@@ -23,6 +23,7 @@ from numpy import array
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.mdo.sobieski.design_space import create_design_space
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -32,7 +33,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.mdo.sobieski.disciplines import (
     create_disciplines_with_physical_naming,
 )
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -194,14 +195,14 @@ def test_coupling(factor, mda) -> None:
 
 
 @pytest.fixture
-def scenario_pn() -> DOEScenario:
-    """A DOEScenario for the Sobieski's SSBJ use case with physical naming."""
-    scn = DOEScenario(
+def scenario_pn() -> MDOScenario:
+    """A MDOScenario for the Sobieski's SSBJ use case with physical naming."""
+    scn = MDOScenario(
         create_disciplines_with_physical_naming(),
-        "range",
         create_design_space(physical_naming=True),
-        formulation_name="MDF",
+        settings=MDF_Settings(),
     )
+    scn.add_objective("range")
     for constraint_name in [
         "stress",
         "twist_c",
@@ -218,19 +219,19 @@ def scenario_pn() -> DOEScenario:
 
 
 @pytest.fixture
-def scenario() -> DOEScenario:
-    """A DOEScenario for the Sobieski's SSBJ use case without physical naming."""
-    scn = DOEScenario(
+def scenario() -> MDOScenario:
+    """A MDOScenario for the Sobieski's SSBJ use case without physical naming."""
+    scn = MDOScenario(
         [
             SobieskiAerodynamics(),
             SobieskiStructure(),
             SobieskiPropulsion(),
             SobieskiMission(),
         ],
-        "y_4",
         create_design_space(),
-        formulation_name="MDF",
+        settings=MDF_Settings(),
     )
+    scn.add_objective("y_4")
     for constraint_name in ["g_1", "g_2", "g_3"]:
         scn.add_constraint(constraint_name, constraint_type=scn.ConstraintType.INEQ)
     scn.add_observable("y_1")

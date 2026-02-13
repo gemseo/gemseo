@@ -35,15 +35,12 @@ A scenario is an interface that:
 
 ### How does a scenario is implemented in GEMSEO?
 
-Programmatically speaking, scenarios are implemented in GEMSEO through the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] abstract class
-inheriting from the [Discipline][gemseo.core.discipline.discipline.Discipline] class and derived classes:
+Programmatically speaking, scenarios are implemented in GEMSEO through the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] class.
+They can be executed using
+either optimizers in the case of optimization processes
+or DOE algorithms in the case of trade-off studies and sampling processes.
 
-- The [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] class inheriting from [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
-  is dedicated to optimization processes.
-- The [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] class inheriting from [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
-  is dedicated to trade-off studies and sampling processes.
-
-A [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] is defined by four main elements:
+An [MDOScenario][gemseo.scenarios.mdo.MDOScenario] is defined by four main elements:
 
 - the `disciplines` attribute: the list of [Discipline][gemseo.core.discipline.discipline.Discipline],
 - the `formulation` attribute: the multidisciplinary formulation based on [DesignSpace][gemseo.algos.design_space.DesignSpace],
@@ -59,7 +56,6 @@ an instance of this scenario can be created from the [create_scenario()][gemseo.
 - `objective_name`: the objective name (`str`)
 - `design_space`: the instantiated [DesignSpace][gemseo.algos.design_space.DesignSpace],
 - `name=None`: the optional name of the scenario (`str`),
-- `scenario_type='MDO'`: the optional type of scenario (`'MDO'` or `'DOE'`),
 - `maximize_objective=False`: the choice between maximizing or minimizing the objective function (`bool`),
 - `formulation_settings_model`: the formulation settings as a Pydantic model (`BaseFormulationSettings`)
 - `**formulation_settings`: settings passed to the multidisciplinary formulation, in case no `formulation_settings_model` is specified. In this case the `formulation_name` (`str`) is mandatory.
@@ -76,7 +72,7 @@ get_available_scenario_types()
 
 ## How to create a scenario?
 
-We can easily create an [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] or a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]
+We can easily create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 from the [create_scenario()][gemseo.create_scenario] high-level function.
 
 ### Instantiate the disciplines
@@ -117,7 +113,7 @@ objective_name = 'obj'
 ### Define the multidisciplinary formulation and its settings
 
 From the design space and the objective name,
-the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] automatically builds an multidisciplinary formulation
+the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] automatically builds an multidisciplinary formulation
 corresponding to a multidisciplinary formulation name specified by the user, e.g.
 
 ``` python
@@ -148,7 +144,7 @@ get_available_formulations()
 
 ### Choose the type of scenario
 
-Just before the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] instantiation,
+Just before the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] instantiation,
 the type of scenario must be chosen, e.g.
 
 ``` python
@@ -167,7 +163,7 @@ get_available_scenario_types()
 
 ### Instantiate the scenario
 
-From these different elements, we can instantiate the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
+From these different elements, we can instantiate the [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 by means of the [create_scenario()][gemseo.create_scenario] high-level function:
 
 ``` python
@@ -177,7 +173,6 @@ scenario = create_scenario(
       disciplines=disciplines,
       objective_name=objective_name,
       design_space=design_space,
-      scenario_type=scenario_type,
       formulation_settings_model=formulation_settings_model,
 )
 ```
@@ -189,14 +184,13 @@ scenario = create_scenario(
       disciplines=disciplines,
       objective_name=objective_name,
       design_space=design_space,
-      scenario_type=scenario_type,
       formulation_name=formulation_name,
 )
 ```
 
 ### Get the names of design variables
 
-We can use the [get_optim_variable_names()][gemseo.scenarios.base_scenario.BaseScenario.get_optim_variable_names] method of the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
+We can use the [get_optim_variable_names()][gemseo.scenarios.mdo.MDOScenario.get_optim_variable_names] method of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 to access formulation design variables names in a convenient way:
 
 ``` python
@@ -206,7 +200,7 @@ print(scenario.get_optim_variable_names)
 
 ### Get the design space
 
-The design space can be accessed using the [design_space][gemseo.scenarios.base_scenario.BaseScenario.design_space] property of the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]:
+The design space can be accessed using the [design_space][gemseo.scenarios.mdo.MDOScenario.design_space] property of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario]:
 
 ``` python
 print(scenario.design_space)
@@ -221,10 +215,10 @@ print(scenario.design_space)
 
 ### Visualize the scenario before execute it (XDSM graph)
 
-The simplest way to visualize how the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] manages the workflow and dataflow before to execute it
+The simplest way to visualize how the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] manages the workflow and dataflow before to execute it
 is to log them in the console or in a file using GEMSEO's logger.
 
-The method [xdsmize()][gemseo.scenarios.base_scenario.BaseScenario.xdsmize] of the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
+The method [xdsmize()][gemseo.scenarios.mdo.MDOScenario.xdsmize] of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 can be used to this aim (`monitor=True`).
 
 If `save_html` (default True), will generate a self-contained HTML file, that can be automatically open using the option `show_html=True`.
@@ -255,7 +249,7 @@ and
 
 Moreover,
 you can save the XDSM into a PDF file
-by setting the argument `save_pdf` of the [xdsmize()][gemseo.scenarios.base_scenario.BaseScenario.xdsmize] method to `True`
+by setting the argument `save_pdf` of the [xdsmize()][gemseo.scenarios.mdo.MDOScenario.xdsmize] method to `True`
 and leaving the argument `pdf_build` to `True`
 (if `pdf_build` is `False`, only the TikZ and LaTeX files will be generated and it will be up to you to compile the LaTeX file):
 
@@ -267,7 +261,7 @@ eventually specifying the output directory `directory_path='SOME_PATH'`.
 
 ## How to execute a scenario?
 
-When the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] is created, we can execute it to solve the optimization problem, e.g.
+When the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] is created, we can execute it to solve the optimization problem, e.g.
 
 ``` python
 scenario.execute(algo_name="SLSQP", max_iter=100) # MDO case
@@ -281,18 +275,17 @@ doe_scenario = create_scenario(
       formulation=formulation,
       objective_name=objective_name,
       design_space=design_space,
-      scenario_type="DOE",
 )
 doe_scenario.execute(algo_name="PYDOE_LHS", n_samples=100) # DOE case
 ```
 
 !!! note
-      [MDOScenario.execute()][gemseo.scenarios.mdo_scenario.MDOScenario.execute] and [DOEScenario.execute()][gemseo.scenarios.doe_scenario.DOEScenario.execute] use an algorithm name (`algo_name`)
+      [MDOScenario.execute()][gemseo.scenarios.mdo.MDOScenario.execute] uses an algorithm name (`algo_name`)
       as well as settings, passed either as a Pydantic model (`settings_model`) or as keyword arguments.
       In particular,
-      [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] requires the mandatory setting parameter `max_iter`
+      the optimization algorithms require the mandatory setting parameter `max_iter`
       corresponding to the maximum number of iterations of the optimization algorithm
-      and [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] the mandatory setting parameter `n_samples` or other setting parameters to deduce it.
+      and the DOE algorithms require a mandatory setting parameter `n_samples` or other setting parameters to deduce it.
 
 !!! info "See also"
 
@@ -308,9 +301,9 @@ doe_scenario.execute(algo_name="PYDOE_LHS", n_samples=100) # DOE case
 
 ## How to get the optimum solution?
 
-Once the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] is executed, the optimum results can be found in the execution log.
+Once the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] is executed, the optimum results can be found in the execution log.
 
-It is also possible to extract them by invoking the [get_result()][gemseo.scenarios.base_scenario.BaseScenario.get_result] method of the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] class.
+It is also possible to extract them by invoking the [get_result()][gemseo.scenarios.mdo.MDOScenario.get_result] method of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] class.
 It returns a dictionary containing the optimum results for the scenario under consideration:
 
 ``` python
@@ -323,7 +316,7 @@ print("The solution of P is (x*,f(x*)) = ({}, {})".format(
 
 ## How to log disciplinary and total execution metrics?
 
-The [print_execution_metrics()][gemseo.scenarios.base_scenario.BaseScenario.print_execution_metrics] method of the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] class
+The [print_execution_metrics()][gemseo.scenarios.mdo.MDOScenario.print_execution_metrics] method of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] class
 adds disciplinary and total execution metrics in the logs:
 
 ``` python
@@ -333,7 +326,7 @@ scenario.print_execution_metrics()
 which yields:
 
 ``` shell
-INFO - 12:50:53 : * BaseScenario Executions statistics *
+INFO - 12:50:53 : * MDOScenario Executions statistics *
 INFO - 12:50:53 : * Discipline: Sellar1
 INFO - 12:50:53 : Executions number: 128
 INFO - 12:50:53 : Execution time:  0.00471186637878 s
@@ -353,8 +346,8 @@ INFO - 12:50:53 : Total number of linearizations 27
 ## How to visualize the scenario execution and results?
 
 GEMSEO provides many post-processing tools which can be called
-either by means of the [post_process()][gemseo.scenarios.base_scenario.BaseScenario.post_process] method of the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] class
+either by means of the [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] method of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] class
 or by means of the [execute_post()][gemseo.execute_post] high-level function.
-The [post_process()][gemseo.scenarios.base_scenario.BaseScenario.post_process] method of the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] class
+The [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] method of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] class
 returns the list of available post-processing methods.
 Find more information about [post-processing and visualization][how-to-deal-with-post-processing].

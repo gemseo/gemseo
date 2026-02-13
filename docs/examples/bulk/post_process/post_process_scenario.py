@@ -46,8 +46,8 @@ scenario.execute(algo_name="NLOPT_COBYLA", max_iter=10)
 
 # %%
 # Then,
-# we can post-process this [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario]
-# either with its method [post_process()][gemseo.scenarios.mdo_scenario.MDOScenario.post_process]:
+# we can post-process this [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+# either with its method [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process]:
 scenario.post_process(post_name="BasicHistory", variable_names=["y"])
 
 # %%

@@ -97,7 +97,7 @@ are a set of rules that define whether a set of data is valid or not as
 inputs or outputs of a [Discipline][gemseo.core.discipline.discipline.Discipline]. There are at least two grammars
 for a discipline: one for input data and one for output data.
 
-In GEMSEO, there is an [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar] class that defines the contract of
+In GEMSEO, there is a [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar] class that defines the contract of
 the grammars implementations, such as checking data, listing the
 required data, etc.
 

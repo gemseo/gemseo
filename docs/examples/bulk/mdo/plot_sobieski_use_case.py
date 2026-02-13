@@ -86,7 +86,7 @@ disciplines = create_discipline([
 #     See the [examples about high-level functions][api].
 
 # %%
-# ## Step 2: [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] creation.
+# ## Step 2: [MDOScenario][gemseo.scenarios.mdo.MDOScenario] creation.
 #
 # The scenario delegates the creation of the optimization problem to the
 # [MDO formulation][mdo-formulations].
@@ -181,7 +181,7 @@ scenario = create_scenario(
 # available for Sobieski test-case, they can be used instead of computing
 # the derivatives with finite differences or with the complex step method.
 # The easiest way to set it is the method
-# [set_differentiation_method()][gemseo.scenarios.base_scenario.BaseScenario.set_differentiation_method]:
+# [set_differentiation_method()][gemseo.scenarios.mdo.MDOScenario.set_differentiation_method]:
 scenario.set_differentiation_method()
 # %%
 #
@@ -209,7 +209,7 @@ scenario.set_differentiation_method()
 # The formulation has a powerful feature to automatically dispatch the constraints
 # ($g_1, g\_2, g\_3$) and plug them to the optimizers depending on
 # the formulation. To do that, we use the method
-# [add_constraint()[gemseo.scenarios.base_scenario.BaseScenario.add_constraint]:
+# [add_constraint()[gemseo.scenarios.mdo.MDOScenario.add_constraint]:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 # %%

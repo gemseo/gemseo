@@ -27,13 +27,14 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
 from gemseo.machine_learning.regression.models.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
 from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.testing.helpers import concretize_classes
 
 from ..core.test_ml_model import DummyMLModel
@@ -56,9 +57,8 @@ def dataset() -> IODataset:
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = DOEScenario(
-        [MODEL], "y", design_space, formulation_name="DisciplinaryOpt"
-    )
+    scenario = MDOScenario([MODEL], design_space, settings=DisciplinaryOpt_Settings())
+    scenario.add_objective("y")
     scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=20)
     return MODEL.cache.to_dataset()
 
@@ -69,9 +69,8 @@ def dataset_test() -> IODataset:
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = DOEScenario(
-        [MODEL], "y", design_space, formulation_name="DisciplinaryOpt"
-    )
+    scenario = MDOScenario([MODEL], design_space, settings=DisciplinaryOpt_Settings())
+    scenario.add_objective("y")
     scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=5)
     return MODEL.cache.to_dataset()
 

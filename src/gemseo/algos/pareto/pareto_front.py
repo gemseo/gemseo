@@ -44,7 +44,7 @@ from gemseo.utils.string_tools import _format_value_in_pretty_table_6
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo import OptimizationProblem
+    from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.typing import RealArray
 
 

@@ -172,7 +172,7 @@ def test_lagrangian_constraint(
     scenario.add_constraint("c_2", constraint_type=constraint_type)
 
     scenario.execute(algo_name="SLSQP", max_iter=50)
-    problem = scenario.formulation.optimization_problem
+    problem = scenario.formulation.problem
     lagrange = LagrangeMultipliers(problem)
 
     lag = lagrange.compute(problem.solution.x_opt)
@@ -238,7 +238,7 @@ def test_2d_ineq(
     analytical_test_2d_ineq, options, algo_ineq, reformulate_constraints
 ) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    problem = analytical_test_2d_ineq.formulation.optimization_problem
+    problem = analytical_test_2d_ineq.formulation.problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()
     execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options.copy())
@@ -267,7 +267,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
     opt = options.copy()
     opt["algo_name"] = algo_eq
     analytical_test_2d_eq.execute(**opt)
-    problem = analytical_test_2d_eq.formulation.optimization_problem
+    problem = analytical_test_2d_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     lag = lagrange.compute(
@@ -284,7 +284,7 @@ def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq) -> No
     opt = options.copy()
     opt["algo_name"] = algo_eq
     analytical_test_2d__multiple_eq.execute(**opt)
-    problem = analytical_test_2d__multiple_eq.formulation.optimization_problem
+    problem = analytical_test_2d__multiple_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     lag = lagrange.compute(
@@ -316,7 +316,7 @@ def test_2d_mixed(
     """Test for lagrange multiplier inequality almost optimum."""
     if subsolver_constraints:
         pytest.skip(f"{algo_eq} does not have subsolver_constraints option.")
-    problem = analytical_test_2d_mixed_rank_deficient.formulation.optimization_problem
+    problem = analytical_test_2d_mixed_rank_deficient.formulation.problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()
     execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options.copy())

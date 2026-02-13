@@ -48,13 +48,14 @@ from gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter import 
     MDOObjectiveScenarioAdapter,
 )
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.name_generator import NameGenerator
 
@@ -81,13 +82,9 @@ def scenario():
     design_space = create_design_space()
     design_space.filter(["x_1", "x_2", "x_3"])
     mdo_scenario = MDOScenario(
-        disciplines,
-        "y_4",
-        design_space,
-        formulation_name="MDF",
-        maximize_objective=True,
-        name="MyScenario",
+        disciplines, design_space, name="MyScenario", settings=MDF_Settings()
     )
+    mdo_scenario.add_objective("y_4", minimize=False)
     mdo_scenario.set_algorithm(algo_name="L-BFGS-B", max_iter=35)
     return mdo_scenario
 
@@ -168,7 +165,7 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
     # initial_x is reset to the initial design value before optimization;
     # thus the optimization starts from initial_design.
     adapter.execute()
-    initial_x = adapter.scenario.formulation.optimization_problem.database.get_x_vect(1)
+    initial_x = adapter.scenario.formulation.problem.database.get_x_vect(1)
     assert np_all(initial_x == initial_design)
 
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
@@ -180,7 +177,7 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
     # initial_x is NOT reset to the initial design value before optimization;
     # thus the optimization starts from the last design value (=new_initial_design).
     adapter.execute()
-    initial_x = adapter.scenario.formulation.optimization_problem.database.get_x_vect(1)
+    initial_x = adapter.scenario.formulation.problem.database.get_x_vect(1)
     assert np_all(initial_x == new_initial_design)
     assert not np_all(initial_x == initial_design)
 
@@ -280,8 +277,8 @@ def test_compute_jacobian_exceptions(scenario) -> None:
         adapter._compute_jacobian(output_names=["y_4", "foo", "bar"])
 
     # Pass invalid differentiated outputs
-    scenario.add_constraint(["g_1"])
-    scenario.add_constraint(["g_2"])
+    scenario.add_constraint("g_1")
+    scenario.add_constraint("g_2")
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4", "g_1", "g_2"])
     with pytest.raises(
         ValueError,
@@ -292,7 +289,7 @@ def test_compute_jacobian_exceptions(scenario) -> None:
         adapter._compute_jacobian(output_names=["y_4", "g_2", "g_1"])
 
     # Pass a multi-valued objective
-    scenario.formulation.optimization_problem.objective.output_names = ["y_4"] * 2
+    scenario.formulation.problem.objective.output_names = ["y_4"] * 2
     with pytest.raises(
         ValueError, match=re.escape("The objective must be single-valued.")
     ):
@@ -303,12 +300,11 @@ def build_struct_scenario():
     ds = SobieskiDesignSpace()
     sc_str = MDOScenario(
         [SobieskiStructure()],
-        "y_11",
         ds.filter("x_1", copy=True),
         name="StructureScenario",
-        formulation_name="DisciplinaryOpt",
-        maximize_objective=True,
+        settings=DisciplinaryOpt_Settings(),
     )
+    sc_str.add_objective("y_11", minimize=False)
     sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
     sc_str.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
     return sc_str
@@ -318,11 +314,11 @@ def build_prop_scenario():
     ds = SobieskiDesignSpace()
     sc_prop = MDOScenario(
         [SobieskiPropulsion()],
-        "y_34",
         ds.filter("x_3", copy=True),
-        formulation_name="DisciplinaryOpt",
         name="PropulsionScenario",
+        settings=DisciplinaryOpt_Settings(),
     )
+    sc_prop.add_objective("y_34")
     sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
     sc_prop.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
     return sc_prop
@@ -331,7 +327,7 @@ def build_prop_scenario():
 def check_adapter_jacobian(
     adapter, inputs, objective_threshold, lagrangian_threshold
 ) -> None:
-    opt_problem = adapter.scenario.formulation.optimization_problem
+    opt_problem = adapter.scenario.formulation.problem
     output_names = opt_problem.objective.output_names
     constraints = opt_problem.constraints.get_names()
 
@@ -396,7 +392,7 @@ def check_obj_scenario_adapter(
     scenario, outputs, minimize, objective_threshold, lagrangian_threshold
 ) -> None:
     dim = scenario.design_space.dimension
-    problem = scenario.formulation.optimization_problem
+    problem = scenario.formulation.problem
     objective = problem.objective
     output_names = objective.output_names
     problem.objective = MDOFunction(
@@ -460,7 +456,7 @@ def test_lagrange_multipliers_outputs() -> None:
     )
     assert adapter.io.output_grammar.has_names(mult_names)
     adapter.execute()
-    problem = struct_scenario.formulation.optimization_problem
+    problem = struct_scenario.formulation.problem
     x_opt = problem.solution.x_opt
     obj_grad = problem.objective.original.jac(x_opt)
     g1_jac = next(problem.constraints.get_originals()).jac(x_opt)
@@ -532,7 +528,7 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> 
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
-        scenario: Fixture that returns a DOEScenario for the Sobieski's SSBJ use case
+        scenario: Fixture that returns n MDOScenario for the Sobieski's SSBJ use case
             without physical naming.
     """
     adapter = MDOScenarioAdapter(
@@ -567,14 +563,11 @@ def test_parallel_adapter(tmp_wd, scenario):
     )
     design_space = SobieskiDesignSpace()
     design_space.filter(["x_shared"])
-    scenario_doe = DOEScenario(
-        [adapter],
-        "y_4",
-        design_space=design_space,
-        maximize_objective=True,
-        formulation_name="DisciplinaryOpt",
+    mdo_scenario = MDOScenario(
+        [adapter], design_space, settings=DisciplinaryOpt_Settings()
     )
-    scenario_doe.execute(LHS_Settings(n_samples=10, n_processes=2))
+    mdo_scenario.add_objective("y_4", minimize=False)
+    mdo_scenario.execute(LHS_Settings(n_samples=10, n_processes=2))
     assert len(list(tmp_wd.rglob("test_*.h5"))) == 10
 
 
@@ -685,7 +678,9 @@ def scenario_fixture(disciplines_fixture):
         design_space,
         formulation_name="DisciplinaryOpt",
     )
-    scenario.add_constraint("g", MDOFunction.ConstraintType.INEQ, value=5)
+    scenario.add_constraint(
+        "g", constraint_type=MDOFunction.ConstraintType.INEQ, value=5
+    )
     scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
     return MDOScenarioAdapter(scenario, ["alpha"], ["f"], set_x0_before_opt=True)
 
@@ -704,7 +699,7 @@ def test_scenario_adapter(scenario_fixture) -> None:
     )
     scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
     scenario.execute()
-    assert scenario.formulation.optimization_problem.solution is not None
+    assert scenario.formulation.problem.solution is not None
 
 
 def test_run_scenario_adapter(scenario_fixture) -> None:

@@ -20,7 +20,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
@@ -97,7 +97,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             )
             raise ValueError(msg)
 
-        doe_algo = DOELibraryFactory().create(self._settings.doe_algo_name)
+        doe_algo = DOE_LIBRARY_FACTORY.create(self._settings.doe_algo_name)
         if (
             "n_samples"
             in doe_algo.ALGORITHM_INFOS[

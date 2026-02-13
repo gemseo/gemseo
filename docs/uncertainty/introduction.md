@@ -52,10 +52,10 @@ GEMSEO implements several UQ&M key concepts through a dedicated package.
 Moreover,
 its class [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace] extends the notion of [DesignSpace][gemseo.algos.design_space.DesignSpace]
 by defining both deterministic and uncertain variables.
-It can already be used in a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] to sample a multidisciplinary system.
+It can already be used in an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] to sample a multidisciplinary system.
 Moreover,
 the GEMSEO community is currently working on extending its use to
-any kind of [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] for robust MDO purposes (see [Roadmap](https://gemseo.gitlab.io/dev/gemseo-org/develop/roadmap))
+any kind of [MDOScenario][gemseo.scenarios.mdo.MDOScenario] for robust MDO purposes (see [Roadmap](https://gemseo.gitlab.io/dev/gemseo-org/develop/roadmap))
 by means of dedicated MDO formulations.
 
 !!! info "See also"

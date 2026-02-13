@@ -32,6 +32,7 @@ from numpy import hstack
 from gemseo import create_dataset
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning import create_classification_model
 from gemseo.machine_learning import create_clustering_model
 from gemseo.machine_learning import create_mlearning_model
@@ -45,7 +46,7 @@ from gemseo.machine_learning import get_mlearning_options
 from gemseo.machine_learning import get_regression_models
 from gemseo.machine_learning import get_regression_options
 from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -79,9 +80,10 @@ def dataset() -> Dataset:
     probability_space.add_random_variable(
         "x_2", OTUniformDistribution_Settings(minimum=0, maximum=1)
     )
-    scenario = DOEScenario(
-        [discipline], "y_1", probability_space, formulation_name="DisciplinaryOpt"
+    scenario = MDOScenario(
+        [discipline], probability_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("y_1")
     scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return scenario.to_dataset(opt_naming=False)
 

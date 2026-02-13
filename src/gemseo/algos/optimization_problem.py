@@ -91,7 +91,6 @@ from numpy import hstack
 from numpy import ndarray
 from numpy import where
 from numpy import zeros
-from strenum import StrEnum
 
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
@@ -105,6 +104,7 @@ from gemseo.algos.optimization_history import OptimizationHistory
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.algos.pareto.pareto_front import ParetoFront
 from gemseo.core.mdo_functions.collections.constraints import Constraints
+from gemseo.core.mdo_functions.concatenate import Concatenate
 from gemseo.core.mdo_functions.linear_composite_function import LinearCompositeFunction
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
@@ -143,9 +143,6 @@ class OptimizationProblem(EvaluationProblem):
     __tolerances: ConstraintTolerances
     """The constraint tolerances."""
 
-    __is_linear: bool
-    """Whether the optimization problem is linear."""
-
     __minimize_objective: bool
     """Whether to minimize the objective."""
 
@@ -158,26 +155,21 @@ class OptimizationProblem(EvaluationProblem):
     use_standardized_objective: bool
     """Whether to use standardized objective for logging and post-processing.
 
-    The standardized objective corresponds to the original one expressed as a cost
-    function to minimize.
-    A [BaseDriverLibrary][gemseo.algos.base_driver_library.BaseDriverLibrary] works
-    with this standardized
-    objective and the [Database][gemseo.algos.database.Database] stores its values.
-    However, for convenience,
-    it may be more relevant to log the expression and the values
-    of the original objective.
+    The standardized objective corresponds to
+    the original objective expressed as an objective to minimize.
+    In other words,
+    $f$ (resp. $-f$) is the standardized objective
+    associated with the objective $f$ to minimize (resp. maximize).
+    Drivers and databases handle standardized objectives
+    but for convenience,
+    it may be more relevant
+    to log the expression and the values of the original objective.
     """
 
     # Enumerations
     AggregationFunction = Constraints.AggregationFunction
     DifferentiationMethod = EvaluationProblem.DifferentiationMethod
     ConstraintType = MDOFunction.ConstraintType
-
-    class HistoryFileFormat(StrEnum):
-        """The format of the history file."""
-
-        HDF5 = "hdf5"
-        GGOBI = "ggobi"
 
     # HDF5 group names
     _CONSTRAINTS_GROUP: Final[str] = "constraints"
@@ -198,13 +190,11 @@ class OptimizationProblem(EvaluationProblem):
     def __init__(
         self,
         design_space: DesignSpace,
-        is_linear: bool = True,
         database: Database | None = None,
         differentiation_method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
         differentiation_step: float = 1e-7,
         parallel_differentiation: bool = False,
         use_standardized_objective: bool = True,
-        **parallel_differentiation_options: int | bool,
     ) -> None:
         """
         Args:
@@ -223,22 +213,35 @@ class OptimizationProblem(EvaluationProblem):
             differentiation_method=differentiation_method,
             differentiation_step=differentiation_step,
             parallel_differentiation=parallel_differentiation,
-            **parallel_differentiation_options,
         )
         self._sequence_of_functions = [self.__constraints, *self._sequence_of_functions]
         self._function_names = ["_objective"]
         self.history = OptimizationHistory(
             self.constraints, self.database, self.design_space
         )
-        self.__is_linear = is_linear
 
     @property
     def is_linear(self) -> bool:
-        """Whether the optimization problem is linear."""
-        if self.constraints.aggregated_constraint_indices:
-            self.__is_linear = False
+        """Whether the optimization problem is linear.
 
-        return self.__is_linear
+        An optimization problem is linear
+        if and only if these three conditions are satisfied:
+
+        - the objective function is linear,
+        - the constraint functions are linear,
+        - there is not aggregated constraint.
+        """
+        return (
+            (
+                self._objective is None
+                or isinstance(self._objective.original, MDOLinearFunction)
+            )
+            and all(
+                isinstance(function.original, MDOLinearFunction)
+                for function in self.__constraints
+            )
+            and not self.constraints.aggregated_constraint_indices
+        )
 
     @property
     def tolerances(self) -> ConstraintTolerances:
@@ -262,9 +265,6 @@ class OptimizationProblem(EvaluationProblem):
 
     @objective.setter
     def objective(self, function: MDOFunction) -> None:
-        if self.is_linear and not isinstance(function, MDOLinearFunction):
-            self.__is_linear = False
-
         function.f_type = function.FunctionType.OBJ
         self._objective = function
         self.history.objective_name = function.name
@@ -295,8 +295,14 @@ class OptimizationProblem(EvaluationProblem):
 
         Args:
             function: The function $c$.
-            value: The value $a$.
+                If its `f_type` is "eq",
+                the constraint is $c(x)=0$ and the other arguments are ignored.
+            value: The value $a$ parameterizing the constraint.
             constraint_type: The type of the constraint.
+                If `None`,
+                `function.f_type` must be either
+                `MDOFunction.ConstraintType.INEQ`
+                or `MDOFunction.ConstraintType.EQ`.
             positive: Whether the inequality constraint is positive.
 
         Raises:
@@ -305,12 +311,15 @@ class OptimizationProblem(EvaluationProblem):
                 [MDOLinearFunction][gemseo.core.mdo_functions.mdo_linear_function.MDOLinearFunction].
             ValueError: When the type of the constraint is missing.
         """
-        if self.is_linear and not isinstance(function, MDOLinearFunction):
-            self.__is_linear = False
-
-        formatted_constraint = self.__constraints.format(
-            function, value=value, constraint_type=constraint_type, positive=positive
-        )
+        if function.f_type.name in function.ConstraintType.__members__:
+            formatted_constraint = function
+        else:
+            formatted_constraint = self.__constraints.format(
+                function,
+                value=value,
+                constraint_type=constraint_type,
+                positive=positive,
+            )
         self._check_function_name(formatted_constraint)
         self.__constraints.append(formatted_constraint)
 
@@ -360,7 +369,6 @@ class OptimizationProblem(EvaluationProblem):
             objective_scale: The objective scaling constant.
             scale_inequality: The inequality constraint scaling constant.
         """
-        self.__is_linear = False
         penalized_objective = self._objective / objective_scale
         previous_objective = self._objective
         previous_constraints = deepcopy(self.__constraints)
@@ -548,19 +556,18 @@ class OptimizationProblem(EvaluationProblem):
                 If `None`,
                 then no constraint is returned.
         """  # noqa: D205, D212
-        return super().get_functions(
-            no_db_no_norm=no_db_no_norm,
-            observable_names=observable_names,
-            jacobian_names=jacobian_names,
-            return_objective=evaluate_objective,
-            constraint_names=constraint_names,
+        output_functions = self._get_output_functions(
+            no_db_no_norm, observable_names, evaluate_objective, constraint_names
+        )
+        return self._get_output_and_jacobian_functions(
+            jacobian_names, output_functions, no_db_no_norm
         )
 
     def _get_options_for_get_functions(
         self, jacobian_names: list[str]
     ) -> dict[str, bool | list[str]]:
         return {
-            "return_objective": self._objective.name in jacobian_names,
+            "evaluate_objective": self._objective.name in jacobian_names,
             "constraint_names": [
                 name
                 for name in jacobian_names
@@ -568,42 +575,38 @@ class OptimizationProblem(EvaluationProblem):
             ],
         }
 
-    def _get_functions(
+    def _get_output_functions(
         self,
+        no_db_no_norm: bool,
         observable_names: Iterable[str] | None,
-        from_original_functions: bool,
-        return_objective: bool,
+        evaluate_objective: bool,
         constraint_names: Iterable[str] | None,
     ) -> list[MDOFunction]:
         """
         Args:
-            return_objective: Whether to return the objective function.
+            evaluate_objective: Whether to evaluate the objective function.
             constraint_names: The names of the constraints to return.
                 If empty,
                 then all the constraints are returned.
                 If `None`,
                 then no constraint is returned.
         """  # noqa: D205, D212
-        if not return_objective:
+        if not evaluate_objective:
             functions = []
-        elif from_original_functions:
+        elif no_db_no_norm:
             functions = [self.objective.original]
         else:
             functions = [self._objective]
 
         if constraint_names:
             for name in constraint_names:
-                functions.append(
-                    self.constraints.get_from_name(name, from_original_functions)
-                )
-        elif constraint_names is not None and from_original_functions:
+                functions.append(self.constraints.get_from_name(name, no_db_no_norm))
+        elif constraint_names is not None and no_db_no_norm:
             functions += self.__constraints.get_originals()
         elif constraint_names is not None:
             functions += self.__constraints
 
-        functions.extend(
-            super()._get_functions(observable_names, from_original_functions)
-        )
+        functions.extend(super()._get_output_functions(no_db_no_norm, observable_names))
         return functions
 
     # TODO: only one public use in DOELibrary and it seems to be a duplicate.
@@ -614,7 +617,7 @@ class OptimizationProblem(EvaluationProblem):
             ValueError: If the objective function is missing.
         """
         if self._objective is None:
-            msg = "Missing objective function in OptimizationProblem"
+            msg = "Missing objective function in optimization problem."
             raise ValueError(msg)
         super().check()
 
@@ -648,7 +651,14 @@ class OptimizationProblem(EvaluationProblem):
         objective_function = [
             line for line in repr(self._objective).split("\n") if line
         ]
-        mls.add(optimize_verb + objective_function[0][start:])
+        if isinstance(self._objective.original, Concatenate):
+            objective_function[0] = "_".join([
+                function.name[start:] for function in self._objective.original.functions
+            ])
+        else:
+            objective_function[0] = objective_function[0][start:]
+
+        mls.add(optimize_verb + objective_function[0])
         for line in objective_function[1:]:
             mls.add(" " * len(optimize_verb) + line)
 
@@ -670,31 +680,14 @@ class OptimizationProblem(EvaluationProblem):
 
         return mls
 
-    def to_hdf(
+    def to_hdf(  # noqa: D102
         self,
         file_path: str | Path,
         append: bool = False,
         hdf_node_path: str = "",
     ) -> None:
-        """Export the optimization problem to an HDF file.
-
-        Args:
-            file_path: The HDF file path.
-            append: Whether to append the data to the file if not empty.
-                Otherwise,
-                overwrite data.
-            hdf_node_path: The path of the HDF node
-                in which the optimization problem should be exported.
-                If empty, the root node is considered.
-        """
-        msg = "Exporting the optimization problem to the file %s"
-        if hdf_node_path:
-            msg += " at node %s"
-            LOGGER.info(msg, file_path, hdf_node_path)
-        else:
-            LOGGER.info(msg, file_path)
-
-        with h5py.File(file_path, "a" if append else "w") as h5file:
+        super().to_hdf(file_path, append=append, hdf_node_path=hdf_node_path)
+        with h5py.File(file_path, mode="a") as h5file:
             if hdf_node_path:
                 h5file = h5file.require_group(hdf_node_path)
 
@@ -731,8 +724,6 @@ class OptimizationProblem(EvaluationProblem):
                 if self.solution is not None:
                     sol_group = h5file.require_group(self._SOLUTION_GROUP)
                     store_attr_h5data(self.solution, sol_group)
-
-        self.database.to_hdf(file_path, append=True, hdf_node_path=hdf_node_path)
 
     @classmethod
     def from_hdf(
@@ -799,12 +790,8 @@ class OptimizationProblem(EvaluationProblem):
                 if attr_name == "minimize_objective":
                     attr_name = "_OptimizationProblem__minimize_objective"
 
-                if attr_name == "is_linear":
-                    attr_name = "_OptimizationProblem__is_linear"
-
-                if attr_name == "pb_type":
-                    attr_name = "_OptimizationProblem__is_linear"
-                    val = val == "linear"
+                if attr_name in ["is_linear", "pb_type"]:
+                    continue
 
                 setattr(problem, attr_name, val)
 

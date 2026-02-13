@@ -24,6 +24,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import Final
 
 from pydantic_core import PydanticUndefined
 
@@ -76,3 +77,7 @@ class MDAFactory(BaseFactory):
 
             defaults[field_name] = default_value
         return defaults
+
+
+MDA_FACTORY: Final[MDAFactory] = MDAFactory()
+"""The factory for `MDA` objects."""

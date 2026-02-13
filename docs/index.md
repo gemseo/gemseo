@@ -80,7 +80,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
     Features:
     [DOE scenario][gemseo.scenarios.doe_scenario] and
-    [MDO scenario][gemseo.scenarios.mdo_scenario].
+    [MDO scenario][gemseo.scenarios.mdo].
 
 - ### __Data persistence__
 

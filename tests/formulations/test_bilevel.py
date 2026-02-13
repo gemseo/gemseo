@@ -27,6 +27,7 @@ import pytest
 
 from gemseo import create_discipline
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
 from gemseo.core.discipline import Discipline
@@ -34,6 +35,8 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_bcd import BiLevelBCD
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
@@ -41,7 +44,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.name_generator import NameGenerator
 from gemseo.utils.testing.bilevel_test_helper import create_aerostructure_scenario
@@ -96,19 +99,17 @@ def test_constraint_not_in_sub_scenario(generate_sobieski_bilevel_scenario) -> N
     scenario = generate_sobieski_bilevel_scenario(apply_cstr_to_system=False)
 
     for i in range(1, 4):
-        scenario.add_constraint(
-            [f"g_{i}"], constraint_type=scenario.ConstraintType.INEQ
-        )
+        scenario.add_constraint(f"g_{i}", constraint_type=scenario.ConstraintType.INEQ)
 
     for i in range(3):
-        cstrs = scenario.disciplines[i].formulation.optimization_problem.constraints
+        cstrs = scenario.disciplines[i].formulation.problem.constraints
         assert len(cstrs) == 1
         assert cstrs[0].name == f"g_{i + 1}"
 
-    cstrs_sys = scenario.formulation.optimization_problem.constraints
+    cstrs_sys = scenario.formulation.problem.constraints
     assert len(cstrs_sys) == 0
     with pytest.raises(ValueError):
-        scenario.add_constraint(["toto"], constraint_type=scenario.ConstraintType.INEQ)
+        scenario.add_constraint("toto", constraint_type=scenario.ConstraintType.INEQ)
 
 
 def test_get_sub_options_grammar_errors() -> None:
@@ -133,7 +134,7 @@ def test_bilevel_aerostructure(aerostructure_scenario) -> None:
     scenario = aerostructure_scenario
 
     assert isinstance(scenario.optimization_result, OptimizationResult)
-    assert scenario.formulation.optimization_problem.database.n_iterations == 5
+    assert scenario.formulation.problem.database.n_iterations == 5
 
 
 def test_bilevel_weak_couplings(dummy_bilevel_scenario) -> None:
@@ -297,19 +298,22 @@ def test_scenario_log_level(
     design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2"})],
-        "z",
         design_space.filter(["y"], copy=True),
-        formulation_name=sub_scenario_formulation,
         name="FooScenario",
+        settings=MDO_FORMULATION_FACTORY.get_class(
+            sub_scenario_formulation
+        ).settings_class(),
     )
+    sub_scenario.add_objective("z")
     sub_scenario.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
     scenario = MDOScenario(
         [sub_scenario],
-        "z",
         design_space.filter(["x"]),
-        formulation_name=scenario_formulation,
-        **settings,
+        settings=MDO_FORMULATION_FACTORY.get_class(scenario_formulation).settings_class(
+            **settings
+        ),
     )
+    scenario.add_objective("z")
     scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
     sub_scenarios_log_level = settings.get("sub_scenarios_log_level")
     if sub_scenarios_log_level == logging.WARNING:
@@ -320,11 +324,9 @@ def test_scenario_log_level(
 
 def test_remove_couplings_from_ds(sobieski_sub_scenarios, caplog) -> None:
     """Check the removal of strong couplings for the design space."""
-    formulation = BiLevel(
-        [*sobieski_sub_scenarios, SobieskiMission()],
-        "y_4",
-        SobieskiProblem().design_space,
-    )
+    problem = OptimizationProblem(SobieskiProblem().design_space)
+    formulation = BiLevel(problem, [*sobieski_sub_scenarios, SobieskiMission()])
+    problem.objective = formulation.create_objective(["y_4"])
     for strong_coupling in ["y_12", "y_21", "y_23", "y_31", "y_32"]:
         assert strong_coupling not in formulation.design_space
     assert (
@@ -400,7 +402,7 @@ def test_adapters_inputs_outputs(scenario, subscenario, request) -> None:
         adapter = scenario_adapter
 
         design_variable = set(
-            adapter.scenario.formulation.optimization_problem.design_space.variable_names
+            adapter.scenario.formulation.problem.design_space.variable_names
         )
         other_local = ssbj_local_variables.difference(design_variable)
         # Check the inputs
@@ -458,20 +460,24 @@ def test_system_variables_not_in_variables_to_warm_start(
     design_space.add_variable("baz", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario_1 = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2", "b": "c+y"}, "foo")],
-        "z",
         design_space.filter(["y"], copy=True),
-        formulation_name=sub_scenario_formulation,
+        settings=MDO_FORMULATION_FACTORY.get_class(
+            sub_scenario_formulation
+        ).settings_class(),
         name="FooScenario",
     )
+    sub_scenario_1.add_objective("z")
     sub_scenario_1.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
 
     sub_scenario_2 = MDOScenario(
         [AnalyticDiscipline({"c": "(x+b)**2"}, "bar")],
-        "c",
         design_space.filter(["b"], copy=True),
-        formulation_name=sub_scenario_formulation,
         name="BarScenario",
+        settings=MDO_FORMULATION_FACTORY.get_class(
+            sub_scenario_formulation
+        ).settings_class(),
     )
+    sub_scenario_2.add_objective("c")
     sub_scenario_2.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
 
     scenario = MDOScenario(
@@ -481,11 +487,12 @@ def test_system_variables_not_in_variables_to_warm_start(
             AnalyticDiscipline({"qux": "baz"}),
             AnalyticDiscipline({"x": "x"}),
         ],
-        "z",
         design_space.filter(["x", "baz"]),
-        formulation_name=scenario_formulation,
-        apply_cstr_tosub_scenarios=False,
+        settings=MDO_FORMULATION_FACTORY.get_class(scenario_formulation).settings_class(
+            apply_cstr_tosub_scenarios=False
+        ),
     )
+    scenario.add_objective("z")
     assert "x" not in scenario.formulation.chain._variable_names_to_warm_start
     assert "baz" not in scenario.formulation.chain._variable_names_to_warm_start
 
@@ -578,18 +585,17 @@ def test_main_mda_settings(main_mda):
     design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2"})],
-        "z",
         design_space.filter(["y"], copy=True),
-        formulation_name="DisciplinaryOpt",
+        settings=DisciplinaryOpt_Settings(),
     )
+    sub_scenario.add_objective("z")
     sub_scenario.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
     scenario = MDOScenario(
         [sub_scenario],
-        "z",
         design_space.filter(["x"]),
-        formulation_name="BiLevel",
-        **main_mda,
+        settings=BiLevel_Settings(**main_mda),
     )
+    scenario.add_objective("z")
     assert isinstance(scenario.formulation.mda2, MDAGaussSeidel)
 
 
@@ -622,9 +628,49 @@ def test_optimal_local_design_history(generate_sobieski_bilevel_scenario):
     """Test the database contains the optimal values of the local design variables."""
     scenario = generate_sobieski_bilevel_scenario()
     scenario.execute(algo_name="NLOPT_COBYLA", max_iter=1)
-    last_item = scenario.formulation.optimization_problem.database.last_item
+    last_item = scenario.formulation.problem.database.last_item
     assert set(last_item) == {"x_3", "x_1", "-y_4", "x_2"}
     y_4 = last_item["-y_4"]
     scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
-    last_item = scenario.formulation.optimization_problem.database.last_item
+    last_item = scenario.formulation.problem.database.last_item
     assert last_item["-y_4"] != y_4
+
+
+@pytest.mark.parametrize("apply_cstr_to_system", [None, False, True])
+@pytest.mark.parametrize("apply_cstr_tosub_scenarios", [None, False, True])
+@pytest.mark.parametrize("apply_to_system_level", [None, False, True])
+@pytest.mark.parametrize("apply_to_sub_level", [None, False, True])
+def test_constraint_level_policy(
+    generate_sobieski_bilevel_scenario,
+    apply_cstr_to_system,
+    apply_cstr_tosub_scenarios,
+    apply_to_system_level,
+    apply_to_sub_level,
+):
+    settings = {}
+    if apply_cstr_to_system is not None:
+        settings["apply_cstr_to_system"] = apply_cstr_to_system
+    if apply_cstr_tosub_scenarios is not None:
+        settings["apply_cstr_tosub_scenarios"] = apply_cstr_tosub_scenarios
+
+    scenario = generate_sobieski_bilevel_scenario(**settings)
+
+    kwargs = {}
+    if apply_to_system_level is not None:
+        kwargs["apply_to_system_level"] = apply_to_system_level
+    if apply_to_sub_level is not None:
+        kwargs["apply_to_sub_level"] = apply_to_sub_level
+
+    scenario.add_constraint("g_1", **kwargs)
+
+    if apply_cstr_to_system is None:
+        apply_cstr_to_system = True
+    if apply_cstr_tosub_scenarios is None:
+        apply_cstr_tosub_scenarios = True
+    assert bool(scenario.formulation.problem.constraints) is (
+        apply_cstr_to_system if apply_to_system_level is None else apply_to_system_level
+    )
+    sub_scenario = scenario.formulation.disciplines[0]
+    assert bool(sub_scenario.formulation.problem.constraints) is (
+        apply_cstr_tosub_scenarios if apply_to_sub_level is None else apply_to_sub_level
+    )

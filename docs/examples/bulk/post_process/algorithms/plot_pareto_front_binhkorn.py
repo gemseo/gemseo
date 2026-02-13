@@ -28,7 +28,7 @@ on the Binh and Korn multi-objective problem.
 from __future__ import annotations
 
 from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import POST_FACTORY
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
@@ -58,7 +58,7 @@ doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 # points. The plots in green denote non-feasible points. Note that the user
 # can avoid the display of the non-feasible points.
 
-PostFactory().execute(
+POST_FACTORY.execute(
     problem,
     post_name="ParetoFront",
     show_non_feasible=False,
@@ -68,7 +68,7 @@ PostFactory().execute(
     show=True,
 )
 
-PostFactory().execute(
+POST_FACTORY.execute(
     problem,
     post_name="ParetoFront",
     objectives=["compute_binhkorn"],

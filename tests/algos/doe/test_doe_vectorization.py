@@ -36,11 +36,13 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -262,15 +264,13 @@ def test_doe_vectorize_scenario(
         discipline = MDOChain([discipline])
 
     scenario = MDOScenario(
-        [discipline],
-        "out",
-        design_space,
-        formulation_name="DisciplinaryOpt",
+        [discipline], design_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("out")
     scenario.execute(
         algo_name="MC", n_samples=N_SAMPLES, vectorize=vectorize, eval_jac=eval_jac
     )
-    problem = scenario.formulation.optimization_problem
+    problem = scenario.formulation.problem
 
     # Check the number of calls to the ProblemFunction.
     assert problem.objective.n_calls == 1 if vectorize else N_SAMPLES
@@ -293,34 +293,30 @@ def test_vectorization_sellar(eval_jac, formulation_name, n):
     # Create the reference results without vectorization.
     scenario = MDOScenario(
         [cls(n=n) for cls in classes],
-        "obj",
         SellarDesignSpace(n=n),
-        formulation_name=formulation_name,
+        settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(),
     )
+    scenario.add_objective("obj")
     scenario.add_constraint("c_1")
     scenario.add_constraint("c_2")
     scenario.execute(
         algo_name="MC", n_samples=N_SAMPLES, vectorize=False, eval_jac=eval_jac
     )
-    reference = scenario.formulation.optimization_problem.database.to_dataset(
-        export_gradients=True
-    )
+    reference = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
     # Create the results with vectorization.
     scenario = MDOScenario(
         [cls(n=n) for cls in classes],
-        "obj",
         SellarDesignSpace(n=n),
-        formulation_name=formulation_name,
+        settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(),
     )
+    scenario.add_objective("obj")
     scenario.add_constraint("c_1")
     scenario.add_constraint("c_2")
     scenario.execute(
         algo_name="MC", n_samples=N_SAMPLES, vectorize=True, eval_jac=eval_jac
     )
-    result = scenario.formulation.optimization_problem.database.to_dataset(
-        export_gradients=True
-    )
+    result = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
     # Compare the results
     # in terms of input values, output values and gradient values.

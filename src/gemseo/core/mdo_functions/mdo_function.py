@@ -211,8 +211,8 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     expr: str
     """The expression of the MDO function, e.g. `"2*x"`."""
 
-    f_type: FunctionType
-    """The type of the MDO function."""
+    __f_type: FunctionType
+    """The function type."""
 
     force_real: bool
     """Whether to cast the results to real value."""
@@ -310,6 +310,7 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
         self.name = name
         self.func = func
         self.jac = jac
+        self.__f_type = self.FunctionType.NONE
         self.f_type = f_type
         self.expr = expr
         self.input_names = input_names
@@ -325,6 +326,15 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
     def original_name(self) -> str:
         """The original name of the MDO function."""
         return self.__original_name
+
+    @property
+    def f_type(self) -> FunctionType:
+        """The function type."""
+        return self.__f_type
+
+    @f_type.setter
+    def f_type(self, f_type: FunctionType | str) -> None:
+        self.__f_type = self.FunctionType(f_type)
 
     @property
     def func(self) -> WrappedFunctionType:
@@ -405,7 +415,7 @@ class MDOFunction(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Whether the MDO function is a constraint.
         """
-        return self.f_type in set(self.ConstraintType)
+        return self.f_type.name in self.ConstraintType.__members__
 
     def __repr__(self) -> str:
         return self.special_repr or self.default_repr

@@ -28,8 +28,7 @@ from gemseo.problems.mdo.scalable.parametric.disciplines.scalable_discipline imp
     ScalableDiscipline,
 )
 from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
-from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 
 @pytest.fixture
@@ -66,10 +65,7 @@ def test_create_scenario(
     )
 
     # Check the type of scenario.
-    if use_optimizer:
-        assert isinstance(scenario, MDOScenario)
-    else:
-        assert isinstance(scenario, DOEScenario)
+    assert isinstance(scenario, MDOScenario)
 
     # Check the disciplines.
     discipline_names = [discipline.name for discipline in scenario.disciplines]
@@ -88,9 +84,9 @@ def test_create_scenario(
         assert scenario.design_space.get_current_value(["y_2"]) != array([0.5])
 
     # Check the optimization functions.
-    assert scenario.formulation.optimization_problem.objective.name == "f"
+    assert scenario.formulation.problem.objective.name == "f"
     constraint_names = [
-        constraint.name for constraint in formulation.optimization_problem.constraints
+        constraint.name for constraint in formulation.problem.constraints
     ]
     if formulation_name == "MDF":
         assert constraint_names == ["c_1", "c_2"]
@@ -104,7 +100,7 @@ def test_create_scenario(
 
     assert [
         constraint.name
-        for constraint in formulation.optimization_problem.constraints.get_inequality_constraints()  # noqa: E501
+        for constraint in formulation.problem.constraints.get_inequality_constraints()  # noqa: E501
     ] == ["c_1", "c_2"]
 
     assert "x_0" in scenario.design_space

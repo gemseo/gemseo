@@ -117,7 +117,6 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import eye
 from numpy import hstack
@@ -128,16 +127,15 @@ from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings i
     ScalableDisciplineSettings,
 )
 from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
-    from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
+    from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.typing import RealArray
 
 
@@ -364,18 +362,15 @@ class OptAsMDOScenario(MDOScenario):
     def __init__(
         self,
         discipline: Discipline,
-        objective_name: str | Sequence[str],
         design_space: DesignSpace,
         name: str = "",
-        maximize_objective: bool = False,
-        formulation_settings_model: BaseFormulationSettings | None = None,
+        settings: BaseFormulationSettings | None = None,
         coupling_equations: tuple[
             Iterable[Discipline],
             Callable[[RealArray], RealArray],
             Callable[[RealArray], RealArray],
         ] = (),
         link_discipline_class: type[BaseLinkDiscipline] = LinearLinkDiscipline,
-        **formulation_settings: Any,
     ) -> None:
         r"""
         Args:
@@ -404,15 +399,7 @@ class OptAsMDOScenario(MDOScenario):
         disciplines = create_disciplines(
             discipline, design_space, coupling_equations, link_discipline_class
         )
-        super().__init__(
-            disciplines,
-            objective_name,
-            design_space,
-            name=name,
-            maximize_objective=maximize_objective,
-            formulation_settings_model=formulation_settings_model,
-            **formulation_settings,
-        )
+        super().__init__(disciplines, design_space, name=name, settings=settings)
 
 
 def create_disciplines(

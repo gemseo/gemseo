@@ -57,16 +57,11 @@ get_available_formulations()
 
 ###
 
-scenario_type = "MDO"
-
-###
-
 scenario = create_scenario(
     disciplines,
     objective_name,
     design_space,
     formulation_name=formulation,
-    scenario_type=scenario_type,
 )
 
 ###

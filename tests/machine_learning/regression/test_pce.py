@@ -40,12 +40,13 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.linreg import LinearRegressor
 from gemseo.machine_learning.regression.models.pce import CleaningOptions
 from gemseo.machine_learning.regression.models.pce import PCERegressor
 from gemseo.machine_learning.regression.models.pce_settings import PCERegressor_Settings
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -651,9 +652,10 @@ def test_multidimensional_variables() -> None:
         "x3", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
 
-    scenario = DOEScenario(
-        [discipline], "y", parameter_space, formulation_name="DisciplinaryOpt"
+    scenario = MDOScenario(
+        [discipline], parameter_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("y")
     scenario.execute(algo_name="OT_OPT_LHS", n_samples=100)
     dataset = scenario.to_dataset(opt_naming=False)
 
@@ -681,9 +683,10 @@ def test_multidimensional_variables() -> None:
         "b", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
 
-    scenario = DOEScenario(
-        [discipline], "y", parameter_space, formulation_name="DisciplinaryOpt"
+    scenario = MDOScenario(
+        [discipline], parameter_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("y")
     scenario.execute(algo_name="OT_OPT_LHS", n_samples=100)
     dataset = scenario.to_dataset(opt_naming=False)
 

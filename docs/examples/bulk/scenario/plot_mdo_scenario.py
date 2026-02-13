@@ -80,7 +80,7 @@ design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-0.5 * o
 # ## Define the MDO scenario
 #
 # Then, by means of the [create_scenario()][gemseo.create_scenario] API function,
-# we define an [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] from the [Discipline][gemseo.core.discipline.discipline.Discipline]
+# we define an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] from the [Discipline][gemseo.core.discipline.discipline.Discipline]
 # and the [DesignSpace][gemseo.algos.design_space.DesignSpace] defined above:
 
 scenario = create_scenario(
@@ -94,7 +94,7 @@ scenario = create_scenario(
 # expressions to obtain the Jacobian matrices. Therefore, there is no need to
 # define a differentiation method in this case. Keep in mind that for a
 # generic discipline with no defined Jacobian function, you can use the
-# [set_differentiation_method()][gemseo.scenarios.base_scenario.BaseScenario.set_differentiation_method] method
+# [set_differentiation_method()][gemseo.scenarios.mdo.MDOScenario.set_differentiation_method] method
 # to define a numerical approximation of the gradients.
 #
 # ``` python
@@ -104,7 +104,7 @@ scenario = create_scenario(
 # ## Execute the MDO scenario
 #
 # Lastly, we solve the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] included in the
-# [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] defined above by minimizing the objective function over
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario] defined above by minimizing the objective function over
 # the [DesignSpace][gemseo.algos.design_space.DesignSpace].
 # Precisely, we choose the [L-BFGS-B algorithm](https://en.wikipedia.org/wiki/Limited-memory_BFGS) implemented in the
 # function `scipy.optimize.fmin_l_bfgs_b`.
@@ -113,7 +113,7 @@ scenario.execute(algo_name="L-BFGS-B", max_iter=100)
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to
-# access them with [BaseScenario.optimization_result][gemseo.scenarios.base_scenario.BaseScenario.optimization_result]:
+# access them with [MDOScenario.optimization_result][gemseo.scenarios.mdo.MDOScenario.optimization_result]:
 
 optimization_result = scenario.optimization_result
 f"The solution of P is (x*, f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt})"
@@ -140,7 +140,7 @@ get_available_post_processings()
 # ## Exporting the problem data.
 #
 # After the execution of the scenario, you may want to export your data to use it
-# elsewhere. The [to_dataset()][gemseo.scenarios.base_scenario.BaseScenario.to_dataset] will allow you to export your
+# elsewhere. The [to_dataset()][gemseo.scenarios.mdo.MDOScenario.to_dataset] will allow you to export your
 # results to a [Dataset][gemseo.datasets.dataset.Dataset], the basic GEMSEO class to store data.
 dataset = scenario.to_dataset("a_name_for_my_dataset")
 

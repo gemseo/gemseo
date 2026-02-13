@@ -31,6 +31,9 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiMissionSG
@@ -41,21 +44,21 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 
 def build_mdo_scenario(
     formulation_name: str,
     grammar_type: Discipline.GrammarType = Discipline.GrammarType.JSON,
-) -> DOEScenario:
-    """Build the DOE scenario for SSBJ.
+) -> MDOScenario:
+    """Build the MDO scenario for SSBJ.
 
     Args:
-        formulation_name: The name of the DOE scenario formulation.
+        formulation_name: The name of the MDO formulation.
         grammar_type: The grammar type.
 
     Returns:
-        The DOE scenario.
+        The MDO scenario.
     """
     if grammar_type == Discipline.GrammarType.JSON:
         disciplines = [
@@ -73,18 +76,18 @@ def build_mdo_scenario(
         ]
 
     design_space = SobieskiDesignSpace()
-    return DOEScenario(
+    scenario = MDOScenario(
         disciplines,
-        "y_4",
         design_space,
-        formulation_name=formulation_name,
-        maximize_objective=True,
+        settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(),
     )
+    scenario.add_objective("y_4", minimize=False)
+    return scenario
 
 
 @pytest.fixture
 def mdf_variable_grammar_doe_scenario(request):
-    """Return a DOEScenario with MDF formulation and custom grammar.
+    """Return an MDOScenario with MDF formulation and custom grammar.
 
     Args:
         request: An auxiliary variable to retrieve the grammar type with
@@ -112,13 +115,12 @@ def test_parallel_doe_hdf_cache(caplog) -> None:
         SobieskiDesignSpace(),
         formulation_name="DisciplinaryOpt",
         maximize_objective=True,
-        scenario_type="DOE",
     )
 
     n_samples = 10
     scenario.execute(algo_name="LHS", n_samples=n_samples, n_processes=2)
     scenario.print_execution_metrics()
-    assert len(scenario.formulation.optimization_problem.database) == n_samples
+    assert len(scenario.formulation.problem.database) == n_samples
     for disc in disciplines:
         assert len(disc.cache) == n_samples
 
@@ -129,10 +131,10 @@ def test_parallel_doe_hdf_cache(caplog) -> None:
     indirect=True,
 )
 def test_doe_scenario(mdf_variable_grammar_doe_scenario) -> None:
-    """Test the execution of a DOEScenario with different grammars.
+    """Test the execution of a MDOScenario with different grammars.
 
     Args:
-        mdf_variable_grammar_doe_scenario: The DOEScenario.
+        mdf_variable_grammar_doe_scenario: The MDOScenario.
     """
     n_samples = 10
     mdf_variable_grammar_doe_scenario.execute(
@@ -140,8 +142,7 @@ def test_doe_scenario(mdf_variable_grammar_doe_scenario) -> None:
     )
     mdf_variable_grammar_doe_scenario.print_execution_metrics()
     assert (
-        len(mdf_variable_grammar_doe_scenario.formulation.optimization_problem.database)
-        == n_samples
+        len(mdf_variable_grammar_doe_scenario.formulation.problem.database) == n_samples
     )
 
 
@@ -160,8 +161,8 @@ def double_discipline():
 
 
 @pytest.fixture
-def doe_scenario(unit_design_space, double_discipline) -> DOEScenario:
-    """A simple DOE scenario not yet executed.
+def doe_scenario(unit_design_space, double_discipline) -> MDOScenario:
+    """A simple MDO scenario not yet executed.
 
     Args:
         unit_design_space: A unit design space with x as a variable.
@@ -169,12 +170,11 @@ def doe_scenario(unit_design_space, double_discipline) -> DOEScenario:
 
     Minimize y=func(x)=2x over [0,1].
     """
-    return DOEScenario(
-        [double_discipline],
-        "y",
-        unit_design_space,
-        formulation_name="DisciplinaryOpt",
+    scenario = MDOScenario(
+        [double_discipline], unit_design_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("y")
+    return scenario
 
 
 def test_validation_exception(doe_scenario) -> None:
@@ -203,7 +203,7 @@ def f_sellar_1(x_1: ndarray, y_2: ndarray, x_shared: ndarray) -> ndarray:
 def test_exception_mda_jacobi(
     caplog, use_threading, sellar_disciplines, enable_discipline_statistics
 ) -> None:
-    """Check that a DOE scenario does not crash with a ValueError and MDAJacobi.
+    """Check that a MDO scenario does not crash with a ValueError and MDAJacobi.
 
     Args:
         caplog: Fixture to access and control log capturing.
@@ -212,18 +212,20 @@ def test_exception_mda_jacobi(
     sellar_disciplines = list(sellar_disciplines)
     sellar_disciplines[0] = create_discipline("AutoPyDiscipline", py_func=f_sellar_1)
 
-    scenario = DOEScenario(
+    scenario = MDOScenario(
         sellar_disciplines,
-        "obj",
         SellarDesignSpace(),
-        formulation_name="MDF",
-        main_mda_name="MDAChain",
-        main_mda_settings={
-            "inner_mda_name": "MDAJacobi",
-            "use_threading": use_threading,
-            "n_processes": 2,
-        },
+        "obj",
+        settings=MDF_Settings(
+            main_mda_name="MDAChain",
+            main_mda_settings={
+                "inner_mda_name": "MDAJacobi",
+                "use_threading": use_threading,
+                "n_processes": 2,
+            },
+        ),
     )
+    scenario.add_objective("obj")
     scenario.execute(algo_name="CustomDOE", samples=array([[0.0, 0.0, -10.0, 0.0]]))
 
     assert sellar_disciplines[2].execution_statistics.n_executions == 0
@@ -239,13 +241,10 @@ def test_other_exceptions_caught(caplog) -> None:
     discipline = AnalyticDiscipline({"y": "1/x"}, name="func")
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = DOEScenario(
-        [discipline],
-        "y",
-        design_space,
-        main_mda_name="MDAJacobi",
-        formulation_name="MDF",
+    scenario = MDOScenario(
+        [discipline], design_space, settings=MDF_Settings(main_mda_name="MDAJacobi")
     )
+    scenario.add_objective("y")
     with pytest.raises(InvalidDataError):
         scenario.execute(algo_name="CustomDOE", samples=array([[0.0]]))
     assert "0.0 cannot be raised to a negative power" in caplog.text
@@ -256,9 +255,10 @@ def test_export_to_dataset_with_repeated_inputs() -> None:
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
     design_space.add_variable("dv")
-    scenario = DOEScenario(
-        [discipline], "obj", design_space, formulation_name="DisciplinaryOpt"
+    scenario = MDOScenario(
+        [discipline], design_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("obj")
     samples = array([[1.0], [2.0], [1.0]])
     scenario.execute(algo_name="CustomDOE", samples=samples)
     dataset = scenario.to_dataset()
@@ -271,9 +271,10 @@ def test_export_to_dataset_normalized_integers() -> None:
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
     design_space.add_variable("dv", type_="integer", lower_bound=1, upper_bound=10)
-    scenario = DOEScenario(
-        [discipline], "obj", design_space, formulation_name="DisciplinaryOpt"
+    scenario = MDOScenario(
+        [discipline], design_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("obj")
     samples = array([[1], [2], [10]])
     scenario.execute(algo_name="CustomDOE", samples=samples)
     dataset = scenario.to_dataset()
@@ -282,7 +283,7 @@ def test_export_to_dataset_normalized_integers() -> None:
 
 
 def test_lib_serialization(tmp_wd, doe_scenario) -> None:
-    """Test the serialization of a DOEScenario with an instantiated BaseDOELibrary.
+    """Test the serialization of a MDOScenario with an instantiated BaseDOELibrary.
 
     Args:
         tmp_wd: Fixture to move into a temporary work directory.
@@ -290,9 +291,7 @@ def test_lib_serialization(tmp_wd, doe_scenario) -> None:
     """
     doe_scenario.execute(algo_name="CustomDOE", samples=array([[1.0]]))
 
-    doe_scenario.formulation.optimization_problem.reset(
-        database=False, design_space=False
-    )
+    doe_scenario.formulation.problem.reset(database=False, design_space=False)
 
     with open("doe.pkl", "wb") as file:
         pickle.dump(doe_scenario, file)
@@ -304,18 +303,12 @@ def test_lib_serialization(tmp_wd, doe_scenario) -> None:
 
     pickled_scenario.execute(algo_name="CustomDOE", samples=array([[0.5]]))
 
-    assert (
-        pickled_scenario.formulation.optimization_problem.database.get_function_value(
-            "y", array([0.5])
-        )
-        == array([1.0])
-    )
-    assert (
-        pickled_scenario.formulation.optimization_problem.database.get_function_value(
-            "y", array([1.0])
-        )
-        == array([2.0])
-    )
+    assert pickled_scenario.formulation.problem.database.get_function_value(
+        "y", array([0.5])
+    ) == array([1.0])
+    assert pickled_scenario.formulation.problem.database.get_function_value(
+        "y", array([1.0])
+    ) == array([2.0])
 
 
 other_doe_scenario = doe_scenario
@@ -341,7 +334,7 @@ def test_partial_execution_from_backup(
     reset_iteration_counters,
     expected,
 ) -> None:
-    """Test the execution of a DOEScenario from a backup.
+    """Test the execution of a MDOScenario from a backup.
 
     Args:
         doe_scenario: A simple DOE scenario.
@@ -352,23 +345,24 @@ def test_partial_execution_from_backup(
             previous execution of the scenario to 0 before executing it again.
         expected: The expected database length.
     """
-    doe_scenario.set_optimization_history_backup("backup.h5")
+    doe_scenario.set_backup_settings("backup.h5")
     doe_scenario.execute(algo_name="CustomDOE", samples=samples_1)
-    other_doe_scenario.set_optimization_history_backup("backup.h5", load=True)
+    other_doe_scenario.set_backup_settings("backup.h5", load=True)
     other_doe_scenario.execute(
         algo_name="CustomDOE",
         samples=samples_2,
         reset_iteration_counters=reset_iteration_counters,
     )
-    assert len(other_doe_scenario.formulation.optimization_problem.database) == expected
+    assert len(other_doe_scenario.formulation.problem.database) == expected
 
 
 def test_scenario_without_initial_design_value() -> None:
-    """Check that a DOEScenario can work without initial design value."""
+    """Check that a MDOScenario can work without initial design value."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     discipline = AnalyticDiscipline({"y": "x"})
     discipline.io.input_grammar.defaults = {}
-    scenario = DOEScenario([discipline], "y", design_space, formulation_name="MDF")
+    scenario = MDOScenario([discipline], design_space, settings=MDF_Settings())
+    scenario.add_objective("y")
     scenario.execute(algo_name="LHS", n_samples=3)
-    assert len(scenario.formulation.optimization_problem.database) == 3
+    assert len(scenario.formulation.problem.database) == 3

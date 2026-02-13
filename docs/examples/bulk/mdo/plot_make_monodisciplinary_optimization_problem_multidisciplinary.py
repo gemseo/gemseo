@@ -50,6 +50,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_coupling_graph
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.problems.mdo.opt_as_mdo_scenario import OptAsMDOScenario
 
 # %%
@@ -100,7 +101,7 @@ design_space.set_current_value(initial_point)
 # %%
 # and create the [OptAsMDOScenario][gemseo.problems.mdo.opt_as_mdo_scenario.OptAsMDOScenario],
 # orchestrated by an MDF formulation:
-mdo_scenario = OptAsMDOScenario(discipline, "f", design_space, formulation_name="MDF")
+mdo_scenario = OptAsMDOScenario(discipline, design_space, "f", settings=MDF_Settings())
 # %%
 # Then,
 # we can see that the design variables have been renamed:

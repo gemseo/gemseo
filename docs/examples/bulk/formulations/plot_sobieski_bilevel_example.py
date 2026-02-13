@@ -144,7 +144,7 @@ system_scenario = create_scenario(
     sub_scenarios_log_level=WARNING,
     formulation_name="BiLevel",
 )
-system_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
+system_scenario.add_constraint("g_1", "g_2", "g_3", constraint_type="ineq")
 
 # %%
 # !!! tip
@@ -188,7 +188,7 @@ system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 # ### Plot the structure optimization histories of the 2 first iterations
 struct_databases = system_scenario.formulation.scenario_adapters[2].databases
 for database in struct_databases[:2]:
-    opt_problem = deepcopy(sc_str.formulation.optimization_problem)
+    opt_problem = deepcopy(sc_str.formulation.problem)
     opt_problem.database = database
     execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)
 

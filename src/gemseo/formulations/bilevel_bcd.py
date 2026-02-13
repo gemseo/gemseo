@@ -24,15 +24,11 @@ from typing import TYPE_CHECKING
 
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_bcd_settings import BiLevelBCD_Settings
-from gemseo.mda.factory import MDAFactory
+from gemseo.mda.factory import MDA_FACTORY
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Any
     from typing import ClassVar
 
-    from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.discipline import Discipline
     from gemseo.mda.gauss_seidel import MDAGaussSeidel
 
 
@@ -60,33 +56,13 @@ class BiLevelBCD(BiLevel):
 
     _settings: BiLevelBCD_Settings
 
-    __mda_factory: ClassVar[MDAFactory] = MDAFactory()
-    """The MDA factory."""
-
-    def __init__(  # noqa: D107
-        self,
-        disciplines: Sequence[Discipline],
-        objective_name: str,
-        design_space: DesignSpace,
-        settings_model: BiLevelBCD_Settings | None = None,
-        **settings: Any,
-    ) -> None:
-        self._bcd_mda = None
-        super().__init__(
-            disciplines,
-            objective_name,
-            design_space,
-            settings_model=settings_model,
-            **settings,
-        )
-
     @property
     def bcd_mda(self) -> MDAGaussSeidel:
         """The MDA of the BCD algorithm."""
         return self._bcd_mda
 
     def _create_sub_scenarios_chain(self) -> MDAGaussSeidel:
-        self._bcd_mda = self.__mda_factory.create(
+        self._bcd_mda = MDA_FACTORY.create(
             "MDAGaussSeidel",
             self.scenario_adapters,
             settings_model=self._settings.bcd_mda_settings,

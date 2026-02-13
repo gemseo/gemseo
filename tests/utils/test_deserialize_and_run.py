@@ -21,10 +21,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo import from_pickle
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.deserialize_and_run import main
+from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 
 if TYPE_CHECKING:

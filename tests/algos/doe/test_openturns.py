@@ -31,7 +31,7 @@ from numpy.testing import assert_equal
 from pydantic import ValidationError
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.openturns._algos.ot_axial_doe import OTAxialDOE
 from gemseo.algos.doe.openturns._algos.ot_composite_doe import OTCompositeDOE
 from gemseo.algos.doe.openturns._algos.ot_factorial_doe import OTFactorialDOE
@@ -70,7 +70,7 @@ def test_call() -> None:
 
     Use an algorithm with options to check if the default options are correctly handled.
     """
-    algo = DOELibraryFactory().create("OT_OPT_LHS")
+    algo = DOE_LIBRARY_FACTORY.create("OT_OPT_LHS")
     samples = algo.compute_doe(2, n_samples=3)
     assert samples.shape == (3, 2)
 
@@ -108,7 +108,7 @@ def test_opt_lhs_wrong_properties(options, error) -> None:
 
 def test_centered_lhs() -> None:
     """Check that a centered LHS produces samples centered in their cells."""
-    algo = DOELibraryFactory().create("OT_LHSC")
+    algo = DOE_LIBRARY_FACTORY.create("OT_LHSC")
     assert set(unique(algo.compute_doe(2, n_samples=2)).tolist()) == {0.25, 0.75}
 
 
@@ -145,7 +145,7 @@ def test_centered_lhs() -> None:
 def test_algos(algo_name, dim, n_samples, options) -> None:
     """Check that the OpenTURNS library returns samples correctly shaped."""
     problem = get_problem(dim)
-    algo = DOELibraryFactory().create(algo_name)
+    algo = DOE_LIBRARY_FACTORY.create(algo_name)
     algo.execute(problem, **options)
     assert algo.unit_samples.shape == (n_samples, dim)
 
@@ -256,7 +256,7 @@ def variables_space():
 )
 def test_compute_doe(variables_space, name) -> None:
     """Check the computation of a DOE out of a design space."""
-    doe = DOELibraryFactory().create(name).compute_doe(variables_space, n_samples=4)
+    doe = DOE_LIBRARY_FACTORY.create(name).compute_doe(variables_space, n_samples=4)
     assert doe.shape == (4, variables_space.dimension)
 
 
@@ -265,7 +265,7 @@ def test_compute_doe(variables_space, name) -> None:
 )
 def test_compute_stratified_doe(variables_space, name, size) -> None:
     """Check the computation of a stratified DOE out of a design space."""
-    library = DOELibraryFactory().create(name)
+    library = DOE_LIBRARY_FACTORY.create(name)
     doe = library.compute_doe(
         variables_space, centers=[0.5] * variables_space.dimension, levels=[0.1]
     )

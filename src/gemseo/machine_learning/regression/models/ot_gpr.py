@@ -47,7 +47,7 @@ from openturns import TensorizedCovarianceModel
 from openturns import UserDefinedCovarianceModel
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.machine_learning.data_formatters.regression_data_formatters import (
     RegressionDataFormatters,
 )
@@ -260,7 +260,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         )
         Log.Show(log_flags)
         if self.__multi_start_n_samples > 1:
-            doe_algo = DOELibraryFactory().create(self.__multi_start_algo_name)
+            doe_algo = DOE_LIBRARY_FACTORY.create(self.__multi_start_algo_name)
             design_space = DesignSpace()
             design_space.add_variable(
                 "x",

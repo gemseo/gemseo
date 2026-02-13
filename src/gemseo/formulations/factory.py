@@ -24,7 +24,7 @@ from __future__ import annotations
 from typing import Final
 
 from gemseo.formulations.base_factory import BaseFormulationFactory
-from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.base_mdo import BaseMDOFormulation
 
 
 class MDOFormulationFactory(BaseFormulationFactory):

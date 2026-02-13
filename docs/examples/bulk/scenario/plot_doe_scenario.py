@@ -75,14 +75,13 @@ design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 # ## Define the DOE scenario
 #
 # Then, by means of the [create_scenario()][gemseo.create_scenario] API function,
-# we define a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] from the [Discipline][gemseo.core.discipline.discipline.Discipline]
+# we define a [MDOScenario][gemseo.scenarios.mdo.MDOScenario] from the [Discipline][gemseo.core.discipline.discipline.Discipline]
 # and the [DesignSpace][gemseo.algos.design_space.DesignSpace] defined above:
 
 scenario = create_scenario(
     discipline,
     "y",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 
@@ -94,7 +93,7 @@ scenario = create_scenario(
 # ## Execute the DOE scenario
 #
 # Lastly, we solve the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] included in the
-# [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] defined above by minimizing the objective function
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario] defined above by minimizing the objective function
 # over a design of experiments included in the [DesignSpace][gemseo.algos.design_space.DesignSpace].
 # Precisely, we choose a [full factorial design](https://en.wikipedia.org/wiki/Factorial_experiment) of size $11^2$:
 
@@ -106,7 +105,7 @@ scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=11**2)
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to
-# access them with [optimization_result][gemseo.scenarios.base_scenario.BaseScenario.optimization_result]:
+# access them with [optimization_result][gemseo.scenarios.mdo.MDOScenario.optimization_result]:
 
 optimization_result = scenario.optimization_result
 f"The solution of P is (x*, f(x*)) = ({optimization_result.x_opt}, {optimization_result.f_opt})"

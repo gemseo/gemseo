@@ -35,7 +35,7 @@ from gemseo.machine_learning.resampling.cross_validation import CrossValidation
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo import Dataset
+    from gemseo.datasets.dataset import Dataset
     from gemseo.machine_learning.clustering.models.base_predictive_clusterer import (
         BasePredictiveClusterer,
     )

@@ -21,12 +21,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -84,17 +85,17 @@ def build_and_run_idf_scenario_with_constraints(
 
     scenario = MDOScenario(
         disciplines,
-        "y_4",
         design_space,
-        formulation_name="IDF",
-        normalize_constraints=normalize_cstr,
-        n_processes=n_processes,
-        use_threading=use_threading,
-        maximize_objective=True,
-        start_at_equilibrium=True,
-        mda_chain_settings_for_start_at_equilibrium={"tolerance": 1e-8},
-        include_weak_coupling_targets=include_weak_coupling_targets,
+        settings=IDF_Settings(
+            normalize_constraints=normalize_cstr,
+            n_processes=n_processes,
+            use_threading=use_threading,
+            start_at_equilibrium=True,
+            mda_chain_settings_for_start_at_equilibrium={"tolerance": 1e-8},
+            include_weak_coupling_targets=include_weak_coupling_targets,
+        ),
     )
+    scenario.add_objective("y_4", minimize=False)
     if linearize:
         scenario.set_differentiation_method()
     else:
@@ -103,7 +104,7 @@ def build_and_run_idf_scenario_with_constraints(
     for c_name in ["g_1", "g_2", "g_3"]:
         scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
 
-    scenario.formulation.optimization_problem.objective *= 0.001
+    scenario.formulation.problem.objective *= 0.001
 
     scenario.execute(
         algo_name=algo,

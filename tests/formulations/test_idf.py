@@ -23,14 +23,18 @@ import re
 import numpy as np
 import pytest
 
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.formulations.idf import IDF
+from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.scenarios.evaluation import EvaluationScenario
 
 
 def test_build_func_from_disc() -> None:
@@ -42,16 +46,21 @@ def test_build_func_from_disc() -> None:
         SobieskiPropulsion("complex128"),
         SobieskiStructure("complex128"),
     ]
-    idf = IDF(disciplines, "y_4", pb.design_space)
+    problem = OptimizationProblem(pb.design_space)
+    idf = IDF(problem, disciplines)
+    problem.objective = idf.create_objective(["y_4"])
     assert idf.all_couplings == idf.coupling_structure.all_couplings
 
-    x_names = idf.optimization_problem.design_space.variable_names
+    x_names = idf.problem.design_space.variable_names
     x_dict = pb.get_default_inputs(x_names)
     x_vect = np.concatenate([x_dict[k] for k in x_names])
 
     for c_name in ["g_1", "g_2", "g_3"]:
-        idf.add_constraint(c_name, constraint_type=idf.ConstraintType.INEQ)
-    opt = idf.optimization_problem
+        constraint = idf.create_constraint(
+            [c_name], constraint_type=MDOFunction.ConstraintType.INEQ
+        )
+        problem.add_constraint(constraint)
+    opt = idf.problem
     opt.objective.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
     for cst in opt.constraints:
         cst.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
@@ -219,7 +228,9 @@ def test_idf_start_equilibrium() -> None:
         SobieskiMission(),
     ]
     design_space = SobieskiDesignSpace()
-    idf = IDF(disciplines, "y_4", design_space, start_at_equilibrium=True)
+    problem = OptimizationProblem(design_space)
+    idf = IDF(problem, disciplines, start_at_equilibrium=True)
+    problem.objective = idf.create_objective(["y_4"])
     coupling_names = [
         "y_12",
         "y_14",
@@ -237,3 +248,23 @@ def test_idf_start_equilibrium() -> None:
             current_couplings[coupling_name] - ref_couplings[coupling_name]
         ) / np.linalg.norm(ref_couplings[coupling_name])
         assert residual < 1e-3
+
+
+def test_idf_evaluation_problem() -> None:
+    """Check that the consistency constraints are observables
+    when IDF uses an EvaluationProblem rather than an OptimizationProblem."""
+    disciplines = [
+        SobieskiStructure(),
+        SobieskiPropulsion(),
+        SobieskiAerodynamics(),
+        SobieskiMission(),
+    ]
+    design_space = SobieskiDesignSpace()
+    scenario = EvaluationScenario(disciplines, design_space, settings=IDF_Settings())
+    names = [
+        "consistency_y_12_y_14",
+        "consistency_y_31_y_32_y_34",
+        "consistency_y_21_y_23_y_24",
+    ]
+    assert scenario.formulation.problem.observables.get_names() == names
+    assert scenario.formulation.problem.function_names == names

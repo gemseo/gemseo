@@ -23,3 +23,8 @@
 - `gemseo.mlearning.regression.models.base_fce_settings.BaseFCERegressor_Settings` was removed; use `gemseo.machine_learning.regression.models.base_fce_settings.BaseFCERegressorSettings` instead.
 - `gemseo.mlearning.regression.models.mode_settings.MOE_Settings` was removed; use `gemseo.machine_learning.regression.models.mode_settings.MOERegressor_Settings` instead.
 - `gemseo.mlearning.regression.models.rbf_settings.Function` was removed; use `gemseo.machine_learning.regression.models.rbf_settings.RBF` instead.
+- The `**parallel_differentiation_options` arguments of `EvaluationProblem` were removed; use the `parallel_differentiation_options` attribute instead.
+- The `**parallel_differentiation_options` arguments of `OptimizationProblem` were removed; use the `parallel_differentiation_options` attribute instead.
+- The `is_linear` argument of `OptimizationProblem` has been removed because it was useless. The `OptimizationProblem.is_linear` property is deduced from the constraints and objective.
+- The `**kwargs` arguments of `EvaluationProblem.get_functions` were removed.
+- The deprecated `**dataset_options` arguments of `EvaluationProblem.to_dataset` were removed.

@@ -39,6 +39,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
 from gemseo.machine_learning.regression.models.linreg_settings import (
     LinearRegressor_Settings,
@@ -51,7 +52,7 @@ from gemseo.machine_learning.regression.models.rbf_settings import RBF
 from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
 from gemseo.machine_learning.transformers.scaler.scaler import Scaler
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -87,12 +88,10 @@ def create_dataset(
                 minimum=bounds["lower_bound"], maximum=bounds["upper_bound"]
             ),
         )
-    scenario = DOEScenario(
-        [discipline],
-        objective_name,
-        parameter_space,
-        formulation_name="DisciplinaryOpt",
+    scenario = MDOScenario(
+        [discipline], parameter_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective(objective_name)
     scenario.execute(algo_name="LHS", n_samples=LEARNING_SIZE)
     return scenario.to_dataset(opt_naming=False)
 

@@ -23,6 +23,7 @@ from math import exp
 
 import numpy as np
 
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.mdo.aerostructure.aerostructure import Aerodynamics
@@ -32,7 +33,7 @@ from gemseo.problems.mdo.aerostructure.aerostructure import get_inputs
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 
 class TestAerostructure(unittest.TestCase):
@@ -192,12 +193,15 @@ class TestAerostructureScenarios(unittest.TestCase):
         :param formulation: name of the formulation (Default value = 'MDF')
         """
         design_space = AerostructureDesignSpace()
-        return MDOScenario(
+        scenario = MDOScenario(
             disciplines,
-            "range",
             design_space,
-            formulation_name=formulation_name,
+            settings=MDO_FORMULATION_FACTORY.get_class(
+                formulation_name
+            ).settings_class(),
         )
+        scenario.add_objective("range")
+        return scenario
 
     @staticmethod
     def build_and_run_scenario(formulation, algo, lin_method="complex_step"):

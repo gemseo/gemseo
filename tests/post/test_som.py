@@ -23,11 +23,11 @@ from pathlib import Path
 import pytest
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import POST_FACTORY
 from gemseo.utils.testing.helpers import image_comparison
 
 pytestmark = pytest.mark.skipif(
-    not PostFactory().is_available("SOM"),
+    not POST_FACTORY.is_available("SOM"),
     reason="SOM plot is not available.",
 )
 
@@ -59,6 +59,6 @@ TEST_PARAMETERS = {
 def test_som(is_annotated, h5_path, baseline_images) -> None:
     """Test the SOM post-processing."""
     problem = OptimizationProblem.from_hdf(h5_path)
-    PostFactory().execute(
+    POST_FACTORY.execute(
         problem, post_name="SOM", n_x=4, n_y=3, save=False, annotate=is_annotated
     )

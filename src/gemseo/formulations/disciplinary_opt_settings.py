@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
+from gemseo.formulations.base_settings import BaseFormulationSettings
 
 
 class DisciplinaryOpt_Settings(BaseFormulationSettings):  # noqa: N801

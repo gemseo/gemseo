@@ -22,11 +22,11 @@
 
 from __future__ import annotations
 
-from gemseo.algos.base_algo_factory import BaseAlgoFactory
+from gemseo.algos.driver_library import DriverLibraryFactory
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 
 
-class OptimizationLibraryFactory(BaseAlgoFactory):
+class OptimizationLibraryFactory(DriverLibraryFactory):
     """A factory of optimization libraries."""
 
     _CLASS = BaseOptimizationLibrary

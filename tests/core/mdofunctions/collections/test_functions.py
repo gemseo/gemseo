@@ -118,14 +118,16 @@ def test_dimension(functions: Functions, mdo_functions: list[MDOFunction]):
 
 def test_f_types(functions: Functions):
     """Check _F_TYPES."""
-    f_types = functions._F_TYPES = ("foo",)
+    f_types = functions._F_TYPES = (MDOFunction.FunctionType.OBJ,)
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "The function type 'bar' is not one of those authorized (foo)."
+            "The function type 'ineq' is not one of those authorized (obj)."
         ),
     ):
-        functions.append(MDOFunction(lambda x: x, name="f", f_type="bar"))
+        functions.append(
+            MDOFunction(lambda x: x, name="f", f_type=MDOFunction.ConstraintType.INEQ)
+        )
 
     functions._F_TYPES = f_types
 

@@ -25,9 +25,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo import from_pickle
 from gemseo.disciplines.wrappers._base_wrapper_discipline import BaseWrapperDiscipline
 from gemseo.utils.directory_creator import DirectoryCreator
+from gemseo.utils.pickle import from_pickle
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

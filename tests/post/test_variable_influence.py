@@ -29,11 +29,12 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.diagonal_doe.diagonal_doe import DiagonalDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.post.factory import PostFactory
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.post.factory import POST_FACTORY
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.testing.helpers import image_comparison
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
@@ -46,9 +47,10 @@ def test_variable_influence(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    post = factory.execute(problem, post_name="VariableInfluence", file_path="var_infl")
+    post = POST_FACTORY.execute(
+        problem, post_name="VariableInfluence", file_path="var_infl"
+    )
     assert len(post.output_file_paths) == 1
     for outf in post.output_file_paths:
         assert Path(outf).exists()
@@ -78,9 +80,10 @@ def test_variable_influence_doe(tmp_wd) -> None:
     design_space = SobieskiDesignSpace()
     inputs = [name for name in disc.io.input_grammar if not name.startswith("c_")]
     design_space.filter(inputs)
-    doe_scenario = DOEScenario(
-        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    doe_scenario = MDOScenario(
+        [disc], design_space, settings=DisciplinaryOpt_Settings()
     )
+    doe_scenario.add_objective("y_12")
     doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
     with pytest.raises(
         ValueError, match=re.escape("No gradients to plot at current iteration.")
@@ -98,9 +101,8 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = PostFactory()
     problem = OptimizationProblem.from_hdf(SSBJ_HDF5_PATH)
-    post = factory.execute(
+    post = POST_FACTORY.execute(
         problem,
         post_name="VariableInfluence",
         file_path="ssbj",

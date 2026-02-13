@@ -28,7 +28,7 @@ which is implemented in the
 A [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline]
 can be used to substitute a
 [Discipline][gemseo.core.discipline.discipline.Discipline] within a
-[BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]. This
+[MDOScenario][gemseo.scenarios.mdo.MDOScenario]. This
 [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline]
 is an evaluation of the [Discipline][gemseo.core.discipline.discipline.Discipline]
 and is faster to compute than the original one. It relies on a
@@ -55,9 +55,8 @@ a text file using the
 [Dataset.from_array()][gemseo.datasets.dataset.Dataset.from_array] and
 [Dataset.from_txt()][gemseo.datasets.dataset.Dataset.from_txt].
 
-Then, the surrogate discipline can be used as any other discipline in a
-[MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario],
-a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario],
+Then, the surrogate discipline can be used as any other discipline
+in an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 or a [BaseMDA][gemseo.mda.base.BaseMDA].
 """
 
@@ -98,15 +97,15 @@ synthetic_dataset = IODataset.from_array(data, variables, sizes, groups)
 # %%
 # If you do not have available data,the following paragraphs of Step 1 concern you.
 #
-# Here, we illustrate the generation of the training data using a
-# [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario],
+# Here, we illustrate the generation of the training data using an
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
 # similarly to [this example][mdf-based-doe-on-the-sobieski-ssbj-test-case],
 # where more details are given.
 #
 # In this basic example, a [Discipline][gemseo.core.discipline.discipline.Discipline]
 # computing the mission
 # performance (range) in the [Sobieski's SSBJ problem][sobieskis-ssbj-test-case] is
-# sampled with a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]. Then,
+# sampled with an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]. Then,
 # the generated database is used to
 # build a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline].
 #
@@ -203,9 +202,7 @@ range_surrogate = create_surrogate("RBFRegressor", mission_dataset)
 #
 # The obtained [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline]
 # can be used in any
-# [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario], such as a
-# [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]
-# or [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario].
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 # We see here that the
 # [Discipline.execute()][gemseo.core.discipline.discipline.Discipline.execute]
 # method can be used as in

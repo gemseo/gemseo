@@ -31,12 +31,13 @@ from numpy import zeros
 from numpy.linalg import norm
 from numpy.testing import assert_almost_equal
 
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.problems.mdo.propane.propane import PropaneComb1
 from gemseo.problems.mdo.propane.propane import PropaneComb2
 from gemseo.problems.mdo.propane.propane import PropaneComb3
 from gemseo.problems.mdo.propane.propane import PropaneReaction
 from gemseo.problems.mdo.propane.propane import get_design_space
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -75,9 +76,7 @@ class TestPropaneScenario(unittest.TestCase):
         :param scenario:
 
         """
-        data_names = (
-            scenario.formulation.optimization_problem.design_space.variable_names
-        )
+        data_names = scenario.formulation.problem.design_space.variable_names
         data = [self.io_data.data[name] for name in data_names]
         return concatenate(data)
 
@@ -94,12 +93,16 @@ class TestPropaneScenario(unittest.TestCase):
             PropaneReaction(),
         ]
         design_space = get_design_space()
-        return MDOScenario(
+        scenario = MDOScenario(
             disciplines,
-            "obj",
             design_space,
-            formulation_name=formulation_name,
+            "obj",
+            settings=MDO_FORMULATION_FACTORY.get_class(
+                formulation_name
+            ).settings_class(),
         )
+        scenario.add_objective("obj")
+        return scenario
 
     def build_and_run_scenario(self, formulation, algo, lin_method="complex_step"):
         """
@@ -114,10 +117,10 @@ class TestPropaneScenario(unittest.TestCase):
         # add constraints
 
         scenario.add_constraint(
-            ["f_2", "f_6"], constraint_type=scenario.ConstraintType.INEQ
+            ("f_2", "f_6"), constraint_type=scenario.ConstraintType.INEQ
         )
         scenario.add_constraint(
-            ["f_7", "f_9"], constraint_type=scenario.ConstraintType.INEQ
+            ("f_7", "f_9"), constraint_type=scenario.ConstraintType.INEQ
         )
 
         # run the optimizer

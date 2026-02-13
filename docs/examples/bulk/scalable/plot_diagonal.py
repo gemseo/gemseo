@@ -41,7 +41,7 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 # %%
 # ## Training dataset
 #
-# The first step is to build an [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache] dataset
+# The first step is to build a [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache] dataset
 # from a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
 
 # %%
@@ -63,7 +63,7 @@ input_space.filter(input_names)
 # %%
 # ### Build the DOE scenario
 #
-# Lastly, we sample the discipline by means of a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]
+# Lastly, we sample the discipline by means of an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 # relying on both discipline and input space.
 # In order to build a diagonal scalable discipline,
 # a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE] must be used.
@@ -71,7 +71,6 @@ scenario = create_scenario(
     [discipline],
     "y_2",
     input_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 for output_name in discipline.io.output_grammar.names:

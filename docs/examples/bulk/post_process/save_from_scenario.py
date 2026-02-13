@@ -46,7 +46,7 @@ scenario.execute(algo_name="NLOPT_COBYLA", max_iter=10)
 # %%
 # Then,
 # we save the results to an HDF5 file for future post-processing:
-scenario.save_optimization_history("my_results.hdf")
+scenario.to_hdf("my_results.hdf")
 
 # %%
 # !!! info "See also"

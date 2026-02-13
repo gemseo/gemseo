@@ -68,7 +68,7 @@ made on:
 - Use
   different [MDO formulations](mdo/mdo_formulations.md): [MDF](mdo/mdo_formulations.md#the-mdf-formulation), [IDF](mdo/mdo_formulations.md#the-idf-formulation), [bilevel](mdo/mdo_formulations.md#the-bi-level-formulation)
   and disciplinary optimizer [[Read more]](mdo/mdo_formulations.md)
-- Visualize a [MDO formulation](mdo/mdo_formulations.md) as
+- Visualize an [MDO formulation](mdo/mdo_formulations.md) as
   an [XDSM diagram](mdo/mdo_formulations.md#xdsm-visualization) [[Read more]](mdo/mdo_formulations.md)
 - Use different `mda` algorithms: fixed-point algorithms (Gauss-Seidel and Jacobi), root finding methods (Newton Raphson
   and Quasi-Newton) and hybrid techniques [[Read more]][multi-disciplinary-analyses].

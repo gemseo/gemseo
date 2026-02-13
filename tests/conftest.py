@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator
     from typing import Any
 
-    from gemseo import Discipline
+    from gemseo.core.discipline.discipline import Discipline
 
 DOC_EXAMPLE_MARK = "doc_examples"
 

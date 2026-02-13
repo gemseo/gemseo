@@ -24,12 +24,12 @@ from pathlib import Path
 
 import pytest
 
-from gemseo import from_pickle
 from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.pickle import from_pickle
 
 N_SAMPLES = 10
 

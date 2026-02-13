@@ -43,6 +43,8 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
+
 
 class _ProcessFlow(BaseProcessFlow):
     """The process flow."""
@@ -99,7 +101,7 @@ class MDOChain(ProcessDiscipline):
 
     def __init__(
         self,
-        disciplines: Sequence[Discipline],
+        disciplines: Sequence[BaseDiscipline],
         name: str = "",
     ) -> None:
         """

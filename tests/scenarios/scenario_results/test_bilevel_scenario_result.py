@@ -24,7 +24,8 @@ from numpy import array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
 )
@@ -36,14 +37,14 @@ def test_bilevel_scenario_result_after_execution(scenario) -> None:
     # The optimal objective is z*=0 and is achieved in (x*, y*) = (0, 0).
 
     # We can get x* and z* from the main optimization problem:
-    f_opt, x_opt, _, _, _ = scenario.formulation.optimization_problem.optimum
+    f_opt, x_opt, _, _, _ = scenario.formulation.problem.optimum
     assert x_opt == 0.0
     assert f_opt == 0.0
 
     # But we cannot get z* from the sub-optimization problem
     # whose optimum corresponds to the last iteration of the main optimization loop;
     # in other words, this is not the z*(x=0) but z*(x=1) with f*(x=1) equal to 1.
-    sub_problem = scenario.formulation.disciplines[0].formulation.optimization_problem
+    sub_problem = scenario.formulation.disciplines[0].formulation.problem
     f_opt, y_opt, _, _, _ = sub_problem.optimum
     assert y_opt == 0.0
     assert f_opt == 1.0
@@ -99,21 +100,21 @@ def test_no_databases():
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
-    sub_scenario = DOEScenario(
+    sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "x+y"})],
-        "z",
         design_space.filter(["y"], copy=True),
-        formulation_name="DisciplinaryOpt",
+        settings=DisciplinaryOpt_Settings(),
         name="FooScenario",
     )
+    sub_scenario.add_objective("z")
     sub_scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
 
-    scenario = DOEScenario(
+    scenario = MDOScenario(
         [sub_scenario],
-        "z",
         design_space.filter(["x"]),
-        formulation_settings_model=BiLevel_Settings(keep_opt_history=False),
+        settings=BiLevel_Settings(keep_opt_history=False),
     )
+    scenario.add_objective("z")
     scenario.execute(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
 
     result = BiLevelScenarioResult(scenario)

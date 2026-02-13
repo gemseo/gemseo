@@ -42,7 +42,8 @@ if TYPE_CHECKING:
 
     from pandas import DataFrame
 
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.formulations.base import BaseFormulation
+    from gemseo.scenarios.mdo import MDOScenario
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
@@ -94,27 +95,27 @@ class DummyDiscipline(Discipline):
 
 
 def __get_all_disciplines(
-    disciplines: Iterable[Discipline | BaseScenario],
+    disciplines: Iterable[Discipline | MDOScenario],
     skip_scenarios: bool,
 ) -> list[Discipline]:
     """Return the non-scenario disciplines or also the disciplines of the scenario ones.
 
     Args:
         disciplines: The disciplines including potentially
-            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
+            [MDOScenario][gemseo.scenarios.mdo.MDOScenario] objects.
         skip_scenarios: If `True`,
             skip the
-            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
+            [MDOScenario][gemseo.scenarios.mdo.MDOScenario] objects.
             Otherwise, return their disciplines.
 
     Returns:
         The non-scenario disciplines
         or also the disciplines of the scenario ones if any and `skip_scenario=False`.
     """
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.scenarios.mdo import MDOScenario
 
-    non_scenarios = [disc for disc in disciplines if not isinstance(disc, BaseScenario)]
-    scenarios = [disc for disc in disciplines if isinstance(disc, BaseScenario)]
+    non_scenarios = [disc for disc in disciplines if not isinstance(disc, MDOScenario)]
+    scenarios = [disc for disc in disciplines if isinstance(disc, MDOScenario)]
 
     if skip_scenarios:
         return non_scenarios
@@ -133,10 +134,10 @@ def get_all_inputs(
 
     Args:
         disciplines: The disciplines including potentially
-            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
+            [MDOScenario][gemseo.scenarios.mdo.MDOScenario] objects.
         skip_scenarios: If `True`,
             skip the
-            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
+            [MDOScenario][gemseo.scenarios.mdo.MDOScenario] objects.
             Otherwise, consider their disciplines.
 
     Returns:
@@ -155,17 +156,17 @@ def get_all_inputs(
 
 
 def get_all_outputs(
-    disciplines: Iterable[Discipline | BaseScenario],
+    disciplines: Iterable[Discipline | MDOScenario],
     skip_scenarios: bool = True,
 ) -> list[str]:
     """Return all the output names of the disciplines.
 
     Args:
         disciplines: The disciplines including potentially
-            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
+            [MDOScenario][gemseo.scenarios.mdo.MDOScenario] objects.
         skip_scenarios: If `True`,
             skip the
-            [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] objects.
+            [MDOScenario][gemseo.scenarios.mdo.MDOScenario] objects.
             Otherwise, consider their disciplines.
 
     Returns:
@@ -183,9 +184,11 @@ def get_all_outputs(
     )
 
 
+# TODO: API: make the name of the method more explicit.
 def get_sub_disciplines(
-    disciplines: Iterable[Discipline], recursive: bool = False
-) -> list[Discipline]:
+    disciplines: Iterable[BaseDiscipline | MDOScenario | BaseFormulation],
+    recursive: bool = False,
+) -> list[BaseDiscipline]:
     """Determine the sub-disciplines.
 
     This method lists the sub-disciplines' disciplines. It will list up to one level
@@ -193,7 +196,8 @@ def get_sub_disciplines(
     set to `True`.
 
     Args:
-        disciplines: The disciplines from which the sub-disciplines will be determined.
+        disciplines: The disciplines, scenarios and formulations
+            from which the sub-disciplines will be determined.
         recursive: If `True`, the method will look inside any discipline that has
             other disciplines inside until it reaches a discipline without
             sub-disciplines, in this case the return value will not include any
@@ -205,15 +209,15 @@ def get_sub_disciplines(
     Returns:
         The sub-disciplines.
     """
-    from gemseo.formulations.base_formulation import BaseFormulation
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.formulations.base import BaseFormulation
+    from gemseo.scenarios.mdo import MDOScenario
 
     sub_disciplines = []
 
     for discipline in disciplines:
         if (
             not isinstance(
-                discipline, (BaseScenario, BaseFormulation, ProcessDiscipline)
+                discipline, (MDOScenario, BaseFormulation, ProcessDiscipline)
             )
             or not discipline.disciplines
         ):
@@ -230,8 +234,8 @@ def get_sub_disciplines(
 
 
 def _add_to_sub(
-    disciplines: Iterable[Discipline],
-    sub_disciplines: MutableSequence[Discipline],
+    disciplines: Iterable[BaseDiscipline],
+    sub_disciplines: MutableSequence[BaseDiscipline],
 ) -> None:
     """Add the disciplines of the sub-scenarios to the sub-disciplines.
 

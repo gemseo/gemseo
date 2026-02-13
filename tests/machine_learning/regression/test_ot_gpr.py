@@ -40,7 +40,7 @@ from scipy.optimize import rosen
 
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.machine_learning.regression.models.ot_gpr import OTGaussianProcessRegressor
@@ -401,7 +401,7 @@ def test_multi_start_optimization(dataset):
         lower_bound=ot_interval.getLowerBound(),
         upper_bound=ot_interval.getUpperBound(),
     )
-    doe_algo = DOELibraryFactory().create("LHS")
+    doe_algo = DOE_LIBRARY_FACTORY.create("LHS")
     assert_equal(doe, doe_algo.compute_doe(design_space, n_samples=9, strength=2))
 
 

@@ -32,7 +32,7 @@ from pydantic import ValidationError
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -44,9 +44,8 @@ DOE_FILE_PATH = str(Path(__file__).parent / "dim_3_semicolon.csv")
 
 def test_library_from_factory():
     """Check that the DOELibraryFactory can create the CustomDOE library."""
-    factory = DOELibraryFactory()
-    if factory.is_available(DOE_LIB_NAME):
-        factory.create(DOE_LIB_NAME)
+    if DOE_LIBRARY_FACTORY.is_available(DOE_LIB_NAME):
+        DOE_LIBRARY_FACTORY.create(DOE_LIB_NAME)
 
 
 def test_check_dimension_inconsistency():

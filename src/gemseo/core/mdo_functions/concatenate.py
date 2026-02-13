@@ -37,7 +37,7 @@ class Concatenate(MDOFunction):
     def __init__(
         self,
         functions: Iterable[MDOFunction],
-        name: str,
+        name: str = "",
         f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
     ) -> None:
         """
@@ -57,12 +57,17 @@ class Concatenate(MDOFunction):
 
         super().__init__(
             self._func_to_wrap,
-            name,
+            name or "_".join([function.name for function in functions]),
             f_type,
             self._jac_to_wrap,
             dim=sum(func.dim for func in self.__functions),
             output_names=output_names,
         )
+
+    @property
+    def functions(self) -> Iterable[MDOFunction]:
+        """The concatenated functions."""
+        return self.__functions
 
     def _func_to_wrap(self, x_vect: NumberArray) -> NumberArray:
         """Concatenate the values of the outputs of the functions.

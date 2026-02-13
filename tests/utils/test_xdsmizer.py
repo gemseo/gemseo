@@ -43,6 +43,10 @@ from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.formulations.bilevel_settings import BiLevel_Settings
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.chain import MDAChain
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
@@ -58,10 +62,9 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.evaluation import EvaluationScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.discipline import DummyDiscipline
-from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.xdsm.xdsm_to_pdf import XDSM
 from gemseo.utils.xdsm.xdsmizer import XDSMizer
 from gemseo.utils.xdsm.xdsmizer import expand
@@ -95,14 +98,15 @@ def build_sobieski_scenario(
         SobieskiMission(),
         SobieskiStructure(),
     ]
-    return MDOScenario(
+    scenario = MDOScenario(
         disciplines,
-        "y_4",
         SobieskiDesignSpace(),
-        formulation_name=formulation_name,
-        maximize_objective=False,
-        **formulation_settings,
+        settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
+            **formulation_settings
+        ),
     )
+    scenario.add_objective("y_4")
+    return scenario
 
 
 @pytest.fixture
@@ -173,7 +177,7 @@ def test_xdsmize_mdf(options) -> None:
 
     # with constraints
     scenario.add_constraint(
-        ["g_1", "g_2", "g_3"], constraint_type=scenario.ConstraintType.INEQ
+        ("g_1", "g_2", "g_3"), constraint_type=scenario.ConstraintType.INEQ
     )
     assert_xdsm(scenario, **options("xdsmized_sobieski_cstr_mdf"))
 
@@ -219,33 +223,31 @@ def test_xdsmize_bilevel(options) -> None:
     )
     sc_prop = MDOScenario(
         [propulsion],
-        "y_34",
         deepcopy(design_space).filter("x_3"),
-        formulation_name="DisciplinaryOpt",
+        settings=DisciplinaryOpt_Settings(),
         name="PropulsionScenario",
     )
+    sc_prop.add_objective("y_34")
     sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
     sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
 
     sc_aero = MDOScenario(
         [aerodynamics],
-        "y_24",
         deepcopy(design_space).filter("x_2"),
-        formulation_name="DisciplinaryOpt",
+        settings=DisciplinaryOpt_Settings(),
         name="AerodynamicsScenario",
-        maximize_objective=True,
     )
-    sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
+    sc_aero.add_objective("y_24", minimize=False)
+    sc_aero.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
     sc_aero.add_constraint("g_2", constraint_type=sc_aero.ConstraintType.INEQ)
 
     sc_str = MDOScenario(
         [structure],
-        "y_11",
         deepcopy(design_space).filter("x_1"),
-        formulation_name="DisciplinaryOpt",
+        settings=DisciplinaryOpt_Settings(),
         name="StructureScenario",
-        maximize_objective=True,
     )
+    sc_str.add_objective("y_11", minimize=False)
     sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
     sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
 
@@ -254,33 +256,33 @@ def test_xdsmize_bilevel(options) -> None:
     design_space = deepcopy(design_space).filter("x_shared")
     system_scenario = MDOScenario(
         sub_disciplines,
-        "y_4",
         design_space,
-        formulation_name="BiLevel",
-        maximize_objective=True,
-        apply_cstr_tosub_scenarios=False,
-        parallel_scenarios=False,
-        apply_cstr_to_system=True,
-        main_mda_settings={"n_processes": 5},
+        settings=BiLevel_Settings(
+            apply_cstr_tosub_scenarios=False,
+            parallel_scenarios=False,
+            apply_cstr_to_system=True,
+            main_mda_settings={"n_processes": 5},
+        ),
     )
+    system_scenario.add_objective("y_4", minimize=False)
     system_scenario.add_constraint(
-        ["g_1", "g_2", "g_3"], constraint_type=system_scenario.ConstraintType.INEQ
+        ("g_1", "g_2", "g_3"), constraint_type=system_scenario.ConstraintType.INEQ
     )
     assert_xdsm(system_scenario, **options("xdsmized_sobieski_bilevel"))
 
     system_scenario_par = MDOScenario(
         sub_disciplines,
-        "y_4",
         design_space,
-        formulation_name="BiLevel",
-        maximize_objective=True,
-        apply_cstr_tosub_scenarios=False,
-        apply_cstr_to_system=True,
-        parallel_scenarios=True,
-        main_mda_settings={"n_processes": 5, "use_threading": True},
+        settings=BiLevel_Settings(
+            apply_cstr_tosub_scenarios=False,
+            apply_cstr_to_system=True,
+            parallel_scenarios=True,
+            main_mda_settings={"n_processes": 5, "use_threading": True},
+        ),
     )
+    system_scenario_par.add_objective("y_4", minimize=False)
     system_scenario_par.add_constraint(
-        ["g_1", "g_2", "g_3"], constraint_type=system_scenario_par.ConstraintType.INEQ
+        ("g_1", "g_2", "g_3"), constraint_type=system_scenario_par.ConstraintType.INEQ
     )
     assert_xdsm(system_scenario_par, **options("xdsmized_sobieski_bilevel_parallel"))
 
@@ -310,11 +312,9 @@ def test_xdsmize_nested_chain(options) -> None:
     design_space.add_variable(get_name(1))
 
     nested_chains = MDOScenario(
-        main_chain,
-        get_name(5),
-        design_space,
-        formulation_name="DisciplinaryOpt",
+        main_chain, design_space, settings=DisciplinaryOpt_Settings()
     )
+    nested_chains.add_objective(get_name(5))
 
     assert_xdsm(nested_chains, **options("xdsmized_nested_chains"))
 
@@ -350,11 +350,9 @@ def test_xdsmize_nested_mda(options, mda_class) -> None:
     design_space.add_variable("x0")
 
     scenario = MDOScenario(
-        [disciplines[2], inner_mda],
-        "y3",
-        design_space,
-        formulation_name="MDF",
+        [disciplines[2], inner_mda], design_space, settings=MDF_Settings()
     )
+    scenario.add_objective("y3")
 
     assert_xdsm(scenario, **options(f"xdsmized_nested_mda_{mda_class.__name__}"))
 
@@ -448,7 +446,6 @@ def test_xdsmize_disciplinary_opt_with_adapter(options) -> None:
         "z",
         design_space,
         formulation_name="MDF",
-        scenario_type="MDO",
     )
 
     adapter = MDOScenarioAdapter(
@@ -465,7 +462,6 @@ def test_xdsmize_disciplinary_opt_with_adapter(options) -> None:
         "z",
         design_space_discrete,
         formulation_name="DisciplinaryOpt",
-        scenario_type="DOE",
     )
 
     assert_xdsm(top_scenario, **options("xdsmized_disciplinary_opt_adapter"))
@@ -496,11 +492,9 @@ def test_xdsmize_nested_parallel_chain(options) -> None:
     design_space.add_variable(get_name(1))
 
     nested_chains = MDOScenario(
-        [beg_chain, inter_chain],
-        get_name(5),
-        design_space,
-        formulation_name="DisciplinaryOpt",
+        [beg_chain, inter_chain], design_space, settings=DisciplinaryOpt_Settings()
     )
+    nested_chains.add_objective(get_name(5))
 
     assert_xdsm(nested_chains, **options("xdsmized_nested_parallel_chains"))
 
@@ -534,10 +528,10 @@ def test_xdsmize_chain_of_parallel_chain(options) -> None:
 
     sce = MDOScenario(
         [beg_chain, par_chain, end_chain],
-        get_name(7),
         design_space,
-        formulation_name="DisciplinaryOpt",
+        settings=DisciplinaryOpt_Settings(),
     )
+    sce.add_objective(get_name(7))
     sce.add_constraint(get_name(5))
 
     assert_xdsm(sce, **options("xdsmized_chain_of_parallel_chain"))
@@ -569,21 +563,23 @@ def test_xdsmized_parallel_chain_of_mda(options) -> None:
 
     sce = MDOScenario(
         [par_chain, elementary_discipline(get_name(6), get_name(7))],
-        get_name(7),
         design_space,
-        formulation_name="DisciplinaryOpt",
+        settings=DisciplinaryOpt_Settings(),
     )
+    sce.add_objective(get_name(7))
 
     assert_xdsm(sce, **options("xdsmized_parallel_chain_of_mda"))
 
 
-def assert_xdsm(discipline: Discipline, **options: StrKeyMapping) -> None:
+def assert_xdsm(
+    discipline: Discipline | EvaluationScenario, **options: StrKeyMapping
+) -> None:
     """Build and check the XDSM representation generated from a scenario.
 
     Check both html and tikz generation.
 
     Args:
-        discipline: The discipline from which the XDSM is generated.
+        discipline: The discipline or scenario from which the XDSM is generated.
         **options: The options for the XDSMizer.
     """
     fname = options["file_name"]
@@ -725,15 +721,16 @@ def test_xdsmize_mdf_mdoparallelchain(options) -> None:
     mdachain_parallel_settings = {"use_threading": True, "n_processes": 2}
     scenario = MDOScenario(
         disciplines,
-        "y2",
         design_space,
-        formulation_name="MDF",
-        main_mda_settings={
-            "mdachain_parallelize_tasks": True,
-            "mdachain_parallel_settings": mdachain_parallel_settings,
-            "inner_mda_name": "MDAGaussSeidel",
-        },
+        settings=MDF_Settings(
+            main_mda_settings={
+                "mdachain_parallelize_tasks": True,
+                "mdachain_parallel_settings": mdachain_parallel_settings,
+                "inner_mda_name": "MDAGaussSeidel",
+            }
+        ),
     )
+    scenario.add_objective("y2")
 
     assert_xdsm(scenario, **options("xdsmized_mdf_mdoparallelchain"))
 
@@ -750,8 +747,9 @@ def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
     design_space.add_variable("x")
     discipline = AnalyticDiscipline({"y": "x"})
     scenario = MDOScenario(
-        [discipline], "y", design_space, formulation_name="DisciplinaryOpt"
+        [discipline], design_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("y")
 
     file_name = file_name or "xdsm"
     xdsm = XDSMizer(scenario).run(
@@ -790,23 +788,23 @@ def test_discipline(options) -> None:
 
 
 @pytest.mark.parametrize(
-    ("cls", "expected"),
-    [(MDOScenario, "Optimizer"), (DOEScenario, "DOE")],
+    ("cls", "expected"), [(MDOScenario, "Optimizer"), (EvaluationScenario, "foo")]
 )
 def test_initial_node_title(cls, expected):
     """Check the title of the initial node."""
     design_space = DesignSpace()
     design_space.add_variable("x")
     discipline = AnalyticDiscipline({"y": "x"})
-    with concretize_classes(cls):
+    if cls == EvaluationScenario:
+        scenario = cls([discipline], design_space, name="foo")
+    else:
         scenario = cls(
             [discipline],
-            "y",
             design_space,
+            settings=DisciplinaryOpt_Settings(),
             name="foo",
-            formulation_name="DisciplinaryOpt",
         )
-
+        scenario.add_objective("y")
     xdsmizer = XDSMizer(scenario)
     assert xdsmizer._scenario_node_title == expected
 
@@ -841,3 +839,63 @@ def test_cleanup(tmp_wd, pdf_cleanup, pdf_build, monkeypatch):
     assert Path("xdsm.tikz").exists() is (not pdf_cleanup or pdf_build)
     assert Path("xdsm.tex").exists() is (not pdf_cleanup or pdf_build)
     assert Path("xdsm.aux").exists() is (pdf_build and not pdf_cleanup)
+
+
+def test_evaluation_scenario(options):
+    """Check XDSMization of an EvaluationScenario."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    discipline = AnalyticDiscipline({"y": "x"})
+    scenario = EvaluationScenario([discipline], design_space)
+    xdsm = scenario.xdsmize(save_html=False)
+    msg = """{
+  "root": {
+    "nodes": [
+      {
+        "id": "Opt",
+        "name": "EvaluationScenario",
+        "type": "optimization",
+        "status": "DONE"
+      },
+      {
+        "id": "Dis1",
+        "name": "AnalyticDiscipline",
+        "type": "analysis",
+        "status": "DONE"
+      }
+    ],
+    "edges": [
+      {
+        "from": "_U_",
+        "to": "Opt",
+        "name": "x^(0)"
+      },
+      {
+        "from": "Opt",
+        "to": "_U_",
+        "name": ""
+      },
+      {
+        "from": "Opt",
+        "to": "Dis1",
+        "name": "x"
+      },
+      {
+        "from": "Dis1",
+        "to": "_U_",
+        "name": "y^*"
+      }
+    ],
+    "workflow": [
+      "_U_",
+      [
+        "Opt",
+        [
+          "Dis1"
+        ]
+      ]
+    ],
+    "optpb": ""
+  }
+}"""
+    assert xdsm.json_schema == msg

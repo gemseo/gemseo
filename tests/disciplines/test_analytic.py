@@ -29,7 +29,7 @@ from numpy import array
 from numpy.testing import assert_equal
 
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle

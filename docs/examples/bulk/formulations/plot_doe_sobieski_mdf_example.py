@@ -78,7 +78,6 @@ scenario = create_scenario(
     "y_4",
     design_space,
     maximize_objective=True,
-    scenario_type="DOE",
     formulation_name="MDF",
 )
 
@@ -117,7 +116,7 @@ scenario.set_differentiation_method()
 #       The features [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache] and [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] are not
 #       available for multiprocessing on Windows.
 #       As an alternative, we recommend the method
-#       [set_optimization_history_backup()][gemseo.scenarios.doe_scenario.DOEScenario.set_optimization_history_backup].
+#       [set_history_backup()][gemseo.scenarios.mdo.MDOScenario.set_history_backup].
 
 # %%
 # We define the algorithm settings. Here the criterion "center" of pyDOE
@@ -148,7 +147,7 @@ scenario.execute(lhs_settings)
 # %%
 # ### Exporting the problem data.
 # After the execution of the scenario, you may want to export your data to use it
-# elsewhere. The method [to_dataset()][gemseo.scenarios.base_scenario.BaseScenario.to_dataset] will allow you to export
+# elsewhere. The method [to_dataset()][gemseo.scenarios.mdo.MDOScenario.to_dataset] will allow you to export
 # your results to a [Dataset][gemseo.datasets.dataset.Dataset], the basic GEMSEO class to store data.
 dataset = scenario.to_dataset("a_name_for_my_dataset")
 

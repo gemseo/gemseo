@@ -41,7 +41,7 @@ class BaseMonitoredProcess(Serializable, metaclass=ABCGoogleDocstringInheritance
     and execution statistics,
     e.g. [Discipline][gemseo.core.discipline.discipline.Discipline],
     [ProcessDiscipline][gemseo.core.process_discipline.ProcessDIscipline]
-    and [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario].
+    and [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
     """
 
     name: str

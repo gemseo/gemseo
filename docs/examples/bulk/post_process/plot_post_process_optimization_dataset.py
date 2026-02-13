@@ -59,7 +59,7 @@ dataset = problem.to_dataset(group_functions=True)
 
 # %%
 # Now we can execute the post-processing as usual. The only difference is that, instead
-# of passing a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] or an HDF5 file as an argument, we pass the
+# of passing an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] or an HDF5 file as an argument, we pass the
 # [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset].
 
 

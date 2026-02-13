@@ -29,8 +29,8 @@ from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 
 if TYPE_CHECKING:
-    from gemseo import OptimizationProblem
-    from gemseo import OptimizationResult
+    from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.typing import NumberArray
 
 

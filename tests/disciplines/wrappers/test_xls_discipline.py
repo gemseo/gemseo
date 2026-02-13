@@ -221,7 +221,6 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
         design_space,
         formulation_name="MDF",
         main_mda_name="MDAChain",
-        scenario_type="DOE",
         main_mda_settings={
             "tolerance": 1e-14,
             "inner_mda_name": "MDAJacobi",

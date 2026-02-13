@@ -56,8 +56,7 @@ from gemseo.mda.base_parallel_solver_settings import (
     BaseParallelMDASettings as BaseParallelMDASettings,
 )
 from gemseo.problems.dataset import DatasetType
-from gemseo.scenarios.base_scenario import BaseScenario as BaseScenario
-from gemseo.scenarios.factory import ScenarioFactory as ScenarioFactory
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
 from gemseo.utils.constants import _ENABLE_DISCIPLINE_CACHE
 from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATISTICS
@@ -105,7 +104,7 @@ if TYPE_CHECKING:
     from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
         JobSchedulerDisciplineWrapper,
     )
-    from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
+    from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.machine_learning.core.models.ml_model import (
         TransformerType as TransformerType,
     )
@@ -121,7 +120,6 @@ if TYPE_CHECKING:
         DataDrivenScalableDiscipline,
     )
     from gemseo.scenarios.backup_settings import BackupSettings
-    from gemseo.scenarios.doe_scenario import DOEScenario as DOEScenario
     from gemseo.scenarios.scenario_results.scenario_result import (
         ScenarioResult as ScenarioResult,
     )
@@ -244,9 +242,9 @@ def get_available_doe_algorithms() -> list[str]:
         >>> from gemseo import get_available_doe_algorithms
         >>> get_available_doe_algorithms()
     """
-    from gemseo.algos.doe.factory import DOELibraryFactory
+    from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 
-    return DOELibraryFactory().algorithms
+    return DOE_LIBRARY_FACTORY.algorithms
 
 
 def get_available_surrogates() -> list[str]:
@@ -309,10 +307,10 @@ def get_algorithm_options_schema(
     Raises:
         ValueError: When the algorithm is not available.
     """
-    from gemseo.algos.doe.factory import DOELibraryFactory
+    from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
     from gemseo.algos.opt.factory import OptimizationLibraryFactory
 
-    for factory in (DOELibraryFactory(), OptimizationLibraryFactory()):
+    for factory in (DOE_LIBRARY_FACTORY, OptimizationLibraryFactory()):
         if factory.is_available(algorithm_name):
             algo_lib = factory.create(algorithm_name)
             settings = algo_lib.ALGORITHM_INFOS[algorithm_name].settings_class
@@ -392,9 +390,9 @@ def get_available_post_processings() -> list[str]:
     Returns:
         The names of the available post-processings.
     """
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import POST_FACTORY
 
-    return PostFactory().class_names
+    return POST_FACTORY.class_names
 
 
 def get_post_processing_options_schema(
@@ -412,9 +410,9 @@ def get_post_processing_options_schema(
     Returns:
         The schema of the options of the post-processing.
     """
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import POST_FACTORY
 
-    cls = PostFactory().get_class(post_proc_name)
+    cls = POST_FACTORY.get_class(post_proc_name)
     return _get_json_schema_from_settings(cls.settings_class, output_json, pretty_print)
 
 
@@ -539,16 +537,17 @@ def get_scenario_options_schema(
     Returns:
         The schema of the options of the scenario.
     """
+    from gemseo.scenarios.factory import SCENARIO_FACTORY
+
     if scenario_type not in get_available_scenario_types():
         msg = f"Unknown scenario type {scenario_type}"
         raise ValueError(msg)
-    scenario_class = {"MDO": "MDOScenario", "DOE": "DOEScenario"}[scenario_type]
-    grammar = ScenarioFactory().get_options_grammar(scenario_class)
+    grammar = SCENARIO_FACTORY.get_options_grammar(f"{scenario_type}Scenario")
     return _get_schema(grammar, output_json, pretty_print)
 
 
 def get_scenario_inputs_schema(
-    scenario: BaseScenario,
+    scenario: MDOScenario,
     output_json: bool = False,
     pretty_print: bool = False,
 ) -> str | dict[str, Any]:
@@ -600,7 +599,9 @@ def get_available_scenario_types() -> list[str]:
     Returns:
         The names of the available scenario types.
     """
-    return ["MDO", "DOE"]
+    from gemseo.scenarios.factory import SCENARIO_FACTORY
+
+    return sorted(n.removesuffix("Scenario") for n in SCENARIO_FACTORY.class_names)
 
 
 def _get_schema(
@@ -668,9 +669,9 @@ def get_available_mdas() -> list[str]:
     Returns:
         The names of the available MDAs.
     """
-    from gemseo.mda.factory import MDAFactory
+    from gemseo.mda.factory import MDA_FACTORY
 
-    return MDAFactory().class_names
+    return MDA_FACTORY.class_names
 
 
 def get_mda_options_schema(
@@ -688,9 +689,9 @@ def get_mda_options_schema(
     Returns:
         The schema of the options of the MDA.
     """
-    from gemseo.mda.factory import MDAFactory
+    from gemseo.mda.factory import MDA_FACTORY
 
-    grammar = MDAFactory().get_options_grammar(mda_name)
+    grammar = MDA_FACTORY.get_options_grammar(mda_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -703,7 +704,7 @@ def create_scenario(
     maximize_objective: bool = False,
     formulation_settings_model: BaseFormulationSettings | None = None,
     **formulation_settings: Any,
-) -> BaseScenario:
+) -> MDOScenario:
     """Initialize a scenario.
 
     Args:
@@ -725,8 +726,8 @@ def create_scenario(
         **formulation_settings: The formulation settings.
             These arguments are ignored when `settings_model` is not `None`.
     """
-    from gemseo.scenarios.doe_scenario import DOEScenario
-    from gemseo.scenarios.mdo_scenario import MDOScenario
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+    from gemseo.scenarios.mdo import MDOScenario
 
     if not isinstance(disciplines, Collection):
         disciplines = [disciplines]
@@ -734,23 +735,23 @@ def create_scenario(
     if isinstance(design_space, (str, Path)):
         design_space = read_design_space(design_space)
 
-    if scenario_type == "MDO":
+    if scenario_type in ["DOE", "MDO"]:
         cls = MDOScenario
-    elif scenario_type == "DOE":
-        cls = DOEScenario
     else:
         msg = f"Unknown scenario type: {scenario_type}, use one of : 'MDO' or 'DOE'."
         raise ValueError(msg)
 
-    return cls(
-        disciplines,
-        objective_name,
-        design_space,
-        name=name,
-        maximize_objective=maximize_objective,
-        formulation_settings_model=formulation_settings_model,
-        **formulation_settings,
-    )
+    if formulation_settings_model is None:
+        formulation_name = formulation_settings.pop("formulation_name")
+        settings = MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
+            **formulation_settings
+        )
+    else:
+        settings = formulation_settings_model
+
+    scenario = cls(disciplines, design_space, name=name, settings=settings)
+    scenario.add_objective(objective_name, minimize=not maximize_objective)
+    return scenario
 
 
 def configure_logger(
@@ -959,9 +960,9 @@ def create_mda(
     Returns:
         The MDA.
     """
-    from gemseo.mda.factory import MDAFactory
+    from gemseo.mda.factory import MDA_FACTORY
 
-    return MDAFactory().create(
+    return MDA_FACTORY.create(
         mda_name,
         disciplines,
         settings_model=settings_model,
@@ -970,7 +971,7 @@ def create_mda(
 
 
 def execute_post(
-    to_post_proc: BaseScenario | OptimizationProblem | str | Path,
+    to_post_proc: MDOScenario | OptimizationProblem | str | Path,
     settings_model: BasePostSettings | None = None,
     **settings: Any,
 ) -> BasePost:
@@ -978,8 +979,7 @@ def execute_post(
 
     Args:
         to_post_proc: The result to be post-processed,
-            either a DOE scenario,
-            an MDO scenario,
+            either an MDO scenario,
             an optimization problem
             or a path to an HDF file containing a saved optimization problem.
         settings_model: The post-processor settings as a Pydantic model.
@@ -992,10 +992,10 @@ def execute_post(
         The post-processor.
     """
     from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.post.factory import PostFactory
+    from gemseo.post.factory import POST_FACTORY
 
-    if isinstance(to_post_proc, BaseScenario):
-        opt_problem = to_post_proc.formulation.optimization_problem
+    if isinstance(to_post_proc, MDOScenario):
+        opt_problem = to_post_proc.formulation.problem
     elif isinstance(to_post_proc, OptimizationProblem):
         opt_problem = to_post_proc
     elif isinstance(to_post_proc, (str, PathLike)):
@@ -1005,7 +1005,7 @@ def execute_post(
     else:
         msg = f"Cannot post process type: {type(to_post_proc)}"
         raise TypeError(msg)
-    return PostFactory().execute(opt_problem, settings_model=settings_model, **settings)
+    return POST_FACTORY.execute(opt_problem, settings_model=settings_model, **settings)
 
 
 def execute_algo(
@@ -1033,9 +1033,9 @@ def execute_algo(
         factory = OptimizationLibraryFactory()
 
     elif algo_type == "doe":
-        from gemseo.algos.doe.factory import DOELibraryFactory
+        from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 
-        factory = DOELibraryFactory()
+        factory = DOE_LIBRARY_FACTORY
     else:
         msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
         raise ValueError(msg)
@@ -1044,7 +1044,7 @@ def execute_algo(
 
 
 def monitor_scenario(
-    scenario: BaseScenario,
+    scenario: MDOScenario,
     observer: Any,
 ) -> None:
     """Add an observer to a scenario.
@@ -1321,7 +1321,7 @@ def import_database(
     [Database.to_hdf()][gemseo.algos.database.Database.to_hdf],
     [OptimizationProblem.to_hdf()][gemseo.algos.optimization_problem.OptimizationProblem.to_hdf]
     or
-    [BaseScenario.save_optimization_history()][gemseo.scenarios.base_scenario.BaseScenario.save_optimization_history].
+    [MDOScenario.save_optimization_history()][gemseo.scenarios.mdo.MDOScenario.save_optimization_history].
 
     Args:
         file_path: The path of the HDF file.
@@ -1367,11 +1367,11 @@ def compute_doe(
           The design of experiments
           whose rows are the samples and columns the variables.
     """
-    from gemseo.algos.doe.factory import DOELibraryFactory
+    from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
     from gemseo.utils.pydantic import get_algo_name
 
     algo_name = get_algo_name(settings_model, settings)
-    library = DOELibraryFactory().create(algo_name)
+    library = DOE_LIBRARY_FACTORY.create(algo_name)
     return library.compute_doe(
         variables_space,
         unit_sampling=unit_sampling,
@@ -1491,7 +1491,7 @@ def wrap_discipline_in_job_scheduler(
     the discipline and its inputs, execute it and serialize the outputs.
     Finally, the deserialized outputs are returned by the wrapper.
 
-    All process classes [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario],
+    All process classes [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
     or [BaseMDA][gemseo.mda.base.BaseMDA], inherit from
     [Discipline][gemseo.core.discipline.discipline.Discipline] so can be sent to HPCs in this way.
 
@@ -1532,7 +1532,7 @@ def wrap_discipline_in_job_scheduler(
 
 
 def create_scenario_result(
-    scenario: BaseScenario | str | Path,
+    scenario: MDOScenario | str | Path,
     name: str = "",
     **options: Any,
 ) -> ScenarioResult | None:
@@ -1544,10 +1544,10 @@ def create_scenario_result(
             [ScenarioResult][gemseo.scenarios.scenario_results.scenario_result.ScenarioResult].
             If empty,
             use the
-            [DEFAULT_SCENARIO_RESULT_CLASS_NAME][gemseo.formulations.base_formulation.BaseFormulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME]
+            [DEFAULT_SCENARIO_RESULT_CLASS_NAME][gemseo.formulations.base.BaseFormulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME]
             of the
-            [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation]
-            attached to the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario].
+            [BaseMDOFormulation][gemseo.formulations.base_mdo.BaseMDOFormulation]
+            attached to the [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
         **options: The options of the
             [ScenarioResult][gemseo.scenarios.scenario_results.scenario_result.ScenarioResult].
 
@@ -1599,19 +1599,24 @@ def sample_disciplines(
     Returns:
         The input-output samples of the disciplines.
     """
-    from gemseo.scenarios.doe_scenario import DOEScenario
+    settings = dict(formulation_settings)
+    maximize_objective = settings.pop("maximize_objective", False)
+    from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+    from gemseo.scenarios.mdo import MDOScenario
     from gemseo.utils.string_tools import convert_strings_to_iterable
 
     output_names = convert_strings_to_iterable(output_names)
     output_names_iterator = iter(output_names)
-    scenario = DOEScenario(
-        disciplines,
-        next(output_names_iterator),
-        input_space,
-        formulation_name=formulation_name,
-        name=name,
-        **formulation_settings,
+    settings = MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
+        **settings
     )
+    scenario = MDOScenario(
+        disciplines,
+        input_space,
+        name=name,
+        settings=settings,
+    )
+    scenario.add_objective(next(output_names_iterator), minimize=not maximize_objective)
     for output_name in output_names_iterator:
         scenario.add_observable(output_name)
 
@@ -1623,7 +1628,7 @@ def sample_disciplines(
             algo_settings["use_one_line_progress_bar"] = True
 
     if backup_settings is not None and backup_settings.file_path:
-        scenario.set_optimization_history_backup(
+        scenario.set_backup_settings(
             backup_settings.file_path,
             at_each_iteration=backup_settings.at_each_iteration,
             at_each_function_call=backup_settings.at_each_function_call,
@@ -1631,7 +1636,7 @@ def sample_disciplines(
             load=backup_settings.load,
         )
     scenario.execute(algo_settings_model=algo_settings_model, **algo_settings)
-    return scenario.formulation.optimization_problem.to_dataset(
+    return scenario.formulation.problem.to_dataset(
         name=name, opt_naming=False, export_gradients=True
     )
 

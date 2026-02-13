@@ -3,7 +3,7 @@
     "nodes": [
       {
         "id": "Opt",
-        "name": "DOE",
+        "name": "Optimizer",
         "type": "optimization"
       },
       {

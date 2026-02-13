@@ -113,10 +113,10 @@ def test_resolution(algo, n, p, constraint_kind) -> None:
         ds,
         formulation_name="DisciplinaryOpt",
     )
-    scenario.add_constraint("g", constraint_kind)
+    scenario.add_constraint("g", constraint_type=constraint_kind)
     scenario.execute(**options)
 
     assert pytest.approx(
-        scenario.formulation.optimization_problem.solution.x_opt,
+        scenario.formulation.problem.solution.x_opt,
         rel=3e-2,
     ) == (arange(n) + 1)

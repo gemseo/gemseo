@@ -23,6 +23,7 @@ import os
 import pytest
 
 from gemseo.caches.hdf5_cache import HDF5Cache
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.problems.mdo.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.mdo.scalable.data_driven.study.process import ScalabilityStudy
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
@@ -30,7 +31,7 @@ from gemseo.problems.mdo.sellar.variables import OBJ
 from gemseo.problems.mdo.sellar.variables import X_1
 from gemseo.problems.mdo.sellar.variables import X_SHARED
 from gemseo.problems.mdo.sellar.variables import Y_1
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 
 def mdf_cost(varsizes, n_c, n_lc, n_tl_c, n_tl_lc):
@@ -65,12 +66,10 @@ def sellar_use_case(tmp_wd, sellar_with_2d_array, sellar_disciplines):
         design_space = SellarDesignSpace()
         input_names = set(design_space) & discipline.io.input_grammar.keys()
         design_space = design_space.filter(input_names)
-        scenario = DOEScenario(
-            [discipline],
-            objective_name,
-            design_space,
-            formulation_name="DisciplinaryOpt",
+        scenario = MDOScenario(
+            [discipline], design_space, settings=DisciplinaryOpt_Settings()
         )
+        scenario.add_objective(objective_name)
         scenario.execute(algo_name="DiagonalDOE", n_samples=n_samples)
     design_variables = [X_SHARED, X_1]
     objective_name = OBJ

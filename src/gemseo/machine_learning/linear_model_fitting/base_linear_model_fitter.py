@@ -28,10 +28,10 @@ from numpy import hstack
 from numpy import ones
 from numpy import vstack
 
-from gemseo import READ_ONLY_EMPTY_DICT
 from gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings import (  # noqa: E501
     BaseLinearModelFitterSettings,
 )
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:

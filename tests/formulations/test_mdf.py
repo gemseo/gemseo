@@ -22,14 +22,16 @@ from functools import partial
 
 from numpy.testing import assert_allclose
 
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.formulations.mdf import MDF
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
 from .formulations_basetest import FormulationsBaseTest
@@ -62,14 +64,14 @@ class TestMDFFormulation(FormulationsBaseTest):
             formulation, dtype, main_mda_settings=options
         )
         if normalize_objective:
-            scenario.formulation.optimization_problem.objective *= 0.001
+            scenario.formulation.problem.objective *= 0.001
         if linearize:
             scenario.set_differentiation_method("user")
         else:
             scenario.set_differentiation_method("complex_step", 1e-30)
         # Set the design constraints
         scenario.add_constraint(
-            ["g_1", "g_2", "g_3"], constraint_type=scenario.ConstraintType.INEQ
+            ("g_1", "g_2", "g_3"), constraint_type=scenario.ConstraintType.INEQ
         )
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
@@ -119,18 +121,16 @@ def test_reset(sellar_with_2d_array):
     design_space = SellarDesignSpace()
 
     scenario = MDOScenario(
-        [Sellar1(), Sellar2(), SellarSystem()],
-        "obj",
-        design_space,
-        formulation_name="MDF",
+        [Sellar1(), Sellar2(), SellarSystem()], design_space, settings=MDF_Settings()
     )
+    scenario.add_objective("obj")
     initial_current_value = design_space.get_current_value()
     scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.execute(algo_name="SLSQP", max_iter=5)
     final_current_value = design_space.get_current_value()
 
-    scenario.formulation.optimization_problem.reset(design_space=True)
+    scenario.formulation.problem.reset(design_space=True)
     assert_allclose(design_space.get_current_value(), initial_current_value)
 
     scenario.execute(algo_name="SLSQP", max_iter=5)
@@ -139,9 +139,8 @@ def test_reset(sellar_with_2d_array):
 
 create_sellar_mdf = partial(
     MDF,
+    problem=OptimizationProblem(SellarDesignSpace()),
     disciplines=[Sellar1(), Sellar2(), SellarSystem()],
-    objective_name="obj",
-    design_space=SellarDesignSpace(),
 )
 
 
@@ -151,6 +150,7 @@ def test_mda_settings():
         main_mda_name="MDAGaussSeidel",
         main_mda_settings={"max_mda_iter": 13},
     )
+    mdf.problem.objective = mdf.create_objective(["obj"])
 
     assert isinstance(mdf.mda, MDAGaussSeidel)
     assert mdf.mda.settings.max_mda_iter == 13

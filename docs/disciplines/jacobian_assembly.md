@@ -196,7 +196,7 @@ def _compute_jacobian(self, input_names=(), output_names=()):
 ```
 
 The differentiation method is set by
-[BaseScenario.set_differentiation_method()][gemseo.scenarios.base_scenario.BaseScenario.set_differentiation_method]:
+[EvaluationScenario.set_differentiation_method()][gemseo.scenarios.evaluation.EvaluationScenario.set_differentiation_method]:
 
 -   for `"finite_differences"` (default value):
 

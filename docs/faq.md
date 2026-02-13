@@ -23,14 +23,15 @@ As GEMSEO code evolves, some calling signatures and behavior may change. These c
 
 ## Create a simple DOE on a single discipline
 
-Use the [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation and a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] scenario. Even for simple DOEs, GEMSEO formulates an optimization problem, so requires a [MDO formulation](mdo/mdo_formulations.md). The [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation executes the [Discipline][gemseo.core.discipline.discipline.Discipline] alone, or the list of [Discipline][gemseo.core.discipline.discipline.Discipline] in the order passed by the user. This means that you must specify an objective function. The DOE won't try to minimize it but it will be set as an objective in the visualizations.
+Use the [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation
+and an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] scenario. Even for simple DOEs, GEMSEO formulates an optimization problem, so requires an [MDO formulation](mdo/mdo_formulations.md). The [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation executes the [Discipline][gemseo.core.discipline.discipline.Discipline] alone, or the list of [Discipline][gemseo.core.discipline.discipline.Discipline] in the order passed by the user. This means that you must specify an objective function. The DOE won't try to minimize it but it will be set as an objective in the visualizations.
 
 !!! info "See Also"
     For more details, we invite you to read [our example][mdf-based-doe-on-the-sobieski-ssbj-test-case].
 
 ## Create a simple optimization on a single discipline
 
-Use the [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation and an [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario]. The [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation executes the [Discipline][gemseo.core.discipline.discipline.Discipline] alone, or the list of [Discipline][gemseo.core.discipline.discipline.Discipline] in the order passed by the user.
+Use the [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation and an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]. The [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation executes the [Discipline][gemseo.core.discipline.discipline.Discipline] alone, or the list of [Discipline][gemseo.core.discipline.discipline.Discipline] in the order passed by the user.
 
 ## Available options for algorithms
 
@@ -83,9 +84,9 @@ sudo yum install libnsl
 
 ## Parallel execution limitations on Windows
 
-When running parallel execution tasks on Windows, the [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] does not work properly. This is due to the way subprocesses are forked in this architecture. The method [DOEScenario.set_optimization_history_backup()][gemseo.scenarios.doe_scenario.DOEScenario.set_optimization_history_backup] is recommended as an alternative.
+When running parallel execution tasks on Windows, the [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] does not work properly. This is due to the way subprocesses are forked in this architecture. The method [MDOScenario.set_history_backup()][gemseo.scenarios.mdo.MDOScenario.set_history_backup] is recommended as an alternative.
 
-The execution of any script using parallel execution on Windows including, but not limited to, [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] with `n_processes > 1`, [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache], [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache], [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution], [DiscParallelExecution][gemseo.core.parallel_execution.disc_parallel_execution.DiscParallelExecution], must be protected by an `if __name__ == '__main__':` statement.
+The execution of any script using parallel execution on Windows including, but not limited to, [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with `n_processes > 1`, [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache], [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache], [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution], [DiscParallelExecution][gemseo.core.parallel_execution.disc_parallel_execution.DiscParallelExecution], must be protected by an `if __name__ == '__main__':` statement.
 
 ## Handling paths for different OSes
 

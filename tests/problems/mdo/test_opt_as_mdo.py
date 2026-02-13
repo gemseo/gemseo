@@ -68,7 +68,8 @@ def test_basic(discipline, initial_point):
         # used in the example plot_opt_as_mdo of the documentation.
         design_space.set_current_value(initial_point)
 
-    scenario = OptAsMDOScenario(discipline, "f", design_space, formulation_name="MDF")
+    scenario = OptAsMDOScenario(discipline, design_space, settings=MDF_Settings())
+    scenario.add_objective("f")
 
     disciplines = scenario.disciplines
     assert disciplines[0].name == "Rosenbrock"
@@ -89,7 +90,7 @@ def test_less_than_3_design_variables(discipline, n_variables):
 
     msg = "The design space must have at least three design variables; got {}."
     with pytest.raises(ValueError, match=re.escape(msg.format(n_variables))):
-        OptAsMDOScenario(discipline, "f", design_space)
+        OptAsMDOScenario(discipline, design_space)
 
 
 def test_non_differentiable_link_discipline(discipline):
@@ -103,10 +104,9 @@ def test_non_differentiable_link_discipline(discipline):
         new_callable=PropertyMock,
         return_value=None,
     ):
-        scenario = OptAsMDOScenario(
-            discipline, "f", design_space, formulation_name="MDF"
-        )
+        scenario = OptAsMDOScenario(discipline, design_space, settings=MDF_Settings())
 
+    scenario.add_objective("f")
     with pytest.raises(
         ValueError, match=re.escape("The discipline L was not linearized.")
     ):
@@ -128,11 +128,11 @@ def test_coupling_equations(discipline):
     )
     scenario = OptAsMDOScenario(
         discipline,
-        "f",
         design_space,
-        formulation_name="MDF",
+        settings=MDF_Settings(),
         coupling_equations=coupling_equations,
     )
+    scenario.add_objective("f")
 
     disciplines = scenario.disciplines
     assert disciplines[0].name == "Rosenbrock"
@@ -158,9 +158,8 @@ def test_more_than_two_disciplines():
     for j in range(d):
         design_space.add_variable(f"z_{j}", lower_bound=-2, upper_bound=2)
 
-    mdo_scenario = OptAsMDOScenario(
-        discipline, "y", design_space, formulation_settings_model=MDF_Settings()
-    )
+    mdo_scenario = OptAsMDOScenario(discipline, design_space, settings=MDF_Settings())
+    mdo_scenario.add_objective("y")
     mdo_scenario.execute(SLSQP_Settings())
     assert_almost_equal(mdo_scenario.optimization_result.x_opt, ones(d), decimal=5)
     assert mdo_scenario.optimization_result.f_opt == pytest.approx(0.0)
@@ -208,9 +207,8 @@ def test_vectorial_design_variables():
 
     mdo_scenario = OptAsMDOScenario(
         Rosenbrock(),
-        "y",
         design_space,
-        formulation_settings_model=MDF_Settings(
+        settings=MDF_Settings(
             main_mda_settings=MDAChain_Settings(
                 inner_mda_settings=MDAJacobi_Settings(
                     acceleration_method=AccelerationMethod.MINIMUM_POLYNOMIAL
@@ -218,6 +216,7 @@ def test_vectorial_design_variables():
             )
         ),
     )
+    mdo_scenario.add_objective("y")
     mdo_scenario.execute(NLOPT_SLSQP_Settings())
 
     assert_almost_equal(mdo_scenario.optimization_result.x_opt, ones(7), decimal=5)

@@ -55,7 +55,6 @@ def generate_parallel_doe(
         "y_4",
         design_space,
         formulation_name="MDF",
-        scenario_type="DOE",
         maximize_objective=True,
         main_mda_name=main_mda_name,
         main_mda_settings=main_mda_settings,

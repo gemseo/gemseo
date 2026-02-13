@@ -54,7 +54,7 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
@@ -67,12 +67,13 @@ from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
@@ -257,65 +258,75 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     ineq_std = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_std",
-        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(ineq_std)
+    problem.add_constraint(ineq_std, constraint_type=MDOFunction.ConstraintType.INEQ)
     expected.append("ineq_std(x): cstr + cst <= 0.0")
 
     ineq_lo_posval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_lo_posval",
-        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(ineq_lo_posval, value=1.0)
+    problem.add_constraint(
+        ineq_lo_posval, value=1.0, constraint_type=MDOFunction.ConstraintType.INEQ
+    )
     expected.append("ineq_lo_posval(x): cstr + cst <= 1.0")
 
     ineq_lo_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_lo_negval",
-        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(ineq_lo_negval, value=-1.0)
+    problem.add_constraint(
+        ineq_lo_negval, value=-1.0, constraint_type=MDOFunction.ConstraintType.INEQ
+    )
     expected.append("ineq_lo_negval(x): cstr + cst <= -1.0")
 
     ineq_up_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_up_negval",
-        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(ineq_up_negval, value=-1.0, positive=True)
+    problem.add_constraint(
+        ineq_up_negval,
+        value=-1.0,
+        positive=True,
+        constraint_type=MDOFunction.ConstraintType.INEQ,
+    )
     expected.append("ineq_up_negval(x): cstr + cst >= -1.0")
 
     ineq_up_posval = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq_up_posval",
-        f_type=MDOFunction.ConstraintType.INEQ,
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(ineq_up_posval, value=1.0, positive=True)
+    problem.add_constraint(
+        ineq_up_posval,
+        value=1.0,
+        positive=True,
+        constraint_type=MDOFunction.ConstraintType.INEQ,
+    )
     expected.append("ineq_up_posval(x): cstr + cst >= 1.0")
 
-    linear_constraint = MDOLinearFunction(
-        array([1, 2]), "lin1", f_type=MDOLinearFunction.ConstraintType.INEQ
+    linear_constraint = MDOLinearFunction(array([1, 2]), "lin1")
+    problem.add_constraint(
+        linear_constraint, constraint_type=MDOLinearFunction.ConstraintType.INEQ
     )
-    problem.add_constraint(linear_constraint)
     expected.append("lin1(x[0], x[1]): x[0] + 2.00e+00*x[1] <= 0.0")
 
-    linear_constraint = MDOLinearFunction(
-        array([1, 2]),
-        "lin2",
-        f_type=MDOLinearFunction.ConstraintType.INEQ,
+    linear_constraint = MDOLinearFunction(array([1, 2]), "lin2")
+    problem.add_constraint(
+        linear_constraint,
+        positive=True,
+        value=-1.0,
+        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
     )
-    problem.add_constraint(linear_constraint, positive=True, value=-1.0)
     expected.append("lin2(x[0], x[1]): x[0] + 2.00e+00*x[1] >= -1.0")
 
     msg = str(problem)
@@ -330,30 +341,31 @@ def test_getmsg_eq_constraints(pow2_problem) -> None:
     eq_std = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_std",
-        f_type=MDOFunction.ConstraintType.EQ,
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(eq_std)
+    problem.add_constraint(eq_std, constraint_type=MDOFunction.ConstraintType.EQ)
     expected.append("eq_std(x): cstr + cst = 0.0")
 
     eq_posval = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_posval",
-        f_type=MDOFunction.ConstraintType.EQ,
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(eq_posval, value=1.0)
+    problem.add_constraint(
+        eq_posval, value=1.0, constraint_type=MDOFunction.ConstraintType.EQ
+    )
     expected.append("eq_posval(x): cstr + cst = 1.0")
     eq_negval = MDOFunction(
         Power2.ineq_constraint1,
         name="eq_negval",
-        f_type=MDOFunction.ConstraintType.EQ,
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(eq_negval, value=-1.0)
+    problem.add_constraint(
+        eq_negval, value=-1.0, constraint_type=MDOFunction.ConstraintType.EQ
+    )
     expected.append("eq_negval(x): cstr + cst = -1.0")
 
     msg = str(problem)
@@ -378,12 +390,13 @@ def test_constraints_dim(pow2_problem) -> None:
     ineq1 = MDOFunction(
         Power2.ineq_constraint1,
         name="ineq1",
-        f_type=MDOFunction.ConstraintType.INEQ,
         jac=Power2.ineq_constraint1_jac,
         expr="0.5 -x[0] ** 3",
         input_names=["x"],
     )
-    problem.add_constraint(ineq1, value=-1)
+    problem.add_constraint(
+        ineq1, value=-1, constraint_type=MDOFunction.ConstraintType.INEQ
+    )
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -420,11 +433,12 @@ def test_missing_constjac(pow2_problem) -> None:
     ineq1 = MDOFunction(
         sum,
         name="sum",
-        f_type=MDOFunction.ConstraintType.INEQ,
         expr="sum(x)",
         input_names=["x"],
     )
-    problem.add_constraint(ineq1, value=-1)
+    problem.add_constraint(
+        ineq1, value=-1, constraint_type=MDOFunction.ConstraintType.INEQ
+    )
     problem.preprocess_functions()
     output_functions, jacobian_functions = problem.get_functions(jacobian_names=())
     with pytest.raises(
@@ -955,10 +969,11 @@ def test_2d_objective() -> None:
     design_space = SobieskiDesignSpace()
     inputs = disc.io.input_grammar
     design_space.filter([name for name in inputs if not name.startswith("c_")])
-    doe_scenario = DOEScenario(
-        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    mdo_scenario = MDOScenario(
+        [disc], design_space, settings=DisciplinaryOpt_Settings()
     )
-    doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10)
+    mdo_scenario.add_objective("y_12")
+    mdo_scenario.execute(algo_name="DiagonalDOE", n_samples=10)
 
 
 def test_observable(pow2_problem) -> None:
@@ -1174,7 +1189,7 @@ def test_parallel_differentiation_setting_after_functions_preprocessing(
 
 def test_database_name(problem) -> None:
     """Check the name of the database."""
-    DOELibraryFactory().execute(problem, algo_name="PYDOE_FULLFACT", n_samples=1)
+    DOE_LIBRARY_FACTORY.execute(problem, algo_name="PYDOE_FULLFACT", n_samples=1)
     problem.database.name = "my_database"
     dataset = problem.to_dataset()
     assert dataset.name == problem.database.name
@@ -1915,17 +1930,9 @@ def test_observables_normalization(sellar_with_2d_array, sellar_disciplines) -> 
     scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_observable("y_1")
     scenario.execute(algo_name="SLSQP", max_iter=3)
-    total_iter = len(scenario.formulation.optimization_problem.database)
-    n_obj_eval = (
-        scenario.formulation.optimization_problem.database.get_function_history(
-            "y_1"
-        ).size
-    )
-    n_obs_eval = (
-        scenario.formulation.optimization_problem.database.get_function_history(
-            "obj"
-        ).size
-    )
+    total_iter = len(scenario.formulation.problem.database)
+    n_obj_eval = scenario.formulation.problem.database.get_function_history("y_1").size
+    n_obs_eval = scenario.formulation.problem.database.get_function_history("obj").size
     assert total_iter == n_obj_eval == n_obs_eval
 
 
@@ -1950,9 +1957,9 @@ def test_repr_constraint_linear_lower_ineq() -> None:
             array([[0, 1], [2, 3], [4, 5]]),
             "g",
             value_at_zero=array([6, 7, 8]),
-            f_type=MDOLinearFunction.ConstraintType.INEQ,
         ),
         positive=True,
+        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
     )
     assert str(problem) == (
         """Optimization problem:
@@ -2100,9 +2107,9 @@ def test_to_from_hdf_log(pow2_problem, caplog, tmp_wd, hdf_node_path, expected):
     pow2_problem.to_hdf(file_path, hdf_node_path=hdf_node_path)
     pow2_problem.from_hdf(file_path, hdf_node_path=hdf_node_path)
     assert caplog.record_tuples[0] == (
-        "gemseo.algos.optimization_problem",
+        "gemseo.algos.evaluation_problem",
         20,
-        "Exporting the optimization problem to the file problem.hdf5" + expected,
+        "Exporting the evaluation problem to the file problem.hdf5" + expected,
     )
     assert caplog.record_tuples[1] == (
         "gemseo.algos.optimization_problem",

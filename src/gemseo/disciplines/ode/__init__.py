@@ -15,13 +15,13 @@
 r"""Scenario adapters.
 
 A scenario adapter is an [Discipline][gemseo.core.discipline.discipline.Discipline]
-wrapping a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario].
+wrapping an [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 A call to [Discipline.execute][gemseo.core.discipline.discipline.Discipline.execute]
 triggers calls to
-[MDOScenario.execute][gemseo.scenarios.mdo_scenario.MDOScenario.execute].
+[MDOScenario.execute][gemseo.scenarios.mdo.MDOScenario.execute].
 
 For instance,
-let us consider an [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario]
+let us consider an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 defining a gradient-based constrained minimization of a cost function
 over a [DesignSpace][gemseo.algos.design_space.DesignSpace] from several
 [Discipline][gemseo.core.discipline.discipline.Discipline] instances.
@@ -40,19 +40,19 @@ Then,
 this
 [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
 can be used as any [Discipline][gemseo.core.discipline.discipline.Discipline]
-in a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]
-defining a sampling-based version of the previous problem.
+in an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+executed by a DOE algorithm.
 In other words,
-this [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] repeats
+this [MDOScenario][gemseo.scenarios.mdo.MDOScenario] repeats
 the gradient-based optimization from several starting points
 and returns the best local minimum.
 
 The scenario adapters can also be useful for bi-level optimization.
 Let us consider an optimization problem with two design variables,
 namely $x_1$ and $x_2$.
-The wrapped [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario]
+The wrapped [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 solves the optimization problem with respect to the design variables $x_1$ a
-nd another [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] considers
+nd another [MDOScenario][gemseo.scenarios.mdo.MDOScenario] considers
 this
 [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
 to solve the optimization problem with respect to $x_2$.

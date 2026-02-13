@@ -87,7 +87,7 @@ def test_2d_ineq(
     analytical_test_2d_ineq, settings_model, reformulate_constraints_with_slack_var
 ) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
-    problem = analytical_test_2d_ineq.formulation.optimization_problem
+    problem = analytical_test_2d_ineq.formulation.problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
     execute_algo(problem, settings_model=settings_model, algo_type="opt")
@@ -114,7 +114,7 @@ def test_2d_ineq(
 def test_2d_eq(analytical_test_2d_eq, settings_model) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     analytical_test_2d_eq.execute(settings_model)
-    problem = analytical_test_2d_eq.formulation.optimization_problem
+    problem = analytical_test_2d_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     lag = lagrange.compute(
@@ -128,7 +128,7 @@ def test_2d_eq(analytical_test_2d_eq, settings_model) -> None:
 def test_2d_multiple_eq(analytical_test_2d__multiple_eq, settings_model) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     analytical_test_2d__multiple_eq.execute(settings_model)
-    problem = analytical_test_2d__multiple_eq.formulation.optimization_problem
+    problem = analytical_test_2d__multiple_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     lag = lagrange.compute(
@@ -158,7 +158,7 @@ def test_2d_mixed(
     """Test for lagrange multiplier inequality almost optimum."""
     settings_model.sub_problem_constraints = subsolver_constraints
     settings_model.ftol_rel = 1e-3
-    problem = analytical_test_2d_mixed_rank_deficient.formulation.optimization_problem
+    problem = analytical_test_2d_mixed_rank_deficient.formulation.problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
     execute_algo(problem, algo_type="opt", settings_model=settings_model)

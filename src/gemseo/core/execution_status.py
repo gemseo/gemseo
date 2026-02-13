@@ -52,7 +52,7 @@ class ExecutionStatus(Serializable):
     Helper methods should be used to handle the statuses
     when executing a monitored process,
     e.g., a [Discipline][gemseo.core.discipline.discipline.Discipline]
-    or a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario],
+    or an [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
     using the `execute()` method,
     or linearizing a [Discipline][gemseo.core.discipline.discipline.Discipline]
     using the method

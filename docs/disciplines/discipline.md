@@ -82,13 +82,12 @@ Furthermore, many disciplines inheriting from [Discipline][gemseo.core.disciplin
 from gemseo import get_available_disciplines
 
 get_available_disciplines()
-> ['RosenMF', 'SobieskiAerodynamics', 'DOEScenario', 'MDOScenario', 'SobieskiMission', 'SobieskiBaseWrapper', 'Sellar1', 'Sellar2', 'MDOChain', 'SobieskiStructure', 'Structure', 'SobieskiPropulsion', 'BaseScenario', 'AnalyticDiscipline', 'MDOScenarioAdapter', 'SellarSystem', 'ScalableFittedDiscipline', 'Aerodynamics', 'Mission', 'PropaneComb1', 'PropaneComb2', 'PropaneComb3', 'PropaneReaction', 'MDOParallelChain']
+> ['Aerodynamics', 'AnalyticDiscipline', 'ArrayBasedFunctionDiscipline', 'AutoPyDiscipline', 'Concatenater', 'ConstraintAggregation', 'DataDrivenScalableDiscipline', 'DensityFilter', 'DiscFromExe', 'FilteringDiscipline', 'FiniteElementAnalysis', 'IshigamiDiscipline', 'JobSchedulerDisciplineWrapper', 'LSF', 'LinearCombination', 'LinearDiscipline', 'LinearLinkDiscipline', 'MDOAdditiveChain', 'MDOChain', 'MDOInitializationChain', 'MDOObjectiveScenarioAdapter', 'MDOParallelChain', 'MDOScenarioAdapter', 'MDOWarmStartedChain', 'MainDiscipline', 'MaterialModelInterpolation', 'Mission', 'ODEDiscipline', 'OscillatorDiscipline', 'PropaneComb1', 'PropaneComb2', 'PropaneComb3', 'PropaneReaction', 'RemappingDiscipline', 'RetryDiscipline', 'RosenMF', 'SLURM', 'ScalableDiscipline', 'Sellar1', 'Sellar2', 'SellarSystem', 'SobieskiAerodynamics', 'SobieskiAerodynamicsSG', 'SobieskiChain', 'SobieskiMDAGaussSeidel', 'SobieskiMDAJacobi', 'SobieskiMission', 'SobieskiMissionSG', 'SobieskiPropulsion', 'SobieskiPropulsionSG', 'SobieskiStructure', 'SobieskiStructureSG', 'Splitter', 'SpringODEDiscipline', 'SpringsDynamicsDiscipline', 'Structure', 'SurrogateDiscipline', 'TaylorDiscipline', 'VolumeFraction', 'WingWeightDiscipline', 'XLSDiscipline']
 ```
 
 !!! note
     These available [Discipline][gemseo.core.discipline.discipline.Discipline] can be classified into different categories:
 
-    -   classes implementing scenario, a key concept in GEMSEO: [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] and [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario], [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario],
     -   classes implementing MDO problem disciplines:
 
         - Sobieski's SSBJ problem:

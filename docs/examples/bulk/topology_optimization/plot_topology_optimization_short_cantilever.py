@@ -68,7 +68,7 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 # %%
 # ## Solve the topology optimization problem
 #
-# Generate an [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario]:
+# Generate an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]:
 scenario = create_scenario(
     disciplines,
     "compliance",

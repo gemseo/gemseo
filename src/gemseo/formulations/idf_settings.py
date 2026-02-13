@@ -23,7 +23,7 @@ from pydantic import Field
 from pydantic import PositiveInt
 from pydantic import model_validator
 
-from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
+from gemseo.formulations.base_settings import BaseFormulationSettings
 from gemseo.mda.chain import MDAChain
 from gemseo.mda.chain_settings import MDAChain_Settings  # noqa: TC001
 from gemseo.typing import StrKeyMapping  # noqa: TC001

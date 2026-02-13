@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
 # %%
 # In this example, we show how to skip the evaluation at a DOE point during a
-# [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] run. This is useful in situations where the evaluation of a
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario] run. This is useful in situations where the evaluation of a
 # sample fails or when the user wants to avoid evaluating some samples when
 # certain conditions are met.
 # The DOE algorithms in GEMSEO are able to catch `ValueError` exceptions
@@ -89,7 +89,6 @@ scenario = create_scenario(
     [discipline],
     "y",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 custom_doe_settings = CustomDOE_Settings(samples=samples)
@@ -108,7 +107,7 @@ scenario.post_process(basic_history_settings)
 # %%
 # !!! warning
 #
-#     In order to be able to continue the execution of a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario], the
+#     In order to be able to continue the execution of a [MDOScenario][gemseo.scenarios.mdo.MDOScenario], the
 #     execution status and statistics of disciplines must be disabled. This is the
 #     default behavior, but you can also disable them explicitly with the
 #     [configure()][gemseo.configure] function.

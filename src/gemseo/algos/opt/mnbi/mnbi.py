@@ -60,7 +60,7 @@ from scipy.optimize import linprog
 
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.multiobjective_optimization_result import (
     MultiObjectiveOptimizationResult,
 )
@@ -837,7 +837,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             if self.__n_obj == 2:
                 betas = linspace(0, 1, n_samples + 2)[1:-1, newaxis]
             else:
-                library = DOELibraryFactory().create(self._settings.doe_algo)
+                library = DOE_LIBRARY_FACTORY.create(self._settings.doe_algo)
                 beta_design_space = DesignSpace()
                 beta_design_space.add_variable(
                     "beta", size=self.__n_obj - 1, lower_bound=0.0, upper_bound=1.0

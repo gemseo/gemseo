@@ -34,6 +34,7 @@ from sklearn.linear_model import Ridge
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.linreg import LinearRegressor
 from gemseo.machine_learning.regression.models.linreg_settings import (
     LinearRegressor_Settings,
@@ -41,7 +42,7 @@ from gemseo.machine_learning.regression.models.linreg_settings import (
 from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
 from gemseo.machine_learning.transformers.dimension_reduction.pls import PLS
 from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
@@ -57,9 +58,10 @@ def dataset() -> IODataset:
     design_space = DesignSpace()
     design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
-    scenario = DOEScenario(
-        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+    scenario = MDOScenario(
+        [discipline], design_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("y_1")
     scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 

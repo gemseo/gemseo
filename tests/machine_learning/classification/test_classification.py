@@ -28,10 +28,10 @@ import pytest
 from numpy import array
 from numpy.testing import assert_allclose
 
-from gemseo import from_pickle
-from gemseo import to_pickle
 from gemseo.machine_learning.classification.models.factory import CLASSIFIER_FACTORY
 from gemseo.problems.dataset.iris import create_iris_dataset
+from gemseo.utils.pickle import from_pickle
+from gemseo.utils.pickle import to_pickle
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset

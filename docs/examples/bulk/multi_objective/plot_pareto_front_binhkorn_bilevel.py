@@ -136,7 +136,6 @@ system_scenario = create_scenario(
     sub_scenario,
     "obj1",
     system_design_space,
-    scenario_type="DOE",
     formulation_name="BiLevel",
     sub_scenarios_log_level=WARNING,
 )
@@ -191,6 +190,6 @@ system_scenario.post_process(
 # more information.
 sub_scenario_databases = system_scenario.formulation.scenario_adapters[0].databases
 for database in sub_scenario_databases[:2]:
-    opt_problem = deepcopy(sub_scenario.formulation.optimization_problem)
+    opt_problem = deepcopy(sub_scenario.formulation.problem)
     opt_problem.database = database
     execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)

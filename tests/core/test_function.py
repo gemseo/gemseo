@@ -130,7 +130,7 @@ def test_operation_error(sinus, operator, symbol) -> None:
 
 
 def test_init_from_dict_repr() -> None:
-    """Check that initializing a MDOFunction with an unknown arg raised an error."""
+    """Check that initializing an MDOFunction with an unknown arg raised an error."""
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -825,6 +825,19 @@ def test_concatenate(f_out, g_out, h_out) -> None:
     assert f.output_names == h_out
 
 
+@pytest.mark.parametrize(("kwargs", "name"), [({}, "f_g"), ({"name": "foo"}, "foo")])
+def test_concatenate_name(kwargs, name):
+    """Check the name of the function concatenating functions."""
+    f = Concatenate(
+        [
+            MDOFunction(lambda x: x, "f"),
+            MDOFunction(lambda x: x, "g"),
+        ],
+        **kwargs,
+    )
+    assert f.name == name
+
+
 @pytest.mark.parametrize(
     ("f_type", "input_names", "expr", "neg", "expected"),
     [
@@ -880,6 +893,13 @@ def test_func(method, n_calls, enable_function_statistics):
     assert f.n_calls == 0
     assert_array_equal(getattr(f, method)(array([2])), array([4]))
     assert f.n_calls == n_calls
+
+
+@pytest.mark.parametrize("f_type", ["obs", MDOFunction.FunctionType.OBS])
+def test_f_type_enum(f_type):
+    """Check setting the f_type using a str or an enum."""
+    f = MDOFunction(lambda x: 2 * x, "f", f_type=f_type)
+    assert f.f_type == MDOFunction.FunctionType.OBS
 
 
 @pytest.mark.parametrize(

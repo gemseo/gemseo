@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.post.base_post import BasePost
@@ -62,3 +63,7 @@ class PostFactory(BaseFactory[BasePost[Any]]):
         post = self.create(post_name, opt_problem)
         post.execute(settings_model=settings_model, **settings)
         return post
+
+
+POST_FACTORY: Final[PostFactory] = PostFactory()
+"""The factory for `BasePost` objects."""

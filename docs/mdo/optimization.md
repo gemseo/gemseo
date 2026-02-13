@@ -24,7 +24,7 @@ Contributors:
 
 In this section we describe GEMSEO's optimization and DOE framework.
 
-The standard way to use GEMSEO is through an [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario], which
+The standard way to use GEMSEO is through an [MDOScenario][gemseo.scenarios.mdo.MDOScenario], which
 automatically creates an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] from an [MDO formulation][mdo-formulations] and a set of
 [Discipline][gemseo.core.discipline.discipline.Discipline].
 

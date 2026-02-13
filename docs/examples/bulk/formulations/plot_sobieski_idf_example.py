@@ -112,13 +112,13 @@ scenario.execute(slsqp_settings)
 
 # %%
 # ### Save the optimization history
-# We can save the whole optimization problem and its history for further post
-# processing:
-scenario.save_optimization_history("idf_history.h5", file_format="hdf5")
+# We can save the whole optimization problem and its history for further
+# post-processing:
+scenario.to_hdf("idf_history.h5")
 
 # %%
 # We can also save only calls to functions and design variables history:
-scenario.save_optimization_history("idf_history.xml", file_format="ggobi")
+scenario.to_ggobi("idf_history.xml")
 
 # %%
 # ### Print optimization metrics

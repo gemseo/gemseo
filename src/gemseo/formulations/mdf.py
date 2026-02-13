@@ -23,9 +23,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.base_mdo import BaseMDOFormulation
 from gemseo.formulations.mdf_settings import MDF_Settings
-from gemseo.mda.factory import MDAFactory
+from gemseo.mda.factory import MDA_FACTORY
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
@@ -53,13 +53,12 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
 
     settings_class: ClassVar[type[MDF_Settings]] = MDF_Settings
 
-    def _init_before_design_space_and_objective(self) -> BaseMDA:
-        self.mda = MDAFactory().create(
+    def _create_multidisciplinary_process(self) -> None:
+        self.mda = MDA_FACTORY.create(
             self._settings.main_mda_settings._TARGET_CLASS_NAME,
             self.disciplines,
             settings_model=self._settings.main_mda_settings,
         )
-        return self.mda
 
     def get_top_level_disciplines(  # noqa:D102
         self, include_sub_formulations: bool = False
@@ -68,11 +67,11 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
 
     @classmethod
     def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:  # noqa:D102
-        return MDAFactory().get_options_grammar(cls.__check_mda(**options))
+        return MDA_FACTORY.get_options_grammar(cls.__check_mda(**options))
 
     @classmethod
     def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:  # noqa:D102
-        return MDAFactory().get_default_option_values(cls.__check_mda(**options))
+        return MDA_FACTORY.get_default_option_values(cls.__check_mda(**options))
 
     @staticmethod
     def __check_mda(**options: str) -> str:
@@ -102,7 +101,7 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
 
     def _remove_couplings_from_ds(self) -> None:
         """Remove the coupling variables from the design space."""
-        design_space = self.optimization_problem.design_space
+        design_space = self.problem.design_space
         for coupling in self.mda.coupling_structure.all_couplings:
             if coupling in design_space:
                 design_space.remove_variable(coupling)

@@ -41,7 +41,7 @@ from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.mda.base import BaseMDA
 from gemseo.mda.base import _BaseMDAProcessFlow
 from gemseo.mda.chain_settings import MDAChain_Settings
-from gemseo.mda.factory import MDAFactory
+from gemseo.mda.factory import MDA_FACTORY
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -122,7 +122,7 @@ class MDAChain(BaseMDA):
             self.settings.chain_linearize = True
 
         self.inner_mdas = []
-        self.__inner_mda_class = MDAFactory().get_class(
+        self.__inner_mda_class = MDA_FACTORY.get_class(
             self.settings.inner_mda_settings._TARGET_CLASS_NAME
         )
         self.mdo_chain = self._create_mdo_chain()

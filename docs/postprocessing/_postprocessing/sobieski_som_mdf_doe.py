@@ -50,7 +50,6 @@ scenario = create_scenario(
     "design_space.csv",
     formulation_name="MDF",
     maximize_objective=True,
-    scenario_type="DOE",
 )
 
 scenario.set_differentiation_method()

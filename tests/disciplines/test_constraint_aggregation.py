@@ -75,7 +75,7 @@ def test_aggregation_discipline(disc_constr) -> None:
     scenario.add_constraint("constr", constraint_type=scenario.ConstraintType.INEQ)
 
     scenario.execute(algo_name="SLSQP", max_iter=50)
-    ref_sol = scenario.formulation.optimization_problem.solution
+    ref_sol = scenario.formulation.problem.solution
 
     disc_agg = create_discipline(
         "ConstraintAggregation",
@@ -98,7 +98,7 @@ def test_aggregation_discipline(disc_constr) -> None:
     )
 
     scenario_agg.execute(algo_name="SLSQP", max_iter=50)
-    sol2 = scenario_agg.formulation.optimization_problem.solution
+    sol2 = scenario_agg.formulation.problem.solution
 
     assert allclose(sol2.x_opt, ref_sol.x_opt, rtol=1e-2)
 

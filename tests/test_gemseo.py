@@ -23,7 +23,6 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
@@ -36,7 +35,6 @@ from numpy import sin
 from numpy.testing import assert_equal
 
 from gemseo import LOGGER as GEMSEO_LOGGER
-from gemseo import DatasetClassName
 from gemseo import compute_doe
 from gemseo import configure
 from gemseo import configure_logger
@@ -96,8 +94,11 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.datasets import DatasetClassName
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.machine_learning.regression.models.rbf import RBFRegressor
 from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.mda.base import BaseMDA
@@ -109,8 +110,7 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.scenarios.backup_settings import BackupSettings
-from gemseo.scenarios.base_scenario import BaseScenario
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
@@ -121,9 +121,6 @@ from gemseo.utils.logging import MultiLineStreamHandler
 from gemseo.utils.pickle import to_pickle
 from gemseo.utils.xdsm.xdsm import XDSM
 from gemseo.utils.xdsm.xdsmizer import XDSMizer
-
-if TYPE_CHECKING:
-    from gemseo.scenarios.mdo_scenario import MDOScenario
 
 
 class Observer:
@@ -270,13 +267,10 @@ def test_monitor_scenario() -> None:
     monitor_scenario(scenario, observer)
 
     scenario.execute(algo_name="SLSQP", max_iter=10)
-    assert (
-        observer.status_changes
-        >= 2 * scenario.formulation.optimization_problem.objective.n_calls
-    )
+    assert observer.status_changes >= 2 * scenario.formulation.problem.objective.n_calls
 
 
-@pytest.mark.parametrize("obj_type", [BaseScenario, str, Path])
+@pytest.mark.parametrize("obj_type", [MDOScenario, str, Path])
 def test_execute_post(scenario, obj_type, tmp_wd) -> None:
     """Test the API method to call the post-processing factory.
 
@@ -285,11 +279,11 @@ def test_execute_post(scenario, obj_type, tmp_wd) -> None:
         obj_type: The type of the object to post-process.
         tmp_wd: Fixture to move into a temporary directory.
     """
-    if obj_type is BaseScenario:
+    if obj_type is MDOScenario:
         obj = scenario
     else:
         file_name = "results.hdf5"
-        scenario.save_optimization_history(file_name)
+        scenario.to_hdf(file_name)
         obj = file_name if obj_type is str else Path(file_name)
 
     post = execute_post(obj, post_name="OptHistoryView", save=False, show=False)
@@ -298,7 +292,7 @@ def test_execute_post(scenario, obj_type, tmp_wd) -> None:
 
 def test_execute_post_with_optimization_dataset(scenario):
     """Test the method execute_post with an OptimizationDataset."""
-    dataset = scenario.formulation.optimization_problem.to_dataset(group_functions=True)
+    dataset = scenario.formulation.problem.to_dataset(group_functions=True)
     post = execute_post(dataset, post_name="OptHistoryView", save=False, show=False)
     assert isinstance(post, OptHistoryView)
 
@@ -309,15 +303,16 @@ def test_execute_post_type_error(scenario) -> None:
         execute_post(1234, post_name="OptHistoryView")
 
 
-def test_create_doe_scenario() -> None:
-    """Test the creation of a DOE scenario."""
-    create_scenario(
+def test_create_scenario_settings() -> None:
+    """Test the use of formulation_settings_model argument of create_scenario."""
+    settings = MDF_Settings()
+    scenario = create_scenario(
         create_discipline("SobieskiMission"),
         "y_4",
         SobieskiDesignSpace(),
-        formulation_name="DisciplinaryOpt",
-        scenario_type="DOE",
+        formulation_settings_model=settings,
     )
+    assert scenario.formulation._settings is settings
 
 
 @pytest.mark.parametrize(
@@ -532,8 +527,11 @@ def training_dataset() -> IODataset:
     disc.set_cache(disc.CacheType.MEMORY_FULL)
     design_space = SobieskiDesignSpace()
     design_space.filter(input_names)
-    doe = DOEScenario([disc], "y_4", design_space, formulation_name="DisciplinaryOpt")
-    doe.execute(algo_name="PYDOE_FULLFACT", n_samples=10)
+    mdo_scenario = MDOScenario(
+        [disc], design_space, settings=DisciplinaryOpt_Settings()
+    )
+    mdo_scenario.add_objective("y_4")
+    mdo_scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=10)
     return disc.cache.to_dataset()
 
 
@@ -689,7 +687,6 @@ def test_get_available_scenario_types() -> None:
     """Test that the available scenario types are retrieved correctly."""
     scen_types = get_available_scenario_types()
     assert "MDO" in scen_types
-    assert "DOE" in scen_types
 
 
 def test_create_parameter_space() -> None:
@@ -1163,7 +1160,7 @@ def test_sample_disciplines_options(disciplines, input_space, caplog):
 
 def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
     """Check that sample_disciplines can use a backup file."""
-    with mock.patch.object(DOEScenario, "set_optimization_history_backup") as method:
+    with mock.patch.object(MDOScenario, "set_backup_settings") as method:
         sample_disciplines(
             disciplines,
             input_space,
@@ -1184,7 +1181,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
     )
     assert len(Database.from_hdf("database.hdf5")) == 2
 
-    with mock.patch.object(DOEScenario, "set_optimization_history_backup") as method:
+    with mock.patch.object(MDOScenario, "set_backup_settings") as method:
         sample_disciplines(
             disciplines,
             input_space,
@@ -1201,7 +1198,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
         "load": False,
     }
 
-    with mock.patch.object(DOEScenario, "set_optimization_history_backup") as method:
+    with mock.patch.object(MDOScenario, "set_backup_settings") as method:
         sample_disciplines(
             disciplines,
             input_space,

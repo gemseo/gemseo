@@ -37,7 +37,7 @@ The
 class implements this concept.
 It inherits from the [Discipline][gemseo.core.discipline.discipline.Discipline] class
 in such a way that it can easily be used
-in a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario].
+in an [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 It is composed
 of a [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel].
 
