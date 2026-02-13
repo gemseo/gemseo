@@ -59,6 +59,7 @@ nav:
       - Tutorials:
           - GEMSEO in 10 minutes: generated/examples/tutorials/basic/plot_gemseo_in_10_minutes.md
           - Tutorial - The design space: generated/examples/tutorials/basic/plot_tutorial_design_space.md
+          - Tutorial - The Multidisciplinary Design Analysis: generated/examples/tutorials/basic/plot_tutorial_create_mda.md
           - Define an MDO problem: interface/study_analysis.md
           - Optimization and DOE framework: mdo/optimization.md
           - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/bulk/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
@@ -136,10 +137,10 @@ nav:
       - Scenario:
           - How to deal with scenarios: scenario/scenario.md
           - Monitoring the execution of a scenario: scenario/monitoring.md
-          - Coupling: generated/examples/bulk/coupling
+          - Coupling: generated/examples/howtos/coupling
           - Study analysis: generated/examples/bulk/study_analysis
           - Scenario examples: generated/examples/bulk/scenario
-          - Multi-disciplinary analysis (MDA): generated/examples/bulk/mda
+          - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda
           - Optimization: generated/examples/bulk/optimization_problem
           - Multi-start optimization: generated/examples/bulk/optimizers/plot_multistart_example.md
       - Design of experiments (DOE): generated/examples/bulk/doe
