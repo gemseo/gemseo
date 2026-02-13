@@ -35,7 +35,7 @@ from gemseo.utils.study_analyses.mdo_study_analysis import MDOStudyAnalysis
 study = MDOStudyAnalysis("mdo_study.xlsx")
 
 # %%
-# ### Generate the N2 chart
+# ### Generate its N2 chart
 study.generate_n2(save=False, show=True)
 
 # %%
