@@ -101,7 +101,8 @@ design_space.set_current_value(initial_point)
 # %%
 # and create the [OptAsMDOScenario][gemseo.problems.mdo.opt_as_mdo_scenario.OptAsMDOScenario],
 # orchestrated by an MDF formulation:
-mdo_scenario = OptAsMDOScenario(discipline, design_space, "f", settings=MDF_Settings())
+mdo_scenario = OptAsMDOScenario(discipline, design_space, settings=MDF_Settings())
+mdo_scenario.add_objective("f")
 # %%
 # Then,
 # we can see that the design variables have been renamed:

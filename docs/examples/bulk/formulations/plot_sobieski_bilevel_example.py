@@ -144,7 +144,7 @@ system_scenario = create_scenario(
     sub_scenarios_log_level=WARNING,
     formulation_name="BiLevel",
 )
-system_scenario.add_constraint("g_1", "g_2", "g_3", constraint_type="ineq")
+system_scenario.add_constraint(["g_1", "g_2", "g_3"], constraint_type="ineq")
 
 # %%
 # !!! tip

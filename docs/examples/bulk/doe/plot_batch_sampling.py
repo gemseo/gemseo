@@ -271,9 +271,8 @@ def solve_sellar(
     """
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     design_space = SellarDesignSpace()
-    scenario = MDOScenario(
-        disciplines, design_space, "obj", formulation_settings_model=MDF_Settings()
-    )
+    scenario = MDOScenario(disciplines, design_space, settings=MDF_Settings())
+    scenario.add_objective("obj")
     scenario.add_constraint("c_1")
     scenario.add_constraint("c_2")
     with Timer() as timer:
