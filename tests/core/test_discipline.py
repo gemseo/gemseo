@@ -951,6 +951,22 @@ def test_grammar_inheritance() -> None:
     assert "x_1" in discipline.io.input_grammar
 
 
+def test_grammar_file_search():
+    """Check that a discipline inherits from the JSON grammar files of its grand father
+    discipline."""
+
+    class Son(SobieskiAerodynamics):
+        """A discipline whose parent is SobieskiAerodynamic."""
+
+    class GrandSon(Son):
+        """A discipline whose grand parent is SobieskiAerodynamic."""
+
+    discipline = SobieskiAerodynamics()
+    grand_son_discipline = GrandSon()
+
+    assert grand_son_discipline.input_grammar == discipline.input_grammar
+
+
 # @pytest.mark.parametrize(
 #     ("grammar_directory", "comp_dir", "in_or_out", "expected"),
 #     [

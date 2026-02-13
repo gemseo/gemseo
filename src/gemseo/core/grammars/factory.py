@@ -109,7 +109,7 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
 
         classes = [discipline_class] + [
             base
-            for base in discipline_class.__bases__
+            for base in discipline_class.__mro__
             if issubclass(base, BaseDiscipline)
         ]
 
