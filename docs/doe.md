@@ -47,10 +47,12 @@ from gemseo import execute_algo
 optimization_result = execute_algo(problem, "PYDOE_LHS", algo_type="doe", n_samples=100)
 ```
 
-In the presence of an [Discipline][gemseo.core.discipline.discipline.Discipline], it is advisable to create a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] with the function [create_scenario()][gemseo.create_scenario] and pass the DOE algorithm to [DOEScenario.execute()][gemseo.scenarios.doe_scenario.DOEScenario.execute]:
+In the presence of a [Discipline][gemseo.core.discipline.discipline.Discipline],
+it is advisable to create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with the function [create_scenario()][gemseo.create_scenario]
+and pass the DOE algorithm to [MDOScenario.execute()][gemseo.scenarios.mdo.MDOScenario.execute]:
 
 ``` python
-doe_scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
+scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
 ```
 
 ## Algorithms

@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.core.chains.chain import MDOChain
-from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.base_mdo import BaseMDOFormulation
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.utils.discipline import get_all_inputs
 
@@ -44,7 +44,7 @@ class DisciplinaryOpt(BaseMDOFormulation[DisciplinaryOpt_Settings]):
     __top_level_disciplines: tuple[Discipline]
     """The top-level disciplines."""
 
-    def _init_before_design_space_and_objective(self) -> None:
+    def _create_multidisciplinary_process(self) -> None:
         disciplines = self.disciplines
         self.__top_level_disciplines = (
             MDOChain(disciplines) if len(disciplines) > 1 else disciplines[0],
@@ -57,7 +57,7 @@ class DisciplinaryOpt(BaseMDOFormulation[DisciplinaryOpt_Settings]):
 
     def _update_design_space(self) -> None:
         all_input_names = get_all_inputs(self.get_top_level_disciplines())
-        design_space = self.optimization_problem.design_space
+        design_space = self.problem.design_space
         kept_variable_names = set(all_input_names).intersection(design_space)
         design_space.filter(kept_variable_names)
         self._set_default_input_values_from_design_space()

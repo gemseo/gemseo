@@ -77,33 +77,33 @@ class Power2(OptimizationProblem):
             MDOFunction(
                 self.ineq_constraint1,
                 name="ineq1",
-                f_type=MDOFunction.ConstraintType.INEQ,
                 jac=self.ineq_constraint1_jac,
                 expr="0.5 - x[0]**3",
                 input_names=["x"],
-            )
+            ),
+            constraint_type=MDOFunction.ConstraintType.INEQ,
         )
 
         self.add_constraint(
             MDOFunction(
                 self.ineq_constraint2,
                 name="ineq2",
-                f_type=MDOFunction.ConstraintType.INEQ,
                 jac=self.ineq_constraint2_jac,
                 expr="0.5 - x[1]**3",
                 input_names=["x"],
-            )
+            ),
+            constraint_type=MDOFunction.ConstraintType.INEQ,
         )
 
         self.add_constraint(
             MDOFunction(
                 self.eq_constraint,
                 name="eq",
-                f_type=MDOFunction.ConstraintType.EQ,
                 jac=self.eq_constraint_jac,
                 expr="0.9 - x[2]**3",
                 input_names=["x"],
-            )
+            ),
+            constraint_type=MDOFunction.ConstraintType.EQ,
         )
         self.iter_error = 0
         self.exception_error = exception_error

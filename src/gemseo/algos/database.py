@@ -100,7 +100,7 @@ class Database(Mapping):
     because it avoids re-evaluating functions
     at points where they have already been evaluated.
 
-    It can also be post-processed by an [BasePost][gemseo.post.base_post.BasePost]
+    It can also be post-processed by a [BasePost][gemseo.post.base_post.BasePost]
     to visualize its content,
     e.g. [OptHistoryView][gemseo.post.opt_history_view.OptHistoryView] generating
     a series of graphs

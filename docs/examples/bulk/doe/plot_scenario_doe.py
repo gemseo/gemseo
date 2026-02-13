@@ -47,7 +47,6 @@ scenario = create_scenario(
     "y_4",
     design_space,
     maximize_objective=True,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 
@@ -59,7 +58,7 @@ scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
 
 # %%
 # Note that both the formulation settings passed to [create_scenario()][gemseo.create_scenario] and the
-# algorithm settings passed to [execute()][gemseo.scenarios.base_scenario.BaseScenario.execute]
+# algorithm settings passed to [execute()][gemseo.scenarios.mdo.MDOScenario.execute]
 # can be provided via a Pydantic model.
 # For more information,
 # see [this page][formulation-settings] about the formulation settings
@@ -70,7 +69,7 @@ scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
 scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
-# Note that post-processor settings passed to [post_process()][gemseo.scenarios.base_scenario.BaseScenario.post_process] can be
+# Note that post-processor settings passed to [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] can be
 # provided via a Pydantic model (see the example below). For more information,
 # see [this page][post-processor-settings].
 #

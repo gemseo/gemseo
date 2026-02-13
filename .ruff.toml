@@ -119,7 +119,7 @@ runtime-evaluated-base-classes = [
   "gemseo.algos.doe.openturns.settings.base_openturns_settings.BaseOpenTURNSSettings",
   "gemseo.algos.doe.scipy.settings.base_scipy_doe_settings.BaseSciPyDOESettings",
   "gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings.BaseSciPyGlobalSettings",
-  "gemseo.formulations.base_formulation_settings.BaseFormulationSettings",
+  "gemseo.formulations.base_settings.BaseFormulationSettings",
   "gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitterSettings",
   "gemseo.machine_learning.regression.models.base_fce_settings.BaseFCERegressorSettings",
   "gemseo.algos.opt.augmented_lagrangian.settings.base.BaseAugmentedLagrangianSettings",

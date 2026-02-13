@@ -19,12 +19,14 @@ from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.formulations.bilevel_settings import BiLevel_Settings
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.scenarios.mdo import MDOScenario
 
 
 @pytest.fixture
-def scenario() -> DOEScenario:
-    """A bi-level DOE Scenario.
+def scenario() -> MDOScenario:
+    """A bi-level MDO Scenario.
 
     For (x, y), we use successively:
 
@@ -38,16 +40,17 @@ def scenario() -> DOEScenario:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    sub_scenario = DOEScenario(
+    sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "x+y"})],
-        "z",
         design_space.filter(["y"], copy=True),
-        formulation_name="DisciplinaryOpt",
+        settings=DisciplinaryOpt_Settings(),
         name="FooScenario",
     )
+    sub_scenario.add_objective("z")
     sub_scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
-    scenario = DOEScenario(
-        [sub_scenario], "z", design_space.filter(["x"]), formulation_name="BiLevel"
+    scenario = MDOScenario(
+        [sub_scenario], design_space.filter(["x"]), settings=BiLevel_Settings()
     )
+    scenario.add_objective("z")
     scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
     return scenario

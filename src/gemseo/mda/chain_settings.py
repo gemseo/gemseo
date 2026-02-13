@@ -30,7 +30,7 @@ from gemseo.mda.base_parallel_solver_settings import (
 )
 from gemseo.mda.base_settings import BaseMDASettings  # noqa: TC001
 from gemseo.mda.composed_settings import ComposedMDASettings
-from gemseo.mda.factory import MDAFactory
+from gemseo.mda.factory import MDA_FACTORY
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 if TYPE_CHECKING:
@@ -98,6 +98,6 @@ If empty, they are created from `disciplines`.""",
     def __inner_mda_settings_to_pydantic_model(self) -> Self:
         """Convert the inner MDA settings into a Pydantic model."""
         if isinstance(self.inner_mda_settings, Mapping):
-            settings_model = MDAFactory().get_class(self.inner_mda_name).settings_class
+            settings_model = MDA_FACTORY.get_class(self.inner_mda_name).settings_class
             self.inner_mda_settings = settings_model(**self.inner_mda_settings)
         return self

@@ -22,10 +22,10 @@ from typing import TYPE_CHECKING
 from pydantic import Field
 from pydantic import model_validator
 
-from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
+from gemseo.formulations.base_settings import BaseFormulationSettings
 from gemseo.mda.base_settings import BaseMDASettings  # noqa: TC001
 from gemseo.mda.chain import MDAChain
-from gemseo.mda.factory import MDAFactory
+from gemseo.mda.factory import MDA_FACTORY
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 if TYPE_CHECKING:
@@ -57,6 +57,6 @@ These settings may include those of the inner-MDA.""",
     def __mda_settings_to_pydantic_model(self) -> Self:
         """Convert MDA settings into a Pydantic model."""
         if isinstance(self.main_mda_settings, Mapping):
-            settings_model = MDAFactory().get_class(self.main_mda_name).settings_class
+            settings_model = MDA_FACTORY.get_class(self.main_mda_name).settings_class
             self.main_mda_settings = settings_model(**self.main_mda_settings)
         return self

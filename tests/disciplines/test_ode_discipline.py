@@ -41,12 +41,12 @@ from numpy import sin
 from numpy import sqrt
 from numpy.testing import assert_allclose
 
-from gemseo import from_pickle
-from gemseo import to_pickle
 from gemseo.core.discipline.base_discipline import CacheType
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
+from gemseo.utils.pickle import from_pickle
+from gemseo.utils.pickle import to_pickle
 
 
 def test_create_oscillator_ode_discipline() -> None:

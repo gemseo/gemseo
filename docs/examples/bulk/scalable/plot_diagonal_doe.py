@@ -58,7 +58,7 @@ design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
 # %%
 # ## Sample with the default mode
 #
-# Lastly, we create a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]
+# Lastly, we create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 # and execute it with the [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE] algorithm
 # to get 10 evaluations of $f$.
 # Note that we use the default configuration:
@@ -68,7 +68,6 @@ scenario = create_scenario(
     discipline,
     "z",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="DiagonalDOE", n_samples=10)
@@ -89,7 +88,6 @@ scenario = create_scenario(
     discipline,
     "z",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="DiagonalDOE", n_samples=10, reverse=["y"])

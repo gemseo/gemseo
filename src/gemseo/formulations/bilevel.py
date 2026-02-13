@@ -30,15 +30,14 @@ from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.base_mdo import BaseMDOFormulation
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
 from gemseo.mda.base_settings import BaseMDASettings
-from gemseo.mda.factory import MDAFactory
+from gemseo.mda.factory import MDA_FACTORY
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
 )
 from gemseo.utils.discipline import get_sub_disciplines
-from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -47,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
     from gemseo.mda.base import BaseMDA
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.scenarios.mdo import MDOScenario
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
@@ -79,15 +78,6 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     DEFAULT_SCENARIO_RESULT_CLASS_NAME: ClassVar[str] = BiLevelScenarioResult.__name__
     """The default name of the scenario results."""
 
-    SYSTEM_LEVEL: ClassVar[str] = "system"
-    """The name of the system level."""
-
-    SUBSCENARIOS_LEVEL: ClassVar[str] = "sub-scenarios"
-    """The name of the sub-scenarios level."""
-
-    LEVELS = (SYSTEM_LEVEL, SUBSCENARIOS_LEVEL)
-    """The collection of levels."""
-
     CHAIN_NAME: ClassVar[str] = "bilevel_chain"
     """The name of the internal chain."""
 
@@ -118,10 +108,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     _mda2: BaseMDA
     """The second MDA that solves the couplings after sub-scenarios."""
 
-    __mda_factory: ClassVar[MDAFactory] = MDAFactory()
-    """The MDA factory."""
-
-    def _init_before_design_space_and_objective(self) -> None:
+    def _create_multidisciplinary_process(self) -> None:
         self._scenario_adapters = []
         self.coupling_structure = CouplingStructure(
             get_sub_disciplines(self.disciplines)
@@ -140,7 +127,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         # Create the inner chain: MDA1 -> sub scenarios -> MDA2
         self.chain = self._create_inner_chain()
 
-        self.optimization_problem.database.add_new_iter_listener(
+        self.problem.database.add_new_iter_listener(
             self._store_optimal_local_design_values
         )
 
@@ -161,7 +148,6 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
     def _create_scenario_adapters(
         self,
-        output_functions: bool = False,
         adapter_class: type[MDOScenarioAdapter] = MDOScenarioAdapter,
         **adapter_options,
     ) -> None:
@@ -170,34 +156,26 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         This is used to build the self.chain.
 
         Args:
-            output_functions: Whether to add the optimization functions in the adapter
-                outputs.
             adapter_class: The class of the adapters.
             **adapter_options: The options for the adapters' initialization.
         """
         for scenario in self.get_sub_scenarios():
-            adapter_inputs = self._compute_adapter_inputs(scenario)
-            adapter_outputs = self._compute_adapter_outputs(scenario, output_functions)
+            input_names = self._compute_adapter_inputs(scenario)
+            output_names = self._compute_adapter_outputs(scenario)
             adapter = adapter_class(
                 scenario,
-                adapter_inputs,
-                adapter_outputs,
+                input_names,
+                output_names,
                 opt_history_file_prefix=scenario.name,
                 **adapter_options,
             )
             self._scenario_adapters.append(adapter)
 
-    def _compute_adapter_outputs(
-        self,
-        scenario: BaseScenario,
-        output_functions: bool,
-    ) -> list[str]:
+    def _compute_adapter_outputs(self, scenario: MDOScenario) -> list[str]:
         """Compute the scenario adapter outputs.
 
         Args:
              scenario: A sub-scenario.
-             output_functions: Whether to add the objective and constraints in the
-                 outputs.
 
         Returns:
             The output variables of the adapter.
@@ -205,23 +183,13 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         couplings = self.coupling_structure.all_couplings
         mda2_inputs = self._get_mda2_inputs()
         top_disc = scenario.formulation.get_top_level_disciplines()
-        top_outputs = [outpt for disc in top_disc for outpt in disc.io.output_grammar]
-
-        # Output couplings of scenario are given to MDA for speedup
-        if output_functions:
-            opt_problem = scenario.formulation.optimization_problem
-            sc_output_names = opt_problem.objective.output_names
-            sc_constraints = opt_problem.constraints.get_names()
-            sc_out_coupl = sc_output_names + sc_constraints
-        else:
-            sc_out_coupl = list(set(top_outputs) & set(couplings + mda2_inputs))
-
-        # Add private variables from disciplinary scenario design space
+        top_outputs = [output for disc in top_disc for output in disc.io.output_grammar]
+        sc_out_coupl = list(set(top_outputs) & set(couplings + mda2_inputs))
         return sc_out_coupl + scenario.formulation.design_space.variable_names
 
     def _compute_adapter_inputs(
         self,
-        scenario: BaseScenario,
+        scenario: MDOScenario,
     ) -> list[str]:
         """Compute the scenario adapter inputs.
 
@@ -236,7 +204,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             for scn in self.get_sub_scenarios()
             for var in scn.design_space.variable_names
         ]
-        shared_dv = set(self.optimization_problem.design_space.variable_names)
+        shared_dv = set(self.problem.design_space.variable_names)
         couplings = self.coupling_structure.all_couplings
         mda1_outputs = self._get_mda1_outputs()
         top_disc = scenario.formulation.get_top_level_disciplines()
@@ -292,7 +260,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 "sub options of BiLevel."
             )
             raise ValueError(msg)
-        return cls.__mda_factory.get_options_grammar(main_mda_name)
+        return MDA_FACTORY.get_options_grammar(main_mda_name)
 
     @classmethod
     def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:
@@ -307,7 +275,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 "sub options of BiLevel."
             )
             raise ValueError(msg)
-        return cls.__mda_factory.get_default_option_values(main_mda_name)
+        return MDA_FACTORY.get_default_option_values(main_mda_name)
 
     def _create_mdas(self) -> tuple[BaseMDA | None, BaseMDA]:
         """Build the chain on top of which all functions are built.
@@ -328,7 +296,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         else:
             main_mda_name = self._settings.main_mda_name
         if len(strongly_coupled_disciplines) > 0:
-            mda1 = self.__mda_factory.create(
+            mda1 = MDA_FACTORY.create(
                 main_mda_name,
                 strongly_coupled_disciplines,
                 settings_model=main_mda_settings,
@@ -340,7 +308,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 "MDA1 is disabled in the BiLevel formulation"
             )
 
-        mda2 = self.__mda_factory.create(
+        mda2 = MDA_FACTORY.create(
             main_mda_name,
             get_sub_disciplines(self.disciplines),
             settings_model=main_mda_settings,
@@ -427,7 +395,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             # Otherwise, the MDA2 may be a user provided MDA
             # Which manages the couplings internally
             couplings = self.mda2.coupling_structure.strong_couplings
-            design_space = self.optimization_problem.design_space
+            design_space = self.problem.design_space
             for coupling in couplings:
                 if coupling in design_space:
                     LOGGER.warning(
@@ -453,92 +421,76 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
         return (self.chain,)
 
-    def add_constraint(
+    def create_constraint(
         self,
-        output_name: str,
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
+        output_names: Iterable[str],
+        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,  # noqa: E501
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
-        levels: list[str] = (),
-    ) -> None:
-        """Add a constraint to the formulation.
-
-        Args:
-            levels: The levels at which the constraint is to be added
-                (sublist of
-                [LEVELS][gemseo.formulations.bilevel.BiLevel.LEVELS]).
-                By default, the policy set at the initialization
-                of the formulation is enforced.
-
-        Raises:
-            ValueError: When the constraint levels are not a sublist of BiLevel.LEVELS.
+        apply_to_system_level: bool | None = None,
+        apply_to_sub_level: bool | None = None,
+    ) -> MDOFunction | None:
         """
-        # If the constraint levels are not specified the initial policy is enforced.
-        if not levels:
-            if self._settings.apply_cstr_to_system:
-                self._add_system_level_constraint(
-                    output_name,
-                    constraint_type=constraint_type,
-                    constraint_name=constraint_name,
-                    value=value,
-                    positive=positive,
-                )
-            if self._settings.apply_cstr_tosub_scenarios:
-                self._add_sub_level_constraint(
-                    output_name,
-                    constraint_type=constraint_type,
-                    constraint_name=constraint_name,
-                    value=value,
-                    positive=positive,
-                )
-        # Otherwise the constraint is applied at the specified levels.
-        elif not isinstance(levels, list) or not set(levels) <= set(BiLevel.LEVELS):
-            msg = f"Constraint levels must be a sublist of {BiLevel.LEVELS}"
-            raise ValueError(msg)
-        elif not levels:
-            LOGGER.warning("Empty list of constraint levels, constraint not added")
-        else:
-            if BiLevel.SYSTEM_LEVEL in levels:
-                self._add_system_level_constraint(
-                    output_name,
-                    constraint_type=constraint_type,
-                    constraint_name=constraint_name,
-                    value=value,
-                    positive=positive,
-                )
-            if BiLevel.SUBSCENARIOS_LEVEL in levels:
-                self._add_sub_level_constraint(
-                    output_name,
-                    constraint_type=constraint_type,
-                    constraint_name=constraint_name,
-                    value=value,
-                    positive=positive,
-                )
+        Args:
+            apply_to_system_level: Whether to add the constraint
+                to the optimization problem of the main level.
+                If `None`, use the `apply_cstr_to_system` option.
+            apply_to_sub_level: Whether to add the constraint
+                to the optimization problems of the sublevel.
+                If `None`, use the `apply_cstr_tosub_scenarios` option.
+        """  # noqa: D205, D212
+        if apply_to_system_level is None:
+            apply_to_system_level = self._settings.apply_cstr_to_system
 
-    def _add_system_level_constraint(
+        if apply_to_sub_level is None:
+            apply_to_sub_level = self._settings.apply_cstr_tosub_scenarios
+
+        if apply_to_system_level:
+            system_level_constraint = self._create_system_level_constraint(
+                output_names,
+                constraint_type=constraint_type,
+                constraint_name=constraint_name,
+                value=value,
+                positive=positive,
+            )
+        else:
+            system_level_constraint = None
+
+        if apply_to_sub_level:
+            self._add_sub_level_constraint(
+                output_names,
+                constraint_type=constraint_type,
+                constraint_name=constraint_name,
+                value=value,
+                positive=positive,
+            )
+
+        return system_level_constraint
+
+    def _create_system_level_constraint(
         self,
-        output_name: str,
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str = "",
-        value: float = 0,
-        positive: bool = False,
-    ) -> None:
-        """Add a constraint at the system level.
+        output_names: Iterable[str],
+        constraint_type: MDOFunction.ConstraintType,
+        constraint_name: str,
+        value: float,
+        positive: bool,
+    ) -> MDOFunction:
+        """Create a constraint function at the system level.
 
         Args:
-            output_name: The name of the output to be used as a constraint.
-                For instance, if g_1 is given and constraint_type="eq",
-                g_1=0 will be added as a constraint to the optimizer.
-            constraint_type: The type of constraint,
-                either "eq" for equality constraint or "ineq" for inequality constraint.
+            output_names: The names of the constrained outputs.
+            constraint_type: The type of constraint.
             constraint_name: The name of the constraint to be stored,
                 If empty, the name is generated from the output name.
             value: The value of activation of the constraint.
             positive: Whether the inequality constraint is positive.
+
+        Returns:
+            A constraint function at the system level.
         """
-        super().add_constraint(
-            output_name,
+        return super().create_constraint(
+            output_names,
             constraint_type=constraint_type,
             constraint_name=constraint_name,
             value=value,
@@ -547,20 +499,17 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
     def _add_sub_level_constraint(
         self,
-        output_name: str,
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str = "",
-        value: float = 0,
-        positive: bool = False,
+        output_names: Iterable[str],
+        constraint_type: MDOFunction.ConstraintType,
+        constraint_name: str,
+        value: float,
+        positive: bool,
     ) -> None:
         """Add a constraint at the sub-scenarios level.
 
         Args:
-            output_name: The name of the output to be used as a constraint.
-                For instance, if g_1 is given and constraint_type="eq",
-                g_1=0 will be added as a constraint to the optimizer.
-            constraint_type: The type of constraint,
-                either "eq" for equality constraint or "ineq" for inequality constraint.
+            output_names: The names of the constrained outputs.
+            constraint_type: The type of constraint.
             constraint_name: The name of the constraint to be stored,
                 If empty, the name is generated from the output name.
             value: The value of activation of the constraint.
@@ -571,11 +520,10 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 top-level disciplines outputs.
         """
         added = False
-        output_names = convert_strings_to_iterable(output_name)
         for sub_scenario in self.get_sub_scenarios():
             if self._scenario_computes_outputs(sub_scenario, output_names):
                 sub_scenario.add_constraint(
-                    output_names,
+                    *output_names,
                     constraint_type=constraint_type,
                     constraint_name=constraint_name,
                     value=value,
@@ -584,14 +532,14 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 added = True
         if not added:
             msg = (
-                f"No sub scenario has an output named {output_name} "
+                f"No sub scenario has the following output names: {output_names} "
                 "cannot create such a constraint."
             )
             raise ValueError(msg)
 
     @staticmethod
     def _scenario_computes_outputs(
-        scenario: BaseScenario,
+        scenario: MDOScenario,
         output_names: Iterable[str],
     ) -> bool:
         """Check if the top level disciplines compute the given outputs.
@@ -614,7 +562,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         Args:
             x_vect: The input value.
         """
-        self.optimization_problem.database.store(
+        self.problem.database.store(
             x_vect,
             {
                 k: v

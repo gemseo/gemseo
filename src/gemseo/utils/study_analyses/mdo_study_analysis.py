@@ -31,7 +31,7 @@ from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
-from gemseo.scenarios.base_scenario import BaseScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 
@@ -40,7 +40,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
-    from gemseo.scenarios.mdo_scenario import MDOScenario
     from gemseo.utils.xdsm.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
@@ -236,7 +235,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
                 disciplines = self._get_disciplines_instances(scenario_description)
                 if disciplines:  # All dependencies resolved
                     for discipline in disciplines:
-                        if not isinstance(discipline, BaseScenario):
+                        if not isinstance(discipline, MDOScenario):
                             non_scenario_disciplines[discipline.name] = discipline
 
                     scenario = self._create_scenario(disciplines, scenario_description)
@@ -280,7 +279,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
         """
         LOGGER.info("Generated the following Scenario:")
         LOGGER.info("%s", self.main_scenario)
-        LOGGER.info("%s", self.main_scenario.formulation.optimization_problem)
+        LOGGER.info("%s", self.main_scenario.formulation.problem)
         return self.main_scenario.xdsmize(
             directory_path=directory_path, save_pdf=save_pdf, show_html=show_html
         )

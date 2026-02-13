@@ -23,7 +23,7 @@ Contributors:
 # Excel wrapper
 
 This section describes how to use an [XLSDiscipline][gemseo.disciplines.wrappers.xls_discipline.XLSDiscipline] with a practical
-application using a simple discipline in a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario].
+application using a simple discipline in a [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 
 ## Imports
 
@@ -79,7 +79,7 @@ design_space.add_variable("a", 1, lower_bound=0.0, upper_bound=10.0, value=array
 design_space.add_variable("b", 1, lower_bound=-10.0, upper_bound=10.0, value=array([2]))
 ```
 
-Create the [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]
+Create the [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 with the [XLSDiscipline][gemseo.disciplines.wrappers.xls_discipline.XLSDiscipline],
 the [DesignSpace][gemseo.algos.design_space.DesignSpace]
 and an [MDF][gemseo.formulations.mdf.MDF] formulation:
@@ -90,7 +90,6 @@ scenario = create_scenario(
     "c",
     design_space,
     formulation_name="DisciplinaryOpt",
-    scenario_type="DOE",
 )
 ```
 
@@ -142,7 +141,6 @@ scenario = create_scenario(
     "f",
     design_space,
     formulation_name="MDF",
-    scenario_type='DOE',
 )
 ```
 
@@ -201,7 +199,6 @@ scenario = create_scenario(
     design_space,
     formulation_name="MDF",
     main_mda_class="MDAJacobi",
-    scenario_type="DOE",
 )
 ```
 
@@ -216,7 +213,7 @@ scenario.execute(algo_name="CustomDOE", samples=samples)
 There is one last case to consider, which occurs when the
 [XLSDiscipline][gemseo.disciplines.wrappers.xls_discipline.XLSDiscipline]will run in multithreading mode from a subprocess that
 was itself created by a multiprocessing instance. A good example of this
-particular situation is when a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] runs in parallel with an
+particular situation is when an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] runs in parallel with an
 [MDAJacobi][gemseo.mda.jacobi.MDAJacobi] that solves the couplings for each sample.
 
 It will be necessary to set both `copy_xls_at_setstate=True` and
@@ -237,7 +234,6 @@ scenario = create_scenario(
     design_space,
     formulation_name="MDF",
     main_mda_class="MDAJacobi",
-    scenario_type="DOE",
 )
 ```
 

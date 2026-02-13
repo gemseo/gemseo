@@ -28,9 +28,10 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.machine_learning.regression.models.linreg import LinearRegressor
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
@@ -46,9 +47,10 @@ def dataset() -> Dataset:
     design_space = DesignSpace()
     design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
-    scenario = DOEScenario(
-        [discipline], "y_1", design_space, formulation_name="DisciplinaryOpt"
+    scenario = MDOScenario(
+        [discipline], design_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("y_1")
     scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
     return discipline.cache.to_dataset("dataset_name")
 

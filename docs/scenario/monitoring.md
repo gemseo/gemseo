@@ -41,7 +41,7 @@ disciplines = create_discipline(["SobieskiStructure",
 ```
 
 and by means of the API function [create_discipline()][gemseo.create_discipline],
-we build the [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] :
+we build the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] :
 
 ``` python
 from gemseo import create_scenario
@@ -58,7 +58,7 @@ scenario = create_scenario(disciplines,
 The simplest way to monitor a change in the statuses of the disciplines is to log them in the console or in a file using GEMSEO's logger.
 Use `from gemseo import configuration` and set the [configuration.logging][gemseo.utils.logging.LoggingConfiguration] attribute to configure GEMSEO logging.
 
-The method [xdsmize()][gemseo.scenarios.base_scenario.BaseScenario.xdsmize] of the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] can be used to this aim (`monitor=True`).
+The method [xdsmize()][gemseo.scenarios.mdo.MDOScenario.xdsmize] of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] can be used to this aim (`monitor=True`).
 If the option `save_html` is set to `True`, a self-contained HTML file will be generated.
 It may be opened automatically with the option `show_html=True`.
 If `save_pdf` is `True`,
@@ -90,7 +90,7 @@ Optimization: |          | 0/5   0% [elapsed: 00:00 left: ?, ? iters/sec]
 
 An XDSM diagram with the status of the [Discipline][gemseo.core.discipline.discipline.Discipline] can be generated at each status change
 of the [Discipline][gemseo.core.discipline.discipline.Discipline].
-To trigger this mode in a scenario, use the [xdsmize()][gemseo.scenarios.base_scenario.BaseScenario.xdsmize] method, with the `monitor` argument set to `True`.
+To trigger this mode in a scenario, use the [xdsmize()][gemseo.scenarios.mdo.MDOScenario.xdsmize] method, with the `monitor` argument set to `True`.
 The path to the [XDSMjs](https://github.com/whatsopt/XDSMjs) library must be set to the folder containing the [XDSMjs](https://github.com/whatsopt/XDSMjs) HTML files.
 
 ``` python

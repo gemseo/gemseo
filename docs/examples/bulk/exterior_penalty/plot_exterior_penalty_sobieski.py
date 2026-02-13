@@ -79,7 +79,7 @@ disciplines = create_discipline([
 #     See :ref:`api`.
 
 # %%
-# ## Step 2: Creation of [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
+# ## Step 2: Creation of [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 #
 # The scenario delegates the creation of the optimization problem to the
 # [MDO formulation][mdo-formulations].
@@ -192,12 +192,12 @@ scenario.set_differentiation_method()
 # The formulation has a powerful feature to automatically dispatch the constraints
 # ($g_1, g\_2, g\_3$) and plug them to the optimizers depending on
 # the formulation. To do that, we use the method
-# [add_constraint()][gemseo.scenarios.base_scenario.BaseScenario.add_constraint]:
+# [add_constraint()][gemseo.scenarios.mdo.MDOScenario.add_constraint]:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 # %%
 # ## Step 3: Apply the exterior penalty and execute the scenario
-scenario.formulation.optimization_problem.apply_exterior_penalty(
+scenario.formulation.problem.apply_exterior_penalty(
     objective_scale=10.0, scale_inequality=10.0
 )
 # %%
@@ -207,7 +207,7 @@ scenario.execute(algo_name="L-BFGS-B", max_iter=10)
 
 # %%
 # Note that the algorithm settings passed to
-# [execute()][gemseo.scenarios.base_scenario.BaseScenario.execute] can be provided via a
+# [execute()][gemseo.scenarios.mdo.MDOScenario.execute] can be provided via a
 # Pydantic model. For more information, [this page][algorithm-settings].
 
 # %%
@@ -244,7 +244,7 @@ scenario_2 = create_scenario(
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario_2.add_constraint(constraint, constraint_type="ineq")
 scenario_2.set_differentiation_method()
-scenario_2.formulation.optimization_problem.apply_exterior_penalty(
+scenario_2.formulation.problem.apply_exterior_penalty(
     objective_scale=1000.0, scale_inequality=1000.0
 )
 

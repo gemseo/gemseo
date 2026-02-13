@@ -34,8 +34,8 @@ which may have been loaded from the disk.
 
 In practice,
 
-- a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] instance has an [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation] attribute,
-- a [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation] instance has an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] attribute,
+- an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] instance has a [BaseMDOFormulation][gemseo.formulations.base_mdo.BaseMDOFormulation] attribute,
+- a [BaseMDOFormulation][gemseo.formulations.base_mdo.BaseMDOFormulation] instance has an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] attribute,
 - an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] instance has an [OptimizationResult][gemseo.algos.optimization_result.OptimizationResult] attribute.
 
 ## Illustration on the Sobieski use case
@@ -73,10 +73,10 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 
 ### How to apply a post-process feature?
 
-From this `scenario`, we can apply any kind of post-processing dedicated to [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] instances,
-using either the [post_process()][gemseo.scenarios.base_scenario.BaseScenario.post_process] method or the [execute_post()][gemseo.execute_post] high-level function.
+From this `scenario`, we can apply any kind of post-processing dedicated to [MDOScenario][gemseo.scenarios.mdo.MDOScenario] instances,
+using either the [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] method or the [execute_post()][gemseo.execute_post] high-level function.
 
 !!! note
       Only design variables and functions (objective function, constraints) are stored for post-processing.
       If you want to be able to plot state variables, you must add them as observables before the problem is executed.
-      Use the [add_observable()][gemseo.scenarios.base_scenario.BaseScenario.add_observable] method.
+      Use the [add_observable()][gemseo.scenarios.mdo.MDOScenario.add_observable] method.

@@ -42,14 +42,13 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.grammars.grammar_properties import GrammarProperties
     from gemseo.typing import JacobianData
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
 
 
 class DisciplineAdapter(MDOFunction):
-    """An function executing a discipline for some inputs and outputs."""
+    """A function executing a discipline for some inputs and outputs."""
 
     __is_linear: bool
     """Whether the function is linear."""
@@ -67,7 +66,7 @@ class DisciplineAdapter(MDOFunction):
         self,
         input_names: Sequence[str],
         output_names: Sequence[str],
-        default_input_data: GrammarProperties,
+        default_input_data: StrKeyMapping,
         discipline: Discipline,
         names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
         differentiated_input_names_substitute: Sequence[str] = (),
@@ -126,7 +125,7 @@ class DisciplineAdapter(MDOFunction):
 
     def __compute_input_dimension(
         self,
-        default_input_data: GrammarProperties,
+        default_input_data: StrKeyMapping,
     ) -> int | None:
         """Compute the input dimension.
 

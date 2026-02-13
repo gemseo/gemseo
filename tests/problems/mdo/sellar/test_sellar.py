@@ -32,6 +32,8 @@ from pandas._testing import assert_frame_equal
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -47,7 +49,7 @@ from gemseo.problems.mdo.sellar.variables import X_2
 from gemseo.problems.mdo.sellar.variables import X_SHARED
 from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.problems.mdo.sellar.variables import Y_2
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.pickle import to_pickle
 
 if TYPE_CHECKING:
@@ -179,10 +181,10 @@ def test_exec(
     """Check the resolution of the Sellar problem."""
     scenario = MDOScenario(
         disciplines,
-        "obj",
         SellarDesignSpace(n=n),
-        formulation_name=formulation,
+        settings=MDO_FORMULATION_FACTORY.get_class(formulation).settings_class(),
     )
+    scenario.add_objective("obj")
     scenario.set_differentiation_method(differentiation_method)
     scenario.add_constraint(C_1, constraint_type=MDOFunction.ConstraintType.INEQ)
     scenario.add_constraint(C_2, constraint_type=MDOFunction.ConstraintType.INEQ)
@@ -207,35 +209,27 @@ def test_vectorization(eval_jac, cls, output_names, n):
 
     # Create the reference results without vectorization.
     scenario = MDOScenario(
-        [cls(n=n)],
-        output_names[0],
-        SellarDesignSpace(n=n),
-        formulation_name="DisciplinaryOpt",
+        [cls(n=n)], SellarDesignSpace(n=n), settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective(output_names[0])
     for output_name in output_names[1:]:
         scenario.add_observable(output_name)
     scenario.execute(
         algo_name="MC", n_samples=n_samples, vectorize=False, eval_jac=eval_jac
     )
-    reference = scenario.formulation.optimization_problem.database.to_dataset(
-        export_gradients=True
-    )
+    reference = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
     # Create the results with vectorization.
     scenario = MDOScenario(
-        [cls(n=n)],
-        output_names[0],
-        SellarDesignSpace(n=n),
-        formulation_name="DisciplinaryOpt",
+        [cls(n=n)], SellarDesignSpace(n=n), settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective(output_names[0])
     for output_name in output_names[1:]:
         scenario.add_observable(output_name)
     scenario.execute(
         algo_name="MC", n_samples=n_samples, vectorize=True, eval_jac=eval_jac
     )
-    result = scenario.formulation.optimization_problem.database.to_dataset(
-        export_gradients=True
-    )
+    result = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
     # Compare the results
     # in terms of input values, output values and gradient values.
@@ -253,34 +247,26 @@ def test_vectorization_sellar2_y_1(eval_jac, n):
 
     # Create the reference results without vectorization.
     scenario = MDOScenario(
-        [Sellar2(n=n)],
-        "y_2",
-        input_space,
-        formulation_name="DisciplinaryOpt",
+        [Sellar2(n=n)], input_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("y_2")
     scenario.execute(
         algo_name="MC", n_samples=n_samples, vectorize=False, eval_jac=eval_jac
     )
-    reference = scenario.formulation.optimization_problem.database.to_dataset(
-        export_gradients=True
-    )
+    reference = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
     input_space = DesignSpace()
     input_space.add_variable("y_1", size=n, lower_bound=0.0, upper_bound=1.0)
 
     # Create the results with vectorization.
     scenario = MDOScenario(
-        [Sellar2(n=n)],
-        "y_2",
-        input_space,
-        formulation_name="DisciplinaryOpt",
+        [Sellar2(n=n)], input_space, settings=DisciplinaryOpt_Settings()
     )
+    scenario.add_objective("y_2")
     scenario.execute(
         algo_name="MC", n_samples=n_samples, vectorize=True, eval_jac=eval_jac
     )
-    result = scenario.formulation.optimization_problem.database.to_dataset(
-        export_gradients=True
-    )
+    result = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
     # Compare the results
     # in terms of input values, output values and gradient values.

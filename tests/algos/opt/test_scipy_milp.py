@@ -77,11 +77,20 @@ def milp_problem(
         array_([[0, 0.5, -0.25]]),
         "g",
         input_names=args,
-        f_type=MDOLinearFunction.ConstraintType.INEQ,
     )
-    problem.add_constraint(ineq_constraint, value=0.333, positive=True)
+    problem.add_constraint(
+        ineq_constraint,
+        value=0.333,
+        positive=True,
+        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
+    )
     if not problem_is_feasible:
-        problem.add_constraint(ineq_constraint, value=0.0, positive=False)
+        problem.add_constraint(
+            ineq_constraint,
+            value=0.0,
+            positive=False,
+            constraint_type=MDOLinearFunction.ConstraintType.INEQ,
+        )
 
     problem.add_constraint(
         MDOLinearFunction(

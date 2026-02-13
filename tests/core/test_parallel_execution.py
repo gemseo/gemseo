@@ -127,7 +127,7 @@ def test_disc_parallel_doe_scenario() -> None:
     design_space = create_design_space()
     design_space.add_variable("x_1", lower_bound=0.0, value=1.0, upper_bound=10.0)
     scenario = create_scenario(
-        s_1, Y_1, design_space, scenario_type="DOE", formulation_name="DisciplinaryOpt"
+        s_1, Y_1, design_space, formulation_name="DisciplinaryOpt"
     )
     n_samples = 20
     scenario.execute(
@@ -137,9 +137,7 @@ def test_disc_parallel_doe_scenario() -> None:
         n_processes=2,
     )
     assert (
-        len(
-            scenario.formulation.optimization_problem.database.get_function_history(Y_1)
-        )
+        len(scenario.formulation.problem.database.get_function_history(Y_1))
         == n_samples
     )
 

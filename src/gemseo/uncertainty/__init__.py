@@ -27,7 +27,8 @@ These distributions can be used to define random variables
 in a [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
 before propagating these uncertainties through
 a system of [Discipline][gemseo.core.discipline.discipline.Discipline],
-by means of a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario].
+by means of an
+[EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario].
 
 See Also:
     [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]

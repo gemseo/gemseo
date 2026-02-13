@@ -60,7 +60,7 @@ a number of shared design variables and a level of feasibility.
 It also proposes a method
 [create_scenario()][gemseo.problems.mdo.scalable.parametric.scalable_problem.ScalableProblem.create_scenario]
 to create a scenario for a
-[BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation]
+[BaseMDOFormulation][gemseo.formulations.base_mdo.BaseMDOFormulation]
 and a method
 [create_quadratic_programming_problem()][gemseo.problems.mdo.scalable.parametric.scalable_problem.ScalableProblem.create_quadratic_programming_problem]
 to rewrite the MDO problem as a quadratic

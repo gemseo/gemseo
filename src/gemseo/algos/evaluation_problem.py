@@ -54,6 +54,7 @@ from gemseo.utils.string_tools import pretty_str
 if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Iterable
+    from pathlib import Path
 
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
@@ -72,6 +73,12 @@ class EvaluationProblem(BaseProblem):
     [MDOFunction.FunctionType.OBS][gemseo.core.mdo_functions.mdo_function.MDOFunction.FunctionType]
     as function type.
     """
+
+    class HistoryFileFormat(StrEnum):
+        """The format of the history file."""
+
+        HDF5 = "hdf5"
+        GGOBI = "ggobi"
 
     __new_iter_observables: Observables
     """The observables to be evaluated whenever a database entry is created."""
@@ -103,7 +110,7 @@ class EvaluationProblem(BaseProblem):
     """Whether the evaluation stops when a function returns `NaN`."""
 
     ApproximationMode = ApproximationMode
-    """Enumeration of approximation modes."""
+    """The enumeration of approximation modes."""
 
     class _DifferentiationMethod(StrEnum):
         """The additional differentiation methods."""
@@ -118,6 +125,7 @@ class EvaluationProblem(BaseProblem):
         _DifferentiationMethod,
         doc="The differentiation methods.",
     )
+    """The enumeration of differentation methods."""
 
     differentiation_method: DifferentiationMethod
     """The differentiation method."""
@@ -129,7 +137,6 @@ class EvaluationProblem(BaseProblem):
         differentiation_method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
         differentiation_step: float = 1e-7,
         parallel_differentiation: bool = False,
-        **parallel_differentiation_options: int | bool,
     ) -> None:
         """
         Args:
@@ -147,8 +154,6 @@ class EvaluationProblem(BaseProblem):
                 [ApproximationMode][gemseo.algos.evaluation_problem.EvaluationProblem.ApproximationMode].
             parallel_differentiation: Whether
                 to approximate the derivatives in parallel.
-            **parallel_differentiation_options: The options
-                to approximate the derivatives in parallel.
         """  # noqa: D205, D212, D415
         self._functions_are_preprocessed = False
         self.__observables = Observables()
@@ -164,7 +169,7 @@ class EvaluationProblem(BaseProblem):
         )
         self._stop_if_nan = True
         self.__parallel_differentiation = parallel_differentiation
-        self.__parallel_differentiation_options = parallel_differentiation_options
+        self.__parallel_differentiation_options = {}
         self.evaluation_counter = EvaluationCounter()
         self._sequence_of_functions = [self.__observables, self.__new_iter_observables]
         self._function_names = []
@@ -362,7 +367,6 @@ class EvaluationProblem(BaseProblem):
         no_db_no_norm: bool = False,
         observable_names: Iterable[str] | None = None,
         jacobian_names: Iterable[str] | None = None,
-        **kwargs: Any,
     ) -> tuple[list[MDOFunction], list[MDOFunction]]:
         """Return the functions to be evaluated.
 
@@ -381,7 +385,6 @@ class EvaluationProblem(BaseProblem):
                 that are selected for evaluation using the other arguments.
                 If `None`,
                 then no Jacobian matrices is computed.
-            **kwargs: The options to select the functions to be evaluated.
 
         Returns:
             The functions computing the outputs
@@ -391,9 +394,28 @@ class EvaluationProblem(BaseProblem):
             ValueError: If a name in `jacobian_names` is not the name of
                 a function of the problem.
         """
-        output_functions = self._get_functions(
-            observable_names, no_db_no_norm, **kwargs
+        output_functions = self._get_output_functions(no_db_no_norm, observable_names)
+        return self._get_output_and_jacobian_functions(
+            jacobian_names, output_functions, no_db_no_norm
         )
+
+    def _get_output_and_jacobian_functions(
+        self,
+        jacobian_names: Iterable[str],
+        output_functions: list[MDOFunction],
+        no_db_no_norm: bool,
+    ) -> tuple[list[MDOFunction], list[MDOFunction]]:
+        """Return the output and Jacobian functions to be evaluated.
+
+        Args:
+            jacobian_names: The names of the Jacobian functions.
+            output_functions: The names of the output functions.
+            no_db_no_norm: Whether to prevent
+                both database backup and design vector normalization.
+
+        Returns:
+            The output and Jacobian functions to be evaluated.
+        """
         if jacobian_names is None:
             return output_functions, []
 
@@ -413,9 +435,9 @@ class EvaluationProblem(BaseProblem):
         observable_names = [
             name for name in jacobian_names if name in self.__observables.get_names()
         ]
-        jacobian_functions = self._get_functions(
-            observable_names or None,
+        jacobian_functions = self._get_output_functions(
             no_db_no_norm,
+            observable_names or None,
             **self._get_options_for_get_functions(jacobian_names),
         )
         return output_functions, jacobian_functions
@@ -551,23 +573,21 @@ class EvaluationProblem(BaseProblem):
 
         return input_value
 
-    def _get_functions(
+    def _get_output_functions(
         self,
-        observable_names: Iterable[str] | None,
         no_db_no_norm: bool,
-        **kwargs: Any,
+        observable_names: Iterable[str] | None,
     ) -> list[MDOFunction]:
         """Return functions.
 
         Args:
+            no_db_no_norm: Whether to prevent
+                both database backup and design vector normalization.
             observable_names: The names of the observables to return.
                 If empty,
                 then all the observables are returned.
                 If `None`,
                 then no observable is returned.
-            no_db_no_norm: Whether to prevent
-                both database backup and design vector normalization.
-            *kwargs: The options to select the functions to be evaluated.
 
         Returns:
             The functions.
@@ -791,7 +811,6 @@ class EvaluationProblem(BaseProblem):
         categorize: bool = True,
         export_gradients: bool = False,
         input_values: Iterable[RealArray] = (),
-        **dataset_options: Any,
     ) -> Dataset:
         """Export the database of the problem to dataset.
 
@@ -893,3 +912,28 @@ class EvaluationProblem(BaseProblem):
                     nio.n_calls = n_calls
 
             self._functions_are_preprocessed = False
+
+    def to_hdf(
+        self,
+        file_path: str | Path,
+        append: bool = False,
+        hdf_node_path: str = "",
+    ) -> None:
+        """Export the evaluation history and results to an HDF file.
+
+        Args:
+            file_path: The HDF file path.
+            append: Whether to append the data to the file if not empty.
+                Otherwise,
+                overwrite data.
+            hdf_node_path: The path of the HDF node
+                in which the evaluation problem should be exported.
+                If empty, the root node is considered.
+        """
+        msg = "Exporting the evaluation problem to the file %s"
+        if hdf_node_path:
+            LOGGER.info(msg + " at node %s", file_path, hdf_node_path)  # noqa: G003
+        else:
+            LOGGER.info(msg, file_path)
+
+        self.database.to_hdf(file_path, append=append, hdf_node_path=hdf_node_path)

@@ -22,9 +22,9 @@ from typing import TYPE_CHECKING
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
-    from gemseo import StrKeyMapping
     from gemseo.algos.hashable_ndarray import HashableNdarray
     from gemseo.algos.optimization_problem import OptimizationProblem
+    from gemseo.typing import StrKeyMapping
 
 
 class BaseProgressBarData(metaclass=ABCGoogleDocstringInheritanceMeta):

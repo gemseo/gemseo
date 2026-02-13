@@ -41,7 +41,7 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
@@ -57,10 +57,8 @@ from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
 if TYPE_CHECKING:
-    from gemseo.scenarios.doe_scenario import DOEScenario
+    from gemseo.scenarios.mdo import MDOScenario
     from gemseo.typing import StrKeyMapping
-
-FACTORY = DOELibraryFactory()
 
 
 @pytest.fixture(scope="module")
@@ -148,7 +146,6 @@ def test_evaluate_samples_multiproc_with_observables(
         [disc],
         "obj",
         design_space,
-        scenario_type="DOE",
         formulation_name="DisciplinaryOpt",
     )
 
@@ -156,7 +153,7 @@ def test_evaluate_samples_multiproc_with_observables(
     scenario.add_observable("obs")
     scenario.execute(algo_name="CustomDOE", n_processes=2, samples=samples)
 
-    database = scenario.formulation.optimization_problem.database
+    database = scenario.formulation.problem.database
     for i, (x, data) in enumerate(database.items()):
         assert x.wrapped_array[0] == pytest.approx(float(i))
         assert data["obj"] == float(i)
@@ -279,7 +276,7 @@ def test_pre_run_debug(lhs, caplog) -> None:
 def test_seed(algo_name) -> None:
     """Check the use of the seed at the BaseDOELibrary level."""
     problem = Power2()
-    library = DOELibraryFactory().create(algo_name)
+    library = DOE_LIBRARY_FACTORY.create(algo_name)
 
     # The BaseDOELibrary has a seed and increments it
     # at the beginning of each execution.
@@ -365,7 +362,6 @@ def test_variable_types(var_type1, var_type2) -> None:
         [Disc()],
         "z",
         design_space,
-        scenario_type="DOE",
         formulation_name="DisciplinaryOpt",
     )
 
@@ -496,7 +492,7 @@ class _DummyDisc(Discipline):
 def test_parallel_doe_db(tmp_wd):
     """Verify the backup database in parallel with vector and scalar outputs."""
 
-    def _create_scn() -> DOEScenario:
+    def _create_scn() -> MDOScenario:
         design_space = DesignSpace()
         design_space.add_variable("x", lower_bound=0, upper_bound=1, size=2)
 
@@ -504,7 +500,6 @@ def test_parallel_doe_db(tmp_wd):
             [_DummyDisc()],
             "z",
             design_space,
-            scenario_type="DOE",
             formulation_name="DisciplinaryOpt",
         )
         scenario.add_constraint("t")
@@ -514,14 +509,14 @@ def test_parallel_doe_db(tmp_wd):
 
     scenario_ser = _create_scn()
     bk_file_ser = Path("ser_out.h5")
-    scenario_ser.set_optimization_history_backup(
+    scenario_ser.set_backup_settings(
         bk_file_ser, at_each_function_call=True, at_each_iteration=True
     )
     scenario_ser.execute(algo_name="PYDOE_FULLFACT", n_samples=4, n_processes=1)
 
     scenario_par = _create_scn()
     bk_file_par = Path("par_out.h5")
-    scenario_par.set_optimization_history_backup(
+    scenario_par.set_backup_settings(
         bk_file_par, at_each_function_call=True, at_each_iteration=True
     )
     scenario_par.execute(algo_name="PYDOE_FULLFACT", n_samples=4, n_processes=2)
@@ -585,12 +580,11 @@ def test_value_error_filtering(formulation, caplog):
         [_DummyDiscValueError()],
         "z",
         design_space,
-        scenario_type="DOE",
         formulation_name=formulation,
     )
     custom_doe_settings = CustomDOE_Settings(samples=array([[1.0], [-1.0], [0.0]]))
     scenario.execute(custom_doe_settings)
-    assert len(scenario.formulation.optimization_problem.database) == 2
+    assert len(scenario.formulation.problem.database) == 2
     driver_message = (
         "The evaluation of the functions at point [-1.] raised a ValueError; "
         "skipping to the next point."

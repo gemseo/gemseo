@@ -27,13 +27,13 @@ from pydantic import NonNegativeInt
 from strenum import StrEnum
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.machine_learning.regression.models.base_regressor_settings import (
     BaseRegressorSettings,
 )
 from gemseo.typing import StrKeyMapping
 
-DOEAlgorithmName = StrEnum("DOEAlgorithmName", DOELibraryFactory().algorithms)
+DOEAlgorithmName = StrEnum("DOEAlgorithmName", DOE_LIBRARY_FACTORY.algorithms)
 """The name of a DOE algorithm."""
 
 

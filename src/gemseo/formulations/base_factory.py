@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.formulations.base_formulation import BaseFormulation
+from gemseo.formulations.base import BaseFormulation
 from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
 
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 class BaseFormulationFactory(BaseFactory[BaseFormulation]):
-    """A factory of [BaseFormulation][gemseo.formulations.base_formulation.BaseFormulation]."""  # noqa: E501
+    """A factory of [BaseFormulation][gemseo.formulations.base.BaseFormulation]."""  # noqa: E501
 
     def get_sub_options_grammar(
         self,

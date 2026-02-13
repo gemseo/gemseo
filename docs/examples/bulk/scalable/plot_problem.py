@@ -65,7 +65,6 @@ for discipline in disciplines:
         next(output_names),
         design_space,
         formulation_name="DisciplinaryOpt",
-        scenario_type="DOE",
     )
     for output_name in output_names:
         scenario.add_observable(output_name)
@@ -105,7 +104,7 @@ problem.plot_n2_chart(save=False, show=True)
 # %%
 # ## Create an MDO scenario
 #
-# Lastly, we create an [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] with the [MDF][gemseo.formulations.mdf.MDF] formulation
+# Lastly, we create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with the [MDF][gemseo.formulations.mdf.MDF] formulation
 # and start the optimization at equilibrium,
 # thus ensuring the feasibility of the first iterate.
 scenario = problem.create_scenario("MDF", start_at_equilibrium=True)

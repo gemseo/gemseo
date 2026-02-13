@@ -121,7 +121,7 @@ def test_is_algorithm_suited_pbm_type() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
-    problem._OptimizationProblem__is_linear = False
+    problem.objective = MDOFunction(lambda x: x**2, "f")
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
         BaseOptimizationLibrary._get_unsuitability_reason(description, problem)

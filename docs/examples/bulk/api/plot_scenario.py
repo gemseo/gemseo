@@ -37,15 +37,13 @@ from gemseo import monitor_scenario
 # related to scenarios, which are the GEMSEO' objects
 # dedicated to the resolution of a problem, e.g. optimization or trade-off,
 # associated with a list of disciplines and a design space. All classes
-# implementing scenarios inherit from [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] which is an
-# abstract class. Classical concrete classes are [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] and
-# [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario], respectively dedicated to optimization and trade-off
-# problems.
+# implementing MDO scenarios inherit from [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
+# dedicated to optimization and trade-off problems.
 #
 # ## Get available scenario type
 #
 # The high-level function [get_available_scenario_types()][gemseo.get_available_scenario_types] can be used
-# to get the available scenario types ([MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] and
+# to get the available scenario types ([MDOScenario][gemseo.scenarios.mdo.MDOScenario] and
 # [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]).
 get_available_scenario_types()
 
@@ -81,7 +79,7 @@ get_scenario_options_schema("MDO")
 #   - `**formulation_settings`: settings passed to the formulation as keyword
 #     arguments when the `formulation_settings_model` was not provided.
 #
-# - This function returns an instance of [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] or
+# - This function returns an instance of [MDOScenario][gemseo.scenarios.mdo.MDOScenario] or
 #   [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario].
 
 discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x1+x2"})
@@ -93,7 +91,6 @@ scenario = create_scenario(
     discipline,
     "y",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=25)
@@ -145,7 +142,6 @@ scenario = create_scenario(
     discipline,
     "y",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 monitor_scenario(scenario, Observer())

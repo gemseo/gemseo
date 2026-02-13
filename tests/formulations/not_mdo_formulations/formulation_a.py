@@ -16,32 +16,40 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulation
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable
 
     from gemseo import Discipline
     from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 
 class ANotMDOFormulation(NotMDOFormulation):
+    def _update_design_space(self) -> None: ...
+
+    def _create_multidisciplinary_process(self) -> None: ...
+
+    def create_objective(
+        self, output_names: Iterable[str], objective_name: str = ""
+    ) -> MDOFunction: ...
+
     def add_observable(
         self,
-        output_names: str | Sequence[str],
+        output_names: Iterable[str],
         observable_name: str = "",
         discipline: Discipline | None = None,
     ) -> None:
         pass
 
-    def add_constraint(
+    def create_constraint(
         self,
-        output_name: str | Sequence[str],
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
-        constraint_name: str = "",
-        value: float = 0,
-        positive: bool = False,
+        output_names: Iterable[str],
+        constraint_type: MDOFunction.ConstraintType,
+        constraint_name: str,
+        value: float,
+        positive: bool,
     ) -> None:
         pass
 

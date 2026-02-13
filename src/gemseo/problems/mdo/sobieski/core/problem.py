@@ -55,7 +55,7 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo import Discipline
+    from gemseo.core.discipline.discipline import Discipline
 
 
 class _Disciplines(NamedTuple):

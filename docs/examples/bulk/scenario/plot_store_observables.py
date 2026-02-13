@@ -25,7 +25,7 @@
 #
 # In this example,
 # we will learn how to store the history of state variables using the
-# [BaseScenario.add_observable()][gemseo.scenarios.base_scenario.BaseScenario.add_observable] method.
+# [MDOScenario.add_observable()][gemseo.scenarios.mdo.MDOScenario.add_observable] method.
 # This is useful in situations where we wish to access, post-process,
 # or save the values of discipline outputs that are not design variables,
 # constraints or objective functions.
@@ -104,7 +104,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 # default. In order to be able to recover the data from the state variables,
 # y1 and y2, we have to add them as observables. All we have to do is enter
 # the variable name as a string to the
-# [add_observable()][gemseo.scenarios.base_scenario.BaseScenario.add_observable].
+# [add_observable()][gemseo.scenarios.mdo.MDOScenario.add_observable].
 # If more than one output name is provided (as a list of strings),
 # the observable function returns a concatenated array of the output values.
 scenario.add_observable("y_1")
@@ -123,7 +123,7 @@ scenario.add_observable("y_2", observable_name="y2")
 scenario.execute(algo_name="SLSQP", max_iter=10)
 
 # %%
-# Note that the algorithm settings passed to [execute()][gemseo.scenarios.base_scenario.BaseScenario.execute] can be provided
+# Note that the algorithm settings passed to [execute()][gemseo.scenarios.mdo.MDOScenario.execute] can be provided
 # via a Pydantic model. For more information, see [this page][algorithm-settings].
 
 # %%
@@ -133,7 +133,7 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 #
 # In order to create a dataset, we use the
 # corresponding [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]:
-opt_problem = scenario.formulation.optimization_problem
+opt_problem = scenario.formulation.problem
 # %%
 # We can easily build an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset] from this [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]:
 # either by separating the design parameters from the functions
@@ -168,7 +168,7 @@ scenario.post_process(
 )
 
 # %%
-# Note that the post-processor settings passed to [post_process()][gemseo.scenarios.base_scenario.BaseScenario.post_process] can be
+# Note that the post-processor settings passed to [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] can be
 # provided via a Pydantic model. For more information, see [this page][post-processor-settings]. An example is shown below.
 from gemseo.settings.post import ScatterPlotMatrix_Settings  # noqa: E402
 

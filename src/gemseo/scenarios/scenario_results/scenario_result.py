@@ -23,18 +23,19 @@ from typing import ClassVar
 from typing import Final
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import POST_FACTORY
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo import BasePost
     from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.post.base_post import BasePost
+    from gemseo.post.factory import PostFactory
+    from gemseo.scenarios.mdo import MDOScenario
 
 
 class ScenarioResult:
-    """The result of a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]."""
+    """The result of an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]."""
 
     _MAIN_PROBLEM_LABEL: Final[str] = "main"
     """The default label for the main problem."""
@@ -45,13 +46,13 @@ class ScenarioResult:
     design_variable_names_to_values: dict[str, ndarray]
     """The design variable names bound to the optimal values."""
 
-    __obj_to_be_post_processed: BaseScenario | OptimizationProblem
+    __obj_to_be_post_processed: MDOScenario | OptimizationProblem
     """The object to be post-processed."""
 
-    POST_FACTORY: ClassVar[PostFactory] = PostFactory()
+    POST_FACTORY: ClassVar[PostFactory] = POST_FACTORY
     """The factory of [BasePost][gemseo.post.base_post.BasePost], if created."""
 
-    def __init__(self, scenario: BaseScenario | str | Path) -> None:
+    def __init__(self, scenario: MDOScenario | str | Path) -> None:
         """
         Args:
             scenario: The scenario to post-process or the path to its HDF5 file.
@@ -63,7 +64,7 @@ class ScenarioResult:
             self.__obj_to_be_post_processed = OptimizationProblem.from_hdf(scenario)
             optimization_result = self.__obj_to_be_post_processed.solution
         else:
-            self.__obj_to_be_post_processed = scenario.formulation.optimization_problem
+            self.__obj_to_be_post_processed = scenario.formulation.problem
             optimization_result = scenario.optimization_result
 
         if optimization_result is None:

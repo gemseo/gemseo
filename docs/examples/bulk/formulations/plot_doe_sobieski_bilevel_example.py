@@ -104,7 +104,6 @@ system_scenario = create_scenario(
     design_space.filter("x_shared", copy=True),
     parallel_scenarios=False,
     reset_x0_before_opt=True,
-    scenario_type="DOE",
     formulation_name="BiLevel",
     save_opt_history="True",
     naming="UUID",
@@ -168,7 +167,7 @@ system_scenario.xdsmize(save_html=False)
 #       The features [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache] and [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] are not
 #       available for multiprocessing on Windows.
 #       As an alternative, we recommend the method
-#       [set_optimization_history_backup()][gemseo.scenarios.doe_scenario.DOEScenario.set_optimization_history_backup].
+#       [set_history_backup()][gemseo.scenarios.mdo.MDOScenario.set_history_backup].
 n_processes = 1 if os_name == "nt" else 4
 system_scenario.execute(algo_name="PYDOE_LHS", n_samples=30, n_processes=n_processes)
 
@@ -185,7 +184,7 @@ system_scenario.print_execution_metrics()
 # %%
 # ### Exporting the problem data.
 # After the execution of the scenario, you may want to export your data to use it
-# elsewhere. The method [to_dataset()][gemseo.scenarios.base_scenario.BaseScenario.to_dataset] will allow you to export
+# elsewhere. The method [to_dataset()][gemseo.scenarios.mdo.MDOScenario.to_dataset] will allow you to export
 # your results to a [Dataset][gemseo.datasets.dataset.Dataset], the basic GEMSEO class to store data.
 dataset = system_scenario.to_dataset("a_name_for_my_dataset")
 
@@ -220,6 +219,6 @@ system_scenario.post_process(post_name="Correlations", save=False, show=True)
 # more information.
 struct_databases = system_scenario.formulation.scenario_adapters[2].databases
 for database in struct_databases[:2]:
-    opt_problem = deepcopy(sc_str.formulation.optimization_problem)
+    opt_problem = deepcopy(sc_str.formulation.problem)
     opt_problem.database = database
     execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)

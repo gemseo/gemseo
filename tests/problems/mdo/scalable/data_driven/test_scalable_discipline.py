@@ -26,9 +26,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from gemseo import from_pickle
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.problems.mdo.scalable.data_driven.discipline import (
     DataDrivenScalableDiscipline,
 )
@@ -37,7 +37,8 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 
 N_SAMPLES = 10
@@ -202,11 +203,10 @@ class ScalableProblem(unittest.TestCase):
 
         scenario = MDOScenario(
             ScalableProblem.scalable_disciplines,
-            "y_4",
             design_space,
-            formulation_name=formulation,
-            maximize_objective=True,
+            settings=MDO_FORMULATION_FACTORY.get_class(formulation).settings_class(),
         )
+        scenario.add_objective("y_4", minimize=False)
         scenario.set_differentiation_method("finite_differences")
 
         # add disciplinary constraints
@@ -216,7 +216,7 @@ class ScalableProblem(unittest.TestCase):
                 cstr, constraint_type=scenario.ConstraintType.INEQ, value=cstr_threshold
             )
 
-        opt_pb = scenario.formulation.optimization_problem
+        opt_pb = scenario.formulation.problem
 
         opt_pb.preprocess_functions()
         for func in opt_pb.functions:

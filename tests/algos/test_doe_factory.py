@@ -22,14 +22,14 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 
 
 @pytest.fixture
 def factory():
     """The DOE factory."""
-    return DOELibraryFactory()
+    return DOE_LIBRARY_FACTORY
 
 
 def test_is_available(factory) -> None:

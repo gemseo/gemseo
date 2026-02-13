@@ -45,11 +45,11 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
-    from gemseo import StrKeyMapping
     from gemseo.algos.database import Database
     from gemseo.algos.database import DatabaseValueType
     from gemseo.algos.hashable_ndarray import HashableNdarray
     from gemseo.typing import StringArray
+    from gemseo.typing import StrKeyMapping
 
 ReturnedHdfMissingOutputType = tuple[
     Mapping[str, float | ndarray | list[int]], Mapping[str, int]

@@ -53,7 +53,7 @@ from gemseo.problems.mdo.scalable.parametric.scalable_design_space import (
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.scenarios.mdo import MDOScenario
     from gemseo.typing import RealArray
 
 
@@ -76,7 +76,7 @@ class ScalableProblem(_ScalableProblem):
         use_optimizer: bool = True,
         formulation_name: str = "MDF",
         **formulation_settings: Any,
-    ) -> BaseScenario:
+    ) -> MDOScenario:
         """Create the DOE or MDO scenario associated with this scalable problem.
 
         Args:
@@ -92,7 +92,6 @@ class ScalableProblem(_ScalableProblem):
             OBJECTIVE_NAME,
             self.design_space,
             formulation_name=formulation_name,
-            scenario_type="MDO" if use_optimizer else "DOE",
             **formulation_settings,
         )
         for index, _ in enumerate(self.scalable_disciplines):

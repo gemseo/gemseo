@@ -31,11 +31,12 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import PostFactory
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.post.factory import POST_FACTORY
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.testing.helpers import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
@@ -46,7 +47,7 @@ SOBIESKI_GRADIENT_VALUES = Path(__file__).parent / "sobieski_gradient.pkl"
 
 @pytest.fixture(scope="module")
 def factory():
-    return PostFactory()
+    return POST_FACTORY
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
@@ -95,25 +96,27 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     design_space = SobieskiDesignSpace()
     inputs = [name for name in disc.io.input_grammar if not name.startswith("c_")]
     design_space.filter(inputs)
-    doe_scenario = DOEScenario(
-        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    mdo_scenario = MDOScenario(
+        [disc], design_space, settings=DisciplinaryOpt_Settings()
     )
-    doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=True)
-    doe_scenario.post_process(
+    mdo_scenario.add_objective("y_12")
+    mdo_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=True)
+    mdo_scenario.post_process(
         post_name="GradientSensitivity",
         scale_gradients=scale_gradients,
         file_path="grad_sens",
         save=True,
     )
-    doe_scenario2 = DOEScenario(
-        [disc], "y_12", design_space, formulation_name="DisciplinaryOpt"
+    mdo_scenario2 = MDOScenario(
+        [disc], design_space, settings=DisciplinaryOpt_Settings()
     )
-    doe_scenario2.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
+    mdo_scenario2.add_objective("y_12")
+    mdo_scenario2.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
 
     with pytest.raises(
         ValueError, match=re.escape("No gradients to plot at current iteration.")
     ):
-        doe_scenario2.post_process(
+        mdo_scenario2.post_process(
             post_name="GradientSensitivity",
             file_path="grad_sens",
             save=True,

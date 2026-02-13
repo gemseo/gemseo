@@ -52,7 +52,6 @@ scenario = create_scenario(
     [discipline],
     "y",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 scenario.execute(algo_name="CustomDOE", samples=samples)
@@ -68,6 +67,6 @@ scenario.execute(algo_name="CustomDOE", samples=samples)
 # we can display the content of the database as a [Dataset][gemseo.datasets.dataset.Dataset]
 # and check the values of the output,
 # which should be the product of $a$ and $b$:
-opt_problem = scenario.formulation.optimization_problem
+opt_problem = scenario.formulation.problem
 dataset = opt_problem.to_dataset(name="custom_sampling", opt_naming=False)
 dataset

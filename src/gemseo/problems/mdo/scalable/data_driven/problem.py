@@ -43,7 +43,7 @@ on the problem dimension.
 See Also:
     [Discipline][gemseo.core.discipline.discipline.Discipline],
    [DataDrivenScalableDiscipline][gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline]
-   and [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
+   and [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.mda.factory import MDAFactory
+from gemseo.mda.factory import MDA_FACTORY
 from gemseo.problems.mdo.scalable.data_driven.discipline import (
     DataDrivenScalableDiscipline,
 )
@@ -84,7 +84,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.scenarios.mdo import MDOScenario
 
 LOGGER = logging.getLogger(__name__)
 
@@ -264,7 +264,7 @@ class ScalableProblem:
         active_probability: float = 0.1,
         feasibility_level: float = 0.5,
         **formulation_settings: Any,
-    ) -> BaseScenario:
+    ) -> MDOScenario:
         """Create a scenario from the scalable disciplines.
 
         Args:
@@ -279,7 +279,7 @@ class ScalableProblem:
             **formulation_settings: The formulation settings.
 
         Returns:
-            The [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
+            The [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
             from the scalable disciplines.
         """
         equilibrium = {}
@@ -298,7 +298,6 @@ class ScalableProblem:
                 self.objective_function,
                 deepcopy(design_space),
                 formulation_name=formulation_name,
-                scenario_type=scenario_type,
                 maximize_objective=self.maximize_objective,
                 **formulation_settings,
             )
@@ -308,7 +307,7 @@ class ScalableProblem:
 
     def _create_bilevel_scenario(
         self, disciplines: Iterable[Discipline], **sub_scenario_options
-    ) -> BaseScenario:
+    ) -> MDOScenario:
         """Create a bi-level scenario from disciplines.
 
         Args:
@@ -425,7 +424,7 @@ class ScalableProblem:
             The equilibrium point.
         """
         LOGGER.info("Build a preliminary MDA to start at equilibrium")
-        factory = MDAFactory()
+        factory = MDA_FACTORY
         mda = factory.create(mda_name, self.scaled_disciplines, **mda_settings)
         if len(mda.coupling_structure.strong_couplings) == 0:
             mda = factory.create(

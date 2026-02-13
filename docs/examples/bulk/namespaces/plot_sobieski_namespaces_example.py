@@ -92,7 +92,6 @@ scenario = create_scenario(
     objective_name="average_y_4",
     design_space=design_space,
     maximize_objective=True,
-    scenario_type="DOE",
 )
 # %%
 # ### Visualize the XDSM

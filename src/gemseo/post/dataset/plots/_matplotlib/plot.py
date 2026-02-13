@@ -32,9 +32,9 @@ if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
-    from gemseo import FigSizeType
     from gemseo.datasets.dataset import Dataset
     from gemseo.post.dataset.plot_settings import PlotSettings
+    from gemseo.utils.matplotlib_figure import FigSizeType
 
 
 class MatplotlibPlot(BasePlot):

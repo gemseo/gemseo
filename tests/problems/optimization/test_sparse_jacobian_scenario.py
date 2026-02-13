@@ -26,11 +26,11 @@ from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.disciplines.splitter import Splitter
 
 if TYPE_CHECKING:
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.scenarios.mdo import MDOScenario
 
 
 @pytest.fixture(scope="module", params=["DisciplinaryOpt", "IDF"])
-def scenario(request) -> BaseScenario:
+def scenario(request) -> MDOScenario:
     """Optimization scenario involving mdo_functions with sparse Jacobians."""
     design_space = DesignSpace()
     design_space.add_variable(
@@ -80,18 +80,18 @@ def scenario(request) -> BaseScenario:
         formulation_name=request.param,
     )
 
-    scenario.add_constraint("eta", MDOFunction.ConstraintType.INEQ)
+    scenario.add_constraint("eta", constraint_type=MDOFunction.ConstraintType.INEQ)
 
     return scenario
 
 
 def test_problem_is_linear(scenario) -> None:
     """Tests that optimization problems are linear."""
-    assert scenario.formulation.optimization_problem.is_linear
+    assert scenario.formulation.problem.is_linear
 
 
 def test_execution(scenario) -> None:
     """Tests the execution of scenario with sparse Jacobians."""
     scenario.execute(algo_name="INTERIOR_POINT", max_iter=1000)
-    out = scenario.formulation.optimization_problem.solution
+    out = scenario.formulation.problem.solution
     assert pytest.approx(out.f_opt) == -8.0

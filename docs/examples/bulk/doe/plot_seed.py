@@ -49,7 +49,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 # ## At the scenario level
 #
 # First,
-# we illustrate the use of the random seed at the [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] level
+# we illustrate the use of the random seed at the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] level
 # which is the appropriate level for most users.
 # Then,
 # we will illustrate this use at the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] level
@@ -66,32 +66,31 @@ design_space.add_variable("x", lower_bound=-1, upper_bound=1)
 # %%
 # We want to sample this discipline over this design space.
 # For that,
-# we express the sampling problem as a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]:
+# we express the sampling problem as a [MDOScenario][gemseo.scenarios.mdo.MDOScenario]:
 scenario = create_scenario(
     [discipline],
     "y",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 
 # %%
 # and solve it:
 scenario.execute(algo_name="OT_OPT_LHS", n_samples=2)
-scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
+scenario.formulation.problem.database.get_last_n_x_vect(2)
 
 # %%
 # When using the same DOE algorithm,
 # solving again this problem with the same scenario leads to a new result:
 scenario.execute(algo_name="OT_OPT_LHS", n_samples=2)
-scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
+scenario.formulation.problem.database.get_last_n_x_vect(2)
 
 # %%
 # The value of the default seed was incremented
 # from 0 (at first execution) to 1 (at last execution),
 # as we can check it by setting the custom `"seed"` to 1:
 scenario.execute(algo_name="OT_OPT_LHS", n_samples=2, seed=1)
-scenario.formulation.optimization_problem.database.get_last_n_x_vect(2)
+scenario.formulation.problem.database.get_last_n_x_vect(2)
 
 # %%
 # The default seed is incremented at each execution, whatever the custom one.
@@ -125,7 +124,7 @@ problem.database.get_last_n_x_vect(2)
 # Note:
 #     We use the function [execute_algo()][gemseo.execute_algo]
 #     as the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] does not have an `execute()` method
-#     unlike the [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario].
+#     unlike the [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 #
 # Solving again this problem with the same configuration leads to the same result:
 execute_algo(problem, algo_name="OT_OPT_LHS", algo_type="doe", n_samples=2)

@@ -56,14 +56,13 @@ from typing import TYPE_CHECKING
 from numpy import argmin
 from numpy import array
 
-from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.discipline import Discipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.core.models.factory import ML_MODEL_FACTORY
 from gemseo.machine_learning.core.quality.base_ml_model_quality import (
     BaseMLModelQuality,
 )
-from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -81,7 +80,6 @@ if TYPE_CHECKING:
     from gemseo.machine_learning.core.quality.base_ml_model_quality import (
         MeasureOptionsType,
     )
-    from gemseo.scenarios.base_scenario import BaseScenario
     from gemseo.typing import StrKeyMapping
 
 
@@ -209,7 +207,7 @@ class MLModelCalibration:
     optimal_model: BaseMLModel | None
     """The optimal machine learning model after execution."""
 
-    scenario: BaseScenario | None
+    scenario: MDOScenario | None
     """The scenario used to calibrate the machine learning model after execution."""
 
     def __init__(
@@ -258,17 +256,13 @@ class MLModelCalibration:
         Args:
             settings: The settings of the driver.
         """
-        if DOELibraryFactory().is_available(settings._TARGET_CLASS_NAME):
-            cls = DOEScenario
-        else:
-            cls = MDOScenario
-
-        self.scenario = cls(
+        self.scenario = MDOScenario(
             [self.model_assessor],
-            self.model_assessor.CRITERION,
             self.calibration_space,
-            formulation_name="DisciplinaryOpt",
-            maximize_objective=self.maximize_objective,
+            settings=DisciplinaryOpt_Settings(),
+        )
+        self.scenario.add_objective(
+            self.model_assessor.CRITERION, minimize=not self.maximize_objective
         )
         self.scenario.add_observable(self.model_assessor.LEARNING)
         self.scenario.execute(settings)

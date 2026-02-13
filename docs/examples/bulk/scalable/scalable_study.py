@@ -54,7 +54,6 @@ for discipline in disciplines:
         next(output_names),
         design_space,
         formulation_name="DisciplinaryOpt",
-        scenario_type="DOE",
     )
     for output_name in output_names:
         scenario.add_observable(output_name)

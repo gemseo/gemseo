@@ -21,12 +21,18 @@
 
 from __future__ import annotations
 
-from gemseo.algos.base_algo_factory import BaseAlgoFactory
+from typing import Final
+
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
+from gemseo.algos.driver_library import DriverLibraryFactory
 
 
-class DOELibraryFactory(BaseAlgoFactory):
+class DOELibraryFactory(DriverLibraryFactory):
     """A factory of DOE libraries."""
 
     _CLASS = BaseDOELibrary
     _PACKAGE_NAMES = ("gemseo.algos.doe",)
+
+
+DOE_LIBRARY_FACTORY: Final[DOELibraryFactory] = DOELibraryFactory()
+"""The factory for `DOELibrary` objects."""

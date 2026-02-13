@@ -171,8 +171,9 @@ class Constraints(Functions):
             self.insert(constraint_index, aggregate_constraints(constraint, **options))
             self.__aggregated_constraint_indices.append(constraint_index)
 
+    @classmethod
     def format(
-        self,
+        cls,
         function: MDOFunction,
         value: float = 0.0,
         constraint_type: MDOFunction.ConstraintType | None = None,
@@ -206,7 +207,7 @@ class Constraints(Functions):
         func_name = function.name
         has_default_name = function.has_default_name
         ctype = constraint_type or function.f_type
-        cstr_repr = self.__get_string_representation(function, ctype, value, positive)
+        cstr_repr = cls.__get_string_representation(function, ctype, value, positive)
         if value != 0:
             function = function.offset(-value)
         if positive:

@@ -226,10 +226,10 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             backup_settings: The settings of the backup file to store the evaluations
                 if any.
             formulation_name: The name of the
-                [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation]
+                [BaseMDOFormulation][gemseo.formulations.base_mdo.BaseMDOFormulation]
                 to sample the disciplines.
             **formulation_settings: The settings of the
-                [BaseMDOFormulation][gemseo.formulations.base_mdo_formulation.BaseMDOFormulation].
+                [BaseMDOFormulation][gemseo.formulations.base_mdo.BaseMDOFormulation].
 
         Returns:
             The samples for the estimation of the sensitivity indices.

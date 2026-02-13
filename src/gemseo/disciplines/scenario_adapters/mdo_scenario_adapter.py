@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from gemseo.algos.database import Database
     from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.scenarios.mdo import MDOScenario
 
 
 class _ProcessFlow(BaseProcessFlow):
@@ -98,7 +98,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
     save_opt_history: bool
     """Whether to save the optimization history after each execution."""
 
-    scenario: BaseScenario
+    scenario: MDOScenario
     """The scenario to be adapted."""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
@@ -128,7 +128,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     def __init__(
         self,
-        scenario: BaseScenario,
+        scenario: MDOScenario,
         input_names: Sequence[str],
         output_names: Sequence[str],
         reset_x0_before_opt: bool = False,
@@ -244,7 +244,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         # level discipline change
         # History must be erased otherwise the wrong values are retrieved
         # between two runs
-        scenario.clear_history_before_execute = True
+        scenario.clear_database_before_execute = True
         self._initial_x = deepcopy(design_space.get_current_value(as_dict=True))
         self.post_optimal_analysis = None
         self.__scenario_log_level = scenario_log_level
@@ -299,7 +299,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         missing_outputs = set(self._output_names).difference(output_grammar)
         if missing_outputs:
             missing_design_variables = set(missing_outputs).intersection(
-                formulation.optimization_problem.design_space
+                formulation.problem.design_space
             )
             if missing_design_variables:
                 dv_grammar = output_grammar.__class__("dvs")
@@ -325,7 +325,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         """Add the Lagrange multipliers of the scenario optimal solution as outputs."""
         # Fill a dictionary with data of typical shapes
         names_to_values = {}
-        problem = self.scenario.formulation.optimization_problem
+        problem = self.scenario.formulation.problem
         # bound-constraints multipliers
         current_value = problem.design_space.get_current_value(as_dict=True)
         names_to_values.update({
@@ -393,7 +393,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
     def _pre_run(self) -> None:
         """Pre-run the scenario."""
         data = self.io.data
-        design_space = self.scenario.formulation.optimization_problem.design_space
+        design_space = self.scenario.formulation.problem.design_space
 
         # Update the top level discipline default inputs with adapter inputs
         # This is the key role of the adapter
@@ -420,13 +420,13 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     def _reset_optimization_problem(self) -> None:
         """Reset the optimization problem."""
-        self.scenario.formulation.optimization_problem.reset(
+        self.scenario.formulation.problem.reset(
             design_space=self._reset_x0_before_opt, database=False, preprocessing=False
         )
 
     def _post_run(self) -> None:
         """Post-process the scenario."""
-        optimization_problem = self.scenario.formulation.optimization_problem
+        optimization_problem = self.scenario.formulation.problem
         database = optimization_problem.database
         if self.keep_opt_history:
             self.databases.append(deepcopy(database))
@@ -467,9 +467,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         data = self.io.data
         formulation = self.scenario.formulation
         top_level_disciplines = formulation.get_top_level_disciplines()
-        current_value = formulation.optimization_problem.design_space.get_current_value(
-            as_dict=True
-        )
+        current_value = formulation.problem.design_space.get_current_value(as_dict=True)
         for output_name in self._output_names:
             for discipline in top_level_disciplines:
                 if (
@@ -487,7 +485,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         This method stores the multipliers in the local data.
         """
         # Compute the Lagrange multipliers
-        problem = self.scenario.formulation.optimization_problem
+        problem = self.scenario.formulation.problem
         x_opt = problem.solution.x_opt
         lagrange = LagrangeMultipliers(problem)
         lagrange.compute(x_opt, problem.tolerances.inequality)
@@ -531,7 +529,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 if a specified output is not an output of the adapter,
                 or if there is non-differentiable outputs.
         """
-        optimization_problem = self.scenario.formulation.optimization_problem
+        optimization_problem = self.scenario.formulation.problem
         objective_names = optimization_problem.objective.output_names
         if len(objective_names) != 1:
             msg = "The objective must be single-valued."
@@ -621,7 +619,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
             The Jacobians of the optimization functions.
         """
         # Gather the names of the functions to differentiate
-        opt_problem = self.scenario.formulation.optimization_problem
+        opt_problem = self.scenario.formulation.problem
         if not func_names:
             func_names = opt_problem.objective.output_names + [
                 output_name

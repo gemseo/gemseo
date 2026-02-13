@@ -55,10 +55,10 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.monitoring import Monitoring
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.mda.base import BaseMDA
-from gemseo.scenarios.base_scenario import BaseScenario
-from gemseo.scenarios.doe_scenario import DOEScenario
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.evaluation import EvaluationScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.locks import synchronized
 from gemseo.utils.show_utils import generate_xdsm_html
 from gemseo.utils.xdsm.xdsm import XDSM
@@ -68,6 +68,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.core._process_flow.execution_sequences import BaseCompositeExecSequence
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
 
 LOGGER = logging.getLogger(__name__)
 
@@ -90,14 +91,14 @@ class XDSMizer:
 
     def __init__(
         self,
-        discipline: Discipline,
+        discipline: BaseDiscipline | EvaluationScenario,
         hashref: str = "root",
         level: int = 0,
         expected_workflow: BaseCompositeExecSequence | None = None,
     ) -> None:
         """
         Args:
-            discipline: The discipline to be represented as an XDSM diagram.
+            discipline: The discipline or scenario to be represented as an XDSM diagram.
             hashref: The keyword used in the JSON structure
                 to reference the dictionary data structure
                 whose keys are "nodes", "edges", "workflow" and "optpb".
@@ -105,35 +106,30 @@ class XDSMizer:
             expected_workflow: The expected workflow,
                 describing the sequence of execution of the different disciplines
                 ([Discipline][gemseo.core.discipline.discipline.Discipline],
-                [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario],
+                [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario],
                  [BaseMDA][gemseo.mda.base.BaseMDA], etc.)
         """  # noqa:D205 D212 D415
-        if isinstance(discipline, BaseScenario):
+        if isinstance(discipline, EvaluationScenario):
+            scenario = discipline
             self._is_scenario = True
-            if isinstance(discipline, MDOScenario):
+            if isinstance(scenario, MDOScenario):
                 self._scenario_node_title = "Optimizer"
-            elif isinstance(discipline, DOEScenario):
-                self._scenario_node_title = "DOE"
             else:
-                self._scenario_node_title = discipline.name
+                self._scenario_node_title = scenario.name
         else:
             self._is_scenario = False
             design_space = DesignSpace()
             for name in discipline.io.input_grammar:
                 design_space.add_variable(name)
-            output_names = iter(discipline.io.output_grammar)
-            discipline = MDOScenario(
-                [discipline],
-                next(output_names),
-                design_space,
-                formulation_name="DisciplinaryOpt",
+            scenario = EvaluationScenario(
+                [discipline], design_space, settings=DisciplinaryOpt_Settings()
             )
-            for output_name in output_names:
-                discipline.add_observable(output_name)
+            for output_name in discipline.io.output_grammar:
+                scenario.add_observable(output_name)
 
             self._scenario_node_title = "Caller"
 
-        self.scenario = discipline
+        self.scenario = scenario
         self.level = level
         self.hashref = hashref
         self._lock = RLock()
@@ -170,7 +166,7 @@ class XDSMizer:
         level = self.level + 1
         num = 1
         for atom in self.atoms:
-            if isinstance(atom.process, BaseScenario):
+            if isinstance(atom.process, EvaluationScenario):
                 if atom.process == self.scenario:
                     self.to_hashref[atom] = "root"
                     self.root_atom = atom
@@ -329,11 +325,7 @@ class XDSMizer:
         nodes = self._create_nodes(algoname)
         edges = self._create_edges()
         workflow = self._create_workflow()
-        optpb = (
-            str(self.scenario.formulation.optimization_problem)
-            if not self._is_scenario
-            else ""
-        )
+        optpb = str(self.scenario.formulation.problem) if not self._is_scenario else ""
 
         if self.level == 0:
             res = {
@@ -409,7 +401,7 @@ class XDSMizer:
             # node type
             if isinstance(atom.process, BaseMDA):
                 node["type"] = "mda"
-            elif isinstance(atom.process, BaseScenario):
+            elif isinstance(atom.process, EvaluationScenario):
                 node["type"] = "mdo"
                 node["subxdsm"] = self.to_hashref[atom]
                 node["name"] = self.to_hashref[atom]
@@ -446,7 +438,7 @@ class XDSMizer:
             edges.append(edge)
 
         # For User to/from optimization
-        opt_pb = self.scenario.formulation.optimization_problem
+        opt_pb = self.scenario.formulation.problem
 
         # fct names such as -y4
         function_name = opt_pb.function_names
@@ -458,9 +450,7 @@ class XDSMizer:
             function_varnames.extend(fvars)
 
         to_user = function_name
-        to_opt = (
-            self.scenario.formulation.optimization_problem.design_space.variable_names
-        )
+        to_opt = self.scenario.formulation.problem.design_space.variable_names
 
         if self._is_scenario:
             user_pattern = "L({})" if self.scenario.name == "Sampling" else "{}^(0)"
@@ -471,13 +461,11 @@ class XDSMizer:
         # Disciplines to/from optimization
         for atom in self.atoms:
             if atom is not self.root_atom:
-                if isinstance(atom.process, BaseScenario):
+                if isinstance(atom.process, EvaluationScenario):
                     continue
                 varnames = sorted(
                     set(atom.process.io.input_grammar)
-                    & set(
-                        self.scenario.formulation.optimization_problem.design_space.variable_names
-                    )
+                    & set(self.scenario.formulation.problem.design_space.variable_names)
                 )
 
                 if varnames:
@@ -495,7 +483,7 @@ class XDSMizer:
         for atom in self.atoms:
             if atom is not self.root_atom:
                 # special case MDA : skipped
-                if isinstance(atom.process, (BaseMDA, BaseScenario)):
+                if isinstance(atom.process, (BaseMDA, EvaluationScenario)):
                     continue
                 out_to_user = [
                     o for o in atom.process.io.output_grammar if o not in disc_to_opt
@@ -540,7 +528,7 @@ class XDSMizer:
         for sequence in workflow.sequences:
             if isinstance(sequence, LoopExecSequence):
                 atoms.append(sequence.atom_controller)
-                if not isinstance(sequence.atom_controller.process, BaseScenario):
+                if not isinstance(sequence.atom_controller.process, EvaluationScenario):
                     atoms += cls._get_single_level_atoms(sequence.iteration_sequence)
             elif isinstance(sequence, ExecutionSequence):
                 atoms.append(sequence)
@@ -638,7 +626,7 @@ def expand(
         ids = [{"parallel": res}]
     elif isinstance(wks, LoopExecSequence):
         if (
-            isinstance(wks.atom_controller.process, BaseScenario)
+            isinstance(wks.atom_controller.process, EvaluationScenario)
             and to_id[wks.atom_controller] != OPT_ID
         ):
             # sub-scnario consider only the controller

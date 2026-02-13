@@ -15,7 +15,7 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.formulations.base_formulation import BaseFormulation
+from gemseo.formulations.base import BaseFormulation
 
 
 class NotMDOFormulation(BaseFormulation):

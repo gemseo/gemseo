@@ -31,7 +31,7 @@ from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import POST_FACTORY
 from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
@@ -40,7 +40,7 @@ CURRENT_DIR = Path(__file__).parent
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 pytestmark = pytest.mark.skipif(
-    not PostFactory().is_available("ScatterPlotMatrix"),
+    not POST_FACTORY.is_available("ScatterPlotMatrix"),
     reason="ScatterPlotMatrix is not available.",
 )
 
@@ -51,10 +51,9 @@ def test_scatter(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = PostFactory()
     problem = Power2()
     OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
-    post = factory.execute(
+    post = POST_FACTORY.execute(
         problem,
         post_name="ScatterPlotMatrix",
         file_path="scatter1",
@@ -71,9 +70,8 @@ def test_scatter_load(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER2)
-    post = factory.execute(
+    post = POST_FACTORY.execute(
         problem,
         post_name="ScatterPlotMatrix",
         file_path="scatter2",
@@ -83,7 +81,9 @@ def test_scatter_load(tmp_wd) -> None:
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
-    post = factory.execute(problem, post_name="ScatterPlotMatrix", variable_names=[])
+    post = POST_FACTORY.execute(
+        problem, post_name="ScatterPlotMatrix", variable_names=[]
+    )
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
@@ -94,7 +94,6 @@ def test_non_existent_var(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    factory = PostFactory()
     problem = OptimizationProblem.from_hdf(POWER2)
     with pytest.raises(
         ValueError,
@@ -102,7 +101,9 @@ def test_non_existent_var(tmp_wd) -> None:
         r"among optimization problem functions: .* "
         r"nor design variables: .*",
     ):
-        factory.execute(problem, post_name="ScatterPlotMatrix", variable_names=["foo"])
+        POST_FACTORY.execute(
+            problem, post_name="ScatterPlotMatrix", variable_names=["foo"]
+        )
 
 
 @pytest.mark.parametrize(
@@ -191,7 +192,6 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
         filter_non_feasible: If True, remove the non-feasible points from the data.
         baseline_images: The reference images to be compared.
     """
-    factory = PostFactory()
     # Create a Power2 instance
     problem = Power2()
     # Add feasible points
@@ -211,7 +211,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
         array([0.5, 0.5, 0.5]),
         {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
     )
-    factory.execute(
+    POST_FACTORY.execute(
         problem,
         post_name="ScatterPlotMatrix",
         file_extension="png",
@@ -223,7 +223,6 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
 
 def test_filter_non_feasible_exception() -> None:
     """Test exception when no feasible points are left after filtering."""
-    factory = PostFactory()
     # Create a Power2 instance
     problem = Power2()
     # Add two non-feasible points
@@ -236,7 +235,7 @@ def test_filter_non_feasible_exception() -> None:
     )
 
     with pytest.raises(ValueError, match=re.escape("No feasible points were found.")):
-        factory.execute(
+        POST_FACTORY.execute(
             problem,
             post_name="ScatterPlotMatrix",
             filter_non_feasible=True,

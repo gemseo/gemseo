@@ -144,7 +144,7 @@ slsqp_settings = SLSQP_Settings(
 #       This slows down a lot the process, here since SSBJ is very light
 #
 #        ``` python
-#        scenario.set_optimization_history_backup(
+#        scenario.set_history_backup(
 #            file_path="mdf_backup.h5",
 #            at_each_iteration=True,
 #            at_each_function_call=False,
@@ -162,11 +162,11 @@ scenario.execute(slsqp_settings)
 # ### Save the optimization history
 # We can save the whole optimization problem and its history for further
 # post-processing:
-scenario.save_optimization_history("mdf_history.h5", file_format="hdf5")
+scenario.to_hdf("mdf_history.h5")
 
 # %%
 # We can also save only calls to functions and design variables history:
-scenario.save_optimization_history("mdf_history.xml", file_format="ggobi")
+scenario.to_ggobi("mdf_history.xml")
 
 # %%
 # ### Print optimization metrics
@@ -179,7 +179,7 @@ scenario.print_execution_metrics()
 scenario.post_process(post_name="OptHistoryView", save=False, show=True)
 
 # %%
-# Note that post-processor settings passed to [post_process()][gemseo.scenarios.base_scenario.BaseScenario.post_process]
+# Note that post-processor settings passed to [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process]
 # can be provided via a Pydantic model (see the example below). For more information,
 # see [this page][post-processor-settings].
 

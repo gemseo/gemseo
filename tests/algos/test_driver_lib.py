@@ -44,6 +44,7 @@ from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.mdo_functions.collections.functions import Functions
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -80,6 +81,7 @@ def optimization_problem():
     problem = mock.Mock()
     problem.dimension = 2
     problem.design_space = design_space
+    problem.functions = Functions()
     return problem
 
 
@@ -96,6 +98,16 @@ def test_empty_design_space() -> None:
         ),
     ):
         driver._check_algorithm(OptimizationProblem(DesignSpace()))
+
+
+def test_no_functions(optimization_problem):
+    """Check that an error is raised when the problem has no function."""
+    lib = ScipyOpt("SLSQP")
+    with pytest.raises(
+        ValueError,
+        match=re.escape("A driver requires a problem with at least one function."),
+    ):
+        lib.execute(optimization_problem)
 
 
 @pytest.mark.parametrize("enable_progress_bar", [False, True])

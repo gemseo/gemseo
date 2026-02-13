@@ -22,59 +22,48 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 
-from numpy import zeros
-
-from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.mdo_functions.collections.constraints import Constraints
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
-from gemseo.formulations.base_formulation import BaseFormulation
-from gemseo.formulations.base_formulation import T
-from gemseo.utils.string_tools import convert_strings_to_iterable
+from gemseo.formulations.base import BaseFormulation
+from gemseo.formulations.base import T
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable
 
     from gemseo.core.discipline.discipline import Discipline
 
 
 class BaseMDOFormulation(BaseFormulation[T]):
-    """A base class for MDO formulations."""
+    """Base class for formulating an MDO problem."""
+
+    def create_objective(  # noqa: D102
+        self, output_names: Iterable[str], objective_name: str = ""
+    ) -> MDOFunction:
+        return self._create_function(output_names, name=objective_name)
 
     def add_observable(  # noqa: D102
         self,
-        output_names: str | Sequence[str],
+        output_names: Iterable[str],
         observable_name: str = "",
         discipline: Discipline | None = None,
     ) -> None:
-        observable = FunctionFromDiscipline(
-            convert_strings_to_iterable(output_names), self, discipline=discipline
+        function = self._create_function(
+            output_names, discipline=discipline, name=observable_name
         )
-        if observable_name:
-            observable.name = observable_name
-        self.optimization_problem.add_observable(observable)
+        self.problem.add_observable(function)
 
-    def add_constraint(  # noqa: D102
+    def create_constraint(  # noqa: D102
         self,
-        output_name: str | Sequence[str],
+        output_names: Iterable[str],
         constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
-    ) -> None:
-        constraint = FunctionFromDiscipline(
-            convert_strings_to_iterable(output_name), self
-        )
-        if constraint.discipline_adapter.is_linear:
-            constraint = compute_linear_approximation(
-                constraint, zeros(constraint.discipline_adapter.input_dimension)
-            )
-        constraint.f_type = constraint_type
-        if constraint_name:
-            constraint.name = constraint_name
-            constraint.has_default_name = False
-        else:
-            constraint.has_default_name = True
-        self.optimization_problem.add_constraint(
-            constraint, value=value, positive=positive
+        **kwargs: Any,
+    ) -> MDOFunction:
+        function = self._create_function(output_names, name=constraint_name)
+        return Constraints.format(
+            function, value=value, constraint_type=constraint_type, positive=positive
         )

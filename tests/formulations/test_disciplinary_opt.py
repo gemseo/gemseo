@@ -24,6 +24,7 @@ from numpy import array
 from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 
@@ -45,10 +46,13 @@ def test_jac_wrt_dv_or_non_dv(options, expected_jac):
     design_space = DesignSpace()
     design_space.add_variable("a")
 
-    formulation = DisciplinaryOpt([discipline], "f", design_space, **options)
-    formulation.add_constraint("c")
-    formulation.add_observable("o")
-    problem = formulation.optimization_problem
+    problem = OptimizationProblem(design_space)
+
+    formulation = DisciplinaryOpt(problem, [discipline], **options)
+    problem.objective = formulation.create_objective(["f"])
+    constraint = formulation.create_constraint(["c"])
+    problem.add_constraint(constraint)
+    formulation.add_observable(["o"])
 
     for function in [problem.objective, problem.constraints[0], problem.observables[0]]:
         assert_equal(function.evaluate(array([1])), array([2.0]))

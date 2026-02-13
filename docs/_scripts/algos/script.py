@@ -37,7 +37,7 @@ from gemseo.machine_learning.clustering.models.factory import CLUSTERER_FACTORY
 from gemseo.machine_learning.core.quality.factory import MLModelQualityFactory
 from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
 from gemseo.mda.factory import MDAFactory
-from gemseo.post.factory import PostFactory
+from gemseo.post.factory import POST_FACTORY
 from gemseo.uncertainty.distributions.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.utils.source_parsing import get_options_doc
@@ -647,7 +647,7 @@ algos_options_docs = [
     BasePostAlgoOptionsDoc(
         "post",
         "Post-processing algorithms",
-        PostFactory(),
+        POST_FACTORY,
         pydantic_model_module_path="settings.post",
     ),
     DriverOptionsDoc(

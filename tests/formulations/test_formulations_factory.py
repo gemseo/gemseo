@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.mdf import MDF
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -59,9 +60,11 @@ def test_create() -> None:
     """Check the creation of a BaseMDOFormulation."""
     design_space = DesignSpace()
     design_space.add_variable("x_shared", 3)
+    problem = OptimizationProblem(design_space)
     formulation = MDO_FORMULATION_FACTORY.create(
-        "MDF", [Sellar1(), Sellar2(), SellarSystem()], "obj", design_space
+        "MDF", problem, [Sellar1(), Sellar2(), SellarSystem()]
     )
+    problem.objective = formulation.create_objective(["obj"])
     assert isinstance(formulation, MDF)
     assert "x_shared" in formulation.design_space
     assert [d.name for d in formulation.disciplines] == [

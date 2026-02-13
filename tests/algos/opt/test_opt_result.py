@@ -33,8 +33,9 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.problems.optimization.power_2 import Power2
-from gemseo.scenarios.doe_scenario import DOEScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
@@ -86,9 +87,8 @@ def optimization_result() -> Generator[OptimizationResult | None, Any, None]:
         "ineq_n_1": "x",
         "ineq_n_2": "x",
     })
-    scenario = DOEScenario(
-        [disc], "y", design_space, formulation_name="DisciplinaryOpt"
-    )
+    scenario = MDOScenario([disc], design_space, settings=DisciplinaryOpt_Settings())
+    scenario.add_objective("y")
     scenario.add_constraint("eq_1")
     scenario.add_constraint("eq_2", value=0.25)
     scenario.add_constraint(

@@ -37,7 +37,7 @@ from gemseo.algos.linear_solvers.base_linear_solver_settings import (
 from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.core.base_factory import BaseFactory
-from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
+from gemseo.formulations.base_settings import BaseFormulationSettings
 from gemseo.machine_learning.core.models.ml_model_settings import BaseMLModelSettings
 from gemseo.mda.base_settings import BaseMDASettings
 from gemseo.post.base_post_settings import BasePostSettings

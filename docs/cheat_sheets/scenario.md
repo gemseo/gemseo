@@ -35,7 +35,6 @@ scenario = create_scenario(
     "obj",
     design_space,
     name="my_scenario",
-    scenario_type="MDO",  # or 'DOE'
     formulation_name="MDF",
     **formulation_settings,
 )
@@ -59,5 +58,5 @@ optimum = scenario.get_optimum()
 Save the optimisation history:
 
 ``` python
-optimum_result = scenario.save_optimization_history("file.h5")
+optimum_result = scenario.save_history("file.h5")
 ```

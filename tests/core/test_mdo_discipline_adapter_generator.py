@@ -29,6 +29,7 @@ from numpy import ones
 from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
@@ -166,6 +167,8 @@ def test_function_from_discipline_input_names(input_names, expected_output_value
     design_space = DesignSpace()
     design_space.add_variable("a")
     design_space.add_variable("b")
-    formulation = DisciplinaryOpt([discipline], "y", design_space)
+    evaluation_problem = OptimizationProblem(design_space)
+    formulation = DisciplinaryOpt(evaluation_problem, [discipline])
+    evaluation_problem.objective = formulation.create_objective(["y"])
     function = FunctionFromDiscipline(["y"], formulation, input_names=input_names)
     assert_equal(function.evaluate(array([1, 2])), expected_output_value)

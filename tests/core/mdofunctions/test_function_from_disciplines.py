@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
@@ -24,7 +25,9 @@ def test_design_space_copy():
     """Verify that FunctionFromDiscipline uses a copy of DesignSpace.variable_sizes."""
     design_space = DesignSpace()
     design_space.add_variable("a")
-    formulation = DisciplinaryOpt([AnalyticDiscipline({"f": "a"})], "f", design_space)
+    evaluation_problem = OptimizationProblem(design_space)
+    formulation = DisciplinaryOpt(evaluation_problem, [AnalyticDiscipline({"f": "a"})])
+    evaluation_problem.objective = formulation.create_objective(["f"])
     function = FunctionFromDiscipline(["f"], formulation)
     function.discipline_adapter._DisciplineAdapter__input_names_to_sizes["b"] = 1
     assert "b" not in design_space.variable_sizes

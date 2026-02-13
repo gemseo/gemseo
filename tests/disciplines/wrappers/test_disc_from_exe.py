@@ -287,7 +287,6 @@ def test_parallel_execution(tmp_wd) -> None:
         disc,
         "out",
         design_space,
-        scenario_type="DOE",
         formulation_name="DisciplinaryOpt",
     )
 

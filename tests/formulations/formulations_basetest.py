@@ -23,12 +23,13 @@ from typing import ClassVar
 
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 
 class FakeDiscipline(Discipline):
@@ -66,11 +67,12 @@ class FormulationsBaseTest(unittest.TestCase):
             SobieskiMission(dtype),
         ]
         design_space = SobieskiDesignSpace()
-        return MDOScenario(
+        scenario = MDOScenario(
             disciplines,
-            "y_4",
             design_space,
-            formulation_name=formulation_name,
-            maximize_objective=True,
-            **options,
+            settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
+                **options
+            ),
         )
+        scenario.add_objective("y_4", minimize=False)
+        return scenario

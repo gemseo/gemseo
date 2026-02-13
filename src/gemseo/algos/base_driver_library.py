@@ -146,7 +146,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
 
     @classmethod
     def _get_unsuitability_reason(
-        cls, algorithm_description: DriverDescription, problem: OptimizationProblem
+        cls, algorithm_description: DriverDescription, problem: EvaluationProblem
     ) -> _UnsuitabilityReason:
         reason = super()._get_unsuitability_reason(algorithm_description, problem)
         if reason or problem.design_space:
@@ -218,7 +218,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
 
     def _post_run(
         self,
-        problem: OptimizationProblem,
+        problem: EvaluationProblem,
         result: OptimizationResult,
         max_design_space_dimension_to_log: int,
     ) -> None:
@@ -336,8 +336,15 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
                 to be logged.
                 If this number is higher than the dimension of the design space
                 then the design space will not be logged.
+
+        Raises:
+            ValueError: If there is no function in the problem.
         """  # noqa: D205, D212
         self._problem = problem
+        if not problem.functions:
+            msg = "A driver requires a problem with at least one function."
+            raise ValueError(msg)
+
         self._check_algorithm(problem)
         self._check_integer_handling(problem.design_space, skip_int_check)
 
@@ -473,7 +480,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
         """  # noqa: D205 D212
 
     def _get_early_stopping_result(
-        self, problem: OptimizationProblem, termination_criterion: TerminationCriterion
+        self, problem: EvaluationProblem, termination_criterion: TerminationCriterion
     ) -> OptimizationResult:
         """Retrieve the best known result when a termination criterion is met.
 

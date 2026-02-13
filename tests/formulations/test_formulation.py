@@ -26,18 +26,20 @@ import pytest
 from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.base_formulation_settings import BaseFormulationSettings
-from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.base_mdo import BaseMDOFormulation
+from gemseo.formulations.base_settings import BaseFormulationSettings
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
+from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.formulations.mdf import MDF
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.testing.helpers import concretize_classes
@@ -65,11 +67,13 @@ def test_cstrs(patch_mdo_formulation) -> None:
     """"""
     sm = SobieskiMission()
     ds = SobieskiDesignSpace()
-    f = DisciplinaryOpt([sm], "y_4", ds)
-    prob = f.optimization_problem
+    prob = OptimizationProblem(ds)
+    f = DisciplinaryOpt(prob, [sm])
+    prob.objective = f.create_objective(["y_4"])
     assert not prob.constraints
-    f.add_constraint("y_4", constraint_name="toto")
-    assert f.optimization_problem.constraints[-1].name == "toto"
+    constraint = f.create_constraint(["y_4"], constraint_name="toto")
+    prob.add_constraint(constraint)
+    assert f.problem.constraints[-1].name == "toto"
 
 
 #     def test_disciplines_runinputs(self):
@@ -100,7 +104,9 @@ def test_jac_sign(patch_mdo_formulation) -> None:
     sm = SobieskiMission()
     design_space = DesignSpace()
     design_space.add_variable("x_shared")
-    f = NewMDOFormulation([sm], "y_4", design_space)
+    problem = OptimizationProblem(design_space)
+    f = NewMDOFormulation(problem, [sm])
+    problem.objective = f.create_objective(["y_4"])
 
     g = MDOFunction(
         math.sin,
@@ -110,26 +116,11 @@ def test_jac_sign(patch_mdo_formulation) -> None:
         expr="sin(x)",
         input_names=["x", "y"],
     )
-    f.optimization_problem.objective = g
+    f.problem.objective = g
 
-    obj = f.optimization_problem.objective
+    obj = f.problem.objective
     assert obj.evaluate(math.pi / 2) == pytest.approx(1.0, 1.0e-9)
     assert obj.jac(0.0) == pytest.approx(1.0, 1.0e-9)
-
-
-def test_get_x0(patch_mdo_formulation) -> None:
-    """"""
-    NewMDOFormulation([SobieskiMission()], "y_4", SobieskiDesignSpace())
-
-
-def test_add_user_defined_constraint_error(patch_mdo_formulation) -> None:
-    """Check that an error is raised when adding a constraint with wrong type."""
-    sm = SobieskiMission()
-    design_space = DesignSpace()
-    design_space.add_variable("x_shared")
-    f = DisciplinaryOpt([sm], "y_4", design_space)
-    with pytest.raises(ValueError):
-        f.add_constraint("y_4", "None", "None")
 
 
 # =========================================================================
@@ -160,7 +151,10 @@ def test_x_mask(patch_mdo_formulation) -> None:
     design_space = DesignSpace()
     design_space.add_variable("x_shared", 4)
     design_space.add_variable("y_14", 4)
-    f = NewMDOFormulation([sm], "y_4", design_space)
+
+    problem = OptimizationProblem(design_space)
+    f = NewMDOFormulation(problem, [sm])
+    problem.objective = f.create_objective(["y_4"])
 
     x = np.concatenate([rid[n] for n in dvs])
     c = f.mask_x_swap_order(dvs, x, dvs)
@@ -201,25 +195,14 @@ def test_remove_sub_scenario_dv_from_ds() -> None:
     ds1 = DesignSpace()
     ds1.add_variable("x")
     sm = SobieskiMission()
-    s1 = MDOScenario([sm], "y_4", ds1, formulation_name="IDF")
-    f2 = NewMDOFormulation([sm, s1], "y_4", ds2)
+    s1 = MDOScenario([sm], ds1, settings=IDF_Settings())
+    s1.add_objective("y_4")
+    problem = OptimizationProblem(ds2)
+    f2 = NewMDOFormulation(problem, [sm, s1])
+    problem.objective = f2.create_objective(["y_4"])
     assert "x" in f2.design_space
     f2._remove_sub_scenario_dv_from_ds()
     assert "x" not in f2.design_space
-
-
-def test_get_obj(patch_mdo_formulation) -> None:
-    """"""
-    sm = SobieskiMission()
-    dvs = ["x_shared", "y_14"]
-
-    design_space = DesignSpace()
-    for name in dvs:
-        design_space.add_variable(name)
-
-    f = NewMDOFormulation([sm], "y_4", design_space)
-    with pytest.raises(AttributeError):
-        f.get_objective()
 
 
 def test_remove_unused_variable_logger(patch_mdo_formulation, caplog) -> None:
@@ -236,10 +219,13 @@ def test_remove_unused_variable_logger(patch_mdo_formulation, caplog) -> None:
     design_space.add_variable("x2")
     design_space.add_variable("y1")
     design_space.add_variable("toto")
-    formulation = MDF([y1, y2, y3], "y2", design_space)
+    problem = OptimizationProblem(design_space)
+    formulation = MDF(problem, [y1, y2, y3])
+    problem.objective = formulation.create_objective(["y2"])
     formulation._remove_unused_variables()
     assert (
-        "Variable toto was removed from the Design Space, it is not an input of any "
+        "Variable toto was removed from the Design Space, it is not an input of "
+        "any "
         "discipline." in caplog.text
     )
 
@@ -265,8 +251,9 @@ def test_get_sub_disciplines_recursive(
     chain2 = MDOChain([d2, chain1], "chain2")
     chain3 = MDOChain([d1, chain2], "chain3")
     design_space = DesignSpace()
-
-    formulation = NewMDOFormulation([chain3], "foo", design_space)
+    problem = OptimizationProblem(design_space)
+    formulation = NewMDOFormulation(problem, [chain3])
+    problem.objective = formulation.create_objective(["foo"])
 
     classes = [
         discipline.name

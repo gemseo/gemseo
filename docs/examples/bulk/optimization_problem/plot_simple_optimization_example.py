@@ -90,7 +90,7 @@ design_space.add_variable("x2", 1, lower_bound=-5, upper_bound=5, type_="integer
 # ### Define the DOE scenario
 #
 # Then, by means of the [create_scenario()][gemseo.create_scenario] high-level function,
-# we define a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] from the [Discipline][gemseo.core.discipline.discipline.Discipline]
+# we define an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] from the [Discipline][gemseo.core.discipline.discipline.Discipline]
 # and the [DesignSpace][gemseo.algos.design_space.DesignSpace] defined above:
 
 scenario = create_scenario(
@@ -98,14 +98,13 @@ scenario = create_scenario(
     "y",
     design_space,
     formulation_name="DisciplinaryOpt",
-    scenario_type="DOE",
 )
 
 # %%
 # ### Execute the DOE scenario
 #
 # Lastly, we solve the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] included in the
-# [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] defined above by minimizing the objective function over a
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario] defined above by minimizing the objective function over a
 # design of experiments included in the [DesignSpace][gemseo.algos.design_space.DesignSpace].
 # Precisely, we choose a
 # [full factorial design](https://en.wikipedia.org/wiki/Factorial_experiment)
@@ -115,7 +114,7 @@ scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=11**2)
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to
-# extract them from the [optimization_result][gemseo.scenarios.base_scenario.BaseScenario.optimization_result] attribute.
+# extract them from the [optimization_result][gemseo.scenarios.mdo.MDOScenario.optimization_result] attribute.
 
 optimization_result = scenario.optimization_result
 
@@ -234,7 +233,7 @@ design_space.add_variable(
 # ### Define the optimization problem
 #
 # Then, by means of the [create_scenario()][gemseo.create_scenario] high-level function,
-# we define an [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] from the [Discipline][gemseo.core.discipline.discipline.Discipline]
+# we define an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] from the [Discipline][gemseo.core.discipline.discipline.Discipline]
 # and the [DesignSpace][gemseo.algos.design_space.DesignSpace] defined above:
 
 scenario = create_scenario(
@@ -242,13 +241,12 @@ scenario = create_scenario(
     "y",
     design_space,
     formulation_name="DisciplinaryOpt",
-    scenario_type="MDO",
 )
 
 # %%
 # ### Execute the optimization problem
 #
-# Lastly, we solve the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] included in the [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario]
+# Lastly, we solve the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] included in the [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 # defined above by minimizing the objective function over the [DesignSpace][gemseo.algos.design_space.DesignSpace].
 # Precisely, we choose the
 # [L-BFGS-B algorithm](https://en.wikipedia.org/wiki/Limited-memory_BFGS)
@@ -283,7 +281,7 @@ algo_list = get_available_opt_algorithms()
 # [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem],
 # we can export the results into an HDF file:
 
-problem = scenario.formulation.optimization_problem
+problem = scenario.formulation.problem
 problem.to_hdf("my_optim.hdf5")
 
 # %%

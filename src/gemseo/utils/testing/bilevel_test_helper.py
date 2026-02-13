@@ -22,6 +22,11 @@ from typing import Any
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.formulations.bilevel_bcd_settings import BiLevelBCD_Settings
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -30,13 +35,11 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.mdo_scenario import MDOScenario
+from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-    from gemseo.scenarios.base_scenario import BaseScenario
 
 
 def create_sobieski_bilevel_scenario(
@@ -66,12 +69,12 @@ def create_sobieski_bilevel_scenario(
 
         system = MDOScenario(
             [*sub_scenarios, SobieskiMission()],
-            "y_4",
             SobieskiProblem().design_space.filter(["x_shared", "y_14"]),
-            formulation_name=formulation_name,
-            maximize_objective=True,
-            **settings,
+            settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
+                **settings
+            ),
         )
+        system.add_objective("y_4", minimize=False)
         system.set_differentiation_method("finite_differences")
         return system
 
@@ -87,32 +90,30 @@ def create_sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenar
     design_space = SobieskiProblem().design_space
     propulsion = MDOScenario(
         [SobieskiPropulsion()],
-        "y_34",
         design_space.filter("x_3", copy=True),
         name="PropulsionScenario",
-        formulation_name="DisciplinaryOpt",
+        settings=DisciplinaryOpt_Settings(),
     )
+    propulsion.add_objective("y_34")
 
     # Maximize L/D
     aerodynamics = MDOScenario(
         [SobieskiAerodynamics()],
-        "y_24",
         design_space.filter("x_2", copy=True),
-        formulation_name="DisciplinaryOpt",
         name="AerodynamicsScenario",
-        maximize_objective=True,
+        settings=DisciplinaryOpt_Settings(),
     )
+    aerodynamics.add_objective("y_24", minimize=False)
 
     # Maximize log(aircraft total weight / (aircraft total weight - fuel
     # weight))
     structure = MDOScenario(
         [SobieskiStructure()],
-        "y_11",
         design_space.filter("x_1"),
-        formulation_name="DisciplinaryOpt",
         name="StructureScenario",
-        maximize_objective=True,
+        settings=DisciplinaryOpt_Settings(),
     )
+    structure.add_objective("y_11", minimize=False)
 
     return structure, aerodynamics, propulsion
 
@@ -145,15 +146,13 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
         def create_block(design_var, name="MDOScenario"):
             scenario = MDOScenario(
                 sub_disciplines,
-                "y_4",
                 ds.filter([design_var], copy=True),
-                formulation_name="MDF",
-                main_mda_name="MDAGaussSeidel",
-                maximize_objective=True,
                 name=name,
+                settings=MDF_Settings(main_mda_name="MDAGaussSeidel"),
             )
+            scenario.add_objective("y_4", minimize=False)
             scenario.set_algorithm(max_iter=50, algo_name="SLSQP")
-            scenario.formulation.optimization_problem.objective *= 0.001
+            scenario.formulation.problem.objective *= 0.001
             return scenario
 
         sc_prop = create_block("x_3", "PropulsionScenario")
@@ -170,14 +169,15 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
 
         sc_system = MDOScenario(
             sub_scenarios,
-            "y_4",
             ds.filter(["x_shared"], copy=True),
-            formulation_name="BiLevelBCD",
-            maximize_objective=True,
-            bcd_mda_settings={"tolerance": 1e-5, "max_mda_iter": 10},
-            **settings,
+            settings=BiLevelBCD_Settings(
+                bcd_mda_settings=MDAGaussSeidel_Settings(
+                    tolerance=1e-5, max_mda_iter=10
+                )
+            ),
         )
-        sc_system.formulation.optimization_problem.objective *= 0.001
+        sc_system.add_objective("y_4", minimize=False)
+        sc_system.formulation.problem.objective *= 0.001
         sc_system.set_differentiation_method("finite_differences")
         return sc_system
 
@@ -237,7 +237,7 @@ def create_dummy_bilevel_scenario(formulation_name: str) -> MDOScenario:
     )
 
 
-def create_aerostructure_scenario(formulation_name: str) -> BaseScenario:
+def create_aerostructure_scenario(formulation_name: str) -> MDOScenario:
     """Create an Aerostructure scenario.
 
     Args:

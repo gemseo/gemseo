@@ -33,7 +33,7 @@ from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
 from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
-from gemseo.formulations.base_mdo_formulation import BaseMDOFormulation
+from gemseo.formulations.base_mdo import BaseMDOFormulation
 from gemseo.formulations.idf_chain import IDFChain
 from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.mda.chain import MDAChain
@@ -107,7 +107,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
     or when `n_processes > 1`.
     """
 
-    def _init_before_design_space_and_objective(self) -> None:
+    def _create_multidisciplinary_process(self) -> None:
         self.__coupling_structure = CouplingStructure(self.disciplines)
         if not self._settings.include_weak_coupling_targets:
             self._process_discipline = IDFChain(
@@ -135,7 +135,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
 
     def _update_design_space(self) -> None:
         strong_couplings = self.__coupling_structure.strong_couplings
-        design_space = self.optimization_problem.design_space
+        design_space = self.problem.design_space
         if not self._settings.include_weak_coupling_targets:
             for coupling in self.__coupling_structure.all_couplings:
                 if coupling in design_space and coupling not in strong_couplings:
@@ -158,7 +158,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
 
     def _compute_equilibrium(self) -> None:
         """Perform an MDA to bring the target coupling variables at equilibrium."""
-        design_space = self.optimization_problem.design_space
+        design_space = self.problem.design_space
 
         # Perform the MDA.
         mda_chain = MDAChain(
@@ -185,7 +185,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
             if self._settings.include_weak_coupling_targets
             else self.__coupling_structure.strong_couplings
         )
-        variable_names = self.optimization_problem.design_space
+        variable_names = self.problem.design_space
         if not couplings.issubset(variable_names):
             missing_variables = couplings.difference(variable_names)
             msg = (
@@ -218,8 +218,8 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
         Returns:
             The concatenation of the normalization factors for all output couplings.
         """
-        get_upper_bound = self.optimization_problem.design_space.get_upper_bound
-        get_lower_bound = self.optimization_problem.design_space.get_lower_bound
+        get_upper_bound = self.problem.design_space.get_upper_bound
+        get_lower_bound = self.problem.design_space.get_lower_bound
         return concatenate([
             np_abs(get_upper_bound(name) - get_lower_bound(name))
             for name in output_couplings
@@ -244,4 +244,4 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
                         zeros(discipline_adapter.input_dimension),
                         f_type=constraint.ConstraintType.EQ,
                     )
-                self.optimization_problem.add_constraint(constraint)
+                self.extra_constraint_functions.append(constraint)

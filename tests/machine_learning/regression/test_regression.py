@@ -31,8 +31,6 @@ from numpy import array
 from numpy import zeros
 from numpy.testing import assert_allclose
 
-from gemseo import from_pickle
-from gemseo import to_pickle
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
@@ -45,6 +43,8 @@ from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
+from gemseo.utils.pickle import from_pickle
+from gemseo.utils.pickle import to_pickle
 
 INPUT_VALUE = array([0.4, 1.8])
 

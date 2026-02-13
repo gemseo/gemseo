@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
     from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
-    from gemseo.formulations.base_formulation import BaseFormulation
+    from gemseo.formulations.base import BaseFormulation
     from gemseo.typing import BooleanArray
     from gemseo.typing import NumberArray
 

@@ -89,9 +89,9 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
             array_([[1.0, 1.0]]),
             "g",
             input_names=input_names,
-            f_type=MDOLinearFunction.ConstraintType.INEQ,
         ),
         value=1.0,
+        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
     )
     problem.add_constraint(
         MDOLinearFunction(

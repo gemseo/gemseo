@@ -25,11 +25,11 @@ from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.scenarios.base_scenario import BaseScenario
+    from gemseo.scenarios.mdo import MDOScenario
 
 
 class BiLevelScenarioResult(ScenarioResult):
-    """The result of a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] using a [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation."""  # noqa: E501
+    """The result of an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] using a [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation."""  # noqa: E501
 
     __SUB_LABEL_FORMATTER: Final[str] = "sub_{}"
     """The formatter to get the name of the key of a sub-problem from its index.
@@ -40,11 +40,11 @@ class BiLevelScenarioResult(ScenarioResult):
     __n_sub_problems: int
     """The number of sub-optimization problems."""
 
-    def __init__(self, scenario: BaseScenario | str | Path) -> None:  # noqa: D107
+    def __init__(self, scenario: MDOScenario | str | Path) -> None:  # noqa: D107
         super().__init__(scenario)
         formulation = scenario.formulation
         scenario_adapters = formulation.scenario_adapters
-        main_problem = formulation.optimization_problem
+        main_problem = formulation.problem
         y_opt = main_problem.database[main_problem.solution.x_opt]
         optimal_local_design_values = {
             variable_name: y_opt[variable_name]
@@ -58,7 +58,7 @@ class BiLevelScenarioResult(ScenarioResult):
 
         i_opt = main_problem.database.get_iteration(main_problem.solution.x_opt) - 1
         for index, scenario_adapter in enumerate(scenario_adapters):
-            sub_problem = scenario_adapter.scenario.formulation.optimization_problem
+            sub_problem = scenario_adapter.scenario.formulation.problem
             database = sub_problem.database
             sub_problem.database = scenario_adapter.databases[i_opt]
             result = OptimizationResult.from_optimization_problem(sub_problem)

@@ -251,10 +251,10 @@ def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
             array_([[0, 0.5, -0.25]]),
             "g",
             input_names=input_names,
-            f_type=MDOLinearFunction.ConstraintType.INEQ,
         ),
         value=0.333,
         positive=True,
+        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
     )
     problem.add_constraint(
         MDOLinearFunction(

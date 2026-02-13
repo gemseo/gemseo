@@ -89,7 +89,7 @@ class HDF5Cache(BaseFullCache):
             Currently, the use of an HDF5Cache is not supported in parallel on Windows
             platforms. This is due to the way subprocesses are forked in this
             architecture. The method
-            [BaseScenario.set_optimization_history_backup()][gemseo.scenarios.base_scenario.BaseScenario.set_optimization_history_backup]
+            [MDOScenario.set_history_backup()][gemseo.scenarios.mdo.MDOScenario.set_history_backup]
             is recommended as an alternative.
         """  # noqa: D205, D212, D415
         self.__input_data_converter = input_data_converter

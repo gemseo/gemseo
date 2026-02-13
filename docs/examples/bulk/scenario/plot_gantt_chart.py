@@ -110,7 +110,7 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 # !!! info "See also"
 #
 #     The formulation settings passed to [create_scenario()][gemseo.create_scenario]
-#     and the algorithm settings passed to [BaseScenario.execute()][gemseo.scenarios.base_scenario.BaseScenario.execute]
+#     and the algorithm settings passed to [MDOScenario.execute()][gemseo.scenarios.mdo.MDOScenario.execute]
 #     can be provided via Pydantic models.
 #     For more information,
 #     see [this page][algorithm-settings] and [this page][formulation-settings].
