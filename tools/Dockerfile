@@ -1,4 +1,4 @@
-ARG FEDORA_VERSION=42@sha256:b3d16134560afa00d7cc2a9e4967eb5b954512805f3fe27d8e70bbed078e22ea
+ARG FEDORA_VERSION=42
 
 FROM fedora:$FEDORA_VERSION
 
@@ -11,6 +11,7 @@ RUN  dnf -y update \
                     python313 \
                     graphviz \
                     git \
+                    just \
   && dnf clean all \
   && rm -rf /var/cache/dnf
 
