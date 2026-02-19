@@ -108,11 +108,12 @@ def test_generate_job_template(tmp_wd, discipline) -> None:
         "",
     )
     assert dest_job_file_path.exists()
-    with open(dest_job_file_path) as infile:
-        lines = infile.readlines()
+    lines = dest_job_file_path.read_text()
     for line in lines:
         if "#SBATCH" in line:
-            assert "$" not in line
+            # Windows may use $ at the end of some variables,
+            # thus we include =.
+            assert "=$" not in line
     assert len(lines) > 40
 
 
