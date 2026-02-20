@@ -25,6 +25,7 @@ from __future__ import annotations
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 
 # %%
 # Let us consider a discipline implementing the function $y=a*b$
@@ -57,7 +58,9 @@ scenario = create_scenario(
     design_space,
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="CustomDOE", doe_file="doe.txt")
+
+
+scenario.execute(CustomDOE_Settings(doe_file="doe.txt"))
 
 # %%
 # Note that both the formulation settings passed to [create_scenario()][gemseo.create_scenario] and the

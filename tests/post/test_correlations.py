@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.correlations import Correlations
 from gemseo.post.factory import POST_FACTORY
@@ -50,7 +50,7 @@ def test_correlations(tmp_wd, factory) -> None:
         factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
-    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="L-BFGS-B")
 
     post = factory.execute(
         problem,
@@ -95,7 +95,7 @@ def test_correlations_func_name_error(factory) -> None:
         factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
-    OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="L-BFGS-B")
 
     with pytest.raises(
         ValueError,

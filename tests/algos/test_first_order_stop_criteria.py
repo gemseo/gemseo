@@ -19,7 +19,7 @@ from numpy import array
 from numpy import ones
 from numpy import zeros
 
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
 from gemseo.algos.stop_criteria import is_kkt_residual_norm_reached
 from gemseo.problems.optimization.power_2 import Power2
@@ -78,7 +78,7 @@ def test_kkt_norm_correctly_stored(algorithm, problem, store_jacobian) -> None:
     }
     problem.reset()
     if store_jacobian:
-        OptimizationLibraryFactory().execute(problem, algo_name=algorithm, **options)
+        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name=algorithm, **options)
         kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
         obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
         obj_hist = problem.database.get_function_history(problem.objective.name)
@@ -92,6 +92,6 @@ def test_kkt_norm_correctly_stored(algorithm, problem, store_jacobian) -> None:
         )
     else:
         with pytest.raises(ValueError):
-            OptimizationLibraryFactory().execute(
+            OPTIMIZATION_LIBRARY_FACTORY.execute(
                 problem, algo_name=algorithm, **options
             )

@@ -41,7 +41,7 @@ from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.doe.scipy.settings.mc import MC_Settings
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.collections.functions import Functions
@@ -117,7 +117,7 @@ def test_progress_bar(enable_progress_bar, enable_logging, caplog) -> None:
     BaseDriverLibrary."""
     enable = configuration.logging.enable
     configuration.logging.enable = enable_logging
-    driver = OptimizationLibraryFactory().create("SLSQP")
+    driver = OPTIMIZATION_LIBRARY_FACTORY.create("SLSQP")
     driver.execute(Power2(), enable_progress_bar=enable_progress_bar)
     use_progress_bar = enable_logging and enable_progress_bar
     assert isinstance(driver._progress_bar, ProgressBar) is use_progress_bar

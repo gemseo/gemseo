@@ -22,7 +22,7 @@ from typing import ClassVar
 
 from pydantic import Field
 
-from gemseo.settings.base_settings import BaseSettings
+from gemseo.algos.base_settings import BaseSettings
 from gemseo.typing import StrKeyMapping
 
 

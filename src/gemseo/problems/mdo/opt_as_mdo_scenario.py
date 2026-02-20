@@ -364,7 +364,7 @@ class OptAsMDOScenario(MDOScenario):
         discipline: Discipline,
         design_space: DesignSpace,
         name: str = "",
-        settings: BaseFormulationSettings | None = None,
+        formulation_settings: BaseFormulationSettings | None = None,
         coupling_equations: tuple[
             Iterable[Discipline],
             Callable[[RealArray], RealArray],
@@ -399,7 +399,12 @@ class OptAsMDOScenario(MDOScenario):
         disciplines = create_disciplines(
             discipline, design_space, coupling_equations, link_discipline_class
         )
-        super().__init__(disciplines, design_space, name=name, settings=settings)
+        super().__init__(
+            disciplines,
+            design_space,
+            name=name,
+            formulation_settings=formulation_settings,
+        )
 
 
 def create_disciplines(

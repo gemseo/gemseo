@@ -28,6 +28,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_doe_algorithms
 from gemseo import get_available_post_processings
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 
 # %%
 #
@@ -97,7 +98,7 @@ scenario = create_scenario(
 # over a design of experiments included in the [DesignSpace][gemseo.algos.design_space.DesignSpace].
 # Precisely, we choose a [full factorial design](https://en.wikipedia.org/wiki/Factorial_experiment) of size $11^2$:
 
-scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=11**2)
+scenario.execute(PYDOE_FULLFACT_Settings(n_samples=11**2))
 
 # %%
 # Note that the algorithm settings passed to [execute()][gemseo.algos.base_driver_library.BaseDriverLibrary.execute] can be provided

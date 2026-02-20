@@ -34,6 +34,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo import get_available_scenario_types
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
 get_available_scenario_types()
@@ -72,7 +73,7 @@ scenario.xdsmize(monitor=True, log_workflow_status=True)
 
 ###
 
-scenario.execute(algo_name="SLSQP", max_iter=100)
+scenario.execute(SLSQP_Settings(max_iter=100))
 
 ###
 

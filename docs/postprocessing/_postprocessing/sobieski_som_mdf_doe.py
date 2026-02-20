@@ -34,6 +34,7 @@ import sys
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 
 num = int(sys.argv[1])
 
@@ -57,7 +58,7 @@ scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
-scenario.execute(algo_name="PYDOE_LHS", n_samples=num)
+scenario.execute(PYDOE_LHS_Settings(n_samples=num))
 
 scenario.post_process(
     post_name="SOM",

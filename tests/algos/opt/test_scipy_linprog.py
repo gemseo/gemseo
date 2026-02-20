@@ -26,7 +26,7 @@ from numpy import array
 from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_linprog.scipy_linprog import ScipyLinprog
 from gemseo.algos.opt.scipy_linprog.settings.highs_dual_simplex import (
     DUAL_SIMPLEX_Settings,
@@ -40,7 +40,7 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 @pytest.fixture(scope="module")
 def library_cls() -> type[ScipyLinprog]:
     """The SciPyLinprog library."""
-    return OptimizationLibraryFactory().get_class("ScipyLinprog")
+    return OPTIMIZATION_LIBRARY_FACTORY.get_class("ScipyLinprog")
 
 
 def test_factory(library_cls) -> None:

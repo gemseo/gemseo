@@ -21,6 +21,7 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 
 from gemseo import execute_algo
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.problems.mdo.scalable.parametric.disciplines.main_discipline import (
     MainDiscipline,
 )
@@ -125,7 +126,7 @@ def test_create_quadratic_optimization_problem(scalable_problem) -> None:
     )
 
     scenario = scalable_problem.create_scenario()
-    scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+    scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
 
     assert_almost_equal(
         execute_algo(qp_problem, algo_name="NLOPT_SLSQP", max_iter=100).x_opt,

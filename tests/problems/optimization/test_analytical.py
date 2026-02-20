@@ -26,7 +26,7 @@ import pytest
 from numpy import zeros
 
 from gemseo.algos.base_driver_library import MaxIterReachedException
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.problems.optimization.hock_schittkowski_71 import HockSchittkowski71
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rastrigin import Rastrigin
@@ -41,7 +41,7 @@ def run_and_test_problem(problem, algo_name="SLSQP") -> None:
     :param algo_name:  (Default value = "SLSQP")
 
     """
-    opt = OptimizationLibraryFactory().execute(
+    opt = OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, algo_name=algo_name, max_iter=800
     )
     x_opt, f_opt = problem.get_solution()

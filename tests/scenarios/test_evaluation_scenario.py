@@ -15,8 +15,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy.testing import assert_equal
@@ -60,9 +58,7 @@ def test_two_coupled_disciplines_default(discipline_a, discipline_b, design_spac
     assert isinstance(scenario.formulation.mda, MDAChain)
     scenario.add_observable("y")
     scenario.add_observable("z")
-    scenario.execute(
-        algo_settings_model=CustomDOE_Settings(samples=array([[2.0], [3.0]]))
-    )
+    scenario.execute(CustomDOE_Settings(samples=array([[2.0], [3.0]])))
     dataset = scenario.to_dataset()
     assert_equal(dataset.get_view(variable_names="y"), array([[3.0], [4.0]]))
     assert_equal(dataset.get_view(variable_names="z"), array([[6.0], [8.0]]))
@@ -77,37 +73,22 @@ def test_two_coupled_disciplines(discipline_a, discipline_b, design_space):
     scenario = EvaluationScenario(
         [discipline_b, discipline_a],
         design_space,
-        settings=MDF_Settings(main_mda_settings=MDAJacobi_Settings()),
+        formulation_settings=MDF_Settings(main_mda_settings=MDAJacobi_Settings()),
     )
     assert isinstance(scenario.formulation, MDF)
     assert isinstance(scenario.formulation.mda, MDAJacobi)
     scenario.add_observable("y")
     scenario.add_observable("z")
-    scenario.execute(
-        algo_settings_model=CustomDOE_Settings(samples=array([[2.0], [3.0]]))
-    )
+    scenario.execute(CustomDOE_Settings(samples=array([[2.0], [3.0]])))
     dataset = scenario.to_dataset()
     assert_equal(dataset.get_view(variable_names="y"), array([[3.0], [4.0]]))
     assert_equal(dataset.get_view(variable_names="z"), array([[6.0], [8.0]]))
-
-
-def test_no_algo_name(discipline_a, design_space):
-    """Check the exception raised when neither algo name nor Pydantic settings."""
-    scenario = EvaluationScenario([discipline_a], design_space)
-    scenario.add_observable("y")
-    with pytest.raises(
-        ValueError,
-        match=re.escape('The algorithm name is missing; use the argument "algo_name".'),
-    ):
-        scenario.execute(samples=array([[2.0], [3.0]]))
 
 
 def test_observable_name(discipline_a, design_space):
     """Check the use of a custom observable name."""
     scenario = EvaluationScenario([discipline_a], design_space)
     scenario.add_observable("y", observable_name="foo")
-    scenario.execute(
-        algo_settings_model=CustomDOE_Settings(samples=array([[2.0], [3.0]]))
-    )
+    scenario.execute(CustomDOE_Settings(samples=array([[2.0], [3.0]])))
     dataset = scenario.to_dataset()
     assert_equal(dataset.get_view(variable_names="foo"), array([[3.0], [4.0]]))

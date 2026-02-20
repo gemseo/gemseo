@@ -103,7 +103,7 @@ evaluated:
 sample_1 = [1, 2]  # a=1, b=2
 sample_2 = [2, 3]  # a=2, b=3
 samples = array([sample_1, sample_2])
-scenario.execute(algo_name="CustomDOE", samples=samples)
+scenario.execute(CustomDOE_Settings(samples=samples))
 print(scenario.to_dataset().export_to_dataframe())
 ```
 
@@ -167,7 +167,7 @@ processes to run and the execution call shall be protected:
 
 ``` python
 if __name__ == '__main__':
-    scenario.execute(algo_name="CustomDOE", samples=samples, n_processes=2)
+    scenario.execute(CustomDOE_Settings(samples=samples, n_processes=2))
 ```
 
 ### Multithreading
@@ -205,7 +205,7 @@ scenario = create_scenario(
 The scenario execution remains the same:
 
 ``` python
-scenario.execute(algo_name="CustomDOE", samples=samples)
+scenario.execute(CustomDOE_Settings(samples=samples))
 ```
 
 ### Multiprocessing & Multithreading
@@ -242,7 +242,7 @@ to run: and the execution call shall be protected:
 
 ``` python
 if __name__ == '__main__':
-    scenario.execute(algo_name="CustomDOE", samples=samples, n_processes=2)
+    scenario.execute(CustomDOE_Settings(samples=samples, n_processes=2))
 ```
 
 ## What about macros?

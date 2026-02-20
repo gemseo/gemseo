@@ -104,7 +104,7 @@ select = [
 runtime-evaluated-base-classes = [
   "pydantic.BaseModel",
   "gemseo.algos.doe.base_doe_settings.BaseDOESettings",
-  "gemseo.settings.base_settings.BaseSettings",
+  "gemseo.algos.base_settings.BaseSettings",
   "gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings",
   "gemseo.algos.opt.base_optimizer_settings.BaseOptimizerSettings",
   "gemseo.algos.opt.nlopt.settings.base_nlopt_settings.BaseNLoptSettings",

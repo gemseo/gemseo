@@ -50,6 +50,7 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.settings.formulations import MDF_Settings
 from gemseo.utils.discipline import get_all_inputs
@@ -203,7 +204,7 @@ scenario.formulation.problem.apply_exterior_penalty(
 # %%
 # In this way the L-BFGS-B algorithm can be used to solve the optimization problem.
 # Note that this algorithm is not suited for constrained optimization problems.
-scenario.execute(algo_name="L-BFGS-B", max_iter=10)
+scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
 # %%
 # Note that the algorithm settings passed to

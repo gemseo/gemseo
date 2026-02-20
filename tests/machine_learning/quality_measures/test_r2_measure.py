@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
@@ -57,9 +58,11 @@ def dataset() -> IODataset:
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = MDOScenario([MODEL], design_space, settings=DisciplinaryOpt_Settings())
+    scenario = MDOScenario(
+        [MODEL], design_space, formulation_settings=DisciplinaryOpt_Settings()
+    )
     scenario.add_objective("y")
-    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=20)
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=20))
     return MODEL.cache.to_dataset()
 
 
@@ -69,9 +72,11 @@ def dataset_test() -> IODataset:
     MODEL.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = MDOScenario([MODEL], design_space, settings=DisciplinaryOpt_Settings())
+    scenario = MDOScenario(
+        [MODEL], design_space, formulation_settings=DisciplinaryOpt_Settings()
+    )
     scenario.add_objective("y")
-    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=5)
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=5))
     return MODEL.cache.to_dataset()
 
 

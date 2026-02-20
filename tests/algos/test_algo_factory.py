@@ -22,17 +22,17 @@ from __future__ import annotations
 import pytest
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.utils.pydantic import create_model
 
 
 def test_is_available_error() -> None:
-    assert not OptimizationLibraryFactory().is_available("None")
+    assert not OPTIMIZATION_LIBRARY_FACTORY.is_available("None")
 
 
 def test_create_ok() -> None:
     """Verify that an existing algorithm can be created."""
-    algo = OptimizationLibraryFactory().create("L-BFGS-B")
+    algo = OPTIMIZATION_LIBRARY_FACTORY.create("L-BFGS-B")
     assert algo._algo_name == "L-BFGS-B"
     algo._settings = create_model(algo.ALGORITHM_INFOS[algo.algo_name].settings_class)
     assert algo._settings.max_iter == 1000
@@ -46,12 +46,12 @@ def test_create_ko() -> None:
             r"No algorithm named idontexist is available; available algorithms are .*"
         ),
     ):
-        OptimizationLibraryFactory().create("idontexist")
+        OPTIMIZATION_LIBRARY_FACTORY.create("idontexist")
 
 
 def test_is_scipy_available() -> None:
-    assert OptimizationLibraryFactory().is_available("ScipyOpt")
-    assert "SLSQP" in OptimizationLibraryFactory().algorithms
+    assert OPTIMIZATION_LIBRARY_FACTORY.is_available("ScipyOpt")
+    assert "SLSQP" in OPTIMIZATION_LIBRARY_FACTORY.algorithms
 
 
 def test_solver_factory_cache() -> None:

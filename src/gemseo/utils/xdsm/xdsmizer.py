@@ -122,7 +122,9 @@ class XDSMizer:
             for name in discipline.io.input_grammar:
                 design_space.add_variable(name)
             scenario = EvaluationScenario(
-                [discipline], design_space, settings=DisciplinaryOpt_Settings()
+                [discipline],
+                design_space,
+                formulation_settings=DisciplinaryOpt_Settings(),
             )
             for output_name in discipline.io.output_grammar:
                 scenario.add_observable(output_name)

@@ -230,7 +230,7 @@ def test_sub_scenario() -> None:
         [d1],
         design_space.filter("x_3", copy=True),
         name="PropulsionScenario",
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     sc_prop.add_objective("y_34")
     d2 = MDOScenarioAdapter(sc_prop, [], [])

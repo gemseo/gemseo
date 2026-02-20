@@ -38,7 +38,7 @@ from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -400,7 +400,7 @@ def test_derivatives_on_design_boundaries(
     problem = OptimizationProblem(design_space, differentiation_method=method)
     problem.objective = MDOFunction(lambda x: x**2, name="my_objective")
 
-    OptimizationLibraryFactory().execute(
+    OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, algo_name="SLSQP", max_iter=1, normalize_design_space=normalize
     )
 

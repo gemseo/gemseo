@@ -106,9 +106,14 @@ class MDOScenario(EvaluationScenario):
         disciplines: Sequence[BaseDiscipline],
         design_space: DesignSpace,
         name: str = "",
-        settings: BaseFormulationSettings | None = None,
+        formulation_settings: BaseFormulationSettings | None = None,
     ) -> None:
-        super().__init__(disciplines, design_space, name=name, settings=settings)
+        super().__init__(
+            disciplines,
+            design_space,
+            name=name,
+            formulation_settings=formulation_settings,
+        )
         self.__objectives_to_minimize = {}
 
     def _add_extra_constraint(self, constraint: MDOFunction) -> None:

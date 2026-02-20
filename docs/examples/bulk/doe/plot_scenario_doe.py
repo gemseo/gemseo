@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
@@ -54,7 +55,7 @@ scenario = create_scenario(
 # ## Execute the scenario
 #
 # Here we use a latin hypercube sampling algorithm with 30 samples.
-scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
+scenario.execute(PYDOE_LHS_Settings(n_samples=30))
 
 # %%
 # Note that both the formulation settings passed to [create_scenario()][gemseo.create_scenario] and the

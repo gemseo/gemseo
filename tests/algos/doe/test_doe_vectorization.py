@@ -31,6 +31,7 @@ from scipy.sparse import block_diag
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
+from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.chains.chain import MDOChain
@@ -264,11 +265,11 @@ def test_doe_vectorize_scenario(
         discipline = MDOChain([discipline])
 
     scenario = MDOScenario(
-        [discipline], design_space, settings=DisciplinaryOpt_Settings()
+        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("out")
     scenario.execute(
-        algo_name="MC", n_samples=N_SAMPLES, vectorize=vectorize, eval_jac=eval_jac
+        MC_Settings(n_samples=N_SAMPLES, vectorize=vectorize, eval_jac=eval_jac)
     )
     problem = scenario.formulation.problem
 
@@ -294,13 +295,15 @@ def test_vectorization_sellar(eval_jac, formulation_name, n):
     scenario = MDOScenario(
         [cls(n=n) for cls in classes],
         SellarDesignSpace(n=n),
-        settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(),
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation_name
+        ).settings_class(),
     )
     scenario.add_objective("obj")
     scenario.add_constraint("c_1")
     scenario.add_constraint("c_2")
     scenario.execute(
-        algo_name="MC", n_samples=N_SAMPLES, vectorize=False, eval_jac=eval_jac
+        MC_Settings(n_samples=N_SAMPLES, vectorize=False, eval_jac=eval_jac)
     )
     reference = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
@@ -308,13 +311,15 @@ def test_vectorization_sellar(eval_jac, formulation_name, n):
     scenario = MDOScenario(
         [cls(n=n) for cls in classes],
         SellarDesignSpace(n=n),
-        settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(),
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation_name
+        ).settings_class(),
     )
     scenario.add_objective("obj")
     scenario.add_constraint("c_1")
     scenario.add_constraint("c_2")
     scenario.execute(
-        algo_name="MC", n_samples=N_SAMPLES, vectorize=True, eval_jac=eval_jac
+        MC_Settings(n_samples=N_SAMPLES, vectorize=True, eval_jac=eval_jac)
     )
     result = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 

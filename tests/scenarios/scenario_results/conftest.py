@@ -18,6 +18,7 @@ import pytest
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
@@ -43,14 +44,16 @@ def scenario() -> MDOScenario:
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "x+y"})],
         design_space.filter(["y"], copy=True),
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
         name="FooScenario",
     )
     sub_scenario.add_objective("z")
-    sub_scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
+    sub_scenario.set_algorithm(CustomDOE_Settings(samples=array([[0.0], [1.0]])))
     scenario = MDOScenario(
-        [sub_scenario], design_space.filter(["x"]), settings=BiLevel_Settings()
+        [sub_scenario],
+        design_space.filter(["x"]),
+        formulation_settings=BiLevel_Settings(),
     )
     scenario.add_objective("z")
-    scenario.set_algorithm(algo_name="CustomDOE", samples=array([[0.0], [1.0]]))
+    scenario.set_algorithm(CustomDOE_Settings(samples=array([[0.0], [1.0]])))
     return scenario

@@ -47,6 +47,7 @@ from numpy import ones
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 
 # %%
 # ## Create the problem disciplines
@@ -120,7 +121,7 @@ scenario.add_observable("y_2", observable_name="y2")
 # we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
-scenario.execute(algo_name="SLSQP", max_iter=10)
+scenario.execute(SLSQP_Settings(max_iter=10))
 
 # %%
 # Note that the algorithm settings passed to [execute()][gemseo.scenarios.mdo.MDOScenario.execute] can be provided

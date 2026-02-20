@@ -89,6 +89,7 @@ from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
@@ -140,7 +141,7 @@ def scenario() -> MDOScenario:
         SobieskiDesignSpace(),
         formulation_name="DisciplinaryOpt",
     )
-    scenario.execute(algo_name="SLSQP", max_iter=10)
+    scenario.execute(SLSQP_Settings(max_iter=10))
     return scenario
 
 
@@ -266,7 +267,7 @@ def test_monitor_scenario() -> None:
     observer = Observer()
     monitor_scenario(scenario, observer)
 
-    scenario.execute(algo_name="SLSQP", max_iter=10)
+    scenario.execute(SLSQP_Settings(max_iter=10))
     assert observer.status_changes >= 2 * scenario.formulation.problem.objective.n_calls
 
 
@@ -398,8 +399,13 @@ def test_get_scenario_inputs_schema() -> None:
     )
 
     schema = get_scenario_inputs_schema(sc_aero)
-    assert "algo_name" in schema["properties"]
-    assert "algo_settings" in schema["properties"]
+    assert "enable_progress_bar" in schema["properties"]
+    assert "iprint" not in schema["properties"]
+
+    sc_aero.set_algorithm(SLSQP_Settings())
+    schema = get_scenario_inputs_schema(sc_aero)
+    assert "enable_progress_bar" in schema["properties"]
+    assert "iprint" in schema["properties"]
 
     get_scenario_inputs_schema(sc_aero, pretty_print=True)
 
@@ -528,10 +534,10 @@ def training_dataset() -> IODataset:
     design_space = SobieskiDesignSpace()
     design_space.filter(input_names)
     mdo_scenario = MDOScenario(
-        [disc], design_space, settings=DisciplinaryOpt_Settings()
+        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     mdo_scenario.add_objective("y_4")
-    mdo_scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=10)
+    mdo_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=10))
     return disc.cache.to_dataset()
 
 

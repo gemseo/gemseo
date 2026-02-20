@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.post.quad_approx import QuadApprox
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import image_comparison
@@ -59,6 +59,6 @@ def test_function_not_in_constraints():
     """Tests QuadApprox when the passed function is not part of the constraints."""
     problem = Power2()
     problem.use_standardized_objective = True
-    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP", max_iter=5)
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP", max_iter=5)
     opt = QuadApprox(problem)
     opt.execute(function="ineq1", save=False)

@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -86,7 +87,7 @@ def build_and_run_idf_scenario_with_constraints(
     scenario = MDOScenario(
         disciplines,
         design_space,
-        settings=IDF_Settings(
+        formulation_settings=IDF_Settings(
             normalize_constraints=normalize_cstr,
             n_processes=n_processes,
             use_threading=use_threading,
@@ -105,13 +106,12 @@ def build_and_run_idf_scenario_with_constraints(
         scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
 
     scenario.formulation.problem.objective *= 0.001
-
-    scenario.execute(
-        algo_name=algo,
-        max_iter=max_iter,
-        eq_tolerance=eq_tolerance,
-        ineq_tolerance=ineq_tolerance,
+    factory = OPTIMIZATION_LIBRARY_FACTORY
+    cls = factory.get_class(factory.algo_names_to_libraries[algo])
+    settings = cls.ALGORITHM_INFOS[algo].settings_class(
+        max_iter=max_iter, eq_tolerance=eq_tolerance, ineq_tolerance=ineq_tolerance
     )
+    scenario.execute(settings)
 
     obj_opt = scenario.optimization_result.f_opt
     is_feasible = scenario.optimization_result.is_feasible

@@ -42,6 +42,8 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 
 # %%
 # ## Definition of the disciplines
@@ -103,7 +105,7 @@ sub_scenario = create_scenario(
     formulation_name="DisciplinaryOpt",
 )
 
-sub_scenario.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=100)
+sub_scenario.set_algorithm(NLOPT_SLSQP_Settings(max_iter=100))
 
 # %%
 # We add the Binh and Korn problem constraints.
@@ -174,7 +176,7 @@ system_scenario.xdsmize(save_html=False)
 # ## Run the scenario
 #
 # Finally, we run a full-factorial DOE using 100 samples and run the post-processing.
-system_scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=50)
+system_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=50))
 system_scenario.post_process(
     post_name="ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
 )

@@ -26,6 +26,7 @@ from __future__ import annotations
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 
 # %%
 # We consider a minimization problem over the interval $[0,1]$
@@ -41,7 +42,7 @@ scenario = create_scenario(
 
 # %%
 # We solve this optimization problem with the gradient-free algorithm COBYLA:
-scenario.execute(algo_name="NLOPT_COBYLA", max_iter=10)
+scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 
 # %%
 # Then,

@@ -36,6 +36,7 @@ from scipy.sparse import eye as speye
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.caches._hdf5_file_singleton import HDF5FileSingleton
 from gemseo.caches.cache_entry import CacheEntry
 from gemseo.caches.factory import CacheFactory
@@ -421,14 +422,14 @@ def test_multithreading(
     ds = SellarDesignSpace()
     scen = create_scenario(par, "obj", ds, formulation_name="DisciplinaryOpt")
 
-    options = {"algo_name": "PYDOE_FULLFACT", "n_samples": 10, "n_processes": 4}
-    scen.execute(**options)
+    settings = PYDOE_FULLFACT_Settings(n_samples=10, n_processes=4)
+    scen.execute(settings)
 
     nexec_1 = s_1.execution_statistics.n_executions
     nexec_2 = s_s.execution_statistics.n_executions
 
     scen = create_scenario(par, "obj", ds, formulation_name="DisciplinaryOpt")
-    scen.execute(**options)
+    scen.execute(settings)
 
     assert nexec_1 == s_1.execution_statistics.n_executions
     assert nexec_2 == s_s.execution_statistics.n_executions

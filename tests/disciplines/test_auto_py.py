@@ -35,6 +35,7 @@ from gemseo import create_design_space
 from gemseo import create_mda
 from gemseo import create_scenario
 from gemseo import execute_algo
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -215,7 +216,7 @@ def test_jac_pb(design_space) -> None:
         design_space,
         formulation_name="DisciplinaryOpt",
     )
-    scn.execute(algo_name=algo, max_iter=max_iter)
+    scn.execute(L_BFGS_B_Settings(max_iter=max_iter))
 
     assert fopt_ref == scn.optimization_result.f_opt
 

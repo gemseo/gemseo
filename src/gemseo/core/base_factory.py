@@ -47,8 +47,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from pathlib import Path
 
+    from gemseo.algos.base_settings import BaseSettings
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.settings.base_settings import BaseSettings
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)

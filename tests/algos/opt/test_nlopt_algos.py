@@ -31,7 +31,7 @@ from scipy.optimize import rosen_der
 
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.nlopt.nlopt import Nlopt
 from gemseo.algos.opt.nlopt.nlopt import nlopt
 from gemseo.algos.optimization_problem import OptimizationProblem
@@ -48,7 +48,7 @@ class TestNLOPT(TestCase):
 
     def _test_init(self) -> None:
         """Tests the initialization of the problem."""
-        factory = OptimizationLibraryFactory()
+        factory = OPTIMIZATION_LIBRARY_FACTORY
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
 
@@ -71,7 +71,7 @@ class TestNLOPT(TestCase):
 
         problem.objective.jac = obj_grad
         problem.constraints.clear()
-        opt_library = OptimizationLibraryFactory().create("NLOPT_BFGS")
+        opt_library = OPTIMIZATION_LIBRARY_FACTORY.create("NLOPT_BFGS")
         opt_library.execute(problem, max_iter=10)
 
     def test_normalization(self) -> None:
@@ -93,7 +93,7 @@ class TestNLOPT(TestCase):
         problem.objective = MDOFunction(
             rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
         )
-        OptimizationLibraryFactory().execute(problem, algo_name="NLOPT_COBYLA")
+        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="NLOPT_COBYLA")
 
     def test_tolerance_activation(self) -> None:
         def run_pb(algo_options):
@@ -105,7 +105,7 @@ class TestNLOPT(TestCase):
             problem.objective = MDOFunction(
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
             )
-            res = OptimizationLibraryFactory().execute(
+            res = OPTIMIZATION_LIBRARY_FACTORY.execute(
                 problem, algo_name="NLOPT_SLSQP", **algo_options
             )
             return res, problem
@@ -138,7 +138,7 @@ def test_cast_to_float() -> None:
     problem.objective = MDOFunction(
         lambda x: x, name="my_function", jac=lambda x: array([[1.0]])
     )
-    res = OptimizationLibraryFactory().execute(
+    res = OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, algo_name="NLOPT_SLSQP", max_iter=100
     )
     assert res.x_opt == array([0.0])

@@ -50,6 +50,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_coupling_graph
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.problems.mdo.opt_as_mdo_scenario import OptAsMDOScenario
 
@@ -85,7 +86,7 @@ opt_scenario = create_scenario(
 )
 # %%
 # and solve it using the SLSQP algorithm:
-opt_scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+opt_scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
 # %%
 # We can see that the numerical solution corresponds to the analytical one.
 #
@@ -101,7 +102,9 @@ design_space.set_current_value(initial_point)
 # %%
 # and create the [OptAsMDOScenario][gemseo.problems.mdo.opt_as_mdo_scenario.OptAsMDOScenario],
 # orchestrated by an MDF formulation:
-mdo_scenario = OptAsMDOScenario(discipline, design_space, settings=MDF_Settings())
+mdo_scenario = OptAsMDOScenario(
+    discipline, design_space, formulation_settings=MDF_Settings()
+)
 mdo_scenario.add_objective("f")
 # %%
 # Then,
@@ -129,6 +132,6 @@ generate_coupling_graph(mdo_scenario.disciplines, file_path="")
 # Lastly,
 # we solve this scenario using the SLSQP algorithm:
 mdo_scenario.set_differentiation_method(method="finite_differences")
-mdo_scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+mdo_scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
 # %%
 # We can see that the numerical solution corresponds to the analytical one.

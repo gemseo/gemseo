@@ -264,7 +264,7 @@ eventually specifying the output directory `directory_path='SOME_PATH'`.
 When the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] is created, we can execute it to solve the optimization problem, e.g.
 
 ``` python
-scenario.execute(algo_name="SLSQP", max_iter=100) # MDO case
+scenario.execute(SLSQP_Settings(max_iter=100)) # optimization case
 ```
 
 or sampling the problem, e.g.
@@ -276,7 +276,7 @@ doe_scenario = create_scenario(
       objective_name=objective_name,
       design_space=design_space,
 )
-doe_scenario.execute(algo_name="PYDOE_LHS", n_samples=100) # DOE case
+doe_scenario.execute(PYDOE_LHS_Settings(n_samples=100)) # DOE case
 ```
 
 !!! note

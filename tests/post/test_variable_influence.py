@@ -27,6 +27,9 @@ from numpy import eye
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.diagonal_doe.diagonal_doe import DiagonalDOE
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
@@ -81,10 +84,10 @@ def test_variable_influence_doe(tmp_wd) -> None:
     inputs = [name for name in disc.io.input_grammar if not name.startswith("c_")]
     design_space.filter(inputs)
     doe_scenario = MDOScenario(
-        [disc], design_space, settings=DisciplinaryOpt_Settings()
+        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     doe_scenario.add_objective("y_12")
-    doe_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
+    doe_scenario.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=False))
     with pytest.raises(
         ValueError, match=re.escape("No gradients to plot at current iteration.")
     ):

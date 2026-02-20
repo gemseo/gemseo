@@ -30,6 +30,10 @@ from numpy import empty
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.post.factory import POST_FACTORY
@@ -97,10 +101,10 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     inputs = [name for name in disc.io.input_grammar if not name.startswith("c_")]
     design_space.filter(inputs)
     mdo_scenario = MDOScenario(
-        [disc], design_space, settings=DisciplinaryOpt_Settings()
+        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     mdo_scenario.add_objective("y_12")
-    mdo_scenario.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=True)
+    mdo_scenario.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=True))
     mdo_scenario.post_process(
         post_name="GradientSensitivity",
         scale_gradients=scale_gradients,
@@ -108,10 +112,10 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
         save=True,
     )
     mdo_scenario2 = MDOScenario(
-        [disc], design_space, settings=DisciplinaryOpt_Settings()
+        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     mdo_scenario2.add_objective("y_12")
-    mdo_scenario2.execute(algo_name="DiagonalDOE", n_samples=10, eval_jac=False)
+    mdo_scenario2.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=False))
 
     with pytest.raises(
         ValueError, match=re.escape("No gradients to plot at current iteration.")
@@ -154,7 +158,7 @@ def test_scale_gradients(tmp_wd, scale_gradients) -> None:
     design_sp.add_variable("x2", lower_bound=-2.0, upper_bound=2.0, value=array(2.0))
 
     scenario = create_scenario(disc, "y", design_sp, formulation_name="DisciplinaryOpt")
-    scenario.execute(algo_name="L-BFGS-B", max_iter=10)
+    scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
     post = scenario.post_process(
         post_name="GradientSensitivity",
@@ -194,7 +198,7 @@ def test_plot(tmp_wd, baseline_images, scale_gradients) -> None:
 
     scenario = create_scenario(disc, "y", design_sp, formulation_name="DisciplinaryOpt")
 
-    scenario.execute(algo_name="L-BFGS-B", max_iter=10)
+    scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
     scenario.post_process(
         post_name="GradientSensitivity",

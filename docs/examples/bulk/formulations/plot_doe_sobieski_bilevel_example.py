@@ -28,6 +28,8 @@ from os import name as os_name
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
+from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
@@ -143,7 +145,7 @@ system_scenario.formulation.mda2.warm_start = False
 #       process whatever the execution order and process dispatch.
 
 for sub_sc in sub_disciplines[0:3]:
-    sub_sc.set_algorithm(algo_name="L-BFGS-B", max_iter=20)
+    sub_sc.set_algorithm(L_BFGS_B_Settings(max_iter=20))
 
 # %%
 # ### Visualize the XDSM
@@ -169,7 +171,7 @@ system_scenario.xdsmize(save_html=False)
 #       As an alternative, we recommend the method
 #       [set_history_backup()][gemseo.scenarios.mdo.MDOScenario.set_history_backup].
 n_processes = 1 if os_name == "nt" else 4
-system_scenario.execute(algo_name="PYDOE_LHS", n_samples=30, n_processes=n_processes)
+system_scenario.execute(PYDOE_LHS_Settings(n_samples=30, n_processes=n_processes))
 
 system_scenario.print_execution_metrics()
 

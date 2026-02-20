@@ -26,12 +26,12 @@ from pydantic import NonNegativeInt  # noqa: TC002
 from pydantic import model_validator
 from strenum import StrEnum
 
+from gemseo.algos.base_settings import BaseSettings
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (  # noqa: TC001
     BaseLinearSolverSettings,
 )
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.core.coupling_structure import CouplingStructure  # noqa: TC001
-from gemseo.settings.base_settings import BaseSettings
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
 if TYPE_CHECKING:

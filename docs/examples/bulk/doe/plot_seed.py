@@ -42,6 +42,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.doe.openturns.openturns import OpenTURNS
+from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
@@ -76,20 +77,20 @@ scenario = create_scenario(
 
 # %%
 # and solve it:
-scenario.execute(algo_name="OT_OPT_LHS", n_samples=2)
+scenario.execute(OT_OPT_LHS_Settings(n_samples=2))
 scenario.formulation.problem.database.get_last_n_x_vect(2)
 
 # %%
 # When using the same DOE algorithm,
 # solving again this problem with the same scenario leads to a new result:
-scenario.execute(algo_name="OT_OPT_LHS", n_samples=2)
+scenario.execute(OT_OPT_LHS_Settings(n_samples=2))
 scenario.formulation.problem.database.get_last_n_x_vect(2)
 
 # %%
 # The value of the default seed was incremented
 # from 0 (at first execution) to 1 (at last execution),
 # as we can check it by setting the custom `"seed"` to 1:
-scenario.execute(algo_name="OT_OPT_LHS", n_samples=2, seed=1)
+scenario.execute(OT_OPT_LHS_Settings(n_samples=2, seed=1))
 scenario.formulation.problem.database.get_last_n_x_vect(2)
 
 # %%

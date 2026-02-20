@@ -33,6 +33,7 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import Ridge
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.linreg import LinearRegressor
@@ -59,10 +60,10 @@ def dataset() -> IODataset:
     design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
     scenario = MDOScenario(
-        [discipline], design_space, settings=DisciplinaryOpt_Settings()
+        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y_1")
-    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=LEARNING_SIZE)
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
     return discipline.cache.to_dataset("dataset_name")
 
 

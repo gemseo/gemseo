@@ -25,6 +25,7 @@ from __future__ import annotations
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 
 # %%
 # ## About namespaces
@@ -100,7 +101,7 @@ scenario = create_scenario(
 # as well as the data handling
 scenario.xdsmize(save_html=False)
 
-scenario.execute(n_samples=20, algo_name="LHS")
+scenario.execute(LHS_Settings(n_samples=20))
 
 # %%
 # ### Plot the optimization history view

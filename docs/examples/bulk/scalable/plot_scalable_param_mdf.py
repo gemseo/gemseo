@@ -38,6 +38,7 @@ from __future__ import annotations
 from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo import generate_n2_plot
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings import (
     ScalableDisciplineSettings,
 )
@@ -59,7 +60,7 @@ generate_n2_plot(problem.disciplines, save=False, show=True)
 # ## Solve the MDO using an MDF formulation
 #
 scenario = problem.create_scenario()
-scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
 
 # %%
 # ## Post-process the results

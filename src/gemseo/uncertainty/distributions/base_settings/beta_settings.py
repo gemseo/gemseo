@@ -22,7 +22,7 @@ from pydantic import Field
 from pydantic import PositiveFloat
 from pydantic import model_validator
 
-from gemseo.settings.base_settings import BaseSettings
+from gemseo.algos.base_settings import BaseSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self

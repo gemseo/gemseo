@@ -20,6 +20,9 @@ import pytest
 
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.scipy_linprog.settings.highs_interior_point import (
+    INTERIOR_POINT_Settings,
+)
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.linear_combination import LinearCombination
@@ -92,6 +95,6 @@ def test_problem_is_linear(scenario) -> None:
 
 def test_execution(scenario) -> None:
     """Tests the execution of scenario with sparse Jacobians."""
-    scenario.execute(algo_name="INTERIOR_POINT", max_iter=1000)
+    scenario.execute(INTERIOR_POINT_Settings(max_iter=1000))
     out = scenario.formulation.problem.solution
     assert pytest.approx(out.f_opt) == -8.0

@@ -28,7 +28,8 @@ from numpy import array
 from gemseo import configure
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -87,7 +88,9 @@ def optimization_result() -> Generator[OptimizationResult | None, Any, None]:
         "ineq_n_1": "x",
         "ineq_n_2": "x",
     })
-    scenario = MDOScenario([disc], design_space, settings=DisciplinaryOpt_Settings())
+    scenario = MDOScenario(
+        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
+    )
     scenario.add_objective("y")
     scenario.add_constraint("eq_1")
     scenario.add_constraint("eq_2", value=0.25)
@@ -104,7 +107,7 @@ def optimization_result() -> Generator[OptimizationResult | None, Any, None]:
         value=0.25,
     )
     scenario.add_constraint("ineq_n_2", constraint_type=scenario.ConstraintType.INEQ)
-    scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=1)
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=1))
     yield scenario.optimization_result
     configure()
 
@@ -258,7 +261,7 @@ def test_from_optimization_problem(
 def test_opt_result_from_opt_problem(tmp_path):
     """Test the creation of an OptimizationResult from an OptimizationProblem."""
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP", max_iter=50)
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP", max_iter=50)
     out_file = tmp_path / "output.hdf"
     problem.to_hdf(out_file)
     read_problem = OptimizationProblem.from_hdf(out_file)

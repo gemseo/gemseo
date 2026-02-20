@@ -28,7 +28,7 @@ from gemseo.algos.opt.augmented_lagrangian.settings.order_0 import (
 from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (
     Augmented_Lagrangian_Order_1_Settings,
 )
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -48,7 +48,7 @@ def test_kkt_norm_correctly_stored(problem) -> None:
         "sub_algorithm_name": "L-BFGS-B",
     }
     problem.reset()
-    OptimizationLibraryFactory().execute(
+    OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, algo_name="Augmented_Lagrangian_Order_1", **options
     )
     kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
@@ -193,7 +193,7 @@ def test_n_obj_func_calls(enable_function_statistics):
         "sub_algorithm_name": "L-BFGS-B",
     }
 
-    optimizer = OptimizationLibraryFactory().create("Augmented_Lagrangian_Order_1")
+    optimizer = OPTIMIZATION_LIBRARY_FACTORY.create("Augmented_Lagrangian_Order_1")
     problem.reset()
     optimizer.execute(problem, **options)
     n_calls = optimizer.n_obj_func_calls  # Accessing as property, not as a method
@@ -232,7 +232,7 @@ def rosenbrock_opt_problem():
 @pytest.fixture
 def optimizer():
     # Create an optimizer instance
-    return OptimizationLibraryFactory().create("Augmented_Lagrangian_Order_1")
+    return OPTIMIZATION_LIBRARY_FACTORY.create("Augmented_Lagrangian_Order_1")
 
 
 def test_solve_sub_problem_adds_constraints_with_rosenbrock(

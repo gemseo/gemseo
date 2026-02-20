@@ -106,7 +106,9 @@ def build_mdo_scenario(
     scenario = MDOScenario(
         disciplines,
         design_space,
-        settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(),
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation_name
+        ).settings_class(),
     )
     scenario.add_objective("y_4", minimize=False)
     for c_name in ["g_1", "g_2", "g_3"]:
@@ -163,7 +165,7 @@ def test_add_user_defined_constraint_error(mdf_scenario) -> None:
 @pytest.mark.parametrize("file_format", OptimizationProblem.HistoryFileFormat)
 def test_save_history_format(mdf_scenario, file_format, tmp_wd) -> None:
     file_path = Path("file_name")
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=2)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=2))
     if file_format == OptimizationProblem.HistoryFileFormat.HDF5:
         mdf_scenario.to_hdf(file_path)
     else:
@@ -271,7 +273,7 @@ def test_optimization_hist_backup_plot(tmp_wd, mdf_scenario, plot) -> None:
     """
     file_path = Path("opt_history.h5")
     mdf_scenario.set_backup_settings(file_path, plot=plot)
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=4)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=4))
     for suffix in [
         "ineq_constraints",
         "objective",
@@ -294,7 +296,7 @@ def test_backup_1(tmp_wd, mdf_variable_grammar_scenario) -> None:
     """
     filename = "opt_history.h5"
     mdf_variable_grammar_scenario.set_backup_settings(filename, load=True)
-    mdf_variable_grammar_scenario.execute(algo_name="SLSQP", max_iter=2)
+    mdf_variable_grammar_scenario.execute(SLSQP_Settings(max_iter=2))
     opt_read = OptimizationProblem.from_hdf(filename)
 
     assert len(opt_read.database) == len(
@@ -362,7 +364,7 @@ def test_adapter(tmp_wd, idf_scenario) -> None:
     # Monitor in the console
     idf_scenario.xdsmize(True, log_workflow_status=True, save_json=True)
 
-    idf_scenario.set_algorithm(algo_name="SLSQP", max_iter=1)
+    idf_scenario.set_algorithm(SLSQP_Settings(max_iter=1))
 
     inputs = ["x_shared"]
     outputs = ["y_4"]
@@ -466,7 +468,7 @@ def test_run_log(mdf_scenario, caplog, is_enabled, expected) -> None:
     mdf_scenario.execution_statistics.is_enabled = is_enabled
     mdf_scenario._execute = lambda: None
     mdf_scenario.name = "ABC Scenario"
-    mdf_scenario.execute(max_iter=1, algo_name="SLSQP")
+    mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     strings = [
         "*** Start ABC Scenario execution ***",
         f"*** End ABC Scenario execution {expected}***",
@@ -479,18 +481,18 @@ def test_run_log(mdf_scenario, caplog, is_enabled, expected) -> None:
 
 def test_clear_history_before_run(mdf_scenario) -> None:
     """Check that clear_history_before_execute is correctly used in Scenario._run."""
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     assert len(mdf_scenario.formulation.problem.database) == 1
 
     def run_algorithm_mock() -> None:
         pass
 
     mdf_scenario._execute = run_algorithm_mock
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     assert len(mdf_scenario.formulation.problem.database) == 1
 
     mdf_scenario.clear_database_before_execute = True
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     assert len(mdf_scenario.formulation.problem.database) == 0
 
 
@@ -505,7 +507,7 @@ def test_print_execution_metrics(mdf_scenario, caplog, activate, text) -> None:
     """Check the print of the execution metrics w.r.t."""
     activate_counters = ExecutionStatistics.is_enabled
     ExecutionStatistics.is_enabled = activate
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     mdf_scenario.print_execution_metrics()
     assert text in caplog.text
     ExecutionStatistics.is_enabled = activate_counters
@@ -513,7 +515,7 @@ def test_print_execution_metrics(mdf_scenario, caplog, activate, text) -> None:
 
 def test_get_execution_metrics(mdf_scenario, enable_discipline_statistics) -> None:
     """Check the string returned execution_metrics."""
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     expected = re.compile(
         r"""Scenario execution statistics
    Discipline: SobieskiPropulsion
@@ -560,7 +562,7 @@ def mocked_export_to_dataset(
 
 def test_export_to_dataset(mdf_scenario) -> None:
     """Check that to_dataset calls OptimizationProblem.to_dataset."""
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     mdf_scenario.to_dataset = mocked_export_to_dataset
     dataset = mdf_scenario.to_dataset(
         name=1, by_group=2, categorize=3, opt_naming=4, export_gradients=5
@@ -586,7 +588,7 @@ def complex_step_scenario() -> MDOScenario:
             self.io.data["y"] = self.io.data["x"]
 
     scenario = MDOScenario(
-        [MyDiscipline()], design_space, settings=DisciplinaryOpt_Settings()
+        [MyDiscipline()], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y")
     scenario.set_differentiation_method(scenario.DifferentiationMethod.COMPLEX_STEP)
@@ -597,7 +599,7 @@ def complex_step_scenario() -> MDOScenario:
 def test_complex_step(complex_step_scenario, normalize_design_space) -> None:
     """Check that complex step approximation works correctly."""
     complex_step_scenario.execute(
-        algo_name="SLSQP", max_iter=10, normalize_design_space=normalize_design_space
+        SLSQP_Settings(max_iter=10, normalize_design_space=normalize_design_space)
     )
 
     assert complex_step_scenario.optimization_result.x_opt[0] == 0.0
@@ -626,12 +628,14 @@ def test_use_standardized_objective(
 ) -> None:
     """Check that the setter use_standardized_objective works correctly."""
     discipline, design_space = sinus_use_case
-    scenario = MDOScenario([discipline], design_space, settings=MDF_Settings())
+    scenario = MDOScenario(
+        [discipline], design_space, formulation_settings=MDF_Settings()
+    )
     scenario.add_objective("y", minimize=not maximize)
     assert scenario.use_standardized_objective
     scenario.use_standardized_objective = standardize
     assert scenario.use_standardized_objective is standardize
-    scenario.execute(algo_name="SLSQP", max_iter=10)
+    scenario.execute(SLSQP_Settings(max_iter=10))
     assert expr in caplog.text
     assert f"Objective: {val}" in caplog.text
     assert f"obj={int(val)}" in caplog.text
@@ -682,7 +686,7 @@ def scenario_with_non_float_variables() -> MDOScenario:
     discipline.io.input_grammar.defaults["w"] = array(1, dtype=int64)
 
     scenario = MDOScenario(
-        [discipline], design_space, settings=DisciplinaryOpt_Settings()
+        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y")
     return scenario
@@ -744,7 +748,7 @@ def test_check_disciplines() -> None:
         MDOScenario(
             [discipline_1, discipline_2],
             design_space,
-            settings=DisciplinaryOpt_Settings(),
+            formulation_settings=DisciplinaryOpt_Settings(),
         )
 
 
@@ -755,7 +759,7 @@ def identity_scenario() -> MDOScenario:
     scenario = MDOScenario(
         [AnalyticDiscipline({"y": "x", "z": "x"})],
         design_space,
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     scenario.add_objective("z")
     return scenario
@@ -916,7 +920,7 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
     Args:
         mdf_scenario: A fixture for the MDOScenario.
     """
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     mdf_scenario.formulation.problem.reset(database=False, design_space=False)
 
     with open("scenario.pkl", "wb") as file:
@@ -925,14 +929,14 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
     with open("scenario.pkl", "rb") as file:
         pickled_scenario = pickle.load(file)
 
-    pickled_scenario.execute(algo_name="SLSQP", max_iter=1)
+    pickled_scenario.execute(SLSQP_Settings(max_iter=1))
 
 
 def test_get_result(mdf_scenario) -> None:
     """Check get_result."""
     assert mdf_scenario.get_result() is None
 
-    mdf_scenario.execute(algo_name="SLSQP", max_iter=1)
+    mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     assert mdf_scenario.get_result().design_variable_names_to_values
 
     with pytest.raises(
@@ -1004,15 +1008,13 @@ def test_scenario_to_dataset(tmp_wd):
     design_space.add_variable("x_int", type_=DesignSpace.DesignVariableType.INTEGER)
 
     scenario = MDOScenario(
-        [MyDisc()], design_space, settings=DisciplinaryOpt_Settings()
+        [MyDisc()], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y1")
     scenario.add_observable("y2")
     scenario.add_observable("name")
 
-    scenario.execute(
-        algo_name="CustomDOE", samples=array([[0.0, 0.0, 1], [3.0, 3.0, 5]])
-    )
+    scenario.execute(CustomDOE_Settings(samples=array([[0.0, 0.0, 1], [3.0, 3.0, 5]])))
     dataset = scenario.to_dataset(name="foo", opt_naming=False)
 
     reference_dataset = Dataset()
@@ -1047,15 +1049,15 @@ def test_opt_and_doe(use_doe_first, expected):
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=-0.5, upper_bound=1.0, value=1.0)
     scenario = MDOScenario(
-        [discipline], design_space, settings=DisciplinaryOpt_Settings()
+        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("f")
     if use_doe_first:
-        scenario.execute(algo_name="CustomDOE", samples=array([[0.123]]))
-        scenario.execute(algo_name="SLSQP", max_iter=3)
+        scenario.execute(CustomDOE_Settings(samples=array([[0.123]])))
+        scenario.execute(SLSQP_Settings(max_iter=3))
     else:
-        scenario.execute(algo_name="SLSQP", max_iter=3)
-        scenario.execute(algo_name="CustomDOE", samples=array([[0.123]]))
+        scenario.execute(SLSQP_Settings(max_iter=3))
+        scenario.execute(CustomDOE_Settings(samples=array([[0.123]])))
 
     x = scenario.formulation.problem.database.get_x_vect_history()
     assert_almost_equal(x, expected)
@@ -1084,10 +1086,12 @@ def test_derivative_bug_1602():
     design_space.add_variable("x1")
     design_space.add_variable("x2")
 
-    scenario = MDOScenario(disciplines, design_space, settings=MDF_Settings())
+    scenario = MDOScenario(
+        disciplines, design_space, formulation_settings=MDF_Settings()
+    )
     scenario.add_objective("a")
     scenario.add_observable("c")
-    scenario.execute(algo_name="CustomDOE", samples=array([[1.0, 1.0]]), eval_jac=True)
+    scenario.execute(CustomDOE_Settings(samples=array([[1.0, 1.0]]), eval_jac=True))
 
     assert_equal(
         scenario.formulation.problem.database.last_item,
@@ -1116,7 +1120,7 @@ def test_listener_dataset():
     discipline = AnalyticDiscipline({"y": "2*x"})
 
     scenario = MDOScenario(
-        [discipline], design_space, settings=DisciplinaryOpt_Settings()
+        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y")
 
@@ -1126,7 +1130,7 @@ def test_listener_dataset():
     scenario.formulation.problem.database.add_new_iter_listener(
         callback, output_names=["z"]
     )
-    scenario.execute(algo_name="CustomDOE", samples=array([[1.0]]))
+    scenario.execute(CustomDOE_Settings(samples=array([[1.0]])))
 
     dataset = scenario.formulation.problem.to_dataset(group_functions=True)
 

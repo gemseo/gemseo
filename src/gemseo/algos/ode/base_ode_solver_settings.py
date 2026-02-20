@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.settings.base_settings import BaseSettings
+from gemseo.algos.base_settings import BaseSettings
 
 
 class BaseODESolverSettings(BaseSettings):

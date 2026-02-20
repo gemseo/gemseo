@@ -52,7 +52,7 @@ it is advisable to create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] wit
 and pass the DOE algorithm to [MDOScenario.execute()][gemseo.scenarios.mdo.MDOScenario.execute]:
 
 ``` python
-scenario.execute(algo_name="PYDOE_LHS", n_samples=100)
+scenario.execute(PYDOE_LHS_Settings(n_samples=100))
 ```
 
 ## Algorithms

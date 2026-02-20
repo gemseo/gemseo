@@ -32,7 +32,7 @@ from scipy.optimize import rosen_der
 from scipy.sparse import csr_array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -100,7 +100,7 @@ class TestScipy(TestCase):
 
         problem.objective = MDOFunction(i_fail, name="rosen")
         self.assertRaises(
-            AttributeError, OptimizationLibraryFactory().execute, problem, algo_name
+            AttributeError, OPTIMIZATION_LIBRARY_FACTORY.execute, problem, algo_name
         )
 
     def test_tnc_options(self) -> None:
@@ -177,10 +177,10 @@ class TestScipy(TestCase):
         problem.objective = MDOFunction(
             rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
         )
-        OptimizationLibraryFactory().execute(
+        OPTIMIZATION_LIBRARY_FACTORY.execute(
             problem, algo_name="L-BFGS-B", normalize_design_space=True
         )
-        OptimizationLibraryFactory().execute(
+        OPTIMIZATION_LIBRARY_FACTORY.execute(
             problem, algo_name="L-BFGS-B", normalize_design_space=False
         )
 
@@ -194,7 +194,7 @@ class TestScipy(TestCase):
             problem.objective = MDOFunction(
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
             )
-            res = OptimizationLibraryFactory().execute(
+            res = OPTIMIZATION_LIBRARY_FACTORY.execute(
                 problem, algo_name="L-BFGS-B", **algo_options
             )
             return res, problem
@@ -275,7 +275,7 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
     optimizer can be executed and converges implies that the mdo_functions' Jacobians
     are indeed recast as dense NumPy arrays before being sent to SciPy.
     """
-    optimization_result = OptimizationLibraryFactory().execute(
+    optimization_result = OPTIMIZATION_LIBRARY_FACTORY.execute(
         opt_problem,
         algo_name="SLSQP",
         ftol_abs=1e-10,
@@ -289,7 +289,7 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
 def test_nelder_mead(initial_simplex) -> None:
     """Test the Nelder-Mead algorithm on the Rosenbrock problem."""
     problem = Rosenbrock()
-    opt = OptimizationLibraryFactory().execute(
+    opt = OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, algo_name="NELDER-MEAD", max_iter=800, initial_simplex=initial_simplex
     )
     x_opt, f_opt = problem.get_solution()
@@ -301,7 +301,7 @@ def test_tnc_maxiter(caplog):
     """Check that TNC no longer receives the unknown maxiter option."""
     problem = Rosenbrock()
     with pytest.warns(UserWarning, match="foo") as record:  # noqa: B028, PT031
-        OptimizationLibraryFactory().execute(problem, algo_name="TNC", max_iter=2)
+        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="TNC", max_iter=2)
         warn("foo", UserWarning, stacklevel=2)
 
     assert len(record) == 1
@@ -324,7 +324,7 @@ def test_stop_crit_n_x(algorithm_name) -> None:
 def test_cobyqa() -> None:
     """Test the COBYQA algorithm on the Rosenbrock problem."""
     problem = Rosenbrock()
-    opt = OptimizationLibraryFactory().execute(
+    opt = OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, algo_name="COBYQA", max_iter=100
     )
     x_opt, f_opt = problem.get_solution()
@@ -360,4 +360,4 @@ def test_cannot_handle_inequality_constraints():
             "because it does not handle inequality constraints."
         ),
     ):
-        OptimizationLibraryFactory().execute(problem, algo_name="TNC")
+        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="TNC")

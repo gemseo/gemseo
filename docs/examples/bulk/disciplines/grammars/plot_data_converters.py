@@ -32,6 +32,7 @@ from numpy import ones
 from gemseo import create_scenario
 from gemseo import set_data_converters
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
@@ -172,10 +173,7 @@ scenario = create_scenario(
 scenario.add_constraint("c_1", constraint_type="ineq")
 scenario.add_constraint("c_2", constraint_type="ineq")
 
-scenario.execute(
-    algo_name="NLOPT_COBYLA",
-    max_iter=10,
-)
+scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 
 # Reset the data converters to remove the custom converters.
 # This should only be needed if the type of the variables y_1 and y_2 are no longer

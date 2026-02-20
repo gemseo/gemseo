@@ -21,7 +21,7 @@ from typing import ClassVar
 
 from pydantic import Field
 
-from gemseo.settings.base_settings import BaseSettings  # noqa: TC001
+from gemseo.algos.base_settings import BaseSettings  # noqa: TC001
 from gemseo.uncertainty.distributions.base_joint_settings import (
     BaseJointDistributionSettings,
 )

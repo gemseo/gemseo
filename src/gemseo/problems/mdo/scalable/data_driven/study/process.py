@@ -60,6 +60,7 @@ from typing import TYPE_CHECKING
 
 from numpy import inf
 
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.mdo.scalable.data_driven.study.result import ScalabilityResult
@@ -851,7 +852,13 @@ class ScalabilityStudy:
         algo_settings = deepcopy(self.algorithms_options[opt_index])
         max_iter = algo_settings["max_iter"]
         del algo_settings["max_iter"]
-        problem.scenario.execute(algo_name=algo, max_iter=max_iter, **algo_settings)
+        cls = OPTIMIZATION_LIBRARY_FACTORY.get_class(
+            OPTIMIZATION_LIBRARY_FACTORY.algo_names_to_libraries[algo]
+        )
+        settings = cls.ALGORITHM_INFOS[algo].settings_class(
+            max_iter=max_iter, **algo_settings
+        )
+        problem.scenario.execute(settings)
         return algo_settings
 
     def __get_stop_index(self, problem: ScalableProblem) -> tuple[int, int]:

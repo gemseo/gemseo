@@ -16,13 +16,16 @@
 
 from __future__ import annotations  # noqa: I001
 
+from typing import TYPE_CHECKING
+
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-
 from ..core.test_chain import two_virtual_disciplines  # noqa: F401
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -59,9 +62,5 @@ def generate_parallel_doe(
         main_mda_name=main_mda_name,
         main_mda_settings=main_mda_settings,
     )
-    scenario.execute(
-        algo_name="DiagonalDOE",
-        n_samples=n_samples,
-        n_processes=2,
-    )
+    scenario.execute(DiagonalDOE_Settings(n_samples=n_samples, n_processes=2))
     return scenario.optimization_result.f_opt

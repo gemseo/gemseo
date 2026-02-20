@@ -42,6 +42,7 @@ from __future__ import annotations
 from gemseo import configure
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.post.core.gantt_chart import create_gantt_chart
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -104,7 +105,7 @@ ExecutionStatistics.is_time_stamps_enabled = True
 #
 # The scenario can now be executed
 # using the SLSQP optimization algorithm and a maximum of 10 iterations:
-scenario.execute(algo_name="SLSQP", max_iter=10)
+scenario.execute(SLSQP_Settings(max_iter=10))
 
 # %%
 # !!! info "See also"

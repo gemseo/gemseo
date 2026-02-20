@@ -23,7 +23,7 @@ from numpy import array
 from numpy import vstack
 from numpy.testing import assert_almost_equal
 
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.multi_start.multi_start import MultiStart
 from gemseo.problems.optimization.power_2 import Power2
 
@@ -107,7 +107,7 @@ def test_database(n_processes):
 
 def test_factory():
     """Check that the factory of optimization algorithms knows this algorithm."""
-    assert OptimizationLibraryFactory().is_available("MultiStart")
+    assert OPTIMIZATION_LIBRARY_FACTORY.is_available("MultiStart")
 
 
 @pytest.fixture(scope="module")

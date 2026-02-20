@@ -24,6 +24,7 @@ from pathlib import Path
 
 import pytest
 
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
@@ -98,5 +99,5 @@ def test_statistics(scalable_problem, enable_discipline_statistics) -> None:
     scalable_problem.get_execution_duration()
     scalable_problem.n_calls  # noqa: B018
     scalable_problem.n_calls_linearize  # noqa: B018
-    scalable_problem.scenario.execute(algo_name="SLSQP", max_iter=100)
+    scalable_problem.scenario.execute(SLSQP_Settings(max_iter=100))
     scalable_problem.status  # noqa: B018

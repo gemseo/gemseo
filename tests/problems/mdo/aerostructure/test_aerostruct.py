@@ -23,6 +23,7 @@ from math import exp
 
 import numpy as np
 
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
@@ -196,7 +197,7 @@ class TestAerostructureScenarios(unittest.TestCase):
         scenario = MDOScenario(
             disciplines,
             design_space,
-            settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation_settings=MDO_FORMULATION_FACTORY.get_class(
                 formulation_name
             ).settings_class(),
         )
@@ -220,7 +221,10 @@ class TestAerostructureScenarios(unittest.TestCase):
         scenario.add_constraint("c_lift")
         scenario.add_constraint("c_rf", constraint_type=scenario.ConstraintType.INEQ)
         # run the optimizer
-        scenario.execute(algo_name=algo, max_iter=10)
+        factory = OPTIMIZATION_LIBRARY_FACTORY
+        cls = factory.get_class(factory.algo_names_to_libraries[algo])
+        settings = cls.ALGORITHM_INFOS[algo].settings_class(max_iter=10)
+        scenario.execute(settings)
         obj_opt = scenario.optimization_result.f_opt
         xopt = scenario.design_space.get_current_value(as_dict=True)
         sweep = xopt["sweep"]

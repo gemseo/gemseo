@@ -22,6 +22,9 @@ import os
 
 import pytest
 
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.problems.mdo.scalable.data_driven.study.post import PostScalabilityStudy
@@ -67,10 +70,10 @@ def sellar_use_case(tmp_wd, sellar_with_2d_array, sellar_disciplines):
         input_names = set(design_space) & discipline.io.input_grammar.keys()
         design_space = design_space.filter(input_names)
         scenario = MDOScenario(
-            [discipline], design_space, settings=DisciplinaryOpt_Settings()
+            [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
         )
         scenario.add_objective(objective_name)
-        scenario.execute(algo_name="DiagonalDOE", n_samples=n_samples)
+        scenario.execute(DiagonalDOE_Settings(n_samples=n_samples))
     design_variables = [X_SHARED, X_1]
     objective_name = OBJ
     os.mkdir("study_1")

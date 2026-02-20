@@ -27,6 +27,7 @@ from numpy import ones_like
 
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
@@ -92,17 +93,22 @@ def test_resolution(algo, n, p, constraint_kind) -> None:
     }:
         pytest.skip("SLSQP is not well suited for non-linear equality constraints")
 
-    options = {
-        "max_iter": 1000,
-        "algo_name": algo,
-        "normalize_design_space": True,
-        "stop_crit_n_x": 2,
-        "ftol_rel": 1e-6,
-    }
-
-    if algo.startswith("Augmented_Lagrangian"):
-        options["sub_algorithm_name"] = "L-BFGS-B"
-        options["sub_algorithm_settings"] = {"max_iter": 300}
+    factory = OPTIMIZATION_LIBRARY_FACTORY
+    cls = factory.get_class(factory.algo_names_to_libraries[algo])
+    settings = cls.ALGORITHM_INFOS[algo].settings_class(
+        max_iter=100,
+        normalize_design_space=True,
+        stop_crit_n_x=2,
+        ftol_rel=1e-6,
+        **(
+            {
+                "sub_algorithm_name": "L-BFGS-B",
+                "sub_algorithm_settings": {"max_iter": 300},
+            }
+            if algo.startswith("Augmented_Lagrangian")
+            else {}
+        ),
+    )
 
     ds = DesignSpace()
     ds.add_variable("x", size=n, lower_bound=0.1, upper_bound=n, value=n)
@@ -114,7 +120,7 @@ def test_resolution(algo, n, p, constraint_kind) -> None:
         formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint("g", constraint_type=constraint_kind)
-    scenario.execute(**options)
+    scenario.execute(settings)
 
     assert pytest.approx(
         scenario.formulation.problem.solution.x_opt,

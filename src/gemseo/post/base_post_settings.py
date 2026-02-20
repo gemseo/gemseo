@@ -21,7 +21,7 @@ from pathlib import Path
 from pydantic import Field
 from pydantic import PositiveFloat
 
-from gemseo.settings.base_settings import BaseSettings
+from gemseo.algos.base_settings import BaseSettings
 
 
 class BasePostSettings(BaseSettings):
