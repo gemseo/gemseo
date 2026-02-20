@@ -47,6 +47,7 @@ from typing import overload
 
 from numpy import ndarray
 
+from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
 from gemseo.datasets import DatasetClassName
 from gemseo.datasets.optimization_dataset import OptimizationDataset
@@ -88,6 +89,7 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
     from gemseo.algos.base_driver_library import DriverSettingType
+    from gemseo.algos.base_settings import BaseSettings
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.doe.base_doe_settings import BaseDOESettings
@@ -123,7 +125,6 @@ if TYPE_CHECKING:
     from gemseo.scenarios.scenario_results.scenario_result import (
         ScenarioResult as ScenarioResult,
     )
-    from gemseo.settings.base_settings import BaseSettings
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
@@ -227,9 +228,9 @@ def get_available_opt_algorithms() -> list[str]:
     Returns:
         The names of the available optimization algorithms.
     """
-    from gemseo.algos.opt.factory import OptimizationLibraryFactory
+    from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 
-    return OptimizationLibraryFactory().algorithms
+    return OPTIMIZATION_LIBRARY_FACTORY.algorithms
 
 
 def get_available_doe_algorithms() -> list[str]:
@@ -308,9 +309,9 @@ def get_algorithm_options_schema(
         ValueError: When the algorithm is not available.
     """
     from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
-    from gemseo.algos.opt.factory import OptimizationLibraryFactory
+    from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 
-    for factory in (DOE_LIBRARY_FACTORY, OptimizationLibraryFactory()):
+    for factory in (DOE_LIBRARY_FACTORY, OPTIMIZATION_LIBRARY_FACTORY):
         if factory.is_available(algorithm_name):
             algo_lib = factory.create(algorithm_name)
             settings = algo_lib.ALGORITHM_INFOS[algorithm_name].settings_class
@@ -561,7 +562,14 @@ def get_scenario_inputs_schema(
     Returns:
         The schema of the inputs of the scenario.
     """
-    return scenario.settings_class.model_json_schema()
+    from gemseo.algos.base_driver_settings import BaseDriverSettings
+
+    if scenario._EvaluationScenario__algorithm_settings is None:
+        settings = BaseDriverSettings
+    else:
+        settings = scenario._EvaluationScenario__algorithm_settings
+
+    return settings.model_json_schema()
 
 
 def get_discipline_options_defaults(
@@ -749,7 +757,7 @@ def create_scenario(
     else:
         settings = formulation_settings_model
 
-    scenario = cls(disciplines, design_space, name=name, settings=settings)
+    scenario = cls(disciplines, design_space, name=name, formulation_settings=settings)
     scenario.add_objective(objective_name, minimize=not maximize_objective)
     return scenario
 
@@ -1028,9 +1036,9 @@ def execute_algo(
             These arguments are ignored when `settings_model` is not `None`.
     """
     if algo_type == "opt":
-        from gemseo.algos.opt.factory import OptimizationLibraryFactory
+        from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 
-        factory = OptimizationLibraryFactory()
+        factory = OPTIMIZATION_LIBRARY_FACTORY
 
     elif algo_type == "doe":
         from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
@@ -1614,7 +1622,7 @@ def sample_disciplines(
         disciplines,
         input_space,
         name=name,
-        settings=settings,
+        formulation_settings=settings,
     )
     scenario.add_objective(next(output_names_iterator), minimize=not maximize_objective)
     for output_name in output_names_iterator:
@@ -1635,7 +1643,14 @@ def sample_disciplines(
             erase=backup_settings.erase,
             load=backup_settings.load,
         )
-    scenario.execute(algo_settings_model=algo_settings_model, **algo_settings)
+    if algo_settings_model is None:
+        algo_name = algo_settings.pop("algo_name")
+        factory = DOELibraryFactory()
+        cls = factory.get_class(factory.algo_names_to_libraries[algo_name])
+        settings = cls.ALGORITHM_INFOS[algo_name].settings_class(**algo_settings)
+        scenario.execute(settings)
+    else:
+        scenario.execute(algo_settings_model)
     return scenario.formulation.problem.to_dataset(
         name=name, opt_naming=False, export_gradients=True
     )

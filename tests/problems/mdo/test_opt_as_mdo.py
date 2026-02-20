@@ -68,7 +68,9 @@ def test_basic(discipline, initial_point):
         # used in the example plot_opt_as_mdo of the documentation.
         design_space.set_current_value(initial_point)
 
-    scenario = OptAsMDOScenario(discipline, design_space, settings=MDF_Settings())
+    scenario = OptAsMDOScenario(
+        discipline, design_space, formulation_settings=MDF_Settings()
+    )
     scenario.add_objective("f")
 
     disciplines = scenario.disciplines
@@ -77,7 +79,7 @@ def test_basic(discipline, initial_point):
     assert disciplines[2].name == "D1"
     assert disciplines[3].name == "D2"
 
-    scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+    scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
     assert_almost_equal(scenario.optimization_result.x_opt, ones(3))
 
 
@@ -104,13 +106,15 @@ def test_non_differentiable_link_discipline(discipline):
         new_callable=PropertyMock,
         return_value=None,
     ):
-        scenario = OptAsMDOScenario(discipline, design_space, settings=MDF_Settings())
+        scenario = OptAsMDOScenario(
+            discipline, design_space, formulation_settings=MDF_Settings()
+        )
 
     scenario.add_objective("f")
     with pytest.raises(
         ValueError, match=re.escape("The discipline L was not linearized.")
     ):
-        scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+        scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
 
 
 def test_coupling_equations(discipline):
@@ -129,7 +133,7 @@ def test_coupling_equations(discipline):
     scenario = OptAsMDOScenario(
         discipline,
         design_space,
-        settings=MDF_Settings(),
+        formulation_settings=MDF_Settings(),
         coupling_equations=coupling_equations,
     )
     scenario.add_objective("f")
@@ -140,7 +144,7 @@ def test_coupling_equations(discipline):
     assert disciplines[2].name == "ScalableDiscipline[1]"
     assert disciplines[3].name == "ScalableDiscipline[2]"
 
-    scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+    scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
     assert_almost_equal(scenario.optimization_result.x_opt, ones(3))
 
 
@@ -158,7 +162,9 @@ def test_more_than_two_disciplines():
     for j in range(d):
         design_space.add_variable(f"z_{j}", lower_bound=-2, upper_bound=2)
 
-    mdo_scenario = OptAsMDOScenario(discipline, design_space, settings=MDF_Settings())
+    mdo_scenario = OptAsMDOScenario(
+        discipline, design_space, formulation_settings=MDF_Settings()
+    )
     mdo_scenario.add_objective("y")
     mdo_scenario.execute(SLSQP_Settings())
     assert_almost_equal(mdo_scenario.optimization_result.x_opt, ones(d), decimal=5)
@@ -208,7 +214,7 @@ def test_vectorial_design_variables():
     mdo_scenario = OptAsMDOScenario(
         Rosenbrock(),
         design_space,
-        settings=MDF_Settings(
+        formulation_settings=MDF_Settings(
             main_mda_settings=MDAChain_Settings(
                 inner_mda_settings=MDAJacobi_Settings(
                     acceleration_method=AccelerationMethod.MINIMUM_POLYNOMIAL

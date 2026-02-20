@@ -45,6 +45,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.settings.mda import MDAChain_Settings
 
 # %%
@@ -248,7 +249,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 # the maximum number of iterations to perform.
 # The execution of the scenario reads:
 
-scenario.execute(algo_name="SLSQP", max_iter=10)
+scenario.execute(SLSQP_Settings(max_iter=10))
 
 # %%
 # The scenario converged after 7 iterations.

@@ -102,11 +102,11 @@ sc_algo_settings = SLSQP_Settings(max_iter=50)
 propulsion_sc = MDOScenario(
     sub_disciplines,
     design_space.filter(["x_3"], copy=True),
-    settings=sub_scenario_settings,
+    formulation_settings=sub_scenario_settings,
     name="PropulsionScenario",
 )
 propulsion_sc.add_objective("y_4", minimize=False)
-propulsion_sc.set_algorithm(algo_settings_model=sc_algo_settings)
+propulsion_sc.set_algorithm(sc_algo_settings)
 propulsion_sc.formulation.problem.objective *= 0.001
 propulsion_sc.add_constraint("g_3", constraint_type="ineq")
 
@@ -118,11 +118,11 @@ propulsion_sc.add_constraint("g_3", constraint_type="ineq")
 aerodynamics_sc = MDOScenario(
     sub_disciplines,
     design_space.filter(["x_2"], copy=True),
-    settings=sub_scenario_settings,
+    formulation_settings=sub_scenario_settings,
     name="AerodynamicsScenario",
 )
 aerodynamics_sc.add_objective("y_4", minimize=False)
-aerodynamics_sc.set_algorithm(algo_settings_model=sc_algo_settings)
+aerodynamics_sc.set_algorithm(sc_algo_settings)
 aerodynamics_sc.formulation.problem.objective *= 0.001
 aerodynamics_sc.add_constraint("g_2", constraint_type="ineq")
 
@@ -134,11 +134,11 @@ aerodynamics_sc.add_constraint("g_2", constraint_type="ineq")
 structure_sc = MDOScenario(
     sub_disciplines,
     design_space.filter(["x_1"], copy=True),
-    settings=sub_scenario_settings,
+    formulation_settings=sub_scenario_settings,
     name="StructureScenario",
 )
 structure_sc.add_objective("y_4", minimize=False)
-structure_sc.set_algorithm(algo_settings_model=sc_algo_settings)
+structure_sc.set_algorithm(sc_algo_settings)
 structure_sc.formulation.problem.objective *= 0.001
 structure_sc.add_constraint("g_1", constraint_type="ineq")
 
@@ -186,11 +186,11 @@ sub_scenarios = [propulsion_sc, aerodynamics_sc, structure_sc, mission_disc]
 system_scenario = MDOScenario(
     sub_scenarios,
     design_space.filter(["x_shared"], copy=True),
-    settings=system_settings,
+    formulation_settings=system_settings,
 )
 system_scenario.add_objective("y_4", minimize=False)
 system_scenario.formulation.problem.objective *= 0.001
-system_scenario.set_algorithm(algo_settings_model=system_sc_algo_settings)
+system_scenario.set_algorithm(system_sc_algo_settings)
 system_scenario.add_constraint("g_1", constraint_type="ineq")
 system_scenario.add_constraint("g_2", constraint_type="ineq")
 system_scenario.add_constraint("g_3", constraint_type="ineq")

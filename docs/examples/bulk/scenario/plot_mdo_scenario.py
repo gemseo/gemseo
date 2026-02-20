@@ -30,6 +30,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_opt_algorithms
 from gemseo import get_available_post_processings
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 
 # %%
 # Let $(P)$ be a simple optimization problem:
@@ -109,7 +110,7 @@ scenario = create_scenario(
 # Precisely, we choose the [L-BFGS-B algorithm](https://en.wikipedia.org/wiki/Limited-memory_BFGS) implemented in the
 # function `scipy.optimize.fmin_l_bfgs_b`.
 
-scenario.execute(algo_name="L-BFGS-B", max_iter=100)
+scenario.execute(L_BFGS_B_Settings(max_iter=100))
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to

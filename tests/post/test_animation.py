@@ -19,6 +19,7 @@ from pathlib import Path
 import pytest
 
 from gemseo import create_scenario
+from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.animation import Animation
 from gemseo.post.factory import POST_FACTORY
@@ -121,7 +122,7 @@ def test_l_shape(tmp_wd) -> None:
         constraint_type=scenario.ConstraintType.INEQ,
         value=volume_fraction,
     )
-    scenario.execute(algo_name="NLOPT_MMA", max_iter=10)
+    scenario.execute(NLOPT_MMA_Settings(max_iter=10))
     post_processing = POST_FACTORY.create("TopologyView", scenario.formulation.problem)
     pp_settings = post_processing.settings_class(n_x=n_x, n_y=n_y)
     output_files = scenario.post_process(

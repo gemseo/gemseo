@@ -36,6 +36,7 @@ from numpy.testing import assert_equal
 from openturns import FunctionalChaosRandomVector
 
 from gemseo import sample_disciplines
+from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -653,10 +654,10 @@ def test_multidimensional_variables() -> None:
     )
 
     scenario = MDOScenario(
-        [discipline], parameter_space, settings=DisciplinaryOpt_Settings()
+        [discipline], parameter_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y")
-    scenario.execute(algo_name="OT_OPT_LHS", n_samples=100)
+    scenario.execute(OT_OPT_LHS_Settings(n_samples=100))
     dataset = scenario.to_dataset(opt_naming=False)
 
     pce = PCERegressor(dataset, PCERegressor_Settings())
@@ -684,10 +685,10 @@ def test_multidimensional_variables() -> None:
     )
 
     scenario = MDOScenario(
-        [discipline], parameter_space, settings=DisciplinaryOpt_Settings()
+        [discipline], parameter_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y")
-    scenario.execute(algo_name="OT_OPT_LHS", n_samples=100)
+    scenario.execute(OT_OPT_LHS_Settings(n_samples=100))
     dataset = scenario.to_dataset(opt_naming=False)
 
     pce = PCERegressor(dataset, PCERegressor_Settings())

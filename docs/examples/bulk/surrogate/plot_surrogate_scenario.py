@@ -70,6 +70,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import create_surrogate
 from gemseo import sample_disciplines
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
@@ -228,7 +229,7 @@ scenario = create_scenario(
     formulation_name="DisciplinaryOpt",
     maximize_objective=True,
 )
-scenario.execute(algo_name="L-BFGS-B", max_iter=30)
+scenario.execute(L_BFGS_B_Settings(max_iter=30))
 
 # %%
 # ## Available surrogate models

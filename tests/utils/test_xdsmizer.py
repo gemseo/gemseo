@@ -101,9 +101,9 @@ def build_sobieski_scenario(
     scenario = MDOScenario(
         disciplines,
         SobieskiDesignSpace(),
-        settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
-            **formulation_settings
-        ),
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation_name
+        ).settings_class(**formulation_settings),
     )
     scenario.add_objective("y_4")
     return scenario
@@ -224,32 +224,32 @@ def test_xdsmize_bilevel(options) -> None:
     sc_prop = MDOScenario(
         [propulsion],
         deepcopy(design_space).filter("x_3"),
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
         name="PropulsionScenario",
     )
     sc_prop.add_objective("y_34")
-    sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
+    sc_prop.set_algorithm(settings_model)
     sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
 
     sc_aero = MDOScenario(
         [aerodynamics],
         deepcopy(design_space).filter("x_2"),
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
         name="AerodynamicsScenario",
     )
     sc_aero.add_objective("y_24", minimize=False)
-    sc_aero.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
+    sc_aero.set_algorithm(settings_model)
     sc_aero.add_constraint("g_2", constraint_type=sc_aero.ConstraintType.INEQ)
 
     sc_str = MDOScenario(
         [structure],
         deepcopy(design_space).filter("x_1"),
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
         name="StructureScenario",
     )
     sc_str.add_objective("y_11", minimize=False)
     sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
-    sc_prop.set_algorithm(algo_name="SLSQP", algo_settings_model=settings_model)
+    sc_prop.set_algorithm(settings_model)
 
     sub_disciplines = [sc_prop, sc_aero, sc_str, mission]
 
@@ -257,7 +257,7 @@ def test_xdsmize_bilevel(options) -> None:
     system_scenario = MDOScenario(
         sub_disciplines,
         design_space,
-        settings=BiLevel_Settings(
+        formulation_settings=BiLevel_Settings(
             apply_cstr_tosub_scenarios=False,
             parallel_scenarios=False,
             apply_cstr_to_system=True,
@@ -273,7 +273,7 @@ def test_xdsmize_bilevel(options) -> None:
     system_scenario_par = MDOScenario(
         sub_disciplines,
         design_space,
-        settings=BiLevel_Settings(
+        formulation_settings=BiLevel_Settings(
             apply_cstr_tosub_scenarios=False,
             apply_cstr_to_system=True,
             parallel_scenarios=True,
@@ -312,7 +312,7 @@ def test_xdsmize_nested_chain(options) -> None:
     design_space.add_variable(get_name(1))
 
     nested_chains = MDOScenario(
-        main_chain, design_space, settings=DisciplinaryOpt_Settings()
+        main_chain, design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     nested_chains.add_objective(get_name(5))
 
@@ -350,7 +350,7 @@ def test_xdsmize_nested_mda(options, mda_class) -> None:
     design_space.add_variable("x0")
 
     scenario = MDOScenario(
-        [disciplines[2], inner_mda], design_space, settings=MDF_Settings()
+        [disciplines[2], inner_mda], design_space, formulation_settings=MDF_Settings()
     )
     scenario.add_objective("y3")
 
@@ -492,7 +492,9 @@ def test_xdsmize_nested_parallel_chain(options) -> None:
     design_space.add_variable(get_name(1))
 
     nested_chains = MDOScenario(
-        [beg_chain, inter_chain], design_space, settings=DisciplinaryOpt_Settings()
+        [beg_chain, inter_chain],
+        design_space,
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     nested_chains.add_objective(get_name(5))
 
@@ -529,7 +531,7 @@ def test_xdsmize_chain_of_parallel_chain(options) -> None:
     sce = MDOScenario(
         [beg_chain, par_chain, end_chain],
         design_space,
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     sce.add_objective(get_name(7))
     sce.add_constraint(get_name(5))
@@ -564,7 +566,7 @@ def test_xdsmized_parallel_chain_of_mda(options) -> None:
     sce = MDOScenario(
         [par_chain, elementary_discipline(get_name(6), get_name(7))],
         design_space,
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     sce.add_objective(get_name(7))
 
@@ -722,7 +724,7 @@ def test_xdsmize_mdf_mdoparallelchain(options) -> None:
     scenario = MDOScenario(
         disciplines,
         design_space,
-        settings=MDF_Settings(
+        formulation_settings=MDF_Settings(
             main_mda_settings={
                 "mdachain_parallelize_tasks": True,
                 "mdachain_parallel_settings": mdachain_parallel_settings,
@@ -747,7 +749,7 @@ def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
     design_space.add_variable("x")
     discipline = AnalyticDiscipline({"y": "x"})
     scenario = MDOScenario(
-        [discipline], design_space, settings=DisciplinaryOpt_Settings()
+        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y")
 
@@ -801,7 +803,7 @@ def test_initial_node_title(cls, expected):
         scenario = cls(
             [discipline],
             design_space,
-            settings=DisciplinaryOpt_Settings(),
+            formulation_settings=DisciplinaryOpt_Settings(),
             name="foo",
         )
         scenario.add_objective("y")

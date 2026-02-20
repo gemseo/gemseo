@@ -221,7 +221,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # and possibly a few options.
 # The maximum number of iterations and the options can be passed
 # either as keyword arguments
-# e.g. `scenario.execute(algo_name="NLOPT_SLSQP", max_iter=10, ftol_rel=1e-6)`
+# e.g. `scenario.execute(NLOPT_SLSQP_Settings(max_iter=10, ftol_rel=1e-6))`
 # or as a Pydantic model of settings,
 # e.g. `scenario.execute(NLOPT_SLSQP_Settings(max_iter=10, ftol_rel=1e-6))`
 # where the Pydantic model `NLOPT_SLSQP_Settings` is imported from

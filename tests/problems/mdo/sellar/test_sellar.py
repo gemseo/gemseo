@@ -31,6 +31,8 @@ from numpy.testing import assert_allclose
 from pandas._testing import assert_frame_equal
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.scipy.settings.mc import MC_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
@@ -161,18 +163,17 @@ def test_mda_linearization(
 
 
 @pytest.mark.parametrize(
-    ("formulation", "algo", "differentiation_method"),
+    ("formulation", "differentiation_method"),
     [
-        ("MDF", "SLSQP", "user"),
-        ("MDF", "SLSQP", "complex_step"),
-        ("IDF", "SLSQP", "complex_step"),
-        ("IDF", "SLSQP", "user"),
+        ("MDF", "user"),
+        ("MDF", "complex_step"),
+        ("IDF", "complex_step"),
+        ("IDF", "user"),
     ],
 )
 def test_exec(
     sellar_with_2d_array,
     formulation,
-    algo,
     differentiation_method,
     disciplines,
     x_opt,
@@ -182,13 +183,15 @@ def test_exec(
     scenario = MDOScenario(
         disciplines,
         SellarDesignSpace(n=n),
-        settings=MDO_FORMULATION_FACTORY.get_class(formulation).settings_class(),
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation
+        ).settings_class(),
     )
     scenario.add_objective("obj")
     scenario.set_differentiation_method(differentiation_method)
     scenario.add_constraint(C_1, constraint_type=MDOFunction.ConstraintType.INEQ)
     scenario.add_constraint(C_2, constraint_type=MDOFunction.ConstraintType.INEQ)
-    scenario.execute(algo_name=algo, max_iter=20)
+    scenario.execute(SLSQP_Settings(max_iter=20))
 
     x_opt = scenario.design_space.get_current_value(as_dict=True)
     x_opt = concatenate((x_opt[X_1], x_opt[X_SHARED]))
@@ -209,25 +212,29 @@ def test_vectorization(eval_jac, cls, output_names, n):
 
     # Create the reference results without vectorization.
     scenario = MDOScenario(
-        [cls(n=n)], SellarDesignSpace(n=n), settings=DisciplinaryOpt_Settings()
+        [cls(n=n)],
+        SellarDesignSpace(n=n),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     scenario.add_objective(output_names[0])
     for output_name in output_names[1:]:
         scenario.add_observable(output_name)
     scenario.execute(
-        algo_name="MC", n_samples=n_samples, vectorize=False, eval_jac=eval_jac
+        MC_Settings(n_samples=n_samples, vectorize=False, eval_jac=eval_jac)
     )
     reference = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
     # Create the results with vectorization.
     scenario = MDOScenario(
-        [cls(n=n)], SellarDesignSpace(n=n), settings=DisciplinaryOpt_Settings()
+        [cls(n=n)],
+        SellarDesignSpace(n=n),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     scenario.add_objective(output_names[0])
     for output_name in output_names[1:]:
         scenario.add_observable(output_name)
     scenario.execute(
-        algo_name="MC", n_samples=n_samples, vectorize=True, eval_jac=eval_jac
+        MC_Settings(n_samples=n_samples, vectorize=True, eval_jac=eval_jac)
     )
     result = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
@@ -247,11 +254,11 @@ def test_vectorization_sellar2_y_1(eval_jac, n):
 
     # Create the reference results without vectorization.
     scenario = MDOScenario(
-        [Sellar2(n=n)], input_space, settings=DisciplinaryOpt_Settings()
+        [Sellar2(n=n)], input_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y_2")
     scenario.execute(
-        algo_name="MC", n_samples=n_samples, vectorize=False, eval_jac=eval_jac
+        MC_Settings(n_samples=n_samples, vectorize=False, eval_jac=eval_jac)
     )
     reference = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
@@ -260,11 +267,11 @@ def test_vectorization_sellar2_y_1(eval_jac, n):
 
     # Create the results with vectorization.
     scenario = MDOScenario(
-        [Sellar2(n=n)], input_space, settings=DisciplinaryOpt_Settings()
+        [Sellar2(n=n)], input_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective("y_2")
     scenario.execute(
-        algo_name="MC", n_samples=n_samples, vectorize=True, eval_jac=eval_jac
+        MC_Settings(n_samples=n_samples, vectorize=True, eval_jac=eval_jac)
     )
     result = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 

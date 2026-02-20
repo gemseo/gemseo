@@ -260,7 +260,9 @@ def test_idf_evaluation_problem() -> None:
         SobieskiMission(),
     ]
     design_space = SobieskiDesignSpace()
-    scenario = EvaluationScenario(disciplines, design_space, settings=IDF_Settings())
+    scenario = EvaluationScenario(
+        disciplines, design_space, formulation_settings=IDF_Settings()
+    )
     names = [
         "consistency_y_12_y_14",
         "consistency_y_31_y_32_y_34",

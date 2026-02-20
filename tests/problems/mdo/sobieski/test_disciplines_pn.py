@@ -23,6 +23,7 @@ from numpy import array
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
+from gemseo.algos.doe.openturns.settings.ot_halton import OT_HALTON_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.mdo.sobieski.design_space import create_design_space
@@ -200,7 +201,7 @@ def scenario_pn() -> MDOScenario:
     scn = MDOScenario(
         create_disciplines_with_physical_naming(),
         create_design_space(physical_naming=True),
-        settings=MDF_Settings(),
+        formulation_settings=MDF_Settings(),
     )
     scn.add_objective("range")
     for constraint_name in [
@@ -229,7 +230,7 @@ def scenario() -> MDOScenario:
             SobieskiMission(),
         ],
         create_design_space(),
-        settings=MDF_Settings(),
+        formulation_settings=MDF_Settings(),
     )
     scn.add_objective("y_4")
     for constraint_name in ["g_1", "g_2", "g_3"]:
@@ -242,9 +243,9 @@ def scenario() -> MDOScenario:
 
 def test_scenario(scenario_pn, scenario) -> None:
     """Check the MDA results of the four disciplines."""
-    scenario_pn.execute(algo_name="OT_HALTON", n_samples=10)
+    scenario_pn.execute(OT_HALTON_Settings(n_samples=10))
     dataset_pn = scenario_pn.to_dataset(opt_naming=False)
-    scenario.execute(algo_name="OT_HALTON", n_samples=10)
+    scenario.execute(OT_HALTON_Settings(n_samples=10))
     dataset = scenario.to_dataset(opt_naming=False)
     data_pn = dataset_pn.get_view(
         variable_names=[

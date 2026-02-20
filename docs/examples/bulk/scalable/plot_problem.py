@@ -31,6 +31,10 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -68,7 +72,7 @@ for discipline in disciplines:
     )
     for output_name in output_names:
         scenario.add_observable(output_name)
-    scenario.execute(algo_name="DiagonalDOE", n_samples=10)
+    scenario.execute(DiagonalDOE_Settings(n_samples=10))
     datasets.append(scenario.to_dataset(name=discipline.name, opt_naming=False))
 
 # %%
@@ -122,7 +126,7 @@ scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
 # Once the scenario is created, we can execute it as any scenario.
 # Here, we use the `NLOPT_SLSQP` optimization algorithm
 # with no more than 100 iterations.
-scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
 
 # %%
 # We can post-process the results.

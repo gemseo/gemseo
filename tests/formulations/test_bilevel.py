@@ -27,6 +27,7 @@ import pytest
 
 from gemseo import create_discipline
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
@@ -214,7 +215,7 @@ def test_bilevel_warm_start(scenario, request) -> None:
     """Test the warm start of the BiLevel chain.
 
     Args:
-        sobieski_bilevel_scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
+        scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
     """
     scenario = request.getfixturevalue(scenario.__name__)()
     scenario.formulation.chain.set_cache(Discipline.CacheType.MEMORY_FULL)
@@ -223,7 +224,7 @@ def test_bilevel_warm_start(scenario, request) -> None:
         Discipline.CacheType.MEMORY_FULL
     )
     mda1_cache = scenario.formulation.chain.disciplines[0].cache
-    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=3)
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=3))
     mda1_inputs = [entry.inputs for entry in mda1_cache.get_all_entries()]
     chain_outputs = [entry.outputs for entry in bilevel_chain_cache.get_all_entries()]
 
@@ -300,21 +301,21 @@ def test_scenario_log_level(
         [AnalyticDiscipline({"z": "(x+y)**2"})],
         design_space.filter(["y"], copy=True),
         name="FooScenario",
-        settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
             sub_scenario_formulation
         ).settings_class(),
     )
     sub_scenario.add_objective("z")
-    sub_scenario.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
+    sub_scenario.set_algorithm(NLOPT_COBYLA_Settings(max_iter=2))
     scenario = MDOScenario(
         [sub_scenario],
         design_space.filter(["x"]),
-        settings=MDO_FORMULATION_FACTORY.get_class(scenario_formulation).settings_class(
-            **settings
-        ),
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            scenario_formulation
+        ).settings_class(**settings),
     )
     scenario.add_objective("z")
-    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=2))
     sub_scenarios_log_level = settings.get("sub_scenarios_log_level")
     if sub_scenarios_log_level == logging.WARNING:
         assert "Start FooScenario execution" not in caplog.text
@@ -461,24 +462,24 @@ def test_system_variables_not_in_variables_to_warm_start(
     sub_scenario_1 = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2", "b": "c+y"}, "foo")],
         design_space.filter(["y"], copy=True),
-        settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
             sub_scenario_formulation
         ).settings_class(),
         name="FooScenario",
     )
     sub_scenario_1.add_objective("z")
-    sub_scenario_1.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
+    sub_scenario_1.set_algorithm(NLOPT_COBYLA_Settings(max_iter=2))
 
     sub_scenario_2 = MDOScenario(
         [AnalyticDiscipline({"c": "(x+b)**2"}, "bar")],
         design_space.filter(["b"], copy=True),
         name="BarScenario",
-        settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
             sub_scenario_formulation
         ).settings_class(),
     )
     sub_scenario_2.add_objective("c")
-    sub_scenario_2.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
+    sub_scenario_2.set_algorithm(NLOPT_COBYLA_Settings(max_iter=2))
 
     scenario = MDOScenario(
         [
@@ -488,9 +489,9 @@ def test_system_variables_not_in_variables_to_warm_start(
             AnalyticDiscipline({"x": "x"}),
         ],
         design_space.filter(["x", "baz"]),
-        settings=MDO_FORMULATION_FACTORY.get_class(scenario_formulation).settings_class(
-            apply_cstr_tosub_scenarios=False
-        ),
+        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            scenario_formulation
+        ).settings_class(apply_cstr_tosub_scenarios=False),
     )
     scenario.add_objective("z")
     assert "x" not in scenario.formulation.chain._variable_names_to_warm_start
@@ -508,7 +509,7 @@ def test_bcd_mda(generate_sobieski_bilevel_bcd_scenario):
 def test_keep_opt_history(generate_sobieski_bilevel_scenario, keep_opt_history) -> None:
     """Test the keep_opt_history setting."""
     scenario = generate_sobieski_bilevel_scenario(keep_opt_history=keep_opt_history)
-    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=2))
     assert len(scenario.formulation.scenario_adapters[0].databases) == (
         2 if keep_opt_history else 0
     )
@@ -530,7 +531,7 @@ def test_save_opt_history(
     scenario = generate_sobieski_bilevel_scenario(
         save_opt_history=save_opt_history, naming=naming
     )
-    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=2))
     # path_structure= Path("StructureScenario")
     # path_aero = Path("AerodynamicsScenario")
     path_propulsion = Path("PropulsionScenario")
@@ -586,14 +587,14 @@ def test_main_mda_settings(main_mda):
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2"})],
         design_space.filter(["y"], copy=True),
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     sub_scenario.add_objective("z")
-    sub_scenario.set_algorithm(algo_name="NLOPT_COBYLA", max_iter=2)
+    sub_scenario.set_algorithm(NLOPT_COBYLA_Settings(max_iter=2))
     scenario = MDOScenario(
         [sub_scenario],
         design_space.filter(["x"]),
-        settings=BiLevel_Settings(**main_mda),
+        formulation_settings=BiLevel_Settings(**main_mda),
     )
     scenario.add_objective("z")
     assert isinstance(scenario.formulation.mda2, MDAGaussSeidel)
@@ -627,11 +628,11 @@ def test_set_x0_before_opt(generate_sobieski_bilevel_scenario, kwargs):
 def test_optimal_local_design_history(generate_sobieski_bilevel_scenario):
     """Test the database contains the optimal values of the local design variables."""
     scenario = generate_sobieski_bilevel_scenario()
-    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=1)
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=1))
     last_item = scenario.formulation.problem.database.last_item
     assert set(last_item) == {"x_3", "x_1", "-y_4", "x_2"}
     y_4 = last_item["-y_4"]
-    scenario.execute(algo_name="NLOPT_COBYLA", max_iter=2)
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=2))
     last_item = scenario.formulation.problem.database.last_item
     assert last_item["-y_4"] != y_4
 

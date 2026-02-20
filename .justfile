@@ -41,7 +41,6 @@ check-typing *args:
 # Build and serve documentation
 [group('doc')]
 doc *args:
-    # uv pip install --no-deps -r requirements/doc-plugins.txt
     DOCSTRING_INHERITANCE_ENABLE=1 uv run --python {{python}} --group doc --extra all mkdocs serve {{args}}
 
 # Build and serve documentation without API

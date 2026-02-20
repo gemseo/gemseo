@@ -17,6 +17,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo import create_scenario
+from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
@@ -48,7 +49,7 @@ def scenario_and_dimensions():
     scenario.add_constraint(
         "volume fraction", constraint_type=scenario.ConstraintType.INEQ, value=vf0
     )
-    scenario.execute(algo_name="NLOPT_MMA", max_iter=1)
+    scenario.execute(NLOPT_MMA_Settings(max_iter=1))
     return scenario, n_el, n_el
 
 

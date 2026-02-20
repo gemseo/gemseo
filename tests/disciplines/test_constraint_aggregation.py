@@ -30,6 +30,7 @@ from numpy.testing import assert_equal
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.problems.optimization.power_2 import Power2
 
@@ -74,7 +75,7 @@ def test_aggregation_discipline(disc_constr) -> None:
     )
     scenario.add_constraint("constr", constraint_type=scenario.ConstraintType.INEQ)
 
-    scenario.execute(algo_name="SLSQP", max_iter=50)
+    scenario.execute(SLSQP_Settings(max_iter=50))
     ref_sol = scenario.formulation.problem.solution
 
     disc_agg = create_discipline(
@@ -97,7 +98,7 @@ def test_aggregation_discipline(disc_constr) -> None:
         "lower_bound_KS_constr", constraint_type=scenario_agg.ConstraintType.INEQ
     )
 
-    scenario_agg.execute(algo_name="SLSQP", max_iter=50)
+    scenario_agg.execute(SLSQP_Settings(max_iter=50))
     sol2 = scenario_agg.formulation.problem.solution
 
     assert allclose(sol2.x_opt, ref_sol.x_opt, rtol=1e-2)

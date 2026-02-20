@@ -20,7 +20,7 @@ from collections.abc import Sequence
 
 from pydantic import Field
 
-from gemseo.settings.base_settings import BaseSettings
+from gemseo.algos.base_settings import BaseSettings
 from gemseo.uncertainty.distributions.base_distribution_settings import (
     BaseDistributionSettings,
 )

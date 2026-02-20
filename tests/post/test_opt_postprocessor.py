@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import pytest
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.datasets.optimization_dataset import OptimizationDataset
@@ -39,7 +39,7 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 def problem() -> Rosenbrock:
     """The Rosenbrock problem."""
     rosenbrock = Rosenbrock()
-    OptimizationLibraryFactory().execute(rosenbrock, algo_name="L-BFGS-B")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(rosenbrock, algo_name="L-BFGS-B")
     return rosenbrock
 
 

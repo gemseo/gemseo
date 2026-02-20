@@ -37,6 +37,9 @@ from numpy import zeros_like
 from gemseo import create_scenario
 from gemseo.algos.database import Database
 from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.discipline import Discipline
@@ -82,10 +85,13 @@ def scenario():
     design_space = create_design_space()
     design_space.filter(["x_1", "x_2", "x_3"])
     mdo_scenario = MDOScenario(
-        disciplines, design_space, name="MyScenario", settings=MDF_Settings()
+        disciplines,
+        design_space,
+        name="MyScenario",
+        formulation_settings=MDF_Settings(),
     )
     mdo_scenario.add_objective("y_4", minimize=False)
-    mdo_scenario.set_algorithm(algo_name="L-BFGS-B", max_iter=35)
+    mdo_scenario.set_algorithm(L_BFGS_B_Settings(max_iter=35))
     return mdo_scenario
 
 
@@ -302,11 +308,11 @@ def build_struct_scenario():
         [SobieskiStructure()],
         ds.filter("x_1", copy=True),
         name="StructureScenario",
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     sc_str.add_objective("y_11", minimize=False)
     sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
-    sc_str.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
+    sc_str.set_algorithm(NLOPT_SLSQP_Settings(max_iter=20))
     return sc_str
 
 
@@ -316,11 +322,11 @@ def build_prop_scenario():
         [SobieskiPropulsion()],
         ds.filter("x_3", copy=True),
         name="PropulsionScenario",
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     sc_prop.add_objective("y_34")
     sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
-    sc_prop.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=20)
+    sc_prop.set_algorithm(NLOPT_SLSQP_Settings(max_iter=20))
     return sc_prop
 
 
@@ -564,7 +570,7 @@ def test_parallel_adapter(tmp_wd, scenario):
     design_space = SobieskiDesignSpace()
     design_space.filter(["x_shared"])
     mdo_scenario = MDOScenario(
-        [adapter], design_space, settings=DisciplinaryOpt_Settings()
+        [adapter], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     mdo_scenario.add_objective("y_4", minimize=False)
     mdo_scenario.execute(LHS_Settings(n_samples=10, n_processes=2))
@@ -681,7 +687,7 @@ def scenario_fixture(disciplines_fixture):
     scenario.add_constraint(
         "g", constraint_type=MDOFunction.ConstraintType.INEQ, value=5
     )
-    scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
+    scenario.set_algorithm(SLSQP_Settings(max_iter=10))
     return MDOScenarioAdapter(scenario, ["alpha"], ["f"], set_x0_before_opt=True)
 
 
@@ -697,7 +703,7 @@ def test_scenario_adapter(scenario_fixture) -> None:
         design_space,
         formulation_name="DisciplinaryOpt",
     )
-    scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
+    scenario.set_algorithm(SLSQP_Settings(max_iter=10))
     scenario.execute()
     assert scenario.formulation.problem.solution is not None
 

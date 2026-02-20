@@ -54,10 +54,14 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.evaluation_problem import EvaluationProblem
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan
@@ -498,7 +502,7 @@ def test_invalid_differentiation_method(pow2_problem) -> None:
 
 def test_get_dv_names() -> None:
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
     assert problem.design_space.variable_names == ["x"]
 
 
@@ -543,7 +547,7 @@ def test_feasible_optimum_points() -> None:
     with pytest.raises(ValueError):
         problem.history.last_point  # noqa: B018
 
-    OptimizationLibraryFactory().execute(
+    OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, algo_name="SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
     )
     feasible_x = problem.history.feasible_points[0]
@@ -630,7 +634,7 @@ def test_normalize_linear_function() -> None:
 def test_export_hdf(tmp_wd) -> None:
     file_path = Path("power2.h5")
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
     problem.to_hdf(file_path, append=True)  # Shall still work now
 
     def check_pb(imp_pb) -> None:
@@ -894,7 +898,7 @@ def test_evaluate_jacobians_alone(constrained_problem, jacobian_names, keys) -> 
 
 def test_no_normalization() -> None:
     problem = Power2()
-    OptimizationLibraryFactory().execute(
+    OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, algo_name="SLSQP", normalize_design_space=False
     )
     f_opt, _, is_feas, _, _ = problem.optimum
@@ -970,10 +974,10 @@ def test_2d_objective() -> None:
     inputs = disc.io.input_grammar
     design_space.filter([name for name in inputs if not name.startswith("c_")])
     mdo_scenario = MDOScenario(
-        [disc], design_space, settings=DisciplinaryOpt_Settings()
+        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     mdo_scenario.add_objective("y_12")
-    mdo_scenario.execute(algo_name="DiagonalDOE", n_samples=10)
+    mdo_scenario.execute(DiagonalDOE_Settings(n_samples=10))
 
 
 def test_observable(pow2_problem) -> None:
@@ -993,7 +997,7 @@ def test_observable(pow2_problem) -> None:
         problem.observables.get_from_name("toto")
 
     # Check that the observable is stored in the database
-    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
     database = problem.database
     iter_norms = [norm(key.unwrap()) for key in database]
     iter_obs = [value[design_norm] for value in database.values()]
@@ -1238,7 +1242,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
     problem.objective = -f_1
 
     if skip_int_check:
-        OptimizationLibraryFactory().execute(
+        OPTIMIZATION_LIBRARY_FACTORY.execute(
             problem,
             algo_name="L-BFGS-B",
             normalize_design_space=True,
@@ -1248,7 +1252,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
         assert problem.optimum[1] == array([2.0])
     else:
         with pytest.raises(ValueError, match=expected_message):
-            OptimizationLibraryFactory().execute(
+            OPTIMIZATION_LIBRARY_FACTORY.execute(
                 problem,
                 algo_name="L-BFGS-B",
                 normalize_design_space=True,
@@ -1710,7 +1714,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     obs2 = MDOFunction(sum, name="sum")
     pow2_problem.add_observable(obs2)
 
-    OptimizationLibraryFactory().execute(pow2_problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(pow2_problem, algo_name="SLSQP")
 
     # Export and import the optimization problem.
     file_path = "power2.h5"
@@ -1760,7 +1764,7 @@ def test_export_to_dataset(input_values, expected) -> None:
 def test_export_to_dataset_with_grouped_functions():
     """Check that functions are properly grouped when the option is true."""
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
     dataset = problem.to_dataset(group_functions=True)
 
     groups = [
@@ -1929,7 +1933,7 @@ def test_observables_normalization(sellar_with_2d_array, sellar_disciplines) -> 
     scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_observable("y_1")
-    scenario.execute(algo_name="SLSQP", max_iter=3)
+    scenario.execute(SLSQP_Settings(max_iter=3))
     total_iter = len(scenario.formulation.problem.database)
     n_obj_eval = scenario.formulation.problem.database.get_function_history("y_1").size
     n_obs_eval = scenario.formulation.problem.database.get_function_history("obj").size

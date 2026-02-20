@@ -33,6 +33,7 @@ from scipy.optimize import rosen
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
@@ -130,12 +131,7 @@ def test_disc_parallel_doe_scenario() -> None:
         s_1, Y_1, design_space, formulation_name="DisciplinaryOpt"
     )
     n_samples = 20
-    scenario.execute(
-        algo_name="LHS",
-        n_samples=n_samples,
-        eval_jac=True,
-        n_processes=2,
-    )
+    scenario.execute(LHS_Settings(n_samples=n_samples, eval_jac=True, n_processes=2))
     assert (
         len(scenario.formulation.problem.database.get_function_history(Y_1))
         == n_samples

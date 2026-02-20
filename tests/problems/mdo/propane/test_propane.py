@@ -31,6 +31,7 @@ from numpy import zeros
 from numpy.linalg import norm
 from numpy.testing import assert_almost_equal
 
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.problems.mdo.propane.propane import PropaneComb1
 from gemseo.problems.mdo.propane.propane import PropaneComb2
@@ -97,7 +98,7 @@ class TestPropaneScenario(unittest.TestCase):
             disciplines,
             design_space,
             "obj",
-            settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation_settings=MDO_FORMULATION_FACTORY.get_class(
                 formulation_name
             ).settings_class(),
         )
@@ -124,7 +125,10 @@ class TestPropaneScenario(unittest.TestCase):
         )
 
         # run the optimizer
-        scenario.execute(algo_name=algo, max_iter=50)
+        factory = OPTIMIZATION_LIBRARY_FACTORY
+        cls = factory.get_class(factory.algo_names_to_libraries[algo])
+        settings = cls.ALGORITHM_INFOS[algo].settings_class(max_iter=50)
+        scenario.execute(settings)
         obj_opt = scenario.optimization_result.f_opt
 
         x_opt = scenario.design_space.get_current_value()

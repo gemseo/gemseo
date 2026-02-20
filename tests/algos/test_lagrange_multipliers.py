@@ -31,6 +31,8 @@ from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
@@ -171,7 +173,7 @@ def test_lagrangian_constraint(
     scenario.add_constraint("c_1", constraint_type=constraint_type)
     scenario.add_constraint("c_2", constraint_type=constraint_type)
 
-    scenario.execute(algo_name="SLSQP", max_iter=50)
+    scenario.execute(SLSQP_Settings(max_iter=50))
     problem = scenario.formulation.problem
     lagrange = LagrangeMultipliers(problem)
 
@@ -265,8 +267,10 @@ def test_2d_ineq(
 def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
-    opt["algo_name"] = algo_eq
-    analytical_test_2d_eq.execute(**opt)
+    factory = OPTIMIZATION_LIBRARY_FACTORY
+    cls = factory.get_class(factory.algo_names_to_libraries[algo_eq])
+    settings = cls.ALGORITHM_INFOS[algo_eq].settings_class(**opt)
+    analytical_test_2d_eq.execute(settings)
     problem = analytical_test_2d_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
@@ -282,8 +286,10 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
 def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
-    opt["algo_name"] = algo_eq
-    analytical_test_2d__multiple_eq.execute(**opt)
+    factory = OPTIMIZATION_LIBRARY_FACTORY
+    cls = factory.get_class(factory.algo_names_to_libraries[algo_eq])
+    settings = cls.ALGORITHM_INFOS[algo_eq].settings_class(**opt)
+    analytical_test_2d__multiple_eq.execute(settings)
     problem = analytical_test_2d__multiple_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3

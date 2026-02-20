@@ -70,9 +70,9 @@ class FormulationsBaseTest(unittest.TestCase):
         scenario = MDOScenario(
             disciplines,
             design_space,
-            settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
-                **options
-            ),
+            formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+                formulation_name
+            ).settings_class(**options),
         )
         scenario.add_objective("y_4", minimize=False)
         return scenario

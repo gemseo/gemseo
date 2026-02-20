@@ -22,6 +22,8 @@ from functools import partial
 
 from numpy.testing import assert_allclose
 
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.formulations.mdf import MDF
 from gemseo.formulations.mdf_settings import MDF_Settings
@@ -75,12 +77,14 @@ class TestMDFFormulation(FormulationsBaseTest):
         )
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
-        scenario.execute(
-            algo_name=algo,
+        factory = OPTIMIZATION_LIBRARY_FACTORY
+        cls = factory.get_class(factory.algo_names_to_libraries[algo])
+        settings = cls.ALGORITHM_INFOS[algo].settings_class(
             max_iter=100,
             ftol_rel=1e-10,
             ineq_tolerance=1e-3,
         )
+        scenario.execute(settings)
         scenario.print_execution_metrics()
         return scenario.optimization_result.f_opt
 
@@ -121,19 +125,21 @@ def test_reset(sellar_with_2d_array):
     design_space = SellarDesignSpace()
 
     scenario = MDOScenario(
-        [Sellar1(), Sellar2(), SellarSystem()], design_space, settings=MDF_Settings()
+        [Sellar1(), Sellar2(), SellarSystem()],
+        design_space,
+        formulation_settings=MDF_Settings(),
     )
     scenario.add_objective("obj")
     initial_current_value = design_space.get_current_value()
     scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
-    scenario.execute(algo_name="SLSQP", max_iter=5)
+    scenario.execute(SLSQP_Settings(max_iter=5))
     final_current_value = design_space.get_current_value()
 
     scenario.formulation.problem.reset(design_space=True)
     assert_allclose(design_space.get_current_value(), initial_current_value)
 
-    scenario.execute(algo_name="SLSQP", max_iter=5)
+    scenario.execute(SLSQP_Settings(max_iter=5))
     assert_allclose(design_space.get_current_value(), final_current_value)
 
 

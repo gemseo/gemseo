@@ -31,6 +31,7 @@ from numpy import array
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.openturns.settings.ot_lhs import OT_LHS_Settings
 from gemseo.disciplines.wrappers.disc_from_exe import Parser
 from gemseo.disciplines.wrappers.disc_from_exe import parse_key_value_file
 from gemseo.disciplines.wrappers.disc_from_exe import parse_outfile
@@ -290,7 +291,7 @@ def test_parallel_execution(tmp_wd) -> None:
         formulation_name="DisciplinaryOpt",
     )
 
-    scenario.execute(algo_name="OT_LHS", n_samples=2, n_processes=nb_process)
+    scenario.execute(OT_LHS_Settings(n_samples=2, n_processes=nb_process))
 
     assert len(tuple(tmp_wd.iterdir())) == nb_process
 

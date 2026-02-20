@@ -259,7 +259,7 @@ class MLModelCalibration:
         self.scenario = MDOScenario(
             [self.model_assessor],
             self.calibration_space,
-            settings=DisciplinaryOpt_Settings(),
+            formulation_settings=DisciplinaryOpt_Settings(),
         )
         self.scenario.add_objective(
             self.model_assessor.CRITERION, minimize=not self.maximize_objective

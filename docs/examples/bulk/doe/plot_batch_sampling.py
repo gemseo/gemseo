@@ -224,7 +224,7 @@ disciplines = [area_discipline, AreaIncreaser()]
 scenario = MDOScenario(
     disciplines,
     design_space,
-    settings=DisciplinaryOpt_Settings(),
+    formulation_settings=DisciplinaryOpt_Settings(),
 )
 scenario.add_objective("final_area")
 scenario.execute(MC_Settings(n_samples=1000, vectorize=True))
@@ -271,7 +271,9 @@ def solve_sellar(
     """
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     design_space = SellarDesignSpace()
-    scenario = MDOScenario(disciplines, design_space, settings=MDF_Settings())
+    scenario = MDOScenario(
+        disciplines, design_space, formulation_settings=MDF_Settings()
+    )
     scenario.add_objective("obj")
     scenario.add_constraint("c_1")
     scenario.add_constraint("c_2")

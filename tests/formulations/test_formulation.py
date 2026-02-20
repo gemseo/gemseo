@@ -195,7 +195,7 @@ def test_remove_sub_scenario_dv_from_ds() -> None:
     ds1 = DesignSpace()
     ds1.add_variable("x")
     sm = SobieskiMission()
-    s1 = MDOScenario([sm], ds1, settings=IDF_Settings())
+    s1 = MDOScenario([sm], ds1, formulation_settings=IDF_Settings())
     s1.add_objective("y_4")
     problem = OptimizationProblem(ds2)
     f2 = NewMDOFormulation(problem, [sm, s1])

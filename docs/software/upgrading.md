@@ -1500,7 +1500,7 @@ ERROR - 17:11:09 : Invalid data in : MDOScenario_input
 ', error : data.algo must be string
 Traceback (most recent call last):
   File "plot_mdo_scenario.py", line 85, in <module>
-    scenario.execute(algo_name="L-BFGS-B", "max_iter": 100)
+    scenario.execute(L_BFGS_B_Settings(max_iter=100))
   File "/home/distracted_user/workspace/gemseo/src/gemseo/core/discipline.py", line 586, in execute
     self.check_input_data(input_data)
   File "/home/distracted_user/workspace/gemseo/src/gemseo/core/discipline.py", line 1243, in check_input_data

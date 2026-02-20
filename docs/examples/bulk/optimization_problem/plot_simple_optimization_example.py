@@ -38,6 +38,8 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo import get_available_opt_algorithms
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 
 # %%
 # ##Optimization based on a design of experiments
@@ -110,7 +112,7 @@ scenario = create_scenario(
 # [full factorial design](https://en.wikipedia.org/wiki/Factorial_experiment)
 # of size $11^2$:
 
-scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=11**2)
+scenario.execute(PYDOE_FULLFACT_Settings(n_samples=11**2))
 
 # %%
 # The optimum results can be found in the execution log. It is also possible to
@@ -254,7 +256,7 @@ scenario = create_scenario(
 # indirectly called by means of the class [OptimizationLibraryFactory][gemseo.algos.opt.factory.OptimizationLibraryFactory]
 # and of its function [execute()][gemseo.algos.base_algo_factory.BaseAlgoFactory.execute]:
 
-scenario.execute(algo_name="L-BFGS-B", max_iter=100)
+scenario.execute(L_BFGS_B_Settings(max_iter=100))
 
 # %%
 # The optimization results are displayed in the log file. They can also be

@@ -13,3 +13,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Settings of the different algorithms."""
+
+from __future__ import annotations
+
+# ruff: noqa: F403
+from .doe import *
+from .formulations import *
+from .linear_solvers import *
+from .machine_learning import *
+from .mda import *
+from .ode import *
+from .opt import *
+from .post import *
+from .probability_distributions import *

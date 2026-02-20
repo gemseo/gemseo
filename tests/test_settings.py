@@ -30,6 +30,7 @@ import gemseo.settings.ode as ode
 import gemseo.settings.opt as opt
 import gemseo.settings.post as post
 import gemseo.settings.probability_distributions as probability_distributions
+from gemseo.algos.base_settings import BaseSettings
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
@@ -41,7 +42,6 @@ from gemseo.formulations.base_settings import BaseFormulationSettings
 from gemseo.machine_learning.core.models.ml_model_settings import BaseMLModelSettings
 from gemseo.mda.base_settings import BaseMDASettings
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.settings.base_settings import BaseSettings
 from gemseo.uncertainty.distributions.base_distribution_settings import (
     BaseGenericDistributionSettings,
 )

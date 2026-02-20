@@ -35,6 +35,7 @@ import pytest
 from numpy import arange
 from numpy import array
 
+from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -89,10 +90,10 @@ def create_dataset(
             ),
         )
     scenario = MDOScenario(
-        [discipline], parameter_space, settings=DisciplinaryOpt_Settings()
+        [discipline], parameter_space, formulation_settings=DisciplinaryOpt_Settings()
     )
     scenario.add_objective(objective_name)
-    scenario.execute(algo_name="LHS", n_samples=LEARNING_SIZE)
+    scenario.execute(LHS_Settings(n_samples=LEARNING_SIZE))
     return scenario.to_dataset(opt_naming=False)
 
 

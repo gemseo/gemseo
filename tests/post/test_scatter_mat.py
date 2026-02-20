@@ -29,7 +29,8 @@ from numpy import power
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
@@ -52,7 +53,7 @@ def test_scatter(tmp_wd) -> None:
         tmp_wd : Fixture to move into a temporary directory.
     """
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
     post = POST_FACTORY.execute(
         problem,
         post_name="ScatterPlotMatrix",
@@ -166,7 +167,7 @@ def test_maximized_func(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> Non
     scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.set_differentiation_method("finite_differences")
-    scenario.set_algorithm(algo_name="SLSQP", max_iter=10)
+    scenario.set_algorithm(SLSQP_Settings(max_iter=10))
     scenario.execute()
     post = scenario.post_process(
         post_name="ScatterPlotMatrix",

@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from gemseo import create_scenario
+from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
@@ -88,7 +89,7 @@ scenario.xdsmize(save_html=False)
 
 # %%
 # Execute the scenario
-scenario.execute(algo_name="NLOPT_MMA", max_iter=200)
+scenario.execute(NLOPT_MMA_Settings(max_iter=200))
 
 # %%
 # ## Results

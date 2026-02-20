@@ -22,6 +22,9 @@ from typing import Any
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.formulations.bilevel_bcd_settings import BiLevelBCD_Settings
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
@@ -65,14 +68,14 @@ def create_sobieski_bilevel_scenario(
         """
         sub_scenarios = create_sobieski_sub_scenarios()
         for scenario in sub_scenarios:
-            scenario.set_algorithm(algo_name="SLSQP", max_iter=5)
+            scenario.set_algorithm(SLSQP_Settings(max_iter=5))
 
         system = MDOScenario(
             [*sub_scenarios, SobieskiMission()],
             SobieskiProblem().design_space.filter(["x_shared", "y_14"]),
-            settings=MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
-                **settings
-            ),
+            formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+                formulation_name
+            ).settings_class(**settings),
         )
         system.add_objective("y_4", minimize=False)
         system.set_differentiation_method("finite_differences")
@@ -92,7 +95,7 @@ def create_sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenar
         [SobieskiPropulsion()],
         design_space.filter("x_3", copy=True),
         name="PropulsionScenario",
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     propulsion.add_objective("y_34")
 
@@ -101,7 +104,7 @@ def create_sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenar
         [SobieskiAerodynamics()],
         design_space.filter("x_2", copy=True),
         name="AerodynamicsScenario",
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     aerodynamics.add_objective("y_24", minimize=False)
 
@@ -111,7 +114,7 @@ def create_sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenar
         [SobieskiStructure()],
         design_space.filter("x_1"),
         name="StructureScenario",
-        settings=DisciplinaryOpt_Settings(),
+        formulation_settings=DisciplinaryOpt_Settings(),
     )
     structure.add_objective("y_11", minimize=False)
 
@@ -148,10 +151,10 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
                 sub_disciplines,
                 ds.filter([design_var], copy=True),
                 name=name,
-                settings=MDF_Settings(main_mda_name="MDAGaussSeidel"),
+                formulation_settings=MDF_Settings(main_mda_name="MDAGaussSeidel"),
             )
             scenario.add_objective("y_4", minimize=False)
-            scenario.set_algorithm(max_iter=50, algo_name="SLSQP")
+            scenario.set_algorithm(SLSQP_Settings(max_iter=50))
             scenario.formulation.problem.objective *= 0.001
             return scenario
 
@@ -170,7 +173,7 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
         sc_system = MDOScenario(
             sub_scenarios,
             ds.filter(["x_shared"], copy=True),
-            settings=BiLevelBCD_Settings(
+            formulation_settings=BiLevelBCD_Settings(
                 bcd_mda_settings=MDAGaussSeidel_Settings(
                     tolerance=1e-5, max_mda_iter=10
                 )
@@ -274,11 +277,10 @@ def create_aerostructure_scenario(formulation_name: str) -> MDOScenario:
     )
     mission_formulas = {"range": "8e11*lift/(mass*drag)"}
     mission = create_discipline("AnalyticDiscipline", mission_formulas, name="Mission")
-    sub_scenario_options = {
-        "max_iter": 2,
-        "algo_name": "NLOPT_SLSQP",
+    sub_scenario_options = NLOPT_SLSQP_Settings(
+        max_iter=2,
         **algo_settings,
-    }
+    )
     design_space_ref = AerostructureDesignSpace()
 
     design_space_aero = design_space_ref.filter(["thick_airfoils"], copy=True)
@@ -294,7 +296,7 @@ def create_aerostructure_scenario(formulation_name: str) -> MDOScenario:
         maximize_objective=True,
     )
 
-    aero_scenario.set_algorithm(**sub_scenario_options)
+    aero_scenario.set_algorithm(sub_scenario_options)
 
     design_space_struct = design_space_ref.filter(["thick_panels"], copy=True)
     struct_scenario = create_scenario(
@@ -307,7 +309,7 @@ def create_aerostructure_scenario(formulation_name: str) -> MDOScenario:
         ),
         maximize_objective=True,
     )
-    struct_scenario.set_algorithm(**sub_scenario_options)
+    struct_scenario.set_algorithm(sub_scenario_options)
 
     design_space_system = design_space_ref.filter(["sweep"], copy=True)
     system_scenario = create_scenario(
@@ -324,6 +326,6 @@ def create_aerostructure_scenario(formulation_name: str) -> MDOScenario:
         "reserve_fact", constraint_type=system_scenario.ConstraintType.INEQ, value=0.5
     )
     system_scenario.add_constraint("lift", value=0.5)
-    system_scenario.execute(algo_name="NLOPT_COBYLA", max_iter=5, **algo_settings)
+    system_scenario.execute(NLOPT_COBYLA_Settings(max_iter=5, **algo_settings))
 
     return system_scenario

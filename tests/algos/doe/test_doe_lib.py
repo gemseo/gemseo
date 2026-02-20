@@ -44,6 +44,7 @@ from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_S
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
@@ -151,7 +152,7 @@ def test_evaluate_samples_multiproc_with_observables(
 
     samples = array([[float(i)] for i in range(4)])
     scenario.add_observable("obs")
-    scenario.execute(algo_name="CustomDOE", n_processes=2, samples=samples)
+    scenario.execute(CustomDOE_Settings(n_processes=2, samples=samples))
 
     database = scenario.formulation.problem.database
     for i, (x, data) in enumerate(database.items()):
@@ -365,7 +366,7 @@ def test_variable_types(var_type1, var_type2) -> None:
         formulation_name="DisciplinaryOpt",
     )
 
-    scenario.execute(algo_name="PYDOE_LHS", n_samples=1)
+    scenario.execute(PYDOE_LHS_Settings(n_samples=1))
 
 
 @pytest.mark.parametrize(("l_b", "u_b"), [(-inf, inf), (1, inf), (-inf, 1)])
@@ -512,14 +513,14 @@ def test_parallel_doe_db(tmp_wd):
     scenario_ser.set_backup_settings(
         bk_file_ser, at_each_function_call=True, at_each_iteration=True
     )
-    scenario_ser.execute(algo_name="PYDOE_FULLFACT", n_samples=4, n_processes=1)
+    scenario_ser.execute(PYDOE_FULLFACT_Settings(n_samples=4, n_processes=1))
 
     scenario_par = _create_scn()
     bk_file_par = Path("par_out.h5")
     scenario_par.set_backup_settings(
         bk_file_par, at_each_function_call=True, at_each_iteration=True
     )
-    scenario_par.execute(algo_name="PYDOE_FULLFACT", n_samples=4, n_processes=2)
+    scenario_par.execute(PYDOE_FULLFACT_Settings(n_samples=4, n_processes=2))
 
     db_ser = Database.from_hdf(bk_file_ser)
     db_par = Database.from_hdf(bk_file_par)

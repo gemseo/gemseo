@@ -27,7 +27,7 @@ from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_global.settings.dual_annealing import (
     DUAL_ANNEALING_Settings,
 )
@@ -165,7 +165,7 @@ def test_execute_without_current_value() -> None:
 
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: (x - 1) ** 2, name="obj")
-    driver = OptimizationLibraryFactory().create("NLOPT_COBYLA")
+    driver = OPTIMIZATION_LIBRARY_FACTORY.create("NLOPT_COBYLA")
     driver.execute(problem, max_iter=1)
     assert design_space.get_current_value(["x"]) == 0.0
 

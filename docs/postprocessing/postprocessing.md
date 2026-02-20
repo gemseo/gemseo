@@ -68,7 +68,7 @@ scenario.set_differentiation_method("user")
 for constraint in ["g_1","g_2","g_3"]:
       scenario.add_constraint(constraint, 'ineq')
 
-scenario.execute(algo_name="SLSQP", max_iter=10)
+scenario.execute(SLSQP_Settings(max_iter=10))
 ```
 
 ### How to apply a post-process feature?

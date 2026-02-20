@@ -29,7 +29,7 @@ from gemseo import _get_schema
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.disciplines.factory import DisciplineFactory
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.machine_learning.classification.models.factory import CLASSIFIER_FACTORY
@@ -81,19 +81,18 @@ def get_algorithm_features(
     Raises:
         ValueError: When the optimization algorithm does not exist.
     """
-    from gemseo.algos.opt.factory import OptimizationLibraryFactory
-
-    factory = OptimizationLibraryFactory()
-    if not factory.is_available(algorithm_name):
+    if not OPTIMIZATION_LIBRARY_FACTORY.is_available(algorithm_name):
         msg = f"{algorithm_name} is not the name of an optimization algorithm."
         raise ValueError(msg)
 
-    driver = factory.create(algorithm_name)
+    driver = OPTIMIZATION_LIBRARY_FACTORY.create(algorithm_name)
     description = driver.ALGORITHM_INFOS[algorithm_name]
     return AlgorithmFeatures(
         algorithm_name=description.algorithm_name,
         library_name=description.library_name,
-        root_package_name=factory.get_library_name(driver.__class__.__name__),
+        root_package_name=OPTIMIZATION_LIBRARY_FACTORY.get_library_name(
+            driver.__class__.__name__
+        ),
         handle_equality_constraints=description.handle_equality_constraints,
         handle_inequality_constraints=description.handle_inequality_constraints,
         handle_float_variables=True,
@@ -660,7 +659,7 @@ algos_options_docs = [
     DriverOptionsDoc(
         "opt",
         "Optimization algorithms",
-        OptimizationLibraryFactory(),
+        OPTIMIZATION_LIBRARY_FACTORY,
         pydantic_model_module_path="settings.opt",
     ),
     DriverOptionsDoc(

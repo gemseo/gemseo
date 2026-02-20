@@ -25,7 +25,7 @@ import pytest
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
+from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_global.scipy_global import ScipyGlobalOpt
 from gemseo.algos.opt.scipy_global.settings.differential_evolution import (
     DIFFERENTIAL_EVOLUTION_Settings,
@@ -51,7 +51,7 @@ class TestScipyGlobalOpt(TestCase):
         return Rosenbrock()
 
     def test_init(self) -> None:
-        factory = OptimizationLibraryFactory()
+        factory = OPTIMIZATION_LIBRARY_FACTORY
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create("DUAL_ANNEALING")
 
@@ -60,7 +60,7 @@ class TestScipyGlobalOpt(TestCase):
 def pow2_database() -> Database:
     """The database resulting from the Power2 problem resolution."""
     problem = Power2()
-    OptimizationLibraryFactory().execute(problem, algo_name="SHGO", max_iter=20)
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SHGO", max_iter=20)
     return problem.database
 
 
@@ -95,7 +95,7 @@ for test_method in suite_tests.generate_test("ScipyGlobalOpt", get_settings):
 def test_differential_evolution_parallel():
     """Test that the Differential Evolution algorithm works in parallel."""
     problem = Rosenbrock()
-    result = OptimizationLibraryFactory().execute(
+    result = OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem,
         algo_name="DIFFERENTIAL_EVOLUTION",
         settings_model=DIFFERENTIAL_EVOLUTION_Settings(

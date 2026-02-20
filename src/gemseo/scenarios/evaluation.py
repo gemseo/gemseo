@@ -27,12 +27,8 @@ from numpy import array
 from numpy import complex128
 from numpy import float64
 from numpy import ndarray
-from pydantic import BaseModel
-from pydantic import Field
-from strenum import StrEnum
 
-from gemseo.algos.doe.base_doe_library import BaseDOELibrary
-from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
@@ -57,6 +53,7 @@ if TYPE_CHECKING:
     from gemseo.algos.base_algo_factory import BaseAlgoFactory
     from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.algos.doe.base_doe_library import BaseDOELibrary
     from gemseo.algos.driver_library import DriverLibraryFactory
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -112,32 +109,11 @@ class EvaluationScenario(BaseMonitoredProcess):
     that is passed at instantiation.
     """
 
-    class _BaseSettings(BaseModel):
-        """Scenario base settings passed to the `execute()` method.
-
-        This class can be derived in EvaluationScenario's derived classes
-        to add fields.
-        At import time,
-        this class is derived a final time to override the `algo_name` field
-        which possible values depends on the `_ALGO_FACTORY_CLASS`.
-        The final class is assigned to the `settings_class` attribute.
-        """
-
-        algo_name: str = Field(..., description="The name of the algorithm.")
-
-        algo_settings: dict[str, Any] = Field(
-            default_factory=dict, description="The settings for the algorithm."
-        )
-
     _ALGO_FACTORY_CLASS: ClassVar[type[DriverLibraryFactory]] = DOELibraryFactory
     """The type of algorithm factory."""
 
     _algo_factory: BaseAlgoFactory
     """The algorithm factory."""
-
-    _algo_enum: ClassVar[type[StrEnum]]
-    """The class names of the possible algorithm
-    (this attribute is solely necessary for pickling)."""
 
     clear_database_before_execute: bool
     """Whether to clear the database before execute."""
@@ -157,7 +133,7 @@ class EvaluationScenario(BaseMonitoredProcess):
     formulation: BaseFormulation
     """The MDO formulation."""
 
-    _back_up_evaluations: bool
+    _backup_evaluations: bool
     """Whether to back-up evaluations during the execution."""
 
     _backup_file_path: Path
@@ -165,10 +141,7 @@ class EvaluationScenario(BaseMonitoredProcess):
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ScenarioProcessFlow
 
-    settings_class: ClassVar[type[_BaseSettings]] = _BaseSettings
-    """The class used to validate the algorithm settings."""
-
-    _settings: settings_class | None
+    __algorithm_settings: BaseDriverSettings | None
     """The algorithm settings once they have been specified."""
 
     def __init__(
@@ -176,7 +149,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         disciplines: Sequence[BaseDiscipline],
         design_space: DesignSpace,
         name: str = "",
-        settings: BaseFormulationSettings | None = None,
+        formulation_settings: BaseFormulationSettings | None = None,
     ) -> None:
         """
         Args:
@@ -184,7 +157,7 @@ class EvaluationScenario(BaseMonitoredProcess):
             design_space: The input space on which to evaluate the disciplines.
             name: The name to be given to the scenario.
                 If empty, use the name of the class.
-            settings: The MDO formulation settings
+            formulation_settings: The MDO formulation settings
                 to generate the multidisciplinary evaluation process.
                 If `None`,
                 use [MDF_Settings][gemseo.formulations.mdf_settings.MDF_Settings].
@@ -193,18 +166,18 @@ class EvaluationScenario(BaseMonitoredProcess):
         self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
         self.clear_database_before_execute = False
         self._execution_result = None
-        self._back_up_evaluations = False
+        self._backup_evaluations = False
         self._backup_file_path = Path()
-        self._settings = None
-        if settings is None:
-            settings = MDF_Settings()
+        self.__algorithm_settings = None
+        if formulation_settings is None:
+            formulation_settings = MDF_Settings()
 
         evaluation_problem = self._evaluation_problem_class(design_space)
         self.formulation = self._formulation_factory.create(
-            settings._TARGET_CLASS_NAME,
+            formulation_settings._TARGET_CLASS_NAME,
             evaluation_problem,
             disciplines,
-            settings_model=settings,
+            settings_model=formulation_settings,
         )
         evaluation_problem.database.name = self.name
         for constraint in self.formulation.extra_constraint_functions:
@@ -222,32 +195,6 @@ class EvaluationScenario(BaseMonitoredProcess):
             constraint: The extra constraint.
         """
         self.formulation.problem.add_observable(constraint)
-
-    @classmethod
-    def __init_subclass__(cls) -> None:
-        """Initialize the attributes `_algo_enum` and `settings_class`.
-
-        This method is necessary for pickling  `settings_class` because the
-        classes used for unpickling shall be accessible with a qualified name in a
-        module, which is not the case of a method's body.
-        Thus, the classes created at runtime (import time actually) are modified to
-        pretend that they were created in the class body.
-        """
-        cls._algo_enum = StrEnum(
-            "algo_enum",
-            names=cls._ALGO_FACTORY_CLASS().algorithms,
-            module=cls.__module__,
-            qualname=cls.__qualname__ + "._algo_enum",
-        )
-
-        class Settings(cls._BaseSettings):
-            algo_name: cls._algo_enum = Field(
-                ..., description="The name of the algorithm."
-            )
-
-        Settings.__module__ = cls.__module__
-        Settings.__qualname__ = cls.__qualname__ + ".settings_class"
-        cls.settings_class = Settings
 
     @property
     def disciplines(self) -> tuple[BaseDiscipline, ...]:
@@ -351,42 +298,29 @@ class EvaluationScenario(BaseMonitoredProcess):
             input_values=self._get_input_values(),
         )
 
-    def _get_input_values(self) -> RealArray:
+    def _get_input_values(self) -> Iterable[RealArray]:
         """Return the input values for exporting the database into a dataset.
 
         Returns:
             The input values.
         """
-        # The algo is not instantiated again since it is in the factory cache.
-        algo = self._algo_factory.create(self._settings.algo_name)
-        return algo.samples if isinstance(algo, BaseDOELibrary) else ()
+        if isinstance(self.__algorithm_settings, BaseDOESettings):
+            # The algo is not instantiated again since it is in the factory cache.
+            algo = self._algo_factory.create(
+                self.__algorithm_settings._TARGET_CLASS_NAME
+            )
+            algo: BaseDOELibrary
+            return algo.samples
 
-    def set_algorithm(
-        self,
-        algo_settings_model: BaseDriverSettings | None = None,
-        **algo_settings: Any,
-    ) -> None:
-        """Define the algorithm.
+        return ()
+
+    def set_algorithm(self, algorithm_settings: BaseDriverSettings) -> None:
+        """Define the algorithm settings.
 
         Args:
-            algo_settings_model: The algorithm settings as a Pydantic model.
-                If `None`, use `**settings`.
-            **algo_settings: The algorithm settings,
-                including the algorithm name (use the keyword `"algo_name"`).
-                These arguments are ignored when `settings_model` is not `None`.
+            algorithm_settings: The algorithm settings
         """
-        if algo_settings_model is None:
-            algo_name = algo_settings.pop("algo_name", None)
-            if algo_name is None:
-                msg = 'The algorithm name is missing; use the argument "algo_name".'
-                raise ValueError(msg)
-        else:
-            algo_settings = {"settings_model": algo_settings_model}
-            algo_name = algo_settings_model._TARGET_CLASS_NAME
-
-        self._settings = self.settings_class(
-            algo_name=algo_name, algo_settings=algo_settings
-        )
+        self.__algorithm_settings = algorithm_settings
 
     def __get_execution_metrics(self) -> MultiLineString:
         """Return the string representation of the execution metrics of the scenario.
@@ -425,26 +359,22 @@ class EvaluationScenario(BaseMonitoredProcess):
 
     def execute(
         self,
-        algo_settings_model: BaseDriverSettings | None = None,
-        **algo_settings: Any,
+        algorithm_settings: BaseDriverSettings | None = None,
     ) -> None:
         """Execute the scenario.
 
         Args:
-            algo_settings_model: The algorithm settings as a Pydantic model.
-                If `None`, use `**settings` if any.
-                If `None` and no settings,
-                the method will use the settings defined by `set_algorithm()`.
-            **algo_settings: The algorithm settings,
-                including the algorithm name (use the keyword `"algo_name"`).
-                These arguments are ignored when `algo_settings_model` is not `None`.
+            algorithm_settings: The algorithm settings.
+                If `None`,
+                the method will use the settings
+                defined by the `algorithm_settings` attribute.
         """
         LOGGER.info("*** Start %s execution ***", self.name)
         LOGGER.info("%r", self)
         initial_duration = self.execution_statistics.duration
 
-        if algo_settings_model is not None or algo_settings:
-            self.set_algorithm(algo_settings_model=algo_settings_model, **algo_settings)
+        if algorithm_settings is not None:
+            self.set_algorithm(algorithm_settings)
 
         # DOE algorithms do not normalize the input data
         # but if an optimization algorithm was used in the previous execution,
@@ -453,7 +383,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         # So the original functions must be used.
         # As it is possible that other types of driver do the same as optimizers,
         # the original functions are restored each time a DOE is used.
-        if DOE_LIBRARY_FACTORY.is_available(self._settings.algo_name):
+        if isinstance(self.__algorithm_settings, BaseDOESettings):
             self.formulation.problem.reset(
                 database=False,
                 current_iter=False,
@@ -473,7 +403,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         # The last call to the functions may not trigger the callback
         # so some values may be missing in the database.
         # This ensures that the callback is called after the last iteration.
-        if self._back_up_evaluations:
+        if self._backup_evaluations:
             database = self.formulation.problem.database
             n_x_a = len(database)
             if 0 < n_x < n_x_a:
@@ -489,9 +419,7 @@ class EvaluationScenario(BaseMonitoredProcess):
 
     def _execute(self) -> None:
         self._execution_result = self._algo_factory.execute(
-            self.formulation.problem,
-            algo_name=self._settings.algo_name,
-            **self._settings.algo_settings,
+            self.formulation.problem, settings_model=self.__algorithm_settings
         )
 
     def to_ggobi(self, file_path: str | Path) -> None:
@@ -535,7 +463,7 @@ class EvaluationScenario(BaseMonitoredProcess):
             ValueError: If both `erase` and `pre_load` are `True`.
         """
         problem = self.formulation.problem
-        self._back_up_evaluations = True
+        self._backup_evaluations = True
         self._backup_file_path = Path(file_path)
 
         if self._backup_file_path.exists():

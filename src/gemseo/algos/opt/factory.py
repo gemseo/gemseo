@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from gemseo.algos.driver_library import DriverLibraryFactory
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 
@@ -31,3 +33,9 @@ class OptimizationLibraryFactory(DriverLibraryFactory):
 
     _CLASS = BaseOptimizationLibrary
     _PACKAGE_NAMES = ("gemseo.algos.opt",)
+
+
+OPTIMIZATION_LIBRARY_FACTORY: Final[OptimizationLibraryFactory] = (
+    OptimizationLibraryFactory()
+)
+"""The factory for `OptimizationLibrary` objects."""

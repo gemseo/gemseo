@@ -47,6 +47,7 @@ from numpy import ones
 
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
@@ -211,7 +212,7 @@ scenario.set_differentiation_method("finite_differences")
 # we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
-scenario.execute(algo_name="SLSQP", max_iter=10)
+scenario.execute(SLSQP_Settings(max_iter=10))
 
 # %%
 # ### Post-process the scenario
