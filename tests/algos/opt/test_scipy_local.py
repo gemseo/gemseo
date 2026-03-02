@@ -34,11 +34,14 @@ from scipy.sparse import csr_array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
+from gemseo.algos.opt.scipy_local.settings.cobyla import COBYLA_Settings
+from gemseo.algos.opt.scipy_local.settings.cobyqa import COBYQA_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
+from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_16
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 
@@ -337,12 +340,62 @@ def test_cobyqa() -> None:
 )
 def test_initial_tr_radius_cobyqa() -> None:
     """Check that option initial_tr_radius is supported."""
-    library = ScipyOpt("COBYQA")
-    library._problem = Rosenbrock()
-    library._settings = create_model(
-        library.ALGORITHM_INFOS[library.algo_name].settings_class, initial_tr_radius=1
+    reference = ScipyOpt("COBYQA").execute(
+        Rosenbrock(), settings_model=COBYQA_Settings(max_iter=10)
     )
-    assert library._settings.initial_tr_radius == 1
+    result = ScipyOpt("COBYQA").execute(
+        Rosenbrock(),
+        settings_model=COBYQA_Settings(max_iter=10, initial_tr_radius=0.05),
+    )
+    assert reference.f_opt != result.f_opt
+
+
+def test_cobyla() -> None:
+    """Test the COBYLA algorithm on the Rosenbrock problem."""
+    problem = Rosenbrock()
+    opt = ScipyOpt("COBYLA").execute(
+        problem, settings_model=COBYLA_Settings(max_iter=500, enable_progress_bar=False)
+    )
+    x_opt, f_opt = problem.get_solution()
+    xtol = 2.0e-1 if SCIPY_GREATER_THAN_1_16 else 6.0e-1
+    ftol = 1.0e-2 if SCIPY_GREATER_THAN_1_16 else 1.1e-1
+    assert opt.x_opt == pytest.approx(x_opt, abs=xtol)
+    assert opt.f_opt == pytest.approx(f_opt, abs=ftol)
+
+
+def test_rhobeg_cobyla() -> None:
+    """Check that option rhobeg is supported."""
+    reference = ScipyOpt("COBYLA").execute(
+        Rosenbrock(),
+        settings_model=COBYLA_Settings(max_iter=10, enable_progress_bar=False),
+    )
+    result = ScipyOpt("COBYLA").execute(
+        Rosenbrock(),
+        settings_model=COBYLA_Settings(
+            max_iter=10, rhobeg=0.1, enable_progress_bar=False
+        ),
+    )
+    assert reference.f_opt != result.f_opt
+
+
+def test_catol_cobyla() -> None:
+    """Check that option catol is supported."""
+    problem = Rosenbrock()
+    problem.add_constraint(
+        MDOFunction(lambda x: x[0] + x[1], name="constr"),
+        value=1.0,
+        constraint_type=MDOFunction.ConstraintType.INEQ,
+    )
+    reference = ScipyOpt("COBYLA").execute(
+        problem, settings_model=COBYLA_Settings(max_iter=10, enable_progress_bar=False)
+    )
+    result = ScipyOpt("COBYLA").execute(
+        problem,
+        settings_model=COBYLA_Settings(
+            max_iter=10, catol=1e-5, enable_progress_bar=False
+        ),
+    )
+    assert reference.f_opt != result.f_opt
 
 
 def test_cannot_handle_inequality_constraints():

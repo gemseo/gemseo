@@ -57,6 +57,7 @@ from gemseo.algos.opt.scipy_linprog.settings.highs_dual_simplex import (
 from gemseo.algos.opt.scipy_linprog.settings.highs_interior_point import (
     INTERIOR_POINT_Settings,
 )
+from gemseo.algos.opt.scipy_local.settings.cobyla import COBYLA_Settings
 from gemseo.algos.opt.scipy_local.settings.cobyqa import COBYQA_Settings
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.opt.scipy_local.settings.nelder_mead import NELDER_MEAD_Settings
@@ -67,6 +68,7 @@ from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_S
 __all__ = [
     "Augmented_Lagrangian_Order_0_Settings",
     "Augmented_Lagrangian_Order_1_Settings",
+    "COBYLA_Settings",
     "COBYQA_Settings",
     "DIFFERENTIAL_EVOLUTION_Settings",
     "DUAL_ANNEALING_Settings",
