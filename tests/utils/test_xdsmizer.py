@@ -258,9 +258,9 @@ def test_xdsmize_bilevel(options) -> None:
         sub_disciplines,
         design_space,
         formulation_settings=BiLevel_Settings(
-            apply_cstr_tosub_scenarios=False,
+            apply_constraints_to_sub_scenarios=False,
             parallel_scenarios=False,
-            apply_cstr_to_system=True,
+            apply_constraints_to_system=True,
             main_mda_settings={"n_processes": 5},
         ),
     )
@@ -274,8 +274,8 @@ def test_xdsmize_bilevel(options) -> None:
         sub_disciplines,
         design_space,
         formulation_settings=BiLevel_Settings(
-            apply_cstr_tosub_scenarios=False,
-            apply_cstr_to_system=True,
+            apply_constraints_to_sub_scenarios=False,
+            apply_constraints_to_system=True,
             parallel_scenarios=True,
             main_mda_settings={"n_processes": 5, "use_threading": True},
         ),

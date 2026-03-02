@@ -166,7 +166,7 @@ system_scenario = create_scenario(
 # lower-level scenario will respect the target imposed by the system.
 # The BiLevel formulation will automatically add the constraints from the system-level
 # to the lower-level, if you wish to handle the constraints manually, pass
-# `apply_cstr_tosub_scenarios=False` as an argument to `create_scenario`.
+# `apply_constraints_to_sub_scenarios=False` as an argument to `create_scenario`.
 # Note that `obj2` shall be added as an observable of `scenario_doe`,
 # otherwise it cannot be used by the ParetoFront post-processing.
 system_scenario.add_constraint("cstr3")

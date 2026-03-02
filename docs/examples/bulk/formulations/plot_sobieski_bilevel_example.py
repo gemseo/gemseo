@@ -130,7 +130,7 @@ system_scenario = create_scenario(
     [sc_prop, sc_aero, sc_str, mission],
     "y_4",
     design_space.filter("x_shared", copy=True),
-    apply_cstr_tosub_scenarios=False,
+    apply_constraints_to_sub_scenarios=False,
     parallel_scenarios=False,
     multithread_scenarios=True,
     main_mda_settings=MDAGaussSeidel_Settings(

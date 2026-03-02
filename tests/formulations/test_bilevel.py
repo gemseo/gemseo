@@ -97,7 +97,7 @@ def sobieski_sub_scenarios() -> tuple[MDOScenario, MDOScenario, MDOScenario]:
 
 def test_constraint_not_in_sub_scenario(generate_sobieski_bilevel_scenario) -> None:
     """Test the execution of the Sobieski BiLevel Scenario."""
-    scenario = generate_sobieski_bilevel_scenario(apply_cstr_to_system=False)
+    scenario = generate_sobieski_bilevel_scenario(apply_constraints_to_system=False)
 
     for i in range(1, 4):
         scenario.add_constraint(f"g_{i}", constraint_type=scenario.ConstraintType.INEQ)
@@ -491,7 +491,7 @@ def test_system_variables_not_in_variables_to_warm_start(
         design_space.filter(["x", "baz"]),
         formulation_settings=MDO_FORMULATION_FACTORY.get_class(
             scenario_formulation
-        ).settings_class(apply_cstr_tosub_scenarios=False),
+        ).settings_class(apply_constraints_to_sub_scenarios=False),
     )
     scenario.add_objective("z")
     assert "x" not in scenario.formulation.chain._variable_names_to_warm_start
@@ -637,22 +637,24 @@ def test_optimal_local_design_history(generate_sobieski_bilevel_scenario):
     assert last_item["-y_4"] != y_4
 
 
-@pytest.mark.parametrize("apply_cstr_to_system", [None, False, True])
-@pytest.mark.parametrize("apply_cstr_tosub_scenarios", [None, False, True])
+@pytest.mark.parametrize("apply_constraints_to_system", [None, False, True])
+@pytest.mark.parametrize("apply_constraints_to_sub_scenarios", [None, False, True])
 @pytest.mark.parametrize("apply_to_system_level", [None, False, True])
 @pytest.mark.parametrize("apply_to_sub_level", [None, False, True])
 def test_constraint_level_policy(
     generate_sobieski_bilevel_scenario,
-    apply_cstr_to_system,
-    apply_cstr_tosub_scenarios,
+    apply_constraints_to_system,
+    apply_constraints_to_sub_scenarios,
     apply_to_system_level,
     apply_to_sub_level,
 ):
     settings = {}
-    if apply_cstr_to_system is not None:
-        settings["apply_cstr_to_system"] = apply_cstr_to_system
-    if apply_cstr_tosub_scenarios is not None:
-        settings["apply_cstr_tosub_scenarios"] = apply_cstr_tosub_scenarios
+    if apply_constraints_to_system is not None:
+        settings["apply_constraints_to_system"] = apply_constraints_to_system
+    if apply_constraints_to_sub_scenarios is not None:
+        settings["apply_constraints_to_sub_scenarios"] = (
+            apply_constraints_to_sub_scenarios
+        )
 
     scenario = generate_sobieski_bilevel_scenario(**settings)
 
@@ -664,14 +666,18 @@ def test_constraint_level_policy(
 
     scenario.add_constraint("g_1", **kwargs)
 
-    if apply_cstr_to_system is None:
-        apply_cstr_to_system = True
-    if apply_cstr_tosub_scenarios is None:
-        apply_cstr_tosub_scenarios = True
+    if apply_constraints_to_system is None:
+        apply_constraints_to_system = True
+    if apply_constraints_to_sub_scenarios is None:
+        apply_constraints_to_sub_scenarios = True
     assert bool(scenario.formulation.problem.constraints) is (
-        apply_cstr_to_system if apply_to_system_level is None else apply_to_system_level
+        apply_constraints_to_system
+        if apply_to_system_level is None
+        else apply_to_system_level
     )
     sub_scenario = scenario.formulation.disciplines[0]
     assert bool(sub_scenario.formulation.problem.constraints) is (
-        apply_cstr_tosub_scenarios if apply_to_sub_level is None else apply_to_sub_level
+        apply_constraints_to_sub_scenarios
+        if apply_to_sub_level is None
+        else apply_to_sub_level
     )
