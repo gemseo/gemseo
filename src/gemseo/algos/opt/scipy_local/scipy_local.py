@@ -39,6 +39,7 @@ from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
     BaseScipyLocalSettings,
 )
+from gemseo.algos.opt.scipy_local.settings.cobyla import COBYLA_Settings
 from gemseo.algos.opt.scipy_local.settings.cobyqa import COBYQA_Settings
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.opt.scipy_local.settings.nelder_mead import NELDER_MEAD_Settings
@@ -108,6 +109,20 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             internal_algorithm_name="Nelder-Mead",
             website=f"{__DOC}optimize.minimize-neldermead.html",
             settings_class=NELDER_MEAD_Settings,
+        ),
+        "COBYLA": SciPyAlgorithmDescription(
+            algorithm_name="COBYLA",
+            description=(
+                "Constrained Optimization BY Linear Approximation (COBYLA) "
+                "implemented in the SciPy library. "
+            ),
+            handle_equality_constraints=True,
+            handle_inequality_constraints=True,
+            internal_algorithm_name="COBYLA",
+            require_gradient=False,
+            positive_constraints=True,
+            website=f"{__DOC}optimize.minimize-cobyla.html",
+            settings_class=COBYLA_Settings,
         ),
     }
 
