@@ -435,16 +435,16 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         Args:
             apply_to_system_level: Whether to add the constraint
                 to the optimization problem of the main level.
-                If `None`, use the `apply_cstr_to_system` option.
+                If `None`, use the `apply_constraints_to_system` option.
             apply_to_sub_level: Whether to add the constraint
                 to the optimization problems of the sublevel.
-                If `None`, use the `apply_cstr_tosub_scenarios` option.
+                If `None`, use the `apply_constraints_to_sub_scenarios` option.
         """  # noqa: D205, D212
         if apply_to_system_level is None:
-            apply_to_system_level = self._settings.apply_cstr_to_system
+            apply_to_system_level = self._settings.apply_constraints_to_system
 
         if apply_to_sub_level is None:
-            apply_to_sub_level = self._settings.apply_cstr_tosub_scenarios
+            apply_to_sub_level = self._settings.apply_constraints_to_sub_scenarios
 
         if apply_to_system_level:
             system_level_constraint = self._create_system_level_constraint(

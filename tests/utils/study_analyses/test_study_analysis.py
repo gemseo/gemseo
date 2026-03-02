@@ -110,7 +110,7 @@ def test_xdsm_idf(tmp_wd) -> None:
 
 
 def test_xdsm_bilevel(tmp_wd) -> None:
-    analysis = MDOStudyAnalysis(INPUT_DIR / "study_bielvel_sobieski.xlsx")
+    analysis = MDOStudyAnalysis(INPUT_DIR / "study_bilevel_sobieski.xlsx")
     dnames = [
         "SobieskiAerodynamics",
         "SobieskiStructure",

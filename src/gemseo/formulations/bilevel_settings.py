@@ -42,15 +42,14 @@ the sub-scenarios are run in parallel using multi-threading;
 if False and parallel_scenarios=True, multiprocessing is used.""",
     )
 
-    # TODO: API: rename to apply_cstr_to_sub_scenarios
-    apply_cstr_tosub_scenarios: bool = Field(
+    apply_constraints_to_sub_scenarios: bool = Field(
         default=True,
         description="""Whether the constraints are added
 to the optimization problem of the sub-scenario
 capable of computing the constraint.""",
     )
 
-    apply_cstr_to_system: bool = Field(
+    apply_constraints_to_system: bool = Field(
         default=True,
         description="""Whether the constraints are added
 to the optimization problem of the system scenario.""",
