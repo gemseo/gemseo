@@ -62,8 +62,7 @@ scenario.execute(PYDOE_LHS_Settings(n_samples=30))
 # algorithm settings passed to [execute()][gemseo.scenarios.mdo.MDOScenario.execute]
 # can be provided via a Pydantic model.
 # For more information,
-# see [this page][formulation-settings] about the formulation settings
-# and [this page][algorithm-settings] about the algorithm settings.
+# see [this page][algorithm-settings] about the algorithm settings.
 #
 # ## Plot optimization history view
 #

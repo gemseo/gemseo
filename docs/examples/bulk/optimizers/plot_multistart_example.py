@@ -60,7 +60,7 @@ scenario = create_scenario(
 )
 # %%
 # Note that the formulation settings passed to [create_scenario()][gemseo.create_scenario] can be provided
-# via a Pydantic model. For more information, see [this page][formulation-settings].
+# via a Pydantic model.
 
 scenario.add_constraint("cstr", constraint_type="ineq")
 

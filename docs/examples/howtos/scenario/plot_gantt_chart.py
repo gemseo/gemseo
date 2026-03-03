@@ -114,7 +114,7 @@ scenario.execute(SLSQP_Settings(max_iter=10))
 #     and the algorithm settings passed to [MDOScenario.execute()][gemseo.scenarios.mdo.MDOScenario.execute]
 #     can be provided via Pydantic models.
 #     For more information,
-#     see [this page][algorithm-settings] and [this page][formulation-settings].
+#     see [this page][algorithm-settings].
 #
 # ## Plot the Gantt chart
 #

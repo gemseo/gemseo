@@ -38,7 +38,7 @@ on the original [Discipline][gemseo.core.discipline.discipline.Discipline],
 and validating the approximation. The
 computations from which the approximation is built can be available, or can be
 built using GEMSEO's DOE capabilities.
-See these [Sobieski][mdf-based-doe-on-the-sobieski-ssbj-test-case]
+See the [Sobieski][tutorial-execute-your-first-design-of-experiment-doe]
 and [Sellar][a-from-scratch-example-on-the-sellar-problem] examples.
 
 In GEMSEO, the data used to build the surrogate model is taken from a
@@ -99,9 +99,7 @@ synthetic_dataset = IODataset.from_array(data, variables, sizes, groups)
 # If you do not have available data,the following paragraphs of Step 1 concern you.
 #
 # Here, we illustrate the generation of the training data using an
-# [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
-# similarly to [this example][mdf-based-doe-on-the-sobieski-ssbj-test-case],
-# where more details are given.
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 #
 # In this basic example, a [Discipline][gemseo.core.discipline.discipline.Discipline]
 # computing the mission

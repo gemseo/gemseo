@@ -66,8 +66,7 @@ scenario.execute(CustomDOE_Settings(doe_file="doe.txt"))
 # Note that both the formulation settings passed to [create_scenario()][gemseo.create_scenario] and the
 # algorithm settings passed to [execute()][gemseo.algos.base_driver_library.BaseDriverLibrary.execute] can be provided via a Pydantic model.
 # For more information,
-# see [this page][formulation-settings] about the formulation settings
-# and [this page][algorithm-settings] about the algorithm settings.
+# see [this page][algorithm-settings] about the algorithm settings.
 #
 # We can display the content of the database as a [Dataset][gemseo.datasets.dataset.Dataset]
 # and check the values of the output,

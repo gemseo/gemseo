@@ -83,8 +83,13 @@ nav:
       - Scenario:
           - Discipline: disciplines/discipline.md
           - Design space: design_space/design_space.md
+          - Scenario: scenario/scenario.md
       - Formulations:
-          - MDO formulations: mdo/mdo_formulations.md
+          - Overview: mdo/formulations/index.md
+          - MDF: mdo/formulations/mdf.md
+          - IDF: mdo/formulations/idf.md
+          - Bi-Level: mdo/formulations/bilevel.md
+          - Bi-Level BCD: mdo/formulations/bilevel_bcd.md
       - Evaluations (DoE):
           - Design of Experiment algorithms: doe.md
       - Optimization:
@@ -136,19 +141,16 @@ nav:
           - Namespaces: generated/examples/bulk/namespaces
       - Design Space: generated/examples/howtos/design_space
       - Scenario:
-          - How to deal with scenarios: scenario/scenario.md
           - Monitoring the execution of a scenario: scenario/monitoring.md
           - Coupling: generated/examples/howtos/coupling
           - Study analysis: generated/examples/bulk/study_analysis
-          - Scenario examples: generated/examples/bulk/scenario
+          - Scenario examples: generated/examples/howtos/scenario
           - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda
           - Optimization: generated/examples/bulk/optimization_problem
           - Multi-start optimization: generated/examples/bulk/optimizers/plot_multistart_example.md
+      - Formulations: generated/examples/howtos/formulations
       - Design of experiments (DOE): generated/examples/bulk/doe
       - Define settings models:
-          - Formulation settings:
-              - Settings: settings/formulation_settings.md
-              - MDO formulation examples: generated/examples/bulk/formulations
           - Algorithm settings: settings/algorithm_settings.md
           - MDA settings: settings/mda_settings.md
           - Post-processor settings: settings/post_processing_settings.md

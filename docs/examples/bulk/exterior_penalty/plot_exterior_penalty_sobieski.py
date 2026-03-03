@@ -151,7 +151,7 @@ scenario = create_scenario(
 
 # %%
 # Note that both the formulation settings passed to [create_scenario()][gemseo.create_scenario] can be provided
-# via a Pydantic model. For more information, see [this page][formulation-settings].
+# via a Pydantic model.
 
 # %%
 # The range function ($y_4$) should be maximized. However, optimizers

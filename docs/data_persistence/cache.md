@@ -79,7 +79,7 @@ In GEMSEO, different cache types are available:
     must be protected by an `if __name__ == '__main__':` statement.
     Currently, the use of an HDF5Cache is not supported in parallel on Windows
     platforms. This is due to the way subprocesses are forked in this architecture.
-    The method [set_optimization_history_backup()][gemseo.scenarios.base_scenario.BaseScenario.set_optimization_history_backup]
+    The method [set_backup_settings()][gemseo.scenarios.mdo.MDOScenario.set_backup_settings]
     is recommended as an alternative.
 
 !!! note
