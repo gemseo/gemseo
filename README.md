@@ -14,7 +14,7 @@
 [![Codecov branch](https://img.shields.io/codecov/c/gitlab/gemseo:dev/gemseo/develop)](https://app.codecov.io/gl/gemseo:dev/gemseo/branch/develop)
 [![Paper](https://img.shields.io/badge/DOI-10.2514%2F6.2018--0657-blue)](https://arc.aiaa.org/doi/10.2514/6.2018-0657)
 
-GEMSEO stands for "Generic Engine for Multi-disciplinary Scenarios,
+GEMSEO® stands for "Generic Engine for Multi-disciplinary Scenarios,
 Exploration and Optimization", it features:
 
 - Automatic creation and execution of MDO processes based on MDO
@@ -46,6 +46,8 @@ The GEMSEO community forums are available at
 questions, and share ideas about GEMSEO.
 
 # License
+
+Copyright (c) 2026 IRT Saint Exupéry.
 
 The GEMSEO source code is distributed under the GNU LGPL v3.0 license. A
 copy of it can be found in the LICENSE.txt file. The GNU LGPL v3.0
