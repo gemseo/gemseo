@@ -69,7 +69,7 @@ nav:
           - Sobieski's Super Sonic Business Jet: generated/examples/bulk/mdo/plot_sobieski_use_case.md
       - Tutorials (advanced):
           - Multi-objective optimization: generated/examples/bulk/multi_objective
-          - Topology optimization: generated/examples/bulk/topology_optimization
+          - Tutorial - Topology optimization: generated/examples/tutorials/advanced/plot_tutorial_topology_optimization_L_shape.md
           - Ordinary differential equations (ODE): generated/examples/bulk/ode
       - Changelog: changelog.md
       - Licenses: software/licenses.md
@@ -107,6 +107,7 @@ nav:
               - Discipline: ode/ode_discipline.md
               - Problem: ode/ode_problem.md
           - Scalable models: scalable_models/original_paper.md
+          - Topology optimization: topology_optimization/topology_optimization.md
           - Extending: extending.md
 
   - How-to:
