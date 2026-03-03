@@ -111,6 +111,7 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.scenarios.backup_settings import BackupSettings
+from gemseo.scenarios.evaluation import EvaluationScenario
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
@@ -1088,7 +1089,7 @@ def test_configure_logger_file_mode(tmp_wd) -> None:
 def disciplines() -> list[AnalyticDiscipline]:
     """Two simple disciplines to be sampled, with 1 input and 2 outputs."""
     return [
-        AnalyticDiscipline({"out1": "2*inpt"}),
+        AnalyticDiscipline({"out1": "2*inpt+other_inpt"}),
         AnalyticDiscipline({"out2": "3*inpt+out1"}),
     ]
 
@@ -1101,10 +1102,7 @@ def input_space() -> DesignSpace:
     return design_space
 
 
-@pytest.mark.parametrize(
-    "output_names",
-    ["out1", ["out1", "out2"]],
-)
+@pytest.mark.parametrize("output_names", ["out1", ["out1", "out2"]])
 def test_sample_disciplines(disciplines, input_space, output_names, caplog):
     """Check the sampling of two disciplines."""
     dataset = sample_disciplines(
@@ -1148,7 +1146,7 @@ def test_sample_disciplines_options(disciplines, input_space, caplog):
         # Use DisciplinaryOpt instead of MDF
         formulation_name="DisciplinaryOpt",
         # Sample -objective instead of objective
-        formulation_settings={"maximize_objective": True},
+        formulation_settings={"differentiated_input_names_substitute": ["other_inpt"]},
         # Sample the gradients
         eval_jac=True,
         # Log the problem
@@ -1156,17 +1154,16 @@ def test_sample_disciplines_options(disciplines, input_space, caplog):
     )
     assert dataset.name == "foo"
     assert_equal(
-        dataset.get_view(variable_names="-out1").to_numpy(), array([[-2.0], [-4.0]])
+        dataset.get_view(variable_names="out1").to_numpy(), array([[2.0], [4.0]])
     )
     assert_equal(
-        dataset.get_view(variable_names="@-out1").to_numpy(), array([[-2.0], [-2.0]])
+        dataset.get_view(variable_names="@out1").to_numpy(), array([[1.0], [1.0]])
     )
-    assert "Objective" in caplog.text
 
 
 def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
     """Check that sample_disciplines can use a backup file."""
-    with mock.patch.object(MDOScenario, "set_backup_settings") as method:
+    with mock.patch.object(EvaluationScenario, "set_backup_settings") as method:
         sample_disciplines(
             disciplines,
             input_space,
@@ -1187,7 +1184,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
     )
     assert len(Database.from_hdf("database.hdf5")) == 2
 
-    with mock.patch.object(MDOScenario, "set_backup_settings") as method:
+    with mock.patch.object(EvaluationScenario, "set_backup_settings") as method:
         sample_disciplines(
             disciplines,
             input_space,
@@ -1204,7 +1201,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
         "load": False,
     }
 
-    with mock.patch.object(MDOScenario, "set_backup_settings") as method:
+    with mock.patch.object(EvaluationScenario, "set_backup_settings") as method:
         sample_disciplines(
             disciplines,
             input_space,
