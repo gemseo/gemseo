@@ -34,9 +34,10 @@ called disciplines ).
 From this information, GEMSEO carries out the following steps:
 
 > 1. **Create** a scenario, translating this design problem into a mathematical optimization problem. The user can
-     choose its favorite [MDO formulation](mdo/mdo_formulations.md) (or architecture) or test another one, by simply
+     choose its favorite [MDO formulation][mdo-formulations] (or architecture) or test another one, by simply
      giving the name of the formulation to the
-     scenario. [Bi-level MDO formulations](mdo/mdo_formulations.md#the-bi-level-formulation) allow to use disciplines
+     scenario.
+     [Bi-level MDO formulations][the-bi-level-formulation] allow to use disciplines
      that are themselves scenarios.
 > 2. **Solve** this design problem, using either an optimization algorithm or a DOE.
 > 3. **Plot** the results and logs of the optimization problem resolution.
@@ -52,7 +53,7 @@ made on:
 > - the integration of heterogeneous simulation environments in industrial and research contexts,
 > - the integration of state-of-the-art algorithms for optimization, design of experiments, and coupled analyses,
 > - the automation of MDO results analysis,
-> - the development of distributed and multi-level [MDO formulations](mdo/mdo_formulations.md).
+> - the development of distributed and multi-level [MDO formulations][mdo-formulations].
 
 ![XDSM of the bi-level formulation applied to the Sobieski's SSBJ problem](assets/images/bilevel_ssbj.png)
 *A bi-level MDO formulation on Sobieski's SSBJ problem.*
@@ -66,10 +67,10 @@ made on:
 - Use different optimization algorithms [[Read more]](mdo/optimization.md)
 - Use different sampling methods for design of experiments  [[Read more]](mdo/optimization.md)
 - Use
-  different [MDO formulations](mdo/mdo_formulations.md): [MDF](mdo/mdo_formulations.md#the-mdf-formulation), [IDF](mdo/mdo_formulations.md#the-idf-formulation), [bilevel](mdo/mdo_formulations.md#the-bi-level-formulation)
-  and disciplinary optimizer [[Read more]](mdo/mdo_formulations.md)
-- Visualize an [MDO formulation](mdo/mdo_formulations.md) as
-  an [XDSM diagram](mdo/mdo_formulations.md#xdsm-visualization) [[Read more]](mdo/mdo_formulations.md)
+  different [MDO formulations][mdo-formulations]: [MDF][the-mdf-formulation], [IDF][the-idf-formulation], [bilevel][the-bi-level-formulation]
+  and disciplinary optimizer [[Read more]][mdo-formulations]
+- Visualize a [MDO formulation][mdo-formulations] as
+  an [XDSM diagram][xdsm-visualization] [[Read more]][mdo-formulations]
 - Use different `mda` algorithms: fixed-point algorithms (Gauss-Seidel and Jacobi), root finding methods (Newton Raphson
   and Quasi-Newton) and hybrid techniques [[Read more]][multi-disciplinary-analyses].
 - Use different surrogate models to substitute a costly discipline within a process: linear regression, RBF model and
@@ -84,7 +85,7 @@ made on:
 - Create simple analytic disciplines using symbolic calculation [[Read more]](disciplines/analytic_discipline.md)
 - Use a cheap scalable model instead of an costly discipline in order to compare different formulation
   performances [[Read more]](scalable_models/original_paper.md)
-- Monitor the execution of a scenario using logs, [XDSM](mdo/mdo_formulations.md#xdsm-visualization) diagram or an
+- Monitor the execution of a scenario using logs, [XDSM][xdsm-visualization] diagram or an
   observer design pattern [[Read more]](scenario/monitoring.md)
 
 ### Development

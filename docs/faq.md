@@ -23,11 +23,10 @@ As GEMSEO code evolves, some calling signatures and behavior may change. These c
 
 ## Create a simple DOE on a single discipline
 
-Use the [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation
-and an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] scenario. Even for simple DOEs, GEMSEO formulates an optimization problem, so requires an [MDO formulation](mdo/mdo_formulations.md). The [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation executes the [Discipline][gemseo.core.discipline.discipline.Discipline] alone, or the list of [Discipline][gemseo.core.discipline.discipline.Discipline] in the order passed by the user. This means that you must specify an objective function. The DOE won't try to minimize it but it will be set as an objective in the visualizations.
+Use the [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation and a [MDOScenario][gemseo.scenarios.mdo.MDOScenario] scenario. Even for simple DOEs, GEMSEO formulates an optimization problem, so requires a [MDO formulation][mdo-formulations]. The [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation executes the [Discipline][gemseo.core.discipline.discipline.Discipline] alone, or the list of [Discipline][gemseo.core.discipline.discipline.Discipline] in the order passed by the user. This means that you must specify an objective function which will be set for the visualizations. The minimum value through the DOE will be considered as the best one.
 
 !!! info "See Also"
-    For more details, we invite you to read [our example][mdf-based-doe-on-the-sobieski-ssbj-test-case].
+    For more details, we invite you to read [our tutorial][tutorial-execute-your-first-design-of-experiment-doe].
 
 ## Create a simple optimization on a single discipline
 
@@ -84,10 +83,17 @@ sudo yum install libnsl
 
 ## Parallel execution limitations on Windows
 
-When running parallel execution tasks on Windows, the [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] does not work properly. This is due to the way subprocesses are forked in this architecture. The method [MDOScenario.set_history_backup()][gemseo.scenarios.mdo.MDOScenario.set_history_backup] is recommended as an alternative.
+When running parallel execution tasks on Windows, the [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] does not work properly. This is due to the way subprocesses are forked in this architecture. The method [MDOScenario.set_backup_settings()][gemseo.scenarios.mdo.MDOScenario.set_backup_settings] is recommended as an alternative.
 
 The execution of any script using parallel execution on Windows including, but not limited to, [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with `n_processes > 1`, [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache], [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache], [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution], [DiscParallelExecution][gemseo.core.parallel_execution.disc_parallel_execution.DiscParallelExecution], must be protected by an `if __name__ == '__main__':` statement.
 
 ## Handling paths for different OSes
 
 Some disciplines wrap other disciplines in order to execute them remotely. Those disciplines may use paths stored as [Path][pathlib.Path], which are handled differently on Windows and on POSIX platforms (Linux and MacOS). Despite the fact that GEMSEO takes care of converting those types of paths, it cannot convert absolute paths. For instance, in the path `C:\\some\path`, the `C:` part has no meaning on POSIX platforms. In that case, to prevent GEMSEO from terminating with an error, these types of paths should be defined as relative paths. For instance, the paths `some\path` or `some/path` are relative paths, which are relative to the current working directory.
+
+## How to list the different features?
+
+GEMSEO offers different ``get_available_*`` methods to list the different features.
+They can be directly imported from GEMSEO.
+For instance, ``from gemseo import get_available_post_processings``
+to list all the post-processings.

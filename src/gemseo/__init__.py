@@ -1329,7 +1329,7 @@ def import_database(
     [Database.to_hdf()][gemseo.algos.database.Database.to_hdf],
     [OptimizationProblem.to_hdf()][gemseo.algos.optimization_problem.OptimizationProblem.to_hdf]
     or
-    [MDOScenario.save_optimization_history()][gemseo.scenarios.mdo.MDOScenario.save_optimization_history].
+    [MDOScenario.to_hdf()][gemseo.scenarios.mdo.MDOScenario.to_hdf].
 
     Args:
         file_path: The path of the HDF file.

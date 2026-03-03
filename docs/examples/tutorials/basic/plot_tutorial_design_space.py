@@ -38,7 +38,7 @@ from __future__ import annotations
 from numpy import array
 from numpy import ones
 
-from gemseo import create_design_space
+from gemseo.algos.design_space import DesignSpace
 
 # %%
 # ## Step 1 - Create a design space
@@ -53,11 +53,11 @@ from gemseo import create_design_space
 # - *x6* is a one-dimensional unbounded float variable,
 # - *x7* is a two-dimensional bounded integer variable with lower bound equal to -1, upper bound equal to 1 and current values to (0,1).
 #
-# We can create this design space from scratch by means of the [create_design_space()][gemseo.create_design_space] high-level function
-# and the [add_variable()][gemseo.algos.design_space.DesignSpace.add_variable] method
-# of the [DesignSpace][gemseo.algos.design_space.DesignSpace] class:
+# We can create this design space from scratch.
+# Use the [add_variable()][gemseo.algos.design_space.DesignSpace.add_variable] method
+# of the [DesignSpace][gemseo.algos.design_space.DesignSpace] class to add variables:
 
-design_space = create_design_space()
+design_space = DesignSpace()
 design_space.add_variable("x1", value=array([1.0]))
 design_space.add_variable("x2", value=array([1]), type_="integer")
 design_space.add_variable("x3", size=2, value=ones(2))

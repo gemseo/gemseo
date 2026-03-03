@@ -108,7 +108,7 @@ Then, you can visualize it with `print(design_space)`:
 
 The Sobieski's SSBJ test case is considered in the different examples:
 
-- [DOE example][mdf-based-doe-on-the-sobieski-ssbj-test-case],
+- [DOE example][tutorial-execute-your-first-design-of-experiment-doe],
 - [MDO example][application-sobieskis-super-sonic-business-jet-mdo].
 
 ### Origin of the test case

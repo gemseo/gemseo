@@ -44,8 +44,7 @@ from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settin
 # ## Get available scenario type
 #
 # The high-level function [get_available_scenario_types()][gemseo.get_available_scenario_types] can be used
-# to get the available scenario types ([MDOScenario][gemseo.scenarios.mdo.MDOScenario] and
-# [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]).
+# to get the available scenario types, including `"Evaluation"` and `"MDO"`.
 get_available_scenario_types()
 
 # %%
@@ -70,7 +69,7 @@ get_scenario_options_schema("MDO")
 #   - `design_space`: the [DesignSpace][gemseo.algos.design_space.DesignSpace] or
 #     the file path of the design space,
 #   - either a `formulation_name` followed by its `formulation_settings``; or
-#   - a `formulation_settings_model` (see [this page][formulation-settings]).
+#   - a `formulation_settings_model`.
 #
 # - The other arguments are optional:
 #
@@ -80,8 +79,8 @@ get_scenario_options_schema("MDO")
 #   - `**formulation_settings`: settings passed to the formulation as keyword
 #     arguments when the `formulation_settings_model` was not provided.
 #
-# - This function returns an instance of [MDOScenario][gemseo.scenarios.mdo.MDOScenario] or
-#   [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario].
+# - This function returns an instance of
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 
 discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x1+x2"})
 design_space = create_design_space()

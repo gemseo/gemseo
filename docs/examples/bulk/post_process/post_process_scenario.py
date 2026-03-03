@@ -19,7 +19,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Post-process a scenario."""
+"""# How to post-process a scenario."""
 
 from __future__ import annotations
 

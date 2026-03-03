@@ -71,7 +71,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __Scenario__
 
-    [:octicons-book-24: User guide][how-to-deal-with-scenarios]
+    [:octicons-book-24: User guide][scenario-user-guide]
     [:octicons-play-24: Examples][scenario-examples]
 
     ---
@@ -79,7 +79,6 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
     Define an evaluation process over a design space for a set of disciplines and a given objective.
 
     Features:
-    [DOE scenario][gemseo.scenarios.doe_scenario] and
     [MDO scenario][gemseo.scenarios.mdo].
 
 - ### __Data persistence__
