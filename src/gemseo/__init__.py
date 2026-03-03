@@ -1608,24 +1608,19 @@ def sample_disciplines(
         The input-output samples of the disciplines.
     """
     settings = dict(formulation_settings)
-    maximize_objective = settings.pop("maximize_objective", False)
     from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
-    from gemseo.scenarios.mdo import MDOScenario
+    from gemseo.scenarios.evaluation import EvaluationScenario
     from gemseo.utils.string_tools import convert_strings_to_iterable
 
-    output_names = convert_strings_to_iterable(output_names)
-    output_names_iterator = iter(output_names)
-    settings = MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
-        **settings
-    )
-    scenario = MDOScenario(
+    formulation_class = MDO_FORMULATION_FACTORY.get_class(formulation_name)
+    formulation_settings = formulation_class.settings_class(**settings)
+    scenario = EvaluationScenario(
         disciplines,
         input_space,
         name=name,
-        formulation_settings=settings,
+        formulation_settings=formulation_settings,
     )
-    scenario.add_objective(next(output_names_iterator), minimize=not maximize_objective)
-    for output_name in output_names_iterator:
+    for output_name in convert_strings_to_iterable(output_names):
         scenario.add_observable(output_name)
 
     if not algo_settings_model:
@@ -1643,17 +1638,17 @@ def sample_disciplines(
             erase=backup_settings.erase,
             load=backup_settings.load,
         )
+
     if algo_settings_model is None:
         algo_name = algo_settings.pop("algo_name")
         factory = DOELibraryFactory()
         cls = factory.get_class(factory.algo_names_to_libraries[algo_name])
-        settings = cls.ALGORITHM_INFOS[algo_name].settings_class(**algo_settings)
-        scenario.execute(settings)
-    else:
-        scenario.execute(algo_settings_model)
-    return scenario.formulation.problem.to_dataset(
-        name=name, opt_naming=False, export_gradients=True
-    )
+        algo_settings_model = cls.ALGORITHM_INFOS[algo_name].settings_class(
+            **algo_settings
+        )
+
+    scenario.execute(algo_settings_model)
+    return scenario.formulation.problem.to_dataset(name=name, export_gradients=True)
 
 
 def generate_xdsm(
