@@ -46,9 +46,6 @@ def order_disciplines_from_default_inputs(
     From the default inputs of the disciplines, use a greedy algorithm to detect
     sequentially the disciplines that can be executed, and records the execution order.
 
-    Raises:
-        ValueError: When a discipline cannot be initialized.
-
     Args:
         disciplines: The disciplines to compute the initialization of.
         raise_error: Whether to raise an exception when the algorithm fails.
@@ -58,6 +55,9 @@ def order_disciplines_from_default_inputs(
     Returns:
         The ordered disciplines when the algorithm succeeds, or, if raise_error=False,
         the inputs that are missing.
+
+    Raises:
+        ValueError: When a discipline cannot be initialized.
     """
     ordered_discs = []
     remaining_discs = list(disciplines)

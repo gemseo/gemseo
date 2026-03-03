@@ -82,11 +82,11 @@ def check_constraint_type(
                 *args: The positional arguments.
                 **kwargs: The keyword arguments.
 
-            Raises:
-                ValueError: If the type is not correct.
-
             Returns:
                 The return value of `func`.
+
+            Raises:
+                ValueError: If the type is not correct.
             """
             constr = args[0]
 

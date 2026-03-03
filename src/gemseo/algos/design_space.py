@@ -1594,11 +1594,11 @@ class DesignSpace:
         Args:
             name: The name of the variable.
 
-        Raises:
-            ValueError: If the variable is not known.
-
         Returns:
             The size of the variable.
+
+        Raises:
+            ValueError: If the variable is not known.
         """
         self.__check_known_variable(name)
         return self._variables[name].size
@@ -1612,11 +1612,11 @@ class DesignSpace:
         Args:
             name: The name of the variable.
 
-        Raises:
-            ValueError: If the variable is not known.
-
         Returns:
             The type of the variable.
+
+        Raises:
+            ValueError: If the variable is not known.
         """
         self.__check_known_variable(name)
         return str(self._variables[name].type)
