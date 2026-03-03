@@ -63,12 +63,12 @@ nav:
           - Define an MDO problem: interface/study_analysis.md
           - Optimization and DOE framework: mdo/optimization.md
           - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/bulk/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
-          - Solve a mixed optimization problem: generated/examples/bulk/mdo/plot_mixed_optimization.md
           - MDO formulations for a toy example in aerostructure: generated/examples/bulk/mdo/plot_aerostructure.md
           - A from scratch example on the Sellar problem: generated/examples/bulk/mdo/plot_sellar.md
           - Sobieski's Super Sonic Business Jet: generated/examples/bulk/mdo/plot_sobieski_use_case.md
       - Tutorials (advanced):
           - Multi-objective optimization: generated/examples/bulk/multi_objective
+          - Tutorial - Solve a mixed optimization problem: generated/examples/tutorials/advanced/plot_tutorial_mixed_optimization.md
           - Tutorial - Topology optimization: generated/examples/tutorials/advanced/plot_tutorial_topology_optimization_L_shape.md
           - Ordinary differential equations (ODE): generated/examples/bulk/ode
       - Changelog: changelog.md
