@@ -1,3 +1,11 @@
+---
+status: draft
+description: ""
+tags: ["user_guide"]
+search:
+  boost: 2
+---
+
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -9,6 +17,9 @@
 
 # Topology optimization
 
+!!! info "Tutorial"
+    - [Tutorial - Solve a 2D L-shape topology optimization problem][tutorial-solvea-2d-l-shape-topology-optimization-problem]
+
 In these examples, 2D topology optimization problems are solved thanks to GEMSEO.
 
 Topology optimization aims at finding the "best" material layout withing a given design space. It is especially useful in preliminary design phases when one only knows a component of the operating conditions and wants to find good design candidates achieving stiffer structures within a given mass budget. The formulation adopted in these examples is the Solid Isotropic Material with Penalization (SIMP)[^1] approach.
@@ -19,11 +30,11 @@ The examples are the same from MATLAB and Python implementations described in[^2
 
 Given a 2D design space with loads and boundary conditions, let us take the example of an MBB structure:
 
-![image](../../../../assets/images/topology_optimization/TO_design_space_MBB.png)
+![image](../assets/images/topology_optimization/TO_design_space_MBB.png)
 
 First, the solid design space is meshed with 2D bi-linear squared finite elements. All the examples proposed here consider rectangular domains. This means that one only needs to define the number of elements in horizontal (x) and vertical (y) direction.
 
-![image](../../../../assets/images/topology_optimization/TO_mesh_MBB.png)
+![image](../assets/images/topology_optimization/TO_mesh_MBB.png)
 
 In the above figure it is possible to find the element and degree of freedoms numbering convention adopted for a 4x3 finite element mesh. What gives a very large design freedom to topology optimization is that a design variable $x \in \{0,1\}^N$ is associated with each finite element. These variables are equal to 0 when the finite element is void and equal to 1 when the finite element is filled with solid material. In order to use the convergence rate of the gradient-based optimization solvers, the design variable are relaxed $x \in [0,1]^N$. To enforce a discrete solution at convergence, the intermediate valuess of the design variables are penalized using the SIMP approach that introduces a power low relationship between the local material density and the Young's modulus. In order to avoid numerical difficulties such as mesh-dependent solutions and checkerboard patterns, a density filtering technique is implemented. In these examples, topology optimization is employed to minimize structural compliance subjected to a mass budget or equivalently a volume fraction target:
 
