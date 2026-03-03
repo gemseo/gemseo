@@ -878,15 +878,15 @@ class Database(Mapping):
                 the input variables are returned in the history
                 as `np.hstack((get_output_history, x_vect_history))`.
 
-        Raises:
-            ValueError: If the number of names does not match the dimension of the
-                design vector.
-
         Returns:
             The history as an 2D array
             whose rows are observations and columns are the variables,
             the names of these columns
             and the names of the functions.
+
+        Raises:
+            ValueError: If the number of names does not match the dimension of the
+                design vector.
         """
         f_names = function_names
         if not f_names:

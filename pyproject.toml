@@ -81,6 +81,7 @@ doc = [
     "griffe-inherited-docstrings",
     "markdown-exec[ansi]",
     "mike",
+    "mkdocs <2",
     "mkdocs-bibtex",
     "mkdocs-gallery",
     "mkdocs-gen-files",

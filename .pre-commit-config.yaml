@@ -28,7 +28,7 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.2
+    rev: v0.15.4
     hooks:
       - id: ruff-check
         types_or: [python, pyi, jupyter]
@@ -46,13 +46,13 @@ repos:
   #       ]
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.13.8
+    rev: v4.13.9
     hooks:
       - id: commitizen
         stages: [commit-msg]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.47.0
+    rev: v0.48.0
     hooks:
       - id: markdownlint
         args: [--fix]
