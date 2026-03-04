@@ -20,6 +20,8 @@ from numpy import ones
 from numpy import zeros
 
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
 from gemseo.algos.stop_criteria import is_kkt_residual_norm_reached
 from gemseo.problems.optimization.power_2 import Power2
@@ -63,10 +65,10 @@ def test_is_kkt_norm_tol_reached_power2(is_optimum) -> None:
     )
 
 
-@pytest.mark.parametrize("algorithm", ["NLOPT_SLSQP", "SLSQP"])
+@pytest.mark.parametrize("settings_class", [NLOPT_SLSQP_Settings, SLSQP_Settings])
 @pytest.mark.parametrize("store_jacobian", [True, False])
 @pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
-def test_kkt_norm_correctly_stored(algorithm, problem, store_jacobian) -> None:
+def test_kkt_norm_correctly_stored(settings_class, problem, store_jacobian) -> None:
     """Test that kkt norm is stored at each iteration requiring gradient."""
     problem.preprocess_functions()
     options = {
@@ -78,7 +80,9 @@ def test_kkt_norm_correctly_stored(algorithm, problem, store_jacobian) -> None:
     }
     problem.reset()
     if store_jacobian:
-        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name=algorithm, **options)
+        OPTIMIZATION_LIBRARY_FACTORY.execute(
+            problem, settings=settings_class(**options)
+        )
         kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
         obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
         obj_hist = problem.database.get_function_history(problem.objective.name)
@@ -93,5 +97,5 @@ def test_kkt_norm_correctly_stored(algorithm, problem, store_jacobian) -> None:
     else:
         with pytest.raises(ValueError):
             OPTIMIZATION_LIBRARY_FACTORY.execute(
-                problem, algo_name=algorithm, **options
+                problem, settings=settings_class(**options)
             )

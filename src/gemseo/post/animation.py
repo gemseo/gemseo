@@ -84,9 +84,7 @@ class Animation(BasePost[Animation_Settings]):
         for iteration in range(len(database), 0, -settings.frame_rate):
             opt_problem.database.clear_from_iteration(iteration)
             settings.post_processing_settings.file_path = f"{self.__FRAME}_{iteration}"
-            settings.post_processing.execute(
-                **settings.post_processing_settings.model_dump(),
-            )
+            settings.post_processing.execute(settings.post_processing_settings)
             steps_to_frame_file_paths.append(
                 settings.post_processing.output_file_paths[output_files_count:],
             )

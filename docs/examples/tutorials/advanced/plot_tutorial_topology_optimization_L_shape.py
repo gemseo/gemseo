@@ -26,6 +26,8 @@ from __future__ import annotations
 
 from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.post import BasicHistory_Settings
+from gemseo.post import TopologyView_Settings
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
@@ -85,7 +87,7 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 scenario = MDOScenario(
     disciplines,
     design_space,
-    settings=DisciplinaryOpt_Settings(),
+    formulation_settings=DisciplinaryOpt_Settings(),
 )
 
 # %%
@@ -113,13 +115,13 @@ scenario.execute(NLOPT_MMA_Settings(max_iter=200))
 # You can see the convergence plot showing the decrease of the ``compliance`` variable,
 # by using the ``BasicHistory`` plot.
 scenario.post_process(
-    post_name="BasicHistory", variable_names=["compliance"], show=True, save=False
+    BasicHistory_Settings(variable_names=["compliance"], show=True, save=False)
 )
 
 # %%
 # And you can also visualize your optimized topology
 # with the ``TopologyView`` post-process.
-scenario.post_process(post_name="TopologyView", n_x=n_x, n_y=n_y, show=True, save=False)
+scenario.post_process(TopologyView_Settings(n_x=n_x, n_y=n_y, show=True, save=False))
 
 # %%
 # ## Key takeaways

@@ -34,6 +34,8 @@ from pandas import DataFrame
 from pandas import MultiIndex
 
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.pareto.pareto_front import ParetoFront
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
@@ -47,14 +49,12 @@ def problem_2obj() -> OptimizationProblem:
     problem = BinhKorn()
     OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem,
-        algo_name="MNBI",
-        max_iter=100,
-        n_sub_optim=5,
-        sub_optim_algo="SLSQP",
-        sub_optim_algo_settings={
-            "normalize_design_space": False,
-        },
-        normalize_design_space=False,
+        settings=MNBI_Settings(
+            max_iter=100,
+            n_sub_optim=5,
+            sub_optim_algo_settings=SLSQP_Settings(normalize_design_space=False),
+            normalize_design_space=False,
+        ),
     )
     return problem
 

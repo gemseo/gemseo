@@ -36,6 +36,10 @@ from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.opt.scipy_local.settings.cobyla import COBYLA_Settings
 from gemseo.algos.opt.scipy_local.settings.cobyqa import COBYQA_Settings
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.algos.opt.scipy_local.settings.nelder_mead import NELDER_MEAD_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
@@ -124,7 +128,7 @@ class TestScipy(TestCase):
 
     def test_lbfgsb_options(self) -> None:
         """"""
-        algo_name = "L-BFGS-B"
+        algo_name = "L_BFGS_B"
         OptLibraryTestBase.generate_one_test_unconstrained(
             self.OPT_LIB_NAME,
             algo_name=algo_name,
@@ -181,10 +185,10 @@ class TestScipy(TestCase):
             rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
         )
         OPTIMIZATION_LIBRARY_FACTORY.execute(
-            problem, algo_name="L-BFGS-B", normalize_design_space=True
+            problem, settings=L_BFGS_B_Settings(normalize_design_space=True)
         )
         OPTIMIZATION_LIBRARY_FACTORY.execute(
-            problem, algo_name="L-BFGS-B", normalize_design_space=False
+            problem, settings=L_BFGS_B_Settings(normalize_design_space=False)
         )
 
     def test_xtol_ftol_activation(self) -> None:
@@ -198,7 +202,7 @@ class TestScipy(TestCase):
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
             )
             res = OPTIMIZATION_LIBRARY_FACTORY.execute(
-                problem, algo_name="L-BFGS-B", **algo_options
+                problem, settings=L_BFGS_B_Settings(**algo_options)
             )
             return res, problem
 
@@ -279,9 +283,7 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
     are indeed recast as dense NumPy arrays before being sent to SciPy.
     """
     optimization_result = OPTIMIZATION_LIBRARY_FACTORY.execute(
-        opt_problem,
-        algo_name="SLSQP",
-        ftol_abs=1e-10,
+        opt_problem, settings=SLSQP_Settings(ftol_abs=1e-10)
     )
     assert allclose(optimization_result.f_opt, -0.001, atol=1e-10)
 
@@ -293,7 +295,8 @@ def test_nelder_mead(initial_simplex) -> None:
     """Test the Nelder-Mead algorithm on the Rosenbrock problem."""
     problem = Rosenbrock()
     opt = OPTIMIZATION_LIBRARY_FACTORY.execute(
-        problem, algo_name="NELDER-MEAD", max_iter=800, initial_simplex=initial_simplex
+        problem,
+        settings=NELDER_MEAD_Settings(max_iter=800, initial_simplex=initial_simplex),
     )
     x_opt, f_opt = problem.get_solution()
     assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
@@ -304,13 +307,13 @@ def test_tnc_maxiter(caplog):
     """Check that TNC no longer receives the unknown maxiter option."""
     problem = Rosenbrock()
     with pytest.warns(UserWarning, match="foo") as record:  # noqa: B028, PT031
-        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="TNC", max_iter=2)
+        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=TNC_Settings(max_iter=2))
         warn("foo", UserWarning, stacklevel=2)
 
     assert len(record) == 1
 
 
-@pytest.mark.parametrize("algorithm_name", ["SLSQP", "L-BFGS-B", "TNC", "NELDER-MEAD"])
+@pytest.mark.parametrize("algorithm_name", ["SLSQP", "L_BFGS_B", "TNC", "NELDER_MEAD"])
 def test_stop_crit_n_x(algorithm_name) -> None:
     """Check that option stop_crit_n_x is supported."""
     library = ScipyOpt(algorithm_name)
@@ -328,7 +331,7 @@ def test_cobyqa() -> None:
     """Test the COBYQA algorithm on the Rosenbrock problem."""
     problem = Rosenbrock()
     opt = OPTIMIZATION_LIBRARY_FACTORY.execute(
-        problem, algo_name="COBYQA", max_iter=100
+        problem, settings=COBYQA_Settings(max_iter=100)
     )
     x_opt, f_opt = problem.get_solution()
     assert opt.x_opt == pytest.approx(x_opt, abs=2.0e-2)
@@ -341,11 +344,11 @@ def test_cobyqa() -> None:
 def test_initial_tr_radius_cobyqa() -> None:
     """Check that option initial_tr_radius is supported."""
     reference = ScipyOpt("COBYQA").execute(
-        Rosenbrock(), settings_model=COBYQA_Settings(max_iter=10)
+        Rosenbrock(), settings=COBYQA_Settings(max_iter=10)
     )
     result = ScipyOpt("COBYQA").execute(
         Rosenbrock(),
-        settings_model=COBYQA_Settings(max_iter=10, initial_tr_radius=0.05),
+        settings=COBYQA_Settings(max_iter=10, initial_tr_radius=0.05),
     )
     assert reference.f_opt != result.f_opt
 
@@ -354,7 +357,7 @@ def test_cobyla() -> None:
     """Test the COBYLA algorithm on the Rosenbrock problem."""
     problem = Rosenbrock()
     opt = ScipyOpt("COBYLA").execute(
-        problem, settings_model=COBYLA_Settings(max_iter=500, enable_progress_bar=False)
+        problem, settings=COBYLA_Settings(max_iter=500, enable_progress_bar=False)
     )
     x_opt, f_opt = problem.get_solution()
     xtol = 2.0e-1 if SCIPY_GREATER_THAN_1_16 else 6.0e-1
@@ -367,13 +370,11 @@ def test_rhobeg_cobyla() -> None:
     """Check that option rhobeg is supported."""
     reference = ScipyOpt("COBYLA").execute(
         Rosenbrock(),
-        settings_model=COBYLA_Settings(max_iter=10, enable_progress_bar=False),
+        settings=COBYLA_Settings(max_iter=10, enable_progress_bar=False),
     )
     result = ScipyOpt("COBYLA").execute(
         Rosenbrock(),
-        settings_model=COBYLA_Settings(
-            max_iter=10, rhobeg=0.1, enable_progress_bar=False
-        ),
+        settings=COBYLA_Settings(max_iter=10, rhobeg=0.1, enable_progress_bar=False),
     )
     assert reference.f_opt != result.f_opt
 
@@ -387,13 +388,11 @@ def test_catol_cobyla() -> None:
         constraint_type=MDOFunction.ConstraintType.INEQ,
     )
     reference = ScipyOpt("COBYLA").execute(
-        problem, settings_model=COBYLA_Settings(max_iter=10, enable_progress_bar=False)
+        problem, settings=COBYLA_Settings(max_iter=10, enable_progress_bar=False)
     )
     result = ScipyOpt("COBYLA").execute(
         problem,
-        settings_model=COBYLA_Settings(
-            max_iter=10, catol=1e-5, enable_progress_bar=False
-        ),
+        settings=COBYLA_Settings(max_iter=10, catol=1e-5, enable_progress_bar=False),
     )
     assert reference.f_opt != result.f_opt
 
@@ -413,4 +412,4 @@ def test_cannot_handle_inequality_constraints():
             "because it does not handle inequality constraints."
         ),
     ):
-        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="TNC")
+        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=TNC_Settings())

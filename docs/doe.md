@@ -87,7 +87,10 @@ Once the functions of the [OptimizationProblem][gemseo.algos.optimization_proble
 !!! note
     GEMSEO applies a DOE algorithm over a unit hypercube of the same dimension as the input space and then project the [unit_samples][gemseo.algos.doe.base_doe_library.BaseDOELibrary.unit_samples] onto the input space using either the probability distributions of the inputs, if the latter are random variables, or their lower and upper bounds.
 
-If we do not want to evaluate the functions but only obtain the input samples, we can use the method [compute_doe()][gemseo.algos.doe.base_doe_library.BaseDOELibrary.compute_doe] which returns the samples as a two-dimensional NumPy array.
+If we do not want to evaluate the functions but only obtain the input samples,
+we can use the methods [sample_space()][gemseo.algos.doe.base_doe_library.BaseDOELibrary.sample_space]
+and [sample_unit_hypercube()][gemseo.algos.doe.base_doe_library.BaseDOELibrary.sample_unit_hypercube]
+which return the samples as a two-dimensional NumPy array.
 
 The quality of the input samples can be assessed with a [DOEQuality][gemseo.algos.doe.doe_quality.DOEQuality] computing the $\varphi_p$, minimum-distance and discrepancy criteria. The smaller these quality measures, the better, except for the minimum-distance criterion for which the larger it is the better. The qualities can be compared with logical operations, with `DOEQuality(doe_1) > DOEQuality(doe_2)` meaning that `doe_1` is better than `doe_2`.
 

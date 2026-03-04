@@ -18,6 +18,9 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.diagonal_doe.diagonal_doe import DiagonalDOE
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.openturns.openturns import OT_LHS_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
@@ -68,7 +71,9 @@ def three_length_common_problem(__common_problem):  # noqa: PYI063, RUF052
     """The __common_problem sampled three times on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"
-    lib.execute(__common_problem, n_samples=3, eval_jac=True)
+    lib.execute(
+        __common_problem, settings=DiagonalDOE_Settings(n_samples=3, eval_jac=True)
+    )
     return __common_problem
 
 
@@ -77,7 +82,9 @@ def common_problem(__common_problem):  # noqa: PYI063, RUF052
     """The __common_problem sampled twice on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"
-    lib.execute(__common_problem, n_samples=2, eval_jac=True)
+    lib.execute(
+        __common_problem, settings=DiagonalDOE_Settings(n_samples=2, eval_jac=True)
+    )
     return __common_problem
 
 
@@ -86,7 +93,9 @@ def large_common_problem(__common_problem):  # noqa: PYI063, RUF052
     """The __common_problem sampled 20 times on a diagonal of its input space."""
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"
-    lib.execute(__common_problem, n_samples=20, eval_jac=True)
+    lib.execute(
+        __common_problem, settings=DiagonalDOE_Settings(n_samples=20, eval_jac=True)
+    )
     return __common_problem
 
 
@@ -97,7 +106,7 @@ def common_problem_():
     problem.minimize_objective = False
     lib = DiagonalDOE()
     lib._algo_name = "DiagonalDOE"
-    lib.execute(problem, n_samples=10, eval_jac=True)
+    lib.execute(problem, settings=DiagonalDOE_Settings(n_samples=10, eval_jac=True))
     return problem
 
 
@@ -107,6 +116,6 @@ def common_problem_lhs_():
     problem = Rosenbrock()
     DOE_LIBRARY_FACTORY.execute(
         problem,
-        settings_model=OT_LHS_Settings(n_samples=20, eval_jac=True),
+        settings=OT_LHS_Settings(n_samples=20, eval_jac=True),
     )
     return problem

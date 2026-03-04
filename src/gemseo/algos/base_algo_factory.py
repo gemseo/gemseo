@@ -29,7 +29,6 @@ from typing import Any
 from typing import ClassVar
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.utils.pydantic import get_algo_name
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
@@ -137,7 +136,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         """Check the availability of a library name or algorithm name.
 
         Args:
-            name: The name of the library name or algorithm name.
+            name: The name of an algorithm or that of a library of algorithms.
 
         Returns:
             Whether the library or algorithm is available.
@@ -146,28 +145,24 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
 
     @property
     def algorithms(self) -> list[str]:
-        """The available algorithms names."""
+        """The names of the available algorithms."""
         return list(self.__algo_name_to_lib_name.keys())
 
     @property
     def algo_names_to_libraries(self) -> dict[str, str]:
-        """The mapping from the algorithm names to the libraries."""
+        """The mapping from the algorithm names to the library names."""
         return self.__algo_name_to_lib_name
 
     @property
     def libraries(self) -> list[str]:
-        """List the available library names in the present configuration.
-
-        Returns:
-            The names of the available libraries.
-        """
+        """The names of the available libraries."""
         return self._factory.class_names
 
-    def create(self, algo_name: str) -> BaseAlgorithmLibrary:
+    def create(self, name: str) -> BaseAlgorithmLibrary:
         """Create an algorithm library from an algorithm name.
 
         Args:
-            algo_name: The name of an algorithm.
+            name: The name of an algorithm.
 
         Returns:
              The algorithm library.
@@ -175,47 +170,39 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         Raises:
             ImportError: If the algorithm is not available.
         """
-        if algo_name not in self.__algo_name_to_lib_name:
+        if name not in self.__algo_name_to_lib_name:
             msg = (
-                f"No algorithm named {algo_name} is available; "
+                f"No algorithm named {name} is available; "
                 f"available algorithms are {pretty_str(self.algorithms, use_and=True)}."
             )
             raise ValueError(msg)
 
-        lib_name = self.__algo_name_to_lib_name.get(algo_name)
+        lib_name = self.__algo_name_to_lib_name.get(name)
         lib_cache = self.__lib_cache[lib_name]
         if self.__use_cache:
-            algo = lib_cache.get(algo_name)
+            algo = lib_cache.get(name)
             if algo is None:
-                algo = self._factory.create(lib_name, algo_name=algo_name)
-                lib_cache[algo_name] = algo
+                algo = self._factory.create(lib_name, name)
+                lib_cache[name] = algo
 
             return algo
 
-        return self._factory.create(lib_name, algo_name=algo_name)
+        return self._factory.create(lib_name, name)
 
     def execute(
-        self,
-        problem: BaseProblem,
-        settings_model: BaseSettings | None = None,
-        **settings: Any,
+        self, problem: BaseProblem, settings: BaseSettings
     ) -> OptimizationResult | ODEResult:
         """Execute a problem with an algorithm.
 
         Args:
             problem: The problem to execute.
-            settings_model: The algorithm settings as a Pydantic model.
-                If `None`, use `**settings`.
-            **settings: The algorithm settings.
-                These arguments are ignored when `settings_model` is not `None`.
+            settings: The algorithm settings.
 
         Returns:
             The result.
         """
-        algo_name = get_algo_name(settings_model, settings)
-        return self.create(algo_name).execute(
-            problem, settings_model=settings_model, **settings
-        )
+        lib = self.create(settings._TARGET_CLASS_NAME)
+        return lib.execute(problem, settings=settings)
 
     def clear_lib_cache(self) -> None:
         """Clear the library cache."""
@@ -252,3 +239,29 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
 
     def __repr__(self) -> str:
         return repr(self._factory)
+
+    def get_settings_class(self, name: str) -> type[BaseSettings]:
+        """Return an algorithm settings class.
+
+        Args:
+            name: The name of the algorithm.
+
+        Returns:
+            The algorithm settings class.
+        """
+        library_name = self.algo_names_to_libraries[name]
+        library_class = self.get_class(library_name)
+        return library_class.ALGORITHM_INFOS[name].settings_class
+
+    def create_settings(self, name: str, **options: Any) -> BaseSettings:
+        """Create settings for an algorithm.
+
+        Args:
+            name: The name of the algorithm.
+            **options: The algorithm options.
+
+        Returns:
+            The algorithm settings.
+        """
+        settings_class = self.get_settings_class(name)
+        return settings_class(**options)

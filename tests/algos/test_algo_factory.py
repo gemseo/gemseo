@@ -32,8 +32,8 @@ def test_is_available_error() -> None:
 
 def test_create_ok() -> None:
     """Verify that an existing algorithm can be created."""
-    algo = OPTIMIZATION_LIBRARY_FACTORY.create("L-BFGS-B")
-    assert algo._algo_name == "L-BFGS-B"
+    algo = OPTIMIZATION_LIBRARY_FACTORY.create("L_BFGS_B")
+    assert algo._algo_name == "L_BFGS_B"
     algo._settings = create_model(algo.ALGORITHM_INFOS[algo.algo_name].settings_class)
     assert algo._settings.max_iter == 1000
 

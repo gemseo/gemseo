@@ -30,6 +30,7 @@ from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -261,7 +262,7 @@ def test_from_optimization_problem(
 def test_opt_result_from_opt_problem(tmp_path):
     """Test the creation of an OptimizationResult from an OptimizationProblem."""
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP", max_iter=50)
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings(max_iter=50))
     out_file = tmp_path / "output.hdf"
     problem.to_hdf(out_file)
     read_problem = OptimizationProblem.from_hdf(out_file)

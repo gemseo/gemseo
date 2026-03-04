@@ -75,7 +75,7 @@ scenario = EvaluationScenario(
     (discipline,),
     design_space,
     name="My evaluation",
-    settings=DisciplinaryOpt_Settings(),
+    formulation_settings=DisciplinaryOpt_Settings(),
 )
 
 # %%

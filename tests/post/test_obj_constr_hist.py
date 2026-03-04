@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import pytest
 
+from gemseo.post import ObjConstrHist_Settings
 from gemseo.post.obj_constr_hist import ObjConstrHist
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -42,4 +43,6 @@ def test_common_scenario(
     """Check ObjConstrHist."""
     common_problem.use_standardized_objective = use_standardized_objective
     opt = ObjConstrHist(common_problem)
-    opt.execute(constraint_names=["eq", "neg", "pos"], save=False)
+    opt.execute(
+        ObjConstrHist_Settings(constraint_names=["eq", "neg", "pos"], save=False)
+    )

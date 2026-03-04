@@ -29,6 +29,7 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 from gemseo.uncertainty.distributions.openturns.log_normal_settings import (
     OTLogNormalDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class OTLogNormalDistribution(OTDistribution):
@@ -39,9 +40,9 @@ class OTLogNormalDistribution(OTDistribution):
     def __init__(  # noqa: D107
         self, settings: OTLogNormalDistribution_Settings | None = None
     ) -> None:
-        if settings is None:
-            settings = OTLogNormalDistribution_Settings()
-
+        settings = create_model(
+            OTLogNormalDistribution_Settings, settings_model=settings
+        )
         if settings.set_log:
             log_mu, log_sigma = settings.mu, settings.sigma
         else:

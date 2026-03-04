@@ -44,6 +44,8 @@ from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
+from gemseo.post import ParetoFront_Settings
 
 # %%
 # ## Definition of the disciplines
@@ -178,7 +180,7 @@ system_scenario.xdsmize(save_html=False)
 # Finally, we run a full-factorial DOE using 100 samples and run the post-processing.
 system_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=50))
 system_scenario.post_process(
-    post_name="ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
+    ParetoFront_Settings(objectives=["obj1", "obj2"], save=False, show=True)
 )
 
 # %%
@@ -194,4 +196,4 @@ sub_scenario_databases = system_scenario.formulation.scenario_adapters[0].databa
 for database in sub_scenario_databases[:2]:
     opt_problem = deepcopy(sub_scenario.formulation.problem)
     opt_problem.database = database
-    execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)
+    execute_post(opt_problem, OptHistoryView_Settings(save=False, show=True))

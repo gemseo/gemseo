@@ -38,9 +38,9 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import MutableSequence
     from pathlib import Path
-    from typing import Self
 
     from pandas import DataFrame
+    from typing_extensions import Self
 
     from gemseo.formulations.base import BaseFormulation
     from gemseo.scenarios.mdo import MDOScenario

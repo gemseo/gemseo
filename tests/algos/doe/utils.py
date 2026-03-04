@@ -72,7 +72,8 @@ def execute_problem(
     """
     problem = get_problem(dim)
     doe_library = DOE_LIBRARY_FACTORY.create(doe_algo_name)
-    doe_library.execute(problem, **options)
+    settings = doe_library.ALGORITHM_INFOS[doe_algo_name].settings_class(**options)
+    doe_library.execute(problem, settings=settings)
     return doe_library
 
 
@@ -95,7 +96,8 @@ def check_problem_execution(
     """
     problem = get_problem(dim)
     doe_library = DOE_LIBRARY_FACTORY.create(algo_name)
-    doe_library.execute(problem, **options)
+    settings = doe_library.ALGORITHM_INFOS[algo_name].settings_class(**options)
+    doe_library.execute(problem, settings=settings)
     samples = doe_library.unit_samples
 
     pb_name = problem.__class__.__name__

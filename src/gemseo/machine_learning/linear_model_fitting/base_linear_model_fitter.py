@@ -33,6 +33,7 @@ from gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_setti
 )
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.pydantic import create_model
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -74,9 +75,7 @@ class BaseLinearModelFitter(
                 If `None`, use a default instance of
                 [settings_class][gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter.BaseLinearModelFitter.settings_class].
         """  # noqa: D205, D212
-        if settings is None:
-            settings = self.settings_class()
-
+        settings = create_model(self.settings_class, settings_model=settings)
         fitter_kwargs = {
             key: value
             for key, value in settings.model_dump().items()

@@ -26,7 +26,9 @@ from pathlib import Path
 import pytest
 
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.post import Correlations_Settings
 from gemseo.post.correlations import Correlations
 from gemseo.post.factory import POST_FACTORY
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
@@ -50,16 +52,17 @@ def test_correlations(tmp_wd, factory) -> None:
         factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="L-BFGS-B")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=L_BFGS_B_Settings())
 
     post = factory.execute(
         problem,
-        post_name="Correlations",
-        save=True,
-        n_plots_x=4,
-        n_plots_y=4,
-        coeff_limit=0.95,
-        file_path="correlations_1",
+        Correlations_Settings(
+            save=True,
+            n_plots_x=4,
+            n_plots_y=4,
+            coeff_limit=0.95,
+            file_path="correlations_1",
+        ),
     )
     assert len(post.output_file_paths) == 2
     for outf in post.output_file_paths:
@@ -76,12 +79,13 @@ def test_correlations_import(tmp_wd, factory) -> None:
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = factory.execute(
         problem,
-        post_name="Correlations",
-        save=True,
-        n_plots_x=4,
-        n_plots_y=4,
-        coeff_limit=0.999,
-        file_path="correlations_2",
+        Correlations_Settings(
+            save=True,
+            n_plots_x=4,
+            n_plots_y=4,
+            coeff_limit=0.999,
+            file_path="correlations_2",
+        ),
     )
     assert len(post.output_file_paths) == 1
     for outf in post.output_file_paths:
@@ -95,7 +99,7 @@ def test_correlations_func_name_error(factory) -> None:
         factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="L-BFGS-B")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=L_BFGS_B_Settings())
 
     with pytest.raises(
         ValueError,
@@ -105,11 +109,7 @@ def test_correlations_func_name_error(factory) -> None:
         ),
     ):
         factory.execute(
-            problem,
-            post_name="Correlations",
-            save=False,
-            show=False,
-            func_names=["toto"],
+            problem, Correlations_Settings(save=False, show=False, func_names=["toto"])
         )
 
 
@@ -131,14 +131,15 @@ def test_correlations_func_names(tmp_wd, factory, baseline_images, func_names) -
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     factory.execute(
         problem,
-        post_name="Correlations",
-        func_names=func_names,
-        save=False,
-        file_extension="png",
-        n_plots_x=4,
-        n_plots_y=4,
-        coeff_limit=0.99,
-        file_path="correlations",
+        Correlations_Settings(
+            func_names=func_names,
+            save=False,
+            file_extension="png",
+            n_plots_x=4,
+            n_plots_y=4,
+            coeff_limit=0.99,
+            file_path="correlations",
+        ),
     )
 
 
@@ -158,14 +159,15 @@ def test_func_name_sorting(tmp_wd, factory) -> None:
     problem = OptimizationProblem.from_hdf(MOD_SELLAR_HDF5_PATH)
     factory.execute(
         problem,
-        post_name="Correlations",
-        func_names=["obj", "c_1", "obj_constr"],
-        save=False,
-        file_extension="png",
-        n_plots_x=4,
-        n_plots_y=4,
-        coeff_limit=0.99,
-        file_path="correlations",
+        Correlations_Settings(
+            func_names=["obj", "c_1", "obj_constr"],
+            save=False,
+            file_extension="png",
+            n_plots_x=4,
+            n_plots_y=4,
+            coeff_limit=0.99,
+            file_path="correlations",
+        ),
     )
 
 
@@ -287,5 +289,7 @@ def test_common_scenario(
     opt = Correlations(common_problem)
     maximum_correlation_coefficient = opt.MAXIMUM_CORRELATION_COEFFICIENT
     opt.MAXIMUM_CORRELATION_COEFFICIENT = 1.0
-    opt.execute(func_names=["obj", "eq", "neg", "pos"], save=False)
+    opt.execute(
+        Correlations_Settings(func_names=["obj", "eq", "neg", "pos"], save=False)
+    )
     opt.MAXIMUM_CORRELATION_COEFFICIENT = maximum_correlation_coefficient

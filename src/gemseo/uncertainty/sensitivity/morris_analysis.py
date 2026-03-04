@@ -64,7 +64,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 import matplotlib.pyplot as plt
@@ -74,10 +73,11 @@ from numpy import concatenate
 from numpy import where
 from strenum import StrEnum
 
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.algos.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.utils.string_tools import filter_names
@@ -87,15 +87,15 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from collections.abc import Collection
     from collections.abc import Iterable
-    from collections.abc import Mapping
     from pathlib import Path
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.base_driver_library import DriverSettingType
+    from gemseo.algos.doe.base_doe_settings import BaseDOESettings
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
         FirstOrderIndicesType,
@@ -134,6 +134,9 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
 
     _indices: SensitivityIndices
 
+    __inner_doe_algo_name: str
+    """The name of the inner DOE algorithm."""
+
     DEFAULT_DRIVER: ClassVar[str] = "PYDOE_LHS"
 
     class Method(StrEnum):
@@ -153,13 +156,11 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         parameter_space: ParameterSpace,
         n_samples: int,
         output_names: Iterable[str] = (),
-        algo: str = "",
-        algo_settings: Mapping[str, DriverSettingType] = READ_ONLY_EMPTY_DICT,
+        algo_settings: BaseDOESettings | None = None,
         backup_settings: BackupSettings | None = None,
+        formulation_settings: BaseFormulationSettings | None = None,
         n_replicates: int = 5,
         step: float = 0.05,
-        formulation_name: str = "MDF",
-        **formulation_settings: Any,
     ) -> IODataset:
         r"""
         Args:
@@ -173,23 +174,21 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         Raises:
             ValueError: If at least one input dimension is not equal to 1.
         """  # noqa: D205, D212, D415
-        algo = algo or self.DEFAULT_DRIVER
-        algo_settings = dict(algo_settings)
-        algo_settings["n_samples"] = n_replicates
+        if algo_settings is None:
+            algo_settings = DOE_LIBRARY_FACTORY.create_settings(self.DEFAULT_DRIVER)
+
+        algo_settings.n_samples = n_replicates
         super().compute_samples(
             disciplines,
             parameter_space,
-            n_samples=n_samples,
+            n_samples,
             output_names=output_names,
-            algo="MorrisDOE",
-            algo_settings={
-                "doe_algo_name": algo,
-                "doe_algo_settings": algo_settings,
-                "step": step,
-            },
+            algo_settings=MorrisDOE_Settings(
+                doe_algo_settings=algo_settings, step=step
+            ),
             backup_settings=backup_settings,
+            formulation_settings=formulation_settings,
         )
-        self._algo_name = algo
         outputs_bounds = {}
         output_dataset = self.dataset.output_dataset
         for output_name in self._output_names:
@@ -197,6 +196,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
             outputs_bounds[output_name] = (data.min(0), data.max(0))
 
         n_replicates = len(self.dataset) // (1 + parameter_space.dimension)
+        self.__inner_doe_algo_name = algo_settings._TARGET_CLASS_NAME
         self.dataset.misc["step"] = step
         self.dataset.misc["n_replicates"] = n_replicates
         self.dataset.misc["outputs_bounds"] = outputs_bounds
@@ -353,7 +353,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         ax.set_xlabel(r"$\mu^*$")
         ax.set_ylabel(r"$\sigma$")
         default_title = (
-            f"Sampling: {self._algo_name}(size={self.n_replicates}) - "
+            f"Sampling: {self.__inner_doe_algo_name}(size={self.n_replicates}) - "
             f"Relative step: {self.dataset.misc.get('step', 'Undefined')} - Output: "
             f"{repr_variable(output_name, output_component, size=len(sigma))}"
         )

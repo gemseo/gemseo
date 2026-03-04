@@ -169,16 +169,11 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
         self.__figures[file_name] = figure
 
-    def execute(
-        self, settings_model: BasePostSettings | None = None, **settings: Any
-    ) -> dict[str, Figure | DatasetPlot]:
+    def execute(self, settings: BasePostSettings) -> dict[str, Figure | DatasetPlot]:
         """Post-process the optimization problem.
 
         Args:
-            settings_model: The post-processor settings as a Pydantic model.
-                If `None`, use `**settings`.
-            **settings: The post-processor settings.
-                This argument is ignored when `settings_model` is not `None`.
+            settings: The post-processor settings.
 
         Returns:
             The figures, to be customized;
@@ -194,9 +189,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             )
             raise ValueError(msg)
 
-        settings_ = create_model(
-            self.settings_class, settings_model=settings_model, **settings
-        )
+        settings_ = create_model(self.settings_class, settings_model=settings)
 
         if settings_.use_best_iteration_history:
             best_iteration_history = self._dataset.get_best_iteration_history()

@@ -119,7 +119,6 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 from typing import Final
 
@@ -142,11 +141,11 @@ from pandas import Series
 from strenum import PascalCaseStrEnum
 from strenum import StrEnum
 
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.uncertainty.sensitivity._cv_sobol_algorithm import CVSobolAlgorithm
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.utils.seeder import SEED
@@ -160,10 +159,11 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.base_driver_library import DriverSettingType
+    from gemseo.algos.doe.base_doe_settings import BaseDOESettings
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.typing import RealArray
     from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
@@ -290,12 +290,10 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         parameter_space: ParameterSpace,
         n_samples: int,
         output_names: Iterable[str] = (),
-        algo: str = "",
-        algo_settings: Mapping[str, DriverSettingType] = READ_ONLY_EMPTY_DICT,
+        algo_settings: BaseDOESettings | None = None,
         backup_settings: BackupSettings | None = None,
-        formulation_name: str = "MDF",
+        formulation_settings: BaseFormulationSettings | None = None,
         compute_second_order: bool = True,
-        **formulation_settings: Any,
     ) -> IODataset:
         r"""
         Args:
@@ -317,18 +315,18 @@ class SobolAnalysis(BaseSensitivityAnalysis):
              the user can choose to set `compute_second_order` to `False`
              to ensure a better estimation of the first- and second-order indices.
         """  # noqa: D205, D212, D415
-        algo_settings = algo_settings or {}
-        algo_settings["eval_second_order"] = compute_second_order
+        if algo_settings is None:
+            algo_settings = DOE_LIBRARY_FACTORY.create_settings(self.DEFAULT_DRIVER)
+
+        algo_settings.eval_second_order = compute_second_order
         super().compute_samples(
             disciplines,
             parameter_space,
-            n_samples=n_samples,
+            n_samples,
             output_names=output_names,
-            algo=algo,
             algo_settings=algo_settings,
             backup_settings=backup_settings,
-            formulation_name=formulation_name,
-            **formulation_settings,
+            formulation_settings=formulation_settings,
         )
         dataset = self.dataset
         dataset.misc["output_names_to_sobol_algos"] = {}

@@ -22,6 +22,7 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
@@ -82,10 +83,10 @@ def test_parallel_doe_execution(linear_combination) -> None:
         },
     )
     custom_doe.execute(
-        problem=opt_problem,
-        samples=array([[1.0, 0.0], [1.0, -1.0]]).T,
-        eval_jac=True,
-        n_processes=2,
+        opt_problem,
+        settings=CustomDOE_Settings(
+            samples=array([[1.0, 0.0], [1.0, -1.0]]).T, eval_jac=True, n_processes=2
+        ),
     )
     v = opt_problem.database.get_function_value("delta", array([1.0, 1.0]))
     assert v == array([-3.0])

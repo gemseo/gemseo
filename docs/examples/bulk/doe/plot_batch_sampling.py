@@ -132,7 +132,7 @@ problem.add_observable(MDOFunction(function, name="area"))
 # Then,
 # this problem can be sampled using a DOE algorithm, e.g., Monte Carlo.
 # The default mode is sequential sampling; we use it to generate reference samples:
-SciPyDOE("MC").execute(problem, settings_model=MC_Settings(n_samples=1000))
+SciPyDOE("MC").execute(problem, settings=MC_Settings(n_samples=1000))
 samples_ref = problem.to_dataset()
 
 # %%
@@ -142,9 +142,7 @@ problem.reset()
 # %%
 # Finally,
 # we can generate the same samples in a batch mode
-SciPyDOE("MC").execute(
-    problem, settings_model=MC_Settings(n_samples=1000, vectorize=True)
-)
+SciPyDOE("MC").execute(problem, settings=MC_Settings(n_samples=1000, vectorize=True))
 samples = problem.to_dataset()
 
 # %%

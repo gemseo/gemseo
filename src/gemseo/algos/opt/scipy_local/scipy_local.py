@@ -83,7 +83,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             website=f"{__DOC}optimize.minimize-slsqp.html",
             settings_class=SLSQP_Settings,
         ),
-        "L-BFGS-B": SciPyAlgorithmDescription(
+        "L_BFGS_B": SciPyAlgorithmDescription(
             algorithm_name="L-BFGS-B",
             description=(
                 "Limited-memory BFGS algorithm implemented in the SciPy library"
@@ -103,7 +103,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             website=f"{__DOC}optimize.minimize-tnc.html",
             settings_class=TNC_Settings,
         ),
-        "NELDER-MEAD": SciPyAlgorithmDescription(
+        "NELDER_MEAD": SciPyAlgorithmDescription(
             algorithm_name="NELDER-MEAD",
             description="Nelder-Mead algorithm implemented in the SciPy library",
             internal_algorithm_name="Nelder-Mead",

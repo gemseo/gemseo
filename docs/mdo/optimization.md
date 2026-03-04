@@ -95,8 +95,8 @@ with normalized design space, we have:
 
 ``` python
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
-opt = OptimizationLibraryFactory().execute(problem, algo_name="L-BFGS-B",
-                                 normalize_design_space=True)
+from gemseo.settings import L_BFGS_B_Settings
+opt = OptimizationLibraryFactory().execute(problem, settings=L_BFGS_B(normalize_design_space=True))
 print(f"Optimum = {opt.f_opt}")
 ```
 
@@ -142,11 +142,12 @@ see [this page][how-to-deal-with-post-processing].
 
 ``` python
 from gemseo import execute_post
+from gemseo.settings import OptHistoryView_Settings
 
-execute_post(problem, post_name="OptHistoryView", save=True, file_path="simple_opt")
+execute_post(problem, OptHistoryView_Settings(save=True, file_path="simple_opt"))
 
 # Also works from disk
-execute_post("my_optim.hdf5", post_name="OptHistoryView", save=True, file_path="opt_view_from_disk")
+execute_post("my_optim.hdf5", OptHistoryView_Settings(save=True, file_path="opt_view_from_disk"))
 ```
 
 ![Objective function history for the simple analytic optimization](../assets/images/doe/simple_opt.png)

@@ -25,7 +25,6 @@ import logging
 from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
 from multiprocessing import RLock
 from multiprocessing import parent_process
 from typing import TYPE_CHECKING
@@ -55,7 +54,6 @@ from gemseo.utils.seeder import Seeder
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.algos.base_driver_library import DriverSettingType
     from gemseo.algos.evaluation_problem import EvaluationProblem
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import RealArray
@@ -423,99 +421,68 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             )
             raise ValueError(msg)
 
-    def compute_doe(
+    def sample_space(
         self,
-        variables_space: DesignSpace | int,
-        unit_sampling: bool = False,
-        settings_model: BaseDOESettings | None = None,
-        **settings: DriverSettingType,
+        space: DesignSpace | int,
+        settings: BaseDOESettings | None = None,
+        use_unit_samples: bool = False,
     ) -> RealArray:
-        """Compute a design of experiments (DOE) in a variables space.
+        """Sample a variable space.
 
         Args:
-            variables_space: Either the variables space to be sampled or its dimension.
-            unit_sampling: Whether to sample in the unit hypercube.
-                If the value provided in `variables_space` is the dimension,
-                the samples will be generated in the unit hypercube
-                whatever the value of `unit_sampling`.
-            settings_model: The DOE settings as a Pydantic model.
-                If `None`, use `**settings`.
-            **settings: The DOE settings.
-                These arguments are ignored when `settings_model` is not `None`.
+            space: The variables space.
+            settings: The settings of the DOE algorithm.
+                If `None`, use the default settings.
+            use_unit_samples: Whether to return unit samples,
+                i.e. samples distributed in the unit hypercube.
 
         Returns:
             The design of experiments
             whose rows are the samples and columns the variables.
         """
-        design_space = self.__get_design_space(variables_space)
-        if not unit_sampling:
-            if isinstance(design_space, DesignSpace):
-                integer_normalization_enabled = (
-                    self.__enable_integer_variables_normalization(design_space)
-                )
-
-            self.__check_unnormalization_capability(design_space)
+        if not use_unit_samples:
+            integer_normalization_enabled = (
+                self.__enable_integer_variables_normalization(space)
+            )
+            self.__check_unnormalization_capability(space)
 
         self._settings = create_model(
             self.ALGORITHM_INFOS[self.algo_name].settings_class,
-            settings_model=settings_model,
-            **settings,
+            settings_model=settings,
         )
-
-        unit_samples = self._generate_unit_samples(design_space)
-        if unit_sampling:
+        unit_samples = self._generate_unit_samples(space)
+        if use_unit_samples:
             return unit_samples
 
-        samples = design_space.untransform_vect(unit_samples, no_check=True)
-        if isinstance(design_space, DesignSpace):
-            self.__reset_integer_variables_normalization(
-                design_space, integer_normalization_enabled
-            )
-
+        samples = space.untransform_vect(unit_samples, no_check=True)
+        self.__reset_integer_variables_normalization(
+            space, integer_normalization_enabled
+        )
         return samples
 
-    @singledispatchmethod
-    def __get_design_space(self, design_space):
-        """Return a design space.
+    def sample_unit_hypercube(
+        self,
+        dimension: int,
+        settings: BaseDOESettings | None = None,
+    ) -> RealArray:
+        r"""Sample the unit hypercube $[0,1]^d$.
 
         Args:
-            design_space: Either a design space or a design space dimension.
+            dimension: The dimension $d$ of the hypercube.
+            settings: The settings of the DOE algorithm.
+                If `None`, use the default settings.
 
         Returns:
-            A design space.
+            The design of experiments
+            whose rows are the samples and columns the variables.
         """
-        return design_space
-
-    @__get_design_space.register
-    def _(self, design_space: DesignSpace):
-        """Return a design space.
-
-        Args:
-            design_space: A design space
-
-        Returns:
-            The design space passed as argument.
-        """
-        return design_space
-
-    @__get_design_space.register
-    def _(self, design_space: int):
-        """Return a design space from a design space dimension.
-
-        Args:
-            design_space: A design space dimension.
-
-        Returns:
-            A design space
-            containing a single variable called `"x"`
-            whose size is the dimension passed as argument
-            and lower and upper bounds are 0 and 1 respectively.
-        """
-        design_space_ = DesignSpace()
-        design_space_.add_variable(
-            "x", size=design_space, lower_bound=0.0, upper_bound=1.0
+        space = DesignSpace()
+        space.add_variable("x", size=dimension, lower_bound=0.0, upper_bound=1.0)
+        self._settings = create_model(
+            self.ALGORITHM_INFOS[self.algo_name].settings_class,
+            settings_model=settings,
         )
-        return design_space_
+        return self._generate_unit_samples(space)
 
     @staticmethod
     def __enable_integer_variables_normalization(design_space: DesignSpace) -> bool:

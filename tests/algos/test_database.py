@@ -39,6 +39,7 @@ from gemseo.algos.database import Database
 from gemseo.algos.database import HashableNdarray
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.datasets.dataset import Dataset
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
@@ -65,15 +66,17 @@ def rel_err(to_test, ref):
 
 @pytest.fixture
 def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
-    """The Rosenbrock problem solved with L-BFGS-B and the optimization result."""
+    """The Rosenbrock problem solved with L_BFGS_B and the optimization result."""
     rosenbrock = Rosenbrock()
-    result = OPTIMIZATION_LIBRARY_FACTORY.execute(rosenbrock, algo_name="L-BFGS-B")
+    result = OPTIMIZATION_LIBRARY_FACTORY.execute(
+        rosenbrock, settings=L_BFGS_B_Settings()
+    )
     return rosenbrock, result
 
 
 @pytest.fixture
 def problem(problem_and_result) -> Rosenbrock:
-    """The Rosenbrock problem solved with L-BFGS-B."""
+    """The Rosenbrock problem solved with L_BFGS_B."""
     return problem_and_result[0]
 
 
@@ -213,7 +216,7 @@ def test_get_x_at_iteration() -> None:
     database = problem.database
     with pytest.raises(ValueError):
         database.get_x_vect(1)
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="L-BFGS-B")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=L_BFGS_B_Settings())
     hist_g2 = database.get_x_vect(21)
     assert database.get_iteration(hist_g2) - 1 == 20
     with pytest.raises(KeyError):

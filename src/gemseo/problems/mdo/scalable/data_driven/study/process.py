@@ -62,6 +62,7 @@ from numpy import inf
 
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.mdo.scalable.data_driven.study.result import ScalabilityResult
 from gemseo.utils.logging import LoggingContext
@@ -685,10 +686,7 @@ class ScalabilityStudy:
                     msg.add("Save optim history view in {}", path)
                     fpath = str(path) + "/"
                     problem.scenario.post_process(
-                        post_name="OptHistoryView",
-                        save=True,
-                        show=False,
-                        file_path=fpath,
+                        OptHistoryView_Settings(save=True, show=False, file_path=fpath)
                     )
                     result = ScalabilityResult(directory, scal_index + 1, replicate)
                     self.results.append(result)
@@ -852,11 +850,8 @@ class ScalabilityStudy:
         algo_settings = deepcopy(self.algorithms_options[opt_index])
         max_iter = algo_settings["max_iter"]
         del algo_settings["max_iter"]
-        cls = OPTIMIZATION_LIBRARY_FACTORY.get_class(
-            OPTIMIZATION_LIBRARY_FACTORY.algo_names_to_libraries[algo]
-        )
-        settings = cls.ALGORITHM_INFOS[algo].settings_class(
-            max_iter=max_iter, **algo_settings
+        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(
+            algo, max_iter=max_iter, **algo_settings
         )
         problem.scenario.execute(settings)
         return algo_settings

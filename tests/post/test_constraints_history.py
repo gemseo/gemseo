@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import pytest
 
+from gemseo.post import ConstraintsHistory_Settings
 from gemseo.post.constraints_history import ConstraintsHistory
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -32,7 +33,9 @@ def test_function_error(common_problem) -> None:
             r"Cannot build constraints history plot, foo is not a constraint name\."
         ),
     ):
-        ConstraintsHistory(common_problem).execute(save=False, constraint_names=["foo"])
+        ConstraintsHistory(common_problem).execute(
+            ConstraintsHistory_Settings(save=False, constraint_names=["foo"])
+        )
 
 
 TEST_PARAMETERS = {
@@ -53,4 +56,8 @@ TEST_PARAMETERS = {
 def test_common_scenario(baseline_images, options, common_problem) -> None:
     """Check ConstraintsHistory."""
     post = ConstraintsHistory(common_problem)
-    post.execute(constraint_names=["eq", "neg", "pos"], save=False, **options)
+    post.execute(
+        ConstraintsHistory_Settings(
+            constraint_names=["eq", "neg", "pos"], save=False, **options
+        )
+    )

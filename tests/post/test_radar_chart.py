@@ -26,6 +26,7 @@ import pytest
 from packaging import version
 
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.post import RadarChart_Settings
 from gemseo.post.radar_chart import RadarChart
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -60,7 +61,7 @@ TEST_PARAMETERS = {
 def test_post(kwargs, baseline_images, problem) -> None:
     """Test the radar chart post-processing with the Power2 problem."""
     post = RadarChart(problem)
-    post.execute(save=False, show=False, **kwargs)
+    post.execute(RadarChart_Settings(save=False, show=False, **kwargs))
 
 
 def test_function_error(problem) -> None:
@@ -73,7 +74,7 @@ def test_function_error(problem) -> None:
             r"stored in the dataset\."
         ),
     ):
-        post.execute(save=False, constraint_names=["foo"])
+        post.execute(RadarChart_Settings(save=False, constraint_names=["foo"]))
 
 
 def test_iteration_error(problem) -> None:
@@ -89,7 +90,11 @@ def test_iteration_error(problem) -> None:
         ),
     ):
         post.execute(
-            save=False, constraint_names=problem.constraints.get_names(), iteration=1000
+            RadarChart_Settings(
+                save=False,
+                constraint_names=problem.constraints.get_names(),
+                iteration=1000,
+            )
         )
 
 
@@ -110,4 +115,4 @@ TEST_PARAMETERS = {"default": ["RadarChart_common_problem"]}
 def test_common_scenario(baseline_images, common_problem) -> None:
     """Check RadarChart."""
     opt = RadarChart(common_problem)
-    opt.execute(constraint_names=["eq", "neg", "pos"], save=False)
+    opt.execute(RadarChart_Settings(constraint_names=["eq", "neg", "pos"], save=False))

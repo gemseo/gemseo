@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from pydantic import Field
+from pydantic import PositiveInt
 from pydantic.types import NonNegativeFloat  # noqa: TC002
 
 from gemseo.algos.base_settings import BaseSettings
@@ -42,6 +43,11 @@ If `None`, use the global value of `enable_progress_bar` (see the
         description="""The tolerance on the equality constraints.""",
     )
 
+    eval_obs_jac: bool = Field(
+        default=False,
+        description="Whether to evaluate the Jacobian of the observables.",
+    )
+
     ineq_tolerance: NonNegativeFloat = Field(
         default=1e-4,
         description="""The tolerance on the inequality constraints.""",
@@ -50,6 +56,14 @@ If `None`, use the global value of `enable_progress_bar` (see the
     log_problem: bool = Field(
         default=True,
         description="""Whether to log the definition and result of the problem.""",
+    )
+
+    max_design_space_dimension_to_log: PositiveInt = Field(
+        default=40,
+        description="The maximum dimension of a design space "
+        "to be logged. "
+        "If this number is higher than the dimension of the design space "
+        "then the design space will not be logged.",
     )
 
     max_time: NonNegativeFloat = Field(
@@ -81,6 +95,12 @@ to define the data of an evaluation problem to be displayed in the progress bar.
     round_ints: bool = Field(
         default=True,
         description="""Whether to round the integer variables.""",
+    )
+
+    skip_int_check: bool = Field(
+        default=False,
+        description=" Whether to skip the integer variable handling check "
+        "of the selected algorithm.",
     )
 
     store_jacobian: bool = Field(

@@ -32,9 +32,13 @@ from numpy import sin
 from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
 
+from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
+    OT_SOBOL_INDICES_Settings,
+)
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -304,6 +308,30 @@ def test_second_order(discipline, uncertain_space, compute_second_order) -> None
     analysis.compute_indices()
     assert bool(analysis.indices.second) is compute_second_order
     assert len(analysis.dataset) == (96 if compute_second_order else 100)
+
+
+def test_algo_settings(discipline, uncertain_space) -> None:
+    """Check the effect of algo_settings."""
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
+    reference = analysis.dataset
+    analysis = SobolAnalysis()
+    analysis.compute_samples(
+        [discipline], uncertain_space, 100, algo_settings=OT_SOBOL_INDICES_Settings()
+    )
+    analysis.dataset
+    assert reference.equals(analysis.dataset)
+
+
+def test_formulation_settings(discipline, uncertain_space) -> None:
+    """Check the effect of formulation_settings."""
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
+    reference = analysis.dataset
+    analysis.compute_samples(
+        [discipline], uncertain_space, 100, formulation_settings=MDF_Settings()
+    )
+    assert reference.equals(analysis.dataset)
 
 
 def test_asymptotic_or_bootstrap_intervals(discipline, uncertain_space) -> None:

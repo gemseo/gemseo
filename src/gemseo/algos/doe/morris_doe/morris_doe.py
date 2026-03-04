@@ -27,6 +27,7 @@ from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.factory import DOELibraryFactory
 from gemseo.algos.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
+from gemseo.algos.doe.oat_doe.settings.oat_doe_settings import OATDOE_Settings
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
@@ -58,15 +59,19 @@ class MorrisDOE(BaseDOELibrary[MorrisDOE_Settings]):
         super().__init__(algo_name)
 
     def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+        """
+        Raises:
+            ValueError: When the number of samples is less than
+                the dimension of the input space plus one.
+        """  # noqa: D205, D212, D415
         n_samples = self._settings.n_samples
-        doe_algo_name = self._settings.doe_algo_name
         doe_algo_settings = self._settings.doe_algo_settings
 
         factory = DOELibraryFactory()
+        doe_algo_name = doe_algo_settings._TARGET_CLASS_NAME
         doe_algo = factory.create(doe_algo_name)
         oat_algo = factory.create("OATDOE")
         dimension = design_space.dimension
-        n_replicates = doe_algo_settings.get("n_samples", 5)
         if n_samples > 0:
             n_replicates = n_samples // (dimension + 1)
             if n_replicates == 0:
@@ -77,18 +82,17 @@ class MorrisDOE(BaseDOELibrary[MorrisDOE_Settings]):
                 )
                 raise ValueError(msg)
 
-        # If possible, set the number of samples of the DOE algorithm
-        n_samples_available = set(
-            doe_algo.ALGORITHM_INFOS[doe_algo_name].settings_class.model_fields
-        ).intersection(["n_samples", "samples"])
-        if n_samples_available and doe_algo_name != "CustomDOE":
-            doe_algo_settings[n_samples_available.pop()] = n_replicates
+            doe_algo_settings.n_samples = n_replicates
 
-        base_options = {"variables_space": dimension, "unit_sampling": True}
-        initial_points = doe_algo.compute_doe(**base_options, **doe_algo_settings)
+        initial_points = doe_algo.sample_unit_hypercube(
+            dimension, settings=doe_algo_settings
+        )
         return vstack([
-            oat_algo.compute_doe(
-                **base_options, step=self._settings.step, initial_point=initial_point
+            oat_algo.sample_unit_hypercube(
+                dimension,
+                settings=OATDOE_Settings(
+                    step=self._settings.step, initial_point=initial_point
+                ),
             )
             for initial_point in initial_points
         ])

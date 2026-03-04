@@ -28,6 +28,7 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class OTNormalDistribution(OTDistribution):
@@ -36,8 +37,7 @@ class OTNormalDistribution(OTDistribution):
     settings_class = OTNormalDistribution_Settings
 
     def __init__(self, settings: OTNormalDistribution_Settings | None = None) -> None:  # noqa: D107
-        if settings is None:
-            settings = OTNormalDistribution_Settings()
+        settings = create_model(OTNormalDistribution_Settings, settings_model=settings)
         super().__init__(
             OTDistribution_Settings(
                 interfaced_distribution="Normal",

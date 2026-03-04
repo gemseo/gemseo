@@ -34,6 +34,7 @@ from logging import WARNING
 from gemseo import create_discipline
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.settings.mda import MDAGaussSeidel_Settings
@@ -97,7 +98,7 @@ sc_aero = MDOScenario(
     (aerodynamics,),
     design_space.filter("x_2", copy=True),
     "AerodynamicsScenario",
-    settings=DisciplinaryOpt_Settings(),
+    formulation_settings=DisciplinaryOpt_Settings(),
 )
 sc_aero.add_objective("y_24", minimize=False)
 sc_aero.set_algorithm(slsqp_settings)
@@ -137,8 +138,8 @@ sc_str.set_algorithm(slsqp_settings)
 system_scenario = MDOScenario(
     (sc_prop, sc_aero, sc_str, mission),
     design_space.filter("x_shared", copy=True),
-    settings=BiLevel_Settings(
-        apply_cstr_tosub_scenarios=False,
+    formulation_settings=BiLevel_Settings(
+        apply_constraints_to_sub_scenarios=False,
         parallel_scenarios=False,
         multithread_scenarios=True,
         main_mda_settings=MDAGaussSeidel_Settings(
@@ -202,7 +203,7 @@ system_scenario.optimization_result
 
 # %%
 # Post-processes can also be applied to your system scenario.
-system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+system_scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 
 # %%
 # ## Step 5 - The results of inner optimizations

@@ -92,7 +92,8 @@ def variables_space():
 def test_compute_doe(variables_space) -> None:
     """Check the computation of a DOE out of a variables space."""
     library = DOE_LIBRARY_FACTORY.create(DOE_LIB_NAME)
-    doe = library.compute_doe(variables_space, n_samples=3, unit_sampling=True)
+    settings = library.ALGORITHM_INFOS[DOE_LIB_NAME].settings_class(n_samples=3)
+    doe = library.sample_unit_hypercube(variables_space.dimension, settings=settings)
     assert_equal(doe, array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]))
 
 
@@ -106,7 +107,10 @@ def test_compute_doe(variables_space) -> None:
 def test_reverse(variables_space, reverse, samples) -> None:
     """Check the sampling of variables in reverse order."""
     library = DOE_LIBRARY_FACTORY.create(DOE_LIB_NAME)
-    doe = library.compute_doe(
-        variables_space, n_samples=3, unit_sampling=True, reverse=reverse
+    settings = library.ALGORITHM_INFOS[DOE_LIB_NAME].settings_class(
+        n_samples=3, reverse=reverse
+    )
+    doe = library.sample_space(
+        variables_space, settings=settings, use_unit_samples=True
     )
     assert_equal(doe, samples)

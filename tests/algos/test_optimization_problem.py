@@ -59,8 +59,10 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
 )
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
@@ -502,7 +504,7 @@ def test_invalid_differentiation_method(pow2_problem) -> None:
 
 def test_get_dv_names() -> None:
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
     assert problem.design_space.variable_names == ["x"]
 
 
@@ -548,7 +550,7 @@ def test_feasible_optimum_points() -> None:
         problem.history.last_point  # noqa: B018
 
     OPTIMIZATION_LIBRARY_FACTORY.execute(
-        problem, algo_name="SLSQP", eq_tolerance=1e-6, ineq_tolerance=1e-6
+        problem, settings=SLSQP_Settings(eq_tolerance=1e-6, ineq_tolerance=1e-6)
     )
     feasible_x = problem.history.feasible_points[0]
     assert len(feasible_x) >= 2
@@ -634,7 +636,7 @@ def test_normalize_linear_function() -> None:
 def test_export_hdf(tmp_wd) -> None:
     file_path = Path("power2.h5")
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
     problem.to_hdf(file_path, append=True)  # Shall still work now
 
     def check_pb(imp_pb) -> None:
@@ -899,7 +901,7 @@ def test_evaluate_jacobians_alone(constrained_problem, jacobian_names, keys) -> 
 def test_no_normalization() -> None:
     problem = Power2()
     OPTIMIZATION_LIBRARY_FACTORY.execute(
-        problem, algo_name="SLSQP", normalize_design_space=False
+        problem, settings=SLSQP_Settings(normalize_design_space=False)
     )
     f_opt, _, is_feas, _, _ = problem.optimum
     assert is_feas
@@ -997,7 +999,7 @@ def test_observable(pow2_problem) -> None:
         problem.observables.get_from_name("toto")
 
     # Check that the observable is stored in the database
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
     database = problem.database
     iter_norms = [norm(key.unwrap()) for key in database]
     iter_obs = [value[design_norm] for value in database.values()]
@@ -1118,7 +1120,9 @@ def test_gradient_with_random_variables() -> None:
     problem.objective = MDOFunction(
         lambda x: 3 * x**2, name="func", jac=lambda x: 6 * x
     )
-    PyDOELibrary("PYDOE_FULLFACT").execute(problem, n_samples=3, eval_jac=True)
+    PyDOELibrary("PYDOE_FULLFACT").execute(
+        problem, settings=PYDOE_FULLFACT_Settings(n_samples=3, eval_jac=True)
+    )
 
     data = problem.database.get_gradient_history("func")
 
@@ -1193,7 +1197,7 @@ def test_parallel_differentiation_setting_after_functions_preprocessing(
 
 def test_database_name(problem) -> None:
     """Check the name of the database."""
-    DOE_LIBRARY_FACTORY.execute(problem, algo_name="PYDOE_FULLFACT", n_samples=1)
+    DOE_LIBRARY_FACTORY.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=1))
     problem.database.name = "my_database"
     dataset = problem.to_dataset()
     assert dataset.name == problem.database.name
@@ -1214,7 +1218,7 @@ def test_database_name(problem) -> None:
         (
             False,
             (
-                "Algorithm L-BFGS-B is not adapted to the problem, "
+                "Algorithm L_BFGS_B is not adapted to the problem, "
                 "it does not handle "
                 "integer variables.\n"
                 "Execution may be forced setting the 'skip_int_check' argument "
@@ -1244,9 +1248,10 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
     if skip_int_check:
         OPTIMIZATION_LIBRARY_FACTORY.execute(
             problem,
-            algo_name="L-BFGS-B",
-            normalize_design_space=True,
-            skip_int_check=skip_int_check,
+            settings=L_BFGS_B_Settings(
+                normalize_design_space=True,
+                skip_int_check=skip_int_check,
+            ),
         )
         assert expected_message in caplog.text
         assert problem.optimum[1] == array([2.0])
@@ -1254,9 +1259,10 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
         with pytest.raises(ValueError, match=expected_message):
             OPTIMIZATION_LIBRARY_FACTORY.execute(
                 problem,
-                algo_name="L-BFGS-B",
-                normalize_design_space=True,
-                skip_int_check=skip_int_check,
+                settings=L_BFGS_B_Settings(
+                    normalize_design_space=True,
+                    skip_int_check=skip_int_check,
+                ),
             )
 
 
@@ -1353,7 +1359,9 @@ def test_approximated_jacobian_wrt_uncertain_variables() -> None:
     problem = OptimizationProblem(uspace)
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     problem.objective = MDOFunction(lambda u: u, name="func")
-    CustomDOE().execute(problem, samples=array([[0.0]]), eval_jac=True)
+    CustomDOE().execute(
+        problem, settings=CustomDOE_Settings(samples=array([[0.0]]), eval_jac=True)
+    )
     grad = problem.database.get_gradient_history("func")
     assert grad[0, 0] == pytest.approx(1.0, abs=1e-3)
 
@@ -1714,7 +1722,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     obs2 = MDOFunction(sum, name="sum")
     pow2_problem.add_observable(obs2)
 
-    OPTIMIZATION_LIBRARY_FACTORY.execute(pow2_problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(pow2_problem, settings=SLSQP_Settings())
 
     # Export and import the optimization problem.
     file_path = "power2.h5"
@@ -1749,7 +1757,9 @@ def test_export_to_dataset(input_values, expected) -> None:
     )
 
     algo = CustomDOE()
-    algo.execute(problem, samples=array([[1.0], [2.0], [1.0]]))
+    algo.execute(
+        problem, settings=CustomDOE_Settings(samples=array([[1.0], [2.0], [1.0]]))
+    )
 
     dataset = problem.to_dataset(input_values=input_values)
 
@@ -1764,7 +1774,7 @@ def test_export_to_dataset(input_values, expected) -> None:
 def test_export_to_dataset_with_grouped_functions():
     """Check that functions are properly grouped when the option is true."""
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
     dataset = problem.to_dataset(group_functions=True)
 
     groups = [
@@ -2145,12 +2155,10 @@ def test_hdf_node_path(pow2_problem, tmp_wd):
     assert_equal(imp_prob.design_space.variable_names, desvar_names)
 
     # Test saving options in nested dict form
-    algo_opts = {"sub_algorithm_settings": {"eq_tolerance": 1e-1}}
     execute_algo(
         problem,
         algo_name="Augmented_Lagrangian_Order_0",
-        sub_algorithm_name="SLSQP",
-        **algo_opts,
+        sub_algorithm_settings=SLSQP_Settings(eq_tolerance=1e-1),
     )
     problem.to_hdf(file_name, hdf_node_path=node)
 
@@ -2359,7 +2367,7 @@ def test_max_iter_reached_exception(
     """Check MaxIterReachedException."""
     CustomDOE().execute(
         evaluation_problem,
-        settings_model=CustomDOE_Settings(
+        settings=CustomDOE_Settings(
             samples=array([[0.1], [0.2], [0.3]]),
             normalize_design_space=design_vector_is_normalized,
             eval_func=eval_func,

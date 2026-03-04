@@ -37,10 +37,12 @@ from numpy import sin
 from numpy import sqrt
 from numpy import sum as np_sum
 
+from gemseo.algos.ode.factory import ODE_SOLVER_LIBRARY_FACTORY
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.algos.ode.ode_problem import ODEResult
 from gemseo.algos.ode.scipy_ode.scipy_ode import ScipyODEAlgos
+from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853_Settings
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -103,11 +105,9 @@ def test_ode_problem_1d(times_eval) -> None:
     assert problem.result.state_trajectories.size == 0
     assert problem.result.times.size == 0
 
-    algo_name = "DOP853"
+    settings = DOP853_Settings(first_step=1e-6)
     assert isinstance(
-        ODESolverLibraryFactory().execute(
-            problem, algo_name=algo_name, first_step=1e-6
-        ),
+        ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings),
         ODEResult,
     )
 
@@ -121,7 +121,7 @@ def test_ode_problem_1d(times_eval) -> None:
     assert problem.initial_state == initial_state
     assert problem.result.state_trajectories.size != 0
     assert problem.result.state_trajectories.size == problem.result.times.size
-    assert problem.result.algorithm_name == algo_name
+    assert problem.result.algorithm_name == settings._TARGET_CLASS_NAME
     assert (
         problem.result.algorithm_termination_message
         == "The solver successfully reached the end of the integration interval."
@@ -152,7 +152,8 @@ def test_ode_problem_2d() -> None:
     )
     problem.check_jacobian(array([0.0, 1.0]))
     algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-6)
+    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
     assert problem.result.algorithm_has_converged
     assert problem.result.algorithm_name == algo_name
     assert problem.result.state_trajectories is not None
@@ -182,10 +183,11 @@ def test_ode_problem_2d_array_jacobian() -> None:
     )
 
     problem.check_jacobian(array([0.0, 1.0]))
-    algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(
+        problem, settings=DOP853_Settings(first_step=1e-6)
+    )
     assert problem.result.algorithm_has_converged
-    assert problem.result.algorithm_name == algo_name
+    assert problem.result.algorithm_name == "DOP853"
     assert problem.result.state_trajectories is not None
 
     analytical_solution = exp(problem.result.times)
@@ -220,10 +222,11 @@ def test_ode_problem_2d_array_time_state_callable_jacobian() -> None:
     )
 
     problem.check_jacobian(array([1.0]), error_max=1e-6)
-    algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(
+        problem, settings=DOP853_Settings(first_step=1e-6)
+    )
     assert problem.result.algorithm_has_converged
-    assert problem.result.algorithm_name == algo_name
+    assert problem.result.algorithm_name == "DOP853"
     assert problem.result.state_trajectories is not None
 
     analytical_solution = arctan(problem.result.times)
@@ -249,8 +252,7 @@ def test_ode_problem_2d_wrong_jacobian() -> None:
         initial_state=array([1, 1]),
         times=arange(0, 1, 0.1),
     )
-    algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, DOP853_Settings(first_step=1e-6))
     try:
         problem.check_jacobian(array([0.0, 1.0]))
     except ValueError:
@@ -272,8 +274,7 @@ def test_ode_problem_without_jacobian() -> None:
         initial_state=array([1, 1]),
         times=arange(0, 1, 0.1),
     )
-    algo_name = "DOP853"
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, DOP853_Settings(first_step=1e-6))
 
     with pytest.raises(
         AttributeError,
@@ -293,8 +294,7 @@ def test_final_time_type() -> None:
         initial_state=array([1, 1]),
         times=arange(0, 1, 0.1),
     )
-    algo_name = "RK45"
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name)
+    ScipyODEAlgos("RK45").execute(problem)
 
     assert type(problem.result.termination_time) is float
 
@@ -313,7 +313,8 @@ def test_unconverged(caplog) -> None:
         return state**2
 
     problem = ODEProblem(_func, array([1]), array([0.0, 1.0]))
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, settings=settings)
 
     assert not problem.result.algorithm_has_converged
     assert f"The ODE solver {algo_name} did not converge." in caplog.records[1].message
@@ -340,8 +341,8 @@ def test_problem_without_given_time_interval():
         times=time_interval,
         solve_at_algorithm_times=True,
     )
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
-
+    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-6)
+    ODESolverLibraryFactory().execute(problem, settings=settings)
     reference_sol = exp(problem.result.times)
     assert problem.result.algorithm_has_converged
     assert allclose(problem.result.state_trajectories, reference_sol, atol=1e-3)
@@ -355,7 +356,8 @@ def test_inconsistent_space_and_time_shapes():
 
     problem = ODEProblem(_func, initial_state=array([1]), times=linspace(0.0, 0.5, 10))
     times_2 = linspace(0.0, 0.5, 3)
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, first_step=1e-6)
+    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-6)
+    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
 
     problem.result.times = times_2
 
@@ -392,7 +394,8 @@ def test_terminating_event() -> None:
         event_functions=(terminating_impact,),
     )
 
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, atol=1e-8)
+    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-8)
+    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
 
     reference_sol = exact_solution(problem.result.times)
     assert allclose(reference_sol, problem.result.state_trajectories[0, :], atol=1e-6)
@@ -423,10 +426,10 @@ def test_terminating_event_fixed_times() -> None:
         times=times,
         jac_function_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact,),
-        solve_at_algorithm_times=False,
     )
 
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, atol=1e-8)
+    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-8)
+    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
 
     reference_sol = exact_solution(problem.result.times)
     impact_instant = sqrt(-2 * initial_height / gravity_acceleration)
@@ -458,10 +461,10 @@ def test_terminating_event_outside_time_interval() -> None:
         times=times,
         jac_function_wrt_state=jac_wrt_state,
         event_functions=(terminating_impact,),
-        solve_at_algorithm_times=False,
     )
 
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, atol=1e-8)
+    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-8)
+    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
 
     reference_sol = exact_solution(problem.result.times)
     assert allclose(reference_sol, problem.result.state_trajectories[0, :], atol=1e-6)
@@ -505,8 +508,9 @@ def test_multiple_terminating_events() -> None:
         event_functions=(terminating_impact_ceiling, terminating_impact_floor),
     )
 
-    ODESolverLibraryFactory().execute(problem_1, algo_name=algo_name, atol=1e-8)
-    ODESolverLibraryFactory().execute(problem_2, algo_name=algo_name, atol=1e-8)
+    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-8)
+    ODE_SOLVER_LIBRARY_FACTORY.execute(problem_1, settings=settings)
+    ODE_SOLVER_LIBRARY_FACTORY.execute(problem_2, settings=settings)
 
     reference_sol = exact_solution(problem_1.result.times)
 

@@ -31,6 +31,7 @@ from gemseo.algos.driver_library import DriverLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.concatenate import Concatenate
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.post import OptHistoryView_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.scenarios.evaluation import EvaluationScenario
 from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
@@ -286,32 +287,21 @@ class MDOScenario(EvaluationScenario):
         """
         if len(self.formulation.problem.database) > 2:
             self.post_process(
-                post_name="OptHistoryView",
-                save=True,
-                show=False,
-                file_path=self._backup_file_path.stem,
+                OptHistoryView_Settings(
+                    save=True, show=False, file_path=self._backup_file_path.stem
+                )
             )
 
-    def post_process(
-        self, settings_model: BasePostSettings | None = None, **settings: Any
-    ) -> BasePost:
+    def post_process(self, settings: BasePostSettings) -> BasePost:
         """Post-process the optimization history.
 
         Args:
-            settings_model: The post-processor settings as a Pydantic model.
-                If `None`, use `**settings`.
-            **settings: The post-processor settings,
-                including the algorithm name (use the keyword `"post_name"`).
-                These arguments are ignored when `settings_model` is not `None`.
+            settings: The post-processor settings.
 
         Returns:
             The post-processor.
         """
-        return self.post_factory.execute(
-            self.formulation.problem,
-            settings_model=settings_model,
-            **settings,
-        )
+        return self.post_factory.execute(self.formulation.problem, settings=settings)
 
     @property
     def optimization_result(self) -> OptimizationResult | None:

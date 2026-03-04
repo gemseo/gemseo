@@ -30,6 +30,7 @@ from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.post import HessianHistory_Settings
 from gemseo.post.hessian_history import HessianHistory
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -131,7 +132,7 @@ def test_common_scenario(
     """Check HessianHistory with objective, standardized or not."""
     three_length_common_problem.use_standardized_objective = use_standardized_objective
     opt = HessianHistory(three_length_common_problem)
-    opt.execute(save=False)
+    opt.execute(HessianHistory_Settings(save=False))
 
 
 @pytest.mark.parametrize(

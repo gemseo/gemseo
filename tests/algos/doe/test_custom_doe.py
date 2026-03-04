@@ -182,30 +182,30 @@ def test_methods(test_method):
 def test_use_custom_doe_directly():
     """Check the use of CustomDOE without setting algo_name."""
     problem = get_problem(2)
-    CustomDOE().execute(problem, samples=array([[0.0, 0.0]]))
+    CustomDOE().execute(
+        problem, settings=CustomDOE_Settings(samples=array([[0.0, 0.0]]))
+    )
     assert len(problem.database) == 1
 
 
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        {"samples": array([[1.0, 2.0]])},
-        {"settings_model": CustomDOE_Settings(samples=array([[1.0, 2.0]]))},
-    ],
-)
-def test_compute_doe(kwargs):
-    """Check that CustomDOE.compute_doe works."""
+def test_compute_doe():
+    """Check that CustomDOE.sample_space works."""
     variables_space = DesignSpace()
     variables_space.add_variable("x", size=2)
     assert_equal(
-        CustomDOE().compute_doe(variables_space, **kwargs), array([[1.0, 2.0]])
+        CustomDOE().sample_space(
+            variables_space, CustomDOE_Settings(samples=array([[1.0, 2.0]]))
+        ),
+        array([[1.0, 2.0]]),
     )
 
 
 def test_malformed_file(caplog):
     """Check that an error message is logged when reading a file raises an exception."""
     with pytest.raises(ParserError):
-        CustomDOE().compute_doe(3, doe_file=Path(__file__).parent / "malformed_doe.csv")
+        CustomDOE().sample_unit_hypercube(
+            3, CustomDOE_Settings(doe_file=Path(__file__).parent / "malformed_doe.csv")
+        )
 
     _, level, message = caplog.record_tuples[0]
     assert level == ERROR

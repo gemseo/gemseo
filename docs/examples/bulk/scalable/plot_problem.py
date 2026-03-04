@@ -35,6 +35,7 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -131,4 +132,4 @@ scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
 # %%
 # We can post-process the results.
 # Here, we use the standard [OptHistoryView][gemseo.post.opt_history_view.OptHistoryView].
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))

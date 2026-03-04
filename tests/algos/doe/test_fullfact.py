@@ -63,7 +63,9 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
     design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(sum, name="func")
-    doe_library_class(algo_name).execute(problem, n_samples=n_samples)
+    lib = doe_library_class(algo_name)
+    settings = lib.ALGORITHM_INFOS[algo_name].settings_class(n_samples=n_samples)
+    lib.execute(problem, settings=settings)
     assert array_equal(
         problem.to_dataset("data").get_view(variable_names="x").to_numpy(),
         expected,
@@ -82,7 +84,9 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size) -> N
     design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(sum, name="func")
-    doe_library_class(algo_name).execute(problem, n_samples=n_samples)
+    lib = doe_library_class(algo_name)
+    settings = lib.ALGORITHM_INFOS[algo_name].settings_class(n_samples=n_samples)
+    lib.execute(problem, settings=settings)
     data = problem.to_dataset().get_view(variable_names="x").to_numpy()
     if n_samples < 2**size:
         expected_min = expected_max = 1.0
@@ -122,8 +126,9 @@ def test_fullfact_levels(
 ) -> None:
     """Check that ``levels`` option in full-factorial is correctly taken into
     account."""
-
-    doe_library_class(algo_name).execute(doe_problem_dim_2, **options)
+    lib = doe_library_class(algo_name)
+    settings = lib.ALGORITHM_INFOS[algo_name].settings_class(**options)
+    lib.execute(doe_problem_dim_2, settings=settings)
     assert allclose(doe_problem_dim_2.database.get_x_vect_history(), expected)
 
 
@@ -165,9 +170,10 @@ def test_fullfact_error(
 
     Also check negative levels
     """
-
-    with pytest.raises(exception, match=error_msg):
-        doe_library_class(algo_name).execute(doe_problem_dim_2, **options)
+    lib = doe_library_class(algo_name)
+    with pytest.raises(exception, match=error_msg):  # noqa: PT012
+        settings = lib.ALGORITHM_INFOS[algo_name].settings_class(**options)
+        lib.execute(doe_problem_dim_2, settings=settings)
 
 
 def test__compute_fullfact_levels(caplog) -> None:

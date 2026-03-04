@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -32,10 +33,14 @@ from numpy import sin
 from numpy.testing import assert_array_equal
 
 from gemseo import create_discipline
+from gemseo.algos.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
+from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.scenarios.backup_settings import BackupSettings
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
@@ -468,7 +473,7 @@ def test_multiple_disciplines(parameter_space) -> None:
     with concretize_classes(BaseSensitivityAnalysis):
         sensitivity_analysis = BaseSensitivityAnalysis()
         sensitivity_analysis.compute_samples(
-            [d1, d2, d3], parameter_space, 5, algo="OT_MONTE_CARLO"
+            [d1, d2, d3], parameter_space, 5, algo_settings=OT_MONTE_CARLO_Settings()
         )
 
     assert sensitivity_analysis.dataset.get_variable_names("inputs") == [
@@ -482,3 +487,15 @@ def test_multiple_disciplines(parameter_space) -> None:
         "y2",
     ]
     assert sensitivity_analysis.dataset.n_samples == 5
+
+
+def test_backup(tmp_wd):
+    """Check the creation of a backup file."""
+    sensitivity_analysis = SobolAnalysis()
+    sensitivity_analysis.compute_samples(
+        [IshigamiDiscipline()],
+        IshigamiSpace(),
+        n_samples=50,
+        backup_settings=BackupSettings(file_path=".backup"),
+    )
+    assert Path(".backup").exists()

@@ -28,6 +28,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 from gemseo.algos.opt.scipy_global.settings.dual_annealing import (
     DUAL_ANNEALING_Settings,
 )
@@ -37,6 +38,7 @@ from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.pydantic import create_model
 
 OPT_LIB_NAME = "ScipyOpt"
@@ -50,7 +52,7 @@ def power() -> Power2:
 
 @pytest.mark.parametrize(
     ("name", "handle_eq", "handle_ineq"),
-    [("L-BFGS-B", False, False), ("SLSQP", True, True)],
+    [("L_BFGS_B", False, False), ("SLSQP", True, True)],
 )
 def test_algorithm_handles_constraints(name, handle_eq, handle_ineq) -> None:
     assert ScipyOpt.ALGORITHM_INFOS[name].handle_equality_constraints is handle_eq
@@ -131,11 +133,11 @@ def test_is_algorithm_suited_pbm_type() -> None:
 
 def test_check_constraints_handling_fail(power) -> None:
     """Test that check_constraints_handling can raise an exception."""
-    lbfgsb = ScipyOpt("L-BFGS-B")
+    lbfgsb = ScipyOpt("L_BFGS_B")
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Requested optimization algorithm L-BFGS-B "
+            "Requested optimization algorithm L_BFGS_B "
             "can not handle equality constraints."
         ),
     ):
@@ -166,7 +168,7 @@ def test_execute_without_current_value() -> None:
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: (x - 1) ** 2, name="obj")
     driver = OPTIMIZATION_LIBRARY_FACTORY.create("NLOPT_COBYLA")
-    driver.execute(problem, max_iter=1)
+    driver.execute(problem, settings=NLOPT_COBYLA_Settings(max_iter=1))
     assert design_space.get_current_value(["x"]) == 0.0
 
 
@@ -211,3 +213,9 @@ def test_removal_redundant_settings(caplog, settings_model, redundant_setting):
     )
     with pytest.raises(ValueError, match=msg):
         settings_model(**{redundant_setting: "foo"})
+
+
+def test_default_settings():
+    """Check that an algorithm can use default settings."""
+    result = ScipyOpt("SLSQP").execute(Rosenbrock())
+    assert result.f_opt == pytest.approx(0.0)

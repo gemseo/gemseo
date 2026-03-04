@@ -42,10 +42,10 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.mdo_functions.mdo_function import MDOFunction
     from gemseo.typing import NumberArray
-    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -250,9 +250,11 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         return f_opt, hv, vk
 
     @staticmethod
-    def _check_for_preconditioner(sub_algorithm_settings: StrKeyMapping) -> None:
+    def _check_for_preconditioner(
+        sub_algorithm_settings: BaseOptimizerSettings,
+    ) -> None:
         """Check if 'precond' is in sub_algorithm_settings and log if detected."""
-        if sub_algorithm_settings and "precond" in sub_algorithm_settings:
+        if "precond" in sub_algorithm_settings.model_fields_set:
             LOGGER.info("Preconditioner Detected")
 
     def __solve_sub_problem(
@@ -292,11 +294,10 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         self._check_for_preconditioner(self._settings.sub_algorithm_settings)
 
         # Solve the sub-problem.
-        opt = OptimizationLibraryFactory().execute(
-            sub_problem,
-            algo_name=self._settings.sub_algorithm_name,
-            **self._settings.sub_algorithm_settings,
+        lib = OptimizationLibraryFactory().create(
+            self._settings.sub_algorithm_settings._TARGET_CLASS_NAME
         )
+        opt = lib.execute(sub_problem, settings=self._settings.sub_algorithm_settings)
 
         self._sub_problems.append(sub_problem)
 

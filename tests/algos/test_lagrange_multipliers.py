@@ -66,7 +66,6 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound) -> None:
     execute_algo(
         problem,
         algo_name="SLSQP",
-        algo_type="opt",
         eq_tolerance=1e-6,
         ineq_tolerance=1e-6,
     )
@@ -91,7 +90,7 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) ->
     options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = normalize
     problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
-    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options)
+    execute_algo(problem, algo_name="SLSQP", **options)
     lagrange = LagrangeMultipliers(problem)
     lagrangian = lagrange.compute(problem.solution.x_opt)
 
@@ -103,23 +102,23 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) ->
         dspace = problem.design_space
         dspace.set_current_value(array([1.0, 0.9, 1.0]))
         dspace.set_lower_bound("x", array([-1.0, 0.8 + lb, -1.0]))
-        execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options)
+        execute_algo(problem, algo_name="SLSQP", **options)
         return problem.solution.f_opt / normalization_factor
 
     df_fd = (obj(eps) - obj(-eps)) / (2 * eps)
     df_anal = lagrangian["lower_bounds"][1]
-    assert_allclose(df_fd, df_anal, rtol=tol, atol=0)
+    assert_allclose(df_fd, df_anal, rtol=tol)
 
 
 def test_lagrangian_validation_eq(problem) -> None:
-    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **SLSQP_OPTIONS)
+    execute_algo(problem, algo_name="SLSQP", **SLSQP_OPTIONS)
     lagrange = LagrangeMultipliers(problem)
     lagrangian = lagrange.compute(problem.solution.x_opt)
 
     def obj(eq_val):
         problem2 = Power2()
         problem2.constraints[-1] += eq_val
-        execute_algo(problem2, algo_name="SLSQP", algo_type="opt", **SLSQP_OPTIONS)
+        execute_algo(problem2, algo_name="SLSQP", **SLSQP_OPTIONS)
         return problem2.solution.f_opt
 
     eps = 1e-5
@@ -136,13 +135,13 @@ def test_lagrangian_validation_ineq_normalize() -> None:
     def obj(eq_val):
         problem2 = Power2()
         problem2.constraints[-2] += eq_val
-        execute_algo(problem2, algo_name="SLSQP", algo_type="opt", **options)
+        execute_algo(problem2, algo_name="SLSQP", **options)
         return problem2.solution.f_opt
 
     def obj_grad(eq_val):
         problem = Power2()
         problem.constraints[-2] += eq_val
-        execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options)
+        execute_algo(problem, algo_name="SLSQP", **options)
         lagrange = LagrangeMultipliers(problem)
         x_opt = problem.solution.x_opt
         lagrangian = lagrange.compute(x_opt)
@@ -192,7 +191,7 @@ def test_lagrangian_constraint(
 def test_lagrange_store(problem) -> None:
     options = deepcopy(SLSQP_OPTIONS)
     options["normalize_design_space"] = True
-    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options)
+    execute_algo(problem, algo_name="SLSQP", **options)
     lagrange = LagrangeMultipliers(problem)
     lagrange.active_lb_names = [0]
     lagrange._store_multipliers(np.ones(10))
@@ -243,7 +242,7 @@ def test_2d_ineq(
     problem = analytical_test_2d_ineq.formulation.problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options.copy())
+    execute_algo(problem, algo_name="SLSQP", **options.copy())
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints:
@@ -267,9 +266,7 @@ def test_2d_ineq(
 def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
-    factory = OPTIMIZATION_LIBRARY_FACTORY
-    cls = factory.get_class(factory.algo_names_to_libraries[algo_eq])
-    settings = cls.ALGORITHM_INFOS[algo_eq].settings_class(**opt)
+    settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_eq, **opt)
     analytical_test_2d_eq.execute(settings)
     problem = analytical_test_2d_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)
@@ -286,9 +283,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
 def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
-    factory = OPTIMIZATION_LIBRARY_FACTORY
-    cls = factory.get_class(factory.algo_names_to_libraries[algo_eq])
-    settings = cls.ALGORITHM_INFOS[algo_eq].settings_class(**opt)
+    settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_eq, **opt)
     analytical_test_2d__multiple_eq.execute(settings)
     problem = analytical_test_2d__multiple_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)
@@ -325,7 +320,7 @@ def test_2d_mixed(
     problem = analytical_test_2d_mixed_rank_deficient.formulation.problem
     if reformulate_constraints:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo_name="SLSQP", algo_type="opt", **options.copy())
+    execute_algo(problem, algo_name="SLSQP", **options.copy())
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints:

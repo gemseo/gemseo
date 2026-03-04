@@ -28,6 +28,7 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 from gemseo.uncertainty.distributions.openturns.exponential_settings import (
     OTExponentialDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class OTExponentialDistribution(OTDistribution):
@@ -38,8 +39,9 @@ class OTExponentialDistribution(OTDistribution):
     def __init__(  # noqa: D107
         self, settings: OTExponentialDistribution_Settings | None = None
     ) -> None:
-        if settings is None:
-            settings = OTExponentialDistribution_Settings()
+        settings = create_model(
+            OTExponentialDistribution_Settings, settings_model=settings
+        )
         super().__init__(
             OTDistribution_Settings(
                 interfaced_distribution="Exponential",

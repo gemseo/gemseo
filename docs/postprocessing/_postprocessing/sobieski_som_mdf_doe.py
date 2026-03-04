@@ -35,6 +35,7 @@ import sys
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
+from gemseo.post import SOM_Settings
 
 num = int(sys.argv[1])
 
@@ -61,29 +62,17 @@ for constraint in ["g_1", "g_2", "g_3"]:
 scenario.execute(PYDOE_LHS_Settings(n_samples=num))
 
 scenario.post_process(
-    post_name="SOM",
-    n_x=2,
-    n_y=2,
-    save=True,
-    show=False,
-    file_path=f"mdf2_{num}",
-    extension="png",
+    SOM_Settings(
+        n_x=2, n_y=2, save=True, show=False, file_path=f"mdf2_{num}", extension="png"
+    )
 )
 scenario.post_process(
-    post_name="SOM",
-    n_x=4,
-    n_y=4,
-    save=True,
-    show=False,
-    file_path=f"mdf4_{num}",
-    extension="png",
+    SOM_Settings(
+        n_x=4, n_y=4, save=True, show=False, file_path=f"mdf4_{num}", extension="png"
+    )
 )
 scenario.post_process(
-    post_name="SOM",
-    n_x=16,
-    n_y=16,
-    save=True,
-    show=False,
-    file_path=f"mdf16_{num}",
-    extension="png",
+    SOM_Settings(
+        n_x=16, n_y=16, save=True, show=False, file_path=f"mdf16_{num}", extension="png"
+    )
 )

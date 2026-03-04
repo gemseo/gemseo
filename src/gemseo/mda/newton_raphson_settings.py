@@ -61,16 +61,8 @@ This field is ignored when `newton_linear_solver_settings` is a Pydantic model."
         """Convert MDA settings into a Pydantic model."""
         if isinstance(self.newton_linear_solver_settings, Mapping):
             factory = LinearSolverLibraryFactory()
-            library_name = factory.algo_names_to_libraries[
-                self.newton_linear_solver_name
-            ]
-            settings_model = (
-                factory
-                .get_class(library_name)
-                .ALGORITHM_INFOS[self.newton_linear_solver_name]
-                .settings_class
+            settings = factory.create_settings(
+                self.newton_linear_solver_name, **self.newton_linear_solver_settings
             )
-            self.newton_linear_solver_settings = settings_model(
-                **self.newton_linear_solver_settings
-            )
+            self.newton_linear_solver_settings = settings
         return self

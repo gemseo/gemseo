@@ -28,6 +28,8 @@ on the Binh and Korn multi-objective problem.
 from __future__ import annotations
 
 from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
+from gemseo.post import ParetoFront_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
@@ -46,7 +48,7 @@ problem = BinhKorn()
 # we instantiate the design of experiment factory,
 # and we request the execution of a 100-length LHS optimized by simulated annealing.
 doe_factory = DOELibraryFactory()
-doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
+doe_factory.execute(problem, OT_OPT_LHS_Settings(n_samples=100))
 
 # %%
 # ## Post-processing
@@ -60,19 +62,21 @@ doe_factory.execute(problem, algo_name="OT_OPT_LHS", n_samples=100)
 
 POST_FACTORY.execute(
     problem,
-    post_name="ParetoFront",
-    show_non_feasible=False,
-    objectives=["compute_binhkorn"],
-    objectives_labels=["f1", "f2"],
-    save=False,
-    show=True,
+    ParetoFront_Settings(
+        show_non_feasible=False,
+        objectives=["compute_binhkorn"],
+        objectives_labels=["f1", "f2"],
+        save=False,
+        show=True,
+    ),
 )
 
 POST_FACTORY.execute(
     problem,
-    post_name="ParetoFront",
-    objectives=["compute_binhkorn"],
-    objectives_labels=["f1", "f2"],
-    save=False,
-    show=True,
+    ParetoFront_Settings(
+        objectives=["compute_binhkorn"],
+        objectives_labels=["f1", "f2"],
+        save=False,
+        show=True,
+    ),
 )

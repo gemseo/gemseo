@@ -29,6 +29,7 @@ from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.post import OptHistoryView_Settings
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -170,7 +171,7 @@ def test_common_scenario(
     """Check OptHistoryView with objective, standardized or not."""
     three_length_common_problem.use_standardized_objective = use_standardized_objective
     opt = OptHistoryView(three_length_common_problem)
-    opt.execute(save=False)
+    opt.execute(OptHistoryView_Settings(save=False))
 
 
 @pytest.mark.parametrize(

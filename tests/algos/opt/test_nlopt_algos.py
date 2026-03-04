@@ -34,6 +34,9 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.nlopt.nlopt import Nlopt
 from gemseo.algos.opt.nlopt.nlopt import nlopt
+from gemseo.algos.opt.nlopt.settings.nlopt_bfgs_settings import NLOPT_BFGS_Settings
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -72,7 +75,7 @@ class TestNLOPT(TestCase):
         problem.objective.jac = obj_grad
         problem.constraints.clear()
         opt_library = OPTIMIZATION_LIBRARY_FACTORY.create("NLOPT_BFGS")
-        opt_library.execute(problem, max_iter=10)
+        opt_library.execute(problem, settings=NLOPT_BFGS_Settings(max_iter=10))
 
     def test_normalization(self) -> None:
         """Runs a problem with one variable to be normalized and three not to be."""
@@ -93,7 +96,7 @@ class TestNLOPT(TestCase):
         problem.objective = MDOFunction(
             rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
         )
-        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="NLOPT_COBYLA")
+        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=NLOPT_COBYLA_Settings())
 
     def test_tolerance_activation(self) -> None:
         def run_pb(algo_options):
@@ -106,7 +109,7 @@ class TestNLOPT(TestCase):
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
             )
             res = OPTIMIZATION_LIBRARY_FACTORY.execute(
-                problem, algo_name="NLOPT_SLSQP", **algo_options
+                problem, NLOPT_SLSQP_Settings(**algo_options)
             )
             return res, problem
 
@@ -139,7 +142,7 @@ def test_cast_to_float() -> None:
         lambda x: x, name="my_function", jac=lambda x: array([[1.0]])
     )
     res = OPTIMIZATION_LIBRARY_FACTORY.execute(
-        problem, algo_name="NLOPT_SLSQP", max_iter=100
+        problem, settings=NLOPT_SLSQP_Settings(max_iter=100)
     )
     assert res.x_opt == array([0.0])
     assert res.f_opt == 0.0
@@ -260,14 +263,14 @@ def test_seed(kwargs, seed):
     """Check the seed for pseudo-randomization."""
     algo = Nlopt("NLOPT_COBYLA")
     with mock.patch.object(nlopt, "srand") as srand:
-        algo.execute(X2(), max_iter=10, **kwargs)
+        algo.execute(X2(), settings=NLOPT_COBYLA_Settings(max_iter=10, **kwargs))
         if seed is None:
             assert srand.call_args is None
         else:
             assert srand.call_args.args[0] == seed
 
         # Re-executing the algorithm does not change the seed.
-        algo.execute(X2(), max_iter=10, **kwargs)
+        algo.execute(X2(), settings=NLOPT_COBYLA_Settings(max_iter=10, **kwargs))
         if seed is None:
             assert srand.call_args is None
         else:

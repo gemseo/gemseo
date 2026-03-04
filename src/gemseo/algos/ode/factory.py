@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
 from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
 
@@ -30,3 +32,7 @@ class ODESolverLibraryFactory(BaseAlgoFactory):
 
     _CLASS = BaseODESolverLibrary
     _PACKAGE_NAMES = ("gemseo.algos.ode",)
+
+
+ODE_SOLVER_LIBRARY_FACTORY: Final[ODESolverLibraryFactory] = ODESolverLibraryFactory()
+"""The factory of ODE solver libraries."""

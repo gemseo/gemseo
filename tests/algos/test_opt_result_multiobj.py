@@ -29,6 +29,8 @@ from gemseo.algos.multiobjective_optimization_result import (
     MultiObjectiveOptimizationResult,
 )
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
@@ -38,7 +40,10 @@ def problem() -> OptimizationProblem:
     """The Binh-Korn optimization problem ready to be post-processed."""
     binh_korn = BinhKorn()
     OPTIMIZATION_LIBRARY_FACTORY.execute(
-        binh_korn, algo_name="MNBI", max_iter=100, n_sub_optim=5, sub_optim_algo="SLSQP"
+        binh_korn,
+        settings=MNBI_Settings(
+            max_iter=100, n_sub_optim=5, sub_optim_algo_settings=SLSQP_Settings()
+        ),
     )
     return binh_korn
 

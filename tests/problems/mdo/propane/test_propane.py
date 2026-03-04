@@ -125,9 +125,7 @@ class TestPropaneScenario(unittest.TestCase):
         )
 
         # run the optimizer
-        factory = OPTIMIZATION_LIBRARY_FACTORY
-        cls = factory.get_class(factory.algo_names_to_libraries[algo])
-        settings = cls.ALGORITHM_INFOS[algo].settings_class(max_iter=50)
+        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo, max_iter=50)
         scenario.execute(settings)
         obj_opt = scenario.optimization_result.f_opt
 

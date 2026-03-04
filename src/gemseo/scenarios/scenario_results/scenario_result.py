@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 from typing import Final
 
@@ -30,6 +29,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.post.base_post import BasePost
+    from gemseo.post.base_post_settings import BasePostSettings
     from gemseo.post.factory import PostFactory
     from gemseo.scenarios.mdo import MDOScenario
 
@@ -89,16 +89,13 @@ class ScenarioResult:
         """
         return self.optimization_problems_to_results[self._MAIN_PROBLEM_LABEL]
 
-    def plot(self, name: str, **settings: Any) -> BasePost:
+    def plot(self, settings: BasePostSettings) -> BasePost:
         """Visualize the result.
 
         Args:
-            name: The name of the post-processing.
-            **settings: The settings of the post-processing.
+            settings: The post-processor settings.
 
         Returns:
             The post-processing of the result.
         """
-        return self.POST_FACTORY.execute(
-            self.__obj_to_be_post_processed, post_name=name, **settings
-        )
+        return self.POST_FACTORY.execute(self.__obj_to_be_post_processed, settings)

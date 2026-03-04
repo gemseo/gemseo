@@ -229,7 +229,7 @@ def test_idf_start_equilibrium() -> None:
     ]
     design_space = SobieskiDesignSpace()
     problem = OptimizationProblem(design_space)
-    idf = IDF(problem, disciplines, start_at_equilibrium=True)
+    idf = IDF(problem, disciplines, IDF_Settings(start_at_equilibrium=True))
     problem.objective = idf.create_objective(["y_4"])
     coupling_names = [
         "y_12",

@@ -26,6 +26,7 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.datasets.optimization_dataset import OptimizationDataset
@@ -39,7 +40,7 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 def problem() -> Rosenbrock:
     """The Rosenbrock problem."""
     rosenbrock = Rosenbrock()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(rosenbrock, algo_name="L-BFGS-B")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(rosenbrock, settings=L_BFGS_B_Settings())
     return rosenbrock
 
 
@@ -52,6 +53,10 @@ class NewBasePost(BasePost[BasePostSettings]):
         self._add_figure(plt.Figure(), "my_figure")
 
 
+class NewBasePost_Settings(BasePostSettings):  # noqa: N801
+    """The settings of NewBasePost."""
+
+
 class NewBasePostWithoutOptionsGrammar(BasePost):
     """A new optimization post processor without options grammar."""
 
@@ -59,22 +64,15 @@ class NewBasePostWithoutOptionsGrammar(BasePost):
 def test_fig_size(problem) -> None:
     """Check the effect of fig_size."""
     post = NewBasePost(problem)
-    figure = post.execute(save=False)["my_figure"]
+    figure = post.execute(NewBasePost_Settings(save=False))["my_figure"]
     assert figure.get_figwidth() == 11.0
     assert figure.get_figheight() == 11.0
 
-    figure = post.execute(save=False, fig_size=(10, 20))["my_figure"]
+    figure = post.execute(NewBasePost_Settings(save=False, fig_size=(10, 20)))[
+        "my_figure"
+    ]
     assert figure.get_figwidth() == 10
     assert figure.get_figheight() == 20
-
-
-def test_settings_as_pydantic_model(problem):
-    """Check that settings can be passed as a Pydantic model."""
-    post = NewBasePost(problem)
-    settings = BasePostSettings(save=False, fig_size=(10, 20))
-    figure = post.execute(settings_model=settings)["my_figure"]
-    assert figure.get_figwidth() == 10.0
-    assert figure.get_figheight() == 20.0
 
 
 @pytest.mark.parametrize("save", [True, False])
@@ -87,7 +85,7 @@ def test_show_close(problem, save, show) -> None:
         patch("gemseo.utils.matplotlib_figure.plt.close") as close_,
         patch("gemseo.post.base_post.save_show_figure") as save_show_figure,
     ):
-        post.execute(save=save, show=show)
+        post.execute(NewBasePost_Settings(save=save, show=show))
 
     save_show_figure.assert_called_once()
     assert save_show_figure.call_args.args[1] is False
@@ -141,4 +139,4 @@ def test_execute_error_with_empty_dataset():
         r"be solved because the optimization problem "
         r"was not solved.",
     ):
-        post.execute()
+        post.execute(NewBasePost_Settings())

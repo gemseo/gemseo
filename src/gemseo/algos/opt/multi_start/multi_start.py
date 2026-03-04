@@ -67,10 +67,35 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
         # as a first iteration has already been done in OptimizationLibrary._pre_run.
         max_iter = self._settings.max_iter - 1
         n_processes = self._settings.n_processes
-        n_start = self._settings.n_start
-        opt_algo_max_iter = self._settings.opt_algo_max_iter
 
-        if opt_algo_max_iter == 0:
+        # The starting points correspond to the input samples of the DOE algorithm.
+        if "samples" in self._settings.doe_algo_settings.model_fields:
+            # The input samples of the DOE algorithm are defined in the settings,
+            # through the `samples` field, e.g. CustomDOE algorithm.
+            n_start = len(self._settings.doe_algo_settings.samples)
+        else:
+            # The input samples of the DOE algorithm are defined in the settings,
+            # through the `n_samples` field, e.g. MC_Settings.
+            n_start = self._settings.doe_algo_settings.n_samples
+
+        # We define the maximum number of iterations of the sub-optimization algorithms.
+        if "max_iter" in self._settings.opt_algo_settings.model_fields_set:
+            # The user sets this number in the setting of these algorithms.
+            opt_algo_max_iter = [self._settings.opt_algo_settings.max_iter] * n_start
+            sum_max_iter = sum(opt_algo_max_iter)
+            if sum_max_iter > max_iter:
+                msg = (
+                    "Multi-start optimization: "
+                    f"the sum of the maximum number of iterations ({sum_max_iter}) "
+                    f"related to the sub-optimizations "
+                    f"is greater than the limit ({max_iter + 1}-1={max_iter})."
+                )
+                raise ValueError(msg)
+        else:
+            # This number is deduced from the total maximum number of iterations
+            # defined by the `max_iter` option.
+            # This total number is allocated fairly
+            # among the different sub-optimizations.
             if max_iter < n_start:
                 msg = (
                     "Multi-start optimization: "
@@ -84,28 +109,12 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             for i in range(max_iter - n * n_start):
                 opt_algo_max_iter[i] += 1
 
-        else:
-            opt_algo_max_iter = [opt_algo_max_iter] * n_start
-
-        sum_max_iter = sum(opt_algo_max_iter)
-        if sum_max_iter > max_iter:
-            msg = (
-                "Multi-start optimization: "
-                f"the sum of the maximum number of iterations ({sum_max_iter}) "
-                f"related to the sub-optimizations "
-                f"is greater than the limit ({max_iter + 1}-1={max_iter})."
-            )
-            raise ValueError(msg)
-
-        doe_algo = DOE_LIBRARY_FACTORY.create(self._settings.doe_algo_name)
-        if (
-            "n_samples"
-            in doe_algo.ALGORITHM_INFOS[
-                self._settings.doe_algo_name
-            ].settings_class.model_fields
-        ):
-            self._settings.doe_algo_settings["n_samples"] = n_start
-        samples = doe_algo.compute_doe(design_space, **self._settings.doe_algo_settings)
+        doe_algo = DOE_LIBRARY_FACTORY.create(
+            self._settings.doe_algo_settings._TARGET_CLASS_NAME
+        )
+        samples = doe_algo.sample_space(
+            design_space, settings=self._settings.doe_algo_settings
+        )
 
         problems = execute(
             self._optimize,
@@ -160,11 +169,8 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
         problem.constraints = (c.original for c in self._problem.constraints)
         problem.observables = (o.original for o in self._problem.observables)
 
-        factory = OptimizationLibraryFactory()
-        opt_algo = factory.create(self._settings.opt_algo_name)
-        opt_algo.execute(
-            problem,
-            max_iter=max_iter,
-            **self._settings.opt_algo_settings,
+        self._settings.opt_algo_settings.max_iter = max_iter
+        OptimizationLibraryFactory().execute(
+            problem, settings=self._settings.opt_algo_settings
         )
         return problem

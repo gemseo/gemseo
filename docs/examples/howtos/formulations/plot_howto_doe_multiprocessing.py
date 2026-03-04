@@ -49,6 +49,7 @@ scenario = EvaluationScenario(
     design_space,
     formulation_settings=MDF_Settings(),
 )
+scenario.add_observable("y_4")
 
 # %%
 #

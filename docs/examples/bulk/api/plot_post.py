@@ -33,6 +33,7 @@ from gemseo import create_scenario
 from gemseo import execute_post
 from gemseo import get_available_post_processings
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 
 # %%
@@ -58,7 +59,7 @@ scenario = create_scenario(
 scenario.add_constraint("c_1", constraint_type="ineq")
 scenario.add_constraint("c_2", constraint_type="ineq")
 scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
-execute_post(scenario, post_name="OptHistoryView", save=False, show=False)
+execute_post(scenario, OptHistoryView_Settings(save=False, show=False))
 
 # %%
 # It is also possible to pass a settings model to [execute_post()][gemseo.execute_post] with the keyword

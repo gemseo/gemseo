@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
+    from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
 
@@ -78,8 +79,8 @@ class ODEDiscipline(Discipline):
     __ode_solver: BaseODESolverLibrary
     """The ODE solver."""
 
-    __ode_solver_options: Mapping[str, Any]
-    """The options of the ODE solver."""
+    __ode_solver_settings: BaseODESolverSettings
+    """The settings of the ODE solver."""
 
     __state_names: Iterable[str] | Mapping[str, str]
     """The names of the state variables, eventually bound to the
@@ -231,7 +232,9 @@ class ODEDiscipline(Discipline):
         )
 
         self.__ode_solver = ODESolverLibraryFactory().create(ode_solver_name)
-        self.__ode_solver_options = ode_solver_settings
+        self.__ode_solver_settings = self.__ode_solver.ALGORITHM_INFOS[
+            ode_solver_name
+        ].settings_class(**ode_solver_settings)
 
         super().__init__(name=name)
 
@@ -337,7 +340,9 @@ class ODEDiscipline(Discipline):
             {k: atleast_1d(v) for k, v in input_data.items()},
             names=self.__initial_state_names,
         )
-        self.__ode_solver.execute(self._ode_problem, **self.__ode_solver_options)
+        self.__ode_solver.execute(
+            self._ode_problem, settings=self.__ode_solver_settings
+        )
         result = self._ode_problem.result
         if not result.algorithm_has_converged:
             msg = (

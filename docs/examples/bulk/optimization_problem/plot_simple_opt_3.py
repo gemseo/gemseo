@@ -38,6 +38,7 @@ from gemseo import get_available_opt_algorithms
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.post import ScatterPlotMatrix_Settings
 
 # %%
 # ## Define the objective function
@@ -73,10 +74,7 @@ execute_algo(problem, algo_name="PYDOE_FULLFACT", n_samples=11**2, algo_type="do
 #
 execute_post(
     problem,
-    post_name="ScatterPlotMatrix",
-    variable_names=["x", "f"],
-    save=False,
-    show=True,
+    ScatterPlotMatrix_Settings(variable_names=["x", "f"], save=False, show=True),
 )
 
 # %%

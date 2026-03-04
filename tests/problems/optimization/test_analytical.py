@@ -41,9 +41,8 @@ def run_and_test_problem(problem, algo_name="SLSQP") -> None:
     :param algo_name:  (Default value = "SLSQP")
 
     """
-    opt = OPTIMIZATION_LIBRARY_FACTORY.execute(
-        problem, algo_name=algo_name, max_iter=800
-    )
+    settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, max_iter=800)
+    opt = OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=settings)
     x_opt, f_opt = problem.get_solution()
     assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
     assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
@@ -63,7 +62,7 @@ def test_rastrigin() -> None:
 def test_rosen() -> None:
     """"""
     problem = Rosenbrock()
-    run_and_test_problem(problem, "L-BFGS-B")
+    run_and_test_problem(problem, "L_BFGS_B")
     Rosenbrock(initial_guess=zeros(2))
     problem = Rosenbrock(scalar_var=True)
     assert "x1" in problem.design_space

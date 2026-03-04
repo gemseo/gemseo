@@ -68,7 +68,6 @@ class BaseFormulationFactory(BaseFactory[BaseFormulation]):
     def get_options_doc(self, name: str) -> dict[str, str]:  # noqa: D102
         cls = self.get_class(name)
         options_doc = get_options_doc(cls.__init__)
-        del options_doc["settings_model"]
         del options_doc["settings"]
         options_doc.update({
             field_name: field.description
@@ -79,7 +78,7 @@ class BaseFormulationFactory(BaseFactory[BaseFormulation]):
     def get_default_option_values(self, name: str) -> StrKeyMapping:  # noqa: D102
         cls = self.get_class(name)
         default_option_values = get_callable_argument_defaults(cls.__init__)
-        del default_option_values["settings_model"]
+        del default_option_values["settings"]
         default_option_values.update({
             field_name: field.get_default(call_default_factory=True)
             for field_name, field in cls.settings_class.model_fields.items()

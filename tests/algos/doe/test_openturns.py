@@ -39,6 +39,9 @@ from gemseo.algos.doe.openturns.openturns import OpenTURNS
 from gemseo.algos.doe.openturns.settings.base_ot_stratified_doe import (
     BaseOTStratifiedDOESettings,
 )
+from gemseo.algos.doe.openturns.settings.ot_lhsc import OT_LHSC_Settings
+from gemseo.algos.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
+from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
@@ -71,7 +74,7 @@ def test_call() -> None:
     Use an algorithm with options to check if the default options are correctly handled.
     """
     algo = DOE_LIBRARY_FACTORY.create("OT_OPT_LHS")
-    samples = algo.compute_doe(2, n_samples=3)
+    samples = algo.sample_unit_hypercube(2, settings=OT_OPT_LHS_Settings(n_samples=3))
     assert samples.shape == (3, 2)
 
 
@@ -109,7 +112,12 @@ def test_opt_lhs_wrong_properties(options, error) -> None:
 def test_centered_lhs() -> None:
     """Check that a centered LHS produces samples centered in their cells."""
     algo = DOE_LIBRARY_FACTORY.create("OT_LHSC")
-    assert set(unique(algo.compute_doe(2, n_samples=2)).tolist()) == {0.25, 0.75}
+    assert set(
+        unique(algo.sample_unit_hypercube(2, OT_LHSC_Settings(n_samples=2))).tolist()
+    ) == {
+        0.25,
+        0.75,
+    }
 
 
 @pytest.mark.parametrize(
@@ -146,7 +154,8 @@ def test_algos(algo_name, dim, n_samples, options) -> None:
     """Check that the OpenTURNS library returns samples correctly shaped."""
     problem = get_problem(dim)
     algo = DOE_LIBRARY_FACTORY.create(algo_name)
-    algo.execute(problem, **options)
+    settings = algo.ALGORITHM_INFOS[algo_name].settings_class(**options)
+    algo.execute(problem, settings=settings)
     assert algo.unit_samples.shape == (n_samples, dim)
 
 
@@ -256,7 +265,9 @@ def variables_space():
 )
 def test_compute_doe(variables_space, name) -> None:
     """Check the computation of a DOE out of a design space."""
-    doe = DOE_LIBRARY_FACTORY.create(name).compute_doe(variables_space, n_samples=4)
+    lib = DOE_LIBRARY_FACTORY.create(name)
+    settings = lib.ALGORITHM_INFOS[name].settings_class(n_samples=4)
+    doe = lib.sample_space(variables_space, settings=settings)
     assert doe.shape == (4, variables_space.dimension)
 
 
@@ -266,9 +277,10 @@ def test_compute_doe(variables_space, name) -> None:
 def test_compute_stratified_doe(variables_space, name, size) -> None:
     """Check the computation of a stratified DOE out of a design space."""
     library = DOE_LIBRARY_FACTORY.create(name)
-    doe = library.compute_doe(
-        variables_space, centers=[0.5] * variables_space.dimension, levels=[0.1]
+    settings = library.ALGORITHM_INFOS[name].settings_class(
+        centers=[0.5] * variables_space.dimension, levels=[0.1]
     )
+    doe = library.sample_space(variables_space, settings=settings)
     assert doe.shape == (size, variables_space.dimension)
 
 
@@ -277,12 +289,10 @@ def test_compute_stratified_doe(variables_space, name, size) -> None:
 def test_executed_twice(identity_problem, n_samples, seed) -> None:
     """Check that the second call to execute() is correctly taken into account."""
     library = OpenTURNS("OT_MONTE_CARLO")
-    library.execute(identity_problem, n_samples=3, seed=1)
-    library.execute(
-        identity_problem,
-        n_samples=n_samples,
-        seed=seed,
-    )
+    settings = OT_MONTE_CARLO_Settings(n_samples=3, seed=1)
+    library.execute(identity_problem, settings=settings)
+    settings = OT_MONTE_CARLO_Settings(n_samples=n_samples, seed=seed)
+    library.execute(identity_problem, settings=settings)
     if seed == 1:
         assert len(identity_problem.database) == max(3, n_samples)
         assert identity_problem.evaluation_counter.maximum == n_samples

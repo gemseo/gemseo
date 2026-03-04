@@ -30,6 +30,7 @@ from gemseo.algos.opt.scipy_global.scipy_global import ScipyGlobalOpt
 from gemseo.algos.opt.scipy_global.settings.differential_evolution import (
     DIFFERENTIAL_EVOLUTION_Settings,
 )
+from gemseo.algos.opt.scipy_global.settings.shgo import SHGO_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -60,7 +61,7 @@ class TestScipyGlobalOpt(TestCase):
 def pow2_database() -> Database:
     """The database resulting from the Power2 problem resolution."""
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SHGO", max_iter=20)
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SHGO_Settings(max_iter=20))
     return problem.database
 
 
@@ -97,8 +98,7 @@ def test_differential_evolution_parallel():
     problem = Rosenbrock()
     result = OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem,
-        algo_name="DIFFERENTIAL_EVOLUTION",
-        settings_model=DIFFERENTIAL_EVOLUTION_Settings(
+        settings=DIFFERENTIAL_EVOLUTION_Settings(
             max_iter=5,
             workers=2,
             popsize=2,
@@ -111,9 +111,7 @@ def test_differential_evolution_parallel():
 def unconstrained_problem() -> OptimizationProblem:
     """An unconstrained optimization problem"""
     design_space = DesignSpace()
-    design_space.add_variable(
-        "x", size=1, lower_bound=array([-1.0]), upper_bound=array([1.0])
-    )
+    design_space.add_variable("x", lower_bound=array([-1.0]), upper_bound=array([1.0]))
     problem = OptimizationProblem(design_space)
     problem.objective = MDOFunction(lambda x: x**2, name="f")
     return problem
@@ -122,4 +120,6 @@ def unconstrained_problem() -> OptimizationProblem:
 @pytest.mark.parametrize("algorithm_name", ScipyGlobalOpt.ALGORITHM_INFOS)
 def test_max_iter(algorithm_name, unconstrained_problem):
     """Test that the maximum number of iteration is monitored by GEMSEO."""
-    ScipyGlobalOpt(algorithm_name).execute(unconstrained_problem, max_iter=10)
+    lib = ScipyGlobalOpt(algorithm_name)
+    settings = lib.ALGORITHM_INFOS[algorithm_name].settings_class(max_iter=10)
+    lib.execute(unconstrained_problem, settings=settings)
