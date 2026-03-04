@@ -394,7 +394,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             The instance of the class.
         """
         return self.create(
-            settings._TARGET_CLASS_NAME, *args, settings=settings, **kwargs
+            settings.target_class_name, *args, settings=settings, **kwargs
         )
 
     def get_options_doc(self, name: str) -> dict[str, str]:

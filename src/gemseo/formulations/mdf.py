@@ -55,7 +55,7 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
 
     def _create_multidisciplinary_process(self) -> None:
         self.mda = MDA_FACTORY.create(
-            self._settings.main_mda_settings._TARGET_CLASS_NAME,
+            self._settings.main_mda_settings.target_class_name,
             self.disciplines,
             settings_model=self._settings.main_mda_settings,
         )

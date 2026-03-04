@@ -138,7 +138,7 @@ class MLModelAssessor(Discipline):
         super().__init__()
         self.io.input_grammar.update_from_names(parameters)
         self.io.output_grammar.update_from_names([self.CRITERION, self.LEARNING])
-        self.model_name = settings._TARGET_CLASS_NAME
+        self.model_name = settings.target_class_name
         self.__measure = measure
         self.__measure_options = dict(measure_options)
         self.__measure_evaluation_method_name = measure_evaluation_method_name

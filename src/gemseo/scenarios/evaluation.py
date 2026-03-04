@@ -174,7 +174,7 @@ class EvaluationScenario(BaseMonitoredProcess):
 
         evaluation_problem = self._evaluation_problem_class(design_space)
         self.formulation = self._formulation_factory.create(
-            formulation_settings._TARGET_CLASS_NAME,
+            formulation_settings.target_class_name,
             evaluation_problem,
             disciplines,
             settings=formulation_settings,
@@ -307,7 +307,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         if isinstance(self.__algorithm_settings, BaseDOESettings):
             # The algo is not instantiated again since it is in the factory cache.
             algo = self._algo_factory.create(
-                self.__algorithm_settings._TARGET_CLASS_NAME
+                self.__algorithm_settings.target_class_name
             )
             algo: BaseDOELibrary
             return algo.samples

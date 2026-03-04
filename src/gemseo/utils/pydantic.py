@@ -114,7 +114,7 @@ def get_class_name(
     if settings_model is None:
         return settings.pop(class_name_arg)
 
-    return settings_model._TARGET_CLASS_NAME
+    return settings_model.target_class_name
 
 
 # TODO: API: delete when algorithms become classes
