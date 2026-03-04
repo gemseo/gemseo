@@ -29,7 +29,6 @@ from dataclasses import asdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from numpy import array
@@ -40,18 +39,21 @@ from numpy import vstack
 from pandas import MultiIndex
 from strenum import StrEnum
 
-from gemseo import sample_disciplines
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.surfaces import Surfaces
+from gemseo.scenarios.evaluation import EvaluationScenario
 from gemseo.typing import RealArray
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.discipline import get_all_outputs
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import filter_names
 from gemseo.utils.string_tools import get_name_and_component
@@ -65,9 +67,10 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.base_driver_library import DriverSettingType
+    from gemseo.algos.doe.base_doe_settings import BaseDOESettings
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import Discipline
+    from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.post.dataset.dataset_plot import DatasetPlot
     from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
     from gemseo.scenarios.backup_settings import BackupSettings
@@ -132,9 +135,6 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     _output_names: list[str]
     """The disciplines' outputs to be considered for the analysis."""
 
-    _algo_name: str
-    """The name of the DOE algorithm to sample the disciplines."""
-
     _file_path_manager: FilePathManager
     """The file path manager for the figures."""
 
@@ -174,7 +174,6 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         else:
             self.dataset = None
 
-        self._algo_name = ""
         self._file_path_manager = FilePathManager(
             FilePathManager.FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
@@ -204,11 +203,9 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         parameter_space: ParameterSpace,
         n_samples: int,
         output_names: Iterable[str] = (),
-        algo: str = "",
-        algo_settings: Mapping[str, DriverSettingType] = READ_ONLY_EMPTY_DICT,
+        algo_settings: BaseDOESettings | None = None,
         backup_settings: BackupSettings | None = None,
-        formulation_name: str = "MDF",
-        **formulation_settings: Any,
+        formulation_settings: BaseFormulationSettings | None = None,
     ) -> IODataset:
         """Compute the samples for the estimation of the sensitivity indices.
 
@@ -219,39 +216,49 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If `0`, the number of samples is computed by the algorithm.
             output_names: The disciplines' outputs to be considered for the analysis.
                 If empty, use all the outputs.
-            algo: The name of the DOE algorithm.
-                If empty, use the
-                [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.DEFAULT_DRIVER].
             algo_settings: The settings of the DOE algorithm.
+                If `None`,
+                use the default settings of the default DOE algorithm
+                (see
+                [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.DEFAULT_DRIVER]).
             backup_settings: The settings of the backup file to store the evaluations
                 if any.
-            formulation_name: The name of the
-                [BaseMDOFormulation][gemseo.formulations.base_mdo.BaseMDOFormulation]
-                to sample the disciplines.
-            **formulation_settings: The settings of the
-                [BaseMDOFormulation][gemseo.formulations.base_mdo.BaseMDOFormulation].
+            formulation_settings: The settings of the MDO formulation.
+                If `None`,
+                use the default settings of the MDF formulation.
 
         Returns:
             The samples for the estimation of the sensitivity indices.
         """  # noqa: D205, D212, D415
         disciplines = list(disciplines)
-        self._algo_name = algo or self.DEFAULT_DRIVER
+        if algo_settings is None:
+            algo_settings = DOE_LIBRARY_FACTORY.create_settings(self.DEFAULT_DRIVER)
+        if n_samples > 0:
+            algo_settings.n_samples = n_samples
         self._output_names = list(output_names or get_all_outputs(disciplines))
         self._input_names = parameter_space.variable_names
-        algo_settings = dict(algo_settings)
-        algo_settings["use_one_line_progress_bar"] = True
-        self.dataset = sample_disciplines(
+        algo_settings.use_one_line_progress_bar = True
+        formulation_settings = create_model(
+            MDF_Settings, settings_model=formulation_settings
+        )
+        scenario = EvaluationScenario(
             disciplines,
             parameter_space,
-            self._output_names,
-            algo_name=self._algo_name,
-            formulation_name=formulation_name,
-            formulation_settings=formulation_settings or {},
-            name=f"{self.__class__.__name__}SamplingPhase",
-            backup_settings=backup_settings,
-            n_samples=n_samples,
-            **algo_settings,
+            f"{self.__class__.__name__}SamplingPhase",
+            formulation_settings=formulation_settings,
         )
+        for output_name in self._output_names:
+            scenario.add_observable(output_name)
+        if backup_settings is not None and backup_settings.file_path:
+            scenario.set_backup_settings(
+                backup_settings.file_path,
+                at_each_iteration=backup_settings.at_each_iteration,
+                at_each_function_call=backup_settings.at_each_function_call,
+                erase=backup_settings.erase,
+                load=backup_settings.load,
+            )
+        scenario.execute(algo_settings)
+        self.dataset = scenario.to_dataset()
         return self.dataset
 
     @property

@@ -26,6 +26,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
+from gemseo.post import OptHistoryView_Settings
 
 # %%
 # ## About namespaces
@@ -106,4 +107,4 @@ scenario.execute(LHS_Settings(n_samples=20))
 # %%
 # ### Plot the optimization history view
 #
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))

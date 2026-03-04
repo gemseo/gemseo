@@ -40,6 +40,7 @@ from gemseo import execute_post
 from gemseo import get_available_opt_algorithms
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.post import OptHistoryView_Settings
 
 # %%
 # ##Optimization based on a design of experiments
@@ -291,9 +292,9 @@ problem.to_hdf("my_optim.hdf5")
 # [execute_post()][gemseo.execute_post],
 # either from the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]:
 
-execute_post(problem, post_name="OptHistoryView", save=False, show=True)
+execute_post(problem, OptHistoryView_Settings(save=False, show=True))
 
 # %%
 # or from the HDF file created above:
 
-execute_post("my_optim.hdf5", post_name="OptHistoryView", save=False, show=True)
+execute_post("my_optim.hdf5", OptHistoryView_Settings(save=False, show=True))

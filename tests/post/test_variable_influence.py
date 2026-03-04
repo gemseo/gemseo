@@ -33,6 +33,7 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.post import VariableInfluence_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -52,7 +53,7 @@ def test_variable_influence(tmp_wd) -> None:
     """
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
     post = POST_FACTORY.execute(
-        problem, post_name="VariableInfluence", file_path="var_infl"
+        problem, VariableInfluence_Settings(file_path="var_infl")
     )
     assert len(post.output_file_paths) == 1
     for outf in post.output_file_paths:
@@ -92,9 +93,7 @@ def test_variable_influence_doe(tmp_wd) -> None:
         ValueError, match=re.escape("No gradients to plot at current iteration.")
     ):
         doe_scenario.post_process(
-            post_name="VariableInfluence",
-            file_path="doe",
-            save=True,
+            VariableInfluence_Settings(file_path="doe", save=True)
         )
 
 
@@ -107,12 +106,13 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
     problem = OptimizationProblem.from_hdf(SSBJ_HDF5_PATH)
     post = POST_FACTORY.execute(
         problem,
-        post_name="VariableInfluence",
-        file_path="ssbj",
-        log_scale=True,
-        absolute_value=False,
-        level=0.98,
-        save_var_files=True,
+        VariableInfluence_Settings(
+            file_path="ssbj",
+            log_scale=True,
+            absolute_value=False,
+            level=0.98,
+            save_var_files=True,
+        ),
     )
     assert len(post.output_file_paths) == 14
     for outf in post.output_file_paths:
@@ -138,7 +138,7 @@ def test_common_scenario(
     """Check VariableInfluence with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective
     opt = VariableInfluence(common_problem)
-    opt.execute(save=False)
+    opt.execute(VariableInfluence_Settings(save=False))
 
 
 @pytest.mark.parametrize(
@@ -163,6 +163,6 @@ def test_visible_labels(size, baseline_images) -> None:
     func = MDOFunction(lambda x: x * 0.5, name="eq", jac=lambda x: 0.5 * eye(size))
     problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.EQ)
     doe = DiagonalDOE()
-    doe.execute(problem, n_samples=size, eval_jac=True)
+    doe.execute(problem, settings=DiagonalDOE_Settings(n_samples=size, eval_jac=True))
     post = VariableInfluence(problem)
-    post.execute(save=False)
+    post.execute(VariableInfluence_Settings(save=False))

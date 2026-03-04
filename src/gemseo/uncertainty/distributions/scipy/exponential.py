@@ -28,6 +28,7 @@ from gemseo.uncertainty.distributions.scipy.distribution_settings import (
 from gemseo.uncertainty.distributions.scipy.exponential_settings import (
     SPExponentialDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class SPExponentialDistribution(SPDistribution):
@@ -38,8 +39,9 @@ class SPExponentialDistribution(SPDistribution):
     def __init__(  # noqa: D107
         self, settings: SPExponentialDistribution_Settings | None = None
     ) -> None:
-        if settings is None:
-            settings = SPExponentialDistribution_Settings()
+        settings = create_model(
+            SPExponentialDistribution_Settings, settings_model=settings
+        )
         super().__init__(
             SPDistribution_Settings(
                 interfaced_distribution="expon",

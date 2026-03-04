@@ -36,6 +36,7 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.post import GradientSensitivity_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -66,10 +67,9 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
     problem = OptimizationProblem.from_hdf(POWER2)
     post = factory.execute(
         problem,
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens1",
-        save=True,
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients, file_path="grad_sens1", save=True
+        ),
     )
     assert len(post.output_file_paths) == 1
     assert Path(post.output_file_paths[0]).exists()
@@ -78,11 +78,12 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
     problem.database[x_0].pop("@eq")
     post = factory.execute(
         problem,
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens2",
-        save=True,
-        iteration=1,
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients,
+            file_path="grad_sens2",
+            save=True,
+            iteration=1,
+        ),
     )
     assert len(post.output_file_paths) == 1
     assert Path(post.output_file_paths[0]).exists()
@@ -106,10 +107,9 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     mdo_scenario.add_objective("y_12")
     mdo_scenario.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=True))
     mdo_scenario.post_process(
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens",
-        save=True,
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients, file_path="grad_sens", save=True
+        )
     )
     mdo_scenario2 = MDOScenario(
         [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
@@ -121,10 +121,9 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
         ValueError, match=re.escape("No gradients to plot at current iteration.")
     ):
         mdo_scenario2.post_process(
-            post_name="GradientSensitivity",
-            file_path="grad_sens",
-            save=True,
-            scale_gradients=scale_gradients,
+            GradientSensitivity_Settings(
+                file_path="grad_sens", save=True, scale_gradients=scale_gradients
+            )
         )
 
 
@@ -161,11 +160,12 @@ def test_scale_gradients(tmp_wd, scale_gradients) -> None:
     scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
     post = scenario.post_process(
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens_analytical",
-        file_extension="png",
-        save=True,
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients,
+            file_path="grad_sens_analytical",
+            file_extension="png",
+            save=True,
+        )
     )
 
     actual_jac = post._GradientSensitivity__get_output_gradients(
@@ -201,11 +201,12 @@ def test_plot(tmp_wd, baseline_images, scale_gradients) -> None:
     scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
     scenario.post_process(
-        post_name="GradientSensitivity",
-        scale_gradients=scale_gradients,
-        file_path="grad_sens_analytical",
-        file_extension="png",
-        save=False,
+        GradientSensitivity_Settings(
+            scale_gradients=scale_gradients,
+            file_path="grad_sens_analytical",
+            file_extension="png",
+            save=False,
+        )
     )
 
 
@@ -228,7 +229,7 @@ def test_common_scenario(
     """Check GradientSensitivity with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective
     opt = GradientSensitivity(common_problem)
-    opt.execute(save=False)
+    opt.execute(GradientSensitivity_Settings(save=False))
 
 
 @pytest.mark.parametrize(
@@ -269,10 +270,11 @@ def test_compute_missing_gradients(
         ):
             factory.execute(
                 problem,
-                post_name="GradientSensitivity",
-                compute_missing_gradients=compute_missing_gradients,
-                save=False,
-                show=False,
+                GradientSensitivity_Settings(
+                    compute_missing_gradients=compute_missing_gradients,
+                    save=False,
+                    show=False,
+                ),
             )
 
         if compute_missing_gradients:
@@ -283,10 +285,11 @@ def test_compute_missing_gradients(
     else:
         factory.execute(
             problem,
-            post_name="GradientSensitivity",
-            compute_missing_gradients=compute_missing_gradients,
-            save=False,
-            show=False,
+            GradientSensitivity_Settings(
+                compute_missing_gradients=compute_missing_gradients,
+                save=False,
+                show=False,
+            ),
         )
 
 
@@ -306,9 +309,8 @@ def test_compute_missing_gradients_with_eval(factory) -> None:
         mocked_evaluate_functions.return_value = (None, gradients)
         factory.execute(
             problem,
-            post_name="GradientSensitivity",
-            compute_missing_gradients=True,
-            save=False,
-            show=False,
+            GradientSensitivity_Settings(
+                compute_missing_gradients=True, save=False, show=False
+            ),
         )
         mocked_evaluate_functions.assert_called()

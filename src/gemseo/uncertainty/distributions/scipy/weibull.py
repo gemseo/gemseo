@@ -23,6 +23,7 @@ from gemseo.uncertainty.distributions.scipy.distribution_settings import (
 from gemseo.uncertainty.distributions.scipy.weibull_settings import (
     SPWeibullDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class SPWeibullDistribution(SPDistribution):
@@ -31,8 +32,7 @@ class SPWeibullDistribution(SPDistribution):
     settings_class = SPWeibullDistribution_Settings
 
     def __init__(self, settings: SPWeibullDistribution_Settings | None = None) -> None:  # noqa: D107
-        if settings is None:
-            settings = SPWeibullDistribution_Settings()
+        settings = create_model(SPWeibullDistribution_Settings, settings_model=settings)
         super().__init__(
             SPDistribution_Settings(
                 interfaced_distribution=(

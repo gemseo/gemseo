@@ -78,6 +78,7 @@ from gemseo.utils.logging import _configure_logger
 from gemseo.utils.logging import _is_gemseo_logger as _is_gemseo_logger
 from gemseo.utils.pickle import from_pickle  # noqa: F401
 from gemseo.utils.pickle import to_pickle  # noqa: F401
+from gemseo.utils.pydantic import create_model
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -313,10 +314,9 @@ def get_algorithm_options_schema(
 
     for factory in (DOE_LIBRARY_FACTORY, OPTIMIZATION_LIBRARY_FACTORY):
         if factory.is_available(algorithm_name):
-            algo_lib = factory.create(algorithm_name)
-            settings = algo_lib.ALGORITHM_INFOS[algorithm_name].settings_class
+            settings_class = factory.get_settings_class(algorithm_name)
             return _get_json_schema_from_settings(
-                settings,
+                settings_class,
                 output_json,
                 pretty_print,
             )
@@ -1013,7 +1013,13 @@ def execute_post(
     else:
         msg = f"Cannot post process type: {type(to_post_proc)}"
         raise TypeError(msg)
-    return POST_FACTORY.execute(opt_problem, settings_model=settings_model, **settings)
+
+    if settings_model is None:
+        post_name = settings.pop("post_name")
+        settings = POST_FACTORY.get_class(post_name).settings_class(**settings)
+    else:
+        settings = settings_model
+    return POST_FACTORY.execute(opt_problem, settings)
 
 
 def execute_algo(
@@ -1048,7 +1054,12 @@ def execute_algo(
         msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
         raise ValueError(msg)
 
-    return factory.execute(opt_problem, settings_model=settings_model, **settings)
+    if settings_model is None:
+        algo_name = settings.pop("algo_name")
+        settings = factory.create_settings(algo_name, **settings)
+    else:
+        settings = settings_model
+    return factory.execute(opt_problem, settings=settings)
 
 
 def monitor_scenario(
@@ -1380,11 +1391,16 @@ def compute_doe(
 
     algo_name = get_algo_name(settings_model, settings)
     library = DOE_LIBRARY_FACTORY.create(algo_name)
-    return library.compute_doe(
-        variables_space,
-        unit_sampling=unit_sampling,
+    settings = create_model(
+        library.ALGORITHM_INFOS[algo_name].settings_class,
         settings_model=settings_model,
         **settings,
+    )
+    if isinstance(variables_space, int):
+        return library.sample_unit_hypercube(variables_space, settings=settings)
+
+    return library.sample_space(
+        variables_space, settings=settings, use_unit_samples=unit_sampling
     )
 
 
@@ -1642,10 +1658,7 @@ def sample_disciplines(
     if algo_settings_model is None:
         algo_name = algo_settings.pop("algo_name")
         factory = DOELibraryFactory()
-        cls = factory.get_class(factory.algo_names_to_libraries[algo_name])
-        algo_settings_model = cls.ALGORITHM_INFOS[algo_name].settings_class(
-            **algo_settings
-        )
+        algo_settings_model = factory.create_settings(algo_name, **algo_settings)
 
     scenario.execute(algo_settings_model)
     return scenario.formulation.problem.to_dataset(name=name, export_gradients=True)

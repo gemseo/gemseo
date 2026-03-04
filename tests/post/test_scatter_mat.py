@@ -32,6 +32,7 @@ from gemseo import execute_post
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.post import ScatterPlotMatrix_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
 from gemseo.problems.optimization.power_2 import Power2
@@ -53,12 +54,12 @@ def test_scatter(tmp_wd) -> None:
         tmp_wd : Fixture to move into a temporary directory.
     """
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, algo_name="SLSQP")
+    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
     post = POST_FACTORY.execute(
         problem,
-        post_name="ScatterPlotMatrix",
-        file_path="scatter1",
-        variable_names=problem.function_names,
+        ScatterPlotMatrix_Settings(
+            file_path="scatter1", variable_names=problem.function_names
+        ),
     )
     assert len(post.output_file_paths) == 1
     for outf in post.output_file_paths:
@@ -74,17 +75,15 @@ def test_scatter_load(tmp_wd) -> None:
     problem = OptimizationProblem.from_hdf(POWER2)
     post = POST_FACTORY.execute(
         problem,
-        post_name="ScatterPlotMatrix",
-        file_path="scatter2",
-        variable_names=problem.function_names,
+        ScatterPlotMatrix_Settings(
+            file_path="scatter2", variable_names=problem.function_names
+        ),
     )
     assert len(post.output_file_paths) == 1
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
-    post = POST_FACTORY.execute(
-        problem, post_name="ScatterPlotMatrix", variable_names=[]
-    )
+    post = POST_FACTORY.execute(problem, ScatterPlotMatrix_Settings(variable_names=[]))
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
@@ -103,7 +102,7 @@ def test_non_existent_var(tmp_wd) -> None:
         r"nor design variables: .*",
     ):
         POST_FACTORY.execute(
-            problem, post_name="ScatterPlotMatrix", variable_names=["foo"]
+            problem, ScatterPlotMatrix_Settings(variable_names=["foo"])
         )
 
 
@@ -170,11 +169,12 @@ def test_maximized_func(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> Non
     scenario.set_algorithm(SLSQP_Settings(max_iter=10))
     scenario.execute()
     post = scenario.post_process(
-        post_name="ScatterPlotMatrix",
-        save=True,
-        file_path="scatter_sellar",
-        file_extension="png",
-        variable_names=["obj", "x_1", "x_shared"],
+        ScatterPlotMatrix_Settings(
+            save=True,
+            file_path="scatter_sellar",
+            file_extension="png",
+            variable_names=["obj", "x_1", "x_shared"],
+        )
     )
     assert len(post.output_file_paths) == 1
     for outf in post.output_file_paths:
@@ -214,11 +214,12 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
     )
     POST_FACTORY.execute(
         problem,
-        post_name="ScatterPlotMatrix",
-        file_extension="png",
-        save=False,
-        filter_non_feasible=filter_non_feasible,
-        variable_names=["x"],
+        ScatterPlotMatrix_Settings(
+            file_extension="png",
+            save=False,
+            filter_non_feasible=filter_non_feasible,
+            variable_names=["x"],
+        ),
     )
 
 
@@ -238,9 +239,7 @@ def test_filter_non_feasible_exception() -> None:
     with pytest.raises(ValueError, match=re.escape("No feasible points were found.")):
         POST_FACTORY.execute(
             problem,
-            post_name="ScatterPlotMatrix",
-            filter_non_feasible=True,
-            variable_names=["x"],
+            ScatterPlotMatrix_Settings(filter_non_feasible=True, variable_names=["x"]),
         )
 
 
@@ -263,4 +262,8 @@ def test_common_scenario(
     """Check ScatterPlotMatrix with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective
     opt = ScatterPlotMatrix(common_problem)
-    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)
+    opt.execute(
+        ScatterPlotMatrix_Settings(
+            variable_names=["obj", "eq", "neg", "pos", "x"], save=False
+        )
+    )

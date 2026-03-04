@@ -63,7 +63,7 @@ from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.opt.scipy_local.settings.nelder_mead import NELDER_MEAD_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
-from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_Settings
+from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import MILP_Settings
 
 __all__ = [
     "Augmented_Lagrangian_Order_0_Settings",
@@ -75,6 +75,7 @@ __all__ = [
     "DUAL_SIMPLEX_Settings",
     "INTERIOR_POINT_Settings",
     "L_BFGS_B_Settings",
+    "MILP_Settings",
     "MNBI_Settings",
     "MultiStart_Settings",
     "NELDER_MEAD_Settings",
@@ -86,6 +87,5 @@ __all__ = [
     "NLOPT_SLSQP_Settings",
     "SHGO_Settings",
     "SLSQP_Settings",
-    "SciPyMILP_Settings",
     "TNC_Settings",
 ]

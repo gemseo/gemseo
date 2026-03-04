@@ -52,7 +52,7 @@ If `None`, randomize the points within the intervals.""",
         description="The number of iterations in the `correlation`/`maximin` algorithms.",  # noqa: E501
     )
 
-    n_samples: PositiveInt = Field(description="""The number of samples.""")
+    n_samples: PositiveInt = Field(default=1, description="The number of samples.")
 
     random_state: PositiveInt | None = Field(
         default=None,

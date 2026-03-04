@@ -31,6 +31,7 @@ from gemseo.uncertainty.distributions.scipy.distribution_settings import (
 from gemseo.uncertainty.distributions.scipy.log_normal_settings import (
     SPLogNormalDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class SPLogNormalDistribution(SPDistribution):
@@ -41,9 +42,9 @@ class SPLogNormalDistribution(SPDistribution):
     def __init__(  # noqa: D107
         self, settings: SPLogNormalDistribution_Settings | None = None
     ) -> None:
-        if settings is None:
-            settings = SPLogNormalDistribution_Settings()
-
+        settings = create_model(
+            SPLogNormalDistribution_Settings, settings_model=settings
+        )
         if settings.set_log:
             log_mu, log_sigma = settings.mu, settings.sigma
         else:

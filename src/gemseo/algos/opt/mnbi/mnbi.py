@@ -89,9 +89,6 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-MNBIOptionsType = bool | int | float
-
-
 class IndividualSubOptimOutput(NamedTuple):
     """An output from a sub-optimization."""
 
@@ -307,11 +304,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             objective.compute_output, name=f"f_{i}", jac=jac
         )
         opt_result = OptimizationLibraryFactory().execute(
-            opt_problem,
-            algo_name=self._settings.sub_optim_algo,
-            max_iter=self._settings.sub_optim_max_iter,
-            enable_progress_bar=False,
-            **self._settings.sub_optim_algo_settings,
+            opt_problem, settings=self._settings.sub_optim_algo_settings
         )
         if not opt_result.is_feasible:
             msg = f"No feasible optimum found for the {i}-th objective function."
@@ -482,11 +475,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             beta_sub_cstr, constraint_type=self.__beta_sub_optim.ConstraintType.INEQ
         )
         opt_res = OptimizationLibraryFactory().execute(
-            self.__beta_sub_optim,
-            algo_name=self._settings.sub_optim_algo,
-            max_iter=self._settings.sub_optim_max_iter,
-            enable_progress_bar=False,
-            **self._settings.sub_optim_algo_settings,
+            self.__beta_sub_optim, settings=self._settings.sub_optim_algo_settings
         )
         if not opt_res.is_feasible:
             LOGGER.warning(
@@ -837,16 +826,17 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             if self.__n_obj == 2:
                 betas = linspace(0, 1, n_samples + 2)[1:-1, newaxis]
             else:
-                library = DOE_LIBRARY_FACTORY.create(self._settings.doe_algo)
                 beta_design_space = DesignSpace()
                 beta_design_space.add_variable(
                     "beta", size=self.__n_obj - 1, lower_bound=0.0, upper_bound=1.0
                 )
-                betas = library.compute_doe(
-                    beta_design_space,
-                    n_samples=n_samples,
-                    unit_sampling=True,
-                    **self._settings.doe_algo_settings,
+                self._settings.doe_algo_settings.n_samples = n_samples
+                lib = DOE_LIBRARY_FACTORY.create(
+                    self._settings.doe_algo_settings._TARGET_CLASS_NAME
+                )
+                betas = lib.sample_unit_hypercube(
+                    beta_design_space.dimension,
+                    settings=self._settings.doe_algo_settings,
                 )
             for beta in betas:
                 beta = append(beta, 1 - beta.sum())

@@ -53,6 +53,8 @@ from __future__ import annotations
 
 from gemseo import execute_algo
 from gemseo import execute_post
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.post import ParetoFront_Settings
 from gemseo.problems.multiobjective_optimization.poloni import Poloni
 from gemseo.settings.opt import MNBI_Settings
 
@@ -66,9 +68,8 @@ from gemseo.settings.opt import MNBI_Settings
 opt_problem = Poloni()
 algo_settings = MNBI_Settings(
     max_iter=10000,
-    sub_optim_max_iter=50,
     n_sub_optim=50,
-    sub_optim_algo="SLSQP",
+    sub_optim_algo_settings=SLSQP_Settings(max_iter=50),
 )
 result = execute_algo(opt_problem, settings_model=algo_settings)
 
@@ -79,4 +80,4 @@ result = execute_algo(opt_problem, settings_model=algo_settings)
 # There is one interesting area that has a hole in the Pareto front.
 # The mNBI algorithm avoids running sub-optimizations in this area
 # which saves computation time.
-execute_post(opt_problem, post_name="ParetoFront", save=False, show=True)
+execute_post(opt_problem, ParetoFront_Settings(save=False, show=True))

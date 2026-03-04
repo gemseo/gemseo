@@ -22,6 +22,7 @@ from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
@@ -36,7 +37,10 @@ def test_default(caplog):
     evaluation_problem.add_observable(MDOFunction(prod, name="prod"))
 
     custom_doe = CustomDOE()
-    custom_doe.execute(evaluation_problem, samples=array([[2.0, 3.0], [4.0, 5.0]]))
+    custom_doe.execute(
+        evaluation_problem,
+        settings=CustomDOE_Settings(samples=array([[2.0, 3.0], [4.0, 5.0]])),
+    )
 
     get_function_history = evaluation_problem.database.get_function_history
     assert_equal(get_function_history("sum"), array([5.0, 9.0]))

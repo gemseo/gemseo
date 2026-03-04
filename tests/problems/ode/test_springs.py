@@ -34,6 +34,8 @@ from numpy.testing import assert_allclose
 
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
 from gemseo.algos.ode.ode_problem import ODEProblem
+from gemseo.algos.ode.scipy_ode.settings.radau import Radau_Settings
+from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.problems.ode.springs.coupled_springs_generator import (
     CoupledSpringsGenerator,
@@ -227,7 +229,7 @@ def test_2_chained_masses():
         times=times,
     )
     ODESolverLibraryFactory().execute(
-        ode_problem, algo_name="Radau", rtol=1e-6, atol=1e-6
+        ode_problem, settings=Radau_Settings(rtol=1e-6, atol=1e-6)
     )
 
     assert allclose(
@@ -287,10 +289,7 @@ def test_chained_masses():
         times=springs_and_masses.times,
     )
     ODESolverLibraryFactory().execute(
-        ode_problem,
-        algo_name="RK45",
-        rtol=1e-6,
-        atol=1e-6,
+        ode_problem, settings=RK45_Settings(rtol=1e-6, atol=1e-6)
     )
 
     for name in springs_and_masses.position_names:
@@ -348,10 +347,7 @@ def test_create_two_chained_masses():
         times=times,
     )
     ODESolverLibraryFactory().execute(
-        ode_problem,
-        algo_name="Radau",
-        rtol=1e-6,
-        atol=1e-6,
+        ode_problem, settings=Radau_Settings(rtol=1e-6, atol=1e-6)
     )
 
     assert allclose(
@@ -414,10 +410,7 @@ def test_create_ode_discipline_for_two_masses():
         times=times,
     )
     ODESolverLibraryFactory().execute(
-        ode_problem,
-        algo_name="Radau",
-        rtol=1e-6,
-        atol=1e-6,
+        ode_problem, settings=Radau_Settings(rtol=1e-6, atol=1e-6)
     )
 
     assert allclose(
@@ -521,10 +514,7 @@ def test_one_mass_attached_to_moving_pins():
         initial_state=array([0.0, 0.0]),
     )
     ODESolverLibraryFactory().execute(
-        ode_problem,
-        algo_name="Radau",
-        rtol=1e-12,
-        atol=1e-12,
+        ode_problem, settings=Radau_Settings(rtol=1e-12, atol=1e-12)
     )
 
     assert allclose(

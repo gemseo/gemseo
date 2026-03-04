@@ -27,7 +27,6 @@ from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.post.base_post import BasePost
-from gemseo.utils.pydantic import get_class_name
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
@@ -43,25 +42,19 @@ class PostFactory(BaseFactory[BasePost[Any]]):
     def execute(
         self,
         opt_problem: OptimizationProblem,
-        settings_model: BasePostSettings | None = None,
-        **settings: Any,
+        settings: BasePostSettings,
     ) -> BasePost[Any]:
         """Post-process an optimization problem.
 
         Args:
             opt_problem: The optimization problem to be post-processed.
-            settings_model: The post-processor settings as a Pydantic model.
-                If `None`, use `**settings`.
-            **settings: The post-processor settings,
-                including the algorithm name (use the keyword `"post_name"`).
-                These arguments are ignored when `settings_model` is not `None`.
+            settings: The post-processor settings.
 
         Returns:
             The post-processor.
         """
-        post_name = get_class_name(settings_model, settings, class_name_arg="post_name")
-        post = self.create(post_name, opt_problem)
-        post.execute(settings_model=settings_model, **settings)
+        post = self.create(settings._TARGET_CLASS_NAME, opt_problem)
+        post.execute(settings=settings)
         return post
 
 

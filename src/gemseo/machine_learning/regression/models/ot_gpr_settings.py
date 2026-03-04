@@ -17,24 +17,25 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 from typing import Final
 
 from openturns import TNC as OT_TNC
 from openturns import CovarianceModelImplementation
 from openturns import OptimizationAlgorithmImplementation
 from pydantic import Field
-from pydantic import NonNegativeInt
+from pydantic import model_validator
 from strenum import StrEnum
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.algos.doe.base_doe_settings import BaseDOESettings
+from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.machine_learning.regression.models.base_regressor_settings import (
     BaseRegressorSettings,
 )
-from gemseo.typing import StrKeyMapping
 
-DOEAlgorithmName = StrEnum("DOEAlgorithmName", DOE_LIBRARY_FACTORY.algorithms)
-"""The name of a DOE algorithm."""
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class Trend(StrEnum):
@@ -117,21 +118,26 @@ OpenTURNS class instances and covariance model names,
 whose size is equal to the output dimension.""",
     )
 
-    multi_start_n_samples: NonNegativeInt = Field(
-        default=10,
-        description="""The number of starting points of the multi-start optimizer.
+    multi_start_algo_settings: BaseDOESettings | None = Field(
+        default_factory=OT_OPT_LHS_Settings,
+        description="""The settings of the DOE algorithm.
 
-This optimizer is used for the covariance model parameters.""",
+This DOE algorithm is used for the multi-start optimization
+of the covariance model parameters.
+
+The number of samples corresponds to the number of starting points.
+If not set explicitly, its value will be 10.
+If `None`, do not use multi-start optimization.
+""",
     )
 
-    multi_start_algo_name: DOEAlgorithmName = Field(
-        default=DOEAlgorithmName.OT_OPT_LHS,
-        description="""The name of the DOE algorithm.
+    @model_validator(mode="after")
+    def __validate_n_samples(self) -> Self:
+        """Validate the number of starting points."""
+        if (
+            self.multi_start_algo_settings is not None
+            and "n_samples" not in self.multi_start_algo_settings.model_fields_set
+        ):
+            self.multi_start_algo_settings.n_samples = 10
 
-This DOE is used for the multi-start optimization
-of the covariance model parameters.""",
-    )
-
-    multi_start_algo_settings: StrKeyMapping = Field(
-        default_factory=dict, description="The settings of the DOE algorithm."
-    )
+        return self

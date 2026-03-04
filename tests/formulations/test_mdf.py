@@ -153,15 +153,18 @@ create_sellar_mdf = partial(
 def test_mda_settings():
     """Test that the MDA settings are properly handled."""
     mdf = create_sellar_mdf(
-        main_mda_name="MDAGaussSeidel",
-        main_mda_settings={"max_mda_iter": 13},
+        settings=MDF_Settings(
+            main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13)
+        )
     )
     mdf.problem.objective = mdf.create_objective(["obj"])
 
     assert isinstance(mdf.mda, MDAGaussSeidel)
     assert mdf.mda.settings.max_mda_iter == 13
     mdf = create_sellar_mdf(
-        main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13),
+        settings=MDF_Settings(
+            main_mda_settings=MDAGaussSeidel_Settings(max_mda_iter=13)
+        )
     )
 
     assert isinstance(mdf.mda, MDAGaussSeidel)

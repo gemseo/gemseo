@@ -32,7 +32,9 @@ SpaceFillingCriterion = OTOptimalLHS.SpaceFillingCriterion
 class OT_OPT_LHS_Settings(BaseOpenTURNSSettings):  # noqa: N801
     """The settings for the optimized LHS DOE from the OpenTURNS library."""
 
-    n_samples: PositiveInt = Field(description="""The number of samples.""", ge=2)
+    n_samples: PositiveInt = Field(
+        default=2, description="The number of samples.", ge=2
+    )
 
     temperature: TemperatureProfile = Field(
         default=TemperatureProfile.GEOMETRIC,

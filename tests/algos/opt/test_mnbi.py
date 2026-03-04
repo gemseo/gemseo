@@ -29,7 +29,8 @@ from numpy.testing import assert_array_equal
 
 from gemseo import execute_algo
 from gemseo.algos.database import Database
-from gemseo.algos.opt.mnbi.mnbi import MNBI
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaFleming
@@ -57,9 +58,8 @@ def test_mnbi(n_sub_optim, opt_problem):
         opt_problem,
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=100,
         n_sub_optim=n_sub_optim,
-        sub_optim_algo="NLOPT_SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
     )
     assert len(result.pareto_front.f_optima) >= n_sub_optim + 2
 
@@ -77,9 +77,8 @@ def test_min_n_sub_optim():
             Viennet(),
             algo_name="MNBI",
             max_iter=10000,
-            sub_optim_max_iter=100,
             n_sub_optim=3,
-            sub_optim_algo="NLOPT_SLSQP",
+            sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
         )
 
 
@@ -115,9 +114,8 @@ def test_mnbi_parallel(binh_korn):
         binh_korn,
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=100,
         n_sub_optim=n_sub_optim,
-        sub_optim_algo="NLOPT_SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
         n_processes=2,
         xtol_abs=0.0,
     )
@@ -139,12 +137,14 @@ def test_mono_objective_error():
             algo_name="MNBI",
             max_iter=100,
             n_sub_optim=5,
-            sub_optim_algo="SLSQP",
+            sub_optim_algo_settings=SLSQP_Settings(),
         )
 
 
 def test_protected_const(binh_korn):
     """Test that an exception is raised for a protected constraint name."""
+    from gemseo.algos.opt.mnbi.mnbi import MNBI
+
     protected_constraint = MDOFunction(
         lambda x: x,
         name=MNBI._MNBI__SUB_OPTIM_CONSTRAINT_NAME,
@@ -162,9 +162,8 @@ def test_protected_const(binh_korn):
             binh_korn,
             algo_name="MNBI",
             max_iter=10000,
-            sub_optim_max_iter=100,
             n_sub_optim=5,
-            sub_optim_algo="NLOPT_SLSQP",
+            sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
         )
 
 
@@ -175,9 +174,8 @@ def test_debug_mode(tmp_wd, binh_korn, kwargs):
         binh_korn,
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=100,
         n_sub_optim=3,
-        sub_optim_algo="NLOPT_SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
         debug=True,
         **kwargs,
     )
@@ -196,7 +194,7 @@ def test_maximize_objective(binh_korn, enable_function_statistics):
         algo_name="MNBI",
         max_iter=100,
         n_sub_optim=5,
-        sub_optim_algo="SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(),
     )
     assert len(result.pareto_front.f_optima) >= 7
 
@@ -212,9 +210,8 @@ def test_unfeasible_solution(binh_korn):
             binh_korn,
             algo_name="MNBI",
             max_iter=1,
-            sub_optim_max_iter=1,
             n_sub_optim=3,
-            sub_optim_algo="SLSQP",
+            sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=1),
         )
 
 
@@ -224,9 +221,8 @@ def test_skippable_points(caplog):
         Poloni(),
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=5,
         n_sub_optim=30,
-        sub_optim_algo="SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=5),
     )
     assert "Skipping sub-optimization for phi_beta =" in caplog.text
 
@@ -248,9 +244,8 @@ def test_exclusive_settings_error(binh_korn):
             binh_korn,
             algo_name="MNBI",
             max_iter=10000,
-            sub_optim_max_iter=100,
             n_sub_optim=10,
-            sub_optim_algo="NLOPT_SLSQP",
+            sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
             custom_anchor_points=[array([44.5, 14]), array([29.4, 19])],
             custom_phi_betas=[array([38, 17]), array([60, 10])],
         )
@@ -276,9 +271,8 @@ def test_custom_anchor_points_error(binh_korn):
             binh_korn,
             algo_name="MNBI",
             max_iter=10000,
-            sub_optim_max_iter=100,
             n_sub_optim=10,
-            sub_optim_algo="NLOPT_SLSQP",
+            sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
             custom_anchor_points=custom_anchor_points,
         )
 
@@ -294,9 +288,8 @@ def test_custom_anchor_points_error(binh_korn):
             binh_korn,
             algo_name="MNBI",
             max_iter=10000,
-            sub_optim_max_iter=100,
             n_sub_optim=10,
-            sub_optim_algo="NLOPT_SLSQP",
+            sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
             custom_anchor_points=custom_anchor_points,
         )
 
@@ -308,9 +301,8 @@ def test_custom_phi_betas_warning(binh_korn, caplog):
         binh_korn,
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=100,
         n_sub_optim=10,
-        sub_optim_algo="NLOPT_SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
         custom_phi_betas=custom_phi_betas,
     )
     assert (
@@ -339,9 +331,8 @@ def test_custom_phi_betas_error(binh_korn):
             binh_korn,
             algo_name="MNBI",
             max_iter=10000,
-            sub_optim_max_iter=100,
             n_sub_optim=10,
-            sub_optim_algo="NLOPT_SLSQP",
+            sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
             custom_phi_betas=custom_phi_betas,
         )
 
@@ -352,17 +343,15 @@ def test_mnbi_custom_anchor_points(binh_korn):
         binh_korn,
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=100,
         n_sub_optim=10,
-        sub_optim_algo="NLOPT_SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
     )
     result_restart = execute_algo(
         binh_korn,
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=100,
         n_sub_optim=10,
-        sub_optim_algo="NLOPT_SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
         custom_anchor_points=[array([44.5, 14]), array([29.4, 19])],
     )
 
@@ -378,17 +367,15 @@ def test_mnbi_custom_phi_betas(binh_korn):
         binh_korn,
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=100,
         n_sub_optim=10,
-        sub_optim_algo="NLOPT_SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
     )
     result_restart = execute_algo(
         binh_korn,
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=100,
         n_sub_optim=2,
-        sub_optim_algo="NLOPT_SLSQP",
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
         custom_phi_betas=[array([38, 17]), array([60, 10])],
     )
 
@@ -411,17 +398,16 @@ def test_mnbi_normalize_design_space(binh_korn, normalize_design_space):
         binh_korn,
         algo_name="MNBI",
         max_iter=10000,
-        sub_optim_max_iter=100,
         n_sub_optim=10,
-        sub_optim_algo="NLOPT_SLSQP",
-        sub_optim_algo_settings={
-            "normalize_design_space": normalize_design_space,
-            "ftol_abs": 1e-14,
-            "xtol_abs": 1e-14,
-            "ftol_rel": 1e-8,
-            "xtol_rel": 1e-8,
-            "ineq_tolerance": 1e-4,
-        },
+        sub_optim_algo_settings=NLOPT_SLSQP_Settings(
+            max_iter=100,
+            normalize_design_space=normalize_design_space,
+            ftol_abs=1e-14,
+            xtol_abs=1e-14,
+            ftol_rel=1e-8,
+            xtol_rel=1e-8,
+            ineq_tolerance=1e-4,
+        ),
         xtol_abs=0.0,
     )
     assert_allclose(result.pareto_front.f_utopia, [0, 4], atol=1e-7)
@@ -441,8 +427,7 @@ def test_normalize_exception(binh_korn):
         execute_algo(
             binh_korn,
             algo_name="MNBI",
-            max_iter=100,
             n_sub_optim=5,
-            sub_optim_algo="SLSQP",
+            sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
             normalize_design_space=True,
         )

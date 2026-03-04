@@ -196,7 +196,7 @@ design_space_inner_scenario
 inner_scenario = MDOScenario(
     [objective, constraint],
     design_space_inner_scenario,
-    settings=DisciplinaryOpt_Settings(),
+    formulation_settings=DisciplinaryOpt_Settings(),
 )
 inner_scenario.add_objective("f")
 inner_scenario.add_constraint("g", constraint_type="ineq", value=2)
@@ -265,9 +265,9 @@ design_space_outer_scenario
 # and we set the same objective function.
 #
 outer_scenario = MDOScenario(
-    adapted_inner_scenario,
+    [adapted_inner_scenario],
     design_space_outer_scenario,
-    settings=DisciplinaryOpt_Settings(),
+    formulation_settings=DisciplinaryOpt_Settings(),
 )
 outer_scenario.add_objective("f")
 

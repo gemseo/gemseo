@@ -336,14 +336,9 @@ def test_pass_dedicated_newton_options(
     newton_step_args = mda.assembly.compute_newton_step.call_args
     assert mda.settings.linear_solver == mda_linear_solver
     factory = LinearSolverLibraryFactory()
-    library_name = factory.algo_names_to_libraries[mda_linear_solver]
-    settings_model = (
-        factory
-        .get_class(library_name)
-        .ALGORITHM_INFOS[mda_linear_solver]
-        .settings_class
+    mda_linear_solver_settings = factory.create_settings(
+        mda_linear_solver, **mda_linear_solver_settings
     )
-    mda_linear_solver_settings = settings_model(**mda_linear_solver_settings)
     assert mda.settings.linear_solver_settings == mda_linear_solver_settings
     assert newton_step_args.args[2] == newton_linear_solver_name
     del newton_step_args.kwargs["matrix_type"]

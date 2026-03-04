@@ -45,12 +45,7 @@ class BaseAugmentedLagrangianSettings(BaseOptimizerSettings):
         description="""The initial penalty value.""",
     )
 
-    sub_algorithm_name: str = Field(
-        description="""The name of the optimizer used to solve each sub-problem."""
-    )
-
-    sub_algorithm_settings: StrKeyMapping = Field(
-        default_factory=dict,
+    sub_algorithm_settings: BaseOptimizerSettings = Field(
         description="""The settings of the optimizer used to solve each sub-problem.""",
     )
 

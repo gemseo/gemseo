@@ -56,6 +56,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_SLSQP_Settings
@@ -242,7 +243,7 @@ scenario.execute(slsqp_settings)
 # [this page][how-to-deal-with-post-processing].
 #
 # To visualize the optimization history:
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 
 # %%
 # ## Influence of gradient computation method on performance

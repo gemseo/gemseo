@@ -21,13 +21,13 @@ from pathlib import Path  # noqa: TC003
 from typing import TYPE_CHECKING
 
 from pydantic import Field
-from pydantic import NonNegativeInt
 from pydantic import PositiveInt
 from pydantic import field_validator
 from pydantic import model_validator
 
+from gemseo.algos.doe.base_doe_settings import BaseDOESettings
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
-from gemseo.typing import StrKeyMapping  # noqa: TC001
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 if TYPE_CHECKING:
@@ -47,12 +47,6 @@ this, pass the setting `normalize_design_space` to
 `sub_optim_algo_settings`.""",
     )
 
-    sub_optim_algo: str = Field(
-        description=(
-            "The optimization algorithm used to solve the sub-optimization problems."
-        )
-    )
-
     n_sub_optim: PositiveInt = Field(
         default=1,
         description="""The number of sub-optimizations points.
@@ -62,31 +56,19 @@ mNBI generates `n_sub_optim` points on the Pareto front between the
 the number of objectives of the problem.""",
     )
 
-    sub_optim_algo_settings: StrKeyMapping = Field(
-        default_factory=dict,
-        description="""The settings for the sub-optimization algorithm.""",
+    sub_optim_algo_settings: BaseOptimizerSettings = Field(
+        description="The settings for the sub-optimization algorithm. "
+        "Set its `max_iter` field explicitly to take it into account. "
+        "Otherwise, the algorithm will use the main `max_iter`.",
     )
 
-    sub_optim_max_iter: NonNegativeInt = Field(
-        default=0,
-        description="""The maximum number of iterations of the sub-optimization algorithms.
-
-If 0, the `max_iter` value is used.""",  # noqa: E501
-    )
-
-    doe_algo: str = Field(
-        default="PYDOE_FULLFACT",
-        description="""
-            The design of experiments algo for the target points on the Pareto front.
-
-A `fullfactorial` DOE is used default as these tend to be low dimensions,
-usually not more than 3 objectives for a given problem.
-This setting is relevant only for problems with more than 2 objectives.""",  # noqa: E501
-    )
-
-    doe_algo_settings: StrKeyMapping = Field(
-        default_factory=dict,
-        description="""The settings for the DOE algorithm.""",
+    doe_algo_settings: BaseDOESettings = Field(
+        default_factory=PYDOE_FULLFACT_Settings,
+        description="The DOE algorithm settings "
+        "for the target points on the Pareto front."
+        "A full factorial DOE is used default as these tend to be low dimensions, "
+        "usually not more than 3 objectives for a given problem. "
+        "This setting is relevant only for problems with more than 2 objectives.",
     )
 
     debug: bool = Field(
@@ -150,7 +132,8 @@ can be incorrectly resolved.""",
 
     @model_validator(mode="after")
     def __validate_sub_optim_max_iter(self) -> Self:
-        """Check if a sub_optim_max_iter was passed, otherwise use max_iter."""
-        if self.sub_optim_max_iter == 0:
-            self.sub_optim_max_iter = self.max_iter
+        """Finalize sub_optim_algo_settings."""
+        self.sub_optim_algo_settings.enable_progress_bar = False
+        if "max_iter" not in self.sub_optim_algo_settings.model_fields_set:
+            self.sub_optim_algo_settings.max_iter = self.max_iter
         return self

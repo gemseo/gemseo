@@ -28,11 +28,11 @@ class BasePostSettings(BaseSettings):
     """The settings common to all the post-processing classes."""
 
     save: bool = Field(
-        True,
+        default=True,
         description="Whether to save the figure.",
     )
     show: bool = Field(
-        False,
+        default=False,
         description="Whether to display the figure.",
     )
     use_best_iteration_history: bool = Field(

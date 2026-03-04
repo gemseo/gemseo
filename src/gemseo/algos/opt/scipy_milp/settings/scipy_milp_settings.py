@@ -19,5 +19,5 @@ from __future__ import annotations
 from gemseo.algos.opt.base_milp_settings import BaseMILPSettings
 
 
-class SciPyMILP_Settings(BaseMILPSettings):  # noqa: N801
+class MILP_Settings(BaseMILPSettings):  # noqa: N801
     """The SciPy mixed-integer linear programming library setting."""

@@ -32,6 +32,7 @@ from gemseo import get_scenario_inputs_schema
 from gemseo import get_scenario_options_schema
 from gemseo import monitor_scenario
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.post import ScatterPlotMatrix_Settings
 
 # %%
 # In this example, we will discover the different functions of the API to
@@ -95,10 +96,7 @@ scenario = create_scenario(
 )
 scenario.execute(PYDOE_FULLFACT_Settings(n_samples=25))
 scenario.post_process(
-    post_name="ScatterPlotMatrix",
-    variable_names=["x1", "x2", "y"],
-    save=False,
-    show=True,
+    ScatterPlotMatrix_Settings(variable_names=["x1", "x2", "y"], save=False, show=True)
 )
 
 # %%

@@ -30,6 +30,7 @@ from numpy import pi
 from numpy.testing import assert_almost_equal
 
 from gemseo import create_discipline
+from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
@@ -290,6 +291,22 @@ def test_n_samples(
     assert discipline.execution_statistics.n_executions - n_calls == expected_n_samples
 
 
+def test_algo_settings(discipline, parameter_space) -> None:
+    """Check the effect of algo_settings."""
+    analysis = MorrisAnalysis()
+    analysis.compute_samples(
+        [discipline],
+        parameter_space,
+        n_samples=0,
+    )
+    reference = analysis.dataset
+    analysis = MorrisAnalysis()
+    analysis.compute_samples(
+        [discipline], parameter_space, n_samples=0, algo_settings=MC_Settings()
+    )
+    assert not reference.equals(analysis.dataset)
+
+
 def test_compute_indices_output_names(morris) -> None:
     """Check compute_indices with different types for output_names."""
     assert morris.compute_indices(["y1"]).mu
@@ -341,6 +358,16 @@ def test_log(caplog, discipline, parameter_space, enable_discipline_statistics) 
 MorrisAnalysisSamplingPhase
    Disciplines: my_function
    MDO formulation: MDF
+Evaluation problem:
+   Evaluate the functions: y1, y2
+   over the design space:
+      \+------\+-------------------------------\+
+      \| Name \|          Distribution         \|
+      \+------\+-------------------------------\+
+      \|  x1  \| Uniform\(lower=0\.0, upper=1\.0\) \|
+      \|  x2  \| Uniform\(lower=0\.0, upper=1\.0\) \|
+      \|  x3  \| Uniform\(lower=0\.0, upper=1\.0\) \|
+      \+------\+-------------------------------\+
 Running the algorithm MorrisDOE:
     25%\|██▌       \| 1\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
     50%\|█████     \| 2\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]

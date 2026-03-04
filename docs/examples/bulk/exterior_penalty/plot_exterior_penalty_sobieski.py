@@ -51,6 +51,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.post import BasicHistory_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.settings.formulations import MDF_Settings
 from gemseo.utils.discipline import get_all_inputs
@@ -217,10 +218,7 @@ scenario.execute(L_BFGS_B_Settings(max_iter=10))
 # To visualize the optimization history of the constraint violation one can use the
 # [BasicHistory][gemseo.post.basic_history.BasicHistory]:
 scenario.post_process(
-    post_name="BasicHistory",
-    variable_names=["g_1", "g_2", "g_3"],
-    save=False,
-    show=True,
+    BasicHistory_Settings(variable_names=["g_1", "g_2", "g_3"], save=False, show=True)
 )
 # %%
 # This solution is almost feasible.
@@ -258,7 +256,7 @@ from gemseo.settings.opt import L_BFGS_B_Settings  # noqa: E402
 
 scenario_2.execute(L_BFGS_B_Settings(max_iter=1000))
 scenario_2.post_process(
-    post_name="BasicHistory", variable_names=["-y_4"], save=False, show=True
+    BasicHistory_Settings(variable_names=["-y_4"], save=False, show=True)
 )
 
 # %%

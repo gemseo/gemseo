@@ -18,12 +18,15 @@ from numpy import array
 from numpy.testing import assert_almost_equal
 
 from gemseo.algos.doe.oat_doe.oat_doe import OATDOE
+from gemseo.algos.doe.oat_doe.settings.oat_doe_settings import OATDOE_Settings
 
 
 def test_oat_doe():
     """Check OAT DOE algo."""
     oat = OATDOE()
-    a = oat.compute_doe(3, initial_point=array([0.2, 0.8, 0.98]), unit_sampling=True)
+    a = oat.sample_unit_hypercube(
+        3, OATDOE_Settings(initial_point=array([0.2, 0.8, 0.98]))
+    )
     assert_almost_equal(
         a,
         array([
@@ -38,8 +41,9 @@ def test_oat_doe():
 def test_oat_doe_step():
     """Check the step option of the OAT DOE algo."""
     oat = OATDOE()
-    a = oat.compute_doe(
-        3, initial_point=array([0.2, 0.8, 0.98]), unit_sampling=True, step=0.1
+    a = oat.sample_unit_hypercube(
+        3,
+        OATDOE_Settings(initial_point=array([0.2, 0.8, 0.98]), step=0.1),
     )
     assert_almost_equal(
         a,

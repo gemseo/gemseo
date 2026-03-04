@@ -41,6 +41,8 @@ from scipy.optimize import rosen
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
+from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.machine_learning.regression.models.ot_gpr import OTGaussianProcessRegressor
@@ -173,7 +175,8 @@ def test_kriging_predict_on_learning_set(dataset):
 def test_kriging_predict(dataset, x1, x2):
     """Check that the Kriging is not yet good enough to extrapolate."""
     kriging = OTGaussianProcessRegressor(
-        dataset, OTGaussianProcessRegressor_Settings(multi_start_n_samples=1)
+        dataset,
+        OTGaussianProcessRegressor_Settings(multi_start_algo_settings=None),
     )
     kriging.learn()
     x = array([x1, x2])
@@ -298,7 +301,8 @@ def test_trend_type(dataset, trend, shape):
 def test_default_optimizer(dataset):
     """Check that the default optimizer is TNC."""
     model = OTGaussianProcessRegressor(
-        dataset, OTGaussianProcessRegressor_Settings(multi_start_n_samples=1)
+        dataset,
+        OTGaussianProcessRegressor_Settings(multi_start_algo_settings=None),
     )
     with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
         model.learn()
@@ -312,7 +316,7 @@ def test_custom_optimizer(dataset):
     model = OTGaussianProcessRegressor(
         dataset,
         OTGaussianProcessRegressor_Settings(
-            optimizer=optimizer, multi_start_n_samples=0
+            optimizer=optimizer, multi_start_algo_settings=None
         ),
     )
     with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
@@ -348,7 +352,7 @@ def test_custom_optimization_space(dataset, optimization_space_type):
     model = OTGaussianProcessRegressor(
         dataset,
         OTGaussianProcessRegressor_Settings(
-            optimization_space=optimization_space, multi_start_n_samples=0
+            optimization_space=optimization_space, multi_start_algo_settings=None
         ),
     )
     with mock.patch.object(KrigingAlgorithm, "setOptimizationBounds") as method:
@@ -373,7 +377,10 @@ def test_multi_start_optimization(dataset):
 
     # Here we check that multi-start optimization leads to a different solution.
     model = OTGaussianProcessRegressor(
-        dataset, OTGaussianProcessRegressor_Settings(multi_start_n_samples=2)
+        dataset,
+        OTGaussianProcessRegressor_Settings(
+            multi_start_algo_settings=OT_OPT_LHS_Settings(n_samples=2)
+        ),
     )
     model.learn()
     assert model.algo.getCovarianceModel().getFullParameter() != reference_length_scales
@@ -382,9 +389,7 @@ def test_multi_start_optimization(dataset):
     model = OTGaussianProcessRegressor(
         dataset,
         OTGaussianProcessRegressor_Settings(
-            multi_start_algo_name="LHS",
-            multi_start_n_samples=9,
-            multi_start_algo_settings={"strength": 2},
+            multi_start_algo_settings=LHS_Settings(n_samples=9, strength=2),
         ),
     )
     with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
@@ -402,7 +407,12 @@ def test_multi_start_optimization(dataset):
         upper_bound=ot_interval.getUpperBound(),
     )
     doe_algo = DOE_LIBRARY_FACTORY.create("LHS")
-    assert_equal(doe, doe_algo.compute_doe(design_space, n_samples=9, strength=2))
+    assert_equal(
+        doe,
+        doe_algo.sample_space(
+            design_space, settings=LHS_Settings(n_samples=9, strength=2)
+        ),
+    )
 
 
 def test_default_covariance_model(dataset):

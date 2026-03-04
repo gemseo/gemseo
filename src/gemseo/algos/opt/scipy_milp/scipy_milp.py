@@ -38,7 +38,7 @@ from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import SciPyMILP_Settings
+from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import MILP_Settings
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
 from gemseo.utils.compatibility.scipy import get_row
@@ -67,11 +67,11 @@ class ScipyMILPAlgorithmDescription(OptimizationAlgorithmDescription):
     handle_integer_variables: bool = True
     """Whether the optimization algorithm handles integer variables."""
 
-    settings_class: type[SciPyMILP_Settings] = SciPyMILP_Settings
+    settings_class: type[MILP_Settings] = MILP_Settings
     """The option validation model for SciPy linear programming library."""
 
 
-class ScipyMILP(BaseOptimizationLibrary[SciPyMILP_Settings]):
+class ScipyMILP(BaseOptimizationLibrary[MILP_Settings]):
     """SciPy Mixed Integer Linear Programming library interface.
 
     See BaseOptimizationLibrary.
@@ -81,20 +81,19 @@ class ScipyMILP(BaseOptimizationLibrary[SciPyMILP_Settings]):
     """
 
     ALGORITHM_INFOS: ClassVar[dict[str, ScipyMILPAlgorithmDescription]] = {
-        "Scipy_MILP": ScipyMILPAlgorithmDescription(
+        "MILP": ScipyMILPAlgorithmDescription(
             algorithm_name="Branch & Cut algorithm",
             description="Mixed-integer linear programming",
             internal_algorithm_name="milp",
             website="https://docs.scipy.org/doc/scipy/reference/generated/"
             "scipy.optimize.milp.html",
-            settings_class=SciPyMILP_Settings,
         ),
     }
 
     _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = True
     """Whether the library support sparse Jacobians."""
 
-    def __init__(self, algo_name: str = "Scipy_MILP") -> None:  # noqa:D107
+    def __init__(self, algo_name: str = "MILP") -> None:  # noqa:D107
         super().__init__(algo_name)
 
     def _run(

@@ -23,6 +23,7 @@ import re
 import pytest
 from numpy import array
 
+from gemseo.post import ParallelCoordinates_Settings
 from gemseo.post.parallel_coordinates import ParallelCoordinates
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -45,7 +46,7 @@ def test_common_scenario(
     """Check ParallelCoordinates with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective
     opt = ParallelCoordinates(common_problem)
-    opt.execute(save=False)
+    opt.execute(ParallelCoordinates_Settings(save=False))
 
 
 def test_shape_error() -> None:

@@ -21,6 +21,7 @@ import pytest
 from gemseo import create_scenario
 from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.post import Animation_Settings
 from gemseo.post.animation import Animation
 from gemseo.post.factory import POST_FACTORY
 from gemseo.problems.topology_optimization.topopt_initialize import (
@@ -45,12 +46,14 @@ def test_common_scenario(
         variable_names=["obj", "eq", "neg", "pos", "x"],
     )
     output_files = animation.execute(
-        n_repetitions=n_rep,
-        remove_frames=not keep_frames,
-        temporary_database_path=tmp_file,
-        first_iteration=first_iteration,
-        post_processing=post_processing,
-        post_processing_settings=pp_settings,
+        Animation_Settings(
+            n_repetitions=n_rep,
+            remove_frames=not keep_frames,
+            temporary_database_path=tmp_file,
+            first_iteration=first_iteration,
+            post_processing=post_processing,
+            post_processing_settings=pp_settings,
+        )
     )
     for output_file in output_files:
         assert Path(output_file).exists()
@@ -65,8 +68,9 @@ def test_large_common_scenario(large_common_problem, tmp_wd) -> None:
         variable_names=["obj", "eq", "neg", "pos", "x"],
     )
     output_files = opt.execute(
-        post_processing=post_processing,
-        post_processing_settings=pp_settings,
+        Animation_Settings(
+            post_processing=post_processing, post_processing_settings=pp_settings
+        )
     )
     for output_file in output_files:
         assert Path(output_file).exists()
@@ -84,8 +88,9 @@ def test_opt_hist_const(tmp_wd) -> None:
         obj_max=5.0,
     )
     output_files = opt.execute(
-        post_processing=post_processing,
-        post_processing_settings=pp_settings,
+        Animation_Settings(
+            post_processing=post_processing, post_processing_settings=pp_settings
+        )
     )
     for output_file in output_files:
         assert Path(output_file).exists()
@@ -126,9 +131,9 @@ def test_l_shape(tmp_wd) -> None:
     post_processing = POST_FACTORY.create("TopologyView", scenario.formulation.problem)
     pp_settings = post_processing.settings_class(n_x=n_x, n_y=n_y)
     output_files = scenario.post_process(
-        post_name="Animation",
-        post_processing=post_processing,
-        post_processing_settings=pp_settings,
+        Animation_Settings(
+            post_processing=post_processing, post_processing_settings=pp_settings
+        )
     ).output_file_paths
     for output_file in output_files:
         assert output_file.exists()

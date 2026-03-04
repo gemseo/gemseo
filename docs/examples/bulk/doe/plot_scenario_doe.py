@@ -25,6 +25,7 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
@@ -66,7 +67,7 @@ scenario.execute(PYDOE_LHS_Settings(n_samples=30))
 #
 # ## Plot optimization history view
 #
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 
 # %%
 # Note that post-processor settings passed to [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] can be

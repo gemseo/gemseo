@@ -23,6 +23,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
     OTDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class OTBetaDistribution(OTDistribution):
@@ -31,8 +32,7 @@ class OTBetaDistribution(OTDistribution):
     settings_class = OTBetaDistribution_Settings
 
     def __init__(self, settings: OTBetaDistribution_Settings | None = None) -> None:  # noqa: D107
-        if settings is None:
-            settings = OTBetaDistribution_Settings()
+        settings = create_model(OTBetaDistribution_Settings, settings_model=settings)
         super().__init__(
             OTDistribution_Settings(
                 interfaced_distribution="Beta",

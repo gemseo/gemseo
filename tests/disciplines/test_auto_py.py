@@ -203,7 +203,7 @@ def test_fail_wrongly_formatted_function() -> None:
 def test_jac_pb(design_space) -> None:
     """Test the AutoPyDiscipline with Jacobian provided."""
     max_iter = 100
-    algo = "L-BFGS-B"
+    algo = "L_BFGS_B"
 
     pb = OptimizationProblem(design_space)
     pb.objective = MDOFunction(rosen, name="rosen", jac=rosen_der)

@@ -180,35 +180,26 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
     def execute(
         self,
         problem: BaseProblem,
-        settings_model: BaseSettings | None = None,
-        **settings: Any,
+        settings: BaseSettings | None = None,
     ) -> Any:
         """Solve a problem with an algorithm from this library.
 
         Args:
             problem: The problem to be solved.
-            settings_model: The algorithm settings as a Pydantic model.
-                If `None`, use `**settings`.
-            **settings: The algorithm settings.
-                These arguments are ignored when `settings_model` is not `None`.
+            settings: The algorithm settings.
+                If `None`, use the default settings.
 
         Returns:
             The solution found by the algorithm.
         """
         self._problem = problem
         problem.check()
-
-        self._settings = create_model(
-            self.ALGORITHM_INFOS[self.algo_name].settings_class,
-            settings_model=settings_model,
-            **settings,
-        )
-
+        settings_class = self.ALGORITHM_INFOS[self.algo_name].settings_class
+        self._settings = create_model(settings_class, settings_model=settings)
         self._pre_run(problem)
         self._run(problem)
         result = self._get_result(problem)
         self._post_run(problem, result)
-
         self._reset()
         return result
 

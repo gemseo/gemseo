@@ -35,6 +35,7 @@ from scipy.sparse.linalg import spilu
 
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+from gemseo.algos.linear_solvers.scipy_linalg import BICGSTAB_Settings
 from gemseo.algos.linear_solvers.scipy_linalg.scipy_linalg import ScipyLinalgAlgos
 from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRES_Settings
 from gemseo.utils.seeder import SEED
@@ -59,20 +60,13 @@ def test_algo_list() -> None:
         factory.is_available(algo)
 
 
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        {"max_iter": 1000},
-        {"settings_model": LGMRES_Settings(max_iter=1000)},
-    ],
-)
-def test_default(kwargs) -> None:
+def test_default() -> None:
     """Tests the DEFAULT solver."""
     factory = LinearSolverLibraryFactory()
     rng = default_rng(1)
     n = 5
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
-    factory.execute(problem, algo_name="LGMRES", **kwargs)
+    factory.execute(problem, settings=LGMRES_Settings(max_iter=1000))
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
 
@@ -107,7 +101,14 @@ def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> 
             "store_outer_av": True,
             "prepend_outer_v": True,
         })
-    factory.execute(problem, algo_name=algo_name, **options)
+    library_name = factory.algo_names_to_libraries[algo_name]
+    settings = (
+        factory
+        .get_class(library_name)
+        .ALGORITHM_INFOS[algo_name]
+        .settings_class(**options)
+    )
+    factory.execute(problem, settings=settings)
     assert problem.solution is not None
     assert problem.compute_residuals() < RESIDUALS_TOL
 
@@ -118,11 +119,11 @@ def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> 
 def test_common_dtype_cplx() -> None:
     factory = LinearSolverLibraryFactory()
     problem = LinearProblem(eye(2, dtype="complex128"), ones(2))
-    factory.execute(problem, algo_name="LGMRES")
+    factory.execute(problem, settings=LGMRES_Settings())
     assert problem.compute_residuals() < RESIDUALS_TOL
 
     problem = LinearProblem(eye(2), ones(2, dtype="complex128"))
-    factory.execute(problem, algo_name="LGMRES")
+    factory.execute(problem, settings=LGMRES_Settings())
     assert problem.compute_residuals() < RESIDUALS_TOL
 
 
@@ -134,7 +135,12 @@ def test_not_converged(caplog) -> None:
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     lib = factory.create("BICGSTAB")
     caplog.set_level(logging.WARNING)
-    lib.execute(problem, max_iter=2, save_when_fail=True, use_ilu_precond=False)
+    lib.execute(
+        problem,
+        settings=BICGSTAB_Settings(
+            maxiter=2, save_when_fail=True, use_ilu_precond=False
+        ),
+    )
     assert not problem.is_converged
     assert "The linear solver BICGSTAB did not converge." in caplog.text
 
@@ -144,7 +150,12 @@ def test_not_converged(caplog) -> None:
     assert (problem2.lhs == problem.lhs).all()
     assert (problem2.rhs == problem.rhs).all()
 
-    lib.execute(problem, max_iter=2, save_when_fail=True, use_ilu_precond=True)
+    lib.execute(
+        problem,
+        settings=BICGSTAB_Settings(
+            max_iter=2, save_when_fail=True, use_ilu_precond=True
+        ),
+    )
     assert problem.is_converged
 
 
@@ -155,11 +166,9 @@ def test_hard_conv(tmp_wd, seed) -> None:
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     LinearSolverLibraryFactory().execute(
         problem,
-        algo_name="LGMRES",
-        max_iter=3,
-        store_residuals=True,
-        use_ilu_precond=True,
-        rtol=1e-14,
+        settings=LGMRES_Settings(
+            max_iter=3, store_residuals=True, use_ilu_precond=True, rtol=1e-14
+        ),
     )
 
     assert problem.compute_residuals() < 1e-10
@@ -172,13 +181,15 @@ def test_inconsistent_options() -> None:
         ValueError, match=re.escape("matrix and preconditioner have different shapes")
     ):
         LinearSolverLibraryFactory().execute(
-            problem, algo_name="LGMRES", preconditioner=ones((3, 3))
+            problem, settings=LGMRES_Settings(preconditioner=ones((3, 3)))
         )
 
     with pytest.raises(
         ValueError, match=re.escape("shapes of A (2, 2) and x0 (3,) are incompatible")
     ):
-        LinearSolverLibraryFactory().execute(problem, algo_name="LGMRES", x0=ones(3))
+        LinearSolverLibraryFactory().execute(
+            problem, settings=LGMRES_Settings(x0=ones(3))
+        )
 
     with pytest.raises(
         ValueError,
@@ -188,9 +199,7 @@ def test_inconsistent_options() -> None:
     ):
         LinearSolverLibraryFactory().execute(
             problem,
-            algo_name="LGMRES",
-            preconditioner=ones((2, 2)),
-            use_ilu_precond=True,
+            settings=LGMRES_Settings(preconditioner=ones((2, 2)), use_ilu_precond=True),
         )
 
 

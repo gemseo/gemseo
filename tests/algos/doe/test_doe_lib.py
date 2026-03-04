@@ -46,6 +46,7 @@ from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
+from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
@@ -88,12 +89,15 @@ def custom_doe():
 
 def test_fail_sample(lhs) -> None:
     problem = Power2(exception_error=True)
-    lhs.execute(problem, n_samples=4)
+    lhs.execute(problem, settings=PYDOE_LHS_Settings(n_samples=4))
 
 
 def test_evaluate_samples(fullfact) -> None:
     problem = Power2()
-    fullfact.execute(problem, n_samples=2, wait_time_between_samples=1)
+    fullfact.execute(
+        problem,
+        settings=PYDOE_FULLFACT_Settings(n_samples=2, wait_time_between_samples=1),
+    )
 
 
 def test_evaluate_samples_multiproc(fullfact) -> None:
@@ -101,10 +105,12 @@ def test_evaluate_samples_multiproc(fullfact) -> None:
     n_samples = 8
     fullfact.execute(
         problem,
-        n_samples=n_samples,
-        n_processes=2,
-        wait_time_between_samples=0.01,
-        eval_jac=True,
+        settings=PYDOE_FULLFACT_Settings(
+            n_samples=n_samples,
+            n_processes=2,
+            wait_time_between_samples=0.01,
+            eval_jac=True,
+        ),
     )
     new_pb = Power2()
     x_history = problem.database.get_x_vect_history()
@@ -181,35 +187,23 @@ def variables_space():
     return design_space
 
 
-@pytest.mark.parametrize(
-    "settings",
-    [{"n_samples": 4}, {"settings_model": PYDOE_FULLFACT_Settings(n_samples=4)}],
-)
-@pytest.mark.parametrize(
-    ("transformation", "expected_points"),
-    [
-        ({"unit_sampling": True}, [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]),
-        ({}, [[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]]),
-    ],
-)
-def test_compute_doe_from_space(
-    fullfact, variables_space, settings, transformation, expected_points
-) -> None:
+def test_compute_doe_from_space(fullfact, variables_space) -> None:
     """Check the computation of a DOE in a variables space."""
-    points = fullfact.compute_doe(variables_space, **settings, **transformation)
-    assert (points == array(expected_points)).all()
+    points = fullfact.sample_space(
+        variables_space, PYDOE_FULLFACT_Settings(n_samples=4)
+    )
+    assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
 
 
 SAMPLES = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
 
 
-@pytest.mark.parametrize(
-    "settings",
-    [{"samples": SAMPLES}, {"settings_model": CustomDOE_Settings(samples=SAMPLES)}],
-)
-def test_compute_doe_from_dimension(custom_doe, settings):
-    """Check BaseDOELibrary.compute_doe from the dimension of the variables space."""
-    assert_equal(custom_doe.compute_doe(3, **settings), SAMPLES)
+def test_sample_unit_hypercube(custom_doe):
+    """Check BaseDOELibrary.sample_unit_hypercube."""
+    assert_equal(
+        custom_doe.sample_unit_hypercube(3, CustomDOE_Settings(samples=SAMPLES)),
+        SAMPLES,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -258,7 +252,7 @@ def test_pre_run_debug(lhs, caplog) -> None:
     """Check a DEBUG message logged just after sampling the input unit hypercube."""
     caplog.set_level("DEBUG", logger="gemseo")
     problem = Power2()
-    lhs.execute(problem, n_samples=2)
+    lhs.execute(problem, settings=PYDOE_LHS_Settings(n_samples=2))
     message = (
         "The DOE algorithm PYDOE_LHS of PyDOELibrary has generated 2 samples "
         "in the input unit hypercube of dimension 3."
@@ -278,11 +272,12 @@ def test_seed(algo_name) -> None:
     """Check the use of the seed at the BaseDOELibrary level."""
     problem = Power2()
     library = DOE_LIBRARY_FACTORY.create(algo_name)
+    settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2)
 
     # The BaseDOELibrary has a seed and increments it
     # at the beginning of each execution.
     assert library.seed == 0
-    library.execute(problem, n_samples=2)
+    library.execute(problem, settings=settings)
     assert library.seed == 1
     assert len(problem.database) == 2
 
@@ -293,7 +288,7 @@ def test_seed(algo_name) -> None:
     problem.reset(
         database=False, design_space=False, function_calls=False, preprocessing=False
     )
-    library.execute(problem, n_samples=2)
+    library.execute(problem, settings=settings)
     assert library.seed == 2
     assert len(problem.database) == 4
 
@@ -306,9 +301,15 @@ def test_seed(algo_name) -> None:
         database=False, design_space=False, function_calls=False, preprocessing=False
     )
     if algo_name == "PYDOE_LHS":
-        library.execute(problem, n_samples=2, random_state=2)
+        settings = library.ALGORITHM_INFOS[algo_name].settings_class(
+            n_samples=2, random_state=2
+        )
+        library.execute(problem, settings=settings)
     else:
-        library.execute(problem, n_samples=2, seed=2)
+        settings = library.ALGORITHM_INFOS[algo_name].settings_class(
+            n_samples=2, seed=2
+        )
+        library.execute(problem, settings=settings)
 
     assert library.seed == 3
     # There is no new evaluation in the database:
@@ -318,7 +319,8 @@ def test_seed(algo_name) -> None:
     problem.reset(
         database=False, design_space=False, function_calls=False, preprocessing=False
     )
-    library.execute(problem, n_samples=2)
+    settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2)
+    library.execute(problem, settings=settings)
     assert library.seed == 4
     # There are new evaluations in the database:
     assert len(problem.database) == 6
@@ -382,10 +384,10 @@ def test_uunormalized_components(mc, l_b, u_b) -> None:
 
     error_message = "The components 2, 3 and 4 of the design space are unbounded."
     with pytest.raises(ValueError, match=re.escape(error_message)):
-        mc.compute_doe(design_space, n_samples=3)
+        mc.sample_space(design_space, MC_Settings(n_samples=3))
 
     with pytest.raises(ValueError, match=re.escape(error_message)):
-        mc.execute(problem, n_samples=3)
+        mc.execute(problem, settings=MC_Settings(n_samples=3))
 
 
 def test_uunormalized_components_with_parameter_space(mc) -> None:
@@ -399,8 +401,8 @@ def test_uunormalized_components_with_parameter_space(mc) -> None:
     problem = OptimizationProblem(parameter_space)
     problem.objective = MDOFunction(sum, name="f")
 
-    mc.compute_doe(parameter_space, n_samples=3)
-    mc.execute(problem, n_samples=3)
+    mc.sample_space(parameter_space, MC_Settings(n_samples=3))
+    mc.execute(problem, settings=MC_Settings(n_samples=3))
 
 
 def f(x):
@@ -433,9 +435,11 @@ def test_callback(custom_doe, n_processes, problem):
     counter = Counter()
     custom_doe.execute(
         problem,
-        samples=array([[1.0], [2.0]]),
-        n_processes=n_processes,
-        callbacks=(counter.callback,),
+        settings=CustomDOE_Settings(
+            samples=array([[1.0], [2.0]]),
+            n_processes=n_processes,
+            callbacks=(counter.callback,),
+        ),
     )
     assert counter.total == 6
 
@@ -449,10 +453,12 @@ def test_use_database(
     """Check the option use_database."""
     custom_doe.execute(
         problem,
-        samples=array([[1.0], [2.0]]),
-        n_processes=n_processes,
-        use_database=use_database,
-        enable_progress_bar=enable_progress_bar,
+        settings=CustomDOE_Settings(
+            samples=array([[1.0], [2.0]]),
+            n_processes=n_processes,
+            use_database=use_database,
+            enable_progress_bar=enable_progress_bar,
+        ),
     )
     assert ("100%" in caplog.text) is enable_progress_bar
     assert bool(problem.database) is use_database
@@ -539,9 +545,7 @@ def test_eval_func_and_eval_jac(eval_func, eval_jac):
     problem = Power2()
     SciPyDOE("MC").execute(
         problem,
-        n_samples=1,
-        eval_jac=eval_jac,
-        eval_func=eval_func,
+        settings=MC_Settings(n_samples=1, eval_jac=eval_jac, eval_func=eval_func),
     )
     database = problem.database
     last_item = database.last_item
@@ -632,17 +636,21 @@ def test_preprocessors(custom_doe, n_processes, add_pre_processors):
         preprocessors = ()
     custom_doe.execute(
         problem,
-        samples=array([[1.0, 1.0, 1.0]]),
-        preprocessors=preprocessors,
-        n_processes=n_processes,
+        settings=CustomDOE_Settings(
+            samples=array([[1.0, 1.0, 1.0]]),
+            preprocessors=preprocessors,
+            n_processes=n_processes,
+        ),
     )
     assert len(problem.database) == 1
     if add_pre_processors:
         assert list(preprocessor.tuples) == [(0, 0)]
     custom_doe.execute(
         problem,
-        samples=array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]]),
-        preprocessors=preprocessors,
+        settings=CustomDOE_Settings(
+            samples=array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]]),
+            preprocessors=preprocessors,
+        ),
     )
     assert len(problem.database) == 3
     if add_pre_processors:

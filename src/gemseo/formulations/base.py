@@ -90,7 +90,6 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     __disciplines: tuple[Discipline, ...]
     """The original disciplines."""
 
-    # TODO: API: rename to settings_class.
     settings_class: ClassVar[type[T]]
     """The type of formulation settings."""
 
@@ -101,8 +100,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         problem: EvaluationProblem,
         disciplines: Sequence[Discipline],
-        settings_model: T | None = None,
-        **settings: Any,
+        settings: T | None = None,
     ) -> None:
         r"""
         Args:
@@ -110,15 +108,11 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
                 to which the evaluation functions will be attached.
             disciplines: The disciplines
                 from which the evaluation functions will be created.
-            settings_model: The settings of the formulation as a Pydantic model.
-                If `None`, use `**settings`.
-            **settings: The settings of the formulation.
-                This argument is ignored when `settings_model` is not `None`.
+            settings: The settings of the formulation.
+                If `None`, use the default settings.
         """  # noqa: D205, D212, D415
         self.extra_constraint_functions = []
-        self._settings = create_model(
-            self.settings_class, settings_model=settings_model, **settings
-        )
+        self._settings = create_model(self.settings_class, settings_model=settings)
         self.__disciplines = tuple(disciplines)
         self.__check_disciplines()
         self.problem = problem

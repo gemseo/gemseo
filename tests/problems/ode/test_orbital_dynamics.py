@@ -30,6 +30,12 @@ from numpy import pi
 from numpy import sqrt
 
 from gemseo.algos.ode.factory import ODESolverLibraryFactory
+from gemseo.algos.ode.scipy_ode.settings.bdf import BDF_Settings
+from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853_Settings
+from gemseo.algos.ode.scipy_ode.settings.lsoda import LSODA_Settings
+from gemseo.algos.ode.scipy_ode.settings.radau import Radau_Settings
+from gemseo.algos.ode.scipy_ode.settings.rk23 import RK23_Settings
+from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.problems.ode.orbital_dynamics import OrbitalDynamics
 
 if TYPE_CHECKING:
@@ -37,23 +43,23 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize(
-    ("algo_name", "eccentricity", "atol"),
+    ("settings_class", "eccentricity", "atol"),
     [
-        ("RK45", 0.5, 1.0e-2),
-        ("RK23", 0.5, 1.0e-3),
-        ("DOP853", 0.5, 1.0e-3),
-        ("Radau", 0.5, 1.0e-3),
-        ("BDF", 0.5, 1.0e-3),
-        ("LSODA", 0.5, 1.0e-2),
-        ("RK45", 0, 1.0e-2),
-        ("RK45", 0.1, 1.0e-2),
-        ("RK45", 0.8, 1.0e-2),
-        ("Radau", 0.1, 1.0e-3),
-        ("Radau", 0.0, 1.0e-3),
-        ("Radau", 0.8, 1.0e-3),
+        (RK45_Settings, 0.5, 1.0e-2),
+        (RK23_Settings, 0.5, 1.0e-3),
+        (DOP853_Settings, 0.5, 1.0e-3),
+        (Radau_Settings, 0.5, 1.0e-3),
+        (BDF_Settings, 0.5, 1.0e-3),
+        (LSODA_Settings, 0.5, 1.0e-2),
+        (RK45_Settings, 0, 1.0e-2),
+        (RK45_Settings, 0.1, 1.0e-2),
+        (RK45_Settings, 0.8, 1.0e-2),
+        (Radau_Settings, 0.1, 1.0e-3),
+        (Radau_Settings, 0.0, 1.0e-3),
+        (Radau_Settings, 0.8, 1.0e-3),
     ],
 )
-def test_orbital(algo_name, eccentricity, atol) -> None:
+def test_orbital(settings_class, eccentricity, atol) -> None:
     """Solve the orbital problem, checking that some characteristics of the elliptic
     orbit are verified:
     1) Vis Viva relation between position and velocity of the orbiting body;
@@ -63,7 +69,7 @@ def test_orbital(algo_name, eccentricity, atol) -> None:
     """
     times = linspace(0, 7, 50)
     problem = OrbitalDynamics(eccentricity=eccentricity, times=times)
-    ODESolverLibraryFactory().execute(problem, algo_name=algo_name, rtol=1.0e-5)
+    ODESolverLibraryFactory().execute(problem, settings=settings_class(rtol=1.0e-5))
     x_exact, y_exact = problem.compute_analytic_solution(times)
 
     def check_orbital_constants(
@@ -131,10 +137,10 @@ def test_orbital(algo_name, eccentricity, atol) -> None:
         yy=problem.result.state_trajectories[1],
         vvx=problem.result.state_trajectories[2],
         vvy=problem.result.state_trajectories[3],
-        algo_name_msg=algo_name,
+        algo_name_msg=settings_class._TARGET_CLASS_NAME,
     )
 
-    if algo_name == "RK45":
+    if settings_class._TARGET_CLASS_NAME == "RK45":
         check_orbital_constants(tt=times, xx=x_exact, yy=y_exact)
 
     assert problem.result.algorithm_has_converged

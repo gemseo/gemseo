@@ -28,6 +28,7 @@ from gemseo.uncertainty.distributions.scipy.distribution_settings import (
 from gemseo.uncertainty.distributions.scipy.triangular_settings import (
     SPTriangularDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class SPTriangularDistribution(SPDistribution):
@@ -38,8 +39,9 @@ class SPTriangularDistribution(SPDistribution):
     def __init__(  # noqa: D107
         self, settings: SPTriangularDistribution_Settings | None = None
     ) -> None:
-        if settings is None:
-            settings = SPTriangularDistribution_Settings()
+        settings = create_model(
+            SPTriangularDistribution_Settings, settings_model=settings
+        )
         super().__init__(
             SPDistribution_Settings(
                 interfaced_distribution="triang",

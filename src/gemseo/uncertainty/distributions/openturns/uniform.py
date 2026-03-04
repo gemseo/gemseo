@@ -28,6 +28,7 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class OTUniformDistribution(OTDistribution):
@@ -36,8 +37,7 @@ class OTUniformDistribution(OTDistribution):
     settings_class = OTUniformDistribution_Settings
 
     def __init__(self, settings: OTUniformDistribution_Settings | None = None) -> None:  # noqa: D107
-        if settings is None:
-            settings = OTUniformDistribution_Settings()
+        settings = create_model(OTUniformDistribution_Settings, settings_model=settings)
         super().__init__(
             OTDistribution_Settings(
                 interfaced_distribution="Uniform",

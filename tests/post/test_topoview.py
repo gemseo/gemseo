@@ -18,6 +18,7 @@ import pytest
 
 from gemseo import create_scenario
 from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
+from gemseo.post import TopologyView_Settings
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
@@ -60,11 +61,12 @@ def test_l_shape(scenario_and_dimensions) -> None:
     Here we consider the design value.
     """
     scenario_and_dimensions[0].post_process(
-        post_name="TopologyView",
-        n_x=scenario_and_dimensions[1],
-        n_y=scenario_and_dimensions[2],
-        save=False,
-        iterations=1,
+        TopologyView_Settings(
+            n_x=scenario_and_dimensions[1],
+            n_y=scenario_and_dimensions[2],
+            save=False,
+            iterations=1,
+        )
     )
 
 
@@ -75,12 +77,13 @@ def test_l_shape_xphys(scenario_and_dimensions) -> None:
     Here we consider the value of an observable.
     """
     scenario_and_dimensions[0].post_process(
-        post_name="TopologyView",
-        n_x=scenario_and_dimensions[1],
-        n_y=scenario_and_dimensions[2],
-        save=False,
-        iterations=1,
-        observable="xPhys",
+        TopologyView_Settings(
+            n_x=scenario_and_dimensions[1],
+            n_y=scenario_and_dimensions[2],
+            save=False,
+            iterations=1,
+            observable="xPhys",
+        )
     )
 
 
@@ -91,8 +94,7 @@ def test_l_shape_last_iter(scenario_and_dimensions) -> None:
     Here we consider the last iteration.
     """
     scenario_and_dimensions[0].post_process(
-        post_name="TopologyView",
-        n_x=scenario_and_dimensions[1],
-        n_y=scenario_and_dimensions[2],
-        save=False,
+        TopologyView_Settings(
+            n_x=scenario_and_dimensions[1], n_y=scenario_and_dimensions[2], save=False
+        )
     )

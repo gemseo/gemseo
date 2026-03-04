@@ -28,6 +28,7 @@ from gemseo.uncertainty.distributions.scipy.distribution_settings import (
 from gemseo.uncertainty.distributions.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class SPUniformDistribution(SPDistribution):
@@ -36,8 +37,7 @@ class SPUniformDistribution(SPDistribution):
     settings_class = SPUniformDistribution_Settings
 
     def __init__(self, settings: SPUniformDistribution_Settings | None = None) -> None:  # noqa: D107
-        if settings is None:
-            settings = SPUniformDistribution_Settings()
+        settings = create_model(SPUniformDistribution_Settings, settings_model=settings)
         super().__init__(
             SPDistribution_Settings(
                 interfaced_distribution="uniform",

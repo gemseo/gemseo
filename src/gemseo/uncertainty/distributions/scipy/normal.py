@@ -28,6 +28,7 @@ from gemseo.uncertainty.distributions.scipy.distribution_settings import (
 from gemseo.uncertainty.distributions.scipy.normal_settings import (
     SPNormalDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class SPNormalDistribution(SPDistribution):
@@ -36,8 +37,7 @@ class SPNormalDistribution(SPDistribution):
     settings_class = SPNormalDistribution_Settings
 
     def __init__(self, settings: SPNormalDistribution_Settings | None = None) -> None:  # noqa: D107
-        if settings is None:
-            settings = SPNormalDistribution_Settings()
+        settings = create_model(SPNormalDistribution_Settings, settings_model=settings)
         super().__init__(
             SPDistribution_Settings(
                 interfaced_distribution="norm",

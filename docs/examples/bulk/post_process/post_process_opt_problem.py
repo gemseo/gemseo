@@ -28,6 +28,7 @@ from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.post import BasicHistory_Settings
 
 # %%
 # We consider a minimization problem over the interval $[0,1]$
@@ -49,7 +50,7 @@ execute_algo(optimization_problem, "NLOPT_COBYLA", max_iter=10)
 # Then,
 # we can post-process this [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
 # with the function [execute_post()][gemseo.execute_post]:
-execute_post(optimization_problem, post_name="BasicHistory", variable_names=["y"])
+execute_post(optimization_problem, BasicHistory_Settings(variable_names=["y"]))
 
 # %%
 # !!! note

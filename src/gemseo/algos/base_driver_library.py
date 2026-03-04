@@ -273,7 +273,6 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
     def _check_integer_handling(
         self,
         design_space: DesignSpace,
-        force_execution: bool,
     ) -> None:
         """Check if the algo handles integer variables.
 
@@ -281,9 +280,6 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
 
         Args:
             design_space: The design space of the problem.
-            force_execution: Whether to force the execution of the algorithm when
-                the problem includes integer variables and the algo does not handle
-                them.
 
         Raises:
             ValueError: If `force_execution` is set to `False` and
@@ -294,7 +290,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             design_space.has_integer_variables
             and not self.ALGORITHM_INFOS[self._algo_name].handle_integer_variables
         ):
-            if not force_execution:
+            if not self._settings.skip_int_check:
                 msg = (
                     f"Algorithm {self._algo_name} is not adapted to the problem, "
                     "it does not handle integer variables.\n"
@@ -314,29 +310,12 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
         """Whether is solving an optimization problem."""
         return isinstance(self._problem, OptimizationProblem)
 
-    # TODO: API: move the following arguments into the settings_model
-    # - eval_obs_jac
-    # - skip_int_check
-    # - max_design_space_dimension_to_log
     def execute(
         self,
         problem: EvaluationProblem,
-        eval_obs_jac: bool = False,
-        skip_int_check: bool = False,
-        max_design_space_dimension_to_log: int = 40,
-        settings_model: BaseDriverSettings | None = None,
-        **settings: Any,
+        settings: BaseDriverSettings | None = None,
     ) -> OptimizationResult:
         """
-        Args:
-            eval_obs_jac: Whether to evaluate the Jacobian of the observables.
-            skip_int_check: Whether to skip the integer variable handling check
-                of the selected algorithm.
-            max_design_space_dimension_to_log: The maximum dimension of a design space
-                to be logged.
-                If this number is higher than the dimension of the design space
-                then the design space will not be logged.
-
         Raises:
             ValueError: If there is no function in the problem.
         """  # noqa: D205, D212
@@ -346,13 +325,10 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             raise ValueError(msg)
 
         self._check_algorithm(problem)
-        self._check_integer_handling(problem.design_space, skip_int_check)
-
         self._settings = create_model(
-            self.ALGORITHM_INFOS[self.algo_name].settings_class,
-            settings_model=settings_model,
-            **settings,
+            self.ALGORITHM_INFOS[self.algo_name].settings_class, settings_model=settings
         )
+        self._check_integer_handling(problem.design_space)
 
         solve_optimization_problem = self._is_solving_optimization_problem
         if solve_optimization_problem:
@@ -369,7 +345,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             is_function_input_normalized=self._settings.normalize_design_space,
             use_database=self._settings.use_database,
             round_ints=self._settings.round_ints,
-            eval_obs_jac=eval_obs_jac,
+            eval_obs_jac=self._settings.eval_obs_jac,
             support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
             store_jacobian=self._settings.store_jacobian,
             # Base drivers have no 'vectorize' option,
@@ -395,7 +371,10 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             )
         if self._settings.log_problem:
             LOGGER.info("%s", problem)
-            if problem.design_space.dimension <= max_design_space_dimension_to_log:
+            if (
+                problem.design_space.dimension
+                <= self._settings.max_design_space_dimension_to_log
+            ):
                 log = MultiLineString()
                 log.indent()
                 log.add("over the design space:")
@@ -458,7 +437,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
             self._post_run(
                 problem,
                 result,
-                max_design_space_dimension_to_log,
+                self._settings.max_design_space_dimension_to_log,
             )
 
         self._reset()

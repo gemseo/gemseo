@@ -39,10 +39,12 @@ from gemseo.algos.base_driver_library import BaseDriverLibrary
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.collections.functions import Functions
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -118,7 +120,9 @@ def test_progress_bar(enable_progress_bar, enable_logging, caplog) -> None:
     enable = configuration.logging.enable
     configuration.logging.enable = enable_logging
     driver = OPTIMIZATION_LIBRARY_FACTORY.create("SLSQP")
-    driver.execute(Power2(), enable_progress_bar=enable_progress_bar)
+    driver.execute(
+        Power2(), settings=SLSQP_Settings(enable_progress_bar=enable_progress_bar)
+    )
     use_progress_bar = enable_logging and enable_progress_bar
     assert isinstance(driver._progress_bar, ProgressBar) is use_progress_bar
     assert (
@@ -209,7 +213,9 @@ def test_clear_listeners(name):
     problem = Power2()
     getattr(problem.database, f"add_{name}")(sum)
     driver = CustomDOE()
-    driver.execute(problem, samples=array([[-0.5, 0.0, 0.5]]))
+    driver.execute(
+        problem, settings=CustomDOE_Settings(samples=array([[-0.5, 0.0, 0.5]]))
+    )
     assert getattr(problem.database, f"_Database__{name}s") == [sum]
 
 
@@ -222,8 +228,10 @@ def test_max_design_space_dimension_to_log(max_dimension, caplog):
     ).replace("\n", "\n      ")
     CustomDOE().execute(
         problem,
-        samples=full((1, 3), pow(0.9, 1.0 / 3.0)),
-        max_design_space_dimension_to_log=max_dimension,
+        settings=CustomDOE_Settings(
+            samples=full((1, 3), pow(0.9, 1.0 / 3.0)),
+            max_design_space_dimension_to_log=max_dimension,
+        ),
     )
 
     # Check the logging of the initial design space
@@ -268,7 +276,9 @@ def test_reaching_max_time_does_not_stop_storing():
     )
     n_samples = 100
     with mock.patch.object(base_driver_library, "time", MockedTime()):
-        SciPyDOE("MC").execute(problem, n_samples=n_samples, max_time=1)
+        SciPyDOE("MC").execute(
+            problem, settings=MC_Settings(n_samples=n_samples, max_time=1)
+        )
 
     # Reaching maximum time stops iterating.
     assert len(problem.database) < n_samples

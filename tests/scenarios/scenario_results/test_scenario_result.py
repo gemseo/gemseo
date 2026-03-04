@@ -22,6 +22,7 @@ from pathlib import Path
 import pytest
 from numpy import array
 
+from gemseo.post import BasicHistory_Settings
 from gemseo.post.basic_history import BasicHistory
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 
@@ -62,7 +63,7 @@ def test_plot(scenario) -> None:
     scenario.execute()
     assert isinstance(
         ScenarioResult(scenario).plot(
-            "BasicHistory", variable_names=["x"], save=False, show=False
+            BasicHistory_Settings(variable_names=["x"], save=False, show=False)
         ),
         BasicHistory,
     )

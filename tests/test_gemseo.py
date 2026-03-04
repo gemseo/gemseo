@@ -104,6 +104,7 @@ from gemseo.machine_learning.regression.models.rbf import RBFRegressor
 from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.mda.base import BaseMDA
 from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
+from gemseo.post import OptHistoryView_Settings
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -197,7 +198,7 @@ def test_get_algorithm_options_schema() -> None:
     """Test that all available options are printed."""
     schema_dict = get_algorithm_options_schema("SLSQP")
     assert "properties" in schema_dict
-    assert len(schema_dict["properties"]) == 23
+    assert len(schema_dict["properties"]) == 26
 
     schema_json = get_algorithm_options_schema("SLSQP", output_json=True)
     out_dict = json.loads(schema_json)
@@ -295,7 +296,9 @@ def test_execute_post(scenario, obj_type, tmp_wd) -> None:
 def test_execute_post_with_optimization_dataset(scenario):
     """Test the method execute_post with an OptimizationDataset."""
     dataset = scenario.formulation.problem.to_dataset(group_functions=True)
-    post = execute_post(dataset, post_name="OptHistoryView", save=False, show=False)
+    post = execute_post(
+        dataset, settings_model=OptHistoryView_Settings(save=False, show=False)
+    )
     assert isinstance(post, OptHistoryView)
 
 
@@ -414,7 +417,7 @@ def test_get_scenario_inputs_schema() -> None:
 def test_exec_algo() -> None:
     """Test the execution of an algorithm with the Rosenbrock problem."""
     problem = Rosenbrock()
-    sol = execute_algo(problem, algo_name="L-BFGS-B", max_iter=200)
+    sol = execute_algo(problem, algo_name="L_BFGS_B", max_iter=200)
     assert abs(sol.f_opt) < 1e-8
 
     sol = execute_algo(problem, algo_name="LHS", algo_type="doe", n_samples=200)
@@ -450,7 +453,7 @@ def test_get_available_opt_algorithms() -> None:
     """Check that the optimization algorithms are retrieved correctly."""
     algos = get_available_opt_algorithms()
     assert "SLSQP" in algos
-    assert "L-BFGS-B" in algos
+    assert "L_BFGS_B" in algos
     assert "TNC" in algos
 
 
@@ -846,10 +849,28 @@ def test_compute_doe(
     variables_space, settings, transformation, expected_points
 ) -> None:
     """Check the computation of a DOE in a variables space."""
-    points = compute_doe(
+    doe = compute_doe(
         variables_space, algo_name="PYDOE_FULLFACT", **settings, **transformation
     )
-    assert (points == array(expected_points)).all()
+    assert (doe == array(expected_points)).all()
+
+
+def test_compute_doe_unit_hypercube(variables_space) -> None:
+    """Check the computation of a DOE in the unit hypercube."""
+    doe = compute_doe(3, settings_model=PYDOE_FULLFACT_Settings(n_samples=8))
+    assert (
+        doe
+        == array([
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [1.0, 0.0, 1.0],
+            [0.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0],
+        ])
+    ).all()
 
 
 def test_import_analytic_discipline(tmp_wd) -> None:

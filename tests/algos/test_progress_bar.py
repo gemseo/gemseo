@@ -37,6 +37,7 @@ from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
+from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.progress_bar_data.data import ProgressBarData
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
@@ -58,6 +59,10 @@ class TestDesc(OptimizationAlgorithmDescription):
     """Test driver."""
 
     library_name: str = "Test"
+
+
+class TestDriver_Settings(BaseOptimizerSettings):  # noqa: N801
+    """The settings of Test Driver."""
 
 
 class ProgressOpt(BaseOptimizationLibrary):
@@ -101,7 +106,7 @@ def test_progress_bar(
     with caplog.at_level(logging.INFO):
         lib = ProgressOpt(offsets, constraints_before_obj, "TestDriver")
         f, problem = objective_and_problem_for_tests
-        lib.execute(problem, max_iter=10)
+        lib.execute(problem, settings=TestDriver_Settings(max_iter=10))
         for k in range(len(offsets) + 1):
             assert f"{k * 10}%" in caplog.text
         count = zeros(len(offsets))
@@ -158,9 +163,7 @@ def test_parallel_doe(caplog, offsets, objective_and_problem_for_tests) -> None:
 
         i_k_0 = atleast_2d(array([offsets]) * 10 + 5).T
         custom_doe.execute(
-            problem=problem,
-            samples=i_k_0,
-            n_processes=4,
+            problem, settings=CustomDOE_Settings(samples=i_k_0, n_processes=4)
         )
         for k in range(len(offsets) + 1):
             assert f"{k * 10}%" in caplog.text
@@ -201,7 +204,7 @@ def test_feasibility(caplog, n_processes):
     )
     CustomDOE().execute(
         problem,
-        settings_model=CustomDOE_Settings(
+        settings=CustomDOE_Settings(
             samples=array([[-1.0, -1.0], [0.5, 0.5], [-0.5, -0.5]]),
             n_processes=n_processes,
         ),

@@ -37,6 +37,7 @@ from gemseo import generate_n2_plot
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.scenarios.mdo import MDOScenario
 
@@ -105,7 +106,7 @@ design_space
 scenario = MDOScenario(
     disciplines,
     design_space,
-    settings=MDF_Settings(
+    formulation_settings=MDF_Settings(
         main_mda_settings=MDAGaussSeidel_Settings(
             tolerance=1e-14,
             max_mda_iter=50,
@@ -188,7 +189,7 @@ scenario.optimization_result
 # %%
 # The scenario can also be post-processed with the
 # [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process]] method.
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 
 # %%
 # ## Key takeaways

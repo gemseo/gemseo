@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import pytest
 
+from gemseo.post import BasicHistory_Settings
 from gemseo.post.basic_history import BasicHistory
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -50,7 +51,9 @@ def test_common_scenario(
     """Check BasicHistory with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective
     opt = BasicHistory(common_problem)
-    opt.execute(variable_names=variable_names, save=False, **options)
+    opt.execute(
+        BasicHistory_Settings(variable_names=variable_names, save=False, **options)
+    )
 
 
 @pytest.mark.parametrize("baseline_images", [("BasicHistory_many_iterations",)])
@@ -58,7 +61,11 @@ def test_common_scenario(
 def test_large_common_scenario(baseline_images, large_common_problem) -> None:
     """Check BasicHistory with a common problem and many iterations."""
     opt = BasicHistory(large_common_problem)
-    opt.execute(variable_names=["obj", "eq", "neg", "pos", "x"], save=False)
+    opt.execute(
+        BasicHistory_Settings(
+            variable_names=["obj", "eq", "neg", "pos", "x"], save=False
+        )
+    )
 
 
 @pytest.mark.parametrize(
@@ -75,7 +82,5 @@ def test_use_best_iteration_history(
     """Check the effect of use_best_iteration_history."""
     opt = BasicHistory(common_problem_lhs_)
     opt.execute(
-        variable_names=["rosen", "x"],
-        save=False,
-        **options,
+        BasicHistory_Settings(variable_names=["rosen", "x"], save=False, **options)
     )

@@ -94,7 +94,7 @@ def database(design_space, eval_jac) -> Database:
     """The reference database."""
     db = Database(input_space=design_space)
     lib = SciPyDOE("MC")
-    samples = lib.compute_doe(design_space, n_samples=N_SAMPLES)
+    samples = lib.sample_space(design_space, MC_Settings(n_samples=N_SAMPLES))
     for sample in samples:
         db.store(sample, {"out": f_vectorized(sample)})
         if eval_jac:
@@ -193,10 +193,12 @@ def test_doe_vectorize_evaluation_problem(
     lib = SciPyDOE("MC")
     lib.execute(
         problem,
-        n_samples=N_SAMPLES,
-        vectorize=vectorize,
-        eval_jac=eval_jac,
-        callbacks=(callback,),
+        settings=MC_Settings(
+            n_samples=N_SAMPLES,
+            vectorize=vectorize,
+            eval_jac=eval_jac,
+            callbacks=(callback,),
+        ),
     )
 
     # Check the number of calls to the ProblemFunction.
@@ -236,7 +238,12 @@ def test_doe_vectorize_optimization_problem(
     problem.objective = MDOFunction(f_vectorized, name="out", jac=dfdx_vectorized)
 
     lib = SciPyDOE("MC")
-    lib.execute(problem, n_samples=N_SAMPLES, vectorize=vectorize, eval_jac=eval_jac)
+    lib.execute(
+        problem,
+        settings=MC_Settings(
+            n_samples=N_SAMPLES, vectorize=vectorize, eval_jac=eval_jac
+        ),
+    )
 
     # Check the number of calls to the ProblemFunction.
     assert problem.objective.n_calls == 1 if vectorize else N_SAMPLES

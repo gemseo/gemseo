@@ -26,9 +26,7 @@ The available GEMSEO post-processors require different configuration settings to
 post-processor settings, either one by one:
 
 ``` python
-scenario.post_process(
-    post_name="BasicHistory", variable_names=["x_shared"], save=False, show=True
-)
+scenario.post_process(BasicHistory_Settings(variable_names=["x_shared"], save=False, show=True))
 ```
 
 or via their associated Pydantic model:
@@ -36,9 +34,7 @@ or via their associated Pydantic model:
 ``` python
 from gemseo.settings.post import BasicHistory_Settings
 
-scenario.post_process(
-    settings_model=BasicHistory_Settings(variable_names=["x_shared"], save=False, show=True)
-)
+scenario.post_process(BasicHistory_Settings(variable_names=["x_shared"], save=False, show=True))
 ```
 
 The advantage of using the Pydantic model directly is that IDEs provide auto completion for Pydantic models. Another

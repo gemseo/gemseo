@@ -30,6 +30,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
+from gemseo.post import OptHistoryView_Settings
 
 # %%
 # We consider a minimization problem over the interval $[0,1]$
@@ -51,7 +52,7 @@ scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 # Then,
 # we can post-process this [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with an [OptHistoryView][gemseo.post.opt_history_view.OptHistoryView].
 opt_post_processor = scenario.post_process(
-    post_name="OptHistoryView", show=True, save=False
+    OptHistoryView_Settings(save=False, show=True)
 )
 
 # %%

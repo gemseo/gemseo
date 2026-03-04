@@ -177,7 +177,7 @@ class EvaluationScenario(BaseMonitoredProcess):
             formulation_settings._TARGET_CLASS_NAME,
             evaluation_problem,
             disciplines,
-            settings_model=formulation_settings,
+            settings=formulation_settings,
         )
         evaluation_problem.database.name = self.name
         for constraint in self.formulation.extra_constraint_functions:
@@ -419,7 +419,7 @@ class EvaluationScenario(BaseMonitoredProcess):
 
     def _execute(self) -> None:
         self._execution_result = self._algo_factory.execute(
-            self.formulation.problem, settings_model=self.__algorithm_settings
+            self.formulation.problem, settings=self.__algorithm_settings
         )
 
     def to_ggobi(self, file_path: str | Path) -> None:

@@ -27,6 +27,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 
 
 @pytest.mark.parametrize(
@@ -48,7 +49,9 @@ def test_jac_wrt_dv_or_non_dv(options, expected_jac):
 
     problem = OptimizationProblem(design_space)
 
-    formulation = DisciplinaryOpt(problem, [discipline], **options)
+    formulation = DisciplinaryOpt(
+        problem, [discipline], DisciplinaryOpt_Settings(**options)
+    )
     problem.objective = formulation.create_objective(["f"])
     constraint = formulation.create_constraint(["c"])
     problem.add_constraint(constraint)

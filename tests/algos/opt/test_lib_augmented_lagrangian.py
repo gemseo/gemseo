@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import logging
+from unittest.mock import Mock
 
 import pytest
 from numpy import array
@@ -29,6 +30,8 @@ from gemseo.algos.opt.augmented_lagrangian.settings.order_1 import (
     Augmented_Lagrangian_Order_1_Settings,
 )
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.problems.optimization.power_2 import Power2
@@ -45,11 +48,11 @@ def test_kkt_norm_correctly_stored(problem) -> None:
         "kkt_tol_abs": 1e-5,
         "kkt_tol_rel": 1e-5,
         "max_iter": 100,
-        "sub_algorithm_name": "L-BFGS-B",
+        "sub_algorithm_settings": L_BFGS_B_Settings(),
     }
     problem.reset()
     OPTIMIZATION_LIBRARY_FACTORY.execute(
-        problem, algo_name="Augmented_Lagrangian_Order_1", **options
+        problem, settings=Augmented_Lagrangian_Order_1_Settings(**options)
     )
     kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
     obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
@@ -68,13 +71,11 @@ parametrized_settings_model = pytest.mark.parametrize(
     [
         Augmented_Lagrangian_Order_0_Settings(
             max_iter=50,
-            sub_algorithm_name="SLSQP",
-            sub_algorithm_settings={"max_iter": 50},
+            sub_algorithm_settings=SLSQP_Settings(max_iter=50),
         ),
         Augmented_Lagrangian_Order_1_Settings(
             max_iter=50,
-            sub_algorithm_name="SLSQP",
-            sub_algorithm_settings={"max_iter": 50},
+            sub_algorithm_settings=SLSQP_Settings(max_iter=50),
             kkt_tol_abs=1e-4,
         ),
     ],
@@ -90,7 +91,7 @@ def test_2d_ineq(
     problem = analytical_test_2d_ineq.formulation.problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, settings_model=settings_model, algo_type="opt")
+    execute_algo(problem, settings_model=settings_model)
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints_with_slack_var:
@@ -161,7 +162,7 @@ def test_2d_mixed(
     problem = analytical_test_2d_mixed_rank_deficient.formulation.problem
     if reformulate_constraints_with_slack_var:
         problem = problem.get_reformulated_problem_with_slack_variables()
-    execute_algo(problem, algo_type="opt", settings_model=settings_model)
+    execute_algo(problem, settings_model=settings_model)
     lagrange = LagrangeMultipliers(problem)
     epsilon = 1e-3
     if reformulate_constraints_with_slack_var:
@@ -190,12 +191,14 @@ def test_n_obj_func_calls(enable_function_statistics):
         "kkt_tol_abs": 1e-5,
         "kkt_tol_rel": 1e-5,
         "max_iter": 100,
-        "sub_algorithm_name": "L-BFGS-B",
+        "sub_algorithm_settings": L_BFGS_B_Settings(),
     }
 
     optimizer = OPTIMIZATION_LIBRARY_FACTORY.create("Augmented_Lagrangian_Order_1")
     problem.reset()
-    optimizer.execute(problem, **options)
+    optimizer.execute(
+        problem, settings=Augmented_Lagrangian_Order_1_Settings(**options)
+    )
     n_calls = optimizer.n_obj_func_calls  # Accessing as property, not as a method
     assert n_calls > 0
 
@@ -242,12 +245,12 @@ def test_solve_sub_problem_adds_constraints_with_rosenbrock(
     x_init = rosenbrock_opt_problem.design_space.get_current_value()
     options = {
         "normalize_design_space": True,
-        "sub_algorithm_name": "SLSQP",
-        "sub_algorithm_settings": {},
+        "sub_algorithm_settings": SLSQP_Settings(),
         "initial_rho": 1.0,
         "max_iter": 10,
     }
-    optimizer.execute(rosenbrock_opt_problem, **options)
+    settings = Augmented_Lagrangian_Order_1_Settings(**options)
+    optimizer.execute(rosenbrock_opt_problem, settings=settings)
     optimizer._problem = rosenbrock_opt_problem
     optimizer._settings = create_model(
         optimizer.ALGORITHM_INFOS[optimizer.algo_name].settings_class,
@@ -271,10 +274,8 @@ def test_solve_sub_problem_triggers_update_options_callback(
     """Test that sub-problem options are updated during sub-problem solving."""
 
     def mock_update_options_callback(sub_problems, sub_algorithm_settings):
-        sub_algorithm_settings.update({
-            "normalize_design_space": True,
-            "max_iter": 50,
-        })
+        sub_algorithm_settings.normalize_design_space = True
+        sub_algorithm_settings.max_iter = 50
 
     alm_options = {
         "normalize_design_space": True,
@@ -283,8 +284,7 @@ def test_solve_sub_problem_triggers_update_options_callback(
         "ftol_rel": 1e-8,
         "xtol_abs": 1e-8,
         "xtol_rel": 1e-8,
-        "sub_algorithm_name": "SLSQP",
-        "sub_algorithm_settings": {},
+        "sub_algorithm_settings": SLSQP_Settings(),
         "update_options_callback": mock_update_options_callback,
         "sub_problem_constraints": ["c_eq"],
         "initial_rho": 1.0,
@@ -292,7 +292,7 @@ def test_solve_sub_problem_triggers_update_options_callback(
 
     optimizer.execute(
         rosenbrock_opt_problem,
-        **alm_options,
+        settings=Augmented_Lagrangian_Order_1_Settings(**alm_options),
     )
 
     optimizer._problem = rosenbrock_opt_problem
@@ -307,15 +307,17 @@ def test_solve_sub_problem_triggers_update_options_callback(
         x_init=rosenbrock_opt_problem.design_space.get_current_value(),
     )
 
-    assert optimizer._settings.sub_algorithm_settings["normalize_design_space"] is True
-    assert optimizer._settings.sub_algorithm_settings["max_iter"] == 50
+    assert optimizer._settings.sub_algorithm_settings.normalize_design_space is True
+    assert optimizer._settings.sub_algorithm_settings.max_iter == 50
 
 
 def test_preconditioner_logging_direct(optimizer, caplog):
     """Test that LOGGER.info is called when 'precond' is in sub_algorithm_settings."""
 
     # Define sub_algorithm_settings with "precond" present
-    sub_algorithm_settings = {"precond": True}
+
+    sub_algorithm_settings = Mock()
+    sub_algorithm_settings.model_fields_set = ("precond",)
 
     with caplog.at_level(logging.INFO, logger="gemseo"):
         optimizer._check_for_preconditioner(sub_algorithm_settings)

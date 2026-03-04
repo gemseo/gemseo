@@ -28,6 +28,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
     OTDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class OTDiracDistribution(OTDistribution):
@@ -36,9 +37,7 @@ class OTDiracDistribution(OTDistribution):
     settings_class = OTDiracDistribution_Settings
 
     def __init__(self, settings: OTDiracDistribution_Settings | None = None) -> None:  # noqa: D107
-        if settings is None:
-            settings = OTDiracDistribution_Settings()
-
+        settings = create_model(OTDiracDistribution_Settings, settings_model=settings)
         super().__init__(
             OTDistribution_Settings(
                 interfaced_distribution="Dirac",

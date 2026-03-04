@@ -49,6 +49,7 @@ from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core.discipline import Discipline
+from gemseo.post import OptHistoryView_Settings
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -219,4 +220,4 @@ scenario.execute(SLSQP_Settings(max_iter=10))
 #
 # Finally,
 # we can generate plots of the optimization history:
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))

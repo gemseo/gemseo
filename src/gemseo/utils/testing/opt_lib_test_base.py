@@ -89,7 +89,8 @@ class OptLibraryTestBase:
         """
         problem = OptLibraryTestBase().get_pb_instance("Power2")
         opt_library = OPTIMIZATION_LIBRARY_FACTORY.create(algo_name)
-        opt_library.execute(problem, **settings)
+        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, **settings)
+        opt_library.execute(problem, settings=settings)
         return opt_library, problem
 
     @staticmethod
@@ -110,7 +111,8 @@ class OptLibraryTestBase:
         """
         problem = OptLibraryTestBase().get_pb_instance("Rosenbrock")
         opt_library = OPTIMIZATION_LIBRARY_FACTORY.create(algo_name)
-        opt_library.execute(problem, **settings)
+        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, **settings)
+        opt_library.execute(problem, settings=settings)
         return problem
 
     @staticmethod
@@ -133,7 +135,8 @@ class OptLibraryTestBase:
         """
         problem = Power2(exception_error=True)
         opt_library = OPTIMIZATION_LIBRARY_FACTORY.create(algo_name)
-        opt_library.execute(problem, **settings)
+        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, **settings)
+        opt_library.execute(problem, settings=settings)
         return opt_library
 
     @staticmethod
@@ -151,9 +154,8 @@ class OptLibraryTestBase:
             The error message if the optimizer cannot find the solution,
             otherwise `None`.
         """
-        opt = OPTIMIZATION_LIBRARY_FACTORY.execute(
-            problem, algo_name=algo_name, **settings
-        )
+        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, **settings)
+        opt = OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=settings)
         x_opt, f_opt = problem.get_solution()
         x_err = OptLibraryTestBase.relative_norm(opt.x_opt, x_opt)
         f_err = OptLibraryTestBase.relative_norm(opt.f_opt, f_opt)

@@ -49,6 +49,8 @@ from numpy import array
 
 from gemseo import execute_algo
 from gemseo import execute_post
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.post import ParetoFront_Settings
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.settings.opt import MNBI_Settings
 
@@ -61,15 +63,14 @@ from gemseo.settings.opt import MNBI_Settings
 problem = BinhKorn()
 mnbi_settings = MNBI_Settings(
     max_iter=10000,
-    sub_optim_max_iter=200,
     n_sub_optim=50,
-    sub_optim_algo="NLOPT_SLSQP",
+    sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=200),
 )
 result = execute_algo(problem, settings_model=mnbi_settings)
 # %%
 # ## Display the Pareto front
 # GEMSEO detects the Pareto optimal points and the dominated ones.
-execute_post(problem, post_name="ParetoFront", save=False, show=True)
+execute_post(problem, ParetoFront_Settings(save=False, show=True))
 
 # %%
 # ## Refine the Pareto front in the user specified area
@@ -78,9 +79,8 @@ execute_post(problem, post_name="ParetoFront", save=False, show=True)
 # both objectives in order to define the refinement area.
 mnbi_settings = MNBI_Settings(
     max_iter=10000,
-    sub_optim_max_iter=200,
     n_sub_optim=5,
-    sub_optim_algo="NLOPT_SLSQP",
+    sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=200),
     custom_anchor_points=[array([44.5, 14]), array([29.4, 19])],
 )
 
@@ -89,4 +89,4 @@ execute_algo(problem, settings_model=mnbi_settings)
 # ### Display the Pareto front
 # We can clearly see the effect of the local refinement.
 
-execute_post(problem, post_name="ParetoFront", save=False, show=True)
+execute_post(problem, ParetoFront_Settings(save=False, show=True))

@@ -23,6 +23,7 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 from gemseo.uncertainty.distributions.openturns.weibull_settings import (
     OTWeibullDistribution_Settings,
 )
+from gemseo.utils.pydantic import create_model
 
 
 class OTWeibullDistribution(OTDistribution):
@@ -31,8 +32,7 @@ class OTWeibullDistribution(OTDistribution):
     settings_class = OTWeibullDistribution_Settings
 
     def __init__(self, settings: OTWeibullDistribution_Settings | None = None) -> None:  # noqa: D107
-        if settings is None:
-            settings = OTWeibullDistribution_Settings()
+        settings = create_model(OTWeibullDistribution_Settings, settings_model=settings)
         super().__init__(
             OTDistribution_Settings(
                 interfaced_distribution="WeibullMin"

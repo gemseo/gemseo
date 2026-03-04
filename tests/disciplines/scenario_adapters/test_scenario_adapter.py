@@ -75,7 +75,7 @@ def create_design_space():
 
 @pytest.fixture
 def scenario():
-    """An MDO scenario solving the Sobieski problem with MDF and L-BFGS-B."""
+    """An MDO scenario solving the Sobieski problem with MDF and L_BFGS_B."""
     disciplines = [
         SobieskiPropulsion(),
         SobieskiAerodynamics(),

@@ -27,6 +27,7 @@ from numpy.linalg import norm
 from pydantic import ValidationError
 
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 from .utils import execute_problem
@@ -138,7 +139,7 @@ def test_integer_lhs() -> None:
     problem.design_space.add_variable(
         "y", type_="integer", lower_bound=10.0, upper_bound=15.0
     )
-    DOE_LIBRARY_FACTORY.execute(problem, algo_name="PYDOE_LHS", n_samples=10)
+    DOE_LIBRARY_FACTORY.execute(problem, settings=PYDOE_LHS_Settings(n_samples=10))
 
     for sample in problem.database.get_x_vect_history():
         assert int(sample[-1]) == sample[-1]

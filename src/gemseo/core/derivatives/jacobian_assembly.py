@@ -873,9 +873,10 @@ class JacobianAssembly:
             residuals = self.residuals(in_data, couplings)
         # solve the linear system
         linear_problem = LinearProblem(dres_dy, -residuals)
-        self.__linear_solver_factory.execute(
-            linear_problem, algo_name=linear_solver, **linear_solver_settings
+        settings = self.__linear_solver_factory.create_settings(
+            linear_solver, **linear_solver_settings
         )
+        self.__linear_solver_factory.execute(linear_problem, settings=settings)
         return linear_problem.solution, linear_problem.is_converged
 
     def residuals(
@@ -1141,11 +1142,13 @@ class CoupledSystem:
         if linear_solver == "LGMRES":
             # Reinit outerV, and store it for all RHS
             linear_solver_settings["outer_v"] = []
+
+        settings = self.__linear_solver_factory.create_settings(
+            linear_solver, **linear_solver_settings
+        )
         for var_index in range(n_variables):
             self.linear_problem.rhs = -dres_dx[:, var_index]
-            self.__linear_solver_factory.execute(
-                self.linear_problem, algo_name=linear_solver, **linear_solver_settings
-            )
+            self.__linear_solver_factory.execute(self.linear_problem, settings=settings)
             dy_dx[:, var_index] = self.linear_problem.solution
             self.n_linear_resolutions += 1
         # assemble the total derivatives of the functions using dy_dx
@@ -1195,10 +1198,11 @@ class CoupledSystem:
             # compute adjoint vector for each component of the function
             for fun_component in range(dfunction_dy.shape[0]):
                 self.linear_problem.rhs = -dfunction_dy[fun_component, :].T
+                settings = self.__linear_solver_factory.create_settings(
+                    linear_solver, **linear_solver_settings
+                )
                 self.__linear_solver_factory.execute(
-                    self.linear_problem,
-                    algo_name=linear_solver,
-                    **linear_solver_settings,
+                    self.linear_problem, settings=settings
                 )
                 adjoint = self.linear_problem.solution
                 self.n_linear_resolutions += 1

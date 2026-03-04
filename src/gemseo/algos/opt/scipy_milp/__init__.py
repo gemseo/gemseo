@@ -17,5 +17,5 @@
 from __future__ import annotations
 
 from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import (
-    SciPyMILP_Settings,  # noqa: F401
+    MILP_Settings,  # noqa: F401
 )

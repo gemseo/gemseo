@@ -132,16 +132,12 @@ of iteration of the MDA algorithm required to reach convergence.""",
         """Convert the linear solver settings into a Pydantic model."""
         if isinstance(self.linear_solver_settings, Mapping):
             factory = LinearSolverLibraryFactory()
-            library_name = factory.algo_names_to_libraries[self.linear_solver]
-            settings_model = (
-                factory
-                .get_class(library_name)
-                .ALGORITHM_INFOS[self.linear_solver]
-                .settings_class
+            settings = factory.create_settings(
+                self.linear_solver, **self.linear_solver_settings
             )
-            is_default_setting = "linear_solver_settings" not in self.model_fields_set
-            self.linear_solver_settings = settings_model(**self.linear_solver_settings)
-            if is_default_setting:
-                self.model_fields_set.remove("linear_solver_settings")
+            # object.__setattr__ avoids
+            # declaring linear_solver_settings as set by the user
+            # (see MDAChain about the use of model_fields_set).
+            object.__setattr__(self, "linear_solver_settings", settings)
 
         return self

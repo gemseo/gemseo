@@ -28,6 +28,7 @@ from numpy import ones_like
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.core.discipline import Discipline
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
@@ -93,17 +94,15 @@ def test_resolution(algo, n, p, constraint_kind) -> None:
     }:
         pytest.skip("SLSQP is not well suited for non-linear equality constraints")
 
-    factory = OPTIMIZATION_LIBRARY_FACTORY
-    cls = factory.get_class(factory.algo_names_to_libraries[algo])
-    settings = cls.ALGORITHM_INFOS[algo].settings_class(
+    settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(
+        algo,
         max_iter=100,
         normalize_design_space=True,
         stop_crit_n_x=2,
         ftol_rel=1e-6,
         **(
             {
-                "sub_algorithm_name": "L-BFGS-B",
-                "sub_algorithm_settings": {"max_iter": 300},
+                "sub_algorithm_settings": L_BFGS_B_Settings(max_iter=300),
             }
             if algo.startswith("Augmented_Lagrangian")
             else {}

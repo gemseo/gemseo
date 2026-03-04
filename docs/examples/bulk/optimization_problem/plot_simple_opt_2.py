@@ -33,6 +33,7 @@ from gemseo import get_available_opt_algorithms
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.post import OptHistoryView_Settings
 
 # %%
 # ## Define the objective function
@@ -69,7 +70,7 @@ problem.objective = objective
 #
 # ### Solve the problem
 #
-optimization_result = execute_algo(problem, algo_name="L-BFGS-B")
+optimization_result = execute_algo(problem, algo_name="L_BFGS_B")
 optimization_result
 
 # %%
@@ -85,7 +86,7 @@ problem.to_hdf("my_optim.hdf5")
 # %%
 # ### Post-process the results
 #
-execute_post(problem, post_name="OptHistoryView", save=False, show=True)
+execute_post(problem, OptHistoryView_Settings(save=False, show=True))
 
 # %%
 # !!! note

@@ -69,11 +69,7 @@ if TYPE_CHECKING:
     from gemseo.machine_learning.regression.models.ot_gpr_settings import (
         CovarianceModelType,
     )
-    from gemseo.machine_learning.regression.models.ot_gpr_settings import (
-        DOEAlgorithmName,
-    )
     from gemseo.typing import RealArray
-    from gemseo.typing import StrKeyMapping
 
 
 class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
@@ -120,15 +116,6 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     __covariance_model: CovarianceModelImplementation
     """The covariance model of the Gaussian process."""
 
-    __multi_start_algo_name: DOEAlgorithmName
-    """The names of the DOE algorithm for multi-start optimization."""
-
-    __multi_start_algo_settings: StrKeyMapping
-    """The options of the DOE algorithm for multi-start optimization."""
-
-    __multi_start_n_samples: int
-    """The number of starting points for multi-start optimization."""
-
     __optimization_space: Interval
     """The covariance model parameter space."""
 
@@ -173,11 +160,6 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
 
         self.__optimization_space = Interval(lower_bounds, upper_bounds)
         self.__optimizer = self._settings.optimizer
-        self.__multi_start_n_samples = self._settings.multi_start_n_samples
-        self.__multi_start_algo_name = self._settings.multi_start_algo_name
-        self.__multi_start_algo_settings = dict(
-            self._settings.multi_start_algo_settings
-        )
         self.__trend = self._settings.trend
         if self._settings.use_hmat is None:
             self.use_hmat = len(self.learning_set) > self.MAX_SIZE_FOR_LAPACK
@@ -259,8 +241,12 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             ),
         )
         Log.Show(log_flags)
-        if self.__multi_start_n_samples > 1:
-            doe_algo = DOE_LIBRARY_FACTORY.create(self.__multi_start_algo_name)
+        if self._settings.multi_start_algo_settings is None:
+            optimizer = self.__optimizer
+        else:
+            doe_algo = DOE_LIBRARY_FACTORY.create(
+                self._settings.multi_start_algo_settings._TARGET_CLASS_NAME
+            )
             design_space = DesignSpace()
             design_space.add_variable(
                 "x",
@@ -270,14 +256,11 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             )
             optimizer = MultiStart(
                 self.__optimizer,
-                doe_algo.compute_doe(
-                    design_space,
-                    n_samples=self.__multi_start_n_samples,
-                    **self.__multi_start_algo_settings,
+                doe_algo.sample_space(
+                    design_space, settings=self._settings.multi_start_algo_settings
                 ),
             )
-        else:
-            optimizer = self.__optimizer
+
         algo.setOptimizationAlgorithm(optimizer)
         algo.setOptimizationBounds(self.__optimization_space)
         algo.run()
