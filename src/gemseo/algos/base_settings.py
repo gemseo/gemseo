@@ -87,3 +87,10 @@ class BaseSettings(
         for name, default in cls._INHERITED_FIELD_DEFAULTS.items():
             fields[name].default = default
         cls.model_rebuild(force=True)
+
+    @property
+    def target_class_name(
+        self,
+    ) -> str:
+        """The name of the class intended to use these settings."""
+        return self._TARGET_CLASS_NAME

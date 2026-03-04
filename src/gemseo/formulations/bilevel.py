@@ -292,7 +292,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         )
         main_mda_settings = self._settings.main_mda_settings
         if isinstance(main_mda_settings, BaseMDASettings):
-            main_mda_name = main_mda_settings._TARGET_CLASS_NAME
+            main_mda_name = main_mda_settings.target_class_name
         else:
             main_mda_name = self._settings.main_mda_name
         if len(strongly_coupled_disciplines) > 0:

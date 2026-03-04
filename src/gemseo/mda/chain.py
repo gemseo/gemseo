@@ -123,7 +123,7 @@ class MDAChain(BaseMDA):
 
         self.inner_mdas = []
         self.__inner_mda_class = MDA_FACTORY.get_class(
-            self.settings.inner_mda_settings._TARGET_CLASS_NAME
+            self.settings.inner_mda_settings.target_class_name
         )
         self.mdo_chain = self._create_mdo_chain()
 

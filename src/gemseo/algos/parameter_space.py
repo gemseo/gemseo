@@ -167,7 +167,7 @@ class ParameterSpace(DesignSpace):
             for value in self.__random_vectors_to_settings.values():
                 settings.extend(value)
 
-            cls = DISTRIBUTION_FACTORY.get_class(settings[0]._TARGET_CLASS_NAME)
+            cls = DISTRIBUTION_FACTORY.get_class(settings[0].target_class_name)
             cls = cls.JOINT_DISTRIBUTION_CLASS
             if copula is None:
                 joint_settings = cls.Settings(marginal_settings=settings)
