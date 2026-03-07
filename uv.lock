@@ -685,7 +685,7 @@ requires-dist = [
     { name = "h5py", specifier = ">=3.6.0,<=3.15.1" },
     { name = "jinja2", specifier = ">=3.0.0,<=3.1.6" },
     { name = "matplotlib", specifier = ">=3.6.0,<=3.10.8" },
-    { name = "minisom", specifier = "<=2.3.5,>=2.3.5" },
+    { name = "minisom", specifier = ">=2.3.5,<=2.3.6" },
     { name = "networkx", specifier = ">=2.5,<=3.6.1" },
     { name = "nlopt", marker = "extra == 'all'", specifier = ">=2.7.0,<=2.10.0" },
     { name = "numpy", specifier = ">=1.23,<=2.4.2" },
@@ -1370,9 +1370,9 @@ wheels = [
 
 [[package]]
 name = "minisom"
-version = "2.3.5"
+version = "2.3.6"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5b/91/0378b47975d93f76a1ce3813be573d857c35fe542cd6c0b2da4b401fd2f5/minisom-2.3.5.tar.gz", hash = "sha256:c4e65e0a6a50170c163e9c0408f77464871e7b3007ad0cd87e178cdaf3db2ce3", size = 12057, upload-time = "2025-02-26T10:09:27.44Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/9c/999bc2f1bee4cfbb6157ac03db32f5a831322479151941bc997774c405c6/minisom-2.3.6.tar.gz", hash = "sha256:1fca9cfeef62b221a89930ad3422b7a24a2bd66ae43ef97332e165f5975c09f1", size = 13140, upload-time = "2026-02-11T12:04:56.267Z" }
 
 [[package]]
 name = "mkdocs"
