@@ -29,9 +29,9 @@ test-min-deps *args:
 
 # Run code formatting and checking
 [group('qa')]
-check:
+check *args:
     uv run --only-group check prek install
-    uv run --only-group check prek run --all-files
+    uv run --only-group check prek run --all-files {{args}}
 
 # Run code formatting and checking
 [group('qa')]
