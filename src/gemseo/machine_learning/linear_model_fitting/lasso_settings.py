@@ -25,10 +25,10 @@ from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
 
-from gemseo.algos.base_settings import BaseSettings
 from gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings import (  # noqa: E501
     BaseLinearModelFitterSettings,
 )
+from gemseo.utils.pydantic import BaseSettings
 
 
 class _LassoSettingsMixin(BaseSettings):

@@ -20,7 +20,7 @@ from collections.abc import Sequence
 
 from pydantic import Field
 
-from gemseo.algos.base_settings import BaseSettings
+from gemseo.utils.pydantic import BaseSettings
 
 
 class BaseFormulationSettings(BaseSettings):

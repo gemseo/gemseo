@@ -225,11 +225,10 @@ class CallableParallelExecution(
                 )
                 raise ValueError(msg)
 
-    # TODO: API: let exec_callback always be iterable and renamed to callbacks.
     def execute(
         self,
         inputs: Sequence[ArgT],
-        exec_callback: CallbackType | Iterable[CallbackType] = (),
+        exec_callbacks: Iterable[CallbackType] = (),
         task_submitted_callback: Callable[[], None] | None = None,
         preprocessors: Iterable[Callable[[int], None]] = (),
     ) -> list[ReturnT | None]:
@@ -237,7 +236,7 @@ class CallableParallelExecution(
 
         Args:
             inputs: The input values.
-            exec_callback: Callback functions called with the
+            exec_callbacks: Callback functions called with the
                 pair (index, outputs) as arguments when an item is retrieved
                 from the processing. Index is the associated index
                 in inputs of the input used to compute the outputs.
@@ -256,9 +255,6 @@ class CallableParallelExecution(
             necessary to protect its execution with an `if __name__ == '__main__':`
             statement when working on Windows.
         """
-        if callable(exec_callback):
-            exec_callback = [exec_callback]
-
         n_tasks = len(inputs)
 
         tasks: list[int] | ListProxy[int] = list(range(n_tasks))[::-1]
@@ -326,7 +322,7 @@ class CallableParallelExecution(
                     stop = True
             else:
                 ordered_outputs[index] = output
-                for callback in exec_callback:
+                for callback in exec_callbacks:
                     callback(index, output)
             n_outputs += 1
 

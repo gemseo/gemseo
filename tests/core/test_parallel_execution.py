@@ -76,8 +76,7 @@ def test_functional() -> None:
     assert output_list == [rosen([0.5] * i) for i in range(1, n + 1)]
 
 
-@pytest.mark.parametrize("as_iterable", [False, True])
-def test_callback(as_iterable) -> None:
+def test_callback() -> None:
     """Test the execution of callbacks."""
 
     class Counter:
@@ -88,11 +87,9 @@ def test_callback(as_iterable) -> None:
             self.total += 2 * index + (data == 0)
 
     counter = Counter()
-    callback = counter.callback
-    exec_callback = [callback] if as_iterable else callback
     parallel_execution = CallableParallelExecution([rosen])
     output_data = parallel_execution.execute(
-        [[1.0, 1.0], [1.0, 1.0, 1.0]], exec_callback=exec_callback
+        [[1.0, 1.0], [1.0, 1.0, 1.0]], exec_callbacks=(counter.callback,)
     )
     assert output_data == [0.0, 0.0]
     assert counter.total == 4.0
@@ -102,7 +99,7 @@ def test_callback_error() -> None:
     parallel_execution = CallableParallelExecution([rosen])
     with pytest.raises(TypeError):
         parallel_execution.execute(
-            [[0.5] * i for i in range(1, 3)], exec_callback="toto"
+            [[0.5] * i for i in range(1, 3)], exec_callbacks="toto"
         )
 
 

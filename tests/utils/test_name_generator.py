@@ -41,7 +41,7 @@ from gemseo.utils.name_generator import NameGenerator
 )
 def test_generate_name(naming) -> None:
     """Test the name generation."""
-    name_generator = NameGenerator(naming_method=naming)
+    name_generator = NameGenerator(naming=naming)
     name_1 = name_generator.generate_name()
     name_2 = name_generator.generate_name()
     if naming == BaseNameGenerator.Naming.UUID:
@@ -65,7 +65,7 @@ def test_generate_name(naming) -> None:
 
 def f(_):
     """Helper function to use ine CallableParallelExecution."""
-    return NameGenerator(naming_method=NameGenerator.Naming.UUID).generate_name()
+    return NameGenerator(naming=NameGenerator.Naming.UUID).generate_name()
 
 
 def test_unique_directory_name_in_multiprocessing():

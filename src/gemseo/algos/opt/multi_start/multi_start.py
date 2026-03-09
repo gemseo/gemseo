@@ -110,7 +110,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
                 opt_algo_max_iter[i] += 1
 
         doe_algo = DOE_LIBRARY_FACTORY.create(
-            self._settings.doe_algo_settings._TARGET_CLASS_NAME
+            self._settings.doe_algo_settings.target_class_name
         )
         samples = doe_algo.sample_space(
             design_space, settings=self._settings.doe_algo_settings

@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.core.discipline import Discipline
+    from gemseo.core.grammars.base_grammar import BaseGrammar
     from gemseo.typing import StrKeyMapping
 
 
@@ -40,8 +41,8 @@ class FilteringDiscipline(BaseWrapperDiscipline):
         discipline: Discipline,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
-        keep_in: bool = True,  # TODO: API: naming and keep/exclude mechanism
-        keep_out: bool = True,  # TODO: API: naming and keep/exclude mechanism
+        use_input_names: bool = True,
+        use_output_names: bool = True,
     ) -> None:
         """
         Args:
@@ -49,55 +50,58 @@ class FilteringDiscipline(BaseWrapperDiscipline):
                 If empty, use all the inputs.
             output_names: The names of the outputs of interest.
                 If empty, use all the outputs.
-            keep_in: Whether the provided input names must be kept or excluded.
-            keep_out: Whether the provided output names must be kept or excluded.
+            use_input_names: Whether to define the input grammar from `input_names`.
+                Otherwise, define it from the other inputs of the discipline.
+            use_output_names: Whether to define the output grammar from `output_names`.
+                Otherwise, define it from the other outputs of the discipline.
         """  # noqa:D205 D212 D415
         super().__init__(discipline)
-
-        if input_names:
-            if keep_in:
-                input_names_to_exclude = self._discipline.io.input_grammar.names - set(
-                    input_names
-                )
-            else:
-                input_names_to_exclude = set(input_names)
-        else:
-            input_names_to_exclude = set()
-
-        for name in input_names_to_exclude:
-            del self.io.input_grammar[name]
-
-        self._differentiated_input_names = list(
-            set(self._differentiated_input_names) - input_names_to_exclude
+        self.__set_grammar(
+            self.io.input_grammar,
+            input_names,
+            use_input_names,
+            self._differentiated_input_names,
+        )
+        self.__set_grammar(
+            self.io.output_grammar,
+            output_names,
+            use_output_names,
+            self._differentiated_output_names,
         )
 
-        if output_names:
-            if keep_out:
-                output_names_to_exclude = (
-                    self._discipline.io.output_grammar.names - set(output_names)
-                )
-            else:
-                output_names_to_exclude = set(output_names)
+    @staticmethod
+    def __set_grammar(
+        grammar: BaseGrammar,
+        variable_names: Iterable[str],
+        keep_variable_names: bool,
+        differentiated_variable_names: list[str],
+    ):
+        """Set a grammar.
+
+        Args:
+            grammar: The grammar to set.
+            variable_names: The names of the variables of interest.
+                If empty, use all the variables.
+            keep_variable_names: Whether to define the grammar from `variable_names`.
+                Otherwise, define it from the other variables of the grammar.
+            differentiated_variable_names: The names of the differentiated variables.
+        """
+        variable_names = set(variable_names)
+        if variable_names and keep_variable_names:
+            variable_names_to_exclude = grammar.names - variable_names
         else:
-            output_names_to_exclude = set()
+            variable_names_to_exclude = variable_names
 
-        for name in output_names_to_exclude:
-            del self.io.output_grammar[name]
+        for name in variable_names_to_exclude:
+            del grammar[name]
 
-        self._differentiated_output_names = list(
-            set(self._differentiated_output_names) - output_names_to_exclude
+        differentiated_variable_names[:] = list(
+            set(differentiated_variable_names) - variable_names_to_exclude
         )
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        # TODO: try to use _run instead of execute
-        self._discipline.execute(input_data)
-
-        output_grammar = self.io.output_grammar
-        return {
-            name: value
-            for name, value in self._discipline.get_output_data().items()
-            if name in output_grammar
-        }
+        data = self._discipline.execute(input_data)
+        return {name: data[name] for name in self.io.output_grammar}
 
     def _compute_jacobian(
         self,
@@ -105,7 +109,6 @@ class FilteringDiscipline(BaseWrapperDiscipline):
         output_names: Iterable[str] = (),
     ) -> None:
         self._discipline._compute_jacobian(input_names, output_names)
-
         wrapped_jac = self._discipline.jac
         jac = self.jac
         for output_name in output_names:

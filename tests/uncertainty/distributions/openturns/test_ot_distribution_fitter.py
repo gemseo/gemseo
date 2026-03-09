@@ -53,7 +53,7 @@ def data() -> RealArray:
 @pytest.fixture(scope="module")
 def fitter(data) -> OTDistributionFitter:
     """The distribution fitter based on OpenTURNS."""
-    return OTDistributionFitter("x", data)
+    return OTDistributionFitter(data)
 
 
 @pytest.fixture(scope="module")

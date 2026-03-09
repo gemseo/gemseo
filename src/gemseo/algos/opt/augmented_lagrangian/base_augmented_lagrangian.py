@@ -295,7 +295,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
 
         # Solve the sub-problem.
         lib = OptimizationLibraryFactory().create(
-            self._settings.sub_algorithm_settings._TARGET_CLASS_NAME
+            self._settings.sub_algorithm_settings.target_class_name
         )
         opt = lib.execute(sub_problem, settings=self._settings.sub_algorithm_settings)
 

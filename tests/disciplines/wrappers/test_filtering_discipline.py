@@ -76,7 +76,7 @@ def test_keep_in_keep_out(discipline) -> None:
 
 def test_remove_in_keep_out(discipline) -> None:
     fdisc = FilteringDiscipline(
-        discipline, input_names=["x1"], output_names=["y1"], keep_in=False
+        discipline, input_names=["x1"], output_names=["y1"], use_input_names=False
     )
     assert set(fdisc.io.input_grammar) == {"x2", "x3"}
     assert set(fdisc.io.output_grammar) == {"y1"}
@@ -90,7 +90,7 @@ def test_remove_in_keep_out(discipline) -> None:
 
 def test_keep_in_remove_out(discipline) -> None:
     fdisc = FilteringDiscipline(
-        discipline, input_names=["x1"], output_names=["y1"], keep_out=False
+        discipline, input_names=["x1"], output_names=["y1"], use_output_names=False
     )
     assert set(fdisc.io.input_grammar) == {"x1"}
     assert set(fdisc.io.output_grammar) == {"y2"}

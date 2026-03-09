@@ -245,7 +245,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             optimizer = self.__optimizer
         else:
             doe_algo = DOE_LIBRARY_FACTORY.create(
-                self._settings.multi_start_algo_settings._TARGET_CLASS_NAME
+                self._settings.multi_start_algo_settings.target_class_name
             )
             design_space = DesignSpace()
             design_space.add_variable(

@@ -136,7 +136,7 @@ class JobSchedulerDisciplineWrapper(BaseWrapperDiscipline):
         self._options = options
 
         self.__directory_creator = DirectoryCreator(
-            workdir_path, DirectoryCreator.Naming.UUID
+            DirectoryCreator.Naming.UUID, root_directory=workdir_path
         )
         self.pickled_discipline = pickle.dumps(self._discipline)
         self.job_file_template = None

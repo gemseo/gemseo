@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from gemseo.algos.base_settings import BaseSettings
+from gemseo.utils.pydantic import BaseSettings
 
 
 class BaseLinearSolverSettings(BaseSettings):

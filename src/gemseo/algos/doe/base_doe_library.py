@@ -326,7 +326,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         self._problem.evaluation_counter.enabled = True
         parallel.execute(
             self.samples,
-            exec_callback=callbacks,
+            exec_callbacks=callbacks,
             preprocessors=self._settings.preprocessors,
         )
         if self._settings.use_database:

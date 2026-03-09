@@ -30,7 +30,6 @@ import gemseo.settings.ode as ode
 import gemseo.settings.opt as opt
 import gemseo.settings.post as post
 import gemseo.settings.probability_distributions as probability_distributions
-from gemseo.algos.base_settings import BaseSettings
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
@@ -45,6 +44,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.uncertainty.distributions.base_distribution_settings import (
     BaseGenericDistributionSettings,
 )
+from gemseo.utils.pydantic import BaseSettings
 
 
 def get_setting_classes(

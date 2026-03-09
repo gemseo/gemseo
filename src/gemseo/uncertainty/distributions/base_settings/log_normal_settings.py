@@ -19,7 +19,7 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic import PositiveFloat
 
-from gemseo.algos.base_settings import BaseSettings
+from gemseo.utils.pydantic import BaseSettings
 
 
 class BaseLogNormalDistributionSettings(BaseSettings):  # noqa: N801

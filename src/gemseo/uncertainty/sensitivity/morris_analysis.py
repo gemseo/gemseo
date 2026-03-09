@@ -196,7 +196,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
             outputs_bounds[output_name] = (data.min(0), data.max(0))
 
         n_replicates = len(self.dataset) // (1 + parameter_space.dimension)
-        self.__inner_doe_algo_name = algo_settings._TARGET_CLASS_NAME
+        self.__inner_doe_algo_name = algo_settings.target_class_name
         self.dataset.misc["step"] = step
         self.dataset.misc["n_replicates"] = n_replicates
         self.dataset.misc["outputs_bounds"] = outputs_bounds

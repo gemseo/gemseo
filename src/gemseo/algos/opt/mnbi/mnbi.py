@@ -832,7 +832,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
                 )
                 self._settings.doe_algo_settings.n_samples = n_samples
                 lib = DOE_LIBRARY_FACTORY.create(
-                    self._settings.doe_algo_settings._TARGET_CLASS_NAME
+                    self._settings.doe_algo_settings.target_class_name
                 )
                 betas = lib.sample_unit_hypercube(
                     beta_design_space.dimension,

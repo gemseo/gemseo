@@ -137,10 +137,10 @@ def test_orbital(settings_class, eccentricity, atol) -> None:
         yy=problem.result.state_trajectories[1],
         vvx=problem.result.state_trajectories[2],
         vvy=problem.result.state_trajectories[3],
-        algo_name_msg=settings_class._TARGET_CLASS_NAME,
+        algo_name_msg=settings_class.target_class_name,
     )
 
-    if settings_class._TARGET_CLASS_NAME == "RK45":
+    if settings_class.target_class_name == "RK45":
         check_orbital_constants(tt=times, xx=x_exact, yy=y_exact)
 
     assert problem.result.algorithm_has_converged

@@ -103,8 +103,8 @@ select = [
 [lint.flake8-type-checking]
 runtime-evaluated-base-classes = [
   "pydantic.BaseModel",
+  "gemseo.utils.pydantic.BaseSettings",
   "gemseo.algos.doe.base_doe_settings.BaseDOESettings",
-  "gemseo.algos.base_settings.BaseSettings",
   "gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings",
   "gemseo.algos.opt.base_optimizer_settings.BaseOptimizerSettings",
   "gemseo.algos.opt.nlopt.settings.base_nlopt_settings.BaseNLoptSettings",
@@ -128,6 +128,7 @@ runtime-evaluated-base-classes = [
   "gemseo.machine_learning.regression.models.linreg_settings.LinearRegressor_Settings",
   "gemseo.machine_learning.classification.models.svm_settings.SVM_Settings",
   "gemseo.machine_learning.core.models.supervised_settings.BaseMLSupervisedModelSettings",
+  "gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings",
   "gemseo.machine_learning.linear_model_fitting.elastic_net_settings.ElasticNet_Settings",
   "gemseo.machine_learning.linear_model_fitting.lars_cv_settings.LARSCV_Settings",
   "gemseo.machine_learning.linear_model_fitting.lars_settings.LARS_Settings",
@@ -143,9 +144,7 @@ runtime-evaluated-base-classes = [
   "gemseo.machine_learning.core.models.ml_model_settings.BaseMLModelSettings",
   "gemseo.uncertainty.distributions.base_distribution_settings.BaseDistribution_Settings",
   "gemseo.uncertainty.distributions.base_settings.weibull_settings.BaseWeibullDistribution_Settings",
-  "gemseo.uncertainty.distributions.openturns.joint_settings.OTJointDistribution_Settings",
-  "gemseo.uncertainty.distributions.scipy.joint_settings.SPJointDistribution_Settings",
-  "gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings",
+  "gemseo.uncertainty.distributions.base_joint_settings.BaseJointDistributionSettings",
 ]
 
 [lint.isort]

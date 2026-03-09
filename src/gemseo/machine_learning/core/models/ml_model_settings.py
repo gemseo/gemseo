@@ -20,9 +20,9 @@ from collections.abc import MutableMapping
 
 from pydantic import Field
 
-from gemseo.algos.base_settings import BaseSettings
 from gemseo.machine_learning.transformers.base_transformer import BaseTransformer
 from gemseo.typing import StrKeyMapping
+from gemseo.utils.pydantic import BaseSettings
 
 SubTransformerType = str | tuple[str, StrKeyMapping] | BaseTransformer
 TransformerType = MutableMapping[str, SubTransformerType]

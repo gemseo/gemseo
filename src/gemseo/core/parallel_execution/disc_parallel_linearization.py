@@ -120,12 +120,12 @@ class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _Worker
     def execute(  # type: ignore[override] # noqa: D102
         self,
         inputs: Sequence[StrKeyMapping],
-        exec_callback: CallbackType | Iterable[CallbackType] = (),
+        exec_callbacks: Iterable[CallbackType] = (),
         task_submitted_callback: Callable[[], None] | None = None,
     ) -> list[JacobianData | None]:
         ordered_outputs = super().execute(
             inputs,
-            exec_callback=exec_callback,
+            exec_callbacks=exec_callbacks,
             task_submitted_callback=task_submitted_callback,
         )
 

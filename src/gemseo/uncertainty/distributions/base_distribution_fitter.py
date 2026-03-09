@@ -54,9 +54,6 @@ class BaseDistributionFitter(
     _samples: Any
     """The samples."""
 
-    variable: str
-    """The name of the variable."""
-
     _CRITERIA_TO_WRAPPED_OBJECTS: ClassVar[StrKeyMapping]
     """Fitting criteria to objects of the UQ library."""
 
@@ -84,15 +81,12 @@ class BaseDistributionFitter(
     _FITTING_CRITERIA_TO_MINIMIZE: ClassVar[set[str]] = set()
     """The fitting criteria to minimize (the others are to be maximized)."""
 
-    def __init__(self, variable: str, data: RealArray) -> None:
-        # TODO: API: rename variable to variable_name or remove it because useless.
+    def __init__(self, data: RealArray) -> None:
         """
         Args:
-            variable: The name of the variable.
             data: A data array.
         """  # noqa: D205,D212,D415
         self.data = data
-        self.variable = variable
 
     @property
     def data(self) -> RealArray:
