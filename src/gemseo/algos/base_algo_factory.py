@@ -34,9 +34,9 @@ from gemseo.utils.string_tools import pretty_str
 if TYPE_CHECKING:
     from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
     from gemseo.algos.base_problem import BaseProblem
-    from gemseo.algos.base_settings import BaseSettings
     from gemseo.algos.ode.ode_result import ODEResult
     from gemseo.algos.optimization_result import OptimizationResult
+    from gemseo.utils.pydantic import BaseSettings
 
 
 class _AlgoFactoryMeta(ABCMeta):
@@ -201,7 +201,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         Returns:
             The result.
         """
-        lib = self.create(settings._TARGET_CLASS_NAME)
+        lib = self.create(settings.target_class_name)
         return lib.execute(problem, settings=settings)
 
     def clear_lib_cache(self) -> None:

@@ -53,7 +53,7 @@ class PostFactory(BaseFactory[BasePost[Any]]):
         Returns:
             The post-processor.
         """
-        post = self.create(settings._TARGET_CLASS_NAME, opt_problem)
+        post = self.create(settings.target_class_name, opt_problem)
         post.execute(settings=settings)
         return post
 

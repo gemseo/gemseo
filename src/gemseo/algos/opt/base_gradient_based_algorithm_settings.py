@@ -23,7 +23,7 @@ from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TC002
 from pydantic import model_validator
 
-from gemseo.algos.base_settings import BaseSettings
+from gemseo.utils.pydantic import BaseSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self

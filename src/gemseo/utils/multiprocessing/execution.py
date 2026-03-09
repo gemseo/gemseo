@@ -68,4 +68,4 @@ def execute(
         return all_outputs
 
     parallel_exec = CallableParallelExecution([worker], n_processes=n_processes)
-    return parallel_exec.execute(inputs, exec_callback=callbacks)
+    return parallel_exec.execute(inputs, exec_callbacks=callbacks)

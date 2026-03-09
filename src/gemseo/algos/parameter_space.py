@@ -96,13 +96,13 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.algos.base_settings import BaseSettings
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
     from gemseo.uncertainty.distributions.base_distribution_settings import (
         BaseDistributionSettings,
     )
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
+    from gemseo.utils.pydantic import BaseSettings
 
 from numpy import array
 from numpy import ndarray

@@ -33,11 +33,11 @@ from typing import TypeVar
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
-from gemseo.algos.base_settings import BaseSettings
 from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
     BaseGradientBasedAlgorithmSettings,
 )
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.pydantic import BaseSettings
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import pretty_str
 

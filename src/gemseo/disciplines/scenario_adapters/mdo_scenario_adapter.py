@@ -177,7 +177,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
                 The full names of the databases are built from
                 the provided base name suffixed by `"_identifier.h5"`
                 where `identifier` is replaced by an identifier according to the
-                `naming_method`.
+                `naming` convention.
                 If empty, use
                 [DEFAULT_DATABASE_FILE_PREFIX][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter.DEFAULT_DATABASE_FILE_PREFIX].
             scenario_log_level: The level of the root logger
@@ -348,7 +348,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         self.io.output_grammar.update(multipliers_grammar)
 
     def _init_shared_memory_attrs_after(self) -> None:
-        self.__name_generator = NameGenerator(naming_method=self.__naming)
+        self.__name_generator = NameGenerator(naming=self.__naming)
 
     @classmethod
     def get_bnd_mult_name(

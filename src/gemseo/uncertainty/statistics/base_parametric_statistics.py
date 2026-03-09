@@ -409,32 +409,27 @@ class BaseParametricStatistics(
         for name in self.names:
             LOGGER.info("| Fit different distributions for %s.", name)
             dataset_values = self.dataset.get_view(variable_names=name).to_numpy()
-            size = self.dataset.variable_names_to_n_components[name]
             results[name] = [
-                self._fit_marginal_distributions(
-                    repr_variable(name, index, size), column, distributions
-                )
+                self._fit_marginal_distributions(column, distributions)
                 for index, column in enumerate(dataset_values.T)
             ]
         return results
 
     def _fit_marginal_distributions(
         self,
-        variable: str,
-        sample: RealArray,
+        samples: RealArray,
         distributions: Iterable[_DistributionNameT],
     ) -> dict[str, dict[str, _DistributionT | MeasureType]]:
         """Fit different distributions for a given dataset marginal.
 
         Args:
-            variable: A variable name.
-            sample: A data array.
+            samples: The samples.
             distributions: The names of the distributions.
 
         Returns:
             The distributions for the different variables.
         """
-        factory = self._DISTRIBUTION_FITTER(variable, sample)
+        factory = self._DISTRIBUTION_FITTER(samples)
         result = {}
         for distribution in distributions:
             fitted_distribution = factory.fit(distribution)

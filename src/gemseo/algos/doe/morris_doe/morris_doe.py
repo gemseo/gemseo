@@ -68,7 +68,7 @@ class MorrisDOE(BaseDOELibrary[MorrisDOE_Settings]):
         doe_algo_settings = self._settings.doe_algo_settings
 
         factory = DOELibraryFactory()
-        doe_algo_name = doe_algo_settings._TARGET_CLASS_NAME
+        doe_algo_name = doe_algo_settings.target_class_name
         doe_algo = factory.create(doe_algo_name)
         oat_algo = factory.create("OATDOE")
         dimension = design_space.dimension

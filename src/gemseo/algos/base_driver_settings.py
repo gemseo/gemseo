@@ -17,12 +17,12 @@
 from __future__ import annotations
 
 from pydantic import Field
+from pydantic import NonNegativeFloat
 from pydantic import PositiveInt
-from pydantic.types import NonNegativeFloat  # noqa: TC002
 
-from gemseo.algos.base_settings import BaseSettings
 from gemseo.algos.progress_bar_data.data import ProgressBarData
-from gemseo.algos.progress_bar_data.factory import ProgressBarDataName  # noqa: TC001
+from gemseo.algos.progress_bar_data.factory import ProgressBarDataName
+from gemseo.utils.pydantic import BaseSettings
 
 
 class BaseDriverSettings(BaseSettings):

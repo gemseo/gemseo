@@ -26,7 +26,7 @@ from typing import Any
 
 from gemseo.core.serializable import Serializable
 from gemseo.utils.directory_creator import DirectoryCreator
-from gemseo.utils.directory_creator import DirectoryNamingMethod
+from gemseo.utils.directory_creator import Naming
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -62,7 +62,7 @@ class _BaseExecutableRunner(Serializable):
         self,
         command_line: str,
         root_directory: str | Path = "",
-        directory_naming_method: DirectoryNamingMethod = DirectoryNamingMethod.UUID,
+        naming: Naming = Naming.UUID,
         data_paths: Iterable[str | Path] = (),
         working_directory: str | Path = "",
         **subprocess_run_options: Any,
@@ -74,7 +74,7 @@ class _BaseExecutableRunner(Serializable):
             root_directory: The path to the root directory,
                 wherein unique directories will be created at each execution.
                 If empty, use the current working directory.
-            directory_naming_method: The method to create the execution directories.
+            naming: The naming convention to create the execution directories.
             data_paths: The directories and files to copy into the execution
                 directory.
             working_directory: The directory within to execute the command line.
@@ -82,8 +82,8 @@ class _BaseExecutableRunner(Serializable):
             **subprocess_run_options: The options of the `subprocess.run` method.
         """  # noqa:D205 D212 D415
         self.__directory_creator = DirectoryCreator(
+            naming,
             root_directory=root_directory,
-            directory_naming_method=directory_naming_method,
         )
         self.command_line = command_line
         self._data_paths = list(map(Path, data_paths))

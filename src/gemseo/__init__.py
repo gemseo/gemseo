@@ -90,7 +90,6 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
     from gemseo.algos.base_driver_library import DriverSettingType
-    from gemseo.algos.base_settings import BaseSettings
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.doe.base_doe_settings import BaseDOESettings
@@ -129,6 +128,7 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
+    from gemseo.utils.pydantic import BaseSettings
     from gemseo.utils.xdsm.xdsm import XDSM
 
 # Most modules are imported directly in the methods, which adds a very small

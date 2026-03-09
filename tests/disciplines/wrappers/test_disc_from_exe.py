@@ -36,7 +36,7 @@ from gemseo.disciplines.wrappers.disc_from_exe import Parser
 from gemseo.disciplines.wrappers.disc_from_exe import parse_key_value_file
 from gemseo.disciplines.wrappers.disc_from_exe import parse_outfile
 from gemseo.disciplines.wrappers.disc_from_exe import parse_template
-from gemseo.utils.directory_creator import DirectoryNamingMethod
+from gemseo.utils.directory_creator import Naming
 
 from .cfgobj_exe import execute as exec_cfg
 from .sum_data import execute as exec_sum
@@ -116,7 +116,7 @@ def test_disc_from_exe_cfgobj(tmp_wd) -> None:
         parse_outfile_method=Parser.KEY_VALUE,
         input_filename="input.cfg",
         output_filename="output.cfg",
-        directory_naming_method=DirectoryNamingMethod.UUID,
+        naming=Naming.UUID,
     )
 
     disc.execute(indata)
@@ -144,7 +144,7 @@ def test_disc_from_exe_cfgobj_parser_str(tmp_wd, parser) -> None:
         parse_outfile_method=parser,
         input_filename="input.cfg",
         output_filename="output.cfg",
-        directory_naming_method="UUID",
+        naming="UUID",
     )
 
 
@@ -278,7 +278,7 @@ def test_parallel_execution(tmp_wd) -> None:
         command_line=exec_cmd,
         input_filename="input.json",
         output_filename="output.json",
-        directory_naming_method=DirectoryNamingMethod.UUID,
+        naming=Naming.UUID,
     )
 
     design_space = DesignSpace()

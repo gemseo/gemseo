@@ -121,7 +121,7 @@ def test_ode_problem_1d(times_eval) -> None:
     assert problem.initial_state == initial_state
     assert problem.result.state_trajectories.size != 0
     assert problem.result.state_trajectories.size == problem.result.times.size
-    assert problem.result.algorithm_name == settings._TARGET_CLASS_NAME
+    assert problem.result.algorithm_name == settings.target_class_name
     assert (
         problem.result.algorithm_termination_message
         == "The solver successfully reached the end of the integration interval."

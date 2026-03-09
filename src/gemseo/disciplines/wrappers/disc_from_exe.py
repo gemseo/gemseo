@@ -39,7 +39,7 @@ from strenum import StrEnum
 from gemseo.core.discipline.data_processor import FloatDataProcessor
 from gemseo.disciplines.wrappers._base_disc_from_exe import _BaseDiscFromExe
 from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableRunner
-from gemseo.utils.directory_creator import DirectoryNamingMethod
+from gemseo.utils.directory_creator import Naming
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -167,7 +167,7 @@ class DiscFromExe(_BaseDiscFromExe):
         command_line: str,
         input_filename: str | Path,
         output_filename: str | Path,
-        directory_naming_method: DirectoryNamingMethod = DirectoryNamingMethod.NUMBERED,
+        naming: Naming = Naming.NUMBERED,
         name: str = "",
         parse_outfile_method: Parser | OutputParser = Parser.TEMPLATE,
         write_input_file_method: InputWriter | None = None,
@@ -194,7 +194,7 @@ class DiscFromExe(_BaseDiscFromExe):
             output_filename: The name of the output file
                 to be generated in the output folder.
                 E.g. `"output.txt"`.
-            directory_naming_method: The method to create the execution directories.
+            naming: The naming convention to create the execution directories.
             parse_outfile_method: The optional method that can be provided
                 by the user to parse the output template file.
                 If the
@@ -213,7 +213,7 @@ class DiscFromExe(_BaseDiscFromExe):
         self._executable_runner = _BaseExecutableRunner(
             root_directory=root_directory,
             command_line=command_line,
-            directory_naming_method=directory_naming_method,
+            naming=naming,
         )
         super().__init__(
             self._executable_runner,

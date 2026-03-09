@@ -21,18 +21,18 @@ from typing import TYPE_CHECKING
 
 from pydantic import ConfigDict
 from pydantic import Field
-from pydantic import NonNegativeFloat  # noqa: TC002
-from pydantic import NonNegativeInt  # noqa: TC002
+from pydantic import NonNegativeFloat
+from pydantic import NonNegativeInt
 from pydantic import model_validator
 from strenum import StrEnum
 
-from gemseo.algos.base_settings import BaseSettings
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (  # noqa: TC001
+from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
 )
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.core.coupling_structure import CouplingStructure  # noqa: TC001
-from gemseo.typing import StrKeyMapping  # noqa: TC001
+from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.typing import StrKeyMapping
+from gemseo.utils.pydantic import BaseSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self

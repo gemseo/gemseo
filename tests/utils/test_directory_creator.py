@@ -25,7 +25,7 @@ from re import match
 import pytest
 
 from gemseo.utils.directory_creator import DirectoryCreator
-from gemseo.utils.directory_creator import DirectoryNamingMethod
+from gemseo.utils.directory_creator import Naming
 
 BASE_DIR = Path("resource_dir")
 
@@ -56,27 +56,25 @@ def empty_directory(tmp_wd) -> None:
 
 def test_get_unique_run_folder_path(directories) -> None:
     """Test the method: ``get_unique_run_folder_path``."""
-    dir_creator = DirectoryCreator("resource_dir")
+    dir_creator = DirectoryCreator(root_directory="resource_dir")
     assert dir_creator.create() == Path("resource_dir/4")
     assert dir_creator.create() == Path("resource_dir/5")
 
     # a director that does not exist
-    dir_creator = DirectoryCreator("resource_dir/foo/bar")
+    dir_creator = DirectoryCreator(root_directory="resource_dir/foo/bar")
     assert dir_creator.create() == Path("resource_dir/foo/bar/1")
 
 
 def test_get_unique_run_folder_path_empty(empty_directory) -> None:
     """Test the method: ``create`` on empty directory."""
-    dir_creator = DirectoryCreator("empty_resource_dir")
+    dir_creator = DirectoryCreator(root_directory="empty_resource_dir")
     assert dir_creator.create() == Path("empty_resource_dir/1")
 
 
 def test_uuid_folder(tmp_wd, directories) -> None:
     """Test that unique folder based on ``UUID`` can be written in a non empty
     directory."""
-    dir_creator = DirectoryCreator(
-        root_directory=BASE_DIR, directory_naming_method=DirectoryNamingMethod.UUID
-    )
+    dir_creator = DirectoryCreator(Naming.UUID, root_directory=BASE_DIR)
     for _ in range(2):
         folder_name = dir_creator.create()
         assert match(r"[0-9a-fA-F]{12}$", str(folder_name.name)) is not None
@@ -85,9 +83,7 @@ def test_uuid_folder(tmp_wd, directories) -> None:
 def test_run_dir_creator_serialization(tmp_wd) -> None:
     """Test that a DirectoryCreator can be serialized and deserialized in
     ``UUID`` mode."""
-    unique_dir_generator = DirectoryCreator(
-        root_directory=BASE_DIR, directory_naming_method=DirectoryNamingMethod.UUID
-    )
+    unique_dir_generator = DirectoryCreator(Naming.UUID, root_directory=BASE_DIR)
     with open("run_folder.pkl", "wb") as file:
         pickle.dump(unique_dir_generator, file)
 
@@ -98,7 +94,7 @@ def test_run_dir_creator_serialization(tmp_wd) -> None:
 
 def test_last_directory(tmp_wd) -> None:
     """Test the method: ``get_unique_run_folder_path``."""
-    dir_creator = DirectoryCreator(".")
+    dir_creator = DirectoryCreator(root_directory=".")
     assert dir_creator.last_directory is None
     path = dir_creator.create()
     assert path == dir_creator.last_directory
@@ -107,17 +103,15 @@ def test_last_directory(tmp_wd) -> None:
 @pytest.mark.parametrize(
     "directory_naming_method",
     [
-        ("UUID", DirectoryNamingMethod.UUID),
-        (DirectoryNamingMethod.UUID, DirectoryNamingMethod.UUID),
-        (DirectoryNamingMethod.NUMBERED, DirectoryNamingMethod.NUMBERED),
-        ("NUMBERED", DirectoryNamingMethod.NUMBERED),
+        ("UUID", Naming.UUID),
+        (Naming.UUID, Naming.UUID),
+        (Naming.NUMBERED, Naming.NUMBERED),
+        ("NUMBERED", Naming.NUMBERED),
     ],
 )
 def test_create(tmp_wd, directory_naming_method) -> None:
     """Test the method: ``create``."""
-    dir_creator = DirectoryCreator(
-        ".", directory_naming_method=directory_naming_method[0]
-    )
+    dir_creator = DirectoryCreator(directory_naming_method[0], root_directory=".")
     path = dir_creator.create()
     assert path == dir_creator.last_directory
     assert path.is_dir()

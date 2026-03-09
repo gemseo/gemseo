@@ -21,8 +21,8 @@ from pathlib import Path
 
 from gemseo.utils.name_generator import NameGenerator
 
-# TODO: API: Rename to Naming and update all references.
-DirectoryNamingMethod = NameGenerator.Naming
+Naming = NameGenerator.Naming
+"""The naming conventions."""
 
 
 class DirectoryCreator(NameGenerator):
@@ -32,28 +32,23 @@ class DirectoryCreator(NameGenerator):
     """The absolute path of the root directory, wherein unique directories will be
     created."""
 
-    __directory_naming_method: DirectoryNamingMethod
-    """The method to create the directory names."""
-
     __last_directory: Path | None
     """The last created directory or `None` if none has been created."""
 
     def __init__(
         self,
+        naming: Naming = Naming.NUMBERED,
         root_directory: str | Path = "",
-        directory_naming_method: DirectoryNamingMethod = DirectoryNamingMethod.NUMBERED,
     ) -> None:
         """
         Args:
             root_directory: The path to the root directory,
                 wherein unique directories will be created.
                 If empty, use the current working directory.
-            directory_naming_method: The method to create the directory names.
         """  # noqa:D205 D212 D415
         self.__root_directory = Path(root_directory) if root_directory else Path.cwd()
         self.__last_directory = None
-        # TODO: API: Rename to naming_method
-        super().__init__(naming_method=directory_naming_method)
+        super().__init__(naming=naming)
 
     @property
     def last_directory(self) -> Path | None:
