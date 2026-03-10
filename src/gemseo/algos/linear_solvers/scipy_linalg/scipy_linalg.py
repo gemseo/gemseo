@@ -44,9 +44,6 @@ from gemseo.algos.linear_solvers.base_linear_solver_library import (
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     LinearSolverDescription,
 )
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (
-    BaseLinearSolverSettings,
-)
 from gemseo.algos.linear_solvers.scipy_linalg.settings.base_scipy_linalg_settings import (  # noqa: E501
     BaseSciPyLinalgSettingsBase,
 )
@@ -189,13 +186,12 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
         if self._settings.store_residuals:
             self._settings.callback = self.__store_residuals
 
-        settings_ = self._filter_settings(
-            self._settings.model_dump(), model_to_exclude=BaseLinearSolverSettings
-        )
-
+        filtered_settings = self._filter_settings()
         linear_solver = self.__NAMES_TO_FUNCTIONS[self._algo_name]
-        problem.solution, info = linear_solver(problem.lhs, problem.rhs, **settings_)
-        self._check_solver_info(info, settings_)
+        problem.solution, info = linear_solver(
+            problem.lhs, problem.rhs, **filtered_settings
+        )
+        self._check_solver_info(info, filtered_settings)
 
     def _get_result(self, problem: LinearProblem) -> NumberArray:
         return problem.solution

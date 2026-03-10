@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.algos.base_algorithm_library import AlgorithmDescription
 from gemseo.algos.base_algorithm_library import BaseAlgorithmLibrary
@@ -43,6 +44,10 @@ class ODESolverDescription(AlgorithmDescription):
 
 class BaseODESolverLibrary(BaseAlgorithmLibrary[BaseODESolverSettings]):
     """Base class for libraries of ODE solvers."""
+
+    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BaseODESolverSettings]] = (
+        BaseODESolverSettings
+    )
 
     def _pre_run(
         self,

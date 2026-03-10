@@ -76,11 +76,9 @@ class BaseLinearModelFitter(
                 [settings_class][gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter.BaseLinearModelFitter.settings_class].
         """  # noqa: D205, D212
         settings = create_model(self.settings_class, settings_model=settings)
-        fitter_kwargs = {
-            key: value
-            for key, value in settings.model_dump().items()
-            if key not in BaseLinearModelFitterSettings.model_fields
-        }
+        fitter_kwargs = settings.model_dump(
+            exclude=BaseLinearModelFitterSettings.model_fields.keys()
+        )
         fitter_kwargs.update(self._PRIORITARY_FITTER_KWARGS)
         self._fitter = self._FITTER_CLASS(**fitter_kwargs)
         self._settings = settings

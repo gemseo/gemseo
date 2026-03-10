@@ -35,7 +35,6 @@ from scipy.optimize import minimize
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
     BaseScipyLocalSettings,
 )
@@ -161,15 +160,12 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             for constraint in self._get_right_sign_constraints(problem)
         ]
 
-        # Filter settings to get only the scipy.optimize.minimize ones
-        settings_ = self._filter_settings(
-            self._settings.model_dump(), BaseOptimizerSettings
-        )
+        filtered_settings = self._filter_settings()
 
         # Deactivate stopping criteria which are handled by GEMSEO
         tolerance = 0.0
         if self._algo_name != "TNC":
-            settings_["maxiter"] = C_LONG_MAX
+            filtered_settings["maxiter"] = C_LONG_MAX
 
         kwargs = {}
         if self.ALGORITHM_INFOS[self._algo_name].require_gradient:
@@ -180,7 +176,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             method=self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name,
             bounds=bounds,
             constraints=scipy_constraints,
-            options=settings_,
+            options=filtered_settings,
             tol=tolerance,
             **kwargs,
         )

@@ -25,6 +25,7 @@ import pickle
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import TypeVar
 from uuid import uuid4
 
@@ -75,6 +76,10 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary[T]):
 
     _problem: LinearProblem
     """The linear problem to solve."""
+
+    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BaseLinearSolverSettings]] = (
+        BaseLinearSolverSettings
+    )
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)

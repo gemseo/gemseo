@@ -33,7 +33,6 @@ from scipy.optimize import linprog
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.scipy_linprog.settings.base_scipy_linprog_settings import (
     BaseSciPyLinProgSettings,
@@ -132,11 +131,7 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
             MDOLinearFunction.ConstraintType.EQ,
         )
 
-        # Filter settings to get only the scipy.optimize.linprog ones
-        settings_ = self._filter_settings(
-            self._settings.model_dump(), BaseOptimizerSettings
-        )
-
+        filtered_settings = self._filter_settings()
         linprog_result = linprog(
             c=obj_coeff.real,
             A_ub=ineq_lhs,
@@ -145,7 +140,7 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
             b_eq=eq_rhs,
             bounds=bounds,
             method=self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name,
-            options=settings_,
+            options=filtered_settings,
             integrality=concatenate([
                 [
                     problem.design_space.variable_types[variable_name]
