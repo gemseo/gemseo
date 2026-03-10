@@ -33,7 +33,6 @@ from scipy.integrate import solve_ivp
 
 from gemseo.algos.ode.base_ode_solver_library import BaseODESolverLibrary
 from gemseo.algos.ode.base_ode_solver_library import ODESolverDescription
-from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
 from gemseo.algos.ode.scipy_ode.settings.base_scipy_ode_jac_settings import (
     BaseScipyODESolverJacSettings,
 )
@@ -115,17 +114,15 @@ class ScipyODEAlgos(BaseODESolverLibrary):
     }
 
     def _run(self, problem: ODEProblem) -> ODEResult:
-        settings_ = self._filter_settings(
-            self._settings.model_dump(), model_to_exclude=BaseODESolverSettings
-        )
+        filtered_settings = self._filter_settings()
         if issubclass(
             self.ALGORITHM_INFOS[self.algo_name].settings_class,
             BaseScipyODESolverJacSettings,
         ):
-            settings_["jac"] = problem.jac_function_wrt_state
+            filtered_settings["jac"] = problem.jac_function_wrt_state
 
         if problem.compute_trajectory and not problem.solve_at_algorithm_times:
-            settings_["t_eval"] = problem.evaluation_times
+            filtered_settings["t_eval"] = problem.evaluation_times
 
         solution = solve_ivp(
             fun=problem.rhs_function,
@@ -133,11 +130,11 @@ class ScipyODEAlgos(BaseODESolverLibrary):
             method=self._algo_name,
             t_span=problem.time_interval,
             events=problem.event_functions,
-            **settings_,
+            **filtered_settings,
         )
 
         problem.result.algorithm_name = self._algo_name
-        problem.result.algorithm_settings = settings_
+        problem.result.algorithm_settings = filtered_settings
         problem.result.algorithm_has_converged = solution.status >= 0
         problem.result.algorithm_termination_message = solution.message
         problem.result.times = solution.t

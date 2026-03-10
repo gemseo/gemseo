@@ -42,7 +42,6 @@ from scipy.optimize import shgo
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.scipy_global.settings.base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
 )
@@ -160,34 +159,30 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
         if problem.constraints:
             problem.add_listener(self._iter_callback)
 
-        # Filter settings to get only the ones of the global optimizer
-        settings_ = self._filter_settings(
-            self._settings.model_dump(), BaseOptimizerSettings
-        )
-
+        filtered_settings = self._filter_settings()
         if self._algo_name == "SHGO":
             constraints = self.__get_constraints_as_scipy_dictionary(problem)
-            settings_["constraints"] = constraints
+            filtered_settings["constraints"] = constraints
         elif self._algo_name == "DIFFERENTIAL_EVOLUTION":
             constraints = self.__get_non_linear_constraints(problem)
-            settings_["constraints"] = constraints
+            filtered_settings["constraints"] = constraints
 
         # Deactivate stopping criteria which are handled by GEMSEO
         if self._algo_name == "SHGO":
-            settings_["options"].update(
+            filtered_settings["options"].update(
                 dict.fromkeys(["maxev", "maxfev", "maxiter", "maxtime"], maxsize)
             )
-            settings_["options"]["ftol"] = 0.0
+            filtered_settings["options"]["ftol"] = 0.0
         elif self._algo_name == "DUAL_ANNEALING":
-            settings_["maxiter"] = settings_["maxfun"] = maxsize
+            filtered_settings["maxiter"] = filtered_settings["maxfun"] = maxsize
         else:  # Necessarily the differential evolution algorithm
-            settings_["maxiter"] = maxsize
+            filtered_settings["maxiter"] = maxsize
 
         global_optimizer = self.__NAMES_TO_FUNCTIONS[self._algo_name]
         opt_result = global_optimizer(
             func=self._compute_objective,
             bounds=bounds,
-            **settings_,
+            **filtered_settings,
         )
 
         return opt_result.message, opt_result.success

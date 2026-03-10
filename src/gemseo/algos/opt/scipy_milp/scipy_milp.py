@@ -36,7 +36,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.design_space_utils import get_value_and_bounds
 from gemseo.algos.opt.base_optimization_library import BaseOptimizationLibrary
 from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDescription
-from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import MILP_Settings
 from gemseo.algos.optimization_result import OptimizationResult
@@ -140,17 +139,13 @@ class ScipyMILP(BaseOptimizationLibrary[MILP_Settings]):
                 )
             )
 
-        # Filter settings to get only the scipy.optimize.milp ones
-        settings_ = self._filter_settings(
-            self._settings.model_dump(), BaseOptimizerSettings
-        )
-
-        # Pass the MILP to Scipy
+        # Pass the MILP to SciPy
+        filtered_settings = self._filter_settings()
         milp_result = milp(
             c=obj_coeff.real,
             bounds=bounds,
             constraints=lq_constraints,
-            options=settings_,
+            options=filtered_settings,
             integrality=concatenate([
                 [
                     self._problem.design_space.get_type(variable_name)

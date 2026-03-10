@@ -106,6 +106,10 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T]):
     ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {}
     """The description of the algorithms contained in the library."""
 
+    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BaseOptimizerSettings]] = (
+        BaseOptimizerSettings
+    )
+
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
         self._f_tol_tester = ObjectiveToleranceTester()

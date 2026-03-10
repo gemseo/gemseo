@@ -158,10 +158,6 @@ class SciPyDOE(BaseDOELibrary[BaseSciPyDOESettings]):
         algo = self.__NAMES_TO_CLASSES[self._algo_name](
             design_space.dimension,
             seed=self._seeder.get_seed(self._settings.seed),
-            **{
-                k: v
-                for k, v in self._settings.model_dump().items()
-                if k in self.__SCIPY_OPTION_NAMES
-            },
+            **self._settings.model_dump(include=self.__SCIPY_OPTION_NAMES),
         )
         return algo.random(self._settings.n_samples)

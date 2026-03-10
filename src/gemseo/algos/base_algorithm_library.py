@@ -45,7 +45,6 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.algos.base_problem import BaseProblem
-    from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 T = TypeVar("T", bound=BaseSettings)
@@ -104,6 +103,11 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
     _settings: T | None
     """The Pydantic model for the settings of the formulation."""
 
+    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[T]]
+    """The settings class whose fields should be excluded from settings.
+
+    The BaseGradientBasedAlgorithmSettings' fields will also be excluded."""
+
     def __init__(self, algo_name: str) -> None:
         """
         Args:
@@ -132,25 +136,19 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
         """The name of the algorithm."""
         return self._algo_name
 
-    @staticmethod
-    def _filter_settings(
-        settings: StrKeyMapping,
-        model_to_exclude: type[BaseSettings],
-    ) -> dict[str, Any]:
-        """Filter settings.
+    def _filter_settings(self) -> dict[str, Any]:
+        """Generate a partial dictionary representation of the settings.
 
-        Args:
-            settings: The settings to be filtered.
-            model_to_exclude: The model whose fields should be excluded from settings.
+        This dictionary does not include the fields from `_SETTINGS_CLASS_TO_EXCLUDE`.
 
         Returns:
-            The validated settings.
+            A partial dictionary representation of the settings.
         """
-        fields_to_exclude = model_to_exclude.model_fields
-
-        # Remove GEMSEO settings lying in dedicated Pydantic models
-        fields_to_exclude |= BaseGradientBasedAlgorithmSettings.model_fields
-        return {key: settings[key] for key in settings if key not in fields_to_exclude}
+        fields_to_exclude = (
+            self._SETTINGS_CLASS_TO_EXCLUDE.model_fields.keys()
+            | BaseGradientBasedAlgorithmSettings.model_fields.keys()
+        )
+        return self._settings.model_dump(exclude=fields_to_exclude)
 
     def _pre_run(
         self,

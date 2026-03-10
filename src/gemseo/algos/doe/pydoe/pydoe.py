@@ -133,26 +133,25 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
         ),
     }
 
+    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BasePyDOESettings]] = BasePyDOESettings
+
     def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
         if self._algo_name == "PYDOE_FULLFACT":
             return PyDOEFullFactorialDOE().generate_samples(
                 design_space.dimension, self._settings
             )
 
-        settings_ = self._filter_settings(
-            self._settings.model_dump(),
-            BasePyDOESettings,
-        )
+        filtered_settings = self._filter_settings()
         doe_algorithm = self.__NAMES_TO_FUNCTIONS[self._algo_name]
         if self._algo_name == "PYDOE_LHS":
-            settings_["random_state"] = RandomState(
+            filtered_settings["random_state"] = RandomState(
                 self._seeder.get_seed(self._settings.random_state)
             )
-            settings_["samples"] = settings_["n_samples"]
-            del settings_["n_samples"]
-            return doe_algorithm(design_space.dimension, **settings_)
+            filtered_settings["samples"] = filtered_settings["n_samples"]
+            del filtered_settings["n_samples"]
+            return doe_algorithm(design_space.dimension, **filtered_settings)
 
-        data = doe_algorithm(design_space.dimension, **settings_)
+        data = doe_algorithm(design_space.dimension, **filtered_settings)
         # Scale data from [-1,1] to [0,1]
         return (data + 1.0) / 2.0
 
