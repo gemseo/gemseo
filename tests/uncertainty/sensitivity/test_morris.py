@@ -32,6 +32,7 @@ from numpy.testing import assert_almost_equal
 from gemseo import create_discipline
 from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.parameter_space import ParameterSpace
+from gemseo.core.discipline import Discipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
@@ -406,3 +407,34 @@ def test_constant_output(discipline_with_constant_output_and_space, normalize):
     indices = analysis.compute_indices(normalize=normalize)
     assert indices.mu["constant"][0] is None
     assert indices.mu["varying"][0] is not None
+
+
+@pytest.mark.parametrize(
+    ("baseline_images"),
+    [
+        (["plot_vectorial_input"]),
+    ],
+)
+@image_comparison(None)
+def test_morris_vectorial_input(baseline_images):
+    """Check that the Morris plot for vectorial input correctly labels the input
+    components."""
+
+    class MyDisc(Discipline):
+        def __init__(self):
+            super().__init__()
+            self.io.input_grammar.update_from_names(["x1"])
+            self.io.output_grammar.update_from_names(["y1"])
+
+        def _run(self, input_data):
+            return {"y1": input_data["x1"]}
+
+    discipline = MyDisc()
+    uncertain_space = ParameterSpace()
+    uncertain_space.add_random_variable(
+        "x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi), size=2
+    )
+    analysis = MorrisAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 0)
+    analysis.compute_indices(normalize=True)
+    analysis.plot(save=False, output="y1")
