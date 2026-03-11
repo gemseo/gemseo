@@ -70,6 +70,7 @@ import matplotlib.pyplot as plt
 from numpy import abs as np_abs
 from numpy import array
 from numpy import concatenate
+from numpy import hstack
 from numpy import where
 from strenum import StrEnum
 
@@ -343,11 +344,11 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         """  # noqa: D415 D417
         output_name, output_component = get_name_and_component(output)
         names = filter_names(self._input_names, input_names)
-        x_val = [
+        x_val = hstack([
             self._indices.mu_star[output_name][output_component][name] for name in names
-        ]
+        ])
         sigma = self._indices.sigma[output_name]
-        y_val = [sigma[output_component][name] for name in names]
+        y_val = hstack([sigma[output_component][name] for name in names])
         fig, ax = plt.subplots()
         ax.scatter(x_val, y_val)
         ax.set_xlabel(r"$\mu^*$")
@@ -362,12 +363,21 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         ax.set_title(title or default_title)
         ax.set_axisbelow(True)
         ax.grid()
-        x_offset = offset * (max(x_val) - min(x_val)) / 100.0
-        y_offset = offset * (max(y_val) - min(y_val)) / 100.0
-        for index, txt in enumerate(names):
-            ax.annotate(
-                txt, ((x_val[index] + x_offset)[0], (y_val[index] + y_offset)[0])
-            )
+        x_offset = offset * (x_val.max() - x_val.min()) / 100.0
+        y_offset = offset * (y_val.max() - y_val.min()) / 100.0
+        index_memory = 0
+        mu_star = self._indices.mu_star[output_name][output_component]
+        for input_name in names:
+            size = mu_star[input_name].size
+            for i in range(size):
+                ax.annotate(
+                    repr_variable(input_name, i, size=size),
+                    (
+                        x_val[index_memory + i] + x_offset,
+                        y_val[index_memory + i] + y_offset,
+                    ),
+                )
+            index_memory += size
         save_show_figure_from_file_path_manager(
             fig,
             self._file_path_manager if save else None,
