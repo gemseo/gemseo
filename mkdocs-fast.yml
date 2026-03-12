@@ -240,3 +240,10 @@ watch:
 extra:
   version:
     provider: mike
+  legacy_versions:
+    - label: "6.3 (legacy)"
+      url: "https://gemseo.readthedocs.io/en/stable/index.html"
+    - label: "6.2 (legacy)"
+      url: "https://gemseo.readthedocs.io/en/6.2.0/index.html"
+    - label: "6.1 (legacy)"
+      url: "https://gemseo.readthedocs.io/en/6.1.0/index.html"
