@@ -24,10 +24,9 @@ Contributors:
 
 !!! info "Tutorial"
     - [Execute your first Multi-Disciplinary Optimization][tutorial-execute-your-first-multi-disciplinary-optimization]
-    - [Execute a bilevel-based Multi-Disciplinary Optimization][tutorial-execute-a-bilevel-based-multi-disciplinary-optimization]
+    - [Solve a bi-level MDO problem][tutorial-solve-a-bi-level-mdo-problem]
 
 !!! info "How-to"
-    - [Get the list of the available formulations][get-the-list-of-the-available-formulations]
     - [Generate an XDSM chart][generate-an-xdsm-chart]
     - [Save the execution history of a scenario][save-the-execution-history-of-a-scenario]
     - [Use multi-processing for your DOE][use-multi-processing-for-your-doe]
