@@ -56,6 +56,7 @@ from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settin
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiMissionSG
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiPropulsionSG
@@ -1231,3 +1232,28 @@ def test_no_objective():
         match=re.escape("Missing objective function in optimization problem."),
     ):
         scenario.execute(SLSQP_Settings(max_iter=100))
+
+
+@pytest.mark.parametrize("add_obj_c", [False, True])
+def test_observe_all_outputs(sellar_disciplines, add_obj_c) -> None:
+    """Test the observe_all_outputs method for an mdo scenario with constraints."""
+    scenario = create_scenario(
+        sellar_disciplines,
+        "obj",
+        SellarDesignSpace(),
+        formulation_name="MDF",
+    )
+    expected_outputs = ["obj"]
+    if add_obj_c:
+        scenario.add_constraint("c_1")
+        scenario.add_constraint("c_2")
+        expected_outputs.extend(["c_1", "c_2"])
+    assert scenario.formulation.problem.function_names == expected_outputs
+    scenario.observe_all_outputs()
+    assert scenario.formulation.problem.function_names == [
+        "obj",
+        "c_1",
+        "c_2",
+        "y_1",
+        "y_2",
+    ]

@@ -44,6 +44,12 @@ def discipline_b() -> AnalyticDiscipline:
 
 
 @pytest.fixture
+def discipline_c() -> AnalyticDiscipline:
+    """Discipline C."""
+    return AnalyticDiscipline({"w": "x*2"}, name="C")
+
+
+@pytest.fixture
 def design_space() -> DesignSpace:
     """The design space."""
     space = DesignSpace()
@@ -92,3 +98,28 @@ def test_observable_name(discipline_a, design_space):
     scenario.execute(CustomDOE_Settings(samples=array([[2.0], [3.0]])))
     dataset = scenario.to_dataset()
     assert_equal(dataset.get_view(variable_names="foo"), array([[3.0], [4.0]]))
+
+
+@pytest.mark.parametrize("add_y", [False, True])
+def test_observe_all_outputs(
+    discipline_a, discipline_b, discipline_c, design_space, add_y
+):
+    """Test the observe_all_outputs method."""
+    scenario = EvaluationScenario(
+        [discipline_b, discipline_a, discipline_c],
+        design_space,
+    )
+    if add_y:
+        scenario.add_observable("y")
+        assert scenario.formulation.problem.function_names == ["y"]
+
+    scenario.observe_all_outputs()
+    assert scenario.formulation.problem.function_names == (
+        ["y", "w", "z"]
+        if add_y
+        else [
+            "w",
+            "y",
+            "z",
+        ]
+    )

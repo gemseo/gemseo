@@ -41,6 +41,7 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.utils.discipline import get_all_outputs
 from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import convert_strings_to_iterable
@@ -224,6 +225,7 @@ class EvaluationScenario(BaseMonitoredProcess):
                 If `None`, detect the discipline from the top-level disciplines.
         """  # noqa: D205, D212
         output_names = convert_strings_to_iterable(output_names)
+
         self.formulation.add_observable(output_names, observable_name, discipline)
 
     @property
@@ -569,3 +571,11 @@ class EvaluationScenario(BaseMonitoredProcess):
             pdf_cleanup=pdf_cleanup,
             pdf_batchmode=pdf_batchmode,
         )
+
+    def observe_all_outputs(self) -> None:
+        """Add all the outputs of the disciplines as observables."""
+        all_output_names = get_all_outputs(self.disciplines)
+        function_names = self.formulation.problem.function_names
+        new_output_names = set(all_output_names).difference(function_names)
+        for output_name in sorted(new_output_names):
+            self.add_observable(output_name)
