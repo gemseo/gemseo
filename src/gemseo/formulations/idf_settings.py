@@ -16,20 +16,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import TYPE_CHECKING
-
 from pydantic import Field
 from pydantic import PositiveInt
-from pydantic import model_validator
 
 from gemseo.formulations.base_settings import BaseFormulationSettings
-from gemseo.mda.chain import MDAChain
 from gemseo.mda.chain_settings import MDAChain_Settings  # noqa: TC001
-from gemseo.typing import StrKeyMapping  # noqa: TC001
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
 
 
 class IDF_Settings(BaseFormulationSettings):  # noqa: N801
@@ -57,13 +48,11 @@ so it is very context dependant.
 Otherwise, IDF will consider only the strong coupling targets.""",
     )
 
-    mda_chain_settings_for_start_at_equilibrium: StrKeyMapping | MDAChain_Settings = (
-        Field(
-            default_factory=dict,
-            description="""The settings for the MDA when `start_at_equilibrium=True`.
+    mda_chain_settings_for_start_at_equilibrium: MDAChain_Settings = Field(
+        default_factory=MDAChain_Settings,
+        description="""The settings for the MDA when `start_at_equilibrium=True`.
 
 See detailed settings in [MDAChain][gemseo.mda.chain.MDAChain].""",
-        )
     )
 
     n_processes: PositiveInt = Field(
@@ -95,13 +84,3 @@ This is important to note
 if you want to execute the same discipline multiple times,
 you shall use multiprocessing.""",
     )
-
-    @model_validator(mode="after")
-    def __mda_chain_settings_to_pydantic_model(self) -> Self:
-        """Convert the MDA chain settings into a Pydantic model."""
-        mda_chain_settings = self.mda_chain_settings_for_start_at_equilibrium
-        if isinstance(mda_chain_settings, Mapping):
-            self.mda_chain_settings_for_start_at_equilibrium = MDAChain.settings_class(
-                **mda_chain_settings
-            )
-        return self

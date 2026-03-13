@@ -65,7 +65,10 @@ def mda_setting() -> StrKeyMapping:
 def reference(mda_setting) -> MDAJacobi:
     """An instance of Jacobi MDA on the Sobieski problem."""
     mda_jacobi = SobieskiMDAJacobi(
-        **mda_setting, acceleration_method=AccelerationMethod.NONE
+        settings=MDAJacobi_Settings(
+            acceleration_method=AccelerationMethod.NONE,
+            **mda_setting,
+        ),
     )
     mda_jacobi.execute()
     return mda_jacobi
@@ -75,9 +78,11 @@ def reference(mda_setting) -> MDAJacobi:
 def test_over_relaxation(mda_setting, relaxation, reference) -> None:
     """Tests the relaxation factor."""
     mda = SobieskiMDAJacobi(
-        **mda_setting,
-        acceleration_method=AccelerationMethod.NONE,
-        over_relaxation_factor=relaxation,
+        settings=MDAJacobi_Settings(
+            acceleration_method=AccelerationMethod.NONE,
+            over_relaxation_factor=relaxation,
+            **mda_setting,
+        ),
     )
     mda.execute()
 
@@ -94,7 +99,12 @@ def test_over_relaxation(mda_setting, relaxation, reference) -> None:
 @pytest.mark.parametrize("acceleration", AccelerationMethod)
 def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
     """Tests the acceleration methods."""
-    mda = SobieskiMDAJacobi(**mda_setting, acceleration_method=acceleration)
+    mda = SobieskiMDAJacobi(
+        settings=MDAJacobi_Settings(
+            acceleration_method=acceleration,
+            **mda_setting,
+        )
+    )
     mda.execute()
 
     assert mda._current_iter <= reference._current_iter
@@ -125,12 +135,12 @@ def test_mda_jacobi_parallel() -> None:
     """Comparison of Jacobi on Sobieski problem: 1 and 4 processes."""
     sorted_couplings = ["y_12", "y_14", "y_21", "y_23", "y_24", "y_31", "y_32", "y_34"]
 
-    mda_seq = SobieskiMDAJacobi(n_processes=1)
+    mda_seq = SobieskiMDAJacobi(settings=MDAJacobi_Settings(n_processes=1))
     assert mda_seq._input_couplings == sorted_couplings
     assert mda_seq.parallel_execution is None
     mda_seq_local_data = mda_seq.execute()
 
-    mda_parallel = SobieskiMDAJacobi(n_processes=4)
+    mda_parallel = SobieskiMDAJacobi(settings=MDAJacobi_Settings(n_processes=4))
     assert mda_seq._input_couplings == sorted_couplings
     assert mda_parallel.parallel_execution is not None
     mda_parallel_local_data = mda_parallel.execute()
@@ -155,14 +165,14 @@ def test_expected_workflow() -> None:
     disc3 = DummyDiscipline()
     disciplines = [disc1, disc2, disc3]
 
-    mda = MDAJacobi(disciplines, n_processes=1)
+    mda = MDAJacobi(disciplines, settings=MDAJacobi_Settings(n_processes=1))
     expected = (
         "{MDAJacobi(DONE), [DummyDiscipline(DONE), DummyDiscipline(DONE), "
         "DummyDiscipline(DONE)]}"
     )
     assert str(mda.get_process_flow().get_execution_flow()) == expected
 
-    mda = MDAJacobi(disciplines, n_processes=2)
+    mda = MDAJacobi(disciplines, settings=MDAJacobi_Settings(n_processes=2))
     expected = (
         "{MDAJacobi(DONE), (DummyDiscipline(DONE), DummyDiscipline(DONE), "
         "DummyDiscipline(DONE))}"

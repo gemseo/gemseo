@@ -23,20 +23,24 @@ import pytest
 from numpy import array
 from numpy import isclose
 
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
+from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
+
 from .utils import generate_parallel_doe
 
 
 @pytest.mark.parametrize(
-    "mda_class",
-    ["MDAQuasiNewton", "MDANewtonRaphson", "MDAGaussSeidel"],
+    "inner_mda_settings",
+    [MDAQuasiNewton_Settings(), MDANewtonRaphson_Settings(), MDAGaussSeidel_Settings()],
 )
-def test_parallel_doe(mda_class) -> None:
+def test_parallel_doe(inner_mda_settings) -> None:
     """Test the execution of Newton methods in parallel.
 
     Args:
-        mda_class: The specific Newton MDA to test.
+        inner_mda_settings: The settings of the inner MDA.
     """
     obj = generate_parallel_doe(
-        "MDAChain", main_mda_settings={"inner_mda_name": mda_class}
+        "MDAChain", main_mda_settings={"inner_mda_settings": inner_mda_settings}
     )
     assert isclose(array([obj]), array([-608.17]), atol=1e-3, rtol=1e-3)

@@ -67,7 +67,7 @@ def mda_setting() -> MDAGaussSeidel_Settings:
 @pytest.fixture
 def reference(mda_setting) -> MDAGaussSeidel:
     """An instance of Gauss-Seidel MDA on the Sobieski problem."""
-    mda_gauss_seidel = SobieskiMDAGaussSeidel(settings_model=mda_setting)
+    mda_gauss_seidel = SobieskiMDAGaussSeidel(settings=mda_setting)
     mda_gauss_seidel.execute()
     return mda_gauss_seidel
 
@@ -76,7 +76,7 @@ def reference(mda_setting) -> MDAGaussSeidel:
 def test_over_relaxation(mda_setting, relaxation, reference) -> None:
     """Tests the relaxation factor."""
     mda_setting.over_relaxation_factor = relaxation
-    mda = SobieskiMDAGaussSeidel(settings_model=mda_setting)
+    mda = SobieskiMDAGaussSeidel(settings=mda_setting)
     mda.execute()
 
     assert allclose(
@@ -93,7 +93,7 @@ def test_over_relaxation(mda_setting, relaxation, reference) -> None:
 def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
     """Tests the acceleration methods."""
     mda_setting.acceleration_method = acceleration
-    mda = SobieskiMDAGaussSeidel(settings_model=mda_setting)
+    mda = SobieskiMDAGaussSeidel(settings=mda_setting)
     mda.execute()
 
     assert mda._current_iter <= reference._current_iter
@@ -111,7 +111,9 @@ def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
 @image_comparison(["sobieski"])
 def test_sobieski(tmp_wd) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
-    mda = SobieskiMDAGaussSeidel(tolerance=1e-12, max_mda_iter=30)
+    mda = SobieskiMDAGaussSeidel(
+        settings=MDAGaussSeidel_Settings(tolerance=1e-12, max_mda_iter=30)
+    )
     mda.io.input_grammar.defaults["x_shared"] += 0.1
     mda.execute()
     mda.io.input_grammar.defaults["x_shared"] += 0.1
@@ -192,7 +194,10 @@ def test_expected_workflow_with_adapter() -> None:
 def test_self_coupled() -> None:
     for plus_y in [False, True]:
         sc_disc = SelfCoupledDisc(plus_y)
-        mda = MDAGaussSeidel([sc_disc], tolerance=1e-14, max_mda_iter=40)
+        mda = MDAGaussSeidel(
+            [sc_disc],
+            settings=MDAGaussSeidel_Settings(tolerance=1e-14, max_mda_iter=40),
+        )
         _ = mda.execute()
         # assert abs(out["y"] - 2. / 3.) < 1e-6
 
@@ -269,7 +274,7 @@ def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) 
         logscale: The limits of the ``y`` axis.
         caplog: Fixture to access and control log capturing.
     """
-    mda = SobieskiMDAGaussSeidel(max_mda_iter=15)
+    mda = SobieskiMDAGaussSeidel(settings=MDAGaussSeidel_Settings(max_mda_iter=15))
     mda.execute()
     mda.io.input_grammar.defaults["x_shared"] += 0.1
     mda.execute()
@@ -293,7 +298,7 @@ def test_virtual_exe_mda(two_virtual_disciplines):  # noqa: F811
 
 def test_max_mda_iter_0(enable_discipline_statistics):
     """Check that Gauss-Seidel calls the disciplines only once when max_mda_iter=0."""
-    mda = SobieskiMDAGaussSeidel(max_mda_iter=0)
+    mda = SobieskiMDAGaussSeidel(settings=MDAGaussSeidel_Settings(max_mda_iter=0))
     assert mda.NORMALIZED_RESIDUAL_NORM not in mda.io.output_grammar
 
     mda.execute()

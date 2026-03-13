@@ -23,7 +23,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from gemseo.mda.base import BaseMDA
@@ -52,19 +51,17 @@ class MDASequential(BaseMDA):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
+        # TODO: API: move to MDASequential_Settings
         mda_sequence: Sequence[BaseMDA],
-        settings_model: MDASequential_Settings | None = None,
-        **settings: Any,
+        settings: MDASequential_Settings | None = None,
     ) -> None:
         """
         Args:
             mda_sequence: The sequence of MDAs.
         """  # noqa:D205 D212 D415
-        super().__init__(disciplines, settings_model=settings_model, **settings)
-
+        super().__init__(disciplines, settings=settings)
         self.mda_sequence = mda_sequence
         self.settings._sub_mdas = self.mda_sequence
-
         for mda in self.mda_sequence:
             mda.reset_history_each_run = True
 

@@ -21,14 +21,13 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.core.parallel_execution.disc_parallel_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
+from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.mda.base_solver import BaseMDASolver
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -42,10 +41,12 @@ if TYPE_CHECKING:
 class BaseMDAParallelSolver(BaseMDASolver):
     """Abstract class for MDA solvers that can be run in parallel."""
 
-    settings_class: ClassVar[type[BaseParallelMDASettings]] = BaseParallelMDASettings
+    settings_class: ClassVar[type[BaseMDAParallelSolverSettings]] = (
+        BaseMDAParallelSolverSettings
+    )
     """The pydantic model for the settings."""
 
-    settings: BaseParallelMDASettings
+    settings: BaseMDAParallelSolverSettings
     """The settings of the MDA"""
 
     __parallel_execution: DiscParallelExecution | None
@@ -57,10 +58,9 @@ class BaseMDAParallelSolver(BaseMDASolver):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: BaseParallelMDASettings | None = None,
-        **settings: Any,
+        settings: BaseMDAParallelSolverSettings | None = None,
     ) -> None:
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
         if self.settings.n_processes > 1:
             self._execute_disciplines = self._execute_disciplines_in_parallel
             self._linearize_disciplines = self._linearize_disciplines_in_parallel

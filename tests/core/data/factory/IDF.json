@@ -12,6 +12,162 @@
     },
     "mda_chain_settings_for_start_at_equilibrium": {
       "type": "object",
+      "properties": {
+        "coupling_structure": {
+          "type": "null"
+        },
+        "linear_solver_settings": {
+          "type": "object",
+          "properties": {
+            "store_residuals": {
+              "type": "boolean"
+            },
+            "use_ilu_precond": {
+              "type": "boolean"
+            },
+            "save_when_fail": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "save_when_fail",
+            "store_residuals",
+            "use_ilu_precond"
+          ]
+        },
+        "log_convergence": {
+          "type": "boolean"
+        },
+        "max_mda_iter": {
+          "type": "integer"
+        },
+        "max_consecutive_unsuccessful_iterations": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "tolerance": {
+          "type": "number"
+        },
+        "use_lu_fact": {
+          "type": "boolean"
+        },
+        "warm_start": {
+          "type": "boolean"
+        },
+        "acceleration_method": {
+          "type": "string"
+        },
+        "over_relaxation_factor": {
+          "type": "number"
+        },
+        "execute_before_linearizing": {
+          "type": "boolean"
+        },
+        "n_processes": {
+          "type": "integer"
+        },
+        "use_threading": {
+          "type": "boolean"
+        },
+        "chain_linearize": {
+          "type": "boolean"
+        },
+        "inner_mda_settings": {
+          "type": "object",
+          "properties": {
+            "coupling_structure": {
+              "type": "null"
+            },
+            "linear_solver_settings": {
+              "type": "object",
+              "properties": {
+                "store_residuals": {
+                  "type": "boolean"
+                },
+                "use_ilu_precond": {
+                  "type": "boolean"
+                },
+                "save_when_fail": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "save_when_fail",
+                "store_residuals",
+                "use_ilu_precond"
+              ]
+            },
+            "log_convergence": {
+              "type": "boolean"
+            },
+            "max_mda_iter": {
+              "type": "integer"
+            },
+            "max_consecutive_unsuccessful_iterations": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "tolerance": {
+              "type": "number"
+            },
+            "use_lu_fact": {
+              "type": "boolean"
+            },
+            "warm_start": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "coupling_structure",
+            "linear_solver_settings",
+            "log_convergence",
+            "max_consecutive_unsuccessful_iterations",
+            "max_mda_iter",
+            "name",
+            "tolerance",
+            "use_lu_fact",
+            "warm_start"
+          ]
+        },
+        "initialize_defaults": {
+          "type": "boolean"
+        },
+        "mdachain_parallel_settings": {
+          "type": "object"
+        },
+        "mdachain_parallelize_tasks": {
+          "type": "boolean"
+        },
+        "sub_coupling_structures": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "acceleration_method",
+        "chain_linearize",
+        "coupling_structure",
+        "execute_before_linearizing",
+        "initialize_defaults",
+        "inner_mda_settings",
+        "linear_solver_settings",
+        "log_convergence",
+        "max_consecutive_unsuccessful_iterations",
+        "max_mda_iter",
+        "mdachain_parallel_settings",
+        "mdachain_parallelize_tasks",
+        "n_processes",
+        "name",
+        "over_relaxation_factor",
+        "sub_coupling_structures",
+        "tolerance",
+        "use_lu_fact",
+        "use_threading",
+        "warm_start"
+      ],
       "description": "The settings for the MDA when `start_at_equilibrium=True`.  See detailed settings in [MDAChain][gemseo.mda.chain.MDAChain]."
     },
     "n_processes": {

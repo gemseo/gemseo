@@ -25,6 +25,7 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
@@ -149,7 +150,9 @@ system_scenario = create_scenario(
     design_space_system,
     formulation_name="BiLevel",
     maximize_objective=True,
-    main_mda_settings=MDAChain_Settings(inner_mda_name="MDAJacobi", tolerance=1e-8),
+    main_mda_settings=MDAChain_Settings(
+        inner_mda_settings=MDAJacobi_Settings(), tolerance=1e-8
+    ),
 )
 system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 system_scenario.add_constraint("lift", value=0.5)

@@ -103,7 +103,7 @@ from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.machine_learning.regression.models.rbf import RBFRegressor
 from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.mda.base import BaseMDA
-from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
+from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.post import OptHistoryView_Settings
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
@@ -949,11 +949,11 @@ def test_configure(
     )
     assert BaseDriverLibrary.enable_progress_bar == enable_progress_bar
     assert BaseMDA.default_cache_type == Discipline.CacheType.SIMPLE
-    assert BaseParallelMDASettings().n_processes == (
+    assert BaseMDAParallelSolverSettings().n_processes == (
         N_CPUS if enable_parallel_execution else 1
     )
     configure()
-    BaseParallelMDASettings.default_n_processes = N_CPUS
+    BaseMDAParallelSolverSettings.default_n_processes = N_CPUS
 
 
 def test_configure_default() -> None:
@@ -966,7 +966,7 @@ def test_configure_default() -> None:
     assert Discipline.validate_output_data is True
     assert Discipline.default_cache_type == Discipline.CacheType.SIMPLE
     assert BaseDriverLibrary.enable_progress_bar is True
-    assert BaseParallelMDASettings().n_processes == N_CPUS
+    assert BaseMDAParallelSolverSettings().n_processes == N_CPUS
 
 
 def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:

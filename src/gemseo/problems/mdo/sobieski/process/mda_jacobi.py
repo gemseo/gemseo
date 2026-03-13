@@ -16,11 +16,14 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 from gemseo.problems.mdo.sobieski.disciplines import create_disciplines
+
+if TYPE_CHECKING:
+    from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 
 
 class SobieskiMDAJacobi(MDAJacobi):
@@ -29,11 +32,10 @@ class SobieskiMDAJacobi(MDAJacobi):
     def __init__(
         self,
         dtype: SobieskiBase.DataType = SobieskiBase.DataType.FLOAT,
-        **settings: Any,
+        settings: MDAJacobi_Settings | None = None,
     ) -> None:
         """
         Args:
             dtype: The NumPy type for data arrays, either "float64" or "complex128".
-            **settings: The settings of the MDA.
         """  # noqa: D205 D212
-        super().__init__(create_disciplines(dtype), **settings)
+        super().__init__(create_disciplines(dtype), settings=settings)

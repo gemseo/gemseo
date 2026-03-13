@@ -23,6 +23,7 @@ from gemseo import create_scenario
 from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
+from gemseo.mda.factory import MDA_FACTORY
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from ..core.test_chain import two_virtual_disciplines  # noqa: F401
@@ -48,6 +49,7 @@ def generate_parallel_doe(
         The optimum solution of the parallel DOE scenario.
     """
     design_space = SobieskiDesignSpace()
+    settings = MDA_FACTORY.get_class(main_mda_name).settings_class(**main_mda_settings)
     scenario = create_scenario(
         create_discipline([
             "SobieskiPropulsion",
@@ -59,8 +61,7 @@ def generate_parallel_doe(
         design_space,
         formulation_name="MDF",
         maximize_objective=True,
-        main_mda_name=main_mda_name,
-        main_mda_settings=main_mda_settings,
+        main_mda_settings=settings,
     )
     scenario.execute(DiagonalDOE_Settings(n_samples=n_samples, n_processes=2))
     return scenario.optimization_result.f_opt

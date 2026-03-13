@@ -32,6 +32,7 @@ from __future__ import annotations
 from logging import WARNING
 
 from gemseo import create_discipline
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.post import OptHistoryView_Settings
@@ -147,7 +148,7 @@ system_scenario = MDOScenario(
             max_mda_iter=50,
             warm_start=True,
             use_lu_fact=False,
-            linear_solver_tolerance=1e-14,
+            linear_solver_settings=LGMRES_Settings(rtol=1e-14),
         ),
         sub_scenarios_log_level=WARNING,
     ),

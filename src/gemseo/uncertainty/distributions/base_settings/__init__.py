@@ -12,17 +12,4 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Base settings for defining probability distributions.
-
-These settings are abstract Pydantic models
-whose `_TARGET_CLASS_NAME` class argument must be defined.
-For example,
-the Pydantic model
-[SPNormalDistribution_Settings][gemseo.uncertainty.distributions.scipy.normal_settings.SPNormalDistribution_Settings]
-deriving from
-[BaseNormalDistributionSettings][gemseo.uncertainty.distributions.base_settings.normal_settings.BaseNormalDistributionSettings]
-can be used for defining a normal distribution based on SciPy
-(see
-[SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]
-).
-"""
+"""Base settings for defining probability distributions."""

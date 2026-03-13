@@ -32,6 +32,7 @@ from gemseo import create_scenario
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.settings.mda import *  # noqa: F401, F403
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 
@@ -184,6 +185,9 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
                         option_value = literal_eval(option_value)
 
                 options[option_name] = option_value
+
+        if "main_mda_settings" in options:
+            options["main_mda_settings"] = eval(options["main_mda_settings"])
 
         scenario = create_scenario(
             disciplines,

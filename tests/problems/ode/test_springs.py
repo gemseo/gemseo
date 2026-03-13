@@ -37,6 +37,7 @@ from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.algos.ode.scipy_ode.settings.radau import Radau_Settings
 from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.ode.springs.coupled_springs_generator import (
     CoupledSpringsGenerator,
 )
@@ -190,7 +191,7 @@ def test_2_chained_masses():
     )
 
     disciplines = [ode_discipline_0, ode_discipline_1]
-    mda = MDAGaussSeidel(disciplines, tolerance=1e-12)
+    mda = MDAGaussSeidel(disciplines, settings=MDAGaussSeidel_Settings(tolerance=1e-12))
 
     discipline_result = mda.execute({
         "initial_position_0": position_0_init,

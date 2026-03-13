@@ -14,6 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
 
@@ -23,6 +24,6 @@ def test_newton_raphson_settings():
         not MDANewtonRaphson_Settings().newton_linear_solver_settings.store_residuals
     )
     settings = MDANewtonRaphson_Settings(
-        newton_linear_solver_settings={"store_residuals": store_residuals}
+        newton_linear_solver_settings=LGMRES_Settings(store_residuals=store_residuals)
     )
     assert settings.newton_linear_solver_settings.store_residuals is store_residuals

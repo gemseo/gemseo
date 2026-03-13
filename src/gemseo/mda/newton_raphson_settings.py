@@ -16,53 +16,30 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from pydantic import Field
-from pydantic import model_validator
 from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,  # noqa: TC001
 )
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
+from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.typing import StrKeyMapping  # noqa: TC001
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
 
 LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
 
-class MDANewtonRaphson_Settings(BaseParallelMDASettings):  # noqa: N801
+class MDANewtonRaphson_Settings(BaseMDAParallelSolverSettings):  # noqa: N801
     """The settings for [MDANewtonRaphson][gemseo.mda.newton_raphson.MDANewtonRaphson]."""  # noqa: E501
 
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
         "execute_before_linearizing": False
     }
 
-    newton_linear_solver_name: LinearSolver = Field(
-        default=LinearSolver.LGMRES,
-        description="""The name of the linear solver for the Newton method.
-
-This field is ignored when `newton_linear_solver_settings` is a Pydantic model.""",
-    )
-
-    newton_linear_solver_settings: StrKeyMapping | BaseLinearSolverSettings = Field(
-        default_factory=dict,
+    newton_linear_solver_settings: BaseLinearSolverSettings = Field(
+        default_factory=LGMRES_Settings,
         description="""The settings for the Newton linear solver.""",
     )
-
-    @model_validator(mode="after")
-    def __newton_linear_solver_settings_to_pydantic_model(self) -> Self:
-        """Convert MDA settings into a Pydantic model."""
-        if isinstance(self.newton_linear_solver_settings, Mapping):
-            factory = LinearSolverLibraryFactory()
-            settings = factory.create_settings(
-                self.newton_linear_solver_name, **self.newton_linear_solver_settings
-            )
-            self.newton_linear_solver_settings = settings
-        return self

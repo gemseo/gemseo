@@ -191,7 +191,7 @@ def test_get_sub_disciplines(scenario, request) -> None:
     """Test the get_sub_disciplines method with the BiLevel formulation.
 
     Args:
-        sobieski_bilevel_scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
+        scenario: Fixture to instantiate a Sobieski BiLevel Scenario.
     """
     scenario = request.getfixturevalue(scenario.__name__)()
     classes = [
@@ -576,7 +576,7 @@ def test_get_top_level_disciplines(scenario, request, include_sub_formulations) 
     "main_mda",
     [
         {"main_mda_settings": MDAGaussSeidel_Settings()},
-        {"main_mda_name": "MDAGaussSeidel", "main_mda_settings": {"max_mda_iter": 10}},
+        {"main_mda_settings": MDAGaussSeidel_Settings(max_mda_iter=10)},
     ],
 )
 def test_main_mda_settings(main_mda):

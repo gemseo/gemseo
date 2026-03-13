@@ -21,7 +21,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from gemseo.mda.base import _BaseMDAProcessFlow
 from gemseo.mda.base_parallel_solver import BaseMDAParallelSolver
@@ -108,10 +107,9 @@ class MDAJacobi(BaseMDAParallelSolver):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAJacobi_Settings | None = None,
-        **settings: Any,
+        settings: MDAJacobi_Settings | None = None,
     ) -> None:
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
         self._compute_input_coupling_names()
         self._set_resolved_variables(self._input_couplings)
 

@@ -30,7 +30,7 @@ from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
-from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
+from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
 from gemseo.utils.constants import _ENABLE_DISCIPLINE_CACHE
 from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATISTICS
@@ -168,7 +168,7 @@ after execution.""",
     @classmethod
     def __validate_enable_parallel_execution(cls, v: bool) -> bool:
         default_n_processes = N_CPUS if v else 1
-        BaseParallelMDASettings.set_default_n_processes(default_n_processes)
+        BaseMDAParallelSolverSettings.set_default_n_processes(default_n_processes)
         return v
 
     @field_validator("enable_progress_bar")

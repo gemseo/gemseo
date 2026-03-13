@@ -21,7 +21,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from gemseo.mda.base import BaseProcessFlow
@@ -133,10 +132,9 @@ class MDAGaussSeidel(BaseMDASolver):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAGaussSeidel_Settings | None = None,
-        **settings: Any,
+        settings: MDAGaussSeidel_Settings | None = None,
     ) -> None:
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
         self._compute_input_coupling_names()
         self._set_resolved_variables(self.coupling_structure.strong_couplings)
         if self.settings.max_mda_iter == 0:

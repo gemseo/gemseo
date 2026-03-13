@@ -21,11 +21,14 @@ from __future__ import annotations
 
 from gemseo.mda.factory import MDA_FACTORY
 from gemseo.mda.jacobi import MDAJacobi
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 
 
 def test_create(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test the factory create."""
-    mda = MDA_FACTORY.create("MDAJacobi", sellar_disciplines, max_mda_iter=2)
+    mda = MDA_FACTORY.create(
+        "MDAJacobi", sellar_disciplines, settings=MDAJacobi_Settings(max_mda_iter=2)
+    )
     assert isinstance(mda, MDAJacobi)
 
 

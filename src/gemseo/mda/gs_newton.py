@@ -23,7 +23,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -52,15 +51,9 @@ class MDAGSNewton(MDASequential):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAGSNewton_Settings | None = None,
-        **settings: Any,
+        settings: MDAGSNewton_Settings | None = None,
     ) -> None:
-        super().__init__(
-            disciplines,
-            mda_sequence=[],
-            settings_model=settings_model,
-            **settings,
-        )
+        super().__init__(disciplines, mda_sequence=[], settings=settings)
 
         cs = {"coupling_structure": self.coupling_structure}
 
@@ -71,7 +64,7 @@ class MDAGSNewton(MDASequential):
         nr_settings = create_model(MDANewtonRaphson_Settings, **nr_settings)
 
         self.mda_sequence = [
-            MDAGaussSeidel(disciplines, settings_model=gs_settings),
-            MDANewtonRaphson(disciplines, settings_model=nr_settings),
+            MDAGaussSeidel(disciplines, settings=gs_settings),
+            MDANewtonRaphson(disciplines, settings=nr_settings),
         ]
         self.settings._sub_mdas = self.mda_sequence

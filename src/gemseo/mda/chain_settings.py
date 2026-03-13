@@ -16,28 +16,22 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from collections.abc import Sequence  # Noqa: TC003
-from typing import TYPE_CHECKING
 from typing import ClassVar  # Noqa: TC003
 
 from pydantic import Field
-from pydantic import model_validator
 
 from gemseo.core.coupling_structure import CouplingStructure  # Noqa: TC001
 from gemseo.mda.base_parallel_solver_settings import (
-    BaseParallelMDASettings,  # Noqa: TC001
+    BaseMDAParallelSolverSettings,  # Noqa: TC001
 )
 from gemseo.mda.base_settings import BaseMDASettings  # noqa: TC001
 from gemseo.mda.composed_settings import ComposedMDASettings
-from gemseo.mda.factory import MDA_FACTORY
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.typing import StrKeyMapping  # noqa: TC001
 
-if TYPE_CHECKING:
-    from typing_extensions import Self
 
-
-class MDAChain_Settings(BaseParallelMDASettings, ComposedMDASettings):  # noqa: N801
+class MDAChain_Settings(BaseMDAParallelSolverSettings, ComposedMDASettings):  # noqa: N801
     """The settings for [MDAChain][gemseo.mda.chain.MDAChain]."""
 
     chain_linearize: bool = Field(
@@ -50,15 +44,9 @@ This last option is preferred to minimize computations in adjoint mode,
 while in direct mode, linearizing the chain may be cheaper.""",
     )
 
-    inner_mda_name: str = Field(
-        default="MDAJacobi",
-        description="""The class name of the inner-MDA.
-
-This field is ignored when `inner_mda_settings` is a Pydantic model.""",
-    )
-
-    inner_mda_settings: StrKeyMapping | BaseMDASettings = Field(
-        default_factory=dict, description="The settings for the inner MDAs."
+    inner_mda_settings: BaseMDASettings = Field(
+        default_factory=MDAJacobi_Settings,
+        description="The settings for the inner MDAs.",
     )
 
     initialize_defaults: bool = Field(
@@ -93,11 +81,3 @@ If empty, they are created from `disciplines`.""",
         "log_convergence",
     ]
     """The settings that must be cascaded to the inner MDAs."""
-
-    @model_validator(mode="after")
-    def __inner_mda_settings_to_pydantic_model(self) -> Self:
-        """Convert the inner MDA settings into a Pydantic model."""
-        if isinstance(self.inner_mda_settings, Mapping):
-            settings_model = MDA_FACTORY.get_class(self.inner_mda_name).settings_class
-            self.inner_mda_settings = settings_model(**self.inner_mda_settings)
-        return self

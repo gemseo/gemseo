@@ -27,7 +27,6 @@ import logging
 from itertools import repeat
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from numpy import array
@@ -107,11 +106,10 @@ class MDAChain(BaseMDA):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAChain_Settings | None = None,
-        **settings: Any,
+        settings: MDAChain_Settings | None = None,
     ) -> None:
         self.mdo_chain = None
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
 
         if (
             not self.coupling_structure.all_couplings
@@ -230,8 +228,7 @@ class MDAChain(BaseMDA):
                 )
 
                 discipline = self.__inner_mda_class(
-                    disciplines=ordered_disciplines,
-                    settings_model=settings_model,
+                    disciplines=ordered_disciplines, settings=settings_model
                 )
 
                 self.inner_mdas.append(discipline)

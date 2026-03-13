@@ -53,9 +53,6 @@ from gemseo.datasets import DatasetClassName
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
 from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
-from gemseo.mda.base_parallel_solver_settings import (
-    BaseParallelMDASettings as BaseParallelMDASettings,
-)
 from gemseo.problems.dataset import DatasetType
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
@@ -951,7 +948,7 @@ def create_mda(
     mda_name: str,
     disciplines: Sequence[Discipline],
     settings_model: BaseMDASettings | None = None,
-    **settings: Any,
+    **kwargs: Any,
 ) -> BaseMDA:
     """Create a multidisciplinary analysis (MDA).
 
@@ -962,19 +959,34 @@ def create_mda(
             If `None`, use `**settings`.
             The MDA settings model can be imported from
             [gemseo.settings.mda][gemseo.settings.mda].
-        **settings: The MDA settings as key/value pairs.
-            These arguments are ignored when `settings_model` is not `None`.
+        **kwargs: The MDA arguments,
+            including the settings as key/value pairs when `settings_model` is `None`.
 
     Returns:
         The MDA.
     """
     from gemseo.mda.factory import MDA_FACTORY
 
+    settings_class = MDA_FACTORY.get_class(mda_name).settings_class
+    settings = {
+        name: value
+        for name, value in kwargs.items()
+        if name in settings_class.model_fields
+    }
+    kwargs = {
+        name: value
+        for name, value in kwargs.items()
+        if name not in settings_class.model_fields
+    }
     return MDA_FACTORY.create(
         mda_name,
         disciplines,
-        settings_model=settings_model,
-        **settings,
+        settings=create_model(
+            settings_class,
+            settings_model=settings_model,
+            **settings,
+        ),
+        **kwargs,
     )
 
 

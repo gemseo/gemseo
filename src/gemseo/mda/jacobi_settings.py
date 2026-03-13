@@ -20,10 +20,10 @@ from typing import Any
 from typing import ClassVar
 
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.mda.base_parallel_solver_settings import BaseParallelMDASettings
+from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 
 
-class MDAJacobi_Settings(BaseParallelMDASettings):  # noqa: N801
+class MDAJacobi_Settings(BaseMDAParallelSolverSettings):  # noqa: N801
     """The settings for [MDAJacobi][gemseo.mda.jacobi.MDAJacobi]."""
 
     _INHERITED_FIELD_DEFAULTS: ClassVar[dict[str, Any]] = {

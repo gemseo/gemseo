@@ -43,7 +43,7 @@ def test_settings_as_model(disciplines) -> None:
         newton_settings=MDANewtonRaphson_Settings(tolerance=1e-4, max_mda_iter=16),
     )
 
-    mda = MDAGSNewton(disciplines, settings_model=gsnewton_settings)
+    mda = MDAGSNewton(disciplines, settings=gsnewton_settings)
 
     assert mda.mda_sequence[0].settings.tolerance == 1e-3
     assert mda.mda_sequence[0].settings.max_mda_iter == 8
@@ -59,7 +59,7 @@ def test_settings_as_key_value_pairs(disciplines) -> None:
         newton_settings={"tolerance": 1e-4, "max_mda_iter": 16},
     )
 
-    mda = MDAGSNewton(disciplines, settings_model=gsnewton_settings)
+    mda = MDAGSNewton(disciplines, settings=gsnewton_settings)
 
     assert mda.mda_sequence[0].settings.tolerance == 1e-3
     assert mda.mda_sequence[0].settings.max_mda_iter == 8

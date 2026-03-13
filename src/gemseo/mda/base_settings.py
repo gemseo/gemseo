@@ -16,26 +16,20 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import TYPE_CHECKING
-
 from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import NonNegativeInt
-from pydantic import model_validator
 from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
 )
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.typing import StrKeyMapping
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
+from gemseo.core.coupling_structure import CouplingStructure  # noqa: TC001
 from gemseo.utils.pydantic import BaseSettings
 
-if TYPE_CHECKING:
-    from typing_extensions import Self
 LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
 
@@ -55,20 +49,9 @@ class BaseMDASettings(BaseSettings):
 If `None`, the coupling structure is created from the disciplines.""",
     )
 
-    linear_solver: LinearSolver = Field(
-        default=LinearSolver.LGMRES,
-        description="""The name of the linear solver.
-
-This field is ignored when `linear_solver_settings` is a Pydantic model.""",
-    )
-
-    linear_solver_settings: StrKeyMapping | BaseLinearSolverSettings = Field(
-        default_factory=dict,
+    linear_solver_settings: BaseLinearSolverSettings = Field(
+        default_factory=LGMRES_Settings,
         description="""The settings of the linear solver.""",
-    )
-
-    linear_solver_tolerance: NonNegativeFloat = Field(
-        default=1e-12, description="""The linear solver tolerance."""
     )
 
     log_convergence: bool = Field(
@@ -126,18 +109,3 @@ The warm start strategy consists in using the last cached values for the
 coupling variables as an initial guess. This is expected to reduce the number
 of iteration of the MDA algorithm required to reach convergence.""",
     )
-
-    @model_validator(mode="after")
-    def __linear_solver_settings_to_pydantic_model(self) -> Self:
-        """Convert the linear solver settings into a Pydantic model."""
-        if isinstance(self.linear_solver_settings, Mapping):
-            factory = LinearSolverLibraryFactory()
-            settings = factory.create_settings(
-                self.linear_solver, **self.linear_solver_settings
-            )
-            # object.__setattr__ avoids
-            # declaring linear_solver_settings as set by the user
-            # (see MDAChain about the use of model_fields_set).
-            object.__setattr__(self, "linear_solver_settings", settings)
-
-        return self

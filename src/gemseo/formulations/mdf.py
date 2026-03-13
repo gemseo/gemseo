@@ -57,7 +57,7 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
         self.mda = MDA_FACTORY.create(
             self._settings.main_mda_settings.target_class_name,
             self.disciplines,
-            settings_model=self._settings.main_mda_settings,
+            settings=self._settings.main_mda_settings,
         )
 
     def get_top_level_disciplines(  # noqa:D102

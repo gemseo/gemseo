@@ -46,6 +46,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.post import OptHistoryView_Settings
 from gemseo.settings.mda import MDAChain_Settings
 
@@ -209,7 +210,7 @@ scenario = create_scenario(
     "obj",
     design_space,
     formulation_name="MDF",
-    main_mda_settings=MDAChain_Settings(inner_mda_name="MDAGaussSeidel"),
+    main_mda_settings=MDAChain_Settings(inner_mda_settings=MDAJacobi_Settings()),
 )
 
 # %%

@@ -39,6 +39,7 @@ from typing import cast
 from fastjsonschema import JsonSchemaException
 from fastjsonschema import compile as compile_schema
 from numpy import ndarray
+from pydantic import BaseModel
 
 from gemseo.core.grammars._python_to_json import PYTHON_TO_JSON_TYPES
 from gemseo.core.grammars.base_grammar import BaseGrammar
@@ -449,6 +450,9 @@ class JSONGrammar(BaseGrammar):
 
         if isinstance(value, PathLike):
             return str(value)
+
+        if isinstance(value, BaseModel):
+            value = value.model_dump()
 
         if isinstance(value, Mapping):
             return cls.__cast_data_mapping(value)

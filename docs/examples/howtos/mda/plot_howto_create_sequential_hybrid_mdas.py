@@ -78,7 +78,7 @@ res = mda.execute()
 #
 # We can clearly see the 5 first iterations through an MDA (here, Jacobi),
 # and then executing another MDA (Gauss-Seidel).
-mda.plot_residual_history(logscale=[1e-8, 10.0], save=False, show=True)
+mda.plot_residual_history(logscale=(1e-8, 10.0), save=False, show=True)
 
 # %%
 # ## Summary

@@ -163,7 +163,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
         # Perform the MDA.
         mda_chain = MDAChain(
             self.disciplines,
-            settings_model=self._settings.mda_chain_settings_for_start_at_equilibrium,
+            settings=self._settings.mda_chain_settings_for_start_at_equilibrium,
         )
         initial = design_space.get_current_value(as_dict=True)
         final = mda_chain.execute(initial)

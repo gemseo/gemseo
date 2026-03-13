@@ -50,8 +50,10 @@ from gemseo.mda.base_settings import BaseMDASettings
 from gemseo.mda.base_solver import BaseMDASolver
 from gemseo.mda.base_solver_settings import BaseMDASolverSettings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
@@ -294,7 +296,8 @@ def test_coupling_structure(sellar_with_2d_array, sellar_disciplines) -> None:
     """Check that an MDA is correctly instantiated from a coupling structure."""
     coupling_structure = CouplingStructure(sellar_disciplines)
     mda_sellar = MDAGaussSeidel(
-        sellar_disciplines, coupling_structure=coupling_structure
+        sellar_disciplines,
+        settings=MDAGaussSeidel_Settings(coupling_structure=coupling_structure),
     )
     assert mda_sellar.coupling_structure == coupling_structure
 
@@ -366,8 +369,7 @@ def reference_mda_jacobian(disciplines) -> dict[str, dict[str, ndarray]]:
     """Compute the Jacobian of the MDA to serve as a reference."""
     mda = MDANewtonRaphson(
         disciplines,
-        max_mda_iter=100,
-        tolerance=1e-12,
+        settings=MDANewtonRaphson_Settings(max_mda_iter=100, tolerance=1e-12),
     )
 
     mda.add_differentiated_inputs("x")
@@ -385,8 +387,7 @@ def test_matrix_free_linearization(
 
     mda = MDANewtonRaphson(
         disciplines,
-        max_mda_iter=100,
-        tolerance=1e-12,
+        settings=MDANewtonRaphson_Settings(max_mda_iter=100, tolerance=1e-12),
     )
 
     mda.matrix_type = matrix_type
@@ -465,20 +466,24 @@ def test_mda_with_residuals(coupled_disciplines) -> None:
     coupled_disciplines[1].io.state_equations_are_solved = True
     mda = MDANewtonRaphson(
         coupled_disciplines,
-        tolerance=1e-14,
-        max_mda_iter=100,
-        acceleration_method=AccelerationMethod.SECANT,
-        over_relaxation_factor=1.0,
+        settings=MDANewtonRaphson_Settings(
+            tolerance=1e-14,
+            max_mda_iter=100,
+            acceleration_method=AccelerationMethod.SECANT,
+            over_relaxation_factor=1.0,
+        ),
     )
     output = mda.execute()
 
     coupled_disciplines[1].io.state_equations_are_solved = False
     mda = MDANewtonRaphson(
         coupled_disciplines,
-        tolerance=1e-14,
-        max_mda_iter=100,
-        acceleration_method=AccelerationMethod.SECANT,
-        over_relaxation_factor=1.0,
+        settings=MDANewtonRaphson_Settings(
+            tolerance=1e-14,
+            max_mda_iter=100,
+            acceleration_method=AccelerationMethod.SECANT,
+            over_relaxation_factor=1.0,
+        ),
     )
     output_ref = mda.execute()
 
@@ -652,7 +657,7 @@ def test_settings_type_error():
     )
 
     with concretize_classes(BaseMDA), pytest.raises(ValueError, match=msg):
-        BaseMDA([], settings_model=settings)
+        BaseMDA([], settings=settings)
 
 
 def test_set_bounds():

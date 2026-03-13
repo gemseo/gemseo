@@ -65,6 +65,6 @@ class BiLevelBCD(BiLevel):
         self._bcd_mda = MDA_FACTORY.create(
             "MDAGaussSeidel",
             self.scenario_adapters,
-            settings_model=self._settings.bcd_mda_settings,
+            settings=self._settings.bcd_mda_settings,
         )
         return self._bcd_mda
