@@ -55,6 +55,7 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -158,7 +159,7 @@ main_mda_settings = MDAGaussSeidel_Settings(
     max_mda_iter=50,
     warm_start=True,
     use_lu_fact=False,
-    linear_solver_tolerance=1e-14,
+    linear_solver_settings=LGMRES_Settings(rtol=1e-14),
 )
 scenario = create_scenario(
     disciplines,

@@ -34,6 +34,7 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import generate_n2_plot
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
@@ -112,7 +113,7 @@ scenario = MDOScenario(
             max_mda_iter=50,
             warm_start=True,
             use_lu_fact=False,
-            linear_solver_tolerance=1e-14,
+            linear_solver_settings=LGMRES_Settings(rtol=1e-14),
         )
     ),
 )
