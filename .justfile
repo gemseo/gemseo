@@ -1,4 +1,5 @@
 set dotenv-load
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
 python := env('UV_PYTHON', '3.10')
 

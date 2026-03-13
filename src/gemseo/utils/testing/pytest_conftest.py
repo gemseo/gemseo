@@ -19,7 +19,6 @@ from __future__ import annotations
 import contextlib
 import faulthandler
 import os
-import sys
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -30,6 +29,7 @@ import pytest
 
 from gemseo import configure
 from gemseo.core.base_factory import BaseFactory
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -92,9 +92,7 @@ def skip_under_windows(request) -> None:
 
     Use it like a usual skip marker.
     """
-    if request.node.get_closest_marker(
-        "skip_under_windows"
-    ) and sys.platform.startswith("win"):
+    if request.node.get_closest_marker("skip_under_windows") and PLATFORM_IS_WINDOWS:
         pytest.skip("skipped on windows")
 
 

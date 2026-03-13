@@ -23,7 +23,6 @@ from __future__ import annotations
 import contextlib
 import logging
 import os
-import platform
 import re
 from pathlib import Path
 from pathlib import PurePosixPath
@@ -71,6 +70,7 @@ from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
@@ -1248,7 +1248,7 @@ class DisciplineWithPaths(Discipline):
         self.io.data["out_path"] = self.io.data["path"]
 
 
-def __is_path_correct(local_path: (Path, PurePosixPath, PureWindowsPath)) -> None:
+def __is_path_correct(local_path: Path | PurePosixPath | PureWindowsPath) -> None:
     """Test the types of paths depending on the platform.
 
     Args:
@@ -1257,7 +1257,7 @@ def __is_path_correct(local_path: (Path, PurePosixPath, PureWindowsPath)) -> Non
     Raises:
         AssertionError: if the path type is invalid.
     """
-    if platform.platform().startswith("Windows"):
+    if PLATFORM_IS_WINDOWS:
         assert isinstance(local_path, PureWindowsPath)
     else:
         assert isinstance(local_path, PurePosixPath)
