@@ -33,14 +33,12 @@ from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import Any
 
     from numpy.typing import NDArray
 
     from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
     from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -77,15 +75,14 @@ class MDANewtonRaphson(BaseMDAParallelSolver):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDANewtonRaphson_Settings | None = None,
-        **settings: Any,
+        settings: MDANewtonRaphson_Settings | None = None,
     ) -> None:
         """
         Raises:
             ValueError: When there are no coupling variables, or when there are weakly
                 coupled disciplines. In these cases, use MDAChain.
         """  # noqa:D205 D212 D415
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
 
         # We use all couplings to form the Newton matrix otherwise the effect of the
         # weak couplings are not taken into account in the coupling updates.
@@ -149,7 +146,7 @@ class MDANewtonRaphson(BaseMDAParallelSolver):
         newton_step, is_converged = self.assembly.compute_newton_step(
             input_data,
             self._resolved_variable_names,
-            self.settings.newton_linear_solver_name,
+            self.settings.newton_linear_solver_settings.target_class_name,
             matrix_type=self.matrix_type,
             residuals=self.get_current_resolved_residual_vector(),
             resolved_residual_names=self._resolved_residual_names,
@@ -160,7 +157,7 @@ class MDANewtonRaphson(BaseMDAParallelSolver):
             LOGGER.warning(
                 "The linear solver %s failed "
                 "to converge during the Newton's step computation.",
-                self.settings.newton_linear_solver_name,
+                self.settings.newton_linear_solver_settings.target_class_name,
             )
 
         return newton_step

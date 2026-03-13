@@ -36,6 +36,8 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.mda.chain_settings import MDAChain_Settings
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiAerodynamicsSG
 from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiMissionSG
@@ -223,12 +225,11 @@ def test_exception_mda_jacobi(
         SellarDesignSpace(),
         "obj",
         formulation_settings=MDF_Settings(
-            main_mda_name="MDAChain",
-            main_mda_settings={
-                "inner_mda_name": "MDAJacobi",
-                "use_threading": use_threading,
-                "n_processes": 2,
-            },
+            main_mda_settings=MDAChain_Settings(
+                inner_mda_settings=MDAJacobi_Settings(),
+                use_threading=use_threading,
+                n_processes=2,
+            )
         ),
     )
     scenario.add_objective("obj")
@@ -250,7 +251,7 @@ def test_other_exceptions_caught(caplog) -> None:
     scenario = MDOScenario(
         [discipline],
         design_space,
-        formulation_settings=MDF_Settings(main_mda_name="MDAJacobi"),
+        formulation_settings=MDF_Settings(main_mda_settings=MDAJacobi_Settings()),
     )
     scenario.add_objective("y")
     with pytest.raises(InvalidDataError):

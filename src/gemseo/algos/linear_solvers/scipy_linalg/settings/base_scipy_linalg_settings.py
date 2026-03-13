@@ -34,7 +34,6 @@ from scipy.sparse.linalg import LinearOperator  # noqa: TC002
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
 )
-from gemseo.utils.compatibility.scipy import SCIPY_LOWER_THAN_1_12
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -50,21 +49,12 @@ class BaseSciPyLinalgSettingsBase(BaseLinearSolverSettings):
 Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
     )
 
-    if SCIPY_LOWER_THAN_1_12:
-        tol: PositiveFloat = Field(
-            alias="rtol",
-            default=1e-12,
-            description="""The relative tolerance.
+    rtol: PositiveFloat = Field(
+        default=1e-12,
+        description="""The relative tolerance.
 
 Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
-        )  # pragma: no cover
-    else:
-        rtol: PositiveFloat = Field(
-            default=1e-12,
-            description="""The relative tolerance.
-
-Algorithm stops if norm(b - A @ x) <= max(rtol*norm(b), atol).""",
-        )
+    )
 
     callback: Annotated[Callable, WithJsonSchema({})] | None = Field(
         default=None,

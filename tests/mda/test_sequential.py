@@ -29,7 +29,9 @@ from numpy import array
 from numpy import inf
 
 from gemseo.mda.base import BaseMDA
+from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
 from gemseo.mda.jacobi import MDAJacobi
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.sequential import MDASequential
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
@@ -49,7 +51,7 @@ def mda_sequential() -> MDASequential:
     return MDASequential(
         disciplines,
         [
-            MDAJacobi(disciplines, max_mda_iter=2),
+            MDAJacobi(disciplines, MDAJacobi_Settings(max_mda_iter=2)),
             MDANewtonRaphson(disciplines),
         ],
     )
@@ -69,7 +71,9 @@ def test_execution(mda_sequential) -> None:
 
 def test_parallel_doe() -> None:
     """Test the execution of GaussSeidel in parallel."""
-    obj = generate_parallel_doe(main_mda_settings={"inner_mda_name": "MDAGSNewton"})
+    obj = generate_parallel_doe(
+        main_mda_settings={"inner_mda_settings": MDAGSNewton_Settings()}
+    )
     assert allclose_(array([-obj]), array([608.175]), atol=1e-3)
 
 
@@ -106,7 +110,7 @@ def test_set_bounds():
     mda = MDASequential(
         disciplines=disciplines,
         mda_sequence=[
-            MDAJacobi(disciplines, max_mda_iter=2),
+            MDAJacobi(disciplines, MDAJacobi_Settings(max_mda_iter=2)),
             MDANewtonRaphson(disciplines),
         ],
     )

@@ -22,6 +22,8 @@ from numpy.testing import assert_equal
 
 from gemseo import execute_algo
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.mda.chain_settings import MDAChain_Settings
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.scalable.parametric.disciplines.main_discipline import (
     MainDiscipline,
 )
@@ -53,7 +55,14 @@ def test_scalable_disciplines(scalable_problem) -> None:
 @pytest.mark.parametrize(
     ("formulation_name", "options"),
     [
-        ("MDF", {"main_mda_settings": {"inner_mda_name": "MDAGaussSeidel"}}),
+        (
+            "MDF",
+            {
+                "main_mda_settings": MDAChain_Settings(
+                    inner_mda_settings=MDAGaussSeidel_Settings()
+                )
+            },
+        ),
         ("IDF", {"start_at_equilibrium": True}),
     ],
 )

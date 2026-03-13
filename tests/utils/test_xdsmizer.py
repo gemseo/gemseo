@@ -48,7 +48,9 @@ from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settin
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.chain import MDAChain
+from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
@@ -171,7 +173,9 @@ def test_xdsmize_mdf(options) -> None:
     constraint."""
 
     scenario = build_sobieski_scenario(
-        main_mda_settings={"inner_mda_name": "MDAGaussSeidel"}
+        main_mda_settings=MDAChain_Settings(
+            inner_mda_settings=MDAGaussSeidel_Settings()
+        )
     )
     assert_xdsm(scenario, **options("xdsmized_sobieski_mdf"))
 
@@ -261,7 +265,7 @@ def test_xdsmize_bilevel(options) -> None:
             apply_constraints_to_sub_scenarios=False,
             parallel_scenarios=False,
             apply_constraints_to_system=True,
-            main_mda_settings={"n_processes": 5},
+            main_mda_settings=MDAChain_Settings(n_processes=5),
         ),
     )
     system_scenario.add_objective("y_4", minimize=False)
@@ -277,7 +281,7 @@ def test_xdsmize_bilevel(options) -> None:
             apply_constraints_to_sub_scenarios=False,
             apply_constraints_to_system=True,
             parallel_scenarios=True,
-            main_mda_settings={"n_processes": 5, "use_threading": True},
+            main_mda_settings=MDAChain_Settings(n_processes=5, use_threading=True),
         ),
     )
     system_scenario_par.add_objective("y_4", minimize=False)
@@ -725,11 +729,11 @@ def test_xdsmize_mdf_mdoparallelchain(options) -> None:
         disciplines,
         design_space,
         formulation_settings=MDF_Settings(
-            main_mda_settings={
-                "mdachain_parallelize_tasks": True,
-                "mdachain_parallel_settings": mdachain_parallel_settings,
-                "inner_mda_name": "MDAGaussSeidel",
-            }
+            main_mda_settings=MDAChain_Settings(
+                mdachain_parallelize_tasks=True,
+                mdachain_parallel_settings=mdachain_parallel_settings,
+                inner_mda_settings=MDAGaussSeidel_Settings(),
+            )
         ),
     )
     scenario.add_objective("y2")

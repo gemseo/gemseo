@@ -204,25 +204,15 @@ class BaseMDA(ProcessDiscipline):
         """
 
     def __init__(
-        self,
-        disciplines: Sequence[Discipline],
-        settings_model: BaseMDASettings | None = None,
-        **settings: Any,
+        self, disciplines: Sequence[Discipline], settings: BaseMDASettings | None = None
     ) -> None:
         """
         Args:
             disciplines: The disciplines from which to compute the MDA.
-            settings_model: The MDA settings as a Pydantic model.
-                If `None`, use `**settings`.
-            **settings: The MDA settings.
-                These arguments are ignored when `settings_model` is not `None`.
+            settings: The MDA settings.
+                If `None`, use the default settings.
         """  # noqa:D205 D212 D415
-        self.settings = create_model(
-            self.settings_class,
-            settings_model=settings_model,
-            **settings,
-        )
-
+        self.settings = create_model(self.settings_class, settings_model=settings)
         super().__init__(disciplines, name=self.settings.name)
 
         self.coupling_structure = (
@@ -424,7 +414,6 @@ class BaseMDA(ProcessDiscipline):
         )
 
         linear_solver_settings = self.settings.linear_solver_settings.model_dump()
-        linear_solver_settings["rtol"] = self.settings.linear_solver_tolerance
         self.jac = self.assembly.total_derivatives(
             self.io.data,
             output_names,

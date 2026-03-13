@@ -299,7 +299,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             mda1 = MDA_FACTORY.create(
                 main_mda_name,
                 strongly_coupled_disciplines,
-                settings_model=main_mda_settings,
+                settings=main_mda_settings,
             )
             mda1.settings.warm_start = True
         else:
@@ -311,7 +311,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         mda2 = MDA_FACTORY.create(
             main_mda_name,
             get_sub_disciplines(self.disciplines),
-            settings_model=main_mda_settings,
+            settings=main_mda_settings,
         )
         mda2.settings.warm_start = False
 

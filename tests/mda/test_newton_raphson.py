@@ -30,12 +30,17 @@ from numpy import linalg
 from numpy.testing import assert_equal
 
 from gemseo import create_mda
-from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
+from gemseo.algos.linear_solvers.scipy_linalg import BICG_Settings
+from gemseo.algos.linear_solvers.scipy_linalg import BICGSTAB_Settings
+from gemseo.algos.linear_solvers.scipy_linalg import GMRES_Settings
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.chain import MDAChain
+from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.newton_raphson import MDANewtonRaphson
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
@@ -81,7 +86,8 @@ def sobieski_disciplines() -> Sequence[Discipline]:
 def reference(sobieski_disciplines, mda_setting) -> MDANewtonRaphson:
     """An instance of Newton-Raphson MDA on the Sobieski problem."""
     mda_newton = MDANewtonRaphson(
-        sobieski_disciplines, **mda_setting, over_relaxation_factor=1.0
+        sobieski_disciplines,
+        settings=MDANewtonRaphson_Settings(over_relaxation_factor=1.0, **mda_setting),
     )
     mda_newton.execute()
     return mda_newton
@@ -93,7 +99,10 @@ def test_over_relaxation(
 ) -> None:
     """Tests the relaxation factor."""
     mda = MDANewtonRaphson(
-        sobieski_disciplines, **mda_setting, over_relaxation_factor=relaxation
+        sobieski_disciplines,
+        settings=MDANewtonRaphson_Settings(
+            over_relaxation_factor=relaxation, **mda_setting
+        ),
     )
     mda.execute()
 
@@ -114,9 +123,11 @@ def test_acceleration_methods(
     """Tests the acceleration methods."""
     mda = MDANewtonRaphson(
         sobieski_disciplines,
-        **mda_setting,
-        acceleration_method=acceleration,
-        over_relaxation_factor=1.0,
+        settings=MDANewtonRaphson_Settings(
+            acceleration_method=acceleration,
+            over_relaxation_factor=1.0,
+            **mda_setting,
+        ),
     )
     mda.execute()
 
@@ -181,7 +192,9 @@ def test_raphson_sellar_without_cache(use_cache, enable_discipline_statistics) -
         for disc in disciplines:
             disc.cache = None
     tolerance = 1e-12
-    mda = MDANewtonRaphson(disciplines, tolerance=tolerance)
+    mda = MDANewtonRaphson(
+        disciplines, settings=MDANewtonRaphson_Settings(tolerance=tolerance)
+    )
     mda.execute()
 
     residual_length = len(mda.residual_history)
@@ -194,8 +207,10 @@ def test_raphson_sellar_without_cache(use_cache, enable_discipline_statistics) -
 def test_raphson_sellar(parallel) -> None:
     """Test the execution of Newton on Sobieski."""
     disciplines = [Sellar1(), Sellar2()]
-    kwargs = {"n_processes": 2} if parallel else {"n_processes": 1}
-    mda = MDANewtonRaphson(disciplines, **kwargs)
+    mda = MDANewtonRaphson(
+        disciplines,
+        settings=MDANewtonRaphson_Settings(n_processes=(2 if parallel else 1)),
+    )
     mda.execute()
 
     assert (mda.settings.n_processes == 1) is not parallel
@@ -217,7 +232,9 @@ def test_log_convergence() -> None:
     disciplines = [Sellar1(), Sellar2()]
     mda = MDANewtonRaphson(disciplines)
     assert not mda.settings.log_convergence
-    mda = MDANewtonRaphson(disciplines, log_convergence=True)
+    mda = MDANewtonRaphson(
+        disciplines, settings=MDANewtonRaphson_Settings(log_convergence=True)
+    )
     assert mda.settings.log_convergence
 
 
@@ -229,7 +246,10 @@ def test_weak_and_strong_couplings() -> None:
     disc3 = AnalyticDiscipline({"j": "1 - 0.3*i"}, name="j=f(i) disc")
     disc4 = AnalyticDiscipline({"obj": "i+j"}, name="obj=f(i,j) disc")
     disciplines = [disc1, disc2, disc3, disc4]
-    mda = MDAChain(disciplines, inner_mda_name="MDANewtonRaphson")
+    mda = MDAChain(
+        disciplines,
+        settings=MDAChain_Settings(inner_mda_settings=MDANewtonRaphson_Settings()),
+    )
     mda.execute({
         "z": array([0.0]),
         "i": array([0.0]),
@@ -254,7 +274,12 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
     disc6 = AnalyticDiscipline({"m": "1. - 0.3*l"}, name=6)
     disc7 = AnalyticDiscipline({"obj": "l+m"}, name=7)
     disciplines = [disc1, disc2, disc3, disc4, disc5, disc6, disc7]
-    mda = MDAChain(disciplines, inner_mda_name="MDANewtonRaphson", tolerance=1e-13)
+    mda = MDAChain(
+        disciplines,
+        settings=MDAChain_Settings(
+            inner_mda_settings=MDANewtonRaphson_Settings(), tolerance=1e-13
+        ),
+    )
     mda.settings.warm_start = True
     mda.linearization_mode = "adjoint"
     mda_input = {
@@ -289,23 +314,19 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
 
 @pytest.mark.parametrize(
     (
-        "mda_linear_solver",
-        "mda_linear_solver_settings",
-        "newton_linear_solver_name",
+        "linear_solver_settings",
         "newton_linear_solver_settings",
     ),
     [
-        ("LGMRES", {}, "LGMRES", {}),
-        ("LGMRES", {"atol": 1e-6}, "LGMRES", {}),
-        ("LGMRES", {}, "LGMRES", {"atol": 1e-3}),
-        ("BICG", {}, "LGMRES", {}),
-        ("LGMRES", {}, "BICG", {}),
+        (LGMRES_Settings(), LGMRES_Settings()),
+        (LGMRES_Settings(atol=1e-6), LGMRES_Settings()),
+        (LGMRES_Settings(), LGMRES_Settings(atol=1e-3)),
+        (BICG_Settings(), LGMRES_Settings()),
+        (LGMRES_Settings(), BICG_Settings()),
     ],
 )
 def test_pass_dedicated_newton_options(
-    mda_linear_solver,
-    mda_linear_solver_settings,
-    newton_linear_solver_name,
+    linear_solver_settings,
     newton_linear_solver_settings,
 ) -> None:
     """Test that the linear solver type and options for the Adjoint method and the
@@ -313,9 +334,7 @@ def test_pass_dedicated_newton_options(
     to unitary test the arguments passed to the Newton step.
 
     Args:
-        mda_linear_solver: The linear solver name to solve the MDA Adjoint matrix.
-        mda_linear_solver_settings: The options for MDA matrix linear solver.
-        newton_linear_solver_name: The linear solver name to solve the Newton method.
+        linear_solver_settings: The options for MDA matrix linear solver.
         newton_linear_solver_settings: The options for Newton linear solver.
 
     Returns:
@@ -324,9 +343,7 @@ def test_pass_dedicated_newton_options(
     mda = create_mda(
         "MDANewtonRaphson",
         disciplines=[Sellar1(), Sellar2()],
-        linear_solver=mda_linear_solver,
-        linear_solver_settings=mda_linear_solver_settings,
-        newton_linear_solver_name=newton_linear_solver_name,
+        linear_solver_settings=linear_solver_settings,
         newton_linear_solver_settings=newton_linear_solver_settings,
     )
     mda.assembly.compute_newton_step = mock.Mock(
@@ -334,36 +351,29 @@ def test_pass_dedicated_newton_options(
     )
     mda.execute()
     newton_step_args = mda.assembly.compute_newton_step.call_args
-    assert mda.settings.linear_solver == mda_linear_solver
-    factory = LinearSolverLibraryFactory()
-    mda_linear_solver_settings = factory.create_settings(
-        mda_linear_solver, **mda_linear_solver_settings
-    )
-    assert mda.settings.linear_solver_settings == mda_linear_solver_settings
-    assert newton_step_args.args[2] == newton_linear_solver_name
+    assert mda.settings.linear_solver_settings == linear_solver_settings
+    assert newton_step_args.args[2] == newton_linear_solver_settings.target_class_name
     del newton_step_args.kwargs["matrix_type"]
     if "atol" in newton_linear_solver_settings:
         assert newton_step_args.kwargs["atol"] == newton_linear_solver_settings["atol"]
 
 
 @pytest.mark.parametrize(
-    ("newton_linear_solver_name", "newton_linear_solver_settings"),
+    "newton_linear_solver_settings",
     [
-        ("LGMRES", {"atol": 1e-7}),
-        ("LGMRES", {}),
-        ("BICGSTAB", {}),
-        ("GMRES", {}),
+        LGMRES_Settings(atol=1e-7),
+        LGMRES_Settings(),
+        BICGSTAB_Settings(),
+        GMRES_Settings(),
     ],
 )
 def test_mda_newton_convergence_passing_dedicated_newton_options(
-    newton_linear_solver_name,
     newton_linear_solver_settings,
 ) -> None:
     """Test that Newton MDA converges toward expected value for various linear solver
     algorithms for the Newton method.
 
     Args:
-        newton_linear_solver_name: The linear solver name to solve the Newton method.
         newton_linear_solver_settings: The options for Newton linear solver.
 
     Returns:
@@ -371,7 +381,6 @@ def test_mda_newton_convergence_passing_dedicated_newton_options(
     mda = create_mda(
         "MDANewtonRaphson",
         disciplines=[Sellar1(), Sellar2()],
-        newton_linear_solver_name=newton_linear_solver_name,
         newton_linear_solver_settings=newton_linear_solver_settings,
     )
     mda.execute()
@@ -381,11 +390,10 @@ def test_mda_newton_convergence_passing_dedicated_newton_options(
 
 def test_mda_newton_serialization(tmp_wd) -> None:
     """Test serialization and deserialization of a Newton based MDA."""
-    options = {"atol": 1e-6}
     mda = create_mda(
         "MDANewtonRaphson",
         disciplines=[Sellar1(), Sellar2()],
-        newton_linear_solver_settings=options,
+        newton_linear_solver_settings=LGMRES_Settings(atol=1e-6),
     )
     out = mda.execute()
     out_file = "mda_newton.pkl"
@@ -418,16 +426,14 @@ def test_mda_newton_no_couplings() -> None:
 
 def test_linear_solver_not_converged(caplog) -> None:
     """Test the warning message when the linear solver does not converge."""
-    solver = "LGMRES"
     mda = create_mda(
         "MDANewtonRaphson",
         disciplines=[Sellar1(), Sellar2()],
-        newton_linear_solver_name=solver,
-        newton_linear_solver_settings={"max_iter": 1},
+        newton_linear_solver_settings=LGMRES_Settings(max_iter=1),
         max_mda_iter=2,
     )
     expected_log = (
-        f"The linear solver {solver} failed to converge"
+        "The linear solver LGMRES failed to converge"
         " during the Newton's step computation."
     )
     mda.execute()

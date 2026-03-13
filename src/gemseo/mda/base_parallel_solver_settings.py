@@ -24,7 +24,7 @@ from gemseo.utils.constants import _ENABLE_PARALLEL_EXECUTION
 from gemseo.utils.constants import N_CPUS
 
 
-class BaseParallelMDASettings(BaseMDASolverSettings):
+class BaseMDAParallelSolverSettings(BaseMDASolverSettings):
     """The settings for the MDA algorithms that can be run in parallel."""
 
     execute_before_linearizing: bool = Field(
@@ -43,7 +43,7 @@ Threads if `use_threading`, processes otherwise.
 
 The default value can be changed
 using
-[set_default_n_processes()][gemseo.mda.base_parallel_solver_settings.BaseParallelMDASettings.set_default_n_processes]
+[set_default_n_processes()][gemseo.mda.base_parallel_solver_settings.BaseMDAParallelSolverSettings.set_default_n_processes]
 or [configure()][gemseo.configure].
 """,
     )

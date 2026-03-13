@@ -24,7 +24,9 @@ from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import Discipline
 from gemseo.mda.base import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi import MDAJacobi
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
@@ -69,8 +71,9 @@ def get_jacobi_reference_residuals(
     """Compute the initial and final residual without scaling for MDAJacobi."""
     mda = MDAJacobi(
         disciplines,
-        max_mda_iter=5,
-        acceleration_method=AccelerationMethod.NONE,
+        settings=MDAJacobi_Settings(
+            max_mda_iter=5, acceleration_method=AccelerationMethod.NONE
+        ),
     )
 
     for discipline in disciplines:
@@ -114,8 +117,9 @@ def test_scaling_strategy_jacobi(
 
     mda = MDAJacobi(
         disciplines,
-        max_mda_iter=5,
-        acceleration_method=AccelerationMethod.NONE,
+        settings=MDAJacobi_Settings(
+            max_mda_iter=5, acceleration_method=AccelerationMethod.NONE
+        ),
     )
 
     mda.scaling = scaling_strategy
@@ -176,8 +180,9 @@ def get_gauss_seidel_reference_residuals(
     """Compute the initial and final residual without scaling for MDAGaussSeidel."""
     mda = MDAGaussSeidel(
         disciplines,
-        max_mda_iter=5,
-        acceleration_method=AccelerationMethod.NONE,
+        settings=MDAGaussSeidel_Settings(
+            max_mda_iter=5, acceleration_method=AccelerationMethod.NONE
+        ),
     )
     mda.scaling = BaseMDA.ResidualScaling.NO_SCALING
     mda.execute()
@@ -206,8 +211,9 @@ def test_scaling_strategy_gauss_seidel(
 
     mda = MDAGaussSeidel(
         disciplines,
-        max_mda_iter=5,
-        acceleration_method=AccelerationMethod.NONE,
+        settings=MDAGaussSeidel_Settings(
+            max_mda_iter=5, acceleration_method=AccelerationMethod.NONE
+        ),
     )
 
     mda.scaling = scaling_strategy

@@ -24,6 +24,10 @@ import os
 import numpy as np
 
 from gemseo.mda.chain import MDAChain
+from gemseo.mda.chain_settings import MDAChain_Settings
+from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
+from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 
@@ -48,13 +52,22 @@ def test_compare_mda_jacobi_gs() -> None:
 
 def test_mda_jacobi_newton_hybrid(sellar_with_2d_array, sellar_disciplines) -> None:
     """Compare Newton and Gauss-Seidel MDA."""
-    mda_j = MDAChain(sellar_disciplines, inner_mda_name="MDAJacobi")
+    mda_j = MDAChain(
+        sellar_disciplines,
+        settings=MDAChain_Settings(inner_mda_settings=MDAJacobi_Settings()),
+    )
     out1 = mda_j.execute()
 
-    mda_newton = MDAChain(sellar_disciplines, inner_mda_name="MDANewtonRaphson")
+    mda_newton = MDAChain(
+        sellar_disciplines,
+        settings=MDAChain_Settings(inner_mda_settings=MDANewtonRaphson_Settings()),
+    )
     out2 = mda_newton.execute()
 
-    mda_hybrid = MDAChain(sellar_disciplines, inner_mda_name="MDAGSNewton")
+    mda_hybrid = MDAChain(
+        sellar_disciplines,
+        settings=MDAChain_Settings(inner_mda_settings=MDAGSNewton_Settings()),
+    )
     out3 = mda_hybrid.execute()
 
     for key, value1 in out1.items():

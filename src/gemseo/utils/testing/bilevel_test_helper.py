@@ -30,6 +30,7 @@ from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settin
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -151,7 +152,9 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
                 sub_disciplines,
                 ds.filter([design_var], copy=True),
                 name=name,
-                formulation_settings=MDF_Settings(main_mda_name="MDAGaussSeidel"),
+                formulation_settings=MDF_Settings(
+                    main_mda_settings=MDAGaussSeidel_Settings()
+                ),
             )
             scenario.add_objective("y_4", minimize=False)
             scenario.set_algorithm(SLSQP_Settings(max_iter=50))
@@ -318,8 +321,7 @@ def create_aerostructure_scenario(formulation_name: str) -> MDOScenario:
         design_space_system,
         formulation_name=formulation_name,
         maximize_objective=True,
-        main_mda_name="MDAJacobi",
-        main_mda_settings={"tolerance": 1e-8},
+        main_mda_settings=MDAJacobi_Settings(tolerance=1e-8),
     )
 
     system_scenario.add_constraint(

@@ -24,6 +24,7 @@ from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.core.discipline import Discipline
 from gemseo.mda.chain import MDAChain
+from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
@@ -102,7 +103,7 @@ def test_chain_jac_basic(input_, output) -> None:
 def test_chain_jac_self_coupled(descriptions) -> None:
     """Test the jacobian with self-couplings."""
     disciplines = create_disciplines_from_desc(descriptions)
-    mda = MDAChain(disciplines, tolerance=1e-14)
+    mda = MDAChain(disciplines, settings=MDAChain_Settings(tolerance=1e-14))
     assert mda.check_jacobian(input_names=["x"], output_names=["o"])
 
 

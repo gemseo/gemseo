@@ -22,11 +22,13 @@ from functools import partial
 
 from numpy.testing import assert_allclose
 
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.formulations.mdf import MDF
 from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -62,9 +64,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         """
         if not linearize:
             dtype = "complex128"
-        scenario = self.build_mdo_scenario(
-            formulation, dtype, main_mda_settings=options
-        )
+        scenario = self.build_mdo_scenario(formulation, dtype, **options)
         if normalize_objective:
             scenario.formulation.problem.objective *= 0.001
         if linearize:
@@ -92,14 +92,14 @@ class TestMDFFormulation(FormulationsBaseTest):
 
     def test_exec_mdf_cstr(self) -> None:
         """"""
-        options = {
-            "tolerance": 1e-12,
-            "max_mda_iter": 50,
-            "max_consecutive_unsuccessful_iterations": 50,
-            "warm_start": True,
-            "use_lu_fact": False,
-            "linear_solver_tolerance": 1e-14,
-        }
+        main_mda_settings = MDAChain_Settings(
+            tolerance=1e-12,
+            max_mda_iter=50,
+            max_consecutive_unsuccessful_iterations=50,
+            warm_start=True,
+            use_lu_fact=False,
+            linear_solver_settings=LGMRES_Settings(rtol=1e-14),
+        )
 
         obj = self.build_and_run_mdf_scenario_with_constraints(
             "MDF",
@@ -107,7 +107,7 @@ class TestMDFFormulation(FormulationsBaseTest):
             linearize=True,
             dtype="float64",
             normalize_objective=True,
-            **options,
+            main_mda_settings=main_mda_settings,
         )
 
         assert_allclose(-obj, 3.9640, atol=4e-3, rtol=0)

@@ -16,47 +16,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import TYPE_CHECKING
-
 from pydantic import Field
-from pydantic import model_validator
 
 from gemseo.formulations.base_settings import BaseFormulationSettings
 from gemseo.mda.base_settings import BaseMDASettings  # noqa: TC001
-from gemseo.mda.chain import MDAChain
-from gemseo.mda.factory import MDA_FACTORY
-from gemseo.typing import StrKeyMapping  # noqa: TC001
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
+from gemseo.mda.chain_settings import MDAChain_Settings
 
 
 class MDF_Settings(BaseFormulationSettings):  # noqa: N801
     """Settings of the [MDF][gemseo.formulations.mdf.MDF] formulation."""
 
-    main_mda_name: str = Field(
-        default=MDAChain.__name__,
-        description="""The name of the class of the main MDA.
-
-Typically the [MDAChain][gemseo.mda.chain.MDAChain],
-but one can force to use [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel]
-for instance.
-
-This field is ignored when `main_mda_settings` is a Pydantic model.""",
-    )
-
-    main_mda_settings: StrKeyMapping | BaseMDASettings = Field(
-        default_factory=dict,
+    main_mda_settings: BaseMDASettings = Field(
+        default_factory=MDAChain_Settings,
         description="""The settings of the main MDA.
 
 These settings may include those of the inner-MDA.""",
     )
-
-    @model_validator(mode="after")
-    def __mda_settings_to_pydantic_model(self) -> Self:
-        """Convert MDA settings into a Pydantic model."""
-        if isinstance(self.main_mda_settings, Mapping):
-            settings_model = MDA_FACTORY.get_class(self.main_mda_name).settings_class
-            self.main_mda_settings = settings_model(**self.main_mda_settings)
-        return self

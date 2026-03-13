@@ -15,12 +15,13 @@
 from __future__ import annotations
 
 from gemseo.mda.chain_settings import MDAChain_Settings
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 
 
 def test_mda_chain_settings():
     """Verify that MDAChain_Settings can handle MDA settings passed as a mapping."""
     log_convergence = not MDAChain_Settings().log_convergence
     settings = MDAChain_Settings(
-        inner_mda_settings={"log_convergence": log_convergence}
+        inner_mda_settings=MDAJacobi_Settings(log_convergence=log_convergence)
     )
     assert settings.inner_mda_settings.log_convergence is log_convergence

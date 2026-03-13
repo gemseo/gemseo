@@ -30,10 +30,8 @@ if TYPE_CHECKING:
     from packaging.version import Version
 
 SCIPY_VERSION: Final[Version] = parse_version(version("scipy"))
-SCIPY_LOWER_THAN_1_12: Final[bool] = parse_version("1.12") > SCIPY_VERSION
 SCIPY_GREATER_THAN_1_14: Final[bool] = parse_version("1.14") <= SCIPY_VERSION
 SCIPY_GREATER_THAN_1_16: Final[bool] = parse_version("1.16") <= SCIPY_VERSION
-TOL_OPTION: Final[str] = "tol" if SCIPY_LOWER_THAN_1_12 else "rtol"
 
 
 sparse_classes = (spmatrix, sparray)

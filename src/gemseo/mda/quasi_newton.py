@@ -86,14 +86,13 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        settings_model: MDAQuasiNewton_Settings | None = None,
-        **settings: Any,
+        settings: MDAQuasiNewton_Settings | None = None,
     ) -> None:
         """
         Raises:
             ValueError: If the method is not a valid quasi-Newton method.
         """  # noqa:D205 D212 D415
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
         self._set_resolved_variables(self.coupling_structure.strong_couplings)
 
         if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:

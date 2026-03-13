@@ -21,7 +21,6 @@ import logging
 from abc import abstractmethod
 from copy import copy
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 
 from numpy import abs as np_abs
@@ -110,10 +109,9 @@ class BaseMDASolver(BaseMDA):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings_model: BaseMDASolverSettings | None = None,
-        **settings: Any,
+        settings: BaseMDASolverSettings | None = None,
     ) -> None:
-        super().__init__(disciplines, settings_model=settings_model, **settings)
+        super().__init__(disciplines, settings=settings)
 
         self._sequence_transformer = RelaxationAcceleration(
             self.settings.over_relaxation_factor,

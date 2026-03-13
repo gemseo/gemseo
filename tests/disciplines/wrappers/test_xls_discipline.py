@@ -35,6 +35,8 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
 )
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.wrappers.xls_discipline import XLSDiscipline
+from gemseo.mda.chain_settings import MDAChain_Settings
+from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 
 DIR_PATH = Path(__file__).parent
 FILE_PATH_PATTERN = str(DIR_PATH / "test_excel_fail{}.xlsx")
@@ -223,11 +225,9 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
         "obj",
         design_space,
         formulation_name="MDF",
-        main_mda_name="MDAChain",
-        main_mda_settings={
-            "tolerance": 1e-14,
-            "inner_mda_name": "MDAJacobi",
-        },
+        main_mda_settings=MDAChain_Settings(
+            tolerance=1e-14, inner_mda_settings=MDAJacobi_Settings()
+        ),
     )
     scenario.add_constraint("c_1", constraint_type=scenario.ConstraintType.INEQ)
     scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)

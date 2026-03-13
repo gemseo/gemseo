@@ -145,7 +145,7 @@ def test_mda_linearization(
     sellar_with_2d_array, input_data, disciplines, n, cls, options
 ) -> None:
     """Check the Jacobian value of the MDA."""
-    mda = cls(disciplines, **options)
+    mda = cls(disciplines, settings=cls.settings_class(**options))
     mda_output_data = mda.execute(input_data)
     for discipline in disciplines:
         assert discipline.check_jacobian(

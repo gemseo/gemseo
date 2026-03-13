@@ -79,7 +79,8 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
     Define an evaluation process over a design space for a set of disciplines and a given objective.
 
     Features:
-    [MDO scenario][gemseo.scenarios.mdo].
+    [Evaluation scenario][gemseo.scenarios.evaluation.EvaluationScenario] and
+    [MDO scenario][gemseo.scenarios.mdo.MDOScenario].
 
 - ### __Data persistence__
 

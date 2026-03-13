@@ -27,6 +27,7 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
 )
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.problems.mdo.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.mdo.scalable.data_driven.study.process import ScalabilityStudy
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
@@ -124,7 +125,9 @@ def test_scalabilitystudy1(sellar_use_case, enable_discipline_statistics) -> Non
         "NLOPT_SLSQP",
         2,
         formulation_name="MDF",
-        formulation_settings={"main_mda_settings": {"chain_linearize": True}},
+        formulation_settings={
+            "main_mda_settings": MDAChain_Settings(chain_linearize=True)
+        },
     )
     study.add_optimization_strategy("NLOPT_SLSQP", 2, "IDF")
     study.add_scaling_strategies(variables=variables)
