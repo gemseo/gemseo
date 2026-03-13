@@ -45,6 +45,8 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
 from gemseo.settings.mda import MDAChain_Settings
 
 # %%
@@ -142,7 +144,7 @@ disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
 
 # %%
 # We then create a list of disciplines, which will be used later to create an
-# [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario]:
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario]:
 disciplines = [disc_sellar_system, disc_sellar_1, disc_sellar_2]
 
 # %%
@@ -175,7 +177,7 @@ generate_n2_plot(disciplines, save=False, show=True)
 # %%
 # ## Definition of the design space
 #
-# In order to define [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario],
+# In order to define [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
 # a design space has to be defined by creating a [DesignSpace][gemseo.algos.design_space.DesignSpace]
 # object. The design space definition reads:
 
@@ -248,7 +250,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 # the maximum number of iterations to perform.
 # The execution of the scenario reads:
 
-scenario.execute(algo_name="SLSQP", max_iter=10)
+scenario.execute(SLSQP_Settings(max_iter=10))
 
 # %%
 # The scenario converged after 7 iterations.
@@ -270,20 +272,20 @@ scenario.execute(algo_name="SLSQP", max_iter=10)
 # following plots. Many other post-processors are available in GEMSEO and
 # are described in [this page][how-to-deal-with-post-processing].
 
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 
 # %%
 # !!! note
 #
 #     Such post-processors can be exported in PDF format,
 #     by setting `save` to `True` and potentially additional
-#     settings (see the [post_process()][gemseo.scenarios.base_scenario.BaseScenario.post_process] options).
+#     settings (see the [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] options).
 
 # %%
 # ## Exporting the problem data.
 #
 # After the execution of the scenario, you may want to export your data to use it
-# elsewhere. The [to_dataset()][gemseo.scenarios.base_scenario.BaseScenario.to_dataset] will allow you to export your
+# elsewhere. The [to_dataset()][gemseo.scenarios.mdo.MDOScenario.to_dataset] will allow you to export your
 # results to a [Dataset][gemseo.datasets.dataset.Dataset], the basic GEMSEO class to store data.
 dataset = scenario.to_dataset("a_name_for_my_dataset")
 

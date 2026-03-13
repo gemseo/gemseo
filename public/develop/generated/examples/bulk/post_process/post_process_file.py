@@ -25,15 +25,16 @@ from __future__ import annotations
 
 from gemseo import execute_post
 from gemseo import import_database
+from gemseo.post import BasicHistory_Settings
 
 # %%
 # Given an HDF5 file
 # generated from an [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem],
 # an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-# or a [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario],
+# or an [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
 # we can visualize the evaluation history using the function [execute_post()][gemseo.execute_post]
 # and a specific visualization tool such as `"BasicHistory"`:
-execute_post("my_results.hdf5", post_name="BasicHistory", variable_names=["y_4"])
+execute_post("my_results.hdf5", BasicHistory_Settings(variable_names=["y_4"]))
 
 # %%
 # !!! note

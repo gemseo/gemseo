@@ -25,6 +25,7 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -100,7 +101,7 @@ scenario = create_scenario(
 scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5)
 scenario.add_constraint("lift", value=0.5)
 scenario.execute(slsqp_settings)
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 
 # %%
 # ## Create an MDO scenario with bilevel formulation
@@ -154,4 +155,4 @@ system_scenario.add_constraint("reserve_fact", constraint_type="ineq", value=0.5
 system_scenario.add_constraint("lift", value=0.5)
 system_scenario.execute(cobyla_settings)
 
-system_scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+system_scenario.post_process(OptHistoryView_Settings(save=False, show=True))

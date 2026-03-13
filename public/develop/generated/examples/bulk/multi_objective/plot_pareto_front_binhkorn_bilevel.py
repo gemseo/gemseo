@@ -42,6 +42,10 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
+from gemseo.post import ParetoFront_Settings
 
 # %%
 # ## Definition of the disciplines
@@ -103,7 +107,7 @@ sub_scenario = create_scenario(
     formulation_name="DisciplinaryOpt",
 )
 
-sub_scenario.set_algorithm(algo_name="NLOPT_SLSQP", max_iter=100)
+sub_scenario.set_algorithm(NLOPT_SLSQP_Settings(max_iter=100))
 
 # %%
 # We add the Binh and Korn problem constraints.
@@ -136,7 +140,6 @@ system_scenario = create_scenario(
     sub_scenario,
     "obj1",
     system_design_space,
-    scenario_type="DOE",
     formulation_name="BiLevel",
     sub_scenarios_log_level=WARNING,
 )
@@ -165,7 +168,7 @@ system_scenario = create_scenario(
 # lower-level scenario will respect the target imposed by the system.
 # The BiLevel formulation will automatically add the constraints from the system-level
 # to the lower-level, if you wish to handle the constraints manually, pass
-# `apply_cstr_tosub_scenarios=False` as an argument to `create_scenario`.
+# `apply_constraints_to_sub_scenarios=False` as an argument to `create_scenario`.
 # Note that `obj2` shall be added as an observable of `scenario_doe`,
 # otherwise it cannot be used by the ParetoFront post-processing.
 system_scenario.add_constraint("cstr3")
@@ -175,9 +178,9 @@ system_scenario.xdsmize(save_html=False)
 # ## Run the scenario
 #
 # Finally, we run a full-factorial DOE using 100 samples and run the post-processing.
-system_scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=50)
+system_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=50))
 system_scenario.post_process(
-    post_name="ParetoFront", objectives=["obj1", "obj2"], save=False, show=True
+    ParetoFront_Settings(objectives=["obj1", "obj2"], save=False, show=True)
 )
 
 # %%
@@ -191,6 +194,6 @@ system_scenario.post_process(
 # more information.
 sub_scenario_databases = system_scenario.formulation.scenario_adapters[0].databases
 for database in sub_scenario_databases[:2]:
-    opt_problem = deepcopy(sub_scenario.formulation.optimization_problem)
+    opt_problem = deepcopy(sub_scenario.formulation.problem)
     opt_problem.database = database
-    execute_post(opt_problem, post_name="OptHistoryView", save=False, show=True)
+    execute_post(opt_problem, OptHistoryView_Settings(save=False, show=True))

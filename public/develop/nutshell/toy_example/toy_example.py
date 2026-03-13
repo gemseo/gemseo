@@ -43,6 +43,8 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
 
 
 def py_function_1(inpt=0.0, output_2=0.0):
@@ -72,5 +74,5 @@ design_space = create_design_space()
 design_space.add_variable("inpt", 1, "float", array([-1.0]), array([1.0]), array([0.0]))
 
 scenario = create_scenario(disciplines, "obj", design_space, formulation_name="MDF")
-scenario.execute(algo_name="SLSQP", max_iter=100)
-scenario.post_process(post_name="OptHistoryView", save=True, show=False)
+scenario.execute(SLSQP_Settings(max_iter=100))
+scenario.post_process(OptHistoryView_Settings(save=True, show=False))

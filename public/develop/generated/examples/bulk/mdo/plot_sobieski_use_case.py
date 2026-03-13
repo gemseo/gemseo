@@ -56,6 +56,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_SLSQP_Settings
@@ -86,7 +87,7 @@ disciplines = create_discipline([
 #     See the [examples about high-level functions][api].
 
 # %%
-# ## Step 2: [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] creation.
+# ## Step 2: [MDOScenario][gemseo.scenarios.mdo.MDOScenario] creation.
 #
 # The scenario delegates the creation of the optimization problem to the
 # [MDO formulation][mdo-formulations].
@@ -181,7 +182,7 @@ scenario = create_scenario(
 # available for Sobieski test-case, they can be used instead of computing
 # the derivatives with finite differences or with the complex step method.
 # The easiest way to set it is the method
-# [set_differentiation_method()][gemseo.scenarios.base_scenario.BaseScenario.set_differentiation_method]:
+# [set_differentiation_method()][gemseo.scenarios.mdo.MDOScenario.set_differentiation_method]:
 scenario.set_differentiation_method()
 # %%
 #
@@ -209,7 +210,7 @@ scenario.set_differentiation_method()
 # The formulation has a powerful feature to automatically dispatch the constraints
 # ($g_1, g\_2, g\_3$) and plug them to the optimizers depending on
 # the formulation. To do that, we use the method
-# [add_constraint()[gemseo.scenarios.base_scenario.BaseScenario.add_constraint]:
+# [add_constraint()[gemseo.scenarios.mdo.MDOScenario.add_constraint]:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 # %%
@@ -221,7 +222,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 # and possibly a few options.
 # The maximum number of iterations and the options can be passed
 # either as keyword arguments
-# e.g. `scenario.execute(algo_name="NLOPT_SLSQP", max_iter=10, ftol_rel=1e-6)`
+# e.g. `scenario.execute(NLOPT_SLSQP_Settings(max_iter=10, ftol_rel=1e-6))`
 # or as a Pydantic model of settings,
 # e.g. `scenario.execute(NLOPT_SLSQP_Settings(max_iter=10, ftol_rel=1e-6))`
 # where the Pydantic model `NLOPT_SLSQP_Settings` is imported from
@@ -242,7 +243,7 @@ scenario.execute(slsqp_settings)
 # [this page][how-to-deal-with-post-processing].
 #
 # To visualize the optimization history:
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 
 # %%
 # ## Influence of gradient computation method on performance

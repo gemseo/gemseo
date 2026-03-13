@@ -16,13 +16,13 @@
 
 """# Sample several disciplines.
 
-The [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario] class is used to solve trade-off studies,
+The [MDOScenario][gemseo.scenarios.mdo.MDOScenario] class can be used to solve trade-off studies
+through the use of DOE algorithms,
 based on a design space, an objective and optional constraints.
-But for a simple need of sampling disciplines,
-this class is not very appropriate
-because the notions of objective, which is mandatory, and constraints do not make sense
-and the same for the log including information related to an optimization problem.
-Rather than using this class,
+But for a simple need of sampling disciplines (without neither objective nor constraints),
+using the [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario]
+class is more appropriate.
+Also,
 you can consider the [sample_disciplines()][gemseo.sample_disciplines] function
 whose API has been designed for sampling purposes.
 """

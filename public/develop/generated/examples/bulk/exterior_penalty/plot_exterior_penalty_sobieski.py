@@ -50,6 +50,8 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import get_available_formulations
+from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.post import BasicHistory_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.settings.formulations import MDF_Settings
 from gemseo.utils.discipline import get_all_inputs
@@ -79,7 +81,7 @@ disciplines = create_discipline([
 #     See :ref:`api`.
 
 # %%
-# ## Step 2: Creation of [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario]
+# ## Step 2: Creation of [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 #
 # The scenario delegates the creation of the optimization problem to the
 # [MDO formulation][mdo-formulations].
@@ -150,7 +152,7 @@ scenario = create_scenario(
 
 # %%
 # Note that both the formulation settings passed to [create_scenario()][gemseo.create_scenario] can be provided
-# via a Pydantic model. For more information, see [this page][formulation-settings].
+# via a Pydantic model.
 
 # %%
 # The range function ($y_4$) should be maximized. However, optimizers
@@ -192,22 +194,22 @@ scenario.set_differentiation_method()
 # The formulation has a powerful feature to automatically dispatch the constraints
 # ($g_1, g\_2, g\_3$) and plug them to the optimizers depending on
 # the formulation. To do that, we use the method
-# [add_constraint()][gemseo.scenarios.base_scenario.BaseScenario.add_constraint]:
+# [add_constraint()][gemseo.scenarios.mdo.MDOScenario.add_constraint]:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 # %%
 # ## Step 3: Apply the exterior penalty and execute the scenario
-scenario.formulation.optimization_problem.apply_exterior_penalty(
+scenario.formulation.problem.apply_exterior_penalty(
     objective_scale=10.0, scale_inequality=10.0
 )
 # %%
 # In this way the L-BFGS-B algorithm can be used to solve the optimization problem.
 # Note that this algorithm is not suited for constrained optimization problems.
-scenario.execute(algo_name="L-BFGS-B", max_iter=10)
+scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
 # %%
 # Note that the algorithm settings passed to
-# [execute()][gemseo.scenarios.base_scenario.BaseScenario.execute] can be provided via a
+# [execute()][gemseo.scenarios.mdo.MDOScenario.execute] can be provided via a
 # Pydantic model. For more information, [this page][algorithm-settings].
 
 # %%
@@ -216,10 +218,7 @@ scenario.execute(algo_name="L-BFGS-B", max_iter=10)
 # To visualize the optimization history of the constraint violation one can use the
 # [BasicHistory][gemseo.post.basic_history.BasicHistory]:
 scenario.post_process(
-    post_name="BasicHistory",
-    variable_names=["g_1", "g_2", "g_3"],
-    save=False,
-    show=True,
+    BasicHistory_Settings(variable_names=["g_1", "g_2", "g_3"], save=False, show=True)
 )
 # %%
 # This solution is almost feasible.
@@ -244,7 +243,7 @@ scenario_2 = create_scenario(
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario_2.add_constraint(constraint, constraint_type="ineq")
 scenario_2.set_differentiation_method()
-scenario_2.formulation.optimization_problem.apply_exterior_penalty(
+scenario_2.formulation.problem.apply_exterior_penalty(
     objective_scale=1000.0, scale_inequality=1000.0
 )
 
@@ -257,7 +256,7 @@ from gemseo.settings.opt import L_BFGS_B_Settings  # noqa: E402
 
 scenario_2.execute(L_BFGS_B_Settings(max_iter=1000))
 scenario_2.post_process(
-    post_name="BasicHistory", variable_names=["-y_4"], save=False, show=True
+    BasicHistory_Settings(variable_names=["-y_4"], save=False, show=True)
 )
 
 # %%

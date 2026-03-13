@@ -36,12 +36,15 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scalable
 from gemseo import create_scenario
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
 # ## Training dataset
 #
-# The first step is to build an [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache] dataset
+# The first step is to build a [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache] dataset
 # from a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
 
 # %%
@@ -63,7 +66,7 @@ input_space.filter(input_names)
 # %%
 # ### Build the DOE scenario
 #
-# Lastly, we sample the discipline by means of a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]
+# Lastly, we sample the discipline by means of an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 # relying on both discipline and input space.
 # In order to build a diagonal scalable discipline,
 # a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE] must be used.
@@ -71,13 +74,12 @@ scenario = create_scenario(
     [discipline],
     "y_2",
     input_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 for output_name in discipline.io.output_grammar.names:
     if output_name != "y_2":
         scenario.add_observable(output_name)
-scenario.execute(algo_name="DiagonalDOE", n_samples=20)
+scenario.execute(DiagonalDOE_Settings(n_samples=20))
 
 # %%
 # ## Scalable diagonal discipline

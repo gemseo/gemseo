@@ -70,6 +70,3 @@ get_formulations_sub_options_defaults("MDF", main_mda_name="MDAGaussSeidel")
 from gemseo.settings.formulations import MDF_Settings  # noqa: E402
 
 settings_model = MDF_Settings()
-
-# %%
-# See [this page][formulation-settings] for more information on how to use settings models.

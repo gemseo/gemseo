@@ -24,6 +24,8 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 
 # %%
@@ -47,7 +49,6 @@ scenario = create_scenario(
     "y_4",
     design_space,
     maximize_objective=True,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 
@@ -55,22 +56,21 @@ scenario = create_scenario(
 # ## Execute the scenario
 #
 # Here we use a latin hypercube sampling algorithm with 30 samples.
-scenario.execute(algo_name="PYDOE_LHS", n_samples=30)
+scenario.execute(PYDOE_LHS_Settings(n_samples=30))
 
 # %%
 # Note that both the formulation settings passed to [create_scenario()][gemseo.create_scenario] and the
-# algorithm settings passed to [execute()][gemseo.scenarios.base_scenario.BaseScenario.execute]
+# algorithm settings passed to [execute()][gemseo.scenarios.mdo.MDOScenario.execute]
 # can be provided via a Pydantic model.
 # For more information,
-# see [this page][formulation-settings] about the formulation settings
-# and [this page][algorithm-settings] about the algorithm settings.
+# see [this page][algorithm-settings] about the algorithm settings.
 #
 # ## Plot optimization history view
 #
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 
 # %%
-# Note that post-processor settings passed to [post_process()][gemseo.scenarios.base_scenario.BaseScenario.post_process] can be
+# Note that post-processor settings passed to [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] can be
 # provided via a Pydantic model (see the example below). For more information,
 # see [this page][post-processor-settings].
 #

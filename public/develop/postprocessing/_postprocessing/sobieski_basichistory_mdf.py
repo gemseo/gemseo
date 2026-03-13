@@ -32,6 +32,8 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.post import BasicHistory_Settings
 
 disciplines = create_discipline([
     "SobieskiPropulsion",
@@ -53,21 +55,23 @@ scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
-scenario.execute(algo_name="SLSQP", max_iter=10)
+scenario.execute(SLSQP_Settings(max_iter=10))
 
 scenario.post_process(
-    post_name="BasicHistory",
-    variable_names=["g_2", "g_3"],
-    save=True,
-    show=False,
-    file_path="mdf",
-    extension="png",
+    BasicHistory_Settings(
+        variable_names=["g_2", "g_3"],
+        save=True,
+        show=False,
+        file_path="mdf",
+        extension="png",
+    )
 )
 scenario.post_process(
-    post_name="BasicHistory",
-    variable_names=["y_4"],
-    save=True,
-    show=False,
-    file_path="mdf_obj",
-    extension="png",
+    BasicHistory_Settings(
+        variable_names=["y_4"],
+        save=True,
+        show=False,
+        file_path="mdf_obj",
+        extension="png",
+    )
 )

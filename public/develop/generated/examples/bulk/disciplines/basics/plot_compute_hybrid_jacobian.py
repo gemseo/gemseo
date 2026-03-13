@@ -39,7 +39,7 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo import StrKeyMapping
+    from gemseo.typing import StrKeyMapping
 
 # %%
 # For many different reasons, one might be in a situation where not all the derivatives

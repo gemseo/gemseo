@@ -46,6 +46,8 @@ from __future__ import annotations
 
 from gemseo import execute_algo
 from gemseo import execute_post
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.post import ParetoFront_Settings
 from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaFleming
 from gemseo.settings.opt import MNBI_Settings
 
@@ -59,9 +61,8 @@ from gemseo.settings.opt import MNBI_Settings
 opt_problem = FonsecaFleming()
 mnbi_settings = MNBI_Settings(
     max_iter=1000,
-    sub_optim_max_iter=100,
     n_sub_optim=3,
-    sub_optim_algo="NLOPT_SLSQP",
+    sub_optim_algo_settings=NLOPT_SLSQP_Settings(max_iter=100),
 )
 result = execute_algo(opt_problem, settings_model=mnbi_settings)
 # %%
@@ -72,7 +73,7 @@ result = execute_algo(opt_problem, settings_model=mnbi_settings)
 # its Pareto front is not convex.
 # The mNBI algorithm successfully computes it.
 
-execute_post(opt_problem, post_name="ParetoFront", save=False, show=True)
+execute_post(opt_problem, ParetoFront_Settings(save=False, show=True))
 
 # %%
 # ## Solve the Fonseca-Fleming optimization problem more finely
@@ -86,4 +87,4 @@ result = execute_algo(opt_problem, settings_model=mnbi_settings)
 #
 # We can clearly see the effect of the refinement.
 
-execute_post(opt_problem, post_name="ParetoFront", save=False, show=True)
+execute_post(opt_problem, ParetoFront_Settings(save=False, show=True))

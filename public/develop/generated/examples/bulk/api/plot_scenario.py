@@ -31,22 +31,21 @@ from gemseo import get_scenario_differentiation_modes
 from gemseo import get_scenario_inputs_schema
 from gemseo import get_scenario_options_schema
 from gemseo import monitor_scenario
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.post import ScatterPlotMatrix_Settings
 
 # %%
 # In this example, we will discover the different functions of the API to
 # related to scenarios, which are the GEMSEO' objects
 # dedicated to the resolution of a problem, e.g. optimization or trade-off,
 # associated with a list of disciplines and a design space. All classes
-# implementing scenarios inherit from [BaseScenario][gemseo.scenarios.base_scenario.BaseScenario] which is an
-# abstract class. Classical concrete classes are [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] and
-# [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario], respectively dedicated to optimization and trade-off
-# problems.
+# implementing MDO scenarios inherit from [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
+# dedicated to optimization and trade-off problems.
 #
 # ## Get available scenario type
 #
 # The high-level function [get_available_scenario_types()][gemseo.get_available_scenario_types] can be used
-# to get the available scenario types ([MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] and
-# [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]).
+# to get the available scenario types, including `"Evaluation"` and `"MDO"`.
 get_available_scenario_types()
 
 # %%
@@ -71,7 +70,7 @@ get_scenario_options_schema("MDO")
 #   - `design_space`: the [DesignSpace][gemseo.algos.design_space.DesignSpace] or
 #     the file path of the design space,
 #   - either a `formulation_name` followed by its `formulation_settings``; or
-#   - a `formulation_settings_model` (see [this page][formulation-settings]).
+#   - a `formulation_settings_model`.
 #
 # - The other arguments are optional:
 #
@@ -81,8 +80,8 @@ get_scenario_options_schema("MDO")
 #   - `**formulation_settings`: settings passed to the formulation as keyword
 #     arguments when the `formulation_settings_model` was not provided.
 #
-# - This function returns an instance of [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] or
-#   [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario].
+# - This function returns an instance of
+# [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 
 discipline = create_discipline("AnalyticDiscipline", expressions={"y": "x1+x2"})
 design_space = create_design_space()
@@ -93,15 +92,11 @@ scenario = create_scenario(
     discipline,
     "y",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=25)
+scenario.execute(PYDOE_FULLFACT_Settings(n_samples=25))
 scenario.post_process(
-    post_name="ScatterPlotMatrix",
-    variable_names=["x1", "x2", "y"],
-    save=False,
-    show=True,
+    ScatterPlotMatrix_Settings(variable_names=["x1", "x2", "y"], save=False, show=True)
 )
 
 # %%
@@ -145,8 +140,7 @@ scenario = create_scenario(
     discipline,
     "y",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
 monitor_scenario(scenario, Observer())
-scenario.execute(algo_name="PYDOE_FULLFACT", n_samples=25)
+scenario.execute(PYDOE_FULLFACT_Settings(n_samples=25))

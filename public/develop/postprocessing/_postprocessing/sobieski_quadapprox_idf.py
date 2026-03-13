@@ -32,6 +32,8 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.post import QuadApprox_Settings
 
 disciplines = create_discipline([
     "SobieskiPropulsion",
@@ -53,13 +55,10 @@ scenario.set_differentiation_method()
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
-scenario.execute(algo_name="SLSQP", max_iter=10)
+scenario.execute(SLSQP_Settings(max_iter=10))
 
 scenario.post_process(
-    post_name="QuadApprox",
-    save=True,
-    show=False,
-    file_path="idf",
-    extension="png",
-    function="-y_4",
+    QuadApprox_Settings(
+        save=True, show=False, file_path="idf", extension="png", function="-y_4"
+    )
 )

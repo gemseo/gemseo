@@ -99,7 +99,7 @@ scenario.execute(SLSQP_Settings(max_iter=20))
 # Let us now post-process the scenario by means of the [GradientSensitivity][gemseo.post.gradient_sensitivity.GradientSensitivity].
 
 scenario.post_process(
-    settings_model=GradientSensitivity_Settings(
+    GradientSensitivity_Settings(
         compute_missing_gradients=True,
         save=False,
         show=True,

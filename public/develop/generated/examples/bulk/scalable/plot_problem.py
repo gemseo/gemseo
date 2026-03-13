@@ -31,6 +31,11 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -65,11 +70,10 @@ for discipline in disciplines:
         next(output_names),
         design_space,
         formulation_name="DisciplinaryOpt",
-        scenario_type="DOE",
     )
     for output_name in output_names:
         scenario.add_observable(output_name)
-    scenario.execute(algo_name="DiagonalDOE", n_samples=10)
+    scenario.execute(DiagonalDOE_Settings(n_samples=10))
     datasets.append(scenario.to_dataset(name=discipline.name, opt_naming=False))
 
 # %%
@@ -105,7 +109,7 @@ problem.plot_n2_chart(save=False, show=True)
 # %%
 # ## Create an MDO scenario
 #
-# Lastly, we create an [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario] with the [MDF][gemseo.formulations.mdf.MDF] formulation
+# Lastly, we create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with the [MDF][gemseo.formulations.mdf.MDF] formulation
 # and start the optimization at equilibrium,
 # thus ensuring the feasibility of the first iterate.
 scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
@@ -123,9 +127,9 @@ scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
 # Once the scenario is created, we can execute it as any scenario.
 # Here, we use the `NLOPT_SLSQP` optimization algorithm
 # with no more than 100 iterations.
-scenario.execute(algo_name="NLOPT_SLSQP", max_iter=100)
+scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
 
 # %%
 # We can post-process the results.
 # Here, we use the standard [OptHistoryView][gemseo.post.opt_history_view.OptHistoryView].
-scenario.post_process(post_name="OptHistoryView", save=False, show=True)
+scenario.post_process(OptHistoryView_Settings(save=False, show=True))

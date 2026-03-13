@@ -32,6 +32,9 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -54,11 +57,10 @@ for discipline in disciplines:
         next(output_names),
         design_space,
         formulation_name="DisciplinaryOpt",
-        scenario_type="DOE",
     )
     for output_name in output_names:
         scenario.add_observable(output_name)
-    scenario.execute(algo_name="DiagonalDOE", n_samples=10)
+    scenario.execute(DiagonalDOE_Settings(n_samples=10))
     datasets[discipline.name] = scenario.to_dataset(
         name=discipline.name, opt_naming=False
     )

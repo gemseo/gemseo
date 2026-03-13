@@ -47,7 +47,7 @@ scenario = create_scenario(
     formulation_name="DisciplinaryOpt",
     scenario_type="DOE",
 )
-scenario.execute(algo_name="LHS", n_samples=100, n_processes=10)
+scenario.execute(LHS_Settings(n_samples=100, n_processes=10))
 
 # %%
 # In this variant,

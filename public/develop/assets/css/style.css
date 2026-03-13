@@ -24,3 +24,19 @@
 .md-content {
   text-align: justify;
 }
+
+/* Version selector */
+.md-version__item--divider {
+  pointer-events: none;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.6;
+  border-top: 1px solid currentColor;
+  margin-top: 0.3rem;
+}
+.md-version__link--legacy {
+  opacity: 0.75;
+  font-style: italic;
+}

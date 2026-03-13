@@ -33,6 +33,9 @@ from __future__ import annotations
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
+from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+    DiagonalDOE_Settings,
+)
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 
 # %%
@@ -58,7 +61,7 @@ design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
 # %%
 # ## Sample with the default mode
 #
-# Lastly, we create a [DOEScenario][gemseo.scenarios.doe_scenario.DOEScenario]
+# Lastly, we create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 # and execute it with the [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE] algorithm
 # to get 10 evaluations of $f$.
 # Note that we use the default configuration:
@@ -68,10 +71,9 @@ scenario = create_scenario(
     discipline,
     "z",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="DiagonalDOE", n_samples=10)
+scenario.execute(DiagonalDOE_Settings(n_samples=10))
 dataset = scenario.to_dataset(opt_naming=False)
 ScatterMatrix(dataset).execute(save=False, show=True)
 
@@ -89,9 +91,8 @@ scenario = create_scenario(
     discipline,
     "z",
     design_space,
-    scenario_type="DOE",
     formulation_name="DisciplinaryOpt",
 )
-scenario.execute(algo_name="DiagonalDOE", n_samples=10, reverse=["y"])
+scenario.execute(DiagonalDOE_Settings(n_samples=10, reverse=["y"]))
 dataset = scenario.to_dataset(opt_naming=False)
 ScatterMatrix(dataset).execute(save=False, show=True)

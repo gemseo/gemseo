@@ -32,9 +32,12 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
+from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.opt.multi_start.settings.multi_start_settings import (
     MultiStart_Settings,
 )
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.post import BasicHistory_Settings
 
 # %%
 # First,
@@ -60,7 +63,7 @@ scenario = create_scenario(
 )
 # %%
 # Note that the formulation settings passed to [create_scenario()][gemseo.create_scenario] can be provided
-# via a Pydantic model. For more information, see [this page][formulation-settings].
+# via a Pydantic model.
 
 scenario.add_constraint("cstr", constraint_type="ineq")
 
@@ -70,9 +73,8 @@ scenario.add_constraint("cstr", constraint_type="ineq")
 # and the full-factorial DOE algorithm:
 multistart_settings = MultiStart_Settings(
     max_iter=100,
-    opt_algo_name="SLSQP",
-    doe_algo_name="PYDOE_FULLFACT",
-    n_start=10,
+    opt_algo_settings=SLSQP_Settings(),
+    doe_algo_settings=PYDOE_FULLFACT_Settings(n_samples=10),
     # Set multistart_file_path to save the history of the local optima.
     multistart_file_path="multistart.hdf5",
 )
@@ -83,15 +85,12 @@ scenario.execute(multistart_settings)
 # we can plot the history of the objective,
 # either by concatenating the 10 sub-optimization histories:
 execute_post(
-    scenario, post_name="BasicHistory", variable_names=["obj"], save=False, show=True
+    scenario, BasicHistory_Settings(variable_names=["obj"], save=False, show=True)
 )
 
 # %%
 # or by filtering the local optima (one per starting point):
 execute_post(
     "multistart.hdf5",
-    post_name="BasicHistory",
-    variable_names=["obj"],
-    save=False,
-    show=True,
+    BasicHistory_Settings(variable_names=["obj"], save=False, show=True),
 )

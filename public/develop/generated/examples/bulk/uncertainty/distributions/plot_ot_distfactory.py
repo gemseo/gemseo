@@ -45,7 +45,7 @@ variable_name = "X"
 #
 # Then,
 # we create an [OTDistributionFitter][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter] from these data and this variable name:
-fitter = OTDistributionFitter(variable_name, data)
+fitter = OTDistributionFitter(data)
 
 # %%
 # ## Fit a distribution

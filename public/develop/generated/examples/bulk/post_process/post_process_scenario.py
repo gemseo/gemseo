@@ -19,7 +19,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Post-process a scenario."""
+"""# How to post-process a scenario."""
 
 from __future__ import annotations
 
@@ -27,6 +27,8 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import execute_post
+from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
+from gemseo.post import BasicHistory_Settings
 
 # %%
 # We consider a minimization problem over the interval $[0,1]$
@@ -42,17 +44,17 @@ scenario = create_scenario(
 
 # %%
 # We solve this optimization problem with the gradient-free algorithm COBYLA:
-scenario.execute(algo_name="NLOPT_COBYLA", max_iter=10)
+scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 
 # %%
 # Then,
-# we can post-process this [MDOScenario][gemseo.scenarios.mdo_scenario.MDOScenario]
-# either with its method [post_process()][gemseo.scenarios.mdo_scenario.MDOScenario.post_process]:
-scenario.post_process(post_name="BasicHistory", variable_names=["y"])
+# we can post-process this [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+# either with its method [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process]:
+scenario.post_process(BasicHistory_Settings(variable_names=["y"]))
 
 # %%
 # or with the function [execute_post()][gemseo.execute_post]:
-execute_post(scenario, post_name="BasicHistory", variable_names=["y"])
+execute_post(scenario, BasicHistory_Settings(variable_names=["y"]))
 
 # %%
 # !!! note
