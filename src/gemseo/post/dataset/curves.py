@@ -30,33 +30,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.base import BaseDatasetPlot
+from gemseo.post.dataset.curves_settings import Curves_Settings
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
 
 
-class Curves(DatasetPlot):
+class Curves(BaseDatasetPlot[Curves_Settings]):
     """Plot curves y_i over the mesh x."""
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        mesh: str,
-        variable: str,
-        samples: Sequence[int] = (),
-    ) -> None:
-        """
-        Args:
-            mesh: The name of the dataset misc corresponding to the mesh.
-            variable: The name of the variable for the x-axis.
-            samples: The indices of the samples to plot.
-                If empty, plot all the samples.
-        """  # noqa: D205, D212, D415
-        super().__init__(dataset, mesh=mesh, variable=variable, samples=samples)
+    settings_class = Curves_Settings
 
     def _create_specific_data_from_dataset(
         self,
@@ -66,15 +50,15 @@ class Curves(DatasetPlot):
             The values of the points of the curves on the y-axis (one curve per row),
             the labels of the curves.
         """  # noqa: D205 D212 D415
-        samples = self._specific_settings.samples
+        samples = self.settings.samples
         y_values = self.dataset.get_view(
-            variable_names=self._specific_settings.variable
+            variable_names=self.settings.variable
         ).to_numpy()
         if samples:
-            self._n_items = len(samples)
+            self.settings.n_items = len(samples)
             y_values = y_values[samples, :]
         else:
-            self._n_items = len(y_values)
-            samples = range(self._n_items)
+            self.settings.n_items = len(y_values)
+            samples = range(self.settings.n_items)
 
         return y_values, [self.dataset.index[sample] for sample in samples]

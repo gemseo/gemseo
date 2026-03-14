@@ -28,6 +28,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
+from gemseo.post.dataset.lines_settings import Lines_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -105,11 +106,11 @@ def test_plot_matplotlib(
     kwargs, properties, baseline_images, dataset, fig_and_ax
 ) -> None:
     """Test images created by Lines.execute against references for matplotlib."""
-    plot = Lines(dataset, **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
-
+    settings = Lines_Settings(**kwargs, **properties)
+    plot = Lines(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)
 
 
@@ -122,11 +123,9 @@ def test_plot_matplotlib(
 def test_plot_plotly(kwargs, properties, baseline_images, dataset) -> None:
     """Test images created by Lines.execute against references for plotly."""
     pytest.importorskip("plotly")
-    plot = Lines(dataset, **kwargs)
-    for k, v in properties.items():
-        setattr(plot, k, v)
-
-    figure = plot.execute(save=False, show=False, file_format="html")[0]
+    settings = Lines_Settings(**kwargs, **properties)
+    plot = Lines(dataset, settings)
+    figure = plot.execute(save=False, file_format="html")[0]
     ref = (
         Path(__file__).parent / "plotly" / "test_lines" / baseline_images[0]
     ).read_text()
@@ -135,13 +134,13 @@ def test_plot_plotly(kwargs, properties, baseline_images, dataset) -> None:
 
 def test_pass_existing_figure(dataset):
     """Check that an existing figure can be modified."""
-    figure = Lines(dataset, variables="y", abscissa_variable="x").execute(
-        save=False, show=False, file_name="existing", file_format="html"
+    settings = Lines_Settings(variables=["y"], abscissa_variable="x")
+    figure = Lines(dataset, settings).execute(
+        save=False, file_name="existing", file_format="html"
     )[0]
-    figure = Lines(
-        dataset, variables="z", abscissa_variable="x", add_markers=True
-    ).execute(
-        save=False, show=False, file_name="final", fig=figure, file_format="html"
+    settings = Lines_Settings(variables=["z"], abscissa_variable="x", add_markers=True)
+    figure = Lines(dataset, settings).execute(
+        save=False, file_name="final", fig=figure, file_format="html"
     )[0]
     ref = (
         Path(__file__).parent / "plotly" / "test_lines" / "Lines_modified"
@@ -151,9 +150,10 @@ def test_pass_existing_figure(dataset):
 
 def test_not_implemented(dataset):
     """Check that the option use_integer_xticks is not implemented with plotly."""
-    lines = Lines(
-        dataset, variables="y", abscissa_variable="x", use_integer_xticks=True
+    settings = Lines_Settings(
+        variables=["y"], abscissa_variable="x", use_integer_xticks=True
     )
+    lines = Lines(dataset, settings)
     with pytest.raises(
         NotImplementedError,
         match=re.escape(

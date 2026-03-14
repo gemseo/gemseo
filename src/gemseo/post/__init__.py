@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from gemseo.post.animation_settings import Animation_Settings  # noqa:F401
 from gemseo.post.basic_history_settings import BasicHistory_Settings  # noqa:F401
+from gemseo.post.constraint_radar_settings import ConstraintRadar_Settings  # noqa:F401
 from gemseo.post.constraints_history_settings import (
     ConstraintsHistory_Settings,  # noqa:F401
 )
@@ -33,7 +34,6 @@ from gemseo.post.parallel_coordinates_settings import (
 )
 from gemseo.post.pareto_front_settings import ParetoFront_Settings  # noqa:F401
 from gemseo.post.quad_approx_settings import QuadApprox_Settings  # noqa:F401
-from gemseo.post.radar_chart_settings import RadarChart_Settings  # noqa:F401
 from gemseo.post.robustness_settings import Robustness_Settings  # noqa:F401
 from gemseo.post.scatter_plot_matrix_settings import (
     ScatterPlotMatrix_Settings,  # noqa:F401

@@ -26,42 +26,17 @@ from typing import TYPE_CHECKING
 from numpy import linspace
 from numpy import pi
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.base import BaseDatasetPlot
+from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
 
 
-class RadarChart(DatasetPlot):
+class RadarChart(BaseDatasetPlot[RadarChart_Settings]):
     """Radar chart visualization."""
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        display_zero: bool = True,
-        connect: bool = False,
-        radial_ticks: bool = False,
-        n_levels: int = 6,
-        scientific_notation: bool = True,
-    ) -> None:
-        """
-        Args:
-            display_zero: Whether to display the line where the output is equal to zero.
-            connect: Whether to connect the elements of a series with a line.
-            radial_ticks: Whether to align the ticks names with the radius.
-            n_levels: The number of grid levels.
-            scientific_notation: Whether to format the grid levels
-                with the scientific notation.
-        """  # noqa: D205, D212, D415
-        super().__init__(
-            dataset,
-            display_zero=display_zero,
-            connect=connect,
-            radial_ticks=radial_ticks,
-            n_levels=n_levels,
-            scientific_notation=scientific_notation,
-        )
+    settings_class = RadarChart_Settings
 
     def _create_specific_data_from_dataset(self) -> tuple[RealArray, list[float]]:
         """
@@ -69,11 +44,17 @@ class RadarChart(DatasetPlot):
             The values of the series on the y-axis (one series per row),
             the values of the series on the r-axis.
         """  # noqa: D205 D212 D415
-        self._n_items = len(self.dataset)
-        self.linestyle = "-o" if self._specific_settings.connect else "o"
+        self.settings.n_items = len(self.dataset)
+        if "linestyle" in self.settings.model_fields_set:
+            self.settings.set_linestyles(self.settings.linestyle)
+        else:
+            self.settings.set_linestyles("-o" if self.settings.connect else "o")
+        self.settings.set_colors(self.settings.color)
         y_values = self.dataset.to_numpy()
-        self.rmin = y_values.min()
-        self.rmax = y_values.max()
+        if "rmin" not in self.settings.model_fields_set:
+            self.settings.rmin = y_values.min()
+        if "rmax" not in self.settings.model_fields_set:
+            self.settings.rmax = y_values.max()
         dimension = self.dataset.shape[1]
         theta = (2 * pi * linspace(0, 1 - 1.0 / dimension, dimension)).tolist()
         theta.append(theta[0])

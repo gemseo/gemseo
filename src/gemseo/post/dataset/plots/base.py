@@ -20,8 +20,10 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import NamedTuple
+from typing import Generic
+from typing import TypeVar
 
+from gemseo.post.dataset.base_settings import BaseDatasetPlotSettings
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import repr_variable
@@ -30,13 +32,14 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.post.dataset.plot_settings import PlotSettings
+
+T = TypeVar("T", bound=BaseDatasetPlotSettings)
 
 
-class BasePlot(metaclass=ABCGoogleDocstringInheritanceMeta):
+class BasePlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     """A base plot class.
 
-    A [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot]
+    A [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot]
     defines a graphical concept (e.g. radar chart, lines, etc.)
     while a [BasePlot][gemseo.post.dataset.plots.base_plot.BasePlot]
     with the same class name implements this concept
@@ -49,13 +52,10 @@ class BasePlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     """
 
     _common_dataset: Dataset
-    """The dataset passed to the [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot]."""  # noqa: E501
+    """The dataset passed to the [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot]."""  # noqa: E501
 
-    _common_settings: PlotSettings
-    """The settings common to many plot classes."""
-
-    _specific_settings: NamedTuple
-    """The settings specific to this plot class."""
+    _settings: T
+    """The settings."""
 
     _file_path_manager: FilePathManager
     """The manager of figure file paths."""
@@ -63,24 +63,21 @@ class BasePlot(metaclass=ABCGoogleDocstringInheritanceMeta):
     def __init__(
         self,
         dataset: Dataset,
-        common_settings: PlotSettings,
-        specific_settings: NamedTuple,
+        settings: T,
         *specific_data: Any,
         **engine_parameters: Any,
     ) -> None:
         """
         Args:
             dataset: The dataset passed to the
-                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
+                [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].
                 To be used when an information item is missing in `*specific_data`.
-            common_settings: The settings common to many plot classes.
-            specific_settings: The settings specific to this plot class.
+            settings: The settings of the plot.
             *specific_data: The data specific to this plot class.
             **engine_parameters: The parameters specific to the plot engine.
         """  # noqa: D205 D212
         self._common_dataset = dataset
-        self._common_settings = common_settings
-        self._specific_settings = specific_settings
+        self._settings = settings
         self._file_path_manager = FilePathManager(
             FilePathManager.FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),

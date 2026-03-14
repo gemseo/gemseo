@@ -29,6 +29,9 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
+from gemseo.post.dataset.parallel_coordinates_settings import (
+    ParallelCoordinates_Settings,
+)
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -78,10 +81,11 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
     """Test images created by ParallelCoordinates._plot against references."""
-    plot = ParallelCoordinates(dataset, classifier="x1", **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = ParallelCoordinates_Settings(classifier="x1", **kwargs, **properties)
+    plot = ParallelCoordinates(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)
 
 
@@ -91,4 +95,4 @@ def test_wrong_classifier_name(dataset) -> None:
         ValueError,
         match=re.escape("Classifier must be one of these names: x1, x2 and x3."),
     ):
-        ParallelCoordinates(dataset, classifier="foo")
+        ParallelCoordinates(dataset, ParallelCoordinates_Settings(classifier="foo"))

@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Test the class Radar plotting samples using the radviz module from pandas."""
+"""Test the class RadViz plotting samples using the radviz module from pandas."""
 
 from __future__ import annotations
 
@@ -27,7 +27,8 @@ from typing import TYPE_CHECKING
 import pytest
 from matplotlib import pyplot as plt
 
-from gemseo.post.dataset.radviz import Radar
+from gemseo.post.dataset.radviz import RadViz
+from gemseo.post.dataset.radviz_settings import RadViz_Settings
 from gemseo.problems.dataset.iris import create_iris_dataset
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -35,10 +36,10 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 # the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to Radar._plot
+# - the kwargs to be passed to RadViz._plot
 # - the expected file names without extension to be compared
 TEST_PARAMETERS = {
-    "default": ({}, {}, ["Radar"]),
+    "default": ({}, {}, ["RadViz"]),
     "with_properties": (
         {},
         {
@@ -47,7 +48,7 @@ TEST_PARAMETERS = {
             "title": "The title",
             "grid": False,
         },
-        ["Radar_properties"],
+        ["RadViz_properties"],
     ),
 }
 
@@ -67,11 +68,12 @@ def dataset() -> Dataset:
 @pytest.mark.parametrize("fig_and_ax", [False, True])
 @image_comparison(None)
 def test_plot(dataset, kwargs, properties, baseline_images, fig_and_ax) -> None:
-    """Test images created by Radar._plot against references."""
-    plot = Radar(dataset, classifier="specy")
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    """Test images created by RadViz._plot against references."""
+    settings = RadViz_Settings(classifier="specy", **properties)
+    plot = RadViz(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)
 
 
@@ -85,4 +87,4 @@ def test_classifier_error(dataset) -> None:
             "petal_length, petal_width, sepal_length, sepal_width and specy"
         ),
     ):
-        Radar(dataset, classifier="foo").execute()
+        RadViz(dataset, RadViz_Settings(classifier="foo")).execute()

@@ -14,7 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """Datasets post-processing.
 
-A [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot] is a generic graphical
+A [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot] is a generic graphical
 representation of a [Dataset][gemseo.datasets.dataset.Dataset]
 that can be displayed on screen or saved to a file.
 The different visualization tools
@@ -30,7 +30,7 @@ As an example,
 [RadarChart][gemseo.post.dataset.radar_chart.RadarChart] implements a
 [radar chart](https://en.wikipedia.org/wiki/Radar_chart)
 and is used by both
-[RadarChart][gemseo.post.radar_chart.RadarChart]
+[ConstraintRadar][gemseo.post.constraint_radar.ConstraintRadar]
 to visualize the constraints stored in a [Database][gemseo.algos.database.Database]
 and
 [plot_radar()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.plot_radar]

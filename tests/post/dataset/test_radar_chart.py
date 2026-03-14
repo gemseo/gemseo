@@ -27,6 +27,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
+from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -80,13 +81,11 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
     """Test images created by RadarChart._plot against references."""
-    plot = RadarChart(dataset, **kwargs)
+    settings = RadarChart_Settings(**kwargs, **properties)
+    plot = RadarChart(dataset, settings)
     if fig_and_ax:
-        fig = plt.figure(figsize=plot.fig_size)
+        fig = plt.figure(figsize=settings.fig_size)
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
     else:
         fig, ax = (None, None)
-
-    for k, v in properties.items():
-        setattr(plot, k, v)
     plot.execute(save=False, fig=fig, ax=ax)

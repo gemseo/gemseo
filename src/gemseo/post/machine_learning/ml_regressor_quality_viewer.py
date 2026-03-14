@@ -25,9 +25,12 @@ from strenum import StrEnum
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.machine_learning.resampling.cross_validation import CrossValidation
+from gemseo.post.dataset._trend import Trend
 from gemseo.post.dataset.scatter import Scatter
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrixOption
+from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
+from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrixOption
+from gemseo.post.dataset.scatter_settings import Scatter_Settings
 from gemseo.utils.seeder import Seeder
 from gemseo.utils.string_tools import convert_strings_to_iterable
 
@@ -115,7 +118,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             save: Whether to save the plots.
             show: Whether to show the plots.
             **options: The options of the underlying
-                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
+                [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].
 
         Returns:
             The plot of the model data versus the observations.
@@ -162,7 +165,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
 
         variable_names = list(dataset.columns.levels[1])
         file_name = options.pop("file_name", default_file_name)
-        trend = options.pop("trend", ScatterMatrix.Trend.LINEAR)
+        trend = options.pop("trend", Trend.LINEAR)
         if use_scatter_matrix:
             return self.__create_scatter_matrix(
                 dataset, trend, variable_names, file_name, save, show, **options
@@ -258,7 +261,10 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 }:
                     continue
 
-                scatter = Scatter(dataset, variable_name, other_variable_name, trend)
+                settings = Scatter_Settings(
+                    x=variable_name, y=other_variable_name, trend=trend
+                )
+                scatter = Scatter(dataset, settings)
                 scatter.execute(
                     file_name=file_name,
                     file_name_suffix=str(file_index),
@@ -294,15 +300,15 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The scatter matrix plot.
         """
-        scatter_matrix = ScatterMatrix(
-            dataset,
-            variable_names,
+        options_ = {"range_padding": 0.2, "alpha": 1.0}
+        options_.update(options)
+        settings = ScatterMatrix_Settings(
+            variable_names=variable_names,
             kde=options.pop("kde", True),
             trend=trend,
-            range_padding=options.pop("range_padding", 0.2),
-            alpha=options.pop("alpha", 1.0),
-            **options,
+            options=options_,
         )
+        scatter_matrix = ScatterMatrix(dataset, settings)
         scatter_matrix.execute(file_name=file_name, save=save, show=show)
         return scatter_matrix
 
@@ -379,7 +385,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 the seed of the `i`-th execution is `SEED+i`.
                 Used only in the case of cross-validation.
             **options: The options of the underlying
-                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
+                [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].
 
         Returns:
             The plots of the residuals of the model versus the observations.
@@ -442,7 +448,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 the seed of the i-th execution is SEED+i.
                 Used only in the case of cross-validation.
             **options: The options of the underlying
-                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
+                [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].
 
         Returns:
             The plots of the residuals of the model versus the inputs.
@@ -547,7 +553,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 the seed of the i-th execution is SEED+i.
                 Used only in the case of cross-validation.
             **options: The options of the underlying
-                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
+                [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].
 
         Returns:
             The plots of the predictions versus the observations.

@@ -28,6 +28,7 @@ from matplotlib import pyplot as plt
 from scipy.interpolate import Rbf
 
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
+from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 # the test parameters, it maps a test name to the inputs and references outputs:
@@ -67,10 +68,11 @@ def test_plot(
     fig_and_ax,
 ) -> None:
     """Test images created by ScatterMatrix._plot against references."""
-    plot = ScatterMatrix(dataset, **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = ScatterMatrix_Settings(**kwargs, **properties)
+    plot = ScatterMatrix(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)
 
 
@@ -87,17 +89,20 @@ def test_plot(
 @image_comparison(None, tol=0.01)
 def test_trend(trend, quadratic_dataset, baseline_images) -> None:
     """Check the use of a trend."""
-    ScatterMatrix(quadratic_dataset, trend=trend).execute(save=False)
+    settings = ScatterMatrix_Settings(trend=trend)
+    ScatterMatrix(quadratic_dataset, settings).execute(save=False)
 
 
 @image_comparison(["ScatterMatrix_pandas_option"])
 def test_pandas_option(dataset) -> None:
     """Check the use of a pandas option."""
-    ScatterMatrix(dataset, alpha=1.0).execute(save=False)
+    settings = ScatterMatrix_Settings(options={"alpha": 1.0})
+    ScatterMatrix(dataset, settings).execute(save=False)
 
 
 def test_plot_error(dataset) -> None:
     """Check that an error is raised when the classifier is not variable name."""
+    settings = ScatterMatrix_Settings(classifier="wrong_name")
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -106,4 +111,4 @@ def test_plot_error(dataset) -> None:
             "available ones are: ['c', 'x', 'y', 'z']."
         ),
     ):
-        ScatterMatrix(dataset, classifier="wrong_name").execute(save=False)
+        ScatterMatrix(dataset, settings).execute(save=False)

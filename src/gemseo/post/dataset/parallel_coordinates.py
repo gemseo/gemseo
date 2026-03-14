@@ -33,7 +33,7 @@ as a piece-wise line where the x-values of the nodes from left to right
 are the values of $x_1$, $x_2$, ... and $x_d^{(i)}$.
 
 A variable name is required by the
-[DatasetPlot.execute()][gemseo.post.dataset.dataset_plot.DatasetPlot.execute] method
+[DatasetPlot.execute()][gemseo.post.dataset.base.BaseDatasetPlot.execute] method
 by means of the `classifier` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled or when we are looking for the samples for which the classifier value
@@ -47,38 +47,23 @@ the samples positively classified and one for the others.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import inf
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.base import BaseDatasetPlot
+from gemseo.post.dataset.parallel_coordinates_settings import (
+    ParallelCoordinates_Settings,
+)
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 
-class ParallelCoordinates(DatasetPlot):
+class ParallelCoordinates(BaseDatasetPlot[ParallelCoordinates_Settings]):
     """Parallel coordinates."""
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        classifier: str,
-        lower: float = -inf,
-        upper: float = inf,
-        **kwargs: Any,
-    ) -> None:
-        """
-        Args:
-            classifier: The name of the variable to group the data.
-            lower: The lower bound of the cluster.
-            upper: The upper bound of the cluster.
-            **kwargs: The options to pass to pandas.
-        """  # noqa: D205, D212, D415
-        super().__init__(
-            dataset, classifier=classifier, lower=lower, upper=upper, kwargs=kwargs
-        )
+    settings_class = ParallelCoordinates_Settings
 
     def _create_specific_data_from_dataset(
         self,
@@ -91,9 +76,9 @@ class ParallelCoordinates(DatasetPlot):
             The dataset to be used,
             the identifier of the cluster.
         """  # noqa: D205, D212, D415
-        classifier = self._specific_settings.classifier
-        upper = self._specific_settings.upper
-        lower = self._specific_settings.lower
+        classifier = self.settings.classifier
+        upper = self.settings.upper
+        lower = self.settings.lower
         if classifier not in self.dataset.variable_names:
             msg = (
                 "Classifier must be one of these names: "
@@ -111,9 +96,11 @@ class ParallelCoordinates(DatasetPlot):
             cluster = ("classifiers", f"{lower} < {label} < {upper}", 0)
             dataframe[cluster] = dataframe.apply(is_btw, axis=1)
 
-        if not self.title:
+        if "title" not in self.settings.model_fields_set:
             if lower != -inf or upper != inf:
-                self.title = f"Cobweb plot based on the classifier: {cluster[1]}"
+                self.settings.title = (
+                    f"Cobweb plot based on the classifier: {cluster[1]}"
+                )
             else:
-                self.title = ""
+                self.settings.title = ""
         return dataframe, cluster

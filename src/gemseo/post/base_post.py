@@ -31,7 +31,7 @@ from typing import TypeVar
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.base import BaseDatasetPlot
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.matplotlib_figure import FigSizeType
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -85,7 +85,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     _output_file_paths: list[Path]
     """Paths to the output files."""
 
-    __figures: dict[str, Figure | DatasetPlot]
+    __figures: dict[str, Figure | BaseDatasetPlot]
     """The mapping from figure names or nameless figure counters to figures."""
 
     _USE_JACOBIAN_DATA: ClassVar[bool] = False
@@ -142,7 +142,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         )
 
     @property
-    def figures(self) -> dict[str, Figure | DatasetPlot]:
+    def figures(self) -> dict[str, Figure | BaseDatasetPlot]:
         """The figures indexed by a name, or the nameless figure counter."""
         return self.__figures
 
@@ -153,7 +153,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def _add_figure(
         self,
-        figure: Figure | DatasetPlot,
+        figure: Figure | BaseDatasetPlot,
         file_name: str = "",
     ) -> None:
         """Add a figure.
@@ -169,7 +169,9 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
         self.__figures[file_name] = figure
 
-    def execute(self, settings: BasePostSettings) -> dict[str, Figure | DatasetPlot]:
+    def execute(
+        self, settings: BasePostSettings
+    ) -> dict[str, Figure | BaseDatasetPlot]:
         """Post-process the optimization problem.
 
         Args:
@@ -228,7 +230,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             else:
                 fig_file_path = ""
 
-            if isinstance(figure, DatasetPlot):
+            if isinstance(figure, BaseDatasetPlot):
                 figure.fig_size = settings.fig_size
                 figure.execute(
                     save=settings.save,

@@ -24,7 +24,7 @@ for web-based interactive visualizations,
 For this reason,
 GEMSEO proposes plotly versions of some visualizations
 which can be generated using the option `file_format="html"`
-of the method [DatasetPlot.execute()][gemseo.post.dataset.dataset_plot.DatasetPlot.execute].
+of the method [DatasetPlot.execute()][gemseo.post.dataset.base.BaseDatasetPlot.execute].
 In that case,
 this method returns a list of plotly figures.
 When `save=True` (default), the figures are saved on the disk.

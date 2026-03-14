@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 from numpy import arange
 
+from gemseo.post.dataset.bars_settings import BarPlot_Settings
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
 
 if TYPE_CHECKING:
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-class BarPlot(MatplotlibPlot):
+class BarPlot(MatplotlibPlot[BarPlot_Settings]):
     """A bar plot based on matplotlib."""
 
     def _create_figures(
@@ -45,10 +46,11 @@ class BarPlot(MatplotlibPlot):
             data: The data to be plotted.
             feature_names: The names of the features.
         """  # noqa: D205, D212, D415
+        settings = self._settings
         fig, ax = self._get_figure_and_axes(fig, ax)
-        self._common_settings.set_colors(self._common_settings.color)
+        settings.set_colors(settings.color)
         n_series, n_features = data.shape
-        ax.tick_params(labelsize=self._common_settings.font_size)
+        ax.tick_params(labelsize=settings.font_size)
         first_series_positions = arange(n_features)
         width = 0.75 / n_series
         subplots = []
@@ -60,7 +62,7 @@ class BarPlot(MatplotlibPlot):
             positions,
             self._common_dataset.index,
             data,
-            self._common_settings.color,
+            settings.color,
             strict=False,
         ):
             subplots.append(
@@ -73,30 +75,28 @@ class BarPlot(MatplotlibPlot):
                 )
             )
 
-        if self._specific_settings.annotate:
+        if settings.annotate:
             for rects in subplots:
                 for rect in rects:
                     height = rect.get_height()
                     pos = 3 if height > 0 else -12
                     ax.annotate(
-                        f"{round(height, self._specific_settings.n_digits)}",
+                        f"{round(height, settings.n_digits)}",
                         xy=(rect.get_x() + rect.get_width() / 2, height),
                         xytext=(0, pos),  # 3 points vertical offset
                         textcoords="offset points",
                         ha="center",
                         va="bottom",
-                        rotation=self._specific_settings.annotation_rotation,
+                        rotation=settings.annotation_rotation,
                         rotation_mode="anchor",
                     )
 
         ax.set_xticks([position + 0.375 for position in first_series_positions])
         ax.set_xticklabels(feature_names)
-        ax.set_xlabel(self._common_settings.xlabel)
-        ax.set_ylabel(self._common_settings.ylabel)
-        ax.set_title(
-            self._common_settings.title, fontsize=self._common_settings.font_size * 1.2
-        )
-        ax.legend(fontsize=self._common_settings.font_size)
+        ax.set_xlabel(settings.xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title, fontsize=settings.font_size * 1.2)
+        ax.legend(fontsize=settings.font_size)
         ax.set_axisbelow(True)
-        ax.grid(visible=self._common_settings.grid)
+        ax.grid(visible=settings.grid)
         return [fig]

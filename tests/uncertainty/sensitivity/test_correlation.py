@@ -79,7 +79,7 @@ def test_indices(correlation) -> None:
 def test_plot(correlation, baseline_images, output) -> None:
     """Check the method plot()."""
     correlation.compute_indices()
-    correlation.plot(output, save=False, show=False)
+    correlation.plot(output, save=False)
 
 
 @pytest.mark.parametrize("baseline_images", [(["plot_radar"])])
@@ -87,7 +87,7 @@ def test_plot(correlation, baseline_images, output) -> None:
 def test_plot_radar(correlation, baseline_images) -> None:
     """Check the method plot_radar()."""
     correlation.compute_indices()
-    correlation.plot_radar("y1", save=False, show=False)
+    correlation.plot_radar("y1", save=False)
 
 
 def test_sort_input_variables(correlation) -> None:

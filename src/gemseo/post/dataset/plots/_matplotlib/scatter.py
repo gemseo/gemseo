@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING
 from gemseo.post.dataset._trend import TREND_FUNCTIONS
 from gemseo.post.dataset._trend import Trend
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.scatter_settings import Scatter_Settings
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
 
-class Scatter(MatplotlibPlot):
+class Scatter(MatplotlibPlot[Scatter_Settings]):
     """Scatter based on matplotlib."""
 
     def _create_figures(
@@ -44,10 +45,11 @@ class Scatter(MatplotlibPlot):
             x_values: The values of the points on the x-axis.
             y_values: The values of the points on the y-axis.
         """  # noqa: D205, D212, D415
+        settings = self._settings
         fig, ax = self._get_figure_and_axes(fig, ax)
-        scatter = ax.scatter(x_values, y_values, color=self._common_settings.color)
+        scatter = ax.scatter(x_values, y_values, color=settings.color)
         scatter.set_zorder(3)
-        trend_function_creator = self._specific_settings.trend
+        trend_function_creator = settings.trend
         if trend_function_creator != Trend.NONE:
             if not isinstance(trend_function_creator, Callable):
                 trend_function_creator = TREND_FUNCTIONS[trend_function_creator]
@@ -63,8 +65,8 @@ class Scatter(MatplotlibPlot):
                 linestyle="--",
             )
 
-        ax.grid(visible=self._common_settings.grid)
-        ax.set_xlabel(self._common_settings.xlabel)
-        ax.set_ylabel(self._common_settings.ylabel)
-        ax.set_title(self._common_settings.title)
+        ax.grid(visible=settings.grid)
+        ax.set_xlabel(settings.xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title)
         return [fig]

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 from matplotlib import pyplot as plt
 
+from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
 from gemseo.utils.compatibility.matplotlib import boxplot as boxplot_
 
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-class Boxplot(MatplotlibPlot):
+class Boxplot(MatplotlibPlot[Boxplot_Settings]):
     """A boxplot based on matplotlib."""
 
     def _create_figures(
@@ -53,74 +54,74 @@ class Boxplot(MatplotlibPlot):
             names: The names of the columns.
             opacity_level: The level of opacity.
         """  # noqa: D205, D212, D415
+        settings = self._settings
         fig, ax = self._get_figure_and_axes(fig, ax)
-        self._common_settings.set_colors(self._common_settings.color)
+        settings.set_colors(settings.color)
         self.__draw_boxplot(
             self._common_dataset,
             ax,
             variable_names,
-            self._common_settings.color[0],
+            settings.color[0],
             n_datasets,
             origin,
             names,
         )
-        for index, dataset in enumerate(self._specific_settings.datasets):
+        for index, dataset in enumerate(settings.datasets):
             self.__draw_boxplot(
                 dataset,
                 ax,
                 variable_names,
-                self._common_settings.color[index + 1],
+                settings.color[index + 1],
                 n_datasets,
                 origin + index + 1,
                 names,
             )
 
-        if self._specific_settings.use_vertical_bars:
+        if settings.use_vertical_bars:
             ax.set_xticks(positions)
             ax.set_xticklabels(names)
         else:
             ax.set_yticks(positions)
             ax.set_yticklabels(names)
 
-        ax.set_xlabel(self._common_settings.xlabel)
-        ax.set_ylabel(self._common_settings.ylabel)
-        ax.set_title(self._common_settings.title)
+        ax.set_xlabel(settings.xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title)
 
         if n_datasets > 1:
-            plt.plot(
-                [], c=self._common_settings.color[0], label=self._common_dataset.name
-            )
+            plt.plot([], c=settings.color[0], label=self._common_dataset.name)
             for index in range(n_datasets - 1):
                 plt.plot(
                     [],
-                    c=self._common_settings.color[index + 1],
-                    label=self._specific_settings.datasets[index].name,
+                    c=settings.color[index + 1],
+                    label=settings.datasets[index].name,
                 )
             plt.legend(loc="upper right")
 
         return [fig]
 
     def __draw_boxplot(self, *args) -> None:
+        settings = self._settings
         dataset, ax, variables, color, n_datasets, origin, names = args
-        if self._specific_settings.center or self._specific_settings.scale:
+        if settings.center or settings.scale:
             dataset = dataset.get_normalized(
                 use_min_max=False,
-                center=self._specific_settings.center,
-                scale=self._specific_settings.scale,
+                center=settings.center,
+                scale=settings.scale,
             )
         boxplot = boxplot_(
             dataset.get_view(variable_names=variables).to_numpy(),
-            vert=self._specific_settings.use_vertical_bars,
-            notch=self._specific_settings.add_confidence_interval,
-            showfliers=self._specific_settings.add_outliers,
+            vert=settings.use_vertical_bars,
+            notch=settings.add_confidence_interval,
+            showfliers=settings.add_outliers,
             positions=[origin + i * n_datasets for i, _ in enumerate(names)],
             sym="*",
             patch_artist=True,
             flierprops={"markeredgecolor": color},
             ax=ax,
-            **self._specific_settings.boxplot_options,
+            **settings.options,
         )
-        if self._common_settings.grid:
+        if settings.grid:
             ax.xaxis.grid(
                 visible=True, linestyle="-", which="major", color="lightgrey", alpha=0.5
             )
@@ -133,4 +134,4 @@ class Boxplot(MatplotlibPlot):
         plt.setp(boxplot["caps"], color=color)
         plt.setp(boxplot["medians"], color=color)
         for patch in boxplot["boxes"]:
-            patch.set(alpha=self._specific_settings.opacity_level)
+            patch.set(alpha=settings.opacity_level)

@@ -22,53 +22,24 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.base import BaseDatasetPlot
+from gemseo.post.dataset.color_evolution_settings import ColorEvolution_Settings
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
 
 
-class ColorEvolution(DatasetPlot):
+class ColorEvolution(BaseDatasetPlot[ColorEvolution_Settings]):
     """Evolution of the variables by means of a color scale.
 
     Based on the matplotlib function `imshow`.
 
     Tip:
-        Use [colormap][gemseo.post.dataset.dataset_plot.DatasetPlot.colormap]
+        Use [colormap][gemseo.post.dataset.base.BaseDatasetPlot.colormap]
         to set a matplotlib colormap, e.g. `"seismic"`.
     """
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        variables: Iterable[str] = (),
-        use_log: bool = False,
-        opacity: float = 0.6,
-        **options: bool | float | str | None,
-    ) -> None:
-        """
-        Args:
-            variables: The variables of interest
-                If empty, use all the variables.
-            use_log: Whether to use a symmetric logarithmic scale.
-            opacity: The level of opacity (0 = transparent; 1 = opaque).
-            **options: The options for the matplotlib function `imshow()`.
-        """  # noqa: D205, D212, D415
-        options_: dict[str, bool | float | str | None] = {
-            "interpolation": "nearest",
-            "aspect": "auto",
-        }
-        options_.update(options)
-        super().__init__(
-            dataset,
-            variables=variables,
-            use_log=use_log,
-            opacity=opacity,
-            options=options_,
-        )
+    settings_class = ColorEvolution_Settings
 
     def _create_specific_data_from_dataset(self) -> tuple[RealArray, list[str]]:
         """
@@ -77,9 +48,6 @@ class ColorEvolution(DatasetPlot):
             the names of the variables.
         """  # noqa: D205, D212, D415
         return (
-            self.dataset
-            .get_view(variable_names=self._specific_settings.variables)
-            .to_numpy()
-            .T,
-            self._specific_settings.variables,
+            self.dataset.get_view(variable_names=self.settings.variables).to_numpy().T,
+            self.settings.variables,
         )

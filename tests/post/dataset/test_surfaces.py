@@ -26,6 +26,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.surfaces import Surfaces
+from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -90,15 +91,15 @@ TEST_PARAMETERS = {
 def test_plot(kwargs, baseline_images, dataset) -> None:
     """Test images created by Surfaces._plot against references."""
     properties = kwargs.pop("properties", {})
-    plot = Surfaces(dataset, mesh="mesh", variable="output", **kwargs)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = Surfaces_Settings(mesh="mesh", variable="output", **kwargs, **properties)
+    plot = Surfaces(dataset, settings)
     plot.execute(save=False)
 
 
 def test_save_multiple_files(dataset, tmp_wd) -> None:
     """Check that the generation of multiple files is OK."""
-    surfaces = Surfaces(dataset, mesh="mesh", variable="output")
+    settings = Surfaces_Settings(mesh="mesh", variable="output")
+    surfaces = Surfaces(dataset, settings)
     surfaces.execute()
     file_paths = [tmp_wd / "surfaces_0.png", tmp_wd / "surfaces_1.png"]
     for file_path in file_paths:

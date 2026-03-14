@@ -201,5 +201,5 @@ def test_plot_save(sample_indices, tmp_wd):
 def test_plot_color(sample_indices):
     """Check the plot() method with specific colors."""
     scatter = CrossValidation(sample_indices).plot(colors=("g", "m"), show=False)
-    assert len(scatter.color) == len(sample_indices) * 5
-    assert set(scatter.color) == {"g", "m"}
+    assert len(scatter.settings.color) == len(sample_indices) * 5
+    assert set(scatter.settings.color) == {"g", "m"}

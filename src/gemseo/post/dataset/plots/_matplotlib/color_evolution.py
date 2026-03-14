@@ -22,6 +22,7 @@ from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
 
+from gemseo.post.dataset.color_evolution_settings import ColorEvolution_Settings
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
 
 if TYPE_CHECKING:
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
 
-class ColorEvolution(MatplotlibPlot):
+class ColorEvolution(MatplotlibPlot[ColorEvolution_Settings]):
     """Evolution of the variables by means of a color scale, using matplotlib."""
 
     def _create_figures(
@@ -47,30 +48,29 @@ class ColorEvolution(MatplotlibPlot):
             data: The data to be plotted.
             variable_names: The names of the variables.
         """  # noqa: D205, D212, D415
+        settings = self._settings
         fig, ax = self._get_figure_and_axes(fig, ax)
         norm = None
-        if self._specific_settings.use_log:
+        if settings.use_log:
             maximum = abs(data).max()
             norm = SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0)
 
         img_ = ax.imshow(
             data,
-            cmap=self._common_settings.colormap,
+            cmap=settings.colormap,
             norm=norm,
-            alpha=self._specific_settings.opacity,
-            **self._specific_settings.options,
+            alpha=settings.opacity,
+            **settings.options,
         )
         names = self._common_dataset.get_columns(variable_names)
         ax.set_yticks(arange(len(names)))
         ax.set_yticklabels(names)
-        ax.set_xlabel(self._common_settings.xlabel)
-        ax.set_ylabel(self._common_settings.ylabel)
-        ax.set_title(self._common_settings.title)
+        ax.set_xlabel(settings.xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title)
         fig.colorbar(
             img_,
             ax=ax,
-            format=LogFormatterSciNotation()
-            if self._specific_settings.use_log
-            else None,
+            format=LogFormatterSciNotation() if settings.use_log else None,
         )
         return [fig]

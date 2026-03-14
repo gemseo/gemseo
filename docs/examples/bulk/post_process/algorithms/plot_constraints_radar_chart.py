@@ -21,10 +21,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Radar chart.
 
-In this example, we illustrate the use of the [RadarChart][gemseo.post.radar_chart.RadarChart] post-processing
+In this example, we illustrate the use of the [ConstraintRadar][gemseo.post.constraint_radar.ConstraintRadar] post-processing
 on the Sobieski's SSBJ problem.
 
-The [RadarChart][gemseo.post.radar_chart.RadarChart] post-processing plots the constraints functions specified by
+The [ConstraintRadar][gemseo.post.constraint_radar.ConstraintRadar] post-processing plots the constraints functions specified by
 the user, at a given iteration, on a radar style chart.
 
 By default, the last iteration is used. This post-processing of the constraints scales
@@ -35,11 +35,11 @@ better with the number of constraints than the constraint plot provided by the
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import RadarChart_Settings
+from gemseo.post.constraint_radar_settings import ConstraintRadar_Settings
 
 execute_post(
     "sobieski_mdf_scenario.h5",
-    settings_model=RadarChart_Settings(
+    settings_model=ConstraintRadar_Settings(
         constraint_names=["g_1", "g_2", "g_3"],
         save=False,
         show=True,

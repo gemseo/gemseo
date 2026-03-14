@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 from matplotlib.ticker import MaxNLocator
 
+from gemseo.post.dataset.lines_settings import Lines_Settings
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
 
 if TYPE_CHECKING:
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
 
-class Lines(MatplotlibPlot):
+class Lines(MatplotlibPlot[Lines_Settings]):
     """Lines based on matplotlib."""
 
     def _create_figures(
@@ -49,40 +50,39 @@ class Lines(MatplotlibPlot):
             default_xlabel: The default x-label.
             n_lines: The number of lines.
         """  # noqa: D205 D212 D415
-        fig, ax = self._get_figure_and_axes(
-            fig, ax, fig_size=self._common_settings.fig_size
-        )
-        self._common_settings.set_colors(self._common_settings.color)
-        self._common_settings.set_linestyles(self._common_settings.linestyle or "-")
-        self._common_settings.set_markers(self._common_settings.marker or "o")
+        settings = self._settings
+        fig, ax = self._get_figure_and_axes(fig, ax, fig_size=settings.fig_size)
+        settings.set_colors(settings.color)
+        settings.set_linestyles(settings.linestyle or "-")
+        settings.set_markers(settings.marker or "o")
         line_index = -1
         for y_name, y_values in y_names_to_values.items():
             for yi_name, yi_values in zip(
                 self._common_dataset.get_columns(y_name), y_values, strict=False
             ):
                 line_index += 1
-                linestyle = self._common_settings.linestyle[line_index]
-                color = self._common_settings.color[line_index]
+                linestyle = settings.linestyle[line_index]
+                color = settings.color[line_index]
                 ax.plot(
                     x_values, yi_values, linestyle=linestyle, color=color, label=yi_name
                 )
-                if self._specific_settings.add_markers:
+                if settings.add_markers:
                     ax.scatter(
                         x_values,
                         yi_values,
                         color=color,
-                        marker=self._common_settings.marker[line_index],
+                        marker=settings.marker[line_index],
                     )
 
-        ax.grid(visible=self._common_settings.grid)
-        ax.set_xlabel(self._common_settings.xlabel or default_xlabel)
-        ax.set_ylabel(self._common_settings.ylabel)
-        ax.set_title(self._common_settings.title)
-        ax.legend(loc=self._common_settings.legend_location)
-        if self._specific_settings.set_xticks_from_data:
+        ax.grid(visible=settings.grid)
+        ax.set_xlabel(settings.xlabel or default_xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title)
+        ax.legend(loc=settings.legend_location)
+        if settings.set_xticks_from_data:
             ax.set_xticks(x_values)
 
-        if self._specific_settings.use_integer_xticks:
+        if settings.use_integer_xticks:
             ax.get_xaxis().set_major_locator(MaxNLocator(integer=True))
 
         return [fig]

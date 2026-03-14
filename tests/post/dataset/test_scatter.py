@@ -28,6 +28,7 @@ from scipy.interpolate import Rbf
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
+from gemseo.post.dataset.scatter_settings import Scatter_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -95,10 +96,11 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
     """Test images created by Scatter._plot against references."""
-    plot = Scatter(dataset, **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = Scatter_Settings(**kwargs, **properties)
+    plot = Scatter(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)
 
 
@@ -115,4 +117,5 @@ def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
 @image_comparison(None)
 def test_trend(trend, quadratic_dataset, baseline_images) -> None:
     """Check the use of a trend."""
-    Scatter(quadratic_dataset, "x", "y", trend=trend).execute(save=False)
+    settings = Scatter_Settings(x="x", y="y", trend=trend)
+    Scatter(quadratic_dataset, settings).execute(save=False)

@@ -23,6 +23,7 @@ from numpy import linspace
 from numpy import rad2deg
 
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
 
-class RadarChart(MatplotlibPlot):
+class RadarChart(MatplotlibPlot[RadarChart_Settings]):
     """Radar chart based on matplotlib."""
 
     def _create_figures(
@@ -41,25 +42,25 @@ class RadarChart(MatplotlibPlot):
             y_values: The values of the series on the y-axis (one series per row).
             theta: The values of the series on the r-axis.
         """  # noqa: D205 D212 D415
+        settings = self._settings
         if not fig or not ax:
-            fig = plt.figure(figsize=self._common_settings.fig_size)
+            fig = plt.figure(figsize=settings.fig_size)
             ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
 
-        if self._common_settings.grid:
+        if settings.grid:
             ax.grid(visible=True, color="k", linewidth=0.3, linestyle=":")
         else:
             ax.grid(visible=False)
 
-        ax.tick_params(labelsize=self._common_settings.font_size)
+        ax.tick_params(labelsize=settings.font_size)
 
         variable_names = self._common_dataset.get_columns()
         series_names = self._common_dataset.index
-        self._common_settings.set_colors(self._common_settings.color)
         for data, name, linestyle, color in zip(
             y_values,
             series_names,
-            self._common_settings.linestyle,
-            self._common_settings.color,
+            settings.linestyle,
+            settings.color,
             strict=False,
         ):
             data = data.tolist()
@@ -73,10 +74,10 @@ class RadarChart(MatplotlibPlot):
                 label=name,
             )
 
-        if self._specific_settings.display_zero and self._common_settings.rmin < 0:
+        if settings.display_zero and settings.rmin < 0:
             circle = plt.Circle(
                 (0, 0),
-                abs(self._common_settings.rmin),
+                abs(settings.rmin),
                 transform=ax.transData._b,
                 fill=False,
                 edgecolor="black",
@@ -87,7 +88,7 @@ class RadarChart(MatplotlibPlot):
 
         theta_degree = rad2deg(theta[:-1])
         ax.set_thetagrids(theta_degree, variable_names)
-        if self._specific_settings.radial_ticks:
+        if settings.radial_ticks:
             labels = []
             for label, angle in zip(ax.get_xticklabels(), theta_degree, strict=False):
                 x, y = label.get_position()
@@ -110,13 +111,13 @@ class RadarChart(MatplotlibPlot):
 
             ax.set_xticklabels([])
 
-        ax.set_rlim([self._common_settings.rmin, self._common_settings.rmax])
+        ax.set_rlim([settings.rmin, settings.rmax])
         rticks = linspace(
-            self._common_settings.rmin,
-            self._common_settings.rmax,
-            self._specific_settings.n_levels,
+            settings.rmin,
+            settings.rmax,
+            settings.n_levels,
         )
-        if self._specific_settings.scientific_notation:
+        if settings.scientific_notation:
             rticks_labels = [f"{value:.2e}" for value in rticks]
         else:
             rticks_labels = rticks
@@ -125,12 +126,10 @@ class RadarChart(MatplotlibPlot):
         ax.set_yticklabels(rticks_labels)
         ax.legend(
             loc="upper left",
-            fontsize=self._common_settings.font_size,
+            fontsize=settings.font_size,
             bbox_to_anchor=(1.05, 1.0),
         )
-        ax.set_title(
-            self._common_settings.title, fontsize=self._common_settings.font_size * 1.2
-        )
+        ax.set_title(settings.title, fontsize=settings.font_size * 1.2)
         box = ax.get_position()
         ax.set_position([
             box.x0,

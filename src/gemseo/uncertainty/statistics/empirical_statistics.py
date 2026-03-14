@@ -73,7 +73,9 @@ from scipy.stats import moment
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
+from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 from gemseo.post.dataset.lines import Lines
+from gemseo.post.dataset.lines_settings import Lines_Settings
 from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
@@ -274,7 +276,7 @@ class EmpiricalStatistics(BaseStatistics):
             The boxplot of each variable.
         """
         plots = {
-            name: Boxplot(self.dataset, variables=[name], **options)
+            name: Boxplot(self.dataset, Boxplot_Settings(variables=(name,), **options))
             for name in self.names
         }
         for name, plot in plots.items():
@@ -315,18 +317,21 @@ class EmpiricalStatistics(BaseStatistics):
                 self.dataset.get_view(variable_names=name).to_numpy().T
             ):
                 x = linspace(samples.min(), samples.max(), 1000)
+                xlabel = repr_variable(name, index, size)
+                settings = Lines_Settings(
+                    variables=(self.__PDF_LABEL,),
+                    abscissa_variable=name,
+                    xlabel=xlabel,
+                    ylabel="Probability density function",
+                    **options,
+                )
                 plot = Lines(
                     Dataset.from_array(
                         vstack((x, gaussian_kde(samples)(x))).T,
                         variable_names=[name, self.__PDF_LABEL],
                     ),
-                    [self.__PDF_LABEL],
-                    name,
-                    **options,
+                    settings,
                 )
-                xlabel = repr_variable(name, index, size)
-                plot.xlabel = xlabel
-                plot.ylabel = "Probability density function"
                 plot.execute(
                     save=save,
                     show=show,
@@ -365,18 +370,21 @@ class EmpiricalStatistics(BaseStatistics):
             for index, samples in enumerate(
                 self.dataset.get_view(variable_names=name).to_numpy().T
             ):
+                xlabel = repr_variable(name, index, size)
+                settings = Lines_Settings(
+                    variables=(self.__CDF_LABEL,),
+                    abscissa_variable=name,
+                    xlabel=xlabel,
+                    ylabel="Cumulative probability function",
+                    **options,
+                )
                 plot = Lines(
                     Dataset.from_array(
                         vstack(self.__evaluate_ecdf(samples)).T,
                         variable_names=[name, self.__CDF_LABEL],
                     ),
-                    [self.__CDF_LABEL],
-                    name,
-                    **options,
+                    settings,
                 )
-                xlabel = repr_variable(name, index, size)
-                plot.xlabel = xlabel
-                plot.ylabel = "Cumulative probability function"
                 plot.execute(
                     save=save,
                     show=show,

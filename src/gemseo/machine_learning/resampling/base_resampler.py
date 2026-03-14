@@ -25,6 +25,7 @@ from numpy import vstack
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
+from gemseo.post.dataset.scatter_settings import Scatter_Settings
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.seeder import SEED
 
@@ -244,7 +245,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
             array([split, index]).T,
             variable_names=["Split", "Index"],
         )
-        scatter = Scatter(dataset, "Index", "Split")
-        scatter.color = color
+        settings = Scatter_Settings(x="Index", y="Split", color=color)
+        scatter = Scatter(dataset, settings)
         scatter.execute(save=file_path != "", show=show, file_path=file_path)
         return scatter

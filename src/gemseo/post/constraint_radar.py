@@ -27,16 +27,17 @@ from numpy import zeros
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.base_post import BasePost
-from gemseo.post.dataset.radar_chart import RadarChart as RadarChartPost
-from gemseo.post.radar_chart_settings import RadarChart_Settings
+from gemseo.post.constraint_radar_settings import ConstraintRadar_Settings
+from gemseo.post.dataset.radar_chart import RadarChart
+from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 
 
-class RadarChart(BasePost[RadarChart_Settings]):
+class ConstraintRadar(BasePost[ConstraintRadar_Settings]):
     """Plot the constraints on a radar chart at a given dataset index."""
 
-    settings_class: ClassVar[type[RadarChart_Settings]] = RadarChart_Settings
+    settings_class: ClassVar[type[ConstraintRadar_Settings]] = ConstraintRadar_Settings
 
-    def _plot(self, settings: RadarChart_Settings) -> None:
+    def _plot(self, settings: ConstraintRadar_Settings) -> None:
         """
         Raises:
             ValueError: When a requested name is not a constraint
@@ -115,11 +116,13 @@ class RadarChart(BasePost[RadarChart_Settings]):
         )
         dataset.index = ["computed constraints", "limit constraint"]
 
-        radar = RadarChartPost(
-            dataset, display_zero=False, radial_ticks=settings.show_names_radially
-        )
-        radar.linestyle = ["-", "--"]
-        radar.color = ["k", "r"]
         title_suffix = " (optimum)" if is_optimum else ""
-        radar.title = f"Constraints at iteration {iteration}{title_suffix}"
+        settings = RadarChart_Settings(
+            display_zero=False,
+            radial_ticks=settings.show_names_radially,
+            linestyle=("-", "--"),
+            color=("k", "r"),
+            title=f"Constraints at iteration {iteration}{title_suffix}",
+        )
+        radar = RadarChart(dataset, settings)
         self._add_figure(radar)

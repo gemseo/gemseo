@@ -27,13 +27,14 @@ from pandas.plotting import scatter_matrix
 from gemseo.post.dataset._trend import TREND_FUNCTIONS
 from gemseo.post.dataset._trend import Trend
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
 
-class ScatterMatrix(MatplotlibPlot):
+class ScatterMatrix(MatplotlibPlot[ScatterMatrix_Settings]):
     """Scatter matrix based on matplotlib."""
 
     def _create_figures(
@@ -46,11 +47,12 @@ class ScatterMatrix(MatplotlibPlot):
         Args:
             classifier_column: The column of the dataset used for classification.
         """  # noqa: D212, D205
-        variable_names = self._specific_settings.variable_names
-        classifier = self._specific_settings.classifier
-        kde = self._specific_settings.kde
-        size = self._specific_settings.size
-        marker = self._specific_settings.marker
+        settings = self._settings
+        variable_names = settings.variable_names
+        classifier = settings.classifier
+        kde = settings.kde
+        size = settings.size
+        marker = settings.marker
         dataframe = self._common_dataset.get_view(variable_names=variable_names)
         kwargs = {}
         if classifier:
@@ -58,9 +60,9 @@ class ScatterMatrix(MatplotlibPlot):
                 variable_names=[classifier]
             ).to_numpy()[:, 0]
             values = (values - values.min()) / ptp(values)
-            colormap = colormaps[self._specific_settings.colormap_name]
+            colormap = colormaps[settings.colormap_name]
             kwargs["color"] = [colormap(value) for value in values]
-            if self._specific_settings.exclude_classifier:
+            if settings.exclude_classifier:
                 dataframe = dataframe.drop(labels=classifier_column, axis=1)
 
         dataframe.columns = self._get_variable_names(dataframe)
@@ -68,7 +70,7 @@ class ScatterMatrix(MatplotlibPlot):
         fig, ax = self._get_figure_and_axes(
             fig,
             ax,
-            fig_size=self._common_settings.fig_size,
+            fig_size=settings.fig_size,
             n_rows=n_rows,
             n_cols=n_cols,
         )
@@ -77,16 +79,16 @@ class ScatterMatrix(MatplotlibPlot):
             diagonal="kde" if kde else "hist",
             s=size,
             marker=marker,
-            figsize=self._common_settings.fig_size,
+            figsize=settings.fig_size,
             ax=ax,
             # The grid argument is ignored because the subplots do not have axes.
             # See the issue https://github.com/pandas-dev/pandas/issues/50818.
-            grid=self._common_settings.grid,
+            grid=settings.grid,
             **kwargs,
-            **self._specific_settings.options,
+            **settings.options,
         )
 
-        trend_function_creator = self._specific_settings.trend
+        trend_function_creator = settings.trend
         if trend_function_creator != Trend.NONE:
             if not isinstance(trend_function_creator, Callable):
                 trend_function_creator = TREND_FUNCTIONS[trend_function_creator]
@@ -110,15 +112,13 @@ class ScatterMatrix(MatplotlibPlot):
                     )
 
         n_cols = axs.shape[0]
-        if not (
-            self._specific_settings.plot_lower and self._specific_settings.plot_upper
-        ):
+        if not (settings.plot_lower and settings.plot_upper):
             for i in range(n_cols):
                 for j in range(n_cols):
                     axs[i, j].get_xaxis().set_visible(False)
                     axs[i, j].get_yaxis().set_visible(False)
 
-        if not self._specific_settings.plot_lower:
+        if not settings.plot_lower:
             for i in range(n_cols):
                 for j in range(i):
                     axs[i, j].set_visible(False)
@@ -127,7 +127,7 @@ class ScatterMatrix(MatplotlibPlot):
                 axs[i, i].get_xaxis().set_visible(True)
                 axs[i, i].get_yaxis().set_visible(True)
 
-        if not self._specific_settings.plot_upper:
+        if not settings.plot_upper:
             for i in range(n_cols):
                 for j in range(i + 1, n_cols):
                     axs[i, j].set_visible(False)
@@ -136,5 +136,5 @@ class ScatterMatrix(MatplotlibPlot):
                 axs[-1, i].get_xaxis().set_visible(True)
                 axs[i, 0].get_yaxis().set_visible(True)
 
-        plt.suptitle(self._common_settings.title)
+        plt.suptitle(settings.title)
         return [fig]

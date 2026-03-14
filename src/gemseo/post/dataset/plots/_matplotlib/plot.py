@@ -19,11 +19,11 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import NamedTuple
 
 from matplotlib import pyplot as plt
 
-from gemseo.post.dataset.plots.base_plot import BasePlot
+from gemseo.post.dataset.plots.base import BasePlot
+from gemseo.post.dataset.plots.base import T
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
@@ -33,11 +33,10 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
     from gemseo.datasets.dataset import Dataset
-    from gemseo.post.dataset.plot_settings import PlotSettings
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
-class MatplotlibPlot(BasePlot):
+class MatplotlibPlot(BasePlot[T]):
     """A base plot class relying on matplotlib."""
 
     __figures: list[Figure]
@@ -46,8 +45,7 @@ class MatplotlibPlot(BasePlot):
     def __init__(
         self,
         dataset: Dataset,
-        common_settings: PlotSettings,
-        specific_settings: NamedTuple,
+        settings: T,
         *specific_data: Any,
         fig: Figure | None = None,
         ax: Axes | None = None,
@@ -59,9 +57,9 @@ class MatplotlibPlot(BasePlot):
             ax: The [Axes][matplotlib.axes.Axes`] object.
                 If `None`, create a new one.
         """  # noqa: D205 D212 D415
-        super().__init__(dataset, common_settings, specific_settings, fig=fig, ax=ax)
+        super().__init__(dataset, settings, fig=fig, ax=ax)
         self.__figures = self.__create_figures(fig, ax, *specific_data)
-        xtick_rotation = self._common_settings.xtick_rotation
+        xtick_rotation = self._settings.xtick_rotation
         if xtick_rotation:
             for figure in self.__figures:
                 for ax in figure.axes:
@@ -154,7 +152,7 @@ class MatplotlibPlot(BasePlot):
             return plt.subplots(
                 nrows=n_rows,
                 ncols=n_cols,
-                figsize=fig_size or self._common_settings.fig_size,
+                figsize=fig_size or self._settings.fig_size,
             )
 
         if ax is None:

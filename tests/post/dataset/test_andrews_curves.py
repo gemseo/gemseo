@@ -29,6 +29,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
+from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -71,10 +72,11 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(properties, baseline_images, dataset, fig_and_ax) -> None:
     """Test images created by AndrewsCurves._plot against references."""
-    plot = AndrewsCurves(dataset, classifier="c")
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = AndrewsCurves_Settings(classifier="c", **properties)
+    plot = AndrewsCurves(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)
 
 
@@ -82,4 +84,4 @@ def test_error(dataset) -> None:
     """Test an error is raised when a wrong name is given."""
     expected = "Classifier must be one of these names: c, x, y and z."
     with pytest.raises(ValueError, match=re.escape(expected)):
-        AndrewsCurves(dataset, classifier="foo")._plot()
+        AndrewsCurves(dataset, AndrewsCurves_Settings(classifier="foo"))._plot()

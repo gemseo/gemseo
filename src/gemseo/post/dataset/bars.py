@@ -23,35 +23,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.bars_settings import BarPlot_Settings
+from gemseo.post.dataset.base import BaseDatasetPlot
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
 
 
-class BarPlot(DatasetPlot):
+class BarPlot(BaseDatasetPlot[BarPlot_Settings]):
     """Barplot visualization."""
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        n_digits: int = 1,
-        annotate: bool = True,
-        annotation_rotation: float = 0.0,
-    ) -> None:
-        """
-        Args:
-            n_digits: The number of digits to print the different bar values.
-            annotate: Whether to add annotations of the height value on each bar.
-            annotation_rotation: The angle by which annotations are rotated.
-        """  # noqa: D205, D212, D415
-        super().__init__(
-            dataset,
-            n_digits=n_digits,
-            annotate=annotate,
-            annotation_rotation=annotation_rotation,
-        )
+    settings_class = BarPlot_Settings
 
     def _create_specific_data_from_dataset(self) -> tuple[RealArray, list[str]]:
         """
@@ -60,5 +42,5 @@ class BarPlot(DatasetPlot):
             the names of the columns.
         """  # noqa: D205, D212, D415
         data = self.dataset.to_numpy()
-        self._n_items = len(data)
+        self.settings.n_items = len(data)
         return data, self.dataset.get_columns()

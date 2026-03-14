@@ -27,6 +27,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.zvsxy import ZvsXY
+from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -124,6 +125,7 @@ TEST_PARAMETERS = {
         {
             "xlabel": "The xlabel",
             "ylabel": "The ylabel",
+            "zlabel": "The zlabel",
             "title": "The title",
         },
         ["ZvsXY_properties"],
@@ -141,8 +143,9 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
     """Test images created by ZvsXY._plot against references."""
-    plot = ZvsXY(dataset, **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = ZvsXY_Settings(**kwargs, **properties)
+    plot = ZvsXY(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)

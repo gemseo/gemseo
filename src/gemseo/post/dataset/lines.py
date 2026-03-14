@@ -23,53 +23,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
+from gemseo.post.dataset.base import BaseDatasetPlot
+from gemseo.post.dataset.lines_settings import Lines_Settings
 
-    from gemseo.datasets.dataset import Dataset
+if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
 
-
-class Lines(DatasetPlot):
+class Lines(BaseDatasetPlot[Lines_Settings]):
     """Connect the observations of variables with lines."""
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        variables: Sequence[str] = (),
-        abscissa_variable: str = "",
-        add_markers: bool = False,
-        set_xticks_from_data: bool = False,
-        use_integer_xticks: bool = False,
-        plot_abscissa_variable: bool = False,
-    ) -> None:
-        """
-        Args:
-            variables: The names of the variables to plot.
-                If empty, use all the variables.
-            abscissa_variable: The name of the variable used in abscissa.
-                The observations of the `variables` are plotted
-                in function of the observations of this `abscissa_variable`.
-                If empty,
-                the observations of the `variables` are plotted
-                in function of the indices of the observations.
-            add_markers: Whether to mark the observations with dots.
-            set_xticks_from_data: Whether to use the values of `abscissa_variable`
-                as locations of abscissa ticks.
-            use_integer_xticks: Whether to use integer xticks.
-            plot_abscissa_variable: Whether to plot the abscissa variable.
-        """  # noqa: D205, D212, D415
-        super().__init__(
-            dataset,
-            variables=variables,
-            abscissa_variable=abscissa_variable,
-            add_markers=add_markers,
-            set_xticks_from_data=set_xticks_from_data,
-            use_integer_xticks=use_integer_xticks,
-            plot_abscissa_variable=plot_abscissa_variable,
-        )
+    settings_class = Lines_Settings
 
     def _create_specific_data_from_dataset(
         self,
@@ -81,7 +45,7 @@ class Lines(DatasetPlot):
             the name of the x-label,
             the number of lines.
         """  # noqa: D205 D212 D415
-        abscissa_variable = self._specific_settings.abscissa_variable
+        abscissa_variable = self.settings.abscissa_variable
         if abscissa_variable:
             x_values = (
                 self.dataset
@@ -94,10 +58,10 @@ class Lines(DatasetPlot):
             x_values = list(range(len(self.dataset)))
 
         variable_names = list(
-            self._specific_settings.variables or self.dataset.columns.levels[1].unique()
+            self.settings.variables or self.dataset.columns.levels[1].unique()
         )
         if abscissa_variable:
-            if self._specific_settings.plot_abscissa_variable:
+            if self.settings.plot_abscissa_variable:
                 if abscissa_variable not in variable_names:
                     variable_names.append(abscissa_variable)
             elif abscissa_variable in variable_names:
@@ -113,5 +77,5 @@ class Lines(DatasetPlot):
         n_lines = sum(
             self.dataset.variable_names_to_n_components[name] for name in variable_names
         )
-        self._n_items = n_lines
+        self.settings.n_items = n_lines
         return x_values, y_names_to_values, abscissa_variable or "Index", n_lines
