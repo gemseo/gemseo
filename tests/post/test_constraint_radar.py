@@ -26,8 +26,8 @@ import pytest
 from packaging import version
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post import RadarChart_Settings
-from gemseo.post.radar_chart import RadarChart
+from gemseo.post import ConstraintRadar_Settings
+from gemseo.post.constraint_radar import ConstraintRadar
 from gemseo.utils.testing.helpers import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
@@ -39,15 +39,15 @@ def problem():
 
 
 TEST_PARAMETERS = {
-    "default": ({}, ["RadarChart_default"]),
-    "opt": ({"iteration": None}, ["RadarChart_opt"]),
-    "negative": ({"iteration": -2}, ["RadarChart_negative"]),
-    "positive": ({"iteration": 2}, ["RadarChart_positive"]),
+    "default": ({}, ["ConstraintRadar_default"]),
+    "opt": ({"iteration": None}, ["ConstraintRadar_opt"]),
+    "negative": ({"iteration": -2}, ["ConstraintRadar_negative"]),
+    "positive": ({"iteration": 2}, ["ConstraintRadar_positive"]),
     "names": (
         {"iteration": 2, "constraint_names": ["ineq1", "eq"]},
-        ["RadarChart_names"],
+        ["ConstraintRadar_names"],
     ),
-    "show_names_radially": ({"show_names_radially": True}, ["RadarChart_radial"]),
+    "show_names_radially": ({"show_names_radially": True}, ["ConstraintRadar_radial"]),
 }
 
 
@@ -60,13 +60,13 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_post(kwargs, baseline_images, problem) -> None:
     """Test the radar chart post-processing with the Power2 problem."""
-    post = RadarChart(problem)
-    post.execute(RadarChart_Settings(save=False, show=False, **kwargs))
+    post = ConstraintRadar(problem)
+    post.execute(ConstraintRadar_Settings(save=False, show=False, **kwargs))
 
 
 def test_function_error(problem) -> None:
     """Test a ValueError is raised for a non-existent function."""
-    post = RadarChart(problem)
+    post = ConstraintRadar(problem)
     with pytest.raises(
         ValueError,
         match=(
@@ -74,13 +74,13 @@ def test_function_error(problem) -> None:
             r"stored in the dataset\."
         ),
     ):
-        post.execute(RadarChart_Settings(save=False, constraint_names=["foo"]))
+        post.execute(ConstraintRadar_Settings(save=False, constraint_names=["foo"]))
 
 
 def test_iteration_error(problem) -> None:
     """Test a ValueError is raised with ill-defined iteration."""
     n_iterations = len(problem.database)
-    post = RadarChart(problem)
+    post = ConstraintRadar(problem)
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -90,7 +90,7 @@ def test_iteration_error(problem) -> None:
         ),
     ):
         post.execute(
-            RadarChart_Settings(
+            ConstraintRadar_Settings(
                 save=False,
                 constraint_names=problem.constraints.get_names(),
                 iteration=1000,
@@ -98,7 +98,7 @@ def test_iteration_error(problem) -> None:
         )
 
 
-TEST_PARAMETERS = {"default": ["RadarChart_common_problem"]}
+TEST_PARAMETERS = {"default": ["ConstraintRadar_common_problem"]}
 
 
 @pytest.mark.skipif(
@@ -113,6 +113,8 @@ TEST_PARAMETERS = {"default": ["RadarChart_common_problem"]}
 )
 @image_comparison(None)
 def test_common_scenario(baseline_images, common_problem) -> None:
-    """Check RadarChart."""
-    opt = RadarChart(common_problem)
-    opt.execute(RadarChart_Settings(constraint_names=["eq", "neg", "pos"], save=False))
+    """Check ConstraintRadar."""
+    opt = ConstraintRadar(common_problem)
+    opt.execute(
+        ConstraintRadar_Settings(constraint_names=["eq", "neg", "pos"], save=False)
+    )

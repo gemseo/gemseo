@@ -27,6 +27,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.curves import Curves
+from gemseo.post.dataset.curves_settings import Curves_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -81,8 +82,9 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
     """Test images created by Curves._plot against references."""
-    plot = Curves(dataset, mesh="mesh", variable="output", **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = Curves_Settings(mesh="mesh", variable="output", **kwargs, **properties)
+    plot = Curves(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)

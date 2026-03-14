@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for post-processing."""
+"""The settings for `ConstraintRadar`."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.typing import StrKeyMapping
 
 
-class RadarChart_Settings(BasePostSettings):  # noqa: D101, N801
+class ConstraintRadar_Settings(BasePostSettings):  # noqa: D101, N801
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (6.4, 4.8)}
     iteration: int | None = Field(
         default=None,

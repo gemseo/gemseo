@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 from plotly.graph_objects import Scatter
 
+from gemseo.post.dataset.lines_settings import Lines_Settings
 from gemseo.post.dataset.plots._plotly.plot import PlotlyPlot
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
     from plotly.graph_objects import Figure
 
 
-class Lines(PlotlyPlot):
+class Lines(PlotlyPlot[Lines_Settings]):
     """Lines based on plotly."""
 
     def _create_figure(
@@ -48,18 +49,17 @@ class Lines(PlotlyPlot):
             default_xlabel: The default x-label.
             n_lines: The number of lines.
         """  # noqa: D205 D212 D415
-        self._common_settings.set_colors(self._common_settings.color)
-        self._common_settings.set_linestyles(self._common_settings.linestyle or "-")
-        self._common_settings.set_markers(self._common_settings.marker or "o")
+        settings = self._settings
+        settings.set_colors(settings.color)
+        settings.set_linestyles(settings.linestyle or "-")
+        settings.set_markers(settings.marker or "o")
         line_index = -1
         for y_name, y_values in y_names_to_values.items():
             for yi_name, yi_values in zip(
                 self._common_dataset.get_columns(y_name), y_values, strict=False
             ):
                 line_index += 1
-                mode = (
-                    "lines+markers" if self._specific_settings.add_markers else "lines"
-                )
+                mode = "lines+markers" if settings.add_markers else "lines"
                 fig.add_trace(
                     Scatter(
                         x=list(x_values),
@@ -69,26 +69,24 @@ class Lines(PlotlyPlot):
                         showlegend=True,
                         line={
                             "dash": self._PLOTLY_LINESTYLES.get(
-                                self._common_settings.linestyle[line_index], "solid"
+                                settings.linestyle[line_index], "solid"
                             ),
-                            "color": self._stringify_color(
-                                self._common_settings.color[line_index]
-                            ),
+                            "color": self._stringify_color(settings.color[line_index]),
                             "width": 2,
                         },
                     )
                 )
         fig.update_layout(
-            title=self._common_settings.title,
-            xaxis_title=self._common_settings.xlabel or default_xlabel,
-            yaxis_title=self._common_settings.ylabel,
+            title=settings.title,
+            xaxis_title=settings.xlabel or default_xlabel,
+            yaxis_title=settings.ylabel,
         )
-        fig.update_xaxes(showgrid=self._common_settings.grid)
-        fig.update_yaxes(showgrid=self._common_settings.grid)
-        if self._specific_settings.set_xticks_from_data:
+        fig.update_xaxes(showgrid=settings.grid)
+        fig.update_yaxes(showgrid=settings.grid)
+        if settings.set_xticks_from_data:
             fig.update_layout(xaxis={"tickvals": x_values})
 
-        if self._specific_settings.use_integer_xticks:
+        if settings.use_integer_xticks:
             msg = (
                 "The use_integer_xticks option of plotly-based Lines "
                 "is not implemented."

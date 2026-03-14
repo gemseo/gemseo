@@ -19,6 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
 
-class YvsX(MatplotlibPlot):
+class YvsX(MatplotlibPlot[YvsX_Settings]):
     """Visualize a variable versus another using matplotlib."""
 
     def _create_figures(
@@ -41,15 +42,16 @@ class YvsX(MatplotlibPlot):
             x_values: The values of the points on the x-axis.
             y_values: The values of the points on the y-axis.
         """  # noqa: D205, D212, D415
+        settings = self._settings
         fig, ax = self._get_figure_and_axes(fig, ax)
         ax.plot(
             x_values,
             y_values,
-            self._common_settings.linestyle,
-            color=self._common_settings.color,
+            settings.linestyle,
+            color=settings.color,
         )
-        ax.grid(visible=self._common_settings.grid)
-        ax.set_xlabel(self._common_settings.xlabel)
-        ax.set_ylabel(self._common_settings.ylabel)
-        ax.set_title(self._common_settings.title)
+        ax.grid(visible=settings.grid)
+        ax.set_xlabel(settings.xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title)
         return [fig]

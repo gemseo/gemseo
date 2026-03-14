@@ -17,9 +17,9 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a radar visualization from a [Dataset][gemseo.datasets.dataset.Dataset].
+r"""Draw a RadViz from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-The [Radar][gemseo.post.dataset.radviz.Radar] class implements the Radviz plot,
+The [RadViz][gemseo.post.dataset.radviz.RadViz] class implements the RadViz plot,
 which is a way to visualize $n$ samples of a multi-dimensional vector
 
 $$x=(x_1,x_2,\ldots,x_d)\in\mathbb{R}^d$$
@@ -36,7 +36,7 @@ on its circumference. Each parameter influence varies from 0 to 1
 and can be interpreted compared to the others.
 
 A variable name is required by the
-[DatasetPlot.execute()][gemseo.post.dataset.dataset_plot.DatasetPlot.execute] method
+[DatasetPlot.execute()][gemseo.post.dataset.base.BaseDatasetPlot.execute] method
 by means of the `classifier` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled or when we are looking for the samples for which the classifier value
@@ -51,26 +51,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.base import BaseDatasetPlot
+from gemseo.post.dataset.radviz_settings import RadViz_Settings
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 
-class Radar(DatasetPlot):
-    """Radar visualization."""
+class RadViz(BaseDatasetPlot[RadViz_Settings]):
+    """RadViz visualization."""
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        classifier: str,
-    ) -> None:
-        """
-        Args:
-            classifier: The name of the variable to group the data.
-        """  # noqa: D205, D212, D415
-        super().__init__(dataset, classifier=classifier)
+    settings_class = RadViz_Settings
 
     def _create_specific_data_from_dataset(self) -> tuple[Dataset, str]:
         """
@@ -78,7 +70,7 @@ class Radar(DatasetPlot):
             The dataset with decoded values,
             the name of the classifier.
         """  # noqa: D205, D212, D415
-        classifier = self._specific_settings.classifier
+        classifier = self.settings.classifier
         if classifier not in self.dataset.variable_names:
             msg = (
                 f"The classifier ({classifier}) is not stored in the dataset; "

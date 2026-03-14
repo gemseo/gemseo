@@ -314,7 +314,7 @@ def test_plot_comparison(
     plot = pearson.plot_comparison(
         spearman, "out", save=False, title="foo", use_bar_plot=use_bar_plot
     )
-    assert plot.title == "foo"
+    assert plot.settings.title == "foo"
 
 
 def test_input_names(mock_sensitivity_analysis) -> None:

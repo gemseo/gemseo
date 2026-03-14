@@ -28,46 +28,11 @@ $z$ as a parameter and the mesh as a metadata.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from gemseo.post.dataset.dataset_plot import DatasetPlot
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from gemseo.datasets.dataset import Dataset
+from gemseo.post.dataset.base import BaseDatasetPlot
+from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
 
 
-class Surfaces(DatasetPlot):
+class Surfaces(BaseDatasetPlot[Surfaces_Settings]):
     """Plot surfaces y_i over the mesh x."""
 
-    def __init__(
-        self,
-        dataset: Dataset,
-        mesh: str,
-        variable: str,
-        samples: Sequence[int] = (),
-        add_points: bool = False,
-        fill: bool = True,
-        levels: int | Sequence[int] = (),
-    ) -> None:
-        """
-        Args:
-            mesh: The name of the dataset metadata corresponding to the mesh.
-            variable: The name of the variable for the x-axis.
-            samples: The indices of the samples to plot. If empty, plot all samples.
-            add_points: If `True` then display the samples over the surface plot.
-            fill: Whether to generate a filled contour plot.
-            levels: Either the number of contour lines
-                or the values of the contour lines in increasing order.
-                If empty, select them automatically.
-        """  # noqa: D205, D212, D415
-        super().__init__(
-            dataset,
-            mesh=mesh,
-            variable=variable,
-            samples=samples,
-            add_points=add_points,
-            fill=fill,
-            levels=levels,
-        )
+    settings_class = Surfaces_Settings

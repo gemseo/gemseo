@@ -22,13 +22,14 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
 
-class Surfaces(MatplotlibPlot):
+class Surfaces(MatplotlibPlot[Surfaces_Settings]):
     """Surfaces based on matplotlib."""
 
     def _create_figures(
@@ -36,17 +37,18 @@ class Surfaces(MatplotlibPlot):
         fig: Figure | None,
         ax: Axes | None,
     ) -> list[Figure]:
-        mesh = self._specific_settings.mesh
-        variable = self._specific_settings.variable
-        samples = self._specific_settings.samples
+        settings = self._settings
+        mesh = settings.mesh
+        variable = settings.variable
+        samples = settings.samples
         x_data = self._common_dataset.misc[mesh][:, 0]
         y_data = self._common_dataset.misc[mesh][:, 1]
         data = self._common_dataset.get_view(variable_names=variable).to_numpy()
 
         samples = data[samples, :] if samples else data
 
-        options = {"cmap": self._common_settings.colormap}
-        levels = self._specific_settings.levels
+        options = {"cmap": settings.colormap}
+        levels = settings.levels
         if levels:
             options["levels"] = levels
 
@@ -54,18 +56,16 @@ class Surfaces(MatplotlibPlot):
         for sample, sample_name in zip(
             samples, self._common_dataset.index, strict=False
         ):
-            fig = plt.figure(figsize=self._common_settings.fig_size)
+            fig = plt.figure(figsize=settings.fig_size)
             ax = fig.add_subplot(1, 1, 1)
-            func = ax.tricontourf if self._specific_settings.fill else ax.tricontour
+            func = ax.tricontourf if settings.fill else ax.tricontour
             tcf = func(mtri.Triangulation(x_data, y_data), sample, **options)
-            if self._specific_settings.add_points:
-                ax.scatter(x_data, y_data, color=self._common_settings.color or None)
+            if settings.add_points:
+                ax.scatter(x_data, y_data, color=settings.color or None)
 
-            ax.set_xlabel(self._common_settings.xlabel)
-            ax.set_ylabel(self._common_settings.ylabel)
-            main_title = (
-                self._common_settings.title or self._common_settings.zlabel or variable
-            )
+            ax.set_xlabel(settings.xlabel)
+            ax.set_ylabel(settings.ylabel)
+            main_title = settings.title or settings.zlabel or variable
             ax.set_title(f"{main_title} - {sample_name}")
             fig.colorbar(tcf)
             figs.append(fig)

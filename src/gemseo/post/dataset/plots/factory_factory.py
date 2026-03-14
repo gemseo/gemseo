@@ -36,7 +36,7 @@ class PlotFactoryFactory(BaseFactory[PlotFactory[T]]):
     [PlotFactoryFactory][gemseo.post.dataset.plots.factory_factory.PlotFactoryFactory]
     is used to create any factory of plots.
     This mechanism is used by
-    [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot]
+    [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot]
     by associating one plot engine per file format.
     """
 

@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 import matplotlib.tri as mtri
 
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 
-class ZvsXY(MatplotlibPlot):
+class ZvsXY(MatplotlibPlot[ZvsXY_Settings]):
     """Visualize a variable versus two others using matplotlib."""
 
     def _create_figures(
@@ -49,23 +50,22 @@ class ZvsXY(MatplotlibPlot):
             z_values: The values of the points on the z-axis.
             other_datasets: Other datasets.
         """  # noqa: D205, D212, D415
+        settings = self._settings
         fig, ax = self._get_figure_and_axes(fig, ax)
-        self._common_settings.set_colors(self._common_settings.color)
+        settings.set_colors(settings.color)
         grid = mtri.Triangulation(x_values, y_values)
-        options = {"cmap": self._common_settings.colormap}
-        if self._specific_settings.levels:
-            options["levels"] = self._specific_settings.levels
+        options = {"cmap": settings.colormap}
+        if settings.levels:
+            options["levels"] = settings.levels
 
-        plot_contour = ax.tricontourf if self._specific_settings.fill else ax.tricontour
+        plot_contour = ax.tricontourf if settings.fill else ax.tricontour
         tcf = plot_contour(grid, z_values, **options)
-        if self._specific_settings.add_points:
-            ax.scatter(
-                x_values, y_values, color=self._common_settings.color[0], label="Data"
-            )
+        if settings.add_points:
+            ax.scatter(x_values, y_values, color=settings.color[0], label="Data")
 
         if other_datasets:
-            x, x_comp = self._specific_settings.x
-            y, y_comp = self._specific_settings.y
+            x, x_comp = settings.x
+            y, y_comp = settings.y
             for index, dataset in enumerate(other_datasets):
                 x_data = dataset.get_view(
                     variable_names=x, components=x_comp
@@ -76,18 +76,18 @@ class ZvsXY(MatplotlibPlot):
                 ax.scatter(
                     x_data,
                     y_data,
-                    color=self._common_settings.color[index + 1],
+                    color=settings.color[index + 1],
                     label=dataset.name,
                 )
 
-        if self._specific_settings.add_points or other_datasets:
+        if settings.add_points or other_datasets:
             ax.legend()
 
-        ax.set_xlabel(self._common_settings.xlabel)
-        ax.set_ylabel(self._common_settings.ylabel)
-        ax.set_title(self._common_settings.title)
-        if self._common_settings.grid:
+        ax.set_xlabel(settings.xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title)
+        if settings.grid:
             ax.grid()
 
-        fig.colorbar(tcf, ax=ax)
+        fig.colorbar(tcf, ax=ax, label=settings.zlabel)
         return [fig]

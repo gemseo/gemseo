@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 from pandas.plotting import radviz
 
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.radviz_settings import RadViz_Settings
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -29,8 +30,8 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 
-class Radar(MatplotlibPlot):
-    """Radar visualization based on matplotlib."""
+class RadViz(MatplotlibPlot[RadViz_Settings]):
+    """RadViz visualization based on matplotlib."""
 
     def _create_figures(
         self,
@@ -44,11 +45,12 @@ class Radar(MatplotlibPlot):
             dataset: The dataset.
             classifier_name: The name of the classifier.
         """  # noqa: D205, D212, D415
+        settings = self._settings
         fig, ax = self._get_figure_and_axes(fig, ax)
         radviz(dataset, classifier_name, ax=ax)
         ax.set_axisbelow(True)
-        ax.grid(visible=self._common_settings.grid)
-        ax.set_xlabel(self._common_settings.xlabel)
-        ax.set_ylabel(self._common_settings.ylabel)
-        ax.set_title(self._common_settings.title)
+        ax.grid(visible=settings.grid)
+        ax.set_xlabel(settings.xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title)
         return [fig]

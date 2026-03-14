@@ -56,7 +56,7 @@ def viewer(linear_regressor) -> MLRegressorQualityViewer:
 @image_comparison(["residuals"], tol=0.01)
 def test_residuals(viewer) -> None:
     """Check the method plot_residuals_vs_observations."""
-    viewer.plot_residuals_vs_observations("y", save=False, show=False)
+    viewer.plot_residuals_vs_observations("y", save=False)
 
 
 @image_comparison(
@@ -68,11 +68,7 @@ def test_residuals_scatter_no_filter(viewer) -> None:
     Do not filter the scatter plots without the residuals.
     """
     viewer.plot_residuals_vs_observations(
-        "y",
-        use_scatter_matrix=False,
-        filter_scatters=False,
-        save=False,
-        show=False,
+        "y", use_scatter_matrix=False, filter_scatters=False, save=False
     )
 
 
@@ -88,9 +84,7 @@ def test_residuals_scatter(
     viewer,
 ) -> None:
     """Check the method plot_residuals_vs_observations with a list of scatters."""
-    viewer.plot_residuals_vs_observations(
-        "y", use_scatter_matrix=False, save=False, show=False
-    )
+    viewer.plot_residuals_vs_observations("y", use_scatter_matrix=False, save=False)
 
 
 @image_comparison(["predictions"], tol=0.01)
@@ -98,7 +92,7 @@ def test_predictions(
     viewer,
 ) -> None:
     """Check the method plot_predictions_vs_observations."""
-    viewer.plot_predictions_vs_observations("y", save=False, show=False)
+    viewer.plot_predictions_vs_observations("y", save=False)
 
 
 @image_comparison(["predictions_z"], tol=0.01)
@@ -106,7 +100,7 @@ def test_predictions_with_scalar_output(
     viewer,
 ) -> None:
     """Check the method plot_predictions_vs_observations with a scalar output."""
-    viewer.plot_predictions_vs_observations("z", save=False, show=False)
+    viewer.plot_predictions_vs_observations("z", save=False)
 
 
 @image_comparison(
@@ -120,11 +114,7 @@ def test_predictions_scatter_no_filter(
     Do not filter the scatter plots without the predictions.
     """
     viewer.plot_predictions_vs_observations(
-        "y",
-        use_scatter_matrix=False,
-        filter_scatters=False,
-        save=False,
-        show=False,
+        "y", use_scatter_matrix=False, filter_scatters=False, save=False
     )
 
 
@@ -140,16 +130,14 @@ def test_predictions_scatter(
     viewer,
 ) -> None:
     """Check the method plot_predictions_vs_observations with a list of scatters."""
-    viewer.plot_predictions_vs_observations(
-        "y", use_scatter_matrix=False, save=False, show=False
-    )
+    viewer.plot_predictions_vs_observations("y", use_scatter_matrix=False, save=False)
 
 
 @pytest.mark.parametrize("input_names", [["x"], "x", ()])
 @image_comparison(["inputs"], tol=0.01)
 def test_inputs(viewer, input_names) -> None:
     """Check the method plot_residuals_vs_inputs."""
-    viewer.plot_residuals_vs_inputs("y", input_names, save=False, show=False)
+    viewer.plot_residuals_vs_inputs("y", input_names, save=False)
 
 
 @image_comparison(
@@ -159,9 +147,7 @@ def test_inputs_scatter(
     viewer,
 ) -> None:
     """Check the method plot_residuals_vs_inputs with a list of scatters."""
-    viewer.plot_residuals_vs_inputs(
-        "y", ["x"], use_scatter_matrix=False, save=False, show=False
-    )
+    viewer.plot_residuals_vs_inputs("y", ["x"], use_scatter_matrix=False, save=False)
 
 
 @image_comparison(["input"], tol=0.01)
@@ -169,7 +155,7 @@ def test_input(
     viewer,
 ) -> None:
     """Check the method plot_residuals_vs_inputs with an input as str."""
-    viewer.plot_residuals_vs_inputs("y", "x", save=False, show=False)
+    viewer.plot_residuals_vs_inputs("y", "x", save=False)
 
 
 @image_comparison(["output"], tol=0.01)
@@ -177,7 +163,7 @@ def test_output(
     viewer,
 ) -> None:
     """Check the method plot_residuals_vs_observations with output as tuple."""
-    viewer.plot_residuals_vs_observations(("y", 0), save=False, show=False)
+    viewer.plot_residuals_vs_observations(("y", 0), save=False)
 
 
 @image_comparison(["output_scatter_a", "output_scatter_b"], tol=0.01)
@@ -186,7 +172,7 @@ def test_output_scatter(
 ) -> None:
     """Check the method plot_residuals_vs_observations with a list of scatters."""
     viewer.plot_residuals_vs_observations(
-        ("y", 0), use_scatter_matrix=False, save=False, show=False
+        ("y", 0), use_scatter_matrix=False, save=False
     )
 
 
@@ -205,7 +191,7 @@ def test_trend(
     viewer,
 ) -> None:
     """Check plot_residuals_vs_observations with trend."""
-    viewer.plot_predictions_vs_observations("y", save=False, show=False, trend="rbf")
+    viewer.plot_predictions_vs_observations("y", save=False, trend="rbf")
 
 
 @image_comparison(["observations"], tol=0.01)
@@ -222,7 +208,6 @@ def test_observations(
         "y",
         observations=observations,
         save=False,
-        show=False,
     )
 
 
@@ -233,7 +218,6 @@ def test_cross_validation_predictions_versus_observations(viewer) -> None:
         "y",
         observations=MLRegressorQualityViewer.ReferenceDataset.CROSS_VALIDATION,
         save=False,
-        show=False,
     )
 
 
@@ -244,7 +228,6 @@ def test_cross_validation_residuals_versus_observations(viewer) -> None:
         "y",
         observations=MLRegressorQualityViewer.ReferenceDataset.CROSS_VALIDATION,
         save=False,
-        show=False,
     )
 
 
@@ -255,7 +238,6 @@ def test_cross_validation_residuals_versus_inputs(viewer) -> None:
         "y",
         observations=MLRegressorQualityViewer.ReferenceDataset.CROSS_VALIDATION,
         save=False,
-        show=False,
     )
 
 

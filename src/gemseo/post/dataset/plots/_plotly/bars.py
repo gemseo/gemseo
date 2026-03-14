@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 from numpy import arange
 from plotly.graph_objects import Bar
 
+from gemseo.post.dataset.bars_settings import BarPlot_Settings
 from gemseo.post.dataset.plots._plotly.plot import PlotlyPlot
 
 if TYPE_CHECKING:
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
     from plotly.graph_objects import Figure
 
 
-class BarPlot(PlotlyPlot):
+class BarPlot(PlotlyPlot[BarPlot_Settings]):
     """A bar plot based on plotly."""
 
     def _create_figure(
@@ -45,7 +46,8 @@ class BarPlot(PlotlyPlot):
             data: The data to be plotted.
             feature_names: The names of the features.
         """  # noqa: D205, D212, D415
-        self._common_settings.set_colors(self._common_settings.color)
+        settings = self._settings
+        settings.set_colors(settings.color)
         n_series, n_features = data.shape
         first_series_positions = arange(n_features)
         width = 0.75 / n_series
@@ -57,10 +59,10 @@ class BarPlot(PlotlyPlot):
             positions,
             self._common_dataset.index,
             data,
-            self._common_settings.color,
+            settings.color,
             strict=False,
         ):
-            text = series_data.tolist() if self._specific_settings.annotate else None
+            text = series_data.tolist() if settings.annotate else None
             fig.add_trace(
                 Bar(
                     x=feature_positions,
@@ -72,23 +74,23 @@ class BarPlot(PlotlyPlot):
                 )
             )
         fig.update_layout(
-            font_size=self._common_settings.font_size,
+            font_size=settings.font_size,
             title={
-                "text": self._common_settings.title,
-                "font": {"size": self._common_settings.font_size * 1.2},
+                "text": settings.title,
+                "font": {"size": settings.font_size * 1.2},
             },
-            xaxis_title=self._common_settings.xlabel,
-            yaxis_title=self._common_settings.ylabel,
+            xaxis_title=settings.xlabel,
+            yaxis_title=settings.ylabel,
         )
         fig.update_xaxes(
-            showgrid=self._common_settings.grid,
+            showgrid=settings.grid,
             tickvals=[position + 0.375 for position in first_series_positions],
             ticktext=feature_names,
-            tickangle=-self._common_settings.xtick_rotation,
+            tickangle=-settings.xtick_rotation,
         )
-        fig.update_yaxes(showgrid=self._common_settings.grid)
+        fig.update_yaxes(showgrid=settings.grid)
         fig.update_traces(
             textposition="outside",
-            textangle=-self._specific_settings.annotation_rotation,
+            textangle=-settings.annotation_rotation,
         )
         return fig

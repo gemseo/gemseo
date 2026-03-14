@@ -476,7 +476,7 @@ def test_get_available_post_processings() -> None:
     """Test that the available post-processing methods are retrieved correctly."""
     post_processors = get_available_post_processings()
     assert "OptHistoryView" in post_processors
-    assert "RadarChart" in post_processors
+    assert "ConstraintRadar" in post_processors
 
 
 def test_get_available_surrogates() -> None:

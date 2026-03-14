@@ -22,11 +22,11 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.post.dataset.dataset_plot import DatasetPlot
+from gemseo.post.dataset.base import BaseDatasetPlot
 
 
-class DatasetPlotFactory(BaseFactory[DatasetPlot]):
+class DatasetPlotFactory(BaseFactory[BaseDatasetPlot]):
     """A factory of dataset plot."""
 
-    _CLASS = DatasetPlot
+    _CLASS = BaseDatasetPlot
     _PACKAGE_NAMES = ("gemseo.post.dataset",)

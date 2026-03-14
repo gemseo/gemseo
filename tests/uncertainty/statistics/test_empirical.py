@@ -252,11 +252,13 @@ def test_plot_boxplot_args(statistics) -> None:
     with mock.patch.object(Boxplot, "__init__", return_value=None) as __init__:  # noqa: SIM117
         with mock.patch.object(Boxplot, "execute") as execute:
             statistics.plot_boxplot(
-                save=1, show=2, directory_path=3, file_format=4, kwarg=5
+                save=1, show=2, directory_path=3, file_format=4, center=False
             )
 
-    assert __init__.call_args.args == (statistics.dataset,)
-    assert __init__.call_args.kwargs == {"kwarg": 5, "variables": ["x_2"]}
+    assert len(__init__.call_args.args) == 2
+    assert __init__.call_args.args[0] is statistics.dataset
+    assert __init__.call_args.args[1].center is False
+    assert __init__.call_args.args[1].variables == ("x_2",)
     assert execute.call_args.kwargs == {
         "save": 1,
         "show": 2,

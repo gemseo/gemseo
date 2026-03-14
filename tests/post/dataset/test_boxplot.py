@@ -25,6 +25,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
+from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -75,7 +76,7 @@ TEST_PARAMETERS = {
         ["confidence_interval"],
     ),
     "outliers": ({"add_outliers": False}, {}, False, ["outliers"]),
-    "option": ({"showmeans": True}, {}, False, ["option"]),
+    "option": ({"options": {"showmeans": True}}, {}, False, ["option"]),
     "datasets": ({}, {}, True, ["datasets"]),
     "color": ({}, {"color": ["red", "blue"], "grid": False}, True, ["color"]),
 }
@@ -100,8 +101,9 @@ def test_plot(
 ) -> None:
     """Check Boxplot."""
     datasets = [other_dataset] if datasets else []
-    plot = Boxplot(dataset, *datasets, **kwargs)
-    fig, ax = (None, None) if not fig_and_ax else plt.subplots(figsize=plot.fig_size)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = Boxplot_Settings(datasets=datasets, **kwargs, **properties)
+    plot = Boxplot(dataset, settings)
+    fig, ax = (
+        (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
+    )
     plot.execute(save=False, fig=fig, ax=ax)

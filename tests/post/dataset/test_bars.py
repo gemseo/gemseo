@@ -21,6 +21,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
+from gemseo.post.dataset.bars_settings import BarPlot_Settings
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -43,7 +44,7 @@ TEST_PARAMETERS = {
         {
             "xlabel": "foo",
             "title": "My Title",
-            "xtick_rotation": 45,
+            "xtick_rotation": 45.0,
             "color": ["red", "blue", "yellow", "black", "green"],
         },
         ["BarPlot_properties"],
@@ -54,7 +55,7 @@ TEST_PARAMETERS = {
         ["BarPlot_no_annotation"],
     ),
     "annotation_rotation": (
-        {"annotation_rotation": 45},
+        {"annotation_rotation": 45.0},
         {},
         ["BarPlot_annotation_rotation"],
     ),
@@ -70,9 +71,8 @@ TEST_PARAMETERS = {
 @image_comparison(None)
 def test_bars_plot(tmp_path, kwargs, properties, dataset, baseline_images) -> None:
     """Test that bar plot generates the expected plot."""
-    plot = BarPlot(dataset, **kwargs)
-    for k, v in properties.items():
-        setattr(plot, k, v)
+    settings = BarPlot_Settings(**kwargs, **properties)
+    plot = BarPlot(dataset, settings)
     plot.execute(save=False)
 
 
@@ -85,11 +85,9 @@ def test_bars_plot(tmp_path, kwargs, properties, dataset, baseline_images) -> No
 def test_bars_plotly(tmp_path, kwargs, properties, baseline_images, dataset):
     """Test images created by BarPlot.execute against references for plotly."""
     pytest.importorskip("plotly")
-    plot = BarPlot(dataset, **kwargs)
-    for k, v in properties.items():
-        setattr(plot, k, v)
-
-    figure = plot.execute(save=False, show=False, file_format="html")[0]
+    settings = BarPlot_Settings(**kwargs, **properties)
+    plot = BarPlot(dataset, settings)
+    figure = plot.execute(save=False, file_format="html")[0]
     ref = (
         Path(__file__).parent / "plotly" / "test_bars" / baseline_images[0]
     ).read_text()

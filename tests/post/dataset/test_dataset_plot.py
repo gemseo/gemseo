@@ -31,11 +31,12 @@ from numpy import array
 from plotly.graph_objects import Figure as PlotlyFigure
 
 from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.dataset_plot import DatasetPlot
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.dataset.plots._matplotlib import plot
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.yvsx import YvsX
+from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 from gemseo.utils.testing.helpers import concretize_classes
 
 
@@ -45,21 +46,20 @@ def yvsx() -> YvsX:
     dataset = Dataset()
     dataset.add_variable("x", array([[1], [2]]))
     dataset.add_variable("y", array([[1], [2]]))
-    return YvsX(dataset, x="x", y="y")
+    return YvsX(dataset, YvsX_Settings(x="x", y="y"))
 
 
 def test_empty_dataset() -> None:
     dataset = Dataset()
     with pytest.raises(ValueError):
-        YvsX(dataset, x="x", y="y")
+        YvsX(dataset, YvsX_Settings(x="x", y="y"))
 
 
 def test_get_label() -> None:
     dataset = Dataset.from_array(
         array([[1, 2]]), variable_names=["x"], variable_names_to_n_components={"x": 2}
     )
-    with concretize_classes(DatasetPlot):
-        post = DatasetPlot(dataset)
+    post = RadarChart(dataset)
     label, varname = post._get_label(("foo", "x", 0))
     assert label == "x[0]"
     assert varname == ("foo", "x", 0)
@@ -80,48 +80,14 @@ def dataset() -> Dataset:
 @pytest.fixture
 def dataset_plot(dataset):
     """A simple dataset plot from a dataset with a single value: x=[1]."""
-    with concretize_classes(DatasetPlot):
-        return DatasetPlot(dataset)
+    return RadarChart(dataset)
 
 
-@pytest.mark.parametrize(
-    ("attribute", "default_value"),
-    [
-        ("xlabel", ""),
-        ("ylabel", ""),
-        ("zlabel", ""),
-        ("title", ""),
-        ("font_size", 10),
-        ("labels", {}),
-    ],
-)
-def test_property_default_values(dataset_plot, attribute, default_value) -> None:
-    """Check the default values of properties."""
-    assert getattr(dataset_plot, attribute) == default_value
-
-
-@pytest.mark.parametrize(
-    ("attribute", "value"),
-    [
-        ("xlabel", "dummy_xlabel"),
-        ("ylabel", "dummy_ylabel"),
-        ("zlabel", "dummy_zlabel"),
-        ("title", "dummy_title"),
-        ("font_size", 2),
-        ("labels", {"x": "dummy_label"}),
-    ],
-)
-def test_setters(dataset_plot, attribute, value) -> None:
-    """Check the attribute setters."""
-    setattr(dataset_plot, attribute, value)
-    assert getattr(dataset_plot, attribute) == value
-
-
-def test_get_figure_and_ax_from_existing_fig_and_ax(dataset_plot, dataset) -> None:
+def test_get_figure_and_ax_from_existing_fig_and_ax(dataset) -> None:
     """Check that get_figure_and_axes using fig and axes returns fig and axes."""
     fig, ax = plt.subplots()
     plot = Lines(dataset)
-    plot.xlabel = "foo"
+    plot.settings.xlabel = "foo"
     figures = plot.execute(show=False, save=False, fig=fig, ax=ax)
     assert figures == [fig]
     assert ax.get_figure() == fig
@@ -131,7 +97,7 @@ def test_get_figure_and_ax_from_existing_fig_and_ax(dataset_plot, dataset) -> No
 def test_get_figure_and_ax_from_scratch(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes without fig and axes returns new fig and axes."""
     with concretize_classes(MatplotlibPlot):
-        plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, None)
+        plot = MatplotlibPlot(dataset, dataset_plot.settings, (), None, None)
     fig, ax = plot._get_figure_and_axes(None, None)
     assert isinstance(fig, MatplotlibFigure)
     assert isinstance(ax, Axes)
@@ -141,7 +107,7 @@ def test_get_figure_and_axes_from_axes_only(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes with axes and without fig raises a ValueError."""
     _, ax = plt.subplots()
     with concretize_classes(MatplotlibPlot):
-        plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), None, ax)
+        plot = MatplotlibPlot(dataset, dataset_plot.settings, (), None, ax)
     with pytest.raises(
         ValueError,
         match=re.escape("The figure associated with the given axes is missing."),
@@ -153,7 +119,7 @@ def test_get_figure_and_axes_from_figure_only(dataset, dataset_plot) -> None:
     """Check that get_figure_and_axes without axes and with fig raises a ValueError."""
     fig, _ = plt.subplots()
     with concretize_classes(MatplotlibPlot):
-        plot = MatplotlibPlot(dataset, dataset_plot._common_settings, (), fig, None)
+        plot = MatplotlibPlot(dataset, dataset_plot.settings, (), fig, None)
     with pytest.raises(
         ValueError,
         match=re.escape("The axes associated with the given figure are missing."),
@@ -179,19 +145,10 @@ def test_save(yvsx, tmp_wd, kwargs, expected, relative) -> None:
     if "file_path" in kwargs and Path(kwargs["file_path"]).parent != Path():
         Path(kwargs["file_path"]).parent.mkdir()
 
-    yvsx.execute(save=True, **kwargs)
+    yvsx.execute(**kwargs)
     file_path = Path(expected) if relative else tmp_wd / expected
     assert file_path.exists()
     assert yvsx.output_files == [str(file_path)]
-
-
-def test_plot_settings(yvsx) -> None:
-    """Check that properties and setters read and write plot settings."""
-    for name in yvsx._common_settings.model_fields:
-        attribute_name = "_n_items" if name == "n_items" else name
-        assert getattr(yvsx, attribute_name) == getattr(yvsx._common_settings, name)
-        setattr(yvsx, attribute_name, "foo")
-        assert getattr(yvsx._common_settings, name) == "foo"
 
 
 @pytest.fixture(scope="module")
@@ -252,6 +209,6 @@ def test_show_matplotlib(lines) -> None:
 )
 def test_figures_property(lines, file_format, expected_figure_type):
     """Check that the figures generated by the DatasetPlot can be accessed."""
-    lines.execute(save=False, show=False, file_format=file_format)
+    lines.execute(save=False, file_format=file_format)
     for fig in lines.figures:
         assert isinstance(fig, expected_figure_type)

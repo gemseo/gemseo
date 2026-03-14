@@ -30,6 +30,7 @@ from numpy import newaxis
 from gemseo.post.base_post import BasePost
 from gemseo.post.basic_history_settings import BasicHistory_Settings
 from gemseo.post.dataset.lines import Lines
+from gemseo.post.dataset.lines_settings import Lines_Settings
 
 
 class BasicHistory(BasePost[BasicHistory_Settings]):
@@ -77,10 +78,9 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
         if settings.normalize:
             dataset = dataset.get_normalized()
 
-        plot = Lines(
-            dataset,
+        settings = Lines_Settings(
             abscissa_variable=self.__ITERATION_NAME,
-            variables=[
+            variables=tuple(
                 names
                 for variable_name in variable_names
                 for names in (
@@ -88,12 +88,12 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
                         variable_name, [variable_name]
                     )
                 )
-            ],
+            ),
             use_integer_xticks=True,
+            font_size=12,
+            xlabel="Iterations",
+            title="History plot",
+            fig_size=settings.fig_size,
         )
-        plot.font_size = 12
-        plot.xlabel = "Iterations"
-        plot.fig_size_x = settings.fig_size[0]
-        plot.fig_size_y = settings.fig_size[1]
-        plot.title = "History plot"
+        plot = Lines(dataset, settings)
         self._add_figure(plot)

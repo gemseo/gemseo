@@ -36,6 +36,7 @@ from strenum import StrEnum
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
+from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
     BaseSensitivityAnalysis,
 )
@@ -212,15 +213,17 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
             )
 
         dataset.index = all_indices
-        radar_chart = RadarChart(dataset)
         output_name = repr_variable(
             output_name,
             output_index,
             size=self.dataset.variable_names_to_n_components[output_name],
         )
-        radar_chart.title = title or f"Correlation indices for the output {output_name}"
-        radar_chart.rmin = -1.0
-        radar_chart.rmax = 1.0
+        settings = RadarChart_Settings(
+            title=title or f"Correlation indices for the output {output_name}",
+            rmin=-1.0,
+            rmax=1.0,
+        )
+        radar_chart = RadarChart(dataset, settings)
         file_path = self._file_path_manager.create_file_path(
             file_path=file_path,
             directory_path=directory_path,

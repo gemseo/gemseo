@@ -21,6 +21,9 @@ from typing import TYPE_CHECKING
 from numpy import inf
 from pandas.plotting import parallel_coordinates
 
+from gemseo.post.dataset.parallel_coordinates_settings import (
+    ParallelCoordinates_Settings,
+)
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
 
 if TYPE_CHECKING:
@@ -30,7 +33,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
 
 
-class ParallelCoordinates(MatplotlibPlot):
+class ParallelCoordinates(MatplotlibPlot[ParallelCoordinates_Settings]):
     """Parallel coordinates based on matplotlib."""
 
     def _create_figures(
@@ -45,6 +48,7 @@ class ParallelCoordinates(MatplotlibPlot):
             dataframe: The dataset to be used.
             cluster: The identifier of the cluster.
         """  # noqa: D205, D212, D415
+        settings = self._settings
         fig, ax = self._get_figure_and_axes(fig, ax)
         columns = self._common_dataset.get_columns(as_tuple=True)
         ax = parallel_coordinates(
@@ -52,19 +56,16 @@ class ParallelCoordinates(MatplotlibPlot):
             cluster,
             cols=columns,
             ax=ax,
-            **self._specific_settings.kwargs,
+            **settings.kwargs,
         )
-        if not self._common_settings.grid:
+        if not settings.grid:
             ax.grid(visible=False)
 
-        if (
-            self._specific_settings.lower == -inf
-            and self._specific_settings.upper == inf
-        ):
+        if settings.lower == -inf and settings.upper == inf:
             ax.get_legend().remove()
 
         ax.set_xticklabels(self._get_variable_names(columns))
-        ax.set_xlabel(self._common_settings.xlabel)
-        ax.set_ylabel(self._common_settings.ylabel)
-        ax.set_title(self._common_settings.title)
+        ax.set_xlabel(settings.xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title)
         return [fig]

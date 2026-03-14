@@ -38,7 +38,7 @@ $$x_i^{(1)},\ldots,x_i^{(n)}$$
 by means of a histogram or a kernel density estimator.
 
 A variable name is required by the
-[DatasetPlot.execute()][gemseo.post.dataset.dataset_plot.DatasetPlot.execute] method
+[DatasetPlot.execute()][gemseo.post.dataset.base.BaseDatasetPlot.execute] method
 by means of the `classifier` keyword in order to color the curves
 according to the value of the variable name. This is useful when the data is
 labeled.
@@ -46,81 +46,16 @@ labeled.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import TYPE_CHECKING
-from typing import Any
+from typing import ClassVar
 
-from matplotlib.pyplot import colormaps
-from strenum import StrEnum
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from gemseo.datasets.dataset import Dataset
-    from gemseo.post.dataset._trend import TrendFunctionCreator
-
-from gemseo.post.dataset._trend import Trend as _Trend
-from gemseo.post.dataset.dataset_plot import DatasetPlot
-
-ScatterMatrixOption = bool | int | str | Sequence[str] | None
-ColormapName = StrEnum("ColormapName", sorted(colormaps.keys()))
+from gemseo.post.dataset.base import BaseDatasetPlot
+from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
 
 
-class ScatterMatrix(DatasetPlot):
+class ScatterMatrix(BaseDatasetPlot[ScatterMatrix_Settings]):
     """Scatter plot matrix."""
 
-    Trend = _Trend
-    """The type of trend."""
-
-    def __init__(
-        self,
-        dataset: Dataset,
-        variable_names: Iterable[str] = (),
-        classifier: str = "",
-        kde: bool = False,
-        size: int = 25,
-        marker: str = "o",
-        plot_lower: bool = True,
-        plot_upper: bool = True,
-        trend: Trend | TrendFunctionCreator = Trend.NONE,
-        colormap_name: ColormapName = ColormapName.cool,
-        exclude_classifier: bool = True,
-        **options: Any,
-    ) -> None:
-        """
-        Args:
-            variable_names: The names of the variables to consider.
-                If empty, consider all the variables of the dataset.
-            classifier: The name of the variable to group data.
-                If empty, do not group data.
-            kde: The type of the distribution representation.
-                If `True`, plot kernel-density estimator on the diagonal.
-                Otherwise, use histograms.
-            size: The size of the points.
-            marker: The marker for the points.
-            plot_lower: Whether to plot the lower part.
-            plot_upper: Whether to plot the upper part.
-            trend: The trend function to be added on the scatter plots
-                or a function creating a trend function from a set of *xy*-points.
-            colormap_name: The name of the matplotlib colormap.
-            exclude_classifier: Whether to exclude the classifier
-                from the variables to be plotted on the axes.
-            **options: The options of the underlying pandas scatter matrix.
-        """  # noqa: D205, D212, D415
-        super().__init__(
-            dataset,
-            variable_names=variable_names,
-            classifier=classifier,
-            kde=kde,
-            size=size,
-            marker=marker,
-            plot_lower=plot_lower,
-            plot_upper=plot_upper,
-            trend=trend,
-            colormap_name=colormap_name,
-            exclude_classifier=exclude_classifier,
-            options=options,
-        )
+    settings_class: ClassVar[type[ScatterMatrix_Settings]] = ScatterMatrix_Settings
 
     def _create_specific_data_from_dataset(self) -> tuple[tuple[str, str, int] | None]:
         """
@@ -131,7 +66,7 @@ class ScatterMatrix(DatasetPlot):
         Raises:
             ValueError: When the classifier does not exist.
         """  # noqa: D205, D212, D415
-        classifier = self._specific_settings.classifier
+        classifier = self.settings.classifier
         if classifier and classifier not in self.dataset.variable_names:
             msg = (
                 f"{classifier} cannot be used as a classifier "

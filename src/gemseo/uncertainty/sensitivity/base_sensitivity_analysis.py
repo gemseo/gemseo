@@ -44,9 +44,13 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.post.dataset.bars import BarPlot
+from gemseo.post.dataset.bars_settings import BarPlot_Settings
 from gemseo.post.dataset.curves import Curves
+from gemseo.post.dataset.curves_settings import Curves_Settings
 from gemseo.post.dataset.radar_chart import RadarChart
+from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 from gemseo.post.dataset.surfaces import Surfaces
+from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
 from gemseo.scenarios.evaluation import EvaluationScenario
 from gemseo.typing import RealArray
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -71,8 +75,8 @@ if TYPE_CHECKING:
     from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import Discipline
     from gemseo.formulations.base_settings import BaseFormulationSettings
-    from gemseo.post.dataset.dataset_plot import DatasetPlot
-    from gemseo.post.dataset.dataset_plot import DatasetPlotPropertyType
+    from gemseo.post.dataset.base import BaseDatasetPlot
+    from gemseo.post.dataset.base import DatasetPlotPropertyType
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.utils.string_tools import VariableType
 
@@ -351,7 +355,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         show: bool = False,
         file_path: str | Path = "",
         file_format: str = "",
-    ) -> DatasetPlot | Figure:
+    ) -> BaseDatasetPlot | Figure:
         """Plot the sensitivity indices.
 
         Args:
@@ -426,7 +430,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             file_format: A file extension, e.g. 'png', 'pdf', 'svg', ...
                 If empty, use a default file extension.
             properties: The general properties
-                of a [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
+                of a [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].
 
         Returns:
             A bar plot representing the sensitivity indices.
@@ -455,14 +459,18 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         dataset.misc["mesh"] = mesh
         mesh_dimension = len(dataset.misc["mesh"].shape)
         if mesh_dimension == 1:
-            plot = Curves(dataset, mesh="mesh", variable=output_name)
+            settings = Curves_Settings(
+                mesh="mesh", variable=output_name, title=title, **properties
+            )
+            plot = Curves(dataset, settings)
         elif mesh_dimension == 2:
-            plot = Surfaces(dataset, mesh="mesh", variable=output_name)
+            settings = Surfaces_Settings(
+                mesh="mesh", variable=output_name, title=title, **properties
+            )
+            plot = Surfaces(dataset, settings)
         else:
             raise NotImplementedError
 
-        for k, v in properties.items():
-            setattr(plot, k, v)
         plot.title = title
         plot.execute(
             save=save,
@@ -536,6 +544,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         options = {"n_digits": 2}
         options.update(settings)
+        settings = BarPlot_Settings(title=title, **options)
         bar_plot = BarPlot(
             self.__create_dataset_to_plot(
                 input_names,
@@ -544,9 +553,8 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 sort,
                 sorting_output,
             ),
-            **options,
+            settings,
         )
-        bar_plot.title = title
         bar_plot.execute(
             save=save,
             show=show,
@@ -704,6 +712,11 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             A radar chart representing the sensitivity indices.
         """
+        if min_radius is not None:
+            settings["rmin"] = min_radius
+        if max_radius is not None:
+            settings["rmax"] = max_radius
+        settings = RadarChart_Settings(title=title, **settings)
         radar_chart = RadarChart(
             self.__create_dataset_to_plot(
                 input_names,
@@ -712,11 +725,8 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 sort,
                 sorting_output,
             ),
-            **settings,
+            settings,
         )
-        radar_chart.title = title
-        radar_chart.rmin = min_radius or radar_chart.rmin
-        radar_chart.rmax = max_radius or radar_chart.rmax
         radar_chart.execute(
             save=save,
             show=show,
@@ -785,7 +795,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
                 If empty, use a default file extension.
             **settings: The settings passed to the underlying
-                [DatasetPlot][gemseo.post.dataset.dataset_plot.DatasetPlot].
+                [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].
 
         Returns:
             A graph comparing sensitivity indices.
@@ -810,15 +820,14 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         )
         dataset.index = [method.main_method for method in methods]
         if use_bar_plot:
-            plot = BarPlot(dataset, n_digits=2)
+            settings = BarPlot_Settings(n_digits=2, title=title)
+            plot = BarPlot(dataset, settings)
         else:
-            plot = RadarChart(dataset)
+            settings = RadarChart_Settings(rmin=0.0, rmax=1.0, title=title)
+            plot = RadarChart(dataset, settings)
             plot.rmin = 0.0
             plot.rmax = 1.0
-        plot.title = title
-        plot.execute(
-            save, show, file_path, directory_path, file_name, file_format, **settings
-        )
+        plot.execute(save, show, file_path, directory_path, file_name, file_format)
         return plot
 
     def to_dataset(self) -> Dataset:

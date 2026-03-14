@@ -55,7 +55,7 @@ from numpy.random import default_rng
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
-from gemseo.post.dataset.radviz import Radar
+from gemseo.post.dataset.radviz import RadViz
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 
 rng = default_rng(1)
@@ -129,4 +129,4 @@ AndrewsCurves(iris, "specy").execute(save=False, show=True)
 # ### Plot Radar
 #
 # We can use the [Radar][gemseo.post.dataset.radviz.Radar] plot
-Radar(iris, "specy").execute(save=False, show=True)
+RadViz(iris, "specy").execute(save=False, show=True)

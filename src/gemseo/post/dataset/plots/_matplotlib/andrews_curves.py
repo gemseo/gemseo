@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 from matplotlib import pyplot as plt
 from pandas.plotting import andrews_curves
 
+from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
 
 if TYPE_CHECKING:
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 
-class AndrewsCurves(MatplotlibPlot):
+class AndrewsCurves(MatplotlibPlot[AndrewsCurves_Settings]):
     """The Andrews curves based on matplotlib."""
 
     def _create_figures(
@@ -38,11 +39,12 @@ class AndrewsCurves(MatplotlibPlot):
         Args:
             column: The column of the dataset containing the group names.
         """  # noqa: D205 D212 D415
+        settings = self._settings
         fig, ax = self._get_figure_and_axes(fig, ax)
         andrews_curves(self._common_dataset, column, ax=ax)
-        if not self._common_settings.grid:
+        if not settings.grid:
             plt.grid(visible=False)
-        plt.xlabel(self._common_settings.xlabel)
-        plt.ylabel(self._common_settings.ylabel)
-        plt.title(self._common_settings.title)
+        plt.xlabel(settings.xlabel)
+        plt.ylabel(settings.ylabel)
+        plt.title(settings.title)
         return [fig]
