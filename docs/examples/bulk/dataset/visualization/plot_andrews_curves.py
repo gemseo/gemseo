@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
+from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
 
 # %%
 # ## Load a dataset
@@ -38,4 +39,6 @@ iris = create_benchmark_dataset("IrisDataset")
 # which can be viewed as a smooth
 # version of the parallel coordinates. Each sample is represented by a curve
 # and if there is structure in data, it may be visible in the plot.
-AndrewsCurves(iris, "specy").execute(save=False, show=True)
+AndrewsCurves(iris, AndrewsCurves_Settings(classifier="specy")).execute(
+    save=False, show=True
+)

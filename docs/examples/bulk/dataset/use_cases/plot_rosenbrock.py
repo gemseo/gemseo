@@ -39,7 +39,9 @@ from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.yvsx import YvsX
+from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 from gemseo.post.dataset.zvsxy import ZvsXY
+from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 
 # %%
 # ## Load Rosenbrock dataset
@@ -69,6 +71,8 @@ dataset
 # %%
 # ## Plot the data
 #
-ZvsXY(dataset, x=("x", 0), y=("x", 1), z="rosen").execute(save=False, show=True)
+ZvsXY(dataset, ZvsXY_Settings(x=("x", 0), y=("x", 1), z="rosen")).execute(
+    save=False, show=True
+)
 
-YvsX(dataset, x=("x", 0), y="rosen").execute(save=False, show=True)
+YvsX(dataset, YvsX_Settings(x=("x", 0), y="rosen")).execute(save=False, show=True)

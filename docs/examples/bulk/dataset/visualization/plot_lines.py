@@ -30,6 +30,7 @@ from numpy import sin
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
+from gemseo.post.dataset.lines_settings import Lines_Settings
 
 # %%
 # ## Build a dataset
@@ -47,7 +48,7 @@ dataset.add_variable("y2", outputs_2, "outputs")
 # ## Plot y1 and y2
 #
 # We can use the [Lines][gemseo.post.dataset.lines.Lines] plot.
-plot = Lines(dataset, variables=["y1", "y2"])
+plot = Lines(dataset, Lines_Settings(variables=("y1", "y2")))
 plot.linestyle = ["--", "-"]
 plot.execute(save=False, show=True)
 

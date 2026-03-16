@@ -28,6 +28,7 @@ from numpy import linspace
 
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.post.dataset.boxplot import Boxplot
+from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 
 # %%
 # ## Build a dataset
@@ -56,7 +57,7 @@ plot.execute(save=False, show=True)
 # ## Plot with centering
 #
 # We can center the data:
-plot = Boxplot(dataset, center=True)
+plot = Boxplot(dataset, Boxplot_Settings(center=True))
 plot.title = "With centering"
 plot.execute(save=False, show=True)
 
@@ -64,7 +65,7 @@ plot.execute(save=False, show=True)
 # ## Plot with scaling
 #
 # We can scale the data (normalization with the standard deviation):
-plot = Boxplot(dataset, scale=True)
+plot = Boxplot(dataset, Boxplot_Settings(scale=True))
 plot.title = "With scaling"
 plot.execute(save=False, show=True)
 
@@ -72,7 +73,7 @@ plot.execute(save=False, show=True)
 # ## Plot without outliers
 #
 # We can remove the outliers:
-plot = Boxplot(dataset, add_outliers=False)
+plot = Boxplot(dataset, Boxplot_Settings(add_outliers=False))
 plot.title = "Without outliers"
 plot.execute(save=False, show=True)
 
@@ -80,7 +81,7 @@ plot.execute(save=False, show=True)
 # ## Plot with confidence intervals
 #
 # We can add confidence intervals for the median:
-plot = Boxplot(dataset, add_confidence_interval=True)
+plot = Boxplot(dataset, Boxplot_Settings(add_confidence_interval=True))
 plot.title = "Confidence intervals"
 plot.execute(save=False, show=True)
 
@@ -88,7 +89,7 @@ plot.execute(save=False, show=True)
 # ## Plot horizontally
 #
 # We can use horizontal bars:
-plot = Boxplot(dataset, use_vertical_bars=False)
+plot = Boxplot(dataset, Boxplot_Settings(use_vertical_bars=False))
 plot.title = "Horizontal bars"
 plot.execute(save=False, show=True)
 
@@ -96,6 +97,6 @@ plot.execute(save=False, show=True)
 # ## Plot with other datasets
 #
 # We can add a dataset:
-plot = Boxplot(dataset, other_dataset)
+plot = Boxplot(dataset, Boxplot_Settings(datasets=[other_dataset]))
 plot.title = "Additional dataset"
 plot.execute(save=False, show=True)
