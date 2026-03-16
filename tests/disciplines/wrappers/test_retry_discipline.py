@@ -101,10 +101,11 @@ class SlowThreadDiscipline(Discipline):
     """A discipline that executes a long-running ."""
 
     def _run(self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT) -> None:
-        end_time = time.time() + 60.0
-
-        while time.time() < end_time:
-            pass
+        # Use sleep instead of a busy-wait loop: sleep releases the GIL, so
+        # PyThreadState_SetAsyncExc can deliver SystemExit almost immediately
+        # at the next bytecode boundary.  A tight C-level loop (time.time())
+        # provides very few such boundaries and makes injection unpredictable.
+        time.sleep(60.0)
 
 
 class SlowProcessDiscipline(Discipline):
@@ -287,7 +288,9 @@ def test_wait_time_and_n_trials(
         disc.execute()
 
     if disc_class == SlowProcessDiscipline:
-        # The wrapped discipline process should have been killed.
+        # pid_path holds the PID of the subprocess spawned by Popen *inside* the
+        # worker process, i.e. a grandchild of the test process.  Verifying it is
+        # gone confirms that recursive=True in _terminate_process captured it.
         assert not psutil.pid_exists(int(pid_path.read_text()))
 
     # The offset accounts for the time it takes for the execution to reach the _run of
@@ -302,3 +305,53 @@ def test_wait_time_and_n_trials(
         f" attempt{plural_suffix}."
     )
     assert log_message in caplog.text
+
+
+def test_n_trials_zero_raises(an_analytic_discipline) -> None:
+    """Test that n_trials=0 raises ValueError immediately."""
+    with pytest.raises(ValueError, match="n_trials must be >= 1"):
+        RetryDiscipline(an_analytic_discipline, n_trials=0)
+
+
+def test_per_attempt_warning_logged(caplog) -> None:
+    """Test that each non-fatal failure emits a WARNING log entry."""
+    disc = RetryDiscipline(FictiveDiscipline(), n_trials=3)
+    disc.execute()
+
+    # FictiveDiscipline raises RuntimeError on attempts 1 and 2.
+    warning_msgs = [
+        r.message
+        for r in caplog.records
+        if r.levelname == "WARNING" and "failed with" in r.message
+    ]
+    assert len(warning_msgs) == 2
+
+
+# TODO: Fix this test on windows.
+@pytest.mark.skipif(
+    PLATFORM_IS_WINDOWS,
+    reason="The windows CI has big troubles with this test.",
+)
+def test_timeout_warning_logged(caplog) -> None:
+    """Test that a timeout is logged at WARNING level."""
+    disc = RetryDiscipline(SlowThreadDiscipline(), timeout=0.1, n_trials=1)
+    with pytest.raises(TimeoutError, match="Timeout reached"):
+        disc.execute()
+
+    assert any(
+        "Timeout reached" in r.message and r.levelname == "WARNING"
+        for r in caplog.records
+    )
+
+
+def test_sleep_not_called_when_wait_time_zero(monkeypatch) -> None:
+    """Test that time.sleep is not called when wait_time=0.0."""
+    sleep_calls = []
+    monkeypatch.setattr(
+        "gemseo.disciplines.wrappers.retry_discipline.time.sleep",
+        sleep_calls.append,
+    )
+    disc = RetryDiscipline(FictiveDiscipline(), n_trials=3, wait_time=0.0)
+    disc.execute()
+
+    assert sleep_calls == []
