@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import math
 import time
 from concurrent.futures import ProcessPoolExecutor
@@ -33,8 +34,6 @@ from gemseo.core.execution_status import ExecutionStatus
 from gemseo.disciplines.wrappers._base_wrapper_discipline import BaseWrapperDiscipline
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
 
@@ -80,7 +79,7 @@ class RetryDiscipline(BaseWrapperDiscipline):
     timeout: float
     """The maximum duration, in seconds, that the discipline is allowed to run."""
 
-    fatal_exceptions: Iterable[type[Exception]]
+    fatal_exceptions: tuple[type[Exception], ...]
     """The exceptions for which the code raises an exception and exit immediately
     without retrying a run."""
 
@@ -90,7 +89,7 @@ class RetryDiscipline(BaseWrapperDiscipline):
         n_trials: int = 5,
         wait_time: float = 0.0,
         timeout: float = math.inf,
-        fatal_exceptions: Iterable[type[Exception]] = (),
+        fatal_exceptions: tuple[type[Exception], ...] = (),
         timeout_with_process: bool = False,
     ) -> None:
         """
@@ -106,13 +105,17 @@ class RetryDiscipline(BaseWrapperDiscipline):
             timeout_with_process: Whether to use a process or a thread when using the
                 timeout feature.
         """  # noqa:D205 D212 D415
+        if n_trials < 1:
+            msg = f"n_trials must be >= 1, got {n_trials!r}"
+            raise ValueError(msg)
+
         super().__init__(discipline)
 
         self.__n_executions = 0
+        self.fatal_exceptions = tuple(fatal_exceptions)
         self.n_trials = n_trials
         self.wait_time = wait_time
         self.timeout = timeout
-        self.fatal_exceptions = fatal_exceptions
         self.timeout_with_process = timeout_with_process
 
     @property
@@ -142,11 +145,11 @@ class RetryDiscipline(BaseWrapperDiscipline):
                     "Timeout reached during the execution of "
                     f"discipline {self._discipline.name}"
                 )
-                LOGGER.debug(msg)
+                LOGGER.warning(msg)
                 current_error = TimeoutError(msg)
 
             except Exception as error:  # noqa: BLE001
-                if isinstance(error, tuple(self.fatal_exceptions)):
+                if isinstance(error, self.fatal_exceptions):
                     LOGGER.info(
                         "Failed to execute discipline %s, "
                         "aborting retry because of the exception type %s.",
@@ -154,10 +157,19 @@ class RetryDiscipline(BaseWrapperDiscipline):
                         type(error),
                     )
                     raise
+                LOGGER.warning(
+                    "Attempt %d/%d for discipline %s failed with %s: %s",
+                    n_trial,
+                    self.n_trials,
+                    self._discipline.name,
+                    type(error).__name__,
+                    error,
+                )
                 current_error = error
 
             self._discipline.execution_status.value = ExecutionStatus.Status.DONE
-            time.sleep(self.wait_time)
+            if self.wait_time:
+                time.sleep(self.wait_time)
             self._run_before_next_trial()
 
         plural_suffix = "s" if self.n_trials > 1 else ""
@@ -193,36 +205,66 @@ class RetryDiscipline(BaseWrapperDiscipline):
         executor_class = (
             ProcessPoolExecutor if self.timeout_with_process else ThreadPoolExecutor
         )
-
-        with executor_class(max_workers=1) as executor:
-            run_discipline = executor.submit(
-                self._discipline.execute,
-                input_data,
-            )
-
+        executor = executor_class(max_workers=1)
+        timed_out = False
+        try:
+            run_discipline = executor.submit(self._discipline.execute, input_data)
             try:
                 return run_discipline.result(timeout=self.timeout)
             except FutureTimeoutError:
+                timed_out = True
                 if self.timeout_with_process:
-                    # Terminate the unique process and its subprocesses.
-                    process_id = next(iter(executor._processes.keys()))
-                    process = psutil.Process(process_id)
-                    for child_process in process.children():
-                        child_process.terminate()
-                    process.terminate()
+                    self._terminate_process(executor)
                 else:
-                    # The unique thread is still alive, so we need to kill it.
-                    thread = next(iter(executor._threads))
-                    # The following is inspired from https://tomerfiliba.com/recipes/Thread2
-                    thread_id = c_long(thread.ident)
-                    res = pythonapi.PyThreadState_SetAsyncExc(
-                        thread_id, py_object(SystemExit)
-                    )
-                    if res == 0:  # pragma: no cover
-                        LOGGER.debug("Invalid thread id %s", thread_id)
-                    if res != 1:  # pragma: no cover
-                        # If it returns a number greater than one, you're in trouble,
-                        # and you should call it again with exc=NULL
-                        # to revert the effect.
-                        pythonapi.PyThreadState_SetAsyncExc(thread_id, None)
+                    self._terminate_thread(executor)
                 raise
+        finally:
+            # If timed out the worker was signalled; skip blocking join so we
+            # never hang waiting for a thread stuck in a C extension.
+            executor.shutdown(wait=not timed_out)
+
+    def _terminate_process(self, executor: ProcessPoolExecutor) -> None:
+        """Terminate the worker process and all its descendants.
+
+        Args:
+            executor: The executor whose worker process is to be terminated.
+        """
+        try:
+            process_id = next(iter(executor._processes.keys()))
+            process = psutil.Process(process_id)
+            children = process.children(recursive=True)
+        except (psutil.NoSuchProcess, StopIteration):
+            return  # already gone
+
+        all_procs = [process, *children]
+        for proc in all_procs:
+            with contextlib.suppress(psutil.NoSuchProcess, psutil.AccessDenied):
+                proc.terminate()
+
+        # Wait for the process and its children to fully exit before raising.
+        # Without this, the OS may still show them as zombies, causing
+        # psutil.pid_exists() to return True even though terminate() was called.
+        _, alive = psutil.wait_procs(all_procs, timeout=5)
+        for proc in alive:  # SIGKILL fallback for processes that ignored SIGTERM
+            with contextlib.suppress(psutil.NoSuchProcess, psutil.AccessDenied):
+                proc.kill()
+
+    def _terminate_thread(self, executor: ThreadPoolExecutor) -> None:
+        """Inject SystemExit into the worker thread to unblock it.
+
+        Args:
+            executor: The executor whose worker thread is to be terminated.
+        """
+        # The unique thread is still alive, so we need to kill it.
+        thread = next(iter(executor._threads))
+        # The following is inspired from https://tomerfiliba.com/recipes/Thread2
+        thread_id = c_long(thread.ident)
+        res = pythonapi.PyThreadState_SetAsyncExc(thread_id, py_object(SystemExit))
+        if res == 0:  # pragma: no cover
+            LOGGER.debug("Invalid thread id %s", thread_id)
+        if res != 1:  # pragma: no cover
+            # If it returns a number greater than one, you're in trouble,
+            # and you should call it again with exc=NULL to revert the effect.
+            pythonapi.PyThreadState_SetAsyncExc(thread_id, None)
+        # Give the thread time to handle the injected SystemExit before shutdown.
+        thread.join(timeout=5)
