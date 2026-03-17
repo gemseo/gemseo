@@ -35,7 +35,9 @@ class ColorEvolution(BaseDatasetPlot[ColorEvolution_Settings]):
     Based on the matplotlib function `imshow`.
 
     Tip:
-        Use [colormap][gemseo.post.dataset.base.BaseDatasetPlot.colormap]
+        Use the colormap setting of the
+        [BaseDatasetPlotSettings][gemseo.post.dataset.base_settings.BaseDatasetPlotSettings]
+        setting class
         to set a matplotlib colormap, e.g. `"seismic"`.
     """
 

@@ -1372,7 +1372,7 @@ The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to
 - The argument `quantile` of [VariableInfluence][gemseo.post.variable_influence.VariableInfluence] has been renamed to `level`.
 - [BasicHistory][gemseo.post.basic_history.BasicHistory]: `data_list` has been renamed to `variable_names`.
 - `MDAChain.sub_mda_list` has been renamed to [MDAChain][gemseo.mda.chain.MDAChain}.
-- [RadarChart][gemseo.post.radar_chart.RadarChart]: `constraints_list` has been renamed to `constraint_names`.
+- `gemseo.post.radar_chart.RadarChart`: `constraints_list` has been renamed to `constraint_names`.
 - [ScatterPlotMatrix][gemseo.post.scatter_plot_matrix.ScatterPlotMatrix]: `variables_list` has been renamed to `variable_names`.
 - All MDA algos now count their iterations starting from `0`.
 - The `MDA.residual_history` is now a list of normed residuals.
