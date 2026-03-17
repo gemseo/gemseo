@@ -41,7 +41,7 @@ class BasePlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     A [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot]
     defines a graphical concept (e.g. radar chart, lines, etc.)
-    while a [BasePlot][gemseo.post.dataset.plots.base_plot.BasePlot]
+    while a [BasePlot][gemseo.post.dataset.plots.base.BasePlot]
     with the same class name implements this concept
     from a visualization library.
 

@@ -140,5 +140,5 @@ AndrewsCurves(iris, AndrewsCurves_Settings(classifier="specy")).execute(
 # %%
 # ### Plot Radar
 #
-# We can use the [Radar][gemseo.post.dataset.radviz.Radar] plot
+# We can use the [RadViz][gemseo.post.dataset.radviz.RadViz] plot
 RadViz(iris, RadViz_Settings(classifier="specy")).execute(save=False, show=True)
