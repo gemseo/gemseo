@@ -29,6 +29,7 @@ from numpy import sin
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
+from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 
 # %%
 # ## Build a dataset
@@ -44,6 +45,6 @@ dataset.add_variable("y", outputs, "outputs")
 # ## Plot y vs x
 #
 # We can use the [YvsX][gemseo.post.dataset.yvsx.YvsX] plot
-plot = YvsX(dataset, "x", "y")
+plot = YvsX(dataset, YvsX_Settings(x="x", y="y"))
 plot.linestyle = "--o"
 plot.execute(save=False, show=True)

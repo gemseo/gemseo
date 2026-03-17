@@ -29,6 +29,7 @@ from numpy import sin
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
+from gemseo.post.dataset.scatter_settings import Scatter_Settings
 
 # %%
 # ## Build a dataset
@@ -45,6 +46,6 @@ dataset.add_variable("y", outputs, "outputs")
 # ## Plot y vs x
 #
 # We can use the [Scatter][gemseo.post.dataset.scatter.Scatter] plot
-plot = Scatter(dataset, "x", "y")
+plot = Scatter(dataset, Scatter_Settings(x="x", y="y"))
 plot.color = color
 plot.execute(save=False, show=True)

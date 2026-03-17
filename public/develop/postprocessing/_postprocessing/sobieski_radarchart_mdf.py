@@ -33,7 +33,7 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.post import RadarChart_Settings
+from gemseo.post import ConstraintRadar_Settings
 
 disciplines = create_discipline([
     "SobieskiPropulsion",
@@ -58,11 +58,11 @@ for constraint in ["g_1", "g_2", "g_3"]:
 scenario.execute(SLSQP_Settings(max_iter=10))
 
 scenario.post_process(
-    RadarChart_Settings(
+    ConstraintRadar_Settings(
         constraint_names=["g_1", "g_2", "g_3"],
         save=True,
         show=False,
         file_path="mdf",
-        extension="png",
+        file_extension="png",
     )
 )

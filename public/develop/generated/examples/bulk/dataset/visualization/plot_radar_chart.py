@@ -27,6 +27,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
+from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 
 # %%
 # ## Build a dataset
@@ -44,7 +45,7 @@ dataset.index = ["series_1", "series_2"]
 #
 # We can use a [RadarChart][gemseo.post.dataset.radar_chart.RadarChart] to display these series,
 # with one color per series and the values grouped by variable name:
-plot = RadarChart(dataset, connect=True, radial_ticks=True)
+plot = RadarChart(dataset, RadarChart_Settings(connect=True, radial_ticks=True))
 plot.rmin = -0.5
 plot.rmax = 1.0
 plot.execute(save=False, show=True)

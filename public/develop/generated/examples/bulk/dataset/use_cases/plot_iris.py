@@ -54,9 +54,15 @@ from numpy.random import default_rng
 
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
+from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
-from gemseo.post.dataset.radviz import Radar
+from gemseo.post.dataset.parallel_coordinates_settings import (
+    ParallelCoordinates_Settings,
+)
+from gemseo.post.dataset.radviz import RadViz
+from gemseo.post.dataset.radviz_settings import RadViz_Settings
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
+from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
 
 rng = default_rng(1)
 
@@ -104,7 +110,9 @@ iris.get_view(group_names="labels", indices=samples)
 # represents the samples according to the x- and y- coordinates names
 # while the diagonal ones approximate the probability distributions of the
 # variables, using either an histogram or a kernel-density estimator.
-ScatterMatrix(iris, classifier="specy", kde=True).execute(save=False, show=True)
+ScatterMatrix(iris, ScatterMatrix_Settings(classifier="specy", kde=True)).execute(
+    save=False, show=True
+)
 
 # %%
 # ### Plot parallel coordinates
@@ -114,7 +122,9 @@ ScatterMatrix(iris, classifier="specy", kde=True).execute(save=False, show=True)
 # a.k.a. cowebplot, where each samples
 # is represented by a continuous straight line in pieces whose nodes are
 # indexed by the variables names and measure the variables values.
-ParallelCoordinates(iris, "specy").execute(save=False, show=True)
+ParallelCoordinates(iris, ParallelCoordinates_Settings(classifier="specy")).execute(
+    save=False, show=True
+)
 
 # %%
 # ### Plot Andrews curves
@@ -123,10 +133,12 @@ ParallelCoordinates(iris, "specy").execute(save=False, show=True)
 # which can be viewed as a smooth
 # version of the parallel coordinates. Each sample is represented by a curve
 # and if there is structure in data, it may be visible in the plot.
-AndrewsCurves(iris, "specy").execute(save=False, show=True)
+AndrewsCurves(iris, AndrewsCurves_Settings(classifier="specy")).execute(
+    save=False, show=True
+)
 
 # %%
 # ### Plot Radar
 #
-# We can use the [Radar][gemseo.post.dataset.radviz.Radar] plot
-Radar(iris, "specy").execute(save=False, show=True)
+# We can use the [RadViz][gemseo.post.dataset.radviz.RadViz] plot
+RadViz(iris, RadViz_Settings(classifier="specy")).execute(save=False, show=True)

@@ -27,6 +27,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
+from gemseo.post.dataset.bars_settings import BarPlot_Settings
 
 # %%
 # ## Build a dataset
@@ -45,7 +46,7 @@ dataset
 #
 # We can use the [BarPlot][gemseo.post.dataset.bars.BarPlot] to display these series,
 # with one color per series and the values grouped by variable name:
-plot = BarPlot(dataset, n_digits=2)
+plot = BarPlot(dataset, BarPlot_Settings(n_digits=2))
 plot.colormap = "PiYG"
 plot.execute(save=False, show=True)
 

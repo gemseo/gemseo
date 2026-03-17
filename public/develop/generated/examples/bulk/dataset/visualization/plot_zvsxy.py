@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.zvsxy import ZvsXY
+from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 
 # %%
 # ## Load the Rosenbrock dataset
@@ -35,6 +36,6 @@ dataset = create_benchmark_dataset("RosenbrockDataset")
 # ## Plot z vs x and y
 #
 # We can use the [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY] plot
-plot = ZvsXY(dataset, x=("x", 0), y=("x", 1), z="rosen")
+plot = ZvsXY(dataset, ZvsXY_Settings(x=("x", 0), y=("x", 1), z="rosen"))
 plot.colormap = "viridis"
 plot.execute(save=False, show=True)
