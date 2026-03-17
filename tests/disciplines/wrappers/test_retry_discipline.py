@@ -251,7 +251,8 @@ def test_2fails_then_succeed() -> None:
     assert disc.execution_status.value == ExecutionStatus.Status.DONE
 
 
-TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 0.1
+THREAD_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 0.1
+PROCESS_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 2.0
 
 
 # TODO: Fix this test on windows.
@@ -269,9 +270,10 @@ def test_wait_time_and_n_trials(
     wrapped_disc = disc_class()
     wrapped_disc.pid_path = pid_path = tmp_wd / "pid"
 
+    timeout = PROCESS_TIMEOUT if disc_class == SlowProcessDiscipline else THREAD_TIMEOUT
     disc = RetryDiscipline(
         wrapped_disc,
-        timeout=TIMEOUT,
+        timeout=timeout,
         n_trials=n_trials,
         wait_time=wait_time,
         timeout_with_process=disc_class == SlowProcessDiscipline,
