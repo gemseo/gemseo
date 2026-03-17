@@ -86,6 +86,7 @@ from gemseo.machine_learning.regression.models.pce import PCERegressor
 from gemseo.machine_learning.regression.models.pce_settings import PCERegressor_Settings
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
 from gemseo.post.dataset.bars import BarPlot
+from gemseo.post.dataset.bars_settings import BarPlot_Settings
 from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
 
@@ -206,7 +207,7 @@ dataset.add_group(
 )
 dataset.index = ["Learning", "Validation", "Learning-GE", "Validation-GE"]
 
-barplot = BarPlot(dataset, annotate=False)
+barplot = BarPlot(dataset, BarPlot_Settings(annotate=False))
 barplot.execute(save=False)
 
 # %%
@@ -287,7 +288,7 @@ dataset.add_group(
 )
 dataset.index = ["Learning", "Validation", "Learning-GE", "Validation-GE"]
 
-barplot = BarPlot(dataset, annotate=False)
+barplot = BarPlot(dataset, BarPlot_Settings(annotate=False))
 barplot.execute(save=False)
 
 # %%

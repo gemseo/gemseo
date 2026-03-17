@@ -25,6 +25,9 @@ from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
+from gemseo.post.dataset.parallel_coordinates_settings import (
+    ParallelCoordinates_Settings,
+)
 
 # %%
 # ## Load a dataset
@@ -37,4 +40,6 @@ iris = create_benchmark_dataset("IrisDataset")
 # a.k.a. cowebplot, where each samples is represented by a continuous straight
 # line in pieces whose nodes are indexed by the variables names and measure the
 # variables values.
-ParallelCoordinates(iris, classifier="specy").execute(save=False, show=True)
+ParallelCoordinates(iris, ParallelCoordinates_Settings(classifier="specy")).execute(
+    save=False, show=True
+)

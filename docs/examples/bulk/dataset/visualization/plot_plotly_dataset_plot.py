@@ -37,6 +37,7 @@ from numpy import array
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
+from gemseo.post.dataset.bars_settings import BarPlot_Settings
 
 # %%
 # In this example,
@@ -50,7 +51,7 @@ dataset.index = ["series_1", "series_2"]
 # %%
 # then,
 # we create a [BarPlot][gemseo.post.dataset.bars.BarPlot]:
-plot = BarPlot(dataset, n_digits=2)
+plot = BarPlot(dataset, BarPlot_Settings(n_digits=2))
 plot.colormap = "PiYG"
 
 # %%

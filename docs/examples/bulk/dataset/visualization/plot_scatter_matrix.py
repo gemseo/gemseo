@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
+from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
 
 # %%
 # ## Load a dataset
@@ -38,4 +39,6 @@ iris = create_benchmark_dataset("IrisDataset")
 # represents the samples according to the x- and y- coordinates names
 # while the diagonal ones approximate the probability distributions of the
 # variables, using either an histogram or a kernel-density estimator.
-ScatterMatrix(iris, classifier="specy").execute(save=False, show=True)
+ScatterMatrix(iris, ScatterMatrix_Settings(classifier="specy")).execute(
+    save=False, show=True
+)

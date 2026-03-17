@@ -28,6 +28,7 @@ from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.curves import Curves
+from gemseo.post.dataset.curves_settings import Curves_Settings
 
 # %%
 # ## Load Burgers' dataset
@@ -59,4 +60,6 @@ dataset
 # %%
 # ## Plot the data
 #
-Curves(dataset, "x", "u_t").execute(save=False, show=True)
+Curves(dataset, Curves_Settings(mesh="x", variable="u_t")).execute(
+    save=False, show=True
+)

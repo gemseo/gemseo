@@ -27,6 +27,7 @@ from matplotlib import pyplot as plt
 
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
+from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 
 # %%
 # First,
@@ -40,7 +41,7 @@ dataset.add_variable("b", [[1], [0], [1]])
 # Then,
 # we define a [YvsX][gemseo.post.dataset.yvsx.YvsX] chart,
 # which is a particular [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot]:
-yvsx = YvsX(dataset, "a", "b")
+yvsx = YvsX(dataset, YvsX_Settings(x="a", y="b"))
 
 # %%
 # and draw the figure.
