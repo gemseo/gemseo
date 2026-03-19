@@ -73,6 +73,7 @@ test = [
     "pytest >=8",
     "pytest-cov",
     "pytest-xdist",
+    "pytest-sugar",
 ]
 doc = [
     "black",
