@@ -18,28 +18,57 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# A Sellar problem with custom data converters."""
+"""# Use data converters
+
+## Problem
+
+GEMSEO requires input and output data to be formatted as 1D NumPy arrays
+to ensure compatibility with its optimization and differentiation drivers.
+However,
+real-world disciplines often involve complex data structures
+such as multi-dimensional arrays,
+nested dictionaries,
+or custom objects.
+How can these high-dimensional
+or non-standard data types be seamlessly integrated into a GEMSEO-compliant workflow?
+
+## Solution
+
+GEMSEO leverages a
+[BaseDataConverter][gemseo.core.data_converters.base.BaseDataConverter]
+to manage the transformation of variable values into 1D NumPy arrays and vice versa.
+Beyond just flattening and reshaping data,
+this utility also provides the framework
+with the expected dimensions of these 1D arrays,
+ensuring consistency across the coupling process.
+
+## Step-by-step guide
+
+"""
 
 from __future__ import annotations
 
 import operator
-from math import exp
 from typing import TYPE_CHECKING
 
 from numpy import array
+from numpy import exp
 from numpy import ones
 
-from gemseo import create_scenario
 from gemseo import set_data_converters
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 from gemseo.core.discipline import Discipline
+from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
 # %%
+# ### 1. Define the disciplines
+#
 # As compared to the original Sellar example,
 # here the `y_1` variable is a dictionary.
 # and the `y_2` variable is a 2D array
@@ -118,6 +147,7 @@ class Sellar2(Discipline):
 
 
 # %%
+# ### 2. Set the data converter
 # Define the data converters for the custom types of the variables `y_1` and `y_2`.
 #
 # This one shall return the value of a variable as a 1D array.
@@ -127,6 +157,7 @@ to_array = {
 }
 
 
+# %%
 # This one shall return the value of a variable in the type expected by the discipline from a 1D array.
 def get_dict(array_):
     return {"dummy": array_}
@@ -142,6 +173,7 @@ from_array = {
 }
 
 
+# %%
 # This one shall return the size of a value of a variable.
 # The builtin converters already handle NumPy arrays via the `size` attribute,
 # so we only need to handle `y_1`.
@@ -153,8 +185,12 @@ to_size = {
     "y_1": get_size,
 }
 
+# %%
+# The [set_data_converters][gemseo.set_data_converters] function is applied:
 set_data_converters(to_array, from_array, to_size)
 
+# %%
+# ### 3. Create your scenario
 disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 
 design_space = DesignSpace()
@@ -163,12 +199,12 @@ design_space.add_variable(
     "z", 2, lower_bound=(-10, 0.0), upper_bound=(10.0, 10.0), value=array([4.0, 3.0])
 )
 
-scenario = create_scenario(
+scenario = MDOScenario(
     disciplines,
-    "obj",
     design_space,
-    formulation_name="MDF",
+    formulation_settings=MDF_Settings(),
 )
+scenario.add_objective("obj")
 
 scenario.add_constraint("c_1", constraint_type="ineq")
 scenario.add_constraint("c_2", constraint_type="ineq")
@@ -179,3 +215,15 @@ scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 # This should only be needed if the type of the variables y_1 and y_2 are no longer
 # custom type afterward.
 set_data_converters({}, {}, {})
+
+# %%
+# ## Summary
+#
+# The [set_data_converters][gemseo.set_data_converters] function can be used to set
+# [BaseDataConverter][gemseo.core.data_converters.base.BaseDataConverter]
+# so it enables seamless I/O exchange between disciplines
+# without altering their underlying grammar.
+#
+# A [BaseDataConverter][gemseo.core.data_converters.base.BaseDataConverter]
+# acts as a transparent translation layer,
+# mapping complex values to 1D NumPy arrays and vice versa.

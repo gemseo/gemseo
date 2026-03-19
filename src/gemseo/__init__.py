@@ -1737,7 +1737,7 @@ def set_data_converters(
     expected 1D NumPy array.
 
     See this
-    [example][a-sellar-problem-with-custom-data-converters].
+    [example][use-data-converters].
 
     Args:
         to_array: The mapping from disciplines variable names
