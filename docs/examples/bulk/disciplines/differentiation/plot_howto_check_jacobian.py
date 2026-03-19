@@ -15,10 +15,22 @@
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 """
-# Check the Jacobian of a discipline.
+# Check the Jacobian of a discipline
 
-In this example,
-the Jacobian of an [Discipline][gemseo.core.discipline.discipline.Discipline] is checked by derivative approximation.
+## Problem
+
+You have defined a Jacobian function in your
+[Discipline][gemseo.core.discipline.discipline.Discipline],
+and you want to check if the implementation is correct.
+
+## Solution
+
+The Jacobian function can be checked by derivative approximation,
+with the
+[check_jacobian()][gemseo.core.discipline.discipline.Discipline.check_jacobian]
+method.
+
+## Step-by-step guide
 """
 
 from __future__ import annotations
@@ -37,6 +49,7 @@ if TYPE_CHECKING:
 
 
 # %%
+# ### 1. Create the discipline
 # First,
 # we create a discipline computing
 # $f(x,y)=e^{-(1-x)^2-(1-y)^2}$
@@ -74,11 +87,15 @@ class BuggedDiscipline(Discipline):
 
 
 # %%
-# We want to check if the implemented Jacobian is correct.
-# For practical applications where Jacobians are needed, this is not a simple task.
-# GEMSEO automates such tests thanks to the [check_jacobian()][gemseo.core.discipline.discipline.Discipline.check_jacobian] method.
+# ### 2. Check the implemented Jacobian function
 #
-# ## Finite differences (default)
+# We want to check if the implemented Jacobian functions is correct.
+# For practical applications, this is not a simple task.
+# GEMSEO automates such tests thanks to the
+# [check_jacobian()][gemseo.core.discipline.discipline.Discipline.check_jacobian]
+# method.
+#
+# #### Finite differences (default)
 #
 discipline = BuggedDiscipline()
 discipline.check_jacobian(
@@ -96,10 +113,10 @@ discipline.check_jacobian(
 # mistakes in fact we can already spot a large mistake in the wrong components.
 #
 #
-# The `derr_approx` argument can be either `finite_differences`, `centered_differences` or
-# `complex_step`.
+# The `derr_approx` argument can be either `"finite_differences"`, `"centered_differences"` or
+# `"complex_step"`.
 #
-# ## Centered differences
+# #### Centered differences
 #
 discipline.check_jacobian(
     input_data={"x": array([0.0]), "y": array([1.0])},
@@ -112,7 +129,7 @@ discipline.check_jacobian(
 # %%
 # With the same step the truncation error is in this case much smaller.
 #
-# ## Complex step
+# #### Complex step
 #
 discipline.check_jacobian(
     input_data={"x": array([0.0]), "y": array([1.0])},
@@ -125,9 +142,9 @@ discipline.check_jacobian(
 # With the same step the truncation error is also smaller than finite differences.
 # This confirms again that an implementation mistake was done.
 #
-# ## Advantages and drawbacks of each method
+# ###  Advantages and drawbacks of each method
 #
-# Finite differences and complex are first-order methods, they use one
+# Finite differences and complex step are first-order methods, they use one
 # sampling point per input and the truncation error goes down linearly with the step.
 # Centered differences are second-order methods which use twice as many points as finite
 # differences and complex step. Complex step derivatives are less prone to numerical
@@ -142,7 +159,7 @@ discipline.check_jacobian(
     step=1e-10,
 )
 # %%
-# ## Automatic time step
+# #### Automatic time step
 #
 # Finite differences and centered differences steps
 # need to be chosen as a trade between truncation and numerical errors.
@@ -156,3 +173,16 @@ discipline.check_jacobian(
     plot_result=True,
     auto_set_step=True,
 )
+
+# %%
+# ## Summary
+#
+# Your implementation of the Jacobian function can be checked by GEMSEO, by using the
+# [check_jacobian()][gemseo.core.discipline.discipline.Discipline.check_jacobian]
+# method.
+#
+# Different approximation methods can be chosen, such as:
+#
+# - finite differences (default),
+# - centered differences,
+# - complex step.

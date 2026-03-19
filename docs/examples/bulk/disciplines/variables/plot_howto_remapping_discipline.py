@@ -19,11 +19,20 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Remapping the input and output variables.
+r"""# Remapping the variables
+
+## Problem
+
+In the context of a multidisciplinary study,
+a discipline may output a vector $x=(x_1,\ldots,x_10)$
+when a scalar output $a=x_1$ and a vector $b=(x_3,\ldots,x_6)$ are relevant.
+
+## Solution
 
 The [RemappingDiscipline][gemseo.disciplines.remapping.RemappingDiscipline] can be used
-to rename the input and output variables of an original discipline
-including defining a variable as a part of an original one.
+to split a variable into multiple variables.
+
+## Step-by-step guide
 """
 
 from __future__ import annotations
@@ -39,6 +48,8 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 # %%
+# ### 1. Create the discipline
+#
 # Let us consider a discipline that sums up the fruits of the market.
 # The fruits can be classified into three categories:
 # pears, Gala apples and Fuji apples.
@@ -66,11 +77,11 @@ class FruitCounting(Discipline):
         }
 
 
-# %%
-# and we can instantiate it:
 fruit_counting = FruitCounting()
-
+fruit_counting
 # %%
+# ### 2. Create a clearer discipline
+#
 # Then,
 # we create a new discipline renaming `fruits` as `pear` and `apples`
 # and `n_fruits` and `n_fruits_per_category` as `total` and `sub_total`
@@ -80,10 +91,11 @@ clearer_fruit_counting = RemappingDiscipline(
     {"pear": ("fruits", 0), "apples": ("fruits", [1, 2])},
     {"total": "n_fruits", "sub_total": "n_fruits_per_category"},
 )
-
+clearer_fruit_counting
 # %%
-# Note:
-#     [RemappingDiscipline][gemseo.disciplines.remapping.RemappingDiscipline] requires an instance of the original discipline,
+# !!! note
+#     [RemappingDiscipline][gemseo.disciplines.remapping.RemappingDiscipline]
+#     requires an instance of the original discipline,
 #     the input names mapping to the original input names
 #     and the outputs names mapping to the original output names.
 #     More precisely,
@@ -97,8 +109,7 @@ clearer_fruit_counting = RemappingDiscipline(
 #     (the `i`-th, `j`-th and `k`-th components of `y`)
 #     or an iterable of integers `range(i, j+1)`
 #     (from the `i`-th to the `j`-th components of `y`).
-
-# %%
+#
 # We can execute this discipline with the original default input values,
 # namely 1 pear, 2 Gala apples and 3 Fuji apples:
 clearer_fruit_counting.execute()
@@ -110,27 +121,22 @@ clearer_fruit_counting.execute({"pear": array([4]), "apples": array([3, 1])})
 clearer_fruit_counting.get_input_data(), clearer_fruit_counting.get_output_data()
 
 # %%
-# To be even more clear,
-# we can split `apples` into `gala` and `fuji`
-# and `sub_total` into `n_pears` and `n_apples`:
-even_clearer_fruit_counting = RemappingDiscipline(
-    clearer_fruit_counting,
-    {"pear": "pear", "gala": ("apples", 0), "fuji": ("apples", 0)},
-    {
-        "total": "total",
-        "n_pears": ("sub_total", 0),
-        "n_apples": ("sub_total", 1),
-    },
-)
-
-# %%
-# and count the number of fruits:
-even_clearer_fruit_counting.execute({
-    "pear": array([4]),
-    "gala": array([3]),
-    "fuji": array([1]),
-})
-(
-    even_clearer_fruit_counting.get_input_data(),
-    even_clearer_fruit_counting.get_output_data(),
-)
+# ## Summary
+#
+# Input and output variables can be redefined by using the
+# [RemappingDiscipline][gemseo.disciplines.remapping.RemappingDiscipline].
+#
+# An input or output name mapping looks like
+# `{"new_x": "x", "new_y": ("y", components)}`
+# where the variable `"new_x"` corresponds to the original variable `"x"`
+# and the variable `"new_y"` corresponds to some `components`
+# of the original variable `"y"`.
+# `components` can be an integer `i` (the `i`-th component of `y`),
+# a sequence of integers `[i, j, k]`
+# (the `i`-th, `j`-th and `k`-th components of `y`)
+# or an iterable of integers `range(i, j+1)`
+# (from the `i`-th to the `j`-th components of `y`).
+#
+# Unlike the variable renaming (See [Renaming variables][renaming-variables]),
+# the [RemappingDiscipline][gemseo.disciplines.remapping.RemappingDiscipline]
+# does not change the grammar of the initial discipline.

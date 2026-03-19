@@ -41,13 +41,6 @@ See the available [DOEs][available-doe-algorithms],
 [optimizers][available-optimization-algorithms], [post-processors][available-post-processing-algorithms]
 and [machine learners][algorithms-of-machine-learning] (accessible from [this page][overview] of the documentation).
 
-## Coupling a simulation software to GEMSEO
-
-See [Interfacing simulation software](interface/software_connection.md).
-
-!!! info "See Also"
-    We invite you to discover all the steps in [this example][a-from-scratch-example-on-the-sellar-problem].
-
 ## How to extend GEMSEO features?
 
 See [Extending Gemseo][extend-gemseo-features].

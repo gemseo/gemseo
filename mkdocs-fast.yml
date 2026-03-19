@@ -58,6 +58,8 @@ nav:
       - Installation: software/installation.md
       - Tutorials:
           - GEMSEO in 10 minutes: generated/examples/tutorials/basic/plot_gemseo_in_10_minutes.md
+          - Tutorial - Your first discipline: generated/examples/tutorials/basic/plot_tutorial_first_discipline.md
+          - Tutorial - Wrap an executable: generated/examples/tutorials/basic/plot_tutorial_discipline_executable.md
           - Tutorial - The design space: generated/examples/tutorials/basic/plot_tutorial_design_space.md
           - Tutorial - The Multidisciplinary Design Analysis: generated/examples/tutorials/basic/plot_tutorial_create_mda.md
           - Define an MDO problem: interface/study_analysis.md
@@ -127,18 +129,7 @@ nav:
           - Post: cheat_sheets/post.md
           - Scenario: cheat_sheets/scenario.md
           - Surrogate: cheat_sheets/surrogate.md
-      - Disciplines:
-          - Interfacing simulation software: interface/software_connection.md
-          - Create an analytic discipline: disciplines/analytic_discipline.md
-          - Create a discipline from scratch: disciplines/discipline_from_scratch.md
-          - Create an Excel discipline: interface/xls_discipline.md
-          - Automatic wrapper for executables with Graphical User Interface: interface/exe_discipline.md
-          - Interface with HPC job schedulers (SLURM, LSF, PBS, etc): interface/job_schedulers.md
-          - Create a discipline interfacing an external executable: disciplines/discipline_interfacing_executable.md
-          - Create a discipline interfacing an external executable (using GUI): interface/exe_discipline.md
-          - Disciplines examples: generated/examples/bulk/disciplines
-          - Surrogate discipline: generated/examples/bulk/surrogate
-          - Namespaces: generated/examples/bulk/namespaces
+      - Disciplines: generated/examples/bulk/disciplines
       - Design Space: generated/examples/howtos/design_space
       - Scenario:
           - Monitoring the execution of a scenario: scenario/monitoring.md
@@ -146,6 +137,7 @@ nav:
           - Study analysis: generated/examples/bulk/study_analysis
           - Scenario examples: generated/examples/howtos/scenario
           - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda
+          - Namespaces: generated/examples/bulk/namespaces
           - Optimization: generated/examples/bulk/optimization_problem
           - Multi-start optimization: generated/examples/bulk/optimizers/plot_multistart_example.md
       - Formulations: generated/examples/howtos/formulations

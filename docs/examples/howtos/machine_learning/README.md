@@ -16,4 +16,4 @@ This section illustrates the features of the [gemseo.machine_learning][gemseo.ma
 - how to assess the quality of a model,
 - how to tune a model.
 
-This package is particularly useful for creating a surrogate model, as a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] wraps a regression model built from it. However, for those who are not very comfortable with machine learning and for those who are essentially interested in the surrogate modelling, starting with [the examples][surrogate-discipline-examples] about the [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] should be more relevant.
+This package is particularly useful for creating a surrogate model, as a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] wraps a regression model built from it. However, for those who are not very comfortable with machine learning and for those who are essentially interested in the surrogate modelling, starting with [the examples][use-a-surrogate-model] about the [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] should be more relevant.

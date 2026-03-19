@@ -27,7 +27,7 @@ The high-level functions also facilitate the interfacing of GEMSEO
 with a platform or other software.
 
 To interface a simulation software with GEMSEO,
-please refer to: [Interfacing simulation software][interfacing-simulation-software].
+please refer to: [The discipline, a key concept][the-discipline-a-key-concept].
 
 See Also:
     [Extend GEMSEO features][extend-gemseo-features].

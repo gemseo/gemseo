@@ -51,10 +51,10 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
     Define an input-output discipline to interface a model.
 
     Features:
-    [analytic expressions][how-to-build-an-analytic-discipline],
-    [executable][how-to-manually-create-a-discipline-interfacing-an-external-executable],
+    [analytic expressions][use-analytic-expressions],
+    [executable][tutorial-wrap-an-executable],
     [surrogate model][surrogate-models] and
-    [much more][interfacing-simulation-software].
+    [much more][the-discipline-a-key-concept].
 
 - ### __Design space__
 
@@ -193,7 +193,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __Surrogate models__ { #overview-surrogate-models }
 
-    [:octicons-play-24: Examples][surrogate-discipline-examples]
+    [:octicons-play-24: Examples][use-a-surrogate-model]
     [:octicons-gear-24: Algorithms][surrogate-models-introduction]
 
     ---

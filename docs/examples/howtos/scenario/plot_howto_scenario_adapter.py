@@ -29,7 +29,7 @@ as just another discipline in its workflow.
 
 ## Solution
 
-You have to transform your scenario into a [Discipline][gemseo.core.discipline.Discipline],
+You have to transform your scenario into a [Discipline][gemseo.core.discipline.discipline.Discipline],
 using the
 [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
 class.
@@ -121,7 +121,7 @@ upper_scenario.to_dataset()
 #
 # You can transform an existing [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 # into a
-# [Discipline][gemseo.core.discipline.Discipline]
+# [Discipline][gemseo.core.discipline.discipline.Discipline]
 # with the
 # [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter].
 #

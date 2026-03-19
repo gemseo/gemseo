@@ -33,7 +33,7 @@ It can be interfaced with multiple workflow engines of disciplines when requeste
 
 GEMSEO must provide generic interfaces, so that it can be integrated within any MDO platform technology.
 
-- Interfaces with external workflow engines , see [Interfacing simulation software](../interface/software_connection.md).
+- Interfaces with external workflow engines , see [The discipline, a key concept][the-discipline-a-key-concept].
 - Interfaces with external optimization algorithms , and DOE methods, MDA solvers, surrogate model.
 - Interfaces with the MDO platform.
 
