@@ -4,6 +4,7 @@
 /src/gemseo.egg-info
 /htmlcov
 /sandbox
+/result_images
 
 *.pyc
 .project
