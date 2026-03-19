@@ -27,6 +27,15 @@ Instantiate
 the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline] class
 from a dictionary of the form `{output_name: expressions, ...}`.
 
+!!! note
+    The [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline]
+    requires additional dependencies.
+    Make sure to install GEMSEO with the `[all]` option:
+
+    ``` bash
+    uv pip install gemseo[all]
+    ```
+
 ## Step-by-step guide
 """
 
@@ -54,7 +63,6 @@ discipline = AnalyticDiscipline(expressions, name="f")
 
 # %%
 # !!! warning
-#
 #     This class only supports scalar input and output variables.
 #
 #
