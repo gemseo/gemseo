@@ -25,42 +25,6 @@ This allows to control the data exchanges between existing disciplines, and ther
 
 In terms of interface, you must always use the method [add_namespace_to_input][gemseo.core.discipline.discipline.Discipline.add_namespace_to_input] and [add_namespace_to_output][gemseo.core.discipline.discipline.Discipline.add_namespace_to_output] to set the namespaces to the input and output variables after defining the latter. Never prefix a variable with a namespace by any other means.
 
-This would result in the following example:
-
-``` python
->>> from gemseo import create_discipline
->>> from gemseo.core.chain import MDOChain
->>>
->>> def func_a(x=1.):
->>>     y=x+1
->>>     return y
->>>
->>> def func_b(y=1.):
->>>     z=y+1
->>>     return z
->>>
->>> a_disc = create_discipline("AutoPyDiscipline", py_func=func_a)
->>> b_disc = create_discipline("AutoPyDiscipline", py_func=func_b)
->>> print("A inputs", list(a_disc.get_input_data_names()), ", outputs",
-...    list(a_disc.output_grammar.names))
-A inputs ['x'], outputs ['y']
-
->>> chain = MDOChain(disciplines=[a_disc, b_disc])
->>> print("Chain output, z = ", chain.execute()['z'])
-Chain output, z = [3.]
-
->>> a_disc_ns = create_discipline("AutoPyDiscipline", py_func=func_a)
->>> a_disc_ns.add_namespace_to_output("y", "ns")
->>>
->>> print("A inputs", list(a_disc_ns.get_input_data_names()), ", outputs",
-...     list(a_disc_ns.output_grammar.names))
-A inputs ['x'], outputs ['ns:y']
-
->>> chain_ns = MDOChain(disciplines=[a_disc_ns, b_disc])
->>> print("Chain output with namespace, z = ", chain_ns.execute()['z'])
-Chain output with namespace, z = [2.]
-```
-
 !!! warning
     This is an experimental feature, that is currently validated for the main process classes: [MDOChain][gemseo.core.chains.chain.MDOChain], [BaseMDA][gemseo.mda.base.BaseMDA] and its subclasses, [MDOParallelChain][gemseo.core.chains.parallel_chain.MDOParallelChain] etc. Scenarios can be created with disciplines handling namespaces. The main limitation is that not all wrappers and MDO test problems are compatible with namespaces, which requires the modifications described at the end of this page. Currently, the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] and [ConstraintAggregation][gemseo.disciplines.constraint_aggregation.ConstraintAggregation] support namespaces and can be used as examples.
 
@@ -79,10 +43,3 @@ After instantiation, a namespace may be added to the discipline, which may make 
 Besides, [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar] has the attributes [to_namespaced][gemseo.core.grammars.base_grammar.BaseGrammar.to_namespaced] and [from_namespaced][gemseo.core.grammars.base_grammar.BaseGrammar.from_namespaced] that map the names with and without namespace prefixes.
 
 Finally, [Discipline.io.update_output_data][gemseo.core.discipline.io.IO.update_output_data] allows to pass variables names without namespace prefixes. This allows to adapt wrappers to support namespaces with only minor modifications.
-
-For instance, the `AutoPyDiscipline._run()` method is as follows, and supports namespaces:
-
-``` python
-def _run(self, input_data):
-    return self.py_func(**input_data)
-```

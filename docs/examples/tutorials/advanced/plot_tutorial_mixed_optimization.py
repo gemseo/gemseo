@@ -265,7 +265,7 @@ design_space_outer_scenario
 # and we set the same objective function.
 #
 outer_scenario = MDOScenario(
-    [adapted_inner_scenario],
+    (adapted_inner_scenario,),
     design_space_outer_scenario,
     formulation_settings=DisciplinaryOpt_Settings(),
 )

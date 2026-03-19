@@ -20,11 +20,20 @@
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
-# Compute the Jacobian of a discipline analytically.
+# Compute the Jacobian of a discipline
 
-In this example,
-we will compute the Jacobians of some outputs of an [Discipline][gemseo.core.discipline.discipline.Discipline]
-with respect to some inputs, based on its analytical derivatives.
+## Problem
+
+You want to compute the Jacobian of your discipline.
+
+## Solution
+
+You can compute the derivatives of some outputs of a
+[Discipline][gemseo.core.discipline.discipline.Discipline]
+with respect to some inputs with the method
+[linearize()][gemseo.core.discipline.discipline.Discipline.linearize].
+
+## Step-by-step guide
 """
 
 from __future__ import annotations
@@ -34,38 +43,29 @@ from numpy import array
 from gemseo.disciplines.analytic import AnalyticDiscipline
 
 # %%
-# First,
-# we create a discipline, e.g. an [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline]:
+# ### 1. Create a discipline
 discipline = AnalyticDiscipline({"y": "a**2+b", "z": "a**3+b**2"})
 
 # %%
-# We can execute it with its default input values:
-discipline.execute()
-discipline.local_data
-
-# %%
-# or with custom ones:
-discipline.execute({"a": array([1.0])})
-discipline.local_data
-
-# %%
-# Then,
-# we use the method [linearize()][gemseo.core.discipline.discipline.Discipline.linearize] to compute the derivatives:
-jacobian_data = discipline.linearize()
-jacobian_data
-
-# %%
-# There is no Jacobian data
-# because we need to set the input variables
+# ### 2. Define the differentiated inputs and ouputs
+#
+# You need to set the input variables
 # with respect to which to compute the Jacobian of the output ones.
 # For that,
-# we use the method [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].
-# We also need to set these output variables:
+# use the method [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs].
+# You also need to set these output variables:
 # with the method [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs].
 # For instance,
-# we may want to only compute the derivative of `"z"` with respect to `"a"`:
+# you may want to only compute the derivative of `"z"` with respect to `"a"`:
 discipline.add_differentiated_inputs(["a"])
 discipline.add_differentiated_outputs(["z"])
+
+# %%
+# ### 3. Compute the derivatives
+#
+# Use the method
+# [linearize()][gemseo.core.discipline.discipline.Discipline.linearize]
+# to compute the derivatives:
 jacobian_data = discipline.linearize()
 jacobian_data
 
@@ -73,12 +73,29 @@ jacobian_data
 # By default,
 # GEMSEO uses [Discipline.default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data] as input data
 # for which to compute the Jacobian on.
-# We can change them with `input_data`:
+# `input_data` can be changed:
 jacobian_data = discipline.linearize({"a": array([1.0])})
 jacobian_data
 
 # %%
 # We can also force the discipline to compute
-# the derivatives of all the outputs with respect to all the inputs:
+# the derivatives of all the outputs with respect to all the inputs.
 jacobian_data = discipline.linearize(compute_all_jacobians=True)
 jacobian_data
+
+# %%
+# ## Summary
+#
+# First, you need to set the input variables
+# with respect to which to compute the Jacobian of the output ones, with the
+# [add_differentiated_inputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_inputs]
+# and
+# [add_differentiated_outputs()][gemseo.core.discipline.discipline.Discipline.add_differentiated_outputs]
+# methods.
+# Then, you can compute the derivatives of your discipline with the
+# [linearize()][gemseo.core.discipline.discipline.Discipline.linearize] method.
+#
+# ## One step further
+#
+# You can learn how to change the way derivatives are computed,
+# by following [this HOW-TO][change-the-differentiation-settings].

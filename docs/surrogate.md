@@ -22,4 +22,4 @@ When a [Discipline][gemseo.core.discipline.discipline.Discipline] is costly to e
 !!! info "See Also"
 
     - The ["machine learning" section](machine_learning/machine_learning_overview.md) of the user guide.
-    - The [examples][surrogate-discipline-examples].
+    - The [examples][use-a-surrogate-model].

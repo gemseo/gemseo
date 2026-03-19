@@ -29,6 +29,21 @@ search:
 
 ### What is a discipline?
 
+A wrapper, or library wrapper, is a piece of software which translates
+the existing API of an existing program or a library, into a
+compatible one. Each program is encapsulated within using a dedicated
+interface. GEMSEO defines the standardized interface in the
+[Discipline][gemseo.core.discipline.discipline.Discipline] interface,
+to define input data,
+output data and an execution of the integrated software. Thanks to it,
+GEMSEO can treat the integrated software independently of their own
+implementation and of their own conventions to describe the inputs and
+outputs (file formats for instance).
+
+The next figure displays the concept of wrapper in workflow management.
+
+![The wrapper concept](figs/wrapper.png)
+
 A discipline is a set of calculations that:
 
 - produces a dictionary of arrays as outputs
@@ -43,18 +58,39 @@ Programmatically speaking, disciplines are implemented in GEMSEO through the [Di
 - the [output_grammar][gemseo.core.discipline.discipline.Discipline.output_grammar] attribute: the set of rules that defines valid output data,
 - the `Discipline._run()` method: the method to compute the output data from the input data.
 
-#### Grammar
+#### Input and output description: grammars
 
 The input and output specifications are defined in a grammar, through the [input_grammar][gemseo.core.discipline.discipline.Discipline.input_grammar] and [output_grammar][gemseo.core.discipline.discipline.Discipline.output_grammar] attributes, which can be either a [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar] or a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] (default grammar), or your own which derives from the [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar] class.
 
+- [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar]: it manipulates the list of required data names,
+  and a list of the associated types (string, float, numpy.ndarray or
+  any type provided). There is also a dictionary of default values that
+  adds default values to the data if they are not provided.
+
+- [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar]: a JSON-based grammar.
+  You must provide a JSON file that describes the validity of the data.
+  This is a much more advanced and much more powerful description. JSON
+  is a web standard supported by many languages: [JSON Schema](https://json-schema.org/tools?query=&sortBy=name&sortOrder=ascending&groupBy=languages&licenses=&languages=&drafts=&toolingTypes=&environments=&showObsolete=false).
+  Please read [Understanding JSON Schema](http://spacetelescope.github.io/understanding-json-schema/index.html)
+  for details on JSON schema. The input and output schemas for the
+  disciplines must be files in the same directory as the Python module
+  of the discipline, with a naming convention
+  `MyDisciplineName_input.json` and `MyDisciplineName_output.json`.
+
 !!! note
-    The *grammar* is a very powerful and key concept. There are multiple ways of creating grammars in GEMSEO. The preferred one for integrating simulation processes is the use of a `JSON schema`, but is not detailed here for the sake of simplicity. For more explanations about grammars, see [Interfacing simulation software](../interface/software_connection.md).
+    The *grammar* is a very powerful and key concept.
+    There are multiple ways of creating grammars in GEMSEO.
+    The preferred one for integrating simulation processes is the use of
+    a `Pydantic` model,
+    but is not detailed here for the sake of simplicity.
 
 !!! warning
     **All the inputs and outputs names of the disciplines in a scenario shall be consistent**.
 
-    -   GEMSEO assumes that the data are tagged by their names with a global convention in the whole process.
-    -   What two disciplines call "X" shall be the same "X". The coupling variables for instance, are detected thanks to these conventions.
+    - GEMSEO assumes that the data are tagged by their names
+    with a global convention in the whole process.
+    - What two disciplines call "X" shall be the same "X".
+    The coupling variables for instance, are detected thanks to these conventions.
 
 #### Inheritance
 
@@ -78,15 +114,8 @@ Once a sub-class of [Discipline][gemseo.core.discipline.discipline.Discipline] i
 
 Furthermore, many disciplines inheriting from [Discipline][gemseo.core.discipline.discipline.Discipline] are already implemented in GEMSEO. Use the [get_available_disciplines][gemseo.get_available_disciplines] high-level function to discover them:
 
-``` python
-from gemseo import get_available_disciplines
-
-get_available_disciplines()
-> ['Aerodynamics', 'AnalyticDiscipline', 'ArrayBasedFunctionDiscipline', 'AutoPyDiscipline', 'Concatenater', 'ConstraintAggregation', 'DataDrivenScalableDiscipline', 'DensityFilter', 'DiscFromExe', 'FilteringDiscipline', 'FiniteElementAnalysis', 'IshigamiDiscipline', 'JobSchedulerDisciplineWrapper', 'LSF', 'LinearCombination', 'LinearDiscipline', 'LinearLinkDiscipline', 'MDOAdditiveChain', 'MDOChain', 'MDOInitializationChain', 'MDOObjectiveScenarioAdapter', 'MDOParallelChain', 'MDOScenarioAdapter', 'MDOWarmStartedChain', 'MainDiscipline', 'MaterialModelInterpolation', 'Mission', 'ODEDiscipline', 'OscillatorDiscipline', 'PropaneComb1', 'PropaneComb2', 'PropaneComb3', 'PropaneReaction', 'RemappingDiscipline', 'RetryDiscipline', 'RosenMF', 'SLURM', 'ScalableDiscipline', 'Sellar1', 'Sellar2', 'SellarSystem', 'SobieskiAerodynamics', 'SobieskiAerodynamicsSG', 'SobieskiChain', 'SobieskiMDAGaussSeidel', 'SobieskiMDAJacobi', 'SobieskiMission', 'SobieskiMissionSG', 'SobieskiPropulsion', 'SobieskiPropulsionSG', 'SobieskiStructure', 'SobieskiStructureSG', 'Splitter', 'SpringODEDiscipline', 'SpringsDynamicsDiscipline', 'Structure', 'SurrogateDiscipline', 'TaylorDiscipline', 'VolumeFraction', 'WingWeightDiscipline', 'XLSDiscipline']
-```
-
 !!! note
-    These available [Discipline][gemseo.core.discipline.discipline.Discipline] can be classified into different categories:
+    The available [Discipline][gemseo.core.discipline.discipline.Discipline] can be classified into different categories:
 
     -   classes implementing MDO problem disciplines:
 

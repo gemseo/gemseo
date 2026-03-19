@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import runpy
 from pathlib import Path
-from re import findall
 from shutil import copytree
 
 import pytest
@@ -24,8 +23,7 @@ import pytest
 EXAMPLE_PATHS = [
     path
     for path in Path(__file__, "..", "..", "docs", "examples").resolve().rglob("*.py")
-    if (path.parent / "README.md").is_file()
-    and not findall(r"(run|post_process_|save_from_)\w*\.py$", path.name)
+    if path.name.startswith("plot_")
 ]
 
 

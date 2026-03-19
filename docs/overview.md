@@ -82,7 +82,7 @@ made on:
 
 ### Advanced techniques in MDO
 
-- Create simple analytic disciplines using symbolic calculation [[Read more]](disciplines/analytic_discipline.md)
+- Create simple analytic disciplines using symbolic calculation [[Read more]][use-analytic-expressions]
 - Use a cheap scalable model instead of an costly discipline in order to compare different formulation
   performances [[Read more]](scalable_models/original_paper.md)
 - Monitor the execution of a scenario using logs, [XDSM][xdsm-visualization] diagram or an
@@ -91,7 +91,7 @@ made on:
 ### Development
 
 - Interface simulation software with GEMSEO using JSON schema based grammars for inputs and output description and a
-  wrapping class for execution [[Read more]](interface/software_connection.md)
+  wrapping class for execution [[Read more]][the-discipline-a-key-concept]
 
 ### Plug-in options
 

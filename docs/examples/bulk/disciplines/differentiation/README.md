@@ -8,6 +8,4 @@
 -->
 
 <!-- markdownlint-disable-next-line MD041 -->
-## Fundamentals of disciplines
-
-A discipline computes output data from input data.
+## Discipline differentiation
