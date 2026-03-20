@@ -205,6 +205,26 @@
     "naming": {
       "type": "string",
       "description": "The way of naming the database files. When the adapter will be executed in parallel, this method shall be set to `UUID` because this method is multiprocess-safe."
+    },
+    "use_mda1": {
+      "type": "boolean",
+      "description": "Whether to use the first MDA. WARNING: this option may only lead to a converging formulation if you handle the couplings in the sub-optimizations (i.e. in a distributed  MDF fashion)."
+    },
+    "use_mda2": {
+      "type": "boolean",
+      "description": "Whether to use the second MDA."
+    },
+    "mda1_instance": {
+      "type": "null",
+      "description": "The first MDA. If `None` and if a first MDA is required, the formulation creates it. This MDA can also be an instance of `Discipline` that computes the strong couplings."
+    },
+    "mda2_instance": {
+      "type": "null",
+      "description": "The second MDA. If `None`, the formulation creates it. This MDA can also be an instance of `Discipline` that computes outputs (objective and constraints) for the system level optimizer."
+    },
+    "disciplines_as_sub_scenario": {
+      "type": "array",
+      "description": "The disciplines to be treated as sub-scenarios and not as disciplines. Typically used when a discipline wraps a sub-optimization process that is not using a GEMSEO scenario. If empty, consider only the sub-optimization processes built from `disciplines`."
     }
   }
 }
