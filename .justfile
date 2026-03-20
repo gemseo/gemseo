@@ -67,10 +67,10 @@ update:
     uv lock --upgrade
     uv run --only-group check prek autoupdate
 
-# Ensure project virtualenv is up to date
+# Ensure project virtualenv is up to date and has the base dependencies
 [group('lifecycle')]
-install:
-    uv sync
+install *args:
+    uv sync --python {{python}} --group check --extra all {{args}}
 
 # Remove temporary files
 [group('lifecycle')]
