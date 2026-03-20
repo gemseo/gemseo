@@ -21,7 +21,9 @@ from typing import TYPE_CHECKING
 from pydantic import Field
 from pydantic import model_validator
 
+from gemseo.core.discipline.discipline import Discipline
 from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.mda.base import BaseMDA
 from gemseo.utils.name_generator import NameGenerator
 
 if TYPE_CHECKING:
@@ -96,6 +98,56 @@ to an HDF5 file after each execution.""",
         description="""The way of naming the database files.
 When the adapter will be executed in parallel, this method shall be set
 to `UUID` because this method is multiprocess-safe.""",
+    )
+
+    use_mda1: bool = Field(
+        default=True,
+        description=(
+            """Whether to use the first MDA.
+
+WARNING: this option may only lead to a converging formulation
+if you handle the couplings in the sub-optimizations
+(i.e. in a distributed  MDF fashion)."""
+        ),
+    )
+
+    use_mda2: bool = Field(
+        default=True, description="""Whether to use the second MDA."""
+    )
+
+    mda1_instance: BaseMDA | Discipline | None = Field(
+        default=None,
+        description=(
+            """The first MDA.
+
+If `None` and if a first MDA is required,
+the formulation creates it.
+This MDA can also be an instance of `Discipline` that computes the strong
+couplings."""
+        ),
+    )
+
+    mda2_instance: BaseMDA | Discipline | None = Field(
+        default=None,
+        description=(
+            """The second MDA.
+
+If `None`, the formulation creates it.
+This MDA can also be an instance of `Discipline` that computes
+outputs (objective and constraints) for the system level optimizer."""
+        ),
+    )
+
+    disciplines_as_sub_scenario: list[Discipline] | Discipline = Field(
+        default_factory=list,
+        description=(
+            """The disciplines to be treated as sub-scenarios and not as disciplines.
+
+Typically used when a discipline wraps a sub-optimization process
+that is not using a GEMSEO scenario.
+If empty, consider only the sub-optimization processes built from
+`disciplines`."""
+        ),
     )
 
     @model_validator(mode="after")

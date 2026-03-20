@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import logging
 import re
+from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -28,11 +29,14 @@ import pytest
 from gemseo import create_discipline
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
 from gemseo.core.discipline import Discipline
+from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_bcd import BiLevelBCD
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
@@ -45,6 +49,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.name_generator import NameGenerator
@@ -55,6 +60,7 @@ from gemseo.utils.testing.bilevel_test_helper import (
 )
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_bilevel_scenario
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_sub_scenarios
+from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -681,3 +687,342 @@ def test_constraint_level_policy(
         if apply_to_sub_level is None
         else apply_to_sub_level
     )
+
+
+def test_execute_custom_mdas(generate_sobieski_bilevel_scenario, caplog):
+    """Test the bilevel execution when MDA instances are provided directly.
+
+    Here, we test that a scenario with custom MDAs gives the same optimal value than
+    a scenario with automatically built MDAs."""
+    scenario = generate_sobieski_bilevel_scenario(
+        apply_constraints_to_sub_scenarios=True,
+        apply_constraints_to_system=False,
+        use_mda1=False,
+    )
+
+    for i in range(1, 4):
+        scenario.add_constraint(["g_" + str(i)], MDOFunction.ConstraintType.INEQ)
+
+    scenario.execute(NLOPT_COBYLA_Settings(max_iter=1))
+
+    mda1 = SobieskiMDAGaussSeidel()
+    mda2 = SobieskiMDAGaussSeidel()
+
+    scenario2 = generate_sobieski_bilevel_scenario(
+        apply_constraints_to_sub_scenarios=True,
+        apply_constraints_to_system=False,
+        mda1_instance=mda1,
+        mda2_instance=mda2,
+    )
+
+    for i in range(1, 4):
+        scenario2.add_constraint(["g_" + str(i)], MDOFunction.ConstraintType.INEQ)
+
+    scenario2.execute(NLOPT_COBYLA_Settings(max_iter=1))
+
+    assert (
+        scenario.optimization_result.x_opt == scenario2.optimization_result.x_opt
+    ).all()
+    assert "Using the provided MDA1 instance" in caplog.text
+    assert "Using the provided MDA2 instance" in caplog.text
+
+
+def test_bilevel_no_mda2():
+    """Test that the MDA2 can be deactivated in the bi-level formulation.
+
+    In this BiLevel formulation, the user has the possibility to inject a custom MDA1
+    (and even an object inheriting from Discipline). The MDA2 is deactivated, and it is
+    checked that the adapters output their top-level output variables. This test checks
+    that, as well as the impacts on the grammars of the adapters.
+    """
+    disc_expressions = {
+        "disc_1": (["x_1"], ["a"]),
+        "disc_2": (["a", "x_1", "x_2"], ["b", "obj"]),
+    }
+    discipline_1, discipline_2 = create_disciplines_from_desc(disc_expressions)
+
+    system_design_space = DesignSpace()
+    system_design_space.add_variable("x_1")
+
+    sub_design_space_1 = DesignSpace()
+    sub_design_space_1.add_variable("x_2")
+    sub_scenario_1 = MDOScenario(
+        [discipline_2],
+        sub_design_space_1,
+        formulation_settings=DisciplinaryOpt_Settings(),
+    )
+    sub_scenario_1.add_objective("obj")
+
+    scenario = MDOScenario(
+        [sub_scenario_1],
+        system_design_space,
+        formulation_settings=BiLevel_Settings(
+            use_mda1=True,
+            use_mda2=False,
+            mda1_instance=discipline_1,
+        ),
+    )
+    scenario.add_objective("obj")
+
+    assert "a" in scenario.formulation.chain.disciplines[0].io.output_grammar.names
+    assert "a" in scenario.formulation.chain.disciplines[1].io.input_grammar.names
+
+    # use_mda2 is set to False -> all the top_level outputs are in the adapter outputs
+    assert "obj" in scenario.formulation.chain.disciplines[1].io.output_grammar.names
+    assert "b" in scenario.formulation.chain.disciplines[1].io.output_grammar.names
+
+
+def test_bilevel_no_mda1(generate_sobieski_bilevel_scenario, caplog):
+    """Test that the MDA1 can be deactivated in the bi-level formulation."""
+    scenario = generate_sobieski_bilevel_scenario(
+        apply_constraints_to_sub_scenarios=True,
+        apply_constraints_to_system=False,
+        use_mda1=False,
+    )
+    assert scenario.formulation.mda1 is None
+    assert (
+        "The first MDA has been deactivated in the Bilevel formulation" in caplog.text
+    )
+
+
+def test_bilevel_custom_mda1_and_custom_mda2():
+    """Test that custom MDAs can be defined in the bi-level formulation.
+
+    In this BiLevel formulation, the user has the possibility to inject custom MDAs
+    (and even an object inheriting from MDODiscipline). This test has not physical
+    significance, and only checks the correct set-up of the grammar adapter.
+    """
+    disc_expressions = {
+        "disc_1": (["x_1"], ["a"]),
+        "disc_2": (["a", "x_2"], ["b"]),
+        "disc_3": (["a", "b", "x_1", "x_2"], ["obj"]),
+    }
+
+    discipline_1, discipline_2, discipline_3 = create_disciplines_from_desc(
+        disc_expressions
+    )
+
+    system_design_space = DesignSpace()
+    system_design_space.add_variable("x_1")
+
+    sub_design_space_1 = DesignSpace()
+    sub_design_space_1.add_variable("x_2")
+    sub_scenario_1 = MDOScenario(
+        [discipline_2, discipline_3],
+        sub_design_space_1,
+        formulation_settings=DisciplinaryOpt_Settings(),
+    )
+    sub_scenario_1.add_objective("obj")
+
+    scenario = MDOScenario(
+        [sub_scenario_1],
+        system_design_space,
+        formulation_settings=BiLevel_Settings(
+            use_mda1=True,
+            use_mda2=True,
+            mda1_instance=discipline_1,
+            mda2_instance=discipline_3,
+        ),
+    )
+    scenario.add_objective("obj")
+
+    assert "a" in scenario.formulation.chain.disciplines[0].io.output_grammar.names
+    assert "a" in scenario.formulation.chain.disciplines[1].io.input_grammar.names
+
+    assert "b" in scenario.formulation.chain.disciplines[1].io.output_grammar.names
+    assert "b" in scenario.formulation.chain.disciplines[2].io.input_grammar.names
+
+    assert "obj" in scenario.formulation.chain.disciplines[2].io.output_grammar.names
+
+
+def test_bilevel_custom_mda1_with_mda2():
+    """Test that a custom MDA1 can be defined in the bi-level formulation.
+
+    In this BiLevel formulation, the user has the possibility to inject a custom MDA
+    (and even an object inheriting from MDODiscipline). This test has not physical
+    significance, and only checks the correct set-up of the grammar adapter.
+    """
+    disc_expression = {
+        "discipline_1": (["x_1"], ["a"]),
+        "discipline_2": (["a", "x_2"], ["b"]),
+        "discipline_3": (["a", "x_1", "x_2", "b"], ["obj"]),
+    }
+
+    discipline_1, discipline_2, discipline_3 = create_disciplines_from_desc(
+        disc_expression
+    )
+
+    system_design_space = DesignSpace()
+    system_design_space.add_variable("x_1")
+
+    sub_design_space_1 = DesignSpace()
+    sub_design_space_1.add_variable("x_2")
+    sub_scenario_1 = MDOScenario(
+        [discipline_2, discipline_3],
+        sub_design_space_1,
+        formulation_settings=DisciplinaryOpt_Settings(),
+    )
+    sub_scenario_1.add_objective("obj")
+
+    scenario = MDOScenario(
+        [sub_scenario_1],
+        system_design_space,
+        formulation_settings=BiLevel_Settings(
+            use_mda1=True,
+            use_mda2=True,
+            mda1_instance=discipline_1,
+        ),
+    )
+    scenario.add_objective("obj")
+
+    assert "a" in scenario.formulation.chain.disciplines[0].io.output_grammar.names
+    assert "a" in scenario.formulation.chain.disciplines[1].io.input_grammar.names
+    assert "b" in scenario.formulation.chain.disciplines[1].io.output_grammar.names
+    assert "obj" in scenario.formulation.chain.disciplines[2].io.output_grammar.names
+
+
+def test_bilevel_warm_start_disciplines_as_subscenario():
+    """Test the warm start of the BiLevel chain for disciplines as sub scenarios."""
+    ds = SobieskiProblem().design_space
+    aerodynamics = SobieskiAerodynamics()
+    struct = SobieskiStructure()
+    mission = SobieskiMission()
+
+    sc_str = MDOScenario(
+        [struct],
+        deepcopy(ds).filter("x_1"),
+        name="StructureScenario",
+        formulation_settings=DisciplinaryOpt_Settings(),
+    )
+    sc_str.add_objective("y_11", minimize=False)
+
+    # Discipline to be used as sub scenario
+    # THIS DISCIPLINE HAS NO REAL MEANING, IT ONLY MOCKS OUTPUTS AS A FUNCTION OF INPUTS
+    aero_disc_scenario = AnalyticDiscipline({
+        "y_23": "25000.*y_32",
+        "y_21": "50000.*y_32",
+        "y_24": "4.5*x_2",
+        "x_2": "y_32",
+    })
+
+    sub_scenarios = [sc_str]
+    sub_disciplines = [*sub_scenarios, mission, aerodynamics]
+    for sc in sub_scenarios:
+        sc.set_algorithm(SLSQP_Settings(max_iter=5))
+
+    ds = SobieskiProblem().design_space
+    sc_system = MDOScenario(
+        sub_disciplines,
+        ds.filter(["x_shared", "y_14"]),
+        formulation_settings=BiLevel_Settings(
+            disciplines_as_sub_scenario=[aero_disc_scenario],
+        ),
+    )
+    sc_system.add_objective("y_4", minimize=False)
+
+    sc_system.formulation.chain.set_cache(Discipline.CacheType.MEMORY_FULL)
+    bilevel_chain_cache = sc_system.formulation.chain.cache
+    sc_system.formulation.chain.disciplines[0].set_cache(
+        Discipline.CacheType.MEMORY_FULL
+    )
+    mda1_cache = sc_system.formulation.chain.disciplines[0].cache
+
+    sc_system.formulation._disciplines_as_sub_scenario[0].set_cache(
+        Discipline.CacheType.MEMORY_FULL
+    )
+    disciplines_as_sub_scenario_cache = (
+        sc_system.formulation._disciplines_as_sub_scenario[0].cache
+    )
+
+    sc_system.execute(NLOPT_COBYLA_Settings(max_iter=3))
+    mda1_inputs = [entry.inputs for entry in mda1_cache]
+    chain_outputs = [entry.outputs for entry in bilevel_chain_cache]
+    disciplines_as_sub_scenario_inputs = [
+        entry.inputs for entry in disciplines_as_sub_scenario_cache
+    ]
+
+    assert disciplines_as_sub_scenario_inputs[1]["x_2"] == chain_outputs[0]["x_2"]
+    assert mda1_inputs[1]["y_21"] == chain_outputs[0]["y_21"]
+    assert (mda1_inputs[1]["y_12"] == chain_outputs[0]["y_12"]).all()
+    assert mda1_inputs[2]["y_21"] == chain_outputs[1]["y_21"]
+    assert (mda1_inputs[2]["y_12"] == chain_outputs[1]["y_12"]).all()
+
+
+def mock_aero_scenario(x_shared, y_12, y_32):
+    """A function that mocks an aerodynamic scenario.
+
+    The computation below makes NO physical sense. It is intended to test the storage
+    of the local variables of disciplines as sub-scenarios.
+    """
+    x_2 = y_32 * 2 + x_shared[0] + y_12[0]
+    return x_2  # noqa: RET504
+
+
+def test_optimal_local_design_history_disciplines_as_sub_scenario():
+    """Test the database contains the optimal values of the local design variables.
+
+    In particular, we test the case in which there are disciplines used as
+    sub-scenarios.
+    """
+    structure, _, propulsion = create_sobieski_sub_scenarios()
+    structure.set_algorithm(SLSQP_Settings(max_iter=5))
+    propulsion.set_algorithm(SLSQP_Settings(max_iter=5))
+    aerodynamic_sub_scenario = AutoPyDiscipline(py_func=mock_aero_scenario)
+
+    system_scenario = MDOScenario(
+        [structure, propulsion, SobieskiAerodynamics(), SobieskiMission()],
+        SobieskiProblem().design_space.filter(["x_shared", "y_14"]),
+        formulation_settings=BiLevel_Settings(
+            disciplines_as_sub_scenario=[aerodynamic_sub_scenario],
+        ),
+    )
+    system_scenario.add_objective("y_4", minimize=False)
+
+    system_scenario.execute(NLOPT_COBYLA_Settings(max_iter=1))
+    last_item = system_scenario.formulation.problem.database.last_item
+    assert set(last_item) == {"x_3", "x_1", "-y_4", "x_2"}
+    x_2 = last_item["x_2"]
+    system_scenario.execute(NLOPT_COBYLA_Settings(max_iter=2))
+    last_item = system_scenario.formulation.problem.database.last_item
+    assert last_item["x_2"] != x_2
+
+
+def test_custom_mda2_with_mda1(generate_sobieski_bilevel_scenario, caplog):
+    """Test the bilevel scenario with a custom MDA2 and a non-custom MDA1."""
+    disc_expression = {
+        "discipline_1": (["x_1"], ["a"]),
+        "discipline_2": (["a", "x_2"], ["b", "x_1"]),
+        "discipline_3": (["a", "x_1", "x_2", "b"], ["obj"]),
+    }
+
+    discipline_1, discipline_2, discipline_3 = create_disciplines_from_desc(
+        disc_expression
+    )
+
+    system_design_space = DesignSpace()
+    system_design_space.add_variable("x_1")
+
+    sub_design_space_1 = DesignSpace()
+    sub_design_space_1.add_variable("x_2")
+    sub_scenario_1 = MDOScenario(
+        [discipline_1, discipline_2, discipline_3],
+        sub_design_space_1,
+        formulation_settings=DisciplinaryOpt_Settings(),
+    )
+    sub_scenario_1.add_objective("obj")
+
+    scenario = MDOScenario(
+        [sub_scenario_1],
+        system_design_space,
+        formulation_settings=BiLevel_Settings(
+            use_mda1=True,
+            use_mda2=True,
+            mda2_instance=discipline_3,
+        ),
+    )
+    scenario.add_objective("obj")
+
+    assert "x_1" in scenario.formulation.chain.disciplines[0].io.input_grammar.names
+    assert "x_1" in scenario.formulation.chain.disciplines[1].io.output_grammar.names
+    assert "b" in scenario.formulation.chain.disciplines[1].io.output_grammar.names
+    assert "obj" in scenario.formulation.chain.disciplines[2].io.output_grammar.names

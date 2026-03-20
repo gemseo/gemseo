@@ -32,7 +32,7 @@ from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.formulations.base_mdo import BaseMDOFormulation
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
-from gemseo.mda.base_settings import BaseMDASettings
+from gemseo.mda.base import BaseMDA
 from gemseo.mda.factory import MDA_FACTORY
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
@@ -41,11 +41,11 @@ from gemseo.utils.discipline import get_sub_disciplines
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Sequence
 
     from gemseo.algos.database import DatabaseKeyType
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammars.json_grammar import JSONGrammar
-    from gemseo.mda.base import BaseMDA
     from gemseo.scenarios.mdo import MDOScenario
     from gemseo.typing import StrKeyMapping
 
@@ -73,6 +73,8 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     [MDA1_RESIDUAL_NAMESPACE][gemseo.formulations.bilevel.BiLevel.MDA1_RESIDUAL_NAMESPACE]
     and
     [MDA2_RESIDUAL_NAMESPACE][gemseo.formulations.bilevel.BiLevel.MDA2_RESIDUAL_NAMESPACE].
+
+    Both MDAs are optional.
     """
 
     DEFAULT_SCENARIO_RESULT_CLASS_NAME: ClassVar[str] = BiLevelScenarioResult.__name__
@@ -96,6 +98,9 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     coupling_structure: CouplingStructure
     """The coupling structure between the involved disciplines."""
 
+    _disciplines_as_sub_scenario: Sequence[Discipline]
+    """The disciplines to be treated as sub-scenarios and not as disciplines."""
+
     _scenario_adapters: list[MDOScenarioAdapter]
     """The adapters of the optimization sub-scenarios."""
 
@@ -109,6 +114,15 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     """The second MDA that solves the couplings after sub-scenarios."""
 
     def _create_multidisciplinary_process(self) -> None:
+        if not self._settings.use_mda1:
+            LOGGER.warning(
+                "The first MDA has been deactivated in the Bilevel formulation. "
+                "This may lead to premature convergence or "
+                "an inconsistent solution. This setting should be "
+                "used only when the couplings are handled in "
+                "the sub-scenarios."
+            )
+        self._disciplines_as_sub_scenario = self._settings.disciplines_as_sub_scenario
         self._scenario_adapters = []
         self.coupling_structure = CouplingStructure(
             get_sub_disciplines(self.disciplines)
@@ -142,9 +156,9 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         return self._mda2
 
     @property
-    def scenario_adapters(self) -> list[MDOScenarioAdapter]:
+    def scenario_adapters(self) -> list[MDOScenarioAdapter | Discipline]:
         """All the adapters that wrap sub-scenarios."""
-        return self._scenario_adapters
+        return self._scenario_adapters + self._settings.disciplines_as_sub_scenario
 
     def _create_scenario_adapters(
         self,
@@ -185,7 +199,16 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         top_disc = scenario.formulation.get_top_level_disciplines()
         top_outputs = [output for disc in top_disc for output in disc.io.output_grammar]
         sc_out_coupl = list(set(top_outputs) & set(couplings + mda2_inputs))
-        return sc_out_coupl + scenario.formulation.design_space.variable_names
+        adapter_outputs = (
+            sc_out_coupl + scenario.formulation.design_space.variable_names
+        )
+        if not self._mda2:
+            top_disc = scenario.formulation.get_top_level_disciplines()
+            top_outputs = [
+                outpt for disc in top_disc for outpt in disc.io.output_grammar.names
+            ]
+            adapter_outputs += top_outputs
+        return adapter_outputs
 
     def _compute_adapter_inputs(
         self,
@@ -287,33 +310,38 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             and the second MDA.
         """
         mda1 = None
+        mda2 = None
         strongly_coupled_disciplines = (
             self.coupling_structure.strongly_coupled_disciplines
         )
-        main_mda_settings = self._settings.main_mda_settings
-        if isinstance(main_mda_settings, BaseMDASettings):
-            main_mda_name = main_mda_settings.target_class_name
-        else:
-            main_mda_name = self._settings.main_mda_name
-        if len(strongly_coupled_disciplines) > 0:
-            mda1 = MDA_FACTORY.create(
-                main_mda_name,
-                strongly_coupled_disciplines,
-                settings=main_mda_settings,
-            )
-            mda1.settings.warm_start = True
-        else:
-            LOGGER.warning(
-                "No strongly coupled disciplines detected, "
-                "MDA1 is disabled in the BiLevel formulation"
-            )
 
-        mda2 = MDA_FACTORY.create(
-            main_mda_name,
-            get_sub_disciplines(self.disciplines),
-            settings=main_mda_settings,
-        )
-        mda2.settings.warm_start = False
+        if self._settings.use_mda1:
+            if (mda1 := self._settings.mda1_instance) is None:
+                if len(strongly_coupled_disciplines) > 0:
+                    mda1 = MDA_FACTORY.create(
+                        self._settings.main_mda_settings.target_class_name,
+                        strongly_coupled_disciplines,
+                        settings=self._settings.main_mda_settings,
+                    )
+                    mda1.settings.warm_start = True
+                else:
+                    LOGGER.warning(
+                        "No strongly coupled disciplines detected, "
+                        "MDA1 is disabled in the BiLevel formulation"
+                    )
+            else:
+                LOGGER.info("Using the provided MDA1 instance.")
+
+        if self._settings.use_mda2:
+            if (mda2 := self._settings.mda2_instance) is None:
+                mda2 = MDA_FACTORY.create(
+                    self._settings.main_mda_settings.target_class_name,
+                    get_sub_disciplines(self.disciplines),
+                    settings=self._settings.main_mda_settings,
+                )
+                mda2.settings.warm_start = False
+            else:
+                LOGGER.info("Using the provided MDA2 instance.")
 
         return mda1, mda2
 
@@ -391,6 +419,9 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
     def _remove_couplings_from_ds(self) -> None:
         """Removes the coupling variables from the design space."""
+        if not isinstance(self._mda2, BaseMDA):
+            return
+
         if hasattr(self._mda2.settings, "coupling_structure"):
             # Otherwise, the MDA2 may be a user provided MDA
             # Which manages the couplings internally
@@ -572,3 +603,16 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 ).items()
             },
         )
+
+        if self._settings.disciplines_as_sub_scenario:
+            self.problem.database.store(
+                x_vect,
+                {
+                    k: v
+                    for discipline in self._settings.disciplines_as_sub_scenario
+                    # TODO: replace local_data with output_data after the local_data
+                    #  splitting.
+                    for k, v in discipline.local_data.items()
+                    if k in discipline.output_grammar.names
+                },
+            )
