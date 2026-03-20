@@ -545,18 +545,6 @@
          <lastmod>2026-03-20</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/generated/examples/bulk/optimizers/</loc>
-         <lastmod>2026-03-20</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/generated/examples/bulk/optimizers/mg_execution_times/</loc>
-         <lastmod>2026-03-20</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/generated/examples/bulk/optimizers/plot_multistart_example/</loc>
-         <lastmod>2026-03-20</lastmod>
-    </url>
-    <url>
          <loc>https://gemseo.org/latest/generated/examples/bulk/post_process/</loc>
          <lastmod>2026-03-20</lastmod>
     </url>
@@ -990,6 +978,18 @@
     </url>
     <url>
          <loc>https://gemseo.org/latest/generated/examples/howtos/mda/plot_howto_use_acceleration_methods/</loc>
+         <lastmod>2026-03-20</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/howtos/optimizers/</loc>
+         <lastmod>2026-03-20</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/howtos/optimizers/mg_execution_times/</loc>
+         <lastmod>2026-03-20</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/howtos/optimizers/plot_howto_multistart/</loc>
          <lastmod>2026-03-20</lastmod>
     </url>
     <url>
