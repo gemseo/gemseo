@@ -139,7 +139,7 @@ nav:
           - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda
           - Namespaces: generated/examples/bulk/namespaces
           - Optimization: generated/examples/bulk/optimization_problem
-          - Multi-start optimization: generated/examples/bulk/optimizers/plot_multistart_example.md
+          - Multi-start optimization: generated/examples/howtos/optimizers/plot_howto_multistart.md
       - Formulations: generated/examples/howtos/formulations
       - Design of experiments (DOE): generated/examples/bulk/doe
       - Define settings models:
