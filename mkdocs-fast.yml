@@ -152,7 +152,7 @@ nav:
           - Post-process an optimization problem: generated/examples/bulk/post_process
       - Machine learning: generated/examples/howtos/machine_learning
       - Cache: generated/examples/howtos/cache
-      - Constraint aggregation: generated/examples/bulk/constraint_aggregation
+      - Constraint aggregation: generated/examples/howtos/constraint_aggregation
       - Scalable model: generated/examples/bulk/scalable
       - Uncertainty: generated/examples/bulk/uncertainty
       - Upgrading: software/upgrading.md
