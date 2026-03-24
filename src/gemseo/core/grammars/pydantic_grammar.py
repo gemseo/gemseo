@@ -186,6 +186,49 @@ class PydanticGrammar(BaseGrammar):
                 names_to_annotations[name] = NDArrayPydantic
         self.__update_from_annotations(names_to_annotations, merge)
 
+    def update_from_model(self, model: ModelType, merge: bool = False) -> None:
+        """Update the grammar from a Pydantic model.
+
+        Unlike [update_from_types()][gemseo.core.grammars.pydantic_grammar.PydanticGrammar.update_from_types],
+        this method preserves the full field information from the model:
+        type annotation, default value or factory, and description.
+        Required/optional status is taken from the model's field definitions:
+        fields without a default are required.
+
+        Args:
+            model: A Pydantic [BaseModel][pydantic.BaseModel] subclass (not an instance).
+                If the model has no fields, the grammar is not modified.
+            merge: Whether to merge or update the grammar.
+        """  # noqa: E501
+        if not model.__pydantic_fields__:
+            return
+
+        copied_model = _create_model(model)
+        fields = copied_model.__pydantic_fields__
+
+        own_fields = self.__model.__pydantic_fields__
+        for field_name, field_info in fields.items():
+            if merge and field_name in own_fields:
+                field_info.annotation = cast(
+                    "type[Any]",
+                    own_fields[field_name].annotation | field_info.annotation,
+                )
+            own_fields[field_name] = field_info
+
+            if field_info.is_required():
+                self._required_names.add(field_name)
+                self._defaults.pop(field_name, None)
+            else:
+                self._required_names.discard(field_name)
+                self._defaults[field_name] = field_info.get_default(
+                    call_default_factory=True
+                )
+
+            if description := field_info.description:
+                self._descriptions[field_name] = description
+
+        self.__model_needs_rebuild = True
+
     def __update_from_annotations(
         self,
         names_to_annotations: SimpleGrammarTypes,
@@ -400,6 +443,8 @@ def _create_model(model: ModelType) -> ModelType:
         **field_definitions,
     )
 
+    _patch_model(derived_model)
+
     if model != BaseModel:
         # Ensure that the class is retrieved when pickling.
         # This is not necessary for BaseModel since the derived class has
@@ -408,5 +453,10 @@ def _create_model(model: ModelType) -> ModelType:
             modules[_create_model.__module__], derived_model.__name__, derived_model
         )
 
-    _patch_model(derived_model)
+        # Ensure that FieldInfo metadata are not shared with the original model.
+        fields = derived_model.__pydantic_fields__
+        for field_name, field_info in fields.items():
+            if field_name not in field_definitions:
+                fields[field_name] = deepcopy(field_info)
+
     return derived_model
