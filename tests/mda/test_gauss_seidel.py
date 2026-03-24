@@ -39,13 +39,13 @@ from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.helpers import image_comparison
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
 
 from ..core.test_chain import two_virtual_disciplines  # noqa: F401
+from .mda_gauss_seidel import SobieskiMDAGaussSeidel
 from .utils import generate_parallel_doe
 
 if TYPE_CHECKING:

@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from .....mda.mda_gauss_seidel import SobieskiMDAGaussSeidel
 
 
 def test() -> None:

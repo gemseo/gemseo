@@ -42,7 +42,8 @@ from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipli
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
+
+from ...mda.mda_gauss_seidel import SobieskiMDAGaussSeidel
 
 if TYPE_CHECKING:
     from numpy import ndarray
