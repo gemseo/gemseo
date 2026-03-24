@@ -32,7 +32,9 @@ def get_model1() -> ModelType:
     """Return a pydantic model."""
 
     class Model(BaseModel):
-        name1: int
+        # The field argument is a FieldInfo metadata used to check that a model is not
+        # shared with the grammar.
+        name1: int = Field(ge=0)
         name2: NDArrayPydantic[int] = Field(
             default_factory=lambda: array([0]), description="Description of name2."
         )

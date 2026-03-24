@@ -42,7 +42,6 @@ from pydantic import BaseModel
 from pydantic import Field
 
 from gemseo.core.discipline import Discipline
-from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 
 if TYPE_CHECKING:
@@ -88,17 +87,13 @@ class Model(BaseModel):
 #     Build complex grammars by subclassing a Pydantic model
 #     rather than defining everything in a single class.
 #
-# ### 2. Create the grammar
-#
-input_grammar = PydanticGrammar("grammar", model=Model)
-input_grammar
 
 
 # %%
 # !!! tip "Good practice"
 #     `PydanticGrammar` should be defined in the `__init__` method of your discipline.
 #
-# ### 3. Create your discipline
+# ### 2. Create your discipline
 #
 class MyDiscipline(Discipline):
     """A discipline using a Pydantic grammar for inputs."""
@@ -107,7 +102,7 @@ class MyDiscipline(Discipline):
 
     def __init__(self, name: str = "") -> None:
         super().__init__(name)
-        self.input_grammar = input_grammar
+        self.input_grammar.update_from_model(Model)
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         return {}

@@ -75,6 +75,14 @@ class BaseGrammar(
         Contrary to the standard dictionary,
         the `copy()` function creates a deep copy.
 
+        Several update methods accept a `merge` argument that controls how existing
+        elements are handled when an incoming element shares the same name.
+        With `merge=False` (default), the existing element type is **replaced** by
+        the incoming type.
+        With `merge=True`, the existing and incoming types are **combined into a
+        union** (`existing_type | incoming_type`), so the grammar accepts values of
+        either type.
+
     Warning:
         A name can be prefixed by a namespace.
         Never add a namespace by any other means

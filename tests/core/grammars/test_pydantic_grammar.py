@@ -19,9 +19,11 @@ import re
 from enum import Enum
 from enum import auto
 from typing import TYPE_CHECKING
+from typing import Any
 
 import pytest
 from numpy import array
+from numpy import dtype
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import field_validator
@@ -32,6 +34,7 @@ from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.core.grammars.pydantic_grammar import _create_model
+from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 from gemseo.utils.testing.helpers import do_not_raise
 
 from .pydantic_models import get_model1
@@ -405,3 +408,67 @@ def test_enum_validation():
     # Ensure that the original model was not modified.
     assert len(DummyModel.__pydantic_fields__["dummy_enum"].metadata) == 1
     assert DummyModel.__pydantic_fields__["dummy_enum_strict"].metadata[0].strict
+
+
+def test_create_model_field_info_not_shared(model1) -> None:
+    """Verify that _create_model returns a model with independent FieldInfo objects."""
+    copied = _create_model(model1)
+    for field_name in model1.__pydantic_fields__:
+        src_field = model1.__pydantic_fields__[field_name]
+        cpy_field = copied.__pydantic_fields__[field_name]
+        assert cpy_field is not src_field
+        for src_item, cpy_item in zip(
+            src_field.metadata, cpy_field.metadata, strict=False
+        ):
+            assert cpy_item is not src_item
+
+
+def test_update_from_model_basic(model1) -> None:
+    """Verify keys, required_names, and descriptions are populated correctly."""
+    grammar = PydanticGrammar("g")
+    grammar.update_from_model(model1)
+    assert grammar.keys() == {"name1", "name2"}
+    assert grammar.required_names == {"name1"}
+    assert grammar.descriptions == {"name2": "Description of name2."}
+    assert grammar.defaults == {"name2": [0]}
+
+
+def test_update_from_model_no_merge(model1, model2) -> None:
+    """Verify that calling without merge overwrites the existing field annotation."""
+    grammar = PydanticGrammar("g")
+    grammar.update_from_model(model1)
+    grammar.update_from_model(model2, merge=False)
+    # name2 should now have the int | str annotation from model2.
+    assert grammar["name2"].annotation == int | str
+
+
+def test_update_from_model_merge(model1, model2) -> None:
+    """Verify that merge unions the field annotations."""
+    grammar = PydanticGrammar("g")
+    grammar.update_from_model(model1)
+    grammar.update_from_model(model2, merge=True)
+    assert grammar["name2"].annotation == _NDArrayPydantic[Any, dtype[int]] | int | str
+
+
+def test_update_from_model_empty_model() -> None:
+    """Verify that an empty model is a no-op."""
+
+    class EmptyModel(BaseModel):
+        pass
+
+    grammar = PydanticGrammar("g")
+    grammar.update_from_model(EmptyModel)
+    assert not grammar
+
+
+def test_update_from_model_incremental(model1) -> None:
+    """Verify that two sequential calls accumulate fields correctly."""
+
+    class ModelExtra(BaseModel):
+        name3: float
+
+    grammar = PydanticGrammar("g")
+    grammar.update_from_model(model1)
+    grammar.update_from_model(ModelExtra)
+    assert grammar.keys() == {"name1", "name2", "name3"}
+    assert grammar.required_names == {"name1", "name3"}
