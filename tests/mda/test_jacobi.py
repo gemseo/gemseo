@@ -39,11 +39,11 @@ from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
 from gemseo.utils.discipline import DummyDiscipline
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
 
+from .mda_jacobi import SobieskiMDAJacobi
 from .test_gauss_seidel import SelfCoupledDisc
 from .utils import generate_parallel_doe
 

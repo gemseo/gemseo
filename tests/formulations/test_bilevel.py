@@ -49,7 +49,6 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.name_generator import NameGenerator
@@ -61,6 +60,8 @@ from gemseo.utils.testing.bilevel_test_helper import (
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_bilevel_scenario
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_sub_scenarios
 from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
+
+from ..mda.mda_gauss_seidel import SobieskiMDAGaussSeidel
 
 if TYPE_CHECKING:
     from collections.abc import Callable

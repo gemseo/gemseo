@@ -28,8 +28,9 @@ from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
-from gemseo.problems.mdo.sobieski.process.mda_gauss_seidel import SobieskiMDAGaussSeidel
-from gemseo.problems.mdo.sobieski.process.mda_jacobi import SobieskiMDAJacobi
+
+from .mda_gauss_seidel import SobieskiMDAGaussSeidel
+from .mda_jacobi import SobieskiMDAJacobi
 
 DIRNAME = os.path.dirname(__file__)
 
