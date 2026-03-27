@@ -29,7 +29,9 @@ from numpy import array
 from numpy import inf
 
 from gemseo.mda.base import BaseMDA
-from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
+from gemseo.mda.gauss_seidel_newton_raphson_settings import (
+    MDAGaussSeidelNewtonRaphson_Settings,
+)
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.mda.newton_raphson import MDANewtonRaphson
@@ -72,7 +74,7 @@ def test_execution(mda_sequential) -> None:
 def test_parallel_doe() -> None:
     """Test the execution of GaussSeidel in parallel."""
     obj = generate_parallel_doe(
-        main_mda_settings={"inner_mda_settings": MDAGSNewton_Settings()}
+        main_mda_settings={"inner_mda_settings": MDAGaussSeidelNewtonRaphson_Settings()}
     )
     assert allclose_(array([-obj]), array([608.175]), atol=1e-3)
 
