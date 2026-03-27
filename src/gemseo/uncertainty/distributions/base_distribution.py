@@ -171,6 +171,9 @@ class BaseDistribution(
     _WEBSITE: ClassVar[str]
     """The website of the library implementing the probability distributions."""
 
+    _settings: BaseDistributionSettings
+    """The settings of the probability distribution used to create it."""
+
     def __init__(self, settings: BaseGenericDistributionSettings | None = None) -> None:
         """
         Args:
@@ -179,6 +182,8 @@ class BaseDistribution(
         """  # noqa: D205,D212,D415
         if settings is None:
             settings = self.settings_class()
+
+        self._settings = settings
 
         self.transformation = self.DEFAULT_VARIABLE_NAME
         self._file_path_manager = FilePathManager(
