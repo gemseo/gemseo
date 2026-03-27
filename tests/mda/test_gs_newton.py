@@ -19,11 +19,11 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.mda.gs_newton import MDAGSNewton
+from gemseo.mda.gauss_seidel_newton_raphson import MDAGaussSeidelNewtonRaphson
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.settings.mda import MDAGaussSeidel_Settings
-from gemseo.settings.mda import MDAGSNewton_Settings
+from gemseo.settings.mda import MDAGaussSeidelNewtonRaphson_Settings
 from gemseo.settings.mda import MDANewtonRaphson_Settings
 
 if TYPE_CHECKING:
@@ -38,12 +38,14 @@ def disciplines() -> list[Discipline]:
 
 def test_settings_as_model(disciplines) -> None:
     """Test that the Pydantic settings model are properly passed."""
-    gsnewton_settings = MDAGSNewton_Settings(
+    gsnewton_settings = MDAGaussSeidelNewtonRaphson_Settings(
         gauss_seidel_settings=MDAGaussSeidel_Settings(tolerance=1e-3, max_mda_iter=8),
-        newton_settings=MDANewtonRaphson_Settings(tolerance=1e-4, max_mda_iter=16),
+        newton_raphson_settings=MDANewtonRaphson_Settings(
+            tolerance=1e-4, max_mda_iter=16
+        ),
     )
 
-    mda = MDAGSNewton(disciplines, settings=gsnewton_settings)
+    mda = MDAGaussSeidelNewtonRaphson(disciplines, settings=gsnewton_settings)
 
     assert mda.mda_sequence[0].settings.tolerance == 1e-3
     assert mda.mda_sequence[0].settings.max_mda_iter == 8
@@ -54,12 +56,12 @@ def test_settings_as_model(disciplines) -> None:
 
 def test_settings_as_key_value_pairs(disciplines) -> None:
     """Test that the key/value settings pairs are properly passed."""
-    gsnewton_settings = MDAGSNewton_Settings(
+    gsnewton_settings = MDAGaussSeidelNewtonRaphson_Settings(
         gauss_seidel_settings={"tolerance": 1e-3, "max_mda_iter": 8},
-        newton_settings={"tolerance": 1e-4, "max_mda_iter": 16},
+        newton_raphson_settings={"tolerance": 1e-4, "max_mda_iter": 16},
     )
 
-    mda = MDAGSNewton(disciplines, settings=gsnewton_settings)
+    mda = MDAGaussSeidelNewtonRaphson(disciplines, settings=gsnewton_settings)
 
     assert mda.mda_sequence[0].settings.tolerance == 1e-3
     assert mda.mda_sequence[0].settings.max_mda_iter == 8

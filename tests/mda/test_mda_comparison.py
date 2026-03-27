@@ -25,7 +25,9 @@ import numpy as np
 
 from gemseo.mda.chain import MDAChain
 from gemseo.mda.chain_settings import MDAChain_Settings
-from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
+from gemseo.mda.gauss_seidel_newton_raphson_settings import (
+    MDAGaussSeidelNewtonRaphson_Settings,
+)
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
@@ -67,7 +69,9 @@ def test_mda_jacobi_newton_hybrid(sellar_with_2d_array, sellar_disciplines) -> N
 
     mda_hybrid = MDAChain(
         sellar_disciplines,
-        settings=MDAChain_Settings(inner_mda_settings=MDAGSNewton_Settings()),
+        settings=MDAChain_Settings(
+            inner_mda_settings=MDAGaussSeidelNewtonRaphson_Settings()
+        ),
     )
     out3 = mda_hybrid.execute()
 

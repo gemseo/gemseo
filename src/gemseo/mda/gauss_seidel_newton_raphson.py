@@ -26,8 +26,10 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.mda.gauss_seidel_newton_raphson_settings import (
+    MDAGaussSeidelNewtonRaphson_Settings,
+)
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
-from gemseo.mda.gs_newton_settings import MDAGSNewton_Settings
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 from gemseo.mda.sequential import MDASequential
@@ -39,19 +41,21 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 
-class MDAGSNewton(MDASequential):
+class MDAGaussSeidelNewtonRaphson(MDASequential):
     """Perform some Gauss-Seidel iterations and then Newton-Raphson iterations."""
 
-    settings_class: ClassVar[type[MDAGSNewton_Settings]] = MDAGSNewton_Settings
+    settings_class: ClassVar[type[MDAGaussSeidelNewtonRaphson_Settings]] = (
+        MDAGaussSeidelNewtonRaphson_Settings
+    )
     """The pydantic model for the settings."""
 
-    settings: MDAGSNewton_Settings
+    settings: MDAGaussSeidelNewtonRaphson_Settings
     """The settings of the MDA"""
 
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[Discipline],
-        settings: MDAGSNewton_Settings | None = None,
+        settings: MDAGaussSeidelNewtonRaphson_Settings | None = None,
     ) -> None:
         super().__init__(disciplines, mda_sequence=[], settings=settings)
 
@@ -60,7 +64,7 @@ class MDAGSNewton(MDASequential):
         gs_settings = dict(self.settings.gauss_seidel_settings) | cs
         gs_settings = create_model(MDAGaussSeidel_Settings, **gs_settings)
 
-        nr_settings = dict(self.settings.newton_settings) | cs
+        nr_settings = dict(self.settings.newton_raphson_settings) | cs
         nr_settings = create_model(MDANewtonRaphson_Settings, **nr_settings)
 
         self.mda_sequence = [

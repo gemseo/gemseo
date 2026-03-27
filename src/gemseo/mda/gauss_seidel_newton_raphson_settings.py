@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for MDAGSNewton."""
+"""Settings for MDAGaussSeidelNewtonRaphson."""
 
 from __future__ import annotations
 
@@ -23,15 +23,15 @@ from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings  # noqa
 from gemseo.mda.sequential_settings import MDASequential_Settings
 
 
-class MDAGSNewton_Settings(MDASequential_Settings):  # noqa: N801
-    """The settings for [MDAGSNewton][gemseo.mda.gs_newton.MDAGSNewton]."""
+class MDAGaussSeidelNewtonRaphson_Settings(MDASequential_Settings):  # noqa: N801
+    """The settings for [MDAGaussSeidelNewtonRaphson][gemseo.mda.gauss_seidel_newton_raphson.MDAGaussSeidelNewtonRaphson]."""  # noqa: E501
 
     gauss_seidel_settings: MDAGaussSeidel_Settings = Field(
         default_factory=MDAGaussSeidel_Settings,
         description="The settings for the Gauss-Seidel MDA.",
     )
 
-    newton_settings: MDANewtonRaphson_Settings = Field(
+    newton_raphson_settings: MDANewtonRaphson_Settings = Field(
         default_factory=MDANewtonRaphson_Settings,
         description="The settings for the Newton-Raphson MDA.",
     )
