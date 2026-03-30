@@ -597,7 +597,8 @@ dependencies = [
     { name = "prettytable" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
-    { name = "pyxdsm" },
+    { name = "pyxdsm", version = "2.3.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pyxdsm", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "requests" },
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -701,7 +702,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.7,<=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.1.0,<=2.13.1" },
     { name = "pydoe3", marker = "extra == 'all'", specifier = ">=1.0.1,<=1.6.2" },
-    { name = "pyxdsm", specifier = ">=2.2.1,<=2.3.1" },
+    { name = "pyxdsm", specifier = ">=2.2.1,<=2.3.2" },
     { name = "requests", specifier = ">2,<3" },
     { name = "scikit-learn", marker = "extra == 'all'", specifier = ">=1.2,<=1.8.0" },
     { name = "scipy", specifier = ">=1.12,<=1.17.1" },
@@ -2531,12 +2532,29 @@ wheels = [
 name = "pyxdsm"
 version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.11'",
+]
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3f/c7/0fe5ec7966a00cc28db62cdb415a88e342d6ab9659e93daf292a260e33fc/pyXDSM-2.3.1-py3-none-any.whl", hash = "sha256:af089e75322b57ce9add8f9f3d1c7b472a93bd2f1e082d51914ee1c62f22d829", size = 15352, upload-time = "2025-02-10T17:37:49.492Z" },
+]
+
+[[package]]
+name = "pyxdsm"
+version = "2.3.2"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.12'",
+    "python_full_version == '3.11.*'",
+]
+dependencies = [
+    { name = "numpy", version = "2.4.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f1/d5/0f5e5bbecc3416af6eb5b99cbae39589a3138a2004e93269bb7b707e1191/pyxdsm-2.3.2-py3-none-any.whl", hash = "sha256:fc8a93bddac3070e2e02a60a437ea09053b4283e0047c02aca1184fdb8616f22", size = 15422, upload-time = "2026-03-19T15:30:24.895Z" },
 ]
 
 [[package]]
