@@ -59,8 +59,8 @@ design_space
 # !!! note
 #
 #     Files without any header can also be considered.
-#     To read such file, the ``header`` optional argument should be given:
-#     ``header=["name", "lower_bound", "value", "upper_bound", "type"]``
+#     To read such file, the `header` optional argument should be given:
+#     `header=["name", "lower_bound", "value", "upper_bound", "type"]`
 #
 # !!! warning
 #

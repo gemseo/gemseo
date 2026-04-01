@@ -192,7 +192,7 @@ design_space_inner_scenario = design_space.filter(keep_variables=["x"], copy=Tru
 design_space_inner_scenario
 # %%
 # We then create our [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
-# The default solver will be ``NLOPT_COBYLA`` with at most 100 iterations.
+# The default solver will be `NLOPT_COBYLA` with at most 100 iterations.
 inner_scenario = MDOScenario(
     [objective, constraint],
     design_space_inner_scenario,

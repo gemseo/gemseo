@@ -949,7 +949,7 @@ def test_dict_to_array() -> None:
 @pytest.mark.parametrize(("name", "dtype"), [("x1", float64), ("x3", int64)])
 def test_dict_to_array_dtype(design_space, name, dtype) -> None:
     """Check the data type of the array returned by
-    ``DesignSpace.convert_dict_to_array``."""
+    `DesignSpace.convert_dict_to_array`."""
     assert (
         design_space.convert_dict_to_array(
             {"x1": array([1.0]), "x3": array([1])}, [name]

@@ -682,7 +682,7 @@ def test_export_to_dataset_and_entries(
     ],
 )
 def test_names_to_sizes(simple_cache, data) -> None:
-    """Verify the ``names_to_sizes`` attribute."""
+    """Verify the `names_to_sizes` attribute."""
     simple_cache.cache_outputs({"index": 1}, {"o": data})
     assert simple_cache.names_to_sizes == {"index": 1, "o": 2}
 

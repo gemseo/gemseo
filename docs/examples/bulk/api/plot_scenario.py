@@ -69,7 +69,7 @@ get_scenario_options_schema("MDO")
 #     (one of the discipline outputs),
 #   - `design_space`: the [DesignSpace][gemseo.algos.design_space.DesignSpace] or
 #     the file path of the design space,
-#   - either a `formulation_name` followed by its `formulation_settings``; or
+#   - either a `formulation_name` followed by its `formulation_settings`; or
 #   - a `formulation_settings_model`.
 #
 # - The other arguments are optional:

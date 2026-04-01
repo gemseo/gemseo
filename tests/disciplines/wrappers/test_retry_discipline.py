@@ -61,7 +61,7 @@ def a_crashing_discipline_in_run() -> Discipline:
 
 
 class CrashingDisciplineInRun(Discipline):
-    """A discipline raising NotImplementedError in ``_run``."""
+    """A discipline raising NotImplementedError in `_run`."""
 
     def _run(self, input_data: StrKeyMapping):
         msg = "Error: This method is not implemented."

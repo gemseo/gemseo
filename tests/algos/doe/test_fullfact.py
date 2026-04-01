@@ -124,7 +124,7 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size) -> N
 def test_fullfact_levels(
     doe_problem_dim_2, doe_library_class, algo_name, options, expected
 ) -> None:
-    """Check that ``levels`` option in full-factorial is correctly taken into
+    """Check that `levels` option in full-factorial is correctly taken into
     account."""
     lib = doe_library_class(algo_name)
     settings = lib.ALGORITHM_INFOS[algo_name].settings_class(**options)

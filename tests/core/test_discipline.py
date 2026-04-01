@@ -1308,8 +1308,8 @@ def test_create_cache_policy_to_none() -> None:
 class StrNumDiscipline(Discipline):
     """A discipline that has both string and numeric i/o.
 
-    Depending on the initialization parameter, it can either use ``str`` or
-    ``array([str])`` for the string variables.
+    Depending on the initialization parameter, it can either use `str` or
+    `array([str])` for the string variables.
 
     """
 

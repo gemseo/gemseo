@@ -337,7 +337,7 @@ def test_multiprocessing_context(
     the definition of differentiated I/O.
     """
     # Just for the test purpose, we consider multithreading as a mp_method
-    # and set the boolean ``use_threading`` from this.
+    # and set the boolean `use_threading` from this.
     use_threading = mp_method == "threading"
     if not use_threading:
         CallableParallelExecution.MULTI_PROCESSING_START_METHOD = mp_method

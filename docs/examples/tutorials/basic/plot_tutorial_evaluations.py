@@ -81,13 +81,13 @@ scenario = EvaluationScenario(
 # %%
 # !!! note
 #     Here,
-#     we chose the ``DisciplinaryOpt`` formulation since we get only one discipline.
+#     we chose the `DisciplinaryOpt` formulation since we get only one discipline.
 #     Other formulations can be chosen for more complex evaluation workflows.
 #
 # We specify which variables to observe.
 # In our case,
-# the ``y`` variable is important.
-# We chose to give this variable a new name (``Result``),
+# the `y` variable is important.
+# We chose to give this variable a new name (`Result`),
 # for plot purposes.
 scenario.add_observable("y", observable_name="Result")
 # %%
@@ -118,9 +118,9 @@ scenario.execute(PYDOE_FULLFACT_Settings(n_samples=11**2))
 # [Dataset][gemseo.datasets.dataset.Dataset].
 #
 # Two different groups are made in the [Dataset][gemseo.datasets.dataset.Dataset]:
-# - ``inputs`` to store the evaluated points
-# - ``outputs`` to store the observables.
-# In our case, the ``y`` variable appears as ``Result``.
+# - `inputs` to store the evaluated points
+# - `outputs` to store the observables.
+# In our case, the `y` variable appears as `Result`.
 scenario.to_dataset()
 
 # %%

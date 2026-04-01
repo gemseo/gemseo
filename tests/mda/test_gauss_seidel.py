@@ -271,7 +271,7 @@ def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) 
     Args:
         baseline_images: The reference images for the test.
         n_iterations: The number of iterations to plot.
-        logscale: The limits of the ``y`` axis.
+        logscale: The limits of the `y` axis.
         caplog: Fixture to access and control log capturing.
     """
     mda = SobieskiMDAGaussSeidel(settings=MDAGaussSeidel_Settings(max_mda_iter=15))

@@ -60,7 +60,7 @@ normalized_x_vect
 # %%
 # !!! note
 #     When each variable has a current value, it can be retrieved as its normalized form with:
-#     ``design_space.get_current_value(normalize=True)``.
+#     `design_space.get_current_value(normalize=True)`.
 #
 # ### 3. Un-normalize the array
 unnormalized_x_vect = design_space.unnormalize_vect(normalized_x_vect)
@@ -83,4 +83,4 @@ unnormalized_x_vect
 # (resp. [unnormalize_vect()][gemseo.algos.design_space.DesignSpace.unnormalize_vect]).
 #
 # A design vector can be retrieved in its normalized form with
-# ``design_space.get_current_value(normalize=True)`` when it has a current value.
+# `design_space.get_current_value(normalize=True)` when it has a current value.

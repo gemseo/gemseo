@@ -576,7 +576,7 @@ class _DummyDiscValueError(Discipline):
 
 @pytest.mark.parametrize("formulation", ["MDF", "DisciplinaryOpt", "IDF"])
 def test_value_error_filtering(formulation, caplog):
-    """Test that the DOELibrary can skip a sample that raises a ``ValueError``."""
+    """Test that the DOELibrary can skip a sample that raises a `ValueError`."""
     caplog.set_level("ERROR")
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)

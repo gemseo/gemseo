@@ -45,7 +45,7 @@ volume_fraction = 0.3
 #
 # !!! note
 #     Other topology problems are available in GEMSEO,
-#     such as ``Short_Cantilever`` and ``MBB``.
+#     such as `Short_Cantilever` and `MBB`.
 problem_name = "L-Shape"
 
 # %%
@@ -91,7 +91,7 @@ scenario = MDOScenario(
 )
 
 # %%
-# Consider the optimization of the ``compliance`` objective:
+# Consider the optimization of the `compliance` objective:
 scenario.add_objective("compliance")
 # %%
 # Add the volume fraction constraint to the scenario:
@@ -112,15 +112,15 @@ scenario.execute(NLOPT_MMA_Settings(max_iter=200))
 # %%
 # ## Step 6 - Exploit the results
 #
-# You can see the convergence plot showing the decrease of the ``compliance`` variable,
-# by using the ``BasicHistory`` plot.
+# You can see the convergence plot showing the decrease of the `compliance` variable,
+# by using the `BasicHistory` plot.
 scenario.post_process(
     BasicHistory_Settings(variable_names=["compliance"], show=True, save=False)
 )
 
 # %%
 # And you can also visualize your optimized topology
-# with the ``TopologyView`` post-process.
+# with the `TopologyView` post-process.
 scenario.post_process(TopologyView_Settings(n_x=n_x, n_y=n_y, show=True, save=False))
 
 # %%

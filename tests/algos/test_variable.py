@@ -100,7 +100,7 @@ def test_invalid_bound_value_scalar(side) -> None:
 def test_wrong_boundaries(
     size: int, type_: str, lower_bound: float, upper_bound: float
 ) -> None:
-    """Test the instantiation with ``upper_bound`` lower than ``lower_bound``."""
+    """Test the instantiation with `upper_bound` lower than `lower_bound`."""
     with pytest.raises(
         ValueError,
         match=re.escape(

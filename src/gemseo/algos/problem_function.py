@@ -206,8 +206,8 @@ class ProblemFunction(MDOFunction, Serializable):
             The output value.
         """
         # The lines below implement function compositions using a for-loop.
-        # For instance, unnormalize ``input_value``, then evaluate the original
-        # ``MDOFunction``. The output value of a function becomes the input value of
+        # For instance, unnormalize `input_value`, then evaluate the original
+        # `MDOFunction`. The output value of a function becomes the input value of
         # the next function.
         for func in self._output_evaluation_sequence:
             input_value = func(input_value)
@@ -224,8 +224,8 @@ class ProblemFunction(MDOFunction, Serializable):
             The Jacobian.
         """
         # The lines below implement function compositions using a for-loop.
-        # For instance, unnormalize ``input_value``, then evaluate the original
-        # ``MDOFunction``. The output value of a function becomes the input value of
+        # For instance, unnormalize `input_value`, then evaluate the original
+        # `MDOFunction`. The output value of a function becomes the input value of
         # the next function.
         for func in self._jacobian_evaluation_sequence:
             input_value = func(input_value)

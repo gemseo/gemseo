@@ -141,6 +141,6 @@ def test_sparse_linprog_algorithms(
 
 @pytest.mark.parametrize("scaling_threshold", [None, 0.1])
 def test_autoscale_setting(scaling_threshold):
-    """Check that the ``scale_threshold`` setting enables the ``autoscale`` setting."""
+    """Check that the `scale_threshold` setting enables the `autoscale` setting."""
     settings = DUAL_SIMPLEX_Settings(scaling_threshold=scaling_threshold)
     assert settings.autoscale if scaling_threshold else not settings.autoscale

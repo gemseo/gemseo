@@ -120,5 +120,5 @@ discipline.output_grammar
 # %%
 # ## Summary
 #
-# The grammar of your discipline can be changed by using the ``default_grammar_type``
+# The grammar of your discipline can be changed by using the `default_grammar_type`
 # and by updating the input / output grammars.

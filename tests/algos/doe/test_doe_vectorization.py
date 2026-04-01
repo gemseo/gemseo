@@ -127,7 +127,7 @@ class VectorizedDiscipline(Discipline):
 class Callback:
     """A callback functor to be evaluated after each evaluation.
 
-    It is used to define the ``callbacks`` field of the ``BaseDOESettings``.
+    It is used to define the `callbacks` field of the `BaseDOESettings`.
     """
 
     x: list[tuple[int, EvaluationType]]
@@ -155,10 +155,10 @@ def test_preprocess_functions_vectorize(
     vectorize,
     use_database,
 ):
-    """Check the EvaluationProblem.preprocess_functions's argument ``vectorize``.
+    """Check the EvaluationProblem.preprocess_functions's argument `vectorize`.
 
-    Whatever the value of ``vectorize``,
-    ``EvaluationProblem.evaluate_functions`` can evaluate a vectorized function.
+    Whatever the value of `vectorize`,
+    `EvaluationProblem.evaluate_functions` can evaluate a vectorized function.
     """
     if design_vector_is_normalized and not preprocess_design_vector:
         expected = array([0.125, 1.25])
