@@ -29,7 +29,7 @@ FACTORY = GrammarFactory()
 
 @pytest.fixture(params=tuple(FACTORY.class_names))
 def grammar(request) -> BaseGrammar:
-    """Return a grammar with an element named ``name``."""
+    """Return a grammar with an element named `name`."""
     grammar = FACTORY.create(request.param, name="g")
     grammar.update_from_names(["name"])
     return grammar

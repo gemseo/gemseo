@@ -243,7 +243,7 @@ def test_parse_outfile() -> None:
 
 
 def test_command_line(tmp_wd) -> None:
-    """Test the property: ``command_line``."""
+    """Test the property: `command_line`."""
     sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
     disc: DiscFromExe = create_discipline(
@@ -298,7 +298,7 @@ def test_parallel_execution(tmp_wd) -> None:
 
 @pytest.mark.parametrize("clean_after_execution", [True, False])
 def test_working_directory(tmp_wd, clean_after_execution: bool) -> None:
-    """Test the property: ``working_directory``."""
+    """Test the property: `working_directory`."""
     sum_path = join(DIRNAME, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 

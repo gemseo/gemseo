@@ -64,13 +64,13 @@ examples_dir_relative = [
 
 
 def insert_generated_in_path(path: Path) -> Path:
-    """Insert the ``generated`` directory just after the ``docs`` directory.
+    """Insert the `generated` directory just after the `docs` directory.
 
     Args:
-        path: The path within the ``generated`` directory must be added.
+        path: The path within the `generated` directory must be added.
 
     Returns:
-        The path containing the ``generated`` directory.
+        The path containing the `generated` directory.
     """
     parts = list(path.parts)
     idx = parts.index("docs") + 1

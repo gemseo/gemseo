@@ -83,10 +83,10 @@ The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to
     - `.get_inputs_asarray`: is removed
     - `.get_inputs_by_name`: now use `.get_input_data`
     - `.get_outputs_by_name`: now use `.get_output_data`
-    - `.get_input_data_names(): now use`.input_grammar.names`and cast it into`list``
+    - `.get_input_data_names(): now use`.input_grammar.names`and cast it into`list`
     - `.get_input_data_names(True)`: now use `.input_grammar.names` and cast it into `list`
     - `.get_input_data_names(False)`: now use `.input_grammar.names_without_namespace` and cast it into `list`
-    - `.get_output_data_names(): now use`.output_grammar.names`and cast it into`list``
+    - `.get_output_data_names(): now use`.output_grammar.names`and cast it into`list`
     - `.get_output_data_names(True)`: now use `.output_grammar.names` and cast it into `list`
     - `.get_output_data_names(False)`: now use `.output_grammar.names_without_namespace` and cast it into `list`
     - `.get_all_inputs`: now use `.get_input_data`
@@ -155,7 +155,7 @@ The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to
 - `OptimizationProblem.nonproc_objective`: `OptimizationProblem.objective.original`.
 - `OptimizationProblem.nonproc_constraints` (property): `OptimizationProblem.constraints.get_originals` (method).
 - `OptimizationProblem.nonproc_observables` (property): `OptimizationProblem.observables.get_originals` (method).
-- `` OptimizationProblem.nonproc_new_iter_observables` (property): `OptimizationProblem.new_iter_observables.get_originals` (method).
+- `OptimizationProblem.nonproc_new_iter_observables` (property): `OptimizationProblem.new_iter_observables.get_originals` (method).
 - `OptimizationProblem.get_nonproc_objective`: removed; use `OptimizationProblem.objective.original` instead.
 - `OptimizationProblem.get_nonproc_constraints`: removed; use `OptimizationProblem.constraints.get_originals` instead.
 - `OptimizationProblem.get_all_functions`: removed; use `OptimizationProblem.original_functions` and `OptimizationProblem.functions` instead.

@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def dataset(data: NDArray[np_int]) -> Dataset:
-    """A dataset built from ``data``.
+    """A dataset built from `data`.
 
     The first feature is "var_1" and the other two are "var_2".
     """
@@ -61,7 +61,7 @@ def dataset(data: NDArray[np_int]) -> Dataset:
 
 @pytest.fixture
 def small_dataset(small_data: NDArray[np_int]) -> Dataset:
-    """A small view of ``dataset``."""
+    """A small view of `dataset`."""
     return Dataset.from_array(
         small_data, ["var_1", "var_2"], {"var_1": 1, "var_2": 2}, {"var_2": "foo"}
     )
@@ -98,7 +98,7 @@ def io_dataset(io_data) -> Dataset:
 
 @pytest.fixture
 def small_file_dataset(tmp_wd, small_data) -> str:
-    """The generation of a small file.txt containing ``small_data``."""
+    """The generation of a small file.txt containing `small_data`."""
     filename = "dataset.txt"
     savetxt(filename, small_data, delimiter=",")
     return filename
@@ -163,7 +163,7 @@ def file_dataset(
     ],
 )
 def test_from_dataframe(df, expected):
-    """Test the classmethod ``from_dataframe``."""
+    """Test the classmethod `from_dataframe`."""
     assert_frame_equal(Dataset.from_dataframe(df), expected)
 
 
@@ -198,7 +198,7 @@ def test_from_dataframe(df, expected):
     ],
 )
 def test_from_dataframe_error(df, expected_error_msg):
-    """Test the classmethod ``from_dataframe`` with malformed ``columns``."""
+    """Test the classmethod `from_dataframe` with malformed `columns`."""
     with pytest.raises(ValueError) as excinfo:
         Dataset.from_dataframe(df)
     assert str(excinfo.value) == expected_error_msg
@@ -381,7 +381,7 @@ def test_update_data(
 
 
 def test_update_data_errors(dataset) -> None:
-    """Test the ``update_data`` method when inputs are incorrect."""
+    """Test the `update_data` method when inputs are incorrect."""
     dataset_to_update = dataset.copy()
     with pytest.raises(ValueError):
         dataset_to_update.update_data(
@@ -447,7 +447,7 @@ def test_from_array(
     variable_names_to_group_names,
     expected_column_multi_index,
 ) -> None:
-    """Test the method ``from_array`` with its options."""
+    """Test the method `from_array` with its options."""
     dataset = Dataset.from_array(
         data,
         variable_names=variable_names,
@@ -572,7 +572,7 @@ def test_add_groups(
     expected_variable,
     expected_components,
 ) -> None:
-    """Test ``add_groups``."""
+    """Test `add_groups`."""
     dataset = Dataset()
     dataset.add_group(group_name, data, variables, variable_names_to_n_components)
     assert dataset.group_names == [group_name]
@@ -595,7 +595,7 @@ def test_add_group_error(dataset) -> None:
 @pytest.mark.parametrize("delimiter", [",", "/"])
 @pytest.mark.parametrize("first_column_as_index", [True, False])
 def test_from_csv(tmp_wd, io_dataset, delimiter, first_column_as_index) -> None:
-    """Test the ``from_csv`` method."""
+    """Test the `from_csv` method."""
     io_dataset.to_csv("io_dataset.csv", sep=delimiter, index=first_column_as_index)
     dataset = Dataset.from_csv(
         "io_dataset.csv",
@@ -606,7 +606,7 @@ def test_from_csv(tmp_wd, io_dataset, delimiter, first_column_as_index) -> None:
 
 
 def test_from_csv_defaults(tmp_wd, io_dataset) -> None:
-    """Test the ``from_csv`` method using only the default arguments."""
+    """Test the `from_csv` method using only the default arguments."""
     io_dataset.to_csv("io_dataset.csv")
     dataset = Dataset.from_csv("io_dataset.csv")
     assert_frame_equal(io_dataset.astype("int32"), dataset.astype("int32"))
@@ -621,7 +621,7 @@ def test_from_txt(
     variable_names_to_group_names,
     expected_column_multi_index,
 ) -> None:
-    """Test the ``from_txt`` method."""
+    """Test the `from_txt` method."""
     dataset = Dataset.from_txt(
         small_file_dataset,
         variable_names,
@@ -649,7 +649,7 @@ def test_from_txt_with_header(
     variable_names_to_group_names,
     expected_column_multi_index,
 ):
-    """Test ``from_txt`` with a header.
+    """Test `from_txt` with a header.
 
     If variable_names is not provided, it tests the case where no header is given.
     """
@@ -681,7 +681,7 @@ def test_from_txt_with_header(
 
 
 def test_from_txt_different_dtypes(tmp_wd) -> None:
-    """Test ``from_txt`` with different data types."""
+    """Test `from_txt` with different data types."""
     data_file = "datafile.txt"
     with open(data_file, "w") as f_data:
         f_data.write("x,x_str\n")
@@ -1112,7 +1112,7 @@ def test_slice(dataset) -> None:
 
 
 def test_get_group_names() -> None:
-    """Test the ``get_group_names`` method."""
+    """Test the `get_group_names` method."""
     dataset = Dataset()
     dataset.add_variable("x", array([[1, 2], [3, 4]]))
     dataset.add_variable("x", array([[-1, -2], [-3, -4]]), "g", [1, 2])

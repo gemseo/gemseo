@@ -32,9 +32,9 @@ or you can add new [CacheEntry][gemseo.caches.cache_entry.CacheEntry].
     since you are allowed to insert inconsistent/unprocessed data.
 
     For instance, in the $y=2*x$ AnalyticDiscipline,
-    you can add the inconsistent entry ``{x: 1, y:5}``.
-    In that case, the discipline will return ``y=5`` for ``x=1`` using the cache,
-    even if ``5 != 2*1``.
+    you can add the inconsistent entry `{x: 1, y:5}`.
+    In that case, the discipline will return `y=5` for `x=1` using the cache,
+    even if `5 != 2*1`.
 
 ## Step-by-step guide
 """

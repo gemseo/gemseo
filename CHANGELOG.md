@@ -1639,7 +1639,7 @@ See `upgrading-gemseo` for more information.
   [#940](https://gitlab.com/gemseo/dev/gemseo/-/issues/940)
 
 - The `SimplerGrammar` is a grammar based on element names only.
-  `` SimplerGrammar` is even simpler than ``SimpleGrammar\`\` which
+  `SimplerGrammar` is even simpler than `SimpleGrammar\`\` which
   considers both names and types.
   [#949](https://gitlab.com/gemseo/dev/gemseo/-/issues/949)
 

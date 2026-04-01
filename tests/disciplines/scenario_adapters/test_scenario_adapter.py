@@ -530,7 +530,7 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> 
 
     The focus of this test is to guarantee that the loaded MDOChain instance can be
     executed, if an AttributeError is raised, it means that the attribute is missing in
-    ``MDOScenarioAdapter._ATTR_NOT_TO_SERIALIZE``.
+    `MDOScenarioAdapter._ATTR_NOT_TO_SERIALIZE`.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.

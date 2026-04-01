@@ -375,8 +375,8 @@ def test_get_formulation_sub_options_schema_print(
     """Check that the sub options schema is printed for different formulations.
 
     Args:
-        capfd: Fixture capture outputs sent to ``stdout`` and
-            ``stderr``.
+        capfd: Fixture capture outputs sent to `stdout` and
+            `stderr`.
         formulation_name: The name of the formulation to test.
         opts: The options for the formulation.
     """

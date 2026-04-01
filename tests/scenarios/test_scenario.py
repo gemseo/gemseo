@@ -654,7 +654,7 @@ def test_complex_casting(
     Args:
         cast_default_inputs_to_complex: Whether to cast the default inputs of the
             scenario's disciplines to complex.
-        expected_dtype: The expected ``dtype`` after setting the differentiation method.
+        expected_dtype: The expected `dtype` after setting the differentiation method.
         mdf_scenario: A fixture for the MDOScenario.
     """
     for discipline in mdf_scenario.disciplines:
@@ -672,7 +672,7 @@ def test_complex_casting(
 
 @pytest.fixture
 def scenario_with_non_float_variables() -> MDOScenario:
-    """Create an ``MDOScenario`` from an ``AnalyticDiscipline`` with non-float inputs.
+    """Create an `MDOScenario` from an `AnalyticDiscipline` with non-float inputs.
 
     Returns:
         The MDOScenario.
@@ -705,8 +705,8 @@ def test_complex_casting_with_non_float_variables(
     Args:
         cast_default_inputs_to_complex: Whether to cast the float default inputs of the
             scenario's disciplines to complex.
-        expected_dtype: The expected ``dtype`` after setting the differentiation method.
-        scenario_with_non_float_variables: Fixture that returns an ``MDOScenario`` with
+        expected_dtype: The expected `dtype` after setting the differentiation method.
+        scenario_with_non_float_variables: Fixture that returns an `MDOScenario` with
             an AnalyticDiscipline that has integer and string inputs.
     """
     scenario_with_non_float_variables.set_differentiation_method(

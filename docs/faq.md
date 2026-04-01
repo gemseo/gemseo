@@ -86,7 +86,7 @@ Some disciplines wrap other disciplines in order to execute them remotely. Those
 
 ## How to list the different features?
 
-GEMSEO offers different ``get_available_*`` methods to list the different features.
+GEMSEO offers different `get_available_*` methods to list the different features.
 They can be directly imported from GEMSEO.
-For instance, ``from gemseo import get_available_post_processings``
+For instance, `from gemseo import get_available_post_processings`
 to list all the post-processings.

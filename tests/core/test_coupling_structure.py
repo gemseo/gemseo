@@ -229,7 +229,7 @@ def test_n2_no_coupling(tmp_wd, baseline_images, show_data_names, descriptions) 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
         baseline_images: The reference images to be compared.
-        show_data_names: If ``True``, show the names of the coupling data ;
+        show_data_names: If `True`, show the names of the coupling data ;
                 otherwise,
                 circles are drawn,
                 whose size depends on the number of coupling names.

@@ -149,7 +149,7 @@ scenario.xdsmize(save_html=False)
 # %%
 # ## Step 3 - Execute your scenario
 #
-# Here, you can use the ``SLSQP`` algorithm to find the solution of your problem.
+# Here, you can use the `SLSQP` algorithm to find the solution of your problem.
 # You limit the number of iteration to 10, and you modify some convergence tolerances.
 # Finally, you want your design space to be normalized while using this algorithm,
 # this is recommended and activated by default.
@@ -165,7 +165,7 @@ scenario.execute(
 # %%
 # !!! note
 #     There are different ways to solve an [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
-#     You can either chose an optimization algorithm, like ``SLSQP``,
+#     You can either chose an optimization algorithm, like `SLSQP`,
 #     or you can chose a Design of Experiment algorithm.
 #     In that case,
 #     the functions of interest will be evaluated in different points

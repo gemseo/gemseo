@@ -135,7 +135,7 @@ def options(tmp_path):
 def elementary_discipline(input_name, output_name):
     """Build an elementary analytic discipline from input and output names.
 
-    The discipline is such as ``output_name = input_name``.
+    The discipline is such as `output_name = input_name`.
     """
     return create_discipline(
         "AnalyticDiscipline", expressions={output_name: input_name}
@@ -292,7 +292,7 @@ def test_xdsmize_bilevel(options) -> None:
 
 
 def test_xdsmize_nested_chain(options) -> None:
-    """Test the XDSM representation of nested ``MDOChain``s.
+    """Test the XDSM representation of nested `MDOChain`s.
 
     Here, we build a 3-levels nested chain.
     """
@@ -325,7 +325,7 @@ def test_xdsmize_nested_chain(options) -> None:
 
 @pytest.mark.parametrize("mda_class", [MDAGaussSeidel, MDAJacobi, MDANewtonRaphson])
 def test_xdsmize_nested_mda(options, mda_class) -> None:
-    """Test the XDSM representation of nested ``MDA``s.
+    """Test the XDSM representation of nested `MDA`s.
 
     Here, we build a 2-levels nested mda.
     """
@@ -362,7 +362,7 @@ def test_xdsmize_nested_mda(options, mda_class) -> None:
 
 
 def test_xdsmize_nested_adapter(options) -> None:
-    """Test the XDSM representation of nested ``MDOScenarioAdapter``s.
+    """Test the XDSM representation of nested `MDOScenarioAdapter`s.
 
     Here, we build a 4-levels nested adapter.
     """
@@ -472,7 +472,7 @@ def test_xdsmize_disciplinary_opt_with_adapter(options) -> None:
 
 
 def test_xdsmize_nested_parallel_chain(options) -> None:
-    """Test the XDSM representation of nested ``MDOParallelChain``s.
+    """Test the XDSM representation of nested `MDOParallelChain`s.
 
     Here, we build a 3-levels nested chain.
     """
@@ -506,7 +506,7 @@ def test_xdsmize_nested_parallel_chain(options) -> None:
 
 
 def test_xdsmize_chain_of_parallel_chain(options) -> None:
-    """Test the XDSM representation of nested ``MDOParallelChain``s.
+    """Test the XDSM representation of nested `MDOParallelChain`s.
 
     Here, we build a 3-levels nested chain.
     """
@@ -605,7 +605,7 @@ def assert_xdsm_json_file_ok(generated_file: str, ref_file: str) -> None:
     Args:
         generated_file: The name of the generated file.
         ref_file: The name of the reference file.
-            This reference file must be located into the ``data`` directory.
+            This reference file must be located into the `data` directory.
     """
     current_dir = Path(__file__).parent
     ref_filepath = (current_dir / "data" / ref_file).with_suffix(".json")
@@ -632,7 +632,7 @@ def assert_xdsm_tikz_file_ok(generated_file: str, ref_file: str) -> None:
     Args:
         generated_file: The name of the generated file.
         ref_file: The name of the reference file.
-            This reference file must be located into the ``data`` directory.
+            This reference file must be located into the `data` directory.
     """
     current_dir = Path(__file__).parent
     ref_filepath = (current_dir / "data" / ref_file).with_suffix(".tikz")
@@ -677,7 +677,7 @@ def assert_level_xdsm_equal(
     expected: Mapping[str, NodeType | EdgeType],
     generated: Mapping[str, NodeType | EdgeType],
 ) -> None:
-    """Check the equality of ``nodes`` and ``edges`` in two different XDSM structures.
+    """Check the equality of `nodes` and `edges` in two different XDSM structures.
 
     Args:
         expected: The expected data to be compared with.

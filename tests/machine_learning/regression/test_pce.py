@@ -469,7 +469,7 @@ def test_learning_cleaning_options_logging(
 def test_learning_cleaning_max_considered_terms(
     ishigami_dataset, ishigami_probability_space, max_considered_terms, n_coefficients
 ) -> None:
-    """Check the effect of the cleaning option ``max_considered_terms``."""
+    """Check the effect of the cleaning option `max_considered_terms`."""
     pce = PCERegressor(
         ishigami_dataset,
         PCERegressor_Settings(
@@ -490,7 +490,7 @@ def test_learning_cleaning_max_considered_terms(
 def test_learning_cleaning_most_significant(
     ishigami_dataset, ishigami_probability_space, most_significant, n_coefficients
 ) -> None:
-    """Check the effect of the cleaning option ``most_significant``."""
+    """Check the effect of the cleaning option `most_significant`."""
     pce = PCERegressor(
         ishigami_dataset,
         PCERegressor_Settings(
@@ -512,7 +512,7 @@ def test_learning_cleaning_most_significant(
 def test_learning_cleaning_significance_factor(
     ishigami_dataset, ishigami_probability_space, significance_factor, n_coefficients
 ) -> None:
-    """Check the effect of the cleaning option ``significance_factor``."""
+    """Check the effect of the cleaning option `significance_factor`."""
     pce = PCERegressor(
         ishigami_dataset,
         PCERegressor_Settings(

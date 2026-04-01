@@ -740,9 +740,9 @@ def test_serialize_deserialize(
 
     Args:
         enable_statistics: Whether to enable the statistics.
-        mdo_function: The ``MDOFunction`` to be tested.
-        kwargs: The keyword arguments to instantiate the ``MDOFunction``.
-        value: The value to evaluate the ``MDOFunction``.
+        mdo_function: The `MDOFunction` to be tested.
+        kwargs: The keyword arguments to instantiate the `MDOFunction`.
+        value: The value to evaluate the `MDOFunction`.
         tmp_wd: Fixture to move into a temporary work directory.
     """
     function = mdo_function(**kwargs)
@@ -814,7 +814,7 @@ def test_f_type_sum_function_and_number(f_type) -> None:
     ],
 )
 def test_concatenate(f_out, g_out, h_out) -> None:
-    """Check ``Concatenate.output_names``."""
+    """Check `Concatenate.output_names`."""
     f = Concatenate(
         [
             MDOFunction(lambda x: x, name="f", output_names=f_out),
