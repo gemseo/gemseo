@@ -41,8 +41,8 @@ check-typing *args:
 
 # Build and serve documentation
 [group('doc')]
-doc *args:
-    DOCSTRING_INHERITANCE_ENABLE=1 uv run --python {{python}} --group doc --extra all mkdocs serve {{args}}
+doc $DOCSTRING_INHERITANCE_ENABLE="1" *args:
+    uv run --python {{python}} --group doc --extra all mkdocs serve {{args}}
 
 # Build and serve documentation without API
 [group('doc')]
