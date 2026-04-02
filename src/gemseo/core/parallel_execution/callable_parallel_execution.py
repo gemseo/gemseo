@@ -41,6 +41,7 @@ from strenum import StrEnum
 
 from gemseo.utils.constants import N_CPUS
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
+from gemseo.utils.platform import PLATFORM_IS_LINUX
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 if TYPE_CHECKING:
@@ -149,8 +150,8 @@ class CallableParallelExecution(
 
     # TODO: remove since it should be done globally with set_start_method().
     MULTI_PROCESSING_START_METHOD: ClassVar[MultiProcessingStartMethod] = (
-        get_start_method()
-    )  # noqa: E501
+        MultiProcessingStartMethod.FORK if PLATFORM_IS_LINUX else get_start_method()
+    )
     """The start method used for multiprocessing."""
 
     workers: Sequence[CallableType[ArgT, ReturnT]]

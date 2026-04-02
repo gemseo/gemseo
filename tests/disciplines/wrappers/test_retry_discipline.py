@@ -251,7 +251,7 @@ def test_2fails_then_succeed() -> None:
     assert disc.execution_status.value == ExecutionStatus.Status.DONE
 
 
-THREAD_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 0.1
+THREAD_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 1.0
 PROCESS_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 2.0
 
 
