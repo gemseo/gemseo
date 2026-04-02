@@ -15,18 +15,20 @@
 [![Paper](https://img.shields.io/badge/DOI-10.2514%2F6.2018--0657-blue)](https://arc.aiaa.org/doi/10.2514/6.2018-0657)
 
 GEMSEO® stands for "Generic Engine for Multi-disciplinary Scenarios,
-Exploration and Optimization", it features:
+Exploration and Optimization".
+
+Features:
 
 - Automatic creation and execution of MDO processes based on MDO
-  formulations
+  formulations.
 - Integration of numerical techniques in MDO processes:
   multidisciplinary coupling, optimization, design of experiments,
   visualization, surrogate models, machine learning, uncertainty, ...
 - Various ways of interfacing software and models: Python, Matlab,
   Excel, scilab, executables, ...
-- A Python library, standalone and easy to embed in simulation platforms
-- Built on NumPy, SciPy and matplotlib
-- Open-source LGPL-3.0 license
+- A Python library, standalone and easy to embed in simulation platforms.
+- Built on NumPy, SciPy and matplotlib.
+- Open-source LGPL-3.0 license.
 
 # Documentation
 
@@ -46,8 +48,6 @@ The GEMSEO community forums are available at
 questions, and share ideas about GEMSEO.
 
 # License
-
-Copyright (c) 2026 IRT Saint Exupéry.
 
 The GEMSEO source code is distributed under the GNU LGPL v3.0 license. A
 copy of it can be found in the LICENSE.txt file. The GNU LGPL v3.0
