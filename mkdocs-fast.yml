@@ -118,17 +118,6 @@ nav:
           - Extending: extending.md
 
   - How-to:
-      - High-level functions: generated/examples/bulk/api
-      - Cheat Sheets:
-          - Available: cheat_sheets/availables.md
-          - Cache: cheat_sheets/cache.md
-          - Coupling: cheat_sheets/coupling.md
-          - Design space: cheat_sheets/design_space.md
-          - Discipline: cheat_sheets/discipline.md
-          - New discipline: cheat_sheets/new_discipline.md
-          - Post: cheat_sheets/post.md
-          - Scenario: cheat_sheets/scenario.md
-          - Surrogate: cheat_sheets/surrogate.md
       - Disciplines: generated/examples/bulk/disciplines
       - Design Space: generated/examples/howtos/design_space
       - Scenario:
