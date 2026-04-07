@@ -13,13 +13,21 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""# Scatter matrix
 
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Scatter matrix."""
+## Problem
+
+Visualise pairwise relationships between all variables in a dataset at once,
+with per-class colour coding.
+
+## Solution
+
+Use [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix],
+which renders all pairwise scatter plots in off-diagonal blocks
+and per-variable distribution estimates (histogram or KDE) on the diagonal.
+
+## Step-by-step guide
+"""
 
 from __future__ import annotations
 
@@ -28,17 +36,21 @@ from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
 from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
 
 # %%
-# ## Load a dataset
+# ### 1. Build the dataset
 #
 iris = create_benchmark_dataset("IrisDataset")
 
 # %%
-# ## Plot scatter matrix
+# ### 2. Plot the scatter matrix
 #
-# We can use the [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix] plot where each non-diagonal block
-# represents the samples according to the x- and y- coordinates names
-# while the diagonal ones approximate the probability distributions of the
-# variables, using either an histogram or a kernel-density estimator.
+# Pass a `classifier` variable name to colour the points by class:
 ScatterMatrix(iris, ScatterMatrix_Settings(classifier="specy")).execute(
     save=False, show=True
 )
+
+# %%
+# ## Summary
+#
+# [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix]
+# provides an overview of all pairwise relationships in a single figure.
+# Use the `classifier` argument to colour points by a categorical variable.

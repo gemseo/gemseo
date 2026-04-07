@@ -13,13 +13,22 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""# Boxplot
 
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Boxplot."""
+## Problem
+
+Visualise the distribution of one or more variables,
+and compare distributions across multiple datasets.
+
+## Solution
+
+Use [Boxplot][gemseo.post.dataset.boxplot.Boxplot],
+which renders one box per variable component
+and supports centering, scaling, outlier removal,
+confidence intervals, orientation, and overlay of additional datasets.
+
+## Step-by-step guide
+"""
 
 from __future__ import annotations
 
@@ -31,7 +40,7 @@ from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 
 # %%
-# ## Build a dataset
+# ### 1. Build the datasets
 #
 inputs = linspace(-1, 1, 100)[:, None]
 
@@ -44,9 +53,8 @@ other_dataset.add_output_variable("y1", -(inputs**2))
 other_dataset.add_output_variable("y2", hstack((-(inputs**3), -(inputs**4))))
 
 # %%
-# ## Plot y1 and y2
+# ### 2. Plot a standard boxplot
 #
-# We can use the [Boxplot][gemseo.post.dataset.boxplot.Boxplot] plot.
 plot = Boxplot(dataset)
 plot.xlabel = "Variables"
 plot.ylabel = "Values"
@@ -54,49 +62,55 @@ plot.title = "Standard boxplots"
 plot.execute(save=False, show=True)
 
 # %%
-# ## Plot with centering
+# ### 3. Center or scale the data
 #
-# We can center the data:
+# Use `center=True` to subtract the mean from each variable:
 plot = Boxplot(dataset, Boxplot_Settings(center=True))
 plot.title = "With centering"
 plot.execute(save=False, show=True)
 
 # %%
-# ## Plot with scaling
-#
-# We can scale the data (normalization with the standard deviation):
+# Use `scale=True` to normalise by the standard deviation:
 plot = Boxplot(dataset, Boxplot_Settings(scale=True))
 plot.title = "With scaling"
 plot.execute(save=False, show=True)
 
 # %%
-# ## Plot without outliers
+# ### 4. Control outliers and confidence intervals
 #
-# We can remove the outliers:
+# Set `add_outliers=False` to hide individual outlier points:
 plot = Boxplot(dataset, Boxplot_Settings(add_outliers=False))
 plot.title = "Without outliers"
 plot.execute(save=False, show=True)
 
 # %%
-# ## Plot with confidence intervals
-#
-# We can add confidence intervals for the median:
+# Set `add_confidence_interval=True` to display confidence intervals
+# for the median:
 plot = Boxplot(dataset, Boxplot_Settings(add_confidence_interval=True))
 plot.title = "Confidence intervals"
 plot.execute(save=False, show=True)
 
 # %%
-# ## Plot horizontally
+# ### 5. Change the orientation
 #
-# We can use horizontal bars:
+# Set `use_vertical_bars=False` to display horizontal boxes:
 plot = Boxplot(dataset, Boxplot_Settings(use_vertical_bars=False))
 plot.title = "Horizontal bars"
 plot.execute(save=False, show=True)
 
 # %%
-# ## Plot with other datasets
+# ### 6. Overlay an additional dataset
 #
-# We can add a dataset:
+# Pass extra datasets as positional arguments to compare distributions side by side:
 plot = Boxplot(dataset, Boxplot_Settings(datasets=[other_dataset]))
 plot.title = "Additional dataset"
 plot.execute(save=False, show=True)
+
+# %%
+# ## Summary
+#
+# [Boxplot][gemseo.post.dataset.boxplot.Boxplot] displays the distribution
+# of each variable component as a box.
+# Use `center`, `scale`, `add_outliers`, `add_confidence_interval`
+# and `use_vertical_bars` to adjust the representation,
+# and pass additional datasets to compare distributions side by side.

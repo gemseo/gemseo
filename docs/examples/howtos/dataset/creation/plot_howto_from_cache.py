@@ -19,10 +19,21 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Convert a cache to a dataset.
+"""# Convert a cache to a dataset
 
-In this example,
-we will see how to convert a cache to a [Dataset][gemseo.datasets.dataset.Dataset].
+
+## Problem
+
+The executions of your discipline have been stored in a cache,
+and you want to retrieve a [Dataset][gemseo.datasets.dataset.Dataset] from it.
+
+## Solution
+
+The [to_dataset()][gemseo.caches.base_cache.BaseCache.to_dataset]
+method can be used to create a
+[Dataset][gemseo.datasets.dataset.Dataset] from your cache.
+
+## Step-by-step guide
 """
 
 from __future__ import annotations
@@ -32,6 +43,8 @@ from numpy import array
 from gemseo.caches.memory_full_cache import MemoryFullCache
 
 # %%
+# ### 1. Create a cache
+#
 # Let us consider an [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache] storing two parameters:
 #
 # - x with dimension 1 which is a cache input,
@@ -42,6 +55,8 @@ cache[{"x": array([1.0])}] = ({"y": array([2.0, 3.0])}, None)
 cache[{"x": array([4.0])}] = ({"y": array([5.0, 6.0])}, None)
 
 # %%
+# ### 2. Convert to dataset
+#
 # This cache can be converted to an [IODataset][gemseo.datasets.io_dataset.IODataset]
 # using its method [to_dataset()][gemseo.caches.memory_full_cache.MemoryFullCache.to_dataset]:
 dataset = cache.to_dataset("toy_cache")
@@ -53,3 +68,9 @@ dataset
 # We can avoid this categorization and simply build a [Dataset][gemseo.datasets.dataset.Dataset]:
 dataset = cache.to_dataset("toy_cache", categorize=False)
 dataset
+
+# %%
+# ## Summary
+#
+# A [Dataset][gemseo.datasets.dataset.Dataset] can be generated from a cache
+# by using the [to_dataset()][gemseo.caches.base_cache.BaseCache.to_dataset] method.

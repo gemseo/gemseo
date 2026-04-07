@@ -62,6 +62,9 @@ nav:
           - Tutorial - Wrap an executable: generated/examples/tutorials/basic/plot_tutorial_discipline_executable.md
           - Tutorial - The design space: generated/examples/tutorials/basic/plot_tutorial_design_space.md
           - Tutorial - The Multidisciplinary Design Analysis: generated/examples/tutorials/basic/plot_tutorial_create_mda.md
+          - Tutorial - Execute your first Design of Experiment (DoE): generated/examples/tutorials/basic/plot_tutorial_evaluations.md
+          - Tutorial - Execute your first Multi-Disciplinary Optimization: generated/examples/tutorials/basic/plot_tutorial_mdo.md
+          - Tutorial - Manipulating a dataset: generated/examples/tutorials/basic/plot_tutorial_dataset.md
           - Define an MDO problem: interface/study_analysis.md
           - Optimization and DOE framework: mdo/optimization.md
           - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/bulk/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
@@ -137,7 +140,7 @@ nav:
           - Post-processor settings: settings/post_processing_settings.md
       - Post-processing:
           - How to deal with post-processing: postprocessing/postprocessing.md
-          - Dataset: generated/examples/bulk/dataset
+          - Dataset: generated/examples/howtos/dataset
           - Post-process an optimization problem: generated/examples/bulk/post_process
       - Machine learning: generated/examples/howtos/machine_learning
       - Cache: generated/examples/howtos/cache

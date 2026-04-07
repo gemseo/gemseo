@@ -13,13 +13,21 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""# Scatter chart
 
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Scatter."""
+## Problem
+
+Visualise the relationship between two variables `x` and `y` as individual points,
+with optional per-point colour coding.
+
+## Solution
+
+Use [Scatter][gemseo.post.dataset.scatter.Scatter],
+which renders a scatter plot of `y` against `x`
+and supports per-point colour assignment.
+
+## Step-by-step guide
+"""
 
 from __future__ import annotations
 
@@ -32,20 +40,30 @@ from gemseo.post.dataset.scatter import Scatter
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
 
 # %%
-# ## Build a dataset
+# ### 1. Build the dataset
 #
 inputs = linspace(0, 1, 20)[:, None]
 outputs = sin(2 * pi * inputs)
-color = ["b" if abs(output) > 0.5 else "r" for output in outputs]
 
 dataset = Dataset()
 dataset.add_variable("x", inputs, "inputs")
 dataset.add_variable("y", outputs, "outputs")
 
 # %%
-# ## Plot y vs x
+# ### 2. Define a per-point colour
 #
-# We can use the [Scatter][gemseo.post.dataset.scatter.Scatter] plot
+# Each point is coloured according to whether its output value exceeds 0.5 in magnitude:
+color = ["b" if abs(output) > 0.5 else "r" for output in outputs]
+
+# %%
+# ### 3. Plot the scatter chart
+#
 plot = Scatter(dataset, Scatter_Settings(x="x", y="y"))
 plot.color = color
 plot.execute(save=False, show=True)
+
+# %%
+# ## Summary
+#
+# Pass the variable names as `x` and `y` to [Scatter][gemseo.post.dataset.scatter.Scatter]
+# and set `color` to a list of colour values to highlight specific points.

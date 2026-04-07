@@ -13,22 +13,20 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""# Bar chart
 
-"""# Interactive visualization using plotly.
+## Problem
 
-By default,
-GEMSEO uses [matplotlib](https://matplotlib.org/) for data visualization.
-However,
-for web-based interactive visualizations,
-[plotly](https://plotly.com/python/) can be appreciated.
-For this reason,
-GEMSEO proposes plotly versions of some visualizations
-which can be generated using the option `file_format="html"`
-of the method [DatasetPlot.execute()][gemseo.post.dataset.base.BaseDatasetPlot.execute].
-In that case,
-this method returns a list of plotly figures.
-When `save=True` (default), the figures are saved on the disk.
-When `show=True`, the figures are displayed in the web browser.
+Visualise and compare multiple series of values across several variables
+as grouped bars.
+
+## Solution
+
+Use [BarPlot][gemseo.post.dataset.bars.BarPlot],
+which renders one colour per dataset row (series)
+with values grouped by variable name along the x-axis.
+
+## Step-by-step guide
 """
 
 from __future__ import annotations
@@ -40,8 +38,9 @@ from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.bars_settings import BarPlot_Settings
 
 # %%
-# In this example,
-# we create a simple dataset:
+# ### 1. Build the dataset
+#
+# Each row is one series; columns are the variable components to compare:
 dataset = Dataset()
 dataset.add_variable("x1", array([[0.25, 0.35], [0.75, 0.85]]))
 dataset.add_variable("x2", array([[0.5], [0.5]]))
@@ -49,25 +48,22 @@ dataset.add_variable("x3", array([[0.75], [0.25]]))
 dataset.index = ["series_1", "series_2"]
 
 # %%
-# then,
-# we create a [BarPlot][gemseo.post.dataset.bars.BarPlot]:
+# ### 2. Plot the bar chart
+#
+# Use `n_digits` to control the number of digits displayed on the bars
+# and `colormap` to set the colour scheme:
 plot = BarPlot(dataset, BarPlot_Settings(n_digits=2))
 plot.colormap = "PiYG"
+plot.execute(save=False, show=True)
 
 # %%
-# generate the plotly figure:
-plotly_figure = plot.execute(save=False, file_format="html")[0]
-
-# %%
-# and visualize it:
-plotly_figure
-
-# %%
-# !!! warning
+# ## Summary
 #
-#     The plotly figures can be truncated both at the bottom and on the right
-#     in the web documentation.
-#     This an issue related to the documentation plugin. The problem is
-#     solved by resizing the window.
-#     Alternatively, setting `show=True` will display the figure in a
-#     new tab of your web browser.
+# [BarPlot][gemseo.post.dataset.bars.BarPlot] displays each dataset row as a series
+# of grouped bars, one per variable component.
+# The dataset index is used as series labels.
+#
+# ## One step further
+#
+# Set `file_format="html"` in `execute()` to produce an interactive plotly figure.
+# See [How to generate an interactive plot][how-to-generate-an-interactive-plot] for details.
