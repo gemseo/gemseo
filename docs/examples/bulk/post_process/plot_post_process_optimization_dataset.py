@@ -97,7 +97,7 @@ recovered_dataset = OptimizationDataset.from_csv("results.csv")
 #     Since the data recovered from the csv comes from an existing
 #     [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset], the variables are already grouped. Details on how to
 #     group the variables in case of importing ungrouped data can be found
-#     in [this example][dataset-manipulation].
+#     in [Tutorial - Manipulating a dataset][tutorial-manipulating-a-dataset].
 
 # %%
 # In order to use an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset] we must attribute some optimization

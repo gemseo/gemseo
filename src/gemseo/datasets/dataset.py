@@ -855,10 +855,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         """Create a dataset from a text file.
 
         See Also:
-            If the file contains multi-index information
-            and not just an array,
-            the [from_csv()][gemseo.datasets.dataset.Dataset.from_csv] method
-            is better suited.
+            For files with multi-index information (group, variable, component)
+            encoded in the first 3 rows, prefer
+            [from_csv()][gemseo.datasets.dataset.Dataset.from_csv].
 
         Args:
             file_path: The path to the file containing the data.

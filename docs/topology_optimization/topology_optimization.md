@@ -18,7 +18,7 @@ search:
 # Topology optimization
 
 !!! info "Tutorial"
-    - [Tutorial - Solve a 2D L-shape topology optimization problem][tutorial-solve-a-2d-l-shape-topology-optimization-problem]
+    - [Solve a 2D L-shape topology optimization problem][tutorial-solve-a-2d-l-shape-topology-optimization-problem]
 
 In these examples, 2D topology optimization problems are solved thanks to GEMSEO.
 

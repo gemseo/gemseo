@@ -13,13 +13,19 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""# An output against an input
 
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# YvsX."""
+## Problem
+
+Visualise how a variable `y` evolves as a function of another variable `x`.
+
+## Solution
+
+Use [YvsX][gemseo.post.dataset.yvsx.YvsX],
+which renders a line or scatter plot of `y` as a function of `x`.
+
+## Step-by-step guide
+"""
 
 from __future__ import annotations
 
@@ -32,7 +38,7 @@ from gemseo.post.dataset.yvsx import YvsX
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 
 # %%
-# ## Build a dataset
+# ### 1. Build the dataset
 #
 inputs = linspace(0, 1, 10)[:, None]
 outputs = sin(2 * pi * inputs)
@@ -42,9 +48,19 @@ dataset.add_variable("x", inputs, "inputs")
 dataset.add_variable("y", outputs, "outputs")
 
 # %%
-# ## Plot y vs x
+# ### 2. Plot y vs x
 #
-# We can use the [YvsX][gemseo.post.dataset.yvsx.YvsX] plot
 plot = YvsX(dataset, YvsX_Settings(x="x", y="y"))
 plot.linestyle = "--o"
 plot.execute(save=False, show=True)
+
+# %%
+# ## Summary
+#
+# Pass the input variable name as `x` and the output variable name as `y`
+# to [YvsX][gemseo.post.dataset.yvsx.YvsX] to visualise their relationship.
+#
+# ## One step further
+#
+# To plot several lines, please have a look on
+# [Multiple variables as lines][multiple-variables-as-lines].

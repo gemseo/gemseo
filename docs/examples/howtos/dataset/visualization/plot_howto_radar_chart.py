@@ -13,13 +13,20 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""# Radar chart
 
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Radar chart."""
+## Problem
+
+Compare multiple series of values across several variables on a single polar chart.
+
+## Solution
+
+Use [RadarChart][gemseo.post.dataset.radar_chart.RadarChart],
+which renders one polygon per dataset row (series),
+with each axis corresponding to a variable component.
+
+## Step-by-step guide
+"""
 
 from __future__ import annotations
 
@@ -30,10 +37,9 @@ from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 
 # %%
-# ## Build a dataset
+# ### 1. Build the dataset
 #
-# Let us consider two series of values for the variables *x1*, *x2* and *x3*
-# which we arrange in rows in a [Dataset][gemseo.datasets.dataset.Dataset]:
+# Each row is one series; columns are the variable components to compare:
 dataset = Dataset()
 dataset.add_variable("x1", array([[0.2, 0.4, 0.5], [0.1, 0.3, 0.5]]))
 dataset.add_variable("x2", array([[0.6], [0.5]]))
@@ -41,11 +47,18 @@ dataset.add_variable("x3", array([[0.8], [0.7]]))
 dataset.index = ["series_1", "series_2"]
 
 # %%
-# ## Plot the two series on a radar chart
+# ### 2. Plot the radar chart
 #
-# We can use a [RadarChart][gemseo.post.dataset.radar_chart.RadarChart] to display these series,
-# with one color per series and the values grouped by variable name:
+# Set `connect=True` to close each polygon and `radial_ticks=True`
+# to display tick labels along the radial axis.
+# Use `rmin` and `rmax` to control the radial range:
 plot = RadarChart(dataset, RadarChart_Settings(connect=True, radial_ticks=True))
 plot.rmin = -0.5
 plot.rmax = 1.0
 plot.execute(save=False, show=True)
+
+# %%
+# ## Summary
+#
+# [RadarChart][gemseo.post.dataset.radar_chart.RadarChart] draws one polygon per row
+# of the dataset, making it easy to compare series across multiple variables at a glance.

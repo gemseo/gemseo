@@ -19,28 +19,45 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Convert a database to a dataset.
+"""# Convert a database to a dataset
 
-In this example,
-we will see how to convert a [Database][gemseo.algos.database.Database] to a [Dataset][gemseo.datasets.dataset.Dataset].
+## Problem
+
+The execution of your optimization problem has been stored in a
+[Database][gemseo.algos.database.Database],
+and you want to retrieve a [Dataset][gemseo.datasets.dataset.Dataset] from it.
+
+## Solution
+
+The [to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset]
+method can be used to create a
+[Dataset][gemseo.datasets.dataset.Dataset]
+from the database attached to your optimization problem.
+
+## Step-by-step guide
 """
 
 from __future__ import annotations
 
 from gemseo import execute_algo
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 # %%
+# ### 1. Create and execute an optimization problem
+#
 # Let us solve the [Rosenbrock][gemseo.problems.optimization.rosenbrock.Rosenbrock] optimization problem
 # with the SLSQP algorithm and 10 iterations:
 optimization_problem = Rosenbrock()
-execute_algo(optimization_problem, algo_name="SLSQP", max_iter=10)
+execute_algo(optimization_problem, settings_model=SLSQP_Settings(max_iter=10))
 
 # %%
+# ### 2. Convert to dataset
+#
 # Then,
 # the [Database][gemseo.algos.database.Database] attached to this [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
 # can be converted to an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
-# using the method [OptimizationProblem.to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset]:
+# using the method [to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset]:
 dataset = optimization_problem.to_dataset()
 dataset
 
@@ -56,8 +73,14 @@ dataset = optimization_problem.to_dataset(categorize=False)
 dataset
 # %%
 # !!! note
-#
 #     Only design variables and functions (objective function, constraints) are
 #     stored in the database. If you want to store state variables, you must add
-#     them as observables before the problem is executed. Use the
-#     [add_observable()][gemseo.algos.optimization_problem.OptimizationProblem.add_observable] method.
+#     them as observables before the problem is executed.
+#     See [Observe variables of interest][observe-variables-of-interest] for more information.
+#
+# ## Summary
+#
+# A [Dataset][gemseo.datasets.dataset.Dataset] can be generated from a
+# [Database][gemseo.algos.database.Database] attached to an
+# [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# by using the [to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset] method.

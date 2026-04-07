@@ -13,32 +13,40 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""# A scalar output against two inputs
 
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Andrews curves."""
+## Problem
+
+Visualise how a scalar quantity `z` varies over a 2D input space `(x, y)`.
+
+## Solution
+
+Use [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY],
+which renders a scatter or surface plot of `z` as a function of two input components.
+
+## Step-by-step guide
+"""
 
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.post.dataset.andrews_curves import AndrewsCurves
-from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
+from gemseo.post.dataset.zvsxy import ZvsXY
+from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 
 # %%
-# ## Load a dataset
+# ### 1. Build the dataset
 #
-iris = create_benchmark_dataset("IrisDataset")
+dataset = create_benchmark_dataset("RosenbrockDataset")
 
 # %%
-# ## Plot Andrews Curves
+# ### 2. Plot z vs x and y
 #
-# We can use the [AndrewsCurves][gemseo.post.dataset.andrews_curves.AndrewsCurves] plot
-# which can be viewed as a smooth
-# version of the parallel coordinates. Each sample is represented by a curve
-# and if there is structure in data, it may be visible in the plot.
-AndrewsCurves(iris, AndrewsCurves_Settings(classifier="specy")).execute(
-    save=False, show=True
-)
+plot = ZvsXY(dataset, ZvsXY_Settings(x=("x", 0), y=("x", 1), z="rosen"))
+plot.colormap = "viridis"
+plot.execute(save=False, show=True)
+
+# %%
+# ## Summary
+#
+# Pass the two input components as `x` and `y` and the scalar output as `z`
+# to [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY] to visualise the response surface.

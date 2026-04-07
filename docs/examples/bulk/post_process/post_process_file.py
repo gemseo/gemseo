@@ -48,7 +48,7 @@ database = import_database("my_results.hdf5")
 
 # %%
 # and convert it into a [Dataset][gemseo.datasets.dataset.Dataset]` to handle it more easily
-# (see [this example][dataset-manipulation]):
+# (see [Tutorial - Manipulating a dataset][tutorial-manipulating-a-dataset]):
 dataset = database.to_dataset()
 
 # %%

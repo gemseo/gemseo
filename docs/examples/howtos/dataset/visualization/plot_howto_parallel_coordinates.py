@@ -13,13 +13,21 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+"""# Parallel coordinates chart
 
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Parallel coordinates."""
+## Problem
+
+Visualise multiple variables simultaneously across many samples,
+and identify patterns or clusters by class.
+
+## Solution
+
+Use [ParallelCoordinates][gemseo.post.dataset.parallel_coordinates.ParallelCoordinates],
+a.k.a. cobweb plot, where each sample is represented as a polyline
+whose nodes are positioned along one axis per variable.
+
+## Step-by-step guide
+"""
 
 from __future__ import annotations
 
@@ -30,16 +38,22 @@ from gemseo.post.dataset.parallel_coordinates_settings import (
 )
 
 # %%
-# ## Load a dataset
+# ### 1. Build the dataset
+#
 iris = create_benchmark_dataset("IrisDataset")
 
 # %%
-# ## Plot parallel coordinates
-# We can use the
-# [ParallelCoordinates][gemseo.post.dataset.parallel_coordinates.ParallelCoordinates] plot,
-# a.k.a. cowebplot, where each samples is represented by a continuous straight
-# line in pieces whose nodes are indexed by the variables names and measure the
-# variables values.
+# ### 2. Plot the parallel coordinates chart
+#
+# Pass a `classifier` variable name to colour each polyline by class:
 ParallelCoordinates(iris, ParallelCoordinates_Settings(classifier="specy")).execute(
     save=False, show=True
 )
+
+# %%
+# ## Summary
+#
+# [ParallelCoordinates][gemseo.post.dataset.parallel_coordinates.ParallelCoordinates]
+# displays each sample as a polyline across all variable axes.
+# Use the `classifier` argument to colour lines by a categorical variable
+# and reveal cluster structure.
