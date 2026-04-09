@@ -16,12 +16,12 @@
 
 from __future__ import annotations
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.uncertainty.ishigami.functions import compute_gradient
 from gemseo.problems.uncertainty.ishigami.functions import compute_output
 
 
-class IshigamiFunction(MDOFunction):
+class IshigamiFunction(ArrayFunction):
     """The Ishigami function."""
 
     def __init__(self) -> None:  # noqa: D107

@@ -18,21 +18,21 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class LinearCompositeFunction(MDOFunction):
+class LinearCompositeFunction(ArrayFunction):
     r"""Linear composite function.
 
     Given a matrix $A$, a function $f$ and an input vector $x$,
     the linear composite function outputs $f(Ax)$.
     """
 
-    _function: MDOFunction
+    _function: ArrayFunction
     r"""The function $f$."""
 
     _matrix: RealArray
@@ -40,7 +40,7 @@ class LinearCompositeFunction(MDOFunction):
 
     def __init__(
         self,
-        function: MDOFunction,
+        function: ArrayFunction,
         matrix: RealArray,
     ) -> None:
         r"""

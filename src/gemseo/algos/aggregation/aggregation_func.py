@@ -38,7 +38,7 @@ from gemseo.algos.aggregation.core import compute_total_ks_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_agg_jac
 from gemseo.algos.aggregation.core import compute_total_sum_square_positive_agg_jac
 from gemseo.algos.aggregation.core import compute_upper_bound_ks_agg
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -106,11 +106,11 @@ def check_constraint_type(
 
 @check_constraint_type("eq")
 def aggregate_sum_square(
-    constr_fct: MDOFunction,
+    constr_fct: ArrayFunction,
     indices: Sequence[int] | None = None,
     scale: float | ndarray = 1.0,
     output_suffix: str = "",
-) -> MDOFunction:
+) -> ArrayFunction:
     """Transform a vector of equalities into a sum of squared constraints.
 
     Args:
@@ -148,11 +148,11 @@ def aggregate_sum_square(
 
 @check_constraint_type("ineq")
 def aggregate_positive_sum_square(
-    constr_fct: MDOFunction,
+    constr_fct: ArrayFunction,
     indices: Sequence[int] | None = None,
     scale: float | ndarray = 1.0,
     output_suffix: str = "",
-) -> MDOFunction:
+) -> ArrayFunction:
     """Transform a vector of equalities into a sum of squared constraints.
 
     Args:
@@ -190,11 +190,11 @@ def aggregate_positive_sum_square(
 
 @check_constraint_type("ineq")
 def aggregate_max(
-    constr_fct: MDOFunction,
+    constr_fct: ArrayFunction,
     indices: Sequence[int] | None = None,
     scale: float | ndarray = 1.0,
     output_suffix: str = "",
-) -> MDOFunction:
+) -> ArrayFunction:
     """Transform a vector of equalities into a max of all values.
 
     Args:
@@ -230,12 +230,12 @@ def aggregate_max(
 
 @check_constraint_type("ineq")
 def aggregate_iks(
-    constr_fct: MDOFunction,
+    constr_fct: ArrayFunction,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
     scale: float | ndarray = 1.0,
     output_suffix: str = "",
-) -> MDOFunction:
+) -> ArrayFunction:
     """Constraints aggregation method for inequality constraints.
 
     !!! quote "References"
@@ -283,12 +283,12 @@ def aggregate_iks(
 
 @check_constraint_type("ineq")
 def aggregate_lower_bound_ks(
-    constr_fct: MDOFunction,
+    constr_fct: ArrayFunction,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
     scale: float | ndarray = 1.0,
     output_suffix: str = "",
-) -> MDOFunction:
+) -> ArrayFunction:
     """Aggregate constraints for inequality constraints.
 
     !!! quote "References"
@@ -341,12 +341,12 @@ def aggregate_lower_bound_ks(
 
 @check_constraint_type("ineq")
 def aggregate_upper_bound_ks(
-    constr_fct: MDOFunction,
+    constr_fct: ArrayFunction,
     indices: Sequence[int] | None = None,
     rho: float = 1e2,
     scale: float | ndarray = 1.0,
     output_suffix: str = "",
-) -> MDOFunction:
+) -> ArrayFunction:
     """Aggregate constraints for inequality constraints.
 
     !!! quote "References"
@@ -398,14 +398,14 @@ def aggregate_upper_bound_ks(
 
 
 def _create_mdofunc(
-    constr_fct: MDOFunction,
+    constr_fct: ArrayFunction,
     compute_fct: Callable[[ndarray], ndarray],
     compute_jac_fct: Callable[[ndarray], ndarray],
     new_name: str,
     new_expr: str,
     new_output_names: Sequence[str],
-) -> MDOFunction:
-    """Create an aggregated MDOFunction from a constraint function.
+) -> ArrayFunction:
+    """Create an aggregated ArrayFunction from a constraint function.
 
     Args:
         constr_fct: The initial constraint function.
@@ -416,9 +416,9 @@ def _create_mdofunc(
         new_output_names: The aggregated function output names.
 
     Returns:
-        The aggregated MDOFunction.
+        The aggregated ArrayFunction.
     """
-    return MDOFunction(
+    return ArrayFunction(
         compute_fct,
         name=new_name,
         f_type=constr_fct.f_type,

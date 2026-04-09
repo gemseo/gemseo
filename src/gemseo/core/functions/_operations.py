@@ -34,9 +34,9 @@ from numpy import tile
 if TYPE_CHECKING:
     from re import Pattern
 
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
-    from gemseo.core.mdo_functions.mdo_function import OperatorType
-    from gemseo.core.mdo_functions.mdo_function import OutputType
+    from gemseo.core.functions.array_function import ArrayFunction
+    from gemseo.core.functions.array_function import OperatorType
+    from gemseo.core.functions.array_function import OutputType
     from gemseo.typing import NumberArray
 
 
@@ -52,16 +52,16 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        cls: type[MDOFunction],
-        first_operand: MDOFunction,
-        second_operand: MDOFunction | ndarray | Number,
+        cls: type[ArrayFunction],
+        first_operand: ArrayFunction,
+        second_operand: ArrayFunction | ndarray | Number,
         operator: OperatorType,
         operator_repr: str,
     ) -> None:
         """
         Args:
             cls: The type of
-                [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction].
+                [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction].
             first_operand: The other function or number.
             second_operand: The operator as a function pointer.
             operator: The operator.
@@ -70,7 +70,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             TypeError: When the second operand is
                 neither an
-                [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
+                [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]
                 nor a `Number`.
             RuntimeError: When one operand expects normalized inputs
                 while the other does not.
@@ -88,7 +88,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         if not self._second_operand_is_number and not self._second_operand_is_func:
             msg = (
                 f"Unsupported {operator_repr} operator "
-                f"for MDOFunction and {type(self._second_operand)}."
+                f"for ArrayFunction and {type(self._second_operand)}."
             )
             raise TypeError(msg)
 
@@ -267,9 +267,9 @@ class _AdditionFunctionMaker(_OperationFunctionMaker):
 
     def __init__(
         self,
-        cls: type[MDOFunction],
-        first_operand: MDOFunction,
-        second_operand: MDOFunction | Number,
+        cls: type[ArrayFunction],
+        first_operand: ArrayFunction,
+        second_operand: ArrayFunction | Number,
         inverse: bool = False,
     ) -> None:
         """
@@ -306,9 +306,9 @@ class _MultiplicationFunctionMaker(_OperationFunctionMaker):
 
     def __init__(
         self,
-        cls: type[MDOFunction],
-        first_operand: MDOFunction,
-        second_operand: MDOFunction | OutputType,
+        cls: type[ArrayFunction],
+        first_operand: ArrayFunction,
+        second_operand: ArrayFunction | OutputType,
         inverse: bool = False,
     ) -> None:
         """

@@ -36,7 +36,7 @@ from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline.discipline import Discipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -166,7 +166,7 @@ def test_preprocess_functions_vectorize(
         expected = array([1.0, 9.0])
 
     problem = EvaluationProblem(design_space)
-    problem.add_observable(MDOFunction(f_vectorized, name="out", jac=dfdx_vectorized))
+    problem.add_observable(ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized))
     problem.preprocess_functions(
         use_database=use_database,
         vectorize=vectorize,
@@ -187,7 +187,7 @@ def test_doe_vectorize_evaluation_problem(
 ):
     """Check the DOE option 'vectorize' with an EvaluationProblem."""
     problem = EvaluationProblem(design_space)
-    problem.add_observable(MDOFunction(f_vectorized, name="out", jac=dfdx_vectorized))
+    problem.add_observable(ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized))
     callback = Callback()
 
     lib = SciPyDOE("MC")
@@ -235,7 +235,7 @@ def test_doe_vectorize_optimization_problem(
 ):
     """Check the DOE option 'vectorize' with an OptimizationProblem."""
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(f_vectorized, name="out", jac=dfdx_vectorized)
+    problem.objective = ArrayFunction(f_vectorized, name="out", jac=dfdx_vectorized)
 
     lib = SciPyDOE("MC")
     lib.execute(

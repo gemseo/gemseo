@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.functions.function_from_discipline import FunctionFromDiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 

@@ -52,7 +52,7 @@ from numpy import sin as np_sin
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -82,10 +82,10 @@ class Viennet(OptimizationProblem):
         super().__init__(design_space)
 
         # Set the objective function.
-        self.objective = MDOFunction(
+        self.objective = ArrayFunction(
             self._compute_output,
             name=self.__class__.__name__,
-            f_type=MDOFunction.FunctionType.OBJ,
+            f_type=ArrayFunction.FunctionType.OBJ,
             jac=self._compute_jacobian,
             expr="[(x**2 + y**2) / 2 + sin(x**2 + y**2), 9*x - (y-1)**2,"
             "(3*x - 2*y + 4)**2 / 8 + (x - y + 1)^2 / 27 + 15,"

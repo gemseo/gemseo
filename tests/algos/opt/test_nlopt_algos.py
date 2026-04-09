@@ -38,7 +38,7 @@ from gemseo.algos.opt.nlopt.settings.nlopt_bfgs_settings import NLOPT_BFGS_Setti
 from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
@@ -93,7 +93,7 @@ class TestNLOPT(TestCase):
             "x4", 1, DesignSpace.DesignVariableType.FLOAT, -inf, inf, 0.0
         )
         problem = OptimizationProblem(design_space)
-        problem.objective = MDOFunction(
+        problem.objective = ArrayFunction(
             rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
         )
         OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=NLOPT_COBYLA_Settings())
@@ -105,7 +105,7 @@ class TestNLOPT(TestCase):
                 "x1", 2, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
             )
             problem = OptimizationProblem(design_space)
-            problem.objective = MDOFunction(
+            problem.objective = ArrayFunction(
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
             )
             res = OPTIMIZATION_LIBRARY_FACTORY.execute(
@@ -138,7 +138,7 @@ def test_cast_to_float() -> None:
     space = DesignSpace()
     space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     problem = OptimizationProblem(space)
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         lambda x: x, name="my_function", jac=lambda x: array([[1.0]])
     )
     res = OPTIMIZATION_LIBRARY_FACTORY.execute(

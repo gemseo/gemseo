@@ -20,8 +20,8 @@ import pytest
 
 from gemseo.algos.constraint_tolerances import ConstraintTolerances
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdo_functions.collections.constraints import Constraints
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.collections.constraints import Constraints
 
 
 @pytest.fixture
@@ -31,10 +31,10 @@ def constraints(problem) -> Constraints:
     design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)
     constraints = Constraints(design_space, ConstraintTolerances())
     constraints.append(
-        MDOFunction(lambda x: x, name="c1", f_type=MDOFunction.FunctionType.EQ)
+        ArrayFunction(lambda x: x, name="c1", f_type=ArrayFunction.FunctionType.EQ)
     )
     constraints.append(
-        MDOFunction(lambda x: x, name="c2", f_type=MDOFunction.FunctionType.EQ)
+        ArrayFunction(lambda x: x, name="c2", f_type=ArrayFunction.FunctionType.EQ)
     )
     return constraints
 

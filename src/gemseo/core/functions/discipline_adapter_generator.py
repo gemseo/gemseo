@@ -24,7 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
+from gemseo.core.functions.discipline_adapter import DisciplineAdapter
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
@@ -43,7 +43,7 @@ class DisciplineAdapterGenerator:
 
     Given a discipline,
     a
-    [DisciplineAdapter][gemseo.core.mdo_functions.discipline_adapter.DisciplineAdapter]
+    [DisciplineAdapter][gemseo.core.functions.discipline_adapter.DisciplineAdapter]
     computes specific outputs from specific inputs.
     """
 

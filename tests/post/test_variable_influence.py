@@ -31,7 +31,7 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.post import VariableInfluence_Settings
 from gemseo.post.factory import POST_FACTORY
@@ -157,11 +157,11 @@ def test_visible_labels(size, baseline_images) -> None:
     design_space = DesignSpace()
     design_space.add_variable("x", size=size, lower_bound=0, upper_bound=1, value=0.5)
     problem = OptimizationProblem(design_space)
-    func = MDOFunction(sum, name="obj", jac=lambda x: array([1.0] * size))
+    func = ArrayFunction(sum, name="obj", jac=lambda x: array([1.0] * size))
     problem.objective = func
     problem.minimize_objective = False
-    func = MDOFunction(lambda x: x * 0.5, name="eq", jac=lambda x: 0.5 * eye(size))
-    problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.EQ)
+    func = ArrayFunction(lambda x: x * 0.5, name="eq", jac=lambda x: 0.5 * eye(size))
+    problem.add_constraint(func, constraint_type=ArrayFunction.ConstraintType.EQ)
     doe = DiagonalDOE()
     doe.execute(problem, settings=DiagonalDOE_Settings(n_samples=size, eval_jac=True))
     post = VariableInfluence(problem)

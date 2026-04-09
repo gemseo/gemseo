@@ -36,7 +36,7 @@ from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.pydantic import create_model
@@ -88,7 +88,7 @@ def test_is_algorithm_suited_has_eq_constraints() -> None:
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
     problem.add_constraint(
-        MDOFunction(lambda x: x, name="c", f_type=MDOFunction.FunctionType.EQ)
+        ArrayFunction(lambda x: x, name="c", f_type=ArrayFunction.FunctionType.EQ)
     )
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
@@ -106,7 +106,7 @@ def test_is_algorithm_suited_has_ineq_constraints() -> None:
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
     problem.add_constraint(
-        MDOFunction(lambda x: x, name="c", f_type=MDOFunction.FunctionType.INEQ)
+        ArrayFunction(lambda x: x, name="c", f_type=ArrayFunction.FunctionType.INEQ)
     )
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
@@ -123,7 +123,7 @@ def test_is_algorithm_suited_pbm_type() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x**2, "f")
+    problem.objective = ArrayFunction(lambda x: x**2, "f")
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
         BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
@@ -166,7 +166,7 @@ def test_execute_without_current_value() -> None:
     design_space.add_variable("x")
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: (x - 1) ** 2, name="obj")
+    problem.objective = ArrayFunction(lambda x: (x - 1) ** 2, name="obj")
     driver = OPTIMIZATION_LIBRARY_FACTORY.create("NLOPT_COBYLA")
     driver.execute(problem, settings=NLOPT_COBYLA_Settings(max_iter=1))
     assert design_space.get_current_value(["x"]) == 0.0

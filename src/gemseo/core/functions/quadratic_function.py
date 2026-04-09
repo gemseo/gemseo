@@ -23,17 +23,17 @@ from numpy import ndarray
 from numpy import zeros
 from numpy import zeros_like
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.linear_function import LinearFunction
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.core.mdo_functions.mdo_function import OutputType
+    from gemseo.core.functions.array_function import OutputType
     from gemseo.typing import NumberArray
 
 
-class MDOQuadraticFunction(MDOFunction):
+class QuadraticFunction(ArrayFunction):
     r"""Scalar-valued quadratic multivariate function defined by.
 
     * a *square* matrix $A$ of second-order coefficients
@@ -56,7 +56,7 @@ class MDOQuadraticFunction(MDOFunction):
         self,
         quad_coeffs: NumberArray,
         name: str,
-        f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
+        f_type: ArrayFunction.FunctionType = ArrayFunction.FunctionType.NONE,
         input_names: Sequence[str] = (),
         linear_coeffs: NumberArray | None = None,
         value_at_zero: OutputType = 0.0,
@@ -71,7 +71,7 @@ class MDOQuadraticFunction(MDOFunction):
         self._input_dim = 0
         self._quad_coeffs = array([])
         self.quad_coeffs = quad_coeffs  # sets the input dimension
-        self._linear_part = MDOLinearFunction(zeros(self._input_dim), f"{name}_lin")
+        self._linear_part = LinearFunction(zeros(self._input_dim), f"{name}_lin")
         new_input_names = self.generate_input_names(self._input_dim, input_names)
 
         # Build the first-order term

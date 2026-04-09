@@ -30,7 +30,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.core.discipline import Discipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -76,7 +76,8 @@ class ScalableDiscipline(Discipline):
 @pytest.mark.parametrize("n", [10, 50, 100])
 @pytest.mark.parametrize("p", [1, 2])
 @pytest.mark.parametrize(
-    "constraint_kind", [MDOFunction.ConstraintType.INEQ, MDOFunction.ConstraintType.EQ]
+    "constraint_kind",
+    [ArrayFunction.ConstraintType.INEQ, ArrayFunction.ConstraintType.EQ],
 )
 @pytest.mark.parametrize(
     "algo",
@@ -88,7 +89,7 @@ class ScalableDiscipline(Discipline):
     ],
 )
 def test_resolution(algo, n, p, constraint_kind) -> None:
-    if constraint_kind == MDOFunction.ConstraintType.EQ and algo in {
+    if constraint_kind == ArrayFunction.ConstraintType.EQ and algo in {
         "SLSQP",
         "NLOPT_SLSQP",
     }:

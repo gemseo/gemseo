@@ -31,7 +31,7 @@ from gemseo import execute_algo
 from gemseo.algos.database import Database
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaFleming
 from gemseo.problems.multiobjective_optimization.poloni import Poloni
@@ -101,10 +101,10 @@ def test_mnbi_parallel(binh_korn):
 
     Check that observables are stored as well.
     """
-    observable = MDOFunction(
+    observable = ArrayFunction(
         identity,
         name="identity",
-        f_type=MDOFunction.FunctionType.OBS,
+        f_type=ArrayFunction.FunctionType.OBS,
         input_names=["x", "y"],
         dim=2,
     )
@@ -145,10 +145,10 @@ def test_protected_const(binh_korn):
     """Test that an exception is raised for a protected constraint name."""
     from gemseo.algos.opt.mnbi.mnbi import MNBI
 
-    protected_constraint = MDOFunction(
+    protected_constraint = ArrayFunction(
         lambda x: x,
         name=MNBI._MNBI__SUB_OPTIM_CONSTRAINT_NAME,
-        f_type=MDOFunction.ConstraintType.INEQ,
+        f_type=ArrayFunction.ConstraintType.INEQ,
     )
     binh_korn.add_constraint(protected_constraint)
     with pytest.raises(

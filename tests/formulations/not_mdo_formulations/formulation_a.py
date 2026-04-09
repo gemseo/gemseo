@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
     from gemseo import Discipline
     from gemseo.core.discipline.base_discipline import BaseDiscipline
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
 
 
 class ANotMDOFormulation(NotMDOFormulation):
@@ -33,7 +33,7 @@ class ANotMDOFormulation(NotMDOFormulation):
 
     def create_objective(
         self, output_names: Iterable[str], objective_name: str = ""
-    ) -> MDOFunction: ...
+    ) -> ArrayFunction: ...
 
     def add_observable(
         self,
@@ -46,7 +46,7 @@ class ANotMDOFormulation(NotMDOFormulation):
     def create_constraint(
         self,
         output_names: Iterable[str],
-        constraint_type: MDOFunction.ConstraintType,
+        constraint_type: ArrayFunction.ConstraintType,
         constraint_name: str,
         value: float,
         positive: bool,

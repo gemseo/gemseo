@@ -42,7 +42,7 @@ from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.discipline import Discipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
@@ -399,7 +399,7 @@ def test_derivatives_on_design_boundaries(
     )
 
     problem = OptimizationProblem(design_space, differentiation_method=method)
-    problem.objective = MDOFunction(lambda x: x**2, name="my_objective")
+    problem.objective = ArrayFunction(lambda x: x**2, name="my_objective")
 
     OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, settings=SLSQP_Settings(max_iter=1, normalize_design_space=normalize)

@@ -40,7 +40,7 @@ from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDesc
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.progress_bar_data.data import ProgressBarData
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
@@ -126,16 +126,16 @@ def test_progress_bar(
 
 @pytest.fixture
 def objective_and_problem_for_tests(constraints_before_obj):
-    f = MDOFunction(
+    f = ArrayFunction(
         func=dummy_sleep_function,
         name="f",
-        f_type=MDOFunction.FunctionType.OBJ,
+        f_type=ArrayFunction.FunctionType.OBJ,
         expr="f(x)",
     )
-    g = MDOFunction(
+    g = ArrayFunction(
         func=dummy_sleep_function,
         name="g",
-        f_type=MDOFunction.ConstraintType.INEQ,
+        f_type=ArrayFunction.ConstraintType.INEQ,
         expr="g(x)",
     )
     design_space = DesignSpace()
@@ -200,7 +200,7 @@ def test_feasibility(caplog, n_processes):
     """Check that the feasibility is correctly logged."""
     problem = Rosenbrock()
     problem.add_constraint(
-        MDOFunction(sum, name="g"), value=0.0, constraint_type="ineq"
+        ArrayFunction(sum, name="g"), value=0.0, constraint_type="ineq"
     )
     CustomDOE().execute(
         problem,

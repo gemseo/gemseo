@@ -34,9 +34,9 @@ from numpy import empty
 from numpy import zeros
 from scipy.sparse import block_array
 
-from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.functions.taylor_polynomials import compute_linear_approximation
 from gemseo.formulations.base_settings import BaseFormulationSettings
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 from gemseo.utils.discipline import check_disciplines_consistency
@@ -80,7 +80,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     problem: EvaluationProblem
     """The evaluation problem."""
 
-    extra_constraint_functions: list[MDOFunction]
+    extra_constraint_functions: list[ArrayFunction]
     """A collection of constraint functions automatically created by the formulation,
     in addition to those manually created by the user with `create_constraint`."""
 
@@ -123,7 +123,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     @abstractmethod
     def create_objective(
         self, output_names: Iterable[str], objective_name: str = ""
-    ) -> MDOFunction:
+    ) -> ArrayFunction:
         """Create an objective function associated with outputs to be minimized.
 
         Args:
@@ -199,12 +199,12 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     def create_constraint(
         self,
         output_names: Iterable[str],
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
+        constraint_type: ArrayFunction.ConstraintType = ArrayFunction.ConstraintType.EQ,
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
         **kwargs: Any,
-    ) -> MDOFunction | None:
+    ) -> ArrayFunction | None:
         r"""Create a constraint function associated with outputs names.
 
         An equality constraint is written as $c(x)=a$,

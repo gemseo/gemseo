@@ -20,7 +20,7 @@ from collections.abc import MutableSequence
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
@@ -30,13 +30,13 @@ if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class Functions(MutableSequence[MDOFunction]):
+class Functions(MutableSequence[ArrayFunction]):
     """A mutable sequence of functions."""
 
-    _functions: list[MDOFunction]
+    _functions: list[ArrayFunction]
     """The functions."""
 
-    _F_TYPES: ClassVar[tuple[MDOFunction.FunctionType]] = ()
+    _F_TYPES: ClassVar[tuple[ArrayFunction.FunctionType]] = ()
     """The authorized types of functions.
 
     If empty, authorized all types.
@@ -44,7 +44,7 @@ class Functions(MutableSequence[MDOFunction]):
 
     evaluate_jacobian: bool
     """Whether the
-    [evaluate()][gemseo.core.mdo_functions.collections.functions.Functions.evaluate]
+    [evaluate()][gemseo.core.functions.collections.functions.Functions.evaluate]
     method has to evaluate the Jacobian."""
 
     def __init__(self) -> None:  # noqa: D107
@@ -54,10 +54,10 @@ class Functions(MutableSequence[MDOFunction]):
     def __delitem__(self, key: int) -> None:
         del self._functions[key]
 
-    def __getitem__(self, item: int) -> MDOFunction:
+    def __getitem__(self, item: int) -> ArrayFunction:
         return self._functions[item]
 
-    def __setitem__(self, key: int, function: MDOFunction) -> None:
+    def __setitem__(self, key: int, function: ArrayFunction) -> None:
         self.__check_function_type(function)
         self.__check_function_name(
             function,
@@ -69,16 +69,16 @@ class Functions(MutableSequence[MDOFunction]):
         return len(self._functions)
 
     def insert(  # noqa: D102
-        self, index: int | slice, function: MDOFunction | Iterable[MDOFunction]
+        self, index: int | slice, function: ArrayFunction | Iterable[ArrayFunction]
     ) -> None:
-        functions = [function] if isinstance(function, MDOFunction) else function
+        functions = [function] if isinstance(function, ArrayFunction) else function
         for function_ in functions:
             self.__check_function_type(function_)
             self.__check_function_name(function_)
 
         self._functions.insert(index, function)
 
-    def __check_function_type(self, _function: MDOFunction) -> None:
+    def __check_function_type(self, _function: ArrayFunction) -> None:
         """Check if the function type is authorized.
 
         Args:
@@ -96,7 +96,7 @@ class Functions(MutableSequence[MDOFunction]):
             raise ValueError(msg)
 
     def __check_function_name(
-        self, _function: MDOFunction, all_functions: list[MDOFunction] | None = None
+        self, _function: ArrayFunction, all_functions: list[ArrayFunction] | None = None
     ):
         """Check if the function name is available.
 
@@ -120,7 +120,7 @@ class Functions(MutableSequence[MDOFunction]):
         """Reset the functions."""
         self._functions = list(self.get_originals())
 
-    def format(self, function: MDOFunction) -> MDOFunction:
+    def format(self, function: ArrayFunction) -> ArrayFunction:
         """Format a function.
 
         Args:
@@ -131,7 +131,7 @@ class Functions(MutableSequence[MDOFunction]):
         """
         return function
 
-    def get_originals(self) -> Iterator[MDOFunction]:
+    def get_originals(self) -> Iterator[ArrayFunction]:
         """Return the original functions.
 
         Yields:
@@ -154,7 +154,7 @@ class Functions(MutableSequence[MDOFunction]):
         return self.get_dimension(self)
 
     @staticmethod
-    def get_dimension(functions: Iterable[MDOFunction]) -> int:
+    def get_dimension(functions: Iterable[ArrayFunction]) -> int:
         """Compute the sum of the output dimensions of functions.
 
         Args:
@@ -204,7 +204,7 @@ class Functions(MutableSequence[MDOFunction]):
 
         return original_to_current
 
-    def get_from_name(self, name: str, get_original: bool = False) -> MDOFunction:
+    def get_from_name(self, name: str, get_original: bool = False) -> ArrayFunction:
         """Return a function from its name.
 
         Args:

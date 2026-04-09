@@ -29,7 +29,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline import Discipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.base_mdo import BaseMDOFormulation
 from gemseo.formulations.base_settings import BaseFormulationSettings
@@ -99,7 +99,7 @@ def test_cstrs(patch_mdo_formulation) -> None:
 
 
 def test_jac_sign(patch_mdo_formulation) -> None:
-    """Check the evaluation and linearization of the sinus MDOFunction."""
+    """Check the evaluation and linearization of the sinus ArrayFunction."""
     # TODO: this test should be removed as it does not check BaseMDOFormulation.
     sm = SobieskiMission()
     design_space = DesignSpace()
@@ -108,10 +108,10 @@ def test_jac_sign(patch_mdo_formulation) -> None:
     f = NewMDOFormulation(problem, [sm])
     problem.objective = f.create_objective(["y_4"])
 
-    g = MDOFunction(
+    g = ArrayFunction(
         math.sin,
         name="G",
-        f_type=MDOFunction.ConstraintType.INEQ,
+        f_type=ArrayFunction.ConstraintType.INEQ,
         jac=math.cos,
         expr="sin(x)",
         input_names=["x", "y"],

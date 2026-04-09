@@ -55,7 +55,7 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.algos.evaluation_problem import EvaluationProblem
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
     from gemseo.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
@@ -112,10 +112,10 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
     """Whether the algorithms use a unit hypercube to generate the design samples."""
 
-    __output_functions: list[MDOFunction] | None
+    __output_functions: list[ArrayFunction] | None
     """The functions to compute the outputs, if any."""
 
-    __jacobian_functions: list[MDOFunction] | None
+    __jacobian_functions: list[ArrayFunction] | None
     """The functions to compute the Jacobians, if any."""
 
     _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"_lock"}

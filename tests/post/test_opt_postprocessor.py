@@ -28,7 +28,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.datasets.optimization_metadata import OptimizationMetadata
 from gemseo.post.base_post import BasePost
@@ -115,7 +115,7 @@ def test_execute_error_with_no_dataset():
     """Tests that an error is raised when executing a post without a dataset."""
 
     problem = OptimizationProblem(DesignSpace())
-    problem.objective = MDOFunction(lambda x: x, name="f")
+    problem.objective = ArrayFunction(lambda x: x, name="f")
     with pytest.raises(
         ValueError,
         match=r"The post-processor NewBasePost cannot"

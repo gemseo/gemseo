@@ -30,10 +30,10 @@ from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.discipline_adapter_generator import (
+from gemseo.core.functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
-from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.functions.function_from_discipline import FunctionFromDiscipline
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission

@@ -32,7 +32,7 @@ from scipy.sparse import csr_array
 from scipy.sparse import dok_array
 
 from gemseo.core.execution_status import ExecutionStatus
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-class DisciplineAdapter(MDOFunction):
+class DisciplineAdapter(ArrayFunction):
     """A function executing a discipline for some inputs and outputs."""
 
     __is_linear: bool

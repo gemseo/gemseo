@@ -12,6 +12,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""The MDO functions."""
+"""The array functions.
+
+An array function ([ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]),
+wraps output and Jacobian functions
+that take an array as an argument and return an array.
+"""
 
 from __future__ import annotations

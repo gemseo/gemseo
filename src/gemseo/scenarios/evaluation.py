@@ -57,7 +57,7 @@ if TYPE_CHECKING:
     from gemseo.algos.doe.base_doe_library import BaseDOELibrary
     from gemseo.algos.driver_library import DriverLibraryFactory
     from gemseo.core.discipline.base_discipline import BaseDiscipline
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
     from gemseo.datasets.dataset import Dataset
     from gemseo.formulations.base import BaseFormulation
     from gemseo.formulations.base_settings import BaseFormulationSettings
@@ -184,7 +184,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         for constraint in self.formulation.extra_constraint_functions:
             self._add_extra_constraint(constraint)
 
-    def _add_extra_constraint(self, constraint: MDOFunction) -> None:
+    def _add_extra_constraint(self, constraint: ArrayFunction) -> None:
         """Add an extra constraint as observable.
 
         An extra constraint is a constraint that is automatically

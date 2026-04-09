@@ -39,8 +39,8 @@ from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.evaluation_counter import EvaluationCounter
 from gemseo.algos.problem_function import ProblemFunction
-from gemseo.core.mdo_functions.collections.observables import Observables
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.collections.observables import Observables
+from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.typing import RealArray
@@ -56,7 +56,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from pathlib import Path
 
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
 
 
 LOGGER = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class EvaluationProblem(BaseProblem):
 
     This problem can only include observables,
     i.e. functions with
-    [MDOFunction.FunctionType.OBS][gemseo.core.mdo_functions.mdo_function.MDOFunction.FunctionType]
+    [ArrayFunction.FunctionType.OBS][gemseo.core.functions.array_function.ArrayFunction.FunctionType]
     as function type.
     """
 
@@ -259,7 +259,7 @@ class EvaluationProblem(BaseProblem):
         return self.__observables
 
     @observables.setter
-    def observables(self, functions: Iterable[MDOFunction]) -> None:
+    def observables(self, functions: Iterable[ArrayFunction]) -> None:
         self.__observables.clear()
         self.__observables.extend(functions)
 
@@ -269,20 +269,20 @@ class EvaluationProblem(BaseProblem):
         return self.__new_iter_observables
 
     @new_iter_observables.setter
-    def new_iter_observables(self, functions: Iterable[MDOFunction]) -> None:
+    def new_iter_observables(self, functions: Iterable[ArrayFunction]) -> None:
         self.__new_iter_observables.clear()
         self.__new_iter_observables.extend(functions)
 
     def add_observable(
         self,
-        observable: MDOFunction,
+        observable: ArrayFunction,
         new_iter: bool = True,
     ) -> None:
         """Add an observable function.
 
-        It is an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
+        It is an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]
         with
-        [MDOFunction.FunctionType.OBS][gemseo.core.mdo_functions.mdo_function.MDOFunction.FunctionType]
+        [ArrayFunction.FunctionType.OBS][gemseo.core.functions.array_function.ArrayFunction.FunctionType]
         as function type.
 
         Args:
@@ -300,12 +300,12 @@ class EvaluationProblem(BaseProblem):
             self.__new_iter_observables.append(formatted_observable)
 
     @property
-    def functions(self) -> list[MDOFunction]:
+    def functions(self) -> list[ArrayFunction]:
         """All the functions except the "new iter" observables."""
         return list(self.__observables)
 
     @property
-    def original_functions(self) -> list[MDOFunction]:
+    def original_functions(self) -> list[ArrayFunction]:
         """All the original functions except those of the "new iter" observables."""
         return list(self.__observables.get_originals())
 
@@ -314,7 +314,7 @@ class EvaluationProblem(BaseProblem):
         """All the function names except those of the "new iter" observables."""
         return [function.name for function in self.functions]
 
-    def _check_function_name(self, function: MDOFunction) -> None:
+    def _check_function_name(self, function: ArrayFunction) -> None:
         """Check that the function has a valid name.
 
         Args:
@@ -367,7 +367,7 @@ class EvaluationProblem(BaseProblem):
         no_db_no_norm: bool = False,
         observable_names: Iterable[str] | None = None,
         jacobian_names: Iterable[str] | None = None,
-    ) -> tuple[list[MDOFunction], list[MDOFunction]]:
+    ) -> tuple[list[ArrayFunction], list[ArrayFunction]]:
         """Return the functions to be evaluated.
 
         Args:
@@ -402,9 +402,9 @@ class EvaluationProblem(BaseProblem):
     def _get_output_and_jacobian_functions(
         self,
         jacobian_names: Iterable[str],
-        output_functions: list[MDOFunction],
+        output_functions: list[ArrayFunction],
         no_db_no_norm: bool,
-    ) -> tuple[list[MDOFunction], list[MDOFunction]]:
+    ) -> tuple[list[ArrayFunction], list[ArrayFunction]]:
         """Return the output and Jacobian functions to be evaluated.
 
         Args:
@@ -447,8 +447,8 @@ class EvaluationProblem(BaseProblem):
         design_vector: RealArray | None = None,
         design_vector_is_normalized: bool = True,
         preprocess_design_vector: bool = True,
-        output_functions: Iterable[MDOFunction] | None = (),
-        jacobian_functions: Iterable[MDOFunction] | None = None,
+        output_functions: Iterable[ArrayFunction] | None = (),
+        jacobian_functions: Iterable[ArrayFunction] | None = None,
     ) -> EvaluationType:
         """Evaluate the functions, and possibly their derivatives.
 
@@ -577,7 +577,7 @@ class EvaluationProblem(BaseProblem):
         self,
         no_db_no_norm: bool,
         observable_names: Iterable[str] | None,
-    ) -> list[MDOFunction]:
+    ) -> list[ArrayFunction]:
         """Return functions.
 
         Args:
@@ -694,7 +694,7 @@ class EvaluationProblem(BaseProblem):
 
     def _preprocess_function(
         self,
-        function: MDOFunction,
+        function: ArrayFunction,
         is_function_input_normalized: bool = True,
         use_database: bool = True,
         round_ints: bool = True,
@@ -721,7 +721,7 @@ class EvaluationProblem(BaseProblem):
         args = () if support_sparse_jacobian else (self._convert_array_to_dense,)
         ds = self.design_space
         if (
-            isinstance(function, MDOLinearFunction)
+            isinstance(function, LinearFunction)
             and not round_ints
             and is_function_input_normalized
         ):

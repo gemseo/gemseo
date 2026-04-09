@@ -74,7 +74,7 @@ from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Setting
 from gemseo.algos.opt.nlopt.settings.nlopt_newuoa_settings import NLOPT_NEWUOA_Settings
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.algos.stop_criteria import TerminationCriterion
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.utils.constants import C_LONG_MAX
 
 if TYPE_CHECKING:
@@ -304,11 +304,11 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
             dim = constraint.dim
             for idim in range(dim):
                 nl_fun = self.__make_constraint(func, jac, idim)
-                if f_type == MDOFunction.ConstraintType.INEQ:
+                if f_type == ArrayFunction.ConstraintType.INEQ:
                     nlopt_problem.add_inequality_constraint(
                         nl_fun, self._settings.ineq_tolerance
                     )
-                elif f_type == MDOFunction.ConstraintType.EQ:
+                elif f_type == ArrayFunction.ConstraintType.EQ:
                     nlopt_problem.add_equality_constraint(
                         nl_fun, self._settings.eq_tolerance
                     )

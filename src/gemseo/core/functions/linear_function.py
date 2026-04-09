@@ -26,7 +26,7 @@ from numpy import multiply
 from numpy import ndarray
 from numpy import where
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.utils.compatibility.scipy import array_classes
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
@@ -37,12 +37,12 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.mdo_functions.mdo_function import OutputType
+    from gemseo.core.functions.array_function import OutputType
     from gemseo.typing import NumberArray
     from gemseo.typing import SparseOrDenseRealArray
 
 
-class MDOLinearFunction(MDOFunction):
+class LinearFunction(ArrayFunction):
     r"""Linear multivariate function defined by.
 
     * a matrix $A$ of first-order coefficients
@@ -76,7 +76,7 @@ class MDOLinearFunction(MDOFunction):
         self,
         coefficients: SparseOrDenseRealArray,
         name: str,
-        f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
+        f_type: ArrayFunction.FunctionType = ArrayFunction.FunctionType.NONE,
         input_names: Sequence[str] = (),
         value_at_zero: OutputType = 0.0,
         output_names: Sequence[str] = (),
@@ -284,7 +284,7 @@ class MDOLinearFunction(MDOFunction):
                 )
         return "".join(strings)
 
-    def __neg__(self) -> MDOLinearFunction:  # noqa:D102
+    def __neg__(self) -> LinearFunction:  # noqa:D102
         return self.__class__(
             -self._coefficients,
             f"-{self.name}",
@@ -294,7 +294,7 @@ class MDOLinearFunction(MDOFunction):
             expr=self.__initial_expression,
         )
 
-    def offset(self, value: OutputType) -> MDOLinearFunction:  # noqa:D102
+    def offset(self, value: OutputType) -> LinearFunction:  # noqa:D102
         return self.__class__(
             self._coefficients,
             self.name,
@@ -306,7 +306,7 @@ class MDOLinearFunction(MDOFunction):
 
     def restrict(
         self, frozen_indexes: ndarray[int], frozen_values: NumberArray
-    ) -> MDOLinearFunction:
+    ) -> LinearFunction:
         """Build a restriction of the linear function.
 
         Args:
@@ -338,7 +338,7 @@ class MDOLinearFunction(MDOFunction):
             expr=self.__initial_expression,
         )
 
-    def normalize(self, input_space: DesignSpace) -> MDOLinearFunction:
+    def normalize(self, input_space: DesignSpace) -> LinearFunction:
         """Create a linear function using a scaled input vector.
 
         Args:
@@ -363,7 +363,7 @@ class MDOLinearFunction(MDOFunction):
             coefficients = multiply(self.coefficients, norm_factors)
 
         value_at_zero = self.evaluate(shift)
-        function = MDOLinearFunction(
+        function = LinearFunction(
             coefficients,
             self.name,
             self.f_type,

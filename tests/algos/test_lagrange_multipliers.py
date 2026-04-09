@@ -34,7 +34,7 @@ from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.derivatives.error_estimators import compute_best_step
@@ -158,7 +158,7 @@ def test_lagrangian_validation_ineq_normalize() -> None:
     assert err < 1e-3
 
 
-@pytest.mark.parametrize("constraint_type", MDOFunction.ConstraintType)
+@pytest.mark.parametrize("constraint_type", ArrayFunction.ConstraintType)
 def test_lagrangian_constraint(
     constraint_type, sellar_with_2d_array, sellar_disciplines
 ) -> None:
@@ -344,15 +344,15 @@ def test_nnls_linalgerror():
     space = DesignSpace()
     space.add_variable("x", 1, lower_bound=0, upper_bound=1)
     problem = OptimizationProblem(space)
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         lambda x: 18 * x, name="f", jac=lambda _: array([18])
     )
     gradient = array([9.9, -1.98000003])
     problem.add_constraint(
-        MDOFunction(
+        ArrayFunction(
             lambda x: x * gradient, name="g", jac=lambda _: gradient.reshape((-1, 1))
         ),
-        constraint_type=MDOFunction.ConstraintType.INEQ,
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
     )
     multipliers = LagrangeMultipliers(problem).compute(array([0]))
     assert 18 - multipliers["lower_bounds"][1] + gradient @ multipliers["inequality"][
@@ -365,7 +365,7 @@ def test_nnls_runtimeerror():
     space = DesignSpace()
     space.add_variable("x", 3, lower_bound=-1, upper_bound=1)
     problem = OptimizationProblem(space)
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         lambda x: 18 * x, name="f", jac=lambda _: full(3, 18)
     )
     jacobian = array([
@@ -374,7 +374,7 @@ def test_nnls_runtimeerror():
         [0, 0, -0.9900000000001],
     ])
     problem.add_constraint(
-        MDOFunction(lambda x: jacobian @ x, name="g", jac=lambda _: jacobian),
+        ArrayFunction(lambda x: jacobian @ x, name="g", jac=lambda _: jacobian),
         constraint_type=problem.ConstraintType.INEQ,
     )
     LagrangeMultipliers(problem).compute(array([0, 0, 0]))

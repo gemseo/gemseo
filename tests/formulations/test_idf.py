@@ -24,8 +24,8 @@ import numpy as np
 import pytest
 
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.consistency_constraint import ConsistencyConstraint
 from gemseo.formulations.idf import IDF
 from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
@@ -57,7 +57,7 @@ def test_build_func_from_disc() -> None:
 
     for c_name in ["g_1", "g_2", "g_3"]:
         constraint = idf.create_constraint(
-            [c_name], constraint_type=MDOFunction.ConstraintType.INEQ
+            [c_name], constraint_type=ArrayFunction.ConstraintType.INEQ
         )
         problem.add_constraint(constraint)
     opt = idf.problem

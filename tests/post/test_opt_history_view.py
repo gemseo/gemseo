@@ -28,7 +28,7 @@ from gemseo import execute_algo
 from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.post import OptHistoryView_Settings
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.utils.testing.helpers import image_comparison
@@ -209,9 +209,9 @@ def test_461(case, baseline_images) -> None:
 
     problem = OptimizationProblem(design_space)
     if case == 1:
-        problem.objective = MDOFunction(lambda x: x[0] ** 2, name="func")
+        problem.objective = ArrayFunction(lambda x: x[0] ** 2, name="func")
     elif case == 2:
-        problem.objective = problem.objective = MDOFunction(
+        problem.objective = problem.objective = ArrayFunction(
             lambda x: array([x[0] ** 2 + x[1] ** 2]), name="func"
         )
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
@@ -244,7 +244,7 @@ def test_no_gradient_history(caplog) -> None:
     design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x**2, name="f")
+    problem.objective = ArrayFunction(lambda x: x**2, name="f")
     problem.database.store(array([-1]), {"f": array([1])})
     problem.database.store(array([0]), {"f": array([0])})
     problem.database.store(array([1]), {"f": array([1])})

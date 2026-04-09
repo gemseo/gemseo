@@ -41,8 +41,8 @@ from gemseo.algos.opt.scipy_local.settings.nelder_mead import NELDER_MEAD_Settin
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_16
@@ -105,7 +105,7 @@ class TestScipy(TestCase):
                 raise ValueError(x)
             return rosen(x)
 
-        problem.objective = MDOFunction(i_fail, name="rosen")
+        problem.objective = ArrayFunction(i_fail, name="rosen")
         self.assertRaises(
             AttributeError, OPTIMIZATION_LIBRARY_FACTORY.execute, problem, algo_name
         )
@@ -181,7 +181,7 @@ class TestScipy(TestCase):
             "x4", 1, DesignSpace.DesignVariableType.FLOAT, -inf, inf, 0.0
         )
         problem = OptimizationProblem(design_space)
-        problem.objective = MDOFunction(
+        problem.objective = ArrayFunction(
             rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
         )
         OPTIMIZATION_LIBRARY_FACTORY.execute(
@@ -198,7 +198,7 @@ class TestScipy(TestCase):
                 "x1", 2, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
             )
             problem = OptimizationProblem(design_space)
-            problem.objective = MDOFunction(
+            problem.objective = ArrayFunction(
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
             )
             res = OPTIMIZATION_LIBRARY_FACTORY.execute(
@@ -225,7 +225,7 @@ for test_method in suite_tests.generate_test("SCIPY"):
 
 @pytest.fixture(params=[True, False])
 def jacobians_are_sparse(request) -> bool:
-    """Whether the Jacobians of MDO Functions are sparse or not."""
+    """Whether the Jacobians of array functions are sparse or not."""
     return request.param
 
 
@@ -250,25 +250,25 @@ def opt_problem(jacobians_are_sparse: bool) -> OptimizationProblem:
     array_ = csr_array if jacobians_are_sparse else array
     input_names = ["x", "y", "z"]
 
-    problem.objective = MDOLinearFunction(
-        array_([[1.0, 1.0, -1]]), "f", MDOFunction.FunctionType.OBJ, input_names, -1.0
+    problem.objective = LinearFunction(
+        array_([[1.0, 1.0, -1]]), "f", ArrayFunction.FunctionType.OBJ, input_names, -1.0
     )
     problem.add_constraint(
-        MDOLinearFunction(
+        LinearFunction(
             array_([[0, 0.5, -0.25]]),
             "g",
             input_names=input_names,
         ),
         value=0.333,
         positive=True,
-        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
+        constraint_type=LinearFunction.ConstraintType.INEQ,
     )
     problem.add_constraint(
-        MDOLinearFunction(
+        LinearFunction(
             array_([[-2.0, 1.0, 1.0]]),
             "h",
             input_names=input_names,
-            f_type=MDOLinearFunction.ConstraintType.EQ,
+            f_type=LinearFunction.ConstraintType.EQ,
         )
     )
 
@@ -383,9 +383,9 @@ def test_catol_cobyla() -> None:
     """Check that option catol is supported."""
     problem = Rosenbrock()
     problem.add_constraint(
-        MDOFunction(lambda x: x[0] + x[1], name="constr"),
+        ArrayFunction(lambda x: x[0] + x[1], name="constr"),
         value=1.0,
-        constraint_type=MDOFunction.ConstraintType.INEQ,
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
     )
     reference = ScipyOpt("COBYLA").execute(
         problem, settings=COBYLA_Settings(max_iter=10, enable_progress_bar=False)
@@ -401,9 +401,9 @@ def test_cannot_handle_inequality_constraints():
     """Check the error raised when an algo does not handle inequality constraints."""
     problem = Rosenbrock()
     problem.add_constraint(
-        MDOFunction(sum, name="sum"),
+        ArrayFunction(sum, name="sum"),
         value=1.0,
-        constraint_type=MDOFunction.ConstraintType.INEQ,
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
     )
     with pytest.raises(
         ValueError,

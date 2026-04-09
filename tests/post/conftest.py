@@ -24,7 +24,7 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.openturns.openturns import OT_LHS_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
@@ -34,33 +34,33 @@ def __common_problem():  # noqa: PT005
     design_space = DesignSpace()
     design_space.add_variable("x", size=2, lower_bound=0, upper_bound=1, value=0.5)
     problem = OptimizationProblem(design_space)
-    func = MDOFunction(sum, name="obj")
+    func = ArrayFunction(sum, name="obj")
     func.has_default_name = True
     problem.objective = func
     problem.minimize_objective = False
-    func = MDOFunction(lambda x: x * 0.5, name="eq")
+    func = ArrayFunction(lambda x: x * 0.5, name="eq")
     func.has_default_name = True
-    problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.EQ)
-    func = MDOFunction(lambda x: x * 1.5, name="pos")
+    problem.add_constraint(func, constraint_type=ArrayFunction.ConstraintType.EQ)
+    func = ArrayFunction(lambda x: x * 1.5, name="pos")
     func.has_default_name = True
     problem.add_constraint(
-        func, constraint_type=MDOFunction.ConstraintType.INEQ, positive=True
+        func, constraint_type=ArrayFunction.ConstraintType.INEQ, positive=True
     )
-    func = MDOFunction(lambda x: x * 1.5, name="pos")
+    func = ArrayFunction(lambda x: x * 1.5, name="pos")
     func.has_default_name = True
     problem.add_constraint(
         func,
-        constraint_type=MDOFunction.ConstraintType.INEQ,
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
         value=0.5,
         positive=True,
     )
-    func = MDOFunction(lambda x: x * 2.5, name="neg")
+    func = ArrayFunction(lambda x: x * 2.5, name="neg")
     func.has_default_name = True
-    problem.add_constraint(func, constraint_type=MDOFunction.ConstraintType.INEQ)
-    func = MDOFunction(lambda x: x * 2.5, name="neg")
+    problem.add_constraint(func, constraint_type=ArrayFunction.ConstraintType.INEQ)
+    func = ArrayFunction(lambda x: x * 2.5, name="neg")
     func.has_default_name = True
     problem.add_constraint(
-        func, constraint_type=MDOFunction.ConstraintType.INEQ, value=0.5
+        func, constraint_type=ArrayFunction.ConstraintType.INEQ, value=0.5
     )
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
     return problem

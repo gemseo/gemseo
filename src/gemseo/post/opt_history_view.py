@@ -44,7 +44,7 @@ from numpy import min as np_min
 from numpy import vstack
 from numpy.linalg import norm
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
@@ -127,11 +127,11 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         for constraints, constraint_type in [
             (
                 self._dataset.inequality_constraint_names,
-                MDOFunction.ConstraintType.INEQ,
+                ArrayFunction.ConstraintType.INEQ,
             ),
             (
                 self._dataset.equality_constraint_names,
-                MDOFunction.ConstraintType.EQ,
+                ArrayFunction.ConstraintType.EQ,
             ),
         ]:
             if constraints:
@@ -418,7 +418,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     def _create_cstr_plot(
         self,
         cstr_history: Iterable[RealArray],
-        cstr_type: MDOFunction.ConstraintType,
+        cstr_type: ArrayFunction.ConstraintType,
         cstr_names: Sequence[str],
         fig_size: tuple[float, float],
         x_xstar: RealArray,
@@ -487,7 +487,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     def _build_cstr_fig(
         self,
         cstr_matrix: NumberArray,
-        cstr_type: MDOFunction.ConstraintType,
+        cstr_type: ArrayFunction.ConstraintType,
         vmax: float,
         n_cstr: int,
         cstr_labels: Sequence[str],
@@ -511,7 +511,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         if cstr_matrix.shape[0] == len(x_xstar):
             cstr_matrix = cstr_matrix.T
         cmap: str | ListedColormap
-        if cstr_type == MDOFunction.ConstraintType.EQ:
+        if cstr_type == ArrayFunction.ConstraintType.EQ:
             cmap = self.__EQ_CSTR_CMAP
             constraint_type = "equality"
         else:

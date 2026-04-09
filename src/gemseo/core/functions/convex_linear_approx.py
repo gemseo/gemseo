@@ -25,7 +25,7 @@ from numpy import ones_like
 from numpy import where
 from numpy import zeros_like
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -33,20 +33,20 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class ConvexLinearApprox(MDOFunction):
+class ConvexLinearApprox(ArrayFunction):
     """Wrap a convex linearization of the function."""
 
     def __init__(
         self,
         x_vect: NumberArray,
-        mdo_function: MDOFunction,
+        array_function: ArrayFunction,
         approx_indexes: ndarray[bool] | None = None,
         sign_threshold: float = 1e-9,
     ) -> None:
         """
         Args:
             x_vect: The input vector at which to build the convex linearization.
-            mdo_function: The function to approximate.
+            array_function: The function to approximate.
             approx_indexes: A boolean mask
                 specifying w.r.t. which inputs the function should be approximated.
                 If `None`, consider all the inputs.
@@ -58,7 +58,7 @@ class ConvexLinearApprox(MDOFunction):
             AttributeError: If the function does not have a Jacobian function.
         """  # noqa: D205, D212, D415
         self.__x_vect = x_vect
-        self.__mdo_function = mdo_function
+        self.__array_function = array_function
         self.__approx_indexes = approx_indexes
         self.__sign_threshold = sign_threshold
 
@@ -76,11 +76,11 @@ class ConvexLinearApprox(MDOFunction):
             raise ValueError(msg)
 
         # Get the function Jacobian matrix
-        if not self.__mdo_function.has_jac:
+        if not self.__array_function.has_jac:
             msg = "Function Jacobian unavailable for convex linearization."
             raise AttributeError(msg)
 
-        jac = atleast_2d(self.__mdo_function.jac(x_vect))
+        jac = atleast_2d(self.__array_function.jac(x_vect))
 
         # Build the coefficients matrices
         coeffs = jac[:, self.__approx_indexes]
@@ -92,13 +92,13 @@ class ConvexLinearApprox(MDOFunction):
 
         super().__init__(
             self._func_to_wrap,
-            f"{self.__mdo_function.name}_convex_lin",
-            self.__mdo_function.f_type,
+            f"{self.__array_function.name}_convex_lin",
+            self.__array_function.f_type,
             self._jac_to_wrap,
-            dim=self.__mdo_function.dim,
-            output_names=self.__mdo_function.output_names,
-            force_real=self.__mdo_function.force_real,
-            original_name=mdo_function.original_name,
+            dim=self.__array_function.dim,
+            output_names=self.__array_function.output_names,
+            force_real=self.__array_function.force_real,
+            original_name=array_function.original_name,
         )
 
     def __get_steps(self, x_new: NumberArray) -> tuple[NumberArray, NumberArray]:
@@ -129,11 +129,11 @@ class ConvexLinearApprox(MDOFunction):
         merged_vect = where(self.__approx_indexes, self.__x_vect, x_new)
         step, inv_step = self.__get_steps(x_new)
         value = (
-            self.__mdo_function.func(merged_vect)
+            self.__array_function.func(merged_vect)
             + self.__direct_coeffs @ step
             + self.__recipr_coeffs @ inv_step
         )
-        if self.__mdo_function.dim == 1:
+        if self.__array_function.dim == 1:
             return value[0]
         return value
 
@@ -147,11 +147,11 @@ class ConvexLinearApprox(MDOFunction):
             The Jacobian matrix of the convex linearization function.
         """
         merged_vect = where(self.__approx_indexes, self.__x_vect, x_new)
-        value = atleast_2d(self.__mdo_function.jac(merged_vect))
+        value = atleast_2d(self.__array_function.jac(merged_vect))
         _, inv_step = self.__get_steps(x_new)
         value[:, self.__approx_indexes] = self.__direct_coeffs + multiply(
             self.__recipr_coeffs, -(inv_step**2)
         )
-        if self.__mdo_function.dim == 1:
+        if self.__array_function.dim == 1:
             value = value[0, :]
         return value

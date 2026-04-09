@@ -57,9 +57,9 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.core.mdo_functions.mdo_function import OutputType
-    from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
-    from gemseo.core.mdo_functions.mdo_function import WrappedJacobianType
+    from gemseo.core.functions.array_function import OutputType
+    from gemseo.core.functions.array_function import WrappedFunctionType
+    from gemseo.core.functions.array_function import WrappedJacobianType
 
 InputType = NDArray[float64 | int32]
 

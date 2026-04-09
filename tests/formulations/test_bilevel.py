@@ -34,7 +34,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
 from gemseo.core.discipline import Discipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.formulations.bilevel import BiLevel
@@ -702,7 +702,7 @@ def test_execute_custom_mdas(generate_sobieski_bilevel_scenario, caplog):
     )
 
     for i in range(1, 4):
-        scenario.add_constraint(["g_" + str(i)], MDOFunction.ConstraintType.INEQ)
+        scenario.add_constraint(["g_" + str(i)], ArrayFunction.ConstraintType.INEQ)
 
     scenario.execute(NLOPT_COBYLA_Settings(max_iter=1))
 
@@ -717,7 +717,7 @@ def test_execute_custom_mdas(generate_sobieski_bilevel_scenario, caplog):
     )
 
     for i in range(1, 4):
-        scenario2.add_constraint(["g_" + str(i)], MDOFunction.ConstraintType.INEQ)
+        scenario2.add_constraint(["g_" + str(i)], ArrayFunction.ConstraintType.INEQ)
 
     scenario2.execute(NLOPT_COBYLA_Settings(max_iter=1))
 

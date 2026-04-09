@@ -22,14 +22,14 @@ from collections.abc import MutableSequence
 import pytest
 from numpy import array
 
-from gemseo.core.mdo_functions.collections.functions import Functions
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.collections.functions import Functions
 
 
 @pytest.fixture(scope="module")
-def mdo_functions() -> list[MDOFunction]:
-    """Some MDOFunction objects."""
-    return [MDOFunction(lambda x: x, name=f"f{i}") for i in range(3)]
+def mdo_functions() -> list[ArrayFunction]:
+    """Some ArrayFunction objects."""
+    return [ArrayFunction(lambda x: x, name=f"f{i}") for i in range(3)]
 
 
 @pytest.fixture
@@ -48,7 +48,7 @@ def test_is_initially_empty(functions):
     assert not functions
 
 
-def test_set_insert_get_del(functions: Functions, mdo_functions: list[MDOFunction]):
+def test_set_insert_get_del(functions: Functions, mdo_functions: list[ArrayFunction]):
     """Check the methods __setitem__, __getitem__, __delitem__, __len__ and insert."""
     function_0 = mdo_functions[0]
     functions.append(function_0)
@@ -68,7 +68,7 @@ def test_format(functions: Functions):
     assert functions.format("a") == "a"
 
 
-def test_names(functions: Functions, mdo_functions: list[MDOFunction]):
+def test_names(functions: Functions, mdo_functions: list[ArrayFunction]):
     """Check the property names."""
     functions.extend(mdo_functions)
     assert functions.get_names() == [
@@ -76,12 +76,12 @@ def test_names(functions: Functions, mdo_functions: list[MDOFunction]):
     ]
 
 
-def test_original_reset(functions: Functions, mdo_functions: list[MDOFunction]):
+def test_original_reset(functions: Functions, mdo_functions: list[ArrayFunction]):
     """Check the property original and the method reset."""
     functions.extend(mdo_functions)
     assert list(functions.get_originals()) == mdo_functions
     original_mdo_functions = [
-        MDOFunction(mdo_function, name=f"g{i}")
+        ArrayFunction(mdo_function, name=f"g{i}")
         for i, mdo_function in enumerate(mdo_functions)
     ]
     for mdo_function, original_mdo_function in zip(
@@ -97,7 +97,7 @@ def test_original_reset(functions: Functions, mdo_functions: list[MDOFunction]):
     assert list(functions.get_originals()) == original_mdo_functions
 
 
-def test_dimension(functions: Functions, mdo_functions: list[MDOFunction]):
+def test_dimension(functions: Functions, mdo_functions: list[ArrayFunction]):
     """Check the property dimension."""
     assert functions.dimension == 0
     functions.extend(mdo_functions)
@@ -118,7 +118,7 @@ def test_dimension(functions: Functions, mdo_functions: list[MDOFunction]):
 
 def test_f_types(functions: Functions):
     """Check _F_TYPES."""
-    f_types = functions._F_TYPES = (MDOFunction.FunctionType.OBJ,)
+    f_types = functions._F_TYPES = (ArrayFunction.FunctionType.OBJ,)
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -126,7 +126,9 @@ def test_f_types(functions: Functions):
         ),
     ):
         functions.append(
-            MDOFunction(lambda x: x, name="f", f_type=MDOFunction.ConstraintType.INEQ)
+            ArrayFunction(
+                lambda x: x, name="f", f_type=ArrayFunction.ConstraintType.INEQ
+            )
         )
 
     functions._F_TYPES = f_types
@@ -134,7 +136,7 @@ def test_f_types(functions: Functions):
 
 def test_f_names(functions: Functions):
     """Check the function names."""
-    functions.append(MDOFunction(lambda x: x, name="bar"))
+    functions.append(ArrayFunction(lambda x: x, name="bar"))
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -142,4 +144,4 @@ def test_f_names(functions: Functions):
             "since it is already used."
         ),
     ):
-        functions.append(MDOFunction(lambda x: x, name="bar"))
+        functions.append(ArrayFunction(lambda x: x, name="bar"))

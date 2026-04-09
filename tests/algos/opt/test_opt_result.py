@@ -33,7 +33,7 @@ from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.problems.optimization.power_2 import Power2
@@ -230,9 +230,9 @@ def test_from_optimization_problem(
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x, name="f")
+    problem.objective = ArrayFunction(lambda x: x, name="f")
     problem.add_constraint(
-        MDOFunction(lambda x: x, name="g"), value, MDOFunction.ConstraintType.INEQ
+        ArrayFunction(lambda x: x, name="g"), value, ArrayFunction.ConstraintType.INEQ
     )
     if maximize:
         problem.minimize_objective = False

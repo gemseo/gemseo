@@ -68,8 +68,8 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
@@ -110,10 +110,12 @@ def problem_executed_twice() -> OptimizationProblem:
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x, name="obj")
-    problem.add_observable(MDOFunction(lambda x: x, name="obs"))
+    problem.objective = ArrayFunction(lambda x: x, name="obj")
+    problem.add_observable(ArrayFunction(lambda x: x, name="obs"))
     problem.add_constraint(
-        MDOFunction(lambda x: x, name="cstr", f_type=MDOFunction.ConstraintType.INEQ)
+        ArrayFunction(
+            lambda x: x, name="cstr", f_type=ArrayFunction.ConstraintType.INEQ
+        )
     )
 
     execute_algo(
@@ -135,7 +137,7 @@ def pow2_problem() -> OptimizationProblem:
 
     problem = OptimizationProblem(design_space)
     power2 = Power2()
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         power2.pow2,
         name="pow2",
         f_type="obj",
@@ -155,7 +157,7 @@ def test_checks() -> None:
     n = 3
     design_space = DesignSpace()
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(rosen, name="rosen", f_type="obj", jac=rosen_der)
+    problem.objective = ArrayFunction(rosen, name="rosen", f_type="obj", jac=rosen_der)
 
     with pytest.raises(ValueError):
         problem.design_space.set_current_value(np.zeros(n))
@@ -178,7 +180,7 @@ def test_callback() -> None:
     design_space.add_variable("x", n, lower_bound=-1.0, upper_bound=1.0)
     design_space.set_current_value(np.zeros(n))
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(rosen, name="rosen", f_type="obj", jac=rosen_der)
+    problem.objective = ArrayFunction(rosen, name="rosen", f_type="obj", jac=rosen_der)
     problem.check()
 
     call_me = mock.Mock()
@@ -193,8 +195,8 @@ def test_callback() -> None:
 def test_add_constraints(pow2_problem: OptimizationProblem) -> None:
     """Test to add constraints."""
 
-    def generate_function(name: str) -> MDOFunction:
-        """Generate an MDOFunction with a given name.
+    def generate_function(name: str) -> ArrayFunction:
+        """Generate an ArrayFunction with a given name.
 
         Args:
             name: The function name.
@@ -202,10 +204,10 @@ def test_add_constraints(pow2_problem: OptimizationProblem) -> None:
         Returns:
             The function.
         """
-        return MDOFunction(
+        return ArrayFunction(
             Power2.ineq_constraint1,
             name=name,
-            f_type=MDOFunction.ConstraintType.INEQ,
+            f_type=ArrayFunction.ConstraintType.INEQ,
             jac=Power2.ineq_constraint1_jac,
             expr="0.5 -x[0] ** 3",
             input_names=["x"],
@@ -222,7 +224,7 @@ def test_add_constraints(pow2_problem: OptimizationProblem) -> None:
     assert len(problem.constraints) == 3
     assert problem.constraints
 
-    ineq2 = MDOFunction(Power2.ineq_constraint1, name="ineq2")
+    ineq2 = ArrayFunction(Power2.ineq_constraint1, name="ineq2")
     with pytest.raises(
         ValueError,
         match=re.escape(
@@ -249,11 +251,11 @@ def test_linear_problem_type_switch() -> None:
     design_space.add_variable("x", n, lower_bound=-1.0, upper_bound=1.0)
     design_space.set_current_value(np.zeros(n))
     problem = OptimizationProblem(design_space)
-    f = MDOFunction(Power2.ineq_constraint1, name="f")
+    f = ArrayFunction(Power2.ineq_constraint1, name="f")
     problem_c = deepcopy(problem)
     problem.objective = f
     assert not problem.is_linear
-    problem_c.add_constraint(f, constraint_type=MDOFunction.ConstraintType.INEQ)
+    problem_c.add_constraint(f, constraint_type=ArrayFunction.ConstraintType.INEQ)
     assert not problem_c.is_linear
 
 
@@ -261,38 +263,38 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
     expected = []
     problem = pow2_problem
 
-    ineq_std = MDOFunction(
+    ineq_std = ArrayFunction(
         Power2.ineq_constraint1,
         name="ineq_std",
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(ineq_std, constraint_type=MDOFunction.ConstraintType.INEQ)
+    problem.add_constraint(ineq_std, constraint_type=ArrayFunction.ConstraintType.INEQ)
     expected.append("ineq_std(x): cstr + cst <= 0.0")
 
-    ineq_lo_posval = MDOFunction(
+    ineq_lo_posval = ArrayFunction(
         Power2.ineq_constraint1,
         name="ineq_lo_posval",
         expr="cstr + cst",
         input_names=["x"],
     )
     problem.add_constraint(
-        ineq_lo_posval, value=1.0, constraint_type=MDOFunction.ConstraintType.INEQ
+        ineq_lo_posval, value=1.0, constraint_type=ArrayFunction.ConstraintType.INEQ
     )
     expected.append("ineq_lo_posval(x): cstr + cst <= 1.0")
 
-    ineq_lo_negval = MDOFunction(
+    ineq_lo_negval = ArrayFunction(
         Power2.ineq_constraint1,
         name="ineq_lo_negval",
         expr="cstr + cst",
         input_names=["x"],
     )
     problem.add_constraint(
-        ineq_lo_negval, value=-1.0, constraint_type=MDOFunction.ConstraintType.INEQ
+        ineq_lo_negval, value=-1.0, constraint_type=ArrayFunction.ConstraintType.INEQ
     )
     expected.append("ineq_lo_negval(x): cstr + cst <= -1.0")
 
-    ineq_up_negval = MDOFunction(
+    ineq_up_negval = ArrayFunction(
         Power2.ineq_constraint1,
         name="ineq_up_negval",
         expr="cstr + cst",
@@ -302,11 +304,11 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
         ineq_up_negval,
         value=-1.0,
         positive=True,
-        constraint_type=MDOFunction.ConstraintType.INEQ,
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
     )
     expected.append("ineq_up_negval(x): cstr + cst >= -1.0")
 
-    ineq_up_posval = MDOFunction(
+    ineq_up_posval = ArrayFunction(
         Power2.ineq_constraint1,
         name="ineq_up_posval",
         expr="cstr + cst",
@@ -316,22 +318,22 @@ def test_getmsg_ineq_constraints(pow2_problem) -> None:
         ineq_up_posval,
         value=1.0,
         positive=True,
-        constraint_type=MDOFunction.ConstraintType.INEQ,
+        constraint_type=ArrayFunction.ConstraintType.INEQ,
     )
     expected.append("ineq_up_posval(x): cstr + cst >= 1.0")
 
-    linear_constraint = MDOLinearFunction(array([1, 2]), "lin1")
+    linear_constraint = LinearFunction(array([1, 2]), "lin1")
     problem.add_constraint(
-        linear_constraint, constraint_type=MDOLinearFunction.ConstraintType.INEQ
+        linear_constraint, constraint_type=LinearFunction.ConstraintType.INEQ
     )
     expected.append("lin1(x[0], x[1]): x[0] + 2.00e+00*x[1] <= 0.0")
 
-    linear_constraint = MDOLinearFunction(array([1, 2]), "lin2")
+    linear_constraint = LinearFunction(array([1, 2]), "lin2")
     problem.add_constraint(
         linear_constraint,
         positive=True,
         value=-1.0,
-        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
+        constraint_type=LinearFunction.ConstraintType.INEQ,
     )
     expected.append("lin2(x[0], x[1]): x[0] + 2.00e+00*x[1] >= -1.0")
 
@@ -344,33 +346,33 @@ def test_getmsg_eq_constraints(pow2_problem) -> None:
     expected = []
     problem = pow2_problem
 
-    eq_std = MDOFunction(
+    eq_std = ArrayFunction(
         Power2.ineq_constraint1,
         name="eq_std",
         expr="cstr + cst",
         input_names=["x"],
     )
-    problem.add_constraint(eq_std, constraint_type=MDOFunction.ConstraintType.EQ)
+    problem.add_constraint(eq_std, constraint_type=ArrayFunction.ConstraintType.EQ)
     expected.append("eq_std(x): cstr + cst = 0.0")
 
-    eq_posval = MDOFunction(
+    eq_posval = ArrayFunction(
         Power2.ineq_constraint1,
         name="eq_posval",
         expr="cstr + cst",
         input_names=["x"],
     )
     problem.add_constraint(
-        eq_posval, value=1.0, constraint_type=MDOFunction.ConstraintType.EQ
+        eq_posval, value=1.0, constraint_type=ArrayFunction.ConstraintType.EQ
     )
     expected.append("eq_posval(x): cstr + cst = 1.0")
-    eq_negval = MDOFunction(
+    eq_negval = ArrayFunction(
         Power2.ineq_constraint1,
         name="eq_negval",
         expr="cstr + cst",
         input_names=["x"],
     )
     problem.add_constraint(
-        eq_negval, value=-1.0, constraint_type=MDOFunction.ConstraintType.EQ
+        eq_negval, value=-1.0, constraint_type=ArrayFunction.ConstraintType.EQ
     )
     expected.append("eq_negval(x): cstr + cst = -1.0")
 
@@ -393,7 +395,7 @@ def test_get_dimension(pow2_problem) -> None:
 
 def test_constraints_dim(pow2_problem) -> None:
     problem = pow2_problem
-    ineq1 = MDOFunction(
+    ineq1 = ArrayFunction(
         Power2.ineq_constraint1,
         name="ineq1",
         jac=Power2.ineq_constraint1_jac,
@@ -401,7 +403,7 @@ def test_constraints_dim(pow2_problem) -> None:
         input_names=["x"],
     )
     problem.add_constraint(
-        ineq1, value=-1, constraint_type=MDOFunction.ConstraintType.INEQ
+        ineq1, value=-1, constraint_type=ArrayFunction.ConstraintType.INEQ
     )
     with pytest.raises(
         ValueError,
@@ -436,14 +438,14 @@ def test_check() -> None:
 
 def test_missing_constjac(pow2_problem) -> None:
     problem = pow2_problem
-    ineq1 = MDOFunction(
+    ineq1 = ArrayFunction(
         sum,
         name="sum",
         expr="sum(x)",
         input_names=["x"],
     )
     problem.add_constraint(
-        ineq1, value=-1, constraint_type=MDOFunction.ConstraintType.INEQ
+        ineq1, value=-1, constraint_type=ArrayFunction.ConstraintType.INEQ
     )
     problem.preprocess_functions()
     output_functions, jacobian_functions = problem.get_functions(jacobian_names=())
@@ -583,9 +585,9 @@ def test_nan() -> None:
 def test_preprocess_functions() -> None:
     """Test the pre-processing of a problem functions."""
     problem = Power2()
-    obs1 = MDOFunction(norm, name="design Euclidean norm")
+    obs1 = ArrayFunction(norm, name="design Euclidean norm")
     problem.add_observable(obs1)
-    obs2 = MDOFunction(partial(norm, inf), name="design infinity norm")
+    obs2 = ArrayFunction(partial(norm, inf), name="design infinity norm")
     problem.add_observable(obs2)
 
     # Store the initial functions identities
@@ -619,7 +621,7 @@ def test_normalize_linear_function() -> None:
     design_space.add_variable(
         "x", 2, lower_bound=lower_bounds, upper_bound=upper_bounds, value=x_0
     )
-    objective = MDOLinearFunction(
+    objective = LinearFunction(
         array([[2.0, 0.0], [0.0, 3.0]]), "affine", "obj", "x", array([5.0, 7.0])
     )
     low_bnd_value = objective.evaluate(lower_bounds)
@@ -735,7 +737,7 @@ def test_evaluate_functions_w_observables(pow2_problem, no_db_no_norm) -> None:
     """Test the evaluation of the functions of a problem with observables."""
     problem = pow2_problem
     design_norm = "design norm"
-    observable = MDOFunction(norm, name=design_norm)
+    observable = ArrayFunction(norm, name=design_norm)
     problem.add_observable(observable)
     problem.preprocess_functions()
     output_functions, jacobian_functions = problem.get_functions(
@@ -990,7 +992,7 @@ def test_observable(pow2_problem) -> None:
     """
     problem = pow2_problem
     design_norm = "design norm"
-    observable = MDOFunction(norm, name=design_norm)
+    observable = ArrayFunction(norm, name=design_norm)
     problem.add_observable(observable)
 
     # Check that the observable can be found
@@ -1117,7 +1119,7 @@ def test_gradient_with_random_variables() -> None:
     parameter_space.add_random_variable("x", OTUniformDistribution_Settings())
 
     problem = OptimizationProblem(parameter_space)
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         lambda x: 3 * x**2, name="func", jac=lambda x: 6 * x
     )
     PyDOELibrary("PYDOE_FULLFACT").execute(
@@ -1134,7 +1136,7 @@ def test_is_mono_objective() -> None:
     design_space = DesignSpace()
     design_space.add_variable("")
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         lambda x: array([1.0, 2.0]),
         name="func",
         f_type="obj",
@@ -1143,7 +1145,7 @@ def test_is_mono_objective() -> None:
 
     assert not problem.is_mono_objective
 
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         lambda x: x, name="func", f_type="obj", output_names=["y1"]
     )
 
@@ -1156,7 +1158,7 @@ def problem() -> OptimizationProblem:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0, upper_bound=1, value=0.5)
     opt_problem = OptimizationProblem(design_space)
-    opt_problem.objective = MDOFunction(lambda x: x, name="func", f_type="obj")
+    opt_problem.objective = ArrayFunction(lambda x: x, name="func", f_type="obj")
     return opt_problem
 
 
@@ -1237,7 +1239,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
             the ValueError message.
         caplog: Fixture to access and control log capturing.
     """
-    f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
+    f_1 = ArrayFunction(sin, name="f_1", jac=cos, expr="sin(x)")
     design_space = DesignSpace()
     design_space.add_variable(
         "x", lower_bound=1, upper_bound=3, value=array([1]), type_="integer"
@@ -1272,20 +1274,20 @@ def constrained_problem() -> OptimizationProblem:
     design_space = DesignSpace()
     design_space.add_variable("x", 2, value=1.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x.sum(), name="f", jac=lambda x: [1, 1])
+    problem.objective = ArrayFunction(lambda x: x.sum(), name="f", jac=lambda x: [1, 1])
     problem.add_constraint(
-        MDOFunction(operator.itemgetter(0), name="g", jac=lambda _: [1, 0], dim=1),
+        ArrayFunction(operator.itemgetter(0), name="g", jac=lambda _: [1, 0], dim=1),
         constraint_type=problem.ConstraintType.INEQ,
     )
     problem.add_constraint(
-        MDOFunction(lambda x: x, name="h", jac=lambda _: np.eye(2)),
-        constraint_type=MDOFunction.ConstraintType.EQ,
+        ArrayFunction(lambda x: x, name="h", jac=lambda _: np.eye(2)),
+        constraint_type=ArrayFunction.ConstraintType.EQ,
     )
     problem.add_observable(
-        MDOFunction(operator.itemgetter(1), name="a", jac=lambda x: [0, 1])
+        ArrayFunction(operator.itemgetter(1), name="a", jac=lambda x: [0, 1])
     )
     problem.add_observable(
-        MDOFunction(operator.neg, name="b", jac=lambda x: -np.eye(2))
+        ArrayFunction(operator.neg, name="b", jac=lambda x: -np.eye(2))
     )
     return problem
 
@@ -1339,7 +1341,7 @@ def test_scalar_constraint_names(constrained_problem) -> None:
 def test_observables_callback() -> None:
     """Test that the observables are called properly."""
     problem = Power2()
-    obs1 = MDOFunction(norm, name="design_norm")
+    obs1 = ArrayFunction(norm, name="design_norm")
     problem.add_observable(obs1)
     problem.database.store(
         array([0.79499653, 0.20792012, 0.96630481]),
@@ -1358,7 +1360,7 @@ def test_approximated_jacobian_wrt_uncertain_variables() -> None:
     uspace.add_random_variable("u", OTNormalDistribution_Settings())
     problem = OptimizationProblem(uspace)
     problem.differentiation_method = problem.ApproximationMode.FINITE_DIFFERENCES
-    problem.objective = MDOFunction(lambda u: u, name="func")
+    problem.objective = ArrayFunction(lambda u: u, name="func")
     CustomDOE().execute(
         problem, settings=CustomDOE_Settings(samples=array([[0.0]]), eval_jac=True)
     )
@@ -1370,9 +1372,9 @@ def test_approximated_jacobian_wrt_uncertain_variables() -> None:
 def rosenbrock_lhs() -> tuple[Rosenbrock, dict[str, ndarray]]:
     """The Rosenbrock problem after evaluation and its start point."""
     problem = Rosenbrock()
-    problem.add_observable(MDOFunction(sum, name="obs"))
+    problem.add_observable(ArrayFunction(sum, name="obs"))
     problem.add_constraint(
-        MDOFunction(sum, name="cstr"), constraint_type=problem.ConstraintType.INEQ
+        ArrayFunction(sum, name="cstr"), constraint_type=problem.ConstraintType.INEQ
     )
     start_point = problem.design_space.get_current_value(as_dict=True)
     execute_algo(problem, algo_name="LHS", n_samples=3, algo_type="doe")
@@ -1455,7 +1457,7 @@ def test_reset_wo_current_value() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x")
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x, name="obj")
+    problem.objective = ArrayFunction(lambda x: x, name="obj")
     problem.design_space.set_current_value({"x": array([0.0])})
     problem.reset()
     assert problem.design_space.get_current_value(as_dict=True) == {}
@@ -1498,15 +1500,15 @@ def test_function_string_representation_from_hdf() -> None:
     # design_space.add_variable("x0", lower_bound=0.0, upper_bound=1.0, value=0.5)
     # design_space.add_variable("x1", lower_bound=0.0, upper_bound=1.0, value=0.5)
     # problem = OptimizationProblem(design_space)
-    # problem.objective = MDOFunction(
+    # problem.objective = ArrayFunction(
     #     lambda x: x[0] + x[1], name="f", input_names=["x0", "x1"]
     # )
     # problem.constraints.append(
-    #     MDOFunction(
+    #     ArrayFunction(
     #         lambda x: x[0] + x[1],
     #         name="g",
     #         input_names=["x0", "x1"],
-    #         f_type=MDOFunction.ConstraintType.INEQ,
+    #         f_type=ArrayFunction.ConstraintType.INEQ,
     #     )
     # )
     # problem.to_hdf("opt_problem_to_check_string_representation.hdf5")
@@ -1665,19 +1667,19 @@ def problem_for_eval_obs_jac() -> OptimizationProblem:
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         lambda x: 1 - x, name="f", jac=lambda x: array([[-1.0]])
     )
     problem.add_constraint(
-        MDOFunction(
+        ArrayFunction(
             lambda x: x - 0.5,
             name="c",
-            f_type=MDOFunction.ConstraintType.INEQ,
+            f_type=ArrayFunction.ConstraintType.INEQ,
             jac=lambda x: array([[1.0]]),
         )
     )
     problem.add_observable(
-        MDOFunction(lambda x: x, name="o", jac=lambda x: array([[1.0]]))
+        ArrayFunction(lambda x: x, name="o", jac=lambda x: array([[1.0]]))
     )
     return problem
 
@@ -1717,9 +1719,9 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     import.
     """
     # Add observables to the optimization problem.
-    obs1 = MDOFunction(norm, name="design norm")
+    obs1 = ArrayFunction(norm, name="design norm")
     pow2_problem.add_observable(obs1)
-    obs2 = MDOFunction(sum, name="sum")
+    obs2 = ArrayFunction(sum, name="sum")
     pow2_problem.add_observable(obs2)
 
     OPTIMIZATION_LIBRARY_FACTORY.execute(pow2_problem, settings=SLSQP_Settings())
@@ -1749,10 +1751,10 @@ def test_export_to_dataset(input_values, expected) -> None:
     design_space.add_variable("dv")
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x * 2, name="obj")
+    problem.objective = ArrayFunction(lambda x: x * 2, name="obj")
     problem.add_constraint(
-        MDOFunction(
-            lambda x: x * 3, name="cstr", f_type=MDOFunction.ConstraintType.INEQ
+        ArrayFunction(
+            lambda x: x * 3, name="cstr", f_type=ArrayFunction.ConstraintType.INEQ
         )
     )
 
@@ -1809,7 +1811,7 @@ def test_export_to_dataset_input_names_order(name) -> None:
     design_space.add_variable(name)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x[0] + x[1], name="obj")
+    problem.objective = ArrayFunction(lambda x: x[0] + x[1], name="obj")
 
     algo = CustomDOE()
     algo.execute(problem, samples=array([[1.0, 1.0], [2.0, 2.0]]))
@@ -1851,7 +1853,7 @@ def test_get_x0_normalized_complex(
 def test_objective_name() -> None:
     """Check the name of the objective."""
     problem = OptimizationProblem(DesignSpace())
-    problem.objective = MDOFunction(lambda x: x, name="f")
+    problem.objective = ArrayFunction(lambda x: x, name="f")
     assert problem.standardized_objective_name == "f"
     assert problem.objective_name == "f"
     problem.minimize_objective = False
@@ -1860,7 +1862,7 @@ def test_objective_name() -> None:
 
 
 @pytest.mark.parametrize(
-    "cstr_type", [MDOFunction.ConstraintType.EQ, MDOFunction.FunctionType.INEQ]
+    "cstr_type", [ArrayFunction.ConstraintType.EQ, ArrayFunction.FunctionType.INEQ]
 )
 @pytest.mark.parametrize("has_default_name", [False, True])
 @pytest.mark.parametrize(
@@ -1880,7 +1882,7 @@ def test_original_to_current_names(
     """Check the name of a constraint."""
     problem = OptimizationProblem(DesignSpace())
     original_name = "c"
-    constraint_function = MDOFunction(lambda x: x, name=original_name)
+    constraint_function = ArrayFunction(lambda x: x, name=original_name)
     constraint_function.has_default_name = has_default_name
     problem.add_constraint(
         constraint_function,
@@ -1905,8 +1907,8 @@ def test_original_to_current_names_with_aggregation() -> None:
     for i in range(nb_constr):
         original_name = f"c{i}"
         problem.add_constraint(
-            MDOFunction(lambda x: x, name=original_name),
-            constraint_type=MDOFunction.FunctionType.INEQ,
+            ArrayFunction(lambda x: x, name=original_name),
+            constraint_type=ArrayFunction.FunctionType.INEQ,
         )
 
     idx_aggr = [0, 3]
@@ -1953,8 +1955,8 @@ def test_observables_normalization(sellar_with_2d_array, sellar_disciplines) -> 
 def test_observable_cannot_be_added_twice(caplog) -> None:
     """Check that an observable cannot be added twice."""
     problem = OptimizationProblem(DesignSpace())
-    problem.add_observable(MDOFunction(lambda x: x, name="obs"))
-    problem.add_observable(MDOFunction(lambda x: x, name="obs"))
+    problem.add_observable(ArrayFunction(lambda x: x, name="obs"))
+    problem.add_observable(ArrayFunction(lambda x: x, name="obs"))
     assert "WARNING" in caplog.text
     assert 'The optimization problem already observes "obs".' in caplog.text
     assert len(problem.observables) == 1
@@ -1965,15 +1967,15 @@ def test_repr_constraint_linear_lower_ineq() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x", 2)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOLinearFunction(array([1, 2]), "f")
+    problem.objective = LinearFunction(array([1, 2]), "f")
     problem.add_constraint(
-        MDOLinearFunction(
+        LinearFunction(
             array([[0, 1], [2, 3], [4, 5]]),
             "g",
             value_at_zero=array([6, 7, 8]),
         ),
         positive=True,
-        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
+        constraint_type=LinearFunction.ConstraintType.INEQ,
     )
     assert str(problem) == (
         """Optimization problem:
@@ -1988,14 +1990,14 @@ def test_repr_constraint_linear_lower_ineq() -> None:
 
 def test_get_original_observable(pow2_problem) -> None:
     """Check the accessor to an original observable."""
-    function = MDOFunction(None, name="f")
+    function = ArrayFunction(None, name="f")
     pow2_problem.add_observable(function)
     assert pow2_problem.observables.get_from_name(function.name) is function
 
 
 def test_get_preprocessed_observable(pow2_problem) -> None:
     """Check the accessor to a pre-processed observable."""
-    function = MDOFunction(None, name="f")
+    function = ArrayFunction(None, name="f")
     pow2_problem.add_observable(function)
     pow2_problem.preprocess_functions()
     assert (
@@ -2023,7 +2025,7 @@ def test_avoid_complex_in_dataset() -> None:
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         lambda x: array([0j]), name="f", jac=lambda x: array([[0j]])
     )
     problem.preprocess_functions()
@@ -2039,7 +2041,7 @@ def test_avoid_complex_in_dataset() -> None:
 
 
 @pytest.mark.parametrize(
-    "cstr_type", [MDOFunction.ConstraintType.EQ, MDOFunction.ConstraintType.INEQ]
+    "cstr_type", [ArrayFunction.ConstraintType.EQ, ArrayFunction.ConstraintType.INEQ]
 )
 @pytest.mark.parametrize(
     ("is_feasible", "violation", "cstr"),
@@ -2062,9 +2064,9 @@ def test_check_design_point_is_feasible(
     problem = OptimizationProblem(design_space)
     problem.tolerances.inequality = 1
     problem.tolerances.equality = 1
-    problem.objective = MDOFunction(lambda x: x, name="obj")
+    problem.objective = ArrayFunction(lambda x: x, name="obj")
     problem.add_constraint(
-        MDOFunction(lambda x: x, name="cstr"), constraint_type=cstr_type
+        ArrayFunction(lambda x: x, name="cstr"), constraint_type=cstr_type
     )
 
     x_vect = array([1.0])
@@ -2081,7 +2083,7 @@ def test_is_multi_objective() -> None:
     design_space = create_design_space()
     design_space.add_variable("x", 1)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: array([x, x]), name="two")
+    problem.objective = ArrayFunction(lambda x: array([x, x]), name="two")
     with pytest.raises(
         ValueError, match=re.escape("Cannot determine the dimension of the objective.")
     ):
@@ -2255,7 +2257,7 @@ def test_no_initial_value_with_approximated_gradient(value, differentiation_meth
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=value)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x**2, name="f")
+    problem.objective = ArrayFunction(lambda x: x**2, name="f")
     problem.differentiation_method = differentiation_method
     optimization_result = execute_algo(problem, algo_name="SLSQP", max_iter=100)
     assert_allclose(optimization_result.x_opt, 0, rtol=0, atol=1e-9)
@@ -2293,14 +2295,14 @@ def test_get_all_functions(preprocess):
 def test_observables_setters():
     """Check that the observables setters work properly."""
     problem = EvaluationProblem(DesignSpace())
-    f_type = MDOFunction.FunctionType.OBS
-    functions = [MDOFunction(lambda x: x, name=name, f_type=f_type) for name in "fg"]
+    f_type = ArrayFunction.FunctionType.OBS
+    functions = [ArrayFunction(lambda x: x, name=name, f_type=f_type) for name in "fg"]
     problem.observables = functions
     problem.new_iter_observables = functions
 
     # Keep the previous lines
     # to check that observables and new_iter_observables are cleared.
-    functions = [MDOFunction(lambda x: x, name=name, f_type=f_type) for name in "hi"]
+    functions = [ArrayFunction(lambda x: x, name=name, f_type=f_type) for name in "hi"]
     problem.observables = functions
     problem.new_iter_observables = functions
     assert problem.observables._functions == functions
@@ -2313,7 +2315,7 @@ def test_evaluation_problem_to_dataset(output_name):
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
     problem = EvaluationProblem(design_space)
-    problem.add_observable(MDOFunction(lambda x: 2 * x, name=output_name))
+    problem.add_observable(ArrayFunction(lambda x: 2 * x, name=output_name))
     problem.preprocess_functions()
     output_functions = problem.get_functions(observable_names=())[0]
     problem.evaluate_functions(
@@ -2352,7 +2354,7 @@ def evaluation_problem() -> EvaluationProblem:
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = EvaluationProblem(design_space)
     problem.add_observable(
-        MDOFunction(lambda x: 2 * x, name="f", jac=lambda x: array([2.0]))
+        ArrayFunction(lambda x: 2 * x, name="f", jac=lambda x: array([2.0]))
     )
     return problem
 
@@ -2379,7 +2381,7 @@ def test_max_iter_reached_exception(
 
 def test_stop_if_nan(evaluation_problem):
     """Check stop_if_nan when the functions are not ProblemFunction."""
-    evaluation_problem.foo = MDOFunction(lambda x: x, name="foo")
+    evaluation_problem.foo = ArrayFunction(lambda x: x, name="foo")
     evaluation_problem._function_names.append("foo")
     evaluation_problem.stop_if_nan = False
     assert not evaluation_problem.stop_if_nan

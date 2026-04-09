@@ -31,8 +31,8 @@ from numpy import zeros
 
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.mdo_functions.consistency_constraint import ConsistencyConstraint
-from gemseo.core.mdo_functions.taylor_polynomials import compute_linear_approximation
+from gemseo.core.functions.consistency_constraint import ConsistencyConstraint
+from gemseo.core.functions.taylor_polynomials import compute_linear_approximation
 from gemseo.formulations.base_mdo import BaseMDOFormulation
 from gemseo.formulations.idf_chain import IDFChain
 from gemseo.formulations.idf_settings import IDF_Settings

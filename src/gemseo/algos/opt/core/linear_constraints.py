@@ -28,7 +28,7 @@ from numpy import vstack
 from numpy import zeros
 from scipy.sparse import vstack as sparse_vstack
 
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.utils.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
@@ -36,12 +36,12 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
 
 
 def build_constraints_matrices(
-    constraints: Iterable[MDOLinearFunction],
-    constraint_type: MDOFunction.ConstraintType,
+    constraints: Iterable[LinearFunction],
+    constraint_type: ArrayFunction.ConstraintType,
 ) -> tuple[ndarray | None, ndarray | None]:
     """Build the constraints matrices associated with passed linear constraints.
 
@@ -61,8 +61,8 @@ def build_constraints_matrices(
 
     # Check that the constraint are linear
     for constraint in constraints:
-        if not isinstance(constraint, MDOLinearFunction):
-            msg = f'The constraint "{constraint.name}" is not an MDOLinearFunction.'
+        if not isinstance(constraint, LinearFunction):
+            msg = f'The constraint "{constraint.name}" is not a LinearFunction.'
             raise TypeError(msg)
 
     contains_sparse = False

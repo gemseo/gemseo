@@ -37,8 +37,8 @@ from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
@@ -206,7 +206,7 @@ def test_jac_pb(design_space) -> None:
     algo = "L_BFGS_B"
 
     pb = OptimizationProblem(design_space)
-    pb.objective = MDOFunction(rosen, name="rosen", jac=rosen_der)
+    pb.objective = ArrayFunction(rosen, name="rosen", jac=rosen_der)
     execute_algo(pb, algo_name=algo, max_iter=max_iter)
     fopt_ref = pb.solution.f_opt
 

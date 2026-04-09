@@ -27,7 +27,7 @@ from numpy import atleast_2d
 from numpy import zeros
 
 if TYPE_CHECKING:
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
     from gemseo.typing import NumberArray
 
 
@@ -39,7 +39,7 @@ class SubOptimConstraint:
     without using a closure.
     """
 
-    __f: MDOFunction
+    __f: ArrayFunction
     """The objective function."""
 
     __n: NumberArray
@@ -48,7 +48,7 @@ class SubOptimConstraint:
     __phi_beta: NumberArray
     r"""The scalar product of $\phi$ and $beta$."""
 
-    def __init__(self, phi_beta: NumberArray, n: NumberArray, f: MDOFunction) -> None:
+    def __init__(self, phi_beta: NumberArray, n: NumberArray, f: ArrayFunction) -> None:
         """
         Args:
             phi_beta: The scalar product of phi and beta.

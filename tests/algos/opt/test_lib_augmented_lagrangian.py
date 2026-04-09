@@ -33,7 +33,7 @@ from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.stop_criteria import KKT_RESIDUAL_NORM
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.pydantic import create_model
@@ -219,14 +219,16 @@ def rosenbrock_opt_problem():
         jacobian[0, 0] = 1.0  # Derivative of (x[0] - 1.0) w.r.t. x[0] is 1
         return jacobian
 
-    # Create the MDOFunction with the Jacobian
-    eq_constraint_func = MDOFunction(eq_constraint, jac=eq_constraint_jac, name="c_eq")
+    # Create the ArrayFunction with the Jacobian
+    eq_constraint_func = ArrayFunction(
+        eq_constraint, jac=eq_constraint_jac, name="c_eq"
+    )
 
     # Add the equality constraint to the problem
     problem.add_constraint(
         eq_constraint_func,
         value=0.0,
-        constraint_type=MDOFunction.ConstraintType.EQ,
+        constraint_type=ArrayFunction.ConstraintType.EQ,
     )
 
     return problem

@@ -31,7 +31,7 @@ from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from gemseo.typing import NumberArray
@@ -61,40 +61,40 @@ class HockSchittkowski71(OptimizationProblem):
 
         super().__init__(design_space)
 
-        self.objective = MDOFunction(
+        self.objective = ArrayFunction(
             self.compute_objective,
             name="hock_schittkoski_71",
-            f_type=MDOFunction.FunctionType.OBJ,
+            f_type=ArrayFunction.FunctionType.OBJ,
             jac=self.compute_objective_jacobian,
             expr="x_1 * x_4 * (x_1 + x_2 + x_3) + x_3",
             input_names=["x"],
             dim=1,
         )
 
-        equality_constraint = MDOFunction(
+        equality_constraint = ArrayFunction(
             self.compute_equality_constraint,
             name="equality_constraint",
-            f_type=MDOFunction.ConstraintType.EQ,
+            f_type=ArrayFunction.ConstraintType.EQ,
             jac=self.compute_equality_constraint_jacobian,
             expr="(x_1**2 + x_2**2 + x_3**2 + x_4**2) - 40",
             input_names=["x"],
             dim=1,
         )
         self.add_constraint(
-            equality_constraint, constraint_type=MDOFunction.ConstraintType.EQ
+            equality_constraint, constraint_type=ArrayFunction.ConstraintType.EQ
         )
 
-        inequality_constraint = MDOFunction(
+        inequality_constraint = ArrayFunction(
             self.compute_inequality_constraint,
             name="inequality_constraint",
-            f_type=MDOFunction.ConstraintType.INEQ,
+            f_type=ArrayFunction.ConstraintType.INEQ,
             jac=self.compute_inequality_constraint_jacobian,
             expr="25 - (x_1 * x_2 * x_3 * x_4)",
             input_names=["x"],
             dim=1,
         )
         self.add_constraint(
-            inequality_constraint, constraint_type=MDOFunction.ConstraintType.INEQ
+            inequality_constraint, constraint_type=ArrayFunction.ConstraintType.INEQ
         )
 
     @staticmethod

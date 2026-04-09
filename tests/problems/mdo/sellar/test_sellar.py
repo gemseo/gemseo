@@ -33,7 +33,7 @@ from pandas._testing import assert_frame_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
@@ -189,8 +189,8 @@ def test_exec(
     )
     scenario.add_objective("obj")
     scenario.set_differentiation_method(differentiation_method)
-    scenario.add_constraint(C_1, constraint_type=MDOFunction.ConstraintType.INEQ)
-    scenario.add_constraint(C_2, constraint_type=MDOFunction.ConstraintType.INEQ)
+    scenario.add_constraint(C_1, constraint_type=ArrayFunction.ConstraintType.INEQ)
+    scenario.add_constraint(C_2, constraint_type=ArrayFunction.ConstraintType.INEQ)
     scenario.execute(SLSQP_Settings(max_iter=20))
 
     x_opt = scenario.design_space.get_current_value(as_dict=True)

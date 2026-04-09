@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 from numpy import delete
 from numpy import insert
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -30,13 +30,13 @@ if TYPE_CHECKING:
     from gemseo.typing import RealArray
 
 
-class RestrictedFunction(MDOFunction):
+class RestrictedFunction(ArrayFunction):
     """Function restricted to a subset of input components.
 
     The rest of the input component are fixed.
     """
 
-    _function: MDOFunction
+    _function: ArrayFunction
     """The original function to restrict."""
 
     _restriction_indices: Sequence[int]
@@ -47,7 +47,7 @@ class RestrictedFunction(MDOFunction):
 
     def __init__(
         self,
-        function: MDOFunction,
+        function: ArrayFunction,
         restriction_indices: IntegerArray,
         restriction_values: RealArray,
     ) -> None:

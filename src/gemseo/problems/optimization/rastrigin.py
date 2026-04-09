@@ -32,7 +32,7 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -71,7 +71,7 @@ class Rastrigin(OptimizationProblem):
         design_space.add_variable("x", 2, lower_bound=-0.1, upper_bound=0.1)
         design_space.set_current_value(full(2, 0.01))
         super().__init__(design_space)
-        self.objective = MDOFunction(
+        self.objective = ArrayFunction(
             self.rastrigin,
             name="Rastrigin",
             f_type="obj",

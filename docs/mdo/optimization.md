@@ -48,17 +48,17 @@ design_space.add_variable("x", 1, lower_bound=-2., upper_bound=2.,
                         value=-0.5 * ones(1))
 ```
 
-and an objective function, of type [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]. The [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] is callable and requires at least
+and an objective function, of type [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]. The [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] is callable and requires at least
 a function pointer to be instantiated. It supports expressions and the +, -, \ * operators:
 
 ``` python
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from numpy import cos
 from numpy import exp
 from numpy import sin
 
-f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
-f_2 = MDOFunction(exp, name="f_2", jac=exp, expr="exp(x)")
+f_1 = ArrayFunction(sin, name="f_1", jac=cos, expr="sin(x)")
+f_2 = ArrayFunction(exp, name="f_2", jac=exp, expr="exp(x)")
 f_1_sub_f_2 = f_1 - f_2
 ```
 
@@ -70,7 +70,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 problem = OptimizationProblem(design_space)
 ```
 
-To set the objective [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction],
+To set the objective [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction],
 the attribute [objective][gemseo.algos.optimization_problem.OptimizationProblem.objective] of the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
 must be set with the objective function pointer:
 
@@ -79,7 +79,7 @@ problem.objective = f_1_sub_f_2
 ```
 
 Similarly the [constraints][gemseo.algos.optimization_problem.OptimizationProblem.constraints] attribute must be set with a list of inequality or equality constraints.
-The [f_type][gemseo.core.mdo_functions.mdo_function.MDOFunction.f_type] attribute of [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] shall be set to `"eq"` or `"ineq"` to declare the type of constraint to equality or inequality.
+The [f_type][gemseo.core.functions.array_function.ArrayFunction.f_type] attribute of [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] shall be set to `"eq"` or `"ineq"` to declare the type of constraint to equality or inequality.
 
 !!! warning
       **All inequality constraints must be negative by convention**, whatever the optimization algorithm used to solve the problem.
