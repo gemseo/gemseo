@@ -29,24 +29,22 @@ if TYPE_CHECKING:
 class Offset(ArrayFunction):
     """Wrap an ArrayFunction plus an offset value."""
 
-    def __init__(
-        self, value: NumberArray | Number, array_function: ArrayFunction
-    ) -> None:
+    def __init__(self, value: NumberArray | Number, function: ArrayFunction) -> None:
         """
         Args:
             value: The offset value.
-            array_function: The original ArrayFunction object.
+            function: The original function.
         """  # noqa: D205, D212, D415
-        function = array_function.offset(value)
+        offset_function = function.offset(value)
         super().__init__(
-            function.func,
-            function.name,
-            f_type=function.f_type,
-            jac=function.jac,
-            expr=function.expr,
-            input_names=function.input_names,
-            dim=function.dim,
-            output_names=function.output_names,
-            force_real=function.force_real,
-            special_repr=function.special_repr,
+            offset_function.func,
+            offset_function.name,
+            f_type=offset_function.f_type,
+            jac=offset_function.jac,
+            expr=offset_function.expr,
+            input_names=offset_function.input_names,
+            dim=offset_function.dim,
+            output_names=offset_function.output_names,
+            force_real=offset_function.force_real,
+            special_repr=offset_function.special_repr,
         )

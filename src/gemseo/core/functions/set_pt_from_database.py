@@ -32,7 +32,7 @@ class SetPtFromDatabase:
         self,
         database: Database,
         design_space: DesignSpace,
-        array_function: ArrayFunction,
+        function: ArrayFunction,
         normalize: bool = False,
         jac: bool = True,
         x_tolerance: float = 1e-10,
@@ -41,7 +41,7 @@ class SetPtFromDatabase:
         Args:
             database: The database to read.
             design_space: The design space used for normalization.
-            array_function: The function where the data from the database will be set.
+            function: The function where the data from the database will be set.
             normalize: If `True`,
                 the values of the inputs are unnormalized before call.
             jac: If `True`, a Jacobian pointer is also generated.
@@ -49,7 +49,7 @@ class SetPtFromDatabase:
         """  # noqa: D205, D212, D415
         self.__database = database
         self.__design_space = design_space
-        self.__array_function = array_function
+        self.__array_function = function
         self.__normalize = normalize
         self.__jac = jac
         self.__x_tolerance = x_tolerance
