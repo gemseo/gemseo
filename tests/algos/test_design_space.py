@@ -45,7 +45,7 @@ from scipy.sparse import csr_array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
@@ -1534,7 +1534,7 @@ def test_normalization_casting(design_space: DesignSpace, normalize: bool) -> No
     """Test that integer variable keep their type after unnormalization."""
     design_space.filter(["x14"])
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x, name="f")
+    problem.objective = ArrayFunction(lambda x: x, name="f")
     out = problem.evaluate_functions(design_vector_is_normalized=normalize)
     assert out[0]["f"] == array([2])
     assert out[0]["f"].dtype == int64

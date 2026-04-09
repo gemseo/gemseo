@@ -28,7 +28,7 @@ from numpy import str_
 from gemseo.algos.database import Database
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.serializable import Serializable
 from gemseo.utils.constants import _ENABLE_FUNCTION_STATISTICS
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
@@ -39,14 +39,14 @@ if TYPE_CHECKING:
 
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.evaluation_counter import EvaluationCounter
-    from gemseo.core.mdo_functions.mdo_function import OutputType
-    from gemseo.core.mdo_functions.mdo_function import WrappedFunctionType
+    from gemseo.core.functions.array_function import OutputType
+    from gemseo.core.functions.array_function import WrappedFunctionType
     from gemseo.typing import NumberArray
     from gemseo.typing import RealOrComplexArrayT
     from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 
-class ProblemFunction(MDOFunction, Serializable):
+class ProblemFunction(ArrayFunction, Serializable):
     """A function to be attached to a problem."""
 
     enable_statistics: ClassVar[bool] = _ENABLE_FUNCTION_STATISTICS
@@ -96,7 +96,7 @@ class ProblemFunction(MDOFunction, Serializable):
 
     def __init__(
         self,
-        function: MDOFunction,
+        function: ArrayFunction,
         output_evaluation_sequence: Iterable[Callable[[NumberArray], NumberArray]],
         jacobian_evaluation_sequence: Iterable[Callable[[NumberArray], NumberArray]],
         with_normalized_inputs: bool,
@@ -180,7 +180,7 @@ class ProblemFunction(MDOFunction, Serializable):
             with_normalized_inputs=with_normalized_inputs,
         )
 
-    @MDOFunction.func.setter
+    @ArrayFunction.func.setter
     def func(self, f_pointer: WrappedFunctionType) -> None:  # noqa: D102
         if self.enable_statistics:
             self._n_calls.value = 0
@@ -207,7 +207,7 @@ class ProblemFunction(MDOFunction, Serializable):
         """
         # The lines below implement function compositions using a for-loop.
         # For instance, unnormalize `input_value`, then evaluate the original
-        # `MDOFunction`. The output value of a function becomes the input value of
+        # `ArrayFunction`. The output value of a function becomes the input value of
         # the next function.
         for func in self._output_evaluation_sequence:
             input_value = func(input_value)
@@ -225,7 +225,7 @@ class ProblemFunction(MDOFunction, Serializable):
         """
         # The lines below implement function compositions using a for-loop.
         # For instance, unnormalize `input_value`, then evaluate the original
-        # `MDOFunction`. The output value of a function becomes the input value of
+        # `ArrayFunction`. The output value of a function becomes the input value of
         # the next function.
         for func in self._jacobian_evaluation_sequence:
             input_value = func(input_value)
@@ -459,7 +459,7 @@ class ProblemFunction(MDOFunction, Serializable):
 
         This count is both multiprocess- and multithread-safe, thanks to the locking
         process used by
-        [MDOFunction.evaluate()][gemseo.core.mdo_functions.mdo_function.MDOFunction.evaluate].
+        [ArrayFunction.evaluate()][gemseo.core.functions.array_function.ArrayFunction.evaluate].
         """
         if self.enable_statistics:
             return self._n_calls.value

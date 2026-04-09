@@ -37,7 +37,7 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_max
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
 
 
@@ -54,8 +54,8 @@ def create_problem():
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
 
-    func = MDOFunction(
-        cstr, name="cstr", jac=jac, f_type=MDOFunction.ConstraintType.INEQ
+    func = ArrayFunction(
+        cstr, name="cstr", jac=jac, f_type=ArrayFunction.ConstraintType.INEQ
     )
     problem.constraints = [func, eq]
     return problem
@@ -78,7 +78,9 @@ def create_pb_alleq():
     def jac(x):
         return vstack([cstr.jac(x) for cstr in constraints])
 
-    func = MDOFunction(cstr, name="cstr", jac=jac, f_type=MDOFunction.ConstraintType.EQ)
+    func = ArrayFunction(
+        cstr, name="cstr", jac=jac, f_type=ArrayFunction.ConstraintType.EQ
+    )
     problem.constraints = [func]
     return problem
 
@@ -212,28 +214,28 @@ def jacobian_function(x):
     scope="module",
     params=[
         (
-            MDOFunction.FunctionType.INEQ,
+            ArrayFunction.FunctionType.INEQ,
             aggregate_max,
         ),
-        (MDOFunction.FunctionType.INEQ, aggregate_lower_bound_ks),
-        (MDOFunction.FunctionType.INEQ, aggregate_upper_bound_ks),
-        (MDOFunction.FunctionType.INEQ, aggregate_iks),
-        (MDOFunction.FunctionType.INEQ, aggregate_positive_sum_square),
-        (MDOFunction.FunctionType.EQ, aggregate_sum_square),
+        (ArrayFunction.FunctionType.INEQ, aggregate_lower_bound_ks),
+        (ArrayFunction.FunctionType.INEQ, aggregate_upper_bound_ks),
+        (ArrayFunction.FunctionType.INEQ, aggregate_iks),
+        (ArrayFunction.FunctionType.INEQ, aggregate_positive_sum_square),
+        (ArrayFunction.FunctionType.EQ, aggregate_sum_square),
     ],
 )
 def complex_real_mdo_func_aggregation(
     request,
-) -> tuple[MDOFunction, MDOFunction, callable]:
+) -> tuple[ArrayFunction, ArrayFunction, callable]:
     """Returns two mdo_functions and a consistent aggregation callable for tests."""
     return (
-        MDOFunction(
+        ArrayFunction(
             lambda x: array([sum(x**2), sum(sin(x)), sum(cos(x))], complex128),
             name="c",
             f_type=request.param[0],
             jac=jacobian_function,
         ),
-        MDOFunction(
+        ArrayFunction(
             lambda x: array([sum(x**2), sum(sin(x)), sum(cos(x))]),
             name="r",
             f_type=request.param[0],

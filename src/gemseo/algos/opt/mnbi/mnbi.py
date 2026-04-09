@@ -76,8 +76,8 @@ from gemseo.algos.opt.mnbi._utils.function_component_extractor import (
 from gemseo.algos.opt.mnbi._utils.sub_optim_constraint import SubOptimConstraint
 from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_function import NotImplementedCallable
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.array_function import NotImplementedCallable
 from gemseo.utils.multiprocessing.execution import execute
 
 if TYPE_CHECKING:
@@ -300,7 +300,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         jac = (
             None if pb_obj.jac is NotImplementedCallable else objective.compute_jacobian
         )
-        opt_problem.objective = MDOFunction(
+        opt_problem.objective = ArrayFunction(
             objective.compute_output, name=f"f_{i}", jac=jac
         )
         opt_result = OptimizationLibraryFactory().execute(
@@ -388,7 +388,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         design_space = deepcopy(self._problem.design_space)
         design_space.add_variable("t", value=0.0)
         self.__beta_sub_optim = OptimizationProblem(design_space)
-        self.__beta_sub_optim.objective = MDOFunction(
+        self.__beta_sub_optim.objective = ArrayFunction(
             self._t_extraction_func,
             name="t_extraction",
             jac=self._t_extraction_jac,
@@ -446,7 +446,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             if not isinstance(f.jac, NotImplementedCallable)
             else None
         )
-        beta_sub_cstr = MDOFunction(
+        beta_sub_cstr = ArrayFunction(
             beta_sub_optim_constraint.compute_output,
             name=self.__SUB_OPTIM_CONSTRAINT_NAME,
             jac=jac,
@@ -463,7 +463,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
                 if not isinstance(g.jac, NotImplementedCallable)
                 else None
             )
-            constraint = MDOFunction(
+            constraint = ArrayFunction(
                 wrapped_g.compute_output,
                 name=f"wrapped_{g.name}",
                 jac=jac,
@@ -796,7 +796,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         # Compute the quasi-normal vector to the simplex formed by the points in phi
         self.__n_vect = -dot(self.__phi - self.__utopia, ones(self.__n_obj))
 
-        # Create the MDOFunction that runs the beta sub-optimization problem
+        # Create the ArrayFunction that runs the beta sub-optimization problem
         self.__create_beta_sub_optim()
 
         # Run the beta sub-problem for different values of beta corresponding to

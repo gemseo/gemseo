@@ -32,7 +32,7 @@ from scipy.linalg import block_diag
 from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.mdo.scalable.parametric.core.scalable_problem import (
     ScalableProblem as _ScalableProblem,
 )
@@ -97,7 +97,7 @@ class ScalableProblem(_ScalableProblem):
         for index, _ in enumerate(self.scalable_disciplines):
             scenario.add_constraint(
                 get_constraint_name(index + 1),
-                constraint_type=MDOFunction.FunctionType.INEQ,
+                constraint_type=ArrayFunction.FunctionType.INEQ,
             )
 
         return scenario
@@ -166,16 +166,16 @@ class ScalableProblem(_ScalableProblem):
         )
 
         problem = OptimizationProblem(design_space)
-        problem.objective = MDOFunction(f, name="f", expr="0.5x'Qx + c'x + d", jac=df)
+        problem.objective = ArrayFunction(f, name="f", expr="0.5x'Qx + c'x + d", jac=df)
         problem.add_constraint(
-            MDOFunction(
+            ArrayFunction(
                 g,
                 name="g",
-                f_type=MDOFunction.FunctionType.INEQ,
+                f_type=ArrayFunction.FunctionType.INEQ,
                 expr="Ax-b <= 0",
                 jac=dg,
             )
         )
         if add_coupling:
-            problem.add_observable(MDOFunction(self.compute_y, name="coupling"))
+            problem.add_observable(ArrayFunction(self.compute_y, name="coupling"))
         return problem

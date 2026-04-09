@@ -26,20 +26,20 @@ from typing import TYPE_CHECKING
 from numpy import atleast_1d
 
 if TYPE_CHECKING:
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
     from gemseo.typing import NumberArray
 
 
 class FunctionComponentExtractor:
     """A function to evaluate only one output component of a function."""
 
-    __f: MDOFunction
+    __f: ArrayFunction
     """The function from which to extract the component."""
 
     __i: int
     """The index of the component to extract."""
 
-    def __init__(self, f: MDOFunction, i: int) -> None:
+    def __init__(self, f: ArrayFunction, i: int) -> None:
         """
         Args:
             f: The function from which to extract the component.

@@ -24,7 +24,7 @@ from gemseo.algos.opt.scipy_linprog.settings.highs_interior_point import (
     INTERIOR_POINT_Settings,
 )
 from gemseo.core.chains.chain import MDOChain
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.disciplines.splitter import Splitter
 
@@ -83,7 +83,7 @@ def scenario(request) -> MDOScenario:
         formulation_name=request.param,
     )
 
-    scenario.add_constraint("eta", constraint_type=MDOFunction.ConstraintType.INEQ)
+    scenario.add_constraint("eta", constraint_type=ArrayFunction.ConstraintType.INEQ)
 
     return scenario
 

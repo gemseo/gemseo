@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import empty
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -31,17 +31,17 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class FunctionRestriction(MDOFunction):
-    """Take an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] and apply a given restriction to its inputs."""  # noqa: E501
+class FunctionRestriction(ArrayFunction):
+    """Take an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] and apply a given restriction to its inputs."""  # noqa: E501
 
     def __init__(
         self,
         frozen_indexes: ndarray[int],
         frozen_values: NumberArray,
         input_dim: int,
-        mdo_function: MDOFunction,
+        array_function: ArrayFunction,
         name: str = "",
-        f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
+        f_type: ArrayFunction.FunctionType = ArrayFunction.FunctionType.NONE,
         expr: str = "",
         input_names: Iterable[str] = (),
     ) -> None:
@@ -55,7 +55,7 @@ class FunctionRestriction(MDOFunction):
                 create a default name
                 based on the name of the current function
                 and on the argument `input_names`.
-            mdo_function: The function to restrict.
+            array_function: The function to restrict.
 
         Raises:
             ValueError: If the `frozen_indexes` and the `frozen_values` arrays do
@@ -69,7 +69,7 @@ class FunctionRestriction(MDOFunction):
         self.__frozen_indexes = frozen_indexes
         self.__frozen_values = frozen_values
         self.__input_dim = input_dim
-        self.__mdo_function = mdo_function
+        self.__array_function = array_function
         self.__name = name
         self.__f_type = f_type
         self.__expr = expr
@@ -82,15 +82,15 @@ class FunctionRestriction(MDOFunction):
         # Build the name of the restriction
         if self.__name is None and self.__input_names is not None:
             self.__name = "{}_wrt_{}".format(
-                self.__mdo_function.name, "_".join(self.__input_names)
+                self.__array_function.name, "_".join(self.__input_names)
             )
         elif name is None:
-            self.__name = f"{self.__mdo_function.name}_restriction"
+            self.__name = f"{self.__array_function.name}_restriction"
 
-        if self.__mdo_function.has_jac:
+        if self.__array_function.has_jac:
             jac = self._jac_to_wrap
         else:
-            jac = self.__mdo_function.jac
+            jac = self.__array_function.jac
 
         super().__init__(
             self._func_to_wrap,
@@ -99,10 +99,10 @@ class FunctionRestriction(MDOFunction):
             expr=self.__expr,
             input_names=self.__input_names,
             jac=jac,
-            dim=self.__mdo_function.dim,
-            output_names=self.__mdo_function.output_names,
-            force_real=self.__mdo_function.force_real,
-            original_name=mdo_function.original_name,
+            dim=self.__array_function.dim,
+            output_names=self.__array_function.output_names,
+            force_real=self.__array_function.force_real,
+            original_name=array_function.original_name,
         )
 
     def __extend_subvect(self, x_subvect: NumberArray) -> NumberArray:
@@ -128,7 +128,7 @@ class FunctionRestriction(MDOFunction):
         Returns:
             The value of the outputs of the restriction.
         """
-        return self.__mdo_function.func(self.__extend_subvect(x_subvect))
+        return self.__array_function.func(self.__extend_subvect(x_subvect))
 
     def _jac_to_wrap(self, x_subvect: NumberArray) -> NumberArray:
         """Compute the Jacobian matrix of the restriction.
@@ -139,6 +139,6 @@ class FunctionRestriction(MDOFunction):
         Returns:
             The Jacobian matrix of the restriction.
         """
-        return self.__mdo_function.jac(self.__extend_subvect(x_subvect))[
+        return self.__array_function.jac(self.__extend_subvect(x_subvect))[
             ..., self._active_indexes
         ]

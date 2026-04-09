@@ -19,7 +19,7 @@ from numpy import concatenate
 from numpy import vstack
 
 from gemseo import execute_algo
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
 
 
@@ -36,8 +36,8 @@ def create_problem():
     def jac(x):
         return vstack([ineq1.jac(x), ineq2.jac(x)])
 
-    func = MDOFunction(
-        cstr, name="cstr", jac=jac, f_type=MDOFunction.ConstraintType.INEQ
+    func = ArrayFunction(
+        cstr, name="cstr", jac=jac, f_type=ArrayFunction.ConstraintType.INEQ
     )
     problem.constraints = [func, eq]
     return problem

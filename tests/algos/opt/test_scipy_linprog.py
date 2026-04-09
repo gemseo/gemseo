@@ -32,8 +32,8 @@ from gemseo.algos.opt.scipy_linprog.settings.highs_dual_simplex import (
     DUAL_SIMPLEX_Settings,
 )
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 
 
@@ -77,28 +77,28 @@ def get_opt_problem(sparse_jacobian: bool = False) -> OptimizationProblem:
     array_ = csr_array if sparse_jacobian else array
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOLinearFunction(
+    problem.objective = LinearFunction(
         array_([[1.0, 1.0]]),
         "f",
-        MDOFunction.FunctionType.OBJ,
+        ArrayFunction.FunctionType.OBJ,
         input_names,
         array([-1.0]),
     )
     problem.add_constraint(
-        MDOLinearFunction(
+        LinearFunction(
             array_([[1.0, 1.0]]),
             "g",
             input_names=input_names,
         ),
         value=1.0,
-        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
+        constraint_type=LinearFunction.ConstraintType.INEQ,
     )
     problem.add_constraint(
-        MDOLinearFunction(
+        LinearFunction(
             array_([[-2.0, 1.0]]),
             "h",
             input_names=input_names,
-            f_type=MDOLinearFunction.ConstraintType.EQ,
+            f_type=LinearFunction.ConstraintType.EQ,
         )
     )
     return problem

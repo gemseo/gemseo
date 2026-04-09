@@ -34,7 +34,7 @@ used as objective, constraints and observables.
 If empty, consider the inputs of these functions.
 More precisely,
 for each function,
-an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
+an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]
 is built from the `disciplines`,
 which depend on input variables $x_1,\ldots,x_d,x_{d+1}$,
 and over an input space
@@ -42,9 +42,9 @@ spanned by the input variables $x_1,\ldots,x_d$
 and depending on both the MDO formulation and the `design_space`.
 Then,
 the methods
-[MDOFunction.evaluate()][gemseo.core.mdo_functions.mdo_function.MDOFunction.evaluate]
+[ArrayFunction.evaluate()][gemseo.core.functions.array_function.ArrayFunction.evaluate]
 and
-[MDOFunction.jac()][gemseo.core.mdo_functions.mdo_function.MDOFunction.jac]
+[ArrayFunction.jac()][gemseo.core.functions.array_function.ArrayFunction.jac]
 are called at a given point of the input space
 and return the output value and the Jacobian matrix,
 i.e. the matrix concatenating the partial derivatives
@@ -57,6 +57,6 @@ but with respect to custom inputs,
 e.g. $x_{d-1}$ and $x_{d+1}$.
 Mathematically speaking,
 this matrix returned by
-[MDOFunction.jac()][gemseo.core.mdo_functions.mdo_function.MDOFunction.jac]
+[ArrayFunction.jac()][gemseo.core.functions.array_function.ArrayFunction.jac]
 is no longer a Jacobian.""",
     )

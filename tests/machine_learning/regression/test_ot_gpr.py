@@ -43,7 +43,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.machine_learning.regression.models.ot_gpr import OTGaussianProcessRegressor
 from gemseo.machine_learning.regression.models.ot_gpr_settings import CovarianceModel
@@ -82,7 +82,7 @@ def func(x: ndarray) -> float:
 def problem() -> Rosenbrock:
     """The Rosenbrock problem with an observable summing the inputs."""
     rosenbrock = Rosenbrock()
-    rosenbrock.add_observable(MDOFunction(func, name="sum"))
+    rosenbrock.add_observable(ArrayFunction(func, name="sum"))
     return rosenbrock
 
 

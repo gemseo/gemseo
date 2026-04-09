@@ -27,12 +27,12 @@ from numpy import ones
 from numpy import zeros
 from scipy.optimize import rosen
 
-from gemseo.core.mdo_functions.discipline_adapter_generator import (
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
-from gemseo.core.mdo_functions.linear_composite_function import LinearCompositeFunction
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.restricted_function import RestrictedFunction
+from gemseo.core.functions.linear_composite_function import LinearCompositeFunction
+from gemseo.core.functions.restricted_function import RestrictedFunction
 from gemseo.problems.optimization.rosen_mf import RosenMF
 
 
@@ -43,7 +43,7 @@ from gemseo.problems.optimization.rosen_mf import RosenMF
 def test_linear_composition_expr(input_names, expected_expr):
     """Check the expression of a LinearCombination."""
     linear_composition = LinearCompositeFunction(
-        MDOFunction(lambda x: x, name="foo", input_names=input_names), array([[1]])
+        ArrayFunction(lambda x: x, name="foo", input_names=input_names), array([[1]])
     )
     assert linear_composition.name == "[foo o A]"
     assert linear_composition.expr == expected_expr

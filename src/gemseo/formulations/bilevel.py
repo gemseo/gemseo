@@ -28,7 +28,7 @@ from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.formulations.base_mdo import BaseMDOFormulation
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
@@ -455,13 +455,13 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     def create_constraint(
         self,
         output_names: Iterable[str],
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,  # noqa: E501
+        constraint_type: ArrayFunction.ConstraintType = ArrayFunction.ConstraintType.EQ,  # noqa: E501
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
         apply_to_system_level: bool | None = None,
         apply_to_sub_level: bool | None = None,
-    ) -> MDOFunction | None:
+    ) -> ArrayFunction | None:
         """
         Args:
             apply_to_system_level: Whether to add the constraint
@@ -502,11 +502,11 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     def _create_system_level_constraint(
         self,
         output_names: Iterable[str],
-        constraint_type: MDOFunction.ConstraintType,
+        constraint_type: ArrayFunction.ConstraintType,
         constraint_name: str,
         value: float,
         positive: bool,
-    ) -> MDOFunction:
+    ) -> ArrayFunction:
         """Create a constraint function at the system level.
 
         Args:
@@ -531,7 +531,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
     def _add_sub_level_constraint(
         self,
         output_names: Iterable[str],
-        constraint_type: MDOFunction.ConstraintType,
+        constraint_type: ArrayFunction.ConstraintType,
         constraint_name: str,
         value: float,
         positive: bool,

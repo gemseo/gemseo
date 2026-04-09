@@ -43,7 +43,7 @@ from gemseo.algos.doe.openturns.settings.ot_lhsc import OT_LHSC_Settings
 from gemseo.algos.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
 from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -64,7 +64,7 @@ def identity_problem() -> OptimizationProblem:
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x, name="f")
+    problem.objective = ArrayFunction(lambda x: x, name="f")
     return problem
 
 

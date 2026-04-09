@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
 
 T = TypeVar("T", bound=BaseOptimizerSettings)
 
@@ -259,10 +259,10 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T]):
 
     @staticmethod
     def __scale(
-        function: MDOFunction,
+        function: ArrayFunction,
         function_value: ndarray,
         scaling_threshold: float,
-    ) -> MDOFunction:
+    ) -> ArrayFunction:
         """Scale a function based on its value on the current design values.
 
         Args:

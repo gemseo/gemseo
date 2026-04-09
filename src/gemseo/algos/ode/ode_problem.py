@@ -30,7 +30,7 @@ from numpy import empty
 
 from gemseo.algos.base_problem import BaseProblem
 from gemseo.algos.ode.ode_result import ODEResult
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.typing import RealArray
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
@@ -221,7 +221,7 @@ class ODEProblem(BaseProblem):
             time = self.__time_interval.initial
         self.__jacobian_check_time = time
 
-        function_of_state = MDOFunction(
+        function_of_state = ArrayFunction(
             self._compute_func_of_state,
             name="f",
             jac=self._compute_jac_of_state,

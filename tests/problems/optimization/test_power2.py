@@ -23,7 +23,7 @@ import pytest
 from numpy.testing import assert_equal
 
 from gemseo.algos.design_space import DesignSpace
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
 
 
@@ -34,25 +34,25 @@ def problem() -> Power2:
 
 
 @pytest.fixture(scope="module")
-def objective(problem) -> MDOFunction:
+def objective(problem) -> ArrayFunction:
     """The objective function."""
     return problem.objective
 
 
 @pytest.fixture(scope="module")
-def inequality_1(problem) -> MDOFunction:
+def inequality_1(problem) -> ArrayFunction:
     """The first inequality constraint."""
     return problem.constraints[0]
 
 
 @pytest.fixture(scope="module")
-def inequality_2(problem) -> MDOFunction:
+def inequality_2(problem) -> ArrayFunction:
     """The second inequality constraint."""
     return problem.constraints[1]
 
 
 @pytest.fixture(scope="module")
-def equality(problem) -> MDOFunction:
+def equality(problem) -> ArrayFunction:
     """The equality constraint."""
     return problem.constraints[2]
 
@@ -93,10 +93,10 @@ def test_function_name(request, function, name) -> None:
 @pytest.mark.parametrize(
     ("function", "type_"),
     [
-        ("objective", MDOFunction.FunctionType.OBJ),
-        ("inequality_1", MDOFunction.ConstraintType.INEQ),
-        ("inequality_2", MDOFunction.ConstraintType.INEQ),
-        ("equality", MDOFunction.ConstraintType.EQ),
+        ("objective", ArrayFunction.FunctionType.OBJ),
+        ("inequality_1", ArrayFunction.ConstraintType.INEQ),
+        ("inequality_2", ArrayFunction.ConstraintType.INEQ),
+        ("equality", ArrayFunction.ConstraintType.EQ),
     ],
 )
 def test_function_type(request, function, type_) -> None:

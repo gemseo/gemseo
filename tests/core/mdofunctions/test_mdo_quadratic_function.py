@@ -22,14 +22,14 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_quadratic_function import MDOQuadraticFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.quadratic_function import QuadraticFunction
 
 
 @pytest.fixture(scope="module")
-def quadratic_function() -> MDOQuadraticFunction:
+def quadratic_function() -> QuadraticFunction:
     """A quadratic function."""
-    return MDOQuadraticFunction(
+    return QuadraticFunction(
         array([[1.0, 2.0], [3.0, 4.0]]),
         "f",
         input_names=("x", "y"),
@@ -39,9 +39,9 @@ def quadratic_function() -> MDOQuadraticFunction:
 
 
 @pytest.fixture(scope="module")
-def quadratic_without_linear_term() -> MDOQuadraticFunction:
+def quadratic_without_linear_term() -> QuadraticFunction:
     """A quadratic function without a linear term."""
-    return MDOQuadraticFunction(
+    return QuadraticFunction(
         array([[1.0, 2.0], [3.0, 4.0]]), "f", input_names=("x", "y"), value_at_zero=7.0
     )
 
@@ -55,7 +55,7 @@ def test_init(coefficients) -> None:
             "Quadratic coefficients must be passed as a 2-dimensional square ndarray."
         ),
     ):
-        MDOQuadraticFunction(coefficients, "f")
+        QuadraticFunction(coefficients, "f")
 
 
 @pytest.mark.parametrize(
@@ -79,7 +79,7 @@ def test_values(function, value, gradient, request) -> None:
             "quadratic_function",
             "[x]'[{} {}][x] + [{}]'[x] + {}\n[y] [{} {}][y]   [{}] [y]".format(
                 *(
-                    MDOFunction.COEFF_FORMAT_ND.format(coefficient)
+                    ArrayFunction.COEFF_FORMAT_ND.format(coefficient)
                     for coefficient in (1, 2, 5, 7, 3, 4, 6)
                 )
             ),
@@ -88,7 +88,7 @@ def test_values(function, value, gradient, request) -> None:
             "quadratic_without_linear_term",
             "[x]'[{} {}][x] + {}\n[y] [{} {}][y]".format(
                 *(
-                    MDOFunction.COEFF_FORMAT_ND.format(coefficient)
+                    ArrayFunction.COEFF_FORMAT_ND.format(coefficient)
                     for coefficient in (1, 2, 7, 3, 4)
                 )
             ),

@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import concatenate
 
-from gemseo.core.mdo_functions.discipline_adapter_generator import (
+from gemseo.core.functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
 
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
+    from gemseo.core.functions.discipline_adapter import DisciplineAdapter
     from gemseo.typing import RealArray
 
 
@@ -48,7 +48,7 @@ class ODEFunction:
     """
 
     _adapter: DisciplineAdapter
-    """The `MDOFunction` wrapping the discipline."""
+    """The `ArrayFunction` wrapping the discipline."""
 
     __parameter_names: tuple[str, ...]
     """The names of the parameters."""

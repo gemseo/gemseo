@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
     from gemseo.algos.optimization_result import OptimizationResult
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
     from gemseo.typing import NumberArray
 
 LOGGER = logging.getLogger(__name__)
@@ -201,8 +201,8 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
     def __compute_objective_function_and_active_constraint_residual(
         self,
         mu0: dict[str, NumberArray],
-        problem_eq_constraints: Iterable[MDOFunction],
-        problem_ineq_constraints: Iterable[MDOFunction],
+        problem_eq_constraints: Iterable[ArrayFunction],
+        problem_ineq_constraints: Iterable[ArrayFunction],
         x_opt: NumberArray,
     ) -> tuple[float | NumberArray, NumberArray | Iterable, NumberArray | Iterable]:
         """Compute the objective function and active constraint residuals.
@@ -356,7 +356,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         eq_lag: dict[str, NumberArray],
         ineq_lag: dict[str, NumberArray],
         rho: float,
-    ) -> MDOFunction:
+    ) -> ArrayFunction:
         """Return the lagrangian function.
 
         Args:

@@ -30,7 +30,7 @@ from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 
 class TestPostOptimalAnalysis(unittest.TestCase):
@@ -81,7 +81,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         # Create the optimization problem
         opt_problem = OptimizationProblem(design_space)
         if minimize:
-            obj_func = MDOFunction(
+            obj_func = ArrayFunction(
                 lambda xy: norm(xy) ** 2 + p**2,
                 name="f",
                 jac=lambda xy: 2.0 * xy,
@@ -91,7 +91,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
                 output_names=["f"],
             )
         else:
-            obj_func = MDOFunction(
+            obj_func = ArrayFunction(
                 lambda xy: -(norm(xy) ** 2 + p**2),
                 name="f",
                 jac=lambda xy: -2.0 * xy,
@@ -101,24 +101,24 @@ class TestPostOptimalAnalysis(unittest.TestCase):
                 output_names=["f"],
             )
         opt_problem.objective = obj_func
-        ineq_func = MDOFunction(
+        ineq_func = ArrayFunction(
             lambda x: array([p - x[0] - x[1]]),
             name="g",
             jac=lambda _: array([-1.0, -1.0]),
             expr="p-x-y",
             input_names=["x", "y"],
             dim=1,
-            f_type=MDOFunction.ConstraintType.INEQ,
+            f_type=ArrayFunction.ConstraintType.INEQ,
         )
         opt_problem.add_constraint(ineq_func)
-        eq_func = MDOFunction(
+        eq_func = ArrayFunction(
             lambda x: array([x[1] - p * x[0]]),
             name="h",
             jac=lambda _: array([p, -1.0]),
             expr="p*x-y",
             input_names=["x", "y"],
             dim=1,
-            f_type=MDOFunction.ConstraintType.EQ,
+            f_type=ArrayFunction.ConstraintType.EQ,
         )
         opt_problem.add_constraint(eq_func)
 

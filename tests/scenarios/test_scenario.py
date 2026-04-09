@@ -42,12 +42,12 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.core.mdo_functions.discipline_adapter_generator import (
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
-from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.function_from_discipline import FunctionFromDiscipline
+from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -113,7 +113,9 @@ def build_mdo_scenario(
     )
     scenario.add_objective("y_4", minimize=False)
     for c_name in ["g_1", "g_2", "g_3"]:
-        scenario.add_constraint(c_name, constraint_type=MDOFunction.ConstraintType.INEQ)
+        scenario.add_constraint(
+            c_name, constraint_type=ArrayFunction.ConstraintType.INEQ
+        )
     return scenario
 
 
@@ -770,126 +772,126 @@ def identity_scenario() -> MDOScenario:
     ("constraint_type", "constraint_name", "value", "positive", "expected"),
     [
         (
-            MDOFunction.ConstraintType.EQ,
+            ArrayFunction.ConstraintType.EQ,
             "",
             0.0,
             False,
             ["y", "", "y(x) = 0.0", "y(x) = 0.0"],
         ),
         (
-            MDOFunction.ConstraintType.EQ,
+            ArrayFunction.ConstraintType.EQ,
             "cstr",
             0.0,
             False,
             ["cstr", "", "y(x) = 0.0", "cstr: y(x) = 0.0"],
         ),
         (
-            MDOFunction.ConstraintType.EQ,
+            ArrayFunction.ConstraintType.EQ,
             "",
             1.0,
             False,
             ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 = 0.0", "y(x) = 1.0"],
         ),
         (
-            MDOFunction.ConstraintType.EQ,
+            ArrayFunction.ConstraintType.EQ,
             "",
             -1.0,
             False,
             ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 = 0.0", "y(x) = -1.0"],
         ),
         (
-            MDOFunction.ConstraintType.EQ,
+            ArrayFunction.ConstraintType.EQ,
             "cstr",
             1.0,
             False,
             ["cstr", "y(x)-1.0", "y(x)-1.0 = 0.0", "cstr: y(x) = 1.0"],
         ),
         (
-            MDOFunction.ConstraintType.EQ,
+            ArrayFunction.ConstraintType.EQ,
             "cstr",
             -1.0,
             False,
             ["cstr", "y(x)+1.0", "y(x)+1.0 = 0.0", "cstr: y(x) = -1.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "",
             0.0,
             False,
             ["y", "", "y(x) <= 0.0", "y(x) <= 0.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "cstr",
             0.0,
             False,
             ["cstr", "", "y(x) <= 0.0", "cstr: y(x) <= 0.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "",
             1.0,
             False,
             ["[y-1.0]", "y(x)-1.0", "y(x)-1.0 <= 0.0", "y(x) <= 1.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "",
             -1.0,
             False,
             ["[y+1.0]", "y(x)+1.0", "y(x)+1.0 <= 0.0", "y(x) <= -1.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "cstr",
             1.0,
             False,
             ["cstr", "y(x)-1.0", "y(x)-1.0 <= 0.0", "cstr: y(x) <= 1.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "cstr",
             -1.0,
             False,
             ["cstr", "y(x)+1.0", "y(x)+1.0 <= 0.0", "cstr: y(x) <= -1.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "",
             0.0,
             True,
             ["-y", "-y(x)", "-y(x) <= 0.0", "y(x) >= 0.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "cstr",
             0.0,
             True,
             ["cstr", "-y(x)", "-y(x) <= 0.0", "cstr: y(x) >= 0.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "",
             1.0,
             True,
             ["-[y-1.0]", "-(y(x)-1.0)", "-(y(x)-1.0) <= 0.0", "y(x) >= 1.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "",
             -1.0,
             True,
             ["-[y+1.0]", "-(y(x)+1.0)", "-(y(x)+1.0) <= 0.0", "y(x) >= -1.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "cstr",
             1.0,
             True,
             ["cstr", "-(y(x)-1.0)", "-(y(x)-1.0) <= 0.0", "cstr: y(x) >= 1.0"],
         ),
         (
-            MDOFunction.ConstraintType.INEQ,
+            ArrayFunction.ConstraintType.INEQ,
             "cstr",
             -1.0,
             True,
@@ -976,7 +978,7 @@ def test_function_problem_type(scenario_for_linear_check, full_linear) -> None:
         )
         assert not optimization_problem.is_linear
     else:
-        assert isinstance(optimization_problem.objective, MDOLinearFunction)
+        assert isinstance(optimization_problem.objective, LinearFunction)
         assert scenario_for_linear_check.formulation.problem.is_linear
 
 

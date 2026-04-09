@@ -28,7 +28,7 @@ from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
 from gemseo.algos.doe.openturns.openturns import OpenTURNS
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.utils.testing.helpers import concretize_classes
 
 
@@ -37,7 +37,7 @@ def doe_problem_dim_2():
     design_space = DesignSpace()
     design_space.add_variable("x", size=2, lower_bound=-2.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(sum, name="func")
+    problem.objective = ArrayFunction(sum, name="func")
     return problem
 
 
@@ -62,7 +62,7 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
     design_space = DesignSpace()
     design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(sum, name="func")
+    problem.objective = ArrayFunction(sum, name="func")
     lib = doe_library_class(algo_name)
     settings = lib.ALGORITHM_INFOS[algo_name].settings_class(n_samples=n_samples)
     lib.execute(problem, settings=settings)
@@ -83,7 +83,7 @@ def test_fullfact_properties(doe_library_class, algo_name, n_samples, size) -> N
     design_space = DesignSpace()
     design_space.add_variable("x", size=size, lower_bound=0.0, upper_bound=2.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(sum, name="func")
+    problem.objective = ArrayFunction(sum, name="func")
     lib = doe_library_class(algo_name)
     settings = lib.ALGORITHM_INFOS[algo_name].settings_class(n_samples=n_samples)
     lib.execute(problem, settings=settings)

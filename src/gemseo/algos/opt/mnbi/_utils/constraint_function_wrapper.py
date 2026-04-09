@@ -27,7 +27,7 @@ from numpy import atleast_2d
 from numpy import zeros
 
 if TYPE_CHECKING:
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
     from gemseo.typing import NumberArray
 
 
@@ -42,10 +42,10 @@ class ConstraintFunctionWrapper:
     and calls $g$ with only the $x$ input.
     """
 
-    __g: MDOFunction
+    __g: ArrayFunction
     """The constraint function to be wrapped."""
 
-    def __init__(self, g: MDOFunction) -> None:
+    def __init__(self, g: ArrayFunction) -> None:
         """
         Args:
             g: The constraint function $g$ to be wrapped.

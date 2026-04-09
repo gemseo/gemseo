@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from numbers import Number
@@ -26,16 +26,18 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class Offset(MDOFunction):
-    """Wrap an MDOFunction plus an offset value."""
+class Offset(ArrayFunction):
+    """Wrap an ArrayFunction plus an offset value."""
 
-    def __init__(self, value: NumberArray | Number, mdo_function: MDOFunction) -> None:
+    def __init__(
+        self, value: NumberArray | Number, array_function: ArrayFunction
+    ) -> None:
         """
         Args:
             value: The offset value.
-            mdo_function: The original MDOFunction object.
+            array_function: The original ArrayFunction object.
         """  # noqa: D205, D212, D415
-        function = mdo_function.offset(value)
+        function = array_function.offset(value)
         super().__init__(
             function.func,
             function.name,

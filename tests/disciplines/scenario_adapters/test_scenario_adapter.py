@@ -43,10 +43,10 @@ from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.chains.parallel_chain import MDOParallelChain
 from gemseo.core.discipline import Discipline
-from gemseo.core.mdo_functions.discipline_adapter_generator import (
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
 from gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter import (
     MDOObjectiveScenarioAdapter,
 )
@@ -401,10 +401,10 @@ def check_obj_scenario_adapter(
     problem = scenario.formulation.problem
     objective = problem.objective
     output_names = objective.output_names
-    problem.objective = MDOFunction(
+    problem.objective = ArrayFunction(
         lambda _: 123.456,
         name=objective.name,
-        f_type=MDOFunction.FunctionType.OBJ,
+        f_type=ArrayFunction.FunctionType.OBJ,
         jac=lambda _: zeros(dim),
         expr="123.456",
         input_names=objective.input_names,
@@ -685,7 +685,7 @@ def scenario_fixture(disciplines_fixture):
         formulation_name="DisciplinaryOpt",
     )
     scenario.add_constraint(
-        "g", constraint_type=MDOFunction.ConstraintType.INEQ, value=5
+        "g", constraint_type=ArrayFunction.ConstraintType.INEQ, value=5
     )
     scenario.set_algorithm(SLSQP_Settings(max_iter=10))
     return MDOScenarioAdapter(scenario, ["alpha"], ["f"], set_x0_before_opt=True)

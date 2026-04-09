@@ -23,7 +23,7 @@ from numpy import atleast_2d
 from numpy import concatenate
 from numpy import vstack
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -31,14 +31,14 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class Concatenate(MDOFunction):
+class Concatenate(ArrayFunction):
     """Wrap the concatenation of a set of functions."""
 
     def __init__(
         self,
-        functions: Iterable[MDOFunction],
+        functions: Iterable[ArrayFunction],
         name: str = "",
-        f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
+        f_type: ArrayFunction.FunctionType = ArrayFunction.FunctionType.NONE,
     ) -> None:
         """
         Args:
@@ -65,7 +65,7 @@ class Concatenate(MDOFunction):
         )
 
     @property
-    def functions(self) -> Iterable[MDOFunction]:
+    def functions(self) -> Iterable[ArrayFunction]:
         """The concatenated functions."""
         return self.__functions
 

@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.mdo_functions.mdo_function import MDOFunction
+    from gemseo.core.functions.array_function import ArrayFunction
     from gemseo.typing import NumberArray
 
 
@@ -32,7 +32,7 @@ class SetPtFromDatabase:
         self,
         database: Database,
         design_space: DesignSpace,
-        mdo_function: MDOFunction,
+        array_function: ArrayFunction,
         normalize: bool = False,
         jac: bool = True,
         x_tolerance: float = 1e-10,
@@ -41,7 +41,7 @@ class SetPtFromDatabase:
         Args:
             database: The database to read.
             design_space: The design space used for normalization.
-            mdo_function: The function where the data from the database will be set.
+            array_function: The function where the data from the database will be set.
             normalize: If `True`,
                 the values of the inputs are unnormalized before call.
             jac: If `True`, a Jacobian pointer is also generated.
@@ -49,17 +49,17 @@ class SetPtFromDatabase:
         """  # noqa: D205, D212, D415
         self.__database = database
         self.__design_space = design_space
-        self.__mdo_function = mdo_function
+        self.__array_function = array_function
         self.__normalize = normalize
         self.__jac = jac
         self.__x_tolerance = x_tolerance
 
-        self.__name = self.__mdo_function.name
+        self.__name = self.__array_function.name
 
-        self.__mdo_function.func = self._f_from_db
+        self.__array_function.func = self._f_from_db
 
         if jac:
-            self.__mdo_function.jac = self._j_from_db
+            self.__array_function.jac = self._j_from_db
 
     def __read_in_db(self, x_n: NumberArray, fname: str) -> NumberArray:
         """Read the value of a function in the database for a given input value.

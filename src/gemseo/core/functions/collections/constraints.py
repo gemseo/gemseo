@@ -32,10 +32,10 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_max
 from gemseo.algos.aggregation.aggregation_func import aggregate_positive_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
-from gemseo.core.mdo_functions.collections.functions import Functions
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
-from gemseo.core.mdo_functions.mdo_quadratic_function import MDOQuadraticFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.collections.functions import Functions
+from gemseo.core.functions.linear_function import LinearFunction
+from gemseo.core.functions.quadratic_function import QuadraticFunction
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -67,8 +67,8 @@ class Constraints(Functions):
     }
 
     _F_TYPES: ClassVar[tuple[str, str]] = (
-        MDOFunction.ConstraintType.EQ,
-        MDOFunction.ConstraintType.INEQ,
+        ArrayFunction.ConstraintType.EQ,
+        ArrayFunction.ConstraintType.INEQ,
     )
 
     __design_space: DesignSpace
@@ -174,11 +174,11 @@ class Constraints(Functions):
     @classmethod
     def format(
         cls,
-        function: MDOFunction,
+        function: ArrayFunction,
         value: float = 0.0,
-        constraint_type: MDOFunction.ConstraintType | None = None,
+        constraint_type: ArrayFunction.ConstraintType | None = None,
         positive: bool = False,
-    ) -> MDOFunction:
+    ) -> ArrayFunction:
         r"""Format a constraint.
 
         An equality constraint is written as $c(x)=a$,
@@ -191,8 +191,8 @@ class Constraints(Functions):
             constraint_type: The type of the constraint.
                 If `None`,
                 `function.f_type` must be either
-                `MDOFunction.ConstraintType.INEQ`
-                or `MDOFunction.ConstraintType.EQ`.
+                `ArrayFunction.ConstraintType.INEQ`
+                or `ArrayFunction.ConstraintType.EQ`.
             positive: Whether the inequality constraint is positive.
 
         Returns:
@@ -201,7 +201,7 @@ class Constraints(Functions):
         Raises:
             TypeError: When the constraint of a linear optimization problem
                 is not an
-                [MDOLinearFunction][gemseo.core.mdo_functions.mdo_linear_function.MDOLinearFunction].
+                [LinearFunction][gemseo.core.functions.linear_function.LinearFunction].
             ValueError: When the type of the constraint is missing.
         """
         func_name = function.name
@@ -235,8 +235,8 @@ class Constraints(Functions):
 
     @staticmethod
     def __get_string_representation(
-        function: MDOFunction,
-        constraint_type: MDOFunction.ConstraintType,
+        function: ArrayFunction,
+        constraint_type: ArrayFunction.ConstraintType,
         value: float | None = None,
         positive: bool = False,
     ) -> str:
@@ -259,7 +259,7 @@ class Constraints(Functions):
             arguments = ", ".join(function.input_names)
             str_repr += f"({arguments})"
 
-        if constraint_type == MDOFunction.ConstraintType.EQ:
+        if constraint_type == ArrayFunction.ConstraintType.EQ:
             sign = " = "
         elif positive:
             sign = " >= "
@@ -273,7 +273,7 @@ class Constraints(Functions):
             # Remove empty lines with filter
             expr_spl = [f for f in expr.split("\n") if f]
             str_repr = str_repr + expr_spl[0] + sign + str(value)
-            if isinstance(function, (MDOLinearFunction, MDOQuadraticFunction)):
+            if isinstance(function, (LinearFunction, QuadraticFunction)):
                 for repre in expr_spl[1:]:
                     str_repr += "\n" + " " * n_char + repre
             else:
@@ -283,7 +283,7 @@ class Constraints(Functions):
             str_repr += sign + str(value)
         return str_repr
 
-    def get_equality_constraints(self) -> Iterator[MDOFunction]:
+    def get_equality_constraints(self) -> Iterator[ArrayFunction]:
         """Return the equality constraints.
 
         Yields:
@@ -293,7 +293,7 @@ class Constraints(Functions):
             if constraint.f_type == constraint.ConstraintType.EQ:
                 yield constraint
 
-    def get_inequality_constraints(self) -> Iterator[MDOFunction]:
+    def get_inequality_constraints(self) -> Iterator[ArrayFunction]:
         """Return the inequality constraints.
 
         Yields:
@@ -307,7 +307,7 @@ class Constraints(Functions):
         self,
         x_vect: RealArray,
         tol: float = 1e-6,
-    ) -> dict[MDOFunction, RealArray]:
+    ) -> dict[ArrayFunction, RealArray]:
         """Indicate the active components of the different inequality constraints.
 
         Args:
@@ -330,7 +330,7 @@ class Constraints(Functions):
 
     def is_constraint_satisfied(
         self,
-        constraint_type: MDOFunction.ConstraintType,
+        constraint_type: ArrayFunction.ConstraintType,
         constraint_value: RealArray,
     ) -> bool:
         """Determine if an evaluation satisfies a constraint within a given tolerance.
@@ -342,7 +342,7 @@ class Constraints(Functions):
         Returns:
             Whether a value satisfies a constraint.
         """
-        if constraint_type == MDOFunction.ConstraintType.EQ:
+        if constraint_type == ArrayFunction.ConstraintType.EQ:
             return np_all(np_abs(constraint_value) <= self.__tolerances.equality)
 
         return np_all(constraint_value <= self.__tolerances.inequality)
@@ -391,7 +391,7 @@ class Constraints(Functions):
                 continue
 
             value = atleast_1d(values[constraint.name])
-            if constraint.f_type == MDOFunction.ConstraintType.EQ:
+            if constraint.f_type == ArrayFunction.ConstraintType.EQ:
                 value = absolute(value)
                 tolerance = self.__tolerances.equality
             else:

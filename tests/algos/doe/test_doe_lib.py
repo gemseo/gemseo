@@ -50,7 +50,7 @@ from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.uncertainty.distributions.scipy.normal_settings import (
     SPNormalDistribution_Settings,
@@ -217,7 +217,7 @@ def doe_database(request) -> Database:
         space.add_variable("var", lower_bound=-3.0, upper_bound=4.0, value=1.0)
 
     problem = OptimizationProblem(space)
-    problem.objective = MDOFunction(lambda x: x, name="func")
+    problem.objective = ArrayFunction(lambda x: x, name="func")
     execute_algo(
         problem,
         algo_name="CustomDOE",
@@ -380,7 +380,7 @@ def test_uunormalized_components(mc, l_b, u_b) -> None:
     design_space.add_variable("z", lower_bound=0, upper_bound=1)
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(sum, name="f")
+    problem.objective = ArrayFunction(sum, name="f")
 
     error_message = "The components 2, 3 and 4 of the design space are unbounded."
     with pytest.raises(ValueError, match=re.escape(error_message)):
@@ -399,7 +399,7 @@ def test_uunormalized_components_with_parameter_space(mc) -> None:
     assert not parameter_space.normalize["x"]
 
     problem = OptimizationProblem(parameter_space)
-    problem.objective = MDOFunction(sum, name="f")
+    problem.objective = ArrayFunction(sum, name="f")
 
     mc.sample_space(parameter_space, MC_Settings(n_samples=3))
     mc.execute(problem, settings=MC_Settings(n_samples=3))
@@ -424,7 +424,7 @@ def problem():
     design_space.add_variable("x")
 
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(f, name="f")
+    problem.objective = ArrayFunction(f, name="f")
     return problem
 
 

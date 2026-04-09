@@ -29,7 +29,7 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -73,7 +73,7 @@ class X2(OptimizationProblem):
         )
 
         super().__init__(design_space)
-        self.objective = MDOFunction(
+        self.objective = ArrayFunction(
             self.__compute_x2,
             name="x2",
             f_type="obj",

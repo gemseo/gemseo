@@ -23,8 +23,8 @@ from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_milp import MILP_Settings
 from gemseo.algos.opt.scipy_milp.scipy_milp import ScipyMILP
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.linear_function import LinearFunction
 
 
 @pytest.fixture(params=[True, False])
@@ -35,7 +35,7 @@ def problem_is_feasible(request) -> bool:
 
 @pytest.fixture(params=[True, False])
 def jacobians_are_sparse(request) -> bool:
-    """Whether the Jacobians of MDO Functions are sparse."""
+    """Whether the Jacobians of array functions are sparse."""
     return request.param
 
 
@@ -71,10 +71,10 @@ def milp_problem(
     args = ["x", "y", "z"]
     problem = OptimizationProblem(design_space)
 
-    problem.objective = MDOLinearFunction(
-        array_([[1.0, 1.0, -1]]), "f", MDOFunction.FunctionType.OBJ, args, -1.0
+    problem.objective = LinearFunction(
+        array_([[1.0, 1.0, -1]]), "f", ArrayFunction.FunctionType.OBJ, args, -1.0
     )
-    ineq_constraint = MDOLinearFunction(
+    ineq_constraint = LinearFunction(
         array_([[0, 0.5, -0.25]]),
         "g",
         input_names=args,
@@ -83,22 +83,22 @@ def milp_problem(
         ineq_constraint,
         value=0.333,
         positive=True,
-        constraint_type=MDOLinearFunction.ConstraintType.INEQ,
+        constraint_type=LinearFunction.ConstraintType.INEQ,
     )
     if not problem_is_feasible:
         problem.add_constraint(
             ineq_constraint,
             value=0.0,
             positive=False,
-            constraint_type=MDOLinearFunction.ConstraintType.INEQ,
+            constraint_type=LinearFunction.ConstraintType.INEQ,
         )
 
     problem.add_constraint(
-        MDOLinearFunction(
+        LinearFunction(
             array_([[-2.0, 1.0, 1.0]]),
             "h",
             input_names=args,
-            f_type=MDOLinearFunction.ConstraintType.EQ,
+            f_type=LinearFunction.ConstraintType.EQ,
         )
     )
     return problem

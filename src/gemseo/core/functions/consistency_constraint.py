@@ -19,7 +19,7 @@
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
-"""The MDOFunction consistency constraint subclass to support formulations."""
+"""The ArrayFunction consistency constraint subclass to support formulations."""
 
 from __future__ import annotations
 
@@ -31,8 +31,8 @@ from numpy import newaxis
 from numpy import ones
 from numpy import zeros
 
-from gemseo.core.mdo_functions.function_from_discipline import FunctionFromDiscipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.function_from_discipline import FunctionFromDiscipline
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -41,8 +41,8 @@ if TYPE_CHECKING:
     from gemseo.typing import NumberArray
 
 
-class ConsistencyConstraint(MDOFunction):
-    """An [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] object to compute the consistency constraints."""  # noqa: E501
+class ConsistencyConstraint(ArrayFunction):
+    """An [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] object to compute the consistency constraints."""  # noqa: E501
 
     __CONSISTENCY_CONSTRAINT_NAME: Final[str] = "consistency_{}"
     """The name template for consistency constraints."""
@@ -85,7 +85,7 @@ class ConsistencyConstraint(MDOFunction):
             expr=expr,
             jac=self._jac_to_wrap,
             output_names=self.__coupl_func.output_names,
-            f_type=MDOFunction.ConstraintType.EQ,
+            f_type=ArrayFunction.ConstraintType.EQ,
         )
 
     @property

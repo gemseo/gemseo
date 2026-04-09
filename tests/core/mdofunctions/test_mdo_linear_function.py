@@ -26,8 +26,8 @@ from numpy import ndarray
 from scipy.sparse import coo_array
 from scipy.sparse import csr_array
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.linear_function import LinearFunction
 
 
 def test_inputs() -> None:
@@ -37,20 +37,20 @@ def test_inputs() -> None:
     coeffs_as_mat = array([coeffs_as_list])
     coeffs_as_sparse = coo_array(coeffs_as_mat)
     with pytest.raises(ValueError):
-        MDOLinearFunction(coeffs_as_list, "f")
-    MDOLinearFunction(coeffs_as_mat, "f")
-    func = MDOLinearFunction(coeffs_as_vec, "f")
+        LinearFunction(coeffs_as_list, "f")
+    LinearFunction(coeffs_as_mat, "f")
+    func = LinearFunction(coeffs_as_vec, "f")
     assert (func.coefficients == coeffs_as_mat).all()
-    func = MDOLinearFunction(coeffs_as_sparse, "f")
+    func = LinearFunction(coeffs_as_sparse, "f")
     assert (func.coefficients == coeffs_as_sparse).toarray().all()
     with pytest.raises(ValueError):
-        MDOLinearFunction(
+        LinearFunction(
             coeffs_as_mat,
             "f",
             value_at_zero=array([0.0, 0.0]),
         )
-    MDOLinearFunction(coeffs_as_mat, "f", value_at_zero=array([0.0]))
-    func = MDOLinearFunction(coeffs_as_mat, "f")
+    LinearFunction(coeffs_as_mat, "f", value_at_zero=array([0.0]))
+    func = LinearFunction(coeffs_as_mat, "f")
     assert (func.value_at_zero == array([0.0])).all()
 
 
@@ -60,20 +60,18 @@ def test_inputs() -> None:
 def test_input_names_generation(coefficients) -> None:
     """Tests the generation of arguments strings."""
     # No arguments strings passed
-    func = MDOLinearFunction(coefficients, "f")
-    input_names = [
-        f"{MDOLinearFunction.DEFAULT_BASE_INPUT_NAME}[{i}]" for i in range(3)
-    ]
+    func = LinearFunction(coefficients, "f")
+    input_names = [f"{LinearFunction.DEFAULT_BASE_INPUT_NAME}[{i}]" for i in range(3)]
     assert func.input_names == input_names
     # Not enough arguments strings passed
-    func = MDOLinearFunction(coefficients, "f", input_names=["u", "v"])
+    func = LinearFunction(coefficients, "f", input_names=["u", "v"])
     assert func.input_names == input_names
     # Only one argument string passed
-    func = MDOLinearFunction(coefficients, "f", input_names=["u"])
+    func = LinearFunction(coefficients, "f", input_names=["u"])
     input_names = [f"u[{i}]" for i in range(3)]
     assert func.input_names == input_names
     # Enough arguments strings passed
-    func = MDOLinearFunction(coefficients, "f", input_names=["u1", "u2", "v"])
+    func = LinearFunction(coefficients, "f", input_names=["u1", "u2", "v"])
     assert func.input_names == ["u1", "u2", "v"]
 
 
@@ -85,10 +83,10 @@ def test_input_names_generation(coefficients) -> None:
     ],
 )
 def test_linear_function(coefs) -> None:
-    """Tests the MDOLinearFunction class."""
+    """Tests the LinearFunction class."""
 
-    linear_fun = MDOLinearFunction(coefs, "f")
-    coeffs_str = (MDOFunction.COEFF_FORMAT_1D.format(coeff) for coeff in (2, 9))
+    linear_fun = LinearFunction(coefs, "f")
+    coeffs_str = (ArrayFunction.COEFF_FORMAT_1D.format(coeff) for coeff in (2, 9))
     expr = "-x[2] + {}*x[3] + x[4] - {}*x[6]".format(*coeffs_str)
     assert linear_fun.expr == expr
     assert linear_fun.evaluate(np.ones(max(coefs.shape))) == -7.0
@@ -105,13 +103,13 @@ def test_linear_function(coefs) -> None:
     [array([[1.0, 2.0], [3.0, 4.0]]), coo_array(array([[1.0, 2.0], [3.0, 4.0]]))],
 )
 def test_nd_expression(coefficients) -> None:
-    """Tests multi-valued MDOLinearFunction literal expression."""
+    """Tests multi-valued LinearFunction literal expression."""
     value_at_zero = array([5.0, 6.0])
-    func = MDOLinearFunction(
+    func = LinearFunction(
         coefficients, "f", input_names=["x", "y"], value_at_zero=value_at_zero
     )
     coeffs_str = (
-        MDOFunction.COEFF_FORMAT_ND.format(coeff) for coeff in (1, 2, 5, 3, 4, 6)
+        ArrayFunction.COEFF_FORMAT_ND.format(coeff) for coeff in (1, 2, 5, 3, 4, 6)
     )
     expr = "[{} {}][x] + [{}]\n[{} {}][y]   [{}]".format(*coeffs_str)
     assert func.expr == expr
@@ -123,7 +121,7 @@ def test_nd_expression(coefficients) -> None:
 )
 def test_provided_expression(coefficients) -> None:
     """Tests provided expression."""
-    func = MDOLinearFunction(
+    func = LinearFunction(
         coefficients,
         "f",
         input_names=["x", "y"],
@@ -139,8 +137,8 @@ def test_provided_expression(coefficients) -> None:
 
 
 def test_mult_linear_function() -> None:
-    """Tests the multiplication of a standard MDOFunction and an MDOLinearFunction."""
-    sqr = MDOFunction(
+    """Tests the multiplication of a standard ArrayFunction and an LinearFunction."""
+    sqr = ArrayFunction(
         lambda x: x[0] ** 2.0,
         name="sqr",
         jac=lambda x: 2.0 * x[0],
@@ -150,7 +148,7 @@ def test_mult_linear_function() -> None:
     )
 
     coefs = np.array([2.0])
-    linear_fun = MDOLinearFunction(coefs, "f")
+    linear_fun = LinearFunction(coefs, "f")
 
     prod = sqr * linear_fun
     x_array = np.array([4.0])
@@ -159,14 +157,14 @@ def test_mult_linear_function() -> None:
     numerical_jac = prod.jac(x_array)
     assert numerical_jac[0] == 96.0
 
-    sqr_eq = MDOFunction(
+    sqr_eq = ArrayFunction(
         lambda x: x[0] ** 2.0,
         name="sqr",
         jac=lambda x: 2.0 * x[0],
         expr="x_0**2.",
         input_names=["x"],
         dim=1,
-        f_type=MDOFunction.ConstraintType.EQ,
+        f_type=ArrayFunction.ConstraintType.EQ,
     )
     prod = sqr * sqr_eq
 
@@ -181,7 +179,7 @@ def test_mult_linear_function() -> None:
 def test_linear_restriction(coefficients) -> None:
     """Tests the restriction of an MDOLinear function."""
     value_at_zero = array([7.0, 8.0])
-    function = MDOLinearFunction(
+    function = LinearFunction(
         coefficients, "f", input_names=["x", "y", "z"], value_at_zero=value_at_zero
     )
     frozen_indexes = array([1, 2])
@@ -190,6 +188,6 @@ def test_linear_restriction(coefficients) -> None:
     assert (restriction.coefficients == array([[1.0], [4.0]])).all()
     assert (restriction.value_at_zero == array([15.0, 25.0])).all()
     assert restriction.input_names == ["x"]
-    coeffs_str = (MDOFunction.COEFF_FORMAT_ND.format(val) for val in (1, 15, 4, 25))
+    coeffs_str = (ArrayFunction.COEFF_FORMAT_ND.format(val) for val in (1, 15, 4, 25))
     expr = "[{}][x] + [{}]\n[{}]      [{}]".format(*coeffs_str)
     assert restriction.expr == expr

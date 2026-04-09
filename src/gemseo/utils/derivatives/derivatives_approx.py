@@ -31,7 +31,7 @@ from typing import ClassVar
 from numpy import atleast_1d
 from scipy.sparse import hstack as sparse_hstack
 
-from gemseo.core.mdo_functions.discipline_adapter_generator import (
+from gemseo.core.functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
 from gemseo.utils.compatibility.scipy import sparse_classes
@@ -83,7 +83,7 @@ class DisciplineJacApprox:
     generator_class: ClassVar[type[DisciplineAdapterGenerator]] = (
         DisciplineAdapterGenerator
     )
-    """The generator class used to create `MDOFunction` from an `Discipline`."""
+    """The generator class used to create `ArrayFunction` from an `Discipline`."""
 
     def __init__(
         self,

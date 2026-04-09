@@ -20,7 +20,7 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 
 @pytest.fixture
@@ -29,5 +29,5 @@ def problem_with_identity() -> OptimizationProblem:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x, name="f", special_repr="Identity")
+    problem.objective = ArrayFunction(lambda x: x, name="f", special_repr="Identity")
     return problem

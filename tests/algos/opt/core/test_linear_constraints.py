@@ -28,8 +28,8 @@ from numpy import inf
 
 from gemseo.algos.opt.core.linear_constraints import build_bounds_matrices
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.linear_function import LinearFunction
 
 
 def test_upper_bounds_matrices() -> None:
@@ -58,19 +58,19 @@ def get_ineq_constraints():
     """Return two linear inequality-constraints.
 
     :returns: two linear inequality-contraints
-    :rtype: MDOLinearFunction, MDOLinearFunction
+    :rtype: LinearFunction, LinearFunction
     """
-    ineq_cstr_1 = MDOLinearFunction(
+    ineq_cstr_1 = LinearFunction(
         coefficients=arange(0, 4).reshape((2, 2)),
         value_at_zero=arange(0, 2),
         name="g_1",
-        f_type=MDOLinearFunction.ConstraintType.INEQ,
+        f_type=LinearFunction.ConstraintType.INEQ,
     )
-    ineq_cstr_2 = MDOLinearFunction(
+    ineq_cstr_2 = LinearFunction(
         coefficients=arange(4, 10).reshape((3, 2)),
         value_at_zero=arange(2, 5),
         name="g_2",
-        f_type=MDOLinearFunction.ConstraintType.INEQ,
+        f_type=LinearFunction.ConstraintType.INEQ,
     )
     return ineq_cstr_1, ineq_cstr_2
 
@@ -79,19 +79,19 @@ def get_eq_constraints():
     """Return two linear equality-constraints.
 
     :returns: two linear equality-contraints
-    :rtype: MDOLinearFunction, MDOLinearFunction
+    :rtype: LinearFunction, LinearFunction
     """
-    eq_cstr_1 = MDOLinearFunction(
+    eq_cstr_1 = LinearFunction(
         coefficients=arange(10, 14).reshape((2, 2)),
         value_at_zero=arange(5, 7),
         name="h_1",
-        f_type=MDOLinearFunction.ConstraintType.EQ,
+        f_type=LinearFunction.ConstraintType.EQ,
     )
-    eq_cstr_2 = MDOLinearFunction(
+    eq_cstr_2 = LinearFunction(
         coefficients=arange(14, 20).reshape((3, 2)),
         value_at_zero=arange(7, 10),
         name="h_2",
-        f_type=MDOLinearFunction.ConstraintType.EQ,
+        f_type=LinearFunction.ConstraintType.EQ,
     )
     return eq_cstr_1, eq_cstr_2
 
@@ -100,12 +100,12 @@ def test_constraint_check() -> None:
     """Test the checking of the constraints."""
     ineq_cstr_1, _ = get_ineq_constraints()
     # Check function type
-    nonlinear_ineq_cstr = MDOFunction(
-        lambda x: x**2, name="square", f_type=MDOFunction.ConstraintType.INEQ
+    nonlinear_ineq_cstr = ArrayFunction(
+        lambda x: x**2, name="square", f_type=ArrayFunction.ConstraintType.INEQ
     )
     with pytest.raises(TypeError):
         build_constraints_matrices(
-            [ineq_cstr_1, nonlinear_ineq_cstr], MDOFunction.ConstraintType.INEQ
+            [ineq_cstr_1, nonlinear_ineq_cstr], ArrayFunction.ConstraintType.INEQ
         )
 
 
@@ -115,20 +115,20 @@ def test_inequality_constraints_matrices() -> None:
     eq_cstr_1, eq_cstr_2 = get_eq_constraints()
     constraints = (ineq_cstr_1, ineq_cstr_2, eq_cstr_1, eq_cstr_2)
     ineq_lhs_mat, ineq_rhs_vec = build_constraints_matrices(
-        constraints, MDOFunction.ConstraintType.INEQ
+        constraints, ArrayFunction.ConstraintType.INEQ
     )
     eq_lhs_mat, eq_rhs_vec = build_constraints_matrices(
-        constraints, MDOFunction.ConstraintType.EQ
+        constraints, ArrayFunction.ConstraintType.EQ
     )
     assert allclose(ineq_lhs_mat, arange(0, 10).reshape((5, 2)))
     assert allclose(ineq_rhs_vec, -arange(0, 5))
     assert allclose(eq_lhs_mat, arange(10, 20).reshape((5, 2)))
     assert allclose(eq_rhs_vec, -arange(5, 10))
     ineq_lhs_mat, ineq_rhs_vec = build_constraints_matrices(
-        [ineq_cstr_1, ineq_cstr_2], MDOFunction.ConstraintType.EQ
+        [ineq_cstr_1, ineq_cstr_2], ArrayFunction.ConstraintType.EQ
     )
     eq_lhs_mat, eq_rhs_vec = build_constraints_matrices(
-        [eq_cstr_1, eq_cstr_2], MDOFunction.ConstraintType.INEQ
+        [eq_cstr_1, eq_cstr_2], ArrayFunction.ConstraintType.INEQ
     )
     assert ineq_lhs_mat is None
     assert ineq_rhs_vec is None

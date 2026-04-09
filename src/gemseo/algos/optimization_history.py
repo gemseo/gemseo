@@ -36,14 +36,14 @@ from numpy import ndarray
 from numpy.linalg import norm
 
 from gemseo.algos.database import Database
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.typing import RealArray
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.algos.design_space import DesignSpace
-    from gemseo.core.mdo_functions.collections.constraints import Constraints
+    from gemseo.core.functions.collections.constraints import Constraints
     from gemseo.typing import RealOrComplexArray
 
 
@@ -176,7 +176,7 @@ class OptimizationHistory:
             if isnan(constraint_value).any():
                 return x_vect_is_feasible, inf
 
-            if f_type == MDOFunction.ConstraintType.INEQ:
+            if f_type == ArrayFunction.ConstraintType.INEQ:
                 tolerance = constraints.tolerances.inequality
             else:
                 tolerance = constraints.tolerances.equality

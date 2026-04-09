@@ -57,7 +57,7 @@ from numpy import array
 
 from gemseo import create_design_space
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -71,7 +71,7 @@ class Poloni(OptimizationProblem):
         design_space.add_variable("x", lower_bound=-pi, upper_bound=pi, value=0)
         design_space.add_variable("y", lower_bound=-pi, upper_bound=pi, value=0)
         super().__init__(design_space)
-        self.objective = MDOFunction(
+        self.objective = ArrayFunction(
             self._compute_output,
             name=self.__class__.__name__,
             jac=self._compute_jacobian,

@@ -20,9 +20,9 @@ from typing import TYPE_CHECKING
 
 from numpy import ndarray
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
-from gemseo.core.mdo_functions.mdo_quadratic_function import MDOQuadraticFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.linear_function import LinearFunction
+from gemseo.core.functions.quadratic_function import QuadraticFunction
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -31,12 +31,12 @@ if TYPE_CHECKING:
 
 
 def compute_linear_approximation(
-    function: MDOFunction,
+    function: ArrayFunction,
     x_vect: NumberArray,
     name: str = "",
-    f_type: MDOFunction.FunctionType = MDOFunction.FunctionType.NONE,
+    f_type: ArrayFunction.FunctionType = ArrayFunction.FunctionType.NONE,
     input_names: Sequence[str] = (),
-) -> MDOLinearFunction:
+) -> LinearFunction:
     r"""Compute a first-order Taylor polynomial of a function.
 
     $\newcommand{\xref}{\hat{x}}\newcommand{\dim}{d}$
@@ -77,7 +77,7 @@ def compute_linear_approximation(
         # Make sure the function value is at most 1-dimensional
         func_val = func_val.flatten()
 
-    return MDOLinearFunction(
+    return LinearFunction(
         coefficients,
         name or f"{function.name}_linearized",
         f_type,
@@ -87,11 +87,11 @@ def compute_linear_approximation(
 
 
 def compute_quadratic_approximation(
-    function: MDOFunction,
+    function: ArrayFunction,
     x_vect: NumberArray,
     hessian_approx: NumberArray,
     input_names: Sequence[str] = (),
-) -> MDOQuadraticFunction:
+) -> QuadraticFunction:
     r"""Build a quadratic approximation of a function at a given point.
 
     The function must be scalar-valued.
@@ -143,7 +143,7 @@ def compute_quadratic_approximation(
     gradient = function.jac(x_vect)
     hess_dot_vect = hessian_approx @ x_vect
 
-    return MDOQuadraticFunction(
+    return QuadraticFunction(
         quad_coeffs=0.5 * hessian_approx,
         linear_coeffs=gradient - hess_dot_vect,
         value_at_zero=(

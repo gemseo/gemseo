@@ -44,7 +44,7 @@ from gemseo.algos.opt.scipy_linprog.settings.highs_interior_point import (
     INTERIOR_POINT_Settings,
 )
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 
@@ -124,11 +124,11 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
 
         ineq_lhs, ineq_rhs = build_constraints_matrices(
             problem.constraints.get_originals(),
-            MDOLinearFunction.ConstraintType.INEQ,
+            LinearFunction.ConstraintType.INEQ,
         )
         eq_lhs, eq_rhs = build_constraints_matrices(
             problem.constraints.get_originals(),
-            MDOLinearFunction.ConstraintType.EQ,
+            LinearFunction.ConstraintType.EQ,
         )
 
         filtered_settings = self._filter_settings()

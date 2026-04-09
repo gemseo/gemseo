@@ -28,7 +28,7 @@ operates on a [DesignSpace][gemseo.algos.design_space.DesignSpace] defining:
 - the bounds $l_b \leq x \leq u_b$ of the design variables.
 
 A (possible vector) objective function
-with an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] type
+with an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] type
 is set using the `objective` attribute.
 If the optimization problem looks for the maximum of this objective function,
 the
@@ -38,7 +38,7 @@ changes the objective function sign
 because the optimization drivers seek to minimize this objective function.
 
 Equality and inequality constraints are also
-[MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] instances
+[ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] instances
 provided to the
 [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
 by means of its
@@ -103,11 +103,11 @@ from gemseo.algos.multiobjective_optimization_result import (
 from gemseo.algos.optimization_history import OptimizationHistory
 from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.algos.pareto.pareto_front import ParetoFront
-from gemseo.core.mdo_functions.collections.constraints import Constraints
-from gemseo.core.mdo_functions.concatenate import Concatenate
-from gemseo.core.mdo_functions.linear_composite_function import LinearCompositeFunction
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.collections.constraints import Constraints
+from gemseo.core.functions.concatenate import Concatenate
+from gemseo.core.functions.linear_composite_function import LinearCompositeFunction
+from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
@@ -146,7 +146,7 @@ class OptimizationProblem(EvaluationProblem):
     __minimize_objective: bool
     """Whether to minimize the objective."""
 
-    _objective: MDOFunction | None
+    _objective: ArrayFunction | None
     """The objective if set."""
 
     solution: OptimizationResult | None
@@ -169,7 +169,7 @@ class OptimizationProblem(EvaluationProblem):
     # Enumerations
     AggregationFunction = Constraints.AggregationFunction
     DifferentiationMethod = EvaluationProblem.DifferentiationMethod
-    ConstraintType = MDOFunction.ConstraintType
+    ConstraintType = ArrayFunction.ConstraintType
 
     # HDF5 group names
     _CONSTRAINTS_GROUP: Final[str] = "constraints"
@@ -234,10 +234,10 @@ class OptimizationProblem(EvaluationProblem):
         return (
             (
                 self._objective is None
-                or isinstance(self._objective.original, MDOLinearFunction)
+                or isinstance(self._objective.original, LinearFunction)
             )
             and all(
-                isinstance(function.original, MDOLinearFunction)
+                isinstance(function.original, LinearFunction)
                 for function in self.__constraints
             )
             and not self.constraints.aggregated_constraint_indices
@@ -254,17 +254,17 @@ class OptimizationProblem(EvaluationProblem):
         return self.__constraints
 
     @constraints.setter
-    def constraints(self, functions: Iterable[MDOFunction]) -> None:
+    def constraints(self, functions: Iterable[ArrayFunction]) -> None:
         self.__constraints.clear()
         self.__constraints.extend(functions)
 
     @property
-    def objective(self) -> MDOFunction:
+    def objective(self) -> ArrayFunction:
         """The objective function."""
         return self._objective
 
     @objective.setter
-    def objective(self, function: MDOFunction) -> None:
+    def objective(self, function: ArrayFunction) -> None:
         function.f_type = function.FunctionType.OBJ
         self._objective = function
         self.history.objective_name = function.name
@@ -282,7 +282,7 @@ class OptimizationProblem(EvaluationProblem):
 
     def add_constraint(
         self,
-        function: MDOFunction,
+        function: ArrayFunction,
         value: float = 0.0,
         constraint_type: ConstraintType | None = None,
         positive: bool = False,
@@ -301,14 +301,14 @@ class OptimizationProblem(EvaluationProblem):
             constraint_type: The type of the constraint.
                 If `None`,
                 `function.f_type` must be either
-                `MDOFunction.ConstraintType.INEQ`
-                or `MDOFunction.ConstraintType.EQ`.
+                `ArrayFunction.ConstraintType.INEQ`
+                or `ArrayFunction.ConstraintType.EQ`.
             positive: Whether the inequality constraint is positive.
 
         Raises:
             TypeError: When the constraint of a linear optimization problem
                 is not an
-                [MDOLinearFunction][gemseo.core.mdo_functions.mdo_linear_function.MDOLinearFunction].
+                [LinearFunction][gemseo.core.functions.linear_function.LinearFunction].
             ValueError: When the type of the constraint is missing.
         """
         if function.f_type.name in function.ConstraintType.__members__:
@@ -432,7 +432,7 @@ class OptimizationProblem(EvaluationProblem):
         # Copy the original design space
         problem = OptimizationProblem(deepcopy(self.design_space))
 
-        # Evaluate the MDOFunctions.
+        # Evaluate the ArrayFunctions.
         self.evaluate_functions()
 
         # Add a slack variable to the copied design space for each
@@ -481,7 +481,7 @@ class OptimizationProblem(EvaluationProblem):
                 -1,
                 0,
             )
-            correction_term = MDOLinearFunction(
+            correction_term = LinearFunction(
                 coefficients=coefficients,
                 name=f"offset_{constraint.name}",
                 input_names=problem.design_space.get_indexed_variable_names(),
@@ -491,11 +491,11 @@ class OptimizationProblem(EvaluationProblem):
         return problem
 
     @property
-    def functions(self) -> list[MDOFunction]:  # noqa: D102
+    def functions(self) -> list[ArrayFunction]:  # noqa: D102
         return [self._objective, *self.__constraints, *super().functions]
 
     @property
-    def original_functions(self) -> list[MDOFunction]:  # noqa: D102
+    def original_functions(self) -> list[ArrayFunction]:  # noqa: D102
         return [
             self.objective.original,
             *self.__constraints.get_originals(),
@@ -546,7 +546,7 @@ class OptimizationProblem(EvaluationProblem):
         jacobian_names: Iterable[str] | None = None,
         evaluate_objective: bool = True,
         constraint_names: Iterable[str] | None = (),
-    ) -> tuple[list[MDOFunction], list[MDOFunction]]:
+    ) -> tuple[list[ArrayFunction], list[ArrayFunction]]:
         """
         Args:
             evaluate_objective: Whether to evaluate the objective.
@@ -581,7 +581,7 @@ class OptimizationProblem(EvaluationProblem):
         observable_names: Iterable[str] | None,
         evaluate_objective: bool,
         constraint_names: Iterable[str] | None,
-    ) -> list[MDOFunction]:
+    ) -> list[ArrayFunction]:
         """
         Args:
             evaluate_objective: Whether to evaluate the objective function.
@@ -767,7 +767,7 @@ class OptimizationProblem(EvaluationProblem):
 
                 problem.solution = OptimizationResult.from_dict(solution_data)
 
-            objective = MDOFunction.init_from_dict_repr(
+            objective = ArrayFunction.init_from_dict_repr(
                 **convert_h5_group_to_dict(h5file, problem._OBJECTIVE_GROUP)
             )
 
@@ -804,7 +804,7 @@ class OptimizationProblem(EvaluationProblem):
                     group = get_hdf5_group(h5file, name)
                     for function_name in group:
                         functions.append(
-                            MDOFunction.init_from_dict_repr(
+                            ArrayFunction.init_from_dict_repr(
                                 **convert_h5_group_to_dict(group, function_name)
                             )
                         )

@@ -32,6 +32,6 @@ GEMSEO offers different tools for data persistence:
 - the [cache][gemseo.caches] stores the evaluations of a
   [Discipline][gemseo.core.discipline.discipline.Discipline],
 - the [database][gemseo.algos.database] stores the evaluations of the
-  [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] instances attached
+  [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] instances attached
   [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem],
 - the [dataset][gemseo.datasets.dataset] is a generic structure facilitating the post-processing of the data. When solving [problems][gemseo.problems.dataset], a [dataset][gemseo.datasets.dataset] can be used for [visualization][dataset-examples].

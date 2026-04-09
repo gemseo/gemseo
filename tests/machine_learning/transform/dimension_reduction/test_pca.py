@@ -31,7 +31,7 @@ from numpy import array
 from numpy import diag
 from numpy import tile
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
 
 if TYPE_CHECKING:
@@ -154,7 +154,7 @@ def test_shape(data, pca) -> None:
 
 def test_transformation_jacobian(pca) -> None:
     """Check the Jacobian of the transformation."""
-    function = MDOFunction(pca.transform, name="transform", jac=pca.compute_jacobian)
+    function = ArrayFunction(pca.transform, name="transform", jac=pca.compute_jacobian)
     input_data = array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
     function.check_grad(input_data, error_max=1e-7)
     function.check_grad(input_data[::-1], error_max=1e-7)
@@ -162,7 +162,7 @@ def test_transformation_jacobian(pca) -> None:
 
 def test_inverse_transformation_jacobian(pca) -> None:
     """Check the Jacobian of the inverse transformation."""
-    function = MDOFunction(
+    function = ArrayFunction(
         pca.inverse_transform,
         name="inverse_transform",
         jac=pca.compute_jacobian_inverse,

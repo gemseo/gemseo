@@ -34,7 +34,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
-from gemseo.core.mdo_functions.discipline_adapter_generator import (
+from gemseo.core.functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
 from gemseo.core.parallel_execution.callable_parallel_execution import (

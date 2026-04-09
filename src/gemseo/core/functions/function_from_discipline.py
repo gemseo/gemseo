@@ -19,17 +19,17 @@
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
 #        :author: Gilberto Ruiz Jimenez
-"""The MDOFunction subclass to create a function from a Discipline."""
+"""The ArrayFunction subclass to create a function from a Discipline."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.core.mdo_functions.discipline_adapter_generator import (
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -37,13 +37,13 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.mdo_functions.discipline_adapter import DisciplineAdapter
+    from gemseo.core.functions.discipline_adapter import DisciplineAdapter
     from gemseo.formulations.base import BaseFormulation
     from gemseo.typing import BooleanArray
     from gemseo.typing import NumberArray
 
 
-class FunctionFromDiscipline(MDOFunction):
+class FunctionFromDiscipline(ArrayFunction):
     """A function computing some outputs of a discipline for some of its inputs.
 
     This function is called from an input vector defined from a larger number of input

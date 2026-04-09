@@ -19,8 +19,8 @@ from __future__ import annotations
 import logging
 from typing import ClassVar
 
-from gemseo.core.mdo_functions.collections.functions import Functions
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.collections.functions import Functions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,11 +28,11 @@ LOGGER = logging.getLogger(__name__)
 class Observables(Functions):
     """A mutable sequence of observables."""
 
-    _F_TYPES: ClassVar[tuple[MDOFunction.FunctionType]] = (
-        MDOFunction.FunctionType.OBS,
+    _F_TYPES: ClassVar[tuple[ArrayFunction.FunctionType]] = (
+        ArrayFunction.FunctionType.OBS,
     )
 
-    def format(self, function: MDOFunction) -> MDOFunction | None:
+    def format(self, function: ArrayFunction) -> ArrayFunction | None:
         """Format an observable.
 
         Returns:

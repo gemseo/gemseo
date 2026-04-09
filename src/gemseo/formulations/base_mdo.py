@@ -24,8 +24,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.core.mdo_functions.collections.constraints import Constraints
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.collections.constraints import Constraints
 from gemseo.formulations.base import BaseFormulation
 from gemseo.formulations.base import T
 
@@ -40,7 +40,7 @@ class BaseMDOFormulation(BaseFormulation[T]):
 
     def create_objective(  # noqa: D102
         self, output_names: Iterable[str], objective_name: str = ""
-    ) -> MDOFunction:
+    ) -> ArrayFunction:
         return self._create_function(output_names, name=objective_name)
 
     def add_observable(  # noqa: D102
@@ -57,12 +57,12 @@ class BaseMDOFormulation(BaseFormulation[T]):
     def create_constraint(  # noqa: D102
         self,
         output_names: Iterable[str],
-        constraint_type: MDOFunction.ConstraintType = MDOFunction.ConstraintType.EQ,
+        constraint_type: ArrayFunction.ConstraintType = ArrayFunction.ConstraintType.EQ,
         constraint_name: str = "",
         value: float = 0,
         positive: bool = False,
         **kwargs: Any,
-    ) -> MDOFunction:
+    ) -> ArrayFunction:
         function = self._create_function(output_names, name=constraint_name)
         return Constraints.format(
             function, value=value, constraint_type=constraint_type, positive=positive

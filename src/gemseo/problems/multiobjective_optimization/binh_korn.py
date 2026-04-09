@@ -50,7 +50,7 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -82,7 +82,7 @@ class BinhKorn(OptimizationProblem):
         )
 
         super().__init__(design_space)
-        self.objective = MDOFunction(
+        self.objective = ArrayFunction(
             self._compute_binhkorn,
             name="compute_binhkorn",
             f_type="obj",
@@ -91,20 +91,20 @@ class BinhKorn(OptimizationProblem):
             input_names=["x", "y"],
             dim=2,
         )
-        ineq1 = MDOFunction(
+        ineq1 = ArrayFunction(
             self._compute_ineq_constraint1,
             name="ineq1",
-            f_type=MDOFunction.ConstraintType.INEQ,
+            f_type=ArrayFunction.ConstraintType.INEQ,
             jac=self._compute_ineq_constraint1_jac,
             expr="(x-5.)**2 + y**2 <= 25.",
             input_names=["x", "y"],
         )
         self.add_constraint(ineq1)
 
-        ineq2 = MDOFunction(
+        ineq2 = ArrayFunction(
             self._compute_ineq_constraint2,
             name="ineq2",
-            f_type=MDOFunction.ConstraintType.INEQ,
+            f_type=ArrayFunction.ConstraintType.INEQ,
             jac=self._compute_ineq_constraint2_jac,
             expr="(x-8.)**2 + (y+3)**2 >= 7.7",
             input_names=["x", "y"],

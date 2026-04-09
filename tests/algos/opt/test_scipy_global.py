@@ -32,7 +32,7 @@ from gemseo.algos.opt.scipy_global.settings.differential_evolution import (
 )
 from gemseo.algos.opt.scipy_global.settings.shgo import SHGO_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
@@ -113,7 +113,7 @@ def unconstrained_problem() -> OptimizationProblem:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=array([-1.0]), upper_bound=array([1.0]))
     problem = OptimizationProblem(design_space)
-    problem.objective = MDOFunction(lambda x: x**2, name="f")
+    problem.objective = ArrayFunction(lambda x: x**2, name="f")
     return problem
 
 

@@ -29,8 +29,8 @@ from typing import ClassVar
 
 from gemseo.algos.driver_library import DriverLibraryFactory
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.concatenate import Concatenate
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.concatenate import Concatenate
 from gemseo.post import OptHistoryView_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.scenarios.evaluation import EvaluationScenario
@@ -91,7 +91,7 @@ class MDOScenario(EvaluationScenario):
 
     _evaluation_problem_class: type[OptimizationProblem] = OptimizationProblem
 
-    __objectives_to_minimize: dict[MDOFunction, bool]
+    __objectives_to_minimize: dict[ArrayFunction, bool]
     """The objectives and if it must be minimized."""
 
     post_factory: ClassVar[PostFactory] = POST_FACTORY
@@ -100,7 +100,7 @@ class MDOScenario(EvaluationScenario):
     posts: ClassVar[list[str]] = post_factory.class_names
     """The names of the post-processors."""
 
-    ConstraintType = MDOFunction.ConstraintType
+    ConstraintType = ArrayFunction.ConstraintType
 
     def __init__(  # noqa: D107
         self,
@@ -117,7 +117,7 @@ class MDOScenario(EvaluationScenario):
         )
         self.__objectives_to_minimize = {}
 
-    def _add_extra_constraint(self, constraint: MDOFunction) -> None:
+    def _add_extra_constraint(self, constraint: ArrayFunction) -> None:
         self.formulation.problem.add_constraint(constraint)
 
     def add_objective(

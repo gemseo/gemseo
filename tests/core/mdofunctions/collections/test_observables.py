@@ -18,9 +18,9 @@ from __future__ import annotations
 
 import logging
 
-from gemseo.core.mdo_functions.collections.functions import Functions
-from gemseo.core.mdo_functions.collections.observables import Observables
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.collections.functions import Functions
+from gemseo.core.functions.collections.observables import Observables
 
 
 def test_functions():
@@ -30,24 +30,26 @@ def test_functions():
 
 def test_f_types():
     """Check the authorized function types."""
-    assert Observables._F_TYPES == (MDOFunction.FunctionType.OBS,)
+    assert Observables._F_TYPES == (ArrayFunction.FunctionType.OBS,)
 
 
 def test_format_cast(problem):
     """Check that the method format casts a function to observable."""
-    function = Observables().format(MDOFunction(lambda x: x, name="o"))
+    function = Observables().format(ArrayFunction(lambda x: x, name="o"))
     assert function.f_type == function.FunctionType.OBS
 
 
 def test_format_warn(problem, caplog):
     """Check that the method format warns and return None if already observed."""
     observables = Observables()
-    observable = MDOFunction(lambda x: x, name="o", f_type=MDOFunction.FunctionType.OBS)
+    observable = ArrayFunction(
+        lambda x: x, name="o", f_type=ArrayFunction.FunctionType.OBS
+    )
     assert observables.format(observable) is not None
     observables.append(observable)
     assert observables.format(observable) is None
     assert caplog.record_tuples[0] == (
-        "gemseo.core.mdo_functions.collections.observables",
+        "gemseo.core.functions.collections.observables",
         logging.WARNING,
         'The optimization problem already observes "o".',
     )

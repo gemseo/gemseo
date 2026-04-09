@@ -22,7 +22,7 @@
 
 # %%
 # In this example, we consider a simple optimization problem to illustrate
-# algorithms interfaces and [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction].
+# algorithms interfaces and [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction].
 #
 # ## Imports
 #
@@ -34,16 +34,16 @@ from numpy import ones
 from numpy import sin
 from scipy import optimize
 
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 # %%
 # ## Define the objective function
 #
 # We define the objective function $f(x)=\sin(x)-\exp(x)$
-# using an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] defined by the sum of [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] s.
+# using an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] defined by the sum of [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] s.
 
-f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
-f_2 = MDOFunction(exp, name="f_2", jac=exp, expr="exp(x)")
+f_1 = ArrayFunction(sin, name="f_1", jac=cos, expr="sin(x)")
+f_2 = ArrayFunction(exp, name="f_2", jac=exp, expr="exp(x)")
 objective = f_1 - f_2
 
 # %%
@@ -63,7 +63,7 @@ objective
 #
 # !!! note
 #
-#     [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] objects are callable like a Python function.
+#     [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] objects are callable like a Python function.
 #
 
 x_0 = -ones(1)

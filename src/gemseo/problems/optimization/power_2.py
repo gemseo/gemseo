@@ -28,7 +28,7 @@ from numpy import sum as np_sum
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -65,7 +65,7 @@ class Power2(OptimizationProblem):
         )
 
         super().__init__(design_space)
-        self.objective = MDOFunction(
+        self.objective = ArrayFunction(
             self.pow2,
             name="pow2",
             f_type="obj",
@@ -74,36 +74,36 @@ class Power2(OptimizationProblem):
             input_names=["x"],
         )
         self.add_constraint(
-            MDOFunction(
+            ArrayFunction(
                 self.ineq_constraint1,
                 name="ineq1",
                 jac=self.ineq_constraint1_jac,
                 expr="0.5 - x[0]**3",
                 input_names=["x"],
             ),
-            constraint_type=MDOFunction.ConstraintType.INEQ,
+            constraint_type=ArrayFunction.ConstraintType.INEQ,
         )
 
         self.add_constraint(
-            MDOFunction(
+            ArrayFunction(
                 self.ineq_constraint2,
                 name="ineq2",
                 jac=self.ineq_constraint2_jac,
                 expr="0.5 - x[1]**3",
                 input_names=["x"],
             ),
-            constraint_type=MDOFunction.ConstraintType.INEQ,
+            constraint_type=ArrayFunction.ConstraintType.INEQ,
         )
 
         self.add_constraint(
-            MDOFunction(
+            ArrayFunction(
                 self.eq_constraint,
                 name="eq",
                 jac=self.eq_constraint_jac,
                 expr="0.9 - x[2]**3",
                 input_names=["x"],
             ),
-            constraint_type=MDOFunction.ConstraintType.EQ,
+            constraint_type=ArrayFunction.ConstraintType.EQ,
         )
         self.iter_error = 0
         self.exception_error = exception_error

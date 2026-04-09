@@ -46,8 +46,8 @@ from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.scipy_local import ScipyOpt
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.collections.functions import Functions
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.functions.collections.functions import Functions
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.pydantic import create_model
@@ -272,7 +272,7 @@ def test_reaching_max_time_does_not_stop_storing():
     """Check that reaching maximum time does not stop storing in the database."""
     problem = Rosenbrock()
     problem.add_constraint(
-        MDOFunction(sum, name="sum"), constraint_type=MDOFunction.ConstraintType.EQ
+        ArrayFunction(sum, name="sum"), constraint_type=ArrayFunction.ConstraintType.EQ
     )
     n_samples = 100
     with mock.patch.object(base_driver_library, "time", MockedTime()):
@@ -301,7 +301,9 @@ def test_progress_bar_database_n_processes(caplog, use_database, n_processes):
     """Check that the progress bar is logged w/wo parallelization and w/wo database."""
     problem = Rosenbrock()
     problem.add_constraint(
-        MDOFunction(G(), name="g"), value=1.0, constraint_type=problem.ConstraintType.EQ
+        ArrayFunction(G(), name="g"),
+        value=1.0,
+        constraint_type=problem.ConstraintType.EQ,
     )
     execute_algo(
         problem,

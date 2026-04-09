@@ -39,7 +39,7 @@ from gemseo.algos.opt.base_optimization_library import OptimizationAlgorithmDesc
 from gemseo.algos.opt.core.linear_constraints import build_constraints_matrices
 from gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings import MILP_Settings
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.core.mdo_functions.mdo_linear_function import MDOLinearFunction
+from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.utils.compatibility.scipy import get_row
 from gemseo.utils.compatibility.scipy import sparse_classes
 
@@ -114,7 +114,7 @@ class ScipyMILP(BaseOptimizationLibrary[MILP_Settings]):
         lq_constraints = []
 
         ineq_lhs, ineq_rhs = build_constraints_matrices(
-            problem.constraints.get_originals(), MDOLinearFunction.ConstraintType.INEQ
+            problem.constraints.get_originals(), LinearFunction.ConstraintType.INEQ
         )
         if ineq_lhs is not None:
             lq_constraints.append(
@@ -127,7 +127,7 @@ class ScipyMILP(BaseOptimizationLibrary[MILP_Settings]):
             )
 
         eq_lhs, eq_rhs = build_constraints_matrices(
-            problem.constraints.get_originals(), MDOLinearFunction.ConstraintType.EQ
+            problem.constraints.get_originals(), LinearFunction.ConstraintType.EQ
         )
         if eq_lhs is not None:
             lq_constraints.append(

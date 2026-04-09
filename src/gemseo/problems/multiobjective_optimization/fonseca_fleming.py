@@ -52,7 +52,7 @@ from numpy import zeros
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -79,7 +79,7 @@ class FonsecaFleming(OptimizationProblem):
             value=zeros(dimension),
         )
         super().__init__(design_space)
-        self.objective = MDOFunction(
+        self.objective = ArrayFunction(
             self._compute_output,
             name=self.__class__.__name__,
             jac=self._compute_jacobian,

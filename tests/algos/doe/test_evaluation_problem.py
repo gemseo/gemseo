@@ -24,7 +24,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.evaluation_problem import EvaluationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 
 def test_default(caplog):
@@ -33,8 +33,8 @@ def test_default(caplog):
     design_space.add_variable("x", size=2)
 
     evaluation_problem = EvaluationProblem(design_space)
-    evaluation_problem.add_observable(MDOFunction(sum, name="sum"))
-    evaluation_problem.add_observable(MDOFunction(prod, name="prod"))
+    evaluation_problem.add_observable(ArrayFunction(sum, name="sum"))
+    evaluation_problem.add_observable(ArrayFunction(prod, name="prod"))
 
     custom_doe = CustomDOE()
     custom_doe.execute(
