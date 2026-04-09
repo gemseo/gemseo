@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 import pytest
 from matplotlib import pyplot as plt
@@ -115,24 +114,20 @@ def test_plot_matplotlib(
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
+    ("kwargs", "properties"),
+    [v[:2] for v in TEST_PARAMETERS.values()],
     ids=TEST_PARAMETERS.keys(),
 )
-def test_plot_plotly(kwargs, properties, baseline_images, dataset) -> None:
+def test_plot_plotly(kwargs, properties, snapshot, dataset) -> None:
     """Test images created by Lines.execute against references for plotly."""
     pytest.importorskip("plotly")
     settings = Lines_Settings(**kwargs, **properties)
     plot = Lines(dataset, settings)
     figure = plot.execute(save=False, file_format="html")[0]
-    ref = (
-        Path(__file__).parent / "plotly" / "test_lines" / baseline_images[0]
-    ).read_text()
-    assert figure.to_json() == ref.strip()
+    assert figure.to_json() == snapshot
 
 
-def test_pass_existing_figure(dataset):
+def test_pass_existing_figure(dataset, snapshot):
     """Check that an existing figure can be modified."""
     settings = Lines_Settings(variables=["y"], abscissa_variable="x")
     figure = Lines(dataset, settings).execute(
@@ -142,10 +137,7 @@ def test_pass_existing_figure(dataset):
     figure = Lines(dataset, settings).execute(
         save=False, file_name="final", fig=figure, file_format="html"
     )[0]
-    ref = (
-        Path(__file__).parent / "plotly" / "test_lines" / "Lines_modified"
-    ).read_text()
-    assert figure.to_json() == ref.strip()
+    assert figure.to_json() == snapshot
 
 
 def test_not_implemented(dataset):

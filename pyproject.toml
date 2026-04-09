@@ -42,6 +42,7 @@ dependencies = [
     "typing-extensions >=4,<5",
     "xdsmjs >=1.0.0,<=2.0.0",
     "xxhash >=3.0.0,<=3.6.0",
+    "syrupy>=2026.4.6.124150327040,<=2026.4.6.124150327040",
 ]
 
 [project.optional-dependencies]
