@@ -14,8 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 from numpy import array
 
@@ -77,18 +75,14 @@ def test_bars_plot(tmp_path, kwargs, properties, dataset, baseline_images) -> No
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
+    ("kwargs", "properties"),
+    [v[:2] for v in TEST_PARAMETERS.values()],
     ids=TEST_PARAMETERS.keys(),
 )
-def test_bars_plotly(tmp_path, kwargs, properties, baseline_images, dataset):
+def test_bars_plotly(kwargs, properties, snapshot, dataset):
     """Test images created by BarPlot.execute against references for plotly."""
     pytest.importorskip("plotly")
     settings = BarPlot_Settings(**kwargs, **properties)
     plot = BarPlot(dataset, settings)
     figure = plot.execute(save=False, file_format="html")[0]
-    ref = (
-        Path(__file__).parent / "plotly" / "test_bars" / baseline_images[0]
-    ).read_text()
-    assert figure.to_json() == ref.strip()
+    assert figure.to_json() == snapshot

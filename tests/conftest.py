@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import NamedTuple
 
+import matplotlib
 import pytest
 from numpy import array
 
@@ -38,6 +39,9 @@ if TYPE_CHECKING:
     from typing import Any
 
     from gemseo.core.discipline.discipline import Discipline
+
+# Use a non GUI rendering backend for matplotlib.
+matplotlib.use("agg")
 
 DOC_EXAMPLE_MARK = "doc_examples"
 

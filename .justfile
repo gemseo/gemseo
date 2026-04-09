@@ -7,7 +7,6 @@ python := env('UV_PYTHON', '3.10')
 # TODO: only in recipes that matters
 export WINDIR := env('WINDIR', 'C:\Windows')
 export GEMSEO_KEEP_IMAGE_COMPARISONS := env('GEMSEO_KEEP_IMAGE_COMPARISONS', '')
-export MPLBACKEND := 'AGG'
 
 @_:
     just --list
