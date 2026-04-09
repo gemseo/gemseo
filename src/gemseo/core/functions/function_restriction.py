@@ -39,7 +39,7 @@ class FunctionRestriction(ArrayFunction):
         frozen_indexes: ndarray[int],
         frozen_values: NumberArray,
         input_dim: int,
-        array_function: ArrayFunction,
+        function: ArrayFunction,
         name: str = "",
         f_type: ArrayFunction.FunctionType = ArrayFunction.FunctionType.NONE,
         expr: str = "",
@@ -55,7 +55,7 @@ class FunctionRestriction(ArrayFunction):
                 create a default name
                 based on the name of the current function
                 and on the argument `input_names`.
-            array_function: The function to restrict.
+            function: The original function.
 
         Raises:
             ValueError: If the `frozen_indexes` and the `frozen_values` arrays do
@@ -69,7 +69,7 @@ class FunctionRestriction(ArrayFunction):
         self.__frozen_indexes = frozen_indexes
         self.__frozen_values = frozen_values
         self.__input_dim = input_dim
-        self.__array_function = array_function
+        self.__array_function = function
         self.__name = name
         self.__f_type = f_type
         self.__expr = expr
@@ -102,7 +102,7 @@ class FunctionRestriction(ArrayFunction):
             dim=self.__array_function.dim,
             output_names=self.__array_function.output_names,
             force_real=self.__array_function.force_real,
-            original_name=array_function.original_name,
+            original_name=function.original_name,
         )
 
     def __extend_subvect(self, x_subvect: NumberArray) -> NumberArray:

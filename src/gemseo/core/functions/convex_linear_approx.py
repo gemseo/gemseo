@@ -39,14 +39,14 @@ class ConvexLinearApprox(ArrayFunction):
     def __init__(
         self,
         x_vect: NumberArray,
-        array_function: ArrayFunction,
+        function: ArrayFunction,
         approx_indexes: ndarray[bool] | None = None,
         sign_threshold: float = 1e-9,
     ) -> None:
         """
         Args:
             x_vect: The input vector at which to build the convex linearization.
-            array_function: The function to approximate.
+            function: The function to approximate.
             approx_indexes: A boolean mask
                 specifying w.r.t. which inputs the function should be approximated.
                 If `None`, consider all the inputs.
@@ -58,7 +58,7 @@ class ConvexLinearApprox(ArrayFunction):
             AttributeError: If the function does not have a Jacobian function.
         """  # noqa: D205, D212, D415
         self.__x_vect = x_vect
-        self.__array_function = array_function
+        self.__array_function = function
         self.__approx_indexes = approx_indexes
         self.__sign_threshold = sign_threshold
 
@@ -98,7 +98,7 @@ class ConvexLinearApprox(ArrayFunction):
             dim=self.__array_function.dim,
             output_names=self.__array_function.output_names,
             force_real=self.__array_function.force_real,
-            original_name=array_function.original_name,
+            original_name=function.original_name,
         )
 
     def __get_steps(self, x_new: NumberArray) -> tuple[NumberArray, NumberArray]:
