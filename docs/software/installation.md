@@ -126,7 +126,8 @@ more information.
 
 ### Test with examples
 
-The [gallery of examples][api] contains many examples to illustrate the main features of GEMSEO.
+The tutorials and how-tos contains many examples
+to illustrate the main features of GEMSEO.
 For each example, you can download a Python script or a Jupyter Notebook,
 execute it and experiment to test the installation.
 
