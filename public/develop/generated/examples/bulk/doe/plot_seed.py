@@ -44,7 +44,7 @@ from gemseo import execute_algo
 from gemseo.algos.doe.openturns.openturns import OpenTURNS
 from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 
 # %%
 # ## At the scenario level
@@ -101,8 +101,10 @@ scenario.formulation.problem.database.get_last_n_x_vect(2)
 #
 # ### Basic
 #
-# Let us consider an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] representing the function $y=x^2$:
-function = MDOFunction(lambda x: x**2, name="f", input_names=["x"], output_names=["y"])
+# Let us consider an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] representing the function $y=x^2$:
+function = ArrayFunction(
+    lambda x: x**2, name="f", input_names=["x"], output_names=["y"]
+)
 
 # %%
 # and defined over the unit interval $x\in[0,1]$:

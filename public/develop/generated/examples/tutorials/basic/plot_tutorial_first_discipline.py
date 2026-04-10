@@ -75,8 +75,8 @@ class NewDiscipline(Discipline):
 
 
 # %%
-# This discipline computes ``f`` and ``g`` (the outputs)
-# from ``x`` and ``z`` (the inputs),
+# This discipline computes `f` and `g` (the outputs)
+# from `x` and `z` (the inputs),
 # according the following equations:
 # $f = x \times z$ and $g = x (z + 1)^2$.
 #
@@ -107,7 +107,7 @@ discipline.default_input_data = {"x": array([0.0]), "z": array([0.0])}
 #     Some variables may have default values even if others do not.
 #
 # !!! tips
-#     The definition of default inputs usually occurs in the ``__init__`` method.
+#     The definition of default inputs usually occurs in the `__init__` method.
 #
 # You can then execute your discipline by giving a subset of inputs, or no input at all.
 # In this case, since the two inputs have default values,
@@ -249,7 +249,7 @@ class MyOutputGrammar(BaseModel):
 
 
 class CompleteDiscipline(Discipline):
-    # The grammar is specified to be of type ``Pydantic``.
+    # The grammar is specified to be of type `Pydantic`.
     default_grammar_type = Discipline.GrammarType.PYDANTIC
 
     def __init__(self, name: str = ""):
@@ -318,7 +318,7 @@ discipline.linearize(compute_all_jacobians=True)
 # you are advised to check for ready-to-use GEMSEO disciplines.
 #
 # The [Discipline][gemseo.core.discipline.discipline.Discipline] handles a lot more features,
-# such as ``namespace``, ``cache``, ...
+# such as `namespace`, `cache`, ...
 # Features that you will explore later.
 #
 # ## How-to guides

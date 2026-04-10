@@ -124,7 +124,7 @@ sc_str.set_algorithm(slsqp_settings)
 # This scenario is based on the three previous sub-scenarios and on the
 # Mission and aims to maximize the range (Breguet).
 #
-# The ``disciplines`` argument of the
+# The `disciplines` argument of the
 # [create_scenario()][gemseo.create_scenario] function gathers both
 # [disciplines][gemseo.core.discipline.discipline.Discipline] and
 # [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
@@ -175,11 +175,11 @@ system_scenario.xdsmize(save_html=False)
 # Finally the scenario can be executed with a gradient-free algorithm
 # since the inner problem with sub-scenarios cannot be differentiated.
 # Here,
-# the ``system_scenario`` is limited to 140 iterations.
+# the `system_scenario` is limited to 140 iterations.
 # When a sub-scenario is executed,
 # GEMSEO understands that a specific optimization must be performed,
 # which means that
-# at each iteration of the ``system_scenario``,
+# at each iteration of the `system_scenario`,
 # GEMSEO executes 3 different optimization scenarios:
 # - Propulsion
 # - Aerodynamics
@@ -219,7 +219,7 @@ for sub_scenario in system_scenario.formulation.scenario_adapters:
 
 # %%
 # For instance, the optimization histories (at each iteration of the system level)
-# of the ``structure`` scenario can be retrieved,
+# of the `structure` scenario can be retrieved,
 # so the number of databases is given by the number of system-level iterations.
 structure_databases = system_scenario.formulation.scenario_adapters[2].databases
 len(structure_databases)
@@ -229,7 +229,7 @@ len(structure_databases)
 #     Post-processes can be applied to the database created at the optimal point.
 #     To do so,
 #     the index must be found using the
-#     ``system_scenario.optimization_result.optimum_index`` index.
+#     `system_scenario.optimization_result.optimum_index` index.
 #
 # More structured results can be retrieved from the
 # [get_result()][gemseo.scenarios.mdo.MDOScenario.get_result] method,
@@ -238,7 +238,7 @@ len(structure_databases)
 # [BiLevelScenarioResult][gemseo.scenarios.scenario_results.bilevel_scenario_result.BiLevelScenarioResult].
 #
 # !!! note
-#     The value contained in ``system_scenario.optimization_result`` can be retrieved by this mean as well.
+#     The value contained in `system_scenario.optimization_result` can be retrieved by this mean as well.
 
 # TODO: fix the get_result() method
 # bilevel_result = system_scenario.get_result()

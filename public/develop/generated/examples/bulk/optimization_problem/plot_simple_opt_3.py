@@ -37,15 +37,15 @@ from gemseo import get_available_doe_algorithms
 from gemseo import get_available_opt_algorithms
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.post import ScatterPlotMatrix_Settings
 
 # %%
 # ## Define the objective function
 #
 # We define the objective function $f(x)=\sum_{i=1}^dx_i$
-# using an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction].
-objective = MDOFunction(np_sum, name="f", expr="sum(x)")
+# using an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction].
+objective = ArrayFunction(np_sum, name="f", expr="sum(x)")
 
 # %%
 # ## Define the design space

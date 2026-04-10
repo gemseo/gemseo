@@ -32,16 +32,16 @@ from gemseo import execute_post
 from gemseo import get_available_opt_algorithms
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.post import OptHistoryView_Settings
 
 # %%
 # ## Define the objective function
 #
 # We define the objective function $f(x)=\sin(x)-\exp(x)$
-# using an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] defined by the sum of [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction] objects.
-f_1 = MDOFunction(sin, name="f_1", jac=cos, expr="sin(x)")
-f_2 = MDOFunction(exp, name="f_2", jac=exp, expr="exp(x)")
+# using an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] defined by the sum of [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] objects.
+f_1 = ArrayFunction(sin, name="f_1", jac=cos, expr="sin(x)")
+f_2 = ArrayFunction(exp, name="f_2", jac=exp, expr="exp(x)")
 objective = f_1 - f_2
 
 # %%

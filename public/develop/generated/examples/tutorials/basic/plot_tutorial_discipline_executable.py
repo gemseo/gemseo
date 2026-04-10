@@ -113,7 +113,7 @@ class MyExecutableDiscipline(_BaseDiscFromExe):
     """A discipline to execute a python script as an executable.
 
     The script is run with the following CLI:
-    ``python ./my_script.py -i inputs.json -o outputs.txt``
+    `python ./my_script.py -i inputs.json -o outputs.txt`
     """
 
     def __init__(self) -> None:
@@ -143,7 +143,7 @@ class MyExecutableDiscipline(_BaseDiscFromExe):
 
     def _create_inputs(self, input_data: StrKeyMapping) -> None:
         # Here, we define how the discipline must create the input JSON file.
-        # We create the ``inputs.json`` file within the last created directory.
+        # We create the `inputs.json` file within the last created directory.
         # Warning: ndarray is not serializable. We must first convert data.
         input = {key: float(value[0]) for key, value in input_data.items()}
         with (
@@ -203,5 +203,5 @@ Path("my_script.py").unlink()
 # ## Key takeaways
 #
 # Now you are able to wrap any model that has to be launched with a CLI.
-# You first create your specific ``ExecutableRunner``,
-# that is given to your ``BaseDiscFromExe``.
+# You first create your specific `ExecutableRunner`,
+# that is given to your `BaseDiscFromExe`.

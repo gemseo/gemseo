@@ -44,7 +44,7 @@ from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.core.discipline.discipline import Discipline
-from gemseo.core.mdo_functions.mdo_function import MDOFunction
+from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
@@ -124,9 +124,9 @@ function = AreaFunction()
 
 # %%
 # This function can be attached
-# to an [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem] using an [MDOFunction][gemseo.core.mdo_functions.mdo_function.MDOFunction]
+# to an [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem] using an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]
 problem = EvaluationProblem(design_space)
-problem.add_observable(MDOFunction(function, name="area"))
+problem.add_observable(ArrayFunction(function, name="area"))
 
 # %%
 # Then,
