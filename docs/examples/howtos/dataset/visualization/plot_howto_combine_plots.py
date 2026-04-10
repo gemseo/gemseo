@@ -96,5 +96,5 @@ plt.show()
 #
 # For further fine-tuning of the combined figure,
 # use the standard matplotlib API directly on the returned `Axes` objects.
-# See [How to customise a plot with matplotlib][how-to-customise-a-plot-with-matplotlib]
+# See [How to customise a plot with matplotlib][how-to-customize-a-plot-with-matplotlib]
 # for details.

@@ -85,9 +85,6 @@ disciplines = create_discipline([
 #     [gemseo][gemseo] module eases the creation of disciplines without having
 #     to import them.
 #
-#     See the [examples about high-level functions][api].
-
-# %%
 # ## Step 2: [MDOScenario][gemseo.scenarios.mdo.MDOScenario] creation.
 #
 # The scenario delegates the creation of the optimization problem to the

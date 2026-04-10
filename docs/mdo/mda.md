@@ -62,8 +62,16 @@ The two composed MDAs available in GEMSEO are the [MDASequential][gemseo.mda.seq
 The [MDASequential][gemseo.mda.sequential.MDASequential] implements a generic mechanism to execute sequentially an arbitrary number of inner MDAs.
 
 !!! note
-    A specific instance of sequential MDA, namely the [MDAGSNewton][gemseo.mda.gs_newton.MDAGSNewton] is readily available in GEMSEO. It starts with the Gauss-Seidel's method before switching to the Newton-Raphson's method.
-    This approach is interesting since the Newton-Raphson's is more expensive, but converges quickly close to the solution. This kind of sequences typically takes advantage of the robustness of fixed-point methods while obtaining an accurate solution thanks to a Newton-Raphson's method.
+    A specific instance of sequential MDA,
+    namely the
+    [MDAGaussSeidelNewtonRaphson][gemseo.mda.gauss_seidel_newton_raphson.MDAGaussSeidelNewtonRaphson]
+    is readily available in GEMSEO.
+    It starts with the Gauss-Seidel's method before switching to the Newton-Raphson's method.
+    This approach is interesting since the Newton-Raphson's is more expensive,
+    but converges quickly close to the solution.
+    This kind of sequences typically takes advantage of
+    the robustness of fixed-point methods
+    while obtaining an accurate solution thanks to a Newton-Raphson's method.
 
 ### The MDA chain
 
