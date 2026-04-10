@@ -81,6 +81,74 @@ nav:
       - Credits: credits.md
 
   - User guide:
+    - Needs:
+      - Interoperability of simulation models: user_guide/needs/interoperability_simulation_models.md
+      - Automatic creation of multidisciplinary simulation processes: user_guide/needs/automatic_process_creation.md
+      - Interoperability of algorithms: user_guide/needs/interoperability_algorithms.md
+      - Data validation and persistence: user_guide/needs/data_validation_persistence.md
+      - Remote process execution: user_guide/needs/remote_process_execution.md
+      - Surrogate modelling: user_guide/needs/surrogate_modelling.md
+    - Use cases:
+      - Chaining simulation models (discipline): user_guide/use_cases/chaining_simulation_models.md
+      - Coupling simulation models (MDA): user_guide/use_cases/coupling_simulation_models.md
+      - Exploring design space (DOE): user_guide/use_cases/exploring_design_space.md
+      - Optimizing a design: user_guide/use_cases/optimizing_a_design.md
+      - MDO (formulations): user_guide/use_cases/mdo_formulations.md
+      - Uncertainty quantification: user_guide/use_cases/uncertainty_quantification.md
+    - Concepts:
+      - Disciplines:
+        - Overview: user_guide/concepts/discipline/index.md
+        - Grammars: user_guide/concepts/discipline/grammars.md
+        - Namespaces: user_guide/concepts/discipline/namespaces.md
+      - Coupling:
+        - Overview: user_guide/concepts/coupling/index.md
+        - Visualization: user_guide/concepts/coupling/visualization.md
+        - Solving (MDA): user_guide/concepts/coupling/solving_mda.md
+        - Gradient computation: user_guide/concepts/coupling/gradient_computation.md
+      - Design space: user_guide/concepts/design_space.md
+      - Scenarios:
+        - Overview: user_guide/concepts/scenarios/index.md
+        - Types: user_guide/concepts/scenarios/types.md
+        - Visualization: user_guide/concepts/scenarios/visualization.md
+      - Algorithms:
+        - Overview: user_guide/concepts/algorithms/index.md
+        - Optimizers: user_guide/concepts/algorithms/optimizers.md
+        - Samplers (DOE): user_guide/concepts/algorithms/samplers.md
+        - Linear solvers: user_guide/concepts/algorithms/linear_solvers.md
+        - ODE solvers: user_guide/concepts/algorithms/ode_solvers.md
+      - Formulations:
+        - Overview: user_guide/concepts/formulations/index.md
+        - MDF: user_guide/concepts/formulations/mdf.md
+        - IDF: user_guide/concepts/formulations/idf.md
+        - Bi-Level: user_guide/concepts/formulations/bilevel.md
+        - Bi-Level BCD: user_guide/concepts/formulations/bilevel_bcd.md
+      - Uncertainty:
+        - Uncertainty specification: user_guide/concepts/uncertainty/uncertainty_specification.md
+        - Uncertainty propagation: user_guide/concepts/uncertainty/uncertainty_propagation.md
+        - Uncertainty quantification: user_guide/concepts/uncertainty/uncertainty_quantification.md
+        - Sensitivity analysis: user_guide/concepts/uncertainty/sensitivity_analysis.md
+      - Machine learning:
+        - Introduction: user_guide/concepts/machine_learning/introduction.md
+        - Types: user_guide/concepts/machine_learning/types.md
+        - Quality: user_guide/concepts/machine_learning/quality.md
+        - Data transformation: user_guide/concepts/machine_learning/data_transformation.md
+        - Selection and calibration: user_guide/concepts/machine_learning/selection_calibration.md
+      - Global configuration: user_guide/concepts/global_configuration.md
+      - Data persistence:
+        - Cache: user_guide/concepts/data_persistence/cache.md
+        - Database: user_guide/concepts/data_persistence/database.md
+        - Dataset: user_guide/concepts/data_persistence/dataset.md
+      - Problems:
+        - Overview: user_guide/concepts/problems/index.md
+        - Functions: user_guide/concepts/problems/functions.md
+      - Benchmarking:
+        - Scalable MDO problems:
+          - Linear: user_guide/concepts/benchmarking/scalable_mdo/linear.md
+          - Quadratic: user_guide/concepts/benchmarking/scalable_mdo/quadratic.md
+          - Data-driven: user_guide/concepts/benchmarking/scalable_mdo/data_driven.md
+        - MDO-like optimization problems: user_guide/concepts/benchmarking/mdo_like_optimization_problems.md
+
+  - User guide (old):
       - Introduction:
           - What is MDO?: overview.md
           - Couplings: mdo/coupling.md

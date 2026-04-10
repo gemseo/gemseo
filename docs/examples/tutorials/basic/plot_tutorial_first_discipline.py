@@ -202,7 +202,7 @@ discipline.input_grammar
 #
 # !!! note
 #     Grammars are different: some allow a lot while others are very restrictive.
-#     Please refer to the [user guide][] for more information.
+#     Please refer to the [Grammar section][concept-grammars] for more information.
 #
 # Let's make your discipline more restrictive, by saying that $x$ is now an integer.
 # One way to do so is to update the grammar with the
