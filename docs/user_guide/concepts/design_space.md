@@ -22,3 +22,9 @@ search:
 ## Handling integer variables { #concept-handling-integer-variables }
 
 ## Going further { #concept-going-further }
+
+!!! tutorial
+    This is a test.
+
+!!! how-to
+    This is another test.
