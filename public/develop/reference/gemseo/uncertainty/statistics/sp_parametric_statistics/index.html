@@ -519,14 +519,14 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise moment of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>554</span>
+   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise moment of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>553</span>
+<span class=normal>554</span>
 <span class=normal>555</span>
 <span class=normal>556</span>
 <span class=normal>557</span>
 <span class=normal>558</span>
 <span class=normal>559</span>
-<span class=normal>560</span>
-<span class=normal>561</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_moment</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>order</span><span class=p>:</span> <span class=nb>int</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
+<span class=normal>560</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_moment</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>order</span><span class=p>:</span> <span class=nb>int</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
     <span class=k>return</span> <span class=p>{</span>
         <span class=n>name</span><span class=p>:</span> <span class=n>array</span><span class=p>([</span>
             <span class=n>distribution</span><span class=o>.</span><span class=n>value</span><span class=o>.</span><span class=n>distribution</span><span class=o>.</span><span class=n>getMoment</span><span class=p>(</span><span class=n>order</span><span class=p>)[</span><span class=mi>0</span><span class=p>]</span>
@@ -658,15 +658,15 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise quantile of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>526</span>
+   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise quantile of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>525</span>
+<span class=normal>526</span>
 <span class=normal>527</span>
 <span class=normal>528</span>
 <span class=normal>529</span>
 <span class=normal>530</span>
 <span class=normal>531</span>
 <span class=normal>532</span>
-<span class=normal>533</span>
-<span class=normal>534</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_quantile</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>prob</span><span class=p>:</span> <span class=nb>float</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
+<span class=normal>533</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_quantile</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>prob</span><span class=p>:</span> <span class=nb>float</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
     <span class=n>prob</span> <span class=o>=</span> <span class=n>array</span><span class=p>([</span><span class=n>prob</span><span class=p>])</span>
     <span class=k>return</span> <span class=p>{</span>
         <span class=n>name</span><span class=p>:</span> <span class=n>array</span><span class=p>([</span>
@@ -730,15 +730,15 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise range of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>563</span>
+   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise range of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>562</span>
+<span class=normal>563</span>
 <span class=normal>564</span>
 <span class=normal>565</span>
 <span class=normal>566</span>
 <span class=normal>567</span>
 <span class=normal>568</span>
 <span class=normal>569</span>
-<span class=normal>570</span>
-<span class=normal>571</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_range</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
+<span class=normal>570</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_range</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
     <span class=k>return</span> <span class=p>{</span>
         <span class=n>name</span><span class=p>:</span> <span class=n>array</span><span class=p>([</span>
             <span class=n>distribution</span><span class=o>.</span><span class=n>value</span><span class=o>.</span><span class=n>math_upper_bound</span>
@@ -758,14 +758,14 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise standard deviation of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>536</span>
+   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise standard deviation of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>535</span>
+<span class=normal>536</span>
 <span class=normal>537</span>
 <span class=normal>538</span>
 <span class=normal>539</span>
 <span class=normal>540</span>
 <span class=normal>541</span>
-<span class=normal>542</span>
-<span class=normal>543</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_standard_deviation</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
+<span class=normal>542</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_standard_deviation</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
     <span class=k>return</span> <span class=p>{</span>
         <span class=n>name</span><span class=p>:</span> <span class=n>array</span><span class=p>([</span>
             <span class=n>distribution</span><span class=o>.</span><span class=n>value</span><span class=o>.</span><span class=n>standard_deviation</span>
@@ -801,8 +801,7 @@
 <span class=normal>520</span>
 <span class=normal>521</span>
 <span class=normal>522</span>
-<span class=normal>523</span>
-<span class=normal>524</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_tolerance_interval</span><span class=p>(</span>  <span class=c1># noqa: D102</span>
+<span class=normal>523</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_tolerance_interval</span><span class=p>(</span>  <span class=c1># noqa: D102</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>coverage</span><span class=p>:</span> <span class=nb>float</span><span class=p>,</span>
     <span class=n>confidence</span><span class=p>:</span> <span class=nb>float</span> <span class=o>=</span> <span class=mf>0.95</span><span class=p>,</span>
@@ -816,12 +815,11 @@
         <span class=n>msg</span> <span class=o>=</span> <span class=s2>&quot;The argument &#39;confidence&#39; must be a number in [0,1].&quot;</span>
         <span class=k>raise</span> <span class=ne>ValueError</span><span class=p>(</span><span class=n>msg</span><span class=p>)</span>
 
-    <span class=n>tolerance_interval_factory</span> <span class=o>=</span> <span class=n>ToleranceIntervalFactory</span><span class=p>()</span>
+    <span class=n>get_class</span> <span class=o>=</span> <span class=n>TOLERANCE_INTERVAL_FACTORY</span><span class=o>.</span><span class=n>get_class</span>
     <span class=k>return</span> <span class=p>{</span>
         <span class=n>name</span><span class=p>:</span> <span class=p>[</span>
-            <span class=n>tolerance_interval_factory</span><span class=o>.</span><span class=n>get_class</span><span class=p>(</span><span class=n>distribution</span><span class=o>.</span><span class=n>name</span><span class=p>)(</span>
-                <span class=bp>self</span><span class=o>.</span><span class=n>n_samples</span><span class=p>,</span>
-                <span class=o>*</span><span class=n>distribution</span><span class=o>.</span><span class=n>value</span><span class=o>.</span><span class=n>distribution</span><span class=o>.</span><span class=n>getParameter</span><span class=p>(),</span>
+            <span class=n>get_class</span><span class=p>(</span><span class=sa>f</span><span class=s2>&quot;</span><span class=si>{</span><span class=n>distribution</span><span class=o>.</span><span class=n>name</span><span class=si>}</span><span class=s2>ToleranceInterval&quot;</span><span class=p>)(</span>
+                <span class=bp>self</span><span class=o>.</span><span class=n>n_samples</span><span class=p>,</span> <span class=o>*</span><span class=n>distribution</span><span class=o>.</span><span class=n>value</span><span class=o>.</span><span class=n>distribution</span><span class=o>.</span><span class=n>getParameter</span><span class=p>()</span>
             <span class=p>)</span><span class=o>.</span><span class=n>compute</span><span class=p>(</span><span class=n>coverage</span><span class=p>,</span> <span class=n>confidence</span><span class=p>,</span> <span class=n>side</span><span class=p>)</span>
             <span class=k>for</span> <span class=n>distribution</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>__distributions</span><span class=p>[</span><span class=n>name</span><span class=p>]</span>
         <span class=p>]</span>
@@ -838,14 +836,14 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise variance of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>545</span>
+   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The component-wise variance of the different variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>544</span>
+<span class=normal>545</span>
 <span class=normal>546</span>
 <span class=normal>547</span>
 <span class=normal>548</span>
 <span class=normal>549</span>
 <span class=normal>550</span>
-<span class=normal>551</span>
-<span class=normal>552</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_variance</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
+<span class=normal>551</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_variance</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
     <span class=k>return</span> <span class=p>{</span>
         <span class=n>name</span><span class=p>:</span> <span class=n>array</span><span class=p>([</span>
             <span class=n>distribution</span><span class=o>.</span><span class=n>value</span><span class=o>.</span><span class=n>standard_deviation</span><span class=o>**</span><span class=mi>2</span>
@@ -999,7 +997,8 @@
     <span class=n>directory_path</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>|</span> <span class=n><a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></span> <span class=o>=</span> <span class=s2>&quot;&quot;</span><span class=p>,</span>
     <span class=n>file_format</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>=</span> <span class=s2>&quot;png&quot;</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" title=matplotlib.figure.Figure href=https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure>Figure</a></span><span class=p>]</span>
-</code></pre></div><div class="doc doc-contents "><p>Visualize the cumulative distribution and probability density functions.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>save</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether to save the figures.</p></div></li><li class="doc-section-item field-body"><b><code>show</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to show the figures.</p></div></li><li class="doc-section-item field-body"><b><code>directory_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a> | <a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The path to save the figures.</p></div></li><li class="doc-section-item field-body"><b><code>file_format</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;png&#39;</code> ) – <div class=doc-md-description><p>The file extension.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=matplotlib.figure.Figure href=https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure>Figure</a>]</code> – <div class=doc-md-description><p>The cumulative distribution and probability density functions for each variable.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>573</span>
+</code></pre></div><div class="doc doc-contents "><p>Visualize the cumulative distribution and probability density functions.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>save</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether to save the figures.</p></div></li><li class="doc-section-item field-body"><b><code>show</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to show the figures.</p></div></li><li class="doc-section-item field-body"><b><code>directory_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a> | <a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The path to save the figures.</p></div></li><li class="doc-section-item field-body"><b><code>file_format</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;png&#39;</code> ) – <div class=doc-md-description><p>The file extension.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=matplotlib.figure.Figure href=https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure>Figure</a>]</code> – <div class=doc-md-description><p>The cumulative distribution and probability density functions for each variable.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/statistics/base_parametric_statistics.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>572</span>
+<span class=normal>573</span>
 <span class=normal>574</span>
 <span class=normal>575</span>
 <span class=normal>576</span>
@@ -1028,8 +1027,7 @@
 <span class=normal>599</span>
 <span class=normal>600</span>
 <span class=normal>601</span>
-<span class=normal>602</span>
-<span class=normal>603</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>plot</span><span class=p>(</span>
+<span class=normal>602</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>plot</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>save</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>False</span><span class=p>,</span>
     <span class=n>show</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>

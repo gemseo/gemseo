@@ -155,7 +155,6 @@ main_mda_settings = MDAGaussSeidel_Settings(
     tolerance=1e-14,
     max_mda_iter=50,
     warm_start=True,
-    use_lu_fact=False,
     linear_solver_settings=LGMRES_Settings(rtol=1e-14),
 )
 scenario = create_scenario(
@@ -262,7 +261,7 @@ scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPER
 # solve multiple right hand sides problems in a cheap way. But this requires
 # extra memory.
 scenario.formulation.mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
-scenario.formulation.mda.use_lu_fact = True
+scenario.formulation.mda.settings.linear_solver_settings = None
 # %%
 # Alternatively, GEMSEO can implicitly create a matrix-vector product operator,
 # which is sufficient for GMRES-like solvers. It avoids to create an additional

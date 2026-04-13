@@ -463,7 +463,9 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The covariance matrices <span class=arithmatex>\(\Sigma_1,\ldots,\Sigma_N\)</span> of the random variables <span class=arithmatex>\(U_1,\ldots,U_N\)</span>. If empty, do not consider uncertainties.</p></div></li><li class="doc-section-item field-body"><b><code>margin_factor</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>2.0</code> ) – <div class=doc-md-description><p>The factor <span class=arithmatex>\(\kappa\)</span> used in the expression of the margins.</p></div></li><li class="doc-section-item field-body"><b><code>tolerance</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.01</code> ) – <div class=doc-md-description><p>The tolerance level <span class=arithmatex>\(\varepsilon\)</span> for the violation probability.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            OptimizationProblem (gemseo.algos.optimization_problem.OptimizationProblem)" href=../../../../../algos/optimization_problem/#gemseo.algos.optimization_problem.OptimizationProblem>OptimizationProblem</a></code> – <div class=doc-md-description><p>The quadratic optimization problem.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/scalable/parametric/scalable_problem.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>105</span>
+   (gemseo.typing.RealArray)" href=../../../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The covariance matrices <span class=arithmatex>\(\Sigma_1,\ldots,\Sigma_N\)</span> of the random variables <span class=arithmatex>\(U_1,\ldots,U_N\)</span>. If empty, do not consider uncertainties.</p></div></li><li class="doc-section-item field-body"><b><code>margin_factor</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>2.0</code> ) – <div class=doc-md-description><p>The factor <span class=arithmatex>\(\kappa\)</span> used in the expression of the margins.</p></div></li><li class="doc-section-item field-body"><b><code>tolerance</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.01</code> ) – <div class=doc-md-description><p>The tolerance level <span class=arithmatex>\(\varepsilon\)</span> for the violation probability.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            OptimizationProblem (gemseo.algos.optimization_problem.OptimizationProblem)" href=../../../../../algos/optimization_problem/#gemseo.algos.optimization_problem.OptimizationProblem>OptimizationProblem</a></code> – <div class=doc-md-description><p>The quadratic optimization problem.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/scalable/parametric/scalable_problem.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>103</span>
+<span class=normal>104</span>
+<span class=normal>105</span>
 <span class=normal>106</span>
 <span class=normal>107</span>
 <span class=normal>108</span>
@@ -537,9 +539,7 @@
 <span class=normal>176</span>
 <span class=normal>177</span>
 <span class=normal>178</span>
-<span class=normal>179</span>
-<span class=normal>180</span>
-<span class=normal>181</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>create_quadratic_programming_problem</span><span class=p>(</span>
+<span class=normal>179</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>create_quadratic_programming_problem</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>add_coupling</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>False</span><span class=p>,</span>
     <span class=n>covariance_matrices</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=n>RealArray</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
@@ -617,11 +617,11 @@
         <span class=n>problem</span><span class=o>.</span><span class=n>add_observable</span><span class=p>(</span><span class=n>ArrayFunction</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>compute_y</span><span class=p>,</span> <span class=n>name</span><span class=o>=</span><span class=s2>&quot;coupling&quot;</span><span class=p>))</span>
     <span class=k>return</span> <span class=n>problem</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.problems.mdo.scalable.parametric.scalable_problem.ScalableProblem.create_scenario class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">create_scenario</span><a href=#gemseo.problems.mdo.scalable.parametric.scalable_problem.ScalableProblem.create_scenario class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>create_scenario</span><span class=p>(</span>
-    <span class=n>use_optimizer</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
-    <span class=n>formulation_name</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>=</span> <span class=s2>&quot;MDF&quot;</span><span class=p>,</span>
-    <span class=o>**</span><span class=n>formulation_settings</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></span>
+    <span class=n>formulation_settings</span><span class=p>:</span> <span class=p>(</span>
+        <span class=n><a class="autorefs autorefs-internal" title="            BaseFormulationSettings (gemseo.formulations.base_settings.BaseFormulationSettings)" href=../../../../../formulations/base_settings/#gemseo.formulations.base_settings.BaseFormulationSettings>BaseFormulationSettings</a></span> <span class=o>|</span> <span class=kc>None</span>
+    <span class=p>)</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-internal" title="            MDOScenario (gemseo.scenarios.mdo.MDOScenario)" href=../../../../../scenarios/mdo/#gemseo.scenarios.mdo.MDOScenario>MDOScenario</a></span>
-</code></pre></div><div class="doc doc-contents "><p>Create the DOE or MDO scenario associated with this scalable problem.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>use_optimizer</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to use an optimizer or a design of experiments.</p></div></li><li class="doc-section-item field-body"><b><code>formulation_name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;MDF&#39;</code> ) – <div class=doc-md-description><p>The name of the formulation.</p></div></li><li class="doc-section-item field-body"><b><code>**formulation_settings</code></b> (<code><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></code>, default: <code>{}</code> ) – <div class=doc-md-description><p>The settings of the formulation.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            MDOScenario (gemseo.scenarios.mdo.MDOScenario)" href=../../../../../scenarios/mdo/#gemseo.scenarios.mdo.MDOScenario>MDOScenario</a></code> – <div class=doc-md-description><p>The scenario to be executed.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/scalable/parametric/scalable_problem.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal> 74</span>
+</code></pre></div><div class="doc doc-contents "><p>Create the DOE or MDO scenario associated with this scalable problem.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>formulation_settings</code></b> (<code><a class="autorefs autorefs-internal" title="            BaseFormulationSettings (gemseo.formulations.base_settings.BaseFormulationSettings)" href=../../../../../formulations/base_settings/#gemseo.formulations.base_settings.BaseFormulationSettings>BaseFormulationSettings</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The settings of the MDO formulation. If <code>None</code>, use the default settings of the MDF formulation.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            MDOScenario (gemseo.scenarios.mdo.MDOScenario)" href=../../../../../scenarios/mdo/#gemseo.scenarios.mdo.MDOScenario>MDOScenario</a></code> – <div class=doc-md-description><p>The scenario to be executed.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/scalable/parametric/scalable_problem.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal> 74</span>
 <span class=normal> 75</span>
 <span class=normal> 76</span>
 <span class=normal> 77</span>
@@ -648,31 +648,27 @@
 <span class=normal> 98</span>
 <span class=normal> 99</span>
 <span class=normal>100</span>
-<span class=normal>101</span>
-<span class=normal>102</span>
-<span class=normal>103</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>create_scenario</span><span class=p>(</span>
-    <span class=bp>self</span><span class=p>,</span>
-    <span class=n>use_optimizer</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
-    <span class=n>formulation_name</span><span class=p>:</span> <span class=nb>str</span> <span class=o>=</span> <span class=s2>&quot;MDF&quot;</span><span class=p>,</span>
-    <span class=o>**</span><span class=n>formulation_settings</span><span class=p>:</span> <span class=n>Any</span><span class=p>,</span>
+<span class=normal>101</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>create_scenario</span><span class=p>(</span>
+    <span class=bp>self</span><span class=p>,</span> <span class=n>formulation_settings</span><span class=p>:</span> <span class=n>BaseFormulationSettings</span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n>MDOScenario</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Create the DOE or MDO scenario associated with this scalable problem.</span>
 
 <span class=sd>    Args:</span>
-<span class=sd>        use_optimizer: Whether to use an optimizer or a design of experiments.</span>
-<span class=sd>        formulation_name: The name of the formulation.</span>
-<span class=sd>        **formulation_settings: The settings of the formulation.</span>
+<span class=sd>        formulation_settings: The settings of the MDO formulation.</span>
+<span class=sd>            If `None`, use the default settings of the MDF formulation.</span>
 
 <span class=sd>    Returns:</span>
 <span class=sd>        The scenario to be executed.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
-    <span class=n>scenario</span> <span class=o>=</span> <span class=n>create_scenario</span><span class=p>(</span>
+    <span class=k>if</span> <span class=n>formulation_settings</span> <span class=ow>is</span> <span class=kc>None</span><span class=p>:</span>
+        <span class=n>formulation_settings</span> <span class=o>=</span> <span class=n>MDF_Settings</span><span class=p>()</span>
+
+    <span class=n>scenario</span> <span class=o>=</span> <span class=n>MDOScenario</span><span class=p>(</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>disciplines</span><span class=p>,</span>
-        <span class=n>OBJECTIVE_NAME</span><span class=p>,</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>design_space</span><span class=p>,</span>
-        <span class=n>formulation_name</span><span class=o>=</span><span class=n>formulation_name</span><span class=p>,</span>
-        <span class=o>**</span><span class=n>formulation_settings</span><span class=p>,</span>
+        <span class=n>formulation_settings</span><span class=o>=</span><span class=n>formulation_settings</span><span class=p>,</span>
     <span class=p>)</span>
+    <span class=n>scenario</span><span class=o>.</span><span class=n>add_objective</span><span class=p>(</span><span class=n>OBJECTIVE_NAME</span><span class=p>)</span>
     <span class=k>for</span> <span class=n>index</span><span class=p>,</span> <span class=n>_</span> <span class=ow>in</span> <span class=nb>enumerate</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>scalable_disciplines</span><span class=p>):</span>
         <span class=n>scenario</span><span class=o>.</span><span class=n>add_constraint</span><span class=p>(</span>
             <span class=n>get_constraint_name</span><span class=p>(</span><span class=n>index</span> <span class=o>+</span> <span class=mi>1</span><span class=p>),</span>

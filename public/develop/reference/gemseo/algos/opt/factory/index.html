@@ -33,10 +33,10 @@
 </code></pre></div><div class="doc doc-contents "><p>The mapping from the algorithm names to the library names.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.algos.opt.factory.OptimizationLibraryFactory.algorithms class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">algorithms</span><span class="doc doc-labels"><small class="doc doc-label doc-label-property"><code>property</code></small></span><a href=#gemseo.algos.opt.factory.OptimizationLibraryFactory.algorithms class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>algorithms</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#list>list</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span>
 </code></pre></div><div class="doc doc-contents "><p>The names of the available algorithms.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.algos.opt.factory.OptimizationLibraryFactory.libraries class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">libraries</span><span class="doc doc-labels"><small class="doc doc-label doc-label-property"><code>property</code></small></span><a href=#gemseo.algos.opt.factory.OptimizationLibraryFactory.libraries class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>libraries</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#list>list</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span>
 </code></pre></div><div class="doc doc-contents "><p>The names of the available libraries.</p></div></div><h5 id=gemseo.algos.opt.factory.OptimizationLibraryFactory-functions>Functions<a href=#gemseo.algos.opt.factory.OptimizationLibraryFactory-functions class=headerlink title="Permanent link">&para;</a></h5><div class="doc doc-object doc-function"><h6 id=gemseo.algos.opt.factory.OptimizationLibraryFactory.clear_lib_cache class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">clear_lib_cache</span><a href=#gemseo.algos.opt.factory.OptimizationLibraryFactory.clear_lib_cache class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>clear_lib_cache</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Clear the library cache.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>207</span>
-<span class=normal>208</span>
-<span class=normal>209</span>
-<span class=normal>210</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>clear_lib_cache</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
+</code></pre></div><div class="doc doc-contents "><p>Clear the library cache.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>222</span>
+<span class=normal>223</span>
+<span class=normal>224</span>
+<span class=normal>225</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>clear_lib_cache</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Clear the library cache.&quot;&quot;&quot;</span>
     <span class=k>for</span> <span class=n>value</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>__lib_cache</span><span class=o>.</span><span class=n>values</span><span class=p>():</span>
         <span class=n>value</span><span class=o>.</span><span class=n>clear</span><span class=p>()</span>
@@ -63,14 +63,7 @@
 <span class=normal>180</span>
 <span class=normal>181</span>
 <span class=normal>182</span>
-<span class=normal>183</span>
-<span class=normal>184</span>
-<span class=normal>185</span>
-<span class=normal>186</span>
-<span class=normal>187</span>
-<span class=normal>188</span>
-<span class=normal>189</span>
-<span class=normal>190</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>create</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>BaseAlgorithmLibrary</span><span class=p>:</span>
+<span class=normal>183</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>create</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>BaseAlgorithmLibrary</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Create an algorithm library from an algorithm name.</span>
 
 <span class=sd>    Args:</span>
@@ -82,37 +75,30 @@
 <span class=sd>    Raises:</span>
 <span class=sd>        ImportError: If the algorithm is not available.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
-    <span class=k>if</span> <span class=n>name</span> <span class=ow>not</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>__algo_name_to_lib_name</span><span class=p>:</span>
-        <span class=n>msg</span> <span class=o>=</span> <span class=p>(</span>
-            <span class=sa>f</span><span class=s2>&quot;No algorithm named </span><span class=si>{</span><span class=n>name</span><span class=si>}</span><span class=s2> is available; &quot;</span>
-            <span class=sa>f</span><span class=s2>&quot;available algorithms are </span><span class=si>{</span><span class=n>pretty_str</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>algorithms</span><span class=p>,</span><span class=w> </span><span class=n>use_and</span><span class=o>=</span><span class=kc>True</span><span class=p>)</span><span class=si>}</span><span class=s2>.&quot;</span>
-        <span class=p>)</span>
-        <span class=k>raise</span> <span class=ne>ValueError</span><span class=p>(</span><span class=n>msg</span><span class=p>)</span>
-
-    <span class=n>lib_name</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__algo_name_to_lib_name</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>name</span><span class=p>)</span>
-    <span class=n>lib_cache</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__lib_cache</span><span class=p>[</span><span class=n>lib_name</span><span class=p>]</span>
+    <span class=n>library_name</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__get_library_name</span><span class=p>(</span><span class=n>name</span><span class=p>)</span>
+    <span class=n>library_cache</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__lib_cache</span><span class=p>[</span><span class=n>library_name</span><span class=p>]</span>
     <span class=k>if</span> <span class=bp>self</span><span class=o>.</span><span class=n>__use_cache</span><span class=p>:</span>
-        <span class=n>algo</span> <span class=o>=</span> <span class=n>lib_cache</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>name</span><span class=p>)</span>
+        <span class=n>algo</span> <span class=o>=</span> <span class=n>library_cache</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>name</span><span class=p>)</span>
         <span class=k>if</span> <span class=n>algo</span> <span class=ow>is</span> <span class=kc>None</span><span class=p>:</span>
-            <span class=n>algo</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_factory</span><span class=o>.</span><span class=n>create</span><span class=p>(</span><span class=n>lib_name</span><span class=p>,</span> <span class=n>name</span><span class=p>)</span>
-            <span class=n>lib_cache</span><span class=p>[</span><span class=n>name</span><span class=p>]</span> <span class=o>=</span> <span class=n>algo</span>
+            <span class=n>algo</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_factory</span><span class=o>.</span><span class=n>create</span><span class=p>(</span><span class=n>library_name</span><span class=p>,</span> <span class=n>name</span><span class=p>)</span>
+            <span class=n>library_cache</span><span class=p>[</span><span class=n>name</span><span class=p>]</span> <span class=o>=</span> <span class=n>algo</span>
 
         <span class=k>return</span> <span class=n>algo</span>
 
-    <span class=k>return</span> <span class=bp>self</span><span class=o>.</span><span class=n>_factory</span><span class=o>.</span><span class=n>create</span><span class=p>(</span><span class=n>lib_name</span><span class=p>,</span> <span class=n>name</span><span class=p>)</span>
+    <span class=k>return</span> <span class=bp>self</span><span class=o>.</span><span class=n>_factory</span><span class=o>.</span><span class=n>create</span><span class=p>(</span><span class=n>library_name</span><span class=p>,</span> <span class=n>name</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.algos.opt.factory.OptimizationLibraryFactory.create_settings class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">create_settings</span><a href=#gemseo.algos.opt.factory.OptimizationLibraryFactory.create_settings class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>create_settings</span><span class=p>(</span><span class=n>name</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=o>**</span><span class=n>options</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-internal" title="            BaseSettings (gemseo.utils.pydantic.BaseSettings)" href=../../../utils/pydantic/#gemseo.utils.pydantic.BaseSettings>BaseSettings</a></span>
-</code></pre></div><div class="doc doc-contents "><p>Create settings for an algorithm.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The name of the algorithm.</p></div></li><li class="doc-section-item field-body"><b><code>**options</code></b> (<code><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></code>, default: <code>{}</code> ) – <div class=doc-md-description><p>The algorithm options.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            BaseSettings (gemseo.utils.pydantic.BaseSettings)" href=../../../utils/pydantic/#gemseo.utils.pydantic.BaseSettings>BaseSettings</a></code> – <div class=doc-md-description><p>The algorithm settings.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>256</span>
-<span class=normal>257</span>
-<span class=normal>258</span>
-<span class=normal>259</span>
-<span class=normal>260</span>
-<span class=normal>261</span>
-<span class=normal>262</span>
-<span class=normal>263</span>
-<span class=normal>264</span>
-<span class=normal>265</span>
-<span class=normal>266</span>
-<span class=normal>267</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>create_settings</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>,</span> <span class=o>**</span><span class=n>options</span><span class=p>:</span> <span class=n>Any</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>BaseSettings</span><span class=p>:</span>
+</code></pre></div><div class="doc doc-contents "><p>Create settings for an algorithm.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The name of the algorithm.</p></div></li><li class="doc-section-item field-body"><b><code>**options</code></b> (<code><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></code>, default: <code>{}</code> ) – <div class=doc-md-description><p>The algorithm options.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            BaseSettings (gemseo.utils.pydantic.BaseSettings)" href=../../../utils/pydantic/#gemseo.utils.pydantic.BaseSettings>BaseSettings</a></code> – <div class=doc-md-description><p>The algorithm settings.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>271</span>
+<span class=normal>272</span>
+<span class=normal>273</span>
+<span class=normal>274</span>
+<span class=normal>275</span>
+<span class=normal>276</span>
+<span class=normal>277</span>
+<span class=normal>278</span>
+<span class=normal>279</span>
+<span class=normal>280</span>
+<span class=normal>281</span>
+<span class=normal>282</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>create_settings</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>,</span> <span class=o>**</span><span class=n>options</span><span class=p>:</span> <span class=n>Any</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>BaseSettings</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Create settings for an algorithm.</span>
 
 <span class=sd>    Args:</span>
@@ -147,20 +133,20 @@
 
   
       dataclass
-   (gemseo.algos.ode.ode_result.ODEResult)" href=../../ode/ode_result/#gemseo.algos.ode.ode_result.ODEResult>ODEResult</a></code> – <div class=doc-md-description><p>The result.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>192</span>
-<span class=normal>193</span>
-<span class=normal>194</span>
-<span class=normal>195</span>
-<span class=normal>196</span>
-<span class=normal>197</span>
-<span class=normal>198</span>
-<span class=normal>199</span>
-<span class=normal>200</span>
-<span class=normal>201</span>
-<span class=normal>202</span>
-<span class=normal>203</span>
-<span class=normal>204</span>
-<span class=normal>205</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>execute</span><span class=p>(</span>
+   (gemseo.algos.ode.ode_result.ODEResult)" href=../../ode/ode_result/#gemseo.algos.ode.ode_result.ODEResult>ODEResult</a></code> – <div class=doc-md-description><p>The result.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>207</span>
+<span class=normal>208</span>
+<span class=normal>209</span>
+<span class=normal>210</span>
+<span class=normal>211</span>
+<span class=normal>212</span>
+<span class=normal>213</span>
+<span class=normal>214</span>
+<span class=normal>215</span>
+<span class=normal>216</span>
+<span class=normal>217</span>
+<span class=normal>218</span>
+<span class=normal>219</span>
+<span class=normal>220</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>execute</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span> <span class=n>problem</span><span class=p>:</span> <span class=n>BaseProblem</span><span class=p>,</span> <span class=n>settings</span><span class=p>:</span> <span class=n>BaseSettings</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n>OptimizationResult</span> <span class=o>|</span> <span class=n>ODEResult</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Execute a problem with an algorithm.</span>
@@ -175,19 +161,19 @@
     <span class=n>lib</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>create</span><span class=p>(</span><span class=n>settings</span><span class=o>.</span><span class=n>target_class_name</span><span class=p>)</span>
     <span class=k>return</span> <span class=n>lib</span><span class=o>.</span><span class=n>execute</span><span class=p>(</span><span class=n>problem</span><span class=p>,</span> <span class=n>settings</span><span class=o>=</span><span class=n>settings</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.algos.opt.factory.OptimizationLibraryFactory.get_class class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">get_class</span><a href=#gemseo.algos.opt.factory.OptimizationLibraryFactory.get_class class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>get_class</span><span class=p>(</span><span class=n>name</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#type>type</a></span>
-</code></pre></div><div class="doc doc-contents "><p>Return a class from its name.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The name of the class.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#type>type</a></code> – <div class=doc-md-description><p>The class.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ImportError>ImportError</a></code> – <div class=doc-md-description><p>If the class is not available.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>223</span>
-<span class=normal>224</span>
-<span class=normal>225</span>
-<span class=normal>226</span>
-<span class=normal>227</span>
-<span class=normal>228</span>
-<span class=normal>229</span>
-<span class=normal>230</span>
-<span class=normal>231</span>
-<span class=normal>232</span>
-<span class=normal>233</span>
-<span class=normal>234</span>
-<span class=normal>235</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_class</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>type</span><span class=p>:</span>
+</code></pre></div><div class="doc doc-contents "><p>Return a class from its name.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The name of the class.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#type>type</a></code> – <div class=doc-md-description><p>The class.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ImportError>ImportError</a></code> – <div class=doc-md-description><p>If the class is not available.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>238</span>
+<span class=normal>239</span>
+<span class=normal>240</span>
+<span class=normal>241</span>
+<span class=normal>242</span>
+<span class=normal>243</span>
+<span class=normal>244</span>
+<span class=normal>245</span>
+<span class=normal>246</span>
+<span class=normal>247</span>
+<span class=normal>248</span>
+<span class=normal>249</span>
+<span class=normal>250</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_class</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>type</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Return a class from its name.</span>
 
 <span class=sd>    Args:</span>
@@ -201,16 +187,16 @@
 <span class=sd>    &quot;&quot;&quot;</span>
     <span class=k>return</span> <span class=bp>self</span><span class=o>.</span><span class=n>_factory</span><span class=o>.</span><span class=n>get_class</span><span class=p>(</span><span class=n>name</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.algos.opt.factory.OptimizationLibraryFactory.get_library_name class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">get_library_name</span><a href=#gemseo.algos.opt.factory.OptimizationLibraryFactory.get_library_name class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>get_library_name</span><span class=p>(</span><span class=n>name</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span>
-</code></pre></div><div class="doc doc-contents "><p>Return the name of the library related to the name of a class.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The name of the class.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code> – <div class=doc-md-description><p>The name of the library.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>212</span>
-<span class=normal>213</span>
-<span class=normal>214</span>
-<span class=normal>215</span>
-<span class=normal>216</span>
-<span class=normal>217</span>
-<span class=normal>218</span>
-<span class=normal>219</span>
-<span class=normal>220</span>
-<span class=normal>221</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_library_name</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>str</span><span class=p>:</span>
+</code></pre></div><div class="doc doc-contents "><p>Return the name of the library related to the name of a class.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The name of the class.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code> – <div class=doc-md-description><p>The name of the library.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>227</span>
+<span class=normal>228</span>
+<span class=normal>229</span>
+<span class=normal>230</span>
+<span class=normal>231</span>
+<span class=normal>232</span>
+<span class=normal>233</span>
+<span class=normal>234</span>
+<span class=normal>235</span>
+<span class=normal>236</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_library_name</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>str</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Return the name of the library related to the name of a class.</span>
 
 <span class=sd>    Args:</span>
@@ -221,18 +207,18 @@
 <span class=sd>    &quot;&quot;&quot;</span>
     <span class=k>return</span> <span class=bp>self</span><span class=o>.</span><span class=n>_factory</span><span class=o>.</span><span class=n>get_library_name</span><span class=p>(</span><span class=n>name</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.algos.opt.factory.OptimizationLibraryFactory.get_settings_class class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">get_settings_class</span><a href=#gemseo.algos.opt.factory.OptimizationLibraryFactory.get_settings_class class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>get_settings_class</span><span class=p>(</span><span class=n>name</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#type>type</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-internal" title="            BaseSettings (gemseo.utils.pydantic.BaseSettings)" href=../../../utils/pydantic/#gemseo.utils.pydantic.BaseSettings>BaseSettings</a></span><span class=p>]</span>
-</code></pre></div><div class="doc doc-contents "><p>Return an algorithm settings class.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The name of the algorithm.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#type>type</a>[<a class="autorefs autorefs-internal" title="            BaseSettings (gemseo.utils.pydantic.BaseSettings)" href=../../../utils/pydantic/#gemseo.utils.pydantic.BaseSettings>BaseSettings</a>]</code> – <div class=doc-md-description><p>The algorithm settings class.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>243</span>
-<span class=normal>244</span>
-<span class=normal>245</span>
-<span class=normal>246</span>
-<span class=normal>247</span>
-<span class=normal>248</span>
-<span class=normal>249</span>
-<span class=normal>250</span>
-<span class=normal>251</span>
-<span class=normal>252</span>
-<span class=normal>253</span>
-<span class=normal>254</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_settings_class</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>type</span><span class=p>[</span><span class=n>BaseSettings</span><span class=p>]:</span>
+</code></pre></div><div class="doc doc-contents "><p>Return an algorithm settings class.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The name of the algorithm.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#type>type</a>[<a class="autorefs autorefs-internal" title="            BaseSettings (gemseo.utils.pydantic.BaseSettings)" href=../../../utils/pydantic/#gemseo.utils.pydantic.BaseSettings>BaseSettings</a>]</code> – <div class=doc-md-description><p>The algorithm settings class.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/algos/base_algo_factory.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>258</span>
+<span class=normal>259</span>
+<span class=normal>260</span>
+<span class=normal>261</span>
+<span class=normal>262</span>
+<span class=normal>263</span>
+<span class=normal>264</span>
+<span class=normal>265</span>
+<span class=normal>266</span>
+<span class=normal>267</span>
+<span class=normal>268</span>
+<span class=normal>269</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_settings_class</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>name</span><span class=p>:</span> <span class=nb>str</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>type</span><span class=p>[</span><span class=n>BaseSettings</span><span class=p>]:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Return an algorithm settings class.</span>
 
 <span class=sd>    Args:</span>
@@ -241,7 +227,7 @@
 <span class=sd>    Returns:</span>
 <span class=sd>        The algorithm settings class.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
-    <span class=n>library_name</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>algo_names_to_libraries</span><span class=p>[</span><span class=n>name</span><span class=p>]</span>
+    <span class=n>library_name</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__get_library_name</span><span class=p>(</span><span class=n>name</span><span class=p>)</span>
     <span class=n>library_class</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>get_class</span><span class=p>(</span><span class=n>library_name</span><span class=p>)</span>
     <span class=k>return</span> <span class=n>library_class</span><span class=o>.</span><span class=n>ALGORITHM_INFOS</span><span class=p>[</span><span class=n>name</span><span class=p>]</span><span class=o>.</span><span class=n>settings_class</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.algos.opt.factory.OptimizationLibraryFactory.is_available class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">is_available</span><a href=#gemseo.algos.opt.factory.OptimizationLibraryFactory.is_available class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>is_available</span><span class=p>(</span><span class=n>name</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span>

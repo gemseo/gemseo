@@ -21,11 +21,7 @@
 
   
       module-attribute
-   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a>, <a class="autorefs autorefs-internal" title="            JacobianPosition (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianPosition)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianPosition>JacobianPosition</a>]]]</code>) – <div class=doc-md-description><p>The method to iterate over the Jacobians associated with the provided functions and variables.</p></div></li><li class="doc-section-item field-body"><b><code>is_residual</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether the functions are residuals.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>109</span>
-<span class=normal>110</span>
-<span class=normal>111</span>
-<span class=normal>112</span>
-<span class=normal>113</span>
+   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a>, <a class="autorefs autorefs-internal" title="            JacobianPosition (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianPosition)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianPosition>JacobianPosition</a>]]]</code>) – <div class=doc-md-description><p>The method to iterate over the Jacobians associated with the provided functions and variables.</p></div></li><li class="doc-section-item field-body"><b><code>is_residual</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether the functions are residuals.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>113</span>
 <span class=normal>114</span>
 <span class=normal>115</span>
 <span class=normal>116</span>
@@ -48,7 +44,11 @@
 <span class=normal>133</span>
 <span class=normal>134</span>
 <span class=normal>135</span>
-<span class=normal>136</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span>
+<span class=normal>136</span>
+<span class=normal>137</span>
+<span class=normal>138</span>
+<span class=normal>139</span>
+<span class=normal>140</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>functions</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>variables</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
@@ -79,13 +79,13 @@
 </code></pre></div></td></tr></table></div></details><div class="doc doc-children"></div></div></div><div class="doc doc-object doc-class"><h4 id=gemseo.core.derivatives.jacobian_assembly.CoupledSystem class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-class"></code><span class="doc doc-object-name doc-class-name">CoupledSystem</span><a href=#gemseo.core.derivatives.jacobian_assembly.CoupledSystem class=headerlink title="Permanent link">&para;</a></h4><div class="doc-signature highlight"><pre><span></span><code><span class=nf>CoupledSystem</span><span class=p>()</span>
 </code></pre></div><div class="doc doc-contents "><p>Compute coupled (total) derivatives of a system of residuals.</p><p>Use several methods:</p><div class=highlight><pre><span></span><code>- direct or adjoint
 - factorized for multiple RHS
-</code></pre></div><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>1012</span>
-<span class=normal>1013</span>
-<span class=normal>1014</span>
-<span class=normal>1015</span>
+</code></pre></div><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>1015</span>
 <span class=normal>1016</span>
 <span class=normal>1017</span>
-<span class=normal>1018</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>  <span class=c1># noqa:D107</span>
+<span class=normal>1018</span>
+<span class=normal>1019</span>
+<span class=normal>1020</span>
+<span class=normal>1021</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>  <span class=c1># noqa:D107</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>n_linear_resolutions</span> <span class=o>=</span> <span class=mi>0</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>n_direct_modes</span> <span class=o>=</span> <span class=mi>0</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>n_adjoint_modes</span> <span class=o>=</span> <span class=mi>0</span>
@@ -104,31 +104,21 @@
     <span class=n>dres_dy_t</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a></span> <span class=o>|</span> <span class=n><a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></span><span class=p>,</span>
     <span class=n>dfun_dx</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a></span><span class=p>],</span>
     <span class=n>dfun_dy</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a></span><span class=p>],</span>
-    <span class=n>linear_solver</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>=</span> <span class=n><a class="autorefs autorefs-internal" title="            DEFAULT_LINEAR_SOLVER
-
-
-  
-      class-attribute
-   (gemseo.core.derivatives.jacobian_assembly.CoupledSystem.DEFAULT_LINEAR_SOLVER)" href=#gemseo.core.derivatives.jacobian_assembly.CoupledSystem.DEFAULT_LINEAR_SOLVER>DEFAULT_LINEAR_SOLVER</a></span><span class=p>,</span>
-    <span class=n>use_lu_fact</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>False</span><span class=p>,</span>
-    <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></span>
+    <span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            BaseLinearSolverSettings (gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings)" href=../../../algos/linear_solvers/base_linear_solver_settings/#gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings>BaseLinearSolverSettings</a></span> <span class=o>|</span> <span class=kc>None</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-internal" title="            RealArray
 
 
   
       module-attribute
    (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a></span><span class=p>]</span>
-</code></pre></div><div class="doc doc-contents "><p>Compute the total derivative Jacobian in adjoint mode.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>functions</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The functions to differentiate.</p></div></li><li class="doc-section-item field-body"><b><code>dres_dx</code></b> (<code><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a> | <a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></code>) – <div class=doc-md-description><p>The Jacobian of the residuals wrt the design variables.</p></div></li><li class="doc-section-item field-body"><b><code>dres_dy_t</code></b> (<code><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a> | <a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></code>) – <div class=doc-md-description><p>The Jacobian of the residuals wrt the coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>dfun_dx</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code>) – <div class=doc-md-description><p>The Jacobian of the functions wrt the design variables.</p></div></li><li class="doc-section-item field-body"><b><code>dfun_dy</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code>) – <div class=doc-md-description><p>The Jacobian of the functions wrt the coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>linear_solver</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code><a class="autorefs autorefs-internal" title="            DEFAULT_LINEAR_SOLVER
-
-
-  
-      class-attribute
-   (gemseo.core.derivatives.jacobian_assembly.CoupledSystem.DEFAULT_LINEAR_SOLVER)" href=#gemseo.core.derivatives.jacobian_assembly.CoupledSystem.DEFAULT_LINEAR_SOLVER>DEFAULT_LINEAR_SOLVER</a></code> ) – <div class=doc-md-description><p>The name of the linear solver.</p></div></li><li class="doc-section-item field-body"><b><code>use_lu_fact</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether to factorize dres_dy_t once.</p></div></li><li class="doc-section-item field-body"><b><code>**linear_solver_settings</code></b> (<code><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></code>, default: <code>{}</code> ) – <div class=doc-md-description><p>The optional parameters.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-internal" title="            RealArray
+</code></pre></div><div class="doc doc-contents "><p>Compute the total derivative Jacobian in adjoint mode.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>functions</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The functions to differentiate.</p></div></li><li class="doc-section-item field-body"><b><code>dres_dx</code></b> (<code><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a> | <a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></code>) – <div class=doc-md-description><p>The Jacobian of the residuals wrt the design variables.</p></div></li><li class="doc-section-item field-body"><b><code>dres_dy_t</code></b> (<code><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a> | <a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></code>) – <div class=doc-md-description><p>The Jacobian of the residuals wrt the coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>dfun_dx</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code>) – <div class=doc-md-description><p>The Jacobian of the functions wrt the design variables.</p></div></li><li class="doc-section-item field-body"><b><code>dfun_dy</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code>) – <div class=doc-md-description><p>The Jacobian of the functions wrt the coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>linear_solver_settings</code></b> (<code><a class="autorefs autorefs-internal" title="            BaseLinearSolverSettings (gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings)" href=../../../algos/linear_solvers/base_linear_solver_settings/#gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings>BaseLinearSolverSettings</a> | None</code>) – <div class=doc-md-description><p>The settings of the linear solver, if any. If <code>None</code>, factorize LU factorization.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-internal" title="            RealArray
 
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The Jacobian of total coupled derivatives.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>1069</span>
+   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code> – <div class=doc-md-description><p>The Jacobian of total coupled derivatives.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>1067</span>
+<span class=normal>1068</span>
+<span class=normal>1069</span>
 <span class=normal>1070</span>
 <span class=normal>1071</span>
 <span class=normal>1072</span>
@@ -161,22 +151,14 @@
 <span class=normal>1099</span>
 <span class=normal>1100</span>
 <span class=normal>1101</span>
-<span class=normal>1102</span>
-<span class=normal>1103</span>
-<span class=normal>1104</span>
-<span class=normal>1105</span>
-<span class=normal>1106</span>
-<span class=normal>1107</span>
-<span class=normal>1108</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>adjoint_mode</span><span class=p>(</span>
+<span class=normal>1102</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>adjoint_mode</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>functions</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>dres_dx</span><span class=p>:</span> <span class=n>dok_matrix</span> <span class=o>|</span> <span class=n>LinearOperator</span><span class=p>,</span>
     <span class=n>dres_dy_t</span><span class=p>:</span> <span class=n>dok_matrix</span> <span class=o>|</span> <span class=n>LinearOperator</span><span class=p>,</span>
     <span class=n>dfun_dx</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>dok_matrix</span><span class=p>],</span>
     <span class=n>dfun_dy</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>dok_matrix</span><span class=p>],</span>
-    <span class=n>linear_solver</span><span class=p>:</span> <span class=nb>str</span> <span class=o>=</span> <span class=n>DEFAULT_LINEAR_SOLVER</span><span class=p>,</span>
-    <span class=n>use_lu_fact</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>False</span><span class=p>,</span>
-    <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n>Any</span><span class=p>,</span>
+    <span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n>BaseLinearSolverSettings</span> <span class=o>|</span> <span class=kc>None</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>]:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute the total derivative Jacobian in adjoint mode.</span>
 
@@ -186,15 +168,14 @@
 <span class=sd>        dres_dy_t: The Jacobian of the residuals wrt the coupling variables.</span>
 <span class=sd>        dfun_dx: The Jacobian of the functions wrt the design variables.</span>
 <span class=sd>        dfun_dy: The Jacobian of the functions wrt the coupling variables.</span>
-<span class=sd>        linear_solver: The name of the linear solver.</span>
-<span class=sd>        use_lu_fact: Whether to factorize dres_dy_t once.</span>
-<span class=sd>        **linear_solver_settings: The optional parameters.</span>
+<span class=sd>        linear_solver_settings: The settings of the linear solver, if any.</span>
+<span class=sd>            If `None`, factorize LU factorization.</span>
 
 <span class=sd>    Returns:</span>
 <span class=sd>        The Jacobian of total coupled derivatives.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>n_adjoint_modes</span> <span class=o>+=</span> <span class=mi>1</span>
-    <span class=k>if</span> <span class=n>use_lu_fact</span><span class=p>:</span>
+    <span class=k>if</span> <span class=n>linear_solver_settings</span> <span class=ow>is</span> <span class=kc>None</span><span class=p>:</span>
         <span class=k>return</span> <span class=bp>self</span><span class=o>.</span><span class=n>_adjoint_mode_lu</span><span class=p>(</span>
             <span class=n>functions</span><span class=p>,</span> <span class=n>dres_dx</span><span class=p>,</span> <span class=n>dres_dy_t</span><span class=p>,</span> <span class=n>dfun_dx</span><span class=p>,</span> <span class=n>dfun_dy</span>
         <span class=p>)</span>
@@ -204,8 +185,7 @@
         <span class=n>dres_dy_t</span><span class=p>,</span>
         <span class=n>dfun_dx</span><span class=p>,</span>
         <span class=n>dfun_dy</span><span class=p>,</span>
-        <span class=n>linear_solver</span><span class=p>,</span>
-        <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>,</span>
+        <span class=n>linear_solver_settings</span><span class=p>,</span>
     <span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.core.derivatives.jacobian_assembly.CoupledSystem.direct_mode class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">direct_mode</span><a href=#gemseo.core.derivatives.jacobian_assembly.CoupledSystem.direct_mode class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>direct_mode</span><span class=p>(</span>
     <span class=n>functions</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>],</span>
@@ -215,24 +195,9 @@
     <span class=n>dres_dy</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a></span> <span class=o>|</span> <span class=n><a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></span><span class=p>,</span>
     <span class=n>dfun_dx</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a></span><span class=p>],</span>
     <span class=n>dfun_dy</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a></span><span class=p>],</span>
-    <span class=n>linear_solver</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>=</span> <span class=n><a class="autorefs autorefs-internal" title="            DEFAULT_LINEAR_SOLVER
-
-
-  
-      class-attribute
-   (gemseo.core.derivatives.jacobian_assembly.CoupledSystem.DEFAULT_LINEAR_SOLVER)" href=#gemseo.core.derivatives.jacobian_assembly.CoupledSystem.DEFAULT_LINEAR_SOLVER>DEFAULT_LINEAR_SOLVER</a></span><span class=p>,</span>
-    <span class=n>use_lu_fact</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>False</span><span class=p>,</span>
-    <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></span>
+    <span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            BaseLinearSolverSettings (gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings)" href=../../../algos/linear_solvers/base_linear_solver_settings/#gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings>BaseLinearSolverSettings</a></span> <span class=o>|</span> <span class=kc>None</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a></span><span class=p>]</span>
-</code></pre></div><div class="doc doc-contents "><p>Compute the total derivative Jacobian in direct mode.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>functions</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The functions to differentiate.</p></div></li><li class="doc-section-item field-body"><b><code>n_variables</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code>) – <div class=doc-md-description><p>The number of variables.</p></div></li><li class="doc-section-item field-body"><b><code>n_couplings</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code>) – <div class=doc-md-description><p>The number of couplings.</p></div></li><li class="doc-section-item field-body"><b><code>dres_dx</code></b> (<code><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a> | <a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></code>) – <div class=doc-md-description><p>The Jacobian of the residuals wrt the design variables.</p></div></li><li class="doc-section-item field-body"><b><code>dres_dy</code></b> (<code><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a> | <a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></code>) – <div class=doc-md-description><p>The Jacobian of the residuals wrt the coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>dfun_dx</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code>) – <div class=doc-md-description><p>The Jacobian of the functions wrt the design variables.</p></div></li><li class="doc-section-item field-body"><b><code>dfun_dy</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code>) – <div class=doc-md-description><p>The Jacobian of the functions wrt the coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>linear_solver</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code><a class="autorefs autorefs-internal" title="            DEFAULT_LINEAR_SOLVER
-
-
-  
-      class-attribute
-   (gemseo.core.derivatives.jacobian_assembly.CoupledSystem.DEFAULT_LINEAR_SOLVER)" href=#gemseo.core.derivatives.jacobian_assembly.CoupledSystem.DEFAULT_LINEAR_SOLVER>DEFAULT_LINEAR_SOLVER</a></code> ) – <div class=doc-md-description><p>The name of the linear solver.</p></div></li><li class="doc-section-item field-body"><b><code>use_lu_fact</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether to factorize dres_dy once.</p></div></li><li class="doc-section-item field-body"><b><code>**linear_solver_settings</code></b> (<code><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></code>, default: <code>{}</code> ) – <div class=doc-md-description><p>The optional parameters.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code> – <div class=doc-md-description><p>The Jacobian of the total coupled derivatives.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>1020</span>
-<span class=normal>1021</span>
-<span class=normal>1022</span>
-<span class=normal>1023</span>
+</code></pre></div><div class="doc doc-contents "><p>Compute the total derivative Jacobian in direct mode.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>functions</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The functions to differentiate.</p></div></li><li class="doc-section-item field-body"><b><code>n_variables</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code>) – <div class=doc-md-description><p>The number of variables.</p></div></li><li class="doc-section-item field-body"><b><code>n_couplings</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code>) – <div class=doc-md-description><p>The number of couplings.</p></div></li><li class="doc-section-item field-body"><b><code>dres_dx</code></b> (<code><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a> | <a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></code>) – <div class=doc-md-description><p>The Jacobian of the residuals wrt the design variables.</p></div></li><li class="doc-section-item field-body"><b><code>dres_dy</code></b> (<code><a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a> | <a class="autorefs autorefs-external" title=scipy.sparse.linalg.LinearOperator href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.LinearOperator.html#scipy.sparse.linalg.LinearOperator>LinearOperator</a></code>) – <div class=doc-md-description><p>The Jacobian of the residuals wrt the coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>dfun_dx</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code>) – <div class=doc-md-description><p>The Jacobian of the functions wrt the design variables.</p></div></li><li class="doc-section-item field-body"><b><code>dfun_dy</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code>) – <div class=doc-md-description><p>The Jacobian of the functions wrt the coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>linear_solver_settings</code></b> (<code><a class="autorefs autorefs-internal" title="            BaseLinearSolverSettings (gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings)" href=../../../algos/linear_solvers/base_linear_solver_settings/#gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings>BaseLinearSolverSettings</a> | None</code>) – <div class=doc-md-description><p>The settings of the linear solver, if any. If <code>None</code>, use LU factorization.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]</code> – <div class=doc-md-description><p>The Jacobian of the total coupled derivatives.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>1023</span>
 <span class=normal>1024</span>
 <span class=normal>1025</span>
 <span class=normal>1026</span>
@@ -274,9 +239,7 @@
 <span class=normal>1062</span>
 <span class=normal>1063</span>
 <span class=normal>1064</span>
-<span class=normal>1065</span>
-<span class=normal>1066</span>
-<span class=normal>1067</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>direct_mode</span><span class=p>(</span>
+<span class=normal>1065</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>direct_mode</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>functions</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>n_variables</span><span class=p>:</span> <span class=nb>int</span><span class=p>,</span>
@@ -285,9 +248,7 @@
     <span class=n>dres_dy</span><span class=p>:</span> <span class=n>dok_matrix</span> <span class=o>|</span> <span class=n>LinearOperator</span><span class=p>,</span>
     <span class=n>dfun_dx</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>dok_matrix</span><span class=p>],</span>
     <span class=n>dfun_dy</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>dok_matrix</span><span class=p>],</span>
-    <span class=n>linear_solver</span><span class=p>:</span> <span class=nb>str</span> <span class=o>=</span> <span class=n>DEFAULT_LINEAR_SOLVER</span><span class=p>,</span>
-    <span class=n>use_lu_fact</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>False</span><span class=p>,</span>
-    <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n>Any</span><span class=p>,</span>
+    <span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n>BaseLinearSolverSettings</span> <span class=o>|</span> <span class=kc>None</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>dok_matrix</span><span class=p>]:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute the total derivative Jacobian in direct mode.</span>
 
@@ -299,16 +260,14 @@
 <span class=sd>        dres_dy: The Jacobian of the residuals wrt the coupling variables.</span>
 <span class=sd>        dfun_dx: The Jacobian of the functions wrt the design variables.</span>
 <span class=sd>        dfun_dy: The Jacobian of the functions wrt the coupling variables.</span>
-<span class=sd>        linear_solver: The name of the linear solver.</span>
-<span class=sd>        use_lu_fact: Whether to factorize dres_dy once.</span>
-<span class=sd>        **linear_solver_settings: The optional parameters.</span>
+<span class=sd>        linear_solver_settings: The settings of the linear solver, if any.</span>
+<span class=sd>            If `None`, use LU factorization.</span>
 
 <span class=sd>    Returns:</span>
 <span class=sd>        The Jacobian of the total coupled derivatives.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>n_direct_modes</span> <span class=o>+=</span> <span class=mi>1</span>
-
-    <span class=k>if</span> <span class=n>use_lu_fact</span><span class=p>:</span>
+    <span class=k>if</span> <span class=n>linear_solver_settings</span> <span class=ow>is</span> <span class=kc>None</span><span class=p>:</span>
         <span class=k>return</span> <span class=bp>self</span><span class=o>.</span><span class=n>_direct_mode_lu</span><span class=p>(</span>
             <span class=n>functions</span><span class=p>,</span> <span class=n>n_variables</span><span class=p>,</span> <span class=n>n_couplings</span><span class=p>,</span> <span class=n>dres_dx</span><span class=p>,</span> <span class=n>dres_dy</span><span class=p>,</span> <span class=n>dfun_dx</span><span class=p>,</span> <span class=n>dfun_dy</span>
         <span class=p>)</span>
@@ -321,15 +280,10 @@
         <span class=n>dres_dy</span><span class=p>,</span>
         <span class=n>dfun_dx</span><span class=p>,</span>
         <span class=n>dfun_dy</span><span class=p>,</span>
-        <span class=n>linear_solver</span><span class=p>,</span>
-        <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>,</span>
+        <span class=n>linear_solver_settings</span><span class=p>,</span>
     <span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div></div></div></div><div class="doc doc-object doc-class"><h4 id=gemseo.core.derivatives.jacobian_assembly.JacobianAssembly class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-class"></code><span class="doc doc-object-name doc-class-name">JacobianAssembly</span><a href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly class=headerlink title="Permanent link">&para;</a></h4><div class="doc-signature highlight"><pre><span></span><code><span class=nf>JacobianAssembly</span><span class=p>(</span><span class=n>coupling_structure</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            CouplingStructure (gemseo.core.coupling_structure.CouplingStructure)" href=../../coupling_structure/#gemseo.core.coupling_structure.CouplingStructure>CouplingStructure</a></span><span class=p>)</span>
-</code></pre></div><div class="doc doc-contents "><p>Assembly of Jacobians.</p><p>Typically, assemble discipline's Jacobians into a system Jacobian.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>coupling_structure</code></b> (<code><a class="autorefs autorefs-internal" title="            CouplingStructure (gemseo.core.coupling_structure.CouplingStructure)" href=../../coupling_structure/#gemseo.core.coupling_structure.CouplingStructure>CouplingStructure</a></code>) – <div class=doc-md-description><p>The CouplingStructure associated disciplines that form the coupled system.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>239</span>
-<span class=normal>240</span>
-<span class=normal>241</span>
-<span class=normal>242</span>
-<span class=normal>243</span>
+</code></pre></div><div class="doc doc-contents "><p>Assembly of Jacobians.</p><p>Typically, assemble discipline's Jacobians into a system Jacobian.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>coupling_structure</code></b> (<code><a class="autorefs autorefs-internal" title="            CouplingStructure (gemseo.core.coupling_structure.CouplingStructure)" href=../../coupling_structure/#gemseo.core.coupling_structure.CouplingStructure>CouplingStructure</a></code>) – <div class=doc-md-description><p>The CouplingStructure associated disciplines that form the coupled system.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>243</span>
 <span class=normal>244</span>
 <span class=normal>245</span>
 <span class=normal>246</span>
@@ -337,7 +291,11 @@
 <span class=normal>248</span>
 <span class=normal>249</span>
 <span class=normal>250</span>
-<span class=normal>251</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>coupling_structure</span><span class=p>:</span> <span class=n>CouplingStructure</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
+<span class=normal>251</span>
+<span class=normal>252</span>
+<span class=normal>253</span>
+<span class=normal>254</span>
+<span class=normal>255</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>coupling_structure</span><span class=p>:</span> <span class=n>CouplingStructure</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;</span>
 <span class=sd>    Args:</span>
 <span class=sd>        coupling_structure: The CouplingStructure associated disciplines that</span>
@@ -378,11 +336,7 @@
   
       class-attribute
       instance-attribute
-   (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX>MATRIX</a></code> ) – <div class=doc-md-description><p>The type of representation for the Jacobian ∂f/∂v.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" title=scipy.sparse.csr_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html#scipy.sparse.csr_matrix>csr_matrix</a> | <a class="autorefs autorefs-internal" title="            AssembledJacobianOperator (gemseo.core.derivatives.jacobian_assembly.AssembledJacobianOperator)" href=#gemseo.core.derivatives.jacobian_assembly.AssembledJacobianOperator>AssembledJacobianOperator</a></code> – <div class=doc-md-description><p>The Jacobian ∂f/∂v in the specified type.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>538</span>
-<span class=normal>539</span>
-<span class=normal>540</span>
-<span class=normal>541</span>
-<span class=normal>542</span>
+   (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX>MATRIX</a></code> ) – <div class=doc-md-description><p>The type of representation for the Jacobian ∂f/∂v.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" title=scipy.sparse.csr_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csr_matrix.html#scipy.sparse.csr_matrix>csr_matrix</a> | <a class="autorefs autorefs-internal" title="            AssembledJacobianOperator (gemseo.core.derivatives.jacobian_assembly.AssembledJacobianOperator)" href=#gemseo.core.derivatives.jacobian_assembly.AssembledJacobianOperator>AssembledJacobianOperator</a></code> – <div class=doc-md-description><p>The Jacobian ∂f/∂v in the specified type.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>542</span>
 <span class=normal>543</span>
 <span class=normal>544</span>
 <span class=normal>545</span>
@@ -414,7 +368,11 @@
 <span class=normal>571</span>
 <span class=normal>572</span>
 <span class=normal>573</span>
-<span class=normal>574</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>assemble_jacobian</span><span class=p>(</span>
+<span class=normal>574</span>
+<span class=normal>575</span>
+<span class=normal>576</span>
+<span class=normal>577</span>
+<span class=normal>578</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>assemble_jacobian</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>functions</span><span class=p>:</span> <span class=n>Collection</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>variables</span><span class=p>:</span> <span class=n>Collection</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
@@ -452,16 +410,16 @@
     <span class=n>msg</span> <span class=o>=</span> <span class=sa>f</span><span class=s2>&quot;Bad jacobian_type: </span><span class=si>{</span><span class=n>jacobian_type</span><span class=si>}</span><span class=s2>&quot;</span>
     <span class=k>raise</span> <span class=ne>ValueError</span><span class=p>(</span><span class=n>msg</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.compute_dimension class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">compute_dimension</span><a href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.compute_dimension class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>compute_dimension</span><span class=p>(</span><span class=n>names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>])</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></span>
-</code></pre></div><div class="doc doc-contents "><p>Compute the total number of functions/variables/couplings of the full system.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The names of the inputs or the outputs.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code> – <div class=doc-md-description><p>The dimension if the system.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>404</span>
-<span class=normal>405</span>
-<span class=normal>406</span>
-<span class=normal>407</span>
-<span class=normal>408</span>
+</code></pre></div><div class="doc doc-contents "><p>Compute the total number of functions/variables/couplings of the full system.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The names of the inputs or the outputs.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code> – <div class=doc-md-description><p>The dimension if the system.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>408</span>
 <span class=normal>409</span>
 <span class=normal>410</span>
 <span class=normal>411</span>
 <span class=normal>412</span>
-<span class=normal>413</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_dimension</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>])</span> <span class=o>-&gt;</span> <span class=nb>int</span><span class=p>:</span>
+<span class=normal>413</span>
+<span class=normal>414</span>
+<span class=normal>415</span>
+<span class=normal>416</span>
+<span class=normal>417</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_dimension</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>])</span> <span class=o>-&gt;</span> <span class=nb>int</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute the total number of functions/variables/couplings of the full system.</span>
 
 <span class=sd>    Args:</span>
@@ -479,7 +437,9 @@
       module-attribute
    (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a></span><span class=p>],</span>
     <span class=n>couplings</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>],</span>
-    <span class=n>linear_solver</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>=</span> <span class=s2>&quot;LGMRES&quot;</span><span class=p>,</span>
+    <span class=n>linear_solver_settings</span><span class=p>:</span> <span class=p>(</span>
+        <span class=n><a class="autorefs autorefs-internal" title="            BaseLinearSolverSettings (gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings)" href=../../../algos/linear_solvers/base_linear_solver_settings/#gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings>BaseLinearSolverSettings</a></span> <span class=o>|</span> <span class=kc>None</span>
+    <span class=p>)</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
     <span class=n>matrix_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            JacobianType (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType>JacobianType</a></span> <span class=o>=</span> <span class=n><a class="autorefs autorefs-internal" title="            MATRIX
 
 
@@ -494,7 +454,6 @@
       module-attribute
    (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a></span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
     <span class=n>resolved_residual_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
-    <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#tuple>tuple</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-internal" title="            RealOrComplexArray
 
 
@@ -506,7 +465,7 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code>) – <div class=doc-md-description><p>The input data.</p></div></li><li class="doc-section-item field-body"><b><code>couplings</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>linear_solver</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;LGMRES&#39;</code> ) – <div class=doc-md-description><p>The name of the linear solver.</p></div></li><li class="doc-section-item field-body"><b><code>matrix_type</code></b> (<code><a class="autorefs autorefs-internal" title="            JacobianType (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType>JacobianType</a></code>, default: <code><a class="autorefs autorefs-internal" title="            MATRIX
+   (gemseo.typing.RealArray)" href=../../../typing/#gemseo.typing.RealArray>RealArray</a>]</code>) – <div class=doc-md-description><p>The input data.</p></div></li><li class="doc-section-item field-body"><b><code>couplings</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>linear_solver_settings</code></b> (<code><a class="autorefs autorefs-internal" title="            BaseLinearSolverSettings (gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings)" href=../../../algos/linear_solvers/base_linear_solver_settings/#gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings>BaseLinearSolverSettings</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The settings of the linear solver. If <code>None</code>, use the default settings of the LGMRES linear solver.</p></div></li><li class="doc-section-item field-body"><b><code>matrix_type</code></b> (<code><a class="autorefs autorefs-internal" title="            JacobianType (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType>JacobianType</a></code>, default: <code><a class="autorefs autorefs-internal" title="            MATRIX
 
 
   
@@ -517,12 +476,25 @@
 
   
       module-attribute
-   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The residuals vector. If <code>None</code>, use <a class="autorefs autorefs-internal" title="            residuals" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.residuals>residuals</a>.</p></div></li><li class="doc-section-item field-body"><b><code>resolved_residual_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The names of residual variables.</p></div></li><li class="doc-section-item field-body"><b><code>**linear_solver_settings</code></b> (<code><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></code>, default: <code>{}</code> ) – <div class=doc-md-description><p>The options passed to the linear solver factory.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#tuple>tuple</a>[<a class="autorefs autorefs-internal" title="            RealOrComplexArray
+   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The values of the residuals. If <code>None</code>, the residuals are computed from the input data.</p></div></li><li class="doc-section-item field-body"><b><code>matrix_type</code></b> (<code><a class="autorefs autorefs-internal" title="            JacobianType (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType>JacobianType</a></code>, default: <code><a class="autorefs autorefs-internal" title="            MATRIX
+
+
+  
+      class-attribute
+      instance-attribute
+   (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX>MATRIX</a></code> ) – <div class=doc-md-description><p>The representation of the matrix ∂R/∂y (sparse or linear operator).</p></div></li><li class="doc-section-item field-body"><b><code>residuals</code></b> (<code><a class="autorefs autorefs-internal" title="            RealOrComplexArray
 
 
   
       module-attribute
-   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a>]</code> – <div class=doc-md-description><p>The Newton step - relax_factor . [∂R/∂y]^-1 . R as an array of steps for which the order is given by the <code>couplings</code> argument. Whether the linear solver converged.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>830</span>
+   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The residuals vector. If <code>None</code>, use <a class="autorefs autorefs-internal" title="            residuals" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.residuals>residuals</a>.</p></div></li><li class="doc-section-item field-body"><b><code>resolved_residual_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The names of residual variables.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#tuple>tuple</a>[<a class="autorefs autorefs-internal" title="            RealOrComplexArray
+
+
+  
+      module-attribute
+   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a>]</code> – <div class=doc-md-description><p>The Newton step - relax_factor . [∂R/∂y]^-1 . R as an array of steps for which the order is given by the <code>couplings</code> argument. Whether the linear solver converged.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>828</span>
+<span class=normal>829</span>
+<span class=normal>830</span>
 <span class=normal>831</span>
 <span class=normal>832</span>
 <span class=normal>833</span>
@@ -572,35 +544,44 @@
 <span class=normal>877</span>
 <span class=normal>878</span>
 <span class=normal>879</span>
-<span class=normal>880</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_newton_step</span><span class=p>(</span>
+<span class=normal>880</span>
+<span class=normal>881</span>
+<span class=normal>882</span>
+<span class=normal>883</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_newton_step</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>in_data</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealArray</span><span class=p>],</span>
     <span class=n>couplings</span><span class=p>:</span> <span class=n>Collection</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
-    <span class=n>linear_solver</span><span class=p>:</span> <span class=nb>str</span> <span class=o>=</span> <span class=s2>&quot;LGMRES&quot;</span><span class=p>,</span>
+    <span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n>BaseLinearSolverSettings</span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
     <span class=n>matrix_type</span><span class=p>:</span> <span class=n>JacobianType</span> <span class=o>=</span> <span class=n>JacobianType</span><span class=o>.</span><span class=n>MATRIX</span><span class=p>,</span>
     <span class=n>residuals</span><span class=p>:</span> <span class=n>RealOrComplexArray</span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
     <span class=n>resolved_residual_names</span><span class=p>:</span> <span class=n>Collection</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
-    <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n>Any</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>tuple</span><span class=p>[</span><span class=n>RealOrComplexArray</span><span class=p>,</span> <span class=nb>bool</span><span class=p>]:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute the Newton step for the coupled system of disciplines residuals.</span>
 
 <span class=sd>    Args:</span>
 <span class=sd>        in_data: The input data.</span>
 <span class=sd>        couplings: The coupling variables.</span>
-<span class=sd>        linear_solver: The name of the linear solver.</span>
+<span class=sd>        linear_solver_settings: The settings of the linear solver.</span>
+<span class=sd>            If `None`, use the default settings of the LGMRES linear solver.</span>
+<span class=sd>        matrix_type: The representation of the matrix ∂R/∂y (sparse or</span>
+<span class=sd>            linear operator).</span>
+<span class=sd>        residuals: The values of the residuals.</span>
+<span class=sd>            If `None`, the residuals are computed from the input data.</span>
 <span class=sd>        matrix_type: The representation of the matrix ∂R/∂y (sparse or</span>
 <span class=sd>            linear operator).</span>
 <span class=sd>        residuals: The residuals vector.</span>
 <span class=sd>            If `None`, use</span>
 <span class=sd>            [residuals][gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.residuals].</span>
 <span class=sd>        resolved_residual_names: The names of residual variables.</span>
-<span class=sd>        **linear_solver_settings: The options passed to the linear solver factory.</span>
 
 <span class=sd>    Returns:</span>
 <span class=sd>        The Newton step - relax_factor . [∂R/∂y]^-1 . R as an array of steps</span>
 <span class=sd>        for which the order is given by the `couplings` argument.</span>
 <span class=sd>        Whether the linear solver converged.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
+    <span class=k>if</span> <span class=n>linear_solver_settings</span> <span class=ow>is</span> <span class=kc>None</span><span class=p>:</span>
+        <span class=n>linear_solver_settings</span> <span class=o>=</span> <span class=n>LGMRES_Settings</span><span class=p>()</span>
+
     <span class=n>residual_names</span> <span class=o>=</span> <span class=n>resolved_residual_names</span> <span class=ow>or</span> <span class=n>couplings</span>
 
     <span class=bp>self</span><span class=o>.</span><span class=n>compute_sizes</span><span class=p>(</span><span class=n>residual_names</span><span class=p>,</span> <span class=n>couplings</span><span class=p>,</span> <span class=n>couplings</span><span class=p>)</span>
@@ -618,10 +599,9 @@
         <span class=n>residuals</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>residuals</span><span class=p>(</span><span class=n>in_data</span><span class=p>,</span> <span class=n>couplings</span><span class=p>)</span>
     <span class=c1># solve the linear system</span>
     <span class=n>linear_problem</span> <span class=o>=</span> <span class=n>LinearProblem</span><span class=p>(</span><span class=n>dres_dy</span><span class=p>,</span> <span class=o>-</span><span class=n>residuals</span><span class=p>)</span>
-    <span class=n>settings</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__linear_solver_factory</span><span class=o>.</span><span class=n>create_settings</span><span class=p>(</span>
-        <span class=n>linear_solver</span><span class=p>,</span> <span class=o>**</span><span class=n>linear_solver_settings</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>__linear_solver_factory</span><span class=o>.</span><span class=n>execute</span><span class=p>(</span>
+        <span class=n>linear_problem</span><span class=p>,</span> <span class=n>settings</span><span class=o>=</span><span class=n>linear_solver_settings</span>
     <span class=p>)</span>
-    <span class=bp>self</span><span class=o>.</span><span class=n>__linear_solver_factory</span><span class=o>.</span><span class=n>execute</span><span class=p>(</span><span class=n>linear_problem</span><span class=p>,</span> <span class=n>settings</span><span class=o>=</span><span class=n>settings</span><span class=p>)</span>
     <span class=k>return</span> <span class=n>linear_problem</span><span class=o>.</span><span class=n>solution</span><span class=p>,</span> <span class=n>linear_problem</span><span class=o>.</span><span class=n>is_converged</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.compute_sizes class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">compute_sizes</span><a href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.compute_sizes class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>compute_sizes</span><span class=p>(</span>
     <span class=n>functions</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>],</span>
@@ -641,11 +621,7 @@
 
   
       module-attribute
-   (gemseo.utils.constants.READ_ONLY_EMPTY_DICT)" href=../../../utils/constants/#gemseo.utils.constants.READ_ONLY_EMPTY_DICT>READ_ONLY_EMPTY_DICT</a></code> ) – <div class=doc-md-description><p>The mapping of residuals of disciplines to their respective state variables.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When the size of some variables could not be determined.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>325</span>
-<span class=normal>326</span>
-<span class=normal>327</span>
-<span class=normal>328</span>
-<span class=normal>329</span>
+   (gemseo.utils.constants.READ_ONLY_EMPTY_DICT)" href=../../../utils/constants/#gemseo.utils.constants.READ_ONLY_EMPTY_DICT>READ_ONLY_EMPTY_DICT</a></code> ) – <div class=doc-md-description><p>The mapping of residuals of disciplines to their respective state variables.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When the size of some variables could not be determined.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>329</span>
 <span class=normal>330</span>
 <span class=normal>331</span>
 <span class=normal>332</span>
@@ -695,7 +671,11 @@
 <span class=normal>376</span>
 <span class=normal>377</span>
 <span class=normal>378</span>
-<span class=normal>379</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_sizes</span><span class=p>(</span>
+<span class=normal>379</span>
+<span class=normal>380</span>
+<span class=normal>381</span>
+<span class=normal>382</span>
+<span class=normal>383</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_sizes</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>functions</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>variables</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
@@ -758,10 +738,7 @@
     <span class=n>filepath</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>=</span> <span class=s2>&quot;&quot;</span><span class=p>,</span>
     <span class=n>markersize</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span>
-</code></pre></div><div class="doc doc-contents "><p>Plot the Jacobian matrix.</p><p>Nonzero elements of the sparse matrix are represented by blue squares.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>functions</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The functions to plot.</p></div></li><li class="doc-section-item field-body"><b><code>variables</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The variables.</p></div></li><li class="doc-section-item field-body"><b><code>show</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether the plot is displayed.</p></div></li><li class="doc-section-item field-body"><b><code>save</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether the plot is saved in a PDF file.</p></div></li><li class="doc-section-item field-body"><b><code>filepath</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The file name to save to. If empty, <code>coupled_jacobian.pdf</code> is used, otherwise <code>coupled_jacobian_ + filepath + .pdf</code>.</p></div></li><li class="doc-section-item field-body"><b><code>markersize</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The size of the markers.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code> – <div class=doc-md-description><p>The file name.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>914</span>
-<span class=normal>915</span>
-<span class=normal>916</span>
-<span class=normal>917</span>
+</code></pre></div><div class="doc doc-contents "><p>Plot the Jacobian matrix.</p><p>Nonzero elements of the sparse matrix are represented by blue squares.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>functions</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The functions to plot.</p></div></li><li class="doc-section-item field-body"><b><code>variables</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The variables.</p></div></li><li class="doc-section-item field-body"><b><code>show</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether the plot is displayed.</p></div></li><li class="doc-section-item field-body"><b><code>save</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether the plot is saved in a PDF file.</p></div></li><li class="doc-section-item field-body"><b><code>filepath</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The file name to save to. If empty, <code>coupled_jacobian.pdf</code> is used, otherwise <code>coupled_jacobian_ + filepath + .pdf</code>.</p></div></li><li class="doc-section-item field-body"><b><code>markersize</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The size of the markers.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code> – <div class=doc-md-description><p>The file name.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>917</span>
 <span class=normal>918</span>
 <span class=normal>919</span>
 <span class=normal>920</span>
@@ -823,7 +800,10 @@
 <span class=normal>976</span>
 <span class=normal>977</span>
 <span class=normal>978</span>
-<span class=normal>979</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>plot_dependency_jacobian</span><span class=p>(</span>
+<span class=normal>979</span>
+<span class=normal>980</span>
+<span class=normal>981</span>
+<span class=normal>982</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>plot_dependency_jacobian</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>functions</span><span class=p>:</span> <span class=n>Collection</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>variables</span><span class=p>:</span> <span class=n>Collection</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
@@ -915,10 +895,7 @@
 
   
       module-attribute
-   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a></code> – <div class=doc-md-description><p>The residuals array.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>882</span>
-<span class=normal>883</span>
-<span class=normal>884</span>
-<span class=normal>885</span>
+   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a></code> – <div class=doc-md-description><p>The residuals array.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>885</span>
 <span class=normal>886</span>
 <span class=normal>887</span>
 <span class=normal>888</span>
@@ -945,7 +922,10 @@
 <span class=normal>909</span>
 <span class=normal>910</span>
 <span class=normal>911</span>
-<span class=normal>912</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>residuals</span><span class=p>(</span>
+<span class=normal>912</span>
+<span class=normal>913</span>
+<span class=normal>914</span>
+<span class=normal>915</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>residuals</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span> <span class=n>in_data</span><span class=p>:</span> <span class=n>StrKeyMapping</span><span class=p>,</span> <span class=n>var_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n>RealOrComplexArray</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Form the matrix of residuals wrt coupling variables.</span>
@@ -984,7 +964,9 @@
 
   
       instance-attribute
-  " href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.sizes>sizes</a> contains the sizes of all the coupling sizes needed for Newton.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>couplings</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The coupling variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>805</span>
+  " href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.sizes>sizes</a> contains the sizes of all the coupling sizes needed for Newton.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>couplings</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The coupling variables.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>803</span>
+<span class=normal>804</span>
+<span class=normal>805</span>
 <span class=normal>806</span>
 <span class=normal>807</span>
 <span class=normal>808</span>
@@ -1004,9 +986,7 @@
 <span class=normal>822</span>
 <span class=normal>823</span>
 <span class=normal>824</span>
-<span class=normal>825</span>
-<span class=normal>826</span>
-<span class=normal>827</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>set_newton_differentiated_ios</span><span class=p>(</span>
+<span class=normal>825</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>set_newton_differentiated_ios</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>couplings</span><span class=p>:</span> <span class=n>Collection</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
@@ -1055,7 +1035,9 @@
 
   
       module-attribute
-   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a> | <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]]</code> – <div class=doc-md-description><p>The Jacobian.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>780</span>
+   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a> | <a class="autorefs autorefs-external" title=scipy.sparse.dok_matrix href=https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.dok_matrix.html#scipy.sparse.dok_matrix>dok_matrix</a>]]</code> – <div class=doc-md-description><p>The Jacobian.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>778</span>
+<span class=normal>779</span>
+<span class=normal>780</span>
 <span class=normal>781</span>
 <span class=normal>782</span>
 <span class=normal>783</span>
@@ -1076,9 +1058,7 @@
 <span class=normal>798</span>
 <span class=normal>799</span>
 <span class=normal>800</span>
-<span class=normal>801</span>
-<span class=normal>802</span>
-<span class=normal>803</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>split_jac</span><span class=p>(</span>
+<span class=normal>801</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>split_jac</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>coupled_system</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealOrComplexArray</span> <span class=o>|</span> <span class=n>dok_matrix</span><span class=p>],</span>
     <span class=n>variables</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
@@ -1112,7 +1092,9 @@
     <span class=n>functions</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>],</span>
     <span class=n>variables</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>],</span>
     <span class=n>couplings</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>],</span>
-    <span class=n>linear_solver</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>=</span> <span class=s2>&quot;LGMRES&quot;</span><span class=p>,</span>
+    <span class=n>linear_solver_settings</span><span class=p>:</span> <span class=p>(</span>
+        <span class=n><a class="autorefs autorefs-internal" title="            BaseLinearSolverSettings (gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings)" href=../../../algos/linear_solvers/base_linear_solver_settings/#gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings>BaseLinearSolverSettings</a></span> <span class=o>|</span> <span class=kc>None</span>
+    <span class=p>)</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
     <span class=n>mode</span><span class=p>:</span> <span class=n><span title=gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.DerivationMode>DerivationMode</span></span> <span class=o>=</span> <span class=n><span title=gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.DerivationMode.AUTO>AUTO</span></span><span class=p>,</span>
     <span class=n>matrix_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            JacobianType (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType>JacobianType</a></span> <span class=o>=</span> <span class=n><a class="autorefs autorefs-internal" title="            MATRIX
 
@@ -1121,7 +1103,6 @@
       class-attribute
       instance-attribute
    (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX>MATRIX</a></span><span class=p>,</span>
-    <span class=n>use_lu_fact</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>False</span><span class=p>,</span>
     <span class=n>exec_cache_tol</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
     <span class=n>execute</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
     <span class=n>residual_variables</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a></span><span class=p>[</span>
@@ -1132,7 +1113,6 @@
   
       module-attribute
    (gemseo.utils.constants.READ_ONLY_EMPTY_DICT)" href=../../../utils/constants/#gemseo.utils.constants.READ_ONLY_EMPTY_DICT>READ_ONLY_EMPTY_DICT</a></span><span class=p>,</span>
-    <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=p>(</span>
     <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-internal" title="            RealOrComplexArray
 
@@ -1147,13 +1127,13 @@
 
   
       module-attribute
-   (gemseo.typing.StrKeyMapping)" href=../../../typing/#gemseo.typing.StrKeyMapping>StrKeyMapping</a></code>) – <div class=doc-md-description><p>The input data dict.</p></div></li><li class="doc-section-item field-body"><b><code>functions</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The functions to differentiate.</p></div></li><li class="doc-section-item field-body"><b><code>variables</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The differentiation variables.</p></div></li><li class="doc-section-item field-body"><b><code>couplings</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>linear_solver</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;LGMRES&#39;</code> ) – <div class=doc-md-description><p>The name of the linear solver.</p></div></li><li class="doc-section-item field-body"><b><code>mode</code></b> (<code><span title=gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.DerivationMode>DerivationMode</span></code>, default: <code><span title=gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.DerivationMode.AUTO>AUTO</span></code> ) – <div class=doc-md-description><p>The linearization mode (auto, direct or adjoint).</p></div></li><li class="doc-section-item field-body"><b><code>matrix_type</code></b> (<code><a class="autorefs autorefs-internal" title="            JacobianType (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType>JacobianType</a></code>, default: <code><a class="autorefs autorefs-internal" title="            MATRIX
+   (gemseo.typing.StrKeyMapping)" href=../../../typing/#gemseo.typing.StrKeyMapping>StrKeyMapping</a></code>) – <div class=doc-md-description><p>The input data dict.</p></div></li><li class="doc-section-item field-body"><b><code>functions</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The functions to differentiate.</p></div></li><li class="doc-section-item field-body"><b><code>variables</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Collection href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection>Collection</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The differentiation variables.</p></div></li><li class="doc-section-item field-body"><b><code>couplings</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>) – <div class=doc-md-description><p>The coupling variables.</p></div></li><li class="doc-section-item field-body"><b><code>linear_solver_settings</code></b> (<code><a class="autorefs autorefs-internal" title="            BaseLinearSolverSettings (gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings)" href=../../../algos/linear_solvers/base_linear_solver_settings/#gemseo.algos.linear_solvers.base_linear_solver_settings.BaseLinearSolverSettings>BaseLinearSolverSettings</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The settings of the linear solver. If <code>None</code>, use LU factorization.</p></div></li><li class="doc-section-item field-body"><b><code>mode</code></b> (<code><span title=gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.DerivationMode>DerivationMode</span></code>, default: <code><span title=gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.DerivationMode.AUTO>AUTO</span></code> ) – <div class=doc-md-description><p>The linearization mode (auto, direct or adjoint).</p></div></li><li class="doc-section-item field-body"><b><code>matrix_type</code></b> (<code><a class="autorefs autorefs-internal" title="            JacobianType (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType>JacobianType</a></code>, default: <code><a class="autorefs autorefs-internal" title="            MATRIX
 
 
   
       class-attribute
       instance-attribute
-   (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX>MATRIX</a></code> ) – <div class=doc-md-description><p>The representation of the matrix ∂R/∂y (sparse or linear operator).</p></div></li><li class="doc-section-item field-body"><b><code>use_lu_fact</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether to factorize dres_dy once, unsupported for linear operator mode.</p></div></li><li class="doc-section-item field-body"><b><code>exec_cache_tol</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The discipline cache tolerance to when calling the linearize method. If <code>None</code>, no tolerance is set (equivalent to tol=0.0).</p></div></li><li class="doc-section-item field-body"><b><code>execute</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to start by executing the discipline with the input data for which to compute the Jacobian; this allows to ensure that the discipline was executed with the right input data; it can be almost free if the corresponding output data have been stored in the <a class="autorefs autorefs-internal" title="            cache
+   (gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX)" href=#gemseo.core.derivatives.jacobian_assembly.JacobianAssembly.JacobianType.MATRIX>MATRIX</a></code> ) – <div class=doc-md-description><p>The representation of the matrix ∂R/∂y (sparse or linear operator).</p></div></li><li class="doc-section-item field-body"><b><code>exec_cache_tol</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a> | None</code>, default: <code>None</code> ) – <div class=doc-md-description><p>The discipline cache tolerance to when calling the linearize method. If <code>None</code>, no tolerance is set (equivalent to tol=0.0).</p></div></li><li class="doc-section-item field-body"><b><code>execute</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to start by executing the discipline with the input data for which to compute the Jacobian; this allows to ensure that the discipline was executed with the right input data; it can be almost free if the corresponding output data have been stored in the <a class="autorefs autorefs-internal" title="            cache
 
 
   
@@ -1163,16 +1143,12 @@
 
   
       module-attribute
-   (gemseo.utils.constants.READ_ONLY_EMPTY_DICT)" href=../../../utils/constants/#gemseo.utils.constants.READ_ONLY_EMPTY_DICT>READ_ONLY_EMPTY_DICT</a></code> ) – <div class=doc-md-description><p>a mapping of residuals of disciplines to their respective state variables.</p></div></li><li class="doc-section-item field-body"><b><code>**linear_solver_settings</code></b> (<code><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></code>, default: <code>{}</code> ) – <div class=doc-md-description><p>The options passed to the linear solver factory.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-internal" title="            RealOrComplexArray
+   (gemseo.utils.constants.READ_ONLY_EMPTY_DICT)" href=../../../utils/constants/#gemseo.utils.constants.READ_ONLY_EMPTY_DICT>READ_ONLY_EMPTY_DICT</a></code> ) – <div class=doc-md-description><p>a mapping of residuals of disciplines to their respective state variables.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-internal" title="            RealOrComplexArray
 
 
   
       module-attribute
-   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a>]] | <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>, None]]</code> – <div class=doc-md-description><p>The total coupled derivatives.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When the linearization_mode is incorrect.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>623</span>
-<span class=normal>624</span>
-<span class=normal>625</span>
-<span class=normal>626</span>
-<span class=normal>627</span>
+   (gemseo.typing.RealOrComplexArray)" href=../../../typing/#gemseo.typing.RealOrComplexArray>RealOrComplexArray</a>]] | <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>, None]]</code> – <div class=doc-md-description><p>The total coupled derivatives.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When the linearization_mode is incorrect.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>627</span>
 <span class=normal>628</span>
 <span class=normal>629</span>
 <span class=normal>630</span>
@@ -1321,22 +1297,18 @@
 <span class=normal>773</span>
 <span class=normal>774</span>
 <span class=normal>775</span>
-<span class=normal>776</span>
-<span class=normal>777</span>
-<span class=normal>778</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>total_derivatives</span><span class=p>(</span>
+<span class=normal>776</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>total_derivatives</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>in_data</span><span class=p>:</span> <span class=n>StrKeyMapping</span><span class=p>,</span>
     <span class=n>functions</span><span class=p>:</span> <span class=n>Collection</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>variables</span><span class=p>:</span> <span class=n>Collection</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>couplings</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
-    <span class=n>linear_solver</span><span class=p>:</span> <span class=nb>str</span> <span class=o>=</span> <span class=s2>&quot;LGMRES&quot;</span><span class=p>,</span>
+    <span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n>BaseLinearSolverSettings</span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
     <span class=n>mode</span><span class=p>:</span> <span class=n>DerivationMode</span> <span class=o>=</span> <span class=n>DerivationMode</span><span class=o>.</span><span class=n>AUTO</span><span class=p>,</span>
     <span class=n>matrix_type</span><span class=p>:</span> <span class=n>JacobianType</span> <span class=o>=</span> <span class=n>JacobianType</span><span class=o>.</span><span class=n>MATRIX</span><span class=p>,</span>
-    <span class=n>use_lu_fact</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>False</span><span class=p>,</span>
     <span class=n>exec_cache_tol</span><span class=p>:</span> <span class=nb>float</span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
     <span class=n>execute</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
     <span class=n>residual_variables</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=n>READ_ONLY_EMPTY_DICT</span><span class=p>,</span>
-    <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>:</span> <span class=n>Any</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>RealOrComplexArray</span><span class=p>]]</span> <span class=o>|</span> <span class=nb>dict</span><span class=p>[</span><span class=n>Any</span><span class=p>,</span> <span class=nb>dict</span><span class=p>[</span><span class=n>Any</span><span class=p>,</span> <span class=kc>None</span><span class=p>]]:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute the Jacobian of total derivatives of the coupled system.</span>
 
@@ -1345,12 +1317,11 @@
 <span class=sd>        functions: The functions to differentiate.</span>
 <span class=sd>        variables: The differentiation variables.</span>
 <span class=sd>        couplings: The coupling variables.</span>
-<span class=sd>        linear_solver: The name of the linear solver.</span>
+<span class=sd>        linear_solver_settings: The settings of the linear solver.</span>
+<span class=sd>            If `None`, use LU factorization.</span>
 <span class=sd>        mode: The linearization mode (auto, direct or adjoint).</span>
 <span class=sd>        matrix_type: The representation of the matrix ∂R/∂y (sparse or</span>
 <span class=sd>            linear operator).</span>
-<span class=sd>        use_lu_fact: Whether to factorize dres_dy once,</span>
-<span class=sd>            unsupported for linear operator mode.</span>
 <span class=sd>        exec_cache_tol: The discipline cache tolerance to</span>
 <span class=sd>            when calling the linearize method.</span>
 <span class=sd>            If `None`, no tolerance is set (equivalent to tol=0.0).</span>
@@ -1363,7 +1334,6 @@
 <span class=sd>            [Discipline.cache][gemseo.core.discipline.discipline.Discipline.cache].</span>
 <span class=sd>        residual_variables: a mapping of residuals of disciplines to</span>
 <span class=sd>            their respective state variables.</span>
-<span class=sd>        **linear_solver_settings: The options passed to the linear solver factory.</span>
 
 <span class=sd>    Returns:</span>
 <span class=sd>        The total coupled derivatives.</span>
@@ -1374,7 +1344,9 @@
     <span class=k>if</span> <span class=ow>not</span> <span class=n>functions</span><span class=p>:</span>
         <span class=k>return</span> <span class=n>defaultdict</span><span class=p>(</span><span class=n>default_dict_factory</span><span class=p>)</span>
 
-    <span class=bp>self</span><span class=o>.</span><span class=n>_check_inputs</span><span class=p>(</span><span class=n>functions</span><span class=p>,</span> <span class=n>variables</span><span class=p>,</span> <span class=n>couplings</span><span class=p>,</span> <span class=n>matrix_type</span><span class=p>,</span> <span class=n>use_lu_fact</span><span class=p>)</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>_check_inputs</span><span class=p>(</span>
+        <span class=n>functions</span><span class=p>,</span> <span class=n>variables</span><span class=p>,</span> <span class=n>couplings</span><span class=p>,</span> <span class=n>matrix_type</span><span class=p>,</span> <span class=n>linear_solver_settings</span> <span class=ow>is</span> <span class=kc>None</span>
+    <span class=p>)</span>
 
     <span class=c1># Retrieve states variables and local residuals if provided</span>
     <span class=n>states</span> <span class=o>=</span> <span class=nb>list</span><span class=p>(</span><span class=n>residual_variables</span><span class=o>.</span><span class=n>values</span><span class=p>())</span> <span class=k>if</span> <span class=n>residual_variables</span> <span class=k>else</span> <span class=p>[]</span>
@@ -1451,9 +1423,7 @@
             <span class=n>dres_dy</span><span class=p>,</span>
             <span class=n>dfun_dx</span><span class=p>,</span>
             <span class=n>dfun_dy</span><span class=p>,</span>
-            <span class=n>linear_solver</span><span class=p>,</span>
-            <span class=n>use_lu_fact</span><span class=o>=</span><span class=n>use_lu_fact</span><span class=p>,</span>
-            <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>,</span>
+            <span class=n>linear_solver_settings</span><span class=p>,</span>
         <span class=p>)</span>
     <span class=k>elif</span> <span class=n>mode</span> <span class=o>==</span> <span class=bp>self</span><span class=o>.</span><span class=n>DerivationMode</span><span class=o>.</span><span class=n>ADJOINT</span><span class=p>:</span>
         <span class=c1># transposed square matrix ∂R/∂y^T</span>
@@ -1471,26 +1441,24 @@
             <span class=n>dres_dy_t</span><span class=o>.</span><span class=n>T</span><span class=p>,</span>
             <span class=n>dfun_dx</span><span class=p>,</span>
             <span class=n>dfun_dy</span><span class=p>,</span>
-            <span class=n>linear_solver</span><span class=p>,</span>
-            <span class=n>use_lu_fact</span><span class=o>=</span><span class=n>use_lu_fact</span><span class=p>,</span>
-            <span class=o>**</span><span class=n>linear_solver_settings</span><span class=p>,</span>
+            <span class=n>linear_solver_settings</span><span class=p>,</span>
         <span class=p>)</span>
     <span class=k>else</span><span class=p>:</span>
         <span class=k>raise</span> <span class=ne>ValueError</span><span class=p>(</span><span class=s2>&quot;Incorrect linearization mode &quot;</span> <span class=o>+</span> <span class=nb>str</span><span class=p>(</span><span class=n>mode</span><span class=p>))</span>
 
     <span class=k>return</span> <span class=bp>self</span><span class=o>.</span><span class=n>split_jac</span><span class=p>(</span><span class=n>total_derivatives</span><span class=p>,</span> <span class=n>variables</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div></div></div></div><h3 id=gemseo.core.derivatives.jacobian_assembly-functions>Functions<a href=#gemseo.core.derivatives.jacobian_assembly-functions class=headerlink title="Permanent link">&para;</a></h3><div class="doc doc-object doc-function"><h4 id=gemseo.core.derivatives.jacobian_assembly.default_dict_factory class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-function"></code><span class="doc doc-object-name doc-function-name">default_dict_factory</span><a href=#gemseo.core.derivatives.jacobian_assembly.default_dict_factory class=headerlink title="Permanent link">&para;</a></h4><div class="doc-signature highlight"><pre><span></span><code><span class=nf>default_dict_factory</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></span><span class=p>,</span> <span class=kc>None</span><span class=p>]</span>
-</code></pre></div><div class="doc doc-contents "><p>Instantiates a defaultdict(None) object.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>84</span>
-<span class=normal>85</span>
-<span class=normal>86</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>default_dict_factory</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=n>Any</span><span class=p>,</span> <span class=kc>None</span><span class=p>]:</span>
+</code></pre></div><div class="doc doc-contents "><p>Instantiates a defaultdict(None) object.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>88</span>
+<span class=normal>89</span>
+<span class=normal>90</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>default_dict_factory</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=n>Any</span><span class=p>,</span> <span class=kc>None</span><span class=p>]:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Instantiates a defaultdict(None) object.&quot;&quot;&quot;</span>
     <span class=k>return</span> <span class=n>defaultdict</span><span class=p>(</span><span class=n>none_factory</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h4 id=gemseo.core.derivatives.jacobian_assembly.none_factory class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-function"></code><span class="doc doc-object-name doc-function-name">none_factory</span><a href=#gemseo.core.derivatives.jacobian_assembly.none_factory class=headerlink title="Permanent link">&para;</a></h4><div class="doc-signature highlight"><pre><span></span><code><span class=nf>none_factory</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Returns None...</p><p>To be used for defaultdict</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>77</span>
-<span class=normal>78</span>
-<span class=normal>79</span>
-<span class=normal>80</span>
-<span class=normal>81</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>none_factory</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
+</code></pre></div><div class="doc doc-contents "><p>Returns None...</p><p>To be used for defaultdict</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/derivatives/jacobian_assembly.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>81</span>
+<span class=normal>82</span>
+<span class=normal>83</span>
+<span class=normal>84</span>
+<span class=normal>85</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>none_factory</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Returns None...</span>
 
 <span class=sd>    To be used for defaultdict</span>

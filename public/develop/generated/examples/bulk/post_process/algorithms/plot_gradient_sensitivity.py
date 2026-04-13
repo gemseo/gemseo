@@ -75,7 +75,7 @@ formulation_settings = MDF_Settings(
         max_mda_iter=30,
         tolerance=1e-10,
         warm_start=True,
-        use_lu_fact=True,
+        linear_solver_settings=None,
     ),
 )
 
