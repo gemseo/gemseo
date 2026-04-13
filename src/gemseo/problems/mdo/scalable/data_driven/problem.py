@@ -66,7 +66,10 @@ from gemseo import create_scenario
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core.coupling_structure import CouplingStructure
+from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.factory import MDA_FACTORY
 from gemseo.problems.mdo.scalable.data_driven.discipline import (
     DataDrivenScalableDiscipline,
@@ -82,8 +85,10 @@ if TYPE_CHECKING:
 
     from numpy._typing import NDArray
 
+    from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
     from gemseo.core.discipline import Discipline
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.scenarios.mdo import MDOScenario
 
 LOGGER = logging.getLogger(__name__)
@@ -258,61 +263,71 @@ class ScalableProblem:
 
     def create_scenario(
         self,
-        formulation_name: str = "DisciplinaryOpt",
-        scenario_type: str = "MDO",
+        formulation_settings: BaseFormulationSettings | None = None,
+        sub_optimizer_settings: BaseOptimizerSettings | None = None,
         start_at_equilibrium: bool = False,
         active_probability: float = 0.1,
         feasibility_level: float = 0.5,
-        **formulation_settings: Any,
     ) -> MDOScenario:
         """Create a scenario from the scalable disciplines.
 
         Args:
-            formulation_name: The MDO formulation to use for the scenario.
-            scenario_type: The type of scenario, either `MDO` or `DOE`.
+            formulation_settings: The settings of the MDO formulation.
+                If `None`, use the default settings of the MDF formulation.
+            sub_optimizer_settings: The settings of the sub-optimization algorithm,
+                if any.
+                If `None`, use the default settings of the SLSQP algorithm.
             start_at_equilibrium: Whether to start at equilibrium using a preliminary
                 MDA.
             active_probability: The probability to set the inequality constraints as
                 active at the initial step of the optimization.
             feasibility_level: The offset of satisfaction for inequality
                 constraints.
-            **formulation_settings: The formulation settings.
 
         Returns:
             The [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
             from the scalable disciplines.
         """
+        if formulation_settings is None:
+            formulation_settings = MDF_Settings()
+
         equilibrium = {}
         if start_at_equilibrium:
             equilibrium = self.__get_equilibrium()
 
         disciplines = self.scaled_disciplines
+        formulation_name = formulation_settings.target_class_name
         design_space = self._create_design_space(disciplines, formulation_name)
         if formulation_name == "BiLevel":
+            if sub_optimizer_settings is None:
+                sub_optimizer_settings = SLSQP_Settings()
             self.scenario = self._create_bilevel_scenario(
-                disciplines, **formulation_settings
+                disciplines, formulation_settings, sub_optimizer_settings
             )
         else:
             self.scenario = create_scenario(
                 disciplines,
                 self.objective_function,
                 deepcopy(design_space),
-                formulation_name=formulation_name,
                 maximize_objective=self.maximize_objective,
-                **formulation_settings,
+                formulation_settings_model=formulation_settings,
             )
         self.__add_ineq_constraints(active_probability, feasibility_level, equilibrium)
         self.__add_eq_constraints(equilibrium)
         return self.scenario
 
     def _create_bilevel_scenario(
-        self, disciplines: Iterable[Discipline], **sub_scenario_options
+        self,
+        disciplines: Iterable[Discipline],
+        formulation_settings: BaseFormulationSettings,
+        sub_optimizer_settings: BaseOptimizerSettings,
     ) -> MDOScenario:
         """Create a bi-level scenario from disciplines.
 
         Args:
             disciplines: The disciplines.
-            **sub_scenario_options: The options of the sub-scenarios.
+            formulation_settings: The settings of the MDO formulation.
+            sub_optimizer_settings: The settings of the sub-optimization algorithm.
 
         Returns:
             A scenario using a bi-level formulation.
@@ -343,11 +358,11 @@ class ScalableProblem:
                     sub_disciplines,
                     obj,
                     design_space,
-                    formulation_name="DisciplinaryOpt",
                     maximize_objective=max_obj,
+                    formulation_settings_model=DisciplinaryOpt_Settings(),
                 )
             )
-            sub_scenarios[-1].default_input_data = sub_scenario_options
+            sub_scenarios[-1].set_algorithm(sub_optimizer_settings)
 
         # Construction of the system scenario
         all_inputs = get_all_inputs(disciplines)
@@ -362,10 +377,8 @@ class ScalableProblem:
             sub_disciplines,
             obj,
             design_space,
-            formulation_name="BiLevel",
             maximize_objective=max_obj,
-            mda_name="MDAJacobi",
-            tolerance=1e-8,
+            formulation_settings_model=formulation_settings,
         )
 
     def _create_design_space(

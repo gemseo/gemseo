@@ -21,7 +21,7 @@ import re
 import pytest
 
 from gemseo.uncertainty.statistics.tolerance_interval.factory import (
-    ToleranceIntervalFactory,
+    TOLERANCE_INTERVAL_FACTORY,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.normal import (
     NormalToleranceInterval,
@@ -31,8 +31,9 @@ from gemseo.uncertainty.statistics.tolerance_interval.normal import (
 def test_create() -> None:
     """Check the creation of a BaseToleranceInterval from the
     ToleranceIntervalFactory."""
-    factory = ToleranceIntervalFactory()
-    tolerance_interval = factory.create("Normal", 100000, 0, 1)
+    tolerance_interval = TOLERANCE_INTERVAL_FACTORY.create(
+        "NormalToleranceInterval", 100000, 0, 1
+    )
     assert isinstance(tolerance_interval, NormalToleranceInterval)
     assert tolerance_interval._NormalToleranceInterval__mean == 0.0
     assert tolerance_interval._NormalToleranceInterval__std == 1.0
@@ -41,18 +42,16 @@ def test_create() -> None:
 def test_create_fail() -> None:
     """Check the creation of a BaseToleranceInterval from the
     ToleranceIntervalFactory."""
-    factory = ToleranceIntervalFactory()
-
     expected = re.escape(
         "The class WrongName is not available; "
-        "the available ones are: Exponential, ExponentialToleranceInterval, LogNormal, "
-        "LogNormalToleranceInterval, Normal, NormalToleranceInterval, Uniform, "
-        "UniformToleranceInterval, Weibull, WeibullMin, WeibullMinToleranceInterval, "
+        "the available ones are: ExponentialToleranceInterval, "
+        "LogNormalToleranceInterval, NormalToleranceInterval, "
+        "UniformToleranceInterval, WeibullMinToleranceInterval, "
         "WeibullToleranceInterval."
     )
 
     with pytest.raises(ImportError, match=expected):
-        factory.create("WrongName", 100000, 0, 1)
+        TOLERANCE_INTERVAL_FACTORY.create("WrongName", 100000, 0, 1)
 
     with pytest.raises(
         TypeError,
@@ -60,4 +59,4 @@ def test_create_fail() -> None:
             "__init__() missing 2 required positional arguments: 'mean' and 'std'"
         ),
     ):
-        factory.create("Normal", 100000)
+        TOLERANCE_INTERVAL_FACTORY.create("NormalToleranceInterval", 100000)

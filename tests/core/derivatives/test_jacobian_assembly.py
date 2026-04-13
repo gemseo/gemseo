@@ -32,6 +32,7 @@ from numpy import ones
 from numpy.random import default_rng
 from scipy.sparse import csr_matrix
 
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives import jacobian_assembly
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
@@ -184,12 +185,20 @@ def mda(in_data, functions, variables, couplings) -> SobieskiMDAGaussSeidel:
     [JacobianAssembly.DerivationMode.DIRECT, JacobianAssembly.DerivationMode.ADJOINT],
 )
 @pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
-@pytest.mark.parametrize("use_lu_fact", [False, True])
+@pytest.mark.parametrize("linear_solver_settings", [None, LGMRES_Settings()])
 def test_sobieski_all_modes(
-    mda, in_data, functions, variables, couplings, mode, matrix_type, use_lu_fact
+    mda,
+    in_data,
+    functions,
+    variables,
+    couplings,
+    mode,
+    matrix_type,
+    linear_solver_settings,
 ) -> None:
     """Test Sobieski's coupled derivatives computed in all modes (sparse direct, sparse
     adjoint, linear operator direct, linear operator adjoint)"""
+    use_lu_fact = linear_solver_settings is None
     if use_lu_fact and matrix_type != JacobianAssembly.JacobianType.MATRIX:
         return
 
@@ -200,7 +209,7 @@ def test_sobieski_all_modes(
         couplings,
         mode=mode,
         matrix_type=matrix_type,
-        use_lu_fact=use_lu_fact,
+        linear_solver_settings=linear_solver_settings,
     )
     if not compare_mda_jac_ref(mda.jac):
         msg = (

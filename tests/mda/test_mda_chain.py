@@ -30,7 +30,6 @@ from numpy import array
 from numpy import inf
 from numpy import isclose
 
-from gemseo.algos.linear_solvers.scipy_linalg import BICG_Settings
 from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.algos.linear_solvers.scipy_linalg import TFQMR_Settings
 from gemseo.core.chains.parallel_chain import MDOParallelChain
@@ -87,21 +86,17 @@ def coupled_disciplines() -> Sequence[Discipline]:
 
 def test_set_solver(sellar_with_2d_array, sellar_disciplines) -> None:
     """Test that the MDA tolerances can be set at the object instantiation."""
-    linear_solver_settings = LGMRES_Settings(inner_m=5, rtol=1e-6)
     mda_chain = MDAChain(
         sellar_disciplines,
         settings=MDAChain_Settings(
             tolerance=1e-3,
-            use_lu_fact=True,
-            linear_solver_settings=linear_solver_settings,
+            linear_solver_settings=None,
         ),
     )
-    assert mda_chain.settings.use_lu_fact
-    assert mda_chain.settings.linear_solver_settings == linear_solver_settings
+    assert mda_chain.settings.linear_solver_settings is None
 
     sub_mda1_settings = mda_chain.mdo_chain.disciplines[0].settings
-    assert sub_mda1_settings.use_lu_fact
-    assert sub_mda1_settings.linear_solver_settings == linear_solver_settings
+    assert sub_mda1_settings.linear_solver_settings is None
 
 
 def test_sellar(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> None:
@@ -450,12 +445,11 @@ def test_inner_mda_name_setting(coupled_disciplines, inner_mda_settings):
 def test_settings_precedence(coupled_disciplines, caplog):
     """Test the settings precedence of MDA chain over inner MDAs."""
     settings = {
-        "linear_solver_settings": BICG_Settings(rtol=0.314),
+        "linear_solver_settings": None,
         "log_convergence": True,
         "max_mda_iter": 17,
         "max_consecutive_unsuccessful_iterations": 13,
         "tolerance": 3e-14,
-        "use_lu_fact": True,
         "warm_start": True,
     }
     main_settings = MDAChain_Settings(**settings)
@@ -470,7 +464,6 @@ def test_settings_precedence(coupled_disciplines, caplog):
         max_mda_iter=34,
         max_consecutive_unsuccessful_iterations=26,
         tolerance=6e-28,
-        use_lu_fact=False,
         warm_start=False,
     )
 

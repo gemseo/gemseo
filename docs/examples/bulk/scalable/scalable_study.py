@@ -35,6 +35,8 @@ from gemseo import create_scenario
 from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
@@ -111,8 +113,10 @@ study.add_discipline(datasets["Mission"])
 #
 # Note that in this case, we compare MDO formulations
 # but we could easily compare optimization algorithms.
-study.add_optimization_strategy("NLOPT_SLSQP", 100, "MDF")
-study.add_optimization_strategy("NLOPT_SLSQP", 100, "IDF")
+study.add_optimization_strategy(NLOPT_SLSQP_Settings(max_iter=100))
+study.add_optimization_strategy(
+    NLOPT_SLSQP_Settings(max_iter=100), formulation_settings=IDF_Settings()
+)
 
 # %%
 # ## Add the scaling strategy

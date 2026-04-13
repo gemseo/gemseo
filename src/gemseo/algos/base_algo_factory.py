@@ -170,24 +170,39 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         Raises:
             ImportError: If the algorithm is not available.
         """
-        if name not in self.__algo_name_to_lib_name:
+        library_name = self.__get_library_name(name)
+        library_cache = self.__lib_cache[library_name]
+        if self.__use_cache:
+            algo = library_cache.get(name)
+            if algo is None:
+                algo = self._factory.create(library_name, name)
+                library_cache[name] = algo
+
+            return algo
+
+        return self._factory.create(library_name, name)
+
+    def __get_library_name(self, name: str) -> str:
+        """Get the library name from the algorithm name.
+
+        Args:
+            name: The name of the algorithm.
+
+        Returns:
+            The library name.
+
+        Raises:
+            ValueError: If the algorithm is not available.
+        """
+        lib_name = self.__algo_name_to_lib_name.get(name)
+        if lib_name is None:
             msg = (
                 f"No algorithm named {name} is available; "
                 f"available algorithms are {pretty_str(self.algorithms, use_and=True)}."
             )
             raise ValueError(msg)
 
-        lib_name = self.__algo_name_to_lib_name.get(name)
-        lib_cache = self.__lib_cache[lib_name]
-        if self.__use_cache:
-            algo = lib_cache.get(name)
-            if algo is None:
-                algo = self._factory.create(lib_name, name)
-                lib_cache[name] = algo
-
-            return algo
-
-        return self._factory.create(lib_name, name)
+        return lib_name
 
     def execute(
         self, problem: BaseProblem, settings: BaseSettings
@@ -249,7 +264,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         Returns:
             The algorithm settings class.
         """
-        library_name = self.algo_names_to_libraries[name]
+        library_name = self.__get_library_name(name)
         library_class = self.get_class(library_name)
         return library_class.ALGORITHM_INFOS[name].settings_class
 

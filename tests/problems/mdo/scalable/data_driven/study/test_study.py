@@ -25,8 +25,11 @@ import pytest
 from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
+from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.formulations.idf_settings import IDF_Settings
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.problems.mdo.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problems.mdo.scalable.data_driven.study.process import ScalabilityStudy
@@ -122,24 +125,22 @@ def test_scalabilitystudy1(sellar_use_case, enable_discipline_statistics) -> Non
     with pytest.raises(ValueError):
         study.execute()
     study.add_optimization_strategy(
-        "NLOPT_SLSQP",
-        2,
-        formulation_name="MDF",
-        formulation_settings={
-            "main_mda_settings": MDAChain_Settings(chain_linearize=True)
-        },
+        NLOPT_SLSQP_Settings(max_iter=2),
+        formulation_settings=MDF_Settings(
+            main_mda_settings=MDAChain_Settings(chain_linearize=True)
+        ),
     )
-    study.add_optimization_strategy("NLOPT_SLSQP", 2, "IDF")
+    study.add_optimization_strategy(
+        NLOPT_SLSQP_Settings(max_iter=2), formulation_settings=IDF_Settings()
+    )
     study.add_scaling_strategies(variables=variables)
     study.execute()
-    with pytest.raises(TypeError):
-        study.add_optimization_strategy("NLOPT_SLSQP", 2, "MDF", algo_settings="dummy")
     tol = 1e-4
-    algo_settings = {"ftol_rel": tol, "xtol_rel": tol, "ftol_abs": tol, "xtol_abs": tol}
     study.add_optimization_strategy(
-        "NLOPT_SLSQP", 2, "MDF", algo_settings=algo_settings
+        NLOPT_SLSQP_Settings(
+            max_iter=2, ftol_rel=tol, xtol_rel=tol, ftol_abs=tol, xtol_abs=tol
+        )
     )
-    variables = [{X_SHARED: i} for i in range(1, 3)]
 
     with pytest.raises(ValueError):
         PostScalabilityStudy("dummy")
@@ -178,8 +179,10 @@ def test_scalabilitystudy2(sellar_use_case, enable_discipline_statistics) -> Non
         study.add_discipline(
             HDF5Cache(hdf_file_path=f_name, hdf_node_path=discipline_name).to_dataset()
         )
-    study.add_optimization_strategy("NLOPT_SLSQP", 2, formulation_name="MDF")
-    study.add_optimization_strategy("NLOPT_SLSQP", 2, formulation_name="IDF")
+    study.add_optimization_strategy(NLOPT_SLSQP_Settings(max_iter=2))
+    study.add_optimization_strategy(
+        NLOPT_SLSQP_Settings(max_iter=2), formulation_settings=IDF_Settings()
+    )
     study.add_scaling_strategies(
         coupling_size=1, eq_cstr_size=[1, 2], variables=variables
     )

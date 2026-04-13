@@ -38,6 +38,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.post.dataset.bars_settings import BarPlot_Settings
 from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
 from gemseo.scenarios.backup_settings import BackupSettings
@@ -238,7 +239,10 @@ BARPLOT_TEST_PARAMETERS = {
         ["bar_plot_inputs_standardize"],
     ),
     "outputs": ({"outputs": [("y2", 0)]}, ["bar_plot_outputs"]),
-    "n_digits": ({"outputs": "y2", "n_digits": 1}, ["bar_plot_n_digits"]),
+    "n_digits": (
+        {"outputs": "y2", "bar_plot_settings": BarPlot_Settings(n_digits=1)},
+        ["bar_plot_n_digits"],
+    ),
     "do_not_sort": ({"outputs": ["y1", "y2"], "sort": False}, ["bar_plot_do_not_sort"]),
     "sorting_output_as_str": (
         {"outputs": ["y1", "y2"], "sorting_output": "y2"},
@@ -260,7 +264,7 @@ BARPLOT_TEST_PARAMETERS = {
 @image_comparison(None)
 def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
     """Check that a Barplot is created with plot_bar."""
-    mock_sensitivity_analysis.plot_bar(save=False, show=False, **kwargs)
+    mock_sensitivity_analysis.plot_bar(save=False, **kwargs)
 
 
 RADAR_TEST_PARAMETERS = {

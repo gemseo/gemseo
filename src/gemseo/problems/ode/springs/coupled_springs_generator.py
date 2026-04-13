@@ -32,11 +32,11 @@ or by coupling directly as many instances of
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import asarray
 from numpy import linspace
 
+from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.core.chains.chain import MDOChain
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.springs.spring_ode_discipline import SpringODEDiscipline
@@ -47,6 +47,7 @@ from gemseo.problems.ode.springs.springs_dynamics_discipline import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
     from gemseo.typing import RealArray
 
 
@@ -114,7 +115,7 @@ class CoupledSpringsGenerator:
         self._rightmost_position = rightmost_position
 
     @property
-    def state_names(self) -> tuple[str]:
+    def state_names(self) -> tuple[str, ...]:
         """The names of the state variables.
 
         Returns:
@@ -123,7 +124,7 @@ class CoupledSpringsGenerator:
         return tuple(name for names in self._state_names for name in names)
 
     @property
-    def state_dot_names(self) -> tuple[str]:
+    def state_dot_names(self) -> tuple[str, ...]:
         """The names of the time derivatives of the state variables.
 
         Returns:
@@ -133,7 +134,7 @@ class CoupledSpringsGenerator:
         return tuple(name for names in self._state_dot_names for name in names)
 
     @property
-    def position_names(self) -> tuple[str]:
+    def position_names(self) -> tuple[str, ...]:
         """The names of the inputs defining the position of a mass.
 
         Returns:
@@ -142,7 +143,7 @@ class CoupledSpringsGenerator:
         return tuple(names[0] for names in self._state_names)
 
     @property
-    def initial_position_names(self) -> tuple[str]:
+    def initial_position_names(self) -> tuple[str, ...]:
         """The names of the inputs defining the initial position.
 
         Returns:
@@ -160,12 +161,13 @@ class CoupledSpringsGenerator:
         return self._times
 
     def create_coupled_ode_disciplines(
-        self, **ode_solver_options: Any
+        self, ode_solver_settings: BaseODESolverSettings | None = None
     ) -> list[ODEDiscipline]:
         """Create coupled ODE disciplines describing masses connected by springs.
 
         Args:
-            **ode_solver_options: The options of the ODE solver.
+            ode_solver_settings: The settings of the ODE solver.
+                If `None`, use the default settings of the RK45 solver.
 
         Returns:
             The ODE disciplines.
@@ -187,6 +189,8 @@ class CoupledSpringsGenerator:
                 kwargs["is_right_position_fixed"] = True
                 kwargs["right_position"] = self._rightmost_position
 
+            if ode_solver_settings is None:
+                ode_solver_settings = RK45_Settings()
             disciplines.append(
                 SpringODEDiscipline(
                     mass=mass,
@@ -195,15 +199,15 @@ class CoupledSpringsGenerator:
                     times=self._times,
                     state_names=self._state_names[i],
                     state_dot_names=self._state_dot_names[i],
+                    ode_solver_settings=ode_solver_settings,
                     **kwargs,
-                    **ode_solver_options,
                 )
             )
 
         return disciplines
 
     def create_discipline_with_coupled_dynamics(
-        self, **ode_solver_options: Any
+        self, ode_solver_settings: BaseODESolverSettings | None = None
     ) -> ODEDiscipline:
         """Create an ODE discipline describing masses connected by springs.
 
@@ -211,7 +215,8 @@ class CoupledSpringsGenerator:
         ODE) is represented by coupled disciplines.
 
         Args:
-            **ode_solver_options: The options of the ODE solver.
+            ode_solver_settings: The settings of the ODE solver.
+                If `None`, use the default settings of the RK45 solver.
 
         Returns:
             The ODE discipline.
@@ -227,7 +232,6 @@ class CoupledSpringsGenerator:
                 else self._rightmost_position,
                 is_left_position_fixed=(ii == 0),
                 is_right_position_fixed=(ii == len(self._masses) - 1),
-                times=None,
                 state_names=self._state_names[ii],
                 state_dot_var_names=self._state_dot_names[ii],
                 left_position_name=self.position_names[ii - 1] if ii > 0 else None,
@@ -245,5 +249,5 @@ class CoupledSpringsGenerator:
             state_names=dict(zip(self.state_names, self.state_dot_names, strict=False)),
             return_trajectories=True,
             times=self._times,
-            **ode_solver_options,
+            ode_solver_settings=ode_solver_settings,
         )

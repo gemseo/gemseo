@@ -41,6 +41,10 @@ from numpy import sin
 from numpy import sqrt
 from numpy.testing import assert_allclose
 
+from gemseo.algos.ode.factory import ODE_SOLVER_LIBRARY_FACTORY
+from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853_Settings
+from gemseo.algos.ode.scipy_ode.settings.radau import Radau_Settings
+from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.core.discipline.base_discipline import CacheType
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
@@ -343,8 +347,7 @@ def test_ode_discipline_wrong_ordering_time_derivatives():
         rhs_discipline=discipline,
         times=times,
         state_names={"a": "a_dot", "b": "b_dot"},
-        ode_solver_name="DOP853",
-        return_trajectories=False,
+        ode_solver_settings=DOP853_Settings(),
     )
 
     res_ode_1 = ode_discipline_1.execute()
@@ -355,8 +358,7 @@ def test_ode_discipline_wrong_ordering_time_derivatives():
         rhs_discipline=discipline,
         times=times,
         state_names={"a": "a_dot", "b": "b_dot"},
-        ode_solver_name="DOP853",
-        return_trajectories=False,
+        ode_solver_settings=DOP853_Settings(),
     )
 
     res_ode_2 = ode_discipline_2.execute()
@@ -387,8 +389,7 @@ def test_ode_discipline_missing_names_time_derivatives():
             rhs_discipline=discipline,
             times=times,
             state_names={"a": "c_dot", "b": "b_dot"},
-            ode_solver_name="DOP853",
-            return_trajectories=False,
+            ode_solver_settings=DOP853_Settings(),
         )
 
 
@@ -410,8 +411,8 @@ def test_ode_discipline_not_convergent():
         rhs_discipline=discipline,
         times=times,
         state_names=["x"],
-        ode_solver_name="RK45",
         return_trajectories=True,
+        ode_solver_settings=RK45_Settings(),
     )
 
     with pytest.raises(
@@ -465,10 +466,8 @@ def test_jacobian():
     ode_discipline = ODEDiscipline(
         rhs_discipline=discipline,
         state_names=["x", "y"],
-        ode_solver_name="Radau",
         times=times,
-        rtol=1e-12,
-        atol=1e-12,
+        ode_solver_settings=Radau_Settings(rtol=1e-12, atol=1e-12),
     )
 
     check_jacobian1 = discipline.check_jacobian(
@@ -536,10 +535,8 @@ def test_jacobian_parameters():
     ode_discipline = ODEDiscipline(
         rhs_discipline=discipline,
         state_names=["x", "y"],
-        ode_solver_name="Radau",
         times=times,
-        rtol=1e-12,
-        atol=1e-12,
+        ode_solver_settings=Radau_Settings(rtol=1e-12, atol=1e-12),
     )
 
     new_omega = 4.0
@@ -623,10 +620,10 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
             ODEDiscipline(
                 discipline,
                 state_names=["x", "y"],
-                ode_solver_name=name_of_algorithm,
                 times=times,
-                rtol=1e-13,
-                atol=1e-12,
+                ode_solver_settings=ODE_SOLVER_LIBRARY_FACTORY.create_settings(
+                    name_of_algorithm, rtol=1e-13, atol=1e-12
+                ),
             )
         assert "No algorithm named non_existing_algorithm is available;" in str(
             error_info.value
@@ -635,10 +632,10 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
         ode_discipline = ODEDiscipline(
             discipline,
             state_names=["x", "y"],
-            ode_solver_name=name_of_algorithm,
             times=times,
-            rtol=1e-13,
-            atol=1e-12,
+            ode_solver_settings=ODE_SOLVER_LIBRARY_FACTORY.create_settings(
+                name_of_algorithm, rtol=1e-13, atol=1e-12
+            ),
         )
         res_ode = ode_discipline.execute()
         assert_allclose(res_ode["final_x"], x_exact)
@@ -683,9 +680,9 @@ def test_ode_discipline_termination_event():
         free_fall_discipline,
         times=times,
         state_names=["position", "velocity"],
-        ode_solver_name="DOP853",
         return_trajectories=True,
         termination_event_disciplines=(termination_discipline,),
+        ode_solver_settings=DOP853_Settings(),
     )
 
     res_ode = ode_discipline.execute()
@@ -745,12 +742,12 @@ def test_ode_discipline_two_termination_events():
         free_fall_discipline,
         times=times,
         state_names=["position", "velocity"],
-        ode_solver_name="DOP853",
         return_trajectories=True,
         termination_event_disciplines=(
             termination_discipline_1,
             termination_discipline_2,
         ),
+        ode_solver_settings=DOP853_Settings(),
     )
 
     res_ode = ode_discipline.execute()
@@ -792,8 +789,8 @@ def test_jacobian_parameters_simple():
         rhs_discipline=rhs_discipline,
         state_names=["x"],
         time_name="t",
-        ode_solver_name="Radau",
         times=array([0.0, 1.0]),
+        ode_solver_settings=Radau_Settings(),
     )
 
     def _exact_sol(tt, x_0):

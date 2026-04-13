@@ -20,6 +20,8 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from gemseo.algos.base_algo_factory import BaseAlgoFactory
 from gemseo.algos.linear_solvers.base_linear_solver_library import (
     BaseLinearSolverLibrary,
@@ -36,3 +38,9 @@ class LinearSolverLibraryFactory(BaseAlgoFactory):
     def linear_solvers(self) -> list[str]:
         """The names of the available classes."""
         return self._factory.class_names
+
+
+LINEAR_SOLVER_LIBRARY_FACTORY: Final[LinearSolverLibraryFactory] = (
+    LinearSolverLibraryFactory()
+)
+"""The factory of `BaseLinearSolverLibrary` objects."""

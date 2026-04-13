@@ -147,7 +147,6 @@ system_scenario = MDOScenario(
             tolerance=1e-14,
             max_mda_iter=50,
             warm_start=True,
-            use_lu_fact=False,
             linear_solver_settings=LGMRES_Settings(rtol=1e-14),
         ),
         sub_scenarios_log_level=WARNING,

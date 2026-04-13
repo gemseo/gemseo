@@ -28,6 +28,7 @@ from numpy import array
 from numpy import linspace
 from scipy.interpolate import interp1d
 
+from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.core.chains.chain import MDOChain
 from gemseo.core.discipline import Discipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
@@ -80,8 +81,6 @@ if TYPE_CHECKING:
 # Let us consider the problem described above in the case of two masses.
 # First we describe the right-hand side (RHS) function of the equations of motion
 # for each point mass.
-
-ode_solver_name = "RK45"
 
 stiffness_0 = 1
 stiffness_1 = 1
@@ -190,9 +189,7 @@ ode_disciplines = [
         state_names=(f"position_{i}", f"velocity_{i}"),
         time_name="time",
         return_trajectories=True,
-        ode_solver_name=ode_solver_name,
-        rtol=1e-6,
-        atol=1e-6,
+        ode_solver_settings=RK45_Settings(rtol=1e-6, atol=1e-6),
     )
     for i, rhs_discipline in enumerate(rhs_disciplines)
 ]
@@ -309,9 +306,7 @@ ode_discipline = ODEDiscipline(
     },
     return_trajectories=True,
     times=times,
-    ode_solver_name=ode_solver_name,
-    rtol=1e-12,
-    atol=1e-12,
+    ode_solver_settings=RK45_Settings(rtol=1e-12, atol=1e-12),
 )
 local_data = ode_discipline.execute()
 
@@ -346,7 +341,7 @@ springs_and_masses = CoupledSpringsGenerator(
 # The disciplines can be coupled with one another by an MDA.
 
 disciplines = springs_and_masses.create_coupled_ode_disciplines(
-    atol=1e-8, ode_solver_name=ode_solver_name
+    RK45_Settings(atol=1e-8)
 )
 mda_shortcut = MDAGaussSeidel(disciplines)
 
@@ -363,7 +358,7 @@ mda_result = mda_shortcut.execute({
 # masses in the system.
 
 ode_discipline_shortcut = springs_and_masses.create_discipline_with_coupled_dynamics(
-    ode_solver_name=ode_solver_name
+    RK45_Settings()
 )
 ode_result = ode_discipline_shortcut.execute({
     "initial_position_0": array([positions[0]]),

@@ -23,16 +23,15 @@ from __future__ import annotations
 
 from statistics import NormalDist
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import diag
 from numpy import trace
 from scipy.linalg import block_diag
 
-from gemseo import create_scenario
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.problems.mdo.scalable.parametric.core.scalable_problem import (
     ScalableProblem as _ScalableProblem,
 )
@@ -49,11 +48,12 @@ from gemseo.problems.mdo.scalable.parametric.disciplines.scalable_discipline imp
 from gemseo.problems.mdo.scalable.parametric.scalable_design_space import (
     ScalableDesignSpace,
 )
+from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.scenarios.mdo import MDOScenario
+    from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.typing import RealArray
 
 
@@ -72,28 +72,26 @@ class ScalableProblem(_ScalableProblem):
     _DESIGN_SPACE_CLASS = ScalableDesignSpace
 
     def create_scenario(
-        self,
-        use_optimizer: bool = True,
-        formulation_name: str = "MDF",
-        **formulation_settings: Any,
+        self, formulation_settings: BaseFormulationSettings | None = None
     ) -> MDOScenario:
         """Create the DOE or MDO scenario associated with this scalable problem.
 
         Args:
-            use_optimizer: Whether to use an optimizer or a design of experiments.
-            formulation_name: The name of the formulation.
-            **formulation_settings: The settings of the formulation.
+            formulation_settings: The settings of the MDO formulation.
+                If `None`, use the default settings of the MDF formulation.
 
         Returns:
             The scenario to be executed.
         """
-        scenario = create_scenario(
+        if formulation_settings is None:
+            formulation_settings = MDF_Settings()
+
+        scenario = MDOScenario(
             self.disciplines,
-            OBJECTIVE_NAME,
             self.design_space,
-            formulation_name=formulation_name,
-            **formulation_settings,
+            formulation_settings=formulation_settings,
         )
+        scenario.add_objective(OBJECTIVE_NAME)
         for index, _ in enumerate(self.scalable_disciplines):
             scenario.add_constraint(
                 get_constraint_name(index + 1),

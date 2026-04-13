@@ -35,6 +35,7 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
@@ -112,7 +113,7 @@ problem.plot_n2_chart(save=False, show=True)
 # Lastly, we create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with the [MDF][gemseo.formulations.mdf.MDF] formulation
 # and start the optimization at equilibrium,
 # thus ensuring the feasibility of the first iterate.
-scenario = problem.create_scenario("MDF", start_at_equilibrium=True)
+scenario = problem.create_scenario(MDF_Settings(), start_at_equilibrium=True)
 
 # %%
 # !!! note
