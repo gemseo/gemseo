@@ -144,10 +144,10 @@ class PropaneReaction(Discipline):
         for which discipline analyses are not computable.
     """
 
-    auto_detect_grammar_files = True
-
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
+        self.io.input_grammar.update_from_names(("x_shared", "y_1", "y_2", "y_3"))
+        self.io.output_grammar.update_from_names(("f_2", "f_6", "f_7", "f_9", "obj"))
         self.io.input_grammar.defaults = {
             "x_shared": ones(4, dtype=complex128),
             "y_1": ones(2, dtype=complex128),
@@ -258,10 +258,10 @@ class PropaneComb1(Discipline):
     This discipline is characterized by two coupling equations in functional form.
     """
 
-    auto_detect_grammar_files = True
-
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
+        self.io.input_grammar.update_from_names(("x_shared",))
+        self.io.output_grammar.update_from_names(("y_1",))
         self.io.input_grammar.defaults = {"x_shared": ones(4, dtype=complex128)}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -302,10 +302,10 @@ class PropaneComb2(Discipline):
     This discipline is characterized by two coupling equations in functional form.
     """
 
-    auto_detect_grammar_files = True
-
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
+        self.io.input_grammar.update_from_names(("x_shared",))
+        self.io.output_grammar.update_from_names(("y_2",))
         self.io.input_grammar.defaults = {"x_shared": ones(4, dtype=complex128)}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -349,10 +349,10 @@ class PropaneComb3(Discipline):
     This discipline is characterized by three coupling equations in functional form.
     """
 
-    auto_detect_grammar_files = True
-
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
+        self.io.input_grammar.update_from_names(("x_shared",))
+        self.io.output_grammar.update_from_names(("y_3",))
         self.io.input_grammar.defaults = {"x_shared": ones(4, dtype=complex128)}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:

@@ -27,6 +27,7 @@ from typing import ClassVar
 from typing import cast
 from typing import get_origin
 
+from numpy import dtype as np_dtype
 from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import Strict
@@ -170,6 +171,19 @@ class PydanticGrammar(BaseGrammar):
     ) -> None:
         self.__update_from_annotations(dict.fromkeys(names, NDArrayPydantic), merge)
 
+    def _update_from_data(  # noqa:D102
+        self,
+        data: StrKeyMapping,
+        merge: bool,
+    ) -> None:
+        names_to_types = {}
+        for name, value in data.items():
+            if isinstance(value, ndarray):
+                names_to_types[name] = _NDArrayPydantic[Any, np_dtype[value.dtype.type]]
+            else:
+                names_to_types[name] = type(value)
+        self._update_from_types(names_to_types, merge=merge)
+
     def _update_from_types(
         self,
         names_to_types: SimpleGrammarTypes,
@@ -304,6 +318,9 @@ class PydanticGrammar(BaseGrammar):
                 LOGGER.warning(message, origin, self.name, name)
                 # This type cannot be converted, use the catch-all type.
                 pydantic_type = None
+
+            if pydantic_type is _NDArrayPydantic:
+                pydantic_type = ndarray
 
             names_to_types[name] = pydantic_type
 

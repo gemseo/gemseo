@@ -256,10 +256,10 @@ class ODEDiscipline(Discipline):
 
         mapping_inputs = {
             self.__initial_time_name: self.local_data.get(
-                self.__initial_time_name, times[0]
+                self.__initial_time_name, float(times[0])
             ),
             self.__final_time_name: self.local_data.get(
-                self.__final_time_name, times[-1]
+                self.__final_time_name, float(times[-1])
             ),
             **mapping_initial_state,
             **mapping_parameters,

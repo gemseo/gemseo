@@ -739,6 +739,11 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         The inputs that do not represent continuous numbers are filtered out.
 
+        Note:
+            Filtering of non-numeric inputs is only supported when the discipline uses
+            a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a
+            [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].
+
         Args:
             input_names: The input variables
                 with respect to which to differentiate the outputs.
@@ -773,6 +778,11 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         """Add the outputs to be differentiated.
 
         The outputs that do not represent continuous numbers are filtered out.
+
+        Note:
+            Filtering of non-numeric outputs is only supported when the discipline uses
+            a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a
+            [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].
 
         Args:
             output_names: The outputs to be differentiated.

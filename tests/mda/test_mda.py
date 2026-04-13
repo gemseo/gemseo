@@ -30,6 +30,7 @@ from numpy import allclose
 from numpy import array
 from numpy import eye
 from numpy import inf
+from numpy import ndarray
 from numpy import ones
 from numpy import zeros
 from numpy.random import default_rng
@@ -45,6 +46,7 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base import BaseMDA
 from gemseo.mda.base_settings import BaseMDASettings
@@ -69,8 +71,6 @@ from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
-    from numpy import ndarray
 
     from gemseo.typing import StrKeyMapping
 
@@ -328,22 +328,24 @@ def test_not_numeric_couplings(caplog) -> None:
     """Test that a message is logged when an MDA includes non-numeric couplings."""
     caplog.set_level("DEBUG", logger="gemseo")
     sellar1 = Sellar1()
-    # Tweak the output grammar and set y_1 as an array of string
-    prop = sellar1.io.output_grammar.schema.get("properties").get("y_1")
-    sub_prop = prop.get("items", prop)
-    sub_prop["type"] = "string"
+    grammar = PydanticGrammar("sellar1")
+    grammar.update_from_types(sellar1.io.output_grammar)
+    grammar.update_from_data({"y_1": ndarray("", dtype=str)})
+    sellar1.io.output_grammar = grammar
 
     # Tweak the input grammar and set y_1 as an array of string
     sellar2 = Sellar2()
-    prop = sellar2.io.input_grammar.schema.get("properties").get("y_1")
-    sub_prop = prop.get("items", prop)
-    sub_prop["type"] = "string"
+    grammar = PydanticGrammar("sellar2")
+    grammar.update_from_types(sellar2.io.input_grammar)
+    grammar.update_from_data({"y_1": ndarray("", dtype=str)})
+    sellar2.io.input_grammar = grammar
 
+    BaseMDA.settings_class = BaseMDASettings
     with concretize_classes(BaseMDA):
-        BaseMDA.settings_class = BaseMDASettings
         BaseMDA([sellar1, sellar2])
-        msg = "The coupling variable(s) {'y_1'} is/are not an array of numeric values."
-        assert msg in caplog.text
+
+    msg = "The coupling variable(s) {'y_1'} is/are not an array of numeric values."
+    assert msg in caplog.text
 
 
 def test_sequence_transformers_setters(sellar_mda) -> None:
@@ -492,86 +494,95 @@ def test_mda_with_residuals(coupled_disciplines) -> None:
 
 
 class DiscWithNonNumericInputs1(Discipline):
+    default_grammar_type = Discipline.GrammarType.PYDANTIC
+
     def __init__(self):
+        # breakpoint()
         super().__init__()
-        self.io.input_grammar.update_from_data({"x": zeros(1)})
-        self.io.input_grammar.update_from_data({"a": zeros(1)})
-        self.io.input_grammar.update_from_data({"b_file": array(["my_b_file"])})
+        input_data = {
+            "x": array([0.5]),
+            "a": array([0.5]),
+            "b_file": array(["my_b_file"]),
+        }
+        self.io.input_grammar.update_from_data(input_data)
+        self.io.input_grammar.defaults.update(input_data)
 
-        self.io.output_grammar.update_from_data({"y": zeros(1)})
-        self.io.output_grammar.update_from_data({"b": zeros(1)})
-        self.io.output_grammar.update_from_data({"a_file": "my_a_file"})
-
-        self.io.input_grammar.defaults["x"] = array([0.5])
-        self.io.input_grammar.defaults["a"] = array([0.5])
-        self.io.input_grammar.defaults["b_file"] = array(["my_b_file"])
+        self.io.output_grammar.update_from_data({
+            "y": zeros(1),
+            "b": zeros(1),
+            "a_file": "my_a_file",
+        })
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x = self.io.data["x"]
-        a = self.io.data["a"]
-        y = x
-        b = 2 * a
-        self.io.data.update({"y": y, "a_file": "my_a_file", "b": b})
+        return {"y": input_data["x"], "a_file": "my_a_file", "b": 2 * input_data["a"]}
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        self.jac = {}
-        self.jac["y"] = {}
-        self.jac["b"] = {}
-        self.jac["y"]["x"] = array([[1.0]])
-        self.jac["y"]["a"] = array([[0.0]])
-        self.jac["b"]["x"] = array([[0.0]])
-        self.jac["b"]["a"] = array([[2.0]])
+        self.jac = {
+            "y": {
+                "x": array([[1.0]]),
+                "a": array([[0.0]]),
+            },
+            "b": {
+                "x": array([[0.0]]),
+                "a": array([[2.0]]),
+            },
+        }
 
 
 class DiscWithNonNumericInputs2(Discipline):
+    default_grammar_type = Discipline.GrammarType.PYDANTIC
+
     def __init__(self):
         super().__init__()
-        self.io.input_grammar.update_from_data({"y": zeros(1)})
-        self.io.input_grammar.update_from_data({"a_file": "my_a_file"})
-        self.io.output_grammar.update_from_data({"x": zeros(1)})
-        self.io.output_grammar.update_from_data({"b_file": array(["my_b_file"])})
-        self.io.input_grammar.defaults["y"] = array([0.5])
-        self.io.input_grammar.defaults["a_file"] = "my_a_file"
+        input_data = {
+            "y": array([0.5]),
+            "a_file": "my_a_file",
+        }
+        self.io.input_grammar.update_from_data(input_data)
+        self.io.input_grammar.defaults.update(input_data)
+        self.io.output_grammar.update_from_data({
+            "x": zeros(1),
+            "b_file": array(["my_b_file"]),
+        })
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        y = self.io.data["y"]
+        y = input_data["y"]
         x = 1.0 - 0.3 * y
-        self.io.data.update({"x": x, "b_file": array(["my_b_file"])})
+        return {"x": x, "b_file": array(["my_b_file"])}
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        self.jac = {}
-        self.jac["x"] = {}
-        self.jac["x"]["y"] = array([[-0.3]])
+        self.jac = {"x": {"y": array([[-0.3]])}}
 
 
 class DiscWithNonNumericInputs3(Discipline):
+    default_grammar_type = Discipline.GrammarType.PYDANTIC
+
     def __init__(self):
         super().__init__()
-        self.io.input_grammar.update_from_data({"x": zeros(1)})
-        self.io.input_grammar.update_from_data({"y": zeros(1)})
-        self.io.input_grammar.update_from_data({"b": zeros(1)})
-        self.io.input_grammar.update_from_data({"a_file": "my_a_file"})
+        input_data = {
+            "x": array([0.5]),
+            "y": array([0.5]),
+            "b": array([0.5]),
+            "a_file": "my_a_file",
+        }
+        self.io.input_grammar.update_from_data(input_data)
+        self.io.input_grammar.defaults.update(input_data)
 
-        self.io.output_grammar.update_from_data({"obj": zeros(1)})
-        self.io.output_grammar.update_from_data({"out_file_2": "my_a_file"})
-        self.io.input_grammar.defaults["x"] = array([0.5])
-        self.io.input_grammar.defaults["y"] = array([0.5])
-        self.io.input_grammar.defaults["b"] = array([0.5])
-        self.io.input_grammar.defaults["a_file"] = "my_a_file"
+        self.io.output_grammar.update_from_data({
+            "obj": zeros(1),
+            "out_file_2": "my_a_file",
+        })
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x = self.io.data["x"]
-        y = self.io.data["y"]
-        obj = x - y
-        self.io.data.update({"obj": obj, "out_file_2": "my_out_file"})
+        return {"obj": input_data["x"] - input_data["y"], "out_file_2": "my_out_file"}
 
     def _compute_jacobian(
         self,
@@ -580,11 +591,9 @@ class DiscWithNonNumericInputs3(Discipline):
     ) -> None:
         x = self.io.data["x"][0]
         y = self.io.data["y"][0]
-        self.jac = {}
-        self.jac["obj"] = {}
-        self.jac["obj"]["x"] = array([[1.0]])
-        self.jac["obj"]["y"] = array([[-1.0]])
-        self.jac["obj"]["b"] = array([[x - y]])
+        self.jac = {
+            "obj": {"x": array([[1.0]]), "y": array([[-1.0]]), "b": array([[x - y]])}
+        }
 
 
 @pytest.mark.parametrize(

@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from numpy import atleast_2d
+from numpy import ndarray
 from numpy import zeros
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
@@ -43,14 +44,14 @@ class RosenMF(Discipline):
     where both $\mathrm{fidelity}$ and $x$ are provided as input data.
     """
 
-    auto_detect_grammar_files = True
-
     def __init__(self, dimension: int = 2) -> None:
         """
         Args:
             dimension: The dimension of the design space.
         """  # noqa: D205 D212
         super().__init__()
+        self.io.input_grammar.update_from_types({"x": ndarray, "fidelity": float})
+        self.io.output_grammar.update_from_types({"rosen": float})
         self.io.input_grammar.defaults = {"x": zeros(dimension), "fidelity": 1.0}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:

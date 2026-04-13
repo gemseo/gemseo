@@ -16,11 +16,13 @@
 
 from __future__ import annotations
 
-from functools import cache
 from typing import TYPE_CHECKING
 from typing import get_args
 from typing import get_origin
 
+from numpy import inexact
+from numpy import integer as np_integer
+from numpy import issubdtype
 from numpy import ndarray
 
 from gemseo.core.data_converters.base import BaseDataConverter
@@ -34,29 +36,11 @@ if TYPE_CHECKING:
 class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
     """Data values to NumPy arrays and vice versa from a [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar]."""  # noqa: E501
 
-    @staticmethod
-    @cache
-    def __convert_types(types: tuple[type, ...]) -> tuple[type, ...]:
-        """Convert from python types to json types.
-
-        This method is cached for performance.
-
-        Args:
-            types: The types to be converted.
-
-        Returns:
-            The converted types.
-        """
-        if ndarray in types:
-            return (*types, _ScalarType_co)
-        return types
-
     def _has_type(  # noqa:D102
         self,
         name: str,
         types: tuple[type, ...],
     ) -> bool:
-        types = self.__convert_types(types)
         annotation = self._grammar[name].annotation
 
         if annotation in types or annotation is _NDArrayPydantic:
@@ -67,7 +51,28 @@ class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
         if type_origin is not _NDArrayPydantic:
             return False
 
-        # This is X in NDArray[X].
+        if ndarray not in types:
+            return False
+
+        # annotation is _NDArrayPydantic[Any, dtype[X]], extract X.
         dtype = get_args(get_args(annotation)[1])[0]
 
-        return dtype in types
+        if dtype is _ScalarType_co:
+            # Unparameterized ndarray: no dtype constraint, matches any ndarray type.
+            return True
+
+        if issubdtype(dtype, inexact):
+            # Float or complex dtype: matches any continuous scalar type.
+            return any(
+                t in types for t in self._IS_CONTINUOUS_TYPES if t is not ndarray
+            )
+
+        if issubdtype(dtype, np_integer):
+            # Integer dtype: matches any numeric-but-not-continuous scalar type.
+            return any(
+                t in types
+                for t in self._IS_NUMERIC_TYPES
+                if t not in self._IS_CONTINUOUS_TYPES
+            )
+
+        return False

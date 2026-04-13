@@ -95,6 +95,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.datasets import DatasetClassName
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -609,6 +610,9 @@ def test_get_available_mdas() -> None:
 def test_get_discipline_inputs_schema() -> None:
     """Test that the discipline input schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
+    json_grammar = JSONGrammar("SobieskiMission")
+    json_grammar.update_from_types(mission.io.input_grammar)
+    mission.io.input_grammar = json_grammar
     schema_dict = get_discipline_inputs_schema(mission)
     for key in mission.io.input_grammar:
         assert key in schema_dict["properties"]
@@ -621,6 +625,9 @@ def test_get_discipline_inputs_schema() -> None:
 def test_get_discipline_outputs_schema() -> None:
     """Test that the discipline output schemas are retrieved correctly."""
     mission = create_discipline("SobieskiMission")
+    json_grammar = JSONGrammar("SobieskiMission")
+    json_grammar.update_from_types(mission.io.output_grammar)
+    mission.io.output_grammar = json_grammar
     schema_dict = get_discipline_outputs_schema(mission)
     for key in mission.io.output_grammar:
         assert key in schema_dict["properties"]

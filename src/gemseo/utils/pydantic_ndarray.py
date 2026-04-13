@@ -108,7 +108,13 @@ class _NDArrayPydantic(ndarray[_ShapeType, _DType_co]):
             #     raise ValueError(msg)
 
             # First check that the source dtype is not catch-all then the actual dtype.
-            if dtype_ not in {Any, _ScalarType_co} and data.dtype != dtype_:
+            # The second condition (data.dtype.type) ignores string length
+            # (e.g. <U4 vs <U9 are both numpy.str_).
+            if (
+                dtype_ not in {Any, _ScalarType_co}
+                and data.dtype != dtype_
+                and data.dtype.type is not dtype_
+            ):
                 msg = (
                     f"The expected dtype is {dtype_}: "
                     f"the actual dtype is {data.dtype.type}"
