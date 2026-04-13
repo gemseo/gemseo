@@ -272,14 +272,66 @@ def test_convert_data_to_array(converter) -> None:
     assert len(array_) == 0
 
 
-def test_str_ndarray() -> None:
-    """Verify the behavior for ndarray of strings."""
-    grammar = JSONGrammar("g")
-    name = "a_str_ndarray"
-    grammar.update_from_types({name: ndarray})
-    prop = grammar.schema.get("properties").get(name)
-    sub_prop = prop.get("items", prop)
-    sub_prop["type"] = "string"
-    converter = grammar.data_converter
-    # They should only be used to check if they are numeric.
-    assert not converter.is_numeric(name)
+def create_converters_ndarray() -> list[BaseDataConverter]:
+    """Create converter for checking ndarray dtype features."""
+    names_to_data = {
+        "float_array": array([1.0]),
+        "int_array": array([1]),
+        "complex_array": array([1j]),
+        "str_array": array(["hello"]),
+    }
+
+    converters = []
+
+    for cls in (JSONGrammar, PydanticGrammar):
+        grammar = cls("g")
+        grammar.update_from_data(names_to_data)
+        converters.append(grammar.data_converter)
+
+    return converters
+
+
+@pytest.fixture(params=create_converters_ndarray())
+def converter_ndarray(request) -> BaseDataConverter:
+    """Return a converter for checking ndarray."""
+    return request.param
+
+
+def test_is_numeric_typed_numeric_arrays(converter_ndarray) -> None:
+    """Numeric-dtype arrays are numeric."""
+    for name in ("float_array", "int_array", "complex_array"):
+        assert converter_ndarray.is_numeric(name)
+
+    assert not converter_ndarray.is_numeric("str_array")
+
+
+def test_is_continuous_typed_arrays(converter_ndarray) -> None:
+    """Float/complex-dtype arrays are continuous; int/str-dtype arrays are not."""
+    assert converter_ndarray.is_continuous("float_array")
+    assert converter_ndarray.is_continuous("complex_array")
+    assert not converter_ndarray.is_continuous("int_array")
+    assert not converter_ndarray.is_continuous("str_array")
+
+
+def test_pydantic_to_simple_grammar_normalizes_ndarray_type() -> None:
+    """Verify PydanticGrammar.to_simple_grammar normalizes _NDArrayPydantic to ndarray.
+
+    When an MDA (SimplerGrammar) absorbs types from PydanticGrammar disciplines,
+    _NDArrayPydantic must be normalized to ndarray so that the SimpleGrammar data
+    converter correctly identifies numeric and continuous variables.
+    """
+    pydantic_grammar = PydanticGrammar("g")
+    pydantic_grammar.update_from_data({
+        "x": array([1.0]),
+        "a_file": "my_file",
+        "a_int": 1,
+    })
+    simple_grammar = pydantic_grammar.to_simple_grammar()
+    converter = simple_grammar.data_converter
+
+    assert simple_grammar["x"] is ndarray
+    assert converter.is_numeric("x")
+    assert converter.is_continuous("x")
+    assert not converter.is_numeric("a_file")
+    assert converter.is_numeric("a_int")
+    assert not converter.is_continuous("a_int")

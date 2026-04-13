@@ -27,7 +27,6 @@ import logging
 from inspect import getsource
 from inspect import signature
 from typing import TYPE_CHECKING
-from typing import ClassVar
 from typing import Final
 from typing import get_args
 from typing import get_origin
@@ -91,10 +90,6 @@ class AutoPyDiscipline(Discipline):
     from the documentation
     illustrates this feature.
     """
-
-    default_grammar_type: ClassVar[Discipline.GrammarType] = (
-        Discipline.GrammarType.SIMPLE
-    )
 
     __input_names: tuple[str, ...]
     """The names of the input variables."""

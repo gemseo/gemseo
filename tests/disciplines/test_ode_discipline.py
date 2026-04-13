@@ -32,7 +32,6 @@ import pytest
 from numpy import allclose
 from numpy import arctan
 from numpy import array
-from numpy import concatenate
 from numpy import cos
 from numpy import exp
 from numpy import isclose
@@ -771,16 +770,16 @@ def test_serialization(tmp_wd):
 def test_jacobian_parameters_simple():
     """Test a gradient-based quadrature algorithm."""
     a = 1.0
-    x_0 = array([1.0])
+    x_0 = 1.0
     t_0 = 0.0
     t_f = 2.0
 
-    def fct(t=t_0, x=x_0, a=a):
-        x_dot = array([a * x])
+    def fct(t: float = t_0, x: float = x_0, a: float = a) -> float:
+        x_dot = a * x
         return x_dot  # noqa: RET504
 
     def jacobian(t=t_0, x=x_0, a=a):
-        jac = concatenate((t * 0, a, x)).reshape((1, -1))
+        jac = array((t * 0, a, x)).reshape((1, -1))
         return jac  # noqa: RET504
 
     rhs_discipline = AutoPyDiscipline(py_func=fct, py_jac=jacobian)

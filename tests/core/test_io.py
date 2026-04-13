@@ -200,7 +200,7 @@ def test_initialize_finalize_data_processor():
         InvalidDataError,
         match=re.escape(
             "Grammar AnalyticDiscipline_discipline_input: validation failed.\n"
-            "error: data.x must be array"
+            "Bad type for x: <class 'float'> instead of <class 'numpy.ndarray'>."
         ),
     ):
         discipline.execute({"x": 1.0})
@@ -211,7 +211,8 @@ def test_initialize_finalize_data_processor():
         InvalidDataError,
         match=re.escape(
             "Grammar AnalyticDiscipline_discipline_output: validation failed.\n"
-            "error: data.y must be array"
+            "Bad type for y: "
+            "<class 'numpy.float64'> instead of <class 'numpy.ndarray'>."
         ),
     ):
         discipline.execute({"x": array([1.0])})

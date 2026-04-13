@@ -51,8 +51,8 @@ def test_linear_composition_expr(input_names, expected_expr):
 
 def test_linear_composition():
     fg = DisciplineAdapterGenerator(RosenMF(3))
-    f1 = fg.get_function(["x"], ["rosen"], default_input_data={"fidelity": 0})
-    f2 = fg.get_function(["x"], ["rosen"], default_input_data={"fidelity": 1})
+    f1 = fg.get_function(["x"], ["rosen"], default_input_data={"fidelity": 0.0})
+    f2 = fg.get_function(["x"], ["rosen"], default_input_data={"fidelity": 1.0})
 
     x = zeros(3)
     assert f1.evaluate(x) == 0.0

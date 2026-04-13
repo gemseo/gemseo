@@ -20,6 +20,7 @@ from typing import NamedTuple
 
 import pytest
 from numpy import array
+from numpy import str_
 from pydantic import ValidationError
 from pydantic import create_model
 
@@ -37,6 +38,8 @@ class Data(NamedTuple):
 INVALID_DATA = ([0], [0.0], 0, 0.0, "0", False)
 
 # Test data with type annotations bound to valid and invalid data.
+# For NDArrayPydantic[str_], valid data includes arrays with different string
+# lengths (e.g. <U1, <U11) — the validator ignores string length in the dtype.
 TYPES_TO_VALUES = {
     _NDArrayPydantic: Data(array([0]), INVALID_DATA),
     NDArrayPydantic: Data(array([0]), INVALID_DATA),
@@ -51,6 +54,14 @@ TYPES_TO_VALUES = {
     NDArrayPydantic[float]: Data(
         array([0.0]),
         (
+            array([0]),
+            array([False]),
+        ),
+    ),
+    NDArrayPydantic[str_]: Data(
+        array(["short"]),
+        (
+            array([1.0]),
             array([0]),
             array([False]),
         ),
@@ -94,3 +105,13 @@ def test_invalid_data(type_, data) -> None:
     for invalid_data in data.invalid:
         with pytest.raises(ValidationError):
             model(name=invalid_data)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [array(["a"]), array(["long_string"]), array(["x", "yy", "zzz"])],
+)
+def test_string_array_ignores_item_length(value) -> None:
+    """Verify that NDArray[str_] accepts strings regardless of item length."""
+    model = create_model("Model", name=(NDArrayPydantic[str_], ...))
+    model(name=value)

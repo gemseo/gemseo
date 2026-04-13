@@ -129,7 +129,7 @@ class BaseDiscipline(BaseMonitoredProcess):
     GRAMMAR_DIRECTORY: ClassVar[str | Path] = ""
     """The directory in which to search for the grammar files if not the class one."""
 
-    default_grammar_type: ClassVar[_GrammarType] = GrammarType.JSON
+    default_grammar_type: ClassVar[_GrammarType] = GrammarType.SIMPLE
     """The default type of grammar."""
 
     auto_detect_grammar_files: ClassVar[bool] = False

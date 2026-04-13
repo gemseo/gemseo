@@ -119,8 +119,6 @@ class Mission(Discipline):
     Compute the objective and the constraints.
     """
 
-    auto_detect_grammar_files = True
-
     def __init__(self, r_val: float = 0.5, lift_val: float = 0.5) -> None:
         """
         Args:
@@ -128,6 +126,13 @@ class Mission(Discipline):
             lift_val: The threshold to compute the lift constraint.
         """  # noqa: D205 D212
         super().__init__()
+        self.io.input_grammar.update_from_names((
+            "lift",
+            "mass",
+            "drag",
+            "reserve_fact",
+        ))
+        self.io.output_grammar.update_from_names(("range", "c_lift", "c_rf"))
         self.io.input_grammar.defaults = get_inputs(
             "lift", "mass", "drag", "reserve_fact"
         )
@@ -221,6 +226,8 @@ class Aerodynamics(Discipline):
 
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
+        self.io.input_grammar.update_from_names(("sweep", "thick_airfoils", "displ"))
+        self.io.output_grammar.update_from_names(("drag", "forces", "lift"))
         self.io.input_grammar.defaults = get_inputs("sweep", "thick_airfoils", "displ")
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -326,10 +333,10 @@ class Structure(Discipline):
     Evaluate: `[mass, rf, displ] = f(sweep, thick_panels, forces)`.
     """
 
-    auto_detect_grammar_files = True
-
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
+        self.io.input_grammar.update_from_names(("sweep", "thick_panels", "forces"))
+        self.io.output_grammar.update_from_names(("mass", "reserve_fact", "displ"))
         self.io.input_grammar.defaults = get_inputs("sweep", "forces", "thick_panels")
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:

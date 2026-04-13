@@ -25,6 +25,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 from strenum import StrEnum
 
@@ -136,3 +137,7 @@ class GrammarType(StrEnum):
     SIMPLE = "SimpleGrammar"
     SIMPLER = "SimplerGrammar"
     PYDANTIC = "PydanticGrammar"
+
+
+GRAMMAR_FACTORY: Final[GrammarFactory] = GrammarFactory()
+"""The factory for `BaseGrammar` objects."""

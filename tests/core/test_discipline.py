@@ -51,6 +51,7 @@ from gemseo.core.discipline.data_processor import ComplexDataProcessor
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
+from gemseo.core.grammars.factory import GRAMMAR_FACTORY
 from gemseo.core.grammars.json_grammar import JSONGrammar
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
@@ -608,13 +609,13 @@ def test_execute_rerun_errors(enable_discipline_status) -> None:
     d = MyDisc()
     d.io.input_grammar.update_from_names(["a"])
     d.io.output_grammar.update_from_names(["b"])
-    d.execute({"a": [1]})
+    d.execute({"a": array([1.0])})
     d.execution_status.value = Status.RUNNING
     with pytest.raises(ValueError):
-        d.execute({"a": [2]})
+        d.execute({"a": array([2.0])})
 
     d.execution_status.value = Status.DONE
-    d.execute({"a": [1]})
+    d.execute({"a": array([1.0])})
 
 
 def test_cache(enable_discipline_statistics) -> None:
@@ -1030,10 +1031,16 @@ def test_no_cache(enable_discipline_statistics) -> None:
 
 
 @pytest.mark.parametrize(
+    ("grammar_type"),
+    [
+        Discipline.GrammarType.JSON,
+        Discipline.GrammarType.PYDANTIC,
+    ],
+)
+@pytest.mark.parametrize(
     (
         "inputs",
         "outputs",
-        "grammar_type",
         "expected_diff_inputs",
         "expected_diff_outputs",
     ),
@@ -1041,21 +1048,19 @@ def test_no_cache(enable_discipline_statistics) -> None:
         (
             {"x": array([1.0]), "in_path": array(["some_string"])},
             {"y": array([0.0]), "out_path": array(["another_string"])},
-            Discipline.GrammarType.JSON,
             ["x"],
             ["y"],
         ),
         (
             {"x": array([1.0]), "in_path": "some_string"},
             {"y": array([0.0]), "out_path": "another_string"},
-            Discipline.GrammarType.JSON,
             ["x"],
             ["y"],
         ),
     ],
 )
 def test_add_differentiated_io_non_numeric(
-    inputs, outputs, grammar_type, expected_diff_inputs, expected_diff_outputs
+    grammar_type, inputs, outputs, expected_diff_inputs, expected_diff_outputs
 ) -> None:
     """Check that non-numeric i/o are ignored in add_differentiated_inputs/outputs.
 
@@ -1067,13 +1072,15 @@ def test_add_differentiated_io_non_numeric(
     the array subtype is not checked.
 
     Args:
+        grammar_type: The discipline grammar type.
         inputs: The inputs of the discipline.
         outputs: The outputs of the discipline.
-        grammar_type: The discipline grammar type.
         expected_diff_inputs: The expected differentiated inputs.
         expected_diff_outputs: The expected differentiated outputs.
     """
     discipline = DummyDiscipline()
+    discipline.io.input_grammar = GRAMMAR_FACTORY.create(grammar_type, name="in")
+    discipline.io.output_grammar = GRAMMAR_FACTORY.create(grammar_type, name="out")
     discipline.io.input_grammar.update_from_data(inputs)
     discipline.io.output_grammar.update_from_data(outputs)
     discipline.add_differentiated_inputs()
