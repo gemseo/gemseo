@@ -9,10 +9,14 @@
        \end{aligned}
        \right.
 </code></pre></div><p>$$</p><div class="doc doc-children"><h3 id=gemseo.problems.mdo.aerostructure.aerostructure-attributes>Attributes<a href=#gemseo.problems.mdo.aerostructure.aerostructure-attributes class=headerlink title="Permanent link">&para;</a></h3><h3 id=gemseo.problems.mdo.aerostructure.aerostructure-classes>Classes<a href=#gemseo.problems.mdo.aerostructure.aerostructure-classes class=headerlink title="Permanent link">&para;</a></h3><div class="doc doc-object doc-class"><h4 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-class"></code><span class="doc doc-object-name doc-class-name">Aerodynamics</span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics class=headerlink title="Permanent link">&para;</a></h4><div class="doc-signature highlight"><pre><span></span><code><span class=nf>Aerodynamics</span><span class=p>()</span>
-</code></pre></div><div class="doc doc-contents "><p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href=../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline>Discipline</a></code></p><p>The aerodynamics discipline of the aerostructure use case.</p><p>Evaluate: <code>[drag, forces, lift] = f(sweep, thick_airfoils, displ)</code>.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>222</span>
-<span class=normal>223</span>
-<span class=normal>224</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>  <span class=c1># noqa: D107</span>
+</code></pre></div><div class="doc doc-contents "><p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href=../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline>Discipline</a></code></p><p>The aerodynamics discipline of the aerostructure use case.</p><p>Evaluate: <code>[drag, forces, lift] = f(sweep, thick_airfoils, displ)</code>.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>227</span>
+<span class=normal>228</span>
+<span class=normal>229</span>
+<span class=normal>230</span>
+<span class=normal>231</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>  <span class=c1># noqa: D107</span>
     <span class=nb>super</span><span class=p>()</span><span class=o>.</span><span class=fm>__init__</span><span class=p>()</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>update_from_names</span><span class=p>((</span><span class=s2>&quot;sweep&quot;</span><span class=p>,</span> <span class=s2>&quot;thick_airfoils&quot;</span><span class=p>,</span> <span class=s2>&quot;displ&quot;</span><span class=p>))</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_grammar</span><span class=o>.</span><span class=n>update_from_names</span><span class=p>((</span><span class=s2>&quot;drag&quot;</span><span class=p>,</span> <span class=s2>&quot;forces&quot;</span><span class=p>,</span> <span class=s2>&quot;lift&quot;</span><span class=p>))</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>defaults</span> <span class=o>=</span> <span class=n>get_inputs</span><span class=p>(</span><span class=s2>&quot;sweep&quot;</span><span class=p>,</span> <span class=s2>&quot;thick_airfoils&quot;</span><span class=p>,</span> <span class=s2>&quot;displ&quot;</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details><div class="doc doc-children"><h5 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics-attributes>Attributes<a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics-attributes class=headerlink title="Permanent link">&para;</a></h5><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.ApproximationMode class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">ApproximationMode</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small><small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.ApproximationMode class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>ApproximationMode</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=enum.EnumType href=https://docs.python.org/3/library/enum.html#enum.EnumType>EnumType</a></span> <span class=o>=</span> <span class=n><a class="autorefs autorefs-internal" title="            merge_enums (gemseo.utils.enumeration.merge_enums)" href=../../../../utils/enumeration/#gemseo.utils.enumeration.merge_enums>merge_enums</a></span><span class=p>(</span>
     <span class=s2>&quot;ApproximationMode&quot;</span><span class=p>,</span>
@@ -61,7 +65,7 @@
    (gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType)" href=../../../../core/discipline/base_discipline/#gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType>CacheType</a></span> <span class=o>=</span> <span class=p>(</span>
     <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType.SIMPLE>SIMPLE</span></span> <span class=k>if</span> <span class=n><span title=gemseo.utils.constants._ENABLE_DISCIPLINE_CACHE>_ENABLE_DISCIPLINE_CACHE</span></span> <span class=k>else</span> <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType.NONE>NONE</span></span>
 <span class=p>)</span>
-</code></pre></div><div class="doc doc-contents "><p>The default type of cache.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.default_grammar_type class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_grammar_type</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.default_grammar_type class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_grammar_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarType (gemseo.core.grammars.factory.GrammarType)" href=../../../../core/grammars/factory/#gemseo.core.grammars.factory.GrammarType>GrammarType</a></span> <span class=o>=</span> <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.GrammarType.JSON>JSON</span></span>
+</code></pre></div><div class="doc doc-contents "><p>The default type of cache.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.default_grammar_type class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_grammar_type</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.default_grammar_type class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_grammar_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarType (gemseo.core.grammars.factory.GrammarType)" href=../../../../core/grammars/factory/#gemseo.core.grammars.factory.GrammarType>GrammarType</a></span> <span class=o>=</span> <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.GrammarType.SIMPLE>SIMPLE</span></span>
 </code></pre></div><div class="doc doc-contents "><p>The default type of grammar.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.default_input_data class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_input_data</span><span class="doc doc-labels"><small class="doc doc-label doc-label-property"><code>property</code></small><small class="doc doc-label doc-label-writable"><code>writable</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.default_input_data class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_input_data</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarProperties (gemseo.core.grammars.grammar_properties.GrammarProperties)" href=../../../../core/grammars/grammar_properties/#gemseo.core.grammars.grammar_properties.GrammarProperties>GrammarProperties</a></span>
 </code></pre></div><div class="doc doc-contents "><p>The default input data.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.default_output_data class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_output_data</span><span class="doc doc-labels"><small class="doc doc-label doc-label-property"><code>property</code></small><small class="doc doc-label doc-label-writable"><code>writable</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.default_output_data class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_output_data</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarProperties (gemseo.core.grammars.grammar_properties.GrammarProperties)" href=../../../../core/grammars/grammar_properties/#gemseo.core.grammars.grammar_properties.GrammarProperties>GrammarProperties</a></span>
 </code></pre></div><div class="doc doc-contents "><p>The default output data used when <a class="autorefs autorefs-internal" title="            virtual_execution
@@ -99,7 +103,7 @@
 </code></pre></div><div class="doc doc-contents "><p>Initialized as SciPy CSR arrays filled with zeros.</p></div></div></div></div></div><h5 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics-functions>Functions<a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics-functions class=headerlink title="Permanent link">&para;</a></h5><div class="doc doc-object doc-function"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.add_differentiated_inputs class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">add_differentiated_inputs</span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.add_differentiated_inputs class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>add_differentiated_inputs</span><span class=p>(</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Add the inputs with respect to which to differentiate the outputs.</p><p>The inputs that do not represent continuous numbers are filtered out.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The input variables with respect to which to differentiate the outputs. If empty, use all the inputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an input name is not the name of a discipline input.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>734</span>
+</code></pre></div><div class="doc doc-contents "><p>Add the inputs with respect to which to differentiate the outputs.</p><p>The inputs that do not represent continuous numbers are filtered out.</p><details class=note open><summary>Note</summary><p>Filtering of non-numeric inputs is only supported when the discipline uses a <a class="autorefs autorefs-internal" title="            JSONGrammar" href=../../../../core/grammars/json_grammar/#gemseo.core.grammars.json_grammar.JSONGrammar>JSONGrammar</a> or a <a class="autorefs autorefs-internal" title="            PydanticGrammar" href=../../../../core/grammars/pydantic_grammar/#gemseo.core.grammars.pydantic_grammar.PydanticGrammar>PydanticGrammar</a>.</p></details><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The input variables with respect to which to differentiate the outputs. If empty, use all the inputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an input name is not the name of a discipline input.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>734</span>
 <span class=normal>735</span>
 <span class=normal>736</span>
 <span class=normal>737</span>
@@ -132,13 +136,23 @@
 <span class=normal>764</span>
 <span class=normal>765</span>
 <span class=normal>766</span>
-<span class=normal>767</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_inputs</span><span class=p>(</span>
+<span class=normal>767</span>
+<span class=normal>768</span>
+<span class=normal>769</span>
+<span class=normal>770</span>
+<span class=normal>771</span>
+<span class=normal>772</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_inputs</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Add the inputs with respect to which to differentiate the outputs.</span>
 
 <span class=sd>    The inputs that do not represent continuous numbers are filtered out.</span>
+
+<span class=sd>    Note:</span>
+<span class=sd>        Filtering of non-numeric inputs is only supported when the discipline uses</span>
+<span class=sd>        a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a</span>
+<span class=sd>        [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].</span>
 
 <span class=sd>    Args:</span>
 <span class=sd>        input_names: The input variables</span>
@@ -169,12 +183,7 @@
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.add_differentiated_outputs class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">add_differentiated_outputs</span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics.add_differentiated_outputs class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>add_differentiated_outputs</span><span class=p>(</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Add the outputs to be differentiated.</p><p>The outputs that do not represent continuous numbers are filtered out.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>output_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The outputs to be differentiated. If empty, use all the outputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an output name is not the name of a discipline output.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>769</span>
-<span class=normal>770</span>
-<span class=normal>771</span>
-<span class=normal>772</span>
-<span class=normal>773</span>
-<span class=normal>774</span>
+</code></pre></div><div class="doc doc-contents "><p>Add the outputs to be differentiated.</p><p>The outputs that do not represent continuous numbers are filtered out.</p><details class=note open><summary>Note</summary><p>Filtering of non-numeric outputs is only supported when the discipline uses a <a class="autorefs autorefs-internal" title="            JSONGrammar" href=../../../../core/grammars/json_grammar/#gemseo.core.grammars.json_grammar.JSONGrammar>JSONGrammar</a> or a <a class="autorefs autorefs-internal" title="            PydanticGrammar" href=../../../../core/grammars/pydantic_grammar/#gemseo.core.grammars.pydantic_grammar.PydanticGrammar>PydanticGrammar</a>.</p></details><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>output_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The outputs to be differentiated. If empty, use all the outputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an output name is not the name of a discipline output.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>774</span>
 <span class=normal>775</span>
 <span class=normal>776</span>
 <span class=normal>777</span>
@@ -201,13 +210,28 @@
 <span class=normal>798</span>
 <span class=normal>799</span>
 <span class=normal>800</span>
-<span class=normal>801</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_outputs</span><span class=p>(</span>
+<span class=normal>801</span>
+<span class=normal>802</span>
+<span class=normal>803</span>
+<span class=normal>804</span>
+<span class=normal>805</span>
+<span class=normal>806</span>
+<span class=normal>807</span>
+<span class=normal>808</span>
+<span class=normal>809</span>
+<span class=normal>810</span>
+<span class=normal>811</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_outputs</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Add the outputs to be differentiated.</span>
 
 <span class=sd>    The outputs that do not represent continuous numbers are filtered out.</span>
+
+<span class=sd>    Note:</span>
+<span class=sd>        Filtering of non-numeric outputs is only supported when the discipline uses</span>
+<span class=sd>        a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a</span>
+<span class=sd>        [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].</span>
 
 <span class=sd>    Args:</span>
 <span class=sd>        output_names: The outputs to be differentiated.</span>
@@ -668,14 +692,7 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The displacement.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The drag.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>239</span>
-<span class=normal>240</span>
-<span class=normal>241</span>
-<span class=normal>242</span>
-<span class=normal>243</span>
-<span class=normal>244</span>
-<span class=normal>245</span>
-<span class=normal>246</span>
+   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The displacement.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The drag.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>246</span>
 <span class=normal>247</span>
 <span class=normal>248</span>
 <span class=normal>249</span>
@@ -691,7 +708,14 @@
 <span class=normal>259</span>
 <span class=normal>260</span>
 <span class=normal>261</span>
-<span class=normal>262</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>262</span>
+<span class=normal>263</span>
+<span class=normal>264</span>
+<span class=normal>265</span>
+<span class=normal>266</span>
+<span class=normal>267</span>
+<span class=normal>268</span>
+<span class=normal>269</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>compute_drag</span><span class=p>(</span>
     <span class=n>sweep</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>thick_airfoils</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>displ</span><span class=p>:</span> <span class=n>RealArray</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>
@@ -750,14 +774,7 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The displacement.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The forces.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>264</span>
-<span class=normal>265</span>
-<span class=normal>266</span>
-<span class=normal>267</span>
-<span class=normal>268</span>
-<span class=normal>269</span>
-<span class=normal>270</span>
-<span class=normal>271</span>
+   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The displacement.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The forces.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>271</span>
 <span class=normal>272</span>
 <span class=normal>273</span>
 <span class=normal>274</span>
@@ -766,7 +783,14 @@
 <span class=normal>277</span>
 <span class=normal>278</span>
 <span class=normal>279</span>
-<span class=normal>280</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>280</span>
+<span class=normal>281</span>
+<span class=normal>282</span>
+<span class=normal>283</span>
+<span class=normal>284</span>
+<span class=normal>285</span>
+<span class=normal>286</span>
+<span class=normal>287</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>compute_forces</span><span class=p>(</span>
     <span class=n>sweep</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>thick_airfoils</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>displ</span><span class=p>:</span> <span class=n>RealArray</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>
@@ -818,14 +842,7 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The displacement.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The lift.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>282</span>
-<span class=normal>283</span>
-<span class=normal>284</span>
-<span class=normal>285</span>
-<span class=normal>286</span>
-<span class=normal>287</span>
-<span class=normal>288</span>
-<span class=normal>289</span>
+   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The displacement.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The lift.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>289</span>
 <span class=normal>290</span>
 <span class=normal>291</span>
 <span class=normal>292</span>
@@ -834,7 +851,14 @@
 <span class=normal>295</span>
 <span class=normal>296</span>
 <span class=normal>297</span>
-<span class=normal>298</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>298</span>
+<span class=normal>299</span>
+<span class=normal>300</span>
+<span class=normal>301</span>
+<span class=normal>302</span>
+<span class=normal>303</span>
+<span class=normal>304</span>
+<span class=normal>305</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>compute_lift</span><span class=p>(</span>
     <span class=n>sweep</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>thick_airfoils</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>displ</span><span class=p>:</span> <span class=n>RealArray</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>
@@ -1724,7 +1748,9 @@
         <span class=n>output_names</span><span class=p>,</span> <span class=n>input_names</span><span class=p>,</span> <span class=n>print_errors</span><span class=p>,</span> <span class=n>numerical_error</span><span class=o>=</span><span class=n>numerical_error</span>
     <span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div></div></div></div><div class="doc doc-object doc-class"><h4 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-class"></code><span class="doc doc-object-name doc-class-name">Mission</span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission class=headerlink title="Permanent link">&para;</a></h4><div class="doc-signature highlight"><pre><span></span><code><span class=nf>Mission</span><span class=p>(</span><span class=n>r_val</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></span> <span class=o>=</span> <span class=mf>0.5</span><span class=p>,</span> <span class=n>lift_val</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></span> <span class=o>=</span> <span class=mf>0.5</span><span class=p>)</span>
-</code></pre></div><div class="doc doc-contents "><p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href=../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline>Discipline</a></code></p><p>The mission discipline of the aerostructure use case.</p><p>Compute the objective and the constraints.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>r_val</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.5</code> ) – <div class=doc-md-description><p>The threshold to compute the reserve factor constraint.</p></div></li><li class="doc-section-item field-body"><b><code>lift_val</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.5</code> ) – <div class=doc-md-description><p>The threshold to compute the lift constraint.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>124</span>
+</code></pre></div><div class="doc doc-contents "><p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href=../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline>Discipline</a></code></p><p>The mission discipline of the aerostructure use case.</p><p>Compute the objective and the constraints.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>r_val</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.5</code> ) – <div class=doc-md-description><p>The threshold to compute the reserve factor constraint.</p></div></li><li class="doc-section-item field-body"><b><code>lift_val</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.5</code> ) – <div class=doc-md-description><p>The threshold to compute the lift constraint.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>122</span>
+<span class=normal>123</span>
+<span class=normal>124</span>
 <span class=normal>125</span>
 <span class=normal>126</span>
 <span class=normal>127</span>
@@ -1735,13 +1761,25 @@
 <span class=normal>132</span>
 <span class=normal>133</span>
 <span class=normal>134</span>
-<span class=normal>135</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>r_val</span><span class=p>:</span> <span class=nb>float</span> <span class=o>=</span> <span class=mf>0.5</span><span class=p>,</span> <span class=n>lift_val</span><span class=p>:</span> <span class=nb>float</span> <span class=o>=</span> <span class=mf>0.5</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
+<span class=normal>135</span>
+<span class=normal>136</span>
+<span class=normal>137</span>
+<span class=normal>138</span>
+<span class=normal>139</span>
+<span class=normal>140</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>r_val</span><span class=p>:</span> <span class=nb>float</span> <span class=o>=</span> <span class=mf>0.5</span><span class=p>,</span> <span class=n>lift_val</span><span class=p>:</span> <span class=nb>float</span> <span class=o>=</span> <span class=mf>0.5</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;</span>
 <span class=sd>    Args:</span>
 <span class=sd>        r_val: The threshold to compute the reserve factor constraint.</span>
 <span class=sd>        lift_val: The threshold to compute the lift constraint.</span>
 <span class=sd>    &quot;&quot;&quot;</span>  <span class=c1># noqa: D205 D212</span>
     <span class=nb>super</span><span class=p>()</span><span class=o>.</span><span class=fm>__init__</span><span class=p>()</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>update_from_names</span><span class=p>((</span>
+        <span class=s2>&quot;lift&quot;</span><span class=p>,</span>
+        <span class=s2>&quot;mass&quot;</span><span class=p>,</span>
+        <span class=s2>&quot;drag&quot;</span><span class=p>,</span>
+        <span class=s2>&quot;reserve_fact&quot;</span><span class=p>,</span>
+    <span class=p>))</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_grammar</span><span class=o>.</span><span class=n>update_from_names</span><span class=p>((</span><span class=s2>&quot;range&quot;</span><span class=p>,</span> <span class=s2>&quot;c_lift&quot;</span><span class=p>,</span> <span class=s2>&quot;c_rf&quot;</span><span class=p>))</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>defaults</span> <span class=o>=</span> <span class=n>get_inputs</span><span class=p>(</span>
         <span class=s2>&quot;lift&quot;</span><span class=p>,</span> <span class=s2>&quot;mass&quot;</span><span class=p>,</span> <span class=s2>&quot;drag&quot;</span><span class=p>,</span> <span class=s2>&quot;reserve_fact&quot;</span>
     <span class=p>)</span>
@@ -1784,7 +1822,7 @@
       instance-attribute
    (gemseo.core.discipline.discipline.Discipline.ApproximationMode)" href=../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.ApproximationMode>ApproximationMode</a></span><span class=p>,</span>
 <span class=p>)</span>
-</code></pre></div><div class="doc doc-contents "><p>Enumeration of linearization modes.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.auto_detect_grammar_files class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">auto_detect_grammar_files</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small><small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.auto_detect_grammar_files class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>auto_detect_grammar_files</span> <span class=o>=</span> <span class=kc>True</span>
+</code></pre></div><div class="doc doc-contents "><p>Enumeration of linearization modes.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.auto_detect_grammar_files class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">auto_detect_grammar_files</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.auto_detect_grammar_files class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>auto_detect_grammar_files</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>False</span>
 </code></pre></div><div class="doc doc-contents "><p>Whether to find the grammar files automatically.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.cache class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">cache</span><span class="doc doc-labels"><small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.cache class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>cache</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            BaseCache (gemseo.caches.base_cache.BaseCache)" href=../../../../caches/base_cache/#gemseo.caches.base_cache.BaseCache>BaseCache</a></span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span>
 </code></pre></div><div class="doc doc-contents "><p>The execution and linearization data saved according to the cache type.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_cache_type class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_cache_type</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_cache_type class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_cache_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            CacheType
 
@@ -1794,7 +1832,7 @@
    (gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType)" href=../../../../core/discipline/base_discipline/#gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType>CacheType</a></span> <span class=o>=</span> <span class=p>(</span>
     <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType.SIMPLE>SIMPLE</span></span> <span class=k>if</span> <span class=n><span title=gemseo.utils.constants._ENABLE_DISCIPLINE_CACHE>_ENABLE_DISCIPLINE_CACHE</span></span> <span class=k>else</span> <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType.NONE>NONE</span></span>
 <span class=p>)</span>
-</code></pre></div><div class="doc doc-contents "><p>The default type of cache.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_grammar_type class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_grammar_type</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_grammar_type class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_grammar_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarType (gemseo.core.grammars.factory.GrammarType)" href=../../../../core/grammars/factory/#gemseo.core.grammars.factory.GrammarType>GrammarType</a></span> <span class=o>=</span> <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.GrammarType.JSON>JSON</span></span>
+</code></pre></div><div class="doc doc-contents "><p>The default type of cache.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_grammar_type class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_grammar_type</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_grammar_type class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_grammar_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarType (gemseo.core.grammars.factory.GrammarType)" href=../../../../core/grammars/factory/#gemseo.core.grammars.factory.GrammarType>GrammarType</a></span> <span class=o>=</span> <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.GrammarType.SIMPLE>SIMPLE</span></span>
 </code></pre></div><div class="doc doc-contents "><p>The default type of grammar.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_input_data class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_input_data</span><span class="doc doc-labels"><small class="doc doc-label doc-label-property"><code>property</code></small><small class="doc doc-label doc-label-writable"><code>writable</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_input_data class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_input_data</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarProperties (gemseo.core.grammars.grammar_properties.GrammarProperties)" href=../../../../core/grammars/grammar_properties/#gemseo.core.grammars.grammar_properties.GrammarProperties>GrammarProperties</a></span>
 </code></pre></div><div class="doc doc-contents "><p>The default input data.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_output_data class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_output_data</span><span class="doc doc-labels"><small class="doc doc-label doc-label-property"><code>property</code></small><small class="doc doc-label doc-label-writable"><code>writable</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.default_output_data class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_output_data</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarProperties (gemseo.core.grammars.grammar_properties.GrammarProperties)" href=../../../../core/grammars/grammar_properties/#gemseo.core.grammars.grammar_properties.GrammarProperties>GrammarProperties</a></span>
 </code></pre></div><div class="doc doc-contents "><p>The default output data used when <a class="autorefs autorefs-internal" title="            virtual_execution
@@ -1832,7 +1870,7 @@
 </code></pre></div><div class="doc doc-contents "><p>Initialized as SciPy CSR arrays filled with zeros.</p></div></div></div></div></div><h5 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission-functions>Functions<a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission-functions class=headerlink title="Permanent link">&para;</a></h5><div class="doc doc-object doc-function"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.add_differentiated_inputs class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">add_differentiated_inputs</span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.add_differentiated_inputs class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>add_differentiated_inputs</span><span class=p>(</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Add the inputs with respect to which to differentiate the outputs.</p><p>The inputs that do not represent continuous numbers are filtered out.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The input variables with respect to which to differentiate the outputs. If empty, use all the inputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an input name is not the name of a discipline input.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>734</span>
+</code></pre></div><div class="doc doc-contents "><p>Add the inputs with respect to which to differentiate the outputs.</p><p>The inputs that do not represent continuous numbers are filtered out.</p><details class=note open><summary>Note</summary><p>Filtering of non-numeric inputs is only supported when the discipline uses a <a class="autorefs autorefs-internal" title="            JSONGrammar" href=../../../../core/grammars/json_grammar/#gemseo.core.grammars.json_grammar.JSONGrammar>JSONGrammar</a> or a <a class="autorefs autorefs-internal" title="            PydanticGrammar" href=../../../../core/grammars/pydantic_grammar/#gemseo.core.grammars.pydantic_grammar.PydanticGrammar>PydanticGrammar</a>.</p></details><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The input variables with respect to which to differentiate the outputs. If empty, use all the inputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an input name is not the name of a discipline input.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>734</span>
 <span class=normal>735</span>
 <span class=normal>736</span>
 <span class=normal>737</span>
@@ -1865,13 +1903,23 @@
 <span class=normal>764</span>
 <span class=normal>765</span>
 <span class=normal>766</span>
-<span class=normal>767</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_inputs</span><span class=p>(</span>
+<span class=normal>767</span>
+<span class=normal>768</span>
+<span class=normal>769</span>
+<span class=normal>770</span>
+<span class=normal>771</span>
+<span class=normal>772</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_inputs</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Add the inputs with respect to which to differentiate the outputs.</span>
 
 <span class=sd>    The inputs that do not represent continuous numbers are filtered out.</span>
+
+<span class=sd>    Note:</span>
+<span class=sd>        Filtering of non-numeric inputs is only supported when the discipline uses</span>
+<span class=sd>        a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a</span>
+<span class=sd>        [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].</span>
 
 <span class=sd>    Args:</span>
 <span class=sd>        input_names: The input variables</span>
@@ -1902,12 +1950,7 @@
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Mission.add_differentiated_outputs class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">add_differentiated_outputs</span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Mission.add_differentiated_outputs class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>add_differentiated_outputs</span><span class=p>(</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Add the outputs to be differentiated.</p><p>The outputs that do not represent continuous numbers are filtered out.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>output_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The outputs to be differentiated. If empty, use all the outputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an output name is not the name of a discipline output.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>769</span>
-<span class=normal>770</span>
-<span class=normal>771</span>
-<span class=normal>772</span>
-<span class=normal>773</span>
-<span class=normal>774</span>
+</code></pre></div><div class="doc doc-contents "><p>Add the outputs to be differentiated.</p><p>The outputs that do not represent continuous numbers are filtered out.</p><details class=note open><summary>Note</summary><p>Filtering of non-numeric outputs is only supported when the discipline uses a <a class="autorefs autorefs-internal" title="            JSONGrammar" href=../../../../core/grammars/json_grammar/#gemseo.core.grammars.json_grammar.JSONGrammar>JSONGrammar</a> or a <a class="autorefs autorefs-internal" title="            PydanticGrammar" href=../../../../core/grammars/pydantic_grammar/#gemseo.core.grammars.pydantic_grammar.PydanticGrammar>PydanticGrammar</a>.</p></details><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>output_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The outputs to be differentiated. If empty, use all the outputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an output name is not the name of a discipline output.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>774</span>
 <span class=normal>775</span>
 <span class=normal>776</span>
 <span class=normal>777</span>
@@ -1934,13 +1977,28 @@
 <span class=normal>798</span>
 <span class=normal>799</span>
 <span class=normal>800</span>
-<span class=normal>801</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_outputs</span><span class=p>(</span>
+<span class=normal>801</span>
+<span class=normal>802</span>
+<span class=normal>803</span>
+<span class=normal>804</span>
+<span class=normal>805</span>
+<span class=normal>806</span>
+<span class=normal>807</span>
+<span class=normal>808</span>
+<span class=normal>809</span>
+<span class=normal>810</span>
+<span class=normal>811</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_outputs</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Add the outputs to be differentiated.</span>
 
 <span class=sd>    The outputs that do not represent continuous numbers are filtered out.</span>
+
+<span class=sd>    Note:</span>
+<span class=sd>        Filtering of non-numeric outputs is only supported when the discipline uses</span>
+<span class=sd>        a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a</span>
+<span class=sd>        [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].</span>
 
 <span class=sd>    Args:</span>
 <span class=sd>        output_names: The outputs to be differentiated.</span>
@@ -2034,18 +2092,18 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The lift.</p></div></li><li class="doc-section-item field-body"><b><code>lift_val</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.5</code> ) – <div class=doc-md-description><p>The threshold for the lift constraint.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The value of the lift constraint.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>166</span>
-<span class=normal>167</span>
-<span class=normal>168</span>
-<span class=normal>169</span>
-<span class=normal>170</span>
-<span class=normal>171</span>
+   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The lift.</p></div></li><li class="doc-section-item field-body"><b><code>lift_val</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.5</code> ) – <div class=doc-md-description><p>The threshold for the lift constraint.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The value of the lift constraint.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>171</span>
 <span class=normal>172</span>
 <span class=normal>173</span>
 <span class=normal>174</span>
 <span class=normal>175</span>
 <span class=normal>176</span>
-<span class=normal>177</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>177</span>
+<span class=normal>178</span>
+<span class=normal>179</span>
+<span class=normal>180</span>
+<span class=normal>181</span>
+<span class=normal>182</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>c_lift</span><span class=p>(</span><span class=n>lift</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>lift_val</span><span class=p>:</span> <span class=nb>float</span> <span class=o>=</span> <span class=mf>0.5</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute the lift constraint: $lift-0.5$.</span>
 
@@ -2068,18 +2126,18 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The reserve factor.</p></div></li><li class="doc-section-item field-body"><b><code>rf_val</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.5</code> ) – <div class=doc-md-description><p>The threshold for the reserve factor constraint.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The value of the reserve factor constraint.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>179</span>
-<span class=normal>180</span>
-<span class=normal>181</span>
-<span class=normal>182</span>
-<span class=normal>183</span>
-<span class=normal>184</span>
+   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The reserve factor.</p></div></li><li class="doc-section-item field-body"><b><code>rf_val</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>0.5</code> ) – <div class=doc-md-description><p>The threshold for the reserve factor constraint.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The value of the reserve factor constraint.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>184</span>
 <span class=normal>185</span>
 <span class=normal>186</span>
 <span class=normal>187</span>
 <span class=normal>188</span>
 <span class=normal>189</span>
-<span class=normal>190</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>190</span>
+<span class=normal>191</span>
+<span class=normal>192</span>
+<span class=normal>193</span>
+<span class=normal>194</span>
+<span class=normal>195</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>c_rf</span><span class=p>(</span><span class=n>reserve_fact</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>rf_val</span><span class=p>:</span> <span class=nb>float</span> <span class=o>=</span> <span class=mf>0.5</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute the reserve factor constraint: $rf-0.5$.</span>
 
@@ -2467,19 +2525,19 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The drag.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The range.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>152</span>
-<span class=normal>153</span>
-<span class=normal>154</span>
-<span class=normal>155</span>
-<span class=normal>156</span>
-<span class=normal>157</span>
+   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The drag.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The range.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>157</span>
 <span class=normal>158</span>
 <span class=normal>159</span>
 <span class=normal>160</span>
 <span class=normal>161</span>
 <span class=normal>162</span>
 <span class=normal>163</span>
-<span class=normal>164</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>164</span>
+<span class=normal>165</span>
+<span class=normal>166</span>
+<span class=normal>167</span>
+<span class=normal>168</span>
+<span class=normal>169</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>compute_range</span><span class=p>(</span><span class=n>lift</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>mass</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>drag</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute the objective function: $range=8.10^{11}*lift/(mass*drag)$.</span>
 
@@ -3365,10 +3423,14 @@
         <span class=n>output_names</span><span class=p>,</span> <span class=n>input_names</span><span class=p>,</span> <span class=n>print_errors</span><span class=p>,</span> <span class=n>numerical_error</span><span class=o>=</span><span class=n>numerical_error</span>
     <span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div></div></div></div><div class="doc doc-object doc-class"><h4 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-class"></code><span class="doc doc-object-name doc-class-name">Structure</span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure class=headerlink title="Permanent link">&para;</a></h4><div class="doc-signature highlight"><pre><span></span><code><span class=nf>Structure</span><span class=p>()</span>
-</code></pre></div><div class="doc doc-contents "><p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href=../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline>Discipline</a></code></p><p>The structure discipline of the aerostructure use case.</p><p>Evaluate: <code>[mass, rf, displ] = f(sweep, thick_panels, forces)</code>.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>331</span>
-<span class=normal>332</span>
-<span class=normal>333</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>  <span class=c1># noqa: D107</span>
+</code></pre></div><div class="doc doc-contents "><p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href=../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline>Discipline</a></code></p><p>The structure discipline of the aerostructure use case.</p><p>Evaluate: <code>[mass, rf, displ] = f(sweep, thick_panels, forces)</code>.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>336</span>
+<span class=normal>337</span>
+<span class=normal>338</span>
+<span class=normal>339</span>
+<span class=normal>340</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>  <span class=c1># noqa: D107</span>
     <span class=nb>super</span><span class=p>()</span><span class=o>.</span><span class=fm>__init__</span><span class=p>()</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>update_from_names</span><span class=p>((</span><span class=s2>&quot;sweep&quot;</span><span class=p>,</span> <span class=s2>&quot;thick_panels&quot;</span><span class=p>,</span> <span class=s2>&quot;forces&quot;</span><span class=p>))</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_grammar</span><span class=o>.</span><span class=n>update_from_names</span><span class=p>((</span><span class=s2>&quot;mass&quot;</span><span class=p>,</span> <span class=s2>&quot;reserve_fact&quot;</span><span class=p>,</span> <span class=s2>&quot;displ&quot;</span><span class=p>))</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>defaults</span> <span class=o>=</span> <span class=n>get_inputs</span><span class=p>(</span><span class=s2>&quot;sweep&quot;</span><span class=p>,</span> <span class=s2>&quot;forces&quot;</span><span class=p>,</span> <span class=s2>&quot;thick_panels&quot;</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details><div class="doc doc-children"><h5 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure-attributes>Attributes<a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure-attributes class=headerlink title="Permanent link">&para;</a></h5><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.ApproximationMode class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">ApproximationMode</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small><small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.ApproximationMode class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>ApproximationMode</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=enum.EnumType href=https://docs.python.org/3/library/enum.html#enum.EnumType>EnumType</a></span> <span class=o>=</span> <span class=n><a class="autorefs autorefs-internal" title="            merge_enums (gemseo.utils.enumeration.merge_enums)" href=../../../../utils/enumeration/#gemseo.utils.enumeration.merge_enums>merge_enums</a></span><span class=p>(</span>
     <span class=s2>&quot;ApproximationMode&quot;</span><span class=p>,</span>
@@ -3407,7 +3469,7 @@
       instance-attribute
    (gemseo.core.discipline.discipline.Discipline.ApproximationMode)" href=../../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.ApproximationMode>ApproximationMode</a></span><span class=p>,</span>
 <span class=p>)</span>
-</code></pre></div><div class="doc doc-contents "><p>Enumeration of linearization modes.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.auto_detect_grammar_files class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">auto_detect_grammar_files</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small><small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.auto_detect_grammar_files class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>auto_detect_grammar_files</span> <span class=o>=</span> <span class=kc>True</span>
+</code></pre></div><div class="doc doc-contents "><p>Enumeration of linearization modes.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.auto_detect_grammar_files class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">auto_detect_grammar_files</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.auto_detect_grammar_files class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>auto_detect_grammar_files</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>False</span>
 </code></pre></div><div class="doc doc-contents "><p>Whether to find the grammar files automatically.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.cache class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">cache</span><span class="doc doc-labels"><small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.cache class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>cache</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            BaseCache (gemseo.caches.base_cache.BaseCache)" href=../../../../caches/base_cache/#gemseo.caches.base_cache.BaseCache>BaseCache</a></span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span>
 </code></pre></div><div class="doc doc-contents "><p>The execution and linearization data saved according to the cache type.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_cache_type class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_cache_type</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_cache_type class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_cache_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            CacheType
 
@@ -3417,7 +3479,7 @@
    (gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType)" href=../../../../core/discipline/base_discipline/#gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType>CacheType</a></span> <span class=o>=</span> <span class=p>(</span>
     <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType.SIMPLE>SIMPLE</span></span> <span class=k>if</span> <span class=n><span title=gemseo.utils.constants._ENABLE_DISCIPLINE_CACHE>_ENABLE_DISCIPLINE_CACHE</span></span> <span class=k>else</span> <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.CacheType.NONE>NONE</span></span>
 <span class=p>)</span>
-</code></pre></div><div class="doc doc-contents "><p>The default type of cache.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_grammar_type class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_grammar_type</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_grammar_type class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_grammar_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarType (gemseo.core.grammars.factory.GrammarType)" href=../../../../core/grammars/factory/#gemseo.core.grammars.factory.GrammarType>GrammarType</a></span> <span class=o>=</span> <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.GrammarType.JSON>JSON</span></span>
+</code></pre></div><div class="doc doc-contents "><p>The default type of cache.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_grammar_type class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_grammar_type</span><span class="doc doc-labels"><small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_grammar_type class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_grammar_type</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarType (gemseo.core.grammars.factory.GrammarType)" href=../../../../core/grammars/factory/#gemseo.core.grammars.factory.GrammarType>GrammarType</a></span> <span class=o>=</span> <span class=n><span title=gemseo.core.discipline.base_discipline.BaseDiscipline.GrammarType.SIMPLE>SIMPLE</span></span>
 </code></pre></div><div class="doc doc-contents "><p>The default type of grammar.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_input_data class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_input_data</span><span class="doc doc-labels"><small class="doc doc-label doc-label-property"><code>property</code></small><small class="doc doc-label doc-label-writable"><code>writable</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_input_data class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_input_data</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarProperties (gemseo.core.grammars.grammar_properties.GrammarProperties)" href=../../../../core/grammars/grammar_properties/#gemseo.core.grammars.grammar_properties.GrammarProperties>GrammarProperties</a></span>
 </code></pre></div><div class="doc doc-contents "><p>The default input data.</p></div></div><div class="doc doc-object doc-attribute"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_output_data class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code><span class="doc doc-object-name doc-attribute-name">default_output_data</span><span class="doc doc-labels"><small class="doc doc-label doc-label-property"><code>property</code></small><small class="doc doc-label doc-label-writable"><code>writable</code></small></span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.default_output_data class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=n>default_output_data</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            GrammarProperties (gemseo.core.grammars.grammar_properties.GrammarProperties)" href=../../../../core/grammars/grammar_properties/#gemseo.core.grammars.grammar_properties.GrammarProperties>GrammarProperties</a></span>
 </code></pre></div><div class="doc doc-contents "><p>The default output data used when <a class="autorefs autorefs-internal" title="            virtual_execution
@@ -3455,7 +3517,7 @@
 </code></pre></div><div class="doc doc-contents "><p>Initialized as SciPy CSR arrays filled with zeros.</p></div></div></div></div></div><h5 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure-functions>Functions<a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure-functions class=headerlink title="Permanent link">&para;</a></h5><div class="doc doc-object doc-function"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.add_differentiated_inputs class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">add_differentiated_inputs</span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.add_differentiated_inputs class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>add_differentiated_inputs</span><span class=p>(</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Add the inputs with respect to which to differentiate the outputs.</p><p>The inputs that do not represent continuous numbers are filtered out.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The input variables with respect to which to differentiate the outputs. If empty, use all the inputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an input name is not the name of a discipline input.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>734</span>
+</code></pre></div><div class="doc doc-contents "><p>Add the inputs with respect to which to differentiate the outputs.</p><p>The inputs that do not represent continuous numbers are filtered out.</p><details class=note open><summary>Note</summary><p>Filtering of non-numeric inputs is only supported when the discipline uses a <a class="autorefs autorefs-internal" title="            JSONGrammar" href=../../../../core/grammars/json_grammar/#gemseo.core.grammars.json_grammar.JSONGrammar>JSONGrammar</a> or a <a class="autorefs autorefs-internal" title="            PydanticGrammar" href=../../../../core/grammars/pydantic_grammar/#gemseo.core.grammars.pydantic_grammar.PydanticGrammar>PydanticGrammar</a>.</p></details><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The input variables with respect to which to differentiate the outputs. If empty, use all the inputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an input name is not the name of a discipline input.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>734</span>
 <span class=normal>735</span>
 <span class=normal>736</span>
 <span class=normal>737</span>
@@ -3488,13 +3550,23 @@
 <span class=normal>764</span>
 <span class=normal>765</span>
 <span class=normal>766</span>
-<span class=normal>767</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_inputs</span><span class=p>(</span>
+<span class=normal>767</span>
+<span class=normal>768</span>
+<span class=normal>769</span>
+<span class=normal>770</span>
+<span class=normal>771</span>
+<span class=normal>772</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_inputs</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Add the inputs with respect to which to differentiate the outputs.</span>
 
 <span class=sd>    The inputs that do not represent continuous numbers are filtered out.</span>
+
+<span class=sd>    Note:</span>
+<span class=sd>        Filtering of non-numeric inputs is only supported when the discipline uses</span>
+<span class=sd>        a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a</span>
+<span class=sd>        [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].</span>
 
 <span class=sd>    Args:</span>
 <span class=sd>        input_names: The input variables</span>
@@ -3525,12 +3597,7 @@
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.problems.mdo.aerostructure.aerostructure.Structure.add_differentiated_outputs class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">add_differentiated_outputs</span><a href=#gemseo.problems.mdo.aerostructure.aerostructure.Structure.add_differentiated_outputs class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>add_differentiated_outputs</span><span class=p>(</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Add the outputs to be differentiated.</p><p>The outputs that do not represent continuous numbers are filtered out.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>output_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The outputs to be differentiated. If empty, use all the outputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an output name is not the name of a discipline output.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>769</span>
-<span class=normal>770</span>
-<span class=normal>771</span>
-<span class=normal>772</span>
-<span class=normal>773</span>
-<span class=normal>774</span>
+</code></pre></div><div class="doc doc-contents "><p>Add the outputs to be differentiated.</p><p>The outputs that do not represent continuous numbers are filtered out.</p><details class=note open><summary>Note</summary><p>Filtering of non-numeric outputs is only supported when the discipline uses a <a class="autorefs autorefs-internal" title="            JSONGrammar" href=../../../../core/grammars/json_grammar/#gemseo.core.grammars.json_grammar.JSONGrammar>JSONGrammar</a> or a <a class="autorefs autorefs-internal" title="            PydanticGrammar" href=../../../../core/grammars/pydantic_grammar/#gemseo.core.grammars.pydantic_grammar.PydanticGrammar>PydanticGrammar</a>.</p></details><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>output_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The outputs to be differentiated. If empty, use all the outputs.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>When an output name is not the name of a discipline output.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>774</span>
 <span class=normal>775</span>
 <span class=normal>776</span>
 <span class=normal>777</span>
@@ -3557,13 +3624,28 @@
 <span class=normal>798</span>
 <span class=normal>799</span>
 <span class=normal>800</span>
-<span class=normal>801</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_outputs</span><span class=p>(</span>
+<span class=normal>801</span>
+<span class=normal>802</span>
+<span class=normal>803</span>
+<span class=normal>804</span>
+<span class=normal>805</span>
+<span class=normal>806</span>
+<span class=normal>807</span>
+<span class=normal>808</span>
+<span class=normal>809</span>
+<span class=normal>810</span>
+<span class=normal>811</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>add_differentiated_outputs</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Add the outputs to be differentiated.</span>
 
 <span class=sd>    The outputs that do not represent continuous numbers are filtered out.</span>
+
+<span class=sd>    Note:</span>
+<span class=sd>        Filtering of non-numeric outputs is only supported when the discipline uses</span>
+<span class=sd>        a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a</span>
+<span class=sd>        [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].</span>
 
 <span class=sd>    Args:</span>
 <span class=sd>        output_names: The outputs to be differentiated.</span>
@@ -4024,14 +4106,7 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The forces.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The displacement.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>389</span>
-<span class=normal>390</span>
-<span class=normal>391</span>
-<span class=normal>392</span>
-<span class=normal>393</span>
-<span class=normal>394</span>
-<span class=normal>395</span>
-<span class=normal>396</span>
+   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The forces.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The displacement.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>396</span>
 <span class=normal>397</span>
 <span class=normal>398</span>
 <span class=normal>399</span>
@@ -4040,7 +4115,14 @@
 <span class=normal>402</span>
 <span class=normal>403</span>
 <span class=normal>404</span>
-<span class=normal>405</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>405</span>
+<span class=normal>406</span>
+<span class=normal>407</span>
+<span class=normal>408</span>
+<span class=normal>409</span>
+<span class=normal>410</span>
+<span class=normal>411</span>
+<span class=normal>412</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>compute_displ</span><span class=p>(</span>
     <span class=n>sweep</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>thick_panels</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>forces</span><span class=p>:</span> <span class=n>RealArray</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>
@@ -4092,14 +4174,7 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The forces.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The mass.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>348</span>
-<span class=normal>349</span>
-<span class=normal>350</span>
-<span class=normal>351</span>
-<span class=normal>352</span>
-<span class=normal>353</span>
-<span class=normal>354</span>
-<span class=normal>355</span>
+   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The forces.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The mass.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>355</span>
 <span class=normal>356</span>
 <span class=normal>357</span>
 <span class=normal>358</span>
@@ -4113,7 +4188,14 @@
 <span class=normal>366</span>
 <span class=normal>367</span>
 <span class=normal>368</span>
-<span class=normal>369</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>369</span>
+<span class=normal>370</span>
+<span class=normal>371</span>
+<span class=normal>372</span>
+<span class=normal>373</span>
+<span class=normal>374</span>
+<span class=normal>375</span>
+<span class=normal>376</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>compute_mass</span><span class=p>(</span>
     <span class=n>sweep</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>thick_panels</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>forces</span><span class=p>:</span> <span class=n>RealArray</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>
@@ -4170,14 +4252,7 @@
 
   
       module-attribute
-   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The forces.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The reserve factor.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>371</span>
-<span class=normal>372</span>
-<span class=normal>373</span>
-<span class=normal>374</span>
-<span class=normal>375</span>
-<span class=normal>376</span>
-<span class=normal>377</span>
-<span class=normal>378</span>
+   (gemseo.typing.RealArray)" href=../../../../typing/#gemseo.typing.RealArray>RealArray</a></code>) – <div class=doc-md-description><p>The forces.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The reserve factor.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/problems/mdo/aerostructure/aerostructure.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>378</span>
 <span class=normal>379</span>
 <span class=normal>380</span>
 <span class=normal>381</span>
@@ -4186,7 +4261,14 @@
 <span class=normal>384</span>
 <span class=normal>385</span>
 <span class=normal>386</span>
-<span class=normal>387</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>387</span>
+<span class=normal>388</span>
+<span class=normal>389</span>
+<span class=normal>390</span>
+<span class=normal>391</span>
+<span class=normal>392</span>
+<span class=normal>393</span>
+<span class=normal>394</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>compute_rf</span><span class=p>(</span>
     <span class=n>sweep</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>thick_panels</span><span class=p>:</span> <span class=n>RealArray</span><span class=p>,</span> <span class=n>forces</span><span class=p>:</span> <span class=n>RealArray</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>

@@ -61,6 +61,14 @@ discipline.add_differentiated_inputs(["a"])
 discipline.add_differentiated_outputs(["z"])
 
 # %%
+# !!! note
+#     Non-numeric variables (e.g. string arrays) are automatically filtered out
+#     when no explicit `input_names` or `output_names` are given.
+#     This filtering is only supported with
+#     [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] and
+#     [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].
+
+# %%
 # ### 3. Compute the derivatives
 #
 # Use the method
