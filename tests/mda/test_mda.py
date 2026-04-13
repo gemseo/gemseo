@@ -37,6 +37,7 @@ from numpy.testing import assert_almost_equal
 from scipy.linalg import solve
 
 from gemseo import create_discipline
+from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.derivation_modes import DerivationMode
@@ -150,7 +151,7 @@ def test_resolved_couplings() -> None:
 
 def test_jacobian(sellar_mda, sellar_inputs) -> None:
     """Check the Jacobian computation."""
-    sellar_mda.settings.use_lu_fact = True
+    sellar_mda.settings.linear_solver_settings = None
     sellar_mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
     with pytest.raises(
         ValueError, match="Unsupported LU factorization for LinearOperators"
@@ -160,7 +161,7 @@ def test_jacobian(sellar_mda, sellar_inputs) -> None:
             compute_all_jacobians=True,
         )
 
-    sellar_mda.settings.use_lu_fact = False
+    sellar_mda.settings.linear_solver_settings = LGMRES_Settings()
     sellar_mda.linearize(sellar_inputs)
     assert sellar_mda.jac == {}
 

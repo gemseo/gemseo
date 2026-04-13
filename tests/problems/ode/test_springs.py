@@ -72,8 +72,7 @@ def test_create_mass_ode_discipline():
         state_dot_names=("position_1_dot", "velocity_1_dot"),
         is_left_position_fixed=True,
         is_right_position_fixed=True,
-        rtol=1e-12,
-        atol=1e-12,
+        ode_solver_settings=RK45_Settings(rtol=1e-12, atol=1e-12),
     )
     ode_discipline.execute()
 
@@ -117,8 +116,7 @@ def test_generic_mass_rhs_function():
         state_names=("position", "velocity"),
         is_left_position_fixed=True,
         is_right_position_fixed=True,
-        rtol=1e-12,
-        atol=1e-12,
+        ode_solver_settings=RK45_Settings(rtol=1e-12, atol=1e-12),
     )
 
     assert ode_discipline is not None
@@ -322,7 +320,9 @@ def test_create_two_chained_masses():
         masses=masses, stiffnesses=stiffnesses, times=times
     )
 
-    mda = MDAGaussSeidel(springs_and_masses.create_coupled_ode_disciplines(atol=1e-8))
+    mda = MDAGaussSeidel(
+        springs_and_masses.create_coupled_ode_disciplines(RK45_Settings(atol=1e-8))
+    )
 
     discipline_result = mda.execute({
         "initial_position_0": array([positions[0]]),
@@ -457,8 +457,7 @@ def test_lateral_masses_as_floats():
         right_position_name="right_position",
         is_left_position_fixed=True,
         is_right_position_fixed=True,
-        rtol=1e-12,
-        atol=1e-12,
+        ode_solver_settings=RK45_Settings(rtol=1e-12, atol=1e-12),
     )
     ode_discipline_1.execute()
 
@@ -491,8 +490,7 @@ def test_one_mass_attached_to_moving_pins():
         is_right_position_fixed=True,
         times=times,
         state_names=("position", "velocity"),
-        rtol=1e-12,
-        atol=1e-12,
+        ode_solver_settings=RK45_Settings(rtol=1e-12, atol=1e-12),
     )
 
     discipline_result = ode_discipline.execute({
@@ -554,8 +552,7 @@ def test_one_mass_attached_to_mobile_pins_wrong_time_lengths():
         is_right_position_fixed=True,
         times=times,
         state_names=("position", "velocity"),
-        rtol=1e-12,
-        atol=1e-12,
+        ode_solver_settings=RK45_Settings(rtol=1e-12, atol=1e-12),
     )
 
     with pytest.raises(AssertionError) as err:
@@ -575,8 +572,7 @@ def test_one_mass_attached_to_mobile_pins_wrong_time_lengths():
         is_right_position_fixed=True,
         times=times,
         state_names=("position", "velocity"),
-        rtol=1e-12,
-        atol=1e-12,
+        ode_solver_settings=RK45_Settings(rtol=1e-12, atol=1e-12),
     )
 
     with pytest.raises(AssertionError) as err:

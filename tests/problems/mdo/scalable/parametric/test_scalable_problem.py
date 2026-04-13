@@ -22,6 +22,8 @@ from numpy.testing import assert_equal
 
 from gemseo import execute_algo
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.formulations.idf_settings import IDF_Settings
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.problems.mdo.scalable.parametric.disciplines.main_discipline import (
@@ -51,27 +53,21 @@ def test_scalable_disciplines(scalable_problem) -> None:
         assert isinstance(discipline, ScalableDiscipline)
 
 
-@pytest.mark.parametrize("use_optimizer", [False, True])
 @pytest.mark.parametrize(
-    ("formulation_name", "options"),
+    "formulation_settings",
     [
-        (
-            "MDF",
-            {
-                "main_mda_settings": MDAChain_Settings(
-                    inner_mda_settings=MDAGaussSeidel_Settings()
-                )
-            },
+        MDF_Settings(
+            main_mda_settings=MDAChain_Settings(
+                inner_mda_settings=MDAGaussSeidel_Settings()
+            )
         ),
-        ("IDF", {"start_at_equilibrium": True}),
+        IDF_Settings(start_at_equilibrium=True),
     ],
 )
-def test_create_scenario(
-    scalable_problem, use_optimizer, formulation_name, options
-) -> None:
+def test_create_scenario(scalable_problem, formulation_settings) -> None:
     """Check the creation of a scenario."""
     scenario = scalable_problem.create_scenario(
-        formulation_name=formulation_name, use_optimizer=use_optimizer, **options
+        formulation_settings=formulation_settings
     )
 
     # Check the type of scenario.
@@ -87,6 +83,7 @@ def test_create_scenario(
 
     # Check the formulation.
     formulation = scenario.formulation
+    formulation_name = formulation_settings.target_class_name
     assert formulation.__class__.__name__ == formulation_name
     if formulation_name == "MDF":
         assert formulation.mda.inner_mdas[0].__class__.__name__ == "MDAGaussSeidel"

@@ -146,11 +146,10 @@ class MDANewtonRaphson(BaseMDAParallelSolver):
         newton_step, is_converged = self.assembly.compute_newton_step(
             input_data,
             self._resolved_variable_names,
-            self.settings.newton_linear_solver_settings.target_class_name,
+            self.settings.newton_linear_solver_settings,
             matrix_type=self.matrix_type,
             residuals=self.get_current_resolved_residual_vector(),
             resolved_residual_names=self._resolved_residual_names,
-            **self.settings.newton_linear_solver_settings.model_dump(),
         )
 
         if not is_converged:

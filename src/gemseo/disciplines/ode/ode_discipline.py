@@ -24,13 +24,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import Final
 
 from numpy import atleast_1d
 
-from gemseo.algos.ode.factory import ODESolverLibraryFactory
+from gemseo.algos.ode.factory import ODE_SOLVER_LIBRARY_FACTORY
 from gemseo.algos.ode.ode_problem import ODEProblem
+from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.disciplines.ode.ode_function import ODEFunction
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
@@ -113,8 +113,7 @@ class ODEDiscipline(Discipline):
         name: str = "",
         termination_event_disciplines: Iterable[Discipline] = (),
         solve_at_algorithm_times: bool = False,
-        ode_solver_name: str = "RK45",
-        **ode_solver_settings: Any,
+        ode_solver_settings: BaseODESolverSettings | None = None,
     ):
         """
         Args:
@@ -161,8 +160,8 @@ class ODEDiscipline(Discipline):
                 when one of the event functions crosses the threshold 0.
                 If empty, the integration covers the entire time interval.
             solve_at_algorithm_times: Whether to solve the ODE chosen by the algorithm.
-            ode_solver_name: The name of the ODE solver.
-            **ode_solver_settings: The settings of the ODE solver.
+            ode_solver_settings: The settings of the ODE solver.
+                If `None`, use the default settings of the RK45 algorithm.
 
         Raises:
             ValueError: If an expected state variable does not appear in
@@ -230,11 +229,12 @@ class ODEDiscipline(Discipline):
             initial_state_names.get(state_name, f"initial_{state_name}")
             for state_name in self.__state_names
         )
-
-        self.__ode_solver = ODESolverLibraryFactory().create(ode_solver_name)
-        self.__ode_solver_settings = self.__ode_solver.ALGORITHM_INFOS[
-            ode_solver_name
-        ].settings_class(**ode_solver_settings)
+        if ode_solver_settings is None:
+            ode_solver_settings = RK45_Settings()
+        self.__ode_solver_settings = ode_solver_settings
+        self.__ode_solver = ODE_SOLVER_LIBRARY_FACTORY.create(
+            ode_solver_settings.target_class_name
+        )
 
         super().__init__(name=name)
 

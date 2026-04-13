@@ -50,9 +50,6 @@
         "tolerance": {
           "type": "number"
         },
-        "use_lu_fact": {
-          "type": "boolean"
-        },
         "warm_start": {
           "type": "boolean"
         },
@@ -114,9 +111,6 @@
             "tolerance": {
               "type": "number"
             },
-            "use_lu_fact": {
-              "type": "boolean"
-            },
             "warm_start": {
               "type": "boolean"
             }
@@ -129,7 +123,6 @@
             "max_mda_iter",
             "name",
             "tolerance",
-            "use_lu_fact",
             "warm_start"
           ]
         },
@@ -164,7 +157,6 @@
         "over_relaxation_factor",
         "sub_coupling_structures",
         "tolerance",
-        "use_lu_fact",
         "use_threading",
         "warm_start"
       ],

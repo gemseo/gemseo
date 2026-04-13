@@ -55,6 +55,7 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import ndarray  # noqa: TC002
 
+from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.core.discipline.base_discipline import CacheType
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
@@ -104,8 +105,7 @@ class OscillatorDiscipline(ODEDiscipline):
             rhs_discipline=rhs_discipline,
             return_trajectories=return_trajectories,
             final_state_names=final_state_names,
-            rtol=1e-12,
-            atol=1e-12,
+            ode_solver_settings=RK45_Settings(rtol=1e-12, atol=1e-12),
         )
 
     def _compute_rhs(

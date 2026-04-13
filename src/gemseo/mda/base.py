@@ -413,7 +413,6 @@ class BaseMDA(ProcessDiscipline):
             set(input_names).difference(self._non_numeric_array_variables)
         )
 
-        linear_solver_settings = self.settings.linear_solver_settings.model_dump()
         self.jac = self.assembly.total_derivatives(
             self.io.data,
             output_names,
@@ -421,11 +420,10 @@ class BaseMDA(ProcessDiscipline):
             couplings_adjoint,
             mode=self.linearization_mode,
             matrix_type=self.matrix_type,
-            use_lu_fact=self.settings.use_lu_fact,
             exec_cache_tol=exec_cache_tol,
             execute=exec_cache_tol == 0.0,
             residual_variables=residual_variables,
-            **linear_solver_settings,
+            linear_solver_settings=self.settings.linear_solver_settings,
         )
 
     def _prepare_io_for_check_jacobian(

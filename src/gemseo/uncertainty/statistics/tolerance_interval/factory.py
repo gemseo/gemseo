@@ -16,15 +16,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
 )
-
-if TYPE_CHECKING:
-    from gemseo.core.base_factory import _ClassInfo
 
 
 class ToleranceIntervalFactory(BaseFactory[BaseToleranceInterval]):
@@ -33,10 +30,6 @@ class ToleranceIntervalFactory(BaseFactory[BaseToleranceInterval]):
     _CLASS = BaseToleranceInterval
     _PACKAGE_NAMES = ("gemseo.uncertainty.statistics.tolerance_interval",)
 
-    @property
-    def _names_to_class_info(self) -> dict[str, _ClassInfo[BaseToleranceInterval]]:
-        names_to_class_info = super()._names_to_class_info
-        for class_info in tuple(names_to_class_info.values()):
-            class_name = class_info.class_.__name__.replace("ToleranceInterval", "")
-            names_to_class_info[class_name] = class_info
-        return names_to_class_info
+
+TOLERANCE_INTERVAL_FACTORY: Final[ToleranceIntervalFactory] = ToleranceIntervalFactory()
+"""The factory for `BaseToleranceInterval` objects."""

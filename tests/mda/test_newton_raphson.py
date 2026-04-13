@@ -352,7 +352,7 @@ def test_pass_dedicated_newton_options(
     mda.execute()
     newton_step_args = mda.assembly.compute_newton_step.call_args
     assert mda.settings.linear_solver_settings == linear_solver_settings
-    assert newton_step_args.args[2] == newton_linear_solver_settings.target_class_name
+    assert newton_step_args.args[2] == newton_linear_solver_settings
     del newton_step_args.kwargs["matrix_type"]
     if "atol" in newton_linear_solver_settings:
         assert newton_step_args.kwargs["atol"] == newton_linear_solver_settings["atol"]

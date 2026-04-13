@@ -251,10 +251,22 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         directory_path: str | Path = "",
         file_name: str = "",
         file_format: str = "",
-        min_radius: float = -1.0,
-        max_radius: float = 1.0,
-        **options: bool,
+        radar_chart_settings: RadarChart_Settings | None = None,
     ) -> RadarChart:
+        """
+        Args:
+            radar_chart_settings: The settings of the radar chart.
+                If `None`,
+                use the default settings of the radar chart,
+                except for the minimum and maximum radius values,
+                which are set to -1.0 and 1.0, respectively.
+        """  # noqa: D205, D212
+        if radar_chart_settings is None:
+            radar_chart_settings = RadarChart_Settings()
+        if "rmin" not in radar_chart_settings.model_fields_set:
+            radar_chart_settings.rmin = -1.0
+        if "rmax" not in radar_chart_settings.model_fields_set:
+            radar_chart_settings.rmax = 1.0
         return super().plot_radar(
             outputs,
             input_names=input_names,
@@ -265,7 +277,5 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
             file_name=file_name,
             file_format=file_format,
             directory_path=directory_path,
-            min_radius=min_radius,
-            max_radius=max_radius,
-            **options,
+            radar_chart_settings=radar_chart_settings,
         )

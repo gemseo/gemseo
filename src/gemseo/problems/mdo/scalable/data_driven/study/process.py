@@ -60,8 +60,8 @@ from typing import TYPE_CHECKING
 
 from numpy import inf
 
-from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problems.mdo.scalable.data_driven.study.result import ScalabilityResult
@@ -73,7 +73,9 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
+    from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
     from gemseo.datasets.io_dataset import IODataset
+    from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
@@ -418,41 +420,34 @@ class ScalabilityStudy:
 
     def add_optimization_strategy(
         self,
-        algo_name: str,
-        max_iter: int,
-        formulation_name: str = "DisciplinaryOpt",
-        algo_settings: StrKeyMapping | None = None,
-        formulation_settings: str | None = None,
+        algo_settings: BaseOptimizerSettings,
+        formulation_settings: BaseFormulationSettings | None = None,
         top_level_diff: str = "auto",
     ) -> None:
         """Add both optimization algorithm and MDO formulation and their options.
 
         Args:
-            algo_name: The name of the optimization algorithm.
-            max_iter: The maximum number of iterations for the optimization algorithm.
-            formulation_name: The name of the MDO formulation.
-            algo_settings: The options of the optimization algorithm.
-            formulation_settings: The options of the MDO formulation.
+            algo_settings: The settings of the optimization algorithm.
+            formulation_settings: The settings of the MDO formulation.
+                If `None`, use the default settings of the MDF formulation.
             top_level_diff: The differentiation method for the top level disciplines.
         """
+        algo_name = algo_settings.target_class_name
+        if formulation_settings is None:
+            formulation_settings = MDF_Settings()
+        formulation_name = formulation_settings.target_class_name
         self.algorithms.append(algo_name)
-        if algo_settings is None:
-            algo_settings = {}
-        elif not isinstance(algo_settings, dict):
-            msg = "algo_settings must be a dictionary."
-            raise TypeError(msg)
-        algo_settings.update({"max_iter": max_iter})
         self.algorithms_options.append(algo_settings)
         self.formulations.append(formulation_name)
         self.formulations_options.append(formulation_settings)
         self.top_level_diff.append(top_level_diff)
-        if algo_settings is not None:
-            algo_settings = ", ".join([
-                f"{name}({value})" for name, value in algo_settings.items()
-            ])
+        algo_settings = ", ".join([
+            f"{name}({value})" for name, value in algo_settings.model_dump().items()
+        ])
         if formulation_settings is not None:
             formulation_settings = ", ".join([
-                f"{name}({value})" for name, value in formulation_settings.items()
+                f"{name}({value})"
+                for name, value in formulation_settings.model_dump().items()
             ])
         msg = MultiLineString()
         msg.add("Add optimization strategy # {}", len(self.formulations))
@@ -675,7 +670,7 @@ class ScalabilityStudy:
                     problem.plot_dependencies(True, False, str(path))
                     msg.add("Create MDO Scenario")
                     with LoggingContext():
-                        self.__create_scenario(problem, formulation, opt_index)
+                        self.__create_scenario(problem, opt_index)
                         msg.add("Execute MDO Scenario")
                         formulation_options = self.formulations_options[opt_index]
                         algo_settings = self.__execute_scenario(
@@ -813,25 +808,18 @@ class ScalabilityStudy:
             allow_unused_inputs=False,
         )
 
-    def __create_scenario(
-        self, problem: ScalableProblem, formulation: str, opt_index: int
-    ) -> None:
+    def __create_scenario(self, problem: ScalableProblem, opt_index: int) -> None:
         """Create scenario for a given formulation.
 
         Args:
             problem: The scalable problem.
-            formulation: The name of the formulation.
             opt_index: The optimization strategy index.
         """
-        form_opt = self.formulations_options[opt_index]
-        formulation_options = {} if not isinstance(form_opt, dict) else form_opt
         problem.create_scenario(
-            formulation,
-            "MDO",
+            self.formulations_options[opt_index],
             self.start_at_equilibrium,
             self.active_probability,
             self.feasibility_level,
-            **formulation_options,
         )
 
     def __execute_scenario(
@@ -848,12 +836,7 @@ class ScalabilityStudy:
         for disc in top_level_disciplines:
             disc.linearization_mode = self.top_level_diff[opt_index]
         algo_settings = deepcopy(self.algorithms_options[opt_index])
-        max_iter = algo_settings["max_iter"]
-        del algo_settings["max_iter"]
-        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(
-            algo, max_iter=max_iter, **algo_settings
-        )
-        problem.scenario.execute(settings)
+        problem.scenario.execute(algo_settings)
         return algo_settings
 
     def __get_stop_index(self, problem: ScalableProblem) -> tuple[int, int]:

@@ -23,7 +23,6 @@ r"""The discipline for describing the motion of a single mass connected by sprin
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import Any
 
 from numpy import asarray
 from numpy import cos
@@ -40,6 +39,7 @@ from gemseo.problems.ode.springs.springs_dynamics_discipline import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
     from gemseo.typing import RealArray
 
 
@@ -60,7 +60,7 @@ class SpringODEDiscipline(ODEDiscipline):
         right_position_name: str = "right_position",
         is_left_position_fixed: bool = False,
         is_right_position_fixed: bool = False,
-        **ode_solver_options: Any,
+        ode_solver_settings: BaseODESolverSettings | None = None,
     ) -> None:
         """
         Args:
@@ -83,7 +83,8 @@ class SpringODEDiscipline(ODEDiscipline):
                 to the left is fixed.
             is_right_position_fixed: Whether the other end of the spring
                 to the right is fixed.
-            **ode_solver_options: The options of the ODE solver.
+            ode_solver_settings: The settings of the ODE solver.
+                If `None`, use the default settings of the RK45 algorithm.
         """  # noqa: D205, D212, D415
         if not is_left_position_fixed:
             left_position = asarray(left_position) * len(times)
@@ -110,7 +111,7 @@ class SpringODEDiscipline(ODEDiscipline):
             state_names=dict(zip(state_names, state_dot_names, strict=False)),
             times=times,
             return_trajectories=True,
-            **ode_solver_options,
+            ode_solver_settings=ode_solver_settings,
         )
 
     @staticmethod

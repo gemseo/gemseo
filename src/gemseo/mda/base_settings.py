@@ -49,9 +49,17 @@ class BaseMDASettings(BaseSettings):
 If `None`, the coupling structure is created from the disciplines.""",
     )
 
-    linear_solver_settings: BaseLinearSolverSettings = Field(
+    linear_solver_settings: BaseLinearSolverSettings | None = Field(
         default_factory=LGMRES_Settings,
-        description="""The settings of the linear solver.""",
+        description="""The settings of the linear solver.
+
+If `None`,
+an LU factorization is performed
+to solve the linear systems arising in the computation of the total derivatives.
+Since there are possibly several right-hand side,
+if affordable,
+such a factorization may improve the solution time.
+""",
     )
 
     log_convergence: bool = Field(
@@ -90,15 +98,6 @@ If empty, use the name of the class.""",
 The available normalization strategies for the residual
 are described in
 [BaseMDA.ResidualScaling][gemseo.mda.base.BaseMDA.ResidualScaling].""",
-    )
-
-    use_lu_fact: bool = Field(
-        default=False,
-        description="""Whether to perform an LU factorization.
-
-The factorization is used to solve the linear systems arising in the computation
-of the total derivatives. Since there are possibly several right-hand side, if
-affordable, such a factorization may improve the solution time.""",
     )
 
     warm_start: bool = Field(

@@ -71,7 +71,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
     BaseToleranceInterval,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.factory import (
-    ToleranceIntervalFactory,
+    TOLERANCE_INTERVAL_FACTORY,
 )
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.string_tools import pretty_str
@@ -511,12 +511,11 @@ class BaseParametricStatistics(
             msg = "The argument 'confidence' must be a number in [0,1]."
             raise ValueError(msg)
 
-        tolerance_interval_factory = ToleranceIntervalFactory()
+        get_class = TOLERANCE_INTERVAL_FACTORY.get_class
         return {
             name: [
-                tolerance_interval_factory.get_class(distribution.name)(
-                    self.n_samples,
-                    *distribution.value.distribution.getParameter(),
+                get_class(f"{distribution.name}ToleranceInterval")(
+                    self.n_samples, *distribution.value.distribution.getParameter()
                 ).compute(coverage, confidence, side)
                 for distribution in self.__distributions[name]
             ]
