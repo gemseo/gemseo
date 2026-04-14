@@ -21,11 +21,15 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import fields
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+from numpy import array
 from numpy import newaxis
+from numpy.testing import assert_equal
 from openturns import HSICEstimatorConditionalSensitivity
 from openturns import HSICEstimatorGlobalSensitivity
 from openturns import HSICEstimatorTargetSensitivity
@@ -42,6 +46,9 @@ from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.sensitivity.hsic_analysis import HSICAnalysis
+
+if TYPE_CHECKING:
+    from gemseo.typing import IntegerArray
 
 
 @pytest.fixture(params=HSICAnalysis.AnalysisType, scope="module")
@@ -74,6 +81,24 @@ def hsic_analysis_2(hsic_analysis, analysis_type) -> HSICAnalysis:
         seed=3,
     )
     return hsic_analysis
+
+
+@pytest.fixture(scope="module")
+def significant_variables(analysis_type) -> dict[str, list[dict[str, IntegerArray]]]:
+    """The significant variables."""
+    if analysis_type == HSICAnalysis.AnalysisType.GLOBAL:
+        return {
+            "y1": [{"x1": array([0]), "x2": array([0])}],
+            "y2": [{"x1": array([0]), "x2": array([0])}],
+        }
+
+    if analysis_type == HSICAnalysis.AnalysisType.TARGET:
+        return {
+            "y1": [{"x2": array([0])}],
+            "y2": [{"x1": array([0]), "x2": array([0])}],
+        }
+
+    return {"y1": [{}], "y2": [{"x1": array([0]), "x2": array([0])}]}
 
 
 @pytest.fixture(scope="module")
@@ -245,6 +270,23 @@ def test_hsic_indices_values(hsic_analysis_2, openturns_hsic_indices) -> None:
     """Check that the global HSIC indices are equal to the indices computed with
     OpenTURNS."""
     assert hsic_analysis_2.indices == openturns_hsic_indices
+
+
+@pytest.mark.parametrize("kwargs", [{}, {"level": 0.06}, {"use_asymptotic": False}])
+def test_filter(hsic_analysis_2, analysis_type, significant_variables, kwargs) -> None:
+    """Check the filter method."""
+    if analysis_type == HSICAnalysis.AnalysisType.CONDITIONAL and kwargs.get(
+        "use_asymptotic", True
+    ):
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "Asymptotic p-values are not available for conditional HSIC."
+            ),
+        ):
+            hsic_analysis_2.filter(**kwargs)
+    else:
+        assert_equal(hsic_analysis_2.filter(**kwargs), significant_variables)
 
 
 def test_from_samples(hsic_analysis, tmp_wd):

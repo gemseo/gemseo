@@ -30,6 +30,7 @@ from typing import Final
 
 from numpy import array
 from numpy import newaxis
+from numpy import nonzero
 from openturns import HSICEstimatorConditionalSensitivity
 from openturns import HSICEstimatorGlobalSensitivity
 from openturns import HSICEstimatorTargetSensitivity
@@ -57,6 +58,7 @@ if TYPE_CHECKING:
     from openturns import HSICEstimatorImplementation
     from openturns import HSICStatImplementation
 
+    from gemseo.typing import IntegerArray
     from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
         FirstOrderIndicesType,
     )
@@ -348,3 +350,45 @@ class HSICAnalysis(BaseSensitivityAnalysis):
 
         self._indices = self.SensitivityIndices(**indices)
         return self.indices
+
+    def filter(
+        self, level: float = 0.05, use_asymptotic: bool = True
+    ) -> dict[str, list[dict[str, IntegerArray]]]:
+        r"""Filter the significant input components.
+
+        You must first call the
+        [compute_indices][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.compute_indices]
+        method.
+
+        Args:
+            level: The significance level of the statistical hypothesis test in $(0,1)$.
+            use_asymptotic: Whether to use asymptotic p-values.
+                Otherwise, use the p-values estimated through bootstrap permutations.
+                Asymptotic p-values are not available for conditional HSIC.
+
+        Returns:
+            The significant input components for each output component.
+
+        Raises:
+            ValueError: When `use_asymptotic` is `True`
+                and the type of HSIC is conditional.
+        """
+        if use_asymptotic:
+            output_names_to_p_values = self._indices.p_value_asymptotic
+            if not output_names_to_p_values:
+                msg = "Asymptotic p-values are not available for conditional HSIC."
+                raise ValueError(msg)
+        else:
+            output_names_to_p_values = self._indices.p_value_permutation
+
+        return {
+            output_name: [
+                {
+                    input_name: nonzero(input_components_are_significant)[0]
+                    for input_name, p_values in output_component.items()
+                    if (input_components_are_significant := p_values < level)
+                }
+                for output_component in output_components
+            ]
+            for output_name, output_components in output_names_to_p_values.items()
+        }
