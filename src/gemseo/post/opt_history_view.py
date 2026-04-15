@@ -45,6 +45,7 @@ from numpy import vstack
 from numpy.linalg import norm
 
 from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.post.base_post import BasePost
 from gemseo.post.core.colormaps import PARULA
 from gemseo.post.core.colormaps import RG_SEISMIC
@@ -163,7 +164,15 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             the history of the design variables to display.
         """
         dataset = self._dataset
-        f_hist = dataset.get_view(variable_names=function_name).to_numpy().squeeze()
+        f_hist = (
+            dataset
+            .get_view(
+                variable_names=function_name,
+                group_names=OptimizationDataset.OBJECTIVE_GROUP,
+            )
+            .to_numpy()
+            .squeeze()
+        )
         x_hist = dataset.design_dataset.to_numpy(dtype=float)
         f_hist = array(f_hist).real
         complete_x_hist = array(x_hist).real
