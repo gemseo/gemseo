@@ -23,6 +23,7 @@ from pathlib import Path
 
 import pytest
 from numpy import array
+from numpy.testing import assert_equal
 
 from gemseo import execute_algo
 from gemseo import execute_post
@@ -252,3 +253,26 @@ def test_no_gradient_history(caplog) -> None:
         problem, post_name="OptHistoryView", save=False, show=False
     )
     assert set(post_processor.figures.keys()) == {"variables", "objective", "x_xstar"}
+
+
+def test_get_history_design_variable_is_function():
+    """Test the _get_history method when the objective is also a design variable.
+
+    This kind of situation can happen with the IDF formulation when the objective is
+    also a coupling variable.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-1, upper_bound=1.5, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x**2, name="x")
+    problem.database.store(array([-1.0]), {"x": array([1.21])})
+    problem.database.store(array([1.21]), {"x": array([1.4641])})
+
+    view = OptHistoryView(problem)
+    f_history, _, _, _ = view._get_history(
+        view._optimization_metadata.standardized_objective_name, variable_names="x"
+    )
+    # Check that the shape matches and that the values are those of the function and
+    # not those of the design vector.
+    assert_equal(f_history, array([1.21, 1.4641]))
