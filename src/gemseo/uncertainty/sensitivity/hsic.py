@@ -43,9 +43,7 @@ from openturns import Sample
 from openturns import SquaredExponential
 from strenum import StrEnum
 
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    BaseSensitivityAnalysis,
-)
+from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.seeder import SEED
 
@@ -59,16 +57,14 @@ if TYPE_CHECKING:
     from openturns import HSICStatImplementation
 
     from gemseo.typing import IntegerArray
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        FirstOrderIndicesType,
-    )
+    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
 
 
 class HSICAnalysis(BaseSensitivityAnalysis):
     """Sensitivity analysis based on the Hilbert-Schmidt independence criterion (HSIC).
 
     The
-    [compute_indices()][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.compute_indices]
+    [compute_indices()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
     method proposes three types of sensitivity analysis:
 
     - global sensitivity analysis (GSA, default)
@@ -88,7 +84,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
 
     Given a sensitivity analysis type and a statistics estimation technique,
     the
-    [compute_indices()][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.compute_indices]
+    [compute_indices()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
     method returns the standard HSIC indices
     and the normalized ones, also called R2-HSIC indices.
     """
@@ -170,7 +166,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
 
         This sensitivity analysis is incompatible
         with
-        [StatisticEstimator.USTAT][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.StatisticEstimator.USTAT].
+        [StatisticEstimator.USTAT][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.StatisticEstimator.USTAT].
         """
 
     __ANALYSIS_TO_OT_CLASSES: Final[
@@ -244,7 +240,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
             statistic_estimator: The name of the statistic estimator type.
                 This argument is ignored
                 when `analysis_type` is
-                [CONDITIONAL][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.AnalysisType.CONDITIONAL];
+                [CONDITIONAL][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.AnalysisType.CONDITIONAL];
                 in this case,
                 the U-statistics do not exist and V-statistics are considered.
             input_covariance_model: The name of the covariance model class of the
@@ -357,7 +353,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         r"""Filter the significant input components.
 
         You must first call the
-        [compute_indices][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis.compute_indices]
+        [compute_indices][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
         method.
 
         Args:

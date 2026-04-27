@@ -42,13 +42,9 @@ from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    FirstOrderIndicesType,
-)
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    SecondOrderIndicesType,
-)
-from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
+from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
+from gemseo.uncertainty.sensitivity.base import SecondOrderIndicesType
+from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.testing.helpers import image_comparison
 

@@ -29,7 +29,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
-from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
 from gemseo.utils.testing.helpers import image_comparison
 
 

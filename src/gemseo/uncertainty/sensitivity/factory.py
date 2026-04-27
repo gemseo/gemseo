@@ -22,9 +22,7 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    BaseSensitivityAnalysis,
-)
+from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
 
 
 class SensitivityAnalysisFactory(BaseFactory):

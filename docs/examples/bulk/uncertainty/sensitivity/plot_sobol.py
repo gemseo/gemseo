@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
+from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 
 # %%
 # In this example,
@@ -48,7 +48,7 @@ uncertain_space = IshigamiSpace()
 
 # %%
 # Then,
-# we run sensitivity analysis of type [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis]:
+# we run sensitivity analysis of type [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]:
 sensitivity_analysis = SobolAnalysis()
 sensitivity_analysis.compute_samples([discipline], uncertain_space, 10000)
 sensitivity_analysis.main_method = "total"
@@ -66,7 +66,7 @@ sensitivity_analysis.indices
 
 # %%
 # The main indices are the total Sobol' indices
-# ([main_method][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.main_method] can also be set to `"first"`
+# ([main_method][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.main_method] can also be set to `"first"`
 # to use the first-order indices as main indices):
 
 # %%
@@ -75,7 +75,7 @@ sensitivity_analysis.indices
 sensitivity_analysis.sort_input_variables("y")
 
 # %%
-# We can use the method [plot()][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.plot]
+# We can use the method [plot()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.plot]
 # to visualize both first-order and total Sobol' indices:
 sensitivity_analysis.plot("y", save=False, show=True)
 

@@ -17,19 +17,19 @@
 This package contains:
 
 - an abstract class
-  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis]]
+  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis]]
   to define the concept of sensitivity analysis,
 - a factory
   [SensitivityAnalysisFactory][gemseo.uncertainty.sensitivity.factory.SensitivityAnalysisFactory]
   to create instances of
-  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis]],
+  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis]],
 - concrete classes implementing this abstract class:
-  [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis]
+  [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]
   (based on OpenTURNS),
-  [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis],
-  [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis]
+  [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis],
+  [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
   (based on OpenTURNS)
-  and [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis]
+  and [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]
   (based on OpenTURNS).
 """
 

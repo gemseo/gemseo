@@ -29,9 +29,7 @@ from numpy import linspace
 from numpy import sort
 from scipy.stats import binom
 
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    _BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.tolerance_interval.base import _BaseToleranceInterval
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray

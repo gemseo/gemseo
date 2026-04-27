@@ -22,9 +22,7 @@ from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 from gemseo.uncertainty.distributions.scipy.distribution_fitter import (
     SPDistributionFitter,
 )
-from gemseo.uncertainty.statistics.base_parametric_statistics import (
-    BaseParametricStatistics,
-)
+from gemseo.uncertainty.statistics.base_parametric import BaseParametricStatistics
 
 
 class SPParametricStatistics(

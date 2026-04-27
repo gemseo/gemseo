@@ -21,9 +21,7 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 
 
 class UniformToleranceInterval(BaseToleranceInterval):

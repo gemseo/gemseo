@@ -40,3 +40,5 @@ asv-gemseo
 .envrc
 devbox.json
 devbox.lock
+
+.claude

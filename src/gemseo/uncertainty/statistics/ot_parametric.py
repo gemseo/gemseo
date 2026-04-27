@@ -22,9 +22,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
     OTDistributionFitter,
 )
-from gemseo.uncertainty.statistics.base_parametric_statistics import (
-    BaseParametricStatistics,
-)
+from gemseo.uncertainty.statistics.base_parametric import BaseParametricStatistics
 
 
 class OTParametricStatistics(

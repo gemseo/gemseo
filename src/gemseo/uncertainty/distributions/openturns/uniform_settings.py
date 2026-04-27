@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.uniform_settings import (
+from gemseo.uncertainty.distributions.base_settings.uniform import (
     BaseUniformDistributionSettings,
 )
 from gemseo.uncertainty.distributions.openturns.base_settings import (

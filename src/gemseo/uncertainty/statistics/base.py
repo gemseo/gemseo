@@ -21,16 +21,16 @@
 ## Overview
 
 The abstract
-[BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics]
+[BaseStatistics][gemseo.uncertainty.statistics.base.BaseStatistics]
 class implements the concept of statistics library.
 It is enriched by the
-[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
 and
-[OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics].
+[OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics].
 
 ## Construction
 
-A [BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics] object
+A [BaseStatistics][gemseo.uncertainty.statistics.base.BaseStatistics] object
 is built from a [Dataset][gemseo.datasets.dataset.Dataset]
 and optionally variables names.
 In this case,
@@ -39,51 +39,51 @@ Otherwise,
 statistics are computed for all the variable available in the dataset.
 Lastly,
 the user can give a name to its
-[BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics] object.
+[BaseStatistics][gemseo.uncertainty.statistics.base.BaseStatistics] object.
 By default,
 this name is the concatenation of the name
 of the class overloading
-[BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics]
+[BaseStatistics][gemseo.uncertainty.statistics.base.BaseStatistics]
 and the name of the [Dataset][gemseo.datasets.dataset.Dataset].
 
 ## Capabilities
 
-A [BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics] object
+A [BaseStatistics][gemseo.uncertainty.statistics.base.BaseStatistics] object
 returns standard descriptive and statistical measures
 for the different variables:
 
-- [compute_minimum()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_minimum]: the minimum value,
-- [compute_maximum()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_maximum]: the maximum value,
-- [compute_range()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_range]: the difference
+- [compute_minimum()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_minimum]: the minimum value,
+- [compute_maximum()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_maximum]: the maximum value,
+- [compute_range()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_range]: the difference
   between minimum and maximum values,
-- [compute_mean()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_mean]: the expectation (a.k.a. mean value),
-- [compute_moment()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_moment]: a central moment,
+- [compute_mean()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_mean]: the expectation (a.k.a. mean value),
+- [compute_moment()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_moment]: a central moment,
   which is the expected value
   of a specified integer power
   of the deviation from the mean,
-- [compute_variance()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_variance]: the variance,
+- [compute_variance()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_variance]: the variance,
   which is the mean squared variation around the mean value,
-- [compute_standard_deviation()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_standard_deviation]: the standard deviation,
+- [compute_standard_deviation()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_standard_deviation]: the standard deviation,
   which is the square root of the variance,
-- [compute_variation_coefficient()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_variation_coefficient]`: the coefficient of variation,
+- [compute_variation_coefficient()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_variation_coefficient]`: the coefficient of variation,
   which is the standard deviation normalized by the mean,
-- [compute_quantile()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_quantile]: the quantile associated with a probability,
+- [compute_quantile()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_quantile]: the quantile associated with a probability,
   which is the cut point diving the range into a first continuous interval
   with this given probability and a second continuous interval
   with the complementary probability; common *q*-quantiles dividing
   the range into *q* continuous interval with equal probabilities are also implemented:
 
-    - [compute_median()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_median]
+    - [compute_median()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_median]
       which implements the 2-quantile (50%).
-    - [compute_quartile()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_quartile]
+    - [compute_quartile()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_quartile]
       whose order (1, 2 or 3) implements the 4-quantiles (25%, 50% and 75%),
-    - [compute_percentile()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_percentile]
+    - [compute_percentile()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_percentile]
       whose order (1, 2, ..., 99) implements the 100-quantiles (1%, 2%, ..., 99%),
 
-- [compute_probability()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_probability]:
+- [compute_probability()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_probability]:
   the probability that the random variable is larger or smaller
   than a certain threshold,
-- [compute_tolerance_interval()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_tolerance_interval]:
+- [compute_tolerance_interval()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_tolerance_interval]:
   the left-sided, right-sided or both-sided tolerance interval
   associated with a given coverage level and a given confidence level,
   which is a statistical interval within which,
@@ -91,10 +91,10 @@ for the different variables:
   a specified proportion of the random variable realizations falls
   (this proportion is the coverage level)
 
-    - [compute_a_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_a_value]:
+    - [compute_a_value()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_a_value]:
       the A-value, which is the lower bound of the left-sided tolerance interval
       associated with a coverage level equal to 99% and a confidence level equal to 95%,
-    - [compute_b_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_b_value]:
+    - [compute_b_value()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_b_value]:
       the B-value, which is the lower bound of the left-sided tolerance interval
       associated with a coverage level equal to 90% and a confidence level equal to 95%,
 """  # noqa: E501
@@ -108,9 +108,7 @@ from typing import Final
 
 from numpy import array
 
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
@@ -230,8 +228,8 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             of the different components of `variable_name`.
 
         See Also:
-            [compute_a_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_a_value]
-            [compute_b_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_b_value]
+            [compute_a_value()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_a_value]
+            [compute_b_value()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_b_value]
         """
 
     SYMBOLS["tolerance_interval"] = "TI"
@@ -247,8 +245,8 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise A-value of the different variables.
 
         See Also:
-            [compute_tolerance_interval()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_tolerance_interval]
-            [compute_b_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_b_value]
+            [compute_tolerance_interval()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_tolerance_interval]
+            [compute_b_value()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_b_value]
         """
         return {
             name: array([t_i.lower for t_i in tolerance_intervals])
@@ -270,8 +268,8 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise B-value of the different variables.
 
         See Also:
-            [compute_tolerance_interval()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_tolerance_interval]
-            [compute_a_value()][gemseo.uncertainty.statistics.base_statistics.BaseStatistics.compute_a_value]
+            [compute_tolerance_interval()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_tolerance_interval]
+            [compute_a_value()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_a_value]
         """
         return {
             name: array([t_i.lower for t_i in tolerance_intervals])

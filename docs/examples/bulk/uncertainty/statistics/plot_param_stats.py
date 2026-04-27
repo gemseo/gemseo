@@ -61,9 +61,9 @@ variables = ["x_0", "x_1", "x_2", "x_3"]
 data
 
 # %%
-# ## Create a [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics] object
+# ## Create a [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics] object
 #
-# We create a [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics] object
+# We create a [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics] object
 # from this data encapsulated in a [Dataset][gemseo.datasets.dataset.Dataset]:
 
 dataset = create_dataset("Dataset", data, variables)
@@ -71,11 +71,11 @@ dataset = create_dataset("Dataset", data, variables)
 # %%
 # and a list of names of candidate probability distributions:
 # exponential, normal and uniform distributions
-# (see [OTParametricStatistics.DistributionName][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics.DistributionName]).
+# (see [OTParametricStatistics.DistributionName][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics.DistributionName]).
 # We do not use the default
 # fitting criterion ('BIC') but 'Kolmogorov'
-# (see [OTParametricStatistics.FittingCriterion][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics.FittingCriterion]
-# and [OTParametricStatistics.SignificanceTest][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics.SignificanceTest]).
+# (see [OTParametricStatistics.FittingCriterion][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics.FittingCriterion]
+# and [OTParametricStatistics.SignificanceTest][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics.SignificanceTest]).
 
 tested_distributions = ["Exponential", "Normal", "Uniform"]
 analysis = create_statistics(
@@ -104,7 +104,7 @@ analysis.plot_criteria("x_0")
 # %%
 # ## Get statistics
 #
-# From this [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics] instance,
+# From this [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics] instance,
 # we can easily get statistics for the different variables
 # based on the selected distributions.
 

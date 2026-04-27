@@ -33,11 +33,9 @@ from numpy.testing import assert_allclose
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.lines import Lines
-from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
-from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.base import BaseStatistics
+from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.testing.helpers import image_comparison
 

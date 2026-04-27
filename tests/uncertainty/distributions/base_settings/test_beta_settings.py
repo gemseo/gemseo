@@ -18,7 +18,7 @@ import re
 
 import pytest
 
-from gemseo.uncertainty.distributions.base_settings.beta_settings import (
+from gemseo.uncertainty.distributions.base_settings.beta import (
     BaseBetaDistributionSettings,
 )
 

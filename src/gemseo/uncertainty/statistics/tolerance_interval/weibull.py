@@ -25,9 +25,7 @@ import openturns as ot
 from numpy import exp
 from numpy import log
 
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 
 
 class WeibullToleranceInterval(BaseToleranceInterval):

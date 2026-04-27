@@ -60,7 +60,7 @@ class OATDOE(BaseDOELibrary[OATDOE_Settings]):
     Note that
     GEMSEO does not implement this sensitivity analysis
     but this DOE is used by
-    the [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis],
+    the [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis],
     which repeats this sensitivity analysis
     and computes statistics from the repetitions.
     """

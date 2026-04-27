@@ -369,7 +369,7 @@ class BaseFCERegressor(BaseRegressor):
         Warning:
            These statistics are expressed in relation to the transformed output space.
            You can use a
-           [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis]
+           [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
            to estimate them in relation to the original output space
            if it is different from the transformed output space.
         """
@@ -383,7 +383,7 @@ class BaseFCERegressor(BaseRegressor):
         Warning:
            These statistics are expressed in relation to the transformed output space.
            You can use a
-           [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis]
+           [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
            to estimate them in relation to the original output space
            if it is different from the transformed output space.
         """

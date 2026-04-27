@@ -19,9 +19,7 @@ from __future__ import annotations
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 
 
 class ToleranceIntervalFactory(BaseFactory[BaseToleranceInterval]):

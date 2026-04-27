@@ -40,7 +40,7 @@ from gemseo.uncertainty.distributions.openturns.uniform_settings import (
 from gemseo.uncertainty.distributions.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
-from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
+from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 from gemseo.utils.testing.helpers import image_comparison
 
 FUNCTION = {

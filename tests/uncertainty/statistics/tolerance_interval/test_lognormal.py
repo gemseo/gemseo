@@ -26,9 +26,7 @@ from math import exp
 import pytest
 from scipy.special import erfinv
 
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 from gemseo.uncertainty.statistics.tolerance_interval.lognormal import (
     LogNormalToleranceInterval,
 )
