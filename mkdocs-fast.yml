@@ -68,8 +68,6 @@ nav:
           - Define an MDO problem: interface/study_analysis.md
           - Optimization and DOE framework: mdo/optimization.md
           - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/bulk/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
-          - MDO formulations for a toy example in aerostructure: generated/examples/bulk/mdo/plot_aerostructure.md
-          - A from scratch example on the Sellar problem: generated/examples/bulk/mdo/plot_sellar.md
           - Sobieski's Super Sonic Business Jet: generated/examples/bulk/mdo/plot_sobieski_use_case.md
       - Tutorials (advanced):
           - Multi-objective optimization: generated/examples/bulk/multi_objective
@@ -201,7 +199,7 @@ nav:
           - Optimization: generated/examples/bulk/optimization_problem
           - Multi-start optimization: generated/examples/howtos/optimizers/plot_howto_multistart.md
       - Formulations: generated/examples/howtos/formulations
-      - Design of experiments (DOE): generated/examples/bulk/doe
+      - Design of experiments (DOE): generated/examples/howtos/doe
       - Define settings models:
           - Algorithm settings: settings/algorithm_settings.md
           - MDA settings: settings/mda_settings.md
@@ -213,6 +211,7 @@ nav:
       - Machine learning: generated/examples/howtos/machine_learning
       - Cache: generated/examples/howtos/cache
       - Constraint aggregation: generated/examples/howtos/constraint_aggregation
+      - Exterior penalty: generated/examples/howtos/exterior_penalty
       - Scalable model: generated/examples/bulk/scalable
       - Uncertainty: generated/examples/bulk/uncertainty
       - Upgrading: software/upgrading.md

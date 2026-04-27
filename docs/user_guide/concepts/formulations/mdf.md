@@ -52,9 +52,6 @@ see [this page][multi-disciplinary-analyses].
 For details on coupled derivatives and gradients computation,
 see [this page][coupled-derivatives-and-gradients-computation].
 
-An example of an MDO study using an MDF formulation can be found in
-[this example][a-from-scratch-example-on-the-sellar-problem].
-
 !!! warning
       Any [Discipline][gemseo.core.discipline.discipline.Discipline]
       that will be placed inside an [MDF][gemseo.formulations.mdf.MDF] formulation
