@@ -94,13 +94,11 @@ nav:
       - MDO (formulations): user_guide/use_cases/mdo_formulations.md
       - Uncertainty quantification: user_guide/use_cases/uncertainty_quantification.md
     - Concepts:
-      - Disciplines:
-        - Overview: user_guide/concepts/discipline/index.md
-        - Grammars: user_guide/concepts/discipline/grammars.md
-        - Namespaces: user_guide/concepts/discipline/namespaces.md
+      - Disciplines: user_guide/concepts/discipline/discipline.md
       - Coupling:
         - Overview: user_guide/concepts/coupling/index.md
         - Visualization: user_guide/concepts/coupling/visualization.md
+        - Namespaces: user_guide/concepts/coupling/namespaces.md
         - Solving (MDA): user_guide/concepts/coupling/solving_mda.md
         - Gradient computation: user_guide/concepts/coupling/gradient_computation.md
       - Design space: user_guide/concepts/design_space.md
