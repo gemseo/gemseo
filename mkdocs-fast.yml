@@ -95,7 +95,7 @@ nav:
           - Uncertainty quantification: user_guide/use_cases/uncertainty_quantification.md
       - Concepts:
           - Disciplines:
-               user_guide/concepts/discipline/discipline.md
+              user_guide/concepts/discipline/discipline.md
           - Coupling:
               - Overview: user_guide/concepts/coupling/index.md
               - Visualization: user_guide/concepts/coupling/visualization.md
@@ -125,7 +125,7 @@ nav:
               - Uncertainty quantification: user_guide/concepts/uncertainty/uncertainty_quantification.md
               - Sensitivity analysis: user_guide/concepts/uncertainty/sensitivity_analysis.md
           - Machine learning: user_guide/concepts/machine_learning.md
-          -  Data persistence:
+          - Data persistence:
               - Cache: user_guide/concepts/data_persistence/cache.md
               - Database: user_guide/concepts/data_persistence/database.md
               - Dataset: user_guide/concepts/data_persistence/dataset.md
@@ -138,7 +138,7 @@ nav:
                   - Quadratic: user_guide/concepts/benchmarking/scalable_mdo/quadratic.md
                   - Data-driven: user_guide/concepts/benchmarking/scalable_mdo/data_driven.md
               - MDO-like optimization problems: user_guide/concepts/benchmarking/mdo_like_optimization_problems.md
-  - User experience:
+      - User experience:
           - Overview: user_guide/user_experience/index.md
           - High-level functions: user_guide/user_experience/high_level_functions.md
           - Global configuration: user_guide/user_experience/global_configuration.md
