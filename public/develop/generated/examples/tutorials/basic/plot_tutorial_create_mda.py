@@ -22,7 +22,8 @@
 
 ## Goal
 
-This tutorial will guide you to create and execute a Multidisciplinary Design Analysis (MDA).
+This tutorial will guide you to create and execute a Multidisciplinary Design
+Analysis (MDA).
 
 In cases where a set of disciplines is strongly coupled,
 one must solve the underlying coupled system to get consistent variables values.
@@ -54,8 +55,10 @@ from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 # [create_discipline][gemseo.create_discipline] high level API function.
 #
 # !!! warning
-#     Any [Discipline][gemseo.core.discipline.discipline.Discipline] provided to a [BaseMDA][gemseo.mda.base.BaseMDA]
-#     with strong couplings **must** define its [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
+#     Any [Discipline][gemseo.core.discipline.discipline.Discipline] provided to
+#     a [BaseMDA][gemseo.mda.base.BaseMDA]
+#     with strong couplings **must** define its
+#     [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
 #     Otherwise, the execution will fail.
 
 disciplines = create_discipline([
@@ -78,14 +81,16 @@ disciplines = create_discipline([
 # or need complex executions to solve strong couplings.
 #
 # !!! note
-#     By setting file_path to an empty string, the generated file is not written to disk.
+#     By setting file_path to an empty string, the generated file is not written to
+#     disk.
 generate_coupling_graph(disciplines, file_path="")
 
 # %%
 # A quick look shows that the *Propulsion*, *Structure*, and *Aerodynamics* disciplines
 # are strongly coupled, while the *Mission* discipline can be run afterward.
 # This information may be hard to get when considering many disciplines.
-# This is why you can generate the condensed coupling graph (which is a directed acyclic graph (DAG)),
+# This is why you can generate the condensed coupling graph (which is a directed
+# acyclic graph (DAG)),
 # that shows the disciplines that are highly coupled.
 generate_coupling_graph(disciplines, file_path="", full=False)
 
@@ -109,7 +114,8 @@ generate_n2_plot(disciplines, save=False, show=True)
 # such as allowing the execution of the disciplines in a multi-process environment,
 # or to focus on sequential executions.
 # In this tutorial, the focus is given to the Gauss-Seidel algorithm.
-# It executes the disciplines sequentially, and the solution given at every iteration is physically feasible.
+# It executes the disciplines sequentially, and the solution given at every iteration
+# is physically feasible.
 # It means that even if the algorithm does not converge,
 # the solution of your problem has a physical meaning.
 #
@@ -129,7 +135,8 @@ gauss_seidel_mda = create_mda(
 #     Here, we create an MDA with the 4 disciplines,
 #     even if the *Mission* is not highly coupled with the other 3 disciplines.
 #     It is sub-optimal, since the *Mission* discipline will be executed many times.
-#     You may want to create an [MDOChain][gemseo.core.chains.chain.MDOChain]
+#     You may want to create
+#     a [DisciplineChain][gemseo.core.chains.chain.DisciplineChain]
 #     of the MDA (3 disciplines) and the *Mission* discipline, as explained in the
 #     [Chain disciplines][chain-disciplines] how-to.
 #     Or you can simply explore the
@@ -160,7 +167,8 @@ output_data
 #       However, the MDA might never converge.
 #
 # The normed residual can be seen by
-# [normalized_residual_norm][gemseo.mda.base.BaseMDA.normalized_residual_norm] attribute.
+# [normalized_residual_norm][gemseo.mda.base.BaseMDA.normalized_residual_norm]
+# attribute.
 gauss_seidel_mda.normalized_residual_norm
 
 # %%
@@ -172,7 +180,8 @@ gauss_seidel_mda.plot_residual_history(logscale=[1e-8, 10.0], save=False, show=T
 # the disciplines have been executed 8 times to make the couplings converge.
 # The given solution is a feasible and converged point.
 #
-# The values can be accessed by [residual_history][gemseo.mda.base.BaseMDA.residual_history].
+# The values can be accessed
+# by [residual_history][gemseo.mda.base.BaseMDA.residual_history].
 gauss_seidel_mda.residual_history
 
 # %%

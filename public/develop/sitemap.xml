@@ -4041,7 +4041,7 @@
          <lastmod>2026-04-27</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/reference/gemseo/problems/mdo/sobieski/process/mdo_chain/</loc>
+         <loc>https://gemseo.org/latest/reference/gemseo/problems/mdo/sobieski/process/discipline_chain/</loc>
          <lastmod>2026-04-27</lastmod>
     </url>
     <url>
@@ -4973,11 +4973,11 @@
          <lastmod>2026-04-27</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/user_guide/concepts/design_space/</loc>
+         <loc>https://gemseo.org/latest/user_guide/concepts/</loc>
          <lastmod>2026-04-27</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/user_guide/concepts/global_configuration/</loc>
+         <loc>https://gemseo.org/latest/user_guide/concepts/design_space/</loc>
          <lastmod>2026-04-27</lastmod>
     </url>
     <url>
@@ -5178,6 +5178,30 @@
     </url>
     <url>
          <loc>https://gemseo.org/latest/user_guide/use_cases/uncertainty_quantification/</loc>
+         <lastmod>2026-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/user_guide/user_experience/</loc>
+         <lastmod>2026-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/user_guide/user_experience/extensibility/</loc>
+         <lastmod>2026-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/user_guide/user_experience/global_configuration/</loc>
+         <lastmod>2026-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/user_guide/user_experience/high_level_functions/</loc>
+         <lastmod>2026-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/user_guide/user_experience/package_structure/</loc>
+         <lastmod>2026-04-27</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/user_guide/user_experience/settings/</loc>
          <lastmod>2026-04-27</lastmod>
     </url>
 </urlset>

@@ -108,7 +108,7 @@ plt.legend()
 plt.show()
 
 # %%
-# ## Settings
+# ## Settings { #rbf-settings }
 #
 # The [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor] has many options
 # defined in the [RBFRegressor_Settings][gemseo.machine_learning.regression.models.rbf_settings.RBFRegressor_Settings] Pydantic model.

@@ -128,7 +128,7 @@ plt.legend()
 plt.show()
 
 # %%
-# ## Settings
+# ## Settings { #gp-settings }
 #
 # The [GaussianProcessRegressor][gemseo.machine_learning.regression.models.gpr.GaussianProcessRegressor] has many options
 # defined in the [GaussianProcessRegressor_Settings][gemseo.machine_learning.regression.models.gpr_settings.GaussianProcessRegressor_Settings] Pydantic model.

@@ -27,7 +27,7 @@ You have several disciplines, and you want to execute them sequentially and forw
 ## Solution
 
 GEMSEO can chain the disciplines to execute them sequentially with the
-[MDOChain][gemseo.core.chains.chain.MDOChain] discipline.
+[DisciplineChain][gemseo.core.chains.chain.DisciplineChain] discipline.
 
 ## Step-by-step guide
 """
@@ -36,7 +36,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.disciplines.analytic import AnalyticDiscipline
 
 # %%
@@ -46,7 +46,7 @@ discipline_b = AnalyticDiscipline({"z": "y+1"}, name="B")
 
 # %%
 # ### 2. Chain the disciplines
-chain = MDOChain([discipline_a, discipline_b])
+chain = DisciplineChain([discipline_a, discipline_b])
 chain
 
 # %%
@@ -64,8 +64,8 @@ chain
 #
 # !!! warning
 #     The order of the disciplines matters.
-#     `MDOChain([discipline_a, discipline_b])` executes `discipline_a` before `discipline_b`
-#     while `MDOChain([discipline_b, discipline_a])` executes `discipline_b` before `discipline_a`.
+#     `DisciplineChain([discipline_a, discipline_b])` executes `discipline_a` before `discipline_b`
+#     while `DisciplineChain([discipline_b, discipline_a])` executes `discipline_b` before `discipline_a`.
 #
 # We can execute the chain using its default inputs:
 chain.execute()
@@ -76,7 +76,7 @@ chain.execute({"x": array([5])})
 
 # %%
 # !!! warning
-#     The `MDOChain` does not solve couplings,
+#     The `DisciplineChain` does not solve couplings,
 #     whether they are strong or weak.
 #     Regardless of their coupling structure,
 #     the disciplines are simply executed sequentially.
@@ -84,7 +84,7 @@ chain.execute({"x": array([5])})
 # ## Summary
 #
 # Multiple disciplines can be chained together thanks to the
-# [MDOChain][gemseo.core.chains.chain.MDOChain].
+# [DisciplineChain][gemseo.core.chains.chain.DisciplineChain].
 # The order of execution is specified by the user.
 #
 # ## One step further
