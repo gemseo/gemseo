@@ -16,7 +16,7 @@
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Francois Gallard
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Graph algorithms to solve the Jacobian accumulation problem for MDOChain and MDA."""
+"""Graph algorithms to solve the Jacobian accumulation problem for DisciplineChain and MDA."""  # noqa: E501
 
 from __future__ import annotations
 

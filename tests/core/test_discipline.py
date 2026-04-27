@@ -44,7 +44,7 @@ from gemseo import create_discipline
 from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.memory_full_cache import MemoryFullCache
 from gemseo.caches.simple_cache import SimpleCache
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.data_processor import ComplexDataProcessor
@@ -108,14 +108,14 @@ def check_jac_equals(
 
 
 @pytest.fixture
-def sobieski_chain() -> tuple[MDOChain, dict[str, ndarray]]:
+def sobieski_chain() -> tuple[DisciplineChain, dict[str, ndarray]]:
     """Build a Sobieski chain.
 
     Returns:
-         Tuple containing a Sobieski MDOChain instance
+         Tuple containing a Sobieski DisciplineChain instance
              and the defaults inputs of the chain.
     """
-    chain = MDOChain([
+    chain = DisciplineChain([
         SobieskiStructure(),
         SobieskiAerodynamics(),
         SobieskiPropulsion(),
@@ -167,7 +167,7 @@ def hybrid_jacobian_discipline() -> Discipline:
 @pytest.mark.xfail
 def test_instantiate_grammars() -> None:
     """Test the instantiation of the grammars."""
-    chain = MDOChain([SobieskiAerodynamics()])
+    chain = DisciplineChain([SobieskiAerodynamics()])
     chain.disciplines[0]._instantiate_grammars(None, None, grammar_type="JSONGrammar")
     assert isinstance(chain.disciplines[0].input_grammar, JSONGrammar)
 

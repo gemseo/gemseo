@@ -27,7 +27,7 @@ from numpy.linalg import norm
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.core.discipline import Discipline
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -247,9 +247,9 @@ def test_get_sub_disciplines_recursive(
         d2 = Discipline("d2")
         d3 = Discipline("d3")
     d1.io.output_grammar.update_from_names(["foo"])
-    chain1 = MDOChain([d3], "chain1")
-    chain2 = MDOChain([d2, chain1], "chain2")
-    chain3 = MDOChain([d1, chain2], "chain3")
+    chain1 = DisciplineChain([d3], "chain1")
+    chain2 = DisciplineChain([d2, chain1], "chain2")
+    chain3 = DisciplineChain([d1, chain2], "chain3")
     design_space = DesignSpace()
     problem = OptimizationProblem(design_space)
     formulation = NewMDOFormulation(problem, [chain3])

@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
@@ -99,19 +99,22 @@ def order_disciplines_from_default_inputs(
     return ordered_discs
 
 
-class MDOInitializationChain(MDOChain):
+class InitializationDisciplineChain(DisciplineChain):
     """An initialization process for a set of disciplines.
 
-    This MDOChain subclass computes the initialization for the computation of a set of
-    disciplines. It is particularly useful in the case of MDAs when not all
-    default_input_data are available, and the execution order is not obvious to compute
-    initial values for all couplings.
+    This DisciplineChain subclass computes the initialization
+    for the computation of a set of disciplines.
+    It is particularly useful in the case of MDAs
+    when not all default_input_data are available,
+    and the execution order is not obvious to compute initial values for all couplings.
 
-    From the default inputs of the disciplines, use a greedy algorithm to detect
-    sequentially the disciplines that can be executed, and records the execution order.
+    From the default inputs of the disciplines,
+    use a greedy algorithm to detect sequentially the disciplines that can be executed,
+    and records the execution order.
 
-    The couplings are ignored, and therefore, a true MDA must be used afterward to
-    ensure consistency.
+    The couplings are ignored,
+    and therefore,
+    a true MDA must be used afterward to ensure consistency.
     """
 
     def __init__(  # noqa:D107

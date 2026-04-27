@@ -40,8 +40,8 @@ from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.core.chains.chain import MDOChain
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.chain import DisciplineChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.core.discipline import Discipline
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.functions.discipline_adapter_generator import (
@@ -224,7 +224,7 @@ def test_chain(scenario) -> None:
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
 
     # Allow re exec when DONE for the chain execution
-    chain = MDOChain([mda, adapter, mda])
+    chain = DisciplineChain([mda, adapter, mda])
 
     # Sobieski Z opt
     x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
@@ -528,8 +528,9 @@ def test_save_opt_history(
 def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> None:
     """Test that an MDOScenarioAdapter can be serialized, loaded and executed.
 
-    The focus of this test is to guarantee that the loaded MDOChain instance can be
-    executed, if an AttributeError is raised, it means that the attribute is missing in
+    The focus of this test is to guarantee
+    that the loaded DisciplineChain instance can be executed,
+    if an AttributeError is raised, it means that the attribute is missing in
     `MDOScenarioAdapter._ATTR_NOT_TO_SERIALIZE`.
 
     Args:
@@ -658,9 +659,18 @@ class DisciplineSub2(Discipline):
     params=[
         [DisciplineMain(), DisciplineSub1(), DisciplineSub2()],
         [DisciplineMainWithJacobian(), DisciplineSub1(), DisciplineSub2()],
-        [MDOChain([DisciplineMain(), DisciplineSub1(), DisciplineSub2()])],
-        [MDOChain([DisciplineMainWithJacobian(), DisciplineSub1(), DisciplineSub2()])],
-        [DisciplineMain(), MDOParallelChain([DisciplineSub1(), DisciplineSub2()])],
+        [DisciplineChain([DisciplineMain(), DisciplineSub1(), DisciplineSub2()])],
+        [
+            DisciplineChain([
+                DisciplineMainWithJacobian(),
+                DisciplineSub1(),
+                DisciplineSub2(),
+            ])
+        ],
+        [
+            DisciplineMain(),
+            ParallelDisciplineChain([DisciplineSub1(), DisciplineSub2()]),
+        ],
     ]
 )
 def disciplines_fixture(request):
@@ -724,7 +734,7 @@ def test_linearize_scenario_adapter(scenario_fixture) -> None:
 
 def test_multiple_linearize() -> None:
     """Tests two linearizations and linearize in the _run method."""
-    disc2 = MDOChain([DisciplineMain(), DisciplineSub1(), DisciplineSub2()])
+    disc2 = DisciplineChain([DisciplineMain(), DisciplineSub1(), DisciplineSub2()])
     disc2.io.input_grammar.defaults = {"x": array([0.0]), "alpha": array([0.0])}
     disc2.add_differentiated_inputs("x")
     disc2.add_differentiated_outputs("g")

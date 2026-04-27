@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 from numpy import allclose
 
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
@@ -54,7 +54,7 @@ def test_matrix_free_chain_rule() -> None:
         ],
     )
 
-    chain = MDOChain(disciplines)
+    chain = DisciplineChain(disciplines)
     chain.add_differentiated_inputs("x")
     chain.add_differentiated_outputs("y")
     chain.linearize()
@@ -62,7 +62,7 @@ def test_matrix_free_chain_rule() -> None:
     disciplines[2].matrix_free_jacobian = True
     disciplines[2].linearize(compute_all_jacobians=True)
 
-    chain_matrix_free = MDOChain(disciplines)
+    chain_matrix_free = DisciplineChain(disciplines)
     chain_matrix_free.add_differentiated_inputs("x")
     chain_matrix_free.add_differentiated_outputs("y")
     chain_matrix_free.linearize()
@@ -112,9 +112,9 @@ def test_traverse_add_diff_io_basic() -> None:
 
 
 def test_chain_jac_basic() -> None:
-    """Test the jacobian from the MDOChain on a basic case."""
+    """Test the jacobian from the DisciplineChain on a basic case."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1)
-    chain = MDOChain(disciplines)
+    chain = DisciplineChain(disciplines)
     assert chain.check_jacobian(input_names=["x"], output_names=["o"])
 
 
@@ -135,9 +135,9 @@ def test_chain_jac_random(nb_of_disc, nb_of_total_disc_io, nb_of_disc_ios) -> No
         unique_disc_per_output=True,
         no_strong_couplings=True,
         no_self_coupled=True,
-        grammar_type=MDOChain.GrammarType.SIMPLE,
+        grammar_type=DisciplineChain.GrammarType.SIMPLE,
     )
-    assert MDOChain(disciplines).check_jacobian()
+    assert DisciplineChain(disciplines).check_jacobian()
 
 
 @pytest.mark.parametrize("inputs_size", [1, 2])
@@ -154,9 +154,9 @@ def test_chain_jac_io_sizes(inputs_size, outputs_size, unique_disc_per_output) -
         unique_disc_per_output=unique_disc_per_output,
         no_strong_couplings=True,
         no_self_coupled=True,
-        grammar_type=MDOChain.GrammarType.SIMPLE,
+        grammar_type=DisciplineChain.GrammarType.SIMPLE,
     )
-    assert MDOChain(disciplines).check_jacobian()
+    assert DisciplineChain(disciplines).check_jacobian()
 
 
 @pytest.mark.parametrize("nb_of_disc", [5, 10])
@@ -177,9 +177,9 @@ def test_chain_jac_random_with_couplings(
         unique_disc_per_output=True,
         no_strong_couplings=True,
         no_self_coupled=no_self_coupled,
-        grammar_type=MDOChain.GrammarType.SIMPLE,
+        grammar_type=DisciplineChain.GrammarType.SIMPLE,
     )
-    assert MDOChain(disciplines).check_jacobian()
+    assert DisciplineChain(disciplines).check_jacobian()
 
 
 # def test_chain_fail_multiple_io(
@@ -189,10 +189,10 @@ def test_chain_jac_random_with_couplings(
 #         ("C", ["3" ], ["2"]),
 #         ("G", [ "2"], ["0"])]
 #     disciplines = create_disciplines_from_desc(
-#     disc_descriptions ,grammar_type=MDOChain.GrammarType.SIMPLE
+#     disc_descriptions ,grammar_type=DisciplineChain.GrammarType.SIMPLE
 #     )
-#     assert MDOChain(disciplines,
-#         grammar_type=MDOChain.GrammarType.SIMPLE).check_jacobian()
+#     assert DisciplineChain(disciplines,
+#         grammar_type=DisciplineChain.GrammarType.SIMPLE).check_jacobian()
 
 
 # def test_chain_jac_big( ):
@@ -206,7 +206,7 @@ def test_chain_jac_random_with_couplings(
 #         unique_disc_per_output=False,
 #         no_strong_couplings=False,
 #         no_self_coupled=False,
-#         grammar_type=MDOChain.GrammarType.SIMPLE
+#         grammar_type=DisciplineChain.GrammarType.SIMPLE
 #     )
 #     coupling_structure = CouplingStructure(disciplines)
 #     print("N Disc",len(disciplines))

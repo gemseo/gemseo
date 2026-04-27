@@ -18,7 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from gemseo.problems.mdo.sobieski.process.mdo_chain import SobieskiChain
+from gemseo.problems.mdo.sobieski.process.discipline_chain import SobieskiChain
 
 
 def test_exec_chain() -> None:

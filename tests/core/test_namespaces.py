@@ -23,8 +23,8 @@ from numpy import array
 
 from gemseo import create_discipline
 from gemseo import create_mda
-from gemseo.core.chains.chain import MDOChain
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.chain import DisciplineChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
 from gemseo.core.namespaces import remove_prefix
@@ -99,7 +99,7 @@ def test_analytic_disc_ns(grammar_type, use_defaults) -> None:
 
 
 def test_chain_disc_ns(grammar_type) -> None:
-    """Tests MDOChain features with namespaces."""
+    """Tests DisciplineChain features with namespaces."""
     disc_1 = create_discipline("AutoPyDiscipline", py_func=func_1)
     disc_2 = create_discipline("AutoPyDiscipline", py_func=func_2)
 
@@ -107,7 +107,7 @@ def test_chain_disc_ns(grammar_type) -> None:
     disc_1.add_namespace_to_output("y", "ns_out")
     disc_2.add_namespace_to_input("y", "ns_out")
 
-    chain = MDOChain([disc_1, disc_2])
+    chain = DisciplineChain([disc_1, disc_2])
 
     assert sorted(chain.io.input_grammar) == ["a", "ns_in:x", "u"]
     assert sorted(remove_prefix(chain.io.input_grammar)) == [
@@ -127,10 +127,10 @@ def test_chain_disc_ns(grammar_type) -> None:
     assert out["z"] == array([20.0])
 
 
-@pytest.mark.parametrize("chain_type", [MDOChain, MDOParallelChain])
+@pytest.mark.parametrize("chain_type", [DisciplineChain, ParallelDisciplineChain])
 def test_chain_disc_ns_twice(grammar_type, chain_type) -> None:
-    """Tests MDOChain and MDOParallelChain with twice the same disciplines and different
-    namespaces."""
+    """Tests DisciplineChain and ParallelDisciplineChain
+    with twice the same disciplines and different namespaces."""
     disc_1 = create_discipline("AutoPyDiscipline", py_func=func_1, py_jac=dfunc_1)
     disc_2 = create_discipline("AutoPyDiscipline", py_func=func_1, py_jac=dfunc_1)
 
@@ -237,15 +237,15 @@ def b_func(y=1.0):
 
 
 def test_namespaces_chain() -> None:
-    """Tests MDOChain namespaces and jacobian."""
+    """Tests DisciplineChain namespaces and jacobian."""
     a_disc = create_discipline("AutoPyDiscipline", py_func=a_func)
     b_disc = create_discipline("AutoPyDiscipline", py_func=b_func)
-    chain = MDOChain(disciplines=[a_disc, b_disc])
+    chain = DisciplineChain(disciplines=[a_disc, b_disc])
     assert chain.execute()["z"][0] == 3.0
 
     a_disc_ns = create_discipline("AutoPyDiscipline", py_func=a_func)
     a_disc_ns.add_namespace_to_output("y", "ns")
-    chain_ns = MDOChain(disciplines=[a_disc_ns, b_disc])
+    chain_ns = DisciplineChain(disciplines=[a_disc_ns, b_disc])
     assert chain_ns.execute()["z"][0] == 2.0
 
     b_disc.linearization_mode = "finite_differences"

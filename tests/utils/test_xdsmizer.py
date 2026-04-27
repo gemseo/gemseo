@@ -39,8 +39,8 @@ from gemseo.core._process_flow.execution_sequences.parallel import ParallelExecS
 from gemseo.core._process_flow.execution_sequences.sequential import (
     SequentialExecSequence,
 )
-from gemseo.core.chains.chain import MDOChain
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.chain import DisciplineChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
@@ -292,7 +292,7 @@ def test_xdsmize_bilevel(options) -> None:
 
 
 def test_xdsmize_nested_chain(options) -> None:
-    """Test the XDSM representation of nested `MDOChain`s.
+    """Test the XDSM representation of nested `DisciplineChain`s.
 
     Here, we build a 3-levels nested chain.
     """
@@ -300,12 +300,12 @@ def test_xdsmize_nested_chain(options) -> None:
     def get_name(x: int) -> str:
         return f"x_{x}"
 
-    deep_chain = MDOChain([
+    deep_chain = DisciplineChain([
         elementary_discipline(get_name(1), get_name(2)),
         elementary_discipline(get_name(2), get_name(3)),
     ])
 
-    inter_chain = MDOChain([
+    inter_chain = DisciplineChain([
         deep_chain,
         elementary_discipline(get_name(3), get_name(4)),
     ])
@@ -472,7 +472,7 @@ def test_xdsmize_disciplinary_opt_with_adapter(options) -> None:
 
 
 def test_xdsmize_nested_parallel_chain(options) -> None:
-    """Test the XDSM representation of nested `MDOParallelChain`s.
+    """Test the XDSM representation of nested `ParallelDisciplineChain`s.
 
     Here, we build a 3-levels nested chain.
     """
@@ -482,12 +482,12 @@ def test_xdsmize_nested_parallel_chain(options) -> None:
 
     beg_chain = elementary_discipline(get_name(1), get_name(2))
 
-    deep_chain = MDOParallelChain([
+    deep_chain = ParallelDisciplineChain([
         elementary_discipline(get_name(2), get_name(3)),
         elementary_discipline(get_name(2), get_name(4)),
     ])
 
-    inter_chain = MDOParallelChain([
+    inter_chain = ParallelDisciplineChain([
         deep_chain,
         elementary_discipline(get_name(4), get_name(5)),
     ])
@@ -506,7 +506,7 @@ def test_xdsmize_nested_parallel_chain(options) -> None:
 
 
 def test_xdsmize_chain_of_parallel_chain(options) -> None:
-    """Test the XDSM representation of nested `MDOParallelChain`s.
+    """Test the XDSM representation of nested `ParallelDisciplineChain`s.
 
     Here, we build a 3-levels nested chain.
     """
@@ -516,15 +516,15 @@ def test_xdsmize_chain_of_parallel_chain(options) -> None:
 
     beg_chain = elementary_discipline(get_name(1), get_name(2))
 
-    par_chain = MDOParallelChain([
+    par_chain = ParallelDisciplineChain([
         elementary_discipline(get_name(2), get_name(3)),
-        MDOChain([
+        DisciplineChain([
             elementary_discipline(get_name(2), get_name(4)),
             elementary_discipline(get_name(4), get_name(5)),
         ]),
     ])
 
-    end_chain = MDOChain([
+    end_chain = DisciplineChain([
         elementary_discipline(get_name(3), get_name(6)),
         elementary_discipline(get_name(5), get_name(7)),
     ])
@@ -549,12 +549,12 @@ def test_xdsmized_parallel_chain_of_mda(options) -> None:
     def get_name(x: int) -> str:
         return f"x_{x}"
 
-    par_chain = MDOParallelChain([
-        MDOChain([
+    par_chain = ParallelDisciplineChain([
+        DisciplineChain([
             elementary_discipline(get_name(1), get_name(2)),
             elementary_discipline(get_name(2), get_name(3)),
         ]),
-        MDOChain([
+        DisciplineChain([
             elementary_discipline(get_name(1), get_name(3)),
             elementary_discipline(get_name(3), get_name(4)),
             MDAGaussSeidel([
@@ -710,8 +710,8 @@ def assert_level_xdsm_equal(
     assert generated["workflow"] == expected["workflow"]
 
 
-def test_xdsmize_mdf_mdoparallelchain(options) -> None:
-    """Test the XDSM representation of an MDF including an MDOParallelChain.
+def test_xdsmize_mdf_parallel_discipline_chain(options) -> None:
+    """Test the XDSM representation of an MDF including an ParallelDisciplineChain.
 
     In this case, the two MDAGaussSeidel created in the MDAChain must be parallel
     """
@@ -738,7 +738,7 @@ def test_xdsmize_mdf_mdoparallelchain(options) -> None:
     )
     scenario.add_objective("y2")
 
-    assert_xdsm(scenario, **options("xdsmized_mdf_mdoparallelchain"))
+    assert_xdsm(scenario, **options("xdsmized_mdf_parallel_discipline_chain"))
 
 
 @pytest.mark.parametrize("directory_path", [".", Path("bar")])

@@ -21,12 +21,12 @@
 
 from __future__ import annotations
 
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 from gemseo.problems.mdo.sobieski.disciplines import create_disciplines
 
 
-class SobieskiChain(MDOChain):
+class SobieskiChain(DisciplineChain):
     """Chain the disciplines of the Sobieski's SSBJ use case.
 
     Order: structure, aerodynamics, propulsion and mission.

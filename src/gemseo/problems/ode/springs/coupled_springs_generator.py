@@ -37,7 +37,7 @@ from numpy import asarray
 from numpy import linspace
 
 from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.springs.spring_ode_discipline import SpringODEDiscipline
 from gemseo.problems.ode.springs.springs_dynamics_discipline import (
@@ -242,7 +242,7 @@ class CoupledSpringsGenerator:
             for ii, mass in enumerate(self._masses)
         ]
 
-        mda_dynamics = MDOChain(mass_spring_disciplines)
+        mda_dynamics = DisciplineChain(mass_spring_disciplines)
 
         return ODEDiscipline(
             rhs_discipline=mda_dynamics,

@@ -32,7 +32,7 @@ from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_S
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.algos.optimization_result import OptimizationResult
-from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
+from gemseo.core.chains.warm_started_chain import WarmStartedDisciplineChain
 from gemseo.core.discipline import Discipline
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -250,7 +250,9 @@ def test_bilevel_warm_start_no_mda1(dummy_bilevel_scenario) -> None:
     """Test that a warm start chain is built even if the process does not include any
     MDA1.
     """
-    assert isinstance(dummy_bilevel_scenario.formulation.chain, MDOWarmStartedChain)
+    assert isinstance(
+        dummy_bilevel_scenario.formulation.chain, WarmStartedDisciplineChain
+    )
 
 
 @pytest.mark.parametrize("formulation_name", ["BiLevel"], indirect=True)

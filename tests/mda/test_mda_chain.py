@@ -32,7 +32,7 @@ from numpy import isclose
 
 from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.algos.linear_solvers.scipy_linalg import TFQMR_Settings
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import Discipline
@@ -95,7 +95,7 @@ def test_set_solver(sellar_with_2d_array, sellar_disciplines) -> None:
     )
     assert mda_chain.settings.linear_solver_settings is None
 
-    sub_mda1_settings = mda_chain.mdo_chain.disciplines[0].settings
+    sub_mda1_settings = mda_chain.discipline_chain.disciplines[0].settings
     assert sub_mda1_settings.linear_solver_settings is None
 
 
@@ -155,7 +155,7 @@ def test_simple_grammar_type(in_gtype) -> None:
     disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
     mda = MDAChain(disciplines)
     assert isinstance(mda.io.input_grammar, SimpleGrammar)
-    assert isinstance(mda.mdo_chain.io.input_grammar, SimpleGrammar)
+    assert isinstance(mda.discipline_chain.io.input_grammar, SimpleGrammar)
     for inner_mda in mda.inner_mdas:
         assert isinstance(inner_mda.io.input_grammar, SimpleGrammar)
 
@@ -209,7 +209,7 @@ def test_sub_coupling_structures(sellar_with_2d_array, sellar_disciplines) -> No
     )
     assert mda_sellar.coupling_structure == coupling_structure
     assert (
-        mda_sellar.mdo_chain.disciplines[0].coupling_structure
+        mda_sellar.discipline_chain.disciplines[0].coupling_structure
         == sub_coupling_structures[0]
     )
 
@@ -247,12 +247,12 @@ def test_mda_chain_self_coupling() -> None:
         [mdachain_lower], settings=MDAChain_Settings(name="mdachain_root")
     )
 
-    assert mdachain_root.mdo_chain.disciplines[0] == mdachain_lower
-    assert len(mdachain_root.mdo_chain.disciplines) == 1
+    assert mdachain_root.discipline_chain.disciplines[0] == mdachain_lower
+    assert len(mdachain_root.discipline_chain.disciplines) == 1
 
 
-def test_mdachain_parallelmdochain() -> None:
-    """Test that the MDAChain creates MDOParallelChain for parallel tasks, if
+def test_mdachain_parallel_discipline_chain() -> None:
+    """Test that the MDAChain creates ParallelDisciplineChain for parallel tasks, if
     requested."""
     disciplines = analytic_disciplines_from_desc((
         {"a": "x"},
@@ -271,8 +271,8 @@ def test_mdachain_parallelmdochain() -> None:
         ),
     )
     assert mdachain.check_jacobian(input_names=["x"], output_names=["obj"])
-    assert type(mdachain.mdo_chain.disciplines[1]) is MDOParallelChain
-    assert type(mdachain.mdo_chain.disciplines[2]) is MDOParallelChain
+    assert type(mdachain.discipline_chain.disciplines[1]) is ParallelDisciplineChain
+    assert type(mdachain.discipline_chain.disciplines[2]) is ParallelDisciplineChain
 
 
 PARALLEL_OPTIONS = [
@@ -300,8 +300,8 @@ PARALLEL_OPTIONS = [
 
 
 @pytest.mark.parametrize("parallel_options", PARALLEL_OPTIONS)
-def test_mdachain_parallelmdochain_options(parallel_options) -> None:
-    """Test the parallel MDO chain in a MDAChain with various arguments."""
+def test_mdachain_paralleldisciplinechain_options(parallel_options) -> None:
+    """Test the parallel discipline chain in a MDAChain with various arguments."""
     disciplines = analytic_disciplines_from_desc((
         {"a": "x"},
         {"y1": "x1", "b": "a+1"},

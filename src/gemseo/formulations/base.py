@@ -266,7 +266,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         to the objective, constraint and observable spaces.
         They can be composed of
         both user disciplines and process disciplines added by the formulation,
-        e.g. [MDOChain][gemseo.core.chains.chain.MDOChain].
+        e.g. [DisciplineChain][gemseo.core.chains.chain.DisciplineChain].
         These process disciplines may also include
         both user disciplines and process disciplines,
         and so on.

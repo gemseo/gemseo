@@ -22,9 +22,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.core.chains.chain import MDOChain
-from gemseo.core.chains.chain import _ProcessFlow as _MDOChainProcessFlow
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.chain import DisciplineChain
+from gemseo.core.chains.chain import _ProcessFlow as _DisciplineChainProcessFlow
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.core.coupling_structure import CouplingStructure
 
 if TYPE_CHECKING:
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 
-class _ProcessFlow(_MDOChainProcessFlow):
+class _ProcessFlow(_DisciplineChainProcessFlow):
     """The process data and execution flow."""
 
     def _get_disciplines_couplings(
@@ -58,7 +58,7 @@ class _ProcessFlow(_MDOChainProcessFlow):
         return new_disciplines_couplings
 
 
-class IDFChain(MDOChain):
+class IDFChain(DisciplineChain):
     """A discipline for processing strongly coupled disciplines in parallel.
 
     Given a collection of disciplines,
@@ -134,7 +134,7 @@ class IDFChain(MDOChain):
             A discipline to process uncoupled groups of strongly coupled disciplines.
         """
         uncoupled_disciplines = [
-            MDOParallelChain(
+            ParallelDisciplineChain(
                 coupled_disciplines,
                 n_processes=n_processes,
                 use_threading=use_threading,
@@ -147,10 +147,10 @@ class IDFChain(MDOChain):
             return uncoupled_disciplines[0]
 
         if n_processes > 1:
-            return MDOParallelChain(
+            return ParallelDisciplineChain(
                 uncoupled_disciplines,
                 n_processes=n_processes,
                 use_threading=use_threading,
             )
 
-        return MDOChain(uncoupled_disciplines)
+        return DisciplineChain(uncoupled_disciplines)

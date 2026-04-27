@@ -29,7 +29,7 @@ from numpy import linspace
 from scipy.interpolate import interp1d
 
 from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.core.discipline import Discipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
@@ -282,7 +282,7 @@ def compute_mass_1_rhs(
 
 # %%
 # To do so, we can use the RHS disciplines we created earlier to define an
-# [MDOChain][gemseo.core.chains.chain.MDOChain].
+# [DisciplineChain][gemseo.core.chains.chain.DisciplineChain].
 rhs_disciplines = [
     AutoPyDiscipline(py_func=compute_rhs)
     for compute_rhs in [compute_mass_0_rhs, compute_mass_1_rhs]
@@ -291,7 +291,7 @@ rhs_disciplines = [
 rhs_disciplines[0].add_differentiated_inputs(["time", "position_0", "velocity_0"])
 rhs_disciplines[1].add_differentiated_inputs(["time", "position_1", "velocity_1"])
 
-mda = MDOChain(rhs_disciplines)
+mda = DisciplineChain(rhs_disciplines)
 
 # %%
 # We then define the ODE discipline that contains the couplings and execute it.

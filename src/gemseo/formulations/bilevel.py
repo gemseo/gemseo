@@ -24,9 +24,9 @@ import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.core.chains.chain import MDOChain
-from gemseo.core.chains.parallel_chain import MDOParallelChain
-from gemseo.core.chains.warm_started_chain import MDOWarmStartedChain
+from gemseo.core.chains.chain import DisciplineChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
+from gemseo.core.chains.warm_started_chain import WarmStartedDisciplineChain
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
@@ -91,7 +91,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
     settings_class: ClassVar[type[BiLevel_Settings]] = BiLevel_Settings
 
-    chain: MDOChain
+    chain: DisciplineChain
     """The chain of the inner problem of the BiLevel formulation
     (MDA1 -> sub-scenarios -> MDA2)"""
 
@@ -345,7 +345,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
         return mda1, mda2
 
-    def _create_inner_chain(self) -> MDOChain:
+    def _create_inner_chain(self) -> DisciplineChain:
         """Create the inner chain.
 
         This chain is: MDA -> MDOScenarios -> MDA.
@@ -361,15 +361,15 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             chain_dis += [self._mda2]
 
         if self._settings.reset_x0_before_opt:
-            return MDOChain(chain_dis, name=self.CHAIN_NAME)
+            return DisciplineChain(chain_dis, name=self.CHAIN_NAME)
 
-        return MDOWarmStartedChain(
+        return WarmStartedDisciplineChain(
             chain_dis,
             name=self.CHAIN_NAME,
             variable_names_to_warm_start=self._get_variable_names_to_warm_start(),
         )
 
-    def _create_sub_scenarios_chain(self) -> MDOChain | MDOParallelChain:
+    def _create_sub_scenarios_chain(self) -> DisciplineChain | ParallelDisciplineChain:
         """Create the chain of sub-scenarios.
 
         Returns:
@@ -377,11 +377,11 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             either parallel or sequential.
         """
         if self._settings.parallel_scenarios:
-            return MDOParallelChain(
+            return ParallelDisciplineChain(
                 self.scenario_adapters,
                 use_threading=self._settings.multithread_scenarios,
             )
-        return MDOChain(self.scenario_adapters)
+        return DisciplineChain(self.scenario_adapters)
 
     def _get_variable_names_to_warm_start(self) -> list[str]:
         """Retrieve the names of the variables to warm start.

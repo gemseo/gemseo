@@ -23,7 +23,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.scipy_linprog.settings.highs_interior_point import (
     INTERIOR_POINT_Settings,
 )
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.disciplines.splitter import Splitter
@@ -73,7 +73,7 @@ def scenario(request) -> MDOScenario:
         ),
     ]
 
-    discipline = MDOChain(disciplines)
+    discipline = DisciplineChain(disciplines)
     discipline.io.set_linear_relationships()
 
     scenario = create_scenario(

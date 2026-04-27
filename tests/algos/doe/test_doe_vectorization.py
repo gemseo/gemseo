@@ -34,7 +34,7 @@ from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.evaluation_problem import EvaluationProblem
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
@@ -257,19 +257,19 @@ def test_doe_vectorize_optimization_problem(
 
 
 @pytest.mark.parametrize("vectorize", [False, True])
-@pytest.mark.parametrize("use_mdo_chain", [False, True])
+@pytest.mark.parametrize("use_discipline_chain", [False, True])
 def test_doe_vectorize_scenario(
     database,
     design_space,
     eval_jac,
     vectorize,
-    use_mdo_chain,
+    use_discipline_chain,
     enable_function_statistics,
 ):
     """Check the DOE option 'vectorize' with an MDOScenario."""
     discipline = VectorizedDiscipline()
-    if use_mdo_chain:
-        discipline = MDOChain([discipline])
+    if use_discipline_chain:
+        discipline = DisciplineChain([discipline])
 
     scenario = MDOScenario(
         [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()

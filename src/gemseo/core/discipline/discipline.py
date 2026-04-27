@@ -230,7 +230,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         # TODO: that should be before the previous bloc,
         # but a test_parallel_chain_combinatorial_thread fails,
-        # copy above bloc into MDOParallelChain linearization?
+        # copy above bloc into ParallelDisciplineChain linearization?
         if self._has_jacobian and self.jac:
             # For cases when linearization is called twice with different I/O
             # while cache_was_loaded=True,

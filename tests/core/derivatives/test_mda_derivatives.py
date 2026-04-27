@@ -82,7 +82,8 @@ def test_traverse_add_diff_io_basic() -> None:
     "grammar_type", [Discipline.GrammarType.SIMPLE, Discipline.GrammarType.JSON]
 )
 def test_chain_jac_basic_grammars(grammar_type) -> None:
-    """Test the jacobian from the MDOChain on a basic case with different grammars."""
+    """Test the jacobian from the DisciplineChain
+    on a basic case with different grammars."""
     disciplines = create_disciplines_from_desc(DISC_DESCR_1, grammar_type=grammar_type)
     mda = MDAChain(disciplines)
     assert mda.check_jacobian(input_names=["x1"], output_names=["o1"])
@@ -91,7 +92,7 @@ def test_chain_jac_basic_grammars(grammar_type) -> None:
 @pytest.mark.parametrize("input_", [["x1"], ["x2"], ["x1", "x2"]])
 @pytest.mark.parametrize("output", [["o1"], ["o2"], ["o1", "o2"]])
 def test_chain_jac_basic(input_, output) -> None:
-    """Test the jacobian from the MDOChain on a basic case."""
+    """Test the jacobian from the DisciplineChain on a basic case."""
     disciplines = create_disciplines_from_desc(
         DISC_DESCR_1, grammar_type=Discipline.GrammarType.SIMPLE
     )
