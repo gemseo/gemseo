@@ -107,7 +107,7 @@ plt.legend()
 plt.show()
 
 # %%
-# ## Settings
+# ## Settings { #pce-settings }
 #
 # The [PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor] has many options
 # defined in the [PCERegressor_Settings][gemseo.machine_learning.regression.models.pce_settings.PCERegressor_Settings] Pydantic model.

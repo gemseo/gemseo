@@ -109,7 +109,7 @@ plt.legend()
 plt.show()
 
 # %%
-# ## Settings
+# ## Settings { #linear-settings }
 #
 # The [LinearRegressor][gemseo.machine_learning.regression.models.linreg.LinearRegressor] has many options
 # defined in the [LinearRegressor_Settings][gemseo.machine_learning.regression.models.linreg_settings.LinearRegressor_Settings] Pydantic model.
