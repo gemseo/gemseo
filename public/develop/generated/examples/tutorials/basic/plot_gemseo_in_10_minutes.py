@@ -141,7 +141,7 @@ disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
 # [Discipline][gemseo.core.discipline.discipline.Discipline] class and implementing the constuctor and the _run
 # method by hand. Although it would take more time, it may also provide more
 # flexibility and more options. This method is illustrated in the
-# [Sellar from scratch tutorial][a-from-scratch-example-on-the-sellar-problem].
+# [Tutorial - Your first discipline][tutorial-your-first-discipline].
 
 # %%
 # We then create a list of disciplines, which will be used later to create an
