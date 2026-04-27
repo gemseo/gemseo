@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 
-class MDOWarmStartedChain(MDOChain):
+class WarmStartedDisciplineChain(DisciplineChain):
     """Chain capable of warm starting a given list of variables.
 
     The values of the variables to warm start are stored after each run and used to

@@ -44,7 +44,7 @@ from gemseo.caches.hdf5_cache import HDF5Cache
 from gemseo.caches.simple_cache import SimpleCache
 from gemseo.caches.utils import hash_data
 from gemseo.caches.utils import to_real
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.comparisons import compare_dict_of_arrays
@@ -418,7 +418,7 @@ def test_multithreading(
     s_1.cache = memory_cache
     s_s.cache = memory_cache
     assert len(memory_cache) == 0
-    par = MDOParallelChain([s_1, s_s])
+    par = ParallelDisciplineChain([s_1, s_s])
     ds = SellarDesignSpace()
     scen = create_scenario(par, "obj", ds, formulation_name="DisciplinaryOpt")
 

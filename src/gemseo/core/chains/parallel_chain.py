@@ -43,7 +43,7 @@ class _ProcessFlow(BaseProcessFlow):
     is_parallel = True
 
 
-class MDOParallelChain(ProcessDiscipline):
+class ParallelDisciplineChain(ProcessDiscipline):
     """Chain of processes that executes disciplines in parallel."""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow

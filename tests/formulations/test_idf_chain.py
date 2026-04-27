@@ -16,15 +16,15 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.core.chains.chain import MDOChain
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.chain import DisciplineChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.formulations.idf_chain import IDFChain
 from gemseo.utils.discipline import DummyDiscipline as D
 
 
-def test_idf_chain_is_mdo_chain():
-    """Check that an IDFChain is an MDOChain."""
-    assert issubclass(IDFChain, MDOChain)
+def test_idf_chain_is_discipline_chain():
+    """Check that an IDFChain is an DisciplineChain."""
+    assert issubclass(IDFChain, DisciplineChain)
 
 
 @pytest.mark.parametrize(
@@ -32,14 +32,14 @@ def test_idf_chain_is_mdo_chain():
     [
         ([[(D(),)]], 1, (D,)),
         ([[(D(),)]], 2, (D,)),
-        ([[(D(), D())]], 1, (MDOParallelChain,)),
-        ([[(D(), D())]], 2, (MDOParallelChain,)),
-        ([[(D(), D()), (D(),)]], 1, (MDOChain,)),
-        ([[(D(), D()), (D(),)]], 2, (MDOParallelChain,)),
+        ([[(D(), D())]], 1, (ParallelDisciplineChain,)),
+        ([[(D(), D())]], 2, (ParallelDisciplineChain,)),
+        ([[(D(), D()), (D(),)]], 1, (DisciplineChain,)),
+        ([[(D(), D()), (D(),)]], 2, (ParallelDisciplineChain,)),
         ([[(D(),)], [(D(),)]], 1, (D, D)),
         ([[(D(),)], [(D(),)]], 2, (D, D)),
-        ([[(D(), D()), (D(),)], [(D(),)]], 1, (MDOChain,)),
-        ([[(D(), D()), (D(),)], [(D(),)]], 2, (MDOParallelChain,)),
+        ([[(D(), D()), (D(),)], [(D(),)]], 1, (DisciplineChain,)),
+        ([[(D(), D()), (D(),)], [(D(),)]], 2, (ParallelDisciplineChain,)),
     ],
 )
 @pytest.mark.parametrize("use_threading", [False, True])

@@ -34,9 +34,9 @@ from numpy import array
 from gemseo.core._process_flow.execution_sequences.sequential import (
     SequentialExecSequence,
 )
-from gemseo.core.chains.chain import MDOChain
-from gemseo.core.chains.initialization_chain import MDOInitializationChain
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.chain import DisciplineChain
+from gemseo.core.chains.initialization_chain import InitializationDisciplineChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.mda.base import BaseMDA
 from gemseo.mda.base import _BaseMDAProcessFlow
 from gemseo.mda.chain_settings import MDAChain_Settings
@@ -68,15 +68,17 @@ class _ProcessFlow(_BaseMDAProcessFlow):
     def get_data_flow(  # noqa:D102
         self,
     ) -> list[tuple[Discipline, Discipline, list[str]]]:
-        return self._node.mdo_chain.get_process_flow().get_data_flow()
+        return self._node.discipline_chain.get_process_flow().get_data_flow()
 
     def get_execution_flow(self) -> SequentialExecSequence:  # noqa:D102
         exec_s = SequentialExecSequence()
-        exec_s.extend(self._node.mdo_chain.get_process_flow().get_execution_flow())
+        exec_s.extend(
+            self._node.discipline_chain.get_process_flow().get_execution_flow()
+        )
         return exec_s
 
     def get_disciplines_in_data_flow(self) -> list[Discipline]:  # noqa: D102
-        return self._node.mdo_chain.get_process_flow().get_disciplines_in_data_flow()  # noqa: E501
+        return self._node.discipline_chain.get_process_flow().get_disciplines_in_data_flow()  # noqa: E501
 
 
 class MDAChain(BaseMDA):
@@ -94,7 +96,7 @@ class MDAChain(BaseMDA):
     inner_mdas: list[BaseMDASolver]
     """The ordered MDAs."""
 
-    mdo_chain: MDOChain
+    discipline_chain: DisciplineChain
     """The chain of MDAs."""
 
     settings: MDAChain_Settings
@@ -108,7 +110,7 @@ class MDAChain(BaseMDA):
         disciplines: Sequence[Discipline],
         settings: MDAChain_Settings | None = None,
     ) -> None:
-        self.mdo_chain = None
+        self.discipline_chain = None
         super().__init__(disciplines, settings=settings)
 
         if (
@@ -123,7 +125,7 @@ class MDAChain(BaseMDA):
         self.__inner_mda_class = MDA_FACTORY.get_class(
             self.settings.inner_mda_settings.target_class_name
         )
-        self.mdo_chain = self._create_mdo_chain()
+        self.discipline_chain = self._create_discipline_chain()
 
         self._initialize_grammars()
         self._check_consistency()
@@ -144,8 +146,8 @@ class MDAChain(BaseMDA):
         for inner_mda in self.inner_mdas:
             inner_mda.set_bounds(variable_names_to_bounds)
 
-    def _create_mdo_chain(self) -> MDOChain:
-        """Create an MDO chain from the execution sequence of the disciplines."""
+    def _create_discipline_chain(self) -> DisciplineChain:
+        """Create an discipline chain from the execution sequence of the disciplines."""
         if not self.settings.sub_coupling_structures:
             sub_coupling_structures = repeat(None)
         else:
@@ -158,7 +160,7 @@ class MDAChain(BaseMDA):
             process = self.__create_process_from_disciplines(parallel_tasks)
             chained_disciplines.append(process)
 
-        return MDOChain(chained_disciplines, name="MDA chain")
+        return DisciplineChain(chained_disciplines, name="MDA chain")
 
     def __create_process_from_disciplines(
         self,
@@ -167,15 +169,15 @@ class MDAChain(BaseMDA):
         """Create a process from disciplines.
 
         This method creates a process that will be appended
-        to the main inner [MDOChain][gemseo.core.chains.chain.MDOChain]
+        to the main inner [DisciplineChain][gemseo.core.chains.chain.DisciplineChain]
         of the [MDAChain][gemseo.mda.chain.MDAChain].
         Depending on the number and type of disciplines,
         as well as the options provided by the user,
         the process may be a sole discipline,
         a [BaseMDA][gemseo.mda.base.BaseMDA],
-        an [MDOChain][gemseo.core.chains.chain.MDOChain],
+        an [DisciplineChain][gemseo.core.chains.chain.DisciplineChain],
         or an
-        [MDOParallelChain][gemseo.core.chains.parallel_chain.MDOParallelChain].
+        [ParallelDisciplineChain][gemseo.core.chains.parallel_chain.ParallelDisciplineChain].
 
         Args:
             parallel_tasks: The parallel tasks to be processed.
@@ -189,11 +191,11 @@ class MDAChain(BaseMDA):
             return parallel_disciplines[0]
 
         if self.settings.mdachain_parallelize_tasks:
-            return MDOParallelChain(
+            return ParallelDisciplineChain(
                 parallel_disciplines,
                 **self.settings.mdachain_parallel_settings,
             )
-        return MDOChain(parallel_disciplines)
+        return DisciplineChain(parallel_disciplines)
 
     def __compute_parallel_disciplines(
         self,
@@ -274,17 +276,17 @@ class MDAChain(BaseMDA):
 
     def _initialize_grammars(self) -> None:
         """Define all inputs and outputs of the chain."""
-        if self.mdo_chain is None:  # First call by super class must be ignored.
+        if self.discipline_chain is None:  # First call by super class must be ignored.
             return
-        self.io.input_grammar = self.mdo_chain.io.input_grammar.copy()
-        self.io.output_grammar = self.mdo_chain.io.output_grammar.copy()
+        self.io.input_grammar = self.discipline_chain.io.input_grammar.copy()
+        self.io.output_grammar = self.discipline_chain.io.output_grammar.copy()
 
     def _check_consistency(self) -> None:
         """Check if there is no more than 1 equation per variable.
 
         For instance if a strong coupling is not also a self coupling.
         """
-        if self.mdo_chain is None:  # First call by super class must be ignored.
+        if self.discipline_chain is None:  # First call by super class must be ignored.
             return
         super()._check_consistency()
 
@@ -298,7 +300,7 @@ class MDAChain(BaseMDA):
             and len(self._disciplines) > 1
             and len(self.coupling_structure.strong_couplings) > 0
         ):
-            init_chain = MDOInitializationChain(
+            init_chain = InitializationDisciplineChain(
                 self._disciplines,
                 available_data_names=input_data,
             )
@@ -312,7 +314,7 @@ class MDAChain(BaseMDA):
         return super().execute(input_data=input_data)
 
     def _solve(self) -> None:
-        self.io.data = self.mdo_chain.execute(self.io.data)
+        self.io.data = self.discipline_chain.execute(self.io.data)
 
         res_sum = 0.0
         for mda in self.inner_mdas:
@@ -330,11 +332,11 @@ class MDAChain(BaseMDA):
         output_names: Iterable[str] = (),
     ) -> None:
         if self.settings.chain_linearize:
-            self.mdo_chain.add_differentiated_inputs(input_names)
-            self.mdo_chain.add_differentiated_outputs(output_names)
-            # the Jacobian of the MDA chain is the Jacobian of the MDO chain
-            self.mdo_chain.linearize(self.io.get_input_data())
-            self.jac = self.mdo_chain.jac
+            self.discipline_chain.add_differentiated_inputs(input_names)
+            self.discipline_chain.add_differentiated_outputs(output_names)
+            # the Jacobian of the MDA chain is the Jacobian of the discipline chain
+            self.discipline_chain.linearize(self.io.get_input_data())
+            self.jac = self.discipline_chain.jac
         else:
             super()._compute_jacobian(input_names, output_names)
 
@@ -344,7 +346,7 @@ class MDAChain(BaseMDA):
     ) -> None:
         BaseMDA.add_differentiated_inputs(self, input_names)
         if self.settings.chain_linearize:
-            self.mdo_chain.add_differentiated_inputs(input_names)
+            self.discipline_chain.add_differentiated_inputs(input_names)
 
     def add_differentiated_outputs(  # noqa: D102
         self,
@@ -352,7 +354,7 @@ class MDAChain(BaseMDA):
     ) -> None:
         BaseMDA.add_differentiated_outputs(self, output_names)
         if self.settings.chain_linearize:
-            self.mdo_chain.add_differentiated_outputs(output_names)
+            self.discipline_chain.add_differentiated_outputs(output_names)
 
     @property
     def normalized_residual_norm(self) -> float:

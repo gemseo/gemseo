@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.core.chains.initialization_chain import MDOInitializationChain
+from gemseo.core.chains.initialization_chain import InitializationDisciplineChain
 from gemseo.core.chains.initialization_chain import (
     order_disciplines_from_default_inputs,
 )
@@ -81,5 +81,5 @@ def test_fail_get_initialization_disciplines(disciplines1) -> None:
 
 def test_create_init_chain(disciplines1) -> None:
     """Tests the creation of the process."""
-    chain = MDOInitializationChain(disciplines1)
+    chain = InitializationDisciplineChain(disciplines1)
     chain.execute()

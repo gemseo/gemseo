@@ -27,7 +27,7 @@ import pytest
 
 from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.wrappers import job_schedulers
 from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (  # noqa: E501
@@ -294,7 +294,7 @@ def test_jac_avec_compute_jacobian(cfd_mocked_js):
         "BC", input_names=["z"], output_names=["bc"], compute_jac_at_run=True
     )
 
-    chain = MDOChain([disc1, cfd_mocked_js])
+    chain = DisciplineChain([disc1, cfd_mocked_js])
     chain.add_differentiated_inputs(["xa"])
     chain.add_differentiated_outputs(["cd"])
     chain.execute()

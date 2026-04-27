@@ -52,7 +52,7 @@ while in direct mode, linearizing the chain may be cheaper.""",
     initialize_defaults: bool = Field(
         default=False,
         description="""Whether to create a
-[MDOInitializationChain][gemseo.core.chains.initialization_chain.MDOInitializationChain]
+[InitializationDisciplineChain][gemseo.core.chains.initialization_chain.InitializationDisciplineChain]
 to compute the eventually missing
 [default_input_data][gemseo.mda.chain.MDAChain.default_input_data]
 at the first execution.""",
@@ -60,7 +60,8 @@ at the first execution.""",
 
     mdachain_parallel_settings: StrKeyMapping = Field(
         default_factory=dict,
-        description="""The settings of the MDOParallelChain instances, if any.""",
+        description="""The settings of the ParallelDisciplineChain instances,
+        if any.""",
     )
 
     mdachain_parallelize_tasks: bool = Field(

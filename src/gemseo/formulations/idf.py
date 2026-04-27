@@ -29,7 +29,7 @@ from numpy import abs as np_abs
 from numpy import concatenate
 from numpy import zeros
 
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.functions.consistency_constraint import ConsistencyConstraint
 from gemseo.core.functions.taylor_polynomials import compute_linear_approximation
@@ -120,7 +120,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
                 "IDF formulation: running in parallel on %s processes.",
                 n_processes,
             )
-            self._process_discipline = MDOParallelChain(
+            self._process_discipline = ParallelDisciplineChain(
                 self.disciplines,
                 use_threading=self._settings.use_threading,
                 n_processes=n_processes,

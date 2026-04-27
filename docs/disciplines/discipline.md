@@ -135,7 +135,7 @@ Furthermore, many disciplines inheriting from [Discipline][gemseo.core.disciplin
           [PropaneComb3][gemseo.problems.mdo.propane.propane.PropaneComb3] and
           [PropaneReaction][gemseo.problems.mdo.propane.propane.PropaneReaction],
 
-    -   classes implementing special disciplines: [MDOParallelChain][gemseo.core.chains.parallel_chain.MDOParallelChain], [MDOChain][gemseo.core.chains.chain.MDOChain] and [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter].
+    -   classes implementing special disciplines: [ParallelDisciplineChain][gemseo.core.chains.parallel_chain.ParallelDisciplineChain], [DisciplineChain][gemseo.core.chains.chain.DisciplineChain] and [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter].
     -   classes implementing optimization discipline: [RosenMF][gemseo.problems.optimization.rosen_mf.RosenMF].
 
 ## How to instantiate an existing [Discipline][gemseo.core.discipline.discipline.Discipline]?

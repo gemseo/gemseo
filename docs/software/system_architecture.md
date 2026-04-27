@@ -170,11 +170,11 @@ classDiagram
     MDA "1" *-- "n" Discipline
     MDA <|-- MDAJacobi
     MDA <|-- MDAGaussSeidel
-    Discipline <|-- MDOChain
+    Discipline <|-- DisciplineChain
     MDA <|-- MDAChain
-    MDOChain "1" <-- "1" MDAChain
+    DisciplineChain "1" <-- "1" MDAChain
     MDAChain "1" *-- "n" MDA
-    MDOChain "1" *-- "1" Discipline
+    DisciplineChain "1" *-- "1" Discipline
 ```
 
 ``` mermaid

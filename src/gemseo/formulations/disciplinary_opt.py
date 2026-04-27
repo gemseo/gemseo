@@ -23,7 +23,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.core.chains.chain import MDOChain
+from gemseo.core.chains.chain import DisciplineChain
 from gemseo.formulations.base_mdo import BaseMDOFormulation
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.utils.discipline import get_all_inputs
@@ -47,7 +47,7 @@ class DisciplinaryOpt(BaseMDOFormulation[DisciplinaryOpt_Settings]):
     def _create_multidisciplinary_process(self) -> None:
         disciplines = self.disciplines
         self.__top_level_disciplines = (
-            MDOChain(disciplines) if len(disciplines) > 1 else disciplines[0],
+            DisciplineChain(disciplines) if len(disciplines) > 1 else disciplines[0],
         )
 
     def get_top_level_disciplines(  # noqa:D102

@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.chains.parallel_chain import MDOParallelChain
+from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 
-class MDOAdditiveChain(MDOParallelChain):
+class AdditiveDisciplineChain(ParallelDisciplineChain):
     """Execute disciplines in parallel and sum specified outputs across disciplines."""
 
     def __init__(

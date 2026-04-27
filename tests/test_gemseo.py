@@ -663,7 +663,7 @@ def test_get_formulation_options_schema() -> None:
 
 def test_get_discipline_options_schema() -> None:
     """Test that the discipline options schemas are retrieved correctly."""
-    for disc in ["SobieskiMission", "MDOChain", "AnalyticDiscipline"]:
+    for disc in ["SobieskiMission", "DisciplineChain", "AnalyticDiscipline"]:
         schema = get_discipline_options_schema(disc)
         props = schema["properties"]
 
@@ -679,7 +679,7 @@ def test_get_discipline_options_schema() -> None:
 
 def test_get_discipline_options_defaults() -> None:
     """Test that the discipline options defaults are retrieved correctly."""
-    for disc in ["SobieskiMission", "MDOChain", "AnalyticDiscipline"]:
+    for disc in ["SobieskiMission", "DisciplineChain", "AnalyticDiscipline"]:
         defaults = get_discipline_options_defaults(disc)
         assert len(defaults) > 0
 

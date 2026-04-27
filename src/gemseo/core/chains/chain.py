@@ -77,7 +77,7 @@ class _ProcessFlow(BaseProcessFlow):
         return DependencyGraph(disciplines).get_disciplines_couplings()
 
 
-class MDOChain(ProcessDiscipline):
+class DisciplineChain(ProcessDiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
@@ -214,7 +214,9 @@ class MDOChain(ProcessDiscipline):
                 # Output of the chain not yet filled in jac,
                 # Take the jacobian dict of the current discipline to
                 # Initialize. Make a copy !
-                self.jac[output_name] = MDOChain.copy_jacs(discipline.jac[output_name])
+                self.jac[output_name] = DisciplineChain.copy_jacs(
+                    discipline.jac[output_name]
+                )
 
     def _compute_diff_in_outs(
         self,
