@@ -197,7 +197,7 @@ Module: [{{modules[algo]}}][{{modules[algo]}}]
 {% endif %}
 
 {% if websites[algo] %}
-More details about the algorithm and its settings on [this page]({{websites[algo]}}>).
+More details about the algorithm and its settings on [this page]({{websites[algo]}}).
 {% endif %}
 
 {% set optional_parameters = [] %}
