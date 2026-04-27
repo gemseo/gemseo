@@ -249,7 +249,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
     Features:
     [distribution][gemseo.uncertainty.distributions],
     [uncertain space][gemseo.algos.parameter_space],
-    [empirical and parametric statistics][gemseo.uncertainty.statistics.base_statistics],
+    [empirical and parametric statistics][gemseo.uncertainty.statistics.base],
     [distribution fitting][gemseo.uncertainty.distributions.base_distribution_fitter] and
     [sensitivity analysis][gemseo.uncertainty.sensitivity].
 

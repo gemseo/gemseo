@@ -23,9 +23,7 @@ from __future__ import annotations
 
 import openturns as ot
 
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 
 
 class ExponentialToleranceInterval(BaseToleranceInterval):

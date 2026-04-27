@@ -15,7 +15,7 @@
 """Parametric estimation of statistics from a dataset.
 
 The base class
-[BaseParametricStatistics][gemseo.uncertainty.statistics.base_parametric_statistics.BaseParametricStatistics]
+[BaseParametricStatistics][gemseo.uncertainty.statistics.base_parametric.BaseParametricStatistics]
 to estimate statistics parametrically,
 using probability distributions fitted to
 a [Dataset][gemseo.datasets.dataset.Dataset] at instantiation.
@@ -29,7 +29,7 @@ For each variable of this [Dataset][gemseo.datasets.dataset.Dataset],
    is selected to estimate the statistics associated with this variable.
 
 Its subclass
-[OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics]
+[OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics]
 uses the OpenTURNS distributions
 through the
 [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
@@ -38,7 +38,7 @@ and
 classes
 and
 its subclass
-[SPParametricStatistics][gemseo.uncertainty.statistics.sp_parametric_statistics.SPParametricStatistics]
+[SPParametricStatistics][gemseo.uncertainty.statistics.sp_parametric.SPParametricStatistics]
 uses the SciPy distributions
 through the
 [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
@@ -66,10 +66,8 @@ from strenum import StrEnum
 from gemseo.uncertainty.distributions.base_distribution_fitter import (
     BaseDistributionFitter,
 )
-from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.base import BaseStatistics
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 from gemseo.uncertainty.statistics.tolerance_interval.factory import (
     TOLERANCE_INTERVAL_FACTORY,
 )
@@ -176,7 +174,7 @@ class BaseParametricStatistics(
                 to measure the goodness-of-fit of the probability distributions.
                 If empty, use the default one.
                 Use
-                [get_criteria()][gemseo.uncertainty.statistics.base_parametric_statistics.BaseParametricStatistics.get_criteria]
+                [get_criteria()][gemseo.uncertainty.statistics.base_parametric.BaseParametricStatistics.get_criteria]
                 to get the available criteria.
             level: A test level,
                 i.e. the risk of committing a Type 1 error,

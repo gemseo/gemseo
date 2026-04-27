@@ -45,7 +45,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
-from gemseo.uncertainty.sensitivity.hsic_analysis import HSICAnalysis
+from gemseo.uncertainty.sensitivity.hsic import HSICAnalysis
 
 if TYPE_CHECKING:
     from gemseo.typing import IntegerArray

@@ -72,10 +72,10 @@ dataset = sample_disciplines(
 )
 
 # %%
-# ## Create an [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics] object for all variables
+# ## Create an [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics] object for all variables
 #
 # In this second stage,
-# we create an [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+# we create an [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
 # from the [Dataset][gemseo.datasets.dataset.Dataset]:
 analysis = create_statistics(dataset, name="SobieskiMission")
 analysis
@@ -86,7 +86,7 @@ analysis
 analysis.compute_minimum()
 
 # %%
-# ## Create an [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics] object for the range
+# ## Create an [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics] object for the range
 #
 # We can only reduce the statistical analysis to the range variable:
 analysis = create_statistics(

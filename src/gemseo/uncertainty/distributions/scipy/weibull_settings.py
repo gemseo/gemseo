@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.weibull_settings import (
+from gemseo.uncertainty.distributions.base_settings.weibull import (
     BaseWeibullDistributionSettings,
 )
 from gemseo.uncertainty.distributions.scipy.base_settings import (

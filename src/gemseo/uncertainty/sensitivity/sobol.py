@@ -79,18 +79,18 @@ The latter represents the sum of the individual effect of $X_i$ and
 the joint effects between $X_i$ and any input variable or group of input variable.
 
 This methodology relies on the
-[SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis] class.
+[SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis] class.
 Precisely,
-[indices][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.indices] contains
+[indices][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.indices] contains
 both
-[first][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.SensitivityIndices.first]
+[first][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.SensitivityIndices.first]
 and
-[total][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.SensitivityIndices.total]
+[total][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.SensitivityIndices.total]
 while
-[main_indices][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.main_indices]
+[main_indices][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.main_indices]
 represents first-order Sobol' indices.
 Lastly, the
-[plot()][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.plot]
+[plot()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.plot]
 method represents
 the estimations of both first-order and total-order Sobol' indices along with
 their confidence intervals whose default level is 95%.
@@ -143,9 +143,7 @@ from strenum import StrEnum
 
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.uncertainty.sensitivity._cv_sobol_algorithm import CVSobolAlgorithm
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    BaseSensitivityAnalysis,
-)
+from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.utils.seeder import SEED
@@ -166,12 +164,8 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.typing import RealArray
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        FirstOrderIndicesType,
-    )
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        SecondOrderIndicesType,
-    )
+    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
+    from gemseo.uncertainty.sensitivity.base import SecondOrderIndicesType
     from gemseo.utils.string_tools import VariableType
 
 LOGGER = logging.getLogger(__name__)
@@ -770,7 +764,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
         Warning:
             You must first call
-            [compute_indices()][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis.compute_indices].
+            [compute_indices()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.compute_indices].
 
         Args:
             first_order: If `True`, compute the intervals for the first-order indices.

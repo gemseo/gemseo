@@ -116,8 +116,6 @@ runtime-evaluated-base-classes = [
     "gemseo.machine_learning.core.models.unsupervised_settings.BaseMLUnsupervisedModelSettings",
     "gemseo.machine_learning.regression.models.base_regressor_settings.BaseRegressorSettings",
     "gemseo.post.base_post_settings.BasePostSettings",
-    "gemseo.uncertainty.distributions.base_distribution_settings.BaseDistributionSettings",
-    "gemseo.uncertainty.distributions.base_settings.weibull_settings.BaseWeibullDistributionSettings",
     "gemseo.algos.doe.pydoe.settings.base_pydoe_settings.BasePyDOESettings",
     "gemseo.algos.doe.openturns.settings.base_openturns_settings.BaseOpenTURNSSettings",
     "gemseo.algos.doe.scipy.settings.base_scipy_doe_settings.BaseSciPyDOESettings",
@@ -143,9 +141,9 @@ runtime-evaluated-base-classes = [
     "gemseo.machine_learning.regression.models.pce_settings.PCERegressor_Settings",
     "gemseo.machine_learning.regression.models.rbf_settings.RBFRegressor_Settings",
     "gemseo.machine_learning.core.models.ml_model_settings.BaseMLModelSettings",
-    "gemseo.uncertainty.distributions.base_distribution_settings.BaseDistribution_Settings",
-    "gemseo.uncertainty.distributions.base_settings.weibull_settings.BaseWeibullDistribution_Settings",
+    "gemseo.uncertainty.distributions.base_distribution_settings.BaseDistributionSettings",
     "gemseo.uncertainty.distributions.base_joint_settings.BaseJointDistributionSettings",
+    "gemseo.uncertainty.distributions.base_settings.weibull.BaseWeibullDistributionSettings",
 ]
 
 [lint.isort]

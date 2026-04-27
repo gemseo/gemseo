@@ -23,17 +23,17 @@ Overview
 --------
 
 The
-[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
 class inherits
 from the abstract
-[BaseStatistics][gemseo.uncertainty.statistics.base_statistics.BaseStatistics]
+[BaseStatistics][gemseo.uncertainty.statistics.base.BaseStatistics]
 class
 and aims to estimate statistics from a [Dataset][gemseo.datasets.dataset.Dataset],
 based on empirical estimators.
 
 ## Construction
 
-[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
 is built from a [Dataset][gemseo.datasets.dataset.Dataset]
 and optionally variables names.
 In this case,
@@ -42,7 +42,7 @@ Otherwise,
 statistics are computed for all the variable available in the dataset.
 Lastly,
 the user can give a name to its
-[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
+[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
 object.
 By default,
 this name is the concatenation of 'EmpiricalStatistics'
@@ -76,10 +76,8 @@ from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.dataset.lines_settings import Lines_Settings
-from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.base import BaseStatistics
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 from gemseo.uncertainty.statistics.tolerance_interval.empirical import (
     EmpiricalToleranceInterval,
 )

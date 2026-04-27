@@ -48,21 +48,17 @@ from gemseo.uncertainty.distributions.openturns.normal_settings import (
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    BaseSensitivityAnalysis,
-)
-from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
-from gemseo.uncertainty.sensitivity.sobol_analysis import SobolAnalysis
+from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
+from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
     from gemseo.disciplines.analytic import AnalyticDiscipline
     from gemseo.typing import StrKeyMapping
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        FirstOrderIndicesType,
-    )
+    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
 
 
 @pytest.fixture(scope="module")

@@ -41,15 +41,9 @@ from gemseo.uncertainty.distributions.scipy import distribution_fitter
 from gemseo.uncertainty.distributions.scipy.distribution_fitter import (
     SPDistributionFitter,
 )
-from gemseo.uncertainty.statistics.ot_parametric_statistics import (
-    OTParametricStatistics,
-)
-from gemseo.uncertainty.statistics.sp_parametric_statistics import (
-    SPParametricStatistics,
-)
-from gemseo.uncertainty.statistics.tolerance_interval.distribution import (
-    BaseToleranceInterval,
-)
+from gemseo.uncertainty.statistics.ot_parametric import OTParametricStatistics
+from gemseo.uncertainty.statistics.sp_parametric import SPParametricStatistics
+from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import image_comparison

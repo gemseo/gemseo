@@ -56,7 +56,7 @@ $$\sigma_i = \sqrt{\frac{1}{r}\sum_{j=1}^r\left(|df_i^{(j)}|-\mu_i\right)^2}$$
 where $\mu_i = \frac{1}{r}\sum_{j=1}^rdf_i^{(j)}$.
 
 This methodology relies on the
-[MorrisAnalysis][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis] class.
+[MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis] class.
 """
 
 from __future__ import annotations
@@ -76,9 +76,7 @@ from strenum import StrEnum
 
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
-from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-    BaseSensitivityAnalysis,
-)
+from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.utils.string_tools import filter_names
@@ -98,22 +96,20 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.scenarios.backup_settings import BackupSettings
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        FirstOrderIndicesType,
-    )
+    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
     from gemseo.utils.string_tools import VariableType
 
 
 class MorrisAnalysis(BaseSensitivityAnalysis):
     r"""Sensitivity analysis based on the Morris' indices.
 
-    [indices][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.indices]
+    [indices][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.indices]
     contains both $\mu^*$, $\mu$ and $\sigma$
     while
-    [main_indices][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.main_indices]
+    [main_indices][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.main_indices]
     represents $\mu^*$.
     Lastly, the
-    [plot()][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.plot]
+    [plot()][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.plot]
     method represents the input variables as a scatter plot
     where $X_i$ has as coordinates $(\mu_i^*,\sigma_i)$.
     The bigger $\mu_i^*$ is, the more significant $X_i$ is.

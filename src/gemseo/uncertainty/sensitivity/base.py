@@ -93,11 +93,11 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     from input-output samples relying on a specific design of experiments (DOE).
 
     A
-    [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis]
+    [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis]
     can be created from such samples
     (passed as an [IODataset][gemseo.datasets.io_dataset.IODataset])
     or use its
-    [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples]
+    [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples]
     method to generate them,
     using a [Discipline][gemseo.core.discipline.discipline.Discipline]
     representing the model,
@@ -106,7 +106,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     and a set of options.
     In the second case,
     the samples returned by
-    [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples]
+    [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples]
     can be saved on the disk for future use.
     """
 
@@ -116,7 +116,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     The samples must be
     either passed at instantiation
     or generated with
-    [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples].
+    [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples].
     """
 
     class Method(StrEnum):
@@ -168,7 +168,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 or as a pickle file path generated
                 from the [to_pickle()][gemseo.utils.pickle.to_pickle] function.
                 If empty, use
-                [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples].
+                [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples].
         """  # noqa: D202, D205, D212
         if isinstance(samples, IODataset):
             self.dataset = samples
@@ -224,7 +224,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 If `None`,
                 use the default settings of the default DOE algorithm
                 (see
-                [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.DEFAULT_DRIVER]).
+                [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.DEFAULT_DRIVER]).
             backup_settings: The settings of the backup file to store the evaluations
                 if any.
             formulation_settings: The settings of the MDO formulation.

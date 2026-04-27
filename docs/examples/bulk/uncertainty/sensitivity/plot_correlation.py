@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
 
 # %%
 # In this example,
@@ -49,7 +49,7 @@ uncertain_space = IshigamiSpace()
 
 # %%
 # Then,
-# we run sensitivity analysis of type [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis]:
+# we run sensitivity analysis of type [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]:
 sensitivity_analysis = CorrelationAnalysis()
 sensitivity_analysis.compute_samples([discipline], uncertain_space, 1000)
 sensitivity_analysis.compute_indices()
@@ -68,14 +68,14 @@ sensitivity_analysis.indices
 
 # %%
 # The main indices corresponds to the Spearman correlation indices
-# (this main method can be changed with [main_method][gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis.main_method]):
+# (this main method can be changed with [main_method][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis.main_method]):
 
 # %%
 # We can also get the input parameters sorted by decreasing order of influence:
 sensitivity_analysis.sort_input_variables("y")
 
 # %%
-# We can use the method [plot()][gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis.plot]
+# We can use the method [plot()][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis.plot]
 # to visualize the different correlation coefficients:
 sensitivity_analysis.plot("y", save=False, show=True)
 

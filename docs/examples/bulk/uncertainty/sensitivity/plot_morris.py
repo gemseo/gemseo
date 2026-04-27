@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
+from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 
 # %%
 # In this example,
@@ -49,7 +49,7 @@ uncertain_space = IshigamiSpace()
 
 # %%
 # Then,
-# we run sensitivity analysis of type [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis]:
+# we run sensitivity analysis of type [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]:
 sensitivity_analysis = MorrisAnalysis()
 sensitivity_analysis.compute_samples([discipline], uncertain_space, n_samples=0)
 sensitivity_analysis.compute_indices()
@@ -61,7 +61,7 @@ sensitivity_analysis.indices
 
 # %%
 # The main indices corresponds to these empirical means
-# (this main method can be changed with [main_method][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.main_method]):
+# (this main method can be changed with [main_method][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.main_method]):
 
 # %%
 # and can be interpreted with respect to the empirical bounds of the outputs:
@@ -71,7 +71,7 @@ sensitivity_analysis.indices
 sensitivity_analysis.sort_input_variables("y")
 
 # %%
-# We can use the method [plot()][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis.plot]
+# We can use the method [plot()][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.plot]
 # to visualize the different series of indices:
 sensitivity_analysis.plot("y", save=False, show=True, lower_mu=0, lower_sigma=0)
 

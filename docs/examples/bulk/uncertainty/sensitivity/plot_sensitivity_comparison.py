@@ -25,8 +25,8 @@ from __future__ import annotations
 
 from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.correlation_analysis import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 
 # %%
 # In this example,
@@ -54,14 +54,14 @@ uncertain_space = IshigamiSpace()
 # and compare the results,
 #
 # Firstly,
-# we create a [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis] and compute the sensitivity indices:
+# we create a [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis] and compute the sensitivity indices:
 correlation = CorrelationAnalysis()
 correlation.compute_samples([discipline], uncertain_space, 10)
 correlation.compute_indices()
 
 # %%
 # Then,
-# we create an [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis] and compute the sensitivity indices:
+# we create an [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis] and compute the sensitivity indices:
 morris = MorrisAnalysis()
 morris.compute_samples([discipline], uncertain_space, 10)
 morris.compute_indices()
@@ -69,7 +69,7 @@ morris.compute_indices()
 # %%
 # Lastly,
 # we compare these analyses
-# with the graphical method [plot_comparison()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.plot_comparison],
+# with the graphical method [plot_comparison()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.plot_comparison],
 # either using a bar chart:
 morris.plot_comparison(correlation, "y", use_bar_plot=True, save=False, show=True)
 

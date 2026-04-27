@@ -36,16 +36,12 @@ from gemseo.uncertainty import get_available_sensitivity_analyses
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
-from gemseo.uncertainty.statistics.ot_parametric_statistics import (
-    OTParametricStatistics,
-)
-from gemseo.uncertainty.statistics.sp_parametric_statistics import (
-    SPParametricStatistics,
-)
+from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+from gemseo.uncertainty.statistics.ot_parametric import OTParametricStatistics
+from gemseo.uncertainty.statistics.sp_parametric import SPParametricStatistics
 
 if TYPE_CHECKING:
-    from gemseo.uncertainty.sensitivity.morris_analysis import MorrisAnalysis
+    from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 
 
 @pytest.fixture(scope="module")

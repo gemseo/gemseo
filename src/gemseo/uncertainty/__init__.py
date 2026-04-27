@@ -43,10 +43,10 @@ correlation measures, Morris technique and Sobol' variance decomposition.
 This sub-package is based in particular on OpenTURNS.
 
 See Also:
-    [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation_analysis.CorrelationAnalysis]
-    [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris_analysis.MorrisAnalysis]
-    [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol_analysis.SobolAnalysis]
-    [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic_analysis.HSICAnalysis]
+    [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]
+    [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]
+    [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
+    [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]
 
 The sub-package [gemseo.uncertainty.statistics][gemseo.uncertainty.statistics]
 offers an abstract level
@@ -57,8 +57,8 @@ while parametric statistics are analytical properties of a
 fitted from a [Dataset][gemseo.datasets.dataset.Dataset].
 
 See Also:
-    [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical_statistics.EmpiricalStatistics]
-    [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics]
+    [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
+    [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics]
 """
 
 from __future__ import annotations
@@ -76,10 +76,8 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset as IODataset
     from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
-    from gemseo.uncertainty.sensitivity.base_sensitivity_analysis import (
-        BaseSensitivityAnalysis,
-    )
-    from gemseo.uncertainty.statistics.base_statistics import BaseStatistics
+    from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
+    from gemseo.uncertainty.statistics.base import BaseStatistics
 
 
 def get_available_distributions(base_class_name: str = "BaseDistribution") -> list[str]:
@@ -181,13 +179,9 @@ def create_statistics(
     """
     import openturns as ot
 
-    from gemseo.uncertainty.statistics.empirical_statistics import EmpiricalStatistics
-    from gemseo.uncertainty.statistics.ot_parametric_statistics import (
-        OTParametricStatistics,
-    )
-    from gemseo.uncertainty.statistics.sp_parametric_statistics import (
-        SPParametricStatistics,
-    )
+    from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+    from gemseo.uncertainty.statistics.ot_parametric import OTParametricStatistics
+    from gemseo.uncertainty.statistics.sp_parametric import SPParametricStatistics
 
     if tested_distributions:
         cls = (
@@ -222,7 +216,7 @@ def create_sensitivity_analysis(
             or as a pickle file path generated
             from the [to_pickle()][gemseo.utils.pickle.to_pickle] function.
             If empty, use
-            [compute_samples()][gemseo.uncertainty.sensitivity.base_sensitivity_analysis.BaseSensitivityAnalysis.compute_samples].
+            [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples].
 
     Returns:
         The sensitivity analysis.

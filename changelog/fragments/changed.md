@@ -16,3 +16,7 @@ The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_setti
 The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` of `CoupledSystem.direct_mode` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
 The optional arguments `use_lu_fact`, `linear_solver` and `**linear_solver_settings` arguments of `CoupledSystem.adjoint_mode` have been removed and replaced by the mandatory argument `linear_solver_settings` of `BaseLinearSolverSettings | None` type.
 The `use_lu_fact` option of MDA settings has been removed; set the `linear_solver_settings` option to `None` instead.
+The modules `base_sensitivity_analysis`, `correlation_analysis`, `hsic_analysis`, `morris_analysis` and `sobol_analysis` of the `gemseo.uncertainty.sensitivity` package were renamed to `base`, `correlation`, `hsic`, `morris` and `sobol` respectively.
+The modules `base_statistics`, `base_parametric_statistics`, `empirical_statistics`, `ot_parametric_statistics` and `sp_parametric_statistics` of the `gemseo.uncertainty.statistics` package were renamed to `base`, `base_parametric`, `empirical`, `ot_parametric` and `sp_parametric` respectively.
+The `gemseo.uncertainty.statistics.tolerance_interval.distribution` was renamed to `gemseo.uncertainty.statistics.tolerance_interval.base`.
+The `_settings` suffix were removed from the module names in `gemseo.uncertainty.distributions.base_settings`.
