@@ -116,7 +116,7 @@ plt.legend()
 plt.show()
 
 # %%
-# ## Settings
+# ## Settings { #poly-settings }
 #
 # The [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] has many options
 # defined in the [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg_settings.PolynomialRegressor_Settings] Pydantic model.

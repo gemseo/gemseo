@@ -17,7 +17,7 @@ search:
 
 # Frequently Asked Questions
 
-## Upgrading GEMSEO
+## Upgrading GEMSEO { #upgrading-gemseo-faq }
 
 As GEMSEO code evolves, some calling signatures and behavior may change. These changes may break the codes that use GEMSEO and require modifications of them. See [Upgrading GEMSEO](software/upgrading.md) for more information.
 

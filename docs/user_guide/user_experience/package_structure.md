@@ -1,3 +1,10 @@
+---
+status: draft
+description: ""
+tags: []
+search:
+  boost: 1
+---
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -7,9 +14,4 @@
  Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
-<!-- TODO: replace these examples by how-to guides -->
-
-<!-- markdownlint-disable-next-line MD041 -->
-## Regression
-
-The purpose of a regression model is to predict the output value corresponding to an input value after being trained from several input-output samples.
+# Package structure

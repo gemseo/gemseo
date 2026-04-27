@@ -106,7 +106,7 @@ plt.legend()
 plt.show()
 
 # %%
-# ## Settings
+# ## Settings { #rf-settings }
 #
 # ### Number of estimators
 #
