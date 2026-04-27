@@ -1,11 +1,11 @@
 ---
-status: draft
-description: ""
+description: "GEMSEO's machine learning capabilities,
+covering clustering, classification, and regression models,
+along with quality assessment, data transformation techniques, and model selection and calibration methods."
 tags: ['user_guide']
 search:
   boost: 2
 ---
-
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -68,12 +68,12 @@ i.e. $c \leftarrow \hat{f}(x)$.
 
 he available clusterers are:
 
-| Description       | Based on                   | Class                                                                                                                                                                                      |
-|-------------------|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| k-means           | scikit-learn               | [KMeans][gemseo.machine_learning.clustering.models.kmeans.KMeans] ([settings][gemseo.machine_learning.clustering.models.kmeans_settings.KMeans_Settings])                                                |
-| Gaussian mixture  | scikit-learn               | [GaussianMixture][gemseo.machine_learning.clustering.models.gaussian_mixture.GaussianMixture] ([settings][gemseo.machine_learning.clustering.models.gaussian_mixture_settings.GaussianMixture_Settings]) |
+| Description      | Based on     | Class                                                                                                                                                                                                    |
+|------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| k-means          | scikit-learn | [KMeans][gemseo.machine_learning.clustering.models.kmeans.KMeans] ([settings][gemseo.machine_learning.clustering.models.kmeans_settings.KMeans_Settings])                                                |
+| Gaussian mixture | scikit-learn | [GaussianMixture][gemseo.machine_learning.clustering.models.gaussian_mixture.GaussianMixture] ([settings][gemseo.machine_learning.clustering.models.gaussian_mixture_settings.GaussianMixture_Settings]) |
 
-!!! question "How-to guides"
+!!! how-to
 
     - [Create a clustering model][create-a-clustering-model]
 
@@ -105,13 +105,13 @@ i.e. $c \leftarrow \hat{f}(x)$.
 
 The available classifiers are:
 
-| Description                  | Based on                   | Class                                                                                                                                                                                                          |
-|------------------------------|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| k-nearest neighbors (k-NN)   | scikit-learn               | [KNNClassifier][gemseo.machine_learning.classification.models.knn.KNNClassifier] ([settings][gemseo.machine_learning.classification.models.knn_settings.KNNClassifier_Settings])                                             |
-| Random forest                | scikit-learn               | [PolynomialRegressor][gemseo.machine_learning.classification.models.random_forest.RandomForestClassifier] ([settings][gemseo.machine_learning.classification.models.random_forest_settings.RandomForestClassifier_Settings]) |
-| Support vector machine (SVM) | scikit-learn               | [PolynomialRegressor][gemseo.machine_learning.classification.models.svm.SVMClassifier] ([settings][gemseo.machine_learning.classification.models.svm_settings.SVMClassifier_Settings])                                       |
+| Description                  | Based on     | Class                                                                                                                                                                                                                        |
+|------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| k-nearest neighbors (k-NN)   | scikit-learn | [KNNClassifier][gemseo.machine_learning.classification.models.knn.KNNClassifier] ([settings][gemseo.machine_learning.classification.models.knn_settings.KNNClassifier_Settings])                                             |
+| Random forest                | scikit-learn | [PolynomialRegressor][gemseo.machine_learning.classification.models.random_forest.RandomForestClassifier] ([settings][gemseo.machine_learning.classification.models.random_forest_settings.RandomForestClassifier_Settings]) |
+| Support vector machine (SVM) | scikit-learn | [PolynomialRegressor][gemseo.machine_learning.classification.models.svm.SVMClassifier] ([settings][gemseo.machine_learning.classification.models.svm_settings.SVMClassifier_Settings])                                       |
 
-!!! question "How-to guides"
+!!! how-to
 
     - [Create a classification model][create-a-classification-model]
 
@@ -146,8 +146,8 @@ i.e. $y' \leftarrow \nabla\hat{f}(x)=(\frac{\partial \hat{f}(x)}{\partial x_1},\
 
 The available regressors are:
 
-| Description                      | Based on                   | Class                                                                                                                                                                                                                      |
-|----------------------------------|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Description                      | Based on                   | Class                                                                                                                                                                                                                                    |
+|----------------------------------|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Linear                           | scikit-learn               | [LinearRegressor][gemseo.machine_learning.regression.models.linreg.LinearRegressor] ([settings][gemseo.machine_learning.regression.models.linreg_settings.LinearRegressor_Settings])                                                     |
 | Polynomial                       | scikit-learn               | [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] ([settings][gemseo.machine_learning.regression.models.polyreg_settings.PolynomialRegressor_Settings])                                       |
 | Radial basis function (RBF)      | SciPy                      | [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor] ([settings][gemseo.machine_learning.regression.models.rbf_settings.RBFRegressor_Settings])                                                                    |
@@ -220,31 +220,31 @@ The available quality measures are:
 
 - for regression:
 
-    | Description                      | Class                                                                       |
-    |----------------------------------|-----------------------------------------------------------------------------|
-    | Maximum error (ME)               | [MEMeasure][gemseo.machine_learning.regression.quality.me_measure.MEMeasure]       |
-    | Mean absolute error (MAE)        | [MAEMeasure][gemseo.machine_learning.regression.quality.mae_measure.MAEMeasure]    |
-    | Mean squared error (MSE)         | [MSEMeasure][gemseo.machine_learning.regression.quality.mse_measure.MSEMeasure]    |
-    | Root mean squared error (RMSE)   | [RMSEMeasure][gemseo.machine_learning.regression.quality.rmse_measure.RMSEMeasure] |
-    | R² score                         | [R2Measure][gemseo.machine_learning.regression.quality.r2_measure.R2Measure]       |
+    | Description                    | Class                                                                              |
+    |--------------------------------|------------------------------------------------------------------------------------|
+    | Maximum error (ME)             | [MEMeasure][gemseo.machine_learning.regression.quality.me_measure.MEMeasure]       |
+    | Mean absolute error (MAE)      | [MAEMeasure][gemseo.machine_learning.regression.quality.mae_measure.MAEMeasure]    |
+    | Mean squared error (MSE)       | [MSEMeasure][gemseo.machine_learning.regression.quality.mse_measure.MSEMeasure]    |
+    | Root mean squared error (RMSE) | [RMSEMeasure][gemseo.machine_learning.regression.quality.rmse_measure.RMSEMeasure] |
+    | R² score                       | [R2Measure][gemseo.machine_learning.regression.quality.r2_measure.R2Measure]       |
 
 - for classification
 
-    | Description         | Class                                                                     |
-    |---------------------|---------------------------------------------------------------------------|
+    | Description         | Class                                                                            |
+    |---------------------|----------------------------------------------------------------------------------|
     | F1 score error (ME) | [MEMeasure][gemseo.machine_learning.classification.quality.f1_measure.F1Measure] |
 
 - for clustering
 
-    | Description                      | Class                                                                                 |
-    |----------------------------------|---------------------------------------------------------------------------------------|
-    | Silhouette coefficient              | [SilhouetteMeasure][gemseo.machine_learning.clustering.quality.silhouette_measure.SilhouetteMeasure] |
+    | Description            | Class                                                                                                |
+    |------------------------|------------------------------------------------------------------------------------------------------|
+    | Silhouette coefficient | [SilhouetteMeasure][gemseo.machine_learning.clustering.quality.silhouette_measure.SilhouetteMeasure] |
 
-!!! example "Tutorials"
+!!! tutorial
 
     - [Assessing the quality of an ML model][assessing-the-quality-of-an-ml-model].
 
-!!! question "How-to guides"
+!!! how-to
 
     - [Get the resampling result][get-the-resampling-result]
     - [Change the number of cross-validation folds][change-the-number-of-cross-validation-folds]
@@ -301,7 +301,7 @@ The available data scalers are
 | Scaling data into $[0,1]$ using minimum and maximum | [MinMaxScaler][gemseo.machine_learning.transformers.scaler.min_max_scaler.MinMaxScaler]      |
 | Making data zero-mean and unit-variance             | [StandardScaler][gemseo.machine_learning.transformers.scaler.standard_scaler.StandardScaler] |
 
-!!! question "How-to guides"
+!!! how-to
 
     - [Scale data before training an ML model][scale-data-before-training-an-ml-model]
 
@@ -325,7 +325,7 @@ The available data dimension techniques are
 | Partial least squares (PLS)        | scikit-learn | [PLS][gemseo.machine_learning.transformers.dimension_reduction.pls.PLS]       |
 | Karhunen-Loève SVD (KLSVD)         | OpenTURNS    | [KLSVD][gemseo.machine_learning.transformers.dimension_reduction.klsvd.KLSVD] |
 
-!!! question "How-to guides"
+!!! how-to
 
     - [Reduce the data dimension before training an ML model][reduce-the-data-dimension-before-training-an-ml-model]
 
@@ -342,7 +342,7 @@ There are also power transformers for making the data more normally distributed:
 
 Data transformations can be chained using a [Pipeline][gemseo.machine_learning.transformers.pipeline.Pipeline].
 
-!!! question "How-to guides"
+!!! how-to
 
     - [Chain data transformation][chain-data-transformations]
 
@@ -370,7 +370,7 @@ several ML models can be trained at the same time
 to keep only the best,
 using the [MLModelSelection][gemseo.machine_learning.core.selection.MLModelSelection] class.
 
-!!! question "How-to guides"
+!!! how-to
 
     - [Select an ML model][select-an-ml-model]
     - [Calibrate an ML model][calibrate-an-ml-model]

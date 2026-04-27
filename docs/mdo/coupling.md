@@ -17,10 +17,10 @@ search:
 
 # Coupling visualization
 
-!!! info "Tutorial"
+!!! tutorial
     - [Tutorial - The Multi-Disciplinary Analysis][tutorial-the-multidisciplinary-design-analysis]
 
-!!! info "How-to"
+!!! how-to
     - [Chain disciplines][chain-disciplines]
     - [Generate a coupling graph][generate-a-coupling-graph]
     - [Generate the N2 chart][generate-the-n2-chart]

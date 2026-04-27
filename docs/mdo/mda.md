@@ -17,10 +17,10 @@ search:
 
 # Multi Disciplinary Analyses
 
-!!! info "Tutorial"
+!!! tutorial
     - [Tutorial - The Multi-Disciplinary Analysis][tutorial-the-multidisciplinary-design-analysis]
 
-!!! info "How-to"
+!!! how-to
     - [Instantiate an MDAChain][manage-nested-coupling-systems]
     - [MDA acceleration techniques][accelerate-mda-convergence]
     - [Create sequential hybrid MDAs][create-sequential-hybrid-mdas]

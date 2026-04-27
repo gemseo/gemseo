@@ -16,11 +16,11 @@ search:
 
 # The Design Space
 
-!!! info "Tutorial"
+!!! tutorial
 
     - [Tutorial - The design space][tutorial-the-design-space]
 
-!!! info "How-to"
+!!! how-to
 
     - [How to import and export a design space from disk][how-to-import-and-export-a-design-space-from-disk]
     - [How to reduce a design space][how-to-reduce-a-design-space]

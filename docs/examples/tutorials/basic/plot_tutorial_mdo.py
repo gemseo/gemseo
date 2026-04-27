@@ -171,7 +171,7 @@ scenario.execute(
 #     according to a sampling strategy,
 #     and the best point will be considered as optimal.
 #
-# !!! note "How-to"
+# !!! how-to
 #     There are different ways to save your optimization process.
 #     You can either save during the process,
 #     to reduce the risk of something going wrong.
