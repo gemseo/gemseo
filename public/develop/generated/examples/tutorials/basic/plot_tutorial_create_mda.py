@@ -131,7 +131,7 @@ gauss_seidel_mda = create_mda(
 )
 
 # %%
-# !!! info "How-to"
+# !!! how-to
 #     Here, we create an MDA with the 4 disciplines,
 #     even if the *Mission* is not highly coupled with the other 3 disciplines.
 #     It is sub-optimal, since the *Mission* discipline will be executed many times.

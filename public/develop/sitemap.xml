@@ -29,10 +29,6 @@
          <lastmod>2026-04-27</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/machine_learning/</loc>
-         <lastmod>2026-04-27</lastmod>
-    </url>
-    <url>
          <loc>https://gemseo.org/latest/overview/</loc>
          <lastmod>2026-04-27</lastmod>
     </url>
@@ -4981,6 +4977,10 @@
          <lastmod>2026-04-27</lastmod>
     </url>
     <url>
+         <loc>https://gemseo.org/latest/user_guide/concepts/machine_learning/</loc>
+         <lastmod>2026-04-27</lastmod>
+    </url>
+    <url>
          <loc>https://gemseo.org/latest/user_guide/concepts/algorithms/</loc>
          <lastmod>2026-04-27</lastmod>
     </url>
@@ -5074,26 +5074,6 @@
     </url>
     <url>
          <loc>https://gemseo.org/latest/user_guide/concepts/formulations/mdf/</loc>
-         <lastmod>2026-04-27</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/user_guide/concepts/machine_learning/data_transformation/</loc>
-         <lastmod>2026-04-27</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/user_guide/concepts/machine_learning/introduction/</loc>
-         <lastmod>2026-04-27</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/user_guide/concepts/machine_learning/quality/</loc>
-         <lastmod>2026-04-27</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/user_guide/concepts/machine_learning/selection_calibration/</loc>
-         <lastmod>2026-04-27</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/user_guide/concepts/machine_learning/types/</loc>
          <lastmod>2026-04-27</lastmod>
     </url>
     <url>
