@@ -22,11 +22,11 @@ Contributors:
 
 # MDO formulations
 
-!!! info "Tutorial"
+!!! tutorial
     - [Execute your first Multi-Disciplinary Optimization][tutorial-execute-your-first-multi-disciplinary-optimization]
     - [Solve a bi-level MDO problem][tutorial-solve-a-bi-level-mdo-problem]
 
-!!! info "How-to"
+!!! how-to
     - [Generate an XDSM chart][generate-an-xdsm-chart]
     - [Save the execution history of a scenario][save-the-execution-history-of-a-scenario]
     - [Use multi-processing for your DOE][use-multi-processing-for-your-doe]

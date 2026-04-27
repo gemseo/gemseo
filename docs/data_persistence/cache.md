@@ -16,7 +16,7 @@ search:
 
 # Caching and recording discipline data
 
-!!! info "How-to"
+!!! how-to
 
     - [Access and clear a discipline cache][access-and-clear-a-discipline-cache]
     - [Set a discipline cache][set-a-discipline-cache]
