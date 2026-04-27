@@ -22,7 +22,7 @@ Contributors:
 
 # Monitoring the execution of a scenario
 
-When a scenario is executed (see [this example][a-from-scratch-example-on-the-sellar-problem] for building a scenario),
+When a scenario is executed,
 GEMSEO logs the last computed value of the objective
 function. But a finer monitoring may be needed, especially in case of crash.
 In a situation like this, the current execution status of the [Discipline][gemseo.core.discipline.discipline.Discipline] is useful as well.

@@ -24,12 +24,6 @@
 # This section describes how to set up and solve the MDO problem relative to the
 # [Sobieski's SSBJ problem][sobieskis-ssbj-test-case] with GEMSEO.
 #
-# !!! info "See also"
-#
-#     To begin with a more simple MDO problem, and have a detailed description
-#     of how to plug a test case to GEMSEO,
-#     see [this example][a-from-scratch-example-on-the-sellar-problem].
-#
 # ## Solving with an [MDF formulation][the-mdf-formulation]
 #
 # In this example, we solve the range optimization using the following

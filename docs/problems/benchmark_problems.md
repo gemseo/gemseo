@@ -24,7 +24,6 @@ In this section, we describe the GEMSEO's benchmark MDO problems.
 The Sellar's problem is considered in different examples:
 
 - [GEMSEO in 10 minutes][gemseo-in-10-minutes],
-- [A from scratch example][a-from-scratch-example-on-the-sellar-problem].
 
 ### Description of the problem
 
@@ -100,9 +99,6 @@ Then, you can visualize it with `print(design_space)`:
     | y_2      |     -100    | (1+0j) |     100     | float |
     +----------+-------------+--------+-------------+-------+
 ```
-
-!!! info "See Also"
-        See [this example][a-from-scratch-example-on-the-sellar-problem] to create the Sellar problem from scratch.
 
 ## Sobieski's SSBJ test case
 
