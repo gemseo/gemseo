@@ -121,7 +121,7 @@ def test_warning(fitter, caplog) -> None:
 
     fitter.select_from_measures(measures, "Kolmogorov", level=0.99)
     assert caplog.record_tuples[-1] == (
-        "gemseo.uncertainty.distributions.base_distribution_fitter",
+        "gemseo.uncertainty.distributions.base_fitter",
         30,
         "All criteria values are lower than the significance level 0.99.",
     )
@@ -132,7 +132,7 @@ def test_warning(fitter, caplog) -> None:
     ]
     fitter.select_from_measures(measures, "Kolmogorov")
     assert caplog.record_tuples[-1] == (
-        "gemseo.uncertainty.distributions.base_distribution_fitter",
+        "gemseo.uncertainty.distributions.base_fitter",
         30,
         "All criteria values are lower than the significance level 0.05.",
     )

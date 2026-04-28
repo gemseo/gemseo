@@ -19,7 +19,7 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic import PositiveFloat
 
-from gemseo.uncertainty.distributions.base_settings.weibull import (
+from gemseo.uncertainty.distributions.base_univariate_settings.weibull import (
     BaseWeibullDistributionSettings,
 )
 from gemseo.uncertainty.distributions.openturns.base_settings import (

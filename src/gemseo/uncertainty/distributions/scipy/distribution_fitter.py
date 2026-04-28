@@ -30,9 +30,7 @@ from scipy.stats import goodness_of_fit
 from scipy.stats import rv_continuous
 from strenum import StrEnum
 
-from gemseo.uncertainty.distributions.base_distribution_fitter import (
-    BaseDistributionFitter,
-)
+from gemseo.uncertainty.distributions.base_fitter import BaseDistributionFitter
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
 from gemseo.uncertainty.distributions.scipy.distribution_settings import (
     SPDistribution_Settings,

@@ -34,14 +34,11 @@ from openturns import Interval
 from openturns import SymbolicFunction
 from openturns import TruncatedDistribution
 
-from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+from gemseo.uncertainty.distributions.base_univariate import BaseUnivariateDistribution
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
     OTDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
-from gemseo.uncertainty.distributions.scalar_distribution_mixin import (
-    ScalarDistributionMixin,
-)
 
 if TYPE_CHECKING:
     from openturns import Distribution
@@ -50,8 +47,7 @@ if TYPE_CHECKING:
 
 
 class OTDistribution(
-    BaseDistribution[float, tuple[Any, ...], DistributionImplementation],
-    ScalarDistributionMixin,
+    BaseUnivariateDistribution[float, tuple[Any, ...], DistributionImplementation],
 ):
     """An OpenTURNS-based probability distribution.
 

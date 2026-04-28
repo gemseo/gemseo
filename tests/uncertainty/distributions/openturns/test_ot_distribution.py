@@ -42,7 +42,7 @@ from openturns import Uniform
 from openturns import WeibullMax
 from openturns import WeibullMin
 
-from gemseo.uncertainty.distributions import scalar_distribution_mixin
+from gemseo.uncertainty.distributions import base_univariate
 from gemseo.uncertainty.distributions._log_normal_utils import compute_mu_l_and_sigma_l
 from gemseo.uncertainty.distributions.factory import DISTRIBUTION_FACTORY
 from gemseo.uncertainty.distributions.openturns.beta_settings import (
@@ -268,7 +268,7 @@ def test_plot_save(
 ) -> None:
     """Check the file path computed by plot()."""
     triangular = OTTriangularDistribution()
-    with patch.object(scalar_distribution_mixin, "save_show_figure") as mock_method:
+    with patch.object(base_univariate, "save_show_figure") as mock_method:
         triangular.plot(
             show=False,
             save=True,

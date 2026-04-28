@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.triangular import (
+from gemseo.uncertainty.distributions.base_univariate_settings.triangular import (
     BaseTriangularDistributionSettings,
 )
 from gemseo.uncertainty.distributions.scipy.base_settings import (

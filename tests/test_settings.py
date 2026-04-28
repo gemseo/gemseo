@@ -41,7 +41,7 @@ from gemseo.formulations.base_settings import BaseFormulationSettings
 from gemseo.machine_learning.core.models.ml_model_settings import BaseMLModelSettings
 from gemseo.mda.base_settings import BaseMDASettings
 from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.uncertainty.distributions.base_distribution_settings import (
+from gemseo.uncertainty.distributions.base_settings import (
     BaseGenericDistributionSettings,
 )
 from gemseo.utils.pydantic import BaseSettings

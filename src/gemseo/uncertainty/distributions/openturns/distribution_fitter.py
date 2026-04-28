@@ -32,9 +32,7 @@ from openturns import FittingTest
 from openturns import Sample
 from strenum import StrEnum
 
-from gemseo.uncertainty.distributions.base_distribution_fitter import (
-    BaseDistributionFitter,
-)
+from gemseo.uncertainty.distributions.base_fitter import BaseDistributionFitter
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
     OTDistribution_Settings,

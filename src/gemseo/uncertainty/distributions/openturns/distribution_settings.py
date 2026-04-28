@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
+from gemseo.uncertainty.distributions.base_settings import (
     BaseGenericDistributionSettings,
 )
 from gemseo.uncertainty.distributions.openturns.base_settings import (
