@@ -17,10 +17,10 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a scatter matrix from a [Dataset][gemseo.datasets.dataset.Dataset].
+r"""Draw a pair plot from a [Dataset][gemseo.datasets.dataset.Dataset].
 
-The [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix] class
-implements the scatter plot matrix,
+The [PairPlot][gemseo.post.dataset.pair_plot.PairPlot] class
+implements the pair plot, a.k.a. scatter plot matrix,
 which is a way to visualize $n$ samples of a
 multi-dimensional vector
 
@@ -49,13 +49,13 @@ from __future__ import annotations
 from typing import ClassVar
 
 from gemseo.post.dataset.base import BaseDatasetPlot
-from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
+from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 
 
-class ScatterMatrix(BaseDatasetPlot[ScatterMatrix_Settings]):
-    """Scatter plot matrix."""
+class PairPlot(BaseDatasetPlot[PairPlot_Settings]):
+    """Pair plot, a.k.a. pair plot."""
 
-    settings_class: ClassVar[type[ScatterMatrix_Settings]] = ScatterMatrix_Settings
+    settings_class: ClassVar[type[PairPlot_Settings]] = PairPlot_Settings
 
     def _create_specific_data_from_dataset(self) -> tuple[tuple[str, str, int] | None]:
         """

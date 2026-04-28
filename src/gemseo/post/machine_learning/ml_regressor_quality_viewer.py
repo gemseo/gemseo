@@ -25,12 +25,11 @@ from strenum import StrEnum
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.machine_learning.resampling.cross_validation import CrossValidation
-from gemseo.post.dataset._trend import Trend
+from gemseo.post.dataset.pair_plot import PairPlot
+from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 from gemseo.post.dataset.scatter import Scatter
-from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
-from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrixOption
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
+from gemseo.post.dataset.trend import Trend
 from gemseo.utils.seeder import Seeder
 from gemseo.utils.string_tools import convert_strings_to_iterable
 
@@ -42,8 +41,6 @@ if TYPE_CHECKING:
 
     from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
     from gemseo.typing import RealArray
-
-DatasetPlotOption = ScatterMatrixOption
 
 
 class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
@@ -88,7 +85,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         save: bool = True,
         show: bool = False,
         **options: Any,
-    ) -> list[Scatter] | ScatterMatrix:
+    ) -> list[Scatter] | PairPlot:
         """Plot the quantity of interest (QOI) vs. the input or output observations.
 
         The quantity of interest is either the output of the model or its error,
@@ -108,7 +105,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 if `None`, plot the outputs.
             observations: The validation dataset.
             use_scatter_matrix: Whether the method outputs a
-                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
+                [PairPlot][gemseo.post.dataset.pair_plot.PairPlot].
                 Otherwise,
                 it outputs a list of [Scatter][gemseo.post.dataset.scatter.Scatter].
             filter_scatters: Whether to display only
@@ -167,7 +164,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         file_name = options.pop("file_name", default_file_name)
         trend = options.pop("trend", Trend.LINEAR)
         if use_scatter_matrix:
-            return self.__create_scatter_matrix(
+            return self.__create_pair_plot(
                 dataset, trend, variable_names, file_name, save, show, **options
             )
 
@@ -277,7 +274,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         return scatters
 
     @staticmethod
-    def __create_scatter_matrix(
+    def __create_pair_plot(
         dataset: Dataset,
         trend,
         variable_names: Iterable[str],
@@ -285,8 +282,8 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         save: bool,
         show: bool,
         **options,
-    ) -> ScatterMatrix:
-        """Create a scatter matrix plot.
+    ) -> PairPlot:
+        """Create a pair plot.
 
         Args:
             dataset: The dataset to plot.
@@ -295,20 +292,20 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             save: Whether to save the plots.
             show: Whether to show the plots.
             **options: The options of the
-                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
+                [PairPlot][gemseo.post.dataset.pair_plot.PairPlot].
 
         Returns:
-            The scatter matrix plot.
+            The pair plot.
         """
-        options_ = {"range_padding": 0.2, "alpha": 1.0}
+        options_ = {"alpha": 1.0}
         options_.update(options)
-        settings = ScatterMatrix_Settings(
+        settings = PairPlot_Settings(
             variable_names=variable_names,
-            kde=options.pop("kde", True),
+            use_kde=options.pop("use_kde", True),
             trend=trend,
             options=options_,
         )
-        scatter_matrix = ScatterMatrix(dataset, settings)
+        scatter_matrix = PairPlot(dataset, settings)
         scatter_matrix.execute(file_name=file_name, save=save, show=show)
         return scatter_matrix
 
@@ -356,7 +353,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         samples: Sequence[int] = (),
         seed: int | None = None,
         **options: Any,
-    ) -> list[Scatter] | ScatterMatrix:
+    ) -> list[Scatter] | PairPlot:
         """Plot the residuals of the model versus the observations.
 
         Args:
@@ -366,7 +363,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 use all the components of the output.
             observations: The validation dataset.
             use_scatter_matrix: Whether the method outputs a
-                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
+                [PairPlot][gemseo.post.dataset.pair_plot.PairPlot].
                 Otherwise,
                 it outputs a list of [Scatter][gemseo.post.dataset.scatter.Scatter].
             filter_scatters: Whether to display only
@@ -417,7 +414,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         samples: Sequence[int] = (),
         seed: int | None = None,
         **options: Any,
-    ) -> list[Scatter] | ScatterMatrix:
+    ) -> list[Scatter] | PairPlot:
         """Plot the residuals of the model versus the inputs.
 
         Args:
@@ -429,7 +426,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 If empty, use all the inputs.
             observations: The validation dataset.
             use_scatter_matrix: Whether the method outputs a
-                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
+                [PairPlot][gemseo.post.dataset.pair_plot.PairPlot].
                 Otherwise,
                 it outputs a list of [Scatter][gemseo.post.dataset.scatter.Scatter].
             filter_scatters: Whether to display only
@@ -524,7 +521,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         samples: Sequence[int] = (),
         seed: int | None = None,
         **options: Any,
-    ) -> list[Scatter] | ScatterMatrix:
+    ) -> list[Scatter] | PairPlot:
         """Plot the predictions versus the observations.
 
         Args:
@@ -534,7 +531,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 use all the components of the output.
             observations: The validation dataset.
             use_scatter_matrix: Whether the method outputs a
-                [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix].
+                [PairPlot][gemseo.post.dataset.pair_plot.PairPlot].
                 Otherwise,
                 it outputs a list of [Scatter][gemseo.post.dataset.scatter.Scatter].
             filter_scatters: Whether to display only

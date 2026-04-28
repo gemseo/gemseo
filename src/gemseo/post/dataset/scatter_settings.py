@@ -21,9 +21,9 @@ from pydantic import Field
 from pydantic import NonNegativeInt  # noqa: TC002
 from pydantic import field_validator
 
-from gemseo.post.dataset._trend import Trend
-from gemseo.post.dataset._trend import TrendFunctionCreator  # noqa: TC001
 from gemseo.post.dataset.base_cartesian_settings import BaseCartesianDatasetPlotSettings
+from gemseo.post.dataset.trend import Trend
+from gemseo.post.dataset.trend import TrendFunctionCreator  # noqa: TC001
 
 
 class Scatter_Settings(BaseCartesianDatasetPlotSettings):  # noqa: N801

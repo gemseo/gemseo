@@ -13,16 +13,17 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-"""# Scatter matrix
+"""# Pair plot
 
 ## Problem
 
-Visualise pairwise relationships between all variables in a dataset at once,
-with per-class colour coding.
+You have a dataset with multiple variables
+and want to visualize all pairwise relationships at once,
+with different colors for each class.
 
 ## Solution
 
-Use [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix],
+Use [PairPlot][gemseo.post.dataset.pair_plot.PairPlot],
 which renders all pairwise scatter plots in off-diagonal blocks
 and per-variable distribution estimates (histogram or KDE) on the diagonal.
 
@@ -32,8 +33,8 @@ and per-variable distribution estimates (histogram or KDE) on the diagonal.
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
+from gemseo.post.dataset.pair_plot import PairPlot
+from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 
 # %%
 # ### 1. Build the dataset
@@ -41,16 +42,31 @@ from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Setti
 iris = create_benchmark_dataset("IrisDataset")
 
 # %%
-# ### 2. Plot the scatter matrix
+# ### 2. Plot the pair plot
 #
-# Pass a `classifier` variable name to colour the points by class:
-ScatterMatrix(iris, ScatterMatrix_Settings(classifier="specy")).execute(
+PairPlot(iris, PairPlot_Settings()).execute(save=False, show=True)
+
+# %%
+# ### 3. Plot the pair plot with options
+#
+# Color the dots based on the value of a variable:
+PairPlot(iris, PairPlot_Settings(classifier="specy")).execute(save=False, show=True)
+
+# %%
+# Use kernel density estimators
+# instead of histograms on the diagonal and scatter plots for the off-diagonal cells:
+PairPlot(iris, PairPlot_Settings(use_scatter=False, use_kde=True)).execute(
     save=False, show=True
 )
 
 # %%
+# Use the component-wise normalized ranks on the upper part
+# and raw data on the lower part:
+PairPlot(iris, PairPlot_Settings(use_ranks=True)).execute(save=False, show=True)
+
+# %%
 # ## Summary
 #
-# [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix]
+# [PairPlot][gemseo.post.dataset.pair_plot.PairPlot]
 # provides an overview of all pairwise relationships in a single figure.
 # Use the `classifier` argument to colour points by a categorical variable.

@@ -83,7 +83,7 @@ class Trend(StrEnum):
     RBF = "rbf"
 
 
-TREND_FUNCTIONS: Final[dict[Trend, TrendFunctionCreator]] = {
+_TREND_FUNCTIONS: Final[dict[Trend, TrendFunctionCreator]] = {
     Trend.LINEAR: _create_polynomial_trend_function_creator(1),
     Trend.QUADRATIC: _create_polynomial_trend_function_creator(2),
     Trend.CUBIC: _create_polynomial_trend_function_creator(3),
