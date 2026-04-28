@@ -139,41 +139,103 @@ class ParameterSpace(DesignSpace):
     _BLANK = ""
     _PARAMETER_SPACE = "Parameter space"
 
-    __random_vectors_to_settings: dict[str, Sequence[BaseSettings]]
-    """The uncertain variable names bound to their definition."""
+    __random_vector_names_to_settings: dict[str, tuple[BaseSettings, ...]]
+    """The settings of the marginal probability distributions of the random vectors."""
+
+    __copulas: list[tuple[tuple[str, ...], Any]]
+    """The independent copulas defined by blocks of random variables."""
+
+    __supports_dependency: bool
+    """Whether the wrapped UQ library supports dependent variables."""
 
     __distribution_library_name: str
     """The name of the library implementing the probability distributions."""
 
     def __init__(self, name: str = "") -> None:  # noqa:D107
-        LOGGER.debug("*** Create a new parameter space ***")
         super().__init__(name=name)
         self.uncertain_variables = []
         self.distributions = {}
         self.distribution = None
-        self.__random_vectors_to_settings = {}
+        self.__random_vector_names_to_settings = {}
+        self.__copulas = []
         self.__distribution_library_name = ""
+        self.__supports_dependency = True
 
-    def build_joint_distribution(self, copula: Any = None) -> None:
-        """Build the joint probability distribution.
+    def add_copula(self, copula: Any, *names: str) -> None:
+        """Add a copula defining the dependency structure between random variables.
+
+        This function can be called several times in order to add several copulas
+        associated to different random variables.
+        All the variables which are not linked through any copula will be
+        independent.
 
         Args:
-            copula: A copula distribution
-                defining the dependency structure between random variables;
-                if `None`, consider an independent copula.
-        """
-        if self.uncertain_variables:
-            settings = []
-            for value in self.__random_vectors_to_settings.values():
-                settings.extend(value)
+            copula: The copula.
+            *names: The names of the random variables.
 
-            cls = DISTRIBUTION_FACTORY.get_class(settings[0].target_class_name)
-            cls = cls.JOINT_DISTRIBUTION_CLASS
-            if copula is None:
-                joint_settings = cls.Settings(marginal_settings=settings)
-            else:
-                joint_settings = cls.Settings(marginal_settings=settings, copula=copula)
-            self.distribution = cls(joint_settings)
+        Raises:
+            ValueError: When the joint probability distribution does not support
+                dependent random variables,
+                i.e. when the joint distribution settings do not have a `copula` field,
+                when there is no variable with that name,
+                or when there is already a copula for one of the random variables.
+        """
+        for name in names:
+            if name not in self.uncertain_variables:
+                msg = f"There is no variable name {name!r}."
+                raise ValueError(msg)
+
+            for existing_names, _ in self.__copulas:
+                if name in existing_names:
+                    msg = f"The random variable {name!r} has already a copula."
+                    raise ValueError(msg)
+
+        if not self.__supports_dependency:
+            msg = (
+                f"{self.distribution.__class__.__name__} does not support "
+                "dependent variables."
+            )
+            raise ValueError(msg)
+
+        self.__copulas.append((names, copula))
+        self.__set_joint_distribution()
+
+    def __set_joint_distribution(self) -> None:
+        """Set the joint probability distribution."""
+        if not self.uncertain_variables:
+            return
+
+        marginal_settings = []
+        for settings in self.__random_vector_names_to_settings.values():
+            marginal_settings.extend(settings)
+
+        marginal_class_name = marginal_settings[0].target_class_name
+        marginal_class = DISTRIBUTION_FACTORY.get_class(marginal_class_name)
+        joint_class = marginal_class.JOINT_DISTRIBUTION_CLASS
+        settings_class = joint_class.settings_class
+        if self.__copulas:
+            new_copulas = []
+            uncertain_names = self.uncertain_variables
+            variable_sizes = self.variable_sizes
+            for variable_names, copula in self.__copulas:
+                indices = []
+                for variable_name in variable_names:
+                    pos = sum(
+                        variable_sizes[uncertain_names[i]]
+                        for i in range(uncertain_names.index(variable_name))
+                    )
+                    indices.extend(range(pos, pos + variable_sizes[variable_name]))
+
+                new_copulas.append((indices, copula))
+
+            settings = settings_class(
+                marginal_settings=marginal_settings,
+                copula=new_copulas,
+            )
+        else:
+            settings = settings_class(marginal_settings=marginal_settings)
+
+        self.distribution = joint_class(settings)
 
     def is_uncertain(
         self,
@@ -237,21 +299,27 @@ class ParameterSpace(DesignSpace):
             )
             raise ValueError(msg)
 
+        if len(self.__random_vector_names_to_settings) == 0:
+            marginal_class_name = settings[0].target_class_name
+            marginal_class = DISTRIBUTION_FACTORY.get_class(marginal_class_name)
+            joint_class = marginal_class.JOINT_DISTRIBUTION_CLASS
+            settings_class = joint_class.settings_class
+            self.__supports_dependency = "copula" in settings_class.__fields__
+
         marginals = [DISTRIBUTION_FACTORY.create_from_settings(s) for s in settings]
         self.__distribution_library_name = next(iter(distribution_library_names))
-        self.__random_vectors_to_settings[name] = settings
+        self.__random_vector_names_to_settings[name] = settings
 
         # Define the distribution of the random vector with a joint distribution.
         cls = marginals[0].JOINT_DISTRIBUTION_CLASS
-        distribution = cls(cls.Settings(marginal_settings=settings))
+        distribution = cls(cls.settings_class(marginal_settings=settings))
         self.distributions[name] = distribution
 
         # Update the uncertain variables.
         self.uncertain_variables.append(name)
 
-        # Update the full joint distribution,
-        # i.e. the joint distribution of all the uncertain variables.
-        self.build_joint_distribution()
+        # Create the joint distribution.
+        self.__set_joint_distribution()
 
         # Update the parameter space as subclass of a DesignSpace.
         self.add_variable(
@@ -314,14 +382,20 @@ class ParameterSpace(DesignSpace):
     ) -> None:
         """Remove a variable from the probability space.
 
+        This method also removes the copulas associated with this variable.
+
         Args:
             name: The name of the variable.
         """
         if name in self.uncertain_variables:
             del self.distributions[name]
+            del self.__random_vector_names_to_settings[name]
+            for copula in list(self.__copulas):
+                if name in copula[0]:
+                    self.__copulas.remove(copula)
+
             self.uncertain_variables.remove(name)
-            if self.uncertain_variables:
-                self.build_joint_distribution()
+            self.__set_joint_distribution()
         super().remove_variable(name)
 
     def compute_samples(
@@ -514,20 +588,18 @@ class ParameterSpace(DesignSpace):
         rnge = []
         for variable in self:
             if variable in self.uncertain_variables:
-                dist = self.distributions[variable]
-                tmp_mean = dist.mean
-                tmp_std = dist.standard_deviation
-                tmp_range = dist.range
-                tmp_support = dist.support
-                for dim in range(dist.dimension):
-                    distribution.append(str(dist))
-                    transformation.append(dist.transformation)
-                    mean.append(tmp_mean[dim])
-                    mean[-1] = round(mean[-1], decimals)
-                    std.append(tmp_std[dim])
-                    std[-1] = round(std[-1], decimals)
-                    rnge.append(tmp_range[dim])
-                    support.append(tmp_support[dim])
+                joint_distribution = self.distributions[variable]
+                joint_mean = joint_distribution.mean
+                joint_std = joint_distribution.standard_deviation
+                joint_range = joint_distribution.range
+                joint_support = joint_distribution.support
+                for i, marginal in enumerate(joint_distribution.marginals):
+                    distribution.append(str(marginal))
+                    transformation.append(marginal.transformation)
+                    mean.append(round(joint_mean[i], decimals))
+                    std.append(round(joint_std[i], decimals))
+                    rnge.append(joint_range[i])
+                    support.append(joint_support[i])
             else:
                 for _ in range(self.variable_sizes[variable]):
                     distribution.append(self._BLANK)
@@ -731,7 +803,7 @@ class ParameterSpace(DesignSpace):
         dataset: Dataset,
         groups: Iterable[str] | None = None,
         uncertain: Mapping[str, bool] | None = None,
-        copula: Any = None,
+        copulas: Iterable[tuple[tuple[str, ...], Any]] = (),
     ) -> ParameterSpace:
         """Initialize the parameter space from a dataset.
 
@@ -740,8 +812,21 @@ class ParameterSpace(DesignSpace):
             groups: The groups of the dataset to be considered.
                 If empty, consider all the groups.
             uncertain: Whether the variables should be uncertain or not.
-            copula: A name of copula defining the dependency between random variables.
-        """
+            copulas: The copula defined by independent blocks of random vectors.
+                An element of `block_copulas` is
+                a pair of random vector names and copula,
+                where the copula must be from the same family
+                as the marginal probability distributions,
+                e.g. an OpenTURNS copula in the case of OpenTURNS marginals.
+                The block must be passed as
+                `set_joint_distribution((("b", "e"), copula_1), (("h", "d"), copula_2))`.
+                Random vectors from different blocks are independent.
+                A random vector can have only one copula.
+                The components of a vector without a copula
+                will be considered independent with all the other ones.
+                In the absence of block copulas,
+                all the components of the full random vector are independent.
+        """  # noqa: E501
         parameter_space = ParameterSpace()
 
         if uncertain is None:
@@ -768,7 +853,7 @@ class ParameterSpace(DesignSpace):
                 else:
                     parameter_space.add_variable(name, size, "float", l_b, u_b, value)
 
-        parameter_space.build_joint_distribution(copula)
+        parameter_space.__set_joint_distribution()
         return parameter_space
 
     def to_design_space(self) -> DesignSpace:
@@ -805,7 +890,7 @@ class ParameterSpace(DesignSpace):
         if current_name in self.uncertain_variables:
             position = self.uncertain_variables.index(current_name)
             self.uncertain_variables[position] = new_name
-            dict_ = self.__random_vectors_to_settings
+            dict_ = self.__random_vector_names_to_settings
             dict_[new_name] = dict_.pop(current_name)
             dict_ = self.distributions
             dict_[new_name] = dict_.pop(current_name)
@@ -819,7 +904,7 @@ class ParameterSpace(DesignSpace):
             if name in space.uncertain_variables:
                 self.add_random_vector(
                     name,
-                    *space.__random_vectors_to_settings[name],
+                    *space.__random_vector_names_to_settings[name],
                 )
                 self.set_current_variable(name, space._current_value[name])
             else:

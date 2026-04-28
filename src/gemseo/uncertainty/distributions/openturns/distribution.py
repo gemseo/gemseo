@@ -127,8 +127,8 @@ class OTDistribution(
         symbolic_function = SymbolicFunction(
             [self.DEFAULT_VARIABLE_NAME], [transformation]
         )
-        self.transformation = transformation.replace(
-            self.DEFAULT_VARIABLE_NAME, f"({self.transformation})"
+        self._transformation = transformation.replace(
+            self.DEFAULT_VARIABLE_NAME, f"({self._transformation})"
         )
         return CompositeDistribution(symbolic_function, distribution)
 
@@ -144,7 +144,7 @@ class OTDistribution(
         Returns:
             The transformed distributions.
         """
-        self.transformation = f"Trunc({self.transformation})"
+        self._transformation = f"Trunc({self._transformation})"
         if settings.lower_bound is None:
             if settings.upper_bound > self.math_upper_bound:
                 msg = "upper_bound is greater than the current upper bound."

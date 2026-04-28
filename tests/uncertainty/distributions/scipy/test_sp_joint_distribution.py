@@ -56,10 +56,6 @@ def joint_distribution(
     )
 
 
-def test_constructor(joint_distribution) -> None:
-    assert joint_distribution.transformation == "x"
-
-
 def test_str(joint_distribution) -> None:
     """Check the string representation of the joint probability distribution."""
     assert (

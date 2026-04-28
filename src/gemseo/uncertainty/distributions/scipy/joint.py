@@ -56,18 +56,19 @@ from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 class SPJointDistribution(BaseJointDistribution):
     """The SciPy-based joint probability distribution."""
 
-    Settings: ClassVar[type[SPJointDistribution_Settings]] = (
+    settings_class: ClassVar[type[SPJointDistribution_Settings]] = (
         SPJointDistribution_Settings
     )
 
-    def __init__(self, settings: SPJointDistribution_Settings) -> None:  # noqa: D107
-        super().__init__(settings)
-        if len(settings.marginal_settings) > 1:
-            self._get_string_representation = (
-                f"{self.__class__.__name__}"
-                f"({pretty_repr(self.marginals, sort=False)}; "
-                f"IndependentCopula)"
-            )
+    def __repr__(self) -> str:
+        if len(self._settings.marginal_settings) == 1:
+            return super().__repr__()
+
+        return (
+            f"{self.__class__.__name__}"
+            f"({pretty_repr(self.marginals, sort=False)}; "
+            f"IndependentCopula)"
+        )
 
     def _create_distribution(self, settings: SPJointDistribution_Settings) -> None:
         self.distribution = self.marginals

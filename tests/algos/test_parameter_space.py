@@ -31,6 +31,8 @@ from numpy import inf
 from numpy import ndarray
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
+from openturns import CorrelationMatrix
+from openturns import FrankCopula
 from openturns import NormalCopula
 
 from gemseo.algos.design_space import DesignSpace
@@ -41,6 +43,9 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 )
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.openturns.triangular_settings import (
+    OTTriangularDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
@@ -96,6 +101,19 @@ def mixed_space():
     space.add_variable("x1")
     space.add_variable("x2", value=0.0, lower_bound=0.0, upper_bound=1.0)
     space.add_random_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    return space
+
+
+@pytest.fixture
+def uncertain_space() -> ParameterSpace:
+    """An uncertain space, i.e. a parameter space with only uncertain variables."""
+    space = ParameterSpace()
+    space.add_random_vector("foo", OTNormalDistribution_Settings())
+    space.add_random_vector(
+        "bar", OTUniformDistribution_Settings(), OTUniformDistribution_Settings()
+    )
+    space.add_random_vector("baz", OTTriangularDistribution_Settings())
+    space.add_random_vector("qux", OTNormalDistribution_Settings())
     return space
 
 
@@ -174,6 +192,31 @@ def test_remove_variable() -> None:
     assert space.variable_names == ["x1", "y2"]
     assert space.uncertain_variables == ["y2"]
     assert "y1" not in space.distributions
+    assert "y1" not in space._ParameterSpace__random_vector_names_to_settings
+
+
+def test_remove_variable_if_copula() -> None:
+    """Check remove_variable in presence of copulas."""
+    space = ParameterSpace()
+    space.add_random_vector("a", OTNormalDistribution_Settings())
+    space.add_random_vector("b", OTNormalDistribution_Settings())
+    space.add_random_vector("c", OTNormalDistribution_Settings())
+    space.add_random_vector("d", OTNormalDistribution_Settings())
+    space.add_copula(NormalCopula(2), "a", "c")
+    space.add_copula(NormalCopula(2), "b", "d")
+    space.remove_variable("a")
+    assert space.uncertain_variables == ["b", "c", "d"]
+    assert repr(space.distribution) == (
+        "OTJointDistribution("
+        "Normal(mu=0.0, sigma=1.0), "
+        "Normal(mu=0.0, sigma=1.0), "
+        "Normal(mu=0.0, sigma=1.0); "
+        "MarginalDistribution("
+        "distribution=BlockIndependentCopula("
+        "NormalCopula(R = [[ 1 0 ]\n [ 0 1 ]]), "
+        "IndependentCopula(dimension = 1)), "
+        "indices=[0,2,1]))"
+    )
 
 
 def test_compute_samples() -> None:
@@ -278,11 +321,15 @@ def test_unnormalize(parameter_space, one_dim) -> None:
     assert allclose(vector, expectation, 1e-3)
 
 
-def test_str_and_tabularview() -> None:
+def test_str_and_tabular_view() -> None:
     """Check that str and unnormalize_vect work correctly."""
     space = ParameterSpace()
     space.add_variable("x")
-    space.add_random_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    space.add_random_vector(
+        "y",
+        SPNormalDistribution_Settings(mu=0.0, sigma=1.0),
+        SPNormalDistribution_Settings(mu=0.0, sigma=2.0),
+    )
     space.add_random_variable(
         "z", SPUniformDistribution_Settings(minimum=0.0, maximum=1.0)
     )
@@ -516,16 +563,29 @@ def test_mix_different_distribution_families(first, second) -> None:
         parameter_space.add_random_variable("y", second)
 
 
-def test_copula() -> None:
-    """Check build_joint_distribution."""
+def test_set_joint_distribution() -> None:
+    """Check set_joint_distribution."""
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable("x", OTNormalDistribution_Settings())
     parameter_space.add_random_variable("y", OTNormalDistribution_Settings(), size=2)
-    parameter_space.build_joint_distribution(NormalCopula(3))
+    parameter_space.add_copula(NormalCopula(3), "x", "y")
     assert (
-        parameter_space.distribution.distribution.getCopula().getName()
-        == "NormalCopula"
+        str(parameter_space.distribution.distribution.getCopula())
+        == "MarginalDistribution(distribution=BlockIndependentCopula("
+        "NormalCopula(R = [[ 1 0 0 ]\n [ 0 1 0 ]\n [ 0 0 1 ]])), indices=[0,1,2])"
     )
+
+
+def test_set_joint_distribution_with_sp_distributions() -> None:
+    """Check that set_joint_distribution raises an error with SciPy distibutions."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", SPNormalDistribution_Settings())
+    parameter_space.add_random_variable("y", SPNormalDistribution_Settings(), size=2)
+    with pytest.raises(
+        ValueError,
+        match=re.escape("SPJointDistribution does not support dependent variables."),
+    ):
+        parameter_space.add_copula(NormalCopula(3), "x", "y")
 
 
 @pytest.mark.parametrize(
@@ -811,3 +871,126 @@ def test_add_random_vector_from_settings_error(use_two_variables):
         ),
     ):
         parameter_space.add_random_vector("y", *settings)
+
+
+@pytest.mark.parametrize(
+    ("block_copulas", "expected"),
+    [
+        (
+            (),
+            # Only independent variables.
+            (
+                "OTJointDistribution("
+                "Normal(mu=0.0, sigma=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Triangular(lower=0.0, mode=0.5, upper=1.0), "
+                "Normal(mu=0.0, sigma=1.0); "
+                "IndependentCopula(dimension = 5))"
+            ),
+        ),
+        (
+            # Only dependent variables, passed in order of marginal distributions.
+            (
+                (
+                    ("foo", "bar"),
+                    NormalCopula(CorrelationMatrix(3)),
+                ),
+                (("baz", "qux"), FrankCopula()),
+            ),
+            (
+                "OTJointDistribution("
+                "Normal(mu=0.0, sigma=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Triangular(lower=0.0, mode=0.5, upper=1.0), "
+                "Normal(mu=0.0, sigma=1.0); "
+                "MarginalDistribution(distribution=BlockIndependentCopula("
+                "NormalCopula(R = [[ 1 0 0 ]\n [ 0 1 0 ]\n [ 0 0 1 ]]), "
+                "FrankCopula(theta = 2)), "
+                "indices=[0,1,2,3,4]))"
+            ),
+        ),
+        (
+            # Only dependent variables, passed in no particular order.
+            (
+                (("baz", "qux"), FrankCopula()),
+                (
+                    ("foo", "bar"),
+                    NormalCopula(CorrelationMatrix(3)),
+                ),
+            ),
+            (
+                "OTJointDistribution("
+                "Normal(mu=0.0, sigma=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Triangular(lower=0.0, mode=0.5, upper=1.0), "
+                "Normal(mu=0.0, sigma=1.0); "
+                "MarginalDistribution(distribution=BlockIndependentCopula("
+                "FrankCopula(theta = 2), "
+                "NormalCopula(R = [[ 1 0 0 ]\n [ 0 1 0 ]\n [ 0 0 1 ]])), "
+                "indices=[2,3,4,0,1]))"
+            ),
+        ),
+        # Only one dependent variable.
+        (
+            ((("bar",), NormalCopula(CorrelationMatrix(2))),),
+            (
+                "OTJointDistribution("
+                "Normal(mu=0.0, sigma=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Triangular(lower=0.0, mode=0.5, upper=1.0), "
+                "Normal(mu=0.0, sigma=1.0); "
+                "MarginalDistribution(distribution=BlockIndependentCopula("
+                "NormalCopula(R = [[ 1 0 ]\n [ 0 1 ]]), "
+                "IndependentCopula(dimension = 3)), "
+                "indices=[2,0,1,3,4]))"
+            ),
+        ),
+        # Only one copula but two dependent variables.
+        (
+            ((("bar", "qux"), NormalCopula(CorrelationMatrix(3))),),
+            (
+                "OTJointDistribution("
+                "Normal(mu=0.0, sigma=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Uniform(lower=0.0, upper=1.0), "
+                "Triangular(lower=0.0, mode=0.5, upper=1.0), "
+                "Normal(mu=0.0, sigma=1.0); "
+                "MarginalDistribution(distribution=BlockIndependentCopula("
+                "NormalCopula(R = [[ 1 0 0 ]\n [ 0 1 0 ]\n [ 0 0 1 ]]), "
+                "IndependentCopula(dimension = 2)), "
+                "indices=[3,0,1,4,2]))"
+            ),
+        ),
+    ],
+)
+def test_joint_distribution(uncertain_space, block_copulas, expected):
+    """Check the joint distribution."""
+    for names, copula in block_copulas:
+        uncertain_space.add_copula(copula, *names)
+    assert str(uncertain_space.distribution) == expected
+
+
+def test_copula_error_missing_variable():
+    """Verify that an error is raised when a copula is defined
+    using a variable name before the variable has been declared."""
+    space = ParameterSpace()
+    with pytest.raises(ValueError, match=re.escape("There is no variable name 'x'.")):
+        space.add_copula(NormalCopula(2), "x")
+
+
+def test_copula_error_already_copula():
+    """Verify that an error is raised when a copula is defined
+    using a variable name for which a copula is already defined."""
+    space = ParameterSpace()
+    space.add_random_vector(
+        "x", OTNormalDistribution_Settings(), OTNormalDistribution_Settings()
+    )
+    space.add_copula(NormalCopula(2), "x")
+    with pytest.raises(
+        ValueError, match=re.escape("The random variable 'x' has already a copula.")
+    ):
+        space.add_copula(NormalCopula(2), "x")

@@ -103,9 +103,6 @@ from numpy import column_stack
 from gemseo.typing import RealArray
 from gemseo.typing import StrKeyMapping
 from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseGenericDistributionSettings,
-)
 from gemseo.uncertainty.distributions.factory import DISTRIBUTION_FACTORY
 
 if TYPE_CHECKING:
@@ -128,7 +125,7 @@ class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
     used to describe the dependence between these $d$ random variables.
     """
 
-    Settings: ClassVar[type[BaseJointDistributionSettings]]
+    settings_class: ClassVar[type[BaseJointDistributionSettings]]
 
     __marginals: list[BaseDistribution]
     """The marginal probability distributions."""
@@ -142,12 +139,10 @@ class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
             DISTRIBUTION_FACTORY.create_from_settings(settings)
             for settings in settings.marginal_settings
         ]
-        super().__init__(
-            BaseGenericDistributionSettings(
-                interfaced_distribution="Joint", parameters=(settings,)
-            )
-        )
-        self._get_string_representation = repr(self.__marginals[0])
+        super().__init__(settings)
+
+    def __repr__(self) -> str:
+        return repr(self.__marginals[0])
 
     @property
     def marginals(self) -> Sequence[BaseDistribution]:

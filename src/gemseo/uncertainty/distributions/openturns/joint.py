@@ -24,7 +24,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
+from openturns import BlockIndependentCopula
+from openturns import DistributionImplementation
 from openturns import IndependentCopula
+from openturns import MarginalDistribution
 
 from gemseo.uncertainty.distributions.openturns.joint_settings import (
     OTJointDistribution_Settings,
@@ -45,34 +48,67 @@ from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 class OTJointDistribution(BaseJointDistribution):
     """The OpenTURNS-based joint probability distribution."""
 
-    Settings: ClassVar[type[OTJointDistribution_Settings]] = (
+    settings_class: ClassVar[type[OTJointDistribution_Settings]] = (
         OTJointDistribution_Settings
     )
 
-    def __init__(self, settings: OTJointDistribution_Settings) -> None:  # noqa: D107
-        super().__init__(settings)
-        if len(settings.marginal_settings) > 1:
-            name = (
-                "IndependentCopula"
-                if settings.copula is None
-                else settings.copula.__class__.__name__
-            )
-            self._get_string_representation = (
-                f"{self.__class__.__name__}"
-                f"({pretty_repr(self.marginals, sort=False)}; "
-                f"{name})"
-            )
+    def __repr__(self) -> str:
+        if len(self._settings.marginal_settings) == 1:
+            return super().__repr__()
+
+        return (
+            f"{self.__class__.__name__}"
+            f"({pretty_repr(self.marginals, sort=False)}; "
+            f"{self.distribution.getCopula()})"
+        )
 
     def _create_distribution(self, settings: OTJointDistribution_Settings) -> None:
-        if settings.parameters[0].copula is None:
+        copula = settings.copula
+        if copula == ():
             copula = IndependentCopula(len(self.marginals))
-        else:
-            copula = settings.parameters[0].copula
+        elif not isinstance(copula, DistributionImplementation):
+            copula = self.__create_block_independent_copula(copula)
+
         self.distribution = JointDistribution(
             [marginal.distribution for marginal in self.marginals],
             copula,
         )
         self._set_bounds(self.marginals)
+
+    def __create_block_independent_copula(
+        self, blocks: Iterable[tuple[tuple[int, ...], DistributionImplementation]]
+    ) -> MarginalDistribution:
+        """Create a block-independent copula.
+
+        Args:
+            blocks: A collection of independent blocks
+                defined by random variables and copulas.
+
+        Returns:
+            The block-independent copula.
+        """
+        dimension = self.dimension
+        remaining_indices = tuple(
+            set(range(dimension))
+            - {index for indices, _ in blocks for index in indices}
+        )
+        extended_blocks = list(blocks)
+        if remaining_indices:
+            extended_blocks.append((
+                remaining_indices,
+                IndependentCopula(len(remaining_indices)),
+            ))
+
+        permutations = []
+        for indices, _ in extended_blocks:
+            permutations.extend(indices)
+
+        inverse_permutations = [0] * dimension
+        for index, original_index in enumerate(permutations):
+            inverse_permutations[original_index] = index
+
+        copula = BlockIndependentCopula([copula for _, copula in extended_blocks])
+        return MarginalDistribution(copula, inverse_permutations)
 
     def compute_samples(  # noqa: D102
         self,

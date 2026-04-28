@@ -78,7 +78,7 @@ def test_distribution_dimension_error(fitter) -> None:
         KeyError,
         match=re.escape(
             "OTJointDistribution(Normal(mu=0.0, sigma=1.0), Normal(mu=0.0, sigma=1.0); "
-            "IndependentCopula)"
+            "IndependentCopula(dimension = 2))"
         ),
     ):
         fitter.compute_measure(ot_joint_distribution, "BIC")

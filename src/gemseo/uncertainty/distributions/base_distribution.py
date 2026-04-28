@@ -77,9 +77,7 @@ method.
 from __future__ import annotations
 
 from abc import abstractmethod
-from collections.abc import Mapping
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import ClassVar
 from typing import Final
 from typing import Generic
@@ -89,17 +87,11 @@ from numpy import array
 
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
-from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from types import ModuleType
-
     from gemseo.typing import RealArray
     from gemseo.uncertainty.distributions.base_distribution_settings import (
         BaseDistributionSettings,
-    )
-    from gemseo.uncertainty.distributions.base_distribution_settings import (
-        BaseGenericDistributionSettings,
     )
 
 _DistributionT = TypeVar("_DistributionT")
@@ -140,7 +132,7 @@ class BaseDistribution(
     num_upper_bound: _VariableT
     """The numerical upper bound of the random variable."""
 
-    transformation: str
+    _transformation: str
     """The transformation applied to the random variable noted `"x"`.
 
     E.g. `"sin(x)"`.
@@ -165,16 +157,15 @@ class BaseDistribution(
     _file_path_manager: FilePathManager
     """A manager of file paths for a given type of file and with default settings."""
 
-    _string_representation: str
-    """The string representation of the distribution."""
+    _settings: BaseDistributionSettings
+    """The settings of the probability distribution."""
 
     _WEBSITE: ClassVar[str]
     """The website of the library implementing the probability distributions."""
 
-    _settings: BaseDistributionSettings
     """The settings of the probability distribution used to create it."""
 
-    def __init__(self, settings: BaseGenericDistributionSettings | None = None) -> None:
+    def __init__(self, settings: BaseDistributionSettings | None = None) -> None:
         """
         Args:
             settings: The settings of the probability distribution.
@@ -184,63 +175,20 @@ class BaseDistribution(
             settings = self.settings_class()
 
         self._settings = settings
-
-        self.transformation = self.DEFAULT_VARIABLE_NAME
+        self._transformation = self.DEFAULT_VARIABLE_NAME
         self._file_path_manager = FilePathManager(
             FilePathManager.FileType.FIGURE,
             default_name="distribution",
         )
-        parameters = settings.standard_parameters or settings.parameters
-        self._get_string_representation = (
-            f"{settings.interfaced_distribution}({pretty_str(parameters, sort=False)})"
-        )
         self._create_distribution(settings)
 
     @abstractmethod
-    def _create_distribution(self, settings: BaseGenericDistributionSettings) -> None:
+    def _create_distribution(self, settings: BaseDistributionSettings) -> None:
         """Create the probability distribution.
 
         Args:
             settings: settings of the probability distribution.
         """
-
-    def _create_distribution_from_module(
-        self, module: ModuleType, settings: BaseGenericDistributionSettings
-    ) -> Any:
-        """Create a distribution from a module.
-
-        Args:
-            module: The module.
-            settings: The settings of the distribution.
-
-        Returns:
-            The distribution.
-
-        Raises:
-            ValueError: When the distribution cannot be created from the module.
-        """
-        distribution_name = settings.interfaced_distribution
-        parameters = settings.parameters
-        try:
-            create_distribution = getattr(module, distribution_name)
-        except BaseException:  # noqa: BLE001
-            msg = f"{distribution_name} cannot be imported from {module.__name__}."
-            raise ImportError(msg) from None
-
-        try:
-            if isinstance(parameters, Mapping):
-                return create_distribution(**parameters)
-
-            return create_distribution(*parameters)
-        except BaseException:  # noqa: BLE001
-            msg = (
-                f"The arguments of {self._get_string_representation} are wrong; "
-                f"more details on {self._WEBSITE}."
-            )
-            raise ValueError(msg) from None
-
-    def __repr__(self) -> str:
-        return self._get_string_representation
 
     @abstractmethod
     def compute_samples(

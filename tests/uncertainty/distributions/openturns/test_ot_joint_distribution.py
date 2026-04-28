@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import re
 
 import pytest
 from numpy import allclose
@@ -36,23 +36,17 @@ from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
 
 @pytest.fixture(scope="module")
-def distribution_settings() -> list[OTNormalDistribution_Settings]:
-    """Two normal distribution settings."""
-    return [OTNormalDistribution_Settings(), OTNormalDistribution_Settings()]
-
-
-@pytest.fixture(scope="module")
-def joint_distribution(
-    distribution_settings: Sequence[OTNormalDistribution_Settings],
-) -> OTJointDistribution:
+def joint_distribution() -> OTJointDistribution:
     """A joint probability distribution."""
     return OTJointDistribution(
-        OTJointDistribution_Settings(marginal_settings=distribution_settings)
+        OTJointDistribution_Settings(
+            marginal_settings=[
+                OTNormalDistribution_Settings(),
+                OTNormalDistribution_Settings(),
+            ]
+        )
     )
 
 
@@ -65,7 +59,7 @@ def joint_distribution(
             (
                 "OTJointDistribution("
                 "Normal(mu=0.0, sigma=1.0), Normal(mu=0.0, sigma=1.0); "
-                "IndependentCopula)"
+                "IndependentCopula(dimension = 2))"
             ),
         ),
     ],
@@ -84,24 +78,6 @@ def test_repr(joint_distribution, n_marginals, expected) -> None:
     )
 
 
-def test_constructor(joint_distribution) -> None:
-    assert joint_distribution.transformation == "x"
-
-
-def test_copula(distribution_settings) -> None:
-    """Check the use of an OpenTURNS copula."""
-    distribution = OTJointDistribution(
-        OTJointDistribution_Settings(
-            marginal_settings=distribution_settings, copula=NormalCopula(2)
-        )
-    )
-    assert repr(distribution) == (
-        "OTJointDistribution("
-        "Normal(mu=0.0, sigma=1.0), Normal(mu=0.0, sigma=1.0); NormalCopula)"
-    )
-    assert distribution.distribution.getCopula().getName() == "NormalCopula"
-
-
 def test_str(joint_distribution) -> None:
     """Check the string representation of the joint probability distribution."""
     assert (
@@ -111,7 +87,7 @@ def test_str(joint_distribution) -> None:
             "OTJointDistribution("
             "Normal(mu=0.0, sigma=1.0), "
             "Normal(mu=0.0, sigma=1.0); "
-            "IndependentCopula"
+            "IndependentCopula(dimension = 2)"
             ")"
         )
     )
@@ -151,3 +127,96 @@ def test_range(joint_distribution) -> None:
     expectation = array([-7.650628, 7.650628])
     for element in joint_distribution.range:
         assert allclose(element, expectation, 1e-3)
+
+
+def test_copula() -> None:
+    """Check the use of an OpenTURNS copula."""
+    distribution = OTJointDistribution(
+        OTJointDistribution_Settings(
+            marginal_settings=[OTNormalDistribution_Settings()] * 2,
+            copula=NormalCopula(2),
+        )
+    )
+    assert repr(distribution) == (
+        "OTJointDistribution("
+        "Normal(mu=0.0, sigma=1.0), Normal(mu=0.0, sigma=1.0); "
+        "NormalCopula(R = [[ 1 0 ]\n [ 0 1 ]]))"
+    )
+    assert distribution.distribution.getCopula().getName() == "NormalCopula"
+
+
+def test_copula_dimension_error():
+    """Check that an error is raised
+    when the copula dimension does not match the number of marginals."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The dimension of the copula must be equal "
+            "to the number of marginals (1); got 2."
+        ),
+    ):
+        OTJointDistribution_Settings(
+            marginal_settings=[OTNormalDistribution_Settings()],
+            copula=NormalCopula(2),
+        )
+
+
+def test_copula_dimension_error_if_sub_copulas():
+    """Check that an error is raised
+    when the copula dimension does not match the number of marginals
+    and the copula uses block-independent copulas."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The sum of the dimensions of the block-independent copulas "
+            "must be less than or equal to the number of marginals (1)."
+        ),
+    ):
+        OTJointDistribution_Settings(
+            marginal_settings=[OTNormalDistribution_Settings()],
+            copula=(((0, 1), NormalCopula(2)),),
+        )
+
+
+def test_sub_copula_dimension_error():
+    """Check that an error is raised
+    when the dimension of a block-independent copula does not match
+    the number of marginals."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The dimension of the block-independent copula at position 0 "
+            "must be equal to the number of components (1); got 2."
+        ),
+    ):
+        OTJointDistribution_Settings(
+            marginal_settings=[OTNormalDistribution_Settings()],
+            copula=(((0,), NormalCopula(2)),),
+        )
+
+
+def test_copula_indices_error():
+    """Check that an error is raised
+    when a component associated with a block-independent copula is out of range."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The components must be in the range [0, n_marginals - 1], i.e. [0, 1]."
+        ),
+    ):
+        OTJointDistribution_Settings(
+            marginal_settings=[OTNormalDistribution_Settings()] * 2,
+            copula=(((0, 2), NormalCopula(2)),),
+        )
+
+
+def test_duplication_error():
+    """Check the error raised when adding two copulas to the same variable."""
+    with pytest.raises(
+        ValueError,
+        match=re.escape("A component cannot have more than one copula."),
+    ):
+        OTJointDistribution_Settings(
+            marginal_settings=[OTNormalDistribution_Settings()] * 2,
+            copula=(((0,), NormalCopula(1)), ((0,), NormalCopula(1))),
+        )
