@@ -24,18 +24,24 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 
 from matplotlib import pyplot as plt
 from numpy import arange
 
 from gemseo.utils.matplotlib_figure import save_show_figure
+from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from types import ModuleType
 
     from matplotlib.figure import Figure
 
+    from gemseo.uncertainty.distributions.base_distribution_settings import (
+        BaseGenericDistributionSettings,
+    )
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
 
 StandardParametersType = Mapping[str, str | int | float]
@@ -131,3 +137,50 @@ class ScalarDistributionMixin:
         Returns:
             The CDF value for the probability level.
         """
+
+    def _create_distribution_from_module(
+        self, module: ModuleType, settings: BaseGenericDistributionSettings
+    ) -> Any:
+        """Create a distribution from a module.
+
+        Args:
+            module: The module.
+            settings: The settings of the distribution.
+
+        Returns:
+            The distribution.
+
+        Raises:
+            ValueError: When the distribution cannot be created from the module.
+        """
+        distribution_name = settings.interfaced_distribution
+        parameters = settings.parameters
+        try:
+            create_distribution = getattr(module, distribution_name)
+        except BaseException:  # noqa: BLE001
+            msg = f"{distribution_name} cannot be imported from {module.__name__}."
+            raise ImportError(msg) from None
+
+        try:
+            if isinstance(parameters, Mapping):
+                return create_distribution(**parameters)
+
+            return create_distribution(*parameters)
+        except BaseException:  # noqa: BLE001
+            msg = f"The arguments of {self} are wrong; more details on {self._WEBSITE}."
+            raise ValueError(msg) from None
+
+    def __repr__(self) -> str:
+        parameters = self._settings.standard_parameters or self._settings.parameters
+        return (
+            f"{self._settings.interfaced_distribution}"
+            f"({pretty_str(parameters, sort=False)})"
+        )
+
+    @property
+    def transformation(self) -> str:
+        """The transformation applied to the random variable noted `"x"`.
+
+        E.g. `"sin(x)"`.
+        """
+        return self._transformation
