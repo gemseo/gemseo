@@ -95,6 +95,6 @@ which return the samples as a two-dimensional NumPy array.
 The quality of the input samples can be assessed with a [DOEQuality][gemseo.algos.doe.doe_quality.DOEQuality] computing the $\varphi_p$, minimum-distance and discrepancy criteria. The smaller these quality measures, the better, except for the minimum-distance criterion for which the larger it is the better. The qualities can be compared with logical operations, with `DOEQuality(doe_1) > DOEQuality(doe_2)` meaning that `doe_1` is better than `doe_2`.
 
 !!! note
-    When numerical metrics are not sufficient to compare two input samples sets, graphical indicators (e.g. [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix]) could be considered.
+    When numerical metrics are not sufficient to compare two input samples sets, graphical indicators (e.g. [PairPlot][gemseo.post.dataset.pair_plot.PairPlot]) could be considered.
 
 Lastly, a [BaseDOELibrary][gemseo.algos.doe.base_doe_library.BaseDOELibrary] has a [seed][gemseo.algos.doe.base_doe_library.BaseDOELibrary.seed] initialized at 0 and each call to [execute()][gemseo.algos.doe.base_doe_library.BaseDOELibrary.execute] increments it before using it. Thus, two executions generate two distinct set of input-output samples. For the sake of reproducibility, you can pass your own seed to [execute()][gemseo.algos.doe.base_doe_library.BaseDOELibrary.execute] as a DOE option.

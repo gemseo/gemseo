@@ -36,7 +36,7 @@ from gemseo import create_scenario
 from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
-from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
+from gemseo.post.dataset.pair_plot import PairPlot
 
 # %%
 # ## Create the discipline
@@ -75,7 +75,7 @@ scenario = create_scenario(
 )
 scenario.execute(DiagonalDOE_Settings(n_samples=10))
 dataset = scenario.to_dataset(opt_naming=False)
-ScatterMatrix(dataset).execute(save=False, show=True)
+PairPlot(dataset).execute(save=False, show=True)
 
 # %%
 # ## Sample with reverse mode for $y$
@@ -83,7 +83,7 @@ ScatterMatrix(dataset).execute(save=False, show=True)
 # We can also change the configuration
 # in order to select another diagonal of the input space,
 # e.g. increasing $x$ and decreasing $y$.
-# This configuration is illustrated in the new [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix] plot
+# This configuration is illustrated in the new [PairPlot][gemseo.post.dataset.pair_plot.PairPlot] plot
 # where the $(x,y)$ points follow the $t\mapsto -t$ line
 # while  the $(x,y)$ points follow the $t\mapsto t$ line
 # with the default configuration.
@@ -95,4 +95,4 @@ scenario = create_scenario(
 )
 scenario.execute(DiagonalDOE_Settings(n_samples=10, reverse=["y"]))
 dataset = scenario.to_dataset(opt_naming=False)
-ScatterMatrix(dataset).execute(save=False, show=True)
+PairPlot(dataset).execute(save=False, show=True)

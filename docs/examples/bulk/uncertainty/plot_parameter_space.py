@@ -30,7 +30,7 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import sample_disciplines
 from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
+from gemseo.post.dataset.pair_plot import PairPlot
 from gemseo.settings.probability_distributions import SPNormalDistribution_Settings
 
 # %%
@@ -150,8 +150,8 @@ dataset
 
 # %%
 # or with a graphical post-processing,
-# e.g. a scatter plot matrix:
-ScatterMatrix(dataset).execute(save=False, show=True)
+# e.g. a pair plot
+PairPlot(dataset).execute(save=False, show=True)
 
 # %%
 # ## Sample a discipline over the uncertain space

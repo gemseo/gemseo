@@ -45,8 +45,8 @@ from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Set
 from gemseo.machine_learning.clustering.quality.silhouette_measure import (
     SilhouetteMeasure,
 )
-from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
+from gemseo.post.dataset.pair_plot import PairPlot
+from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 
 # %%
 # ### 1. Create the training dataset
@@ -87,10 +87,21 @@ model.predict(input_value)
 # %%
 # ### 5. Visualize predictions
 training_dataset.add_variable("km_specy", model.labels.reshape((-1, 1)), "labels")
-scatter_matrix = ScatterMatrix(
-    training_dataset, ScatterMatrix_Settings(kde=True, classifier="km_specy")
+pair_plot = PairPlot(
+    training_dataset,
+    PairPlot_Settings(
+        use_kde=True,
+        classifier="km_specy",
+        variable_names=(
+            "sepal_length",
+            "petal_length",
+            "sepal_width",
+            "petal_width",
+            "km_specy",
+        ),
+    ),
 )
-scatter_matrix.execute(save=False)
+pair_plot.execute(save=False, show=True)
 
 # %%
 # ## Summary

@@ -29,7 +29,7 @@ def test_instantiate_factory() -> None:
 
 def test_is_available() -> None:
     factory = DatasetPlotFactory()
-    assert factory.is_available("ScatterMatrix")
+    assert factory.is_available("PairPlot")
     assert factory.is_available("ParallelCoordinates")
     assert not factory.is_available("DummyPlot")
 
@@ -37,4 +37,4 @@ def test_is_available() -> None:
 def test_create() -> None:
     factory = DatasetPlotFactory()
     dataset = create_rosenbrock_dataset()
-    factory.create("ScatterMatrix", dataset=dataset)
+    factory.create("PairPlot", dataset=dataset)
