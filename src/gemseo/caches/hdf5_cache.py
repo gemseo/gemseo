@@ -35,7 +35,6 @@ from gemseo.utils.locks import synchronized
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from multiprocessing.synchronize import RLock as RLockType
 
     from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.typing import JacobianData
@@ -92,11 +91,12 @@ class HDF5Cache(BaseFullCache):
             [MDOScenario.set_backup_settings()][gemseo.scenarios.mdo.MDOScenario.set_backup_settings]
             is recommended as an alternative.
         """  # noqa: D205, D212, D415
+        super().__init__(tolerance, name or hdf_node_path)
         self.__input_data_converter = input_data_converter
         self.__output_data_converter = output_data_converter
         self.__hdf_node_path = hdf_node_path
         self.__hdf_file = HDF5FileSingleton(str(hdf_file_path))
-        super().__init__(tolerance, name or hdf_node_path)
+        self._lock = self.__hdf_file.lock
         self._read_hashes()
 
     @property
@@ -115,18 +115,6 @@ class HDF5Cache(BaseFullCache):
         mls.add("HDF node path: {}", self.__hdf_node_path)
         return mls
 
-    def __getstate__(self) -> dict[str, float | str]:
-        # Pickle __init__ arguments so to call it when unpickling.
-        return {
-            "tolerance": self._tolerance,
-            "hdf_file_path": self.__hdf_file.hdf_file_path,
-            "hdf_node_path": self.__hdf_node_path,
-            "name": self.name,
-        }
-
-    def __setstate__(self, state: StrKeyMapping) -> None:
-        self.__class__.__init__(self, **state)
-
     def _copy_empty_cache(self) -> HDF5Cache:
         file_path = Path(self.__hdf_file.hdf_file_path)
         return self.__class__(
@@ -135,9 +123,6 @@ class HDF5Cache(BaseFullCache):
             tolerance=self._tolerance,
             name=self.name,
         )
-
-    def _get_lock(self) -> RLockType:
-        return self.__hdf_file.lock
 
     @synchronized
     def _read_hashes(self) -> None:
@@ -244,3 +229,7 @@ class HDF5Cache(BaseFullCache):
             hdf_file_path: A HDF5 file path.
         """
         HDF5FileSingleton.update_file_format(hdf_file_path)
+
+    def __setstate__(self, state):
+        super().__setstate__(state)
+        self._read_hashes()

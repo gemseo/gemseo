@@ -22,8 +22,8 @@ from __future__ import annotations
 import logging
 import pickle
 import re
+from multiprocessing import get_start_method
 from pathlib import Path
-from sys import platform
 from typing import TYPE_CHECKING
 
 import pytest
@@ -166,16 +166,16 @@ def test_evaluate_samples_multiproc_with_observables(
         assert data["obj"] == float(i)
         assert data["obs"] == float(i + 1)
 
-    # In multi-processing mode,
+    # In multiprocessing mode,
     # the disciplinary calls are only made on the worker processes
-    # Under Linux, the counters are updated from the subprocesses counters,
+    # Under Linux with fork, the counters are updated from the subprocesses counters,
     # Under Windows, the discipline counters on the main process are not updated.
     # Without leveraging the cache mechanism,
     # the discipline shall be called 8 times.
-    if platform == "win32":
-        assert disc.execution_statistics.n_executions == 0
-    else:
+    if get_start_method() == "fork":
         assert disc.execution_statistics.n_executions == 8
+    else:
+        assert disc.execution_statistics.n_executions == 0
 
 
 @pytest.fixture(scope="module")

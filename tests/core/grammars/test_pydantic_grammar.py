@@ -18,6 +18,7 @@ import pickle
 import re
 from enum import Enum
 from enum import auto
+from platform import python_version
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -220,16 +221,10 @@ def test_convert_to_simple_grammar_warnings(model2, caplog) -> None:
     grammar = PydanticGrammar("g", model=model2)
     grammar.to_simple_grammar()
     assert caplog.records[0].levelname == "WARNING"
-    assert caplog.messages[0] in (
-        (
-            "Unsupported type '<class 'types.UnionType'>' in PydanticGrammar 'g' for "
-            "field 'name2' in conversion to SimpleGrammar."
-        ),
-        # For python 3.9.
-        (
-            "Unsupported type 'typing.Union' in PydanticGrammar 'g' for "
-            "field 'name2' in conversion to SimpleGrammar."
-        ),
+    union_type = "typing.Union" if python_version() >= "3.14" else "types.UnionType"
+    assert caplog.messages[0] == (
+        f"Unsupported type '<class '{union_type}'>' in PydanticGrammar 'g' for "
+        "field 'name2' in conversion to SimpleGrammar."
     )
 
 

@@ -9,6 +9,7 @@ RUN  dnf -y update \
                     python311 \
                     python312 \
                     python313 \
+                    python314 \
                     graphviz \
                     git \
                     just \
