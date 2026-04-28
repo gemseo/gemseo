@@ -23,7 +23,6 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from genericpath import exists
-from multiprocessing import RLock
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -40,6 +39,7 @@ from gemseo.caches.base_cache import BaseCache
 from gemseo.caches.utils import hash_data
 from gemseo.caches.utils import to_real
 from gemseo.utils.compatibility.scipy import sparse_classes
+from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
 
 if TYPE_CHECKING:
@@ -103,8 +103,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         self.__file = None
         self.hdf_file_path = hdf_file_path
         self.__check_file_format_version()
-        # Attach the lock to the file and NOT the Cache because it is a singleton.
-        self._lock = RLock()
+        self._lock = get_multi_processing_manager().RLock()
 
     @property
     def lock(self) -> RLockType:
@@ -152,7 +151,6 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                     else:
                         entry_group[name] = to_real(value)
 
-            # IOError and RuntimeError are for python 2.7
             except (RuntimeError, OSError, ValueError):
                 msg = "Failed to cache dataset %s.%s.%s in file: %s"
                 raise RuntimeError(
@@ -443,4 +441,14 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         """Close the file handle."""
         assert self.__file is not None
         self.__file.close()
+        self.__file = None
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        # The hd5py file handle is not pickable.
+        del state["_HDF5FileSingleton__file"]
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
         self.__file = None

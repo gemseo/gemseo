@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 from copy import copy
-from multiprocessing import RLock
 from typing import TYPE_CHECKING
 from typing import Literal
 from typing import cast
@@ -35,7 +34,6 @@ from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
 if TYPE_CHECKING:
     from multiprocessing.managers import DictProxy
-    from multiprocessing.synchronize import RLock as RLockType
 
     from gemseo.typing import JacobianData
     from gemseo.typing import StrKeyMapping
@@ -86,9 +84,6 @@ class MemoryFullCache(BaseFullCache):
         index: int,
     ) -> None:
         self.__data[index] = {}
-
-    def _get_lock(self) -> RLockType:
-        return RLock()
 
     def _has_group(
         self,

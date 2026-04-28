@@ -70,18 +70,20 @@ class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineD
         inputs: Sequence[StrKeyMapping],
         exec_callbacks: Iterable[CallbackType] = (),
         task_submitted_callback: Callable[[], None] | None = None,
+        preprocessors: Iterable[Callable[[int], None]] = (),
     ) -> list[DisciplineData | None]:
         ordered_outputs = super().execute(
             inputs,
             exec_callbacks=exec_callbacks,
             task_submitted_callback=task_submitted_callback,
+            preprocessors=preprocessors,
         )
 
         if len(self._disciplines) == 1 or len(self._disciplines) != len(inputs):
             if (
                 not self.use_threading
                 and self.MULTI_PROCESSING_START_METHOD
-                == self.MultiProcessingStartMethod.SPAWN
+                != self.MultiProcessingStartMethod.FORK
                 and ExecutionStatistics.is_enabled
             ):
                 self._disciplines[0].execution_statistics.n_executions += len(inputs)  # type: ignore[operator] # checked with activate_counter

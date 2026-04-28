@@ -137,7 +137,7 @@ def test_failure_zero_division_error(a_crashing_analytic_discipline, caplog) -> 
     In order to catch the ZeroDivisionError, set n_trials=1
     """
     disc = RetryDiscipline(a_crashing_analytic_discipline, n_trials=1)
-    with pytest.raises(ZeroDivisionError, match="float division by zero"):
+    with pytest.raises(ZeroDivisionError, match="division by zero"):
         disc.execute({"x": array([0.0])})
 
     assert disc.local_data == {"x": array([0.0])}
@@ -172,7 +172,7 @@ def test_failure_zero_division_error_n_trials(
         n_trials=n_trials,
         fatal_exceptions=fatal_exceptions,
     )
-    with pytest.raises(ZeroDivisionError, match="float division by zero"):
+    with pytest.raises(ZeroDivisionError, match="division by zero"):
         disc.execute({"x": array([0.0])})
 
     assert disc.n_executions == 1
@@ -225,7 +225,7 @@ def test_1_3times_failing(a_crashing_analytic_discipline, n_trials, caplog) -> N
         a_crashing_analytic_discipline,
         n_trials=n_trials,
     )
-    with pytest.raises(ZeroDivisionError, match="float division by zero"):
+    with pytest.raises(ZeroDivisionError, match="division by zero"):
         disc.execute({"x": array([0.0])})
 
     assert disc.n_executions == n_trials
@@ -251,7 +251,7 @@ def test_2fails_then_succeed() -> None:
     assert disc.execution_status.value == ExecutionStatus.Status.DONE
 
 
-THREAD_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 0.1
+THREAD_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 1.0
 PROCESS_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 2.0
 
 

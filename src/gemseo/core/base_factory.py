@@ -175,7 +175,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         # Import the plugins packages.
 
         # Do not search the current working directory.
-        # See https://docs.python.org/3.9/library/sys.html#sys.path
+        # See https://docs.python.org/3/library/sys.html#sys.path
         sys_path = list(sys.path)
         sys_path.pop(0)
 

@@ -19,6 +19,8 @@
 from __future__ import annotations
 
 import pickle
+from multiprocessing import get_start_method
+from platform import python_version
 
 import pytest
 from numpy import array
@@ -103,7 +105,10 @@ def mdf_variable_grammar_doe_scenario(request):
 
 
 @pytest.mark.usefixtures("tmp_wd")
-@pytest.mark.skip_under_windows
+@pytest.mark.skipif(
+    get_start_method() != "fork",
+    reason="Only works with multiprocessing fork",
+)
 def test_parallel_doe_hdf_cache(caplog) -> None:
     disciplines = create_discipline([
         "SobieskiStructure",
@@ -256,7 +261,11 @@ def test_other_exceptions_caught(caplog) -> None:
     scenario.add_objective("y")
     with pytest.raises(InvalidDataError):
         scenario.execute(CustomDOE_Settings(samples=array([[0.0]])))
-    assert "0.0 cannot be raised to a negative power" in caplog.text
+    if python_version() >= "3.14":
+        msg = "zero to a negative power"
+    else:
+        msg = "0.0 cannot be raised to a negative power"
+    assert msg in caplog.text
 
 
 def test_export_to_dataset_with_repeated_inputs() -> None:

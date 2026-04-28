@@ -23,10 +23,12 @@ from __future__ import annotations
 import contextlib
 import logging
 import os
+import platform
 import re
 from pathlib import Path
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
+from pickle import PickleError
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from unittest.mock import MagicMock
@@ -361,7 +363,9 @@ def test_serialize_deserialize(tmp_wd) -> None:
         return ["numpy_test"]
 
     aero.get_attributes_to_serialize = attr_list
-    with pytest.raises(AttributeError):
+
+    exception = PickleError if platform.python_version() >= "3.14" else AttributeError
+    with pytest.raises(exception):
         to_pickle(aero, out_file)
 
     saero_u_dict = saero_u.__dict__
