@@ -55,14 +55,14 @@ from numpy.random import default_rng
 from gemseo import create_benchmark_dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
+from gemseo.post.dataset.pair_plot import PairPlot
+from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.post.dataset.parallel_coordinates_settings import (
     ParallelCoordinates_Settings,
 )
 from gemseo.post.dataset.radviz import RadViz
 from gemseo.post.dataset.radviz_settings import RadViz_Settings
-from gemseo.post.dataset.scatter_plot_matrix import ScatterMatrix
-from gemseo.post.dataset.scatter_plot_matrix_settings import ScatterMatrix_Settings
 
 rng = default_rng(1)
 
@@ -104,13 +104,13 @@ iris.get_view(group_names="labels", indices=samples)
 # samples are colored according to their labels.
 
 # %%
-# ### Plot scatter matrix
+# ### Plot pair plot
 #
-# We can use the [ScatterMatrix][gemseo.post.dataset.scatter_plot_matrix.ScatterMatrix] plot where each non-diagonal block
+# We can use the [PairPlot][gemseo.post.dataset.pair_plot.PairPlot] plot where each non-diagonal block
 # represents the samples according to the x- and y- coordinates names
 # while the diagonal ones approximate the probability distributions of the
 # variables, using either an histogram or a kernel-density estimator.
-ScatterMatrix(iris, ScatterMatrix_Settings(classifier="specy", kde=True)).execute(
+PairPlot(iris, PairPlot_Settings(classifier="specy", use_kde=True)).execute(
     save=False, show=True
 )
 
