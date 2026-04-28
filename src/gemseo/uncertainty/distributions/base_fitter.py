@@ -123,7 +123,7 @@ class BaseDistributionFitter(
         Args:
             distribution: Either a GEMSEO probability distribution
                 fitted to
-                [data][gemseo.uncertainty.distributions.base_distribution_fitter.BaseDistributionFitter.data]
+                [data][gemseo.uncertainty.distributions.base_fitter.BaseDistributionFitter.data]
                 or the name of a probability distribution in the UQ library.
             criterion: The name of the fitting criterion
                 to measure the goodness-of-fit of the probability distribution.
@@ -199,7 +199,7 @@ class BaseDistributionFitter(
         Args:
             distributions: A collection of GEMSEO probability distributions
                 fitted to
-                [data][gemseo.uncertainty.distributions.base_distribution_fitter.BaseDistributionFitter.data]
+                [data][gemseo.uncertainty.distributions.base_fitter.BaseDistributionFitter.data]
                 or names of probability distributions in the UQ library.
             fitting_criterion: The name of the fitting criterion
                 to measure the goodness-of-fit of the probability distribution.
