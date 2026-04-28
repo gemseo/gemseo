@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""A mixin for the probability distribution of a scalar random variable."""
+"""Base class for univariate distributions."""
 
 from __future__ import annotations
 
@@ -30,6 +30,10 @@ from typing import ClassVar
 from matplotlib import pyplot as plt
 from numpy import arange
 
+from gemseo.uncertainty.distributions.base import BaseDistribution
+from gemseo.uncertainty.distributions.base import _DistributionT
+from gemseo.uncertainty.distributions.base import _ParametersT
+from gemseo.uncertainty.distributions.base import _VariableT
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.string_tools import pretty_str
 
@@ -39,22 +43,21 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.uncertainty.distributions.base_distribution_settings import (
+    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
+    from gemseo.uncertainty.distributions.base_settings import (
         BaseGenericDistributionSettings,
     )
-    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
-
-StandardParametersType = Mapping[str, str | int | float]
-ParametersType = tuple[str, int, float] | StandardParametersType
 
 
-class ScalarDistributionMixin:
-    """A mixin for the probability distribution of a scalar random variable."""
+class BaseUnivariateDistribution(
+    BaseDistribution[_VariableT, _ParametersT, _DistributionT]
+):
+    """The base class for univariate distributions."""
 
     JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution]]
-    """The class of the joint distribution associated with this distribution."""
+    """The class of the joint distribution associated with this marginal."""
 
-    def plot(
+    def plot(  # noqa: D102
         self,
         show: bool = True,
         save: bool = False,
@@ -63,7 +66,7 @@ class ScalarDistributionMixin:
         file_name: str = "",
         file_extension: str = "",
     ) -> Figure:
-        """Plot both probability and cumulative density functions.
+        """Plot the distribution.
 
         Args:
             save: Whether to save the figure.

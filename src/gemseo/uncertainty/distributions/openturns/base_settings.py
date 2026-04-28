@@ -22,9 +22,7 @@ from typing import ClassVar
 from pydantic import Field
 from pydantic import model_validator
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
+from gemseo.uncertainty.distributions.base_settings import BaseDistributionSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self

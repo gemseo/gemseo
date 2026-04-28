@@ -98,10 +98,8 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
-    from gemseo.uncertainty.distributions.base_distribution_settings import (
-        BaseDistributionSettings,
-    )
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
+    from gemseo.uncertainty.distributions.base_settings import BaseDistributionSettings
     from gemseo.utils.pydantic import BaseSettings
 
 from numpy import array

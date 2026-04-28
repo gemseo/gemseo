@@ -18,7 +18,7 @@ import re
 
 import pytest
 
-from gemseo.uncertainty.distributions.base_settings.uniform import (
+from gemseo.uncertainty.distributions.base_univariate_settings.uniform import (
     BaseUniformDistributionSettings,
 )
 

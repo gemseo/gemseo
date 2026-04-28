@@ -20,7 +20,7 @@
 r"""The base class for probability distributions.
 
 The base class
-[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution]
 implements the concept of
 [probability distribution](https://en.wikipedia.org/wiki/Probability_distribution),
 which is a mathematical function giving the probabilities of occurrence
@@ -38,22 +38,22 @@ See Also:
     interfacing the SciPy probability distributions.
 
 The
-[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution]
 of a given uncertain variable is built
 from a distribution name (e.g. `'Normal'` for OpenTURNS or `'norm'` for SciPy),
 a set of parameters
 and optionally a standard representation of these parameters.
 
 From a
-[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution],
+[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution],
 we can easily get statistics, such as
-[mean][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.mean]
+[mean][gemseo.uncertainty.distributions.base.BaseDistribution.mean]
 and
-[standard_deviation][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.standard_deviation]
+[standard_deviation][gemseo.uncertainty.distributions.base.BaseDistribution.standard_deviation]
 We can also get the numerical
-[range][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.range]
+[range][gemseo.uncertainty.distributions.base.BaseDistribution.range]
 and the mathematical
-[support][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.support].
+[support][gemseo.uncertainty.distributions.base.BaseDistribution.support].
 
 Note:
     We call mathematical *support* the set of values that the random variable
@@ -63,14 +63,14 @@ Note:
     Both support and range are described in terms of lower and upper bounds
 
 We can also evaluate the cumulative distribution function
-([compute_cdf()][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.compute_cdf])
+([compute_cdf()][gemseo.uncertainty.distributions.base.BaseDistribution.compute_cdf])
 for the different marginals of the random variable,
 as well as the inverse cumulative density function
-([compute_inverse_cdf()][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.compute_inverse_cdf]).
+([compute_inverse_cdf()][gemseo.uncertainty.distributions.base.BaseDistribution.compute_inverse_cdf]).
 
 Lastly, we can compute realizations of the random variable
 using the
-[compute_samples()][gemseo.uncertainty.distributions.base_distribution.BaseDistribution.compute_samples])
+[compute_samples()][gemseo.uncertainty.distributions.base.BaseDistribution.compute_samples])
 method.
 """
 
@@ -90,9 +90,7 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
-    from gemseo.uncertainty.distributions.base_distribution_settings import (
-        BaseDistributionSettings,
-    )
+    from gemseo.uncertainty.distributions.base_settings import BaseDistributionSettings
 
 _DistributionT = TypeVar("_DistributionT")
 _ParametersT = TypeVar("_ParametersT")

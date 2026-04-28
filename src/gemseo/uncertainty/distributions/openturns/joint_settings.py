@@ -24,11 +24,11 @@ from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import model_validator
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (  # noqa: TC001
-    BaseDistributionSettings,
-)
 from gemseo.uncertainty.distributions.base_joint_settings import (
     BaseJointDistributionSettings,
+)
+from gemseo.uncertainty.distributions.base_settings import (  # noqa: TC001
+    BaseDistributionSettings,
 )
 from gemseo.uncertainty.distributions.openturns.base_settings import (
     BaseOTDistributionSettings,

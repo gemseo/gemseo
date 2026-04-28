@@ -18,9 +18,7 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from gemseo.uncertainty.distributions.base_distribution_settings import (
-    BaseDistributionSettings,
-)
+from gemseo.uncertainty.distributions.base_settings import BaseDistributionSettings
 
 
 class BaseSPDistributionSettings(BaseDistributionSettings):  # noqa: N801

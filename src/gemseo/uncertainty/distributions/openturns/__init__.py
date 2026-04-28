@@ -20,7 +20,7 @@ from the [OpenTURNS](https://openturns.github.io/www/) library.
 ## Interfaced distributions
 
 This package implements the abstract classes
-[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution]
 and
 [BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution].
 

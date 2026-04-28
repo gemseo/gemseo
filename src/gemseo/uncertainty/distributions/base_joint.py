@@ -35,7 +35,7 @@ A
 [BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
 is defined
 from a list of
-[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution]
 objects
 defining the marginals of the random variables
 and a copula defining the dependency structure between them.
@@ -49,13 +49,13 @@ By definition, a joint probability distribution is a probability distribution.
 Therefore,
 [BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
 inherits from the abstract class
-[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution].
+[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution].
 
 The
 [BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
 of a list of given uncertain variables is built
 from a list of
-[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution]
 objects
 implementing the probability distributions of these variables
 and from a copula.
@@ -63,7 +63,7 @@ and from a copula.
 Because
 [BaseJointDistribution][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution]
 inherits from
-[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution],
+[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution],
 we can easily get statistics, such as
 [mean][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.mean] and
 [standard_deviation][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.standard_deviation].
@@ -102,7 +102,7 @@ from numpy import column_stack
 
 from gemseo.typing import RealArray
 from gemseo.typing import StrKeyMapping
-from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+from gemseo.uncertainty.distributions.base import BaseDistribution
 from gemseo.uncertainty.distributions.factory import DISTRIBUTION_FACTORY
 
 if TYPE_CHECKING:

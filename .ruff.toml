@@ -142,9 +142,9 @@ runtime-evaluated-base-classes = [
     "gemseo.machine_learning.regression.models.rbf_settings.RBFRegressor_Settings",
     "gemseo.machine_learning.core.models.ml_model_settings.BaseMLModelSettings",
     "gemseo.post.dataset.base_settings.BaseDatasetPlotSettings",
-    "gemseo.uncertainty.distributions.base_distribution_settings.BaseDistributionSettings",
     "gemseo.uncertainty.distributions.base_joint_settings.BaseJointDistributionSettings",
-    "gemseo.uncertainty.distributions.base_settings.weibull.BaseWeibullDistributionSettings",
+    "gemseo.uncertainty.distributions.base_settings.BaseDistributionSettings",
+    "gemseo.uncertainty.distributions.base_univariate_settings.weibull.BaseWeibullDistributionSettings",
 ]
 
 [lint.isort]

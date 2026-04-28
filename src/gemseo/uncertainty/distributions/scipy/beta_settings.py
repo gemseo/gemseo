@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.base_settings.beta import (
+from gemseo.uncertainty.distributions.base_univariate_settings.beta import (
     BaseBetaDistributionSettings,
 )
 from gemseo.uncertainty.distributions.scipy.base_settings import (

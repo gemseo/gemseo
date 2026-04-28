@@ -53,7 +53,7 @@ offers an abstract level
 for statistics, as well as parametric and empirical versions.
 Empirical statistics are estimated from a [Dataset][gemseo.datasets.dataset.Dataset]
 while parametric statistics are analytical properties of a
-[BaseDistribution][gemseo.uncertainty.distributions.base_distribution.BaseDistribution]
+[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution]
 fitted from a [Dataset][gemseo.datasets.dataset.Dataset].
 
 See Also:
@@ -75,7 +75,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset as IODataset
-    from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+    from gemseo.uncertainty.distributions.base import BaseDistribution
     from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
     from gemseo.uncertainty.statistics.base import BaseStatistics
 

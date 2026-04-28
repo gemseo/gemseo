@@ -24,7 +24,7 @@ from __future__ import annotations
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
+from gemseo.uncertainty.distributions.base import BaseDistribution
 
 
 class DistributionFactory(BaseFactory):

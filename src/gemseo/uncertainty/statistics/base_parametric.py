@@ -63,9 +63,7 @@ from numpy import linspace
 from prettytable import PrettyTable
 from strenum import StrEnum
 
-from gemseo.uncertainty.distributions.base_distribution_fitter import (
-    BaseDistributionFitter,
-)
+from gemseo.uncertainty.distributions.base_fitter import BaseDistributionFitter
 from gemseo.uncertainty.statistics.base import BaseStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 from gemseo.uncertainty.statistics.tolerance_interval.factory import (
@@ -84,8 +82,8 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
-    from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
-    from gemseo.uncertainty.distributions.base_distribution_fitter import MeasureType
+    from gemseo.uncertainty.distributions.base import BaseDistribution
+    from gemseo.uncertainty.distributions.base_fitter import MeasureType
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 

@@ -28,10 +28,7 @@ import scipy.stats as scipy_stats
 from scipy.stats._distn_infrastructure import rv_continuous_frozen
 
 from gemseo.typing import StrKeyMapping
-from gemseo.uncertainty.distributions.base_distribution import BaseDistribution
-from gemseo.uncertainty.distributions.scalar_distribution_mixin import (
-    ScalarDistributionMixin,
-)
+from gemseo.uncertainty.distributions.base_univariate import BaseUnivariateDistribution
 from gemseo.uncertainty.distributions.scipy.distribution_settings import (
     SPDistribution_Settings,
 )
@@ -46,8 +43,7 @@ if TYPE_CHECKING:
 
 
 class SPDistribution(
-    BaseDistribution[float, StrKeyMapping, rv_continuous_frozen],
-    ScalarDistributionMixin,
+    BaseUnivariateDistribution[float, StrKeyMapping, rv_continuous_frozen],
 ):
     """A SciPy-based probability distribution.
 
