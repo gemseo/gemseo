@@ -3,7 +3,9 @@
     <span class=n>name</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>=</span> <span class=s2>&quot;&quot;</span><span class=p>,</span>
     <span class=n>is_memory_shared</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
 <span class=p>)</span>
-</code></pre></div><div class="doc doc-contents "><p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-internal" title="            BaseFullCache (gemseo.caches.base_full_cache.BaseFullCache)" href=../base_full_cache/#gemseo.caches.base_full_cache.BaseFullCache>BaseFullCache</a></code></p><p>Cache using memory to cache all the data.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>is_memory_shared</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>If <code>True</code>, a shared memory dictionary is used to store the data, which makes the cache compatible with multiprocessing.</p></div></li></ul><details class=warning open><summary>Warning</summary><p>If <code>is_memory_shared</code> is <code>False</code> and multiple disciplines point to the same cache or the process is multi-processed, there may be duplicate computations because the cache will not be shared among the processes. This class relies on some multiprocessing features, it is therefore necessary to protect its execution with an <code>if __name__ == '__main__':</code> statement when working on Windows.</p></details><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/memory_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>52</span>
+</code></pre></div><div class="doc doc-contents "><p class="doc doc-class-bases"> Bases: <code><a class="autorefs autorefs-internal" title="            BaseFullCache (gemseo.caches.base_full_cache.BaseFullCache)" href=../base_full_cache/#gemseo.caches.base_full_cache.BaseFullCache>BaseFullCache</a></code></p><p>Cache using memory to cache all the data.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>is_memory_shared</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>If <code>True</code>, a shared memory dictionary is used to store the data, which makes the cache compatible with multiprocessing.</p></div></li></ul><details class=warning open><summary>Warning</summary><p>If <code>is_memory_shared</code> is <code>False</code> and multiple disciplines point to the same cache or the process is multi-processed, there may be duplicate computations because the cache will not be shared among the processes. This class relies on some multiprocessing features, it is therefore necessary to protect its execution with an <code>if __name__ == '__main__':</code> statement when working on Windows.</p></details><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/memory_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>50</span>
+<span class=normal>51</span>
+<span class=normal>52</span>
 <span class=normal>53</span>
 <span class=normal>54</span>
 <span class=normal>55</span>
@@ -28,9 +30,7 @@
 <span class=normal>74</span>
 <span class=normal>75</span>
 <span class=normal>76</span>
-<span class=normal>77</span>
-<span class=normal>78</span>
-<span class=normal>79</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span>
+<span class=normal>77</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>tolerance</span><span class=p>:</span> <span class=nb>float</span> <span class=o>=</span> <span class=mf>0.0</span><span class=p>,</span>
     <span class=n>name</span><span class=p>:</span> <span class=nb>str</span> <span class=o>=</span> <span class=s2>&quot;&quot;</span><span class=p>,</span>
@@ -91,7 +91,15 @@
 
   
       module-attribute
-   (gemseo.typing.JacobianData)" href=../../typing/#gemseo.typing.JacobianData>JacobianData</a></code>) – <div class=doc-md-description><p>The Jacobian data to cache.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>242</span>
+   (gemseo.typing.JacobianData)" href=../../typing/#gemseo.typing.JacobianData>JacobianData</a></code>) – <div class=doc-md-description><p>The Jacobian data to cache.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>234</span>
+<span class=normal>235</span>
+<span class=normal>236</span>
+<span class=normal>237</span>
+<span class=normal>238</span>
+<span class=normal>239</span>
+<span class=normal>240</span>
+<span class=normal>241</span>
+<span class=normal>242</span>
 <span class=normal>243</span>
 <span class=normal>244</span>
 <span class=normal>245</span>
@@ -101,15 +109,7 @@
 <span class=normal>249</span>
 <span class=normal>250</span>
 <span class=normal>251</span>
-<span class=normal>252</span>
-<span class=normal>253</span>
-<span class=normal>254</span>
-<span class=normal>255</span>
-<span class=normal>256</span>
-<span class=normal>257</span>
-<span class=normal>258</span>
-<span class=normal>259</span>
-<span class=normal>260</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@synchronized</span>
+<span class=normal>252</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@synchronized</span>
 <span class=k>def</span><span class=w> </span><span class=nf>cache_jacobian</span><span class=p>(</span>  <span class=c1># noqa: D102</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>input_data</span><span class=p>:</span> <span class=n>StrKeyMapping</span><span class=p>,</span>
@@ -151,21 +151,21 @@
 
   
       module-attribute
-   (gemseo.typing.StrKeyMapping)" href=../../typing/#gemseo.typing.StrKeyMapping>StrKeyMapping</a></code>) – <div class=doc-md-description><p>The data containing the output data to cache.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>226</span>
+   (gemseo.typing.StrKeyMapping)" href=../../typing/#gemseo.typing.StrKeyMapping>StrKeyMapping</a></code>) – <div class=doc-md-description><p>The data containing the output data to cache.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>218</span>
+<span class=normal>219</span>
+<span class=normal>220</span>
+<span class=normal>221</span>
+<span class=normal>222</span>
+<span class=normal>223</span>
+<span class=normal>224</span>
+<span class=normal>225</span>
+<span class=normal>226</span>
 <span class=normal>227</span>
 <span class=normal>228</span>
 <span class=normal>229</span>
 <span class=normal>230</span>
 <span class=normal>231</span>
-<span class=normal>232</span>
-<span class=normal>233</span>
-<span class=normal>234</span>
-<span class=normal>235</span>
-<span class=normal>236</span>
-<span class=normal>237</span>
-<span class=normal>238</span>
-<span class=normal>239</span>
-<span class=normal>240</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@synchronized</span>
+<span class=normal>232</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@synchronized</span>
 <span class=k>def</span><span class=w> </span><span class=nf>cache_outputs</span><span class=p>(</span>  <span class=c1># noqa: D102</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>input_data</span><span class=p>:</span> <span class=n>StrKeyMapping</span><span class=p>,</span>
@@ -181,21 +181,21 @@
         <span class=bp>self</span><span class=o>.</span><span class=n>_last_accessed_index</span><span class=o>.</span><span class=n>value</span><span class=p>,</span>
     <span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.caches.memory_full_cache.MemoryFullCache.clear class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">clear</span><a href=#gemseo.caches.memory_full_cache.MemoryFullCache.clear class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>clear</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Clear the cache.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/memory_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>100</span>
-<span class=normal>101</span>
-<span class=normal>102</span>
-<span class=normal>103</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@synchronized</span>
+</code></pre></div><div class="doc doc-contents "><p>Clear the cache.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/memory_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>95</span>
+<span class=normal>96</span>
+<span class=normal>97</span>
+<span class=normal>98</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@synchronized</span>
 <span class=k>def</span><span class=w> </span><span class=nf>clear</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>  <span class=c1># noqa:D102</span>
     <span class=nb>super</span><span class=p>()</span><span class=o>.</span><span class=n>clear</span><span class=p>()</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>__data</span><span class=o>.</span><span class=n>clear</span><span class=p>()</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.caches.memory_full_cache.MemoryFullCache.get_all_entries class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">get_all_entries</span><a href=#gemseo.caches.memory_full_cache.MemoryFullCache.get_all_entries class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>get_all_entries</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterator href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator>Iterator</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-internal" title="            CacheEntry (gemseo.caches.cache_entry.CacheEntry)" href=../cache_entry/#gemseo.caches.cache_entry.CacheEntry>CacheEntry</a></span><span class=p>]</span>
-</code></pre></div><div class="doc doc-contents "><p>Return an iterator over all the entries.</p><p>The tolerance is ignored.</p><p><span class=doc-section-title>Yields:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            CacheEntry (gemseo.caches.cache_entry.CacheEntry)" href=../cache_entry/#gemseo.caches.cache_entry.CacheEntry>CacheEntry</a></code> – <div class=doc-md-description><p>The entries.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>387</span>
-<span class=normal>388</span>
-<span class=normal>389</span>
-<span class=normal>390</span>
-<span class=normal>391</span>
-<span class=normal>392</span>
-<span class=normal>393</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@synchronized</span>
+</code></pre></div><div class="doc doc-contents "><p>Return an iterator over all the entries.</p><p>The tolerance is ignored.</p><p><span class=doc-section-title>Yields:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            CacheEntry (gemseo.caches.cache_entry.CacheEntry)" href=../cache_entry/#gemseo.caches.cache_entry.CacheEntry>CacheEntry</a></code> – <div class=doc-md-description><p>The entries.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>379</span>
+<span class=normal>380</span>
+<span class=normal>381</span>
+<span class=normal>382</span>
+<span class=normal>383</span>
+<span class=normal>384</span>
+<span class=normal>385</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@synchronized</span>
 <span class=k>def</span><span class=w> </span><span class=nf>get_all_entries</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>Iterator</span><span class=p>[</span><span class=n>CacheEntry</span><span class=p>]:</span>  <span class=c1># noqa: D102</span>
     <span class=k>for</span> <span class=n>index</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>_all_groups</span><span class=p>:</span>
         <span class=n>input_data</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_read_data</span><span class=p>(</span><span class=n>index</span><span class=p>,</span> <span class=bp>self</span><span class=o>.</span><span class=n>Group</span><span class=o>.</span><span class=n>INPUTS</span><span class=p>)</span>
@@ -370,7 +370,15 @@
     <span class=n>input_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Export the cache to an XML file for ggobi tool.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>file_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The path of the file to export the cache.</p></div></li><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The names of the inputs to export. If empty, export all of them.</p></div></li><li class="doc-section-item field-body"><b><code>output_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The names of the outputs to export. If empty, export all of them.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>395</span>
+</code></pre></div><div class="doc doc-contents "><p>Export the cache to an XML file for ggobi tool.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>file_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>) – <div class=doc-md-description><p>The path of the file to export the cache.</p></div></li><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The names of the inputs to export. If empty, export all of them.</p></div></li><li class="doc-section-item field-body"><b><code>output_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The names of the outputs to export. If empty, export all of them.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>387</span>
+<span class=normal>388</span>
+<span class=normal>389</span>
+<span class=normal>390</span>
+<span class=normal>391</span>
+<span class=normal>392</span>
+<span class=normal>393</span>
+<span class=normal>394</span>
+<span class=normal>395</span>
 <span class=normal>396</span>
 <span class=normal>397</span>
 <span class=normal>398</span>
@@ -437,15 +445,7 @@
 <span class=normal>459</span>
 <span class=normal>460</span>
 <span class=normal>461</span>
-<span class=normal>462</span>
-<span class=normal>463</span>
-<span class=normal>464</span>
-<span class=normal>465</span>
-<span class=normal>466</span>
-<span class=normal>467</span>
-<span class=normal>468</span>
-<span class=normal>469</span>
-<span class=normal>470</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>to_ggobi</span><span class=p>(</span>
+<span class=normal>462</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>to_ggobi</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>file_path</span><span class=p>:</span> <span class=nb>str</span><span class=p>,</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
@@ -522,18 +522,18 @@
     <span class=p>])</span>
     <span class=n>save_data_arrays_to_xml</span><span class=p>(</span><span class=n>variable_names</span><span class=p>,</span> <span class=n>cache_as_array</span><span class=p>,</span> <span class=n>file_path</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.caches.memory_full_cache.MemoryFullCache.update class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">update</span><a href=#gemseo.caches.memory_full_cache.MemoryFullCache.update class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>update</span><span class=p>(</span><span class=n>other_cache</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            BaseFullCache (gemseo.caches.base_full_cache.BaseFullCache)" href=../base_full_cache/#gemseo.caches.base_full_cache.BaseFullCache>BaseFullCache</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Update from another cache.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>other_cache</code></b> (<code><a class="autorefs autorefs-internal" title="            BaseFullCache (gemseo.caches.base_full_cache.BaseFullCache)" href=../base_full_cache/#gemseo.caches.base_full_cache.BaseFullCache>BaseFullCache</a></code>) – <div class=doc-md-description><p>The cache to update the current one.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>472</span>
+</code></pre></div><div class="doc doc-contents "><p>Update from another cache.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>other_cache</code></b> (<code><a class="autorefs autorefs-internal" title="            BaseFullCache (gemseo.caches.base_full_cache.BaseFullCache)" href=../base_full_cache/#gemseo.caches.base_full_cache.BaseFullCache>BaseFullCache</a></code>) – <div class=doc-md-description><p>The cache to update the current one.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/caches/base_full_cache.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>464</span>
+<span class=normal>465</span>
+<span class=normal>466</span>
+<span class=normal>467</span>
+<span class=normal>468</span>
+<span class=normal>469</span>
+<span class=normal>470</span>
+<span class=normal>471</span>
+<span class=normal>472</span>
 <span class=normal>473</span>
 <span class=normal>474</span>
-<span class=normal>475</span>
-<span class=normal>476</span>
-<span class=normal>477</span>
-<span class=normal>478</span>
-<span class=normal>479</span>
-<span class=normal>480</span>
-<span class=normal>481</span>
-<span class=normal>482</span>
-<span class=normal>483</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>update</span><span class=p>(</span>
+<span class=normal>475</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>update</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>other_cache</span><span class=p>:</span> <span class=n>BaseFullCache</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
