@@ -62,6 +62,7 @@ nav:
           - Tutorial - Wrap an executable: generated/examples/tutorials/basic/plot_tutorial_discipline_executable.md
           - Tutorial - The design space: generated/examples/tutorials/basic/plot_tutorial_design_space.md
           - Tutorial - The Multidisciplinary Design Analysis: generated/examples/tutorials/basic/plot_tutorial_create_mda.md
+          - Tutorial - Prototyping a multidisciplinary study: generated/examples/tutorials/basic/plot_tutorial_study_analysis.md
           - Tutorial - Execute your first Design of Experiment (DoE): generated/examples/tutorials/basic/plot_tutorial_evaluations.md
           - Tutorial - Execute your first Multi-Disciplinary Optimization: generated/examples/tutorials/basic/plot_tutorial_mdo.md
           - Tutorial - Manipulating a dataset: generated/examples/tutorials/basic/plot_tutorial_dataset.md
