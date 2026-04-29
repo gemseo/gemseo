@@ -36,7 +36,7 @@ from pydantic import create_model
 from pydantic.fields import FieldInfo
 
 from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
-from gemseo.core.grammars.base_grammar import BaseGrammar
+from gemseo.core.grammars.base import BaseGrammar
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 
@@ -47,11 +47,10 @@ if TYPE_CHECKING:
     from pydantic import ConfigDict
     from typing_extensions import Self
 
-    from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
+    from gemseo.core.grammars.base import SimpleGrammarTypes
     from gemseo.core.grammars.json_schema import Schema
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
-
 
 ModelType = type[BaseModel]
 
@@ -203,7 +202,7 @@ class PydanticGrammar(BaseGrammar):
     def update_from_model(self, model: ModelType, merge: bool = False) -> None:
         """Update the grammar from a Pydantic model.
 
-        Unlike [update_from_types()][gemseo.core.grammars.pydantic_grammar.PydanticGrammar.update_from_types],
+        Unlike [update_from_types()][gemseo.core.grammars.pydantic.PydanticGrammar.update_from_types],
         this method preserves the full field information from the model:
         type annotation, default value or factory, and description.
         Required/optional status is taken from the model's field definitions:

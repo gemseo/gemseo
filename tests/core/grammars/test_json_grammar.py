@@ -29,7 +29,7 @@ from numpy import int64
 from numpy import ndarray
 
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.grammars.json import JSONGrammar
 
 DATA_PATH = Path(__file__).parent / "data"
 

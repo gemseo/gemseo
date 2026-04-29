@@ -63,7 +63,7 @@ for entry in discipline.cache:
 #
 # If you only want the last entry (inputs or outputs),
 # you can use the
-# [last_entry][gemseo.caches.base_cache.BaseCache.last_entry] property:
+# [last_entry][gemseo.caches.base.BaseCache.last_entry] property:
 inputs, outputs, jacobian = discipline.cache.last_entry
 print(f"Last inputs: {inputs}")
 print(f"Last outputs: {outputs}")
@@ -80,8 +80,8 @@ discipline.cache
 # - A cache stores one or many named tuples,
 # called [CacheEntry][gemseo.caches.cache_entry.CacheEntry];
 # - Data can be retrieved from a cache as a dataset with the
-# [to_dataset()][gemseo.caches.base_cache.BaseCache.to_dataset] method;
+# [to_dataset()][gemseo.caches.base.BaseCache.to_dataset] method;
 # - The last entry of a cache is gotten with the
-# [last_entry][gemseo.caches.base_cache.BaseCache.last_entry] property;
+# [last_entry][gemseo.caches.base.BaseCache.last_entry] property;
 # - The cache can be cleared with the
-# [clear()][gemseo.caches.base_cache.BaseCache.clear] method;
+# [clear()][gemseo.caches.base.BaseCache.clear] method;

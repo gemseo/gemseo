@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from gemseo.caches.base_cache import BaseCache
+from gemseo.caches.base import BaseCache
 from gemseo.core.base_factory import BaseFactory
 
 

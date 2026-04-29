@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
-    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.grammars.base import BaseGrammar
     from gemseo.typing import StrKeyMapping
 
 

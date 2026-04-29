@@ -25,7 +25,7 @@ from typing import ClassVar
 from numpy import ndarray
 
 from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
-from gemseo.core.grammars.base_grammar import BaseGrammar
+from gemseo.core.grammars.base import BaseGrammar
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
-    from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
+    from gemseo.core.grammars.base import SimpleGrammarTypes
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.string_tools import MultiLineString
 
@@ -107,7 +107,7 @@ class SimpleGrammar(BaseGrammar):
         Raises:
             ValueError: When merge is `True`,
                 since it is not supported
-                for [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar].
+                for [SimpleGrammar][gemseo.core.grammars.simple.SimpleGrammar].
         """  # noqa: D205, D212, D415
         self.__check_merge(merge)
         self.__update(grammar.to_simple_grammar(), excluded_names)
@@ -121,7 +121,7 @@ class SimpleGrammar(BaseGrammar):
         Raises:
             ValueError: When merge is `True`,
                 since it is not supported
-                for [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar].
+                for [SimpleGrammar][gemseo.core.grammars.simple.SimpleGrammar].
         """  # noqa: D205, D212, D415
         self.__check_merge(merge)
         self.__update(dict.fromkeys(names, ndarray))
@@ -135,7 +135,7 @@ class SimpleGrammar(BaseGrammar):
         Raises:
             ValueError: When merge is `True`,
                 since it is not supported
-                for [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar].
+                for [SimpleGrammar][gemseo.core.grammars.simple.SimpleGrammar].
         """  # noqa: D205, D212, D415
         self.__check_merge(merge)
         self.__update(names_to_types)
@@ -150,7 +150,7 @@ class SimpleGrammar(BaseGrammar):
         Raises:
             ValueError: When merge is `True`,
                 since it is not supported
-                for [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar].
+                for [SimpleGrammar][gemseo.core.grammars.simple.SimpleGrammar].
         """
         if merge:
             msg = f"Merge is not supported for {cls.__name__}."
@@ -164,7 +164,7 @@ class SimpleGrammar(BaseGrammar):
         """Update the elements from another grammar or elements.
 
         When elements are provided names and types instead of a
-        [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar],
+        [BaseGrammar][gemseo.core.grammars.base.BaseGrammar],
         for consistency with the constructor's behavior
         it is assumed that all of them are required.
 

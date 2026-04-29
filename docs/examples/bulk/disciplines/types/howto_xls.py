@@ -103,7 +103,7 @@ c = xls_discipline.io.data["c"]
 #
 # The option `copy_xls_at_setstate` shall be set to `True` whenever an
 # [XLSDiscipline][gemseo.disciplines.wrappers.xls_discipline.XLSDiscipline] will be used
-# in a [DiscParallelExecution][gemseo.core.parallel_execution.disc_parallel_execution.DiscParallelExecution] instance implementing multiprocessing.
+# in a [DiscParallelExecution][gemseo.core.parallel_execution.discipline_execution.DiscParallelExecution] instance implementing multiprocessing.
 #
 # #### Multithreading
 #

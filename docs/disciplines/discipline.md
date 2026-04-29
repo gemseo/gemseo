@@ -60,14 +60,14 @@ Programmatically speaking, disciplines are implemented in GEMSEO through the [Di
 
 #### Input and output description: grammars
 
-The input and output specifications are defined in a grammar, through the [input_grammar][gemseo.core.discipline.discipline.Discipline.input_grammar] and [output_grammar][gemseo.core.discipline.discipline.Discipline.output_grammar] attributes, which can be either a [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar] or a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] (default grammar), or your own which derives from the [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar] class.
+The input and output specifications are defined in a grammar, through the [input_grammar][gemseo.core.discipline.discipline.Discipline.input_grammar] and [output_grammar][gemseo.core.discipline.discipline.Discipline.output_grammar] attributes, which can be either a [SimpleGrammar][gemseo.core.grammars.simple.SimpleGrammar] or a [JSONGrammar][gemseo.core.grammars.json.JSONGrammar] (default grammar), or your own which derives from the [BaseGrammar][gemseo.core.grammars.base.BaseGrammar] class.
 
-- [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar]: it manipulates the list of required data names,
+- [SimpleGrammar][gemseo.core.grammars.simple.SimpleGrammar]: it manipulates the list of required data names,
   and a list of the associated types (string, float, numpy.ndarray or
   any type provided). There is also a dictionary of default values that
   adds default values to the data if they are not provided.
 
-- [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar]: a JSON-based grammar.
+- [JSONGrammar][gemseo.core.grammars.json.JSONGrammar]: a JSON-based grammar.
   You must provide a JSON file that describes the validity of the data.
   This is a much more advanced and much more powerful description. JSON
   is a web standard supported by many languages: [JSON Schema](https://json-schema.org/tools?query=&sortBy=name&sortOrder=ascending&groupBy=languages&licenses=&languages=&drafts=&toolingTypes=&environments=&showObsolete=false).
@@ -254,7 +254,7 @@ sellar_system.io.input_grammar.validate({'a': array([1.]), 'b': array([1., -6.2]
 raises the error:
 
 ``` text
-gemseo.core.grammar.InvalidDataException: Invalid input data for: SellarSystem
+gemseo.core.grammars.InvalidDataException: Invalid input data for: SellarSystem
 ```
 
 ### How to get the default input values?

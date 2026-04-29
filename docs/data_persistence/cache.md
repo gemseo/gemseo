@@ -55,10 +55,10 @@ The user can pass a tolerance below which two input arrays are considered equal:
 In GEMSEO, different cache types are available:
 
 - in memory:
-    - the [SimpleCache][gemseo.caches.simple_cache.SimpleCache] (default policy) only stores in memory the data associated with the last call to [execute()][gemseo.core.discipline.discipline.Discipline.execute],
-    - the [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache] stores in memory the data associated with all the calls to [execute()][gemseo.core.discipline.discipline.Discipline.execute],
+    - the [SimpleCache][gemseo.caches.simple.SimpleCache] (default policy) only stores in memory the data associated with the last call to [execute()][gemseo.core.discipline.discipline.Discipline.execute],
+    - the [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache] stores in memory the data associated with all the calls to [execute()][gemseo.core.discipline.discipline.Discipline.execute],
 - on the disk:
-    - the [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] stores in a node of an HDF file the data associated with all the calls to [execute()][gemseo.core.discipline.discipline.Discipline.execute].
+    - the [HDF5Cache][gemseo.caches.hdf5.HDF5Cache] stores in a node of an HDF file the data associated with all the calls to [execute()][gemseo.core.discipline.discipline.Discipline.execute].
 
         HDF5 (Hierarchical Data Format version 5) is a file format designed to store
         and organize large and complex datasets.
@@ -69,13 +69,13 @@ In GEMSEO, different cache types are available:
         This structure allows multiple datasets to coexist in a single file, each accessible through a unique path. Metadata can also be attached to groups and datasets using attributes, making HDF5 well suited for scientific and engineering applications.
 
 !!! warning
-    - The [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache] relies on some multiprocessing features.
+    - The [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache] relies on some multiprocessing features.
     When working on Windows, the execution of scripts containing instances of
-    [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache] must be protected by an
+    [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache] must be protected by an
     `if __name__ == '__main__':` statement.
 
-    - The [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] relies on some multiprocessing features. When working on
-    Windows, the execution of scripts containing instances of [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache]
+    - The [HDF5Cache][gemseo.caches.hdf5.HDF5Cache] relies on some multiprocessing features. When working on
+    Windows, the execution of scripts containing instances of [HDF5Cache][gemseo.caches.hdf5.HDF5Cache]
     must be protected by an `if __name__ == '__main__':` statement.
     Currently, the use of an HDF5Cache is not supported in parallel on Windows
     platforms. This is due to the way subprocesses are forked in this architecture.
@@ -83,7 +83,7 @@ In GEMSEO, different cache types are available:
     is recommended as an alternative.
 
 !!! note
-    The types of cache can be extended by subclassing [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache] or [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache].
+    The types of cache can be extended by subclassing [BaseFullCache][gemseo.caches.base_full.BaseFullCache] or [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache].
     The [set_cache()][gemseo.core.discipline.discipline.Discipline.set_cache] method will find the new types automatically because it is based on a [CacheFactory][gemseo.caches.factory.CacheFactory].
 
 ## Advanced use

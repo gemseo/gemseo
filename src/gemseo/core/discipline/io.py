@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.core.discipline.data_processor import DataProcessor
-    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.grammars.base import BaseGrammar
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
 

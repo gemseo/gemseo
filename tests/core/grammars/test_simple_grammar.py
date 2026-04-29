@@ -17,8 +17,8 @@ from __future__ import annotations
 import pytest
 
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.core.grammars.simpler_grammar import SimplerGrammar
+from gemseo.core.grammars.simple import SimpleGrammar
+from gemseo.core.grammars.simpler import SimplerGrammar
 
 
 @pytest.fixture(params=(SimpleGrammar, SimplerGrammar))

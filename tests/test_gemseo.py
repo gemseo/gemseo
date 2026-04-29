@@ -95,7 +95,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.grammars.json import JSONGrammar
 from gemseo.datasets import DatasetClassName
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline

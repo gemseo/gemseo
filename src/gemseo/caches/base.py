@@ -107,11 +107,11 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
     or `[entry.outputs for entry in cache]`.
 
     See Also:
-        [SimpleCache][gemseo.caches.simple_cache.SimpleCache]
+        [SimpleCache][gemseo.caches.simple.SimpleCache]
         to store the last discipline evaluation.
-        [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache]
+        [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache]
         to store all the discipline evaluations in memory.
-        [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache]
+        [HDF5Cache][gemseo.caches.hdf5.HDF5Cache]
         to store all the discipline evaluations in a HDF5 file.
     """
 

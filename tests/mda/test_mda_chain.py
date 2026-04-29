@@ -37,7 +37,7 @@ from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.core.grammars.simple import SimpleGrammar
 from gemseo.mda.chain import MDAChain
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.factory import MDA_FACTORY

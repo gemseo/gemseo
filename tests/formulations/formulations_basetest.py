@@ -22,7 +22,7 @@ import unittest
 from typing import ClassVar
 
 from gemseo.core.discipline import Discipline
-from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.grammars.json import JSONGrammar
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics

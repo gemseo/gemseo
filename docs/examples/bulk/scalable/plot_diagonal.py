@@ -44,7 +44,7 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 # %%
 # ## Training dataset
 #
-# The first step is to build a [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache] dataset
+# The first step is to build a [BaseFullCache][gemseo.caches.base_full.BaseFullCache] dataset
 # from a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
 
 # %%

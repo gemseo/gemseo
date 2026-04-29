@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from gemseo.algos.evaluation_problem import EvaluationProblem
     from gemseo.core.discipline import Discipline
     from gemseo.core.discipline.base_discipline import BaseDiscipline
-    from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.core.grammars.json import JSONGrammar
     from gemseo.scenarios.mdo import MDOScenario
     from gemseo.typing import StrKeyMapping
 

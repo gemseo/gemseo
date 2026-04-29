@@ -43,9 +43,9 @@ from numpy.linalg import norm
 
 from gemseo import configure
 from gemseo import create_discipline
-from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.caches.memory_full_cache import MemoryFullCache
-from gemseo.caches.simple_cache import SimpleCache
+from gemseo.caches.hdf5 import HDF5Cache
+from gemseo.caches.memory_full import MemoryFullCache
+from gemseo.caches.simple import SimpleCache
 from gemseo.core.chains.chain import DisciplineChain
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.base_discipline import BaseDiscipline
@@ -54,7 +54,7 @@ from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GRAMMAR_FACTORY
-from gemseo.core.grammars.json_grammar import JSONGrammar
+from gemseo.core.grammars.json import JSONGrammar
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.mda.base import BaseMDA

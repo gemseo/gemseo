@@ -25,7 +25,7 @@ from numpy import zeros
 from numpy.testing import assert_equal
 
 from gemseo.core.discipline import Discipline
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.core.grammars.simple import SimpleGrammar
 from gemseo.disciplines.remapping import RemappingDiscipline
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.pickle import from_pickle

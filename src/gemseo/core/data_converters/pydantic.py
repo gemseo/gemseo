@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Data values to NumPy arrays and vice versa from a [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar]."""  # noqa: E501
+"""Data values to NumPy arrays and vice versa from a [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar]."""  # noqa: E501
 
 from __future__ import annotations
 
@@ -30,11 +30,11 @@ from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 from gemseo.utils.pydantic_ndarray import _ScalarType_co
 
 if TYPE_CHECKING:
-    from gemseo.core.grammars.pydantic_grammar import PydanticGrammar  # noqa: F401
+    from gemseo.core.grammars.pydantic import PydanticGrammar  # noqa: F401
 
 
 class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
-    """Data values to NumPy arrays and vice versa from a [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar]."""  # noqa: E501
+    """Data values to NumPy arrays and vice versa from a [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar]."""  # noqa: E501
 
     def _has_type(  # noqa:D102
         self,

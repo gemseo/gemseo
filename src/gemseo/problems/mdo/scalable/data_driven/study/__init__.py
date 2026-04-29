@@ -34,7 +34,7 @@ the concept of scalability study:
    the user defines the MDO problem in terms of design parameters,
    objective function and constraints.
 2. For each discipline, the user adds a dataset stored
-   in a [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache]
+   in a [BaseFullCache][gemseo.caches.base_full.BaseFullCache]
    and select a type of
    [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel]
    to build the

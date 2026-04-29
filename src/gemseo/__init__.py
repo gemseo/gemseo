@@ -93,10 +93,10 @@ if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.caches.base_cache import BaseCache
+    from gemseo.caches.base import BaseCache
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.discipline.discipline import Discipline
-    from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.core.grammars.json import JSONGrammar
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.disciplines.surrogate import SurrogateDiscipline

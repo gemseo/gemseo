@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.grammars.base import BaseGrammar
 
 
 class DisciplineAdapterGenerator:

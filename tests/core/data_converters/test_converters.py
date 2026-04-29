@@ -25,9 +25,9 @@ from numpy.testing import assert_array_equal
 
 from gemseo import set_data_converters
 from gemseo.core.data_converters.base import BaseDataConverter
-from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.core.grammars.json import JSONGrammar
+from gemseo.core.grammars.pydantic import PydanticGrammar
+from gemseo.core.grammars.simple import SimpleGrammar
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
 if TYPE_CHECKING:

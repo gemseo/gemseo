@@ -23,8 +23,8 @@ from numpy import ndarray
 
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline.discipline_data import DisciplineData
-from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
-from gemseo.core.parallel_execution.disc_parallel_linearization import (
+from gemseo.core.parallel_execution.discipline_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.discipline_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.core.process_discipline import ProcessDiscipline

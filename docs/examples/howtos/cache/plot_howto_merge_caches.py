@@ -18,7 +18,7 @@
 ## Problem
 
 You execute the same discipline multiple times, in different workflows.
-You have multiple [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache],
+You have multiple [BaseFullCache][gemseo.caches.base_full.BaseFullCache],
 and you would like to merge them into one.
 
 ## Solution
@@ -27,7 +27,7 @@ GEMSEO allows you to merge different caches.
 
 !!! note
     These methods only apply to caches inheriting from
-    [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache].
+    [BaseFullCache][gemseo.caches.base_full.BaseFullCache].
 
 ## Step-by-step guide
 """
@@ -81,4 +81,4 @@ disciplines[1].cache.to_dataset()
 #
 # - creating a new cache and use the "+" operator;
 # - updating an existing cache with the
-# [update()][gemseo.caches.base_full_cache.BaseFullCache.update] method.
+# [update()][gemseo.caches.base_full.BaseFullCache.update] method.

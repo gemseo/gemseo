@@ -42,14 +42,13 @@ from gemseo.utils.string_tools import pretty_str
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from gemseo.caches.base_cache import BaseCache
+    from gemseo.caches.base import BaseCache
     from gemseo.caches.cache_entry import CacheEntry
     from gemseo.core.discipline.discipline_data import DisciplineData
-    from gemseo.core.grammars.base_grammar import BaseGrammar
-    from gemseo.core.grammars.grammar_properties import GrammarProperties
+    from gemseo.core.grammars.base import BaseGrammar
+    from gemseo.core.grammars.properties import GrammarProperties
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -283,16 +282,16 @@ class BaseDiscipline(BaseMonitoredProcess):
         according to the distance between the corresponding input data
         and the input data already cached for which output data are also cached.
 
-        The cache can be either a [SimpleCache][gemseo.caches.simple_cache.SimpleCache]
+        The cache can be either a [SimpleCache][gemseo.caches.simple.SimpleCache]
         recording the last execution
         or a cache storing all executions,
-        e.g. [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache]
-        and [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache].
+        e.g. [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache]
+        and [HDF5Cache][gemseo.caches.hdf5.HDF5Cache].
         Caching data can be either in-memory,
-        e.g. [SimpleCache][gemseo.caches.simple_cache.SimpleCache]
-        and [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache],
+        e.g. [SimpleCache][gemseo.caches.simple.SimpleCache]
+        and [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache],
         or on the disk,
-        e.g. [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache].
+        e.g. [HDF5Cache][gemseo.caches.hdf5.HDF5Cache].
 
         Args:
             cache_type: The type of cache.

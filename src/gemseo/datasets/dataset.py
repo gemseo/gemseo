@@ -34,11 +34,11 @@ and can be enriched from a group of variables (
 or from a single variable (
 [add_variable()][gemseo.datasets.dataset.Dataset.add_variable]).
 
-A [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache]
+A [BaseFullCache][gemseo.caches.base_full.BaseFullCache]
 or an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
 can also be exported to a [Dataset][gemseo.datasets.dataset.Dataset]
 using the methods
-[BaseFullCache.to_dataset()][gemseo.caches.base_full_cache.BaseFullCache.to_dataset]
+[BaseFullCache.to_dataset()][gemseo.caches.base_full.BaseFullCache.to_dataset]
 and
 [OptimizationProblem.to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset].
 """

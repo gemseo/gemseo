@@ -42,7 +42,7 @@ from numpy import ndarray
 from pydantic import BaseModel
 
 from gemseo.core.grammars._python_to_json import PYTHON_TO_JSON_TYPES
-from gemseo.core.grammars.base_grammar import BaseGrammar
+from gemseo.core.grammars.base import BaseGrammar
 from gemseo.core.grammars.json_schema import MutableMappingSchemaBuilder
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
@@ -52,7 +52,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
-    from gemseo.core.grammars.base_grammar import SimpleGrammarTypes
+    from gemseo.core.grammars.base import SimpleGrammarTypes
     from gemseo.core.grammars.json_schema import Properties
     from gemseo.core.grammars.json_schema import Schema
     from gemseo.typing import StrKeyMapping
@@ -71,7 +71,7 @@ class JSONGrammar(BaseGrammar):
     In that case, the resulting grammar will allow any of the values.
 
     When using
-    [update_from_types()][gemseo.core.grammars.json_grammar.JSONGrammar.update_from_types],
+    [update_from_types()][gemseo.core.grammars.json.JSONGrammar.update_from_types],
     it is assumed that a grammar element of type `ndarray` is a number.
     """
 
@@ -88,7 +88,7 @@ class JSONGrammar(BaseGrammar):
 
     This object has its own handling of the required names,
     but it is almost not used since this handling is done in the base class
-    [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar].
+    [BaseGrammar][gemseo.core.grammars.base.BaseGrammar].
     Nevertheless, we use the required names that this object can read from
     external sources (json schema from a dict or a file).
     We also need to populate the required names of this object when it is
@@ -175,7 +175,7 @@ class JSONGrammar(BaseGrammar):
 
         Raises:
             TypeError: If the grammar is not
-                a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar].
+                a [JSONGrammar][gemseo.core.grammars.json.JSONGrammar].
         """  # noqa:D417
         if not isinstance(grammar, JSONGrammar):
             msg = (

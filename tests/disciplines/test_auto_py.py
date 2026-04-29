@@ -38,8 +38,8 @@ from gemseo import execute_algo
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
+from gemseo.core.grammars.simple import SimpleGrammar
+from gemseo.core.parallel_execution.discipline_execution import DiscParallelExecution
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.utils import get_initial_data

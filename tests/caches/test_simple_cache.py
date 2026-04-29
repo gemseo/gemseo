@@ -28,7 +28,7 @@ from numpy import ones
 from gemseo.caches.factory import CacheFactory
 
 if TYPE_CHECKING:
-    from gemseo.caches.simple_cache import SimpleCache
+    from gemseo.caches.simple import SimpleCache
 
 
 def create_cache() -> SimpleCache:

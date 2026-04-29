@@ -35,7 +35,7 @@ from gemseo.algos.lagrange_multipliers import LagrangeMultipliers
 from gemseo.algos.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline import Discipline
-from gemseo.core.parallel_execution.disc_parallel_linearization import (
+from gemseo.core.parallel_execution.discipline_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.core.process_discipline import ProcessDiscipline

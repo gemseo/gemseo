@@ -57,14 +57,14 @@ JSON schemas describe the format (i.e. structure) of JSON files, in a similar wa
 
 ## Store persistent data produced by disciplines
 
-Use HDF5  caches to persist the discipline output on the disk.
+Use HDF5 caches to persist the discipline output on the disk.
 
 !!! info "See Also"
     We invite you to read our documentation: [Cache](data_persistence/cache.md).
 
 ## Error when using a HDF5 cache
 
-In GEMSEO 3.2.0, the storage of the data hashes in the HDF5 cache has been fixed and the previous cache files are no longer valid. If you get an error like `The file cache.h5 cannot be used because it has no file format version: see HDF5Cache.update_file_format for converting it.`, please use [HDF5Cache.update_file_format()][gemseo.caches.hdf5_cache.HDF5Cache.update_file_format] to update the format of the file and fix the data hashes.
+In GEMSEO 3.2.0, the storage of the data hashes in the HDF5 cache has been fixed and the previous cache files are no longer valid. If you get an error like `The file cache.h5 cannot be used because it has no file format version: see HDF5Cache.update_file_format for converting it.`, please use [HDF5Cache.update_file_format()][gemseo.caches.hdf5.HDF5Cache.update_file_format] to update the format of the file and fix the data hashes.
 
 ## GEMSEO fails with openturns
 
@@ -76,9 +76,9 @@ sudo yum install libnsl
 
 ## Parallel execution limitations on Windows
 
-When running parallel execution tasks on Windows, the [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache] does not work properly. This is due to the way subprocesses are forked in this architecture. The method [MDOScenario.set_backup_settings()][gemseo.scenarios.mdo.MDOScenario.set_backup_settings] is recommended as an alternative.
+When running parallel execution tasks on Windows, the [HDF5Cache][gemseo.caches.hdf5.HDF5Cache] does not work properly. This is due to the way subprocesses are forked in this architecture. The method [MDOScenario.set_backup_settings()][gemseo.scenarios.mdo.MDOScenario.set_backup_settings] is recommended as an alternative.
 
-The execution of any script using parallel execution on Windows including, but not limited to, [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with `n_processes > 1`, [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache], [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache], [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution], [DiscParallelExecution][gemseo.core.parallel_execution.disc_parallel_execution.DiscParallelExecution], must be protected by an `if __name__ == '__main__':` statement.
+The execution of any script using parallel execution on Windows including, but not limited to, [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with `n_processes > 1`, [HDF5Cache][gemseo.caches.hdf5.HDF5Cache], [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache], [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution], [DiscParallelExecution][gemseo.core.parallel_execution.discipline_execution.DiscParallelExecution], must be protected by an `if __name__ == '__main__':` statement.
 
 ## Handling paths for different OSes
 

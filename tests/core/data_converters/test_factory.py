@@ -20,7 +20,7 @@ from gemseo.core.data_converters.factory import DataConverterFactory
 from gemseo.core.data_converters.json import JSONGrammarDataConverter
 from gemseo.core.data_converters.pydantic import PydanticGrammarDataConverter
 from gemseo.core.data_converters.simple import SimpleGrammarDataConverter
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.core.grammars.simple import SimpleGrammar
 
 
 @pytest.mark.parametrize(

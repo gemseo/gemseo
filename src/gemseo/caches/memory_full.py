@@ -27,7 +27,7 @@ from typing import Literal
 from typing import cast
 from typing import overload
 
-from gemseo.caches.base_full_cache import BaseFullCache
+from gemseo.caches.base_full import BaseFullCache
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager

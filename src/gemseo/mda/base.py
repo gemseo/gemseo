@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from strenum import LowercaseStrEnum
 
-from gemseo.caches.simple_cache import SimpleCache
+from gemseo.caches.simple import SimpleCache
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
 from gemseo.core.coupling_structure import CouplingStructure

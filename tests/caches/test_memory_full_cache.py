@@ -28,7 +28,7 @@ from numpy import ones
 from gemseo.caches.factory import CacheFactory
 
 if TYPE_CHECKING:
-    from gemseo.caches.memory_full_cache import MemoryFullCache
+    from gemseo.caches.memory_full import MemoryFullCache
 
 
 def create_cache() -> MemoryFullCache:

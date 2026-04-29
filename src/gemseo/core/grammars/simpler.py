@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.core.grammars.simple import SimpleGrammar
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
