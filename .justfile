@@ -46,8 +46,7 @@ doc $DOCSTRING_INHERITANCE_ENABLE="1" *args:
 # Build and serve documentation without API
 [group('doc')]
 doc-fast *args:
-    # uv pip install --no-deps -r requirements/doc-plugins.txt
-    just doc --config-file mkdocs-fast.yml {{args}}
+    just doc -- --config-file mkdocs-fast.yml {{args}}
 
 # Create and check PyPI distribution
 [group('packaging')]
