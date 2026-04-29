@@ -31,7 +31,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.core.data_converters.simple import SimpleGrammarDataConverter
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.core.grammars.simple import SimpleGrammar
 
 if TYPE_CHECKING:
     from gemseo.core.data_converters.base import ValueType

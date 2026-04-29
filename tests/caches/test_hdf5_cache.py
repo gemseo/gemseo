@@ -29,7 +29,7 @@ from gemseo.caches.factory import CacheFactory
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
-    from gemseo.caches.hdf5_cache import HDF5Cache
+    from gemseo.caches.hdf5 import HDF5Cache
 
 
 def create_cache(hdf_node_path="Dummy") -> HDF5Cache:

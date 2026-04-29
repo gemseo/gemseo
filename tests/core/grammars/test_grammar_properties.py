@@ -16,8 +16,8 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.core.grammars.grammar_properties import GrammarProperties
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.core.grammars.properties import GrammarProperties
+from gemseo.core.grammars.simple import SimpleGrammar
 
 exclude_names = pytest.mark.parametrize(
     "excluded_names",

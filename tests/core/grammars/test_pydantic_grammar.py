@@ -32,8 +32,8 @@ from strenum import StrEnum
 
 from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
-from gemseo.core.grammars.pydantic_grammar import _create_model
+from gemseo.core.grammars.pydantic import PydanticGrammar
+from gemseo.core.grammars.pydantic import _create_model
 from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 from gemseo.utils.testing.helpers import do_not_raise
 
@@ -44,7 +44,7 @@ from .pydantic_models import get_model3
 if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
 
-    from gemseo.core.grammars.pydantic_grammar import ModelType
+    from gemseo.core.grammars.pydantic import ModelType
 
 
 class ModelID(Enum):
@@ -388,7 +388,7 @@ def assert_model_equal(model, model_copy) -> None:
     """Assert that 2 models are identical grammar wise."""
     assert id(model_copy) != id(model)
     # assert model_copy.__name__ == model.__name__
-    assert model_copy.__module__ == "gemseo.core.grammars.pydantic_grammar"
+    assert model_copy.__module__ == "gemseo.core.grammars.pydantic"
 
     for field_name, field_info in model.__pydantic_fields__.items():
         field_info_copy = model_copy.__pydantic_fields__[field_name]

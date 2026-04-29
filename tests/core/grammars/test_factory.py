@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.core.grammars.factory import GrammarFactory
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
+from gemseo.core.grammars.simple import SimpleGrammar
 
 
 @pytest.fixture

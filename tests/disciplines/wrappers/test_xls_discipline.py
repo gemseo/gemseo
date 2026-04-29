@@ -33,7 +33,7 @@ from gemseo import create_scenario
 from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
-from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.discipline_execution import DiscParallelExecution
 from gemseo.disciplines.wrappers.xls_discipline import XLSDiscipline
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings

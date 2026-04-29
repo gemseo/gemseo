@@ -30,7 +30,7 @@ from typing import ClassVar
 
 from gemseo.core.data_converters.factory import DataConverterFactory
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.grammar_properties import GrammarProperties
+from gemseo.core.grammars.properties import GrammarProperties
 from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import update_namespaces
@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from gemseo.core.data_converters.base import BaseDataConverter
-    from gemseo.core.grammars.simple_grammar import SimpleGrammar
+    from gemseo.core.grammars.simple import SimpleGrammar
     from gemseo.core.namespaces import MutableNamespacesMapping
 
     SimpleGrammarTypes = Mapping[str, type[Any] | None]
@@ -87,7 +87,7 @@ class BaseGrammar(
         A name can be prefixed by a namespace.
         Never add a namespace by any other means
         than the method
-        [add_namespace()][gemseo.core.grammars.base_grammar.BaseGrammar.add_namespace].
+        [add_namespace()][gemseo.core.grammars.base.BaseGrammar.add_namespace].
     """
 
     name: str
@@ -507,7 +507,7 @@ class BaseGrammar(
         Returns:
             A simple grammar version of the current grammar.
         """
-        from gemseo.core.grammars.simple_grammar import SimpleGrammar
+        from gemseo.core.grammars.simple import SimpleGrammar
 
         grammar = SimpleGrammar(
             self.name,
@@ -629,7 +629,7 @@ class BaseGrammar(
         Warning:
            Never add a namespace by any other means
            than the method
-           [add_namespace()][gemseo.core.grammars.base_grammar.BaseGrammar.add_namespace],
+           [add_namespace()][gemseo.core.grammars.base.BaseGrammar.add_namespace],
            e.g. do not write
            `my_discipline.io.input_grammar.update_from_names(["ns:foo"])`,
            but write instead:

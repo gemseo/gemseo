@@ -20,3 +20,16 @@ The modules `base_sensitivity_analysis`, `correlation_analysis`, `hsic_analysis`
 The modules `base_statistics`, `base_parametric_statistics`, `empirical_statistics`, `ot_parametric_statistics` and `sp_parametric_statistics` of the `gemseo.uncertainty.statistics` package were renamed to `base`, `base_parametric`, `empirical`, `ot_parametric` and `sp_parametric` respectively.
 The `gemseo.uncertainty.statistics.tolerance_interval.distribution` was renamed to `gemseo.uncertainty.statistics.tolerance_interval.base`.
 The `_settings` suffix were removed from the module names in `gemseo.uncertainty.distributions.base_settings`.
+The module `gemseo.caches.base_cache` was renamed to `gemseo.caches.base`.
+The module `gemseo.caches.base_full_cache` was renamed to `gemseo.caches.base_full`.
+The module `gemseo.caches.hdf5_cache` was renamed to `gemseo.caches.hdf5`.
+The module `gemseo.caches.memory_full_cache` was renamed to `gemseo.caches.memory_full`.
+The module `gemseo.caches.simple_cache` was renamed to `gemseo.caches.simple`.
+The module `gemseo.core.grammars.base_grammar` was renamed to `gemseo.core.grammars.base`.
+The module `gemseo.core.grammars.json_grammar` was renamed to `gemseo.core.grammars.json`.
+The module `gemseo.core.grammars.grammar_properties` was renamed to `gemseo.core.grammars.properties`.
+The module `gemseo.core.grammars.pydantic_grammar` was renamed to `gemseo.core.grammars.pydantic`.
+The module `gemseo.core.grammars.simple_grammar` was renamed to `gemseo.core.grammars.simple`.
+The module `gemseo.core.grammars.simpler_grammar` was renamed to `gemseo.core.grammars.simpler`.
+The module `gemseo.core.parallel_execution.disc_parallel_execution` was renamed to `gemseo.core.parallel_execution.discipline_execution`.
+The module `gemseo.core.parallel_execution.disc_parallel_linearization` was renamed to `gemseo.core.parallel_execution.discipline_linearization`.

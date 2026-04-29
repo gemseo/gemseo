@@ -28,7 +28,7 @@ from typing import Literal
 from typing import overload
 
 from gemseo.caches._hdf5_file_singleton import HDF5FileSingleton
-from gemseo.caches.base_full_cache import BaseFullCache
+from gemseo.caches.base_full import BaseFullCache
 from gemseo.caches.cache_entry import CacheEntry
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized

@@ -24,7 +24,7 @@ from gemseo.utils.source_parsing import get_callable_argument_defaults
 from gemseo.utils.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
-    from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.core.grammars.json import JSONGrammar
     from gemseo.typing import StrKeyMapping
 
 

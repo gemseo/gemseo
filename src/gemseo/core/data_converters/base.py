@@ -35,12 +35,11 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.grammars.base import BaseGrammar
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
 
     ValueType = int | float | complex | NumberArray
-
 
 T = TypeVar("T", bound="BaseGrammar")
 

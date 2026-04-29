@@ -23,7 +23,7 @@ from numpy import array
 from numpy import concatenate
 from numpy.testing import assert_allclose
 
-from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.discipline_execution import DiscParallelExecution
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.surrogate import SurrogateDiscipline
 from gemseo.machine_learning.regression.models.gpr_settings import (

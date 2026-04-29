@@ -22,7 +22,7 @@ from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.grammars.required_names import RequiredNames
 
 if TYPE_CHECKING:
-    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.grammars.base import BaseGrammar
 
 FACTORY = GrammarFactory()
 

@@ -32,7 +32,7 @@ from numpy import array
 from numpy import concatenate
 from numpy import vstack
 
-from gemseo.caches.base_cache import BaseCache
+from gemseo.caches.base import BaseCache
 from gemseo.caches.cache_entry import CacheEntry
 from gemseo.caches.utils import hash_data
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
@@ -56,9 +56,9 @@ class BaseFullCache(BaseCache):
     """Base cache to store all the data, either in memory or on the disk.
 
     See Also:
-        [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache]:
+        [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache]:
         store all the data in memory.
-        [HDF5Cache][gemseo.caches.hdf5_cache.HDF5Cache]:
+        [HDF5Cache][gemseo.caches.hdf5.HDF5Cache]:
         store all the data in an HDF5 file.
     """
 

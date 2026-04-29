@@ -61,7 +61,7 @@ class _Functor:
                 with the right input data;
                 it can be almost free if the corresponding output data
                 have been stored in the
-                [cache][gemseo.core.parallel_execution.disc_parallel_linearization.DiscParallelLinearization.cache].
+                [cache][gemseo.core.parallel_execution.discipline_linearization.DiscParallelLinearization.cache].
         """  # noqa:D205 D212 D415
         self.__disc = discipline
         self.__execute = execute

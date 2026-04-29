@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.caches.base_cache import BaseCache
+from gemseo.caches.base import BaseCache
 from gemseo.caches.cache_entry import CacheEntry
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 

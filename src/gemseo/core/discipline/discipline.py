@@ -741,8 +741,8 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         Note:
             Filtering of non-numeric inputs is only supported when the discipline uses
-            a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a
-            [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].
+            a [JSONGrammar][gemseo.core.grammars.json.JSONGrammar] or a
+            [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar].
 
         Args:
             input_names: The input variables
@@ -781,8 +781,8 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         Note:
             Filtering of non-numeric outputs is only supported when the discipline uses
-            a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar] or a
-            [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar].
+            a [JSONGrammar][gemseo.core.grammars.json.JSONGrammar] or a
+            [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar].
 
         Args:
             output_names: The outputs to be differentiated.

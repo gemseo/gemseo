@@ -30,14 +30,14 @@ from typing import Final
 from strenum import StrEnum
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.core.grammars.base_grammar import BaseGrammar
+from gemseo.core.grammars.base import BaseGrammar
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 
 class GrammarFactory(BaseFactory[BaseGrammar]):
-    """A factory of [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar]."""
+    """A factory of [BaseGrammar][gemseo.core.grammars.base.BaseGrammar]."""
 
     _CLASS = BaseGrammar
     _PACKAGE_NAMES = ("gemseo.core.grammars",)
@@ -56,7 +56,7 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
 
         Args:
             class_name: The name of a class deriving
-                from [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar].
+                from [BaseGrammar][gemseo.core.grammars.base.BaseGrammar].
             name: The name to be given to the grammar.
             search_file: Whether to search for a JSON grammar file.
                 This argument is considered to be `False` when the option

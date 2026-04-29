@@ -26,7 +26,7 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
-from gemseo.caches.hdf5_cache import HDF5Cache
+from gemseo.caches.hdf5 import HDF5Cache
 from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings

@@ -28,11 +28,11 @@ from pydantic.fields import FieldInfo
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GrammarFactory
-from gemseo.core.grammars.grammar_properties import GrammarProperties
-from gemseo.core.grammars.json_grammar import JSONGrammar
-from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
-from gemseo.core.grammars.simple_grammar import SimpleGrammar
-from gemseo.core.grammars.simpler_grammar import SimplerGrammar
+from gemseo.core.grammars.json import JSONGrammar
+from gemseo.core.grammars.properties import GrammarProperties
+from gemseo.core.grammars.pydantic import PydanticGrammar
+from gemseo.core.grammars.simple import SimpleGrammar
+from gemseo.core.grammars.simpler import SimplerGrammar
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
 from gemseo.utils.testing.helpers import do_not_raise
 
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
 
-    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.grammars.base import BaseGrammar
 
 FACTORY = GrammarFactory()
 

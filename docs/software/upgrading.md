@@ -1465,7 +1465,7 @@ The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to
     - `write_schema` has been renamed to `BaseGrammar.write`.
     - `schema_dict` has been renamed to `BaseGrammar.schema`.
     - `JSONGrammar` class attributes removed has been renamed to `PROPERTIES_FIELD`, `REQUIRED_FIELD`, `TYPE_FIELD`, `OBJECT_FIELD`, `TYPES_MAP`.
-    - `AbstractGrammar` has been renamed to [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar].
+    - `AbstractGrammar` has been renamed to `BaseGrammar`.
 - `AnalyticDiscipline.expr_symbols_dict` has been renamed to `AnalyticDiscipline.output_names_to_symbols`.
 - `AtomicExecSequence.get_state_dict` has been renamed to `AtomicExecSequence.get_statuses`.
 - In `CompositeExecSequence`:

@@ -47,12 +47,11 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from pathlib import Path
 
-    from gemseo.core.grammars.json_grammar import JSONGrammar
+    from gemseo.core.grammars.json import JSONGrammar
     from gemseo.typing import StrKeyMapping
     from gemseo.utils.pydantic import BaseSettings
 
 LOGGER = logging.getLogger(__name__)
-
 
 T = TypeVar("T", bound=object)
 
@@ -451,7 +450,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         }
 
         # Import locally to avoid a cyclic import.
-        from gemseo.core.grammars.json_grammar import JSONGrammar
+        from gemseo.core.grammars.json import JSONGrammar
 
         grammar = JSONGrammar(name)
         grammar.update_from_data(default_option_values)

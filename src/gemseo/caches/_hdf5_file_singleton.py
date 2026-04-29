@@ -36,7 +36,7 @@ from numpy import str_
 from scipy.sparse import csr_array
 from strenum import StrEnum
 
-from gemseo.caches.base_cache import BaseCache
+from gemseo.caches.base import BaseCache
 from gemseo.caches.utils import hash_data
 from gemseo.caches.utils import to_real
 from gemseo.utils.compatibility.scipy import sparse_classes

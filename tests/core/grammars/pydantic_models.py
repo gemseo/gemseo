@@ -25,7 +25,7 @@ from pydantic import Field
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 
 if TYPE_CHECKING:
-    from gemseo.core.grammars.pydantic_grammar import ModelType
+    from gemseo.core.grammars.pydantic import ModelType
 
 
 def get_model1() -> ModelType:

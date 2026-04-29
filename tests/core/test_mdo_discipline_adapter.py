@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.core.functions.array_function import ArrayFunction
-    from gemseo.core.grammars.grammar_properties import GrammarProperties
+    from gemseo.core.grammars.properties import GrammarProperties
 
 INPUT_VECTOR = array([1.0, 1.0])
 

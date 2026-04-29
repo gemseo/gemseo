@@ -40,8 +40,8 @@ from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settin
 from gemseo.caches._hdf5_file_singleton import HDF5FileSingleton
 from gemseo.caches.cache_entry import CacheEntry
 from gemseo.caches.factory import CacheFactory
-from gemseo.caches.hdf5_cache import HDF5Cache
-from gemseo.caches.simple_cache import SimpleCache
+from gemseo.caches.hdf5 import HDF5Cache
+from gemseo.caches.simple import SimpleCache
 from gemseo.caches.utils import hash_data
 from gemseo.caches.utils import to_real
 from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
@@ -52,7 +52,7 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from gemseo.caches.memory_full_cache import MemoryFullCache
+    from gemseo.caches.memory_full import MemoryFullCache
 
 DIR_PATH = Path(__file__).parent
 

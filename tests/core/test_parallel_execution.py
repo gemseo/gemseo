@@ -40,8 +40,8 @@ from gemseo.core.functions.discipline_adapter_generator import (
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
-from gemseo.core.parallel_execution.disc_parallel_linearization import (
+from gemseo.core.parallel_execution.discipline_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.discipline_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1

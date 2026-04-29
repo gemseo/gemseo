@@ -23,8 +23,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.core.parallel_execution.disc_parallel_execution import DiscParallelExecution
-from gemseo.core.parallel_execution.disc_parallel_linearization import (
+from gemseo.core.parallel_execution.discipline_execution import DiscParallelExecution
+from gemseo.core.parallel_execution.discipline_linearization import (
     DiscParallelLinearization,
 )
 from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings

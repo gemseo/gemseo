@@ -46,7 +46,7 @@ from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import Discipline
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
+from gemseo.core.grammars.pydantic import PydanticGrammar
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.mda.base import BaseMDA
 from gemseo.mda.base_settings import BaseMDASettings

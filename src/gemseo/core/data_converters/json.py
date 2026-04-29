@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Data values to NumPy arrays and vice versa from a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar]."""  # noqa: E501
+"""Data values to NumPy arrays and vice versa from a [JSONGrammar][gemseo.core.grammars.json.JSONGrammar]."""  # noqa: E501
 
 from __future__ import annotations
 
@@ -23,11 +23,11 @@ from gemseo.core.data_converters.base import BaseDataConverter
 from gemseo.core.grammars._python_to_json import PYTHON_TO_JSON_TYPES
 
 if TYPE_CHECKING:
-    from gemseo.core.grammars.json_grammar import JSONGrammar  # noqa: F401
+    from gemseo.core.grammars.json import JSONGrammar  # noqa: F401
 
 
 class JSONGrammarDataConverter(BaseDataConverter["JSONGrammar"]):
-    """Data values to NumPy arrays and vice versa from a [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar]."""  # noqa: E501
+    """Data values to NumPy arrays and vice versa from a [JSONGrammar][gemseo.core.grammars.json.JSONGrammar]."""  # noqa: E501
 
     @staticmethod
     @cache

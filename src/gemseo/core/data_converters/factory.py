@@ -22,7 +22,7 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.core.data_converters.base import BaseDataConverter
 
 if TYPE_CHECKING:
-    from gemseo.core.grammars.base_grammar import BaseGrammar  # noqa: F401
+    from gemseo.core.grammars.base import BaseGrammar  # noqa: F401
 
 
 class DataConverterFactory(BaseFactory[BaseDataConverter["BaseGrammar"]]):

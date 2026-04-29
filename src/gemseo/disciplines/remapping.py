@@ -29,7 +29,7 @@ from gemseo.core.discipline import Discipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
-    from gemseo.core.grammars.base_grammar import BaseGrammar
+    from gemseo.core.grammars.base import BaseGrammar
     from gemseo.typing import StrKeyMapping
 
 Indices = tuple[str, int | Iterable[int]]

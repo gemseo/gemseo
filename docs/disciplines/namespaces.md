@@ -40,6 +40,6 @@ The discipline that wraps a simulation code, such as [AutoPyDiscipline][gemseo.d
 
 After instantiation, a namespace may be added to the discipline, which may make the names of the grammar elements inconsistent with the names of the local variables in the discipline wrapper. To this aim, the method `.Discipline._run()` takes the inputs with names without namespaces as argument and can return the outputs with names without namespaces.
 
-Besides, [BaseGrammar][gemseo.core.grammars.base_grammar.BaseGrammar] has the attributes [to_namespaced][gemseo.core.grammars.base_grammar.BaseGrammar.to_namespaced] and [from_namespaced][gemseo.core.grammars.base_grammar.BaseGrammar.from_namespaced] that map the names with and without namespace prefixes.
+Besides, [BaseGrammar][gemseo.core.grammars.base.BaseGrammar] has the attributes [to_namespaced][gemseo.core.grammars.base.BaseGrammar.to_namespaced] and [from_namespaced][gemseo.core.grammars.base.BaseGrammar.from_namespaced] that map the names with and without namespace prefixes.
 
 Finally, [Discipline.io.update_output_data][gemseo.core.discipline.io.IO.update_output_data] allows to pass variables names without namespace prefixes. This allows to adapt wrappers to support namespaces with only minor modifications.
