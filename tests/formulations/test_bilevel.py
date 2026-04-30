@@ -40,7 +40,6 @@ from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.formulations.bilevel import BiLevel
 from gemseo.formulations.bilevel_bcd import BiLevelBCD
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
@@ -594,9 +593,7 @@ def test_main_mda_settings(main_mda):
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
     sub_scenario = MDOScenario(
-        [AnalyticDiscipline({"z": "(x+y)**2"})],
-        design_space.filter(["y"], copy=True),
-        formulation_settings=DisciplinaryOpt_Settings(),
+        [AnalyticDiscipline({"z": "(x+y)**2"})], design_space.filter(["y"], copy=True)
     )
     sub_scenario.add_objective("z")
     sub_scenario.set_algorithm(NLOPT_COBYLA_Settings(max_iter=2))
@@ -749,11 +746,7 @@ def test_bilevel_no_mda2():
 
     sub_design_space_1 = DesignSpace()
     sub_design_space_1.add_variable("x_2")
-    sub_scenario_1 = MDOScenario(
-        [discipline_2],
-        sub_design_space_1,
-        formulation_settings=DisciplinaryOpt_Settings(),
-    )
+    sub_scenario_1 = MDOScenario([discipline_2], sub_design_space_1)
     sub_scenario_1.add_objective("obj")
 
     scenario = MDOScenario(
@@ -810,11 +803,7 @@ def test_bilevel_custom_mda1_and_custom_mda2():
 
     sub_design_space_1 = DesignSpace()
     sub_design_space_1.add_variable("x_2")
-    sub_scenario_1 = MDOScenario(
-        [discipline_2, discipline_3],
-        sub_design_space_1,
-        formulation_settings=DisciplinaryOpt_Settings(),
-    )
+    sub_scenario_1 = MDOScenario([discipline_2, discipline_3], sub_design_space_1)
     sub_scenario_1.add_objective("obj")
 
     scenario = MDOScenario(
@@ -860,11 +849,7 @@ def test_bilevel_custom_mda1_with_mda2():
 
     sub_design_space_1 = DesignSpace()
     sub_design_space_1.add_variable("x_2")
-    sub_scenario_1 = MDOScenario(
-        [discipline_2, discipline_3],
-        sub_design_space_1,
-        formulation_settings=DisciplinaryOpt_Settings(),
-    )
+    sub_scenario_1 = MDOScenario([discipline_2, discipline_3], sub_design_space_1)
     sub_scenario_1.add_objective("obj")
 
     scenario = MDOScenario(
@@ -891,12 +876,7 @@ def test_bilevel_warm_start_disciplines_as_subscenario():
     struct = SobieskiStructure()
     mission = SobieskiMission()
 
-    sc_str = MDOScenario(
-        [struct],
-        deepcopy(ds).filter("x_1"),
-        name="StructureScenario",
-        formulation_settings=DisciplinaryOpt_Settings(),
-    )
+    sc_str = MDOScenario([struct], deepcopy(ds).filter("x_1"), name="StructureScenario")
     sc_str.add_objective("y_11", minimize=False)
 
     # Discipline to be used as sub scenario
@@ -1008,9 +988,7 @@ def test_custom_mda2_with_mda1(generate_sobieski_bilevel_scenario, caplog):
     sub_design_space_1 = DesignSpace()
     sub_design_space_1.add_variable("x_2")
     sub_scenario_1 = MDOScenario(
-        [discipline_1, discipline_2, discipline_3],
-        sub_design_space_1,
-        formulation_settings=DisciplinaryOpt_Settings(),
+        [discipline_1, discipline_2, discipline_3], sub_design_space_1
     )
     sub_scenario_1.add_objective("obj")
 

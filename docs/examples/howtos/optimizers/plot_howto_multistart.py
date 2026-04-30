@@ -39,7 +39,6 @@ from gemseo.algos.opt.multi_start.settings.multi_start_settings import (
 )
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.post import BasicHistory_Settings
 from gemseo.scenarios.mdo import MDOScenario
 
@@ -47,17 +46,13 @@ from gemseo.scenarios.mdo import MDOScenario
 # ### 1. Build the multimodal problem
 #
 # We define a constrained problem with a multimodal objective $x^3 - x + 1$:
-objective = AnalyticDiscipline(expressions={"obj": "x**3-x+1"})
-constraint = AnalyticDiscipline(expressions={"cstr": "x**2+obj**2-1.5"})
+objective = AnalyticDiscipline({"obj": "x**3-x+1"})
+constraint = AnalyticDiscipline({"cstr": "x**2+obj**2-1.5"})
 
 design_space = DesignSpace()
 design_space.add_variable("x", lower_bound=-1.5, upper_bound=1.5, value=1.5)
 
-scenario = MDOScenario(
-    [objective, constraint],
-    design_space,
-    formulation_settings=DisciplinaryOpt_Settings(),
-)
+scenario = MDOScenario([objective, constraint], design_space)
 scenario.add_objective("obj")
 scenario.add_constraint("cstr", constraint_type="ineq")
 

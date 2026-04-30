@@ -21,7 +21,6 @@ import pytest
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.discipline import check_disciplines_consistency
@@ -67,9 +66,7 @@ def disciplines_and_scenario() -> list[MyDiscipline]:
     ]
     design_space = DesignSpace()
     design_space.add_variable("xa")
-    scenario = MDOScenario(
-        sub_disciplines, design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario(sub_disciplines, design_space)
     scenario.add_objective("ya")
     return [*disciplines, scenario]
 

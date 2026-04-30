@@ -1302,7 +1302,7 @@ def test_path_serialization(tmp_path) -> None:
 def test_repr_html() -> None:
     """Check Discipline._repr_html_."""
     assert AnalyticDiscipline(
-        name="foo", expressions={"z": "b+a", "y": "c+d+e"}
+        {"z": "b+a", "y": "c+d+e"}, name="foo"
     )._repr_html_() == REPR_HTML_WRAPPER.format(
         "foo<br/><ul><li>Inputs: a, b, c, d, e</li><li>Outputs: y, z</li></ul>"
     )

@@ -37,7 +37,7 @@ from gemseo.utils.testing.helpers import image_comparison
 def correlation() -> CorrelationAnalysis:
     """A correlation analysis."""
     discipline = create_discipline(
-        "AnalyticDiscipline", expressions={"y1": "x1+2*x2", "y2": "x1-2*x2"}
+        "AnalyticDiscipline", {"y1": "x1+2*x2", "y2": "x1-2*x2"}
     )
     space = ParameterSpace()
     for name in ["x1", "x2"]:

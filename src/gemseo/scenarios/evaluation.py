@@ -501,15 +501,15 @@ class EvaluationScenario(BaseMonitoredProcess):
         """
         self.to_hdf(self._backup_file_path, append=True)
 
-    def _get_string_representation(self) -> str:
-        msg = MultiLineString()
-        msg.add(self.name)
-        msg.indent()
-        msg.add(
+    def _get_string_representation(self) -> MultiLineString:
+        mls = MultiLineString()
+        mls.add(self.name)
+        mls.indent()
+        mls.add(
             "Disciplines: {}", pretty_str(self.formulation.disciplines, delimiter=" ")
         )
-        msg.add("MDO formulation: {}", self.formulation.__class__.__name__)
-        return str(msg)
+        mls.add("MDO formulation: {}", self.formulation.__class__.__name__)
+        return mls
 
     def xdsmize(
         self,

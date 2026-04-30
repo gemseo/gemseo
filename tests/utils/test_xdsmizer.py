@@ -137,9 +137,7 @@ def elementary_discipline(input_name, output_name):
 
     The discipline is such as `output_name = input_name`.
     """
-    return create_discipline(
-        "AnalyticDiscipline", expressions={output_name: input_name}
-    )
+    return create_discipline("AnalyticDiscipline", {output_name: input_name})
 
 
 def test_expand(tmp_path) -> None:
@@ -228,7 +226,6 @@ def test_xdsmize_bilevel(options) -> None:
     sc_prop = MDOScenario(
         [propulsion],
         deepcopy(design_space).filter("x_3"),
-        formulation_settings=DisciplinaryOpt_Settings(),
         name="PropulsionScenario",
     )
     sc_prop.add_objective("y_34")
@@ -238,7 +235,6 @@ def test_xdsmize_bilevel(options) -> None:
     sc_aero = MDOScenario(
         [aerodynamics],
         deepcopy(design_space).filter("x_2"),
-        formulation_settings=DisciplinaryOpt_Settings(),
         name="AerodynamicsScenario",
     )
     sc_aero.add_objective("y_24", minimize=False)
@@ -248,7 +244,6 @@ def test_xdsmize_bilevel(options) -> None:
     sc_str = MDOScenario(
         [structure],
         deepcopy(design_space).filter("x_1"),
-        formulation_settings=DisciplinaryOpt_Settings(),
         name="StructureScenario",
     )
     sc_str.add_objective("y_11", minimize=False)
@@ -315,9 +310,7 @@ def test_xdsmize_nested_chain(options) -> None:
     design_space = DesignSpace()
     design_space.add_variable(get_name(1))
 
-    nested_chains = MDOScenario(
-        main_chain, design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    nested_chains = MDOScenario(main_chain, design_space)
     nested_chains.add_objective(get_name(5))
 
     assert_xdsm(nested_chains, **options("xdsmized_nested_chains"))
@@ -532,11 +525,7 @@ def test_xdsmize_chain_of_parallel_chain(options) -> None:
     design_space = DesignSpace()
     design_space.add_variable(get_name(1))
 
-    sce = MDOScenario(
-        [beg_chain, par_chain, end_chain],
-        design_space,
-        formulation_settings=DisciplinaryOpt_Settings(),
-    )
+    sce = MDOScenario([beg_chain, par_chain, end_chain], design_space)
     sce.add_objective(get_name(7))
     sce.add_constraint(get_name(5))
 
@@ -752,9 +741,7 @@ def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
     design_space = DesignSpace()
     design_space.add_variable("x")
     discipline = AnalyticDiscipline({"y": "x"})
-    scenario = MDOScenario(
-        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y")
 
     file_name = file_name or "xdsm"
@@ -807,7 +794,6 @@ def test_initial_node_title(cls, expected):
         scenario = cls(
             [discipline],
             design_space,
-            formulation_settings=DisciplinaryOpt_Settings(),
             name="foo",
         )
         scenario.add_objective("y")

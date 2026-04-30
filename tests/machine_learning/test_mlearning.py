@@ -33,7 +33,6 @@ from gemseo import create_dataset
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning import create_classification_model
 from gemseo.machine_learning import create_clustering_model
 from gemseo.machine_learning import create_mlearning_model
@@ -81,9 +80,7 @@ def dataset() -> Dataset:
     probability_space.add_random_variable(
         "x_2", OTUniformDistribution_Settings(minimum=0, maximum=1)
     )
-    scenario = MDOScenario(
-        [discipline], probability_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], probability_space)
     scenario.add_objective("y_1")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
     return scenario.to_dataset(opt_naming=False)

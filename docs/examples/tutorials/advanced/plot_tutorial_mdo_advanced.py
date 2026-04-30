@@ -34,7 +34,6 @@ from logging import WARNING
 from gemseo import create_discipline
 from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.scenarios.mdo import MDOScenario
@@ -83,10 +82,7 @@ slsqp_settings = SLSQP_Settings(
 # ### Build a sub-scenario for Propulsion
 # This sub-scenario will minimize SFC.
 sc_prop = MDOScenario(
-    (propulsion,),
-    design_space.filter("x_3", copy=True),
-    "PropulsionScenario",
-    DisciplinaryOpt_Settings(),
+    (propulsion,), design_space.filter("x_3", copy=True), name="PropulsionScenario"
 )
 sc_prop.add_objective("y_34")
 sc_prop.set_algorithm(slsqp_settings)
@@ -96,10 +92,7 @@ sc_prop.add_constraint("g_3", constraint_type="ineq")
 # ### Build a sub-scenario for Aerodynamics
 # This sub-scenario will minimize L/D.
 sc_aero = MDOScenario(
-    (aerodynamics,),
-    design_space.filter("x_2", copy=True),
-    "AerodynamicsScenario",
-    formulation_settings=DisciplinaryOpt_Settings(),
+    (aerodynamics,), design_space.filter("x_2", copy=True), name="AerodynamicsScenario"
 )
 sc_aero.add_objective("y_24", minimize=False)
 sc_aero.set_algorithm(slsqp_settings)
@@ -112,8 +105,7 @@ sc_aero.add_constraint("g_2", constraint_type="ineq")
 sc_str = MDOScenario(
     (structure,),
     design_space.filter("x_1", copy=True),
-    "StructureScenario",
-    DisciplinaryOpt_Settings(),
+    name="StructureScenario",
 )
 sc_str.add_objective("y_11", minimize=False)
 sc_str.add_constraint("g_1", constraint_type="ineq")

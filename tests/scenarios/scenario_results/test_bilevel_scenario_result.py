@@ -25,7 +25,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.bilevel_settings import BiLevel_Settings
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
@@ -104,7 +103,6 @@ def test_no_databases():
     sub_scenario = MDOScenario(
         [AnalyticDiscipline({"z": "x+y"})],
         design_space.filter(["y"], copy=True),
-        formulation_settings=DisciplinaryOpt_Settings(),
         name="FooScenario",
     )
     sub_scenario.add_objective("z")

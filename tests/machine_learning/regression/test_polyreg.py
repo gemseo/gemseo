@@ -36,7 +36,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
 from gemseo.machine_learning.regression.models.polyreg_settings import (
     PolynomialRegressor_Settings,
@@ -104,9 +103,7 @@ def dataset_from_cache() -> IODataset:
     design_space = DesignSpace()
     design_space.add_variable("x_2", lower_bound=-1, upper_bound=2)
     design_space.add_variable("x_1", lower_bound=-1, upper_bound=2)
-    scenario = MDOScenario(
-        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y_1")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
     return discipline.cache.to_dataset("dataset_name")

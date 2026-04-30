@@ -41,7 +41,7 @@ from gemseo.settings import OT_OPT_LHS_Settings
 # %%
 # ### 1. Build the discipline, design space and scenario
 #
-discipline = AnalyticDiscipline(expressions={"y": "x**2"})
+discipline = AnalyticDiscipline({"y": "x**2"})
 
 design_space = DesignSpace()
 design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)

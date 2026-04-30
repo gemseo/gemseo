@@ -45,7 +45,6 @@ from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.settings.doe import PYDOE_FULLFACT_Settings
-from gemseo.settings.formulations import DisciplinaryOpt_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
 from gemseo.settings.post import OptHistoryView_Settings
 
@@ -193,11 +192,7 @@ design_space_inner_scenario
 # %%
 # We then create our [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 # The default solver will be `NLOPT_COBYLA` with at most 100 iterations.
-inner_scenario = MDOScenario(
-    [objective, constraint],
-    design_space_inner_scenario,
-    formulation_settings=DisciplinaryOpt_Settings(),
-)
+inner_scenario = MDOScenario([objective, constraint], design_space_inner_scenario)
 inner_scenario.add_objective("f")
 inner_scenario.add_constraint("g", constraint_type="ineq", value=2)
 inner_scenario.set_algorithm(NLOPT_COBYLA_Settings(max_iter=100))
@@ -264,11 +259,7 @@ design_space_outer_scenario
 # We then create our [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
 # and we set the same objective function.
 #
-outer_scenario = MDOScenario(
-    (adapted_inner_scenario,),
-    design_space_outer_scenario,
-    formulation_settings=DisciplinaryOpt_Settings(),
-)
+outer_scenario = MDOScenario((adapted_inner_scenario,), design_space_outer_scenario)
 outer_scenario.add_objective("f")
 
 # %%

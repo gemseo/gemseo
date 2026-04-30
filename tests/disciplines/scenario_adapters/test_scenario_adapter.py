@@ -51,7 +51,6 @@ from gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter import 
     MDOObjectiveScenarioAdapter,
 )
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
@@ -305,10 +304,7 @@ def test_compute_jacobian_exceptions(scenario) -> None:
 def build_struct_scenario():
     ds = SobieskiDesignSpace()
     sc_str = MDOScenario(
-        [SobieskiStructure()],
-        ds.filter("x_1", copy=True),
-        name="StructureScenario",
-        formulation_settings=DisciplinaryOpt_Settings(),
+        [SobieskiStructure()], ds.filter("x_1", copy=True), name="StructureScenario"
     )
     sc_str.add_objective("y_11", minimize=False)
     sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
@@ -319,10 +315,7 @@ def build_struct_scenario():
 def build_prop_scenario():
     ds = SobieskiDesignSpace()
     sc_prop = MDOScenario(
-        [SobieskiPropulsion()],
-        ds.filter("x_3", copy=True),
-        name="PropulsionScenario",
-        formulation_settings=DisciplinaryOpt_Settings(),
+        [SobieskiPropulsion()], ds.filter("x_3", copy=True), name="PropulsionScenario"
     )
     sc_prop.add_objective("y_34")
     sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
@@ -570,9 +563,7 @@ def test_parallel_adapter(tmp_wd, scenario):
     )
     design_space = SobieskiDesignSpace()
     design_space.filter(["x_shared"])
-    mdo_scenario = MDOScenario(
-        [adapter], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    mdo_scenario = MDOScenario([adapter], design_space)
     mdo_scenario.add_objective("y_4", minimize=False)
     mdo_scenario.execute(LHS_Settings(n_samples=10, n_processes=2))
     assert len(list(tmp_wd.rglob("test_*.h5"))) == 10
