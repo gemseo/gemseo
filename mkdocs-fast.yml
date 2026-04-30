@@ -191,7 +191,6 @@ nav:
       - Scenario:
           - Monitoring the execution of a scenario: scenario/monitoring.md
           - Coupling: generated/examples/howtos/coupling
-          - Study analysis: generated/examples/bulk/study_analysis
           - Scenario examples: generated/examples/howtos/scenario
           - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda
           - Namespaces: generated/examples/bulk/namespaces
