@@ -38,10 +38,10 @@ and preventing the discipline from running with inconsistent data.
 
 The different grammar types are:
 
-- [SimplerGrammar][gemseo.core.grammars.simpler_grammar.SimplerGrammar]: defines variable names only, with no value validation.
-- [SimpleGrammar][gemseo.core.grammars.simple_grammar.SimpleGrammar]: defines variable names and their type (pure Python types only).
-- [JSONGrammar][gemseo.core.grammars.json_grammar.JSONGrammar]: validates variable values against a JSON Schema.
-- [PydanticGrammar][gemseo.core.grammars.pydantic_grammar.PydanticGrammar]: validates variable values against a Pydantic model,
+- [SimplerGrammar][gemseo.core.grammars.simpler.SimplerGrammar]: defines variable names only, with no value validation.
+- [SimpleGrammar][gemseo.core.grammars.simple.SimpleGrammar]: defines variable names and their type (pure Python types only).
+- [JSONGrammar][gemseo.core.grammars.json.JSONGrammar]: validates variable values against a JSON Schema.
+- [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar]: validates variable values against a Pydantic model,
   enabling fine-grained validation rules and natural definition.
 
 !!! how-to

@@ -103,7 +103,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 - ### __Study analysis__
 
     [:octicons-book-24: User guide](interface/study_analysis.md)
-    [:octicons-play-24: Examples][study-analysis-examples]
+    [:octicons-play-24: Examples][tutorial-prototyping-a-multidisciplinary-study]
 
     ---
 
@@ -250,7 +250,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
     [distribution][gemseo.uncertainty.distributions],
     [uncertain space][gemseo.algos.parameter_space],
     [empirical and parametric statistics][gemseo.uncertainty.statistics.base],
-    [distribution fitting][gemseo.uncertainty.distributions.base_distribution_fitter] and
+    [distribution fitting][gemseo.uncertainty.distributions.base_fitter] and
     [sensitivity analysis][gemseo.uncertainty.sensitivity].
 
     Based on
