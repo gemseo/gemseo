@@ -937,11 +937,36 @@ def test_read_write_failure(tmp_wd, index) -> None:
         DesignSpace.from_csv(testfile)
 
 
-def test_dict_to_array() -> None:
+@pytest.mark.parametrize(
+    ("dict_", "array_"),
+    [
+        (
+            {"x": array([1.0, 2.0]), "y": array([3.0, 4.0, 5.0])},
+            array([1.0, 2.0, 3.0, 4.0, 5.0]),
+        ),
+        (
+            {
+                "x": array([[1.0, 2.0], [-1.0, -2.0]]),
+                "y": array([[3.0, 4.0, 5.0], [-3.0, -4.0, -5.0]]),
+            },
+            array([[1.0, 2.0, 3.0, 4.0, 5.0], [-1.0, -2.0, -3.0, -4.0, -5.0]]),
+        ),
+    ],
+)
+def test_dict_to_array(dict_, array_) -> None:
+    """Check the conversion from dictionary to array and vice-versa."""
+    ds = DesignSpace()
+    ds.add_variable("x", size=2)
+    ds.add_variable("y", size=3)
+    assert_array_equal(ds.convert_dict_to_array(dict_), array_)
+    assert_equal(ds.convert_array_to_dict(array_), dict_)
+
+
+def test_dict_to_array_key_error() -> None:
+    """Chech the KeyError when converting an incomplete dictionary to an array."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
     design_space.add_variable("y", lower_bound=-2.0, upper_bound=2.0)
-
     with pytest.raises(KeyError, match="'y'"):
         design_space.convert_dict_to_array({"x": array([1.0])})
 

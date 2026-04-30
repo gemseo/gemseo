@@ -1883,7 +1883,7 @@ class DesignSpace:
         data = tuple(design_values[name] for name in variable_names)
         # TODO: remove astype when numpy >= 2,
         # since int62 will be the default on windows.
-        return concatenate(data).astype(self.__get_common_dtype(data))
+        return concatenate(data, axis=-1).astype(self.__get_common_dtype(data))
 
     def get_pretty_table(
         self,
