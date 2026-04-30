@@ -46,13 +46,13 @@ if TYPE_CHECKING:
 @pytest.fixture
 def an_analytic_discipline() -> Discipline:
     """Analytic discipline."""
-    return create_discipline("AnalyticDiscipline", expressions={"y": "x"})
+    return create_discipline("AnalyticDiscipline", {"y": "x"})
 
 
 @pytest.fixture
 def a_crashing_analytic_discipline() -> Discipline:
     """Analytic discipline crashing when x=0."""
-    return create_discipline("AnalyticDiscipline", expressions={"y": "1.0/x"})
+    return create_discipline("AnalyticDiscipline", {"y": "1.0/x"})
 
 
 @pytest.fixture

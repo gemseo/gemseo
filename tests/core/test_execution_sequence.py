@@ -33,7 +33,6 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 )
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
@@ -227,10 +226,7 @@ def test_sub_scenario() -> None:
     d1 = SobieskiPropulsion()
     design_space = SobieskiDesignSpace()
     sc_prop = MDOScenario(
-        [d1],
-        design_space.filter("x_3", copy=True),
-        name="PropulsionScenario",
-        formulation_settings=DisciplinaryOpt_Settings(),
+        [d1], design_space.filter("x_3", copy=True), name="PropulsionScenario"
     )
     sc_prop.add_objective("y_34")
     d2 = MDOScenarioAdapter(sc_prop, [], [])

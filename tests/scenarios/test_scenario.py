@@ -52,7 +52,6 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.formulations.mdf_settings import MDF_Settings
@@ -590,9 +589,7 @@ def complex_step_scenario() -> MDOScenario:
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
             self.io.data["y"] = self.io.data["x"]
 
-    scenario = MDOScenario(
-        [MyDiscipline()], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([MyDiscipline()], design_space)
     scenario.add_objective("y")
     scenario.set_differentiation_method(scenario.DifferentiationMethod.COMPLEX_STEP)
     return scenario
@@ -688,9 +685,7 @@ def scenario_with_non_float_variables() -> MDOScenario:
     discipline.io.input_grammar.defaults["z"] = "some_str"
     discipline.io.input_grammar.defaults["w"] = array(1, dtype=int64)
 
-    scenario = MDOScenario(
-        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y")
     return scenario
 
@@ -748,22 +743,14 @@ def test_check_disciplines() -> None:
         f"which ({discipline_1.name}|({discipline_2.name})), "
         "compute the same outputs: {'y'}",
     ):
-        MDOScenario(
-            [discipline_1, discipline_2],
-            design_space,
-            formulation_settings=DisciplinaryOpt_Settings(),
-        )
+        MDOScenario([discipline_1, discipline_2], design_space)
 
 
 @pytest.fixture
 def identity_scenario() -> MDOScenario:
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
-    scenario = MDOScenario(
-        [AnalyticDiscipline({"y": "x", "z": "x"})],
-        design_space,
-        formulation_settings=DisciplinaryOpt_Settings(),
-    )
+    scenario = MDOScenario([AnalyticDiscipline({"y": "x", "z": "x"})], design_space)
     scenario.add_objective("z")
     return scenario
 
@@ -1010,9 +997,7 @@ def test_scenario_to_dataset(tmp_wd):
     design_space.add_variable("x_float", size=2)
     design_space.add_variable("x_int", type_=DesignSpace.DesignVariableType.INTEGER)
 
-    scenario = MDOScenario(
-        [MyDisc()], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([MyDisc()], design_space)
     scenario.add_objective("y1")
     scenario.add_observable("y2")
     scenario.add_observable("name")
@@ -1051,9 +1036,7 @@ def test_opt_and_doe(use_doe_first, expected):
     discipline = AnalyticDiscipline({"f": "x**2"})
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=-0.5, upper_bound=1.0, value=1.0)
-    scenario = MDOScenario(
-        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("f")
     if use_doe_first:
         scenario.execute(CustomDOE_Settings(samples=array([[0.123]])))
@@ -1122,9 +1105,7 @@ def test_listener_dataset():
 
     discipline = AnalyticDiscipline({"y": "2*x"})
 
-    scenario = MDOScenario(
-        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y")
 
     def callback(x):

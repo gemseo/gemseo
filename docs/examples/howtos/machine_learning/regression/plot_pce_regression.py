@@ -50,8 +50,8 @@ from gemseo.uncertainty.distributions.openturns.uniform_settings import (
 #       Engineering design via surrogate modelling: a practical guide. Wiley, 2008.
 discipline = create_discipline(
     "AnalyticDiscipline",
+    {"y": "(6*x-2)**2*sin(12*x-4)"},
     name="f",
-    expressions={"y": "(6*x-2)**2*sin(12*x-4)"},
 )
 # %%
 # and seek to approximate it over the input space

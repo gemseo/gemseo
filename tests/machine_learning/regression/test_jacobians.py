@@ -40,7 +40,6 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
 from gemseo.machine_learning.regression.models.linreg_settings import (
     LinearRegressor_Settings,
@@ -89,9 +88,7 @@ def create_dataset(
                 minimum=bounds["lower_bound"], maximum=bounds["upper_bound"]
             ),
         )
-    scenario = MDOScenario(
-        [discipline], parameter_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], parameter_space)
     scenario.add_objective(objective_name)
     scenario.execute(LHS_Settings(n_samples=LEARNING_SIZE))
     return scenario.to_dataset(opt_naming=False)

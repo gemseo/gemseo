@@ -99,7 +99,6 @@ from gemseo.core.grammars.json import JSONGrammar
 from gemseo.datasets import DatasetClassName
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.machine_learning.regression.models.rbf import RBFRegressor
 from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
@@ -538,9 +537,7 @@ def training_dataset() -> IODataset:
     disc.set_cache(disc.CacheType.MEMORY_FULL)
     design_space = SobieskiDesignSpace()
     design_space.filter(input_names)
-    mdo_scenario = MDOScenario(
-        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    mdo_scenario = MDOScenario([disc], design_space)
     mdo_scenario.add_objective("y_4")
     mdo_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=10))
     return disc.cache.to_dataset()
@@ -884,7 +881,7 @@ def test_import_analytic_discipline(tmp_wd) -> None:
     """Check that an analytic discipline performs correctly after import."""
     file_path = "saved_discipline.pkl"
 
-    discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
+    discipline = create_discipline("AnalyticDiscipline", {"y": "2*x"})
     to_pickle(discipline, file_path)
     discipline.execute()
 

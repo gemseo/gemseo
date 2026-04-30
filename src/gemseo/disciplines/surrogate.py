@@ -140,12 +140,6 @@ class SurrogateDiscipline(Discipline):
         mls.add("Linearization mode: {}", self.linearization_mode)
         return mls
 
-    def __repr__(self) -> str:
-        return str(self._get_string_representation())
-
-    def _repr_html_(self) -> str:
-        return self._get_string_representation()._repr_html_()
-
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self.__check_validity_domain(input_data)
         return {

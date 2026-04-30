@@ -35,7 +35,6 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
 )
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.post import GradientSensitivity_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.gradient_sensitivity import GradientSensitivity
@@ -101,9 +100,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     design_space = SobieskiDesignSpace()
     inputs = [name for name in disc.io.input_grammar if not name.startswith("c_")]
     design_space.filter(inputs)
-    mdo_scenario = MDOScenario(
-        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    mdo_scenario = MDOScenario([disc], design_space)
     mdo_scenario.add_objective("y_12")
     mdo_scenario.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=True))
     mdo_scenario.post_process(
@@ -111,9 +108,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
             scale_gradients=scale_gradients, file_path="grad_sens", save=True
         )
     )
-    mdo_scenario2 = MDOScenario(
-        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    mdo_scenario2 = MDOScenario([disc], design_space)
     mdo_scenario2.add_objective("y_12")
     mdo_scenario2.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=False))
 

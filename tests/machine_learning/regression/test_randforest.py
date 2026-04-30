@@ -30,7 +30,6 @@ from numpy import array
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.machine_learning.regression.models.random_forest import (
     RandomForestRegressor,
 )
@@ -56,9 +55,7 @@ def dataset() -> Dataset:
     design_space = DesignSpace()
     design_space.add_variable("x_1", lower_bound=0.0, upper_bound=1.0)
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
-    scenario = MDOScenario(
-        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y_1")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
     return discipline.cache.to_dataset("dataset_name")

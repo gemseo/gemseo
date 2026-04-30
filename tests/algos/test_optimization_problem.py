@@ -73,7 +73,6 @@ from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.datasets.dataset import Dataset
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.datasets.optimization_dataset import OptimizationDataset
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
@@ -977,9 +976,7 @@ def test_2d_objective() -> None:
     design_space = SobieskiDesignSpace()
     inputs = disc.io.input_grammar
     design_space.filter([name for name in inputs if not name.startswith("c_")])
-    mdo_scenario = MDOScenario(
-        [disc], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    mdo_scenario = MDOScenario([disc], design_space)
     mdo_scenario.add_objective("y_12")
     mdo_scenario.execute(DiagonalDOE_Settings(n_samples=10))
 

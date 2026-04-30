@@ -27,7 +27,6 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
 )
 from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.caches.hdf5 import HDF5Cache
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.idf_settings import IDF_Settings
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.chain_settings import MDAChain_Settings
@@ -73,9 +72,7 @@ def sellar_use_case(tmp_wd, sellar_with_2d_array, sellar_disciplines):
         design_space = SellarDesignSpace()
         input_names = set(design_space) & discipline.io.input_grammar.keys()
         design_space = design_space.filter(input_names)
-        scenario = MDOScenario(
-            [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-        )
+        scenario = MDOScenario([discipline], design_space)
         scenario.add_objective(objective_name)
         scenario.execute(DiagonalDOE_Settings(n_samples=n_samples))
     design_variables = [X_SHARED, X_1]

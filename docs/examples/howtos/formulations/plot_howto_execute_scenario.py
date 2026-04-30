@@ -42,7 +42,6 @@ from __future__ import annotations
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.settings.opt import L_BFGS_B_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
@@ -55,14 +54,12 @@ from gemseo.settings.opt import SLSQP_Settings
 # An [MDOScenario][gemseo.scenarios.mdo.MDOScenario] is generated,
 # but it would also work with an
 # [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario].
-discipline = AnalyticDiscipline(expressions={"y": "x1+x2"})
+discipline = AnalyticDiscipline({"y": "x1+x2"})
 design_space = DesignSpace()
 design_space.add_variable("x1", lower_bound=-5, upper_bound=5)
 design_space.add_variable("x2", lower_bound=-5, upper_bound=5)
 
-scenario = MDOScenario(
-    (discipline,), design_space, formulation_settings=DisciplinaryOpt_Settings()
-)
+scenario = MDOScenario((discipline,), design_space)
 
 # %%
 # and add an objective function

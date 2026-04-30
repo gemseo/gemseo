@@ -37,7 +37,6 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.chains.chain import DisciplineChain
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
@@ -271,9 +270,7 @@ def test_doe_vectorize_scenario(
     if use_discipline_chain:
         discipline = DisciplineChain([discipline])
 
-    scenario = MDOScenario(
-        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("out")
     scenario.execute(
         MC_Settings(n_samples=N_SAMPLES, vectorize=vectorize, eval_jac=eval_jac)

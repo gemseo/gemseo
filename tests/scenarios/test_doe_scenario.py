@@ -35,7 +35,6 @@ from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.mdf_settings import MDF_Settings
 from gemseo.mda.chain_settings import MDAChain_Settings
@@ -181,11 +180,7 @@ def doe_scenario(unit_design_space, double_discipline) -> MDOScenario:
 
     Minimize y=func(x)=2x over [0,1].
     """
-    scenario = MDOScenario(
-        [double_discipline],
-        unit_design_space,
-        formulation_settings=DisciplinaryOpt_Settings(),
-    )
+    scenario = MDOScenario([double_discipline], unit_design_space)
     scenario.add_objective("y")
     return scenario
 
@@ -273,9 +268,7 @@ def test_export_to_dataset_with_repeated_inputs() -> None:
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
     design_space.add_variable("dv")
-    scenario = MDOScenario(
-        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("obj")
     samples = array([[1.0], [2.0], [1.0]])
     scenario.execute(CustomDOE_Settings(samples=samples))
@@ -289,9 +282,7 @@ def test_export_to_dataset_normalized_integers() -> None:
     discipline = AnalyticDiscipline({"obj": "2*dv"}, "f")
     design_space = DesignSpace()
     design_space.add_variable("dv", type_="integer", lower_bound=1, upper_bound=10)
-    scenario = MDOScenario(
-        [discipline], design_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("obj")
     samples = array([[1], [2], [10]])
     scenario.execute(CustomDOE_Settings(samples=samples))

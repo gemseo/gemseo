@@ -34,7 +34,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
@@ -211,11 +210,7 @@ def test_vectorization(eval_jac, cls, output_names, n):
     n_samples = 3
 
     # Create the reference results without vectorization.
-    scenario = MDOScenario(
-        [cls(n=n)],
-        SellarDesignSpace(n=n),
-        formulation_settings=DisciplinaryOpt_Settings(),
-    )
+    scenario = MDOScenario([cls(n=n)], SellarDesignSpace(n=n))
     scenario.add_objective(output_names[0])
     for output_name in output_names[1:]:
         scenario.add_observable(output_name)
@@ -225,11 +220,7 @@ def test_vectorization(eval_jac, cls, output_names, n):
     reference = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
     # Create the results with vectorization.
-    scenario = MDOScenario(
-        [cls(n=n)],
-        SellarDesignSpace(n=n),
-        formulation_settings=DisciplinaryOpt_Settings(),
-    )
+    scenario = MDOScenario([cls(n=n)], SellarDesignSpace(n=n))
     scenario.add_objective(output_names[0])
     for output_name in output_names[1:]:
         scenario.add_observable(output_name)
@@ -253,9 +244,7 @@ def test_vectorization_sellar2_y_1(eval_jac, n):
     input_space.add_variable("y_1", size=n, lower_bound=0.0, upper_bound=1.0)
 
     # Create the reference results without vectorization.
-    scenario = MDOScenario(
-        [Sellar2(n=n)], input_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([Sellar2(n=n)], input_space)
     scenario.add_objective("y_2")
     scenario.execute(
         MC_Settings(n_samples=n_samples, vectorize=False, eval_jac=eval_jac)
@@ -266,9 +255,7 @@ def test_vectorization_sellar2_y_1(eval_jac, n):
     input_space.add_variable("y_1", size=n, lower_bound=0.0, upper_bound=1.0)
 
     # Create the results with vectorization.
-    scenario = MDOScenario(
-        [Sellar2(n=n)], input_space, formulation_settings=DisciplinaryOpt_Settings()
-    )
+    scenario = MDOScenario([Sellar2(n=n)], input_space)
     scenario.add_objective("y_2")
     scenario.execute(
         MC_Settings(n_samples=n_samples, vectorize=True, eval_jac=eval_jac)

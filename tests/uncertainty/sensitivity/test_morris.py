@@ -65,7 +65,7 @@ def discipline() -> AnalyticDiscipline:
     """The discipline used by the main Morris analysis."""
     return create_discipline(
         "AnalyticDiscipline",
-        expressions=FUNCTION["expression"],
+        FUNCTION["expression"],
         name=FUNCTION["name"],
     )
 
@@ -194,7 +194,7 @@ def test_morris_sort_parameters(morris, output, expected) -> None:
 def test_morris_with_nsamples() -> None:
     """Check the number of replicates when the number of samples is specified."""
     expressions = {"y": "x1+x2"}
-    discipline = create_discipline("AnalyticDiscipline", expressions=expressions)
+    discipline = create_discipline("AnalyticDiscipline", expressions)
     space = ParameterSpace()
     space.add_random_variable(
         "x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
@@ -215,7 +215,7 @@ def test_morris_outputs_bounds(morris, output) -> None:
 def test_normalize(morris) -> None:
     discipline = create_discipline(
         "AnalyticDiscipline",
-        expressions=FUNCTION["expression"],
+        FUNCTION["expression"],
         name=FUNCTION["name"],
     )
 
@@ -256,9 +256,9 @@ def test_normalize(morris) -> None:
 def test_morris_multiple_disciplines() -> None:
     """Test the Morris Analysis for more than one discipline."""
     expressions = [{"y1": "x1+x3+y2"}, {"y2": "x2+x3+2*y1"}, {"f": "x3+y1+y2"}]
-    d1 = create_discipline("AnalyticDiscipline", expressions=expressions[0])
-    d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
-    d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
+    d1 = create_discipline("AnalyticDiscipline", expressions[0])
+    d2 = create_discipline("AnalyticDiscipline", expressions[1])
+    d3 = create_discipline("AnalyticDiscipline", expressions[2])
 
     space = ParameterSpace()
 

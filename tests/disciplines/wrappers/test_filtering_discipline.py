@@ -28,7 +28,7 @@ from gemseo.disciplines.wrappers.filtering_discipline import FilteringDiscipline
 @pytest.fixture
 def discipline():
     expressions = {"y1": "x1+x2+x3", "y2": "-x1-x2-x3"}
-    disc = create_discipline("AnalyticDiscipline", expressions=expressions, name="foo")
+    disc = create_discipline("AnalyticDiscipline", expressions, name="foo")
     disc.io.input_grammar.descriptions = {"x1": "This is x1.", "x2": "This is x2."}
     disc.io.output_grammar.descriptions = {"y1": "This is y1.", "y2": "This is y2."}
     disc.add_differentiated_inputs(["x1", "x2", "x3"])

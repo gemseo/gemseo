@@ -64,7 +64,7 @@ if TYPE_CHECKING:
 @pytest.fixture(scope="module")
 def discipline() -> AnalyticDiscipline:
     """Return a discipline of interest."""
-    return create_discipline("AnalyticDiscipline", expressions={"out": "x1+2*x2+3*x3"})
+    return create_discipline("AnalyticDiscipline", {"out": "x1+2*x2+3*x3"})
 
 
 @pytest.fixture(scope="module")
@@ -466,9 +466,9 @@ def test_multiple_disciplines(parameter_space) -> None:
         parameter_space: A parameter space for the analysis.
     """
     expressions = [{"y1": "x1+x3+y2"}, {"y2": "x2+x3+2*y1"}, {"f": "x3+y1+y2"}]
-    d1 = create_discipline("AnalyticDiscipline", expressions=expressions[0])
-    d2 = create_discipline("AnalyticDiscipline", expressions=expressions[1])
-    d3 = create_discipline("AnalyticDiscipline", expressions=expressions[2])
+    d1 = create_discipline("AnalyticDiscipline", expressions[0])
+    d2 = create_discipline("AnalyticDiscipline", expressions[1])
+    d3 = create_discipline("AnalyticDiscipline", expressions[2])
 
     with concretize_classes(BaseSensitivityAnalysis):
         sensitivity_analysis = BaseSensitivityAnalysis()
