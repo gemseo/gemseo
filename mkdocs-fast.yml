@@ -72,6 +72,7 @@ nav:
           - Sobieski's Super Sonic Business Jet: generated/examples/bulk/mdo/plot_sobieski_use_case.md
       - Tutorials (advanced):
           - Tutorial - Solve a mixed optimization problem: generated/examples/tutorials/advanced/plot_tutorial_mixed_optimization.md
+          - Tutorial - Use namespaces to run the same discipline in multiple contexts: generated/examples/tutorials/advanced/plot_tutorial_namespace.md
           - Tutorial - Compute a Pareto front with a BiLevel formulation: generated/examples/tutorials/advanced/plot_tutorial_bilevel_multi_objective.md
           - Tutorial - Topology optimization: generated/examples/tutorials/advanced/plot_tutorial_topology_optimization_L_shape.md
           - Ordinary differential equations (ODE): generated/examples/bulk/ode
@@ -193,7 +194,6 @@ nav:
           - Coupling: generated/examples/howtos/coupling
           - Scenario examples: generated/examples/howtos/scenario
           - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda
-          - Namespaces: generated/examples/bulk/namespaces
           - Optimization problem: generated/examples/howtos/optimizers/plot_howto_optimization_problem.md
           - Multi-start optimization: generated/examples/howtos/optimizers/plot_howto_multistart.md
       - Formulations: generated/examples/howtos/formulations
