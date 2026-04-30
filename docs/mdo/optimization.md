@@ -138,7 +138,7 @@ opt = DOELibraryFactory().execute(
 ## Results analysis
 
 The optimization history can be plotted using one of the post-processing tools,
-see [this page][how-to-deal-with-post-processing].
+see [this page][how-to-post-process].
 
 ``` python
 from gemseo import execute_post

@@ -231,7 +231,7 @@ scenario.execute(slsqp_settings)
 #
 # A whole variety of visualizations may be displayed for both MDO and DOE
 # scenarios. These features are illustrated on the SSBJ use case in
-# [this page][how-to-deal-with-post-processing].
+# [this page][how-to-post-process].
 #
 # To visualize the optimization history:
 scenario.post_process(OptHistoryView_Settings(save=False, show=True))

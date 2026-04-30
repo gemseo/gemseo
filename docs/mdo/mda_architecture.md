@@ -37,13 +37,13 @@ classDiagram
     class MDAQuasiNewton
     class MDAChain
     class MDASequential
-    class MDAGSNewton
+    class MDAGaussSeidelNewtonRaphson
 
     BaseMDA <-- MDAChain
     BaseMDA <-- MDAGaussSeidel
     BaseMDASolver <-- MDAJacobi
     BaseParallelMDASolver <-- MDAQuasiNewton
-    MDASequential <|-- MDAGSNewton
+    MDASequential <|-- MDAGaussSeidelNewtonRaphson
 
     MDAChain "n" *-- BaseMDASolver
     MDASequential "n" *-- BaseMDASolver

@@ -183,8 +183,8 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __Visualization__
 
-    [:octicons-book-24: User guide][how-to-deal-with-post-processing]
-    [:octicons-play-24: Examples][post-process-an-optimization-problem]
+    [:octicons-book-24: User guide][how-to-post-process]
+    [:octicons-play-24: Examples][post-process-an-optimizationproblem]
     [:octicons-gear-24: Algorithms][available-post-processing-algorithms]
 
     ---

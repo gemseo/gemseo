@@ -75,7 +75,7 @@ made on:
   and Quasi-Newton) and hybrid techniques [[Read more]][multi-disciplinary-analyses].
 - Use different surrogate models to substitute a costly discipline within a process: linear regression, RBF model and
   Gaussian process regression [[Read more]](surrogate.md)
-- Visualize the optimization results by means of many graphs [[Read more]][how-to-deal-with-post-processing]
+- Visualize the optimization results by means of many graphs [[Read more]][how-to-post-process]
 - Record and cache the disciplines inputs and outputs into HDF
   files [[Read more]][caching-and-recording-discipline-data]
 - Experiment with different GEMSEO 's benchmark MDO problems [[Read more]][benchmark-problems]
