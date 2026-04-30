@@ -860,9 +860,8 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             input_names: The names of the input wrt the `output_names` are
                 linearized.
         """
+        self._compute_jacobian(self.__input_names, self.__output_names)
         analytical_jacobian = self.jac
-
-        self.set_jacobian_approximation(self._linearization_mode)
 
         approximated_jac = {}
         outputs_names_to_approximate = []
@@ -878,6 +877,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
                     outputs_names_to_approximate.append(output_name)
                     input_names_to_approximate.append(input_name)
 
+        input_data = self.get_input_data().copy()
         # Compute approximated Jacobian elements.
         for output_name, input_name in zip(
             outputs_names_to_approximate, input_names_to_approximate, strict=False
@@ -885,6 +885,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             jac_input_output = self._jac_approx.compute_approx_jac(
                 [output_name], [input_name]
             )
+            self.io.data |= input_data
             approximated_jac[output_name][input_name] = jac_input_output[output_name][
                 input_name
             ]
