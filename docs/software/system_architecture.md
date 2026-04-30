@@ -121,7 +121,7 @@ sequenceDiagram
 
 ### During results analysis
 
-After the execution, convergence plots of the optimization can be generated. In addition, design space analysis, sensitivity analysis and constraints plots can be generated. For a complete overview of GEMSEO post-processing capabilities, see [How to deal with post-processing][how-to-deal-with-post-processing]. This can be achieved either from disk data (a serialized optimization problem), or from in-memory data after execution.
+After the execution, convergence plots of the optimization can be generated. In addition, design space analysis, sensitivity analysis and constraints plots can be generated. For a complete overview of GEMSEO post-processing capabilities, see [How to deal with post-processing][how-to-post-process]. This can be achieved either from disk data (a serialized optimization problem), or from in-memory data after execution.
 
 The user triggers the plots generation from a post-processing factory, or via the scenario, which delegates the execution to the same factory. The main steps are:
 

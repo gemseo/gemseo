@@ -271,7 +271,7 @@ scenario.execute(SLSQP_Settings(max_iter=10))
 # extremely useful. The convergence of the objective function, design
 # variables and of the inequality constraints can be observed in the
 # following plots. Many other post-processors are available in GEMSEO and
-# are described in [this page][how-to-deal-with-post-processing].
+# are described in [this page][how-to-post-process].
 
 scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 

@@ -202,12 +202,11 @@ nav:
           - Algorithm settings: settings/algorithm_settings.md
           - MDA settings: settings/mda_settings.md
           - Post-processor settings: settings/post_processing_settings.md
-      - Post-processing:
-          - How to deal with post-processing: postprocessing/postprocessing.md
+      - Post-processing: generated/examples/howtos/post_process
+      - Data persistence:
+          - Cache: generated/examples/howtos/cache
           - Dataset: generated/examples/howtos/dataset
-          - Post-process an optimization problem: generated/examples/bulk/post_process
       - Machine learning: generated/examples/howtos/machine_learning
-      - Cache: generated/examples/howtos/cache
       - Constraint aggregation: generated/examples/howtos/constraint_aggregation
       - Exterior penalty: generated/examples/howtos/exterior_penalty
       - Scalable model: generated/examples/bulk/scalable

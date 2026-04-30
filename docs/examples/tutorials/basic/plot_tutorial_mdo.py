@@ -211,4 +211,4 @@ scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 #
 # - [Generate an XDSM chart][generate-an-xdsm-chart] ,
 # - [Save the execution history of a scenario][save-the-execution-history-of-a-scenario],
-# - [Post-process an optimization scenario][how-to-post-process-a-scenario].
+# - [Post-process an optimization scenario][post-process-a-scenario].
