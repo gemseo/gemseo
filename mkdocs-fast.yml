@@ -71,8 +71,8 @@ nav:
           - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/bulk/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
           - Sobieski's Super Sonic Business Jet: generated/examples/bulk/mdo/plot_sobieski_use_case.md
       - Tutorials (advanced):
-          - Multi-objective optimization: generated/examples/bulk/multi_objective
           - Tutorial - Solve a mixed optimization problem: generated/examples/tutorials/advanced/plot_tutorial_mixed_optimization.md
+          - Tutorial - Compute a Pareto front with a BiLevel formulation: generated/examples/tutorials/advanced/plot_tutorial_bilevel_multi_objective.md
           - Tutorial - Topology optimization: generated/examples/tutorials/advanced/plot_tutorial_topology_optimization_L_shape.md
           - Ordinary differential equations (ODE): generated/examples/bulk/ode
       - Changelog: changelog.md
@@ -212,6 +212,7 @@ nav:
       - Constraint aggregation: generated/examples/howtos/constraint_aggregation
       - Exterior penalty: generated/examples/howtos/exterior_penalty
       - Scalable model: generated/examples/bulk/scalable
+      - Multi-objective: generated/examples/howtos/multi_objective
       - Uncertainty: generated/examples/bulk/uncertainty
       - Upgrading: software/upgrading.md
 

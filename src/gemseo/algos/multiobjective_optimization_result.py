@@ -45,20 +45,29 @@ class MultiObjectiveOptimizationResult(OptimizationResult):
 
     __PARETO_FRONT: Final[str] = "pareto_front"
 
-    def __repr__(self) -> str:
-        msg = MultiLineString()
-        msg.add("Multi-objective optimization result:")
-        msg.indent()
-        msg.add("Design variables: {}", self.x_opt)
-        msg.add("Objective function: {}", self.f_opt)
-        msg.add("Feasible solution: {}", self.is_feasible)
+    @property
+    def _string_representation(self) -> MultiLineString:
+        """The string representation of the multi-objective optimization result."""
+        mls = MultiLineString()
+        mls.add("Multi-objective optimization result:")
+        mls.indent()
+        mls.add("Design variables: {}", self.x_opt)
+        mls.add("Objective function: {}", self.f_opt)
+        mls.add("Feasible solution: {}", self.is_feasible)
         if self.pareto_front is not None:
-            msg.add("Pareto front:")
-            msg.indent()
-            msg.add("Number of points: {}", self.pareto_front.f_optima.shape[0])
-            msg.add("Distance from utopia: {}", self.pareto_front.distance_from_utopia)
-            msg.dedent()
-        return str(msg)
+            mls.add("Pareto front:")
+            mls.indent()
+            mls.add("Number of points: {}", self.pareto_front.f_optima.shape[0])
+            mls.add("Distance from utopia: {}", self.pareto_front.distance_from_utopia)
+            mls.dedent()
+
+        return mls
+
+    def __repr__(self) -> str:
+        return str(self._string_representation)
+
+    def _repr_html_(self) -> str:
+        return self._string_representation._repr_html_()
 
     def __str__(self) -> str:
         parent_string = super().__str__()

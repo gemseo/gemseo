@@ -100,7 +100,7 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
     __NOT_DICT_KEYS: ClassVar[list[str]] = [__CONSTRAINTS_VALUES, __CONSTRAINTS_GRAD]
 
     @property
-    def __string_representation(self) -> MultiLineString:
+    def _string_representation(self) -> MultiLineString:
         """The string representation of the optimization result."""
         mls = MultiLineString()
         mls.add("Optimization result:")
@@ -111,10 +111,10 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
         return mls
 
     def __repr__(self) -> str:
-        return str(self.__string_representation)
+        return str(self._string_representation)
 
     def _repr_html_(self) -> str:
-        return self.__string_representation._repr_html_()
+        return self._string_representation._repr_html_()
 
     @property
     def _strings(self) -> list[MultiLineString]:
