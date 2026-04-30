@@ -35,9 +35,13 @@ import pytest
 from numpy import array
 from numpy import complex128
 from numpy import concatenate
+from numpy import cos
+from numpy import exp
 from numpy import ndarray
 from numpy import ones
+from numpy import sin
 from numpy.linalg import norm
+from numpy.testing import assert_allclose
 
 from gemseo import configure
 from gemseo import create_discipline
@@ -130,24 +134,28 @@ def hybrid_jacobian_discipline() -> Discipline:
     class HybridDiscipline(Discipline):
         def __init__(self) -> None:
             super().__init__()
-            self.input_grammar.update_from_names(["x_1"])
-            self.input_grammar.update_from_names(["x_2"])
-            self.input_grammar.update_from_names(["x_3"])
-            self.output_grammar.update_from_names(["y_1"])
-            self.output_grammar.update_from_names(["y_2"])
-            self.output_grammar.update_from_names(["y_3"])
-            self.default_input_data = {
+            self.io.input_grammar.update_from_names(["x_1", "x_2", "x_3"])
+            self.io.output_grammar.update_from_names(["y_1", "y_2", "y_3"])
+            self.io.input_grammar.defaults = {
                 "x_1": array([1.0]),
-                "x_2": array([2.0]),
+                "x_2": array([1.0]),
                 "x_3": array([1.0]),
             }
 
+            self.exact_outputs_to_inputs = {
+                "y_1": "x_1",
+                "y_2": ["x_1", "x_3"],
+                "y_3": "x_1",
+            }
+
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-            self.io.data["y_1"] = input_data["x_1"] * input_data["x_2"]
-            self.io.data["y_2"] = (
-                input_data["x_1"] * input_data["x_2"] * input_data["x_3"]
-            )
-            self.io.data["y_3"] = input_data["x_1"]
+            x1 = input_data["x_1"]
+            x2 = input_data["x_2"]
+            x3 = input_data["x_3"]
+            y_1 = sin(x1) * exp(x2) + x3**3
+            y_2 = exp(x1 * x2) * sin(x3)
+            y_3 = x1**3 * cos(x2) * exp(x3)
+            return {"y_1": y_1, "y_2": y_2, "y_3": y_3}
 
         def _compute_jacobian(
             self,
@@ -155,10 +163,49 @@ def hybrid_jacobian_discipline() -> Discipline:
             output_names: Iterable[str] = (),
         ) -> None:
             self._init_jacobian()
-            x1 = array([self.get_input_data(with_namespaces=False)["x_1"]])
-            x2 = array([self.get_input_data(with_namespaces=False)["x_2"]])
-            x3 = array([self.get_input_data(with_namespaces=False)["x_3"]])
-            self.jac = {"y_1": {"x_1": x2}, "y_2": {"x_2": x1 * x3}}
+            x1 = self.get_input_data(with_namespaces=False)["x_1"][0]
+            x2 = self.get_input_data(with_namespaces=False)["x_2"][0]
+            x3 = self.get_input_data(with_namespaces=False)["x_3"][0]
+
+            # Exact derivatives
+            # dy_1/dx_1 = cos(x_1) * exp(x_2)
+            self.jac["y_1"]["x_1"] = array([[cos(x1) * exp(x2)]])
+            # dy_2/dx_3 = exp(x_1 * x_2) * cos(x_3)
+            self.jac["y_2"]["x_3"] = array([[exp(x1 * x2) * cos(x3)]])
+            self.jac["y_2"]["x_1"] = array([[x2 * exp(x1 * x2) * sin(x3)]])
+            # dy_3/dx_1 = 3 * x_1² * cos(x_2) * exp(x_3)
+            self.jac["y_3"]["x_1"] = array([[3 * x1**2 * cos(x2) * exp(x3)]])
+
+            # All other derivatives are left missing and will be filled in by the hybrid
+            # finite-difference approximation:
+            #   dy_1/dx_2, dy_1/dx_3
+            #   dy_2/dx_1, dy_2/dx_2
+            #   dy_3/dx_2, dy_3/dx_3
+
+        @property
+        def exact_jacobian(self) -> StrKeyMapping:
+            x1, x2, x3 = 1.0, 1.0, 1.0
+
+            return {
+                "y_1": {
+                    "x_1": cos(x1) * exp(x2),  # already provided analytically
+                    "x_2": sin(x1) * exp(x2),  # approximated by FD
+                    "x_3": 3 * x1**2,  # approximated by FD
+                },
+                "y_2": {
+                    "x_1": x2 * exp(x1 * x2) * sin(x3),  # approximated by FD
+                    "x_2": x1 * exp(x1 * x2) * sin(x3),  # approximated by FD
+                    "x_3": exp(x1 * x2) * cos(x3),  # already provided analytically
+                },
+                "y_3": {
+                    "x_1": 3
+                    * x1**2
+                    * cos(x2)
+                    * exp(x3),  # already provided analytically
+                    "x_2": -(x1**3) * sin(x2) * exp(x3),  # approximated by FD
+                    "x_3": x1**3 * cos(x2) * exp(x3),  # approximated by FD
+                },
+            }
 
     return HybridDiscipline()
 
@@ -273,21 +320,40 @@ def test_check_jac_csapprox() -> None:
 
 @pytest.mark.parametrize(
     "hybrid_approximation_mode",
-    ["hybrid_complex_step", "hybrid_finite_differences", "hybrid_centered_differences"],
+    [
+        "hybrid_complex_step",
+        "hybrid_finite_differences",
+        "hybrid_centered_differences",
+    ],
 )
+@pytest.mark.parametrize("step", [1e-7, 0.001])
 def test_check_jac_hybrid_approx(
-    hybrid_jacobian_discipline, hybrid_approximation_mode
+    hybrid_jacobian_discipline, hybrid_approximation_mode, step
 ) -> None:
     """Test the hybrid finite difference approximation."""
 
     disc = hybrid_jacobian_discipline
-
-    inputs = disc.default_input_data
-    disc.linearization_mode = hybrid_approximation_mode
-    disc.linearize(inputs, compute_all_jacobians=True)
-    disc.check_jacobian(
-        inputs, linearization_mode=disc.ApproximationMode.FINITE_DIFFERENCES
+    disc.set_cache(disc.CacheType.MEMORY_FULL)
+    disc.set_jacobian_approximation(hybrid_approximation_mode, jax_approx_step=step)
+    hybrid_jacobian = disc.linearize(compute_all_jacobians=True)
+    exact_jacobian = disc.exact_jacobian
+    for y in ["y_1", "y_2", "y_3"]:
+        for x in ["x_1", "x_2", "x_3"]:
+            ref = exact_jacobian[y][x]
+            hybrid_val = hybrid_jacobian[y][x][0, 0]
+            if x in disc.exact_outputs_to_inputs[y]:
+                assert abs(hybrid_val - ref) == 0
+            else:
+                assert_allclose(hybrid_val, ref, step, step)
+    cache = [
+        {"inputs": inputs, "outputs": outputs, "jac": jac}
+        for inputs, outputs, jac in disc.cache.get_all_entries()
+    ]
+    cached_jac = [entry["jac"] for entry in cache if "y_1" in entry["jac"]]
+    assert len(cache) == (
+        3 if hybrid_approximation_mode != "hybrid_centered_differences" else 5
     )
+    assert len(cached_jac) == 1
 
 
 def test_check_jac_approx_plot(tmp_wd) -> None:
