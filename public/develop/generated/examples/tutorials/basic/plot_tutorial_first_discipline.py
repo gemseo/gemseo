@@ -33,7 +33,7 @@ from pydantic import Field
 
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.pydantic_grammar import PydanticGrammar
+from gemseo.core.grammars.pydantic import PydanticGrammar
 
 
 # %%
@@ -197,7 +197,7 @@ discipline.input_grammar
 # %%
 # Here, the $x$ and $z$ inputs are required, and are of type "arrays".
 # By default, a discipline uses
-# [JSONGrammars][gemseo.core.grammars.json_grammar.JSONGrammar].
+# [JSONGrammars][gemseo.core.grammars.json.JSONGrammar].
 # What your seeing here is the JSON schema of your input grammar.
 #
 # !!! note
@@ -206,7 +206,7 @@ discipline.input_grammar
 #
 # Let's make your discipline more restrictive, by saying that $x$ is now an integer.
 # One way to do so is to update the grammar with the
-# [update_from_data][gemseo.core.grammars.base_grammar.BaseGrammar.update_from_data]
+# [update_from_data][gemseo.core.grammars.base.BaseGrammar.update_from_data]
 # method.
 # By giving to $x$ an array of integer,
 # the grammar will automatically understand that x is now an integer.

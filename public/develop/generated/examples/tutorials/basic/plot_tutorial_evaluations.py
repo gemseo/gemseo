@@ -32,7 +32,6 @@ from __future__ import annotations
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.scenarios.evaluation import EvaluationScenario
 from gemseo.settings.doe import PYDOE_FULLFACT_Settings
 
@@ -43,7 +42,7 @@ from gemseo.settings.doe import PYDOE_FULLFACT_Settings
 # we create a [Discipline][gemseo.core.discipline.discipline.Discipline] of
 # [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline] type
 # from a Python function:
-discipline = AnalyticDiscipline(expressions={"y": "x1+x2"})
+discipline = AnalyticDiscipline({"y": "x1+x2"})
 
 # %%
 # ## Step 2 - Define your design space
@@ -71,12 +70,7 @@ design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 # from the [Discipline][gemseo.core.discipline.discipline.Discipline]
 # and the [DesignSpace][gemseo.algos.design_space.DesignSpace] defined above:
 
-scenario = EvaluationScenario(
-    (discipline,),
-    design_space,
-    name="My evaluation",
-    formulation_settings=DisciplinaryOpt_Settings(),
-)
+scenario = EvaluationScenario((discipline,), design_space, name="My evaluation")
 
 # %%
 # !!! note

@@ -49,8 +49,8 @@ constraint_names = [f"g_{k + 1}" for k in range(N)]
 function_names = ["o", *constraint_names]
 function_expressions = ["y"] + [f"{k + 1}*x*exp(1-{k + 1}*x)-y" for k in range(N)]
 disc = AnalyticDiscipline(
+    dict(zip(function_names, function_expressions, strict=False)),
     name="function",
-    expressions=dict(zip(function_names, function_expressions, strict=False)),
 )
 
 # %%

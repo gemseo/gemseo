@@ -58,7 +58,7 @@ maximize_objective = True
 # %%
 # ## Create the disciplinary datasets
 #
-# Then, we create the disciplinary [BaseFullCache][gemseo.caches.base_full_cache.BaseFullCache] datasets
+# Then, we create the disciplinary [BaseFullCache][gemseo.caches.base_full.BaseFullCache] datasets
 # based on a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
 disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
 datasets = []

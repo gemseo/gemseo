@@ -29,7 +29,7 @@ and you want to retrieve a [Dataset][gemseo.datasets.dataset.Dataset] from it.
 
 ## Solution
 
-The [to_dataset()][gemseo.caches.base_cache.BaseCache.to_dataset]
+The [to_dataset()][gemseo.caches.base.BaseCache.to_dataset]
 method can be used to create a
 [Dataset][gemseo.datasets.dataset.Dataset] from your cache.
 
@@ -40,12 +40,12 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.caches.memory_full_cache import MemoryFullCache
+from gemseo.caches.memory_full import MemoryFullCache
 
 # %%
 # ### 1. Create a cache
 #
-# Let us consider an [MemoryFullCache][gemseo.caches.memory_full_cache.MemoryFullCache] storing two parameters:
+# Let us consider an [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache] storing two parameters:
 #
 # - x with dimension 1 which is a cache input,
 # - y with dimension 2 which is a cache output.
@@ -58,7 +58,7 @@ cache[{"x": array([4.0])}] = ({"y": array([5.0, 6.0])}, None)
 # ### 2. Convert to dataset
 #
 # This cache can be converted to an [IODataset][gemseo.datasets.io_dataset.IODataset]
-# using its method [to_dataset()][gemseo.caches.memory_full_cache.MemoryFullCache.to_dataset]:
+# using its method [to_dataset()][gemseo.caches.memory_full.MemoryFullCache.to_dataset]:
 dataset = cache.to_dataset("toy_cache")
 dataset
 
@@ -73,4 +73,4 @@ dataset
 # ## Summary
 #
 # A [Dataset][gemseo.datasets.dataset.Dataset] can be generated from a cache
-# by using the [to_dataset()][gemseo.caches.base_cache.BaseCache.to_dataset] method.
+# by using the [to_dataset()][gemseo.caches.base.BaseCache.to_dataset] method.

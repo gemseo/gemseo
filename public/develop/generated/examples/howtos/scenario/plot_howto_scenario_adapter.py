@@ -52,7 +52,6 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
 
@@ -66,9 +65,7 @@ discipline = AnalyticDiscipline({"y": "(x+1)**2 + n"})
 design_space = DesignSpace()
 design_space.add_variable("x", lower_bound=-5, upper_bound=5.0, value=ones(1))
 
-inner_scenario = MDOScenario(
-    (discipline,), design_space, formulation_settings=DisciplinaryOpt_Settings()
-)
+inner_scenario = MDOScenario((discipline,), design_space)
 inner_scenario.add_objective("y")
 # %%
 # ### 2. Set a default algorithm
@@ -108,11 +105,7 @@ upper_design_space.add_variable(
     value=ones(1, dtype=int),
     type_=upper_design_space.DesignVariableType.INTEGER,
 )
-upper_scenario = MDOScenario(
-    (scenario_adapter,),
-    upper_design_space,
-    formulation_settings=DisciplinaryOpt_Settings(),
-)
+upper_scenario = MDOScenario((scenario_adapter,), upper_design_space)
 upper_scenario.add_objective("y")
 upper_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=6))
 upper_scenario.to_dataset()

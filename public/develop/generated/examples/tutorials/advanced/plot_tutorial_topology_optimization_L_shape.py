@@ -25,7 +25,6 @@ You will go through configuration to post-processing steps.
 from __future__ import annotations
 
 from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.post import BasicHistory_Settings
 from gemseo.post import TopologyView_Settings
 from gemseo.problems.topology_optimization.topopt_initialize import (
@@ -84,11 +83,7 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 # ## Step 3 - Create the topology optimization problem
 #
 # Generate an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]:
-scenario = MDOScenario(
-    disciplines,
-    design_space,
-    formulation_settings=DisciplinaryOpt_Settings(),
-)
+scenario = MDOScenario(disciplines, design_space)
 
 # %%
 # Consider the optimization of the `compliance` objective:
