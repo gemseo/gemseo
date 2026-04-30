@@ -80,7 +80,7 @@ nav:
       - Licenses: software/licenses.md
       - Credits: credits.md
 
-  - User guide:
+  - Explanations:
       - Needs:
           - Interoperability of simulation models: user_guide/needs/interoperability_simulation_models.md
           - Automatic creation of multidisciplinary simulation processes: user_guide/needs/automatic_process_creation.md
@@ -96,8 +96,7 @@ nav:
           - MDO (formulations): user_guide/use_cases/mdo_formulations.md
           - Uncertainty quantification: user_guide/use_cases/uncertainty_quantification.md
       - Concepts:
-          - Disciplines:
-              user_guide/concepts/discipline/discipline.md
+          - Disciplines: user_guide/concepts/discipline/discipline.md
           - Coupling:
               - Overview: user_guide/concepts/coupling/index.md
               - Visualization: user_guide/concepts/coupling/visualization.md
