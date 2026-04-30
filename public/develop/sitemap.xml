@@ -145,18 +145,6 @@
          <lastmod>2026-04-30</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/generated/examples/bulk/namespaces/</loc>
-         <lastmod>2026-04-30</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/generated/examples/bulk/namespaces/mg_execution_times/</loc>
-         <lastmod>2026-04-30</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/generated/examples/bulk/namespaces/plot_sobieski_namespaces_example/</loc>
-         <lastmod>2026-04-30</lastmod>
-    </url>
-    <url>
          <loc>https://gemseo.org/latest/generated/examples/bulk/ode/</loc>
          <lastmod>2026-04-30</lastmod>
     </url>
@@ -910,6 +898,10 @@
     </url>
     <url>
          <loc>https://gemseo.org/latest/generated/examples/tutorials/advanced/plot_tutorial_mixed_optimization/</loc>
+         <lastmod>2026-04-30</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/tutorials/advanced/plot_tutorial_namespace/</loc>
          <lastmod>2026-04-30</lastmod>
     </url>
     <url>
