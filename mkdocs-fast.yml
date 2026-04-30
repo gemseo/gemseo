@@ -186,7 +186,7 @@ nav:
           - Extending: extending.md
 
   - How-to:
-      - Disciplines: generated/examples/bulk/disciplines
+      - Disciplines: generated/examples/howtos/disciplines
       - Design Space: generated/examples/howtos/design_space
       - Scenario:
           - Monitoring the execution of a scenario: scenario/monitoring.md
@@ -195,7 +195,7 @@ nav:
           - Scenario examples: generated/examples/howtos/scenario
           - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda
           - Namespaces: generated/examples/bulk/namespaces
-          - Optimization: generated/examples/bulk/optimization_problem
+          - Optimization problem: generated/examples/howtos/optimizers/plot_howto_optimization_problem.md
           - Multi-start optimization: generated/examples/howtos/optimizers/plot_howto_multistart.md
       - Formulations: generated/examples/howtos/formulations
       - Design of experiments (DOE): generated/examples/howtos/doe
