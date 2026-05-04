@@ -123,3 +123,15 @@ def test_observe_all_outputs(
             "z",
         ]
     )
+
+
+def test_raise_exception_when_missing_algo_settings(discipline_a, design_space):
+    """Check that a ValueError is raised when the algo_settings are missing."""
+    scenario = EvaluationScenario([discipline_a], design_space)
+    msg = (
+        "Algorithm settings are necessary for executing a scenario. "
+        "Pass the settings in the execute method "
+        "or use the set_algorithm method."
+    )
+    with pytest.raises(ValueError, match=msg):
+        scenario.execute()
