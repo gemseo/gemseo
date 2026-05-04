@@ -370,6 +370,9 @@ class EvaluationScenario(BaseMonitoredProcess):
                 If `None`,
                 the method will use the settings
                 defined by the `algorithm_settings` attribute.
+
+        Raises:
+            ValueError: If the algorithm settings are not defined.
         """
         LOGGER.info("*** Start %s execution ***", self.name)
         LOGGER.info("%r", self)
@@ -377,6 +380,14 @@ class EvaluationScenario(BaseMonitoredProcess):
 
         if algorithm_settings is not None:
             self.set_algorithm(algorithm_settings)
+
+        if self.__algorithm_settings is None:
+            msg = (
+                "Algorithm settings are necessary for executing a scenario. "
+                "Pass the settings in the execute method "
+                "or use the set_algorithm method."
+            )
+            raise ValueError(msg)
 
         # DOE algorithms do not normalize the input data
         # but if an optimization algorithm was used in the previous execution,
