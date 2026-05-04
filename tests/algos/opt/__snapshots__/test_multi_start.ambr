@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_max_iter_error_1[4]
+  'Multi-start optimization: the maximum number of iterations (4) must be greater than the number of initial points (5).'
+# ---
+# name: test_max_iter_error_1[5]
+  'Multi-start optimization: the maximum number of iterations (5) must be greater than the number of initial points (5).'
+# ---
+# name: test_max_iter_error_2
+  'Multi-start optimization: the sum of the maximum number of iterations (50) related to the sub-optimizations is greater than the limit (10-1=9).'
+# ---

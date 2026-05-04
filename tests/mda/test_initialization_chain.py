@@ -29,6 +29,7 @@ from gemseo.core.chains.initialization_chain import (
 from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
@@ -64,15 +65,12 @@ def test_get_initialization_disciplines(disciplines1) -> None:
     ]
 
 
-def test_fail_get_initialization_disciplines(disciplines1) -> None:
+def test_fail_get_initialization_disciplines(disciplines1, snapshot) -> None:
     """Tests that the algorithm fails when not enough default inputs are present."""
     disciplines1[1].default_input_data.pop("g")
     missing_inputs = order_disciplines_from_default_inputs(disciplines1, False)
     assert missing_inputs == ["g"]
-    with pytest.raises(
-        ValueError,
-        match=r"Cannot compute the inputs g, for the following disciplines C.",
-    ):
+    with assert_exception(ValueError, snapshot):
         order_disciplines_from_default_inputs(disciplines1, True)
 
     missing_inputs = order_disciplines_from_default_inputs(disciplines1, False)

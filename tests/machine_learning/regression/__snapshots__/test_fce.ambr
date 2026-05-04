@@ -1,0 +1,14 @@
+# serializer version: 1
+# name: test_fce_jacobian_error[learn_jacobian_data]
+  'Option learn_jacobian_data is True but the training dataset does not contain Jacobian data.'
+# ---
+# name: test_fce_jacobian_error[use_special_jacobian_data]
+  'Option use_special_jacobian_data is True but the training dataset does not contain Jacobian data.'
+# ---
+# name: test_fce_settings_jacobian_error
+  '''
+  1 validation error for FCERegressor_Settings
+    Value error, Only one of the options learn_jacobian_data and use_special_jacobian_data can be True. [type=value_error, input_value={'use_special_jacobian_da...rn_jacobian_data': True}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

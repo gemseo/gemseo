@@ -24,7 +24,6 @@ ODE stands for Ordinary Differential Equation.
 
 from __future__ import annotations
 
-import re
 from math import atan
 from math import pi
 
@@ -50,6 +49,7 @@ from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def test_create_oscillator_ode_discipline() -> None:
@@ -270,7 +270,7 @@ def test_ode_discipline_with_design_variable() -> None:
     assert isclose(second_solution["state_final"], 20.0)
 
 
-def test_ode_discipline_bad_grammar() -> None:
+def test_ode_discipline_bad_grammar(snapshot) -> None:
     """Test error messages when passing an ill-formed grammar."""
     initial_time = array([0.0])
     initial_position = array([0.0])
@@ -287,11 +287,7 @@ def test_ode_discipline_bad_grammar() -> None:
 
     oscillator = AutoPyDiscipline(py_func=_rhs_function)
     oscillator.set_cache(cache_type=CacheType.NONE)
-    msg = (
-        "'not_position' and 'not_velocity' are not input variables of "
-        "the RHS discipline."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with assert_exception(ValueError, snapshot):
         bad_input_ode_discipline = ODEDiscipline(  # noqa: F841
             rhs_discipline=oscillator,
             state_names=["not_position", "not_velocity"],
@@ -365,7 +361,7 @@ def test_ode_discipline_wrong_ordering_time_derivatives():
     assert_allclose(res_ode_2["final_b"], -1.0)
 
 
-def test_ode_discipline_missing_names_time_derivatives():
+def test_ode_discipline_missing_names_time_derivatives(snapshot):
     """Test the error message when the time derivatives are explicitly named,
     but do not correspond to the outputs of the discipline describing the RHS."""
     times = array([0.0, 1.0])
@@ -382,8 +378,7 @@ def test_ode_discipline_missing_names_time_derivatives():
     discipline = AutoPyDiscipline(py_func=_fct)
     discipline.set_cache(cache_type=CacheType.NONE)
 
-    msg = "'c_dot' are not output variables of the RHS discipline."
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with assert_exception(ValueError, snapshot):
         ODEDiscipline(
             rhs_discipline=discipline,
             times=times,
@@ -392,7 +387,7 @@ def test_ode_discipline_missing_names_time_derivatives():
         )
 
 
-def test_ode_discipline_not_convergent():
+def test_ode_discipline_not_convergent(snapshot):
     """Test the error message when an ODE does not converge to a solution."""
     times = linspace(0.0, 1.0, 20)
 
@@ -414,9 +409,7 @@ def test_ode_discipline_not_convergent():
         ode_solver_settings=RK45_Settings(),
     )
 
-    with pytest.raises(
-        RuntimeError, match=re.escape("ODE solver RK45 failed to converge.")
-    ):
+    with assert_exception(RuntimeError, snapshot):
         ode_discipline.execute({"x": array([1.0])})
 
 

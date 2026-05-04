@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy import ones
@@ -34,6 +32,7 @@ from gemseo.core.functions.discipline_adapter_generator import (
 from gemseo.core.functions.linear_composite_function import LinearCompositeFunction
 from gemseo.core.functions.restricted_function import RestrictedFunction
 from gemseo.problems.optimization.rosen_mf import RosenMF
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.mark.parametrize(
@@ -65,7 +64,7 @@ def test_linear_composition():
     f_1_2.check_grad(ones(1), error_max=1e-4)
 
 
-def test_restricted_function():
+def test_restricted_function(snapshot):
     fg = DisciplineAdapterGenerator(RosenMF(3))
     x = zeros(3)
     f_ref = fg.get_function(["fidelity", "x"], ["rosen"])
@@ -84,10 +83,7 @@ def test_restricted_function():
     f1.check_grad(x, error_max=1e-4)
     f2.check_grad(x, error_max=1e-4)
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Inconsistent shapes for restriction values and indices."),
-    ):
+    with assert_exception(ValueError, snapshot):
         RestrictedFunction(
             f_ref, restriction_indices=array([0, 1]), restriction_values=array([0])
         )

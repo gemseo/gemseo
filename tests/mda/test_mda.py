@@ -67,6 +67,7 @@ from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.seeder import SEED
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
@@ -149,13 +150,11 @@ def test_resolved_couplings() -> None:
         mda._resolved_variable_names = "a"
 
 
-def test_jacobian(sellar_mda, sellar_inputs) -> None:
+def test_jacobian(sellar_mda, sellar_inputs, snapshot) -> None:
     """Check the Jacobian computation."""
     sellar_mda.settings.linear_solver_settings = None
     sellar_mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
-    with pytest.raises(
-        ValueError, match="Unsupported LU factorization for LinearOperators"
-    ):
+    with assert_exception(ValueError, snapshot):
         sellar_mda.linearize(
             sellar_inputs,
             compute_all_jacobians=True,
@@ -658,15 +657,11 @@ def test_namespaces(sellar_mda) -> None:
     sellar_mda.execute()
 
 
-def test_settings_type_error():
+def test_settings_type_error(snapshot):
     settings = "toto"
     BaseMDA.settings_class = BaseMDASettings
-    msg = (
-        f"The Pydantic model must be a {BaseMDA.settings_class.__name__}; "
-        f"got {settings.__class__.__name__}"
-    )
 
-    with concretize_classes(BaseMDA), pytest.raises(ValueError, match=msg):
+    with concretize_classes(BaseMDA), assert_exception(ValueError, snapshot):
         BaseMDA([], settings=settings)
 
 

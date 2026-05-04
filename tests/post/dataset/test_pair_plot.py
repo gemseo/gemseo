@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from matplotlib import pyplot as plt
 from scipy.interpolate import Rbf
@@ -30,6 +28,7 @@ from scipy.interpolate import Rbf
 from gemseo.post.dataset.pair_plot import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 from gemseo.problems.dataset.iris import create_iris_dataset
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 # the test parameters, it maps a test name to the inputs and references outputs:
@@ -80,7 +79,7 @@ def test_plot(
 @pytest.mark.parametrize(
     ("use_fig", "use_ax"), [(False, True), (True, False), (True, True)]
 )
-def test_fig_ax_error(dataset, use_fig, use_ax) -> None:
+def test_fig_ax_error(dataset, use_fig, use_ax, snapshot) -> None:
     """Check the error raised when using fig and ax."""
     settings = PairPlot_Settings()
     fig, ax = plt.subplots(figsize=settings.fig_size)
@@ -88,10 +87,7 @@ def test_fig_ax_error(dataset, use_fig, use_ax) -> None:
         fig = None
     if not use_ax:
         ax = None
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The arguments 'fig' and 'ax' are not supported by PairPlot."),
-    ):
+    with assert_exception(ValueError, snapshot):
         PairPlot(dataset, settings).execute(save=False, fig=fig, ax=ax)
 
 
@@ -119,28 +115,16 @@ def test_scatter_plot_option(dataset) -> None:
     PairPlot(dataset, settings).execute(save=False)
 
 
-def test_classifier_error(dataset) -> None:
+def test_classifier_error(dataset, snapshot) -> None:
     """Check that an error is raised when the classifier is not variable name."""
     settings = PairPlot_Settings(classifier="wrong_name")
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "wrong_name cannot be used as a classifier "
-            "because it is not a variable name; "
-            "available ones are: ['c', 'x', 'y', 'z']."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         PairPlot(dataset, settings).execute(save=False)
 
 
-def test_plot_lower_upper_error(dataset) -> None:
+def test_plot_lower_upper_error(dataset, snapshot) -> None:
     """Check that an error is raised when both plot_lower and plot_upper are False."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "At least one of the arguments 'plot_lower' and 'plot_upper' must be True."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         PairPlot_Settings(plot_lower=False, plot_upper=False)
 
 
@@ -168,13 +152,7 @@ def test_iris():
     PairPlot(dataset, settings).execute(save=False)
 
 
-def test_trend_surface():
+def test_trend_surface(snapshot):
     """Test the error when using a trend with density surfaces."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The argument 'trend' must be 'none' "
-            "when the argument 'use_scatter' is False."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         PairPlot_Settings(use_scatter=False, trend="linear")

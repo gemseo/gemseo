@@ -14,22 +14,17 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
-import pytest
-
 from gemseo.machine_learning.linear_model_fitting.null_space import NullSpace
 from gemseo.machine_learning.linear_model_fitting.null_space_settings import (
     NullSpace_Settings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 
-def test_null_space_error(input_data, output_data):
+def test_null_space_error(input_data, output_data, snapshot):
     """Check the error raised when using NulSpace algorithm without extra data."""
     algo = NullSpace(NullSpace_Settings())
-    with pytest.raises(
-        ValueError, match=re.escape("The null space algorithm requires extra data.")
-    ):
+    with assert_exception(ValueError, snapshot):
         algo.fit(input_data, output_data)
 
 

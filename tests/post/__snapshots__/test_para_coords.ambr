@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_shape_error
+  'The data shape (1, 1) is not equal to the expected one (2, 1).'
+# ---

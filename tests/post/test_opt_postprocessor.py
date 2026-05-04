@@ -34,6 +34,7 @@ from gemseo.datasets.optimization_metadata import OptimizationMetadata
 from gemseo.post.base_post import BasePost
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -111,21 +112,16 @@ def test_dataset_as_input_for_post(problem):
     assert post.database is None
 
 
-def test_execute_error_with_no_dataset():
+def test_execute_error_with_no_dataset(snapshot):
     """Tests that an error is raised when executing a post without a dataset."""
 
     problem = OptimizationProblem(DesignSpace())
     problem.objective = ArrayFunction(lambda x: x, name="f")
-    with pytest.raises(
-        ValueError,
-        match=r"The post-processor NewBasePost cannot"
-        r" be created because there is no dataset "
-        r"to plot.",
-    ):
+    with assert_exception(ValueError, snapshot):
         NewBasePost(problem)
 
 
-def test_execute_error_with_empty_dataset():
+def test_execute_error_with_empty_dataset(snapshot):
     """Tests that an error is raised when executing a post with an empty dataset."""
     dataset = OptimizationDataset()
     dataset.misc["optimization_metadata"] = OptimizationMetadata(**{
@@ -133,10 +129,5 @@ def test_execute_error_with_empty_dataset():
     })
     post = NewBasePost(dataset)
 
-    with pytest.raises(
-        ValueError,
-        match=r"The post-processor NewBasePost cannot "
-        r"be solved because the optimization problem "
-        r"was not solved.",
-    ):
+    with assert_exception(ValueError, snapshot):
         post.execute(NewBasePost_Settings())

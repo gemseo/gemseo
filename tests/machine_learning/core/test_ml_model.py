@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import arange
 from numpy import array
@@ -33,6 +31,7 @@ from gemseo.machine_learning.core.models.ml_model import BaseMLModel
 from gemseo.machine_learning.core.models.ml_model_settings import BaseMLModelSettings
 from gemseo.machine_learning.transformers.scaler.scaler import Scaler
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import concretize_classes
 
 from .new_ml_model.new_ml_model import NewMLModel
@@ -129,34 +128,21 @@ def test_transformer(dataset, transformer) -> None:
         assert ml_model.transformer["parameters"].offset == 2.0
 
 
-def test_transformer_wrong_type(dataset) -> None:
+def test_transformer_wrong_type(dataset, snapshot) -> None:
     """Check that using a wrong transformer type raises a ValueError."""
     with (
-        pytest.raises(
-            ValueError,
-            match=re.escape(
-                "BaseTransformer type must be "
-                "either BaseTransformer, Tuple[str, StrKeyMapping] or str."
-            ),
-        ),
+        assert_exception(ValueError, snapshot),
         concretize_classes(DummyMLModel),
     ):
         DummyMLModel(dataset, BaseMLModelSettings(transformer={"parameters": 1}))
 
 
-def test_transformers_error(dataset) -> None:
+def test_transformers_error(dataset, snapshot) -> None:
     """Check that BaseMLModel cannot use a transformer for both group and variable."""
     dataset = IODataset()
     dataset.add_variable("x", array([[1.0]]), group_name="foo")
     with (
-        pytest.raises(
-            ValueError,
-            match=re.escape(
-                "An BaseMLModel cannot have both a transformer "
-                "for all variables of a group and a transformer "
-                "for one variable of this group."
-            ),
-        ),
+        assert_exception(ValueError, snapshot),
         concretize_classes(DummyMLModel),
     ):
         DummyMLModel(

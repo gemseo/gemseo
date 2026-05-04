@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_create_fail
+  'The class WrongName is not available; the available ones are: ExponentialToleranceInterval, LogNormalToleranceInterval, NormalToleranceInterval, UniformToleranceInterval, WeibullMinToleranceInterval, WeibullToleranceInterval.'
+# ---
+# name: test_create_fail.1
+  "NormalToleranceInterval.__init__() missing 2 required positional arguments: 'mean' and 'std'"
+# ---

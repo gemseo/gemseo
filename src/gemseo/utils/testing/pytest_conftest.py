@@ -31,6 +31,9 @@ from gemseo import configure
 from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
+# Rewrite asserts in helpers so syrupy's snapshot diff is shown on mismatch.
+pytest.register_assert_rewrite("gemseo.utils.testing.helpers")
+
 if TYPE_CHECKING:
     from collections.abc import Generator
 

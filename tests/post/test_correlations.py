@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import random
-import re
 from functools import partial
 from pathlib import Path
 
@@ -32,6 +31,7 @@ from gemseo.post import Correlations_Settings
 from gemseo.post.correlations import Correlations
 from gemseo.post.factory import POST_FACTORY
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 PARENT_PATH = Path(__file__).parent
@@ -92,7 +92,7 @@ def test_correlations_import(tmp_wd, factory) -> None:
         assert Path(outf).exists()
 
 
-def test_correlations_func_name_error(factory) -> None:
+def test_correlations_func_name_error(factory, snapshot) -> None:
     """Test ValueError for non-existent function.
 
     Args:
@@ -101,13 +101,7 @@ def test_correlations_func_name_error(factory) -> None:
     problem = Rosenbrock(20)
     OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=L_BFGS_B_Settings())
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The following elements are not functions: ['toto']; "
-            "available ones are: ['rosen']."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         factory.execute(
             problem, Correlations_Settings(save=False, show=False, func_names=["toto"])
         )

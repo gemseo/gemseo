@@ -1,0 +1,16 @@
+# serializer version: 1
+# name: test_init_with_file_error
+  'Cannot update the grammar from non existing file: foo.'
+# ---
+# name: test_update_error
+  "A JSONGrammar cannot be updated from a grammar of type: <class 'bool'>"
+# ---
+# name: test_update_from_types_error
+  "Unsupported Python type for a JSON Grammar: <class 'set'>"
+# ---
+# name: test_validate_error[data0-error: data.name2 must be array-True]
+  '''
+  Grammar g: validation failed.
+  error: data.name2 must be array
+  '''
+# ---

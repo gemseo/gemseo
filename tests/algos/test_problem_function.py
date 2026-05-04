@@ -14,8 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy import nan
@@ -23,22 +21,15 @@ from numpy import nan
 from gemseo.algos.problem_function import ProblemFunction
 from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
+from gemseo.utils.testing.helpers import assert_exception
 
 
-def test_check_function_output_includes_nan():
+def test_check_function_output_includes_nan(snapshot):
     """Check the error raised by check_function_output_includes_nan()."""
-    with pytest.raises(
-        DesvarIsNan, match=re.escape("Found a NaN in the input array [nan].")
-    ):
+    with assert_exception(DesvarIsNan, snapshot):
         ProblemFunction.check_function_output_includes_nan(array([nan]))
 
-    with pytest.raises(
-        FunctionIsNan,
-        match=re.escape(
-            "Found a NaN in the output data of the function f "
-            "evaluated at the input array [1.]."
-        ),
-    ):
+    with assert_exception(FunctionIsNan, snapshot):
         ProblemFunction.check_function_output_includes_nan(
             array([nan]), function_name="f", xu_vect=array([1.0])
         )

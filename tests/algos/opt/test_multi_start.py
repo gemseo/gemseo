@@ -14,7 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -34,6 +33,7 @@ from gemseo.algos.opt.multi_start.settings.multi_start_settings import (
 from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -69,18 +69,11 @@ def test_database_length(
 
 
 @pytest.mark.parametrize("max_iter", [4, 5])
-def test_max_iter_error_1(max_iter):
+def test_max_iter_error_1(max_iter, snapshot):
     """Check that max_iter <= n_start raises an error."""
     problem = Power2()
     algo = MultiStart()
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Multi-start optimization: "
-            f"the maximum number of iterations ({max_iter}) must be "
-            "greater than the number of initial points (5)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         algo.execute(
             problem,
             settings=MultiStart_Settings(
@@ -89,18 +82,11 @@ def test_max_iter_error_1(max_iter):
         )
 
 
-def test_max_iter_error_2():
+def test_max_iter_error_2(snapshot):
     """Check that opt_algo_max_iter * n_start > max_iter raises an error."""
     problem = Power2()
     algo = MultiStart()
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Multi-start optimization: "
-            "the sum of the maximum number of iterations (50) "
-            "related to the sub-optimizations is greater than the limit (10-1=9)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         algo.execute(
             problem,
             settings=MultiStart_Settings(

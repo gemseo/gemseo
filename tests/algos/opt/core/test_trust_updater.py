@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import full
 from numpy.testing import assert_allclose
@@ -30,73 +28,37 @@ from numpy.testing import assert_allclose
 from gemseo.algos.opt.core.trust_updater import BoundsUpdater
 from gemseo.algos.opt.core.trust_updater import PenaltyUpdater
 from gemseo.algos.opt.core.trust_updater import RadiusUpdater
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.mark.parametrize(
-    ("thresholds", "type_", "msg"),
+    ("thresholds", "type_"),
     [
-        (
-            0.1,
-            TypeError,
-            "The thresholds must be input as a tuple; input of type <class 'float'> was provided.",  # noqa: E501
-        ),
-        (
-            (0.1,),
-            ValueError,
-            "There must be exactly two thresholds for the decreases ratio; 1 were given.",  # noqa: E501
-        ),
-        (
-            (0.2, 0.1),
-            ValueError,
-            "The update threshold (0.2) must be lower than or equal to the non-contraction threshold (0.1).",  # noqa: E501
-        ),
+        (0.1, TypeError),
+        ((0.1,), ValueError),
+        ((0.2, 0.1), ValueError),
     ],
 )
 @pytest.mark.parametrize("cls", [RadiusUpdater, PenaltyUpdater])
-def test_invalid_thresholds(thresholds, type_, msg, cls) -> None:
+def test_invalid_thresholds(thresholds, type_, cls, snapshot) -> None:
     """Tests the invalid thresholds exceptions."""
-    if cls == PenaltyUpdater and (expr := "contraction") in msg:
-        msg = msg.replace(expr, "expansion")
-    with pytest.raises(type_, match=re.escape(msg)):
+    with assert_exception(type_, snapshot):
         cls(thresholds=thresholds)
 
 
 @pytest.mark.parametrize(
-    ("multipliers", "type_", "msg"),
+    ("multipliers", "type_"),
     [
-        (
-            1.0,
-            TypeError,
-            "The multipliers must be input as a tuple; input of type <class 'float'> was provided.",  # noqa: E501
-        ),
-        (
-            (1.0,),
-            ValueError,
-            "There must be exactly two multipliers for the region radius; 2 were given.",  # noqa: E501
-        ),
-        (
-            (2.0, 1.0),
-            ValueError,
-            "The contraction factor (2.0) must be lower than or equal to one.",
-        ),
-        (
-            (0.5, 0.5),
-            ValueError,
-            "The expansion factor (0.5) must be greater than one.",
-        ),
+        (1.0, TypeError),
+        ((1.0,), ValueError),
+        ((2.0, 1.0), ValueError),
+        ((0.5, 0.5), ValueError),
     ],
 )
 @pytest.mark.parametrize("cls", [RadiusUpdater, PenaltyUpdater])
-def test_invalid_multipliers(multipliers, type_, msg, cls) -> None:
+def test_invalid_multipliers(multipliers, type_, cls, snapshot) -> None:
     """Tests the invalid multipliers exceptions."""
-    if cls == PenaltyUpdater:
-        if (expr := "region radius") in msg:
-            msg = msg.replace(expr, "penalty parameter")
-        if (expr := "lower than or equal to one") in msg:
-            msg = msg.replace(expr, "lower than one")
-        if (expr := "greater than one") in msg:
-            msg = msg.replace(expr, "greater than or equal to one")
-    with pytest.raises(type_, match=re.escape(msg)):
+    with assert_exception(type_, snapshot):
         cls(multipliers=multipliers)
 
 

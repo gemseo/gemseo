@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import operator
-import re
 from copy import deepcopy
 from functools import partial
 from math import sqrt
@@ -87,6 +86,7 @@ from gemseo.uncertainty.distributions.openturns.uniform_settings import (
 )
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -191,7 +191,7 @@ def test_callback() -> None:
     call_me.assert_called_once()
 
 
-def test_add_constraints(pow2_problem: OptimizationProblem) -> None:
+def test_add_constraints(pow2_problem: OptimizationProblem, snapshot) -> None:
     """Test to add constraints."""
 
     def generate_function(name: str) -> ArrayFunction:
@@ -224,23 +224,12 @@ def test_add_constraints(pow2_problem: OptimizationProblem) -> None:
     assert problem.constraints
 
     ineq2 = ArrayFunction(Power2.ineq_constraint1, name="ineq2")
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Constraint type must be provided, "
-            "either when defining the function or when adding it to the problem."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         problem.add_constraint(ineq2)
 
     problem.add_constraint(generate_function("ineq1_positive"), positive=True)
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The function type 'obj' is not one of those authorized (eq, ineq)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         problem.constraints.append(problem.objective)
 
 
@@ -392,7 +381,7 @@ def test_get_dimension(pow2_problem) -> None:
     assert problem.design_space.dimension == dim
 
 
-def test_constraints_dim(pow2_problem) -> None:
+def test_constraints_dim(pow2_problem, snapshot) -> None:
     problem = pow2_problem
     ineq1 = ArrayFunction(
         Power2.ineq_constraint1,
@@ -404,13 +393,7 @@ def test_constraints_dim(pow2_problem) -> None:
     problem.add_constraint(
         ineq1, value=-1, constraint_type=ArrayFunction.ConstraintType.INEQ
     )
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The function output dimension is not available yet, "
-            "please call function ineq1(x): 0.5 -x[0] ** 3 <= -1 once."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         problem.constraints.get_dimension(
             problem.constraints.get_inequality_constraints()
         )
@@ -435,7 +418,7 @@ def test_check() -> None:
         problem.check()
 
 
-def test_missing_constjac(pow2_problem) -> None:
+def test_missing_constjac(pow2_problem, snapshot) -> None:
     problem = pow2_problem
     ineq1 = ArrayFunction(
         sum,
@@ -448,12 +431,7 @@ def test_missing_constjac(pow2_problem) -> None:
     )
     problem.preprocess_functions()
     output_functions, jacobian_functions = problem.get_functions(jacobian_names=())
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape(
-            "The function computing the Jacobian of [sum+1] is not implemented."
-        ),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         problem.evaluate_functions(
             ones(3),
             output_functions=output_functions,
@@ -496,10 +474,10 @@ def _test_check_bounds(pow2_problem) -> None:
         problem.check()
 
 
-def test_invalid_differentiation_method(pow2_problem) -> None:
+def test_invalid_differentiation_method(pow2_problem, snapshot) -> None:
     """Check the error raised when using an invalid differentiation method."""
     pow2_problem.differentiation_method = "foo"
-    with pytest.raises(ImportError, match=r"The class foo is not available"):
+    with assert_exception(ImportError, snapshot):
         pow2_problem.preprocess_functions()
 
 
@@ -868,14 +846,13 @@ def test_evaluate_jacobians_subset(constrained_problem, jacobian_names, keys) ->
     [(["unknown"], "This name is"), (["other unknown", "unknown"], "These names are")],
 )
 def test_evaluate_unknown_jacobians(
-    constrained_problem, jacobian_names, message
+    constrained_problem,
+    jacobian_names,
+    message,
+    snapshot,
 ) -> None:
     """Check the evaluation of the Jacobian matrices of unknown functions."""
-    with pytest.raises(
-        ValueError,
-        match=f"{message} not among the names of the functions: "
-        f"{', '.join(jacobian_names)}.",
-    ):
+    with assert_exception(ValueError, snapshot):
         constrained_problem.get_functions(jacobian_names=jacobian_names)
 
 
@@ -1175,22 +1152,13 @@ def test_parallel_differentiation_options(problem) -> None:
 
 def test_parallel_differentiation_setting_after_functions_preprocessing(
     problem,
+    snapshot,
 ) -> None:
     """Check that parallel differentiation cannot be changed after preprocessing."""
     problem.preprocess_functions()
-    expected_message = (
-        "The parallel differentiation cannot be changed "
-        "because the functions have already been pre-processed."
-    )
-    with pytest.raises(
-        RuntimeError,
-        match=expected_message,
-    ):
+    with assert_exception(RuntimeError, snapshot):
         problem.parallel_differentiation = "user"
-    with pytest.raises(
-        RuntimeError,
-        match=expected_message,
-    ):
+    with assert_exception(RuntimeError, snapshot):
         problem.parallel_differentiation_options = {}
 
 
@@ -1226,7 +1194,7 @@ def test_database_name(problem) -> None:
         ),
     ],
 )
-def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
+def test_int_opt_problem(skip_int_check, expected_message, caplog, snapshot) -> None:
     """Test the execution of an optimization problem with integer variables.
 
     Args:
@@ -1255,7 +1223,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog) -> None:
         assert expected_message in caplog.text
         assert problem.optimum[1] == array([2.0])
     else:
-        with pytest.raises(ValueError, match=expected_message):
+        with assert_exception(ValueError, snapshot):
             OPTIMIZATION_LIBRARY_FACTORY.execute(
                 problem,
                 settings=L_BFGS_B_Settings(
@@ -1522,11 +1490,9 @@ def test_get_function_dimension(constrained_problem, name, dimension) -> None:
     assert constrained_problem.get_function_dimension(name) == dimension
 
 
-def test_get_function_dimension_unknown(constrained_problem) -> None:
+def test_get_function_dimension_unknown(constrained_problem, snapshot) -> None:
     """Check the output dimension of an unknown problem function."""
-    with pytest.raises(
-        ValueError, match=re.escape("The problem has no function named unknown.")
-    ):
+    with assert_exception(ValueError, snapshot):
         constrained_problem.get_function_dimension("unknown")
 
 
@@ -1566,16 +1532,13 @@ def test_get_function_dimension_no_dim(
         assert design_space.get_current_value.call_count == 2
 
 
-def test_get_function_dimension_unavailable(function, design_space) -> None:
+def test_get_function_dimension_unavailable(function, design_space, snapshot) -> None:
     """Check the unavailable output dimension of a problem function."""
     function.dim = 0
     design_space.has_current_value = False
     problem = OptimizationProblem(design_space)
     problem.objective = function
-    with pytest.raises(
-        RuntimeError,
-        match=f"The output dimension of function {function.name} is not available.",
-    ):
+    with assert_exception(RuntimeError, snapshot):
         problem.get_function_dimension(function.name)
 
 
@@ -2003,10 +1966,9 @@ def test_get_preprocessed_observable(pow2_problem) -> None:
     )
 
 
-def test_get_missing_observable(constrained_problem) -> None:
+def test_get_missing_observable(constrained_problem, snapshot) -> None:
     """Check the accessor to a missing observable."""
-    match = "missing_observable_name is not among the names of the observables: a, b."
-    with pytest.raises(ValueError, match=match):
+    with assert_exception(ValueError, snapshot):
         constrained_problem.observables.get_from_name("missing_observable_name")
 
 
@@ -2074,25 +2036,21 @@ def test_check_design_point_is_feasible(
     ))
 
 
-def test_is_multi_objective() -> None:
+def test_is_multi_objective(snapshot) -> None:
     assert not BinhKorn().is_mono_objective
 
     design_space = create_design_space()
     design_space.add_variable("x", 1)
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: array([x, x]), name="two")
-    with pytest.raises(
-        ValueError, match=re.escape("Cannot determine the dimension of the objective.")
-    ):
+    with assert_exception(ValueError, snapshot):
         problem.is_mono_objective  # noqa: B018
 
     problem.objective.evaluate(1.0)
     assert not problem.is_mono_objective
 
     problem.objective.dim = 0
-    with pytest.raises(
-        ValueError, match=re.escape("Cannot determine the dimension of the objective.")
-    ):
+    with assert_exception(ValueError, snapshot):
         problem.is_mono_objective  # noqa: B018
 
     problem.objective.output_names = ["x", "x"]

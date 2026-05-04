@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
@@ -28,6 +26,7 @@ from numpy import array
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.dataset.lines_settings import Lines_Settings
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -140,16 +139,11 @@ def test_pass_existing_figure(dataset, snapshot):
     assert figure.to_json() == snapshot
 
 
-def test_not_implemented(dataset):
+def test_not_implemented(dataset, snapshot):
     """Check that the option use_integer_xticks is not implemented with plotly."""
     settings = Lines_Settings(
         variables=["y"], abscissa_variable="x", use_integer_xticks=True
     )
     lines = Lines(dataset, settings)
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape(
-            "The use_integer_xticks option of plotly-based Lines is not implemented."
-        ),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         lines.execute(save=False, file_format="html")

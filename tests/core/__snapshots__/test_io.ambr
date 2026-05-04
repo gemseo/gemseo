@@ -1,0 +1,31 @@
+# serializer version: 1
+# name: test_finalize
+  '''
+  Grammar io_discipline_output: validation failed.
+  Bad type for output: <class 'str'> instead of <class 'int'>.
+  '''
+# ---
+# name: test_initialize
+  '''
+  Grammar io_discipline_input: validation failed.
+  Missing required names: input.
+  '''
+# ---
+# name: test_initialize_finalize_data_processor
+  '''
+  Grammar AnalyticDiscipline_discipline_input: validation failed.
+  Bad type for x: <class 'float'> instead of <class 'numpy.ndarray'>.
+  '''
+# ---
+# name: test_initialize_finalize_data_processor.1
+  '''
+  Grammar AnalyticDiscipline_discipline_output: validation failed.
+  Bad type for y: <class 'numpy.float64'> instead of <class 'numpy.ndarray'>.
+  '''
+# ---
+# name: test_set_linear_relationships_error
+  'The following input_names are not in the input grammar: dummy.'
+# ---
+# name: test_set_linear_relationships_error.1
+  'The following output_names are not in the output grammar: dummy.'
+# ---

@@ -18,8 +18,6 @@
 #        :author: Benoit Pauwels
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import allclose
 from numpy import array
@@ -35,6 +33,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -48,18 +47,12 @@ def test_factory(library_cls) -> None:
     assert library_cls == ScipyLinprog
 
 
-def test_nonlinear_optimization_problem(library_cls) -> None:
+def test_nonlinear_optimization_problem(library_cls, snapshot) -> None:
     """Tests that library does not support non-linear problems."""
     problem = Rosenbrock()
     assert not library_cls.filter_adapted_algorithms(problem)
     for algo_name in library_cls.ALGORITHM_INFOS:
-        with pytest.raises(
-            ValueError,
-            match=re.escape(
-                f"The algorithm {algo_name} is not adapted to the problem because it "
-                "does not handle non-linear problems."
-            ),
-        ):
+        with assert_exception(ValueError, snapshot):
             library_cls(algo_name).execute(problem)
 
 

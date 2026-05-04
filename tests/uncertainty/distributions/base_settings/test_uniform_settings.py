@@ -14,26 +14,17 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
-import pytest
-
 from gemseo.uncertainty.distributions.base_univariate_settings.uniform import (
     BaseUniformDistributionSettings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 
 class SpecificUniformDistribution_Settings(BaseUniformDistributionSettings):  # noqa: N801
     pass
 
 
-def test_validator():
+def test_validator(snapshot):
     """Test SPBetaDistribution_Settings.__validate."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The maximum of the uniform random variable "
-            "must be greater than its minimum."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         SpecificUniformDistribution_Settings(minimum=1.0, maximum=0.0)

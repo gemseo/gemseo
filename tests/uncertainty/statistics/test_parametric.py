@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import contextlib
 import numbers
-import re
 from unittest import mock
 
 import openturns as ot
@@ -44,6 +43,7 @@ from gemseo.uncertainty.statistics.sp_parametric import SPParametricStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
 from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 RNG = RandomState(0)
@@ -254,18 +254,14 @@ def test_compute_margin(statistics) -> None:
         assert_equal(value, mean_std[name])
 
 
-def test_plot_criteria(tmp_wd, statistics, dataset, tested_distributions) -> None:
+def test_plot_criteria(
+    tmp_wd, statistics, dataset, tested_distributions, snapshot
+) -> None:
     """Check plot_criteria()."""
     fig = statistics.plot_criteria("x_2", save=True, show=False)
     assert isinstance(fig, Figure)
     statistics.plot_criteria("x_2", title="title", save=True, show=False)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The variable 'dummy' is missing from the dataset; "
-            "available ones are: x_1, x_2, x_3."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         statistics.plot_criteria("dummy", save=True, show=False)
 
     stats = OTParametricStatistics(
@@ -296,22 +292,16 @@ def test_plot_criteria_images(
 
 
 @pytest.mark.parametrize("coverage", [-0.5, 1.5])
-def test_tolerance_interval_wrong_coverage(statistics, coverage) -> None:
+def test_tolerance_interval_wrong_coverage(statistics, coverage, snapshot) -> None:
     """Verify that compute_tolerance_interval raises an error if wrong coverage."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The argument 'coverage' must be a number in [0,1]."),
-    ):
+    with assert_exception(ValueError, snapshot):
         statistics.compute_tolerance_interval(coverage)
 
 
 @pytest.mark.parametrize("confidence", [-0.5, 1.5])
-def test_tolerance_interval_wrong_confidence(statistics, confidence) -> None:
+def test_tolerance_interval_wrong_confidence(statistics, confidence, snapshot) -> None:
     """Verify that compute_tolerance_interval raises an error if wrong confidence."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The argument 'confidence' must be a number in [0,1]."),
-    ):
+    with assert_exception(ValueError, snapshot):
         statistics.compute_tolerance_interval(0.1, confidence=confidence)
 
 

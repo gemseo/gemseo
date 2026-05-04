@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_get_sub_optimization_result
+  'The index (1) of a sub-optimization result must be between 0 and 0.'
+# ---

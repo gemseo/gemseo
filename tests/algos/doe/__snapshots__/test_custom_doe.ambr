@@ -1,0 +1,19 @@
+# serializer version: 1
+# name: test_check_dimension_inconsistency
+  'Dimension mismatch between the variables space (4) and the samples (3).'
+# ---
+# name: test_wrong_arguments[options0]
+  '''
+  1 validation error for CustomDOE_Settings
+    Value error, The algorithm CustomDOE requires either a 'doe_file' or the input 'samples' as settings. [type=value_error, input_value={}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_wrong_arguments[options1]
+  '''
+  1 validation error for CustomDOE_Settings
+    Value error, The algorithm CustomDOE requires either a 'doe_file' or the input 'samples' as settings. [type=value_error, input_value={'doe_file': 'foo.txt', '...,
+         [1., 2., 3.]])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

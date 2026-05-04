@@ -20,7 +20,6 @@
 #        :author: Benoit Pauwels - stacked data ; docstrings
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -42,6 +41,7 @@ from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.datasets.dataset import Dataset
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_result import OptimizationResult
@@ -311,10 +311,12 @@ def test_get_history_array(problem) -> None:
 
 @pytest.mark.parametrize("input_names", ["label_1", ["label_1"]])
 def test_get_history_array_wrong_dimension(
-    simple_database_with_large_x_vect, input_names
+    simple_database_with_large_x_vect,
+    input_names,
+    snapshot,
 ) -> None:
     """Check the exception raised when the input names have the wrong dimension."""
-    with pytest.raises(ValueError, match="Expected 6 names, got 1\\."):
+    with assert_exception(ValueError, snapshot):
         simple_database_with_large_x_vect.get_history_array(input_names=input_names)
 
 
@@ -425,23 +427,12 @@ def test_get_history_array_names(
     assert function_names == expected_function_names
 
 
-def test_get_history_array_wrong_f_name(problem) -> None:
+def test_get_history_array_wrong_f_name(problem, snapshot) -> None:
     """Check that get_history_array raises an error with an unknown function name."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "'foo' is not an output name; available ones are '@rosen' and 'rosen'."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         problem.database.get_history_array(function_names=["foo"])
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "'bar' and 'foo' are not output names; "
-            "available ones are '@rosen' and 'rosen'."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         problem.database.get_history_array(function_names=["foo", "bar"])
 
 
@@ -671,7 +662,7 @@ def test_get_history_array_with_simple_database(simple_database) -> None:
     assert functions == ["w", "x", "y", "z"]
 
 
-def test_get_output_value() -> None:
+def test_get_output_value(snapshot) -> None:
     """Check get_output()."""
     database = Database()
     input_value = array([1.0])
@@ -680,13 +671,7 @@ def test_get_output_value() -> None:
 
     other_input_value = input_value + 0.01
     assert database._Database__get_output(other_input_value) is None
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The iteration must be within {-N, ..., -1, 1, ..., N} "
-            "where N=1 is the number of iterations."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         database._Database__get_output(2)
 
     assert database._Database__get_output(1) == output_value
@@ -712,15 +697,9 @@ def test_check_output_history_is_empty() -> None:
     assert database.check_output_history_is_empty("g")
 
 
-def test_get_hashable_ndarray() -> None:
+def test_get_hashable_ndarray(snapshot) -> None:
     """Check get_hashable_ndarray."""
-    with pytest.raises(
-        KeyError,
-        match=re.escape(
-            "A database key must be either a NumPy array of a HashableNdarray; "
-            "got <class 'int'> instead."
-        ),
-    ):
+    with assert_exception(KeyError, snapshot):
         Database.get_hashable_ndarray(12)
 
 
@@ -788,11 +767,9 @@ def test_clear_listeners_arguments(store_listeners, new_iter_listeners, expected
     )
 
 
-def test_get_function_history():
+def test_get_function_history(snapshot):
     """Check that get_function_history raises a KeyError when the name is missing."""
-    with pytest.raises(
-        KeyError, match=re.escape("The database 'foo' contains no value of 'g'.")
-    ):
+    with assert_exception(KeyError, snapshot):
         Database("foo").get_function_history("g")
 
 

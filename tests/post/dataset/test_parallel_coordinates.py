@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
@@ -32,6 +30,7 @@ from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.post.dataset.parallel_coordinates_settings import (
     ParallelCoordinates_Settings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -89,10 +88,7 @@ def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
     plot.execute(save=False, fig=fig, ax=ax)
 
 
-def test_wrong_classifier_name(dataset) -> None:
+def test_wrong_classifier_name(dataset, snapshot) -> None:
     """Check that the message of the error raised when the classifier name is wrong."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Classifier must be one of these names: x1, x2 and x3."),
-    ):
+    with assert_exception(ValueError, snapshot):
         ParallelCoordinates(dataset, ParallelCoordinates_Settings(classifier="foo"))

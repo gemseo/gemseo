@@ -16,14 +16,13 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.taylor import TaylorDiscipline
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(
@@ -82,16 +81,12 @@ def test_linearize(linear_combination, discipline) -> None:
         ),
     ],
 )
-def test_raises_wrong_instantiation(linear_combination, input_data, default_input_data):
+def test_raises_wrong_instantiation(
+    linear_combination, input_data, default_input_data, snapshot
+):
     """Tests that TaylorDiscipline requires either input data or default inputs."""
     linear_combination.io.input_grammar.defaults = default_input_data
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "All the discipline input values must be specified either in input_data or "
-            "in discipline.io.input_grammar.defaults."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         return TaylorDiscipline(linear_combination, input_data=input_data)
 
 

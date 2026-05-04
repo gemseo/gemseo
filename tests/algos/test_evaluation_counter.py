@@ -14,11 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
-import pytest
-
 from gemseo.algos.evaluation_counter import EvaluationCounter
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def test_default():
@@ -52,13 +49,7 @@ def test_maximum_is_reached():
     assert EvaluationCounter(current=3, maximum=3).maximum_is_reached
 
 
-def test_error():
+def test_error(snapshot):
     """Check that the current value cannot be greater than the maximum."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The current value (3) of the evaluation counter must be "
-            "less than or equal to the maximum number of evaluations (2)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         EvaluationCounter(current=3, maximum=2)

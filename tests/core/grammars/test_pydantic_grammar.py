@@ -36,6 +36,7 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.pydantic import PydanticGrammar
 from gemseo.core.grammars.pydantic import _create_model
 from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import do_not_raise
 
 from .pydantic_models import get_model1
@@ -252,12 +253,10 @@ def test_set_descriptions(descriptions, model2) -> None:
             assert "description" not in grammar.schema["properties"][name]
 
 
-def test_set_descriptions_no_rebuild(model2) -> None:
+def test_set_descriptions_no_rebuild(model2, snapshot) -> None:
     """Verify setting descriptions that does nothing."""
     grammar = PydanticGrammar("g", model=model2)
-    with pytest.raises(
-        KeyError, match=re.escape("The name 'dummy' is not in the grammar.")
-    ):
+    with assert_exception(KeyError, snapshot):
         grammar.descriptions.update({"dummy": "description"})
 
 
@@ -361,7 +360,7 @@ def test_model_on_grammar_multi_instantiation() -> None:
     assert "dummy_var" in grammar_2
 
 
-def test_copy_model():
+def test_copy_model(snapshot):
     # With a model created internally.
     model = PydanticGrammar(name="g")._PydanticGrammar__model
     model_copy = _create_model(model)
@@ -375,7 +374,7 @@ def test_copy_model():
     assert obj.dummy_var == 0
 
     # Verify that the config dict and the validator are copied.
-    with pytest.raises(ValueError, match="dummy_var must be positive"):
+    with assert_exception(ValueError, snapshot):
         obj.dummy_var = -1
 
 

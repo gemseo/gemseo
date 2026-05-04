@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import pytest
 from numpy import array
 from numpy import complex128
 from numpy import eye
@@ -26,12 +25,13 @@ from numpy import float64
 from numpy import zeros
 
 from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
+from gemseo.utils.testing.helpers import assert_exception
 
 
-def test_init() -> None:
+def test_init(snapshot) -> None:
     assert SobieskiBase("float64").dtype == float64
     assert SobieskiBase("complex128").dtype == complex128
-    with pytest.raises(ValueError, match="foo"):
+    with assert_exception(ValueError, snapshot):
         SobieskiBase("foo")
 
 

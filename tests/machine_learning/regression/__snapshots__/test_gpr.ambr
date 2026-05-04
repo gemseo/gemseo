@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_failure_hessian[model0]
+  'The Hessian function of GaussianProcessRegressor is not implemented.'
+# ---
+# name: test_failure_hessian[model1]
+  'The Hessian function of GaussianProcessRegressor is not implemented.'
+# ---
+# name: test_failure_jacobian[model0]
+  'The Jacobian function of GaussianProcessRegressor is not implemented.'
+# ---
+# name: test_failure_jacobian[model1]
+  'The Jacobian function of GaussianProcessRegressor is not implemented.'
+# ---

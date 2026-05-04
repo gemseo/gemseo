@@ -18,14 +18,13 @@ from __future__ import annotations
 
 import re
 
-import pytest
-
 from gemseo.uncertainty.statistics.tolerance_interval.factory import (
     TOLERANCE_INTERVAL_FACTORY,
 )
 from gemseo.uncertainty.statistics.tolerance_interval.normal import (
     NormalToleranceInterval,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def test_create() -> None:
@@ -39,10 +38,10 @@ def test_create() -> None:
     assert tolerance_interval._NormalToleranceInterval__std == 1.0
 
 
-def test_create_fail() -> None:
+def test_create_fail(snapshot) -> None:
     """Check the creation of a BaseToleranceInterval from the
     ToleranceIntervalFactory."""
-    expected = re.escape(
+    re.escape(
         "The class WrongName is not available; "
         "the available ones are: ExponentialToleranceInterval, "
         "LogNormalToleranceInterval, NormalToleranceInterval, "
@@ -50,13 +49,8 @@ def test_create_fail() -> None:
         "WeibullToleranceInterval."
     )
 
-    with pytest.raises(ImportError, match=expected):
+    with assert_exception(ImportError, snapshot):
         TOLERANCE_INTERVAL_FACTORY.create("WrongName", 100000, 0, 1)
 
-    with pytest.raises(
-        TypeError,
-        match=re.escape(
-            "__init__() missing 2 required positional arguments: 'mean' and 'std'"
-        ),
-    ):
+    with assert_exception(TypeError, snapshot):
         TOLERANCE_INTERVAL_FACTORY.create("NormalToleranceInterval", 100000)

@@ -21,6 +21,7 @@ import pytest
 
 import gemseo.core._discipline_class_injector
 import gemseo.core.discipline.discipline
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -90,12 +91,11 @@ def test_class_injector(prepare):
     assert Disc().hi_there is None
 
 
-def test_class_injector_error(prepare_error):
+def test_class_injector_error(prepare_error, snapshot):
     """Verify the error handling when injecting a bad class."""
     from gemseo.core.discipline.discipline import Discipline
 
-    match = "The class Dummy cannot be imported from the package dummy."
-    with pytest.raises(ImportError, match=match):
+    with assert_exception(ImportError, snapshot):
 
         class Disc(Discipline):
             def _run(self, input_data: StrKeyMapping):

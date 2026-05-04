@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_couplings_sellar
+  "There is no discipline with an output variable named 'foo'."
+# ---
+# name: test_n2
+  'N2 diagrams need at least two disciplines.'
+# ---

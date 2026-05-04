@@ -33,6 +33,7 @@ from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.utils.testing.helpers import assert_exception
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -48,14 +49,9 @@ def test_library_from_factory():
         DOE_LIBRARY_FACTORY.create(DOE_LIB_NAME)
 
 
-def test_check_dimension_inconsistency():
+def test_check_dimension_inconsistency(snapshot):
     """Check that an error is raised if the dimensions are inconsistent."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Dimension mismatch between the variables space (4) and the samples (3)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_problem(
             DOE_LIB_NAME,
             dim=4,
@@ -115,15 +111,9 @@ def test_samples_shape(n_samples, options):
         },
     ],
 )
-def test_wrong_arguments(options):
+def test_wrong_arguments(options, snapshot):
     """Check that an error is raised when arguments are wrong."""
-    with pytest.raises(
-        ValidationError,
-        match=re.escape(
-            "The algorithm CustomDOE requires "
-            "either a 'doe_file' or the input 'samples' as settings."
-        ),
-    ):
+    with assert_exception(ValidationError, snapshot):
         execute_problem(DOE_LIB_NAME, dim=3, **options)
 
 

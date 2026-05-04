@@ -1,0 +1,19 @@
+# serializer version: 1
+# name: test_uunormalized_components[-inf-1]
+  'The components 2, 3 and 4 of the design space are unbounded.'
+# ---
+# name: test_uunormalized_components[-inf-1].1
+  'The components 2, 3 and 4 of the design space are unbounded.'
+# ---
+# name: test_uunormalized_components[-inf-inf]
+  'The components 2, 3 and 4 of the design space are unbounded.'
+# ---
+# name: test_uunormalized_components[-inf-inf].1
+  'The components 2, 3 and 4 of the design space are unbounded.'
+# ---
+# name: test_uunormalized_components[1-inf]
+  'The components 2, 3 and 4 of the design space are unbounded.'
+# ---
+# name: test_uunormalized_components[1-inf].1
+  'The components 2, 3 and 4 of the design space are unbounded.'
+# ---

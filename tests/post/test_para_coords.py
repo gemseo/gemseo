@@ -18,13 +18,12 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 
 from gemseo.post import ParallelCoordinates_Settings
 from gemseo.post.parallel_coordinates import ParallelCoordinates
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 TEST_PARAMETERS = {
@@ -49,14 +48,9 @@ def test_common_scenario(
     opt.execute(ParallelCoordinates_Settings(save=False))
 
 
-def test_shape_error() -> None:
+def test_shape_error(snapshot) -> None:
     """Check the error raised by parallel_coordinates if shapes are inconsistent."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The data shape (1, 1) is not equal to the expected one (2, 1)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         ParallelCoordinates._ParallelCoordinates__parallel_coordinates(
             array([[1]]), ["x"], [0.0, 0.5], (0.0, 0.0)
         )

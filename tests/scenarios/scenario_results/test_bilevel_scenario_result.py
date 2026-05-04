@@ -16,9 +16,6 @@
 
 from __future__ import annotations
 
-import re
-
-import pytest
 from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
@@ -29,6 +26,7 @@ from gemseo.scenarios.mdo import MDOScenario
 from gemseo.scenarios.scenario_results.bilevel_scenario_result import (
     BiLevelScenarioResult,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def test_bilevel_scenario_result_after_execution(scenario) -> None:
@@ -66,16 +64,11 @@ def test_bilevel_scenario_result_after_execution(scenario) -> None:
     assert f_opt == 1.0
 
 
-def test_get_sub_optimization_result(scenario) -> None:
+def test_get_sub_optimization_result(scenario, snapshot) -> None:
     """Check get_sub_optimization_result."""
     scenario.execute()
     scenario_result = BiLevelScenarioResult(scenario)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The index (1) of a sub-optimization result must be between 0 and 0."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         scenario_result.get_sub_optimization_result(1)
 
     assert (

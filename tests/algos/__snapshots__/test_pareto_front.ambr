@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_raise_error_if_dimension_mismatch
+  'Inconsistent objective values size and objective names: 2 != 3'
+# ---

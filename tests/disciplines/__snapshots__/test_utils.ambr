@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_check_disciplines_consistency_error
+  "Two disciplines, among which Bar, compute the same outputs: {'y'}"
+# ---

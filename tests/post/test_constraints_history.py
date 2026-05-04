@@ -22,17 +22,13 @@ import pytest
 
 from gemseo.post import ConstraintsHistory_Settings
 from gemseo.post.constraints_history import ConstraintsHistory
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 
-def test_function_error(common_problem) -> None:
+def test_function_error(common_problem, snapshot) -> None:
     """Test a ValueError is raised for a non-existent function."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"Cannot build constraints history plot, foo is not a constraint name\."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         ConstraintsHistory(common_problem).execute(
             ConstraintsHistory_Settings(save=False, constraint_names=["foo"])
         )

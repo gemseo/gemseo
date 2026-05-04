@@ -1,0 +1,49 @@
+# serializer version: 1
+# name: test_init_errors[SimpleGrammar]
+  'The element name must be a type or None: it is 0.'
+# ---
+# name: test_init_errors[SimpleGrammar].1
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_init_errors[SimplerGrammar]
+  'The element name must be a type or None: it is 0.'
+# ---
+# name: test_init_errors[SimplerGrammar].1
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_update_error[SimpleGrammar]
+  'The element name must be a type or None: it is 0.'
+# ---
+# name: test_update_error[SimplerGrammar]
+  'The element name must be a type or None: it is 0.'
+# ---
+# name: test_update_with_merge_error[SimpleGrammar]
+  'Merge is not supported for SimpleGrammar.'
+# ---
+# name: test_update_with_merge_error[SimpleGrammar].1
+  'Merge is not supported for SimpleGrammar.'
+# ---
+# name: test_update_with_merge_error[SimpleGrammar].2
+  'Merge is not supported for SimpleGrammar.'
+# ---
+# name: test_update_with_merge_error[SimpleGrammar].3
+  'Merge is not supported for SimpleGrammar.'
+# ---
+# name: test_update_with_merge_error[SimplerGrammar]
+  'Merge is not supported for SimplerGrammar.'
+# ---
+# name: test_update_with_merge_error[SimplerGrammar].1
+  'Merge is not supported for SimplerGrammar.'
+# ---
+# name: test_update_with_merge_error[SimplerGrammar].2
+  'Merge is not supported for SimplerGrammar.'
+# ---
+# name: test_update_with_merge_error[SimplerGrammar].3
+  'Merge is not supported for SimplerGrammar.'
+# ---
+# name: test_validate_error[True-data0-Bad type for name2: <class 'str'> instead of <class 'int'>.]
+  '''
+  Grammar g: validation failed.
+  Bad type for name2: <class 'str'> instead of <class 'int'>.
+  '''
+# ---

@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from copy import deepcopy
 from math import cos
 from math import exp
@@ -53,6 +52,7 @@ from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.error_estimators import compute_best_step
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.derivatives.finite_differences import FirstOrderFD
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -340,7 +340,7 @@ def test_indices(inputs, outputs, indices, dtype, method) -> None:
     "method",
     [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
 )
-def test_wrong_step(dtype, method) -> None:
+def test_wrong_step(dtype, method, snapshot) -> None:
     """Test that an exception is raised if the step size length does not match inputs.
 
     Args:
@@ -349,9 +349,7 @@ def test_wrong_step(dtype, method) -> None:
     discipline = ToyDiscipline(dtype)
     discipline.linearize(compute_all_jacobians=True)
     apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7], approx_method=method)
-    with pytest.raises(
-        ValueError, match=re.escape("Inconsistent step size, expected 3 got 2.")
-    ):
+    with assert_exception(ValueError, snapshot):
         apprx.compute_approx_jac(output_names=["y1", "y2"], input_names=["x1", "x2"])
 
 

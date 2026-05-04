@@ -47,6 +47,7 @@ from gemseo.machine_learning.transformers.dimension_reduction.base_dimension_red
     BaseDimensionReduction,
 )
 from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
@@ -366,18 +367,18 @@ def test_compute_transformed_variable_sizes(dataset, name, expected) -> None:
     assert model._transformed_output_sizes == {"y": sizes["y"]}
 
 
-def test_crossed_transformer_failure(dataset) -> None:
+def test_crossed_transformer_failure(dataset, snapshot) -> None:
     """Check that a crossed transformer cannot be applied to outputs."""
     with concretize_classes(BaseMLSupervisedModel):
         model = BaseMLSupervisedModel(
             dataset, BaseMLSupervisedModelSettings(transformer={"y": "PLS"})
         )
 
-    expected = re.escape(
+    re.escape(
         "The transformer PLS cannot be applied to the outputs "
         "to build a supervised machine learning model."
     )
-    with pytest.raises(NotImplementedError, match=expected):
+    with assert_exception(NotImplementedError, snapshot):
         model.learn()
 
 

@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 import logging
-import re
 
 import pytest
 
@@ -26,6 +25,7 @@ from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.discipline import check_disciplines_consistency
 from gemseo.utils.discipline import get_all_inputs
 from gemseo.utils.discipline import get_all_outputs
+from gemseo.utils.testing.helpers import assert_exception
 
 
 class MyDiscipline(DummyDiscipline):
@@ -110,12 +110,9 @@ def test_check_disciplines_consistency_log(inconsistent_disciplines, caplog) -> 
     )
 
 
-def test_check_disciplines_consistency_error(inconsistent_disciplines, caplog) -> None:
+def test_check_disciplines_consistency_error(
+    inconsistent_disciplines, caplog, snapshot
+) -> None:
     """Test check_disciplines_consistency with inconsistent disciplines and log mode."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Two disciplines, among which Bar, compute the same outputs: {'y'}"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         check_disciplines_consistency(inconsistent_disciplines, False, True)

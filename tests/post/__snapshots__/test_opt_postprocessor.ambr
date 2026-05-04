@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_execute_error_with_empty_dataset
+  'The post-processor NewBasePost cannot be solved because the optimization problem was not solved.'
+# ---
+# name: test_execute_error_with_no_dataset
+  'The post-processor NewBasePost cannot be created because there is no dataset to plot.'
+# ---

@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import matplotlib
@@ -28,6 +27,7 @@ from packaging import version
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post import ConstraintRadar_Settings
 from gemseo.post.constraint_radar import ConstraintRadar
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
@@ -64,31 +64,18 @@ def test_post(kwargs, baseline_images, problem) -> None:
     post.execute(ConstraintRadar_Settings(save=False, show=False, **kwargs))
 
 
-def test_function_error(problem) -> None:
+def test_function_error(problem, snapshot) -> None:
     """Test a ValueError is raised for a non-existent function."""
     post = ConstraintRadar(problem)
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"The names \[.?'foo'\] are not names of constraints "
-            r"stored in the dataset\."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         post.execute(ConstraintRadar_Settings(save=False, constraint_names=["foo"]))
 
 
-def test_iteration_error(problem) -> None:
+def test_iteration_error(problem, snapshot) -> None:
     """Test a ValueError is raised with ill-defined iteration."""
-    n_iterations = len(problem.database)
+    len(problem.database)
     post = ConstraintRadar(problem)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The requested iteration 1000 is neither "
-            f"in ({-n_iterations},...,-1,1,...,{n_iterations}) "
-            f"nor None."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         post.execute(
             ConstraintRadar_Settings(
                 save=False,

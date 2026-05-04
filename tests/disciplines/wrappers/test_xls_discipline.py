@@ -37,20 +37,20 @@ from gemseo.core.parallel_execution.discipline_execution import DiscParallelExec
 from gemseo.disciplines.wrappers.xls_discipline import XLSDiscipline
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
+from gemseo.utils.testing.helpers import assert_exception
 
 DIR_PATH = Path(__file__).parent
 FILE_PATH_PATTERN = str(DIR_PATH / "test_excel_fail{}.xlsx")
 INPUT_DATA = {"a": array([20.25]), "b": array([3.25])}
 
 
-def test_missing_xlwings(skip_if_xlwings_is_usable) -> None:
+def test_missing_xlwings(skip_if_xlwings_is_usable, snapshot) -> None:
     """Check error when excel is not available.
 
     Args:
         skip_if_xlwings_is_usable: Fixture to skip the test when xlwings is usable.
     """
-    msg = "xlwings requires Microsoft Excel"
-    with pytest.raises(RuntimeError, match=msg):
+    with assert_exception(RuntimeError, snapshot):
         XLSDiscipline("dummy_file_path")
 
 
@@ -79,7 +79,7 @@ def test_error_init(skip_if_xlwings_is_not_usable, file_id) -> None:
         XLSDiscipline(FILE_PATH_PATTERN.format(file_id))
 
 
-def test_error_execute(skip_if_xlwings_is_not_usable) -> None:
+def test_error_execute(skip_if_xlwings_is_not_usable, snapshot) -> None:
     """Check that an exception is raised for incomplete data.
 
     Args:
@@ -87,29 +87,22 @@ def test_error_execute(skip_if_xlwings_is_not_usable) -> None:
             usable.
     """
     disc = XLSDiscipline(FILE_PATH_PATTERN.format(4))
-    with pytest.raises(
-        ValueError,
-        match=r"Inconsistent Outputs sheet, names \(first columns\) and "
-        r"values column \(second\) must be of the same length.",
-    ):
+    with assert_exception(ValueError, snapshot):
         disc.execute(INPUT_DATA)
 
 
-def test_excel_error_defaults(skip_if_xlwings_is_not_usable) -> None:
+def test_excel_error_defaults(skip_if_xlwings_is_not_usable, snapshot) -> None:
     """Check that an exception is raised if default inputs contain excel errors.
 
     Args:
         skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
             usable.
     """
-    with pytest.raises(
-        ValueError,
-        match=r"Inputs sheet contains Excel errors in the second column at rows \[2\]",
-    ):
+    with assert_exception(ValueError, snapshot):
         XLSDiscipline(FILE_PATH_PATTERN.format(5))
 
 
-def test_excel_error_execute(skip_if_xlwings_is_not_usable) -> None:
+def test_excel_error_execute(skip_if_xlwings_is_not_usable, snapshot) -> None:
     """Check that an exception is raised if output data contain excel errors.
 
     Args:
@@ -117,11 +110,7 @@ def test_excel_error_execute(skip_if_xlwings_is_not_usable) -> None:
             usable.
     """
     disc = XLSDiscipline(FILE_PATH_PATTERN.format(6))
-    with pytest.raises(
-        ValueError,
-        match="Outputs sheet contains Excel errors "
-        r"in the second column at rows \[1\]",
-    ):
+    with assert_exception(ValueError, snapshot):
         disc.execute(INPUT_DATA)
 
 

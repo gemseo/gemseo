@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import logging
 import pickle
-import re
 from multiprocessing import get_start_method
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -57,6 +56,7 @@ from gemseo.uncertainty.distributions.scipy.normal_settings import (
 )
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.scenarios.mdo import MDOScenario
@@ -372,7 +372,7 @@ def test_variable_types(var_type1, var_type2) -> None:
 
 
 @pytest.mark.parametrize(("l_b", "u_b"), [(-inf, inf), (1, inf), (-inf, 1)])
-def test_uunormalized_components(mc, l_b, u_b) -> None:
+def test_uunormalized_components(mc, l_b, u_b, snapshot) -> None:
     """Check that an error is raised when the design space is unbounded."""
     design_space = DesignSpace()
     design_space.add_variable("x", 2, lower_bound=1, upper_bound=3)
@@ -382,11 +382,10 @@ def test_uunormalized_components(mc, l_b, u_b) -> None:
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(sum, name="f")
 
-    error_message = "The components 2, 3 and 4 of the design space are unbounded."
-    with pytest.raises(ValueError, match=re.escape(error_message)):
+    with assert_exception(ValueError, snapshot):
         mc.sample_space(design_space, MC_Settings(n_samples=3))
 
-    with pytest.raises(ValueError, match=re.escape(error_message)):
+    with assert_exception(ValueError, snapshot):
         mc.execute(problem, settings=MC_Settings(n_samples=3))
 
 

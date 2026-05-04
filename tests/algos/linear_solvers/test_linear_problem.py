@@ -18,8 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import diag
 from numpy import eye
@@ -29,6 +27,7 @@ from numpy.random import RandomState
 from scipy.sparse.linalg import aslinearoperator
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -51,21 +50,14 @@ def test_init() -> None:
     assert len(pb1.residuals_history) == 2
 
 
-def test_residuals_checks() -> None:
+def test_residuals_checks(snapshot) -> None:
     """Tests the basic checks for residuals computation."""
     pb1 = LinearProblem(diag([1, 1]))
-    with pytest.raises(
-        ValueError, match=re.escape("No right-hand side available to compute residual.")
-    ):
+    with assert_exception(ValueError, snapshot):
         pb1.compute_residuals(current_x=ones(2))
 
     pb1.rhs = ones(2)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Neither solution or current iterate available to compute residual."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         pb1.compute_residuals()
 
 
@@ -73,10 +65,10 @@ def test_residuals_checks() -> None:
     ("lhs", "rhs"),
     [(diag([1, 1]), ones(1)), (ones(1), ones(2)), (diag([1, 1]), diag([1, 1]))],
 )
-def test_size_checks(lhs, rhs) -> None:
+def test_size_checks(lhs, rhs, snapshot) -> None:
     """Tests the sizes consistency checks in RHL and LHS."""
     problem = LinearProblem(lhs, rhs)
-    with pytest.raises(ValueError, match="Incompatible dimensions in linear system"):
+    with assert_exception(ValueError, snapshot):
         problem.check()
 
 
@@ -92,10 +84,10 @@ def test_plot_residuals(tmp_wd) -> None:
     problem.plot_residuals()
 
 
-def test_plot_residuals_checks() -> None:
+def test_plot_residuals_checks(snapshot) -> None:
     """Tests the residuals plot creation."""
     problem = LinearProblem(eye(1), ones(1))
-    with pytest.raises(ValueError, match=re.escape("Residuals history is empty.")):
+    with assert_exception(ValueError, snapshot):
         problem.plot_residuals()
 
 

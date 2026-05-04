@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy.random import RandomState
 
@@ -46,6 +44,7 @@ from gemseo.uncertainty.statistics.tolerance_interval.uniform import (
 from gemseo.uncertainty.statistics.tolerance_interval.weibull import (
     WeibullToleranceInterval,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 dataset = Dataset.from_array(
     RandomState(0).weibull(1.5, size=1000),
@@ -124,9 +123,7 @@ def test_tolerance_interval_confidence_upper(side, distribution) -> None:
 
 
 @pytest.mark.parametrize("distribution_name", ["Uniform", "Normal"])
-def test_tolerance_interval_incorrect_side(distribution_name) -> None:
+def test_tolerance_interval_incorrect_side(distribution_name, snapshot) -> None:
     """Check that an error is raised if the type of tolerance interval is incorrect."""
-    with pytest.raises(
-        ValueError, match=re.escape("The type of tolerance interval is incorrect.")
-    ):
+    with assert_exception(ValueError, snapshot):
         DISTRIBUTIONS[distribution_name].compute(0.9, side="incorrect_side")

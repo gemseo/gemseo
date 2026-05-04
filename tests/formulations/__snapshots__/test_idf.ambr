@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_fail_idf_no_coupl
+  "IDF formulation: the variables 'y_12', 'y_14', 'y_21', 'y_23', 'y_24', 'y_31', 'y_32' and 'y_34' must be added to the design space."
+# ---

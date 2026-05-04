@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -43,6 +42,7 @@ from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
 from gemseo.machine_learning.transformers.dimension_reduction.pls import PLS
 from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
@@ -165,7 +165,7 @@ def test_reduced_io_dimensions(
     assert regressor._reduced_output_dimension == reduced_output_dimension
 
 
-def test_coefficients_with_transform(dataset, model_with_transform) -> None:
+def test_coefficients_with_transform(dataset, model_with_transform, snapshot) -> None:
     """Test correct handling of get_coefficients with transformers."""
     model_with_transform.get_coefficients(as_dict=False)
     model_with_transform.get_coefficients(as_dict=True)
@@ -178,14 +178,7 @@ def test_coefficients_with_transform(dataset, model_with_transform) -> None:
     )
     model_with_pca.learn()
     model_with_pca.get_coefficients(as_dict=False)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Coefficients are only representable in dictionary "
-            "form if the transformers do not change the "
-            "dimensions of the variables."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         model_with_pca.get_coefficients()
 
 
@@ -201,20 +194,13 @@ def test_intercept_false(model) -> None:
     assert_almost_equal(model.get_intercept(False), array([1.0, -1.0]))
 
 
-def test_intercept_with_output_dimension_change(dataset) -> None:
+def test_intercept_with_output_dimension_change(dataset, snapshot) -> None:
     """Verify that an error is raised."""
     model = LinearRegressor(
         dataset, LinearRegressor_Settings(transformer={"outputs": PCA(n_components=2)})
     )
     model.learn()
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Intercept is only representable in dictionary "
-            "form if the transformers do not change the "
-            "dimensions of the output variables."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         model.get_intercept()
 
 
@@ -273,18 +259,12 @@ def test_prediction_with_pls(dataset) -> None:
     assert allclose(another_prediction["y_2"], array([[-9.0], [-1.0], [-2.0]]))
 
 
-def test_prediction_with_pls_failure(dataset) -> None:
+def test_prediction_with_pls_failure(dataset, snapshot) -> None:
     """Test that PLS does not work with output group."""
     model = LinearRegressor(
         dataset, LinearRegressor_Settings(transformer={"outputs": PLS(n_components=2)})
     )
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape(
-            "The transformer PLS cannot be applied to the outputs "
-            "to build a supervised machine learning model."
-        ),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         model.learn()
 
 

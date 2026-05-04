@@ -1,0 +1,22 @@
+# serializer version: 1
+# name: test_failure_tolerance_interval[0.1-0.95-lower]
+  'The dataset is not large enough to estimate the desired tolerance interval.'
+# ---
+# name: test_failure_tolerance_interval[0.9-0.95-both]
+  'The dataset is not large enough to estimate the desired tolerance interval.'
+# ---
+# name: test_failure_tolerance_interval[0.9-0.95-upper]
+  'The dataset is not large enough to estimate the desired tolerance interval.'
+# ---
+# name: test_failure_wrong_type
+  'The argument side is not of ToleranceIntervalSide type.'
+# ---
+# name: test_percentile_error[-1]
+  'Percentile order must be in {0, 1, 2, ..., 100}.'
+# ---
+# name: test_percentile_error[0.25]
+  'Percentile order must be in {0, 1, 2, ..., 100}.'
+# ---
+# name: test_quartile_error
+  'Quartile order must be in {1, 2, 3}.'
+# ---

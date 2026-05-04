@@ -14,7 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -25,6 +24,7 @@ from gemseo.core.discipline.io import IO
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GrammarType
 from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.typing import MutableStrKeyMapping
@@ -140,7 +140,7 @@ class OtherProcessor(Processor):
         return {k: v[0] for k, v in data.items()}
 
 
-def test_initialize(io: IO):
+def test_initialize(io: IO, snapshot):
     io.input_grammar.update_from_data({"input": 0})
 
     validate = False
@@ -153,16 +153,13 @@ def test_initialize(io: IO):
     io.initialize({"input": 0}, validate)
     assert io.data == {"input": 0}
 
-    match = (
-        "Grammar io_discipline_input: validation failed.\nMissing required names: input"
-    )
-    with pytest.raises(InvalidDataError, match=match):
+    with assert_exception(InvalidDataError, snapshot):
         io.initialize({}, validate)
 
     assert io.data == {"input": 0}
 
 
-def test_finalize(io: IO):
+def test_finalize(io: IO, snapshot):
     io.input_grammar.update_from_data({"input": 0})
     io.output_grammar.update_from_data({"output": 0})
 
@@ -173,16 +170,12 @@ def test_finalize(io: IO):
 
     # Check validation.
     io.data = {"dummy": 0, "input": "0", "output": "0"}
-    match = (
-        "Grammar io_discipline_output: validation failed.\nBad type for output: "
-        "<class 'str'> instead of <class 'int'>."
-    )
-    with pytest.raises(InvalidDataError, match=match):
+    with assert_exception(InvalidDataError, snapshot):
         io.finalize(True)
     assert io.data == {"dummy": 0, "input": "0", "output": "0"}
 
 
-def test_initialize_finalize_data_processor():
+def test_initialize_finalize_data_processor(snapshot):
     # Validate input and output data and use data processor.
     discipline = AnalyticDiscipline({"y": "x+2"})
     discipline.validate_input_data = True
@@ -196,25 +189,12 @@ def test_initialize_finalize_data_processor():
     assert discipline.io.data == {"x": array([0.0]), "y": array([2.0])}
 
     # Raises an InvalidDataError when passing scalar input data.
-    with pytest.raises(
-        InvalidDataError,
-        match=re.escape(
-            "Grammar AnalyticDiscipline_discipline_input: validation failed.\n"
-            "Bad type for x: <class 'float'> instead of <class 'numpy.ndarray'>."
-        ),
-    ):
+    with assert_exception(InvalidDataError, snapshot):
         discipline.execute({"x": 1.0})
 
     # Raises an InvalidDataError when returning scalar input data.
     discipline.io.data_processor = OtherProcessor()
-    with pytest.raises(
-        InvalidDataError,
-        match=re.escape(
-            "Grammar AnalyticDiscipline_discipline_output: validation failed.\n"
-            "Bad type for y: "
-            "<class 'numpy.float64'> instead of <class 'numpy.ndarray'>."
-        ),
-    ):
+    with assert_exception(InvalidDataError, snapshot):
         discipline.execute({"x": array([1.0])})
 
 
@@ -262,11 +242,9 @@ def test_linear_relationships(io: IO):
             assert not io.have_linear_relationships(input_names_, output_names_)
 
 
-def test_set_linear_relationships_error(io: IO):
-    match = "The following input_names are not in the input grammar: dummy."
-    with pytest.raises(ValueError, match=match):
+def test_set_linear_relationships_error(io: IO, snapshot):
+    with assert_exception(ValueError, snapshot):
         io.set_linear_relationships(("dummy",), ())
 
-    match = "The following output_names are not in the output grammar: dummy."
-    with pytest.raises(ValueError, match=match):
+    with assert_exception(ValueError, snapshot):
         io.set_linear_relationships((), ("dummy",))

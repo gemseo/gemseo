@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from unittest import mock
 
 import pytest
@@ -36,6 +35,7 @@ from gemseo.post.dataset.lines import Lines
 from gemseo.uncertainty.statistics.base import BaseStatistics
 from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
 from gemseo.uncertainty.statistics.tolerance_interval.base import BaseToleranceInterval
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import concretize_classes
 from gemseo.utils.testing.helpers import image_comparison
 
@@ -183,20 +183,16 @@ def test_statistics(
     assert "x_2" not in result
 
 
-def test_quartile_error(statistics) -> None:
+def test_quartile_error(statistics, snapshot) -> None:
     """Check that compute_quartile() raises an error when using a wrong order."""
-    with pytest.raises(
-        ValueError, match=re.escape("Quartile order must be in {1, 2, 3}.")
-    ):
+    with assert_exception(ValueError, snapshot):
         statistics.compute_quartile(0.25)
 
 
 @pytest.mark.parametrize("order", [0.25, -1])
-def test_percentile_error(statistics, order) -> None:
+def test_percentile_error(statistics, order, snapshot) -> None:
     """Check that compute_percentile() raises an error when using a wrong order."""
-    with pytest.raises(
-        TypeError, match=re.escape("Percentile order must be in {0, 1, 2, ..., 100}.")
-    ):
+    with assert_exception(TypeError, snapshot):
         statistics.compute_percentile(order)
 
 
@@ -327,26 +323,17 @@ def test_plot_pdf_args(statistics) -> None:
         (0.9, 0.95, BaseToleranceInterval.ToleranceIntervalSide.BOTH),
     ],
 )
-def test_failure_tolerance_interval(statistics, coverage, confidence, side):
+def test_failure_tolerance_interval(statistics, coverage, confidence, side, snapshot):
     """Check that an error is raised when not enough samples are available."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The dataset is not large enough to estimate "
-            "the desired tolerance interval."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         statistics.compute_tolerance_interval(
             coverage=coverage, confidence=confidence, side=side
         )
 
 
-def test_failure_wrong_type(statistics):
+def test_failure_wrong_type(statistics, snapshot):
     """Check that an error is raised when not enough samples are available."""
-    with pytest.raises(
-        TypeError,
-        match=re.escape("The argument side is not of ToleranceIntervalSide type."),
-    ):
+    with assert_exception(TypeError, snapshot):
         statistics.compute_tolerance_interval(coverage=0.9, confidence=0.9, side="e")
 
 

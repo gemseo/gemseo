@@ -18,8 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import numpy as np
 import pytest
 
@@ -35,6 +33,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.evaluation import EvaluationScenario
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def test_build_func_from_disc() -> None:
@@ -194,22 +193,14 @@ def test_idf_execution(
         )
 
 
-def test_fail_idf_no_coupl(generate_idf_scenario) -> None:
+def test_fail_idf_no_coupl(generate_idf_scenario, snapshot) -> None:
     """Test an exception when the coupling variables are not in the Design Space.
 
     Args:
         generate_idf_scenario: Fixture that returns an MDOScenario with an IDF
             formulation with custom arguments.
     """
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "IDF formulation: "
-            "the variables "
-            "'y_12', 'y_14', 'y_21', 'y_23', 'y_24', 'y_31', 'y_32' and 'y_34' "
-            "must be added to the design space."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         generate_idf_scenario(
             "SLSQP",
             linearize=False,

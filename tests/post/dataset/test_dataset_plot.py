@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from unittest import mock
 
@@ -37,6 +36,7 @@ from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import concretize_classes
 
 
@@ -103,27 +103,21 @@ def test_get_figure_and_ax_from_scratch(dataset, dataset_plot) -> None:
     assert isinstance(ax, Axes)
 
 
-def test_get_figure_and_axes_from_axes_only(dataset, dataset_plot) -> None:
+def test_get_figure_and_axes_from_axes_only(dataset, dataset_plot, snapshot) -> None:
     """Check that get_figure_and_axes with axes and without fig raises a ValueError."""
     _, ax = plt.subplots()
     with concretize_classes(MatplotlibPlot):
         plot = MatplotlibPlot(dataset, dataset_plot.settings, (), None, ax)
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The figure associated with the given axes is missing."),
-    ):
+    with assert_exception(ValueError, snapshot):
         plot._get_figure_and_axes(None, ax)
 
 
-def test_get_figure_and_axes_from_figure_only(dataset, dataset_plot) -> None:
+def test_get_figure_and_axes_from_figure_only(dataset, dataset_plot, snapshot) -> None:
     """Check that get_figure_and_axes without axes and with fig raises a ValueError."""
     fig, _ = plt.subplots()
     with concretize_classes(MatplotlibPlot):
         plot = MatplotlibPlot(dataset, dataset_plot.settings, (), fig, None)
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The axes associated with the given figure are missing."),
-    ):
+    with assert_exception(ValueError, snapshot):
         plot._get_figure_and_axes(fig, None)
 
 

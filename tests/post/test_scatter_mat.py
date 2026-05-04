@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import pytest
@@ -36,6 +35,7 @@ from gemseo.post import ScatterPlotMatrix_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 CURRENT_DIR = Path(__file__).parent
@@ -88,19 +88,14 @@ def test_scatter_load(tmp_wd) -> None:
         assert Path(outf).exists()
 
 
-def test_non_existent_var(tmp_wd) -> None:
+def test_non_existent_var(tmp_wd, snapshot) -> None:
     """Test exception when a requested variable does not exist.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
     problem = OptimizationProblem.from_hdf(POWER2)
-    with pytest.raises(
-        ValueError,
-        match=r"Cannot build scatter plot matrix: function foo is neither "
-        r"among optimization problem functions: .* "
-        r"nor design variables: .*",
-    ):
+    with assert_exception(ValueError, snapshot):
         POST_FACTORY.execute(
             problem, ScatterPlotMatrix_Settings(variable_names=["foo"])
         )
@@ -223,7 +218,7 @@ def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
     )
 
 
-def test_filter_non_feasible_exception() -> None:
+def test_filter_non_feasible_exception(snapshot) -> None:
     """Test exception when no feasible points are left after filtering."""
     # Create a Power2 instance
     problem = Power2()
@@ -236,7 +231,7 @@ def test_filter_non_feasible_exception() -> None:
         {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
     )
 
-    with pytest.raises(ValueError, match=re.escape("No feasible points were found.")):
+    with assert_exception(ValueError, snapshot):
         POST_FACTORY.execute(
             problem,
             ScatterPlotMatrix_Settings(filter_non_feasible=True, variable_names=["x"]),

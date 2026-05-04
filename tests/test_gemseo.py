@@ -122,6 +122,7 @@ from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
 from gemseo.utils.constants import N_CPUS
 from gemseo.utils.logging import MultiLineStreamHandler
 from gemseo.utils.pickle import to_pickle
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.xdsm.xdsm import XDSM
 from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
@@ -194,7 +195,7 @@ def test_generate_coupling_graph_without_saving(
     assert not list(tmp_wd.iterdir())
 
 
-def test_get_algorithm_options_schema() -> None:
+def test_get_algorithm_options_schema(snapshot) -> None:
     """Test that all available options are printed."""
     schema_dict = get_algorithm_options_schema("SLSQP")
     assert "properties" in schema_dict
@@ -206,9 +207,7 @@ def test_get_algorithm_options_schema() -> None:
         assert key in out_dict
         assert out_dict[key] == val
 
-    with pytest.raises(
-        ValueError, match=re.escape("Algorithm named unknown is not available.")
-    ):
+    with assert_exception(ValueError, snapshot):
         get_algorithm_options_schema("unknown")
 
     get_algorithm_options_schema("SLSQP", pretty_print=True)
@@ -235,7 +234,7 @@ def test_get_surrogate_options_schema() -> None:
     get_surrogate_options_schema("LinearRegressor", pretty_print=True)
 
 
-def test_create_scenario_and_monitor() -> None:
+def test_create_scenario_and_monitor(snapshot) -> None:
     """Test the creation of a scenario from the SobieskiMission discipline."""
     create_scenario(
         create_discipline("SobieskiMission"),
@@ -244,10 +243,7 @@ def test_create_scenario_and_monitor() -> None:
         formulation_name="DisciplinaryOpt",
     )
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Unknown scenario type: unknown, use one of : 'MDO' or 'DOE'."),
-    ):
+    with assert_exception(ValueError, snapshot):
         create_scenario(
             create_discipline("SobieskiMission"),
             "y_4",
@@ -302,9 +298,9 @@ def test_execute_post_with_optimization_dataset(scenario):
     assert isinstance(post, OptHistoryView)
 
 
-def test_execute_post_type_error(scenario) -> None:
+def test_execute_post_type_error(scenario, snapshot) -> None:
     """Test the method execute_post with a wrong typed argument."""
-    with pytest.raises(TypeError, match=f"Cannot post process type: {int}"):
+    with assert_exception(TypeError, snapshot):
         execute_post(1234, post_name="OptHistoryView")
 
 
@@ -414,7 +410,7 @@ def test_get_scenario_inputs_schema() -> None:
     get_scenario_inputs_schema(sc_aero, pretty_print=True)
 
 
-def test_exec_algo() -> None:
+def test_exec_algo(snapshot) -> None:
     """Test the execution of an algorithm with the Rosenbrock problem."""
     problem = Rosenbrock()
     sol = execute_algo(problem, algo_name="L_BFGS_B", max_iter=200)
@@ -423,19 +419,16 @@ def test_exec_algo() -> None:
     sol = execute_algo(problem, algo_name="LHS", algo_type="doe", n_samples=200)
     assert abs(sol.f_opt) < 1e-8
 
-    with pytest.raises(
-        ValueError,
-        match="Unknown algo type: unknown_algo, please use 'doe' or 'opt' !",
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_algo(problem, algo_name="LHS", algo_type="unknown_algo", n_samples=200)
 
 
-def test_get_scenario_options_schema() -> None:
+def test_get_scenario_options_schema(snapshot) -> None:
     """Check that the scenario options schema is retrieved correctly."""
     schema = get_scenario_options_schema("MDO")
     assert "name" in schema["properties"]
 
-    with pytest.raises(ValueError, match="Unknown scenario type UnknownType"):
+    with assert_exception(ValueError, snapshot):
         get_scenario_options_schema("UnknownType")
 
     get_scenario_options_schema("MDO", pretty_print=True)
@@ -493,7 +486,7 @@ def test_get_available_disciplines() -> None:
     assert "Sellar1" in disciplines
 
 
-def test_create_discipline() -> None:
+def test_create_discipline(snapshot) -> None:
     """Test that API method creates a discipline properly.
 
     Test exceptions when the options dictionary does not follow the specified json
@@ -514,11 +507,7 @@ def test_create_discipline() -> None:
         "cache_type": Discipline.CacheType.SIMPLE,
     }
 
-    msg = (
-        "data.linearization_mode must be one of "
-        r"\['auto', 'direct', 'reverse', 'adjoint'\]"
-    )
-    with pytest.raises(InvalidDataError, match=msg):
+    with assert_exception(InvalidDataError, snapshot):
         create_discipline("SobieskiMission", **options_fail)
 
 

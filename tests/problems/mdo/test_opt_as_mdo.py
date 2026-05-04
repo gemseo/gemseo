@@ -14,7 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 from unittest.mock import PropertyMock
 from unittest.mock import patch
@@ -40,6 +39,7 @@ from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.problems.mdo.opt_as_mdo_scenario import OptAsMDOScenario
 from gemseo.problems.mdo.scalable.parametric.scalable_problem import ScalableProblem
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -84,18 +84,17 @@ def test_basic(discipline, initial_point):
 
 
 @pytest.mark.parametrize("n_variables", range(3))
-def test_less_than_3_design_variables(discipline, n_variables):
+def test_less_than_3_design_variables(discipline, n_variables, snapshot):
     """Check the error raised when the design space has less than 3 design variables."""
     design_space = DesignSpace()
     for i in range(n_variables):
         design_space.add_variable(f"z_{i}", lower_bound=-1, upper_bound=1)
 
-    msg = "The design space must have at least three design variables; got {}."
-    with pytest.raises(ValueError, match=re.escape(msg.format(n_variables))):
+    with assert_exception(ValueError, snapshot):
         OptAsMDOScenario(discipline, design_space)
 
 
-def test_non_differentiable_link_discipline(discipline):
+def test_non_differentiable_link_discipline(discipline, snapshot):
     """Check the error raised when the link discipline is not differentiable."""
     design_space = DesignSpace()
     design_space.add_variable("z_0", lower_bound=-1, upper_bound=1)
@@ -111,9 +110,7 @@ def test_non_differentiable_link_discipline(discipline):
         )
 
     scenario.add_objective("f")
-    with pytest.raises(
-        ValueError, match=re.escape("The discipline L was not linearized.")
-    ):
+    with assert_exception(ValueError, snapshot):
         scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
 
 

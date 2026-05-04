@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import logging
-import re
 import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -48,6 +47,7 @@ from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.datasets.io_dataset import IODataset
 from gemseo.problems.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -82,13 +82,12 @@ def hdf5_cache(tmp_wd):
 
 
 @pytest.mark.parametrize("cache", map(FACTORY.create, FACTORY.class_names))
-def test_tolerance(cache):
+def test_tolerance(cache, snapshot):
     """Verify tolerance property."""
     assert cache.tolerance == 0.0
     cache.tolerance = 1.0
     assert cache.tolerance == 1.0
-    match = "The tolerance shall be positive: -1.0"
-    with pytest.raises(ValueError, match=match):
+    with assert_exception(ValueError, snapshot):
         cache.tolerance = -1.0
 
 
@@ -497,34 +496,20 @@ def test_check_version_empty_file(h5_file) -> None:
     HDF5FileSingleton(CACHE_FILE_NAME)
 
 
-def test_check_version_missing(h5_file) -> None:
+def test_check_version_missing(h5_file, snapshot) -> None:
     """Verify that a non-empty file with no file format version raises."""
     h5_file["foo"] = "bar"
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The file cache.h5 cannot be used because it has no file format version: "
-            "see HDFCache.update_file_format to convert it."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         HDF5FileSingleton(CACHE_FILE_NAME)
 
 
-def test_check_version_greater(h5_file) -> None:
+def test_check_version_greater(h5_file, snapshot) -> None:
     """Verify that a non-empty file with greater file format version raises."""
     h5_file["foo"] = "bar"
     h5_file.attrs["version"] = HDF5FileSingleton.FILE_FORMAT_VERSION + 1
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The file cache.h5 cannot be used because its file format version is "
-            f"{HDF5FileSingleton.FILE_FORMAT_VERSION + 1}"
-            f"while the expected version is {HDF5FileSingleton.FILE_FORMAT_VERSION}: "
-            "see HDFCache.update_file_format to convert it."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         HDF5FileSingleton(CACHE_FILE_NAME)
 
 

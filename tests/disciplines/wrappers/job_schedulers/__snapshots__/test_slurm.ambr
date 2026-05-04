@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_wrap_discipline_in_job_scheduler
+  "[Errno 2] No such file or directory: 'sbatch'"
+# ---

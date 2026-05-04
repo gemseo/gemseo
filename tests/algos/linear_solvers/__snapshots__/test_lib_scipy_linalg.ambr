@@ -1,0 +1,17 @@
+# serializer version: 1
+# name: test_check_info_error
+  "SciPy linear solver algorithm stop info: illegal input or breakdown, options = {'a': 2}."
+# ---
+# name: test_inconsistent_options
+  'matrix and preconditioner have different shapes'
+# ---
+# name: test_inconsistent_options.1
+  'shapes of A (2, 2) and x0 (3,) are incompatible'
+# ---
+# name: test_inconsistent_options.2
+  '''
+  1 validation error for LGMRES_Settings
+    Value error, Use either 'use_ilu_precond' or provide 'preconditioner', but not both. [type=value_error, input_value={'preconditioner': array(...'use_ilu_precond': True}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

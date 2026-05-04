@@ -116,10 +116,7 @@ def test_no_docstring():
 
     def foo() -> None: ...
 
-    with pytest.raises(
-        ValueError,
-        match=r"Empty doc for <function test_no_docstring.<locals>.foo at .*\.",
-    ):
+    with pytest.raises(ValueError, match=r"^Empty doc for "):
         get_options_doc(foo)
 
 

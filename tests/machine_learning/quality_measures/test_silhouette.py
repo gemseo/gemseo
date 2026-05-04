@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import arange
 
@@ -32,6 +30,7 @@ from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Set
 from gemseo.machine_learning.clustering.quality.silhouette_measure import (
     SilhouetteMeasure,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture
@@ -71,12 +70,9 @@ def test_compute_learning_measure(measure) -> None:
     assert quality > 0
 
 
-def test_compute_learning_measure_fail(measure) -> None:
+def test_compute_learning_measure_fail(measure, snapshot) -> None:
     """Test evaluate learn method; should fail if multioutput is True."""
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape("The SilhouetteMeasure does not support the multioutput case."),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         measure.compute_learning_measure(multioutput=True)
 
 

@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_wrong_step[centered_differences-complex]
+  'Inconsistent step size, expected 3 got 2.'
+# ---
+# name: test_wrong_step[centered_differences-float]
+  'Inconsistent step size, expected 3 got 2.'
+# ---
+# name: test_wrong_step[finite_differences-complex]
+  'Inconsistent step size, expected 3 got 2.'
+# ---
+# name: test_wrong_step[finite_differences-float]
+  'Inconsistent step size, expected 3 got 2.'
+# ---

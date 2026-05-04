@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import pytest
@@ -38,6 +37,7 @@ from gemseo.post.variable_influence import VariableInfluence
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
@@ -73,7 +73,7 @@ def test_variable_influence(tmp_wd) -> None:
     #     assert Path(outf).exists()
 
 
-def test_variable_influence_doe(tmp_wd) -> None:
+def test_variable_influence_doe(tmp_wd, snapshot) -> None:
     """Test the variable influence post-processing on a DOE.
 
     Args:
@@ -86,9 +86,7 @@ def test_variable_influence_doe(tmp_wd) -> None:
     doe_scenario = MDOScenario([disc], design_space)
     doe_scenario.add_objective("y_12")
     doe_scenario.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=False))
-    with pytest.raises(
-        ValueError, match=re.escape("No gradients to plot at current iteration.")
-    ):
+    with assert_exception(ValueError, snapshot):
         doe_scenario.post_process(
             VariableInfluence_Settings(file_path="doe", save=True)
         )

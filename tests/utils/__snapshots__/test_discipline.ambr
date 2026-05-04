@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_rename_discipline_variables
+  "The discipline 'A' has no variable 'foo'."
+# ---
+# name: test_rename_twice_error
+  "In discipline 'A', the variable 'a' cannot be renamed to 'y' because it has already been renamed to 'x'."
+# ---

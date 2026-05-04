@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_null_space_error[False]
+  'The null space algorithm requires extra data.'
+# ---
+# name: test_null_space_error[True]
+  'The null space algorithm requires extra data.'
+# ---

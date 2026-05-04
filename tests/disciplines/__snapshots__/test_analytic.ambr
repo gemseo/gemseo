@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_failure_with_malformed_expressions
+  'Expression must be a SymPy expression or a string.'
+# ---

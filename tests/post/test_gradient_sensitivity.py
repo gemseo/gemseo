@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import pickle
-import re
 from pathlib import Path
 from unittest import mock
 
@@ -41,6 +40,7 @@ from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
@@ -89,7 +89,7 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
-def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
+def test_gradient_sensitivity_prob(tmp_wd, scale_gradients, snapshot) -> None:
     """Test the gradient sensitivity post-processing with the Sobieski problem.
 
     Args:
@@ -112,9 +112,7 @@ def test_gradient_sensitivity_prob(tmp_wd, scale_gradients) -> None:
     mdo_scenario2.add_objective("y_12")
     mdo_scenario2.execute(DiagonalDOE_Settings(n_samples=10, eval_jac=False))
 
-    with pytest.raises(
-        ValueError, match=re.escape("No gradients to plot at current iteration.")
-    ):
+    with assert_exception(ValueError, snapshot):
         mdo_scenario2.post_process(
             GradientSensitivity_Settings(
                 file_path="grad_sens", save=True, scale_gradients=scale_gradients
@@ -247,6 +245,7 @@ def test_compute_missing_gradients(
     baseline_images,
     factory,
     caplog,
+    snapshot,
 ) -> None:
     """Test the option to compute missing gradients for a given iteration.
 
@@ -260,9 +259,7 @@ def test_compute_missing_gradients(
     problem = OptimizationProblem.from_hdf(str(opt_problem))
 
     if opt_problem == SOBIESKI_MISSING_GRADIENTS:
-        with pytest.raises(
-            ValueError, match=re.escape("No gradients to plot at current iteration.")
-        ):
+        with assert_exception(ValueError, snapshot):
             factory.execute(
                 problem,
                 GradientSensitivity_Settings(

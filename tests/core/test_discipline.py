@@ -24,7 +24,6 @@ import contextlib
 import logging
 import os
 import platform
-import re
 from pathlib import Path
 from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
@@ -79,6 +78,7 @@ from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -252,7 +252,7 @@ def test_check_input_data_exception_chain(sobieski_chain) -> None:
 @pytest.mark.parametrize(
     "grammar_type", [Discipline.GrammarType.JSON, Discipline.GrammarType.SIMPLE]
 )
-def test_check_input_data_exception(grammar_type) -> None:
+def test_check_input_data_exception(grammar_type, snapshot) -> None:
     """Test the check input data exception."""
     if grammar_type == Discipline.GrammarType.SIMPLE:
         struct = SobieskiStructureSG()
@@ -263,13 +263,13 @@ def test_check_input_data_exception(grammar_type) -> None:
     indata = SobieskiProblem().get_default_inputs(names=struct_inputs)
     del indata["x_1"]
 
-    with pytest.raises(InvalidDataError, match=r".*Missing required names: x_1"):
+    with assert_exception(InvalidDataError, snapshot):
         struct.io.input_grammar.validate(indata)
 
     struct.execute(indata)
 
     del struct.io.input_grammar.defaults["x_1"]
-    with pytest.raises(InvalidDataError, match=r".*Missing required names: x_1"):
+    with assert_exception(InvalidDataError, snapshot):
         struct.execute(indata)
 
 
@@ -488,25 +488,17 @@ def test_data_processor() -> None:
         assert (out_data2[k] == v).all()
 
 
-def test_diff_inputs_outputs() -> None:
+def test_diff_inputs_outputs(snapshot) -> None:
     """Test the differentiation w.r.t inputs and outputs."""
     d = DummyDiscipline()
-    with pytest.raises(
-        ValueError,
-        match=f"Cannot differentiate the discipline {d.name} w.r.t. the inputs "
-        r"that are not among the discipline inputs: \[\]",
-    ):
+    with assert_exception(ValueError, snapshot):
         d.add_differentiated_inputs(["toto"])
-    with pytest.raises(
-        ValueError,
-        match=f"Cannot differentiate the discipline {d.name} for variables "
-        r"that are not among the discipline outputs: \[\]",
-    ):
+    with assert_exception(ValueError, snapshot):
         d.add_differentiated_outputs(["toto"])
     d.add_differentiated_inputs()
 
 
-def test_linearize_errors() -> None:
+def test_linearize_errors(snapshot) -> None:
     """Test the exceptions and errors during discipline linearization."""
     DummyDiscipline()._compute_jacobian()
 
@@ -530,13 +522,7 @@ def test_linearize_errors() -> None:
         d2.linearize({"x": array([1])}, compute_all_jacobians=True)
 
     d2.io.data["y"] = 1
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The shape (1,) of the Jacobian matrix dy/dx of the discipline LinDisc "
-            "does not match (output_size, input_size)=(1, 1)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         d2._check_jacobian_shape(["x"], ["y"])
 
     class SM(SobieskiMission):
@@ -566,7 +552,7 @@ def test_check_jacobian_errors() -> None:
     sm._check_jacobian_shape(sm.io.input_grammar, sm.io.output_grammar)
 
 
-def test_check_jacobian() -> None:
+def test_check_jacobian(snapshot) -> None:
     """Test the check_jacobian method."""
 
     class SM(SobieskiMission):
@@ -580,8 +566,7 @@ def test_check_jacobian() -> None:
     sm.execute()
     sm._compute_jacobian()
 
-    msg = f"The discipline {sm.name} was not linearized."
-    with pytest.raises(ValueError, match=msg):
+    with assert_exception(ValueError, snapshot):
         sm.linearize(compute_all_jacobians=True)
 
     class SM(SobieskiMission):
@@ -844,12 +829,11 @@ def test_jac_set_optimal_fd_step_input_output() -> None:
     assert sm.check_jacobian(n_processes=1, threshold=1e-4)
 
 
-def test_jac_set_optimal_fd_step_no_jac_approx() -> None:
+def test_jac_set_optimal_fd_step_no_jac_approx(snapshot) -> None:
     """Test that the optimal_fd_step cannot be called before settijng the approx
     method."""
     sm = SobieskiMission()
-    msg = "set_jacobian_approximation must be called before setting an optimal step"
-    with pytest.raises(ValueError, match=msg):
+    with assert_exception(ValueError, snapshot):
         sm.set_optimal_fd_step(compute_all_jacobians=True)
 
 
@@ -971,7 +955,7 @@ def test_activate_counters(enable_discipline_statistics) -> None:
     assert discipline.execution_statistics.duration > 0
 
 
-def test_deactivate_counters() -> None:
+def test_deactivate_counters(snapshot) -> None:
     """Check that the discipline counters are set to None when deactivated."""
     activate_counters = ExecutionStatistics.is_enabled
 
@@ -987,14 +971,13 @@ def test_deactivate_counters() -> None:
     assert discipline.execution_statistics.n_linearizations is None
     assert discipline.execution_statistics.duration is None
 
-    match = "The execution statistics of the object named DummyDiscipline are disabled."
-    with pytest.raises(RuntimeError, match=match):
+    with assert_exception(RuntimeError, snapshot):
         discipline.execution_statistics.n_executions = 1
 
-    with pytest.raises(RuntimeError, match=match):
+    with assert_exception(RuntimeError, snapshot):
         discipline.execution_statistics.n_linearizations = 1
 
-    with pytest.raises(RuntimeError, match=match):
+    with assert_exception(RuntimeError, snapshot):
         discipline.execution_statistics.duration = 1
 
     ExecutionStatistics.is_enabled = activate_counters
@@ -1287,7 +1270,7 @@ def test_self_coupled(self_coupled_disc, name, group, value) -> None:
     assert len(d.get_group_names(name)) > 1
 
 
-def test_virtual_exe(enable_discipline_status) -> None:
+def test_virtual_exe(enable_discipline_status, snapshot) -> None:
     """Tests the discipline virtual execution."""
     disc_1 = DummyDiscipline("d1")
     disc_1.io.input_grammar.update_from_names(["x"])
@@ -1308,7 +1291,7 @@ def test_virtual_exe(enable_discipline_status) -> None:
     disc_1.execute()
 
     disc_1.cache.clear()
-    with pytest.raises(InvalidDataError, match=re.escape("Missing required names: y.")):
+    with assert_exception(InvalidDataError, snapshot):
         disc_1.execute()
 
 

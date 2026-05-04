@@ -1,0 +1,113 @@
+# serializer version: 1
+# name: test_invalid_bound_size[lower]
+  '''
+  1 validation error for Variable
+    Value error, The lower bound should be of size 1. [type=value_error, input_value={'lower_bound': [0, 0]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_invalid_bound_size[upper]
+  '''
+  1 validation error for Variable
+    Value error, The upper bound should be of size 1. [type=value_error, input_value={'upper_bound': [0, 0]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_invalid_bound_value_scalar[lower]
+  '''
+  6 validation errors for Variable
+  lower_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  lower_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  lower_bound.list[union[int,float]]
+    Input should be a valid list [type=list_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/list_type
+  lower_bound.tuple[union[int,float]]
+    Input should be a valid tuple [type=tuple_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
+  lower_bound.int
+    Input should be a valid integer [type=int_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  lower_bound.float
+    Input should be a valid number [type=float_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  '''
+# ---
+# name: test_invalid_bound_value_scalar[upper]
+  '''
+  6 validation errors for Variable
+  upper_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  upper_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  upper_bound.list[union[int,float]]
+    Input should be a valid list [type=list_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/list_type
+  upper_bound.tuple[union[int,float]]
+    Input should be a valid tuple [type=tuple_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
+  upper_bound.int
+    Input should be a valid integer [type=int_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  upper_bound.float
+    Input should be a valid number [type=float_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  '''
+# ---
+# name: test_invalid_lower_bound_assignment
+  '''
+  1 validation error for Variable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value=Variable(size=1, type=<Da...upper_bound=array([1.])), input_type=Variable]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_invalid_type
+  '''
+  1 validation error for Variable
+  type
+    Input should be 'float' or 'integer' [type=enum, input_value='complex', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/enum
+  '''
+# ---
+# name: test_invalid_upper_bound_assignment
+  '''
+  1 validation error for Variable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value=Variable(size=1, type=<Da...pper_bound=array([-1.])), input_type=Variable]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_non_positive_size[-1]
+  '''
+  1 validation error for Variable
+  size
+    Input should be greater than 0 [type=greater_than, input_value=-1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  '''
+# ---
+# name: test_non_positive_size[0]
+  '''
+  1 validation error for Variable
+  size
+    Input should be greater than 0 [type=greater_than, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  '''
+# ---
+# name: test_wrong_boundaries[1-float-0--1.0]
+  '''
+  1 validation error for Variable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'type': <Data... 0, 'upper_bound': -1.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_wrong_boundaries[1-integer-0--1]
+  '''
+  1 validation error for Variable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'type': 'inte...': 0, 'upper_bound': -1}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

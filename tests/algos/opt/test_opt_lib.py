@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
@@ -40,6 +38,7 @@ from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.pydantic import create_model
+from gemseo.utils.testing.helpers import assert_exception
 
 OPT_LIB_NAME = "ScipyOpt"
 
@@ -131,16 +130,10 @@ def test_is_algorithm_suited_pbm_type() -> None:
     )
 
 
-def test_check_constraints_handling_fail(power) -> None:
+def test_check_constraints_handling_fail(power, snapshot) -> None:
     """Test that check_constraints_handling can raise an exception."""
     lbfgsb = ScipyOpt("L_BFGS_B")
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Requested optimization algorithm L_BFGS_B "
-            "can not handle equality constraints."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         lbfgsb._check_constraints_handling(power)
 
 
@@ -204,14 +197,11 @@ def test_function_scaling(power, scaling_threshold, pow2, ineq1, ineq2, eq) -> N
         (TNC_Settings, "eps"),
     ],
 )
-def test_removal_redundant_settings(caplog, settings_model, redundant_setting):
+def test_removal_redundant_settings(
+    caplog, settings_model, redundant_setting, snapshot
+):
     """Test that redundant settings are properly removed."""
-    msg = (
-        f"The '{redundant_setting}' setting cannot be passed to the "
-        "optimization library since there exists a GEMSEO counterpart. \n"
-        "Please consider using the corresponding GEMSEO setting."
-    )
-    with pytest.raises(ValueError, match=msg):
+    with assert_exception(ValueError, snapshot):
         settings_model(**{redundant_setting: "foo"})
 
 

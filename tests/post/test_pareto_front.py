@@ -26,6 +26,7 @@ from gemseo.post import ParetoFront_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 # - the kwargs to be passed to ParetoFront._plot
@@ -93,15 +94,11 @@ def test_pareto_minimize(
     )
 
 
-def test_pareto_incorrect_objective_list() -> None:
+def test_pareto_incorrect_objective_list(snapshot) -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
     DOE_LIBRARY_FACTORY.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
-    msg = (
-        "objective_labels shall have the same dimension as the number of objectives "
-        "to plot."
-    )
-    with pytest.raises(ValueError, match=msg):
+    with assert_exception(ValueError, snapshot):
         POST_FACTORY.execute(
             problem,
             ParetoFront_Settings(
@@ -113,15 +110,11 @@ def test_pareto_incorrect_objective_list() -> None:
         )
 
 
-def test_pareto_incorrect_objective_names() -> None:
+def test_pareto_incorrect_objective_names(snapshot) -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
     DOE_LIBRARY_FACTORY.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
-    msg = (
-        "Cannot build Pareto front, Function \\w* is neither among"
-        " optimization problem functions:.*\\.$"
-    )
-    with pytest.raises(ValueError, match=msg):
+    with assert_exception(ValueError, snapshot):
         POST_FACTORY.execute(
             problem,
             ParetoFront_Settings(

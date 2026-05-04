@@ -14,8 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy import hstack
@@ -39,6 +37,7 @@ from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
 from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
 from gemseo.problems.uncertainty.utils import UniformDistribution
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module", params=[False, True])
@@ -329,31 +328,18 @@ def test_gradient_enhanced_fce(dataset2, validation_dataset):
     assert all(r2_ge > r2)
 
 
-def test_fce_settings_jacobian_error():
+def test_fce_settings_jacobian_error(snapshot):
     """Check the error raised when combining Jacobian data and special Jacobian data."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Only one of the options learn_jacobian_data and "
-            "use_special_jacobian_data "
-            "can be True."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         FCERegressor_Settings(use_special_jacobian_data=True, learn_jacobian_data=True)
 
 
 @pytest.mark.parametrize(
     "option_name", ["learn_jacobian_data", "use_special_jacobian_data"]
 )
-def test_fce_jacobian_error(option_name):
+def test_fce_jacobian_error(option_name, snapshot):
     """Check the error when enabling learn_jacobian_data without Jacobian data."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            f"Option {option_name} is True "
-            "but the training dataset does not contain Jacobian data."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         FCERegressor(IODataset(), FCERegressor_Settings(**{option_name: True}))
 
 

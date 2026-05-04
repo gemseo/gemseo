@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -33,6 +32,7 @@ from gemseo.utils.data_conversion import flatten_nested_dict
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.data_conversion import nest_flat_dict
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -112,16 +112,11 @@ def test_split_array_to_dict_of_arrays(xy_array, xy_sizes, names, expected) -> N
 
 @pytest.mark.parametrize("y_size", [1, 3])
 def test_split_array_to_dict_of_arrays_with_inconsistency_check(
-    xy_array, y_size
+    xy_array,
+    y_size,
+    snapshot,
 ) -> None:
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            f"The total size of the elements ({1 + y_size}) "
-            f"and the size of the last dimension of the array ({xy_array.shape[-1]}) "
-            "are different."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         split_array_to_dict_of_arrays(
             xy_array, {"x": 1, "y": y_size}, ["x", "y"], check_consistency=True
         )

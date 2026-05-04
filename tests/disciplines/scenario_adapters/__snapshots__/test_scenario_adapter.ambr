@@ -1,0 +1,16 @@
+# serializer version: 1
+# name: test_adapter_set_and_reset_x0
+  'The options reset_x0_before_opt and set_x0_before_opt of MDOScenarioAdapter cannot both be True.'
+# ---
+# name: test_compute_jacobian_exceptions
+  "The following are not inputs of the adapter: 'bar' and 'foo'."
+# ---
+# name: test_compute_jacobian_exceptions.1
+  "The following are not outputs of the adapter: 'bar' and 'foo'."
+# ---
+# name: test_compute_jacobian_exceptions.2
+  "The post-optimal Jacobians of 'g_1' and 'g_2' cannot be computed."
+# ---
+# name: test_compute_jacobian_exceptions.3
+  'The objective must be single-valued.'
+# ---

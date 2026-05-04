@@ -14,13 +14,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
 import pytest
 from pydantic import BaseModel
 from pydantic import ValidationError
 
 from gemseo.utils.pydantic import create_model
+from gemseo.utils.testing.helpers import assert_exception
 
 
 class Model(BaseModel):
@@ -50,10 +49,7 @@ def test_create_model_from_model():
     assert model_1 == model_2
 
 
-def test_create_model_from_a_wrong_model():
+def test_create_model_from_a_wrong_model(snapshot):
     """Test creation from a wrong model."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The Pydantic model must be a Model; got WrongModel."),
-    ):
+    with assert_exception(ValueError, snapshot):
         create_model(Model, settings_model=WrongModel(a=1))

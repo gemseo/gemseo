@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_create_error
+  'The class dummy is not available; the available ones are: BiLevel, BiLevelBCD, DisciplinaryOpt, IDF, MDF.'
+# ---

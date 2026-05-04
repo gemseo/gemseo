@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 import scipy.stats as scipy_stats
 from numpy import array
@@ -59,6 +57,7 @@ from gemseo.uncertainty.distributions.scipy.uniform_settings import (
 from gemseo.uncertainty.distributions.scipy.weibull_settings import (
     SPWeibullDistribution_Settings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -85,10 +84,8 @@ def test_constructor() -> None:
     assert distribution.transformation == "x"
 
 
-def test_bad_distribution() -> None:
-    with pytest.raises(
-        ImportError, match=re.escape("Dummy cannot be imported from scipy.stats.")
-    ):
+def test_bad_distribution(snapshot) -> None:
+    with assert_exception(ImportError, snapshot):
         SPDistribution(
             SPDistribution_Settings(
                 interfaced_distribution="Dummy", parameters={"loc": 0.0, "scale": 1}
@@ -96,14 +93,8 @@ def test_bad_distribution() -> None:
         )
 
 
-def test_bad_distribution_parameters() -> None:
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The arguments of norm(loc=0.0, max=1) are wrong; "
-            "more details on https://docs.scipy.org/doc/scipy/reference/stats.html."
-        ),
-    ):
+def test_bad_distribution_parameters(snapshot) -> None:
+    with assert_exception(ValueError, snapshot):
         SPDistribution(
             SPDistribution_Settings(
                 interfaced_distribution="norm", parameters={"loc": 0.0, "max": 1}

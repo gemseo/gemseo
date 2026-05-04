@@ -52,6 +52,7 @@ from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.problems.mdo.sellar.variables import X_SHARED
 from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
+from gemseo.utils.testing.helpers import assert_exception
 
 
 class CallableWorker:
@@ -266,7 +267,7 @@ def f(x: float = 0.0) -> float:
     ("exceptions", "raises_exception"),
     [((), False), ((ValueError,), True), ((RuntimeError,), False)],
 )
-def test_re_raise_exceptions(exceptions, raises_exception) -> None:
+def test_re_raise_exceptions(exceptions, raises_exception, snapshot) -> None:
     """Test that exceptions inside workers are properly handled.
 
     Args:
@@ -284,7 +285,7 @@ def test_re_raise_exceptions(exceptions, raises_exception) -> None:
     input_list = [array([1.0]), array([0.0])]
 
     if raises_exception:
-        with pytest.raises(ValueError, match="Undefined"):
+        with assert_exception(ValueError, snapshot):
             parallel_execution.execute(input_list)
     else:
         assert parallel_execution.execute(input_list) == [array([2.0]), None]

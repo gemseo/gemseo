@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_get_function
+  "['toto'] are not names of inputs in the discipline SobieskiMission; expected names among ['x_shared', 'y_14', 'y_24', 'y_34']."
+# ---
+# name: test_get_function.1
+  "['toto'] are not names of outputs in the discipline SobieskiMission; expected names among ['y_4']."
+# ---

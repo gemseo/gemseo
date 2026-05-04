@@ -26,6 +26,7 @@ from gemseo.utils.comparisons import compare_dict_of_arrays
 from gemseo.utils.deserialize_and_run import main
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from pytest import CaptureFixture  # noqa: PT013
@@ -50,10 +51,11 @@ def set_cli_args(monkeypatch: MonkeyPatch, args: str) -> None:
 def check_main_error(
     capsys: CaptureFixture[str],
     error_msg: str,
+    snapshot,
 ) -> None:
     """Check that the main function exits with an error code and
     gives the expected message."""
-    with pytest.raises(SystemExit, match="2"):
+    with assert_exception(SystemExit, snapshot):
         main()
     # The replacement is for the case that used protocol_999 where 999 may be wrapped
     # with ' depending on the python version and the platform.
@@ -85,6 +87,7 @@ def test_cli_input_file_error(
     capsys: CaptureFixture[str],
     arg_name: str,
     args: str,
+    snapshot,
 ):
     """Verify the cli error related to file existence."""
     # Create dummy files but for the first one, which will be missing.
@@ -98,7 +101,7 @@ def test_cli_input_file_error(
     )
 
     set_cli_args(monkeypatch, args)
-    check_main_error(capsys, error_msg)
+    check_main_error(capsys, error_msg, snapshot)
 
 
 @pytest.mark.parametrize(
@@ -127,12 +130,13 @@ def test_cli_protocol_error(
     capsys: CaptureFixture[str],
     args: str,
     error: str,
+    snapshot,
 ):
     """Verify the cli errors."""
     # Create a dummy file to pass the checks on the input files.
     Path("dummy").touch()
     set_cli_args(monkeypatch, "dummy dummy dummy " + args)
-    check_main_error(capsys, error)
+    check_main_error(capsys, error, snapshot)
 
 
 @pytest.mark.parametrize(

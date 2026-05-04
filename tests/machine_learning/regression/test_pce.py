@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from copy import deepcopy
 from pickle import dump
 from pickle import load
@@ -57,6 +56,7 @@ from gemseo.uncertainty.distributions.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -161,57 +161,45 @@ def untrained_pce(dataset, probability_space) -> PCERegressor:
 
 
 def test_discipline_and_data_with_quadrature(
-    dataset, discipline, probability_space
+    dataset,
+    discipline,
+    probability_space,
+    snapshot,
 ) -> None:
     """Check that quadrature cannot be used with both a dataset and a discipline."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The quadrature rule requires data or discipline but not both."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         PCERegressor(
             dataset,
             PCERegressor_Settings(discipline=discipline, use_quadrature=True),
         )
 
 
-def test_no_discipline_and_no_data_with_quadrature(probability_space) -> None:
+def test_no_discipline_and_no_data_with_quadrature(probability_space, snapshot) -> None:
     """Check that quadrature requires either a dataset or a discipline."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The quadrature rule requires either data or discipline."),
-    ):
+    with assert_exception(ValueError, snapshot):
         PCERegressor(
             IODataset(),
             PCERegressor_Settings(discipline=None, use_quadrature=True),
         )
 
 
-def test_lars_with_quadrature(discipline, probability_space) -> None:
+def test_lars_with_quadrature(discipline, probability_space, snapshot) -> None:
     """Check that LARS is not applicable with quadrature."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("LARS is not applicable with the quadrature rule."),
-    ):
+    with assert_exception(ValueError, snapshot):
         PCERegressor_Settings(use_quadrature=True, use_lars=True)
 
 
-def test_no_dataset_with_least_square(probability_space, discipline) -> None:
+def test_no_dataset_with_least_square(probability_space, discipline, snapshot) -> None:
     """Check that least square requires a dataset."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The least-squares regression requires data."),
-    ):
+    with assert_exception(ValueError, snapshot):
         PCERegressor(IODataset(), PCERegressor_Settings())
 
 
-def test_discipline_with_least_square(probability_space, dataset, discipline) -> None:
+def test_discipline_with_least_square(
+    probability_space, dataset, discipline, snapshot
+) -> None:
     """Check that least square does not require a discipline."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The least-squares regression does not require a discipline."),
-    ):
+    with assert_exception(ValueError, snapshot):
         PCERegressor_Settings(discipline=discipline)
 
 
@@ -233,50 +221,36 @@ def test_input_names_with_quadrature(discipline, probability_space) -> None:
     assert pce.input_names == ["x1", "x2"]
 
 
-def test_missing_random_variables(dataset) -> None:
+def test_missing_random_variables(dataset, snapshot) -> None:
     """Check that a ValueError is raised when a random variable has no distribution."""
     probability_space = ParameterSpace()
     probability_space.add_random_variable("x1", SPNormalDistribution_Settings())
     input_space = dataset.misc["input_space"]
     dataset.misc["input_space"] = probability_space
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The probability space does not contain the probability distributions "
-            "of the random input variables: x2."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         PCERegressor(dataset, PCERegressor_Settings())
 
     dataset.misc["input_space"] = input_space
 
 
 @pytest.mark.parametrize("key", ["inputs", "x1", "x2"])
-def test_transformer(dataset, probability_space, key) -> None:
+def test_transformer(dataset, probability_space, key, snapshot) -> None:
     """Check that transforming the input data raises an error."""
-    with pytest.raises(
-        ValueError, match=re.escape("PCERegressor does not support input transformers.")
-    ):
+    with assert_exception(ValueError, snapshot):
         PCERegressor(
             dataset,
             PCERegressor_Settings(transformer={key: "MinMaxScaler"}),
         )
 
 
-def test_ot_distribution(dataset) -> None:
+def test_ot_distribution(dataset, snapshot) -> None:
     """Check that PCERegressor handles only the OTDistribution instances."""
     probability_space = ParameterSpace()
     probability_space.add_random_variable("x1", SPUniformDistribution_Settings())
     probability_space.add_random_variable("x2", SPUniformDistribution_Settings())
     input_space = dataset.misc["input_space"]
     dataset.misc["input_space"] = probability_space
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The probability distributions of the random variables x1, x2 "
-            "are not instances of OTJointDistribution."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         PCERegressor(dataset, PCERegressor_Settings())
     dataset.misc["input_space"] = input_space
 
@@ -604,12 +578,9 @@ def test_mean_cov_var_std(pce) -> None:
         "total_sobol_indices",
     ],
 )
-def test_check_is_trained(untrained_pce, name) -> None:
+def test_check_is_trained(untrained_pce, name, snapshot) -> None:
     """Check that a RuntimeError is raised when accessing properties before training."""
-    with pytest.raises(
-        RuntimeError,
-        match=re.escape(f"The PCERegressor must be trained to access {name}."),
-    ):
+    with assert_exception(RuntimeError, snapshot):
         getattr(untrained_pce, name)
 
 
@@ -745,31 +716,22 @@ def test_differentiation_wrt_special_variables(pce):
         "variance_jacobian_wrt_special_variables",
     ],
 )
-def test_differentiation_wrt_special_variables_error(ishigami_pce, name):
+def test_differentiation_wrt_special_variables_error(ishigami_pce, name, snapshot):
     """Check that an error is raised when Jacobian data is missing."""
-    with pytest.raises(  # noqa: PT012
-        ValueError,
-        match=re.escape(
-            f"You cannot use {name} because use_special_jacobian_data is False."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         attr = getattr(ishigami_pce, name)
         if name == "predict_jacobian_wrt_special_variables":
             attr(array([1.0, 1.0]))
 
 
-def test_differentiation_wrt_special_variables_error_not_implement_error(dataset):
+def test_differentiation_wrt_special_variables_error_not_implement_error(
+    dataset, snapshot
+):
     """Check that a NotImplementedError is raised when
     predict_jacobian_wrt_special_variables is not implemented."""
     model = LinearRegressor(dataset)
     model.learn()
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape(
-            "LinearRegressor does not implement differentiation "
-            "with respect to special variables."
-        ),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         model.predict_jacobian_wrt_special_variables(array([1.0, 1.0]))
 
 

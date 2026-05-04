@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -38,6 +37,7 @@ from gemseo.machine_learning.regression.models.polyreg_settings import (
 )
 from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
 from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
@@ -49,12 +49,9 @@ def dataset() -> Dataset:
     return create_rosenbrock_dataset(opt_naming=False)
 
 
-def test_discipline_multioutput_fail(dataset) -> None:
+def test_discipline_multioutput_fail(dataset, snapshot) -> None:
     """Verify that MLModelAssessor raises an error if multioutput option is True."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("MLModelAssessor does not support multioutput."),
-    ):
+    with assert_exception(ValueError, snapshot):
         MLModelAssessor(
             PolynomialRegressor_Settings(),
             dataset,

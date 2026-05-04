@@ -16,13 +16,13 @@
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from unittest import mock
 
 import pytest
 
 import gemseo.utils.xdsm.xdsm as xdsm_module
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.xdsm.xdsm import XDSM
 
 
@@ -60,14 +60,9 @@ def test_visualize(xdsm) -> None:
         assert mock_object.open.call_args.args == ("file://xdsm_path",)
 
 
-def test_visualize_without_html_file(xdsm_without_html_file) -> None:
+def test_visualize_without_html_file(xdsm_without_html_file, snapshot) -> None:
     """Check the visualization without HTML file."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "A HTML file is required to visualize the XDSM in a web browser."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         xdsm_without_html_file.visualize()
 
 

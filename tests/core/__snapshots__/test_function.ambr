@@ -1,0 +1,19 @@
+# serializer version: 1
+# name: test_deactivate_counters
+  'The function counters are disabled.'
+# ---
+# name: test_init_from_dict_repr
+  'Cannot initialize ArrayFunction attribute: foo, allowed ones are: dim, expr, f_type, input_names, name, output_names, special_repr.'
+# ---
+# name: test_operation_error[add-+]
+  "Unsupported + operator for ArrayFunction and <class 'str'>."
+# ---
+# name: test_operation_error[mul-*]
+  "Unsupported * operator for ArrayFunction and <class 'str'>."
+# ---
+# name: test_quadratic_approximation_error[x_vect0]
+  'Hessian approximation must be a square ndarray.'
+# ---
+# name: test_quadratic_approximation_error[x_vect1]
+  'Hessian approximation must be a square ndarray.'
+# ---

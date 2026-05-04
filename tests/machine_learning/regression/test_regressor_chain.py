@@ -14,8 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy.testing import assert_equal
@@ -30,6 +28,7 @@ from gemseo.machine_learning.regression.models.polyreg_settings import (
 )
 from gemseo.machine_learning.regression.models.regressor_chain import RegressorChain
 from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -56,16 +55,10 @@ def improved_model(model) -> RegressorChain:
     return model
 
 
-def test_no_regressors(dataset):
+def test_no_regressors(dataset, snapshot):
     """Check the ValueError message raised when the chain contains no regressor."""
     model = RegressorChain(dataset)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The regressor chain contains no regressor; "
-            "please add regressors using the add_regressor method."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         model.learn()
 
 

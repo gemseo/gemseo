@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_jac_function_none
+  'The discipline foo cannot compute the analytic derivatives.'
+# ---

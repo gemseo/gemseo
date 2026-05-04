@@ -22,7 +22,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from unittest import mock
@@ -51,6 +50,7 @@ from gemseo.core.functions.collections.functions import Functions
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.pydantic import create_model
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
@@ -87,28 +87,19 @@ def optimization_problem():
     return problem
 
 
-def test_empty_design_space() -> None:
+def test_empty_design_space(snapshot) -> None:
     """Check that a driver cannot be executed with an empty design space."""
     with concretize_classes(MyDriver):
         driver = MyDriver()
     driver._algo_name = "algo_name"
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The algorithm algo_name is not adapted to the problem "
-            "because the design space is empty."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         driver._check_algorithm(OptimizationProblem(DesignSpace()))
 
 
-def test_no_functions(optimization_problem):
+def test_no_functions(optimization_problem, snapshot):
     """Check that an error is raised when the problem has no function."""
     lib = ScipyOpt("SLSQP")
-    with pytest.raises(
-        ValueError,
-        match=re.escape("A driver requires a problem with at least one function."),
-    ):
+    with assert_exception(ValueError, snapshot):
         lib.execute(optimization_problem)
 
 

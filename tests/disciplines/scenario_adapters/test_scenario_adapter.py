@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import pickle
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -60,6 +59,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.name_generator import NameGenerator
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -136,13 +136,12 @@ def test_adapter_set_x0_before_opt(scenario) -> None:
     assert f_x3 > 4947.0
 
 
-def test_adapter_set_and_reset_x0(scenario) -> None:
+def test_adapter_set_and_reset_x0(scenario, snapshot) -> None:
     """Test that set and reset x_0 cannot be done at MDOScenarioAdapter
     instantiation."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
-    msg = "The options reset_x0_before_opt and set_x0_before_opt of MDOScenarioAdapter cannot both be True."  # noqa: E501
-    with pytest.raises(ValueError, match=msg):
+    with assert_exception(ValueError, snapshot):
         MDOScenarioAdapter(
             scenario, inputs, outputs, set_x0_before_opt=True, reset_x0_before_opt=True
         )
@@ -260,44 +259,27 @@ def test_compute_jacobian_with_bound_inputs(scenario) -> None:
         assert set(adapter.jac[output_name].keys()) == set(expected_input_names)
 
 
-def test_compute_jacobian_exceptions(scenario) -> None:
+def test_compute_jacobian_exceptions(scenario, snapshot) -> None:
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4"])
 
     # Pass invalid inputs
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The following are not inputs of the adapter: 'bar' and 'foo'."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         adapter._compute_jacobian(input_names=["x_shared", "foo", "bar"])
 
     # Pass invalid outputs
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The following are not outputs of the adapter: 'bar' and 'foo'."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         adapter._compute_jacobian(output_names=["y_4", "foo", "bar"])
 
     # Pass invalid differentiated outputs
     scenario.add_constraint("g_1")
     scenario.add_constraint("g_2")
     adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_4", "g_1", "g_2"])
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The post-optimal Jacobians of 'g_1' and 'g_2' cannot be computed."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         adapter._compute_jacobian(output_names=["y_4", "g_2", "g_1"])
 
     # Pass a multi-valued objective
     scenario.formulation.problem.objective.output_names = ["y_4"] * 2
-    with pytest.raises(
-        ValueError, match=re.escape("The objective must be single-valued.")
-    ):
+    with assert_exception(ValueError, snapshot):
         adapter._compute_jacobian()
 
 

@@ -20,6 +20,7 @@ import pytest
 
 from gemseo.core.grammars.factory import GrammarFactory
 from gemseo.core.grammars.required_names import RequiredNames
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.base import BaseGrammar
@@ -35,7 +36,7 @@ def grammar(request) -> BaseGrammar:
     return grammar
 
 
-def test_init(grammar):
+def test_init(grammar, snapshot):
     """Verify init."""
     rn = RequiredNames(grammar)
     assert not rn
@@ -43,18 +44,16 @@ def test_init(grammar):
     rn = RequiredNames(grammar, names=["name"])
     assert "name" in rn
 
-    match = r"The name 'bad' is not in the grammar\."
-    with pytest.raises(KeyError, match=match):
+    with assert_exception(KeyError, snapshot):
         RequiredNames(grammar, names=["bad"])
 
 
-def test_add(grammar):
+def test_add(grammar, snapshot):
     """Verify add."""
     rn = RequiredNames(grammar)
     rn.add("name")
 
-    match = r"The name 'bad' is not in the grammar\."
-    with pytest.raises(KeyError, match=match):
+    with assert_exception(KeyError, snapshot):
         rn.add("bad")
 
 
@@ -91,13 +90,12 @@ def test_len(grammar):
     assert len(rn) == 1
 
 
-def test_from_iterable(grammar):
+def test_from_iterable(grammar, snapshot):
     """Verify _from_iterable."""
     rn = RequiredNames(grammar, names=["name"])
     rn | {"name"}
 
-    match = r"The name 'bad' is not in the grammar\."
-    with pytest.raises(KeyError, match=match):
+    with assert_exception(KeyError, snapshot):
         rn | {"bad"}
 
 

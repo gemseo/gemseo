@@ -66,6 +66,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -195,13 +196,9 @@ def test_basic_idf(tmp_wd, idf_scenario) -> None:
     assert Path("xdsm.html").exists()
 
 
-def test_backup_error(tmp_wd, mdf_scenario) -> None:
+def test_backup_error(tmp_wd, mdf_scenario, snapshot) -> None:
     """"""
-    expected_message = (
-        "Conflicting options for evaluation backup, "
-        "cannot pre-load and erase the backup file at the same time."
-    )
-    with pytest.raises(ValueError, match=expected_message):
+    with assert_exception(ValueError, snapshot):
         mdf_scenario.set_backup_settings(__file__, erase=True, load=True)
 
     with pytest.raises(IOError):
@@ -384,21 +381,15 @@ def test_adapter(tmp_wd, idf_scenario) -> None:
     func.evaluate(x_shared)
 
 
-def test_adapter_error(idf_scenario) -> None:
+def test_adapter_error(idf_scenario, snapshot) -> None:
     """Test the adapter."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Cannot compute inputs from scenarios: 'missing_input'."),
-    ):
+    with assert_exception(ValueError, snapshot):
         MDOScenarioAdapter(idf_scenario, [*inputs, "missing_input"], outputs)
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Cannot compute outputs from scenarios: 'missing_output'."),
-    ):
+    with assert_exception(ValueError, snapshot):
         MDOScenarioAdapter(idf_scenario, inputs, [*outputs, "missing_output"])
 
 
@@ -440,18 +431,14 @@ def test_add_observable(mdf_scenario, output_names, observable_name, expected):
 
 def test_add_observable_not_available(
     mdf_scenario: MDOScenario,
+    snapshot,
 ) -> None:
     """Test adding an observable which is not available in any discipline.
 
     Args:
          mdf_scenario: A fixture for the MDOScenario.
     """
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "No discipline known by formulation MDF has all outputs named ['toto']."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         mdf_scenario.add_observable("toto")
 
 
@@ -730,19 +717,14 @@ def test_complex_casting_with_non_float_variables(
     )
 
 
-def test_check_disciplines() -> None:
+def test_check_disciplines(snapshot) -> None:
     """Test that an exception is raised when two disciplines compute the same output."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
 
     discipline_1 = AnalyticDiscipline({"y": "x"}, name="foo")
     discipline_2 = AnalyticDiscipline({"y": "x + 1"}, name="bar")
-    with pytest.raises(
-        ValueError,
-        match="Two disciplines, among "
-        f"which ({discipline_1.name}|({discipline_2.name})), "
-        "compute the same outputs: {'y'}",
-    ):
+    with assert_exception(ValueError, snapshot):
         MDOScenario([discipline_1, discipline_2], design_space)
 
 
@@ -922,17 +904,14 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
     pickled_scenario.execute(SLSQP_Settings(max_iter=1))
 
 
-def test_get_result(mdf_scenario) -> None:
+def test_get_result(mdf_scenario, snapshot) -> None:
     """Check get_result."""
     assert mdf_scenario.get_result() is None
 
     mdf_scenario.execute(SLSQP_Settings(max_iter=1))
     assert mdf_scenario.get_result().design_variable_names_to_values
 
-    with pytest.raises(
-        ImportError,
-        match=r"The class foo is not available; the available ones are: .*",
-    ):
+    with assert_exception(ImportError, snapshot):
         mdf_scenario.get_result("foo")
 
 
@@ -1050,12 +1029,8 @@ def test_opt_and_doe(use_doe_first, expected):
 
 
 @pytest.mark.parametrize("name", ["g_1", "g_2", "-y_4"])
-def test_duplicate_constraint_name(mdf_scenario: MDOScenario, name: str):
-    with pytest.raises(
-        ValueError,
-        match=f"The function name '{name}' is already used by another function."
-        f" Duplicated function names produce unpredictable behavior.",
-    ):
+def test_duplicate_constraint_name(mdf_scenario: MDOScenario, name: str, snapshot):
+    with assert_exception(ValueError, snapshot):
         mdf_scenario.add_constraint("y_4", constraint_name=name)
 
 
@@ -1205,15 +1180,12 @@ def test_add_objective(
         assert log in caplog.text
 
 
-def test_no_objective():
+def test_no_objective(snapshot):
     discipline = AnalyticDiscipline({"y": "x"}, name="foo")
     design_space = DesignSpace()
     design_space.add_variable("x")
     scenario = MDOScenario([discipline], design_space)
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Missing objective function in optimization problem."),
-    ):
+    with assert_exception(ValueError, snapshot):
         scenario.execute(SLSQP_Settings(max_iter=100))
 
 

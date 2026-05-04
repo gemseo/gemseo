@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_get_figure_and_axes_from_axes_only
+  'The figure associated with the given axes is missing.'
+# ---
+# name: test_get_figure_and_axes_from_figure_only
+  'The axes associated with the given figure are missing.'
+# ---

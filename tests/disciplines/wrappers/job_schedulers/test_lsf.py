@@ -26,6 +26,7 @@ import pytest
 from gemseo import create_discipline
 from gemseo.disciplines.wrappers.job_schedulers.lsf import LSF
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture
@@ -58,19 +59,18 @@ def test_run(discipline) -> None:
     assert "y_4" in discipline.execute()
 
 
-def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:
+def test_wrap_discipline_in_job_scheduler(tmpdir, snapshot) -> None:
     """Tests the LSF wrapper execution errors when LSF is not available."""
     disc = create_discipline("SobieskiMission")
     wrapped = LSF(disc, workdir_path=tmpdir)
-    match = "Value not passed to template for key: 'queue_name'"
-    with pytest.raises(KeyError, match=match):
+    with assert_exception(KeyError, snapshot):
         wrapped.execute()
 
     wrapped = LSF(disc, workdir_path=tmpdir, queue_name="all")
 
     if PLATFORM_IS_WINDOWS:
-        match = r"\[WinError 2\] .*"
+        pass
     else:
-        match = re.escape("[Errno 2] No such file or directory: 'bsub'")
-    with pytest.raises(FileNotFoundError, match=match):
+        re.escape("[Errno 2] No such file or directory: 'bsub'")
+    with assert_exception(FileNotFoundError, snapshot):
         wrapped.execute()
