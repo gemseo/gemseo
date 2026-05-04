@@ -18,8 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import allclose
 from numpy import array
@@ -39,6 +37,7 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def create_problem():
@@ -137,16 +136,10 @@ def test_ks_aggreg(method) -> None:
     assert allclose(ref_sol.x_opt, sol2.x_opt, rtol=1e-2)
 
 
-def test_wrong_constraint_index() -> None:
+def test_wrong_constraint_index(snapshot) -> None:
     """Tests OptimizationProblem.aggregate_constraint with a wrong constraint index."""
     problem = create_pb_alleq()
-    with pytest.raises(
-        KeyError,
-        match=re.escape(
-            "The index of the constraint (10) must be lower than "
-            "the number of constraints (1)."
-        ),
-    ):
+    with assert_exception(KeyError, snapshot):
         problem.constraints.aggregate(10)
 
 

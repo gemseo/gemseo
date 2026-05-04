@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_diag_with_nan
+  'HessianHistory cannot be plotted because the approximated Hessian diagonal contains NaN.'
+# ---
+# name: test_no_gradient_history
+  'The HessianHistory cannot be plotted because the history of the gradient of the objective is empty.'
+# ---

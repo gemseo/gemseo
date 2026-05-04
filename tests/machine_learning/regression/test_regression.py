@@ -45,6 +45,7 @@ from gemseo.uncertainty.distributions.openturns.uniform_settings import (
 )
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
+from gemseo.utils.testing.helpers import assert_exception
 
 INPUT_VALUE = array([0.4, 1.8])
 
@@ -136,9 +137,9 @@ def test_predict_jacobian(dataset_for_jacobian, groups) -> None:
 
 
 @pytest.mark.parametrize("variable", ["x_1", "y_1"])
-def test_predict_jacobian_failure(dataset_for_jacobian, variable) -> None:
+def test_predict_jacobian_failure(dataset_for_jacobian, variable, snapshot) -> None:
     """Test predict Jacobian when the transformer uses a variable name."""
-    expected = re.escape(
+    re.escape(
         "The Jacobian of regression models cannot be computed "
         "when the transformed quantities are variables; "
         "please transform the whole group 'inputs' or 'outputs' "
@@ -149,7 +150,7 @@ def test_predict_jacobian_failure(dataset_for_jacobian, variable) -> None:
         LinearRegressor_Settings(transformer={variable: "MinMaxScaler"}),
     )
     ml_model.learn()
-    with pytest.raises(NotImplementedError, match=expected):
+    with assert_exception(NotImplementedError, snapshot):
         ml_model.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
 
 

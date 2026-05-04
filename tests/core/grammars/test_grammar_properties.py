@@ -18,6 +18,7 @@ import pytest
 
 from gemseo.core.grammars.properties import GrammarProperties
 from gemseo.core.grammars.simple import SimpleGrammar
+from gemseo.utils.testing.helpers import assert_exception
 
 exclude_names = pytest.mark.parametrize(
     "excluded_names",
@@ -47,10 +48,9 @@ def test_init() -> None:
     assert properties == data
 
 
-def test_init_error() -> None:
+def test_init_error(snapshot) -> None:
     """Verify the error when initializing from an existing dictionary."""
-    msg = "The name 'bad-name' is not in the grammar."
-    with pytest.raises(KeyError, match=msg):
+    with assert_exception(KeyError, snapshot):
         GrammarProperties(SimpleGrammar("g"), {"bad-name": 0})
 
 
@@ -68,10 +68,10 @@ def test_iter(properties: GrammarProperties) -> None:
     assert list(iter(properties)) == ["name"]
 
 
-def test_delitem(properties: GrammarProperties) -> None:
+def test_delitem(properties: GrammarProperties, snapshot) -> None:
     """Verify delete."""
     # Non existing name.
-    with pytest.raises(KeyError, match="dummy"):
+    with assert_exception(KeyError, snapshot):
         del properties["dummy"]
 
     # Existing name.
@@ -80,10 +80,10 @@ def test_delitem(properties: GrammarProperties) -> None:
     assert "name" not in properties
 
 
-def test_getitem(properties: GrammarProperties) -> None:
+def test_getitem(properties: GrammarProperties, snapshot) -> None:
     """Verify setitem."""
     # Non existing name.
-    with pytest.raises(KeyError, match="dummy"):
+    with assert_exception(KeyError, snapshot):
         properties["dummy"]
 
     # Existing name.
@@ -91,13 +91,12 @@ def test_getitem(properties: GrammarProperties) -> None:
     assert properties["name"] == 0
 
 
-def test_setitem(properties: GrammarProperties) -> None:
+def test_setitem(properties: GrammarProperties, snapshot) -> None:
     """Verify setitem."""
     # Set without error.
     properties["name"] = 0
     assert properties["name"] == 0
 
     # Non existing name.
-    msg = r"The name 'dummy' is not in the grammar\."
-    with pytest.raises(KeyError, match=msg):
+    with assert_exception(KeyError, snapshot):
         properties["dummy"] = 0

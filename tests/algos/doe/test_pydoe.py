@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from typing import Any
 
 import pytest
@@ -29,6 +28,7 @@ from pydantic import ValidationError
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.utils.testing.helpers import assert_exception
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -36,14 +36,9 @@ from .utils import generate_test_functions
 DOE_LIB_NAME = "PyDOELibrary"
 
 
-def test_invalid_algo() -> None:
+def test_invalid_algo(snapshot) -> None:
     """Check that an invalid algorithm name."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"No algorithm named unknown_algo is available; available algorithms are .+"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_problem(
             "unknown_algo",
             dim=2,
@@ -69,50 +64,22 @@ def test_lhs_maximin() -> None:
 
 
 @pytest.mark.parametrize(
-    ("algo_name", "options", "error"),
+    ("algo_name", "options"),
     [
-        (
-            "PYDOE_CCDESIGN",
-            {"alpha": "unknown_value"},
-            "Input should be 'orthogonal', 'o', 'rotatable' or 'r'",
-        ),
-        (
-            "PYDOE_CCDESIGN",
-            {"face": "unknown_value"},
-            (
-                "Input should be 'circumscribed', 'ccc', 'inscribed', 'cci', 'faced' or"
-                " 'ccf'"
-            ),
-        ),
-        (
-            "PYDOE_CCDESIGN",
-            {"center": 1},
-            "Input should be a valid tuple",
-        ),
-        (
-            "PYDOE_BBDESIGN",
-            {"center": (4, 4)},
-            "Input should be a valid integer",
-        ),
+        ("PYDOE_CCDESIGN", {"alpha": "unknown_value"}),
+        ("PYDOE_CCDESIGN", {"face": "unknown_value"}),
+        ("PYDOE_CCDESIGN", {"center": 1}),
+        ("PYDOE_BBDESIGN", {"center": (4, 4)}),
         (
             "PYDOE_LHS",
             {"criterion": "corr", "iterations": "unknown_value", "n_samples": 2},
-            "Input should be a valid integer",
         ),
-        (
-            "PYDOE_LHS",
-            {"criterion": "unknown_value", "n_samples": 2},
-            (
-                "Input should be 'center', 'c', 'maximin', 'm', 'centermaximin', 'cm',"
-                " 'correlation', 'corr' or 'lhsmu'"
-            ),
-        ),
+        ("PYDOE_LHS", {"criterion": "unknown_value", "n_samples": 2}),
     ],
 )
-def test_algo_with_unknown_options(algo_name, options, error) -> None:
+def test_algo_with_unknown_options(algo_name, options, snapshot) -> None:
     """Check that exceptions are raised when unknown options are passed to an algo."""
-    match = f"{error}"
-    with pytest.raises(ValidationError, match=re.escape(match)):
+    with assert_exception(ValidationError, snapshot):
         execute_problem(algo_name, dim=3, **options)
 
 

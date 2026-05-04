@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_discipline_multioutput_fail
+  'MLModelAssessor does not support multioutput.'
+# ---

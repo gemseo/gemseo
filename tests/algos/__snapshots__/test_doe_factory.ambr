@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_create_from_unknown_name
+  'No algorithm named unknown_name is available; available algorithms are CustomDOE, DiagonalDOE, Halton, LHS, MC, MorrisDOE, OATDOE, OT_AXIAL, OT_COMPOSITE, OT_FACTORIAL, OT_FAURE, OT_FULLFACT, OT_HALTON, OT_HASELGROVE, OT_LHS, OT_LHSC, OT_MONTE_CARLO, OT_OPT_LHS, OT_RANDOM, OT_REVERSE_HALTON, OT_SOBOL, OT_SOBOL_INDICES, PYDOE_BBDESIGN, PYDOE_CCDESIGN, PYDOE_FF2N, PYDOE_FULLFACT, PYDOE_LHS, PYDOE_PBDESIGN, PoissonDisk and Sobol.'
+# ---

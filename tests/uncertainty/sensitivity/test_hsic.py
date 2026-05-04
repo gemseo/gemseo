@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import re
 from dataclasses import fields
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -46,6 +45,7 @@ from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.sensitivity.hsic import HSICAnalysis
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.typing import IntegerArray
@@ -273,17 +273,14 @@ def test_hsic_indices_values(hsic_analysis_2, openturns_hsic_indices) -> None:
 
 
 @pytest.mark.parametrize("kwargs", [{}, {"level": 0.06}, {"use_asymptotic": False}])
-def test_filter(hsic_analysis_2, analysis_type, significant_variables, kwargs) -> None:
+def test_filter(
+    hsic_analysis_2, analysis_type, significant_variables, kwargs, snapshot
+) -> None:
     """Check the filter method."""
     if analysis_type == HSICAnalysis.AnalysisType.CONDITIONAL and kwargs.get(
         "use_asymptotic", True
     ):
-        with pytest.raises(
-            ValueError,
-            match=re.escape(
-                "Asymptotic p-values are not available for conditional HSIC."
-            ),
-        ):
+        with assert_exception(ValueError, snapshot):
             hsic_analysis_2.filter(**kwargs)
     else:
         assert_equal(hsic_analysis_2.filter(**kwargs), significant_variables)

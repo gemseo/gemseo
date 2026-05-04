@@ -16,7 +16,6 @@
 #     Matthias De Lozzo
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -30,6 +29,7 @@ from gemseo.disciplines.remapping import RemappingDiscipline
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -136,17 +136,12 @@ def test_original_discipline(discipline) -> None:
 
 
 @pytest.mark.parametrize("use_default", [False, True])
-def test_with_discipline_wo_default_values(use_default) -> None:
+def test_with_discipline_wo_default_values(use_default, snapshot) -> None:
     """Check that the wrapped discipline must have default input values."""
     discipline = DummyDiscipline(input_names=["x", "y"])
     if use_default:
         discipline.io.input_grammar.defaults["x"] = array([0.0])
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Some input variables of the original discipline have no default values."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         RemappingDiscipline(discipline, {}, {})
 
 

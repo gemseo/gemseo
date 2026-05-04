@@ -38,6 +38,7 @@ from gemseo.algos.opt.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.pareto.pareto_front import ParetoFront
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
@@ -98,7 +99,7 @@ def test_pareto(problem_2obj):
     )
 
 
-def test_get_utopia_nearest_neighbors():
+def test_get_utopia_nearest_neighbors(snapshot):
     """Test the __get_utopia_nearest_neighbors method."""
     # 2 objectives, 3 design variables and 4 points on the pareto front.
     f_optima = array([
@@ -124,10 +125,7 @@ def test_get_utopia_nearest_neighbors():
     assert_array_equal(x_utopia_neighbors, x_optima[[1, 2]])
     assert min_norm == (2**2 + 3**2) ** 0.5
 
-    with pytest.raises(
-        Exception,
-        match="does not have the same amount of objectives as the pareto front",
-    ):
+    with assert_exception(Exception, snapshot):
         ParetoFront._ParetoFront__get_utopia_nearest_neighbors(
             f_optima,
             x_optima,

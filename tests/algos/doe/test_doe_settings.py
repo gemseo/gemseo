@@ -14,11 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
-import pytest
-
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def test_doe_settings_wait_time_between_samples(caplog):
@@ -36,22 +33,16 @@ def test_doe_settings_wait_time_between_samples(caplog):
     ]
 
 
-def test_doe_settings_vectorize_in_parallel():
+def test_doe_settings_vectorize_in_parallel(snapshot):
     """Check the error when setting vectorize in parallel mode."""
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape("Vectorization in parallel is not supported."),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         BaseDOESettings(vectorize=True, n_processes=2)
 
 
 def preprocessor(index: int) -> None: ...
 
 
-def test_doe_settings_preprocessors_and_vectorization():
+def test_doe_settings_preprocessors_and_vectorization(snapshot):
     """Check the error when combining preprocessors and vectorization."""
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape("Combining preprocessors and vectorization is not supported."),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         BaseDOESettings(vectorize=True, preprocessors=[preprocessor])

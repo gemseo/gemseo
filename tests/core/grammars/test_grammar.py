@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 import pickle
-import re
 from copy import deepcopy
 from itertools import chain
 from itertools import combinations
@@ -34,6 +33,7 @@ from gemseo.core.grammars.pydantic import PydanticGrammar
 from gemseo.core.grammars.simple import SimpleGrammar
 from gemseo.core.grammars.simpler import SimplerGrammar
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import do_not_raise
 
 if TYPE_CHECKING:
@@ -78,10 +78,9 @@ def test_serialize(grammar) -> None:
                 pickled_grammar.validate(data)
 
 
-def test_init_error(grammar_class):
+def test_init_error(grammar_class, snapshot):
     """Verify __init__ error."""
-    msg = "The grammar name cannot be empty."
-    with pytest.raises(ValueError, match=msg):
+    with assert_exception(ValueError, snapshot):
         grammar_class("")
 
 
@@ -94,10 +93,9 @@ def test_init(grammar):
     assert not grammar.required_names
 
 
-def test_delitem_error(grammar) -> None:
+def test_delitem_error(grammar, snapshot) -> None:
     """Verify that removing a non-existing item raises an error."""
-    msg = "foo"
-    with pytest.raises(KeyError, match=msg):
+    with assert_exception(KeyError, snapshot):
         del grammar["foo"]
 
 
@@ -113,10 +111,9 @@ def test_delitem(grammar) -> None:
     assert "name" not in grammar.descriptions
 
 
-def test_getitem_error(grammar):
+def test_getitem_error(grammar, snapshot):
     """Verify __getitem__ error."""
-    msg = "foo"
-    with pytest.raises(KeyError, match=msg):
+    with assert_exception(KeyError, snapshot):
         grammar["foo"]
 
 
@@ -220,10 +217,9 @@ def test_restrict_to(grammar, names, required_names) -> None:
     assert len(grammar.descriptions) == len(names)
 
 
-def test_restrict_to_error(grammar) -> None:
+def test_restrict_to_error(grammar, snapshot) -> None:
     """Verify that raises the expected error."""
-    msg = "The name 'foo' is not in the grammar."
-    with pytest.raises(KeyError, match=msg):
+    with assert_exception(KeyError, snapshot):
         grammar.restrict_to(["foo"])
 
 
@@ -266,9 +262,9 @@ def test_rename(grammar) -> None:
     grammar.rename_element("new_name", "new_new_name")
 
 
-def test_rename_error(grammar) -> None:
+def test_rename_error(grammar, snapshot) -> None:
     """Verify rename error."""
-    with pytest.raises(KeyError, match="foo"):
+    with assert_exception(KeyError, snapshot):
         grammar.rename_element("foo", "bar")
 
 
@@ -641,13 +637,13 @@ def test_validate(grammar, data) -> None:
 
 
 @pytest.mark.parametrize("raises", [True, False])
-def test_validate_error_missing_required(grammar, raises, caplog):
+def test_validate_error_missing_required(grammar, raises, caplog, snapshot):
     grammar.update_from_names(["name"])
 
     match = "Grammar g: validation failed.\nMissing required names: name."
 
     if raises:
-        with pytest.raises(InvalidDataError, match=match):
+        with assert_exception(InvalidDataError, snapshot):
             grammar.validate({})
     else:
         grammar.validate({}, raise_exception=False)
@@ -663,7 +659,7 @@ def test_validate_empty(grammar) -> None:
     grammar.validate(data)
 
 
-def test_add_namespace(grammar) -> None:
+def test_add_namespace(grammar, snapshot) -> None:
     """Check add_namespace."""
     grammar.update_from_types({"x": int, "y": bool})
     grammar.add_namespace("x", "n")
@@ -675,16 +671,13 @@ def test_add_namespace(grammar) -> None:
     assert "n:x" in grammar
     assert "n:x" in grammar.required_names
 
-    match = "The name 'dummy' is not in the grammar."
-    with pytest.raises(KeyError, match=re.escape(match)):
+    with assert_exception(KeyError, snapshot):
         grammar.add_namespace("dummy", "n")
 
-    match = "The name 'x' is not in the grammar."
-    with pytest.raises(KeyError, match=re.escape(match)):
+    with assert_exception(KeyError, snapshot):
         grammar.add_namespace("x", "n")
 
-    match = "The variable 'x' already has a namespace ('n')."
-    with pytest.raises(ValueError, match=re.escape(match)):
+    with assert_exception(ValueError, snapshot):
         grammar.add_namespace("n:x", "")
 
 

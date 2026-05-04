@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -43,6 +42,7 @@ from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.algos.ode.ode_problem import ODEResult
 from gemseo.algos.ode.scipy_ode.scipy_ode import ScipyODEAlgos
 from gemseo.algos.ode.scipy_ode.settings.dop853 import DOP853_Settings
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -262,7 +262,7 @@ def test_ode_problem_2d_wrong_jacobian() -> None:
         raise ValueError(msg)
 
 
-def test_ode_problem_without_jacobian() -> None:
+def test_ode_problem_without_jacobian(snapshot) -> None:
     r"""Test that check_jacobian raises an error when the jacobian is not given, but it
     asked to be tested."""
 
@@ -276,10 +276,7 @@ def test_ode_problem_without_jacobian() -> None:
     )
     ODESolverLibraryFactory().execute(problem, DOP853_Settings(first_step=1e-6))
 
-    with pytest.raises(
-        AttributeError,
-        match=re.escape("The function jac_function_wrt_state is not available."),
-    ):
+    with assert_exception(AttributeError, snapshot):
         problem.check_jacobian(array([1.0]))
 
 
@@ -520,7 +517,7 @@ def test_multiple_terminating_events() -> None:
     assert isclose(problem_2.result.final_state[0], 0.0, atol=1e-3)
 
 
-def test_order_initial_and_final_times():
+def test_order_initial_and_final_times(snapshot):
     initial_height = 10
     t_max = 4
     new_t_max = -1
@@ -535,6 +532,5 @@ def test_order_initial_and_final_times():
         times=times,
     )
 
-    msg = "The initial time must be lower than the final time."
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with assert_exception(ValueError, snapshot):
         problem.update_times(final_time=new_t_max)

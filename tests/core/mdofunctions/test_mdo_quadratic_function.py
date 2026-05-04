@@ -16,14 +16,13 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.functions.quadratic_function import QuadraticFunction
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -47,14 +46,9 @@ def quadratic_without_linear_term() -> QuadraticFunction:
 
 
 @pytest.mark.parametrize("coefficients", ["test", array([1, 2]), array([[1, 2]])])
-def test_init(coefficients) -> None:
+def test_init(coefficients, snapshot) -> None:
     """Check the initialization of the quadratic function."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Quadratic coefficients must be passed as a 2-dimensional square ndarray."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         QuadraticFunction(coefficients, "f")
 
 

@@ -19,7 +19,6 @@
 #        :author:  François Gallard - minor improvements for integration
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -37,6 +36,7 @@ from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaF
 from gemseo.problems.multiobjective_optimization.poloni import Poloni
 from gemseo.problems.multiobjective_optimization.viennet import Viennet
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -64,15 +64,9 @@ def test_mnbi(n_sub_optim, opt_problem):
     assert len(result.pareto_front.f_optima) >= n_sub_optim + 2
 
 
-def test_min_n_sub_optim():
+def test_min_n_sub_optim(snapshot):
     """Test that an exception is raised when the `n_sub_optim` is too low."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The number of sub-optimization problems must be "
-            "strictly greater than the number of objectives 3; got 3."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_algo(
             Viennet(),
             algo_name="MNBI",
@@ -126,12 +120,9 @@ def test_mnbi_parallel(binh_korn):
     assert len(result.pareto_front.f_optima) >= n_sub_optim + 2
 
 
-def test_mono_objective_error():
+def test_mono_objective_error(snapshot):
     """Check that an exception is raised for single objective problems."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("MNBI optimizer is not suitable for mono-objective problems."),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_algo(
             Power2(),
             algo_name="MNBI",
@@ -141,7 +132,7 @@ def test_mono_objective_error():
         )
 
 
-def test_protected_const(binh_korn):
+def test_protected_const(binh_korn, snapshot):
     """Test that an exception is raised for a protected constraint name."""
     from gemseo.algos.opt.mnbi.mnbi import MNBI
 
@@ -151,13 +142,7 @@ def test_protected_const(binh_korn):
         f_type=ArrayFunction.ConstraintType.INEQ,
     )
     binh_korn.add_constraint(protected_constraint)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            f"The constraint name {MNBI._MNBI__SUB_OPTIM_CONSTRAINT_NAME} is "
-            f"protected when using MNBI optimizer"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_algo(
             binh_korn,
             algo_name="MNBI",
@@ -199,13 +184,10 @@ def test_maximize_objective(binh_korn, enable_function_statistics):
     assert len(result.pareto_front.f_optima) >= 7
 
 
-def test_unfeasible_solution(binh_korn):
+def test_unfeasible_solution(binh_korn, snapshot):
     """Test the result of a maximized multi objective problem."""
     binh_korn.design_space.set_current_value(array([3, 3]))
-    with pytest.raises(
-        RuntimeError,
-        match=re.escape("No feasible optimum found for the 0-th objective function."),
-    ):
+    with assert_exception(RuntimeError, snapshot):
         execute_algo(
             binh_korn,
             algo_name="MNBI",
@@ -227,19 +209,13 @@ def test_skippable_points(caplog):
     assert "Skipping sub-optimization for phi_beta =" in caplog.text
 
 
-def test_exclusive_settings_error(binh_korn):
+def test_exclusive_settings_error(binh_korn, snapshot):
     """Test that an exception is raised when mutually exclusive settings are set.
 
     Settings custom_anchor_points and custom_phi_betas are not compatible with each
     other.
     """
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The custom_anchor_points and custom_phi_betas settings "
-            "cannot be set at the same time."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_algo(
             binh_korn,
             algo_name="MNBI",
@@ -251,7 +227,7 @@ def test_exclusive_settings_error(binh_korn):
         )
 
 
-def test_custom_anchor_points_error(binh_korn):
+def test_custom_anchor_points_error(binh_korn, snapshot):
     """Test that exceptions are raised when custom_anchor_points has incorrect values.
 
     The length of the custom_anchor_points list must be the same as the number of
@@ -259,14 +235,7 @@ def test_custom_anchor_points_error(binh_korn):
     number of objectives.
     """
     custom_anchor_points = [array([44.5, 14])]
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The number of custom anchor points must be "
-            f"the same as the number of objectives {binh_korn.objective.dim}; "
-            f"got {len(custom_anchor_points)}."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_algo(
             binh_korn,
             algo_name="MNBI",
@@ -277,13 +246,7 @@ def test_custom_anchor_points_error(binh_korn):
         )
 
     custom_anchor_points = [array([44.5, 14]), array([29.4, 19, 12])]
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            f"The custom anchor points must be of dimension {binh_korn.objective.dim}; "
-            f"got {[len(p) for p in custom_anchor_points]}"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_algo(
             binh_korn,
             algo_name="MNBI",
@@ -312,21 +275,14 @@ def test_custom_phi_betas_warning(binh_korn, caplog):
     )
 
 
-def test_custom_phi_betas_error(binh_korn):
+def test_custom_phi_betas_error(binh_korn, snapshot):
     """Test that an exception is raised for incorrect values of custom_phi_betas.
 
     The length of all custom_phi_betas arrays must be the same as the number of
     objectives.
     """
     custom_phi_betas = [array([38, 17]), array([60, 10, 28])]
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The custom phi_beta values "
-            f"must be of dimension {binh_korn.objective.dim}; "
-            f"got {[len(p) for p in custom_phi_betas]}"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_algo(
             binh_korn,
             algo_name="MNBI",
@@ -415,15 +371,9 @@ def test_mnbi_normalize_design_space(binh_korn, normalize_design_space):
     assert_allclose(result.pareto_front.f_utopia_neighbors.flatten(), utopia_neighbor)
 
 
-def test_normalize_exception(binh_korn):
+def test_normalize_exception(binh_korn, snapshot):
     """Check that an exception is raised when the top problem is normalized."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The mNBI algo does not allow to normalize the design space at"
-            " the top level"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_algo(
             binh_korn,
             algo_name="MNBI",

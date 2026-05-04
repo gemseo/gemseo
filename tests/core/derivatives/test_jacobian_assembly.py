@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest import mock
@@ -43,6 +42,7 @@ from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipli
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.utils.testing.helpers import assert_exception
 
 from ...mda.mda_gauss_seidel import SobieskiMDAGaussSeidel
 
@@ -113,18 +113,15 @@ def test_total_derivatives_ok(assembly, in_data) -> None:
         ),
     ],
 )
-def test_total_derivatives_ko(assembly, in_data, args, kwargs, msg) -> None:
+def test_total_derivatives_ko(assembly, in_data, args, kwargs, msg, snapshot) -> None:
     """Check that the errors raised by total_derivatives()."""
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with assert_exception(ValueError, snapshot):
         assembly.total_derivatives(in_data, *args, **kwargs)
 
 
-def test_compute_sizes_ko(assembly) -> None:
+def test_compute_sizes_ko(assembly, snapshot) -> None:
     """Check the consistency error raised by compute_sizes()."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Failed to determine the size of input variable foo"),
-    ):
+    with assert_exception(ValueError, snapshot):
         assembly.compute_sizes(["y_4"], ["foo"], ["y_24"])
 
 

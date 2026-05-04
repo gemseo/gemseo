@@ -1,0 +1,76 @@
+# serializer version: 1
+# name: test_check_is_trained[covariance]
+  'The PCERegressor must be trained to access covariance.'
+# ---
+# name: test_check_is_trained[first_sobol_indices]
+  'The PCERegressor must be trained to access first_sobol_indices.'
+# ---
+# name: test_check_is_trained[mean]
+  'The PCERegressor must be trained to access mean.'
+# ---
+# name: test_check_is_trained[second_sobol_indices]
+  'The PCERegressor must be trained to access second_sobol_indices.'
+# ---
+# name: test_check_is_trained[standard_deviation]
+  'The PCERegressor must be trained to access standard_deviation.'
+# ---
+# name: test_check_is_trained[total_sobol_indices]
+  'The PCERegressor must be trained to access total_sobol_indices.'
+# ---
+# name: test_check_is_trained[variance]
+  'The PCERegressor must be trained to access variance.'
+# ---
+# name: test_differentiation_wrt_special_variables_error[mean_jacobian_wrt_special_variables]
+  'You cannot use mean_jacobian_wrt_special_variables because use_special_jacobian_data is False.'
+# ---
+# name: test_differentiation_wrt_special_variables_error[predict_jacobian_wrt_special_variables]
+  'You cannot use predict_jacobian_wrt_special_variables because use_special_jacobian_data is False.'
+# ---
+# name: test_differentiation_wrt_special_variables_error[standard_deviation_jacobian_wrt_special_variables]
+  'You cannot use standard_deviation_jacobian_wrt_special_variables because use_special_jacobian_data is False.'
+# ---
+# name: test_differentiation_wrt_special_variables_error[variance_jacobian_wrt_special_variables]
+  'You cannot use variance_jacobian_wrt_special_variables because use_special_jacobian_data is False.'
+# ---
+# name: test_differentiation_wrt_special_variables_error_not_implement_error
+  'LinearRegressor does not implement differentiation with respect to special variables.'
+# ---
+# name: test_discipline_and_data_with_quadrature
+  'The quadrature rule requires data or discipline but not both.'
+# ---
+# name: test_discipline_with_least_square
+  '''
+  1 validation error for PCERegressor_Settings
+    Value error, The least-squares regression does not require a discipline. [type=value_error, input_value={'discipline': AnalyticDi..., x2
+     Outputs: y1, y2}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_lars_with_quadrature
+  '''
+  1 validation error for PCERegressor_Settings
+    Value error, LARS is not applicable with the quadrature rule. [type=value_error, input_value={'use_quadrature': True, 'use_lars': True}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_missing_random_variables
+  'The probability space does not contain the probability distributions of the random input variables: x2.'
+# ---
+# name: test_no_dataset_with_least_square
+  'The least-squares regression requires data.'
+# ---
+# name: test_no_discipline_and_no_data_with_quadrature
+  'The quadrature rule requires either data or discipline.'
+# ---
+# name: test_ot_distribution
+  'The probability distributions of the random variables x1, x2 are not instances of OTJointDistribution.'
+# ---
+# name: test_transformer[inputs]
+  'PCERegressor does not support input transformers.'
+# ---
+# name: test_transformer[x1]
+  'PCERegressor does not support input transformers.'
+# ---
+# name: test_transformer[x2]
+  'PCERegressor does not support input transformers.'
+# ---

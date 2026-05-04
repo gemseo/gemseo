@@ -1,0 +1,12 @@
+# serializer version: 1
+# name: test_copy_model
+  '''
+  1 validation error for DummyModel
+  dummy_var
+    Value error, dummy_var must be positive [type=value_error, input_value=-1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_set_descriptions_no_rebuild
+  '"The name \'dummy\' is not in the grammar."'
+# ---

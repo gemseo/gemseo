@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import pickle
-import re
 from pathlib import Path
 from string import Template
 
@@ -36,7 +35,7 @@ from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (  # n
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.topology_optimization.volume_fraction_disc import VolumeFraction
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.platform import PLATFORM_IS_WINDOWS
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture
@@ -117,41 +116,35 @@ def test_generate_job_template(tmp_wd, discipline) -> None:
     assert len(lines) > 40
 
 
-def test_generate_job_template_fail(discipline, tmp_wd) -> None:
+def test_generate_job_template_fail(discipline, tmp_wd, snapshot) -> None:
     """Test that missing template values raises a proper exception."""
     discipline.job_file_template = Template("$missing")
-    with pytest.raises(
-        KeyError, match="Value not passed to template for key: 'missing'"
-    ):
+    with assert_exception(KeyError, snapshot):
         discipline._generate_job_file_from_template(tmp_wd, None, None, None, None, "")
 
 
-def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmp_wd, caplog) -> None:
+@pytest.mark.skip_under_windows
+def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmp_wd, snapshot) -> None:
     """Test the run failure is correctly handled."""
     discipline._scheduler_run_command = "IDONTEXIST"
-    if PLATFORM_IS_WINDOWS:
-        match = r"\[WinError 2\] .*"
-    else:
-        match = re.escape("[Errno 2] No such file or directory: 'IDONTEXIST'")
-    with pytest.raises(FileNotFoundError, match=match):
+    with assert_exception(FileNotFoundError, snapshot):
         discipline._run_command(tmp_wd, tmp_wd / "output.pckl")
 
 
 def test_handle_outputs_errors(
-    discipline: JobSchedulerDisciplineWrapper, tmp_wd
+    discipline: JobSchedulerDisciplineWrapper,
+    tmp_wd,
+    snapshot,
 ) -> None:
     """Test that errors in outputs are correctly handled."""
-    with pytest.raises(
-        FileNotFoundError,
-        match="The serialized outputs file of the discipline does not exist",
-    ):
+    with assert_exception(FileNotFoundError, snapshot):
         discipline._handle_outputs(tmp_wd, Path("IDONTEXIST"))
 
     exception = (ValueError("An error."), "stack trace.")
     outputs_path = tmp_wd / "outputs.pickl"
     Path(outputs_path).write_bytes(pickle.dumps(exception))
 
-    with pytest.raises(ValueError, match=re.escape("An error.")):
+    with assert_exception(ValueError, snapshot):
         discipline._handle_outputs(tmp_wd, outputs_path)
 
 
@@ -242,12 +235,9 @@ def test_linearize_at_exec(discipline_diff_mocked_js) -> None:
     assert compare_dict_of_arrays(discipline_diff_mocked_js.io.data, disc_local.io.data)
 
 
-def test_api_fail(tmp_wd) -> None:
+def test_api_fail(tmp_wd, snapshot) -> None:
     """Test the api method that wraps the JS error messages."""
-    with pytest.raises(
-        FileNotFoundError,
-        match=r"Job scheduler template file .*IDONTEXIST does not exist.",
-    ):
+    with assert_exception(FileNotFoundError, snapshot):
         wrap_discipline_in_job_scheduler(
             create_discipline("SobieskiMission"),
             "SLURM",

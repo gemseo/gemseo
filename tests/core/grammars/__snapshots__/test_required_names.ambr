@@ -1,0 +1,37 @@
+# serializer version: 1
+# name: test_add[JSONGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_add[PydanticGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_add[SimpleGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_add[SimplerGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_from_iterable[JSONGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_from_iterable[PydanticGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_from_iterable[SimpleGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_from_iterable[SimplerGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_init[JSONGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_init[PydanticGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_init[SimpleGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---
+# name: test_init[SimplerGrammar]
+  '"The name \'bad\' is not in the grammar."'
+# ---

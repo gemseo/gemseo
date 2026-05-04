@@ -21,6 +21,7 @@ import pytest
 
 from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableRunner
 from gemseo.utils.directory_creator import Naming
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.mark.parametrize("root_directory", [".", Path()])
@@ -122,15 +123,8 @@ def test_run_options(tmp_wd) -> None:
         {"shell": False, "cwd": ".."},
     ],
 )
-def test_run_options_error(tmp_wd, options) -> None:
-    msg = (
-        f"{set(options.keys())} must not be defined a second time in "
-        "subprocess_run_options."
-    )
-    with pytest.raises(
-        KeyError,
-        match=msg,
-    ):
+def test_run_options_error(tmp_wd, options, snapshot) -> None:
+    with assert_exception(KeyError, snapshot):
         _BaseExecutableRunner(
             "python --version",
             ".",

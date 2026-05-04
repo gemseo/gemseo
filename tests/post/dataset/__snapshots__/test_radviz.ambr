@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_classifier_error
+  'The classifier (foo) is not stored in the dataset; available variables are petal_length, petal_width, sepal_length, sepal_width and specy.'
+# ---

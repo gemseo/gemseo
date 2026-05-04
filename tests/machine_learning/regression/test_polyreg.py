@@ -41,6 +41,7 @@ from gemseo.machine_learning.regression.models.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.testing.helpers import assert_exception
 
 LEARNING_SIZE = 50
 DEGREE = 5
@@ -145,14 +146,9 @@ def test_learn(dataset) -> None:
     assert model_.algo is not None
 
 
-def test_get_coefficients(model) -> None:
+def test_get_coefficients(model, snapshot) -> None:
     """Verify that an error is raised when getting coefficients as a dictionary."""
-    with pytest.raises(
-        NotImplementedError,
-        match=(
-            "For now the coefficients can only be obtained in the form of a NumPy array"
-        ),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         model.get_coefficients(as_dict=True)
 
 

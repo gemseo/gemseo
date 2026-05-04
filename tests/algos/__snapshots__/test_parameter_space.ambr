@@ -1,0 +1,34 @@
+# serializer version: 1
+# name: test_add_random_vector_from_settings_error[False]
+  "A parameter space cannot mix probability distributions based on different libraries; got 'OpenTURNS' and 'SciPy'."
+# ---
+# name: test_add_random_vector_from_settings_error[True]
+  "A parameter space cannot mix probability distributions based on different libraries; got 'OpenTURNS' and 'SciPy'."
+# ---
+# name: test_copula_error_already_copula
+  "The random variable 'x' has already a copula."
+# ---
+# name: test_copula_error_missing_variable
+  "There is no variable name 'x'."
+# ---
+# name: test_evaluate_cdf_raising_errors
+  'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
+# ---
+# name: test_evaluate_cdf_raising_errors.1
+  'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
+# ---
+# name: test_evaluate_cdf_raising_errors.2
+  'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
+# ---
+# name: test_existing_variable
+  "The variable 'a' already exists."
+# ---
+# name: test_mix_different_distribution_families[first0-second0]
+  "A parameter space cannot mix probability distributions based on different libraries; got 'OpenTURNS' and 'SciPy'."
+# ---
+# name: test_mix_different_distribution_families[first1-second1]
+  "A parameter space cannot mix probability distributions based on different libraries; got 'OpenTURNS' and 'SciPy'."
+# ---
+# name: test_set_joint_distribution_with_sp_distributions
+  'SPJointDistribution does not support dependent variables.'
+# ---

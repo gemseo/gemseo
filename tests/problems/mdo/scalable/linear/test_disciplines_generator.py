@@ -20,8 +20,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import ndarray
 
@@ -39,6 +37,7 @@ from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.utils.testing.helpers import assert_exception
 
 DESCRIPTIONS = [
     DESC_3_DISC_WEAK,
@@ -48,12 +47,12 @@ DESCRIPTIONS = [
 ]
 
 
-def test_fail_no_output() -> None:
+def test_fail_no_output(snapshot) -> None:
     """Test that the LinearDiscipline fails when there are no inputs or outputs in the
     description."""
-    with pytest.raises(ValueError, match=re.escape("output_names must not be empty.")):
+    with assert_exception(ValueError, snapshot):
         create_disciplines_from_desc([("A", ["x"], [])])
-    with pytest.raises(ValueError, match=re.escape("input_names must not be empty.")):
+    with assert_exception(ValueError, snapshot):
         create_disciplines_from_desc([("A", [], ["y"])])
 
 
@@ -131,9 +130,9 @@ def test_create_disciplines_from_sizes(grammar_type) -> None:
         (1, 3, "outputs"),
     ],
 )
-def test_sizes_errors(nb_of_disc_inputs, nb_of_disc_outputs, kind) -> None:
+def test_sizes_errors(nb_of_disc_inputs, nb_of_disc_outputs, kind, snapshot) -> None:
     """Test that the inputs consistency errors."""
-    with pytest.raises(ValueError, match=f"The number of disciplines {kind}"):
+    with assert_exception(ValueError, snapshot):
         create_disciplines_from_sizes(
             1,
             2,

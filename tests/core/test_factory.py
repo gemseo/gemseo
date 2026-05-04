@@ -34,6 +34,7 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.factory import MDOFormulationFactory
 from gemseo.utils.base_multiton import BaseABCMultiton
+from gemseo.utils.testing.helpers import assert_exception
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
@@ -88,10 +89,9 @@ def test_print_configuration(reset_factory) -> None:
         assert re.findall(pattern, repr(factory))
 
 
-def test_create_error(reset_factory) -> None:
+def test_create_error(reset_factory, snapshot) -> None:
     """Verify that Factory.create catches bad sub-classes."""
-    msg = "The class dummy is not available; the available ones are: "
-    with pytest.raises(ImportError, match=msg):
+    with assert_exception(ImportError, snapshot):
         MDO_FORMULATION_FACTORY.create("dummy", "dummy", "dummy", "dummy")
 
 

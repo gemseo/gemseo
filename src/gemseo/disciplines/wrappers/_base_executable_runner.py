@@ -109,7 +109,7 @@ class _BaseExecutableRunner(Serializable):
         intersection = {"cwd", "args", "shell"}.intersection(subprocess_run_options)
         if intersection:
             msg = (
-                f"{intersection} must not be defined a second time "
+                f"{sorted(intersection)} must not be defined a second time "
                 "in subprocess_run_options."
             )
             raise KeyError(msg)

@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_initialize_defaults
+  '''
+  Grammar MDA chain_discipline_input: validation failed.
+  Missing required names: y.
+  '''
+# ---
+# name: test_initialize_defaults.1
+  'Cannot compute the inputs a, x, y, z, for the following disciplines A, B.'
+# ---

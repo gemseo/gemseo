@@ -16,23 +16,19 @@
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
-import pytest
 from numpy import array
 
 from gemseo.post import BasicHistory_Settings
 from gemseo.post.basic_history import BasicHistory
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
+from gemseo.utils.testing.helpers import assert_exception
 
 
-def test_scenario_result_before_execution(scenario) -> None:
+def test_scenario_result_before_execution(scenario, snapshot) -> None:
     """Check ScenarioResult before execution."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("A ScenarioResult requires a scenario that has been executed."),
-    ):
+    with assert_exception(ValueError, snapshot):
         ScenarioResult(scenario)
 
 

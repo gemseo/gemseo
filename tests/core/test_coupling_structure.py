@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from os.path import exists
 from random import shuffle
 from typing import TYPE_CHECKING
@@ -48,6 +47,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 from .test_dependency_graph import DISC_DESCRIPTIONS
@@ -56,7 +56,7 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-def test_couplings_sellar() -> None:
+def test_couplings_sellar(snapshot) -> None:
     """Verify the strong/weak/total couplings of Sellar pb."""
     disciplines = [Sellar1(), Sellar2(), SellarSystem()]
     coupling_structure = CouplingStructure(disciplines)
@@ -71,10 +71,7 @@ def test_couplings_sellar() -> None:
     input_coupl = coupling_structure.get_input_couplings(disciplines[2])
     assert input_coupl == [Y_1, Y_2]
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape("There is no discipline with an output variable named 'foo'."),
-    ):
+    with assert_exception(ValueError, snapshot):
         coupling_structure.find_discipline("foo")
 
 
@@ -87,7 +84,7 @@ def test_strong_weak_coupling() -> None:
     assert s1_o_weak == ["y_14"]
 
 
-def test_n2(tmp_wd) -> None:
+def test_n2(tmp_wd, snapshot) -> None:
     """Verify the strong/weak/total couplings of Sellar pb."""
     disciplines = [
         SobieskiStructure(),
@@ -113,9 +110,7 @@ def test_n2(tmp_wd) -> None:
     assert exists(fname)
 
     coupling_structure = CouplingStructure([disciplines[0]])
-    with pytest.raises(
-        ValueError, match=re.escape("N2 diagrams need at least two disciplines.")
-    ):
+    with assert_exception(ValueError, snapshot):
         coupling_structure.plot_n2_chart("n2_3.png", False)
 
 

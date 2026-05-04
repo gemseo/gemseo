@@ -1,0 +1,121 @@
+# serializer version: 1
+# name: test_add_namespace[JSONGrammar]
+  '"The name \'dummy\' is not in the grammar."'
+# ---
+# name: test_add_namespace[JSONGrammar].1
+  '"The name \'x\' is not in the grammar."'
+# ---
+# name: test_add_namespace[JSONGrammar].2
+  "The variable 'x' already has a namespace ('n')."
+# ---
+# name: test_add_namespace[PydanticGrammar]
+  '"The name \'dummy\' is not in the grammar."'
+# ---
+# name: test_add_namespace[PydanticGrammar].1
+  '"The name \'x\' is not in the grammar."'
+# ---
+# name: test_add_namespace[PydanticGrammar].2
+  "The variable 'x' already has a namespace ('n')."
+# ---
+# name: test_add_namespace[SimpleGrammar]
+  '"The name \'dummy\' is not in the grammar."'
+# ---
+# name: test_add_namespace[SimpleGrammar].1
+  '"The name \'x\' is not in the grammar."'
+# ---
+# name: test_add_namespace[SimpleGrammar].2
+  "The variable 'x' already has a namespace ('n')."
+# ---
+# name: test_add_namespace[SimplerGrammar]
+  '"The name \'dummy\' is not in the grammar."'
+# ---
+# name: test_add_namespace[SimplerGrammar].1
+  '"The name \'x\' is not in the grammar."'
+# ---
+# name: test_add_namespace[SimplerGrammar].2
+  "The variable 'x' already has a namespace ('n')."
+# ---
+# name: test_delitem_error[JSONGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_delitem_error[PydanticGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_delitem_error[SimpleGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_delitem_error[SimplerGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_getitem_error[JSONGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_getitem_error[PydanticGrammar]
+  "'foo'"
+# ---
+# name: test_getitem_error[SimpleGrammar]
+  "'foo'"
+# ---
+# name: test_getitem_error[SimplerGrammar]
+  "'foo'"
+# ---
+# name: test_init_error[JSONGrammar]
+  'The grammar name cannot be empty.'
+# ---
+# name: test_init_error[PydanticGrammar]
+  'The grammar name cannot be empty.'
+# ---
+# name: test_init_error[SimpleGrammar]
+  'The grammar name cannot be empty.'
+# ---
+# name: test_init_error[SimplerGrammar]
+  'The grammar name cannot be empty.'
+# ---
+# name: test_rename_error[JSONGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_rename_error[PydanticGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_rename_error[SimpleGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_rename_error[SimplerGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_restrict_to_error[JSONGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_restrict_to_error[PydanticGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_restrict_to_error[SimpleGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_restrict_to_error[SimplerGrammar]
+  '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_validate_error_missing_required[JSONGrammar-True]
+  '''
+  Grammar g: validation failed.
+  Missing required names: name.
+  '''
+# ---
+# name: test_validate_error_missing_required[PydanticGrammar-True]
+  '''
+  Grammar g: validation failed.
+  Missing required names: name.
+  '''
+# ---
+# name: test_validate_error_missing_required[SimpleGrammar-True]
+  '''
+  Grammar g: validation failed.
+  Missing required names: name.
+  '''
+# ---
+# name: test_validate_error_missing_required[SimplerGrammar-True]
+  '''
+  Grammar g: validation failed.
+  Missing required names: name.
+  '''
+# ---

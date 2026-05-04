@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -29,6 +28,7 @@ from numpy.testing import assert_equal
 from gemseo.core.functions.discipline_adapter import DisciplineAdapter
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -83,15 +83,9 @@ def check_func_and_jac_evaluation(mdo_function: ArrayFunction) -> None:
     assert_equal(mdo_function.jac(INPUT_VECTOR), array([1.0, 1.0]))
 
 
-def test_error(disciplinary_function) -> None:
+def test_error(disciplinary_function, snapshot) -> None:
     """Check that a ValueError is raised when the size of an input cannot be guessed."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The size of the input x cannot be guessed from the discipline my_func, "
-            "nor from its default inputs or from its local data."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         disciplinary_function.func(INPUT_VECTOR)
 
 

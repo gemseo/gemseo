@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import logging
 import operator
-import re
 import warnings
 from pathlib import Path
 
@@ -48,6 +47,7 @@ from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.utils.testing.helpers import assert_exception
 
 CURRENT_DIR = Path(__file__).parent
 TEST_INFILE = CURRENT_DIR / "design_space.csv"
@@ -97,45 +97,29 @@ def design_space():
     return ds
 
 
-def test_add_variable_when_already_exists(design_space) -> None:
+def test_add_variable_when_already_exists(design_space, snapshot) -> None:
     """Check that adding an existing variable raises an error."""
     design_space.add_variable("varname")
-    with pytest.raises(
-        ValueError, match=re.escape("The variable 'varname' already exists.")
-    ):
+    with assert_exception(ValueError, snapshot):
         design_space.add_variable(name="varname")
 
 
-nonpositivity_message = "Input should be greater than 0"
-
-
-@pytest.mark.parametrize(
-    ("size", "message"),
-    [
-        (-1, nonpositivity_message),
-        (0, nonpositivity_message),
-        (0.4, "Input should be a valid integer, got a number with a fractional part"),
-    ],
-)
-def test_add_variable_with_wrong_size(design_space, size, message) -> None:
+@pytest.mark.parametrize("size", [-1, 0, 0.4])
+def test_add_variable_with_wrong_size(design_space, size, snapshot) -> None:
     """Check that adding a variable with a wrong size raises an error."""
-    with pytest.raises(ValidationError, match=message):
+    with assert_exception(ValidationError, snapshot):
         design_space.add_variable(name="varname", size=size)
 
 
-def test_add_variable_with_unkown_type(design_space) -> None:
+def test_add_variable_with_unkown_type(design_space, snapshot) -> None:
     """Check that adding a variable with unknown type raises an error."""
-    with pytest.raises(ValidationError, match="Input should be 'float' or 'integer'"):
+    with assert_exception(ValidationError, snapshot):
         design_space.add_variable(name="varname", type_="a")
 
 
-def test_add_variable_with_unnumerizable_value(design_space) -> None:
+def test_add_variable_with_unnumerizable_value(design_space, snapshot) -> None:
     """Check that adding a variable with unnumerizable value raises an error."""
-    expected = re.escape(
-        "The following value of variable 'varname' is neither None nor complex "
-        "and cannot be cast to float: <built-in function len> (index 0).",
-    )
-    with pytest.raises(ValueError, match=expected):
+    with assert_exception(ValueError, snapshot):
         design_space.add_variable(name="varname", value=len)
 
 
@@ -159,29 +143,24 @@ def test_add_variable_with_unnumerizable_value(design_space) -> None:
         ),
     ],
 )
-def test_add_variable_with_nan_value(design_space, arg, message) -> None:
+def test_add_variable_with_nan_value(design_space, arg, message, snapshot) -> None:
     """Check that adding a variable with nan value raises an error."""
-    with pytest.raises(ValueError, match=re.escape(message)):
+    with assert_exception(ValueError, snapshot):
         design_space.add_variable(name="varname", **{arg: float("nan")})
 
 
-@pytest.mark.parametrize(
-    ("arg", "side"), [("lower_bound", "lower"), ("upper_bound", "upper")]
-)
-def test_add_variable_with_inconsistent_bound_size(design_space, arg, side) -> None:
+@pytest.mark.parametrize("arg", ["lower_bound", "upper_bound"])
+def test_add_variable_with_inconsistent_bound_size(design_space, arg, snapshot) -> None:
     """Check that using bounds with inconsistent size raises an error."""
-    with pytest.raises(ValidationError, match=f"The {side} bound should be of size 3."):
+    with assert_exception(ValidationError, snapshot):
         design_space.add_variable(name="varname", size=3, **{arg: [0.0, 0.0]})
 
 
-def test_add_variable_with_upper_bounds_lower_than_lower_ones(design_space) -> None:
+def test_add_variable_with_upper_bounds_lower_than_lower_ones(
+    design_space, snapshot
+) -> None:
     """Check that using upper bounds lower than lower ones raises an error."""
-    with pytest.raises(
-        ValidationError,
-        match=re.escape(
-            "The upper bounds must be greater than or equal to the lower bounds."
-        ),
-    ):
+    with assert_exception(ValidationError, snapshot):
         design_space.add_variable(
             name="varname",
             size=3,
@@ -191,19 +170,9 @@ def test_add_variable_with_upper_bounds_lower_than_lower_ones(design_space) -> N
 
 
 @pytest.mark.parametrize("arg", ["lower_bound", "upper_bound", "value"])
-def test_add_variable_with_2d_object(design_space, arg) -> None:
+def test_add_variable_with_2d_object(design_space, arg, snapshot) -> None:
     """Check that using a 2d iterable object raises an error."""
-    variable_name = " of variable 'varname'" if arg == "value" else ""
-    message = (
-        (
-            f"The value [[1.]]{variable_name} has a dimension greater than 1 "
-            "while a scalar or a 1D iterable object (array, list, tuple, ...) "
-            "was expected."
-        )
-        if arg == "value"
-        else "validation errors for Variable"
-    )
-    with pytest.raises(ValueError, match=re.escape(message)):
+    with assert_exception(ValueError, snapshot):
         design_space.add_variable("varname", **{arg: [[1.0]]})
 
 
@@ -214,17 +183,15 @@ def test_add_variable_with_2d_object(design_space, arg) -> None:
         (1.0, 2.0, 0.0),
     ],
 )
-def test_add_variable_with_value_out_of_bounds(design_space, l_b, u_b, value) -> None:
+def test_add_variable_with_value_out_of_bounds(
+    design_space, l_b, u_b, value, snapshot
+) -> None:
     """Check that setting a value out of bounds raises an error.
 
     Check also that after this error is raised, the design space does not contain the
     variable.
     """
-    expected = (
-        f"The current value of variable 'varname' ({value}) is not "
-        f"between the lower bound {l_b} and the upper bound {u_b}."
-    )
-    with pytest.raises(ValueError, match=re.escape(expected)):
+    with assert_exception(ValueError, snapshot):
         design_space.add_variable(
             name="varname",
             size=1,
@@ -237,13 +204,10 @@ def test_add_variable_with_value_out_of_bounds(design_space, l_b, u_b, value) ->
     assert "varname" not in design_space
 
 
-def test_creation_4() -> None:
+def test_creation_4(snapshot) -> None:
     design_space = DesignSpace()
     design_space.add_variable("varname")
-    with pytest.raises(
-        KeyError,
-        match=re.escape("There is no current value for the design variables: varname"),
-    ):
+    with assert_exception(KeyError, snapshot):
         design_space.get_current_value(normalize=True)
 
 
@@ -272,38 +236,23 @@ def test_set_current_value(design_space, current_x) -> None:
     assert (x_n == 0.5).all()
 
 
-def test_set_current_value_with_malformed_mapping_arg(design_space) -> None:
+def test_set_current_value_with_malformed_mapping_arg(design_space, snapshot) -> None:
     """Check that setting the current value from a malformed mapping raises an error."""
     design_space.filter("x1")
-    with pytest.raises(
-        Exception,
-        match=re.escape(
-            "The variable x1 of size 1 cannot be set with an array of size 2."
-        ),
-    ):
+    with assert_exception(Exception, snapshot):
         design_space.set_current_value({"x1": array([1.0, 1.0])})
 
 
-def test_set_current_value_with_malformed_opt_arg(design_space) -> None:
+def test_set_current_value_with_malformed_opt_arg(design_space, snapshot) -> None:
     """Check that setting the current value from a malformed optimization result raises
     an error."""
-    with pytest.raises(
-        Exception,
-        match=f"Invalid x_opt, dimension mismatch: {design_space.dimension} != 1",
-    ):
+    with assert_exception(Exception, snapshot):
         design_space.set_current_value(OptimizationResult(x_opt=array([1.0])))
 
 
-def test_set_current_value_with_malformed_current_x(design_space) -> None:
+def test_set_current_value_with_malformed_current_x(design_space, snapshot) -> None:
     """Check that setting the current value from a float raises an error."""
-    with pytest.raises(
-        TypeError,
-        match=re.escape(
-            "The current design value should be either an array, "
-            "a dictionary of arrays or an optimization result; "
-            "got <class 'float'> instead."
-        ),
-    ):
+    with assert_exception(TypeError, snapshot):
         design_space.set_current_value(1.0)
 
 
@@ -357,11 +306,9 @@ def test_filter_by_variable_names(design_space, copy) -> None:
         assert design_space_with_x5 is not design_space
 
 
-def test_filter_with_an_unknown_variable(design_space) -> None:
+def test_filter_with_an_unknown_variable(design_space, snapshot) -> None:
     """Check that filtering a design space with an unknown name raises an error."""
-    with pytest.raises(
-        ValueError, match=re.escape("Variable 'unknown_x' is not known.")
-    ):
+    with assert_exception(ValueError, snapshot):
         design_space.filter("unknown_x")
 
 
@@ -403,9 +350,11 @@ def test_filter_dimensions(current_value) -> None:
         ([0, 3, 4], "Dimensions 3 and 4 of variable 'x5' do not exist."),
     ],
 )
-def test_filter_dimensions_nonexistent(design_space, indices, message) -> None:
+def test_filter_dimensions_nonexistent(
+    design_space, indices, message, snapshot
+) -> None:
     """Check that the design space cannot filter nonexistent dimensions."""
-    with pytest.raises(ValueError, match=message):
+    with assert_exception(ValueError, snapshot):
         design_space.filter_dimensions("x5", indices)
 
 
@@ -454,7 +403,7 @@ def test_extend() -> None:
     check_variable(design_space, "x3", other, False)
 
 
-def test_active_bounds() -> None:
+def test_active_bounds(snapshot) -> None:
     """Check whether active bounds are correctly identified."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
@@ -477,20 +426,10 @@ def test_active_bounds() -> None:
     assert ub_1["x"] == [False]
     assert not ub_1["z"][0]
 
-    with pytest.raises(
-        TypeError,
-        match=re.escape(
-            "Expected dict or array for x_vec argument; got <class 'str'>."
-        ),
-    ):
+    with assert_exception(TypeError, snapshot):
         design_space.get_active_bounds("test")
 
-    with pytest.raises(
-        KeyError,
-        match=re.escape(
-            "There is no current value for the design variables: x, y and z."
-        ),
-    ):
+    with assert_exception(KeyError, snapshot):
         design_space.get_active_bounds()
 
 
@@ -682,41 +621,27 @@ def test_get_upper_bounds(design_space, variable_names, as_dict, upper_bounds) -
     assert_equal(design_space.get_upper_bounds(variable_names, as_dict), upper_bounds)
 
 
-def test_bounds_set_lower_bound_with_nan(design_space) -> None:
+def test_bounds_set_lower_bound_with_nan(design_space, snapshot) -> None:
     """Check that setting lower bound with nan raises an error."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The following lower bound component is not a number: nan (index 0)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         design_space.set_lower_bound("x6", float("nan"))
 
 
-def test_bounds_set_lower_bound_with_inconsistent_size(design_space) -> None:
+def test_bounds_set_lower_bound_with_inconsistent_size(design_space, snapshot) -> None:
     """Check that setting lower bound with inconsistent sized value raises an error."""
-    with pytest.raises(
-        ValueError, match=re.escape("The lower bound should be of size 1.")
-    ):
+    with assert_exception(ValueError, snapshot):
         design_space.set_lower_bound("x6", ones(2))
 
 
-def test_bounds_set_upper_bound_with_nan(design_space) -> None:
+def test_bounds_set_upper_bound_with_nan(design_space, snapshot) -> None:
     """Check that setting upper bound with nan raises an error."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The following upper bound component is not a number: nan (index 0)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         design_space.set_upper_bound("x6", float("nan"))
 
 
-def test_bounds_set_upper_bound_with_inconsistent_size(design_space) -> None:
+def test_bounds_set_upper_bound_with_inconsistent_size(design_space, snapshot) -> None:
     """Check that setting upper bound with inconsistent sized value raises an error."""
-    with pytest.raises(
-        ValueError, match=re.escape("The upper bound should be of size 1.")
-    ):
+    with assert_exception(ValueError, snapshot):
         design_space.set_upper_bound("x6", ones(2))
 
 
@@ -774,7 +699,7 @@ def test_unnormalize_vect_with_integer(design_space, vect, get_item) -> None:
     assert get_item(design_space.unnormalize_vect(vect)) == 0
 
 
-def test_norm_policy() -> None:
+def test_norm_policy(snapshot) -> None:
     """Check the normalization policy."""
     design_space = DesignSpace()
     design_space.add_variable(
@@ -784,11 +709,11 @@ def test_norm_policy() -> None:
         upper_bound=array([0.0, inf]),
     )
 
-    with pytest.raises(ValueError, match=re.escape("Variable 'foo' is not known.")):
+    with assert_exception(ValueError, snapshot):
         design_space._add_norm_policy("foo")
 
 
-def test_current_x() -> None:
+def test_current_x(snapshot) -> None:
     names = ["x_1", "x_2"]
     sizes = {"x_1": 1, "x_2": 2}
     l_b = {"x_1": 0.5, "x_2": (-inf, 2.0)}
@@ -814,17 +739,10 @@ def test_current_x() -> None:
     design_space.set_current_value(x_0)
     design_space.check()
 
-    expected = re.escape("Expected current_x variables: x_1 and x_2; got x_1.")
-    with pytest.raises(ValueError, match=expected):
+    with assert_exception(ValueError, snapshot):
         design_space.set_current_value({"x_1": array([0.0])})
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The component x_1[0] of the given array (-999.5) is lower "
-            "than the lower bound (0.5) by 1.0e+03.",
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         design_space.set_current_value(x_0 - 1000.0)
 
     """
@@ -836,23 +754,18 @@ def test_current_x() -> None:
     """
 
     assert design_space.get_type("x_1") == np.array([FLOAT])
-    with pytest.raises(ValueError, match=re.escape("Variable 'x_3' is not known.")):
+    with assert_exception(ValueError, snapshot):
         assert design_space.get_type("x_3")
-    with pytest.raises(ValueError, match=re.escape("Variable 'x_3' is not known.")):
+    with assert_exception(ValueError, snapshot):
         assert design_space.get_size("x_3")
 
     design_space.set_current_variable("x_1", np.array([5.0]))
     assert design_space.get_current_value(as_dict=True)["x_1"][0] == 5.0
 
-    with pytest.raises(ValueError, match=re.escape("Variable 'x_3' is not known.")):
+    with assert_exception(ValueError, snapshot):
         design_space.set_current_variable("x_3", 1.0)
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The upper bounds must be greater than or equal to the lower bounds."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         design_space.add_variable("error", lower_bound=1.0, upper_bound=0.0)
 
     design_space = DesignSpace()
@@ -962,12 +875,12 @@ def test_dict_to_array(dict_, array_) -> None:
     assert_equal(ds.convert_array_to_dict(array_), dict_)
 
 
-def test_dict_to_array_key_error() -> None:
+def test_dict_to_array_key_error(snapshot) -> None:
     """Chech the KeyError when converting an incomplete dictionary to an array."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=2.0)
     design_space.add_variable("y", lower_bound=-2.0, upper_bound=2.0)
-    with pytest.raises(KeyError, match="'y'"):
+    with assert_exception(KeyError, snapshot):
         design_space.convert_dict_to_array({"x": array([1.0])})
 
 
@@ -1455,12 +1368,10 @@ def test_rename_variable(value) -> None:
         assert_array_equal(design_space._current_value["y"], value)
 
 
-def test_rename_unknown_variable() -> None:
+def test_rename_unknown_variable(snapshot) -> None:
     """Check that a value error is raised when renaming of an unknown variable."""
     design_space = DesignSpace()
-    with pytest.raises(
-        ValueError, match=re.escape("The variable x is not in the design space.")
-    ):
+    with assert_exception(ValueError, snapshot):
         design_space.rename_variable("x", "y")
 
 
@@ -1661,6 +1572,7 @@ def test_check_membership(
     variable_names,
     error,
     error_msg,
+    snapshot,
 ) -> None:
     """Check the method check_membership."""
     ds = design_space_to_check_membership
@@ -1671,7 +1583,7 @@ def test_check_membership(
             assert_equal(ds._DesignSpace__lower_bounds_array, array([-2, 1, 1]))
             assert_equal(ds._DesignSpace__upper_bounds_array, array([-1, 2, 2]))
     else:
-        with pytest.raises(error, match=re.escape(error_msg)):
+        with assert_exception(error, snapshot):
             ds.check_membership(x_vect, variable_names)
 
 
@@ -1756,10 +1668,9 @@ def test_get_current_value_empty_names(as_dict) -> None:
     assert len(design_space.get_current_value(variable_names=[], as_dict=as_dict)) == 0
 
 
-def test_get_current_value_bad_names() -> None:
+def test_get_current_value_bad_names(snapshot) -> None:
     design_space = DesignSpace()
-    match = "There are no such variables named: bar and foo."
-    with pytest.raises(ValueError, match=match):
+    with assert_exception(ValueError, snapshot):
         design_space.get_current_value(variable_names=["foo", "bar"])
 
 
@@ -1789,13 +1700,13 @@ def test_get_current_value_missing_as_dict_not_normalized(
 @pytest.mark.parametrize("variable_names", [None, ["x", "y"]])
 @pytest.mark.parametrize("complex_to_real", [False, True])
 def test_get_current_value_missing_as_array_not_normalized(
-    mixed_design_space_without_value, variable_names, complex_to_real
+    mixed_design_space_without_value,
+    variable_names,
+    complex_to_real,
+    snapshot,
 ) -> None:
     """Check the access to a missing current value as a NumPy array."""
-    with pytest.raises(
-        KeyError,
-        match=re.escape("There is no current value for the design variables: x and y."),
-    ):
+    with assert_exception(KeyError, snapshot):
         mixed_design_space_without_value.get_current_value(
             variable_names, complex_to_real, as_dict=False, normalize=False
         )
@@ -1805,13 +1716,14 @@ def test_get_current_value_missing_as_array_not_normalized(
 @pytest.mark.parametrize("complex_to_real", [False, True])
 @pytest.mark.parametrize("as_dict", [False, True])
 def test_get_current_value_missing_partial_not_normalized(
-    mixed_design_space_without_value, name, complex_to_real, as_dict
+    mixed_design_space_without_value,
+    name,
+    complex_to_real,
+    as_dict,
+    snapshot,
 ) -> None:
     """Check the access to a missing current value."""
-    with pytest.raises(
-        KeyError,
-        match=re.escape(f"There is no current value for the design variables: {name}."),
-    ):
+    with assert_exception(KeyError, snapshot):
         mixed_design_space_without_value.get_current_value(
             [name], complex_to_real, as_dict, normalize=False
         )
@@ -1821,17 +1733,14 @@ def test_get_current_value_missing_partial_not_normalized(
 @pytest.mark.parametrize("complex_to_real", [False, True])
 @pytest.mark.parametrize("as_dict", [False, True])
 def test_get_current_value_missing_normalized(
-    mixed_design_space_without_value, variable_names, complex_to_real, as_dict
+    mixed_design_space_without_value,
+    variable_names,
+    complex_to_real,
+    as_dict,
+    snapshot,
 ) -> None:
     """Check the access to a missing current value."""
-    with pytest.raises(
-        KeyError,
-        match=re.escape(
-            "The current value of a design space cannot be normalized "
-            "when some variables have no current value. "
-            "There is no current value for the design variables: x and y."
-        ),
-    ):
+    with assert_exception(KeyError, snapshot):
         mixed_design_space_without_value.get_current_value(
             variable_names, complex_to_real, as_dict, normalize=True
         )
@@ -1862,13 +1771,13 @@ def test_get_current_value_partially_missing_as_dict_not_normalized(
 @pytest.mark.parametrize("variable_names", [None, ["x", "y"], ["y"]])
 @pytest.mark.parametrize("complex_to_real", [False, True])
 def test_get_current_value_partially_missing_as_array_not_normalized(
-    mixed_design_space_with_partial_value, variable_names, complex_to_real
+    mixed_design_space_with_partial_value,
+    variable_names,
+    complex_to_real,
+    snapshot,
 ) -> None:
     """Check the access to a missing current value as a NumPy array."""
-    with pytest.raises(
-        KeyError,
-        match=re.escape("There is no current value for the design variables: y."),
-    ):
+    with assert_exception(KeyError, snapshot):
         mixed_design_space_with_partial_value.get_current_value(
             variable_names, complex_to_real, as_dict=False, normalize=False
         )
@@ -1878,17 +1787,14 @@ def test_get_current_value_partially_missing_as_array_not_normalized(
 @pytest.mark.parametrize("complex_to_real", [False, True])
 @pytest.mark.parametrize("as_dict", [False, True])
 def test_get_current_value_partially_missing_as_array_normalized(
-    mixed_design_space_with_partial_value, variable_names, complex_to_real, as_dict
+    mixed_design_space_with_partial_value,
+    variable_names,
+    complex_to_real,
+    as_dict,
+    snapshot,
 ) -> None:
     """Check the access to a missing current value as a NumPy array."""
-    with pytest.raises(
-        KeyError,
-        match=re.escape(
-            "The current value of a design space cannot be normalized "
-            "when some variables have no current value. "
-            "There is no current value for the design variables: y."
-        ),
-    ):
+    with assert_exception(KeyError, snapshot):
         mixed_design_space_with_partial_value.get_current_value(
             variable_names, complex_to_real, as_dict, normalize=True
         )
@@ -2068,7 +1974,7 @@ def test_add_variable_from():
     assert "z" not in ds._current_value
 
 
-def test_to_scalar_variables():
+def test_to_scalar_variables(snapshot):
     """Check the splitting of design variables into scalar variables."""
     space = DesignSpace()
     space.add_variable("foo", 1, "float", 1, 2)
@@ -2083,10 +1989,7 @@ def test_to_scalar_variables():
     assert new_space.get_type("y[1]") == DesignSpace.DesignVariableType.INTEGER
     assert_array_equal(new_space.get_lower_bounds(), [1, 3, 5])
     assert_array_equal(new_space.get_upper_bounds(), [2, 4, 6])
-    with pytest.raises(
-        KeyError,
-        match=re.escape("There is no current value for the design variables: foo."),
-    ):
+    with assert_exception(KeyError, snapshot):
         new_space.get_current_value(["foo"])
 
     assert_array_equal(new_space.get_current_value(["y[0]", "y[1]"]), [3, 6])

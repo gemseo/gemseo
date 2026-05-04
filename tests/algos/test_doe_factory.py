@@ -24,6 +24,7 @@ import pytest
 
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture
@@ -60,12 +61,7 @@ def test_create_from_algo_name(factory) -> None:
     assert lib._algo_name == "PYDOE_FULLFACT"
 
 
-def test_create_from_unknown_name(factory) -> None:
+def test_create_from_unknown_name(factory, snapshot) -> None:
     """Check that the method create raises an ValueError from an unknown name."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"No algorithm named unknown_name is available; available algorithms are .+"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         factory.create("unknown_name")

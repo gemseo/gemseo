@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-import re
-
 import numpy
 import pytest
 from numpy.testing import assert_equal
@@ -25,6 +23,7 @@ from numpy.testing import assert_equal
 from gemseo.algos.design_space import DesignSpace
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -152,15 +151,13 @@ def test_iter_error(exception_error, iter_error) -> None:
     assert power2.iter_error == iter_error
 
 
-def test_exception_error() -> None:
+def test_exception_error(snapshot) -> None:
     """Check the `exception_error` mechanism."""
     power2 = Power2(True)
     power2.objective.evaluate(numpy.zeros(3))
     power2.objective.evaluate(numpy.zeros(3))
     power2.objective.evaluate(numpy.zeros(3))
-    with pytest.raises(
-        ValueError, match=re.escape("pow2() has already been called three times.")
-    ):
+    with assert_exception(ValueError, snapshot):
         power2.objective.evaluate(numpy.zeros(3))
 
 

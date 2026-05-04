@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_ode_problem_without_jacobian
+  'The function jac_function_wrt_state is not available.'
+# ---
+# name: test_order_initial_and_final_times
+  'The initial time must be lower than the final time.'
+# ---

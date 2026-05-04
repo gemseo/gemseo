@@ -22,8 +22,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import arange
 from numpy import array
@@ -35,6 +33,7 @@ from gemseo.machine_learning.clustering.models.factory import CLUSTERER_FACTORY
 from gemseo.problems.dataset.iris import create_iris_dataset
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
+from gemseo.utils.testing.helpers import assert_exception
 
 INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
 
@@ -46,16 +45,13 @@ class NewModel(BaseClusterer):
         pass
 
 
-def test_labels() -> None:
+def test_labels(snapshot) -> None:
     """Test clustering labels."""
     dataset = Dataset.from_array(
         arange(30).reshape(10, 3), ["x_1", "x_2"], {"x_1": 1, "x_2": 2}
     )
     model = NewModel(dataset)
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape("NewModel._fit() did not set the labels attribute."),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         model.learn()
 
 

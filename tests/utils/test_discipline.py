@@ -31,6 +31,7 @@ from gemseo.utils.discipline import VariableTranslation
 from gemseo.utils.discipline import get_discipline_variable_properties
 from gemseo.utils.discipline import rename_discipline_variables
 from gemseo.utils.discipline import update_default_input_values
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -209,7 +210,7 @@ def test_rename_twice_log(caplog):
     )
 
 
-def test_rename_twice_error():
+def test_rename_twice_error(snapshot):
     """Check the error message raised when renaming a variable twice with diff name."""
     translations = (
         VariableTranslation(
@@ -219,12 +220,12 @@ def test_rename_twice_error():
             discipline_name="A", variable_name="a", new_variable_name="y"
         ),
     )
-    msg = re.escape(
+    re.escape(
         "In discipline 'A', "
         "the variable 'a' cannot be renamed to 'y' "
         "because it has already been renamed to 'x'."
     )
-    with pytest.raises(ValueError, match=msg):
+    with assert_exception(ValueError, snapshot):
         VariableRenamer.from_translations(*translations)
 
 
@@ -266,7 +267,7 @@ def test_add_translations_by_discipline():
     assert renamer.translators == {"A": {"a": "x", "b": "x"}, "C": {"c": "z"}}
 
 
-def test_rename_discipline_variables(disciplines, translators, caplog):
+def test_rename_discipline_variables(disciplines, translators, caplog, snapshot):
     """Check rename_discipline_variables.
 
     Translators: {"A": {"a": "x", "c": "z"}, "B": {"b": "y"}}
@@ -289,9 +290,7 @@ def test_rename_discipline_variables(disciplines, translators, caplog):
         "The discipline 'C' has no translator.",
     )
 
-    with pytest.raises(
-        ValueError, match=re.escape("The discipline 'A' has no variable 'foo'.")
-    ):
+    with assert_exception(ValueError, snapshot):
         rename_discipline_variables(disciplines, {"A": {"foo": "bar"}})
 
 

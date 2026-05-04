@@ -1,0 +1,25 @@
+# serializer version: 1
+# name: test_iteration_callbacks_unsupported[anderson]
+  "Iteration callbacks are only supported for the methods: (<QuasiNewtonMethod.BROYDEN1: 'broyden1'>, <QuasiNewtonMethod.BROYDEN2: 'broyden2'>), not for anderson."
+# ---
+# name: test_iteration_callbacks_unsupported[df-sane]
+  "Iteration callbacks are only supported for the methods: (<QuasiNewtonMethod.BROYDEN1: 'broyden1'>, <QuasiNewtonMethod.BROYDEN2: 'broyden2'>), not for df-sane."
+# ---
+# name: test_iteration_callbacks_unsupported[diagbroyden]
+  "Iteration callbacks are only supported for the methods: (<QuasiNewtonMethod.BROYDEN1: 'broyden1'>, <QuasiNewtonMethod.BROYDEN2: 'broyden2'>), not for diagbroyden."
+# ---
+# name: test_iteration_callbacks_unsupported[excitingmixing]
+  "Iteration callbacks are only supported for the methods: (<QuasiNewtonMethod.BROYDEN1: 'broyden1'>, <QuasiNewtonMethod.BROYDEN2: 'broyden2'>), not for excitingmixing."
+# ---
+# name: test_iteration_callbacks_unsupported[hybr]
+  "Iteration callbacks are only supported for the methods: (<QuasiNewtonMethod.BROYDEN1: 'broyden1'>, <QuasiNewtonMethod.BROYDEN2: 'broyden2'>), not for hybr."
+# ---
+# name: test_iteration_callbacks_unsupported[krylov]
+  "Iteration callbacks are only supported for the methods: (<QuasiNewtonMethod.BROYDEN1: 'broyden1'>, <QuasiNewtonMethod.BROYDEN2: 'broyden2'>), not for krylov."
+# ---
+# name: test_iteration_callbacks_unsupported[linearmixing]
+  "Iteration callbacks are only supported for the methods: (<QuasiNewtonMethod.BROYDEN1: 'broyden1'>, <QuasiNewtonMethod.BROYDEN2: 'broyden2'>), not for linearmixing."
+# ---
+# name: test_iteration_callbacks_unsupported[lm]
+  "Iteration callbacks are only supported for the methods: (<QuasiNewtonMethod.BROYDEN1: 'broyden1'>, <QuasiNewtonMethod.BROYDEN2: 'broyden2'>), not for lm."
+# ---

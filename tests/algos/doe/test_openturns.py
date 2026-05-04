@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from typing import TYPE_CHECKING
 from typing import Any
 from unittest import mock
@@ -44,6 +43,7 @@ from gemseo.algos.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Se
 from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.utils.testing.helpers import assert_exception
 
 from .utils import execute_problem
 from .utils import generate_test_functions
@@ -79,28 +79,15 @@ def test_call() -> None:
 
 
 @pytest.mark.parametrize(
-    ("options", "error"),
+    "options",
     [
-        (
-            {"criterion": "unknown_criterion"},
-            (
-                "\ncriterion\n  Input should be 'C2', 'PhiP' or 'MinDist' [type=enum,"
-                " input_value='unknown_criterion', input_type=str]"
-            ),
-        ),
-        (
-            {"annealing": True, "temperature": "unknown_temperature"},
-            (
-                "\ntemperature\n  Input should be 'Geometric' or 'Linear' [type=enum,"
-                " input_value='unknown_temperature', input_type=str]"
-            ),
-        ),
+        {"criterion": "unknown_criterion"},
+        {"annealing": True, "temperature": "unknown_temperature"},
     ],
 )
-def test_opt_lhs_wrong_properties(options, error) -> None:
+def test_opt_lhs_wrong_properties(options, snapshot) -> None:
     """Check that using an optimal LHS with wrong properties raises an error."""
-    match = re.escape(f"1 validation error for OT_OPT_LHS_Settings{error}")
-    with pytest.raises(ValidationError, match=match):
+    with assert_exception(ValidationError, snapshot):
         execute_problem(
             doe_algo_name="OT_OPT_LHS",
             dim=2,
@@ -303,12 +290,10 @@ def test_executed_twice(identity_problem, n_samples, seed) -> None:
         assert identity_problem.evaluation_counter.current == n_samples
 
 
-def test_optimized_lhs_size_1():
+def test_optimized_lhs_size_1(snapshot):
     """Check that size 1 is not allowed for optimized LHS."""
     library = OpenTURNS("OT_OPT_LHS")
-    with pytest.raises(
-        ValidationError, match="Input should be greater than or equal to 2"
-    ):
+    with assert_exception(ValidationError, snapshot):
         library.ALGORITHM_INFOS["OT_OPT_LHS"].settings_class(n_samples=1)
 
 
@@ -336,9 +321,9 @@ def test_optimized_lhs_size_1():
         ),
     ],
 )
-def test_ot_stratified_doe_n_samples_error(cls, error_message):
+def test_ot_stratified_doe_n_samples_error(cls, error_message, snapshot):
     """Verify that a stratified DOE algorithm raises when n_samples is too small."""
-    with pytest.raises(ValueError, match=re.escape(error_message)):
+    with assert_exception(ValueError, snapshot):
         cls().generate_samples(2, BaseOTStratifiedDOESettings(n_samples=4))
 
 
@@ -400,30 +385,24 @@ def test_ot_stratified_doe_n_samples_warning(cls, n_samples, caplog, error_messa
 
 
 @pytest.mark.parametrize("cls", [OTAxialDOE, OTCompositeDOE, OTFactorialDOE])
-def test_ot_stratified_centers_dimension_error(cls: BaseOTStratifiedDOE):
+def test_ot_stratified_centers_dimension_error(cls: BaseOTStratifiedDOE, snapshot):
     """Verify that a stratified DOE algorithm raises when centers is ill-dimensioned."""
-    with pytest.raises(
-        ValueError, match=re.escape("The number of centers must be 3; got 2.")
-    ):
+    with assert_exception(ValueError, snapshot):
         cls().generate_samples(3, BaseOTStratifiedDOESettings(centers=[0.5, 0.6]))
 
 
 @pytest.mark.parametrize("cls", [OTAxialDOE, OTCompositeDOE, OTFactorialDOE])
 @pytest.mark.parametrize("centers", [[0.0, 0.5], [0.5, 1.0]])
-def test_ot_stratified_centers_value_error(cls, centers):
+def test_ot_stratified_centers_value_error(cls, centers, snapshot):
     """Verify that a stratified DOE algorithm raises when centers has wrong values."""
-    with pytest.raises(
-        ValueError, match=re.escape(f"The centers must be in ]0,1[; got {centers}.")
-    ):
+    with assert_exception(ValueError, snapshot):
         cls().generate_samples(2, BaseOTStratifiedDOESettings(centers=centers))
 
 
 @pytest.mark.parametrize("cls", [OTAxialDOE, OTCompositeDOE, OTFactorialDOE])
-def test_ot_stratified_levels_value_error(cls):
+def test_ot_stratified_levels_value_error(cls, snapshot):
     """Verify that a stratified DOE algorithm raises when centers has wrong values."""
-    with pytest.raises(
-        ValueError, match=re.escape("The levels must be in ]0,1]; got [0.0, 0.5].")
-    ):
+    with assert_exception(ValueError, snapshot):
         cls().generate_samples(2, BaseOTStratifiedDOESettings(levels=[0, 0.5]))
 
 

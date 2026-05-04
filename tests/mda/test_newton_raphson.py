@@ -48,6 +48,7 @@ from gemseo.problems.mdo.sellar.utils import get_y_opt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.testing.helpers import assert_exception
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
 
@@ -406,21 +407,17 @@ def test_mda_newton_serialization(tmp_wd) -> None:
     assert_equal(mda_d.io.data, out)
 
 
-def test_mda_newton_weak_couplings() -> None:
+def test_mda_newton_weak_couplings(snapshot) -> None:
     """Test the check when there are weakly coupled disciplines."""
-    match = (
-        "The MDANewtonRaphson has weakly coupled disciplines, which is not supported."
-    )
 
-    with pytest.raises(ValueError, match=match):
+    with assert_exception(ValueError, snapshot):
         create_mda("MDANewtonRaphson", disciplines=[Sellar1(), SellarSystem()])
 
 
-def test_mda_newton_no_couplings() -> None:
+def test_mda_newton_no_couplings(snapshot) -> None:
     """Test the check when there are no coupled disciplines."""
-    match = "There is no couplings to compute. Please consider using MDAChain."
 
-    with pytest.raises(ValueError, match=match):
+    with assert_exception(ValueError, snapshot):
         create_mda("MDANewtonRaphson", disciplines=[Sellar1()])
 
 

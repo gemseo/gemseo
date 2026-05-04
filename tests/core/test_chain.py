@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import os
 import pickle
-import re
 import unittest
 from itertools import permutations
 from typing import TYPE_CHECKING
@@ -45,6 +44,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.problems.mdo.sobieski.process.discipline_chain import SobieskiChain
 from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
@@ -194,27 +194,19 @@ def test_warm_started_discipline_chain(variable_names, expected) -> None:
     assert (y_12 != out["y_12"]).any() == expected
 
 
-def test_warm_started_discipline_chain_jac() -> None:
+def test_warm_started_discipline_chain_jac(snapshot) -> None:
     """Test that the Jacobian of an WarmStartedDisciplineChain raises an exception."""
     chain = WarmStartedDisciplineChain(
         [SobieskiMission()], variable_names_to_warm_start=[]
     )
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape("WarmStartedDisciplineChain cannot be linearized."),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         chain.check_jacobian()
 
 
 @pytest.mark.parametrize("variable_names", [("y_4", "i_dont_exist"), ("i_dont_exist",)])
-def test_warm_started_discipline_chain_variables(variable_names) -> None:
+def test_warm_started_mdo_chain_variables(variable_names, snapshot) -> None:
     """Test an exception if a variable that is not in the chain is warm started."""
-    with pytest.raises(
-        ValueError,
-        match="The following variable names are not "
-        r"outputs of the chain: \{'i_dont_exist'\}\."
-        r" Available outputs are: \['y_4'\]\.",
-    ):
+    with assert_exception(ValueError, snapshot):
         WarmStartedDisciplineChain(
             [SobieskiMission()], variable_names_to_warm_start=variable_names
         )

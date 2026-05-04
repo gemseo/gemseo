@@ -1,0 +1,55 @@
+# serializer version: 1
+# name: test_check_input_data_exception[JSONGrammar]
+  '''
+  Grammar SobieskiStructure_discipline_input: validation failed.
+  Missing required names: x_1.
+  '''
+# ---
+# name: test_check_input_data_exception[JSONGrammar].1
+  '''
+  Grammar SobieskiStructure_discipline_input: validation failed.
+  Missing required names: x_1.
+  '''
+# ---
+# name: test_check_input_data_exception[SimpleGrammar]
+  '''
+  Grammar SobieskiStructureSG_discipline_input: validation failed.
+  Missing required names: x_1.
+  '''
+# ---
+# name: test_check_input_data_exception[SimpleGrammar].1
+  '''
+  Grammar SobieskiStructureSG_discipline_input: validation failed.
+  Missing required names: x_1.
+  '''
+# ---
+# name: test_check_jacobian
+  'The discipline SM was not linearized.'
+# ---
+# name: test_deactivate_counters
+  'The execution statistics of the object named DummyDiscipline are disabled.'
+# ---
+# name: test_deactivate_counters.1
+  'The execution statistics of the object named DummyDiscipline are disabled.'
+# ---
+# name: test_deactivate_counters.2
+  'The execution statistics of the object named DummyDiscipline are disabled.'
+# ---
+# name: test_diff_inputs_outputs
+  'Cannot differentiate the discipline DummyDiscipline w.r.t. the inputs that are not among the discipline inputs: [].'
+# ---
+# name: test_diff_inputs_outputs.1
+  'Cannot differentiate the discipline DummyDiscipline for variables that are not among the discipline outputs: [].'
+# ---
+# name: test_jac_set_optimal_fd_step_no_jac_approx
+  'set_jacobian_approximation must be called before setting an optimal step.'
+# ---
+# name: test_linearize_errors
+  'The shape (1,) of the Jacobian matrix dy/dx of the discipline LinDisc does not match (output_size, input_size)=(1, 1).'
+# ---
+# name: test_virtual_exe
+  '''
+  Grammar d1_discipline_output: validation failed.
+  Missing required names: y.
+  '''
+# ---

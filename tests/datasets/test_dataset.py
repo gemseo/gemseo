@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import operator
-import re
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
@@ -41,6 +40,7 @@ from pandas.testing import assert_frame_equal
 from gemseo import create_dataset
 from gemseo.datasets.dataset import Dataset
 from gemseo.problems.dataset.iris import create_iris_dataset
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from numpy import int64 as np_int
@@ -584,11 +584,9 @@ def test_add_groups(
         ).all()
 
 
-def test_add_group_error(dataset) -> None:
+def test_add_group_error(dataset, snapshot) -> None:
     """Test the method add_group with a group already defined."""
-    with pytest.raises(
-        ValueError, match=re.escape("The group 'parameters' is already defined.")
-    ):
+    with assert_exception(ValueError, snapshot):
         dataset.add_group(dataset.PARAMETER_GROUP, 1)
 
 
@@ -1041,33 +1039,24 @@ def test_add_variable() -> None:
     assert_frame_equal(dataset, dataframe)
 
 
-def test_add_variable_twice() -> None:
+def test_add_variable_twice(snapshot) -> None:
     """Test the method add_variable to raise ValueError, when needed."""
     dataset = Dataset()
     dataset.add_variable("x", array([[1, 2], [3, 4]]))
     dataset.add_variable("x", array([[5], [6]]), components=2)
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The group 'parameters' has already a variable 'x' defined."),
-    ):
+    with assert_exception(ValueError, snapshot):
         dataset.add_variable("x", array([[10, 20], [30, 40]]))
 
 
-def test_data_shape_inconsistency() -> None:
+def test_data_shape_inconsistency(snapshot) -> None:
     """Check that an exception is raised when data is inconsistent."""
     dataset = Dataset()
     dataset.add_variable("x", [[1, 1], [1, 1]])
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The data shape must be (2, 3) or (1, 3); got (3, 3) instead."),
-    ):
+    with assert_exception(ValueError, snapshot):
         dataset.add_variable("y", [[1, 1, 1]] * 3)
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape("The data shape must be (2, 2) or (1, 2); got (3, 3) instead."),
-    ):
+    with assert_exception(ValueError, snapshot):
         dataset.add_variable("y", [[1, 1, 1]] * 3, components=[1, 2])
 
 
@@ -1228,27 +1217,15 @@ def test_create_empty_dataset() -> None:
     assert dataset.name == "foo"
 
 
-def test_create_dataset_with_wrong_data() -> None:
+def test_create_dataset_with_wrong_data(snapshot) -> None:
     """Check the high-level function create_dataset from a wrong type."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The dataset can be created from an array or a .csv or .txt file, "
-            "not a <class 'int'>."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         create_dataset("foo", 123)
 
 
-def test_create_dataset_from_wrong_file_extension() -> None:
+def test_create_dataset_from_wrong_file_extension(snapshot) -> None:
     """Check the high-level function create_dataset from a .png file."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The dataset can be created from a file with a .csv or .txt extension, "
-            "not .png."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         create_dataset("foo", "file_name.png")
 
 

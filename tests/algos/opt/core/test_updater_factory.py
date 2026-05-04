@@ -21,22 +21,14 @@
 
 from __future__ import annotations
 
-import re
-
-import pytest
-
 from gemseo.algos.opt.core.updater_factory import UpdaterFactory
+from gemseo.utils.testing.helpers import assert_exception
 
 
-def test_unavailable_update() -> None:
+def test_unavailable_update(snapshot) -> None:
     """Tests the unavailable update exception."""
     updater_factory = UpdaterFactory()
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "'method_name' is not an updater; available: 'penalty' and 'radius'."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         updater_factory.create(
             "method_name",
             thresholds=(0.0, 0.25),

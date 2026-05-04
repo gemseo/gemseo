@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import logging
 import pickle
-import re
 from os import remove
 from pathlib import Path
 
@@ -39,6 +38,7 @@ from gemseo.algos.linear_solvers.scipy_linalg import BICGSTAB_Settings
 from gemseo.algos.linear_solvers.scipy_linalg.scipy_linalg import ScipyLinalgAlgos
 from gemseo.algos.linear_solvers.scipy_linalg.settings.lgmres import LGMRES_Settings
 from gemseo.utils.seeder import SEED
+from gemseo.utils.testing.helpers import assert_exception
 
 RESIDUALS_TOL = 1e-12
 
@@ -174,29 +174,20 @@ def test_hard_conv(tmp_wd, seed) -> None:
     assert problem.compute_residuals() < 1e-10
 
 
-def test_inconsistent_options() -> None:
+def test_inconsistent_options(snapshot) -> None:
     problem = LinearProblem(ones((2, 2)), ones(2))
 
-    with pytest.raises(
-        ValueError, match=re.escape("matrix and preconditioner have different shapes")
-    ):
+    with assert_exception(ValueError, snapshot):
         LinearSolverLibraryFactory().execute(
             problem, settings=LGMRES_Settings(preconditioner=ones((3, 3)))
         )
 
-    with pytest.raises(
-        ValueError, match=re.escape("shapes of A (2, 2) and x0 (3,) are incompatible")
-    ):
+    with assert_exception(ValueError, snapshot):
         LinearSolverLibraryFactory().execute(
             problem, settings=LGMRES_Settings(x0=ones(3))
         )
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Use either 'use_ilu_precond' or provide 'preconditioner', but not both."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         LinearSolverLibraryFactory().execute(
             problem,
             settings=LGMRES_Settings(preconditioner=ones((2, 2)), use_ilu_precond=True),
@@ -214,15 +205,9 @@ def test_check_info_warning(algo, caplog) -> None:
     )
 
 
-def test_check_info_error(algo):
+def test_check_info_error(algo, snapshot):
     """Check the message of the error raised by check_info when info<0."""
-    with pytest.raises(
-        RuntimeError,
-        match=re.escape(
-            "SciPy linear solver algorithm stop info: "
-            "illegal input or breakdown, options = {'a': 2}."
-        ),
-    ):
+    with assert_exception(RuntimeError, snapshot):
         algo._check_solver_info(-1, {"a": 2})
 
 

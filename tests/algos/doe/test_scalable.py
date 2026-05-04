@@ -25,6 +25,7 @@ from numpy import array
 from numpy.testing import assert_equal
 
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.utils.testing.helpers import assert_exception
 
 from .utils import check_problem_execution
 from .utils import execute_problem
@@ -38,14 +39,9 @@ def test_init() -> None:
         DOE_LIBRARY_FACTORY.create(DOE_LIB_NAME)
 
 
-def test_invalid_algo() -> None:
+def test_invalid_algo(snapshot) -> None:
     """Check the request of an invalid algorithm."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"No algorithm named invalid_algo is available; available algorithms are .+"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_problem("invalid_algo", n_samples=100)
 
 

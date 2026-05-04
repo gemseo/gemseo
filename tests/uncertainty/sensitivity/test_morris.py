@@ -41,6 +41,7 @@ from gemseo.uncertainty.distributions.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
 from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 FUNCTION = {
@@ -316,16 +317,10 @@ def test_compute_indices_output_names(morris) -> None:
     morris.compute_indices()
 
 
-def test_too_few_samples(discipline, parameter_space) -> None:
+def test_too_few_samples(discipline, parameter_space, snapshot) -> None:
     """Check that the MorrisAnalysis raises a ValueError is n_samples is too small."""
     analysis = MorrisAnalysis()
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The number of samples (2) must be "
-            "at least equal to the dimension of the input space plus one (3+1=4)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         analysis.compute_samples([discipline], parameter_space, n_samples=2)
 
 
@@ -378,14 +373,10 @@ Running the algorithm MorrisDOE:
     assert re.match(pattern, result)
 
 
-def test_n_replicates_error():
+def test_n_replicates_error(snapshot):
     """Check that the property n_replicates cannot be used without a dataset."""
     analysis = MorrisAnalysis()
-    msg = (
-        "There is not dataset attached to the MorrisAnalysis; "
-        "please provide samples at instantiation or use compute_samples."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with assert_exception(ValueError, snapshot):
         analysis.n_replicates
 
 

@@ -18,13 +18,13 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from os.path import dirname
 
 import pytest
 
 from gemseo.utils.singleton import SingleInstancePerAttributeId
 from gemseo.utils.singleton import SingleInstancePerFileAttribute
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def test_sing_id() -> None:
@@ -47,7 +47,7 @@ def test_sing_id() -> None:
         SingleIdFail()
 
 
-def test_sing_file() -> None:
+def test_sing_file(snapshot) -> None:
     file_loc = __file__
 
     class SingleFile(metaclass=SingleInstancePerFileAttribute):
@@ -61,19 +61,10 @@ def test_sing_file() -> None:
     assert a is b
     assert a != c
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "SingleInstancePerFileAttribute subclasses need at least one argument "
-            "in the constructor."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         SingleFile()
 
-    with pytest.raises(
-        TypeError,
-        match=re.escape("Argument 0 is not a string but of type <class 'int'>."),
-    ):
+    with assert_exception(TypeError, snapshot):
         SingleFile(123)
 
     class SingleFileFail(metaclass=SingleInstancePerFileAttribute):

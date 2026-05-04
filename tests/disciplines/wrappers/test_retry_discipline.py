@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import math
-import re
 import shlex
 import time
 from subprocess import Popen
@@ -34,6 +33,7 @@ from gemseo.core.execution_status import ExecutionStatus
 from gemseo.disciplines.wrappers.retry_discipline import RetryDiscipline
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.timer import Timer
 
 if TYPE_CHECKING:
@@ -131,13 +131,15 @@ class SlowProcessDiscipline(Discipline):
         sleep(60)
 
 
-def test_failure_zero_division_error(a_crashing_analytic_discipline, caplog) -> None:
+def test_failure_zero_division_error(
+    a_crashing_analytic_discipline, caplog, snapshot
+) -> None:
     """Test failure of the discipline with a bad x entry.
 
     In order to catch the ZeroDivisionError, set n_trials=1
     """
     disc = RetryDiscipline(a_crashing_analytic_discipline, n_trials=1)
-    with pytest.raises(ZeroDivisionError, match="division by zero"):
+    with assert_exception(ZeroDivisionError, snapshot):
         disc.execute({"x": array([0.0])})
 
     assert disc.local_data == {"x": array([0.0])}
@@ -161,6 +163,7 @@ def test_failure_zero_division_error_n_trials(
     fatal_exceptions: Iterable[type[Exception]],
     a_crashing_analytic_discipline,
     caplog,
+    snapshot,
 ) -> None:
     """Test failure of the discipline with timeout and a bad x entry.
 
@@ -172,7 +175,7 @@ def test_failure_zero_division_error_n_trials(
         n_trials=n_trials,
         fatal_exceptions=fatal_exceptions,
     )
-    with pytest.raises(ZeroDivisionError, match="division by zero"):
+    with assert_exception(ZeroDivisionError, snapshot):
         disc.execute({"x": array([0.0])})
 
     assert disc.n_executions == 1
@@ -186,7 +189,9 @@ def test_failure_zero_division_error_n_trials(
 
 
 def test_a_not_implemented_error_analytic_discipline(
-    a_crashing_discipline_in_run, caplog
+    a_crashing_discipline_in_run,
+    caplog,
+    snapshot,
 ) -> None:
     """Test discipline with a_crashing_discipline_in_run and a tuple of
 
@@ -203,9 +208,7 @@ def test_a_not_implemented_error_analytic_discipline(
             NotImplementedError,
         ),
     )
-    with pytest.raises(
-        NotImplementedError, match=re.escape("Error: This method is not implemented.")
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         retry_discipline.execute({"x": array([1.0])})
 
     assert retry_discipline.n_executions == 1
@@ -219,13 +222,15 @@ def test_a_not_implemented_error_analytic_discipline(
 
 
 @pytest.mark.parametrize("n_trials", [1, 3])
-def test_1_3times_failing(a_crashing_analytic_discipline, n_trials, caplog) -> None:
+def test_1_3times_failing(
+    a_crashing_analytic_discipline, n_trials, caplog, snapshot
+) -> None:
     """Test a discipline crashing each time, n_trials = 1 or 3."""
     disc = RetryDiscipline(
         a_crashing_analytic_discipline,
         n_trials=n_trials,
     )
-    with pytest.raises(ZeroDivisionError, match="division by zero"):
+    with assert_exception(ZeroDivisionError, snapshot):
         disc.execute({"x": array([0.0])})
 
     assert disc.n_executions == n_trials
@@ -264,7 +269,12 @@ PROCESS_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 2.0
 @pytest.mark.parametrize("n_trials", [1, 3])
 @pytest.mark.parametrize("disc_class", [SlowProcessDiscipline, SlowThreadDiscipline])
 def test_wait_time_and_n_trials(
-    n_trials, wait_time, disc_class, caplog, tmp_wd
+    n_trials,
+    wait_time,
+    disc_class,
+    caplog,
+    tmp_wd,
+    snapshot,
 ) -> None:
     """Test failure of the discipline with a too much very short timeout."""
     wrapped_disc = disc_class()
@@ -281,11 +291,7 @@ def test_wait_time_and_n_trials(
 
     with (
         Timer() as timer,
-        pytest.raises(
-            TimeoutError,
-            match="Timeout reached during the execution"
-            rf" of discipline {disc_class.__name__}",
-        ),
+        assert_exception(TimeoutError, snapshot),
     ):
         disc.execute()
 
@@ -309,9 +315,9 @@ def test_wait_time_and_n_trials(
     assert log_message in caplog.text
 
 
-def test_n_trials_zero_raises(an_analytic_discipline) -> None:
+def test_n_trials_zero_raises(an_analytic_discipline, snapshot) -> None:
     """Test that n_trials=0 raises ValueError immediately."""
-    with pytest.raises(ValueError, match="n_trials must be >= 1"):
+    with assert_exception(ValueError, snapshot):
         RetryDiscipline(an_analytic_discipline, n_trials=0)
 
 
@@ -334,10 +340,10 @@ def test_per_attempt_warning_logged(caplog) -> None:
     PLATFORM_IS_WINDOWS,
     reason="The windows CI has big troubles with this test.",
 )
-def test_timeout_warning_logged(caplog) -> None:
+def test_timeout_warning_logged(caplog, snapshot) -> None:
     """Test that a timeout is logged at WARNING level."""
     disc = RetryDiscipline(SlowThreadDiscipline(), timeout=0.1, n_trials=1)
-    with pytest.raises(TimeoutError, match="Timeout reached"):
+    with assert_exception(TimeoutError, snapshot):
         disc.execute()
 
     assert any(

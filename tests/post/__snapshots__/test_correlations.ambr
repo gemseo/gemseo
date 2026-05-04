@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_correlations_func_name_error
+  "The following elements are not functions: ['toto']; available ones are: ['rosen']."
+# ---

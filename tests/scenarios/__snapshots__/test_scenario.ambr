@@ -1,0 +1,31 @@
+# serializer version: 1
+# name: test_adapter_error
+  "Cannot compute inputs from scenarios: 'missing_input'."
+# ---
+# name: test_adapter_error.1
+  "Cannot compute outputs from scenarios: 'missing_output'."
+# ---
+# name: test_add_observable_not_available
+  "No discipline known by formulation MDF has all outputs named ['toto']."
+# ---
+# name: test_backup_error
+  'Conflicting options for evaluation backup, cannot pre-load and erase the backup file at the same time.'
+# ---
+# name: test_check_disciplines
+  "Two disciplines, among which bar, compute the same outputs: {'y'}"
+# ---
+# name: test_duplicate_constraint_name[-y_4]
+  "The function name '-y_4' is already used by another function. Duplicated function names produce unpredictable behavior."
+# ---
+# name: test_duplicate_constraint_name[g_1]
+  "The function name 'g_1' is already used by another function. Duplicated function names produce unpredictable behavior."
+# ---
+# name: test_duplicate_constraint_name[g_2]
+  "The function name 'g_2' is already used by another function. Duplicated function names produce unpredictable behavior."
+# ---
+# name: test_get_result
+  'The class foo is not available; the available ones are: BiLevelScenarioResult, ScenarioResult.'
+# ---
+# name: test_no_objective
+  'Missing objective function in optimization problem.'
+# ---

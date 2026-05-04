@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_check_function_output_includes_nan
+  'Found a NaN in the input array [nan].'
+# ---
+# name: test_check_function_output_includes_nan.1
+  'Found a NaN in the output data of the function f evaluated at the input array [1.].'
+# ---

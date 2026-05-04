@@ -1,0 +1,8 @@
+# serializer version: 1
+# name: test_bilevel_settings_error
+  '''
+  1 validation error for BiLevel_Settings
+    Value error, The options reset_x0_before_opt and set_x0_before_opt of BiLevel cannot both be True. [type=value_error, input_value={'reset_x0_before_opt': T...et_x0_before_opt': True}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

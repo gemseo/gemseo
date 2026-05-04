@@ -26,6 +26,7 @@ import pytest
 
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.utils import timer  # noqa: E402
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.mocks import SleepingCounter
 
 SLEEP_TIME = 0.1
@@ -53,7 +54,7 @@ def test_default_state():
     assert not ExecutionStatistics.is_time_stamps_enabled
 
 
-def test_n_calls(execution_statistics: ExecutionStatistics):
+def test_n_calls(execution_statistics: ExecutionStatistics, snapshot):
     """Verify n_calls."""
     ExecutionStatistics.is_enabled = True
 
@@ -65,8 +66,7 @@ def test_n_calls(execution_statistics: ExecutionStatistics):
 
     assert execution_statistics.n_executions is None
 
-    match = "The execution statistics of the object named dummy are disabled."
-    with pytest.raises(RuntimeError, match=match):
+    with assert_exception(RuntimeError, snapshot):
         execution_statistics.n_executions = 1
 
     # Re-enable to access the kept results.
@@ -75,7 +75,7 @@ def test_n_calls(execution_statistics: ExecutionStatistics):
     assert execution_statistics.n_executions == 1
 
 
-def test_n_calls_linearize(execution_statistics: ExecutionStatistics):
+def test_n_calls_linearize(execution_statistics: ExecutionStatistics, snapshot):
     """Verify n_calls_linearizations."""
     ExecutionStatistics.is_enabled = True
 
@@ -87,8 +87,7 @@ def test_n_calls_linearize(execution_statistics: ExecutionStatistics):
 
     assert execution_statistics.n_linearizations is None
 
-    match = "The execution statistics of the object named dummy are disabled."
-    with pytest.raises(RuntimeError, match=match):
+    with assert_exception(RuntimeError, snapshot):
         execution_statistics.n_linearizations = 1
 
     # Re-enable to access the kept results.
@@ -97,7 +96,7 @@ def test_n_calls_linearize(execution_statistics: ExecutionStatistics):
     assert execution_statistics.n_linearizations == 1
 
 
-def test_duration(execution_statistics: ExecutionStatistics):
+def test_duration(execution_statistics: ExecutionStatistics, snapshot):
     """Verify duration."""
     ExecutionStatistics.is_enabled = True
 
@@ -109,8 +108,7 @@ def test_duration(execution_statistics: ExecutionStatistics):
 
     assert execution_statistics.duration is None
 
-    match = "The execution statistics of the object named dummy are disabled."
-    with pytest.raises(RuntimeError, match=match):
+    with assert_exception(RuntimeError, snapshot):
         execution_statistics.duration = 1.0
 
     # Re-enable to access the kept results.

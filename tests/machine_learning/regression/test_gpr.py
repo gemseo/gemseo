@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -44,6 +43,7 @@ from gemseo.machine_learning.regression.models.gpr_settings import (
 )
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
@@ -177,23 +177,15 @@ def test_kernel(dataset) -> None:
     assert id(model.kernel) == id(model.algo.kernel_)
 
 
-def test_failure_jacobian(model):
+def test_failure_jacobian(model, snapshot):
     """Check that the Jacobian function is not available."""
-    msg = f"The Jacobian function of {model.__class__.__name__} is not implemented."
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape(msg),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         model.predict_jacobian(array([[1.85016387, 4.00618543]]))
 
 
-def test_failure_hessian(model):
+def test_failure_hessian(model, snapshot):
     """Check that the Hessian function is not available."""
-    msg = f"The Hessian function of {model.__class__.__name__} is not implemented."
-    with pytest.raises(
-        NotImplementedError,
-        match=re.escape(msg),
-    ):
+    with assert_exception(NotImplementedError, snapshot):
         model.predict_hessian(array([[1.85016387, 4.00618543]]))
 
 

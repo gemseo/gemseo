@@ -27,7 +27,6 @@ parameters.
 
 from __future__ import annotations
 
-import re
 from operator import itemgetter
 from typing import TYPE_CHECKING
 
@@ -56,6 +55,7 @@ from gemseo.scenarios.mdo import MDOScenario
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
@@ -160,31 +160,21 @@ def dataset(request) -> Dataset:
     return create_dataset(*request.param)
 
 
-def test_regression_model_jacobian() -> None:
+def test_regression_model_jacobian(snapshot) -> None:
     """Test that by default the computation of the Jacobian raises an error."""
     dataset = create_dataset(*DATASETS_DESCRIPTIONS[0])
     with (
-        pytest.raises(
-            NotImplementedError,
-            match=re.escape(
-                "The Jacobian function of BaseRegressor is not implemented."
-            ),
-        ),
+        assert_exception(NotImplementedError, snapshot),
         concretize_classes(BaseRegressor),
     ):
         BaseRegressor(dataset).predict_jacobian(array([1.0]))
 
 
-def test_regression_model_hessian() -> None:
+def test_regression_model_hessian(snapshot) -> None:
     """Test that by default the computation of the Hessian raises an error."""
     dataset = create_dataset(*DATASETS_DESCRIPTIONS[0])
     with (
-        pytest.raises(
-            NotImplementedError,
-            match=re.escape(
-                "The Hessian function of BaseRegressor is not implemented."
-            ),
-        ),
+        assert_exception(NotImplementedError, snapshot),
         concretize_classes(BaseRegressor),
     ):
         BaseRegressor(dataset).predict_hessian(array([1.0]))

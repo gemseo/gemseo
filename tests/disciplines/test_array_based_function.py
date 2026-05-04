@@ -14,14 +14,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy import eye
 from numpy.testing import assert_equal
 
 from gemseo.disciplines.array_based_function import ArrayBasedFunctionDiscipline
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -62,12 +61,9 @@ def test_custom_input_values(discipline):
     assert_equal(discipline.io.data["y2"], array([4.0, 5.0]))
 
 
-def test_jac_function_none(discipline):
+def test_jac_function_none(discipline, snapshot):
     """Check the Jacobian computation when jac_function is None."""
-    with pytest.raises(
-        RuntimeError,
-        match=re.escape("The discipline foo cannot compute the analytic derivatives."),
-    ):
+    with assert_exception(RuntimeError, snapshot):
         discipline.linearize(compute_all_jacobians=True)
 
 

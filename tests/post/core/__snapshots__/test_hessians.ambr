@@ -1,0 +1,31 @@
+# serializer version: 1
+# name: test_baseclass_methods
+  'The number of iterations (1) must greater than or equal to 2.'
+# ---
+# name: test_baseclass_methods.1
+  'Design space must be provided when using a normalize_design_space option.'
+# ---
+# name: test_baseclass_methods.2
+  'Cannot build approximation for function: rosen because its gradient history is too small: 1.'
+# ---
+# name: test_baseclass_methods.3
+  '"The database \'Database\' contains no value of \'@rosen\'."'
+# ---
+# name: test_build_inverse_approximation
+  'The inversion of h_mat failed.'
+# ---
+# name: test_build_inverse_approximation.1
+  'The Cholesky decomposition of h_factor or b_factor failed.'
+# ---
+# name: test_get_x_grad_history_on_sobieski
+  'Function g_1 has a vector output, the function index of the output must be specified.'
+# ---
+# name: test_get_x_grad_history_on_sobieski.1
+  'Iteration 5 is higher than the number of gradients in the database: 4.'
+# ---
+# name: test_get_x_grad_history_on_sobieski.2
+  'Function g_1 has a vector output of size 7, function index 7 is out of range.'
+# ---
+# name: test_get_x_grad_history_on_sobieski.3
+  'The shape of the design variable history (n_iter,n_x)=((4, 10)) and the shape of the gradient history (n_iter,[n_y,]n_x)=((4, 1)) are not consistent.'
+# ---

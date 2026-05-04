@@ -186,7 +186,8 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __check_disciplines(self) -> None:
         """Check that two disciplines do not compute the same output."""
-        disciplines = set(self.disciplines).difference(self.get_sub_scenarios())
+        sub_scenarios = self.get_sub_scenarios()
+        disciplines = [d for d in self.disciplines if d not in sub_scenarios]
         if disciplines:
             check_disciplines_consistency(disciplines, False, True)
 

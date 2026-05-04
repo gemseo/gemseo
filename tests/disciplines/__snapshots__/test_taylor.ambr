@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_raises_wrong_instantiation[input_data0-default_input_data0]
+  'All the discipline input values must be specified either in input_data or in discipline.io.input_grammar.defaults.'
+# ---
+# name: test_raises_wrong_instantiation[input_data1-default_input_data1]
+  'All the discipline input values must be specified either in input_data or in discipline.io.input_grammar.defaults.'
+# ---

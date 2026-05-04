@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_plot_filter_fail
+  "The disciplines: ['IDONTEXIST'], have no time stamps."
+# ---
+# name: test_stamps_error
+  'Time stamps are not enabled in Discipline'
+# ---

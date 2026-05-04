@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-import re
 from collections.abc import MutableSequence
 
 import pytest
@@ -24,6 +23,7 @@ from numpy import array
 
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.functions.collections.functions import Functions
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -97,17 +97,11 @@ def test_original_reset(functions: Functions, mdo_functions: list[ArrayFunction]
     assert list(functions.get_originals()) == original_mdo_functions
 
 
-def test_dimension(functions: Functions, mdo_functions: list[ArrayFunction]):
+def test_dimension(functions: Functions, mdo_functions: list[ArrayFunction], snapshot):
     """Check the property dimension."""
     assert functions.dimension == 0
     functions.extend(mdo_functions)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The function output dimension is not available yet, "
-            "please call function f0 once."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         assert functions.dimension == 3
 
     for mdo_function in mdo_functions:
@@ -116,15 +110,10 @@ def test_dimension(functions: Functions, mdo_functions: list[ArrayFunction]):
     assert functions.dimension == 3
 
 
-def test_f_types(functions: Functions):
+def test_f_types(functions: Functions, snapshot):
     """Check _F_TYPES."""
     f_types = functions._F_TYPES = (ArrayFunction.FunctionType.OBJ,)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The function type 'ineq' is not one of those authorized (obj)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         functions.append(
             ArrayFunction(
                 lambda x: x, name="f", f_type=ArrayFunction.ConstraintType.INEQ
@@ -134,14 +123,8 @@ def test_f_types(functions: Functions):
     functions._F_TYPES = f_types
 
 
-def test_f_names(functions: Functions):
+def test_f_names(functions: Functions, snapshot):
     """Check the function names."""
     functions.append(ArrayFunction(lambda x: x, name="bar"))
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The function 'bar' cannot be used as a function name "
-            "since it is already used."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         functions.append(ArrayFunction(lambda x: x, name="bar"))

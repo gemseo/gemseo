@@ -29,6 +29,7 @@ from gemseo.algos.doe.openturns.openturns import OpenTURNS
 from gemseo.algos.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import concretize_classes
 
 
@@ -137,33 +138,15 @@ def test_fullfact_levels(
     [(PyDOELibrary, "PYDOE_FULLFACT"), (OpenTURNS, "OT_FULLFACT")],
 )
 @pytest.mark.parametrize(
-    ("options", "exception", "error_msg"),
+    ("options", "exception"),
     [
-        (
-            {},
-            ValueError,
-            (
-                "Either 'n_samples' or 'levels' is required as an input parameter "
-                "for the full-factorial DOE."
-            ),
-        ),
-        (
-            {"n_samples": 6, "levels": [2, 2]},
-            ValueError,
-            (
-                "Only one input parameter among 'n_samples' and 'levels' must be given "
-                "for the full-factorial DOE."
-            ),
-        ),
-        (
-            {"levels": -1},
-            ValidationError,
-            None,
-        ),  # Raised by grammar, do not check the message
+        ({}, ValueError),
+        ({"n_samples": 6, "levels": [2, 2]}, ValueError),
+        ({"levels": -1}, ValidationError),
     ],
 )
 def test_fullfact_error(
-    doe_problem_dim_2, doe_library_class, algo_name, options, exception, error_msg
+    doe_problem_dim_2, doe_library_class, algo_name, options, exception, snapshot
 ) -> None:
     """Check that an error is raised if both levels and n_sample are provided, or if
     none of them are provided.
@@ -171,7 +154,7 @@ def test_fullfact_error(
     Also check negative levels
     """
     lib = doe_library_class(algo_name)
-    with pytest.raises(exception, match=error_msg):  # noqa: PT012
+    with assert_exception(exception, snapshot):  # noqa: PT012
         settings = lib.ALGORITHM_INFOS[algo_name].settings_class(**options)
         lib.execute(doe_problem_dim_2, settings=settings)
 

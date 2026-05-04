@@ -19,7 +19,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -59,6 +58,7 @@ from gemseo.utils.testing.bilevel_test_helper import (
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_bilevel_scenario
 from gemseo.utils.testing.bilevel_test_helper import create_sobieski_sub_scenarios
 from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
+from gemseo.utils.testing.helpers import assert_exception
 
 from ..mda.mda_gauss_seidel import SobieskiMDAGaussSeidel
 
@@ -606,15 +606,9 @@ def test_main_mda_settings(main_mda):
     assert isinstance(scenario.formulation.mda2, MDAGaussSeidel)
 
 
-def test_bilevel_settings_error():
+def test_bilevel_settings_error(snapshot):
     """Check the error when reset_x0_before_opt and set_x0_before_opt are both True."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The options reset_x0_before_opt and set_x0_before_opt of BiLevel "
-            "cannot both be True"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         BiLevel_Settings(reset_x0_before_opt=True, set_x0_before_opt=True)
 
 

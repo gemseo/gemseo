@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import allclose
 from numpy import arange
@@ -62,6 +60,7 @@ from gemseo.uncertainty.distributions.scipy.triangular_settings import (
 from gemseo.uncertainty.distributions.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 from tests.algos.test_design_space import DesignVariableType
 
 
@@ -367,26 +366,20 @@ def test_normalize_vect() -> None:
     assert space.normalize_vect(array([1.0]))[0] == 0.5
 
 
-def test_evaluate_cdf_raising_errors() -> None:
+def test_evaluate_cdf_raising_errors(snapshot) -> None:
     """Check that evaluate_cdf raises errors."""
     space = ParameterSpace()
     space.add_random_variable(
         "x", SPTriangularDistribution_Settings(minimum=0.0, mode=0.5, maximum=2.0)
     )
 
-    expected = (
-        r"obj must be a dictionary whose keys are the variables "
-        "names and values are arrays whose dimensions are the "
-        r"variables ones and components are in \[0, 1\]"
-    )
-
-    with pytest.raises(TypeError, match=expected):
+    with assert_exception(TypeError, snapshot):
         space.evaluate_cdf({"x": 1}, inverse=True)
 
-    with pytest.raises(ValueError, match=expected):
+    with assert_exception(ValueError, snapshot):
         space.evaluate_cdf({"x": array([0.5] * 2)}, inverse=True)
 
-    with pytest.raises(ValueError, match=expected):
+    with assert_exception(ValueError, snapshot):
         space.evaluate_cdf({"x": array([1.5])}, inverse=True)
 
 
@@ -549,17 +542,11 @@ def test_rename_variable() -> None:
         (OTUniformDistribution_Settings(), SPUniformDistribution_Settings()),
     ],
 )
-def test_mix_different_distribution_families(first, second) -> None:
+def test_mix_different_distribution_families(first, second, snapshot) -> None:
     """Check that a ParameterSpace cannot mix distributions from different families."""
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable("x", first)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "A parameter space cannot mix probability distributions "
-            "based on different libraries; got 'OpenTURNS' and 'SciPy'."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         parameter_space.add_random_variable("y", second)
 
 
@@ -576,15 +563,12 @@ def test_set_joint_distribution() -> None:
     )
 
 
-def test_set_joint_distribution_with_sp_distributions() -> None:
+def test_set_joint_distribution_with_sp_distributions(snapshot) -> None:
     """Check that set_joint_distribution raises an error with SciPy distibutions."""
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable("x", SPNormalDistribution_Settings())
     parameter_space.add_random_variable("y", SPNormalDistribution_Settings(), size=2)
-    with pytest.raises(
-        ValueError,
-        match=re.escape("SPJointDistribution does not support dependent variables."),
-    ):
+    with assert_exception(ValueError, snapshot):
         parameter_space.add_copula(NormalCopula(3), "x", "y")
 
 
@@ -777,11 +761,11 @@ def test_string_representation() -> None:
     assert str(parameter_space) == expected
 
 
-def test_existing_variable() -> None:
+def test_existing_variable(snapshot) -> None:
     """Check that one cannot add a random variable twice."""
     parameter_space = ParameterSpace()
     parameter_space.add_random_variable("a", OTUniformDistribution_Settings())
-    with pytest.raises(ValueError, match=re.escape("The variable 'a' already exists.")):
+    with assert_exception(ValueError, snapshot):
         parameter_space.add_random_variable("a", OTUniformDistribution_Settings())
 
 
@@ -852,7 +836,7 @@ def test_add_random_vector_from_settings():
 
 
 @pytest.mark.parametrize("use_two_variables", [False, True])
-def test_add_random_vector_from_settings_error(use_two_variables):
+def test_add_random_vector_from_settings_error(use_two_variables, snapshot):
     """Check error when mixing settings from different libraries."""
     first_settings = OTNormalDistribution_Settings(mu=3.0)
     second_settings = SPUniformDistribution_Settings(minimum=1.0, maximum=3.0)
@@ -863,13 +847,7 @@ def test_add_random_vector_from_settings_error(use_two_variables):
     else:
         settings = (first_settings, second_settings)
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "A parameter space cannot mix probability distributions "
-            "based on different libraries; got 'OpenTURNS' and 'SciPy'."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         parameter_space.add_random_vector("y", *settings)
 
 
@@ -974,15 +952,15 @@ def test_joint_distribution(uncertain_space, block_copulas, expected):
     assert str(uncertain_space.distribution) == expected
 
 
-def test_copula_error_missing_variable():
+def test_copula_error_missing_variable(snapshot):
     """Verify that an error is raised when a copula is defined
     using a variable name before the variable has been declared."""
     space = ParameterSpace()
-    with pytest.raises(ValueError, match=re.escape("There is no variable name 'x'.")):
+    with assert_exception(ValueError, snapshot):
         space.add_copula(NormalCopula(2), "x")
 
 
-def test_copula_error_already_copula():
+def test_copula_error_already_copula(snapshot):
     """Verify that an error is raised when a copula is defined
     using a variable name for which a copula is already defined."""
     space = ParameterSpace()
@@ -990,7 +968,5 @@ def test_copula_error_already_copula():
         "x", OTNormalDistribution_Settings(), OTNormalDistribution_Settings()
     )
     space.add_copula(NormalCopula(2), "x")
-    with pytest.raises(
-        ValueError, match=re.escape("The random variable 'x' has already a copula.")
-    ):
+    with assert_exception(ValueError, snapshot):
         space.add_copula(NormalCopula(2), "x")

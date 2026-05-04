@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_empty_design_space
+  'The algorithm algo_name is not adapted to the problem because the design space is empty.'
+# ---
+# name: test_no_functions
+  'A driver requires a problem with at least one function.'
+# ---

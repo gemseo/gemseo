@@ -50,6 +50,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def build_mdo_scenario(
@@ -185,13 +186,13 @@ def doe_scenario(unit_design_space, double_discipline) -> MDOScenario:
     return scenario
 
 
-def test_validation_exception(doe_scenario) -> None:
+def test_validation_exception(doe_scenario, snapshot) -> None:
     """Check that an exception is raised when a setting is unknown.
 
     Args:
         doe_scenario: A simple DOE scenario.
     """
-    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+    with assert_exception(ValidationError, snapshot):
         doe_scenario.execute(
             CustomDOE_Settings(samples=array([[1.0]]), unknown_setting=1)
         )

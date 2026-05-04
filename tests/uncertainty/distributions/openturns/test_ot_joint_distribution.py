@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import allclose
 from numpy import array
@@ -35,6 +33,7 @@ from gemseo.uncertainty.distributions.openturns.joint_settings import (
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -145,77 +144,51 @@ def test_copula() -> None:
     assert distribution.distribution.getCopula().getName() == "NormalCopula"
 
 
-def test_copula_dimension_error():
+def test_copula_dimension_error(snapshot):
     """Check that an error is raised
     when the copula dimension does not match the number of marginals."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The dimension of the copula must be equal "
-            "to the number of marginals (1); got 2."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         OTJointDistribution_Settings(
             marginal_settings=[OTNormalDistribution_Settings()],
             copula=NormalCopula(2),
         )
 
 
-def test_copula_dimension_error_if_sub_copulas():
+def test_copula_dimension_error_if_sub_copulas(snapshot):
     """Check that an error is raised
     when the copula dimension does not match the number of marginals
     and the copula uses block-independent copulas."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The sum of the dimensions of the block-independent copulas "
-            "must be less than or equal to the number of marginals (1)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         OTJointDistribution_Settings(
             marginal_settings=[OTNormalDistribution_Settings()],
             copula=(((0, 1), NormalCopula(2)),),
         )
 
 
-def test_sub_copula_dimension_error():
+def test_sub_copula_dimension_error(snapshot):
     """Check that an error is raised
     when the dimension of a block-independent copula does not match
     the number of marginals."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The dimension of the block-independent copula at position 0 "
-            "must be equal to the number of components (1); got 2."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         OTJointDistribution_Settings(
             marginal_settings=[OTNormalDistribution_Settings()],
             copula=(((0,), NormalCopula(2)),),
         )
 
 
-def test_copula_indices_error():
+def test_copula_indices_error(snapshot):
     """Check that an error is raised
     when a component associated with a block-independent copula is out of range."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The components must be in the range [0, n_marginals - 1], i.e. [0, 1]."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         OTJointDistribution_Settings(
             marginal_settings=[OTNormalDistribution_Settings()] * 2,
             copula=(((0, 2), NormalCopula(2)),),
         )
 
 
-def test_duplication_error():
+def test_duplication_error(snapshot):
     """Check the error raised when adding two copulas to the same variable."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape("A component cannot have more than one copula."),
-    ):
+    with assert_exception(ValueError, snapshot):
         OTJointDistribution_Settings(
             marginal_settings=[OTNormalDistribution_Settings()] * 2,
             copula=(((0,), NormalCopula(1)), ((0,), NormalCopula(1))),

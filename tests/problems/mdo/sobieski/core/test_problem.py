@@ -28,6 +28,7 @@ from numpy.linalg import norm
 from numpy.testing import assert_equal
 
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -101,8 +102,8 @@ def test_init() -> None:
     assert (cmod == problem.constants).all()
 
 
-def test_wrong_dtype() -> None:
-    with pytest.raises(ValueError, match="foo"):
+def test_wrong_dtype(snapshot) -> None:
+    with assert_exception(ValueError, snapshot):
         SobieskiProblem("foo")
 
 

@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -38,6 +37,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -53,7 +53,7 @@ def test_get_values_array_from_dict() -> None:
     assert out_x.size == 0
 
 
-def test_get_function() -> None:
+def test_get_function(snapshot) -> None:
     """"""
     sr = SobieskiMission()
     gen = DisciplineAdapterGenerator(sr)
@@ -61,22 +61,10 @@ def test_get_function() -> None:
     args = [["x_shared"], ["y_4"]]
     gen.get_function(*args)
     args = [["toto"], ["y_4"]]
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "['toto'] are not names of inputs in the discipline SobieskiMission; "
-            "expected names among ['x_shared', 'y_14', 'y_24', 'y_34']."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         gen.get_function(*args)
     args = [["x_shared"], ["toto"]]
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "['toto'] are not names of outputs in the discipline SobieskiMission; "
-            "expected names among ['y_4']."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         gen.get_function(*args)
 
 

@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy import linalg
@@ -33,6 +31,7 @@ from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sellar.utils import get_y_opt
 from gemseo.problems.mdo.sellar.variables import X_SHARED
+from gemseo.utils.testing.helpers import assert_exception
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
 
@@ -172,16 +171,10 @@ def test_iteration_callbacks_clearing(method) -> None:
         set(QuasiNewtonMethod).difference(MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS)
     ),
 )
-def test_iteration_callbacks_unsupported(method) -> None:
+def test_iteration_callbacks_unsupported(method, snapshot) -> None:
     """Check the iteration callbacks for unsupported methods."""
     mda = MDAQuasiNewton(
         [Sellar1(), Sellar2()], settings=MDAQuasiNewton_Settings(method=method)
     )
-    with pytest.raises(
-        RuntimeError,
-        match=re.escape(
-            "Iteration callbacks are only supported for the methods: "
-            f"{MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS}, not for {method}."
-        ),
-    ):
+    with assert_exception(RuntimeError, snapshot):
         mda.add_iteration_callback(lambda mda: None)

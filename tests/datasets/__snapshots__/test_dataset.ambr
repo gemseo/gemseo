@@ -1,0 +1,19 @@
+# serializer version: 1
+# name: test_add_group_error
+  "The group 'parameters' is already defined."
+# ---
+# name: test_add_variable_twice
+  "The group 'parameters' has already a variable 'x' defined."
+# ---
+# name: test_create_dataset_from_wrong_file_extension
+  'The dataset can be created from a file with a .csv or .txt extension, not .png.'
+# ---
+# name: test_create_dataset_with_wrong_data
+  "The dataset can be created from an array or a .csv or .txt file, not a <class 'int'>."
+# ---
+# name: test_data_shape_inconsistency
+  'The data shape must be (2, 3) or (1, 3); got (3, 3) instead.'
+# ---
+# name: test_data_shape_inconsistency.1
+  'The data shape must be (2, 2) or (1, 2); got (3, 3) instead.'
+# ---

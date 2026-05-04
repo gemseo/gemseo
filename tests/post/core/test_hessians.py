@@ -18,12 +18,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pytest
 from numpy import array
 from numpy import multiply
 from numpy import outer
@@ -36,6 +34,7 @@ from gemseo.post.core.hessians import BFGSApprox
 from gemseo.post.core.hessians import HessianApproximation
 from gemseo.post.core.hessians import LSTSQApprox
 from gemseo.post.core.hessians import SR1Approx
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -144,7 +143,7 @@ def compute_error(
     return (norm(h_approx - h_ref) / norm(h_ref)) * 100
 
 
-def test_baseclass_methods() -> None:
+def test_baseclass_methods(snapshot) -> None:
     """Test the different types of hessian approximation."""
     _, _, problem = build_history(ROSENBROCK_2_PATH)
     database = problem.database
@@ -175,20 +174,10 @@ def test_baseclass_methods() -> None:
 
     assert len(apprx.b_mat_history) > 1
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The number of iterations (1) must greater than or equal to 2."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         apprx.get_x_grad_history(problem.objective.name, at_most_niter=1)
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Design space must be provided when using a normalize_design_space option."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         apprx.get_x_grad_history(
             problem.objective.name,
             at_most_niter=at_most_niter,
@@ -196,34 +185,19 @@ def test_baseclass_methods() -> None:
         )
 
     database.clear_from_iteration(2)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Cannot build approximation for function: "
-            "rosen because its gradient history is too small: 1."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
 
     database.clear()
-    with pytest.raises(
-        KeyError,
-        match=re.escape("The database 'Database' contains no value of '@rosen'."),
-    ):
+    with assert_exception(KeyError, snapshot):
         apprx.get_x_grad_history(problem.objective.name, at_most_niter=at_most_niter)
 
 
-def test_get_x_grad_history_on_sobieski() -> None:
+def test_get_x_grad_history_on_sobieski(snapshot) -> None:
     """Test the gradient history on the Sobieski problem."""
     opt_pb = OptimizationProblem.from_hdf(MDF_HIST_PATH)
     apprx = HessianApproximation(opt_pb.database)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Function g_1 has a vector output, "
-            "the function index of the output must be specified."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         apprx.get_x_grad_history("g_1")
     x_hist, x_grad_hist, n_iter, nparam = apprx.get_x_grad_history("g_1", func_index=1)
 
@@ -237,21 +211,10 @@ def test_get_x_grad_history_on_sobieski() -> None:
     for grad in x_grad_hist:
         assert grad.shape == (nparam,)
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Iteration 5 is higher than the number of gradients in the database: 4."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         apprx.get_s_k_y_k(x_hist, x_grad_hist, 5)
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Function g_1 has a vector output of size 7, "
-            "function index 7 is out of range."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         apprx.get_x_grad_history("g_1", func_index=7)
 
     # Create inconsistent optimization history by restricting g_2 gradient
@@ -259,14 +222,7 @@ def test_get_x_grad_history_on_sobieski() -> None:
     x_0 = next(iter(opt_pb.database.keys()))
     val_0 = opt_pb.database[x_0]
     val_0["@g_2"] = val_0["@g_2"][1:]
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The shape of the design variable history (n_iter,n_x)=((4, 10)) "
-            "and the shape of the gradient history (n_iter,[n_y,]n_x)=((4, 1)) "
-            "are not consistent."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         apprx.get_x_grad_history("g_2")
 
 
@@ -303,19 +259,16 @@ def test_n_35() -> None:
     )
 
 
-def test_build_inverse_approximation() -> None:
+def test_build_inverse_approximation(snapshot) -> None:
     """Test the creation of an inverse approximation."""
     _, _, problem = build_history(ROSENBROCK_2_LB_UB_PATH)
     database = problem.database
     approx = HessianApproximation(database)
     funcname = problem.objective.name
     approx.build_inverse_approximation(funcname=funcname, h_mat0=[], factorize=True)
-    with pytest.raises(LinAlgError, match=re.escape("The inversion of h_mat failed.")):
+    with assert_exception(LinAlgError, snapshot):
         approx.build_inverse_approximation(funcname=funcname, h_mat0=array([1.0, 2.0]))
-    with pytest.raises(
-        LinAlgError,
-        match=re.escape("The Cholesky decomposition of h_factor or b_factor failed."),
-    ):
+    with assert_exception(LinAlgError, snapshot):
         approx.build_inverse_approximation(
             funcname=funcname,
             h_mat0=array([[0.0, 1.0], [-1.0, 0.0]]),

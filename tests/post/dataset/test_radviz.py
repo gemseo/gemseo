@@ -21,7 +21,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -30,6 +29,7 @@ from matplotlib import pyplot as plt
 from gemseo.post.dataset.radviz import RadViz
 from gemseo.post.dataset.radviz_settings import RadViz_Settings
 from gemseo.problems.dataset.iris import create_iris_dataset
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
@@ -77,14 +77,7 @@ def test_plot(dataset, kwargs, properties, baseline_images, fig_and_ax) -> None:
     plot.execute(save=False, fig=fig, ax=ax)
 
 
-def test_classifier_error(dataset) -> None:
+def test_classifier_error(dataset, snapshot) -> None:
     """Check the error returned when setting a classifier that is not a variable."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The classifier (foo) is not stored in the dataset; "
-            "available variables are "
-            "petal_length, petal_width, sepal_length, sepal_width and specy"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         RadViz(dataset, RadViz_Settings(classifier="foo")).execute()

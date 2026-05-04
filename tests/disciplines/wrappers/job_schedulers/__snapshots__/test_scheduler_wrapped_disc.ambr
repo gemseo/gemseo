@@ -1,0 +1,16 @@
+# serializer version: 1
+# name: test_api_fail
+  'Job scheduler template file IDONTEXIST does not exist.'
+# ---
+# name: test_generate_job_template_fail
+  '"Value not passed to template for key: \'missing\'"'
+# ---
+# name: test_handle_outputs_errors
+  'The serialized outputs file of the discipline does not exist: IDONTEXIST.'
+# ---
+# name: test_handle_outputs_errors.1
+  'An error.'
+# ---
+# name: test_run_fail
+  "[Errno 2] No such file or directory: 'IDONTEXIST'"
+# ---

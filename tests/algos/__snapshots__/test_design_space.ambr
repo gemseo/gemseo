@@ -1,0 +1,413 @@
+# serializer version: 1
+# name: test_active_bounds
+  "Expected dict or array for x_vec argument; got <class 'str'>."
+# ---
+# name: test_active_bounds.1
+  "'There is no current value for the design variables: x, y and z.'"
+# ---
+# name: test_add_variable_when_already_exists
+  "The variable 'varname' already exists."
+# ---
+# name: test_add_variable_with_2d_object[lower_bound]
+  '''
+  8 validation errors for Variable
+  lower_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=[[1.0]], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  lower_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=[[1.0]], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  lower_bound.list[union[int,float]].0.int
+    Input should be a valid integer [type=int_type, input_value=[1.0], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  lower_bound.list[union[int,float]].0.float
+    Input should be a valid number [type=float_type, input_value=[1.0], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  lower_bound.tuple[union[int,float]].0.int
+    Input should be a valid integer [type=int_type, input_value=[1.0], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  lower_bound.tuple[union[int,float]].0.float
+    Input should be a valid number [type=float_type, input_value=[1.0], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  lower_bound.int
+    Input should be a valid integer [type=int_type, input_value=[[1.0]], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  lower_bound.float
+    Input should be a valid number [type=float_type, input_value=[[1.0]], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  '''
+# ---
+# name: test_add_variable_with_2d_object[upper_bound]
+  '''
+  8 validation errors for Variable
+  upper_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=[[1.0]], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  upper_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=[[1.0]], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  upper_bound.list[union[int,float]].0.int
+    Input should be a valid integer [type=int_type, input_value=[1.0], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  upper_bound.list[union[int,float]].0.float
+    Input should be a valid number [type=float_type, input_value=[1.0], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  upper_bound.tuple[union[int,float]].0.int
+    Input should be a valid integer [type=int_type, input_value=[1.0], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  upper_bound.tuple[union[int,float]].0.float
+    Input should be a valid number [type=float_type, input_value=[1.0], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  upper_bound.int
+    Input should be a valid integer [type=int_type, input_value=[[1.0]], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  upper_bound.float
+    Input should be a valid number [type=float_type, input_value=[[1.0]], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  '''
+# ---
+# name: test_add_variable_with_2d_object[value]
+  "The value [[1.]] of variable 'varname' has a dimension greater than 1 while a scalar or a 1D iterable object (array, list, tuple, ...) was expected."
+# ---
+# name: test_add_variable_with_inconsistent_bound_size[lower_bound]
+  '''
+  1 validation error for Variable
+    Value error, The lower bound should be of size 3. [type=value_error, input_value={'size': 3, 'type': <Data....0], 'upper_bound': inf}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_add_variable_with_inconsistent_bound_size[upper_bound]
+  '''
+  1 validation error for Variable
+    Value error, The upper bound should be of size 3. [type=value_error, input_value={'size': 3, 'type': <Data...pper_bound': [0.0, 0.0]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_add_variable_with_nan_value[lower_bound-The following lower bound component is not a number: nan (index 0).]
+  '''
+  1 validation error for Variable
+    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...nan, 'upper_bound': inf}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_add_variable_with_nan_value[upper_bound-The following upper bound component is not a number: nan (index 0).]
+  '''
+  1 validation error for Variable
+    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...inf, 'upper_bound': nan}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_add_variable_with_nan_value[value-The following value of variable 'varname' is neither None nor a number: nan (index 0).]
+  "The following value of variable 'varname' is neither None nor a number: nan (index 0)."
+# ---
+# name: test_add_variable_with_unkown_type
+  '''
+  1 validation error for Variable
+  type
+    Input should be 'float' or 'integer' [type=enum, input_value='a', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/enum
+  '''
+# ---
+# name: test_add_variable_with_unnumerizable_value
+  "The following value of variable 'varname' is neither None nor complex and cannot be cast to float: <built-in function len> (index 0)."
+# ---
+# name: test_add_variable_with_upper_bounds_lower_than_lower_ones
+  '''
+  1 validation error for Variable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 3, 'type': <Data...per_bound': [1, 0.0, 1]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_add_variable_with_value_out_of_bounds[1.0-2.0-0.0]
+  "The current value of variable 'varname' (0.0) is not between the lower bound 1.0 and the upper bound 2.0."
+# ---
+# name: test_add_variable_with_value_out_of_bounds[1.0-2.0-3.0]
+  "The current value of variable 'varname' (3.0) is not between the lower bound 1.0 and the upper bound 2.0."
+# ---
+# name: test_add_variable_with_wrong_size[-1]
+  '''
+  1 validation error for Variable
+  size
+    Input should be greater than 0 [type=greater_than, input_value=-1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  '''
+# ---
+# name: test_add_variable_with_wrong_size[0.4]
+  '''
+  1 validation error for Variable
+  size
+    Input should be a valid integer, got a number with a fractional part [type=int_from_float, input_value=0.4, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_from_float
+  '''
+# ---
+# name: test_add_variable_with_wrong_size[0]
+  '''
+  1 validation error for Variable
+  size
+    Input should be greater than 0 [type=greater_than, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  '''
+# ---
+# name: test_bounds_set_lower_bound_with_inconsistent_size
+  '''
+  1 validation error for Variable
+    Value error, The lower bound should be of size 1. [type=value_error, input_value=Variable(size=1, type=<Da...upper_bound=array([2.])), input_type=Variable]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bounds_set_lower_bound_with_nan
+  '''
+  1 validation error for Variable
+    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value=Variable(size=1, type=<Da...upper_bound=array([2.])), input_type=Variable]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bounds_set_upper_bound_with_inconsistent_size
+  '''
+  1 validation error for Variable
+    Value error, The upper bound should be of size 1. [type=value_error, input_value=Variable(size=1, type=<Da...r_bound=array([1., 1.])), input_type=Variable]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bounds_set_upper_bound_with_nan
+  '''
+  1 validation error for Variable
+    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value=Variable(size=1, type=<Da...pper_bound=array([nan])), input_type=Variable]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_check_membership[x_vect0-None-TypeError-The input vector should be an array or a dictionary; got a <class 'list'> instead.]
+  "The input vector should be an array or a dictionary; got a <class 'list'> instead."
+# ---
+# name: test_check_membership[x_vect14-None-ValueError-The variable x is of type integer; got x[0] = -1.5.]
+  'The variable x is of type integer; got x[0] = -1.5.'
+# ---
+# name: test_check_membership[x_vect15-None-ValueError-The variable y of size 2 cannot be set with an array of size 3.]
+  'The variable y of size 2 cannot be set with an array of size 3.'
+# ---
+# name: test_check_membership[x_vect16-None-ValueError-The component y[1] of the given array (0) is lower than the lower bound (1.0) by 1.0e+00.]
+  'The component y[1] of the given array (0) is lower than the lower bound (1.0) by 1.0e+00.'
+# ---
+# name: test_check_membership[x_vect17-None-ValueError-The component y[1] of the given array (3) is greater than the upper bound (2.0) by 1.0e+00.]
+  'The component y[1] of the given array (3) is greater than the upper bound (2.0) by 1.0e+00.'
+# ---
+# name: test_check_membership[x_vect2-None-ValueError-Expected an array of shape (..., 3); got (4,).]
+  'Expected an array of shape (..., 3); got (4,).'
+# ---
+# name: test_check_membership[x_vect5-None-ValueError-The components [0] of the given array ([-3]) are lower than the lower bound ([-2.]) by [1.].]
+  'The components [0] of the given array ([-3]) are lower than the lower bound ([-2.]) by [1.].'
+# ---
+# name: test_check_membership[x_vect6-None-ValueError-The components [0] of the given array ([1]) are greater than the upper bound ([-1.]) by [2.].]
+  'The components [0] of the given array ([1]) are greater than the upper bound ([-1.]) by [2.].'
+# ---
+# name: test_check_membership[x_vect7-None-ValueError-The components [2] of the given array ([3]) are greater than the upper bound ([2.]) by [1.].]
+  'The components [2] of the given array ([3]) are greater than the upper bound ([2.]) by [1.].'
+# ---
+# name: test_creation_4
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: varname.'"
+# ---
+# name: test_current_x
+  'Expected current_x variables: x_1 and x_2; got x_1.'
+# ---
+# name: test_current_x.1
+  'The component x_1[0] of the given array (-999.5) is lower than the lower bound (0.5) by 1.0e+03.'
+# ---
+# name: test_current_x.2
+  "Variable 'x_3' is not known."
+# ---
+# name: test_current_x.3
+  "Variable 'x_3' is not known."
+# ---
+# name: test_current_x.4
+  "Variable 'x_3' is not known."
+# ---
+# name: test_current_x.5
+  '''
+  1 validation error for Variable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'type': <Data...1.0, 'upper_bound': 0.0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_dict_to_array_key_error
+  "'y'"
+# ---
+# name: test_filter_dimensions_nonexistent[indices0-Dimension 3 of variable 'x5' does not exist.]
+  "Dimension 3 of variable 'x5' does not exist."
+# ---
+# name: test_filter_dimensions_nonexistent[indices1-Dimensions 3 and 4 of variable 'x5' do not exist.]
+  "Dimensions 3 and 4 of variable 'x5' do not exist."
+# ---
+# name: test_filter_with_an_unknown_variable
+  "Variable 'unknown_x' is not known."
+# ---
+# name: test_get_current_value_bad_names
+  'There are no such variables named: bar and foo.'
+# ---
+# name: test_get_current_value_missing_as_array_not_normalized[False-None]
+  "'There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_as_array_not_normalized[False-variable_names1]
+  "'There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_as_array_not_normalized[True-None]
+  "'There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_as_array_not_normalized[True-variable_names1]
+  "'There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[False-False-None]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[False-False-variable_names1]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[False-False-variable_names2]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[False-False-variable_names3]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[False-True-None]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[False-True-variable_names1]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[False-True-variable_names2]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[False-True-variable_names3]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[True-False-None]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[True-False-variable_names1]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[True-False-variable_names2]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[True-False-variable_names3]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[True-True-None]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[True-True-variable_names1]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[True-True-variable_names2]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_normalized[True-True-variable_names3]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: x and y.'"
+# ---
+# name: test_get_current_value_missing_partial_not_normalized[False-False-x]
+  "'There is no current value for the design variables: x.'"
+# ---
+# name: test_get_current_value_missing_partial_not_normalized[False-False-y]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_missing_partial_not_normalized[False-True-x]
+  "'There is no current value for the design variables: x.'"
+# ---
+# name: test_get_current_value_missing_partial_not_normalized[False-True-y]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_missing_partial_not_normalized[True-False-x]
+  "'There is no current value for the design variables: x.'"
+# ---
+# name: test_get_current_value_missing_partial_not_normalized[True-False-y]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_missing_partial_not_normalized[True-True-x]
+  "'There is no current value for the design variables: x.'"
+# ---
+# name: test_get_current_value_missing_partial_not_normalized[True-True-y]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[False-False-None]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[False-False-variable_names1]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[False-False-variable_names2]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[False-False-variable_names3]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[False-True-None]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[False-True-variable_names1]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[False-True-variable_names2]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[False-True-variable_names3]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[True-False-None]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[True-False-variable_names1]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[True-False-variable_names2]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[True-False-variable_names3]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[True-True-None]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[True-True-variable_names1]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[True-True-variable_names2]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_normalized[True-True-variable_names3]
+  "'The current value of a design space cannot be normalized when some variables have no current value. There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_not_normalized[False-None]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_not_normalized[False-variable_names1]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_not_normalized[False-variable_names2]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_not_normalized[True-None]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_not_normalized[True-variable_names1]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_get_current_value_partially_missing_as_array_not_normalized[True-variable_names2]
+  "'There is no current value for the design variables: y.'"
+# ---
+# name: test_norm_policy
+  "Variable 'foo' is not known."
+# ---
+# name: test_rename_unknown_variable
+  'The variable x is not in the design space.'
+# ---
+# name: test_set_current_value_with_malformed_current_x
+  "The current design value should be either an array, a dictionary of arrays or an optimization result; got <class 'float'> instead."
+# ---
+# name: test_set_current_value_with_malformed_mapping_arg
+  'The variable x1 of size 1 cannot be set with an array of size 2.'
+# ---
+# name: test_set_current_value_with_malformed_opt_arg
+  'Invalid x_opt, dimension mismatch: 33 != 1.'
+# ---
+# name: test_to_scalar_variables
+  "'There is no current value for the design variables: foo.'"
+# ---

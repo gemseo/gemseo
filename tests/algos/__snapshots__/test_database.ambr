@@ -1,0 +1,22 @@
+# serializer version: 1
+# name: test_get_function_history
+  '"The database \'foo\' contains no value of \'g\'."'
+# ---
+# name: test_get_hashable_ndarray
+  '"A database key must be either a NumPy array of a HashableNdarray; got <class \'int\'> instead."'
+# ---
+# name: test_get_history_array_wrong_dimension[input_names1]
+  'Expected 6 names, got 1.'
+# ---
+# name: test_get_history_array_wrong_dimension[label_1]
+  'Expected 6 names, got 1.'
+# ---
+# name: test_get_history_array_wrong_f_name
+  "'foo' is not an output name; available ones are '@rosen' and 'rosen'."
+# ---
+# name: test_get_history_array_wrong_f_name.1
+  "'bar' and 'foo' are not output names; available ones are '@rosen' and 'rosen'."
+# ---
+# name: test_get_output_value
+  'The iteration must be within {-N, ..., -1, 1, ..., N} where N=1 is the number of iterations.'
+# ---

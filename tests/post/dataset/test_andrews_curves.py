@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
@@ -30,6 +28,7 @@ from numpy import array
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 
@@ -80,8 +79,7 @@ def test_plot(properties, baseline_images, dataset, fig_and_ax) -> None:
     plot.execute(save=False, fig=fig, ax=ax)
 
 
-def test_error(dataset) -> None:
+def test_error(dataset, snapshot) -> None:
     """Test an error is raised when a wrong name is given."""
-    expected = "Classifier must be one of these names: c, x, y and z."
-    with pytest.raises(ValueError, match=re.escape(expected)):
+    with assert_exception(ValueError, snapshot):
         AndrewsCurves(dataset, AndrewsCurves_Settings(classifier="foo"))._plot()

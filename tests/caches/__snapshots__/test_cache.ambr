@@ -1,0 +1,16 @@
+# serializer version: 1
+# name: test_check_version_greater
+  'The file cache.h5 cannot be used because its file format version is 3while the expected version is 2: see HDFCache.update_file_format to convert it.'
+# ---
+# name: test_check_version_missing
+  'The file cache.h5 cannot be used because it has no file format version: see HDFCache.update_file_format to convert it.'
+# ---
+# name: test_tolerance[cache0]
+  'The tolerance shall be positive: -1.0'
+# ---
+# name: test_tolerance[cache1]
+  'The tolerance shall be positive: -1.0'
+# ---
+# name: test_tolerance[cache2]
+  'The tolerance shall be positive: -1.0'
+# ---

@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 import shutil
 from pathlib import Path
 from unittest import mock
@@ -30,6 +29,7 @@ from gemseo.utils.study_analyses import coupling_study_analysis
 from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.utils.study_analyses.mdo_study_analysis import MDOStudyAnalysis
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
+from gemseo.utils.testing.helpers import assert_exception
 
 INPUT_DIR = Path(__file__).parent / "study_inputs"
 
@@ -77,15 +77,13 @@ def test_discipline_self_coupled_two_disciplines(tmp_wd) -> None:
     assert fpath.exists()
 
 
-def test_discipline_self_coupled_one_disc(tmp_wd) -> None:
+def test_discipline_self_coupled_one_disc(tmp_wd, snapshot) -> None:
     """Test that a GEMSEO study can be done with a self-coupled discipline.
 
     In this test, only one self-coupled discipline is present in the MDO process.
     """
     analysis = MDOStudyAnalysis(INPUT_DIR / "discipline_self_coupled_one_disc.xlsx")
-    with pytest.raises(
-        ValueError, match=re.escape("N2 diagrams need at least two disciplines.")
-    ):
+    with assert_exception(ValueError, snapshot):
         analysis.generate_n2("xls_n2.pdf", fig_size=(5, 5))
 
     analysis.generate_xdsm(".")

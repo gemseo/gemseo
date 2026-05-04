@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_n_replicates_error
+  'There is not dataset attached to the MorrisAnalysis; please provide samples at instantiation or use compute_samples.'
+# ---
+# name: test_too_few_samples
+  'The number of samples (2) must be at least equal to the dimension of the input space plus one (3+1=4).'
+# ---

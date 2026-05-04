@@ -40,6 +40,7 @@ from gemseo.machine_learning.regression.models.polyreg_settings import (
 from gemseo.machine_learning.regression.models.rbf import RBFRegressor
 from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture
@@ -74,12 +75,8 @@ def test_init_with_measure(dataset, measure) -> None:
     assert selector.measure == MSEMeasure
 
 
-def test_init_fails_if_multioutput_(dataset) -> None:
-    expected = (
-        "MLModelSelection does not support multioutput; "
-        "the measure shall return one value."
-    )
-    with pytest.raises(ValueError, match=expected):
+def test_init_fails_if_multioutput_(dataset, snapshot) -> None:
+    with assert_exception(ValueError, snapshot):
         MLModelSelection(dataset, MSEMeasure, multioutput=True)
 
 

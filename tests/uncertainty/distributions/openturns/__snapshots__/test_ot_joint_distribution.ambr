@@ -1,0 +1,36 @@
+# serializer version: 1
+# name: test_copula_dimension_error
+  '''
+  1 validation error for OTJointDistribution_Settings
+    Value error, The dimension of the copula must be equal to the number of marginals (1); got 2. [type=value_error, input_value={'marginal_settings': [OT...umns=2 values=[1,0,0,1]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_copula_dimension_error_if_sub_copulas
+  '''
+  1 validation error for OTJointDistribution_Settings
+    Value error, The sum of the dimensions of the block-independent copulas must be less than or equal to the number of marginals (1). [type=value_error, input_value={'marginal_settings': [OT...s=2 values=[1,0,0,1]),)}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_copula_indices_error
+  '''
+  1 validation error for OTJointDistribution_Settings
+    Value error, The components must be in the range [0, n_marginals - 1], i.e. [0, 1]. [type=value_error, input_value={'marginal_settings': [OT...s=2 values=[1,0,0,1]),)}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_duplication_error
+  '''
+  1 validation error for OTJointDistribution_Settings
+    Value error, A component cannot have more than one copula. [type=value_error, input_value={'marginal_settings': [OT... columns=1 values=[1]))}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_sub_copula_dimension_error
+  '''
+  1 validation error for OTJointDistribution_Settings
+    Value error, The dimension of the block-independent copula at position 0 must be equal to the number of components (1); got 2. [type=value_error, input_value={'marginal_settings': [OT...s=2 values=[1,0,0,1]),)}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

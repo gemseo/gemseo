@@ -21,8 +21,6 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 import sympy
 from numpy import array
@@ -33,6 +31,7 @@ from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture
@@ -67,10 +66,8 @@ def test_fast_expression_evaluation(expressions) -> None:
     disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
 
 
-def test_failure_with_malformed_expressions() -> None:
-    with pytest.raises(
-        TypeError, match=re.escape("Expression must be a SymPy expression or a string.")
-    ):
+def test_failure_with_malformed_expressions(snapshot) -> None:
+    with assert_exception(TypeError, snapshot):
         AnalyticDiscipline({"y": MDOScenario})
 
 

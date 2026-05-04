@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_wrong_constraint_index
+  "'The index of the constraint (10) must be lower than the number of constraints (1).'"
+# ---

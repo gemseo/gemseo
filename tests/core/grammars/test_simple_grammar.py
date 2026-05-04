@@ -19,6 +19,7 @@ import pytest
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.simple import SimpleGrammar
 from gemseo.core.grammars.simpler import SimplerGrammar
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(params=(SimpleGrammar, SimplerGrammar))
@@ -39,14 +40,12 @@ def test_init(grammar_class, required_names) -> None:
     assert not grammar.defaults
 
 
-def test_init_errors(grammar_class) -> None:
+def test_init_errors(grammar_class, snapshot) -> None:
     """Verify init errors."""
-    msg = "The element name must be a type or None: it is 0."
-    with pytest.raises(TypeError, match=msg):
+    with assert_exception(TypeError, snapshot):
         grammar_class("g", names_to_types={"name": 0})
 
-    msg = "The name 'foo' is not in the grammar."
-    with pytest.raises(KeyError, match=msg):
+    with assert_exception(KeyError, snapshot):
         grammar_class("g", names_to_types={"name": str}, required_names=["foo"])
 
 
@@ -56,12 +55,11 @@ def test_getitem(grammar_class) -> None:
     assert grammar["name"] is str
 
 
-def test_update_error(grammar_class) -> None:
+def test_update_error(grammar_class, snapshot) -> None:
     """Verify update error."""
     grammar = grammar_class("g1")
 
-    msg = "The element name must be a type or None: it is 0."
-    with pytest.raises(TypeError, match=msg):
+    with assert_exception(TypeError, snapshot):
         grammar.update_from_types({"name": 0})
 
 
@@ -88,14 +86,14 @@ def test_validate(grammar_class, names_to_types, data) -> None:
     ],
 )
 @pytest.mark.parametrize("raise_exception", [True, False])
-def test_validate_error(data, error_msg, raise_exception, caplog) -> None:
+def test_validate_error(data, error_msg, raise_exception, caplog, snapshot) -> None:
     """Verify that validate raises the expected errors."""
     grammar = SimpleGrammar(
         "g", names_to_types={"name1": None, "name2": int}, required_names=["name1"]
     )
 
     if raise_exception:
-        with pytest.raises(InvalidDataError, match=error_msg):
+        with assert_exception(InvalidDataError, snapshot):
             grammar.validate(data)
     else:
         grammar.validate(data, raise_exception=False)
@@ -104,10 +102,9 @@ def test_validate_error(data, error_msg, raise_exception, caplog) -> None:
     assert caplog.text.strip().endswith(error_msg)
 
 
-def test_update_with_merge_error(grammar_class):
+def test_update_with_merge_error(grammar_class, snapshot):
     """Verify that any update method raises when merging."""
     grammar = grammar_class("g")
-    match = rf"Merge is not supported for {grammar_class.__name__}."
 
     for method_name in (
         "update",
@@ -115,5 +112,5 @@ def test_update_with_merge_error(grammar_class):
         "update_from_types",
         "update_from_data",
     ):
-        with pytest.raises(ValueError, match=match):
+        with assert_exception(ValueError, snapshot):
             getattr(grammar, method_name)({"name": bool}, merge=True)

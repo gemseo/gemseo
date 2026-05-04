@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_distribution_dimension_error
+  'OTJointDistribution(Normal(mu=0.0, sigma=1.0), Normal(mu=0.0, sigma=1.0); IndependentCopula(dimension = 2))'
+# ---

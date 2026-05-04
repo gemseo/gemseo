@@ -14,8 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy import zeros
@@ -25,6 +23,7 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.utils.metrics.dataset_metric import DatasetMetric
 from gemseo.utils.metrics.mean_metric import MeanMetric
 from gemseo.utils.metrics.squared_error_metric import SquaredErrorMetric
+from gemseo.utils.testing.helpers import assert_exception
 
 dataset_duplicate_variable_name = Dataset.from_array(
     array([[1, 5, 10], [2, 6, 11]]),
@@ -34,16 +33,13 @@ dataset_duplicate_variable_name = Dataset.from_array(
 dataset_duplicate_variable_name.add_variable("d", data=[10, 11], group_name="outputs")
 
 
-def test_duplicate_variable_name():
+def test_duplicate_variable_name(snapshot):
     """Check that a dataset having a variable belonging to more than one group raises an
     error."""
     dm = DatasetMetric(SquaredErrorMetric())
     a = dataset_duplicate_variable_name
     b = a.copy()
-    with pytest.raises(
-        ValueError,
-        match=re.escape("A variable cannot belong to more than one group."),
-    ):
+    with assert_exception(ValueError, snapshot):
         assert MeanMetric(dm).compute(a, b) == pytest.approx(4)
 
 

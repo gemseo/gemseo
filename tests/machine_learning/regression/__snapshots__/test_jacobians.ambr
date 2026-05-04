@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_regression_model_hessian
+  'The Hessian function of BaseRegressor is not implemented.'
+# ---
+# name: test_regression_model_jacobian
+  'The Jacobian function of BaseRegressor is not implemented.'
+# ---

@@ -20,7 +20,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from operator import add
 from operator import itemgetter
 from operator import mul
@@ -55,6 +54,7 @@ from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -118,27 +118,15 @@ def test_f_type(sinus, sinus_eq_output_names) -> None:
 
 
 @pytest.mark.parametrize(("operator", "symbol"), [(mul, "*"), (add, "+")])
-def test_operation_error(sinus, operator, symbol) -> None:
+def test_operation_error(sinus, operator, symbol, snapshot) -> None:
     """Check that errors are raised with operations mixing ArrayFunction and operators."""  # noqa: E501
-    with pytest.raises(
-        TypeError,
-        match=re.escape(
-            f"Unsupported {symbol} operator for ArrayFunction and <class 'str'>."
-        ),
-    ):
+    with assert_exception(TypeError, snapshot):
         operator(sinus, "foo")
 
 
-def test_init_from_dict_repr() -> None:
+def test_init_from_dict_repr(snapshot) -> None:
     """Check that initializing an ArrayFunction with an unknown arg raised an error."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Cannot initialize ArrayFunction attribute: foo, "
-            "allowed ones are: dim, expr, f_type, input_names, name, output_names, "
-            "special_repr."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         ArrayFunction.init_from_dict_repr(foo="sin")
 
 
@@ -399,12 +387,12 @@ def function_for_quadratic_approximation() -> ArrayFunction:
 
 @pytest.mark.parametrize("x_vect", [(ones(2), ones(3)), (eye(3), ones(2))])
 def test_quadratic_approximation_error(
-    function_for_quadratic_approximation, x_vect
+    function_for_quadratic_approximation,
+    x_vect,
+    snapshot,
 ) -> None:
     """Test the second-order polynomial of a function with inconsistent input."""
-    with pytest.raises(
-        ValueError, match=re.escape("Hessian approximation must be a square ndarray.")
-    ):
+    with assert_exception(ValueError, snapshot):
         compute_quadratic_approximation(function_for_quadratic_approximation, *x_vect)
 
 
@@ -582,7 +570,7 @@ def test_activate_counters(enable_function_statistics) -> None:
     assert func.n_calls == 1
 
 
-def test_deactivate_counters() -> None:
+def test_deactivate_counters(snapshot) -> None:
     """Check that the function counter is set to None when deactivated."""
     enable_statistics = ProblemFunction.enable_statistics
 
@@ -601,9 +589,7 @@ def test_deactivate_counters() -> None:
     )
     assert not func.n_calls
 
-    with pytest.raises(
-        RuntimeError, match=re.escape("The function counters are disabled.")
-    ):
+    with assert_exception(RuntimeError, snapshot):
         func.n_calls = 1
 
     ProblemFunction.enable_statistics = enable_statistics

@@ -14,25 +14,18 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
-import pytest
 from numpy import array
 from numpy.testing import assert_almost_equal
 
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.algos.doe.morris_doe.morris_doe import MorrisDOE
 from gemseo.algos.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
+from gemseo.utils.testing.helpers import assert_exception
 
 
-def test_settings_error():
+def test_settings_error(snapshot):
     """Check error when n_samples > 0 but not in doe_algo_settings."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "When n_samples > 0, doe_algo_settings must have an n_samples field."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         MorrisDOE_Settings(
             n_samples=3,
             doe_algo_settings=CustomDOE_Settings(

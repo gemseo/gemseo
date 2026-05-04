@@ -29,6 +29,7 @@ from numpy.testing import assert_array_equal
 
 from gemseo.algos.pareto.utils import compute_pareto_optimal_points
 from gemseo.algos.pareto.utils import generate_pareto_plots
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -96,17 +97,14 @@ def test_pareto_front(tmp_wd, objective_points) -> None:
     assert exists(outfile)
 
 
-def test_raise_error_if_dimension_mismatch(tmp_wd, objective_points) -> None:
+def test_raise_error_if_dimension_mismatch(tmp_wd, objective_points, snapshot) -> None:
     """Check that a value error is raised if there is a mismatch between the objective
     values and the objective names.
 
     Args:
         objective_points: points on which the test shall be applied
     """
-    expect_msg = (
-        "^Inconsistent objective values size and objective names: \\d+ != \\d+$"
-    )
-    with pytest.raises(ValueError, match=expect_msg):
+    with assert_exception(ValueError, snapshot):
         generate_pareto_plots(objective_points, ["0", "1", "2"])
 
 

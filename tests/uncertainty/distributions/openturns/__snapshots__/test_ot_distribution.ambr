@@ -1,0 +1,26 @@
+# serializer version: 1
+# name: test_bad_distribution
+  'Dummy cannot be imported from openturns.'
+# ---
+# name: test_bad_distribution_parameters
+  'The arguments of Normal(0.0, 1.0, 2.0) are wrong; more details on http://openturns.github.io/openturns/latest/user_manual/probabilistic_modelling.html.'
+# ---
+# name: test_settings_truncation_error
+  '''
+  1 validation error for OTDistribution_Settings
+    Value error, The upper truncation bound of a probability distribution must be greater than its lower truncation bound. [type=value_error, input_value={'interfaced_distribution... 0.0, 'upper_bound': -1}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_truncate_exception[kwargs0-upper_bound is greater than the current upper bound.]
+  'upper_bound is greater than the current upper bound.'
+# ---
+# name: test_truncate_exception[kwargs1-lower_bound is less than the current lower bound.]
+  'lower_bound is less than the current lower bound.'
+# ---
+# name: test_truncate_exception[kwargs2-lower_bound is less than the current lower bound.]
+  'lower_bound is less than the current lower bound.'
+# ---
+# name: test_truncate_exception[kwargs3-upper_bound is greater than the current upper bound.]
+  'upper_bound is greater than the current upper bound.'
+# ---

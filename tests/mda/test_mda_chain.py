@@ -21,7 +21,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -51,6 +50,7 @@ from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipli
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.utils.testing.helpers import assert_exception
 
 from .test_mda import analytic_disciplines_from_desc
 from .utils import generate_parallel_doe
@@ -339,7 +339,7 @@ def test_scaling_setter(sellar_with_2d_array, sellar_disciplines) -> None:
         assert mda.scaling == MDAChain.ResidualScaling.NO_SCALING
 
 
-def test_initialize_defaults() -> None:
+def test_initialize_defaults(snapshot) -> None:
     """Test the automated initialization of the default_input_data."""
     disciplines = create_disciplines_from_desc([
         ("A", ["x", "y"], ["z"]),
@@ -347,7 +347,7 @@ def test_initialize_defaults() -> None:
     ])
     del disciplines[0].default_input_data["y"]
     chain = MDAChain(disciplines, settings=MDAChain_Settings(initialize_defaults=False))
-    with pytest.raises(InvalidDataError, match=re.escape("Missing required names: y.")):
+    with assert_exception(InvalidDataError, snapshot):
         chain.execute()
 
     MDAChain(
@@ -356,12 +356,7 @@ def test_initialize_defaults() -> None:
 
     del disciplines[1].default_input_data["z"]
     chain = MDAChain(disciplines, settings=MDAChain_Settings(initialize_defaults=True))
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Cannot compute the inputs a, x, y, z, for the following disciplines A, B."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         chain.execute()
 
     chain = MDAChain(disciplines, settings=MDAChain_Settings(initialize_defaults=True))

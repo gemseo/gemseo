@@ -1,0 +1,22 @@
+# serializer version: 1
+# name: test_validator[1-3-2]
+  '''
+  1 validation error for SpecificTriangularDistribution_Settings
+    Value error, The parameters of the triangular distribution do not satisfy the order: minimum < mode < maximum. [type=value_error, input_value={'minimum': 1, 'mode': 3, 'maximum': 2}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_validator[2-1-3]
+  '''
+  1 validation error for SpecificTriangularDistribution_Settings
+    Value error, The parameters of the triangular distribution do not satisfy the order: minimum < mode < maximum. [type=value_error, input_value={'minimum': 2, 'mode': 1, 'maximum': 3}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_validator[3-2-1]
+  '''
+  1 validation error for SpecificTriangularDistribution_Settings
+    Value error, The parameters of the triangular distribution do not satisfy the order: minimum < mode < maximum. [type=value_error, input_value={'minimum': 3, 'mode': 2, 'maximum': 1}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

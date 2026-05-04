@@ -19,8 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy import atleast_1d
@@ -45,6 +43,7 @@ from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.typing import IntegerArray  # noqa: TC001
 from gemseo.typing import RealArray  # noqa: TC001
+from gemseo.utils.testing.helpers import assert_exception
 
 X_DIM = 4
 
@@ -188,15 +187,10 @@ def test_use_arrays() -> None:
     assert d1.io.data["y1"] == f1()
 
 
-def test_fail_wrongly_formatted_function() -> None:
+def test_fail_wrongly_formatted_function(snapshot) -> None:
     """Test that a wrongly formatted function cannot be used."""
     AutoPyDiscipline(f3)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Two return statements use different variable names; ['y', 'x'] and ['y']."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         AutoPyDiscipline(f4)
 
 
@@ -221,11 +215,9 @@ def test_jac_pb(design_space) -> None:
     assert fopt_ref == scn.optimization_result.f_opt
 
 
-def test_missing_jacobian() -> None:
+def test_missing_jacobian(snapshot) -> None:
     auto_rosen = AutoPyDiscipline(rosen)
-    with pytest.raises(
-        RuntimeError, match=re.escape("The analytic Jacobian is missing.")
-    ):
+    with assert_exception(RuntimeError, snapshot):
         auto_rosen._compute_jacobian()
 
 
@@ -266,20 +258,14 @@ def jac_wrong_shape(a=1.0, b=2.0, c=3.0):
     return array([[1.0, 2.0, 3.0]]).T
 
 
-def test_jacobian_shape_mismatch() -> None:
+def test_jacobian_shape_mismatch(snapshot) -> None:
     """Tests the jacobian shape."""
     disc = AutoPyDiscipline(py_func=obj, py_jac=jac)
 
     assert disc.check_jacobian(threshold=1e-5)
 
     disc_wrong = AutoPyDiscipline(py_func=obj, py_jac=jac_wrong_shape)
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The shape (3, 1) of the Jacobian matrix of the discipline obj "
-            "provided by py_jac does not match (output_size, input_size)=(1, 3)."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         disc_wrong.linearize(compute_all_jacobians=True)
 
 
@@ -578,14 +564,9 @@ def f_returning_expression(x=1):
     return x + 2
 
 
-def test_f_returning_expression():
+def test_f_returning_expression(snapshot):
     """Check the message of the error raised when returning an expression."""
-    msg = (
-        "The function must return one or more variables, "
-        "e.g. 'return x' or 'return x, y',"
-        "but no expression like 'return a+b' or 'return a+b, y'."
-    )
-    with pytest.raises(ValueError, match=re.escape(msg)):
+    with assert_exception(ValueError, snapshot):
         AutoPyDiscipline(f_returning_expression)
 
 

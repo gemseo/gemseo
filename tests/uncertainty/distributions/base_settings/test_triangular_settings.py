@@ -14,13 +14,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
 import pytest
 
 from gemseo.uncertainty.distributions.base_univariate_settings.triangular import (
     BaseTriangularDistributionSettings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 
 class SpecificTriangularDistribution_Settings(BaseTriangularDistributionSettings):  # noqa: N801
@@ -30,15 +29,9 @@ class SpecificTriangularDistribution_Settings(BaseTriangularDistributionSettings
 @pytest.mark.parametrize(
     ("minimum", "mode", "maximum"), [(1, 3, 2), (2, 1, 3), (3, 2, 1)]
 )
-def test_validator(minimum, mode, maximum):
+def test_validator(minimum, mode, maximum, snapshot):
     """Test BaseTriangularDistributionSettings.__validate."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The parameters of the triangular distribution do not satisfy "
-            "the order: minimum < mode < maximum."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         SpecificTriangularDistribution_Settings(
             minimum=minimum, mode=mode, maximum=maximum
         )

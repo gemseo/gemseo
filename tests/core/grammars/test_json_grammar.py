@@ -30,6 +30,7 @@ from numpy import ndarray
 
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.json import JSONGrammar
+from gemseo.utils.testing.helpers import assert_exception
 
 DATA_PATH = Path(__file__).parent / "data"
 
@@ -48,11 +49,9 @@ def assert_reset_dependencies(grammar: JSONGrammar) -> None:
     assert grammar._JSONGrammar__schema == {}
 
 
-def test_init_with_file_error() -> None:
+def test_init_with_file_error(snapshot) -> None:
     """Verify that init raises the expected errors."""
-    path = "foo"
-    msg = f"Cannot update the grammar from non existing file: {path}."
-    with pytest.raises(FileNotFoundError, match=msg):
+    with assert_exception(FileNotFoundError, snapshot):
         JSONGrammar("g", file_path="foo")
 
 
@@ -127,12 +126,11 @@ def test_update_and_update_from_file(file_path1, file_path2) -> None:
     assert_reset_dependencies(g1)
 
 
-def test_update_error() -> None:
+def test_update_error(snapshot) -> None:
     """Verify update error."""
     grammar = JSONGrammar("g")
 
-    msg = "A JSONGrammar cannot be updated from a grammar of type: <class 'bool'>"
-    with pytest.raises(TypeError, match=msg):
+    with assert_exception(TypeError, snapshot):
         grammar.update(True)
 
 
@@ -173,12 +171,12 @@ def test_validate(data) -> None:
         ),
     ],
 )
-def test_validate_error(raise_exception, data, error_msg, caplog) -> None:
+def test_validate_error(raise_exception, data, error_msg, caplog, snapshot) -> None:
     """Verify that validate raises the expected errors."""
     grammar = new_grammar(DATA_PATH / "grammar_2.json")
 
     if raise_exception:
-        with pytest.raises(InvalidDataError, match=error_msg):
+        with assert_exception(InvalidDataError, snapshot):
             grammar.validate(data)
     else:
         grammar.validate(data, raise_exception=raise_exception)
@@ -384,9 +382,8 @@ def test_update_from_types():
     }
 
 
-def test_update_from_types_error():
+def test_update_from_types_error(snapshot):
     """Verify error when updated from a bad type."""
     grammar = JSONGrammar("g")
-    match = "Unsupported Python type for a JSON Grammar: <class 'set'>"
-    with pytest.raises(TypeError, match=match):
+    with assert_exception(TypeError, snapshot):
         grammar.update_from_types({"x": set})

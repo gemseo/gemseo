@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 import pytest
@@ -32,6 +31,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.post import HessianHistory_Settings
 from gemseo.post.hessian_history import HessianHistory
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 DIR_PATH = Path(__file__).parent
@@ -82,7 +82,7 @@ def test_opt_hist_from_database(
     )
 
 
-def test_diag_with_nan() -> None:
+def test_diag_with_nan(snapshot) -> None:
     """Check that the Hessian plot creation is skipped if its diagonal contains NaN."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
@@ -93,13 +93,7 @@ def test_diag_with_nan() -> None:
     execute_algo(
         problem, algo_name="PYDOE_FULLFACT", n_samples=3, eval_jac=True, algo_type="doe"
     )
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "HessianHistory cannot be plotted "
-            "because the approximated Hessian diagonal contains NaN."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_post(problem, post_name="HessianHistory", save=False, show=False)
 
 
@@ -178,7 +172,7 @@ def test_variable_names() -> None:
     )
 
 
-def test_no_gradient_history() -> None:
+def test_no_gradient_history(snapshot) -> None:
     """Check that HessianHistory cannot work without gradient history."""
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
@@ -188,11 +182,5 @@ def test_no_gradient_history() -> None:
     problem.database.store(array([-1]), {"f": array([1])})
     problem.database.store(array([0]), {"f": array([0])})
     problem.database.store(array([1]), {"f": array([1])})
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The HessianHistory cannot be plotted "
-            "because the history of the gradient of the objective is empty."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         execute_post(problem, post_name="HessianHistory", save=False, show=False)

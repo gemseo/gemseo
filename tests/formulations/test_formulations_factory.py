@@ -29,6 +29,7 @@ from gemseo.formulations.mdf import MDF
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
+from gemseo.utils.testing.helpers import assert_exception
 from tests.formulations.not_mdo_formulations.formulation import NotMDOFormulationFactory
 
 
@@ -45,14 +46,9 @@ def test_is_available(non_mdo_formulations) -> None:
     assert not MDO_FORMULATION_FACTORY.is_available("ANotMDOFormulation")
 
 
-def test_create_with_wrong_formulation_name() -> None:
+def test_create_with_wrong_formulation_name(snapshot) -> None:
     """Check that a BaseMDOFormulation cannot be instantiated with a wrong name."""
-    with pytest.raises(
-        ImportError,
-        match="The class foo is not available; "
-        # Prevent failure when testing in environments with plugins. (terminal .*)
-        r"the available ones are: .*BiLevel, BiLevelBCD, DisciplinaryOpt, IDF, MDF.*",
-    ):
+    with assert_exception(ImportError, snapshot):
         MDO_FORMULATION_FACTORY.create("foo", None, None, None)
 
 

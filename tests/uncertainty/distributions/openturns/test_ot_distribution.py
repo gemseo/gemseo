@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from unittest.mock import patch
 
@@ -84,6 +83,7 @@ from gemseo.uncertainty.distributions.openturns.uniform_settings import (
 from gemseo.uncertainty.distributions.openturns.weibull_settings import (
     OTWeibullDistribution_Settings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -103,24 +103,15 @@ def test_constructor(distribution) -> None:
     assert distribution.transformation == "x"
 
 
-def test_bad_distribution() -> None:
-    with pytest.raises(
-        ImportError, match=re.escape("Dummy cannot be imported from openturns.")
-    ):
+def test_bad_distribution(snapshot) -> None:
+    with assert_exception(ImportError, snapshot):
         OTDistribution(
             OTDistribution_Settings(interfaced_distribution="Dummy", parameters=(0, 1))
         )
 
 
-def test_bad_distribution_parameters() -> None:
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The arguments of Normal(0.0, 1.0, 2.0) are wrong; "
-            "more details on "
-            "http://openturns.github.io/openturns/latest/user_manual/probabilistic_modelling.html."  # noqa: E501
-        ),
-    ):
+def test_bad_distribution_parameters(snapshot) -> None:
+    with assert_exception(ValueError, snapshot):
         OTDistribution(
             OTDistribution_Settings(
                 interfaced_distribution="Normal", parameters=(0, 1, 2)
@@ -221,9 +212,9 @@ def test_truncation(kwargs, expected) -> None:
         ),
     ],
 )
-def test_truncate_exception(kwargs, expected) -> None:
+def test_truncate_exception(kwargs, expected, snapshot) -> None:
     """Check that exceptions are raised when mistruncating a distribution."""
-    with pytest.raises(ValueError, match=re.escape(expected)):
+    with assert_exception(ValueError, snapshot):
         OTDistribution(
             OTDistribution_Settings(
                 interfaced_distribution="Uniform", parameters=(0, 1), **kwargs
@@ -465,15 +456,9 @@ def test_lognormal_distribution():
     assert distribution.standard_deviation == pytest.approx(1.0)
 
 
-def test_settings_truncation_error():
+def test_settings_truncation_error(snapshot):
     """Test the message raised in the case of a truncation error."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The upper truncation bound of a probability distribution "
-            "must be greater than its lower truncation bound."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         OTDistribution_Settings(
             interfaced_distribution="Normal", lower_bound=0.0, upper_bound=-1
         )

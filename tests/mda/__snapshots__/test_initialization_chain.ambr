@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_fail_get_initialization_disciplines
+  'Cannot compute the inputs g, for the following disciplines C.'
+# ---

@@ -1,0 +1,52 @@
+# serializer version: 1
+# name: test_algo_with_unknown_options[PYDOE_BBDESIGN-options3]
+  '''
+  1 validation error for PYDOE_BBDESIGN_Settings
+  center
+    Input should be a valid integer [type=int_type, input_value=(4, 4), input_type=tuple]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  '''
+# ---
+# name: test_algo_with_unknown_options[PYDOE_CCDESIGN-options0]
+  '''
+  1 validation error for PYDOE_CCDESIGN_Settings
+  alpha
+    Input should be 'orthogonal', 'o', 'rotatable' or 'r' [type=enum, input_value='unknown_value', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/enum
+  '''
+# ---
+# name: test_algo_with_unknown_options[PYDOE_CCDESIGN-options1]
+  '''
+  1 validation error for PYDOE_CCDESIGN_Settings
+  face
+    Input should be 'circumscribed', 'ccc', 'inscribed', 'cci', 'faced' or 'ccf' [type=enum, input_value='unknown_value', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/enum
+  '''
+# ---
+# name: test_algo_with_unknown_options[PYDOE_CCDESIGN-options2]
+  '''
+  1 validation error for PYDOE_CCDESIGN_Settings
+  center
+    Input should be a valid tuple [type=tuple_type, input_value=1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
+  '''
+# ---
+# name: test_algo_with_unknown_options[PYDOE_LHS-options4]
+  '''
+  1 validation error for PYDOE_LHS_Settings
+  iterations
+    Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='unknown_value', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_parsing
+  '''
+# ---
+# name: test_algo_with_unknown_options[PYDOE_LHS-options5]
+  '''
+  1 validation error for PYDOE_LHS_Settings
+  criterion
+    Input should be 'center', 'c', 'maximin', 'm', 'centermaximin', 'cm', 'correlation', 'corr' or 'lhsmu' [type=enum, input_value='unknown_value', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/enum
+  '''
+# ---
+# name: test_invalid_algo
+  'No algorithm named unknown_algo is available; available algorithms are CustomDOE, DiagonalDOE, Halton, LHS, MC, MorrisDOE, OATDOE, OT_AXIAL, OT_COMPOSITE, OT_FACTORIAL, OT_FAURE, OT_FULLFACT, OT_HALTON, OT_HASELGROVE, OT_LHS, OT_LHSC, OT_MONTE_CARLO, OT_OPT_LHS, OT_RANDOM, OT_REVERSE_HALTON, OT_SOBOL, OT_SOBOL_INDICES, PYDOE_BBDESIGN, PYDOE_CCDESIGN, PYDOE_FF2N, PYDOE_FULLFACT, PYDOE_LHS, PYDOE_PBDESIGN, PoissonDisk and Sobol.'
+# ---

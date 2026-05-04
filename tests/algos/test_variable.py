@@ -14,8 +14,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import re
-
 import pytest
 from numpy import array
 from numpy import atleast_1d
@@ -24,6 +22,7 @@ from pydantic import ValidationError
 
 from gemseo.algos._variable import DataType
 from gemseo.algos._variable import Variable
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def test_init_defaults():
@@ -62,34 +61,29 @@ def test_initialization(
 
 
 @pytest.mark.parametrize("size", [-1, 0])
-def test_non_positive_size(size) -> None:
+def test_non_positive_size(size, snapshot) -> None:
     """Check non-positive variables size."""
-    with pytest.raises(ValidationError, match="Input should be greater than 0"):
+    with assert_exception(ValidationError, snapshot):
         Variable(size=size)
 
 
-def test_invalid_type() -> None:
+def test_invalid_type(snapshot) -> None:
     """Check invalid variable type."""
-    with pytest.raises(ValidationError, match="Input should be 'float' or 'integer'"):
+    with assert_exception(ValidationError, snapshot):
         Variable(type="complex")
 
 
 @pytest.mark.parametrize("side", ["lower", "upper"])
-def test_invalid_bound_size(side) -> None:
+def test_invalid_bound_size(side, snapshot) -> None:
     """Check invalid bound size."""
-    with pytest.raises(
-        ValidationError, match=re.escape(f"The {side} bound should be of size 1.")
-    ):
+    with assert_exception(ValidationError, snapshot):
         Variable(**{f"{side}_bound": [0, 0]})
 
 
 @pytest.mark.parametrize("side", ["lower", "upper"])
-def test_invalid_bound_value_scalar(side) -> None:
+def test_invalid_bound_value_scalar(side, snapshot) -> None:
     """Check invalid bound value type."""
-    with pytest.raises(
-        ValidationError,
-        match="validation errors for Variable",
-    ):
+    with assert_exception(ValidationError, snapshot):
         Variable(**{f"{side}_bound": 1j})
 
 
@@ -98,15 +92,10 @@ def test_invalid_bound_value_scalar(side) -> None:
     [(1, DataType.FLOAT, 0, -1.0), (1, "integer", 0, -1)],
 )
 def test_wrong_boundaries(
-    size: int, type_: str, lower_bound: float, upper_bound: float
+    size: int, type_: str, lower_bound: float, upper_bound: float, snapshot
 ) -> None:
     """Test the instantiation with `upper_bound` lower than `lower_bound`."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The upper bounds must be greater than or equal to the lower bounds."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         Variable(
             size=size, type=type_, lower_bound=lower_bound, upper_bound=upper_bound
         )
@@ -118,23 +107,13 @@ def variable() -> Variable:
     return Variable(size=1, type="float", lower_bound=0, upper_bound=1)
 
 
-def test_invalid_lower_bound_assignment(variable) -> None:
+def test_invalid_lower_bound_assignment(variable, snapshot) -> None:
     """Check the handling of an invalid lower bound assignment."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The upper bounds must be greater than or equal to the lower bounds."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         variable.lower_bound = 5
 
 
-def test_invalid_upper_bound_assignment(variable) -> None:
+def test_invalid_upper_bound_assignment(variable, snapshot) -> None:
     """Check the handling of an invalid upper bound assignment."""
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The upper bounds must be greater than or equal to the lower bounds."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         variable.upper_bound = -1

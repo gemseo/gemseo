@@ -18,7 +18,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from unittest import TestCase
 from warnings import warn
 
@@ -47,6 +46,7 @@ from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_16
 from gemseo.utils.pydantic import create_model
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.opt_lib_test_base import OptLibraryTestBase
 
 
@@ -397,7 +397,7 @@ def test_catol_cobyla() -> None:
     assert reference.f_opt != result.f_opt
 
 
-def test_cannot_handle_inequality_constraints():
+def test_cannot_handle_inequality_constraints(snapshot):
     """Check the error raised when an algo does not handle inequality constraints."""
     problem = Rosenbrock()
     problem.add_constraint(
@@ -405,11 +405,5 @@ def test_cannot_handle_inequality_constraints():
         value=1.0,
         constraint_type=ArrayFunction.ConstraintType.INEQ,
     )
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "The algorithm TNC is not adapted to the problem "
-            "because it does not handle inequality constraints."
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=TNC_Settings())

@@ -1,0 +1,16 @@
+# serializer version: 1
+# name: test_plot_criteria
+  "The variable 'dummy' is missing from the dataset; available ones are: x_1, x_2, x_3."
+# ---
+# name: test_tolerance_interval_wrong_confidence[-0.5]
+  "The argument 'confidence' must be a number in [0,1]."
+# ---
+# name: test_tolerance_interval_wrong_confidence[1.5]
+  "The argument 'confidence' must be a number in [0,1]."
+# ---
+# name: test_tolerance_interval_wrong_coverage[-0.5]
+  "The argument 'coverage' must be a number in [0,1]."
+# ---
+# name: test_tolerance_interval_wrong_coverage[1.5]
+  "The argument 'coverage' must be a number in [0,1]."
+# ---

@@ -28,6 +28,7 @@ from gemseo import configure
 from gemseo import create_discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.post.core.gantt_chart import create_gantt_chart
+from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import image_comparison
 
 TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
@@ -84,9 +85,9 @@ def test_time_stamps(reset_time_stamping) -> None:
     assert mission_stamps[2][-1]
 
 
-def test_stamps_error() -> None:
+def test_stamps_error(snapshot) -> None:
     """Tests that the error is raised when time stamps are deactivated."""
-    with pytest.raises(ValueError, match="Time stamps are not enabled in Discipline"):
+    with assert_exception(ValueError, snapshot):
         create_gantt_chart()
 
 
@@ -142,8 +143,10 @@ def test_plot_filter(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     )
 
 
-def test_plot_filter_fail(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
+def test_plot_filter_fail(
+    tmp_wd, reset_time_stamping, time_stamps_data, snapshot
+) -> None:
     """Tests the Gantt chart disciplines filter failure."""
     ExecutionStatistics.time_stamps = time_stamps_data
-    with pytest.raises(ValueError, match="have no time stamps"):
+    with assert_exception(ValueError, snapshot):
         create_gantt_chart(save=False, disc_names=["IDONTEXIST"])

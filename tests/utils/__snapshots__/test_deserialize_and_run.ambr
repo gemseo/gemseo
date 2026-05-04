@@ -1,0 +1,16 @@
+# serializer version: 1
+# name: test_cli_input_file_error[discipline_path-dummy1]
+  '2'
+# ---
+# name: test_cli_input_file_error[inputs_path-dummy1 dummy2]
+  '2'
+# ---
+# name: test_cli_protocol_error[--execute-at-linearize-The option --execute-at-linearize cannot be used without --linearize]
+  '2'
+# ---
+# name: test_cli_protocol_error[--protocol 999-error: argument --protocol: invalid choice: 999 (choose from 0, 1, 2, 3, 4, 5)]
+  '2'
+# ---
+# name: test_cli_protocol_error[--protocol dummy-error: argument --protocol: invalid int value: 'dummy']
+  '2'
+# ---

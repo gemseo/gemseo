@@ -19,7 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import re
 from typing import TYPE_CHECKING
 
 import pytest
@@ -39,6 +38,7 @@ from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistributi
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
+from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -67,20 +67,14 @@ def test_data(fitter, data):
     assert id(fitter.data) == id(data)
 
 
-def test_distribution_dimension_error(fitter) -> None:
+def test_distribution_dimension_error(fitter, snapshot) -> None:
     """Check the error raised when using a distribution of dimension higher than 1."""
     ot_joint_distribution = OTJointDistribution(
         OTJointDistribution_Settings(
             marginal_settings=[OTNormalDistribution_Settings()] * 2
         )
     )
-    with pytest.raises(
-        KeyError,
-        match=re.escape(
-            "OTJointDistribution(Normal(mu=0.0, sigma=1.0), Normal(mu=0.0, sigma=1.0); "
-            "IndependentCopula(dimension = 2))"
-        ),
-    ):
+    with assert_exception(KeyError, snapshot):
         fitter.compute_measure(ot_joint_distribution, "BIC")
 
 

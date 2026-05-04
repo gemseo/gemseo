@@ -1,0 +1,34 @@
+# serializer version: 1
+# name: test_handle_bad_initial_status[LINEARIZING]
+  ' cannot be set to status LINEARIZING while in status LINEARIZING.'
+# ---
+# name: test_handle_bad_initial_status[RUNNING]
+  ' cannot be set to status RUNNING while in status LINEARIZING.'
+# ---
+# name: test_handle_failure[LINEARIZING]
+  'message'
+# ---
+# name: test_handle_failure[RUNNING]
+  'message'
+# ---
+# name: test_value_setter_error_without_enum
+  "'bad' is not a valid ExecutionStatus.Status"
+# ---
+# name: test_value_setter_errors[FAILED-new_statuses1]
+  ' cannot be set to status LINEARIZING while in status FAILED.'
+# ---
+# name: test_value_setter_errors[FAILED-new_statuses1].1
+  ' cannot be set to status RUNNING while in status FAILED.'
+# ---
+# name: test_value_setter_errors[LINEARIZING-new_statuses0]
+  ' cannot be set to status LINEARIZING while in status LINEARIZING.'
+# ---
+# name: test_value_setter_errors[LINEARIZING-new_statuses0].1
+  ' cannot be set to status RUNNING while in status LINEARIZING.'
+# ---
+# name: test_value_setter_errors[RUNNING-new_statuses2]
+  ' cannot be set to status LINEARIZING while in status RUNNING.'
+# ---
+# name: test_value_setter_errors[RUNNING-new_statuses2].1
+  ' cannot be set to status RUNNING while in status RUNNING.'
+# ---

@@ -19,11 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
-import pytest
-
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.utils.pydantic import create_model
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def test_is_available_error() -> None:
@@ -38,14 +37,9 @@ def test_create_ok() -> None:
     assert algo._settings.max_iter == 1000
 
 
-def test_create_ko() -> None:
+def test_create_ko(snapshot) -> None:
     """Verify that an error is raised when trying to create an unknown algorithm."""
-    with pytest.raises(
-        ValueError,
-        match=(
-            r"No algorithm named idontexist is available; available algorithms are .*"
-        ),
-    ):
+    with assert_exception(ValueError, snapshot):
         OPTIMIZATION_LIBRARY_FACTORY.create("idontexist")
 
 
