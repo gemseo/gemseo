@@ -16,6 +16,8 @@
 from __future__ import annotations
 
 import sys
+import warnings
+from logging import root
 
 from gemseo import _configure_logger
 from gemseo.utils.constants import _LOGGING_DATE_FORMAT
@@ -23,6 +25,13 @@ from gemseo.utils.constants import _LOGGING_FILE_MODE
 from gemseo.utils.constants import _LOGGING_FILE_PATH
 from gemseo.utils.constants import _LOGGING_LEVEL
 from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
+from gemseo.utils.logging import _is_gemseo_logger
+
+# Suppress deprecation warnings as early as possible: mkdocs-gallery parses
+# every example with ast.Str (deprecated) inside split_code_and_text_blocks,
+# which runs before reset_logging is invoked.
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 
 
 class _WrapStdOut:
@@ -38,12 +47,23 @@ class _WrapStdOut:
 
 
 def reset_logging(gallery_conf, fname):
-    _configure_logger(
-        "",
-        _LOGGING_LEVEL,
-        _LOGGING_MESSAGE_FORMAT,
-        _LOGGING_DATE_FORMAT,
-        _LOGGING_FILE_PATH,
-        _LOGGING_FILE_MODE,
-        _WrapStdOut(),
-    )
+    # Route every GEMSEO logger through _WrapStdOut so log records reach the
+    # current sys.stdout (mkdocs-gallery's _LoggingTee during example
+    # execution). The tee captures them for the gallery "Out:" block and
+    # forwards them at debug level, keeping the console clean.
+    stream = _WrapStdOut()
+    for name in root.manager.loggerDict:
+        if _is_gemseo_logger(name):
+            _configure_logger(
+                name,
+                _LOGGING_LEVEL,
+                _LOGGING_MESSAGE_FORMAT,
+                _LOGGING_DATE_FORMAT,
+                _LOGGING_FILE_PATH,
+                _LOGGING_FILE_MODE,
+                stream,
+            )
+    # Reapply the deprecation filters in case an example or another plugin
+    # reset warnings.filters between examples.
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
