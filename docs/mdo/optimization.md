@@ -44,8 +44,9 @@ from gemseo import create_design_space
 from numpy import ones
 
 design_space = create_design_space()
-design_space.add_variable("x", 1, lower_bound=-2., upper_bound=2.,
-                        value=-0.5 * ones(1))
+design_space.add_variable(
+    "x", size=1, lower_bound=-2.0, upper_bound=2.0, value=-0.5 * ones(1)
+)
 ```
 
 and an objective function, of type [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]. The [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] is callable and requires at least
@@ -67,6 +68,7 @@ an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] 
 
 ``` python
 from gemseo.algos.optimization_problem import OptimizationProblem
+
 problem = OptimizationProblem(design_space)
 ```
 
@@ -96,7 +98,10 @@ with normalized design space, we have:
 ``` python
 from gemseo.algos.opt.factory import OptimizationLibraryFactory
 from gemseo.settings import L_BFGS_B_Settings
-opt = OptimizationLibraryFactory().execute(problem, settings=L_BFGS_B(normalize_design_space=True))
+
+opt = OptimizationLibraryFactory().execute(
+    problem, L_BFGS_B(normalize_design_space=True)
+)
 print(f"Optimum = {opt.f_opt}")
 ```
 
@@ -126,12 +131,11 @@ DOE algorithms can also be used to sample the design space and observe the
 value of the objective and constraints
 
 ``` python
-
 from gemseo.algos.doe.factory import DOELibraryFactory
 
 # And solve it with GEMSEO interface
 opt = DOELibraryFactory().execute(
-   problem, algo_name="PYDOE_LHS", n_samples=10, normalize_design_space=True
+    problem, algo_name="PYDOE_LHS", n_samples=10, normalize_design_space=True
 )
 ```
 
@@ -147,7 +151,9 @@ from gemseo.settings import OptHistoryView_Settings
 execute_post(problem, OptHistoryView_Settings(save=True, file_path="simple_opt"))
 
 # Also works from disk
-execute_post("my_optim.hdf5", OptHistoryView_Settings(save=True, file_path="opt_view_from_disk"))
+execute_post(
+    "my_optim.hdf5", OptHistoryView_Settings(save=True, file_path="opt_view_from_disk")
+)
 ```
 
 ![Objective function history for the simple analytic optimization](../assets/images/doe/simple_opt.png)

@@ -65,7 +65,7 @@ made on:
 - Analyse an MDO problem and generate an N2 chart and an XDSM diagram without wrapping any tool or writing
   code [[Read more]](interface/study_analysis.md)
 - Use different optimization algorithms [[Read more]](mdo/optimization.md)
-- Use different sampling methods for design of experiments  [[Read more]](mdo/optimization.md)
+- Use different sampling methods for design of experiments [[Read more]](mdo/optimization.md)
 - Use
   different [MDO formulations][mdo-formulations]: [MDF][the-mdf-formulation], [IDF][the-idf-formulation], [bilevel][the-bi-level-formulation]
   and disciplinary optimizer [[Read more]][mdo-formulations]

@@ -154,7 +154,7 @@ the parallel execution of the independent
 meaning that the execution of the two independent [BaseMDA][gemseo.mda.base.BaseMDA]
 will remain sequential.
 Yet,
-a parallel execution of the two [BaseMDA][gemseo.mda.base.BaseMDA] can be  activated
+a parallel execution of the two [BaseMDA][gemseo.mda.base.BaseMDA] can be activated
 using the `mdachain_parallelize_task` boolean option.
 
 If activated,

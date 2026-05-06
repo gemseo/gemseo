@@ -34,10 +34,12 @@ For that, by means of the API function [create_discipline()][gemseo.create_disci
 ``` python
 from gemseo import create_discipline
 
-disciplines = create_discipline(["SobieskiStructure",
-                                 "SobieskiPropulsion",
-                                 "SobieskiAerodynamics",
-                                 "SobieskiMission"])
+disciplines = create_discipline([
+    "SobieskiStructure",
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+])
 ```
 
 and by means of the API function [create_discipline()][gemseo.create_discipline],
@@ -46,10 +48,12 @@ we build the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] :
 ``` python
 from gemseo import create_scenario
 
-scenario = create_scenario(disciplines,
-                           formulation_name="MDF",
-                           objective_name="y_4",
-                           design_space="design_space.csv")
+scenario = create_scenario(
+    disciplines,
+    formulation_name="MDF",
+    objective_name="y_4",
+    design_space="design_space.csv",
+)
 
 ```
 
@@ -102,7 +106,7 @@ The following images shows the typical outputs of the process statuses
 - Initial state of the process before execution: the colors represent the type of discipline (scenario, MDA, simple discipline)
    ![Initial state of the process before execution](../assets/images/monitoring/monitoring_1.png)
 
-- The process has started:  the colors represent the status of the disciplines : green for RUNNING, blue for PENDING, red for FAILED
+- The process has started: the colors represent the status of the disciplines : green for RUNNING, blue for PENDING, red for FAILED
    ![The process has started](../assets/images/monitoring/monitoring_2.png)
 
 - The process is running, the MDA iterations are ongoing
@@ -125,10 +129,11 @@ and add the observer to the list of the listeners that are notified by GEMSEO mo
 ``` python
 from gemseo import monitor_scenario
 
-class Observer(object):
 
-   def update(self, atom):
-      print(atom)
+class Observer(object):
+    def update(self, atom):
+        print(atom)
+
 
 observer = Observer()
 monitor_scenario(scenario, observer)
@@ -166,6 +171,7 @@ please enable the time stamps before executing the scenario.
 
 ``` python
 from gemseo.core.discipline import Discipline
+
 ExecutionStatistics.is_time_stamps_enabled = True
 ```
 

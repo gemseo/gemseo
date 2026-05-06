@@ -47,16 +47,15 @@ repos:
   #       ]
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.15.0
+    rev: v4.15.1
     hooks:
       - id: commitizen
         stages: [commit-msg]
 
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.48.0
+  - repo: https://github.com/rvben/rumdl-pre-commit
+    rev: v0.1.89
     hooks:
-      - id: markdownlint
-        args: [--fix]
+      - id: rumdl-fmt
         exclude: ^.gitlab
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks

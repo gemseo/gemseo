@@ -28,7 +28,7 @@ We may not support newer version of Python if a dependency of GEMSEO does not su
 The currently supported versions of Python are 3.10, 3.11, 3.12, 3.13 and 3.14.
 
 To install GEMSEO, you should use a Python environment.
-You can create environments with  [uv](https://docs.astral.sh/uv),
+You can create environments with [uv](https://docs.astral.sh/uv),
 or with the Python built-in [venv](https://docs.python.org/3/library/venv.html) module
 or with [Anaconda](https://docs.anaconda.com/anaconda/install).
 

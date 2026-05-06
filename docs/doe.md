@@ -36,14 +36,18 @@ As any [BaseDriverLibrary][gemseo.algos.base_driver_library.BaseDriverLibrary], 
 
 ``` python
 from gemseo.algos.doe.lib_pydoe import PyDOE
+
 pydoe_library = PyDOE()
-optimization_result = pydoe_library.execute(problem, algo_name="PYDOE_LHS", n_samples=100)
+optimization_result = pydoe_library.execute(
+    problem, algo_name="PYDOE_LHS", n_samples=100
+)
 ```
 
 In the presence of an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem], it is advisable to apply DOE algorithms with the function [execute_algo()][gemseo.execute_algo] which returns an [OptimizationResult][gemseo.algos.optimization_result.OptimizationResult]:
 
 ``` python
 from gemseo import execute_algo
+
 optimization_result = execute_algo(problem, "PYDOE_LHS", algo_type="doe", n_samples=100)
 ```
 
