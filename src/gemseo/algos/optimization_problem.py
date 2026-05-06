@@ -19,58 +19,7 @@
 #       :author: Francois Gallard, Charlie Vanaret, Benoit Pauwels
 #       :author: Gabriel Max De Mendonça Abrantes
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Optimization problem.
-
-The [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] class
-operates on a [DesignSpace][gemseo.algos.design_space.DesignSpace] defining:
-
-- an initial guess $x_0$ for the design variables,
-- the bounds $l_b \leq x \leq u_b$ of the design variables.
-
-A (possible vector) objective function
-with an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] type
-is set using the `objective` attribute.
-If the optimization problem looks for the maximum of this objective function,
-the
-[OptimizationProblem.minimize_objective][gemseo.algos.optimization_problem.OptimizationProblem.minimize_objective]
-property
-changes the objective function sign
-because the optimization drivers seek to minimize this objective function.
-
-Equality and inequality constraints are also
-[ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] instances
-provided to the
-[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-by means of its
-[add_constraint()][gemseo.algos.optimization_problem.OptimizationProblem.add_constraint]
-method.
-
-The [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-allows to evaluate the different functions
-for a given design parameters vector
-(see its method
-[evaluate_functions()][gemseo.algos.optimization_problem.OptimizationProblem.evaluate_functions]
-).
-Note that this evaluation step relies on an automated scaling of function wrt the bounds
-so that optimizers and DOE algorithms work
-with inputs scaled between 0 and 1 for all the variables.
-
-The [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-has also a [Database][gemseo.algos.database.Database]
-that stores the calls to all the functions
-so that no function is called twice with the same inputs.
-Concerning the derivatives' computation,
-the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-automates the generation of the finite differences or complex step wrappers
-on functions,
-when the analytical gradient is not available.
-
-Lastly,
-various getters and setters are available,
-as well as methods to export the [Database][gemseo.algos.database.Database]
-to an HDF file or to a [Dataset][gemseo.datasets.dataset.Dataset]
-for future post-processing.
-"""
+"""Optimization problem."""
 
 from __future__ import annotations
 

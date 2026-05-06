@@ -66,13 +66,7 @@ EvaluationType = tuple[dict[str, float | RealArray], dict[str, RealArray]]
 
 
 class EvaluationProblem(BaseProblem):
-    """A problem to evaluate functions over a design space.
-
-    This problem can only include observables,
-    i.e. functions with
-    [ArrayFunction.FunctionType.OBS][gemseo.core.functions.array_function.ArrayFunction.FunctionType]
-    as function type.
-    """
+    """A problem to evaluate functions over a design space."""
 
     class HistoryFileFormat(StrEnum):
         """The format of the history file."""

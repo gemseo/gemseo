@@ -132,6 +132,10 @@ nav:
               - Dataset: user_guide/concepts/data_persistence/dataset.md
           - Problems:
               - Overview: user_guide/concepts/problems/index.md
+              - Evaluation problem: user_guide/concepts/problems/evaluation.md
+              - Optimization problem: user_guide/concepts/problems/optimization.md
+              - Linear problem: user_guide/concepts/problems/linear.md
+              - ODE problem: user_guide/concepts/problems/ode.md
               - Functions: user_guide/concepts/problems/functions.md
           - Benchmarking:
               - Scalable MDO problems:

@@ -1,6 +1,5 @@
 ---
-status: draft
-description: ""
+description: "Overview of mathematical problems in GEMSEO, from function evaluation to optimization, linear systems, and ODEs."
 tags: ['user_guide']
 search:
   boost: 2
@@ -16,3 +15,15 @@ search:
 -->
 
 # Problems { #concept-problems }
+
+Generally,
+a problem can be defined as a question that needs an answer.
+There may be zero, one, or more answers,
+as well as zero, one or more ways to find them (or not!).
+
+In GEMSEO,
+a *problem* is a mathematical problem that can be solved using an *algorithm*,
+e.g. an optimization problem solved by an optimizer.
+The associated base class is [BaseProblem][gemseo.algos.base_problem.BaseProblem].
+
+The following pages will show the different types of problems available in GEMSEO.
