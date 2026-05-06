@@ -32,7 +32,7 @@ $$
 &\text{Find the function } y(t) \\
 &\text{defined on the time interval }[t_0, t_f] \\
 &\text{such that }y(0) = y_0, \\
-&\text{and }\frac{\mathrm{d}}{\mathrm{d}t}y(t) = f(t, y(t))\text{  for all } t \in [t_0, t_f].
+&\text{and }\frac{\mathrm{d}}{\mathrm{d}t}y(t) = f(t, y(t))\text{ for all } t \in [t_0, t_f].
 \end{cases}
 $$
 
@@ -51,7 +51,7 @@ $$
 &\text{Find the function } y(t) \\
 &\text{defined on the time interval }[t_0, t^*] \\
 &\text{such that }y(0) = y_0,\\
-&\frac{\mathrm{d}}{\mathrm{d}t}y(t) = f(t, y(t))\text{  for all } t \in [t_0, t_f], \\
+&\frac{\mathrm{d}}{\mathrm{d}t}y(t) = f(t, y(t))\text{ for all } t \in [t_0, t_f], \\
 &\text{and }t^* \text{is the smallest element of }[t_0, t_f] \\
 &\text{for which } g_i(t^*, y(t^*)) = 0 \text{ for some } i \in \lbrace 1, \ldots, m\rbrace.
 \end{cases}

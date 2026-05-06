@@ -42,7 +42,7 @@ solving the following ODE:
 $$
 \begin{cases}
 y(t_0) &= y_0 \\
-\frac{\mathrm{d} y}{\mathrm{d} t}(t) &= f(t, y(t)) \qquad \mbox{for all  }t \in [t_0, t_f].
+\frac{\mathrm{d} y}{\mathrm{d} t}(t) &= f(t, y(t)) \qquad \mbox{for all }t \in [t_0, t_f].
 \end{cases}
 $$
 

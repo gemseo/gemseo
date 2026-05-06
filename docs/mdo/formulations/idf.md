@@ -20,12 +20,12 @@ search:
 IDF stands for individual discipline feasible.
 This MDO formulation expresses the MDO problem as
 
-$$\begin{aligned}
+$$
+\begin{aligned}
 & \underset{x,z,y^t}{\text{min}} & & f(x, z, y^t) \\
-& \text{subject to}     & & g(x, z, y^t) \le 0 \\
-&                       & & h(x, z, y^t) = 0 \\
-&                       & & y_i(x_i, z, y^t_{j \neq i}) - y_i^t = 0,
-                              \quad \forall i \in \{1,\ldots, N\}
+& \text{subject to} & & g(x, z, y^t) \le 0 \\
+& & & h(x, z, y^t) = 0 \\
+& & & y_i(x_i, z, y^t_{j \neq i}) - y_i^t = 0, \quad \forall i \in \{1,\ldots, N\}
 \end{aligned}
 $$
 

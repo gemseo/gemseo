@@ -464,9 +464,9 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     sub-scenario to prefix the name of the files. Use this setting if
     the sub-scenarios are running in parallel.
 
-  \- `naming`: To select the id to append to the prefix of each database
-  file when `save_opt_history=True`. See `NameGenerator.Naming` for more
-  details. [#839](https://gitlab.com/gemseo/dev/gemseo/-/issues/839)
+    \- `naming`: To select the id to append to the prefix of each database
+    file when `save_opt_history=True`. See `NameGenerator.Naming` for more
+    details. [#839](https://gitlab.com/gemseo/dev/gemseo/-/issues/839)
 
 - In `LinearCombination`, the inputs are averaged when
   `input_coefficients` is empty and the new argument `average` is `True`
@@ -905,9 +905,9 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     - Conjugate Gradient Stabilized (CGS),
     - Generalized Conjugate Residual with Optimal Truncation (GCROT),
 
-  \- Transpose-Free Quasi-Minimum Residual (TFQMR). The `ScipyLinprog`
-  library now handles integer variables.
-  [#1450](https://gitlab.com/gemseo/dev/gemseo/-/issues/1450)
+    \- Transpose-Free Quasi-Minimum Residual (TFQMR). The `ScipyLinprog`
+    library now handles integer variables.
+    [#1450](https://gitlab.com/gemseo/dev/gemseo/-/issues/1450)
 
 #### MDO processes
 
@@ -917,8 +917,8 @@ There is also a page containing the history of the breaking changes in GEMSEO:
 
     - `acceleration_method`,
 
-  \- `over_relaxation_factor`.
-  [#1322](https://gitlab.com/gemseo/dev/gemseo/-/issues/1322)
+    \- `over_relaxation_factor`.
+    [#1322](https://gitlab.com/gemseo/dev/gemseo/-/issues/1322)
 
 - The `JobSchedulerDisciplineWrapper` and the `deserialize_and_run`
   entry point implement `_compute_jacobian`.
@@ -980,9 +980,9 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     - The `MeanMetric` is a composite metric to compare two collections
     using an underlying metric; it returns an array.
 
-  \- The `SquaredErrorMetric` is a composite metric returning the
-  squared difference between two quantities.
-  [#1024](https://gitlab.com/gemseo/dev/gemseo/-/issues/1024)
+    \- The `SquaredErrorMetric` is a composite metric returning the
+    squared difference between two quantities.
+    [#1024](https://gitlab.com/gemseo/dev/gemseo/-/issues/1024)
 
 - The quality of an `MLRegressorAlgo` can be assessed by plotting its
   cross-validation error.
@@ -1020,9 +1020,9 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     - `ClustererQualityFactory` is a factory of objects to assess the
     quality of clustering algorithms.
 
-  \- `BaseClassifierQuality` is the base class to assess the quality of
-  classification algorithms.
-  [#1129](https://gitlab.com/gemseo/dev/gemseo/-/issues/1129)
+    \- `BaseClassifierQuality` is the base class to assess the quality of
+    classification algorithms.
+    [#1129](https://gitlab.com/gemseo/dev/gemseo/-/issues/1129)
 
 - `OptimizationProblem.evaluation_counter` is an `EvaluationCounter` to
   count the number of times a new iteration is stored in
@@ -1086,9 +1086,9 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     - The coefficient `3.16` in `SellarSystem` is now an input variable
     named *α* (default: 3.16).
 
-  \- The coefficient `24.0` in `SellarSystem` is now an input variable
-  named *β* (default: 24.0).
-  [#1164](https://gitlab.com/gemseo/dev/gemseo/-/issues/1164)
+    \- The coefficient `24.0` in `SellarSystem` is now an input variable
+    named *β* (default: 24.0).
+    [#1164](https://gitlab.com/gemseo/dev/gemseo/-/issues/1164)
 
 - The function `to_pickle` saves the pickled representation of an object
   on the disk.
@@ -1110,10 +1110,10 @@ There is also a page containing the history of the breaking changes in GEMSEO:
     - `gemseo.utils.string_tools.filter_names` filters original names from
     a selection of names to keep by preserving their order.
 
-  \- `gemseo.utils.string_tools.get_variables_with_components` returns a
-  collection of `(name, component)` objects from a `name` or
-  `(name, component)` object or a collection of such objects.
-  [#1243](https://gitlab.com/gemseo/dev/gemseo/-/issues/1243)
+    \- `gemseo.utils.string_tools.get_variables_with_components` returns a
+    collection of `(name, component)` objects from a `name` or
+    `(name, component)` object or a collection of such objects.
+    [#1243](https://gitlab.com/gemseo/dev/gemseo/-/issues/1243)
 
 - The function `import_database` can create either a `Dataset` or a
   `Database` from the HDF5 file storing the `Database` associated to an
@@ -1591,7 +1591,7 @@ See `upgrading-gemseo` for more information.
     - `create_scenario_result` stores the result of a `Scenario` from a
     `Scenario` or an HDF5 file.
 
-  [#771](https://gitlab.com/gemseo/dev/gemseo/-/issues/771)
+    [#771](https://gitlab.com/gemseo/dev/gemseo/-/issues/771)
 
 - The `LinearCombination` discipline now has a sparse Jacobian.
   [#809](https://gitlab.com/gemseo/dev/gemseo/-/issues/809)
@@ -1819,7 +1819,7 @@ See `upgrading-gemseo` for more information.
         - `folders_iter` is replaced by `identifiers`
         - `output_folder_basepath` is replaced by `root_directory`
 
-  [#878](https://gitlab.com/gemseo/dev/gemseo/-/issues/878)
+    [#878](https://gitlab.com/gemseo/dev/gemseo/-/issues/878)
 
 - The subpackage `gemseo.mlearning.data_formatters` includes the
   `DataFormatters` used by the learning and prediction methods of the
@@ -1909,7 +1909,7 @@ Upgrade the dependency `pillow` to mitigate a
 - Acceleration methods for MDAs are defined in dedicated classes
   inheriting from `SequenceTransformer`.
 
-  Available sequence transformers are:
+    Available sequence transformers are:
 
     - The alternate 2-δ method: `Alternate2Delta`.
     - The alternate δ² method: `AlternateDeltaSquared`.
@@ -1918,7 +1918,7 @@ Upgrade the dependency `pillow` to mitigate a
     - The minimum polynomial method: `MinimumPolynomial`.
     - The over-relaxation: `OverRelaxation`.
 
-  [#799](https://gitlab.com/gemseo/dev/gemseo/-/issues/799)
+    [#799](https://gitlab.com/gemseo/dev/gemseo/-/issues/799)
 
 - The values of the constraints can be passed to method
   `OptimizationProblem.get_number_of_unsatisfied_constraints.`
@@ -1974,7 +1974,7 @@ Upgrade the dependency `pillow` to mitigate a
   `over_relaxation_factor` and can be modified afterward via the
   attributes `MDA.acceleration_method` and `MDA.over_relaxation_factor`.
 
-  Available acceleration methods are:
+    Available acceleration methods are:
 
   > - `Alternate2Delta`,
   > - `AlternateDeltaSquared`,
@@ -1982,7 +1982,7 @@ Upgrade the dependency `pillow` to mitigate a
   > - `Secant`,
   > - `MinimumPolynomial`,
 
-  [#900](https://gitlab.com/gemseo/dev/gemseo/-/issues/900)
+    [#900](https://gitlab.com/gemseo/dev/gemseo/-/issues/900)
 
 - `CouplingStudyAnalysis` has a new method `generate_coupling_graph`.
 
@@ -2246,7 +2246,7 @@ Upgrade the dependency `pillow` to mitigate a
     removing the non-significant terms.
     - `hyperbolic_parameter` to truncate the PCE before training.
 
-  [#496](https://gitlab.com/gemseo/dev/gemseo/-/issues/496)
+    [#496](https://gitlab.com/gemseo/dev/gemseo/-/issues/496)
 
 - The argument `scale` of `PCA` allows to scale the data before reducing
   their dimension.
@@ -2285,7 +2285,7 @@ Upgrade the dependency `pillow` to mitigate a
     - the Euclidean norm of the component-wise division by initial
     residual scaled by the problem size.
 
-  [#780](https://gitlab.com/gemseo/dev/gemseo/-/issues/780)
+    [#780](https://gitlab.com/gemseo/dev/gemseo/-/issues/780)
 
 - `OTComposedDistribution` can consider any copula offered by OpenTURNS.
   [#655](https://gitlab.com/gemseo/dev/gemseo/-/issues/655)
@@ -2526,7 +2526,7 @@ Upgrade the dependency `pillow` to mitigate a
     - The argument `alpha` (default: 0.5) defines the share of feasible
     design space.
 
-  [#717](https://gitlab.com/gemseo/dev/gemseo/-/issues/717)
+    [#717](https://gitlab.com/gemseo/dev/gemseo/-/issues/717)
 
 ### API changes
 
@@ -2566,7 +2566,7 @@ See `upgrading-gemseo` for more information.
     - The equality constraints are plotted with the
     `OptPostProcessor.eq_cstr_cmap`.
 
-  [#619](https://gitlab.com/gemseo/dev/gemseo/-/issues/619)
+    [#619](https://gitlab.com/gemseo/dev/gemseo/-/issues/619)
 
 - Users can now choose whether the `OptimizationProblem.current_iter`
   should be set to 0 before the execution of an `OptimizationProblem`
@@ -2853,7 +2853,7 @@ See `upgrading-gemseo` for more information.
     space-filling criterion.
     - `compute_discrepancy` computes different discrepancy criteria.
 
-  [#477](https://gitlab.com/gemseo/dev/gemseo/-/issues/477)
+    [#477](https://gitlab.com/gemseo/dev/gemseo/-/issues/477)
 
 ### Fixed
 

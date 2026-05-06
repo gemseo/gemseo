@@ -576,7 +576,6 @@ The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to
     - `BaseMDA.warm_start` is now accessed via `BaseMDA.settings.warm_start`.
 - The inner MDA settings of `MDAChain` can no longer be passed using `**inner_mda_options`, and must now be passed either as dictionnary or an instance of `MDAChain_Settings`.
 - The signature of `MDAGSNewton` has been modified. Settings for the `MDAGaussSeidel` and the `MDANewtonRaphson` are now respectively passed via the `gauss_seidel_settings` and the `newton_settings` arguments, which can be either key/value pairs or the appropriate Pydantic settings model.
-
 - The MDA settings for the `IDF` formulation are now passed via the `mda_chain_settings_for_start_at_equilibrium` argument which can be either key/value pairs or an `MDAChain_Settings` instance. The MDA settings for the `MDF` and `BiLevel` formulations are now passed via the `main_mda_settings` argument which can be either key/value pairs or an appropriate Pydantic settings model. [#1322](https://gitlab.com/gemseo/dev/gemseo/-/issues/1322) - The `parallel_execution` attribute of `MDAJacobi` is `None` when `n_processes` is `1` (serial mode). [#1277](https://gitlab.com/gemseo/dev/gemseo/-/issues/1277) - The `relax_factor` argument of `MDAGSNewton` has been removed; use `over_relaxation_factor` instead. [#1279](https://gitlab.com/gemseo/dev/gemseo/-/issues/1279)
 
 ### MDOFunction

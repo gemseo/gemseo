@@ -27,8 +27,8 @@ residuals removed from the set of constraints:
 
 $$
 \begin{aligned}
-& \underset{x,z}{\text{min}}    & & f(x, z, \Psi(x, z)) \\
-& \text{subject to}             & & g(x, z, \Psi(x, z)) \le 0
+& \underset{x,z}{\text{min}} & & f(x, z, \Psi(x, z)) \\
+& \text{subject to} & & g(x, z, \Psi(x, z)) \le 0
 \end{aligned}
 $$
 

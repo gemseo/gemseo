@@ -145,7 +145,7 @@ We can easily instantiate an internal discipline by means of the [create_discipl
 ``` python
 from gemseo import create_discipline
 
-sellar_system = create_discipline('SellarSystem')
+sellar_system = create_discipline("SellarSystem")
 ```
 
 We can easily instantiate multiple built-in disciplines by means of the [create_discipline()][gemseo.create_discipline] method, using a list of discipline names rather than a single discipline name, e.g.:
@@ -153,7 +153,7 @@ We can easily instantiate multiple built-in disciplines by means of the [create_
 ``` python
 from gemseo import create_discipline
 
-disciplines = create_discipline(['Sellar1', 'Sellar2', 'SellarSystem'])
+disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 ```
 
 In this case, `disciplines` is a list of [Discipline][gemseo.core.discipline.discipline.Discipline], where the first one is an instance of [Sellar1][gemseo.problems.mdo.sellar.sellar_1.Sellar1], the second one is an instance of [Sellar2][gemseo.problems.mdo.sellar.sellar_2.Sellar2] and the third one is an instance of [SellarSystem][gemseo.problems.mdo.sellar.sellar_system.SellarSystem].
@@ -164,7 +164,7 @@ In this case, `disciplines` is a list of [Discipline][gemseo.core.discipline.dis
     ``` python
     from gemseo import create_discipline
 
-    discipline = create_discipline('MyDisciplineWithArguments', **kwargs)
+    discipline = create_discipline("MyDisciplineWithArguments", **kwargs)
     ```
 
     where `kwargs = {'arg1_key': arg1_val, 'arg1_key': arg1_val, ...}`.
@@ -175,7 +175,7 @@ In this case, `disciplines` is a list of [Discipline][gemseo.core.discipline.dis
     ``` python
     from gemseo import create_discipline
 
-    discipline = create_discipline('MyExternalDiscipline')
+    discipline = create_discipline("MyExternalDiscipline")
     ```
 
 ## How to set the cache policy?
@@ -189,13 +189,19 @@ sellar_system.set_cache(cache_type=sellar_system.CacheType.SIMPLE)
 or the HDF5 cache strategy with the discipline name as node name (here `SellarSystem`), e.g.:
 
 ``` python
-sellar_system.set_cache(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5')
+sellar_system.set_cache(
+    cache_type=sellar_system.CacheType.HDF5, cache_hdf_file="cached_data.hdf5"
+)
 ```
 
 or the HDF5 cache strategy with a user-defined name as node name (here `node`), e.g.:
 
 ``` python
-sellar_system.set_cache(cache_type=sellar_system.CacheType.HDF5, cache_hdf_file='cached_data.hdf5', cache_hdf_node_path='node')
+sellar_system.set_cache(
+    cache_type=sellar_system.CacheType.HDF5,
+    cache_hdf_file="cached_data.hdf5",
+    cache_hdf_node_path="node",
+)
 ```
 
 !!! note
@@ -248,7 +254,7 @@ sellar_system.io.input_grammar.validate(sellar_system.default_input_data)
 does not raise any error while:
 
 ``` python
-sellar_system.io.input_grammar.validate({'a': array([1.]), 'b': array([1., -6.2])})
+sellar_system.io.input_grammar.validate({"a": array([1.0]), "b": array([1.0, -6.2])})
 ```
 
 raises the error:

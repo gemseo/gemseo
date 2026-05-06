@@ -216,11 +216,14 @@ an output of the discipline no. *i* and an input of the discipline no. *j*.
 To create the disciplines of the Sobieski problem:
 
 ``` python
-from gemseo import  create_discipline
+from gemseo import create_discipline
 
-disciplines = create_discipline(
-  ["SobieskiStructure", "SobieskiPropulsion", "SobieskiAerodynamics", "SobieskiMission"]
-  )
+disciplines = create_discipline([
+    "SobieskiStructure",
+    "SobieskiPropulsion",
+    "SobieskiAerodynamics",
+    "SobieskiMission",
+])
 ```
 
 ### Reference results
@@ -315,9 +318,14 @@ $$
 The Propane combustion disciplines are available in GEMSEO and can be imported with the following code:
 
 ``` python
-from gemseo import  create_discipline
+from gemseo import create_discipline
 
-disciplines = create_discipline(["PropaneComb1", "PropaneComb2", "PropaneComb3", "PropaneReaction"])
+disciplines = create_discipline([
+    "PropaneComb1",
+    "PropaneComb2",
+    "PropaneComb3",
+    "PropaneReaction",
+])
 ```
 
 A [DesignSpace][gemseo.algos.design_space.DesignSpace] file *propane_design_space.csv* is also available in the same folder,
@@ -326,7 +334,7 @@ which can be read using the [read_design_space()][gemseo.read_design_space] func
 ### Problem results
 
 The optimum is $(x1,x3,x6,x7) = (1.378887, 18.426810, 1.094798, 0.931214)$.
-The minimum objective value is $0$. At this point,  all the system-level inequality constraints are active.
+The minimum objective value is $0$. At this point, all the system-level inequality constraints are active.
 
 ## Aerostructure problem
 
@@ -389,7 +397,10 @@ The
 class can be imported as follows:
 
 ``` python
-from gemseo.problems.aerostructure.aerostructure_design_space import AerostructureDesignSpace
+from gemseo.problems.aerostructure.aerostructure_design_space import (
+    AerostructureDesignSpace,
+)
+
 design_space = AerostructureDesignSpace()
 ```
 

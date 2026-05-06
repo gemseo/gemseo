@@ -94,15 +94,19 @@ This assumes that the MDA is exactly solved at each iteration.
 
 Since $\mathcal{R}$ is a null function, its derivative with respect to $\mathbf{x}$ is always zero, leading to:
 
-$$\frac{\partial \mathcal{R}}{\partial \mathbf{x}}
+$$
+\frac{\partial \mathcal{R}}{\partial \mathbf{x}}
 + \frac{\partial \mathcal{R}}{\partial \mathcal{Y}}~
-\frac{d\mathcal{Y}}{d\mathbf{x}} = 0$$
+\frac{d\mathcal{Y}}{d\mathbf{x}} = 0
+$$
 
 So we can obtain the total derivative of the coupling variables :
 
-$$\frac{d\mathcal{Y}}{d\mathbf{x}} =
--\left( \frac{\partial \mathcal{R}}{\partial \mathcal{Y}} \right)^{-1}
-\frac{\partial \mathcal{R}}{\partial \mathbf{x}}$$
+$$
+\frac{d\mathcal{Y}}{d\mathbf{x}} =
+- \left( \frac{\partial \mathcal{R}}{\partial \mathcal{Y}} \right)^{-1}
+\frac{\partial \mathcal{R}}{\partial \mathbf{x}}
+$$
 
 However, this linear system is very expensive when there are many design variables, so the computation of this derivative is usually not performed.
 
@@ -115,17 +119,19 @@ $$\frac{d\mathbf{f}}{d\mathbf{x}} =
 
 Replacing $\frac{d\mathcal{Y}}{d\mathbf{x}}$ from the residual derivative gives:
 
-$$\frac{d\mathbf{f}}{d\mathbf{x}} =
+$$
+\frac{d\mathbf{f}}{d\mathbf{x}} =
 - \frac{\partial \mathbf{f}}{\partial \mathcal{Y}}~
 \left( \frac{\partial \mathcal{R}}{\partial \mathcal{Y}} \right)^{-1}~
 \frac{\partial \mathcal{R}}{\partial \mathbf{x}}
-+ \frac{\partial \mathbf{f}}{\partial \mathbf{x}}$$
++ \frac{\partial \mathbf{f}}{\partial \mathbf{x}}
+$$
 
 ## Adjoint versus direct methods
 
 The cost of evaluating the gradient of $\mathbf{f}$ is driven by the matrix inversion $\left( \frac{\partial \mathcal{R}}{\partial \mathcal{Y}} \right)^{-1}$. Two approaches are possible to compute the previous equation:
 
--   The adjoint method: computation of the adjoint vector $\bf{\lambda}$
+- The adjoint method: computation of the adjoint vector $\bf{\lambda}$
 
     $$\dfrac{d\bf{f}}{d\bf{x}} = -\underbrace{\left[ \dfrac{\partial \bf{f}}{\partial \bf{\mathcal{Y}}}\cdot\left(\dfrac{\partial\bf{\mathcal{R}}}{\partial \bf{\mathcal{Y}}}\right)^{-1} \right] }_{\bf{\lambda}^T}\cdot\dfrac{\partial \bf{\mathcal{R}}}{\partial \bf{x}}+ \dfrac{\partial \bf{f}}{\partial \bf{x}} = -\bf{\lambda}^T\cdot\dfrac{\partial \bf{\mathcal{R}}}{\partial \bf{x}} + \dfrac{\partial \bf{f}}{\partial \bf{x}}$$
 
@@ -135,7 +141,7 @@ The cost of evaluating the gradient of $\mathbf{f}$ is driven by the matrix inve
 
     These linear systems are the expensive part of the computation, which does not depend on the number of design variables because the equation is independent of x. The Jacobian of the functions are then obtained by a simple matrix vector product, which cost depends on the design variables number but is usually negligible.
 
--   The direct method: linear solve of $\dfrac{d\bf{\mathcal{Y}}}{d\bf{x}}$
+- The direct method: linear solve of $\dfrac{d\bf{\mathcal{Y}}}{d\bf{x}}$
 
     $$\dfrac{d\bf{f}}{d\bf{x}} = -\dfrac{\partial \bf{f}}{\partial \bf{\mathcal{Y}}} \cdot \underbrace{\left[ \left(\dfrac{\partial\bf{\mathcal{R}}}{\partial \bf{\mathcal{Y}}}\right)^{-1}\cdot \dfrac{\partial \bf{\mathcal{R}}}{\partial \bf{x}}\right]}_{-d\bf{\mathcal{Y}}/d\bf{x}} + \dfrac{\partial \bf{f}}{\partial \bf{x}}$$
 
@@ -179,6 +185,7 @@ classDiagram
     MDA "1" -- "1..*" Discipline
     JacobianAssembly "1" -- "1" CouplingStructure
 ```
+
 ## Illustration on the Sobieski SSBJ test-case
 
 In GEMSEO, the jacobian matrix of a discipline is a dictionary of dictionaries. When wrapping the execution, a `Discipline._compute_jacobian()` method must be defined (it overloads the generical one defined in [Discipline][gemseo.core.discipline.discipline.Discipline] class): the jacobian matrix must be defined as [Discipline.jac][gemseo.core.discipline.discipline.Discipline.jac].
@@ -198,24 +205,24 @@ def _compute_jacobian(self, input_names=(), output_names=()):
 The differentiation method is set by
 [EvaluationScenario.set_differentiation_method()][gemseo.scenarios.evaluation.EvaluationScenario.set_differentiation_method]:
 
--   for `"finite_differences"` (default value):
+- for `"finite_differences"` (default value):
 
 ``` python
 scenario.set_differentiation_method("finite_differences")
 ```
 
--   for the `"complex_step"` method (each discipline must handle complex numbers):
+- for the `"complex_step"` method (each discipline must handle complex numbers):
 
 ``` python
 scenario.set_differentiation_method("complex_step")
 ```
 
--   for linearized version of the disciplines (`"user"`): switching from direct mode to reverse mode is automatic, depending on the number of inputs and outputs. It can also be set by the user, setting [linearization_mode][gemseo.core.discipline.discipline.Discipline.linearization_mode] at `"direct"` or `"adjoint"`.
+- for linearized version of the disciplines (`"user"`): switching from direct mode to reverse mode is automatic, depending on the number of inputs and outputs. It can also be set by the user, setting [linearization_mode][gemseo.core.discipline.discipline.Discipline.linearization_mode] at `"direct"` or `"adjoint"`.
 
 ``` python
 scenario.set_differentiation_method("user")
 for discipline in scenario.disciplines:
-   discipline.linearization_mode='auto' # default, can also be 'direct' or 'adjoint'
+    discipline.linearization_mode = "auto"  # default, can also be 'direct' or 'adjoint'
 ```
 
 When deriving a source code, it is very easy to make some errors or to forget to derive some terms: that is why implementation of derivation can be validated against finite differences or complex step method, by means of the method [check_jacobian()][gemseo.core.discipline.discipline.Discipline.check_jacobian]:

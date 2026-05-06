@@ -14,6 +14,8 @@
 [![Codecov branch](https://img.shields.io/codecov/c/gitlab/gemseo:dev/gemseo/develop)](https://app.codecov.io/gl/gemseo:dev/gemseo/branch/develop)
 [![Paper](https://img.shields.io/badge/DOI-10.2514%2F6.2018--0657-blue)](https://arc.aiaa.org/doi/10.2514/6.2018-0657)
 
+# GEMSEO
+
 GEMSEO® stands for "Generic Engine for Multi-disciplinary Scenarios,
 Exploration and Optimization".
 
@@ -30,24 +32,24 @@ Features:
 - Built on NumPy, SciPy and matplotlib.
 - Open-source LGPL-3.0 license.
 
-# Documentation
+## Documentation
 
 The full documentation of GEMSEO, including installation and tutorials,
-can be found at <https://gemseo.readthedocs.io>.
+can be found at <https://gemseo.org/doc/gemseo>.
 
-# Bugs/Questions
+## Bugs/Questions
 
 Please use the gitlab issue tracker at
 <https://gitlab.com/gemseo/dev/gemseo/-/issues> to submit bugs or
 questions.
 
-# Community
+## Community
 
 The GEMSEO community forums are available at
 <https://gemseo.discourse.group>. A place where users can connect, ask
 questions, and share ideas about GEMSEO.
 
-# License
+## License
 
 The GEMSEO source code is distributed under the GNU LGPL v3.0 license. A
 copy of it can be found in the LICENSE.txt file. The GNU LGPL v3.0
@@ -64,9 +66,8 @@ The GEMSEO product depends on other software which have various
 licenses. The list of dependencies with their licenses is given in the
 documentation page named credits.
 
-# About us
+## About us
 
-Visit the page [About
-us](https://gemseo.readthedocs.io/en/develop/aboutus.html) to find out
+Visit [this page](https://gemseo.org/about/history/) to find out
 more about GEMSEO (context, history, references, etc.) and its
 contributors.
