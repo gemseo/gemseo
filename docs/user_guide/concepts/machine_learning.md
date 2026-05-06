@@ -27,7 +27,7 @@ as explained in [this page][surrogate-models-introduction].
 
 The data consist of $n$ samples:
 
-$$\mathcal{L}=\left(p^{(i)}\right)_{1 \leq i \leq n}$$,
+$$\mathcal{L}=\left(p^{(i)}\right)_{1 \leq i \leq n},$$
 
 describing $d$ properties of interest $p=(p_1,\ldots,p_d)$,
 which can sometimes be organized into groups
