@@ -19,6 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -35,6 +36,7 @@ from numpy.typing import NDArray
 from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
     OT_SOBOL_INDICES_Settings,
 )
+from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
@@ -101,7 +103,7 @@ def discipline_cv2() -> AutoPyDiscipline:
 def uncertain_space() -> ParameterSpace:
     """The uncertain space of interest."""
     parameter_space = ParameterSpace()
-    for name, size in zip(["x1", "x23"], [1, 2], strict=False):
+    for name, size in zip(["x1", "x23"], [1, 2], strict=True):
         parameter_space.add_random_variable(
             name, OTUniformDistribution_Settings(minimum=-pi, maximum=pi), size=size
         )
@@ -685,3 +687,138 @@ def test_constant_output(discipline_with_constant_output_and_space, kwargs):
     assert indices.total["varying"][0]["x2"] is not None
     if not kwargs:
         assert indices.second["varying"][0] is not None
+
+
+def test_rank_based_sobol_warning(discipline, uncertain_space, caplog):
+    """Check that a warning is logged if the user tries to compute second-order indices
+    with a rank-based Sobol' analysis."""
+    analysis = SobolAnalysis()
+    analysis.compute_samples(
+        [discipline],
+        uncertain_space,
+        10,
+        algo_settings=MC_Settings(),
+    )
+    assert (
+        "gemseo.uncertainty.sensitivity.sobol",
+        30,
+        (
+            "The second-order indices can only be computed "
+            "with the OT_SOBOL_INDICES algorithm."
+        ),
+    ) in caplog.record_tuples
+
+
+@pytest.mark.parametrize(
+    "algo",
+    [
+        algo
+        for algo in SobolAnalysis.Algorithm
+        if algo != SobolAnalysis.Algorithm.SALTELLI
+    ],
+)
+def test_algo_control_variate_error(discipline, uncertain_space, algo):
+    """Check that an error is raised if the user tries to use control variates
+    with a wrong algorithm."""
+    analysis = SobolAnalysis()
+    analysis.compute_samples(
+        [discipline],
+        uncertain_space,
+        10,
+        algo_settings=MC_Settings() if algo == SobolAnalysis.Algorithm.RANK else None,
+    )
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The Saltelli algorithm is required for the use of control variates."
+        ),
+    ):
+        analysis.compute_indices(algo=algo, control_variates=["mock"])
+
+
+def test_pf_algo_compatibility_error(discipline, uncertain_space):
+    """Check that an error is raised if the user tries to use a Sobol' estimation
+    algorithm expecting pick-and-freeze (PF) samples with non-PF samples."""
+    analysis = SobolAnalysis()
+    analysis.compute_samples(
+        [discipline],
+        uncertain_space,
+        10,
+        algo_settings=MC_Settings(),
+    )
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Sobol' estimation algorithms (except rank-based) expect "
+            "pick-and-freeze samples."
+        ),
+    ):
+        analysis.compute_indices(algo=analysis.Algorithm.SALTELLI)
+
+
+def test_rank_based_algo_compatibility_error(discipline, uncertain_space):
+    """Check that an error is raised if the user tries to use the rank-based Sobol'
+    estimation algorithm samples with pick-and-freeze samples."""
+    analysis = SobolAnalysis()
+    analysis.compute_samples([discipline], uncertain_space, 100)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "The rank-based Sobol' estimation algorithm expects Monte Carlo samples."
+        ),
+    ):
+        analysis.compute_indices(algo=analysis.Algorithm.RANK)
+
+
+@pytest.fixture
+def rank_based_sobol(discipline, uncertain_space):
+    """A rank-based Sobol' analysis."""
+    analysis = SobolAnalysis()
+    analysis.compute_samples(
+        [discipline],
+        uncertain_space,
+        100,
+        algo_settings=MC_Settings(),
+    )
+    return analysis
+
+
+@image_comparison(["plot_rank"])
+def test_rank_based_sobol(rank_based_sobol):
+    """Check that the rank-based Sobol' analysis works."""
+    rank_based_sobol.compute_indices()
+
+    # Check that rank-based Sobol' analysis cannot compute second-order
+    # and total indices.
+    assert not rank_based_sobol.indices.total
+    assert not rank_based_sobol.indices.second
+
+    # Check the first-order indices.
+    for output_name, component in [("y", 0), ("z", 0), ("z", 1)]:
+        assert_almost_equal(
+            rank_based_sobol.indices.first[output_name][component]["x1"],
+            array([0.33418792]),
+        )
+        assert_almost_equal(
+            rank_based_sobol.indices.first[output_name][component]["x23"],
+            array([0.4059578, -0.05841109]),
+        )
+
+    # Check that plotting works, even if total indices are missing.
+    rank_based_sobol.plot("y", save=False)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected"),
+    [
+        ({}, [[0.1701791], [0.4228924]]),
+        # Check the confidence intervals with 10 replicates instead of 100.
+        ({"n_replicates": 10}, [[0.2362999], [0.3917675]]),
+        # Check the confidence intervals with a 90% confidence level instead of 95%
+        ({"confidence_level": 0.90}, [[0.2104981], [0.4356857]]),
+    ],
+)
+def test_rank_based_sobol_bootstrap(rank_based_sobol, kwargs, expected):
+    """Check that the bootstrap options of rank-based Sobol' analysis work."""
+    rank_based_sobol.compute_indices(**kwargs)
+    assert_almost_equal(rank_based_sobol.get_intervals()["y"][0]["x1"], array(expected))
