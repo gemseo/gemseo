@@ -1212,3 +1212,10 @@ def test_observe_all_outputs(sellar_disciplines, add_obj_c) -> None:
         "y_1",
         "y_2",
     ]
+
+
+def test_algo_result(mdf_scenario):
+    """The execution result returned by execute() can be accessed via an attribute."""
+    result = mdf_scenario.execute(SLSQP_Settings(max_iter=2))
+    assert isinstance(result, OptimizationResult)
+    assert result == mdf_scenario.optimization_result

@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
+    from gemseo.algos.base_driver_settings import BaseDriverSettings
     from gemseo.algos.design_space import DesignSpace
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.core.discipline.base_discipline import BaseDiscipline
@@ -340,18 +341,25 @@ class MDOScenario(EvaluationScenario):
         )
 
     def get_result(self, name: str = "", **options: Any) -> ScenarioResult | None:
-        """Return the result of the scenario execution.
+        """Return the scenario result.
+
+        This result differs from the optimization result
+        returned by [execute()][gemseo.scenarios.mdo.MDOScenario.execute].
+        It is a post-processed version of the latter,
+        which can be retrieved using its `optimization_result` attribute.
+        For the `BiLevel` formulation,
+        its `get_sub_optimization_result` method returns the optimization result
+        associated with a sub-scenario.
 
         Args:
             name: The class name of the
                 [ScenarioResult][gemseo.scenarios.scenario_results.scenario_result.ScenarioResult].
-                If empty, use a default one
-                (see [create_scenario_result()][gemseo.create_scenario_result]).
+                If empty, use the default class associated with the formulation.
             **options: The options of the
                 [ScenarioResult][gemseo.scenarios.scenario_results.scenario_result.ScenarioResult].
 
         Returns:
-            The result of the scenario execution.
+            The scenario result.
         """
         if self._execution_result is None:
             return None
@@ -361,3 +369,15 @@ class MDOScenario(EvaluationScenario):
             scenario=self,
             **options,
         )
+
+    def execute(
+        self,
+        algorithm_settings: BaseDriverSettings | None = None,
+    ) -> OptimizationResult:
+        """
+        Returns:
+            The optimization result.
+            This result is part of the scenario result,
+            accessible via [get_result()][gemseo.scenarios.mdo.MDOScenario.get_result].
+        """  # noqa: D205, D212
+        return super().execute(algorithm_settings=algorithm_settings)

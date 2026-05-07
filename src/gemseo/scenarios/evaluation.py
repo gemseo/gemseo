@@ -362,14 +362,17 @@ class EvaluationScenario(BaseMonitoredProcess):
     def execute(
         self,
         algorithm_settings: BaseDriverSettings | None = None,
-    ) -> None:
-        """Execute the scenario.
+    ) -> Any:
+        """Apply an algorithm to the scenario.
 
         Args:
             algorithm_settings: The algorithm settings.
                 If `None`,
                 the method will use the settings
                 defined by the `algorithm_settings` attribute.
+
+        Returns:
+            The result of the algorithm's execution, if there is one.
 
         Raises:
             ValueError: If the algorithm settings are not defined.
@@ -429,6 +432,8 @@ class EvaluationScenario(BaseMonitoredProcess):
             LOGGER.info("*** End %s execution (time: %s) ***", self.name, time_)
         else:
             LOGGER.info("*** End %s execution ***", self.name)
+
+        return self._execution_result
 
     def _execute(self) -> None:
         self._execution_result = self._algo_factory.execute(
