@@ -17,47 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Class for the estimation of Morris indices.
-
-## OAT technique
-
-The purpose of the One-At-a-Time (OAT) methodology is to quantify the elementary effect
-
-$$
-   df_i = f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i+dX_i,\ldots,X_d)
-          -
-          f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i,\ldots,X_d)
-$$
-
-associated with a small variation $dX_i$ of $X_i$ with
-
-$$df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)$$
-
-The elementary effects $df_1,\ldots,df_d$ are computed sequentially
-from an initial point
-
-$$X=(X_1,\ldots,X_d)$$
-
-From these elementary effects, we can compare their absolute values
-$|df_1|,\ldots,|df_d|$ and sort $X_1,\ldots,X_d$ accordingly.
-
-## Morris technique
-
-Then, the purpose of the Morris' methodology is to repeat the OAT method
-from different initial points $X^{(1)},\ldots,X^{(r)}$
-and compare the input variables in terms of mean
-
-$$\mu_i^* = \frac{1}{r}\sum_{j=1}^r|df_i^{(j)}|$$
-
-and standard deviation
-
-$$\sigma_i = \sqrt{\frac{1}{r}\sum_{j=1}^r\left(|df_i^{(j)}|-\mu_i\right)^2}$$
-
-where $\mu_i = \frac{1}{r}\sum_{j=1}^rdf_i^{(j)}$.
-
-This methodology relies on the
-[MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis] class.
-"""
+"""Sensitivity analysis based on the Morris method."""
 
 from __future__ import annotations
 
@@ -101,23 +61,51 @@ if TYPE_CHECKING:
 
 
 class MorrisAnalysis(BaseSensitivityAnalysis):
-    r"""Sensitivity analysis based on the Morris' indices.
+    r"""Sensitivity analysis based on the Morris method.
 
-    [indices][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.indices]
-    contains both $\mu^*$, $\mu$ and $\sigma$
-    while
-    [main_indices][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.main_indices]
-    represents $\mu^*$.
-    Lastly, the
-    [plot()][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.plot]
-    method represents the input variables as a scatter plot
-    where $X_i$ has as coordinates $(\mu_i^*,\sigma_i)$.
-    The bigger $\mu_i^*$ is, the more significant $X_i$ is.
-    Concerning $\sigma_i$, it highlights non-linear effects
-    along $X_i$ or cross-effects between $X_i$ and other parameter(s).
+    The Morris method is a screening technique used in sensitivity analysis
+    to identify which input variables have the most significant influence on an ouptut
+    through a computationally efficient one-at-a-time (OAT) sampling approach.
+    It also makes it possible to detect interactions or nonlinear effects.
 
-    The user can specify the DOE algorithm name to select the initial points, as
-    well as the number of replicates and the relative step for the input variations.
+    The OAT technique involves calculating elementary effects for each variable,
+    defined as
+
+    $$df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)$$
+
+    and
+
+    $$
+    df_i = f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i+dX_i,\ldots,X_d)
+          -
+          f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i,\ldots,X_d)
+    $$
+
+    where $dX_i$ is a small variation of $X_i$.
+
+    The elementary effects $df_1,\ldots,df_d$ are computed sequentially
+    from an initial point
+
+    $$X=(X_1,\ldots,X_d).$$
+
+    Given these elementary effects,
+    we can compare their absolute values
+    $|df_1|,\ldots,|df_d|$ and sort $X_1,\ldots,X_d$ accordingly.
+
+    The Morris method repeats this OAT technique at $r$ points of the input space
+    and computes statistics from the elementary effects,
+    such as the means of the absolute finite differences $\mu^*$:
+
+    $$\mu_i^* = \frac{1}{r}\sum_{j=1}^r|df_i^{(j)}|$$
+
+    and standard deviations $\sigma$:
+
+    $$\sigma_i = \sqrt{\frac{1}{r}\sum_{j=1}^r\left(|df_i^{(j)}|-\mu_i\right)^2}$$
+
+    where $\mu_i = \frac{1}{r}\sum_{j=1}^r df_i^{(j)}$.
+
+    The larger the value of $\mu_i^*$, the more significant $X_i$ is.
+    The larger the value of $\sigma_i$, the greater the nonlinearity or interaction.
     """
 
     @dataclass(frozen=True)
@@ -161,15 +149,15 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
     ) -> IODataset:
         r"""
         Args:
-            n_replicates: The number of times
-                the OAT method is repeated. Used only if `n_samples` is `0`.
-                Otherwise, this number is the greater integer $r$
-                such that $r(d+1)\leq$ `n_samples`
-                and $r(d+1)$ is the number of samples actually carried out.
-            step: The finite difference step of the OAT method.
-
-        Raises:
-            ValueError: If at least one input dimension is not equal to 1.
+            n_replicates: The number of times $r$ the OAT method is repeated.
+                When `n_samples` is not equal to `0`,
+                $r$ is the greatest integer such that $r(d+1)\leq$ `n_samples`,
+                where $d$ is the input dimension,
+                and the number of samples actually carried out is $r(d+1)$.
+            step: The relative finite difference step $\delta_r$ of the OAT method.
+                In the $i$-th direction,
+                the absolute step is
+                $\delta_a = \min(x_i) + \delta_r (\max(x_i) - \min(x_i))$.
         """  # noqa: D205, D212, D415
         if algo_settings is None:
             algo_settings = DOE_LIBRARY_FACTORY.create_settings(self.DEFAULT_DRIVER)
@@ -325,8 +313,8 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
     ) -> Figure:
         r"""Plot the Morris indices for each input variable.
 
-        For $i\in\{1,\ldots,d\}$,
-        plot $\mu_i^*$ in function of $\sigma_i$.
+        This is a scatter plot
+        where $X_i$ has coordinates $(\mu_i^*,\sigma_i)$.
 
         Args:
             directory_path: The path to the directory where to save the plots.

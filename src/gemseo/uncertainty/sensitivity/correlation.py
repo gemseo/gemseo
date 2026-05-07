@@ -18,7 +18,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Class for the estimation of various correlation coefficients."""
+"""Sensitivity analysis based on correlation measures."""
 
 from __future__ import annotations
 
@@ -57,7 +57,7 @@ from openturns import CorrelationAnalysis as OTCorrelationAnalysis
 
 
 class CorrelationAnalysis(BaseSensitivityAnalysis):
-    """Sensitivity analysis based on indices using correlation measures."""  # noqa: E501
+    """Sensitivity analysis based on correlation measures."""
 
     @dataclass(frozen=True)
     class SensitivityIndices:  # noqa: D106
