@@ -64,7 +64,8 @@ def test_two_coupled_disciplines_default(discipline_a, discipline_b, design_spac
     assert isinstance(scenario.formulation.mda, MDAChain)
     scenario.add_observable("y")
     scenario.add_observable("z")
-    scenario.execute(CustomDOE_Settings(samples=array([[2.0], [3.0]])))
+    result = scenario.execute(CustomDOE_Settings(samples=array([[2.0], [3.0]])))
+    assert result is None
     dataset = scenario.to_dataset()
     assert_equal(dataset.get_view(variable_names="y"), array([[3.0], [4.0]]))
     assert_equal(dataset.get_view(variable_names="z"), array([[6.0], [8.0]]))
