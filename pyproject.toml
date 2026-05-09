@@ -30,7 +30,7 @@ dependencies = [
     "minisom >=2.3.5,<=2.3.6",
     "networkx >=2.5,<=3.6.1",
     "numpy >=1.23,<=2.4.4",
-    "packaging >=15,<=26.1",
+    "packaging >=15,<=26.2",
     "pandas >=2.1.0,<=2.3.3",
     "prettytable >=2.3.0,<=3.17.0",
     "pyxdsm >=2.2.1,<=2.3.2",
