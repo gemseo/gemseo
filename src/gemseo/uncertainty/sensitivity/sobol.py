@@ -40,6 +40,7 @@ from numpy.random import default_rng
 from openturns import JansenSensitivityAlgorithm
 from openturns import MartinezSensitivityAlgorithm
 from openturns import MauntzKucherenkoSensitivityAlgorithm
+from openturns import RandomGenerator
 from openturns import RankSobolSensitivityAlgorithm
 from openturns import SaltelliSensitivityAlgorithm
 from openturns import Sample
@@ -65,6 +66,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from matplotlib.figure import Figure
+    from openturns import SobolIndicesAlgorithmImplementation
 
     from gemseo.algos.doe.base_doe_settings import BaseDOESettings
     from gemseo.algos.parameter_space import ParameterSpace
@@ -243,9 +245,43 @@ class SobolAnalysis(BaseSensitivityAnalysis):
       the first-order or the total-order.
     """
 
+    __output_standard_deviations: dict[str, RealArray]
+    """The map between output names and standard deviations."""
+
+    __output_name_to_sobol_algos: dict[str, list[SobolIndicesAlgorithmImplementation]]
+    """The map from an output name to a Sobol' algorithms."""
+
+    __output_variances: dict[str, RealArray]
+    """The map between output names and variances."""
+
+    __use_control_variates: bool
+    """Whether to use control variates to estimate the indices."""
+
     DEFAULT_DRIVER: ClassVar[str] = "OT_SOBOL_INDICES"
 
     _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.FIRST
+
+    def __init__(self, samples: IODataset | str | Path = "") -> None:  # noqa: D107
+        super().__init__(samples)
+        self.__use_control_variates = False
+        self.__output_name_to_sobol_algos = {}
+        dataset = self.dataset
+        if dataset is None or dataset.empty:
+            self.__output_standard_deviations = {}
+            self.__output_variances = {}
+        elif "output_variances" in (misc := dataset.misc):
+            self.__output_standard_deviations = misc["output_standard_deviations"]
+            self.__output_variances = misc["output_variances"]
+        else:
+            output_variances = split_array_to_dict_of_arrays(
+                dataset.get_view(group_names=dataset.OUTPUT_GROUP).to_numpy().var(0),
+                dataset.variable_names_to_n_components,
+                dataset.output_names,
+            )
+            self.__output_variances = output_variances
+            self.__output_standard_deviations = {
+                k: v**0.5 for k, v in output_variances.items()
+            }
 
     def compute_samples(
         self,
@@ -338,25 +374,25 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             dataset.misc["sample_size"] = len(dataset)
 
         self.dataset.misc["eval_second_order"] = compute_second_order
+        self.__output_variances = output_variances
+        self.__output_standard_deviations = {
+            k: v**0.5 for k, v in output_variances.items()
+        }
         dataset.misc["parameter_space"] = parameter_space
         dataset.misc["n_inputs"] = n_inputs
         dataset.misc["output_variances"] = output_variances
-        dataset.misc["output_standard_deviations"] = {
-            k: v**0.5 for k, v in output_variances.items()
-        }
-        dataset.misc["use_control_variates"] = False
-        dataset.misc["output_names_to_sobol_algos"] = {}
+        dataset.misc["output_standard_deviations"] = self.__output_standard_deviations
         return dataset
 
     @property
     def output_variances(self) -> dict[str, RealArray]:
         """The variances of the output variables."""
-        return self.dataset.misc["output_variances"]
+        return self.__output_variances
 
     @property
     def output_standard_deviations(self) -> dict[str, RealArray]:
         """The standard deviations of the output variables."""
-        return self.dataset.misc["output_standard_deviations"]
+        return self.__output_standard_deviations
 
     def __execute_cv(
         self,
@@ -422,6 +458,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         confidence_level: float,
         use_asymptotic_distributions: bool,
         n_replicates: int,
+        seed: int | None = None,
     ) -> SensitivityIndices:
         """Compute the sensitivity indices with OpenTURNS capabilities.
 
@@ -434,23 +471,33 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 Otherwise, use the bootstrap method.
             n_replicates: The number of bootstrap replicates
                 used for the computation of the confidence intervals.
+            seed: The seed of the OpenTURNS random generator for bootstrapping.
+                If `None`,
+                the current state of `openturns.RandomGenerator` is used (no reseeding).
 
         Returns:
             The sensitivity indices.
         """
         algo_class = self.__ALGO_NAME_TO_CLASS[algo]
+        use_rank_algorithm = issubclass(algo_class, RankSobolSensitivityAlgorithm)
+        state = None
+        if (
+            use_rank_algorithm or not use_asymptotic_distributions
+        ) and seed is not None:
+            state = RandomGenerator.GetState()
+            RandomGenerator.SetSeed(seed)
+
         dataset = self.dataset
         input_data = Sample(
             dataset.get_view(
                 group_names=dataset.INPUT_GROUP, variable_names=self._input_names
             ).to_numpy()
         )
-        output_names_to_sobol_algos = self.dataset.misc["output_names_to_sobol_algos"]
         for output_name in output_names:
             output_data = dataset.get_view(
                 group_names=dataset.OUTPUT_GROUP, variable_names=output_name
             ).to_numpy()
-            algos = output_names_to_sobol_algos[output_name] = []
+            algos = self.__output_name_to_sobol_algos[output_name] = []
             for sub_output_data in output_data.T:
                 if sub_output_data.var() == 0.0:
                     algos.append(None)
@@ -460,14 +507,17 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 ot_algo.setDesign(
                     input_data,
                     Sample(sub_output_data[:, newaxis]),
-                    dataset.misc["sample_size"],
+                    dataset.misc.get("sample_size", len(input_data)),
                 )
                 ot_algo.setBootstrapSize(n_replicates)
                 ot_algo.setUseAsymptoticDistribution(use_asymptotic_distributions)
                 ot_algo.setConfidenceLevel(confidence_level)
                 algos.append(ot_algo)
 
-        if issubclass(algo_class, RankSobolSensitivityAlgorithm):
+        if state is not None:
+            RandomGenerator.SetState(state)
+
+        if use_rank_algorithm:
             self._indices = self.SensitivityIndices(
                 first=self.__get_indices(self.__GET_FIRST_ORDER_INDICES),
             )
@@ -496,10 +546,8 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             confidence_level: The confidence level.
             n_replicates: The number of bootstrap replicates
                 used for the computation of the confidence intervals.
-            seed: The seed to initialize the random generator used for the bootstrapping
-                method.
-                If `None`,
-                then fresh, unpredictable entropy will be pulled from the OS.
+            seed: The seed of the random generator for bootstrapping.
+                If `None`, fresh, unpredictable entropy will be pulled from the OS.
 
         Returns:
             The sensitivity indices.
@@ -527,7 +575,6 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             for cv in control_variates
         ]
 
-        output_names_to_sobol_algos = dataset.misc["output_names_to_sobol_algos"]
         for output_name in output_names:
             output_data = dataset.get_view(
                 group_names=dataset.OUTPUT_GROUP,
@@ -538,7 +585,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 vstack(list(cv_dataset_list[output_name]))
                 for cv_dataset_list in cvs_dataset_list
             ]
-            algos = output_names_to_sobol_algos[output_name] = []
+            algos = self.__output_name_to_sobol_algos[output_name] = []
             for i, sub_output_data in enumerate(output_data.T):
                 if sub_output_data.var() == 0.0:
                     algos.append(None)
@@ -614,10 +661,12 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 and so, this argument is ignored.
             n_replicates: The number of bootstrap replicates
                 used for the computation of the confidence intervals.
-            seed: The seed to initialize the random generator used for the bootstrapping
-                method when the indices are estimated using control variates.
+            seed: The seed of the random generator for bootstrapping.
                 If `None`,
-                then fresh, unpredictable entropy will be pulled from the OS.
+                the current state of `openturns.RandomGenerator` will be used
+                (no reseeding) in the standard case,
+                and fresh, unpredictable entropy will be pulled from the OS
+                when control variates are used.
 
         Raises:
             ValueError: If control variates are provided
@@ -645,7 +694,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             raise ValueError(msg)
 
         output_names = self._get_output_names(output_names)
-        self.dataset.misc["output_names_to_sobol_algos"] = {}
+        self.__output_name_to_sobol_algos = {}
         if control_variates:
             if algo != self.Algorithm.SALTELLI:
                 msg = (
@@ -657,7 +706,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             if isinstance(control_variates, self.ControlVariate):
                 control_variates = [control_variates]
 
-            self.dataset.misc["use_control_variates"] = True
+            self.__use_control_variates = True
             return self.__compute_indices_using_cv(
                 output_names,
                 control_variates,
@@ -672,6 +721,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             confidence_level,
             use_asymptotic_distributions,
             n_replicates,
+            seed,
         )
 
     def __get_indices(
@@ -693,7 +743,6 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             return {}
 
         names_to_sizes = dataset.variable_names_to_n_components
-        output_names_to_sobol_algos = dataset.misc["output_names_to_sobol_algos"]
         indices = {
             output_name: [
                 None
@@ -705,7 +754,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 )
                 for algorithm in algorithms
             ]
-            for output_name, algorithms in output_names_to_sobol_algos.items()
+            for output_name, algorithms in self.__output_name_to_sobol_algos.items()
         }
         if method_name == self.__GET_SECOND_ORDER_INDICES:
             return {
@@ -820,12 +869,10 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 }
             ```
         """
-        use_cv = self.dataset.misc["use_control_variates"]
+        use_cv = self.__use_control_variates
         names_to_sizes = self.dataset.variable_names_to_n_components
         intervals = {}
-        for output_name, sobol_algos in self.dataset.misc[
-            "output_names_to_sobol_algos"
-        ].items():
+        for output_name, sobol_algos in self.__output_name_to_sobol_algos.items():
             intervals[output_name] = []
             for sobol_algorithm in sobol_algos:
                 interval = getattr(

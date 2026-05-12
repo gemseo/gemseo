@@ -33,6 +33,7 @@ from numpy import sin
 from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
 
+from gemseo import sample_disciplines
 from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
     OT_SOBOL_INDICES_Settings,
 )
@@ -351,7 +352,7 @@ def test_confidence_level_default(discipline, uncertain_space) -> None:
     analysis = SobolAnalysis()
     analysis.compute_samples([discipline], uncertain_space, 100)
     analysis.compute_indices()
-    algos = analysis.dataset.misc["output_names_to_sobol_algos"]
+    algos = analysis._SobolAnalysis__output_name_to_sobol_algos
     assert algos["y"][0].getConfidenceLevel() == 0.95
 
 
@@ -360,7 +361,7 @@ def test_confidence_level_custom(discipline, uncertain_space) -> None:
     analysis = SobolAnalysis()
     analysis.compute_samples([discipline], uncertain_space, 100)
     analysis.compute_indices(confidence_level=0.90)
-    algos = analysis.dataset.misc["output_names_to_sobol_algos"]
+    algos = analysis._SobolAnalysis__output_name_to_sobol_algos
     assert algos["y"][0].getConfidenceLevel() == 0.90
 
 
@@ -814,3 +815,22 @@ def test_rank_based_sobol_bootstrap(rank_based_sobol, kwargs, expected):
     """Check that the bootstrap options of rank-based Sobol' analysis work."""
     rank_based_sobol.compute_indices(**kwargs)
     assert_almost_equal(rank_based_sobol.get_intervals()["y"][0]["x1"], array(expected))
+
+
+def test_ranked_based_sobol_from_samples(discipline, uncertain_space):
+    """Rank-based Sobol' analysis supports any IODataset as samples.
+
+    The only requirement is that
+    the samples are independent and identically distributed.
+    """
+    samples = sample_disciplines(
+        [discipline],
+        uncertain_space,
+        ["y"],
+        algo_settings_model=MC_Settings(n_samples=100),
+    )
+    analysis = SobolAnalysis(samples)
+    analysis.compute_indices()
+    assert_almost_equal(
+        analysis.get_intervals()["y"][0]["x1"], array([[0.1724129], [0.4527147]])
+    )
