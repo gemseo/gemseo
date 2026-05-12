@@ -30,7 +30,6 @@ from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.bars_settings import BarPlot_Settings
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -44,8 +43,7 @@ def dataset() -> Dataset:
     return dataset
 
 
-@image_comparison(["Subplots"])
-def test_plot(dataset) -> None:
+def test_plot(dataset, snapshot_matplotlib) -> None:
     """Check the creation of a plot with subplots."""
     fig, (ax1, ax2) = plt.subplots(ncols=2)
     settings = BarPlot_Settings(n_digits=2)

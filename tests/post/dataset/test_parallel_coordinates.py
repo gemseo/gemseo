@@ -31,7 +31,6 @@ from gemseo.post.dataset.parallel_coordinates_settings import (
     ParallelCoordinates_Settings,
 )
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -45,40 +44,26 @@ def dataset():
     )
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to ParallelCoordinates._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "default": ({}, {}, ["ParallelCoordinates"]),
-    "with_lower": ({"lower": 0.25}, {}, ["ParallelCoordinates_lower"]),
-    "with_upper": ({"upper": 0.75}, {}, ["ParallelCoordinates_upper"]),
-    "with_lower_upper": (
-        {"lower": 0.1, "upper": 0.75},
-        {},
-        ["ParallelCoordinates_lower_upper"],
-    ),
-    "with_properties": (
-        {},
-        {
-            "xlabel": "The xlabel",
-            "ylabel": "The ylabel",
-            "title": "The title",
-            "grid": False,
-        },
-        ["ParallelCoordinates_properties"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [
+        ({}, {}),
+        ({"lower": 0.25}, {}),
+        ({"upper": 0.75}, {}),
+        ({"lower": 0.1, "upper": 0.75}, {}),
+        (
+            {},
+            {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+                "grid": False,
+            },
+        ),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
+def test_plot(kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by ParallelCoordinates._plot against references."""
     settings = ParallelCoordinates_Settings(classifier="x1", **kwargs, **properties)
     plot = ParallelCoordinates(dataset, settings)

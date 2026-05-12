@@ -28,7 +28,6 @@ from numpy import array
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -46,59 +45,29 @@ def dataset():
     )
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to YvsX._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "default": ({"x": "x", "y": "y"}, {}, ["YvsX"]),
-    "with_color": (
-        {"x": "x", "y": "y"},
-        {"color": "red"},
-        ["YvsX_color"],
-    ),
-    "with_style": (
-        {"x": "x", "y": "y"},
-        {"linestyle": "-"},
-        ["YvsX_style"],
-    ),
-    "with_2d_output": ({"x": "x", "y": "z"}, {}, ["YvsX_2d_output"]),
-    "with_2d_output_given_component": (
-        {"x": "x", "y": ("z", 1)},
-        {},
-        ["YvsX_2d_output_given_component"],
-    ),
-    "with_2d_input": (
-        {"x": "z", "y": "y"},
-        {},
-        ["YvsX_2d_input"],
-    ),
-    "with_2d_input_given_component": (
-        {"x": ("z", 1), "y": "y"},
-        {},
-        ["YvsX_2d_input_given_component"],
-    ),
-    "with_properties": (
-        {"x": "x", "y": "y"},
-        {
-            "xlabel": "The xlabel",
-            "ylabel": "The ylabel",
-            "title": "The title",
-            "grid": False,
-        },
-        ["YvsX_properties"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [
+        ({"x": "x", "y": "y"}, {}),
+        ({"x": "x", "y": "y"}, {"color": "red"}),
+        ({"x": "x", "y": "y"}, {"linestyle": "-"}),
+        ({"x": "x", "y": "z"}, {}),
+        ({"x": "x", "y": ("z", 1)}, {}),
+        ({"x": "z", "y": "y"}, {}),
+        ({"x": ("z", 1), "y": "y"}, {}),
+        (
+            {"x": "x", "y": "y"},
+            {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+                "grid": False,
+            },
+        ),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
+def test_plot(kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by YvsX._plot against references."""
     settings = YvsX_Settings(**kwargs, **properties)
     plot = YvsX(dataset, settings)

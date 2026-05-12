@@ -783,6 +783,7 @@ dev = [
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
     { name = "ruff" },
+    { name = "syrupy-matplotlib" },
 ]
 dist = [
     { name = "check-wheel-contents" },
@@ -815,6 +816,7 @@ test = [
     { name = "pytest-cov" },
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
+    { name = "syrupy-matplotlib" },
 ]
 typing = [
     { name = "mypy", extra = ["reports"] },
@@ -876,6 +878,7 @@ dev = [
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
     { name = "ruff" },
+    { name = "syrupy-matplotlib" },
 ]
 dist = [{ name = "check-wheel-contents" }]
 doc = [
@@ -906,6 +909,7 @@ test = [
     { name = "pytest-cov" },
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
+    { name = "syrupy-matplotlib" },
 ]
 typing = [
     { name = "mypy", extras = ["reports"] },
@@ -3407,6 +3411,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/2e/b0/24bca682d6a6337854be37f242d116cceeda9942571d5804c44bc1bdd427/syrupy-5.1.0.tar.gz", hash = "sha256:df543c7aa50d3cf1246e83d58fe490afe5f7dab7b41e74ecc0d8d23ae19bd4b8", size = 50495, upload-time = "2026-01-25T14:53:06.2Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/de/70/cf880c3b95a6034ef673e74b369941b42315c01f1554a5637a4f8b911009/syrupy-5.1.0-py3-none-any.whl", hash = "sha256:95162d2b05e61ed3e13f117b88dfab7c58bd6f90e66ebbf918e8a77114ad51c5", size = 51658, upload-time = "2026-01-25T14:53:05.105Z" },
+]
+
+[[package]]
+name = "syrupy-matplotlib"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "matplotlib" },
+    { name = "pytest" },
+    { name = "syrupy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9a/de/54dd02d5a8b8871401e53a678cf622d56863a7262d4c3c962aacee148c9c/syrupy_matplotlib-0.1.1.tar.gz", hash = "sha256:cce031c9cd19b350992962431c5cebaa1dbd05192494dbd413da7b0af3355e93", size = 134576, upload-time = "2026-05-10T16:58:48.538Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/79/a0/3d6ffb607c1beb4e94135d425060c8a3e445d8f2d2d346d3a4775af53698/syrupy_matplotlib-0.1.1-py3-none-any.whl", hash = "sha256:3d1f5885107ac49b94263c052f4efcfb7d77398d66b52032143157f66d04b31c", size = 36591, upload-time = "2026-05-10T16:58:47.317Z" },
 ]
 
 [[package]]

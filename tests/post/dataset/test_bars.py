@@ -20,7 +20,6 @@ from numpy import array
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.bars import BarPlot
 from gemseo.post.dataset.bars_settings import BarPlot_Settings
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -61,13 +60,10 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [v[:2] for v in TEST_PARAMETERS.values()],
 )
-@image_comparison(None)
-def test_bars_plot(tmp_path, kwargs, properties, dataset, baseline_images) -> None:
+def test_bars_plot(kwargs, properties, dataset, snapshot_matplotlib) -> None:
     """Test that bar plot generates the expected plot."""
     settings = BarPlot_Settings(**kwargs, **properties)
     plot = BarPlot(dataset, settings)

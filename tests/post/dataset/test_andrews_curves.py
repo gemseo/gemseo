@@ -29,7 +29,6 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.andrews_curves import AndrewsCurves
 from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -44,32 +43,20 @@ def dataset():
     )
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to ParallelCoordinates._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "default": ({}, ["AndrewsCurves"]),
-    "with_properties": (
+@pytest.mark.parametrize(
+    "properties",
+    [
+        {},
         {
             "xlabel": "The xlabel",
             "ylabel": "The ylabel",
             "title": "The title",
             "grid": False,
         },
-        ["AndrewsCurves_properties"],
-    ),
-}
-
-
-@pytest.mark.parametrize(
-    ("properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(properties, baseline_images, dataset, fig_and_ax) -> None:
+def test_plot(properties, dataset, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by AndrewsCurves._plot against references."""
     settings = AndrewsCurves_Settings(classifier="c", **properties)
     plot = AndrewsCurves(dataset, settings)

@@ -48,7 +48,6 @@ from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.base import SecondOrderIndicesType
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
@@ -251,18 +250,17 @@ def test_total_intervals(total_intervals, name, bound, expected) -> None:
 
 
 @pytest.mark.parametrize(
-    ("name", "sort", "sort_by_total", "kwargs", "baseline_images"),
+    ("name", "sort", "sort_by_total", "kwargs"),
     [
-        ("y", False, False, {}, ["plot"]),
-        ("y", False, False, {"title": "foo"}, ["plot_title"]),
-        ("y", True, False, {}, ["plot_sort_by_first"]),
-        ("y", True, True, {}, ["plot_sort_by_total"]),
-        ("z", False, False, {}, ["plot_name"]),
-        (("z", 1), False, False, {}, ["plot_name_component"]),
+        ("y", False, False, {}),
+        ("y", False, False, {"title": "foo"}),
+        ("y", True, False, {}),
+        ("y", True, True, {}),
+        ("z", False, False, {}),
+        (("z", 1), False, False, {}),
     ],
 )
-@image_comparison(None)
-def test_plot(name, sobol, sort, sort_by_total, kwargs, baseline_images) -> None:
+def test_plot(name, sobol, sort, sort_by_total, kwargs, snapshot_matplotlib) -> None:
     """Check the main visualization method."""
     fig = sobol.plot(name, save=False, sort=sort, sort_by_total=sort_by_total, **kwargs)
     assert isinstance(fig, Figure)
@@ -590,12 +588,7 @@ def test_cv_algo(
     sobol.compute_indices()
 
 
-@pytest.mark.parametrize(
-    "baseline_images",
-    [["plot_cv"]],
-)
-@image_comparison(None)
-def test_plot_cv(sobol_cv, baseline_images) -> None:
+def test_plot_cv(sobol_cv, snapshot_matplotlib) -> None:
     """Check the main visualization method when a control variate is used."""
     fig = sobol_cv.plot("y", save=False, sort=False)
     assert isinstance(fig, Figure)
@@ -783,8 +776,7 @@ def rank_based_sobol(discipline, uncertain_space):
     return analysis
 
 
-@image_comparison(["plot_rank"])
-def test_rank_based_sobol(rank_based_sobol):
+def test_rank_based_sobol(rank_based_sobol, snapshot_matplotlib):
     """Check that the rank-based Sobol' analysis works."""
     rank_based_sobol.compute_indices()
 

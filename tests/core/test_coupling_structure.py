@@ -48,7 +48,6 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 from .test_dependency_graph import DISC_DESCRIPTIONS
 
@@ -187,43 +186,33 @@ def test_strong_couplings_self_coupled() -> None:
 
 
 @pytest.mark.parametrize(
-    ("show_data_names", "descriptions", "baseline_images"),
+    ("show_data_names", "descriptions"),
     [
         (
             False,
             ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"}),
-            ["n_2_no_coupling"],
         ),
-        (True, ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"}), ["n_2_no_coupling"]),
-        (
-            False,
-            ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
-            ["n_2_coupling_no_names"],
-        ),
+        (True, ({"y1": "x1"}, {"y2": "x2"}, {"y3": "x3"})),
+        (False, ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"})),
         (
             True,
             ({"y1": "x1+y2"}, {"y2": "x2+y1"}, {"y3": "x3+y1+y2"}),
-            ["n_2_coupling_names"],
         ),
         (
             False,
             ({"y1": "y2"}, {"y2": "y1"}, {"y3": "y1+y3"}, {"y4": "y1+y2+y3"}),
-            ["n_2_self_coupled_no_names"],
         ),
         (
             True,
             ({"y1": "y2"}, {"y2": "y1"}, {"y3": "y1+y3"}, {"y4": "y1+y2+y3"}),
-            ["n_2_self_coupled"],
         ),
     ],
 )
-@image_comparison(None)
-def test_n2_no_coupling(tmp_wd, baseline_images, show_data_names, descriptions) -> None:
+def test_n2_no_coupling(show_data_names, descriptions, snapshot_matplotlib) -> None:
     """Test that an N2 plot is generated correctly when there are no couplings.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.
-        baseline_images: The reference images to be compared.
         show_data_names: If `True`, show the names of the coupling data ;
                 otherwise,
                 circles are drawn,
@@ -236,7 +225,7 @@ def test_n2_no_coupling(tmp_wd, baseline_images, show_data_names, descriptions) 
     ]
 
     CouplingStructure(disciplines).plot_n2_chart(
-        f"{baseline_images[0]}.png", show_data_names
+        show_data_names=show_data_names, save=False
     )
 
 

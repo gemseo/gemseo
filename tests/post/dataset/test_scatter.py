@@ -29,7 +29,6 @@ from scipy.interpolate import Rbf
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -47,54 +46,28 @@ def dataset():
     )
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to Scatter._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "default": ({"x": "x", "y": "y"}, {}, ["Scatter"]),
-    "with_color": (
-        {"x": "x", "y": "y"},
-        {"color": "red"},
-        ["Scatter_color"],
-    ),
-    "with_2d_output": ({"x": "x", "y": "z"}, {}, ["Scatter_2d_output"]),
-    "with_2d_output_given_component": (
-        {"x": "x", "y": ("z", 1)},
-        {},
-        ["Scatter_2d_output_given_component"],
-    ),
-    "with_2d_input": (
-        {"x": "z", "y": "y"},
-        {},
-        ["Scatter_2d_input"],
-    ),
-    "with_2d_input_given_component": (
-        {"x": ("z", 1), "y": "y"},
-        {},
-        ["Scatter_2d_input_given_component"],
-    ),
-    "with_properties": (
-        {"x": "z", "y": "y"},
-        {
-            "xlabel": "The xlabel",
-            "ylabel": "The ylabel",
-            "title": "The title",
-            "grid": False,
-        },
-        ["Scatter_properties"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [
+        ({"x": "x", "y": "y"}, {}),
+        ({"x": "x", "y": "y"}, {"color": "red"}),
+        ({"x": "x", "y": "z"}, {}),
+        ({"x": "x", "y": ("z", 1)}, {}),
+        ({"x": "z", "y": "y"}, {}),
+        ({"x": ("z", 1), "y": "y"}, {}),
+        (
+            {"x": "z", "y": "y"},
+            {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+                "grid": False,
+            },
+        ),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
+def test_plot(kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by Scatter._plot against references."""
     settings = Scatter_Settings(**kwargs, **properties)
     plot = Scatter(dataset, settings)
@@ -105,17 +78,16 @@ def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
 
 
 @pytest.mark.parametrize(
-    ("trend", "baseline_images"),
+    "trend",
     [
-        ("linear", ["Scatter_linear_trend"]),
-        ("quadratic", ["Scatter_quadratic_trend"]),
-        ("cubic", ["Scatter_cubic_trend"]),
-        ("rbf", ["Scatter_rbf_trend"]),
-        (Rbf, ["Scatter_custom_trend"]),
+        "linear",
+        "quadratic",
+        "cubic",
+        "rbf",
+        Rbf,
     ],
 )
-@image_comparison(None)
-def test_trend(trend, quadratic_dataset, baseline_images) -> None:
+def test_trend(trend, quadratic_dataset, snapshot_matplotlib) -> None:
     """Check the use of a trend."""
     settings = Scatter_Settings(x="x", y="y", trend=trend)
     Scatter(quadratic_dataset, settings).execute(save=False)

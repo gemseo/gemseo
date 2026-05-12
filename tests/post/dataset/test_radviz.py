@@ -30,27 +30,9 @@ from gemseo.post.dataset.radviz import RadViz
 from gemseo.post.dataset.radviz_settings import RadViz_Settings
 from gemseo.problems.dataset.iris import create_iris_dataset
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
-
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to RadViz._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "default": ({}, {}, ["RadViz"]),
-    "with_properties": (
-        {},
-        {
-            "xlabel": "The xlabel",
-            "ylabel": "The ylabel",
-            "title": "The title",
-            "grid": False,
-        },
-        ["RadViz_properties"],
-    ),
-}
 
 
 @pytest.fixture
@@ -60,14 +42,22 @@ def dataset() -> Dataset:
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [
+        ({}, {}),
+        (
+            {},
+            {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+                "grid": False,
+            },
+        ),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(dataset, kwargs, properties, baseline_images, fig_and_ax) -> None:
+def test_plot(dataset, kwargs, properties, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by RadViz._plot against references."""
     settings = RadViz_Settings(classifier="specy", **properties)
     plot = RadViz(dataset, settings)

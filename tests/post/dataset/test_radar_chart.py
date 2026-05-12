@@ -28,7 +28,6 @@ from numpy import array
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -42,44 +41,30 @@ def dataset():
     return dataset
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to RadarChart._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "default": ({}, {}, ["RadarChart"]),
-    "with_display_zero": ({"display_zero": False}, {}, ["RadarChart_without_zero"]),
-    "with_connect": ({"connect": True}, {}, ["RadarChart_connect"]),
-    "with_radial_ticks": ({"radial_ticks": True}, {}, ["RadarChart_radial_ticks"]),
-    "with_n_levels": ({"n_levels": 3}, {}, ["RadarChart_n_levels"]),
-    "with_properties": (
-        {},
-        {
-            "title": "The title",
-            "linestyle": ["-", "--"],
-            "rmin": -1,
-            "rmax": 4,
-            "color": "red",
-            "grid": False,
-        },
-        ["RadarChart_properties"],
-    ),
-    "with_scientific_notation": (
-        {"scientific_notation": False},
-        {"colormap": "viridis"},
-        ["RadarChart_scientific_notation"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [
+        ({}, {}),
+        ({"display_zero": False}, {}),
+        ({"connect": True}, {}),
+        ({"radial_ticks": True}, {}),
+        ({"n_levels": 3}, {}),
+        (
+            {},
+            {
+                "title": "The title",
+                "linestyle": ["-", "--"],
+                "rmin": -1,
+                "rmax": 4,
+                "color": "red",
+                "grid": False,
+            },
+        ),
+        ({"scientific_notation": False}, {"colormap": "viridis"}),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
+def test_plot(kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by RadarChart._plot against references."""
     settings = RadarChart_Settings(**kwargs, **properties)
     plot = RadarChart(dataset, settings)

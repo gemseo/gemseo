@@ -23,7 +23,6 @@ import pytest
 from gemseo.post import ConstraintsHistory_Settings
 from gemseo.post.constraints_history import ConstraintsHistory
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 
 def test_function_error(common_problem, snapshot) -> None:
@@ -34,22 +33,16 @@ def test_function_error(common_problem, snapshot) -> None:
         )
 
 
-TEST_PARAMETERS = {
-    "default": (["ConstraintsHistory_default"], {}),
-    "no_line": (["ConstraintsHistory_no_line"], {"line_style": ""}),
-    "line_style": (["ConstraintsHistory_line_style"], {"line_style": "-"}),
-    "points": (["ConstraintsHistory_points"], {"add_points": False}),
-}
-
-
 @pytest.mark.parametrize(
-    ("baseline_images", "options"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "options",
+    [
+        {},
+        {"line_style": ""},
+        {"line_style": "-"},
+        {"add_points": False},
+    ],
 )
-@image_comparison(None)
-def test_common_scenario(baseline_images, options, common_problem) -> None:
+def test_common_scenario(options, common_problem, snapshot_matplotlib) -> None:
     """Check ConstraintsHistory."""
     post = ConstraintsHistory(common_problem)
     post.execute(

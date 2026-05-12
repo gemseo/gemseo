@@ -28,7 +28,6 @@ from numpy import array
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.curves_settings import Curves_Settings
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -51,36 +50,26 @@ def dataset():
     return dataset
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to Curves._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "without_option": ({}, {}, ["Curves"]),
-    "with_subsamples": ({"samples": [1]}, {}, ["Curves_with_subsamples"]),
-    "with_properties": (
-        {},
-        {
-            "xlabel": "The xlabel",
-            "ylabel": "The ylabel",
-            "title": "The title",
-            "color": ["red", "blue"],
-            "linestyle": "-",
-            "grid": False,
-        },
-        ["Curves_properties"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [
+        ({}, {}),
+        ({"samples": [1]}, {}),
+        (
+            {},
+            {
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+                "color": ["red", "blue"],
+                "linestyle": "-",
+                "grid": False,
+            },
+        ),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
+def test_plot(kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by Curves._plot against references."""
     settings = Curves_Settings(mesh="mesh", variable="output", **kwargs, **properties)
     plot = Curves(dataset, settings)

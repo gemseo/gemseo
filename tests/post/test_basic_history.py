@@ -22,31 +22,23 @@ import pytest
 
 from gemseo.post import BasicHistory_Settings
 from gemseo.post.basic_history import BasicHistory
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.mark.parametrize(
-    ("variable_names", "use_standardized_objective", "options", "baseline_images"),
+    ("variable_names", "use_standardized_objective", "options"),
     [
-        (["obj", "eq", "neg", "pos", "x"], True, {}, ["BasicHistory_standardized"]),
-        (["obj", "eq", "neg", "pos", "x"], False, {}, ["BasicHistory_unstandardized"]),
-        (
-            ["obj", "x"],
-            True,
-            {"normalize": True},
-            ["BasicHistory_standardized_normalize"],
-        ),
-        (
-            ["obj", "x"],
-            False,
-            {"normalize": True},
-            ["BasicHistory_unstandardized_normalize"],
-        ),
+        (["obj", "eq", "neg", "pos", "x"], True, {}),
+        (["obj", "eq", "neg", "pos", "x"], False, {}),
+        (["obj", "x"], True, {"normalize": True}),
+        (["obj", "x"], False, {"normalize": True}),
     ],
 )
-@image_comparison(None)
 def test_common_scenario(
-    variable_names, use_standardized_objective, options, baseline_images, common_problem
+    variable_names,
+    use_standardized_objective,
+    options,
+    common_problem,
+    snapshot_matplotlib,
 ) -> None:
     """Check BasicHistory with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective
@@ -56,9 +48,7 @@ def test_common_scenario(
     )
 
 
-@pytest.mark.parametrize("baseline_images", [("BasicHistory_many_iterations",)])
-@image_comparison(None)
-def test_large_common_scenario(baseline_images, large_common_problem) -> None:
+def test_large_common_scenario(large_common_problem, snapshot_matplotlib) -> None:
     """Check BasicHistory with a common problem and many iterations."""
     opt = BasicHistory(large_common_problem)
     opt.execute(
@@ -69,15 +59,14 @@ def test_large_common_scenario(baseline_images, large_common_problem) -> None:
 
 
 @pytest.mark.parametrize(
-    ("options", "baseline_images"),
+    "options",
     [
-        ({"use_best_iteration_history": False}, ["BasicHistory_full_history"]),
-        ({"use_best_iteration_history": True}, ["BasicHistory_best_candidate"]),
+        {"use_best_iteration_history": False},
+        {"use_best_iteration_history": True},
     ],
 )
-@image_comparison(None)
 def test_use_best_iteration_history(
-    options, baseline_images, common_problem_lhs_
+    options, common_problem_lhs_, snapshot_matplotlib
 ) -> None:
     """Check the effect of use_best_iteration_history."""
     opt = BasicHistory(common_problem_lhs_)

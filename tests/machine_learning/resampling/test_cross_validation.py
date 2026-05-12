@@ -31,7 +31,6 @@ from gemseo.machine_learning.resampling.cross_validation import CrossValidation
 from gemseo.machine_learning.resampling.split import Split
 from gemseo.machine_learning.resampling.splits import Splits
 from gemseo.utils.seeder import SEED
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -186,8 +185,7 @@ def test_name(sample_indices, n_folds, name) -> None:
     assert CrossValidation(sample_indices, n_folds).name == name
 
 
-@image_comparison(["plot"])
-def test_plot(sample_indices):
+def test_plot(sample_indices, snapshot_matplotlib):
     """Check the plot() method."""
     CrossValidation(sample_indices).plot(show=False)
 

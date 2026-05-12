@@ -29,7 +29,6 @@ from gemseo import create_discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.post.core.gantt_chart import create_gantt_chart
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
 
@@ -99,8 +98,7 @@ def test_save(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     assert file_path.exists()
 
 
-@image_comparison(["gantt_chart"])
-def test_plot(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
+def test_plot(reset_time_stamping, time_stamps_data, snapshot_matplotlib) -> None:
     """Tests the Gantt chart plot creation."""
     # If needed for figure regeneration:
     #
@@ -132,8 +130,9 @@ def test_plot(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
     create_gantt_chart(save=False, font_size=10)
 
 
-@image_comparison(["gantt_chart_filtered"])
-def test_plot_filter(tmp_wd, reset_time_stamping, time_stamps_data) -> None:
+def test_plot_filter(
+    reset_time_stamping, time_stamps_data, snapshot_matplotlib
+) -> None:
     """Tests the Gantt chart plot creation with disciplines filter."""
     ExecutionStatistics.time_stamps = time_stamps_data
     create_gantt_chart(

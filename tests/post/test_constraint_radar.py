@@ -28,7 +28,6 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post import ConstraintRadar_Settings
 from gemseo.post.constraint_radar import ConstraintRadar
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 
@@ -38,27 +37,18 @@ def problem():
     return OptimizationProblem.from_hdf(file_path=POWER2)
 
 
-TEST_PARAMETERS = {
-    "default": ({}, ["ConstraintRadar_default"]),
-    "opt": ({"iteration": None}, ["ConstraintRadar_opt"]),
-    "negative": ({"iteration": -2}, ["ConstraintRadar_negative"]),
-    "positive": ({"iteration": 2}, ["ConstraintRadar_positive"]),
-    "names": (
-        {"iteration": 2, "constraint_names": ["ineq1", "eq"]},
-        ["ConstraintRadar_names"],
-    ),
-    "show_names_radially": ({"show_names_radially": True}, ["ConstraintRadar_radial"]),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "kwargs",
+    [
+        {},
+        {"iteration": None},
+        {"iteration": -2},
+        {"iteration": 2},
+        {"iteration": 2, "constraint_names": ["ineq1", "eq"]},
+        {"show_names_radially": True},
+    ],
 )
-@image_comparison(None)
-def test_post(kwargs, baseline_images, problem) -> None:
+def test_post(kwargs, problem, snapshot_matplotlib) -> None:
     """Test the radar chart post-processing with the Power2 problem."""
     post = ConstraintRadar(problem)
     post.execute(ConstraintRadar_Settings(save=False, show=False, **kwargs))
@@ -85,21 +75,11 @@ def test_iteration_error(problem, snapshot) -> None:
         )
 
 
-TEST_PARAMETERS = {"default": ["ConstraintRadar_common_problem"]}
-
-
 @pytest.mark.skipif(
     version.parse(matplotlib.__version__) < version.parse("3.10.0"),
     reason="Does not work with matplotlib < 3.10.0",
 )
-@pytest.mark.parametrize(
-    "baseline_images",
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
-)
-@image_comparison(None)
-def test_common_scenario(baseline_images, common_problem) -> None:
+def test_common_scenario(common_problem, snapshot_matplotlib) -> None:
     """Check ConstraintRadar."""
     opt = ConstraintRadar(common_problem)
     opt.execute(

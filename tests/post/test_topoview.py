@@ -22,7 +22,6 @@ from gemseo.post import TopologyView_Settings
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -54,8 +53,7 @@ def scenario_and_dimensions():
     return scenario, n_el, n_el
 
 
-@image_comparison(["l_shape_solution"])
-def test_l_shape(scenario_and_dimensions) -> None:
+def test_l_shape(scenario_and_dimensions, snapshot_matplotlib) -> None:
     """Test the plot of the solution of the L-shape topology optimization.
 
     Here we consider the design value.
@@ -70,8 +68,7 @@ def test_l_shape(scenario_and_dimensions) -> None:
     )
 
 
-@image_comparison(["l_shape_solution_xphys"])
-def test_l_shape_xphys(scenario_and_dimensions) -> None:
+def test_l_shape_xphys(scenario_and_dimensions, snapshot_matplotlib) -> None:
     """Test the plot of the solution of the L-shape topology optimization.
 
     Here we consider the value of an observable.
@@ -87,8 +84,7 @@ def test_l_shape_xphys(scenario_and_dimensions) -> None:
     )
 
 
-@image_comparison(["l_shape_solution_last_iter"])
-def test_l_shape_last_iter(scenario_and_dimensions) -> None:
+def test_l_shape_last_iter(scenario_and_dimensions, snapshot_matplotlib) -> None:
     """Test the plot of the solution of the L-shape topology optimization.
 
     Here we consider the last iteration.

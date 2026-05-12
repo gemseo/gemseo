@@ -36,7 +36,6 @@ from gemseo.post.factory import POST_FACTORY
 from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 CURRENT_DIR = Path(__file__).parent
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
@@ -102,24 +101,23 @@ def test_non_existent_var(tmp_wd, snapshot) -> None:
 
 
 @pytest.mark.parametrize(
-    ("variables", "baseline_images"),
+    ("variables", "infile_stem"),
     [
-        ([], ["empty_list"]),
-        (["x_shared", "obj"], ["subset_2components"]),
-        (["x_shared", "x_local"], ["subset_2variables"]),
-        (["c_2", "x_shared", "x_local", "obj", "c_1"], ["all_var_func"]),
+        ([], "empty_list"),
+        (["x_shared", "obj"], "subset_2components"),
+        (["x_shared", "x_local"], "subset_2variables"),
+        (["c_2", "x_shared", "x_local", "obj", "c_1"], "all_var_func"),
     ],
 )
-@image_comparison(None)
-def test_scatter_plot(baseline_images, variables) -> None:
+def test_scatter_plot(variables, infile_stem, snapshot_matplotlib) -> None:
     """Test images created by the post_process method against references.
 
     Args:
-        baseline_images: The reference images to be compared.
         variables: The list of variables to be plotted
             in each test case.
+        infile_stem: The stem of the hdf5 data file to load.
     """
-    infile = CURRENT_DIR / (baseline_images[0] + ".h5")
+    infile = CURRENT_DIR / (infile_stem + ".h5")
     execute_post(
         infile,
         post_name="ScatterPlotMatrix",
@@ -177,16 +175,14 @@ def test_maximized_func(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> Non
 
 
 @pytest.mark.parametrize(
-    ("filter_non_feasible", "baseline_images"),
-    [(True, ["power_2_filtered"]), (False, ["power_2_not_filtered"])],
+    "filter_non_feasible",
+    [True, False],
 )
-@image_comparison(None)
-def test_filter_non_feasible(filter_non_feasible, baseline_images) -> None:
+def test_filter_non_feasible(filter_non_feasible, snapshot_matplotlib) -> None:
     """Test if the filter_non_feasible option works properly.
 
     Args:
         filter_non_feasible: If True, remove the non-feasible points from the data.
-        baseline_images: The reference images to be compared.
     """
     # Create a Power2 instance
     problem = Power2()
@@ -238,21 +234,12 @@ def test_filter_non_feasible_exception(snapshot) -> None:
         )
 
 
-TEST_PARAMETERS = {
-    "standardized": (True, ["ScatterPlotMatrix_standardized"]),
-    "unstandardized": (False, ["ScatterPlotMatrix_unstandardized"]),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem
+    use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check ScatterPlotMatrix with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective

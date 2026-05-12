@@ -53,7 +53,6 @@ from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.utils.testing.helpers import concretize_classes
-from gemseo.utils.testing.helpers import image_comparison
 
 if TYPE_CHECKING:
     from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -226,82 +225,46 @@ def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
         return SecondMockSensitivityAnalysis()
 
 
-BARPLOT_TEST_PARAMETERS = {
-    "without_option": ({}, ["bar_plot"]),
-    "standardize": ({"outputs": "y2", "standardize": True}, ["bar_plot_standardize"]),
-    "inputs": ({"outputs": "y2", "input_names": ["x1"]}, ["bar_plot_inputs"]),
-    "inputs_standardize": (
-        {"standardize": True, "input_names": ["x1"], "outputs": "y2"},
-        ["bar_plot_inputs_standardize"],
-    ),
-    "outputs": ({"outputs": [("y2", 0)]}, ["bar_plot_outputs"]),
-    "n_digits": (
-        {"outputs": "y2", "bar_plot_settings": BarPlot_Settings(n_digits=1)},
-        ["bar_plot_n_digits"],
-    ),
-    "do_not_sort": ({"outputs": ["y1", "y2"], "sort": False}, ["bar_plot_do_not_sort"]),
-    "sorting_output_as_str": (
-        {"outputs": ["y1", "y2"], "sorting_output": "y2"},
-        ["bar_plot_sorting_output_as_str"],
-    ),
-    "sorting_output_as_tuple": (
-        {"outputs": ["y1", "y2"], "sorting_output": ("y2", 1)},
-        ["bar_plot_sorting_output_as_tuple"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    BARPLOT_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=BARPLOT_TEST_PARAMETERS.keys(),
+    "kwargs",
+    [
+        {},
+        {"outputs": "y2", "standardize": True},
+        {"outputs": "y2", "input_names": ["x1"]},
+        {"standardize": True, "input_names": ["x1"], "outputs": "y2"},
+        {"outputs": [("y2", 0)]},
+        {"outputs": "y2", "bar_plot_settings": BarPlot_Settings(n_digits=1)},
+        {"outputs": ["y1", "y2"], "sort": False},
+        {"outputs": ["y1", "y2"], "sorting_output": "y2"},
+        {"outputs": ["y1", "y2"], "sorting_output": ("y2", 1)},
+    ],
 )
-@image_comparison(None)
-def test_plot_bar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
+def test_plot_bar(kwargs, mock_sensitivity_analysis, snapshot_matplotlib) -> None:
     """Check that a Barplot is created with plot_bar."""
     mock_sensitivity_analysis.plot_bar(save=False, **kwargs)
 
 
-RADAR_TEST_PARAMETERS = {
-    "without_option": ({}, ["radar_plot"]),
-    "standardize": ({"outputs": "y2", "standardize": True}, ["radar_plot_standardize"]),
-    "inputs": ({"outputs": "y2", "input_names": ["x1"]}, ["radar_plot_inputs"]),
-    "inputs_standardize": (
-        {"standardize": True, "input_names": ["x1"], "outputs": "y2"},
-        ["radar_plot_inputs_standardize"],
-    ),
-    "outputs": ({"outputs": [("y2", 0)]}, ["radar_plot_outputs"]),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    RADAR_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=RADAR_TEST_PARAMETERS.keys(),
+    "kwargs",
+    [
+        {},
+        {"outputs": "y2", "standardize": True},
+        {"outputs": "y2", "input_names": ["x1"]},
+        {"standardize": True, "input_names": ["x1"], "outputs": "y2"},
+        {"outputs": [("y2", 0)]},
+    ],
 )
-@image_comparison(None)
-def test_plot_radar(kwargs, baseline_images, mock_sensitivity_analysis) -> None:
+def test_plot_radar(kwargs, mock_sensitivity_analysis, snapshot_matplotlib) -> None:
     """Check that a RadarChart is created with plot_radar."""
     mock_sensitivity_analysis.plot_radar(save=False, show=False, **kwargs)
 
 
-COMPARISON_TEST_PARAMETERS = {
-    "use_bar": (True, ["comparison_bar"]),
-    "use_radar": (False, ["comparison_radar"]),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_bar_plot", "baseline_images"),
-    COMPARISON_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=COMPARISON_TEST_PARAMETERS.keys(),
+    "use_bar_plot",
+    [True, False],
 )
-@image_comparison(None)
 def test_plot_comparison(
-    use_bar_plot, baseline_images, discipline, parameter_space
+    use_bar_plot, discipline, parameter_space, snapshot_matplotlib
 ) -> None:
     """Check if the comparison of sensitivity indices works."""
     spearman = CorrelationAnalysis()
@@ -377,28 +340,18 @@ def ishigami() -> SobolAnalysis:
     return sobol_analysis
 
 
-ONE_D_FIELD_TEST_PARAMETERS = {
-    "without_option": ({}, ["1d_field"], "out"),
-    "without_option_with_tuple": ({}, ["1d_field"], ("out", 0)),
-    "standardize": ({"standardize": True}, ["1d_field_standardize"], "out"),
-    "inputs": ({"input_names": ["x1", "x3"]}, ["1d_field_inputs"], "out"),
-    "inputs_standardize": (
-        {"standardize": True, "input_names": ["x1", "x3"]},
-        ["1d_field_inputs_standardize"],
-        "out",
-    ),
-    "properties": ({"properties": {"xlabel": "foo"}}, ["1d_field_properties"], "out"),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images", "output"),
-    ONE_D_FIELD_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=ONE_D_FIELD_TEST_PARAMETERS.keys(),
+    ("kwargs", "output"),
+    [
+        ({}, "out"),
+        ({}, ("out", 0)),
+        ({"standardize": True}, "out"),
+        ({"input_names": ["x1", "x3"]}, "out"),
+        ({"standardize": True, "input_names": ["x1", "x3"]}, "out"),
+        ({"properties": {"xlabel": "foo"}}, "out"),
+    ],
 )
-@image_comparison(None)
-def test_plot_1d_field(kwargs, baseline_images, output, ishigami) -> None:
+def test_plot_1d_field(kwargs, output, ishigami, snapshot_matplotlib) -> None:
     """Check if a 1D field is well plotted."""
     ishigami.plot_field(output, save=False, show=False, **kwargs)
 
@@ -408,31 +361,16 @@ TWO_D_FIELD_TEST_PARAMETERS_WO_MESH = {
 }
 
 
-TWO_D_FIELD_TEST_PARAMETERS = {
-    "without_option": ({}, [f"2d_field_{i}" for i in range(3)]),
-    "standardize": (
-        {"standardize": True},
-        [f"2d_field_standardize_{i}" for i in range(3)],
-    ),
-    "inputs": (
-        {"input_names": ["x1", "x3"]},
-        [f"2d_field_inputs_{i}" for i in range(2)],
-    ),
-    "inputs_standardize": (
-        {"standardize": True, "input_names": ["x1", "x3"]},
-        [f"2d_field_inputs_standardize_{i}" for i in range(2)],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    TWO_D_FIELD_TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TWO_D_FIELD_TEST_PARAMETERS.keys(),
+    "kwargs",
+    [
+        {},
+        {"standardize": True},
+        {"input_names": ["x1", "x3"]},
+        {"standardize": True, "input_names": ["x1", "x3"]},
+    ],
 )
-@image_comparison(None)
-def test_plot_2d_field(kwargs, baseline_images, ishigami) -> None:
+def test_plot_2d_field(kwargs, ishigami, snapshot_matplotlib) -> None:
     """Check if a 2D field is well plotted with mesh."""
     times = linspace(0, 1, 10)
     mesh = array([[time1, time2] for time1 in times for time2 in times])
