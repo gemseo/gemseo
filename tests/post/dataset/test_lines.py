@@ -27,7 +27,6 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.dataset.lines_settings import Lines_Settings
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -93,15 +92,12 @@ TEST_PARAMETERS = {
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [v[:2] for v in TEST_PARAMETERS.values()],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
 def test_plot_matplotlib(
-    kwargs, properties, baseline_images, dataset, fig_and_ax
+    kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib
 ) -> None:
     """Test images created by Lines.execute against references for matplotlib."""
     settings = Lines_Settings(**kwargs, **properties)

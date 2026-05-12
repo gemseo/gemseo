@@ -40,7 +40,6 @@ from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.utils.discipline import DummyDiscipline
-from gemseo.utils.testing.helpers import image_comparison
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
 
@@ -108,8 +107,7 @@ def test_acceleration_methods(mda_setting, acceleration, reference) -> None:
     )
 
 
-@image_comparison(["sobieski"])
-def test_sobieski(tmp_wd) -> None:
+def test_sobieski(tmp_wd, snapshot_matplotlib) -> None:
     """Test the execution of Gauss-Seidel on Sobieski."""
     mda = SobieskiMDAGaussSeidel(
         settings=MDAGaussSeidel_Settings(tolerance=1e-12, max_mda_iter=30)
@@ -255,21 +253,21 @@ def test_parallel_doe() -> None:
 
 
 @pytest.mark.parametrize(
-    ("baseline_images", "n_iterations", "logscale"),
+    ("n_iterations", "logscale"),
     [
-        (["all_iter_default_log"], None, None),
-        (["all_iter_modified_log"], None, [1e-10, 10.0]),
-        (["five_iter_default_log"], 5, None),
-        (["five_iter_modified_log"], 5, [1e-10, 10.0]),
-        (["n_iter_larger_than_history"], 50, None),
+        (None, None),
+        (None, [1e-10, 10.0]),
+        (5, None),
+        (5, [1e-10, 10.0]),
+        (50, None),
     ],
 )
-@image_comparison(None, tol=0.098)
-def test_plot_residual_history(baseline_images, n_iterations, logscale, caplog) -> None:
+def test_plot_residual_history(
+    n_iterations, logscale, caplog, snapshot_matplotlib
+) -> None:
     """Test the residual history plot.
 
     Args:
-        baseline_images: The reference images for the test.
         n_iterations: The number of iterations to plot.
         logscale: The limits of the `y` axis.
         caplog: Fixture to access and control log capturing.

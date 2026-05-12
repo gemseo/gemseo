@@ -25,7 +25,6 @@ import pytest
 from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.post import SOM_Settings
 from gemseo.post.factory import POST_FACTORY
-from gemseo.utils.testing.helpers import image_comparison
 
 pytestmark = pytest.mark.skipif(
     not POST_FACTORY.is_available("SOM"),
@@ -36,28 +35,19 @@ POWER2_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 SELLAR_PATH = Path(__file__).parent / "modified_sellar_opt_pb.h5"
 SOBIESKI_PATH = Path(__file__).parent / "sobieski_all_gradients.h5"
 
-TEST_PARAMETERS = {
-    "SOM_Power2_annotated": (True, POWER2_PATH, ["SOM_Power2_annotated"]),
-    "SOM_Power2_not_annotated": (False, POWER2_PATH, ["SOM_Power2_not_annotated"]),
-    "SOM_Sellar_annotated": (True, SELLAR_PATH, ["SOM_Sellar_annotated"]),
-    "SOM_Sellar_not_annotated": (False, SELLAR_PATH, ["SOM_Sellar_not_annotated"]),
-    "SOM_Sobieski_annotated": (True, SOBIESKI_PATH, ["SOM_Sobieski_annotated"]),
-    "SOM_Sobieski_not_annotated": (
-        False,
-        SOBIESKI_PATH,
-        ["SOM_Sobieski_not_annotated"],
-    ),
-}
-
 
 @pytest.mark.parametrize(
-    ("is_annotated", "h5_path", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("is_annotated", "h5_path"),
+    [
+        (True, POWER2_PATH),
+        (False, POWER2_PATH),
+        (True, SELLAR_PATH),
+        (False, SELLAR_PATH),
+        (True, SOBIESKI_PATH),
+        (False, SOBIESKI_PATH),
+    ],
 )
-@image_comparison(None)
-def test_som(is_annotated, h5_path, baseline_images) -> None:
+def test_som(is_annotated, h5_path, snapshot_matplotlib) -> None:
     """Test the SOM post-processing."""
     problem = OptimizationProblem.from_hdf(h5_path)
     POST_FACTORY.execute(

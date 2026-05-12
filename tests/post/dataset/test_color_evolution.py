@@ -28,7 +28,6 @@ from numpy import array
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.color_evolution import ColorEvolution
 from gemseo.post.dataset.color_evolution_settings import ColorEvolution_Settings
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -41,33 +40,26 @@ def dataset():
     return dataset
 
 
-TEST_PARAMETERS = {
-    "default": ({}, {}, ["ColorEvolution"]),
-    "with_variables": ({"variables": ["x1", "x3"]}, {}, ["ColorEvolution_variables"]),
-    "with_log": ({"use_log": True}, {}, ["ColorEvolution_log"]),
-    "with_opacity": ({"opacity": 1.0}, {}, ["ColorEvolution_opacity"]),
-    "with_properties": (
-        {},
-        {
-            "colormap": "seismic",
-            "xlabel": "The xlabel",
-            "ylabel": "The ylabel",
-            "title": "The title",
-        },
-        ["ColorEvolution_properties"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties"),
+    [
+        ({}, {}),
+        ({"variables": ["x1", "x3"]}, {}),
+        ({"use_log": True}, {}),
+        ({"opacity": 1.0}, {}),
+        (
+            {},
+            {
+                "colormap": "seismic",
+                "xlabel": "The xlabel",
+                "ylabel": "The ylabel",
+                "title": "The title",
+            },
+        ),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
-def test_plot(kwargs, properties, baseline_images, dataset, fig_and_ax) -> None:
+def test_plot(kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib) -> None:
     """Test images created by ColorEvolution._plot against references."""
     settings = ColorEvolution_Settings(**kwargs, **properties)
     plot = ColorEvolution(dataset, settings)

@@ -28,7 +28,6 @@ from scipy.sparse.linalg import aslinearoperator
 
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 
 def test_init() -> None:
@@ -72,8 +71,7 @@ def test_size_checks(lhs, rhs, snapshot) -> None:
         problem.check()
 
 
-@image_comparison(["residuals0"])
-def test_plot_residuals(tmp_wd) -> None:
+def test_plot_residuals(snapshot_matplotlib) -> None:
     """Tests the residuals plot creation."""
     rng = RandomState(1)
     n = 10

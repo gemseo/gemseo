@@ -24,23 +24,14 @@ from numpy import array
 from gemseo.post import ParallelCoordinates_Settings
 from gemseo.post.parallel_coordinates import ParallelCoordinates
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
-
-TEST_PARAMETERS = {
-    "standardized": (True, ["PC_standardized_0", "PC_standardized_1"]),
-    "unstandardized": (False, ["PC_unstandardized_0", "PC_unstandardized_1"]),
-}
 
 
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem
+    use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check ParallelCoordinates with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective

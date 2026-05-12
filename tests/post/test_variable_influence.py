@@ -38,7 +38,6 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 SSBJ_HDF5_PATH = Path(__file__).parent / "mdf_backup.h5"
@@ -114,21 +113,12 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
         assert Path(outf).exists()
 
 
-TEST_PARAMETERS = {
-    "standardized": (True, ["VariableInfluence_standardized"]),
-    "unstandardized": (False, ["VariableInfluence_unstandardized"]),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem
+    use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check VariableInfluence with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective
@@ -137,17 +127,10 @@ def test_common_scenario(
 
 
 @pytest.mark.parametrize(
-    ("size", "baseline_images"),
-    [
-        (10, ["VariableInfluence_multidim_10"]),
-        (20, ["VariableInfluence_multidim_20"]),
-        (21, ["VariableInfluence_multidim_21"]),
-        (30, ["VariableInfluence_multidim_30"]),
-    ],
-    indirect=["baseline_images"],
+    "size",
+    [10, 20, 21, 30],
 )
-@image_comparison(None)
-def test_visible_labels(size, baseline_images) -> None:
+def test_visible_labels(size, snapshot_matplotlib) -> None:
     """A dummy optimization problem to check post-processors."""
     design_space = DesignSpace()
     design_space.add_variable("x", size=size, lower_bound=0, upper_bound=1, value=0.5)

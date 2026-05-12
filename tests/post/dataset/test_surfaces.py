@@ -27,7 +27,6 @@ from numpy import array
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -50,25 +49,14 @@ def dataset():
     return dataset
 
 
-# the test parameters, it maps a test name to the inputs and references outputs:
-# - the kwargs to be passed to Surfaces._plot
-# - the expected file names without extension to be compared
-TEST_PARAMETERS = {
-    "without_option": ({}, ["Surfaces_0", "Surfaces_1"]),
-    "with_subsamples": ({"samples": [1]}, ["Surfaces_with_subsamples"]),
-    "with_addpoint": (
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"samples": [1]},
         {"add_points": True},
-        ["Surfaces_with_addpoints_0", "Surfaces_with_addpoints_1"],
-    ),
-    "with_isolines": (
         {"fill": False},
-        ["Surfaces_with_isolines_0", "Surfaces_with_isolines_1"],
-    ),
-    "with_levels": (
         {"levels": 2},
-        ["Surfaces_with_levels_0", "Surfaces_with_levels_1"],
-    ),
-    "with_properties": (
         {
             "properties": {
                 "xlabel": "The xlabel",
@@ -76,19 +64,9 @@ TEST_PARAMETERS = {
                 "title": "The title",
             }
         },
-        ["Surfaces_properties_0", "Surfaces_properties_1"],
-    ),
-}
-
-
-@pytest.mark.parametrize(
-    ("kwargs", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ],
 )
-@image_comparison(None)
-def test_plot(kwargs, baseline_images, dataset) -> None:
+def test_plot(kwargs, dataset, snapshot_matplotlib) -> None:
     """Test images created by Surfaces._plot against references."""
     properties = kwargs.pop("properties", {})
     settings = Surfaces_Settings(mesh="mesh", variable="output", **kwargs, **properties)

@@ -22,23 +22,14 @@ import pytest
 
 from gemseo.post import Robustness_Settings
 from gemseo.post.robustness import Robustness
-from gemseo.utils.testing.helpers import image_comparison
-
-TEST_PARAMETERS = {
-    "standardized": (True, ["Robustness_standardized"]),
-    "unstandardized": (False, ["Robustness_unstandardized"]),
-}
 
 
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem
+    use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check Robustness with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective
@@ -46,16 +37,7 @@ def test_common_scenario(
     opt.execute(Robustness_Settings(save=False))
 
 
-@pytest.mark.parametrize(
-    "baseline_images",
-    [
-        ("Robustness_stddev",),
-    ],
-    indirect=["baseline_images"],
-    ids=["stddev"],
-)
-@image_comparison(None)
-def test_common_scenario_std(baseline_images, common_problem) -> None:
+def test_common_scenario_std(common_problem, snapshot_matplotlib) -> None:
     """Check Robustness with a custom standard deviation."""
     opt = Robustness(common_problem)
     opt.execute(Robustness_Settings(stddev=0.2, save=False))

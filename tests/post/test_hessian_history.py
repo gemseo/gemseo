@@ -32,7 +32,6 @@ from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.post import HessianHistory_Settings
 from gemseo.post.hessian_history import HessianHistory
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 DIR_PATH = Path(__file__).parent
 POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
@@ -40,14 +39,10 @@ POWER2_NAN_PATH = DIR_PATH / "power2_opt_pb_nan.h5"
 
 
 @pytest.mark.parametrize(
-    ("obj_relative", "baseline_images"),
-    [
-        (False, ["power2_2_hessian_approximation"]),
-        (True, ["power2_2_hessian_approximation"]),
-    ],
+    "obj_relative",
+    [False, True],
 )
-@image_comparison(None)
-def test_opt_hist_const(baseline_images, obj_relative) -> None:
+def test_opt_hist_const(obj_relative, snapshot_matplotlib) -> None:
     """Test that a problem with constraints is properly rendered."""
     problem = OptimizationProblem.from_hdf(POWER2_PATH)
     execute_post(
@@ -60,18 +55,16 @@ def test_opt_hist_const(baseline_images, obj_relative) -> None:
 
 
 @pytest.mark.parametrize(
-    ("problem_path", "baseline_images"),
-    [(POWER2_PATH, ["power2view_hessian_approximation"])],
+    "problem_path",
+    [POWER2_PATH],
 )
-@image_comparison(None)
 def test_opt_hist_from_database(
-    baseline_images,
     problem_path,
+    snapshot_matplotlib,
 ) -> None:
     """Test the generation of the plots from databases.
 
     Args:
-        baseline_images: The reference images to be compared.
         problem_path: The path to the hdf5 database of the problem to test.
     """
     problem = OptimizationProblem.from_hdf(problem_path)
@@ -97,31 +90,14 @@ def test_diag_with_nan(snapshot) -> None:
         execute_post(problem, post_name="HessianHistory", save=False, show=False)
 
 
-TEST_PARAMETERS = {
-    "standardized": (
-        True,
-        [
-            "hessian_history_hessian_approximation_standardized",
-        ],
-    ),
-    "unstandardized": (
-        False,
-        ["hessian_history_hessian_approximation_unstandardized"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
     use_standardized_objective,
-    baseline_images,
     three_length_common_problem,
+    snapshot_matplotlib,
 ) -> None:
     """Check HessianHistory with objective, standardized or not."""
     three_length_common_problem.use_standardized_objective = use_standardized_objective
@@ -130,14 +106,10 @@ def test_common_scenario(
 
 
 @pytest.mark.parametrize(
-    ("case", "baseline_images"),
-    [
-        (1, ["461_1_hessian_history_hessian"]),
-        (2, ["461_2_hessian_history_hessian"]),
-    ],
+    "case",
+    [1, 2],
 )
-@image_comparison(None)
-def test_461(case, baseline_images) -> None:
+def test_461(case, snapshot_matplotlib) -> None:
     """Check that HessianHistory works with the cases mentioned in issue 461.
 
     1. Design space of dimension 1 and scalar output.
@@ -161,8 +133,7 @@ def test_461(case, baseline_images) -> None:
     execute_post(problem, post_name="HessianHistory", save=False, show=False)
 
 
-@image_comparison(baseline_images=["hessian_history_hessian_variable_names"])
-def test_variable_names() -> None:
+def test_variable_names(snapshot_matplotlib) -> None:
     execute_post(
         Path(__file__).parent / "mdf_backup.h5",
         post_name="HessianHistory",

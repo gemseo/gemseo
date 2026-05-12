@@ -19,6 +19,7 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+from matplotlib import pyplot as plt
 from numpy import hstack
 from numpy import linspace
 from numpy import newaxis
@@ -29,7 +30,6 @@ from gemseo.machine_learning.regression.models.linreg import LinearRegressor
 from gemseo.post.machine_learning.ml_regressor_quality_viewer import (
     MLRegressorQualityViewer,
 )
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -53,16 +53,12 @@ def viewer(linear_regressor) -> MLRegressorQualityViewer:
     return MLRegressorQualityViewer(linear_regressor)
 
 
-@image_comparison(["residuals"], tol=0.01)
-def test_residuals(viewer) -> None:
+def test_residuals(viewer, snapshot_matplotlib) -> None:
     """Check the method plot_residuals_vs_observations."""
     viewer.plot_residuals_vs_observations("y", save=False)
 
 
-@image_comparison(
-    [f"residuals_scatter_{chr(x)}" for x in range(ord("a"), ord("a") + 12)], tol=0.01
-)
-def test_residuals_scatter_no_filter(viewer) -> None:
+def test_residuals_scatter_no_filter(viewer, snapshot_matplotlib) -> None:
     """Check the method plot_residuals_vs_observations with a list of scatters.
 
     Do not filter the scatter plots without the residuals.
@@ -72,42 +68,33 @@ def test_residuals_scatter_no_filter(viewer) -> None:
     )
 
 
-@image_comparison(
-    [
-        f"residuals_scatter_{chr(x)}"
-        for x in range(ord("a"), ord("a") + 12)
-        if chr(x) not in "il"
-    ],
-    tol=0.01,
-)
 def test_residuals_scatter(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check the method plot_residuals_vs_observations with a list of scatters."""
     viewer.plot_residuals_vs_observations("y", use_scatter_matrix=False, save=False)
 
 
-@image_comparison(["predictions"], tol=0.01)
 def test_predictions(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check the method plot_predictions_vs_observations."""
     viewer.plot_predictions_vs_observations("y", save=False)
 
 
-@image_comparison(["predictions_z"], tol=0.01)
 def test_predictions_with_scalar_output(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check the method plot_predictions_vs_observations with a scalar output."""
     viewer.plot_predictions_vs_observations("z", save=False)
 
 
-@image_comparison(
-    [f"predictions_scatter_{chr(x)}" for x in range(ord("a"), ord("a") + 12)], tol=0.01
-)
 def test_predictions_scatter_no_filter(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check the method plot_predictions_vs_observations with a list of scatters.
 
@@ -118,57 +105,47 @@ def test_predictions_scatter_no_filter(
     )
 
 
-@image_comparison(
-    [
-        f"predictions_scatter_{chr(x)}"
-        for x in range(ord("a"), ord("a") + 12)
-        if chr(x) not in "il"
-    ],
-    tol=0.01,
-)
 def test_predictions_scatter(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check the method plot_predictions_vs_observations with a list of scatters."""
     viewer.plot_predictions_vs_observations("y", use_scatter_matrix=False, save=False)
 
 
 @pytest.mark.parametrize("input_names", [["x"], "x", ()])
-@image_comparison(["inputs"], tol=0.01)
-def test_inputs(viewer, input_names) -> None:
+def test_inputs(viewer, input_names, snapshot_matplotlib) -> None:
     """Check the method plot_residuals_vs_inputs."""
     viewer.plot_residuals_vs_inputs("y", input_names, save=False)
 
 
-@image_comparison(
-    [f"inputs_scatter_{chr(x)}" for x in range(ord("a"), ord("a") + 6)], tol=0.01
-)
 def test_inputs_scatter(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check the method plot_residuals_vs_inputs with a list of scatters."""
     viewer.plot_residuals_vs_inputs("y", ["x"], use_scatter_matrix=False, save=False)
 
 
-@image_comparison(["input"], tol=0.01)
 def test_input(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check the method plot_residuals_vs_inputs with an input as str."""
     viewer.plot_residuals_vs_inputs("y", "x", save=False)
 
 
-@image_comparison(["output"], tol=0.01)
 def test_output(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check the method plot_residuals_vs_observations with output as tuple."""
     viewer.plot_residuals_vs_observations(("y", 0), save=False)
 
 
-@image_comparison(["output_scatter_a", "output_scatter_b"], tol=0.01)
 def test_output_scatter(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check the method plot_residuals_vs_observations with a list of scatters."""
     viewer.plot_residuals_vs_observations(
@@ -186,17 +163,18 @@ def test_output_scatter_default_file_names(viewer, tmp_wd) -> None:
     assert Path("residuals_vs_observations_1.png").exists()
 
 
-@image_comparison(["trend"], tol=0.01)
 def test_trend(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check plot_residuals_vs_observations with trend."""
     viewer.plot_predictions_vs_observations("y", save=False, trend="rbf")
+    assert plt.gcf() == snapshot_matplotlib(tolerance=0.01)
 
 
-@image_comparison(["observations"], tol=0.01)
 def test_observations(
     viewer,
+    snapshot_matplotlib,
 ) -> None:
     """Check plot_residuals_vs_observations with a validation dataset."""
     observations = IODataset()
@@ -211,8 +189,9 @@ def test_observations(
     )
 
 
-@image_comparison(["cross_validation_predictions_versus_observations"], tol=0.01)
-def test_cross_validation_predictions_versus_observations(viewer) -> None:
+def test_cross_validation_predictions_versus_observations(
+    viewer, snapshot_matplotlib
+) -> None:
     """Check plot_predictions_vs_observations for a cross validation."""
     viewer.plot_predictions_vs_observations(
         "y",
@@ -221,8 +200,9 @@ def test_cross_validation_predictions_versus_observations(viewer) -> None:
     )
 
 
-@image_comparison(["cross_validation_residuals_versus_observations"], tol=0.01)
-def test_cross_validation_residuals_versus_observations(viewer) -> None:
+def test_cross_validation_residuals_versus_observations(
+    viewer, snapshot_matplotlib
+) -> None:
     """Check plot_residuals_vs_observations for a cross validation."""
     viewer.plot_residuals_vs_observations(
         "y",
@@ -231,8 +211,7 @@ def test_cross_validation_residuals_versus_observations(viewer) -> None:
     )
 
 
-@image_comparison(["cross_validation_residuals_versus_inputs"], tol=0.01)
-def test_cross_validation_residuals_versus_inputs(viewer) -> None:
+def test_cross_validation_residuals_versus_inputs(viewer, snapshot_matplotlib) -> None:
     """Check plot_residuals_vs_inputs for a cross validation."""
     viewer.plot_residuals_vs_inputs(
         "y",

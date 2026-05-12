@@ -32,7 +32,6 @@ from gemseo.post.correlations import Correlations
 from gemseo.post.factory import POST_FACTORY
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 PARENT_PATH = Path(__file__).parent
 POWER_HDF5_PATH = PARENT_PATH / "power2_opt_pb.h5"
@@ -44,7 +43,7 @@ def factory():
     return POST_FACTORY
 
 
-def test_correlations(tmp_wd, factory) -> None:
+def test_correlations(tmp_wd, factory, snapshot_matplotlib) -> None:
     """Test correlations with the Rosenbrock problem.
 
     Args:
@@ -108,17 +107,15 @@ def test_correlations_func_name_error(factory, snapshot) -> None:
 
 
 @pytest.mark.parametrize(
-    ("func_names", "baseline_images"),
-    [(["pow2", "ineq1"], ["pow2_ineq1"]), ([], ["all_func"])],
+    ("func_names"),
+    [["pow2", "ineq1"], []],
 )
-@image_comparison(None)
-def test_correlations_func_names(tmp_wd, factory, baseline_images, func_names) -> None:
+def test_correlations_func_names(factory, func_names, snapshot_matplotlib) -> None:
     """Test func_names filter.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
         factory: Fixture that returns a post-processing factory.
-        baseline_images: The reference images to be compared.
         func_names: The function names subset for which the correlations
             are computed. If None, all functions are considered.
     """
@@ -137,8 +134,7 @@ def test_correlations_func_names(tmp_wd, factory, baseline_images, func_names) -
     )
 
 
-@image_comparison(["modified_sellar"])
-def test_func_name_sorting(tmp_wd, factory) -> None:
+def test_func_name_sorting(factory, snapshot_matplotlib) -> None:
     """Test that the function names sorting.
 
     Use a database from a modified Sellar problem
@@ -254,29 +250,14 @@ def test_func_order() -> None:
     assert variables == variables_expected
 
 
-TEST_PARAMETERS = {
-    "standardized": (
-        True,
-        ["Correlations_standardized_0", "Correlations_standardized_1"],
-    ),
-    "unstandardized": (
-        False,
-        ["Correlations_unstandardized_0", "Correlations_unstandardized_1"],
-    ),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
     use_standardized_objective,
-    baseline_images,
     common_problem,
+    snapshot_matplotlib,
 ) -> None:
     """Check Correlations with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective

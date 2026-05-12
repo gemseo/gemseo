@@ -19,12 +19,10 @@ from __future__ import annotations
 import contextlib
 import faulthandler
 import os
-import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 
-import matplotlib.testing.decorators
 import pytest
 
 from gemseo import configure
@@ -100,36 +98,11 @@ def skip_under_windows(request) -> None:
 
 
 @pytest.fixture
-def baseline_images(request):
-    """Return the baseline_images contents.
-
-    Used when the compare_images decorator has indirect set.
-    """
-    return request.param
-
-
-@pytest.fixture
 def reset_factory():
     """Reset the factory cache."""
     BaseFactory.clear_cache()
     yield
     BaseFactory.clear_cache()
-
-
-# Backup before we monkey patch.
-original_image_directories = matplotlib.testing.decorators._image_directories
-
-if "GEMSEO_KEEP_IMAGE_COMPARISONS" not in os.environ:
-    # Context manager to change the current working directory to a temporary one.
-    __ctx_tmp_wd = contextlib.contextmanager(__tmp_wd)
-
-    def _image_directories(func):
-        """Create the result_images directory in a temporary parent directory."""
-        with __ctx_tmp_wd(tempfile.mkdtemp()):
-            baseline_dir, result_dir = original_image_directories(func)
-        return baseline_dir, result_dir
-
-    matplotlib.testing.decorators._image_directories = _image_directories
 
 
 # Fixtures to deal with the Excel disciplines.

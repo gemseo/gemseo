@@ -1,8 +1,8 @@
 # serializer version: 1
-# name: test_compute_missing_gradients[png-False-opt_problem3-baseline_images3]
+# name: test_compute_missing_gradients[False-opt_problem3]
   'No gradients to plot at current iteration.'
 # ---
-# name: test_compute_missing_gradients[png-True-opt_problem1-baseline_images1]
+# name: test_compute_missing_gradients[True-opt_problem1]
   'No gradients to plot at current iteration.'
 # ---
 # name: test_gradient_sensitivity_prob[False]

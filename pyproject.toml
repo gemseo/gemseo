@@ -76,6 +76,7 @@ test = [
     "pytest-cov",
     "pytest-xdist",
     "pytest-sugar",
+    "syrupy-matplotlib",
 ]
 doc = [
     "black",

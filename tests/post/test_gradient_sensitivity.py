@@ -41,7 +41,6 @@ from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 SOBIESKI_MISSING_GRADIENTS = Path(__file__).parent / "sobieski_missing_gradients.h5"
@@ -171,16 +170,14 @@ def test_scale_gradients(tmp_wd, scale_gradients) -> None:
 
 
 @pytest.mark.parametrize(
-    ("scale_gradients", "baseline_images"),
-    [(True, ["grad_sens_scaled"]), (False, ["grad_sens"])],
+    "scale_gradients",
+    [True, False],
 )
-@image_comparison(None)
-def test_plot(tmp_wd, baseline_images, scale_gradients) -> None:
+def test_plot(scale_gradients, snapshot_matplotlib) -> None:
     """Test images created by the post_process method against references.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        baseline_images: The reference images to be compared.
         scale_gradients: If True, normalize each gradient w.r.t. design variables.
     """
     disc = create_discipline("AutoPyDiscipline", py_func=f, py_jac=dfdxy)
@@ -203,21 +200,12 @@ def test_plot(tmp_wd, baseline_images, scale_gradients) -> None:
     )
 
 
-TEST_PARAMETERS = {
-    "standardized": (True, ["GradientSensitivity_standardized"]),
-    "unstandardized": (False, ["GradientSensitivity_unstandardized"]),
-}
-
-
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    "use_standardized_objective",
+    [True, False],
 )
-@image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, baseline_images, common_problem
+    use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check GradientSensitivity with objective, standardized or not."""
     common_problem.use_standardized_objective = use_standardized_objective
@@ -226,23 +214,17 @@ def test_common_scenario(
 
 
 @pytest.mark.parametrize(
-    ("compute_missing_gradients", "opt_problem", "baseline_images"),
+    ("compute_missing_gradients", "opt_problem"),
     [
-        (True, SOBIESKI_ALL_GRADIENTS, ["grad_sens_sobieski"]),
-        (
-            True,
-            SOBIESKI_MISSING_GRADIENTS,
-            [],
-        ),
-        (False, SOBIESKI_ALL_GRADIENTS, ["grad_sens_sobieski"]),
-        (False, SOBIESKI_MISSING_GRADIENTS, []),
+        (True, SOBIESKI_ALL_GRADIENTS),
+        (True, SOBIESKI_MISSING_GRADIENTS),
+        (False, SOBIESKI_ALL_GRADIENTS),
+        (False, SOBIESKI_MISSING_GRADIENTS),
     ],
 )
-@image_comparison(None)
 def test_compute_missing_gradients(
     compute_missing_gradients,
     opt_problem,
-    baseline_images,
     factory,
     caplog,
     snapshot,
@@ -252,7 +234,6 @@ def test_compute_missing_gradients(
     Args:
         compute_missing_gradients: Whether to compute the gradients if they are missing.
         opt_problem: The path to an HDF5 file of the Sobieski problem.
-        baseline_images: The references images for the image comparison test.
         factory: Fixture that returns a post-processing factory.
         caplog: Fixture to access and control log capturing.
     """
@@ -285,8 +266,7 @@ def test_compute_missing_gradients(
         )
 
 
-@image_comparison(["grad_sens_sobieski"])
-def test_compute_missing_gradients_with_eval(factory) -> None:
+def test_compute_missing_gradients_with_eval(factory, snapshot_matplotlib) -> None:
     """Test that the computation of the missing gradients works well with functions.
 
     Args:

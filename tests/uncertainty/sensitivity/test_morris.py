@@ -42,7 +42,6 @@ from gemseo.uncertainty.distributions.scipy.uniform_settings import (
 )
 from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import image_comparison
 
 FUNCTION = {
     "name": "my_function",
@@ -165,18 +164,17 @@ def test_morris_relative_sigma(morris, output, variable) -> None:
 
 
 @pytest.mark.parametrize(
-    ("output_name", "kwargs", "baseline_images"),
+    ("output_name", "kwargs"),
     [
-        ("y1", {}, ["plot_y1"]),
-        ("y2", {}, ["plot_y2"]),
-        ("y1", {"input_names": ["x1", "x3"]}, ["plot_inputs"]),
-        ("y1", {"offset": 5}, ["plot_offset"]),
-        ("y1", {"lower_mu": 1}, ["plot_lower_mu"]),
-        ("y1", {"lower_sigma": 0.1}, ["plot_lower_sigma"]),
+        ("y1", {}),
+        ("y2", {}),
+        ("y1", {"input_names": ["x1", "x3"]}),
+        ("y1", {"offset": 5}),
+        ("y1", {"lower_mu": 1}),
+        ("y1", {"lower_sigma": 0.1}),
     ],
 )
-@image_comparison(None)
-def test_plot(morris, output_name, kwargs, baseline_images) -> None:
+def test_plot(morris, output_name, kwargs, snapshot_matplotlib) -> None:
     """Check the main visualization method."""
     fig = morris.plot(output_name, save=False, **kwargs)
     assert isinstance(fig, Figure)
@@ -400,14 +398,7 @@ def test_constant_output(discipline_with_constant_output_and_space, normalize):
     assert indices.mu["varying"][0] is not None
 
 
-@pytest.mark.parametrize(
-    ("baseline_images"),
-    [
-        (["plot_vectorial_input"]),
-    ],
-)
-@image_comparison(None)
-def test_morris_vectorial_input(baseline_images):
+def test_morris_vectorial_input(snapshot_matplotlib):
     """Check that the Morris plot for vectorial input correctly labels the input
     components."""
 

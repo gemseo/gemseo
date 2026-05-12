@@ -26,7 +26,6 @@ from numpy import array
 from gemseo.datasets.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -63,41 +62,30 @@ def other_dataset():
     return dataset
 
 
-TEST_PARAMETERS = {
-    "default": ({}, {}, False, ["default"]),
-    "variables": ({"variables": ["y", "z"]}, {}, False, ["variables"]),
-    "scale": ({"scale": True}, {}, False, ["scale"]),
-    "center": ({"center": True}, {}, False, ["center"]),
-    "horizontal": ({"use_vertical_bars": False}, {}, False, ["horizontal"]),
-    "confidence_interval": (
-        {"add_confidence_interval": True},
-        {},
-        False,
-        ["confidence_interval"],
-    ),
-    "outliers": ({"add_outliers": False}, {}, False, ["outliers"]),
-    "option": ({"options": {"showmeans": True}}, {}, False, ["option"]),
-    "datasets": ({}, {}, True, ["datasets"]),
-    "color": ({}, {"color": ["red", "blue"], "grid": False}, True, ["color"]),
-}
-
-
 @pytest.mark.parametrize(
-    ("kwargs", "properties", "datasets", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("kwargs", "properties", "datasets"),
+    [
+        ({}, {}, False),
+        ({"variables": ["y", "z"]}, {}, False),
+        ({"scale": True}, {}, False),
+        ({"center": True}, {}, False),
+        ({"use_vertical_bars": False}, {}, False),
+        ({"add_confidence_interval": True}, {}, False),
+        ({"add_outliers": False}, {}, False),
+        ({"options": {"showmeans": True}}, {}, False),
+        ({}, {}, True),
+        ({}, {"color": ["red", "blue"], "grid": False}, True),
+    ],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
-@image_comparison(None)
 def test_plot(
     kwargs,
     properties,
     datasets,
     other_dataset,
-    baseline_images,
     dataset,
     fig_and_ax,
+    snapshot_matplotlib,
 ) -> None:
     """Check Boxplot."""
     datasets = [other_dataset] if datasets else []

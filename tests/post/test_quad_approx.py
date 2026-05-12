@@ -25,31 +25,17 @@ from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.post import QuadApprox_Settings
 from gemseo.post.quad_approx import QuadApprox
 from gemseo.problems.optimization.power_2 import Power2
-from gemseo.utils.testing.helpers import image_comparison
-
-TEST_PARAMETERS = {
-    "standardized": (
-        True,
-        "rosen",
-        ["QuadApprox_standardized_0", "QuadApprox_standardized_1"],
-    ),
-    "unstandardized": (
-        False,
-        "rosen",
-        ["QuadApprox_unstandardized_0", "QuadApprox_unstandardized_1"],
-    ),
-}
 
 
 @pytest.mark.parametrize(
-    ("use_standardized_objective", "function", "baseline_images"),
-    TEST_PARAMETERS.values(),
-    indirect=["baseline_images"],
-    ids=TEST_PARAMETERS.keys(),
+    ("use_standardized_objective", "function"),
+    [
+        (True, "rosen"),
+        (False, "rosen"),
+    ],
 )
-@image_comparison(None)
 def test_common_scenario(
-    use_standardized_objective, function, baseline_images, common_problem_
+    use_standardized_objective, function, common_problem_, snapshot_matplotlib
 ) -> None:
     """Check QuadApprox with objective, standardized or not."""
     common_problem_.use_standardized_objective = use_standardized_objective

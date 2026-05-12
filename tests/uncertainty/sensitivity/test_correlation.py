@@ -30,7 +30,6 @@ from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
-from gemseo.utils.testing.helpers import image_comparison
 
 
 @pytest.fixture(scope="module")
@@ -73,18 +72,14 @@ def test_indices(correlation) -> None:
         assert pearson["y1"][0][input_name].shape == (1,)
 
 
-@pytest.mark.parametrize("baseline_images", [["plot"]])
 @pytest.mark.parametrize("output", ["y1", ("y1", 0)])
-@image_comparison(None)
-def test_plot(correlation, baseline_images, output) -> None:
+def test_plot(correlation, output, snapshot_matplotlib) -> None:
     """Check the method plot()."""
     correlation.compute_indices()
     correlation.plot(output, save=False)
 
 
-@pytest.mark.parametrize("baseline_images", [(["plot_radar"])])
-@image_comparison(None)
-def test_plot_radar(correlation, baseline_images) -> None:
+def test_plot_radar(correlation, snapshot_matplotlib) -> None:
     """Check the method plot_radar()."""
     correlation.compute_indices()
     correlation.plot_radar("y1", save=False)
