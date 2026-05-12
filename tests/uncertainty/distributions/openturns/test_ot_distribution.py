@@ -241,11 +241,11 @@ def test_transformation() -> None:
         "expected",
     ),
     [
-        (1, None, None, None, None, "distribution.png"),
-        (2, None, None, None, None, "distribution.png"),
-        (2, "foo/bar.png", None, None, None, Path("foo/bar.png")),
-        (2, None, "foo", None, None, Path("foo/distribution.png")),
-        (2, None, "foo", "bar", "svg", Path("foo/bar.svg")),
+        (1, "", "", "", "", "pdf_cdf.png"),
+        (2, "", "", "", "", "pdf_cdf.png"),
+        (2, "foo/bar.png", "", "", "", Path("foo/bar.png")),
+        (2, "", "foo", "", "", Path("foo/pdf_cdf.png")),
+        (2, "", "foo", "bar", "svg", Path("foo/bar.svg")),
     ],
 )
 def test_plot_save(

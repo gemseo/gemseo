@@ -18,12 +18,14 @@ from __future__ import annotations
 
 import contextlib
 import faulthandler
+import math
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 
 import pytest
+from syrupy.matchers import path_type
 
 from gemseo import configure
 from gemseo.core.base_factory import BaseFactory
@@ -103,6 +105,45 @@ def reset_factory():
     BaseFactory.clear_cache()
     yield
     BaseFactory.clear_cache()
+
+
+@pytest.fixture
+def snapshot_allclose(snapshot):
+    """Return a factory building a ``snapshot`` comparing floats with tolerances.
+
+    Use in place of ``snapshot`` for snapshots containing Python-level floats
+    whose last bits drift across OSes or Python versions
+    (e.g. plotly figures decoded from ``json.loads(fig.to_json())``).
+    Numpy arrays serialized by plotly as ``{"dtype": "f8", "bdata": ...}``
+    are not affected: they are still compared byte-for-byte.
+
+    Floats are canonicalized following ``numpy.allclose`` semantics
+    (``|x - y| <= atol + rtol * |y|``):
+    values with ``|x| <= atol`` collapse to ``0.0``,
+    and the remaining values are rounded to a number of significant digits
+    derived from ``rtol``.
+    Two floats within tolerance therefore canonicalize to the same value
+    and compare equal in the snapshot.
+
+    Args:
+        rtol: The relative tolerance.
+        atol: The absolute tolerance.
+    """
+
+    def make(rtol: float = 1e-9, atol: float = 0.0):
+        sig_digits = max(1, -math.floor(math.log10(rtol)))
+
+        def quantize(value: float, _) -> float:  # pragma: no cover
+            if not math.isfinite(value) or value == 0.0:
+                return value
+            if abs(value) <= atol:
+                return 0.0
+            order = math.floor(math.log10(abs(value)))
+            return round(value, sig_digits - order - 1)
+
+        return snapshot(matcher=path_type(types=(float,), replacer=quantize))
+
+    return make
 
 
 # Fixtures to deal with the Excel disciplines.

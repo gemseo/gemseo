@@ -19,6 +19,10 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from pathlib import Path
+from unittest.mock import MagicMock
+from unittest.mock import patch
+
 import pytest
 import scipy.stats as scipy_stats
 from numpy import array
@@ -51,6 +55,7 @@ from gemseo.uncertainty.distributions.scipy.normal_settings import (
 from gemseo.uncertainty.distributions.scipy.triangular_settings import (
     SPTriangularDistribution_Settings,
 )
+from gemseo.uncertainty.distributions.scipy.uniform import SPUniformDistribution
 from gemseo.uncertainty.distributions.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
@@ -312,3 +317,34 @@ def test_lognormal_distribution():
     distribution = SPLogNormalDistribution()
     assert distribution.mean == pytest.approx(1.0)
     assert distribution.standard_deviation == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize(
+    ("save", "show", "directory_path"),
+    [
+        (True, False, ""),
+        (True, False, "my_dir"),
+        (False, True, ""),
+        (False, False, ""),
+    ],
+)
+def test_plot_html(save, show, directory_path) -> None:
+    """Check the save and show behavior of plot() in the HTML branch."""
+    distribution = SPUniformDistribution()
+    mock_fig = MagicMock()
+    with patch(
+        "gemseo.uncertainty.distributions.base_univariate.make_subplots",
+        return_value=mock_fig,
+    ):
+        distribution.plot(
+            save=save, show=show, file_extension="html", directory_path=directory_path
+        )
+    expected_dir = Path().cwd() if directory_path == "" else Path(directory_path)
+    if save:
+        mock_fig.write_html.assert_called_once_with(expected_dir / "pdf_cdf.html")
+    else:
+        mock_fig.write_html.assert_not_called()
+    if show:
+        mock_fig.show.assert_called_once()
+    else:
+        mock_fig.show.assert_not_called()

@@ -2,6 +2,4212 @@
 # name: test_plot_criteria
   "The variable 'dummy' is missing from the dataset; available ones are: x_1, x_2, x_3."
 # ---
+# name: test_plot_html
+  dict({
+    'data': list([
+      dict({
+        'name': 'PDF',
+        'type': 'scatter',
+        'x': dict({
+          'bdata': 'tNRB4c1EdL+CbJbwDtB0P9xWN+F18o4/u7sRJXK+mT8E5sOs1AGiPyzu/kZwJKc/UvY54QtHrD89f7q907SwP1AD2IohRrM/Y4f1V2/XtT93CxMlvWi4P4qPMPIK+ro/nRNOv1iLvT/YyzVGUw7AP+KNxCz6VsE/609TE6Gfwj/1EeL5R+jDP//TcODuMMU/CJb/xpV5xj8SWI6tPMLHPxwaHZTjCsk/JdyreopTyj8vnjphMZzLPzlgyUfY5Mw/QiJYLn8tzj9M5OYUJnbPPyvTun1mX9A/MDQC8bkD0T81lUlkDajRPzn2kNdgTNI/PlfYSrTw0j9DuB++B5XTP0gZZzFbOdQ/TXqupK7d1D9S2/UXAoLVP1c8PYtVJtY/W52E/qjK1j9g/stx/G7XP2VfE+VPE9g/asBaWKO32D9vIaLL9lvZP3SC6T5KANo/eOMwsp2k2j99RHgl8UjbP4Klv5hE7ds/hwYHDJiR3D+MZ05/6zXdP5HIlfI+2t0/lSndZZJ+3j+aiiTZ5SLfP5/ra0w5x98/U6bZX8Y14D/VVn0Z8IfgP1cHIdMZ2uA/2rfEjEMs4T9caGhGbX7hP98YDACX0OE/YcmvucAi4j/jeVNz6nTiP2Yq9ywUx+I/6Nqa5j0Z4z9riz6gZ2vjP+074lmRveM/cOyFE7sP5D/ynCnN5GHkP3RNzYYOtOQ/9/1wQDgG5T95rhT6YVjlP/xeuLOLquU/fg9cbbX85T8BwP8m307mP4Nwo+AIoeY/BSFHmjLz5j+I0epTXEXnPwqCjg2Gl+c/jTIyx6/p5z8P49WA2TvoP5GTeToDjug/FEQd9Czg6D+W9MCtVjLpPxmlZGeAhOk/m1UIIarW6T8eBqza0yjqP6C2T5T9euo/ImfzTSfN6j+lF5cHUR/rPyfIOsF6ces/qnjeeqTD6z8sKYI0zhXsP6/ZJe73Z+w/MYrJpyG67D+zOm1hSwztPzbrEBt1Xu0/uJu01J6w7T87TFiOyALuP738+0fyVO4/P62fARyn7j/CXUO7RfnuP0QO53RvS+8/x76KLpmd7z8=',
+          'dtype': 'f8',
+        }),
+        'xaxis': 'x',
+        'y': list([
+          0.0,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+          0.997,
+        ]),
+        'yaxis': 'y',
+      }),
+      dict({
+        'name': 'CDF',
+        'type': 'scatter',
+        'x': dict({
+          'bdata': 'tNRB4c1EdL+CbJbwDtB0P9xWN+F18o4/u7sRJXK+mT8E5sOs1AGiPyzu/kZwJKc/UvY54QtHrD89f7q907SwP1AD2IohRrM/Y4f1V2/XtT93CxMlvWi4P4qPMPIK+ro/nRNOv1iLvT/YyzVGUw7AP+KNxCz6VsE/609TE6Gfwj/1EeL5R+jDP//TcODuMMU/CJb/xpV5xj8SWI6tPMLHPxwaHZTjCsk/JdyreopTyj8vnjphMZzLPzlgyUfY5Mw/QiJYLn8tzj9M5OYUJnbPPyvTun1mX9A/MDQC8bkD0T81lUlkDajRPzn2kNdgTNI/PlfYSrTw0j9DuB++B5XTP0gZZzFbOdQ/TXqupK7d1D9S2/UXAoLVP1c8PYtVJtY/W52E/qjK1j9g/stx/G7XP2VfE+VPE9g/asBaWKO32D9vIaLL9lvZP3SC6T5KANo/eOMwsp2k2j99RHgl8UjbP4Klv5hE7ds/hwYHDJiR3D+MZ05/6zXdP5HIlfI+2t0/lSndZZJ+3j+aiiTZ5SLfP5/ra0w5x98/U6bZX8Y14D/VVn0Z8IfgP1cHIdMZ2uA/2rfEjEMs4T9caGhGbX7hP98YDACX0OE/YcmvucAi4j/jeVNz6nTiP2Yq9ywUx+I/6Nqa5j0Z4z9riz6gZ2vjP+074lmRveM/cOyFE7sP5D/ynCnN5GHkP3RNzYYOtOQ/9/1wQDgG5T95rhT6YVjlP/xeuLOLquU/fg9cbbX85T8BwP8m307mP4Nwo+AIoeY/BSFHmjLz5j+I0epTXEXnPwqCjg2Gl+c/jTIyx6/p5z8P49WA2TvoP5GTeToDjug/FEQd9Czg6D+W9MCtVjLpPxmlZGeAhOk/m1UIIarW6T8eBqza0yjqP6C2T5T9euo/ImfzTSfN6j+lF5cHUR/rPyfIOsF6ces/qnjeeqTD6z8sKYI0zhXsP6/ZJe73Z+w/MYrJpyG67D+zOm1hSwztPzbrEBt1Xu0/uJu01J6w7T87TFiOyALuP738+0fyVO4/P62fARyn7j/CXUO7RfnuP0QO53RvS+8/x76KLpmd7z8=',
+          'dtype': 'f8',
+        }),
+        'xaxis': 'x2',
+        'y': list([
+          0.0,
+          0.01,
+          0.02,
+          0.03,
+          0.04,
+          0.05,
+          0.06,
+          0.07,
+          0.08,
+          0.09,
+          0.1,
+          0.11,
+          0.12,
+          0.13,
+          0.14,
+          0.15,
+          0.16,
+          0.17,
+          0.18,
+          0.19,
+          0.2,
+          0.21,
+          0.22,
+          0.23,
+          0.24,
+          0.25,
+          0.26,
+          0.27,
+          0.28,
+          0.29,
+          0.3,
+          0.31,
+          0.32,
+          0.33,
+          0.34,
+          0.35,
+          0.36,
+          0.37,
+          0.38,
+          0.39,
+          0.4,
+          0.41,
+          0.42,
+          0.43,
+          0.44,
+          0.45,
+          0.46,
+          0.47,
+          0.48,
+          0.49,
+          0.5,
+          0.51,
+          0.52,
+          0.53,
+          0.54,
+          0.55,
+          0.56,
+          0.57,
+          0.58,
+          0.59,
+          0.6,
+          0.61,
+          0.62,
+          0.63,
+          0.64,
+          0.65,
+          0.66,
+          0.67,
+          0.68,
+          0.69,
+          0.7,
+          0.71,
+          0.72,
+          0.73,
+          0.74,
+          0.75,
+          0.76,
+          0.77,
+          0.78,
+          0.79,
+          0.8,
+          0.81,
+          0.82,
+          0.83,
+          0.84,
+          0.85,
+          0.86,
+          0.87,
+          0.88,
+          0.89,
+          0.9,
+          0.91,
+          0.92,
+          0.93,
+          0.94,
+          0.95,
+          0.96,
+          0.97,
+          0.98,
+          0.99,
+        ]),
+        'yaxis': 'y2',
+      }),
+    ]),
+    'layout': dict({
+      'template': dict({
+        'data': dict({
+          'bar': list([
+            dict({
+              'error_x': dict({
+                'color': '#2a3f5f',
+              }),
+              'error_y': dict({
+                'color': '#2a3f5f',
+              }),
+              'marker': dict({
+                'line': dict({
+                  'color': '#E5ECF6',
+                  'width': 0.5,
+                }),
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'bar',
+            }),
+          ]),
+          'barpolar': list([
+            dict({
+              'marker': dict({
+                'line': dict({
+                  'color': '#E5ECF6',
+                  'width': 0.5,
+                }),
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'barpolar',
+            }),
+          ]),
+          'carpet': list([
+            dict({
+              'aaxis': dict({
+                'endlinecolor': '#2a3f5f',
+                'gridcolor': 'white',
+                'linecolor': 'white',
+                'minorgridcolor': 'white',
+                'startlinecolor': '#2a3f5f',
+              }),
+              'baxis': dict({
+                'endlinecolor': '#2a3f5f',
+                'gridcolor': 'white',
+                'linecolor': 'white',
+                'minorgridcolor': 'white',
+                'startlinecolor': '#2a3f5f',
+              }),
+              'type': 'carpet',
+            }),
+          ]),
+          'choropleth': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'choropleth',
+            }),
+          ]),
+          'contour': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'contour',
+            }),
+          ]),
+          'contourcarpet': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'contourcarpet',
+            }),
+          ]),
+          'heatmap': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'heatmap',
+            }),
+          ]),
+          'histogram': list([
+            dict({
+              'marker': dict({
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'histogram',
+            }),
+          ]),
+          'histogram2d': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'histogram2d',
+            }),
+          ]),
+          'histogram2dcontour': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'histogram2dcontour',
+            }),
+          ]),
+          'mesh3d': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'mesh3d',
+            }),
+          ]),
+          'parcoords': list([
+            dict({
+              'line': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'parcoords',
+            }),
+          ]),
+          'pie': list([
+            dict({
+              'automargin': True,
+              'type': 'pie',
+            }),
+          ]),
+          'scatter': list([
+            dict({
+              'fillpattern': dict({
+                'fillmode': 'overlay',
+                'size': 10,
+                'solidity': 0.2,
+              }),
+              'type': 'scatter',
+            }),
+          ]),
+          'scatter3d': list([
+            dict({
+              'line': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatter3d',
+            }),
+          ]),
+          'scattercarpet': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattercarpet',
+            }),
+          ]),
+          'scattergeo': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattergeo',
+            }),
+          ]),
+          'scattergl': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattergl',
+            }),
+          ]),
+          'scattermap': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattermap',
+            }),
+          ]),
+          'scattermapbox': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattermapbox',
+            }),
+          ]),
+          'scatterpolar': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterpolar',
+            }),
+          ]),
+          'scatterpolargl': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterpolargl',
+            }),
+          ]),
+          'scatterternary': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterternary',
+            }),
+          ]),
+          'surface': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'surface',
+            }),
+          ]),
+          'table': list([
+            dict({
+              'cells': dict({
+                'fill': dict({
+                  'color': '#EBF0F8',
+                }),
+                'line': dict({
+                  'color': 'white',
+                }),
+              }),
+              'header': dict({
+                'fill': dict({
+                  'color': '#C8D4E3',
+                }),
+                'line': dict({
+                  'color': 'white',
+                }),
+              }),
+              'type': 'table',
+            }),
+          ]),
+        }),
+        'layout': dict({
+          'annotationdefaults': dict({
+            'arrowcolor': '#2a3f5f',
+            'arrowhead': 0,
+            'arrowwidth': 1,
+          }),
+          'autotypenumbers': 'strict',
+          'coloraxis': dict({
+            'colorbar': dict({
+              'outlinewidth': 0,
+              'ticks': '',
+            }),
+          }),
+          'colorscale': dict({
+            'diverging': list([
+              list([
+                0,
+                '#8e0152',
+              ]),
+              list([
+                0.1,
+                '#c51b7d',
+              ]),
+              list([
+                0.2,
+                '#de77ae',
+              ]),
+              list([
+                0.3,
+                '#f1b6da',
+              ]),
+              list([
+                0.4,
+                '#fde0ef',
+              ]),
+              list([
+                0.5,
+                '#f7f7f7',
+              ]),
+              list([
+                0.6,
+                '#e6f5d0',
+              ]),
+              list([
+                0.7,
+                '#b8e186',
+              ]),
+              list([
+                0.8,
+                '#7fbc41',
+              ]),
+              list([
+                0.9,
+                '#4d9221',
+              ]),
+              list([
+                1,
+                '#276419',
+              ]),
+            ]),
+            'sequential': list([
+              list([
+                0.0,
+                '#0d0887',
+              ]),
+              list([
+                0.111,
+                '#46039f',
+              ]),
+              list([
+                0.222,
+                '#7201a8',
+              ]),
+              list([
+                0.333,
+                '#9c179e',
+              ]),
+              list([
+                0.444,
+                '#bd3786',
+              ]),
+              list([
+                0.556,
+                '#d8576b',
+              ]),
+              list([
+                0.667,
+                '#ed7953',
+              ]),
+              list([
+                0.778,
+                '#fb9f3a',
+              ]),
+              list([
+                0.889,
+                '#fdca26',
+              ]),
+              list([
+                1.0,
+                '#f0f921',
+              ]),
+            ]),
+            'sequentialminus': list([
+              list([
+                0.0,
+                '#0d0887',
+              ]),
+              list([
+                0.111,
+                '#46039f',
+              ]),
+              list([
+                0.222,
+                '#7201a8',
+              ]),
+              list([
+                0.333,
+                '#9c179e',
+              ]),
+              list([
+                0.444,
+                '#bd3786',
+              ]),
+              list([
+                0.556,
+                '#d8576b',
+              ]),
+              list([
+                0.667,
+                '#ed7953',
+              ]),
+              list([
+                0.778,
+                '#fb9f3a',
+              ]),
+              list([
+                0.889,
+                '#fdca26',
+              ]),
+              list([
+                1.0,
+                '#f0f921',
+              ]),
+            ]),
+          }),
+          'colorway': list([
+            '#636efa',
+            '#EF553B',
+            '#00cc96',
+            '#ab63fa',
+            '#FFA15A',
+            '#19d3f3',
+            '#FF6692',
+            '#B6E880',
+            '#FF97FF',
+            '#FECB52',
+          ]),
+          'font': dict({
+            'color': '#2a3f5f',
+          }),
+          'geo': dict({
+            'bgcolor': 'white',
+            'lakecolor': 'white',
+            'landcolor': '#E5ECF6',
+            'showlakes': True,
+            'showland': True,
+            'subunitcolor': 'white',
+          }),
+          'hoverlabel': dict({
+            'align': 'left',
+          }),
+          'hovermode': 'closest',
+          'mapbox': dict({
+            'style': 'light',
+          }),
+          'paper_bgcolor': 'white',
+          'plot_bgcolor': '#E5ECF6',
+          'polar': dict({
+            'angularaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'bgcolor': '#E5ECF6',
+            'radialaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+          }),
+          'scene': dict({
+            'xaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+            'yaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+            'zaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+          }),
+          'shapedefaults': dict({
+            'line': dict({
+              'color': '#2a3f5f',
+            }),
+          }),
+          'ternary': dict({
+            'aaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'baxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'bgcolor': '#E5ECF6',
+            'caxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+          }),
+          'title': dict({
+            'x': 0.05,
+          }),
+          'xaxis': dict({
+            'automargin': True,
+            'gridcolor': 'white',
+            'linecolor': 'white',
+            'ticks': '',
+            'title': dict({
+              'standoff': 15,
+            }),
+            'zerolinecolor': 'white',
+            'zerolinewidth': 2,
+          }),
+          'yaxis': dict({
+            'automargin': True,
+            'gridcolor': 'white',
+            'linecolor': 'white',
+            'ticks': '',
+            'title': dict({
+              'standoff': 15,
+            }),
+            'zerolinecolor': 'white',
+            'zerolinewidth': 2,
+          }),
+        }),
+      }),
+      'title': dict({
+        'text': 'Uniform(-0.004948429315949788, 0.998017743567723)',
+      }),
+      'xaxis': dict({
+        'anchor': 'y',
+        'domain': list([
+          0.0,
+          0.45,
+        ]),
+        'title': dict({
+          'text': 'x_1',
+        }),
+      }),
+      'xaxis2': dict({
+        'anchor': 'y2',
+        'domain': list([
+          0.55,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'x_1',
+        }),
+      }),
+      'yaxis': dict({
+        'anchor': 'x',
+        'domain': list([
+          0.0,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'Probability density function',
+        }),
+      }),
+      'yaxis2': dict({
+        'anchor': 'x2',
+        'domain': list([
+          0.0,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'Cumulative distribution function',
+        }),
+      }),
+    }),
+  })
+# ---
+# name: test_plot_html.1
+  dict({
+    'data': list([
+      dict({
+        'name': 'PDF',
+        'type': 'scatter',
+        'x': dict({
+          'bdata': 'mSknfR1V+b8/oMO2ErH4v+UWYPAHDfi/i438Kf1o978xBJlj8sT2v9d6NZ3nIPa/ffHR1tx89b8jaG4Q0tj0v8neCkrHNPS/b1Wng7yQ878VzEO9sezyv7tC4PamSPK/Ybl8MJyk8b8HMBlqkQDxv62mtaOGXPC/pjqkuvdw77/yJ90t4ijuvz4VFqHM4Oy/igJPFLeY67/W74eHoVDqvyLdwPqLCOm/bsr5bXbA57+6tzLhYHjmvwala1RLMOW/UpKkxzXo47+ef906IKDiv+psFq4KWOG/NlpPIfUP4L8EjxApv4/dv5xpgg+U/9q/NET09Whv2L/MHmbcPd/Vv2T518IST9O//NNJqee+0L8oXXcfeV3Mv1gSW+wiPce/iMc+ucwcwr9w+UQM7fi5v6DHGEyBcK+/wDhP/1Delb/AHZOZYCSTPyC6OhmJE64/sPLV8nBKuT8oRIesjsXBP/iOo9/k5cY/yNm/EjsGzD9MEu6iSJPQP7Q3fLxzI9M/HF0K1p6z1T+EgpjvyUPYP+ynJgn109o/VM20IiBk3T+88kI8S/TfPxKM6Co7QuE/xp6vt1CK4j96sXZEZtLjPy7EPdF7GuU/4tYEXpFi5j+W6cvqpqrnP0r8kne88ug//g5aBNI66j+yISGR54LrP2Y06B39yuw/GkevqhIT7j/OWXY3KFvvP0G2HuKeUfA/mz+CqKn18D/1yOVutJnxP09SSTW/PfI/qdus+8nh8j8DZRDC1IXzP13uc4jfKfQ/t3fXTurN9D8RATsV9XH1P2uKntv/FfY/xRMCogq69j8fnWVoFV73P3kmyS4gAvg/068s9Sqm+D8tOZC7NUr5P4fC84FA7vk/4UtXSEuS+j871boOVjb7P5VeHtVg2vs/7+eBm2t+/D9JceVhdiL9P6P6SCiBxv0//YOs7otq/j9XDRC1lg7/P7GWc3uhsv8/BpDrIFYrAECyVB2EW30AQGAZT+dgzwBADN6ASmYhAUC6orKta3MBQGZn5BBxxQFAFCwWdHYXAkDA8EfXe2kCQG61eTqBuwJAGnqrnYYNA0A=',
+          'dtype': 'f8',
+        }),
+        'xaxis': 'x',
+        'y': list([
+          0.0,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+          0.25,
+        ]),
+        'yaxis': 'y',
+      }),
+      dict({
+        'name': 'CDF',
+        'type': 'scatter',
+        'x': dict({
+          'bdata': 'mSknfR1V+b8/oMO2ErH4v+UWYPAHDfi/i438Kf1o978xBJlj8sT2v9d6NZ3nIPa/ffHR1tx89b8jaG4Q0tj0v8neCkrHNPS/b1Wng7yQ878VzEO9sezyv7tC4PamSPK/Ybl8MJyk8b8HMBlqkQDxv62mtaOGXPC/pjqkuvdw77/yJ90t4ijuvz4VFqHM4Oy/igJPFLeY67/W74eHoVDqvyLdwPqLCOm/bsr5bXbA57+6tzLhYHjmvwala1RLMOW/UpKkxzXo47+ef906IKDiv+psFq4KWOG/NlpPIfUP4L8EjxApv4/dv5xpgg+U/9q/NET09Whv2L/MHmbcPd/Vv2T518IST9O//NNJqee+0L8oXXcfeV3Mv1gSW+wiPce/iMc+ucwcwr9w+UQM7fi5v6DHGEyBcK+/wDhP/1Delb/AHZOZYCSTPyC6OhmJE64/sPLV8nBKuT8oRIesjsXBP/iOo9/k5cY/yNm/EjsGzD9MEu6iSJPQP7Q3fLxzI9M/HF0K1p6z1T+EgpjvyUPYP+ynJgn109o/VM20IiBk3T+88kI8S/TfPxKM6Co7QuE/xp6vt1CK4j96sXZEZtLjPy7EPdF7GuU/4tYEXpFi5j+W6cvqpqrnP0r8kne88ug//g5aBNI66j+yISGR54LrP2Y06B39yuw/GkevqhIT7j/OWXY3KFvvP0G2HuKeUfA/mz+CqKn18D/1yOVutJnxP09SSTW/PfI/qdus+8nh8j8DZRDC1IXzP13uc4jfKfQ/t3fXTurN9D8RATsV9XH1P2uKntv/FfY/xRMCogq69j8fnWVoFV73P3kmyS4gAvg/068s9Sqm+D8tOZC7NUr5P4fC84FA7vk/4UtXSEuS+j871boOVjb7P5VeHtVg2vs/7+eBm2t+/D9JceVhdiL9P6P6SCiBxv0//YOs7otq/j9XDRC1lg7/P7GWc3uhsv8/BpDrIFYrAECyVB2EW30AQGAZT+dgzwBADN6ASmYhAUC6orKta3MBQGZn5BBxxQFAFCwWdHYXAkDA8EfXe2kCQG61eTqBuwJAGnqrnYYNA0A=',
+          'dtype': 'f8',
+        }),
+        'xaxis': 'x2',
+        'y': list([
+          0.0,
+          0.01,
+          0.02,
+          0.03,
+          0.04,
+          0.05,
+          0.06,
+          0.07,
+          0.08,
+          0.09,
+          0.1,
+          0.11,
+          0.12,
+          0.13,
+          0.14,
+          0.15,
+          0.16,
+          0.17,
+          0.18,
+          0.19,
+          0.2,
+          0.21,
+          0.22,
+          0.23,
+          0.24,
+          0.25,
+          0.26,
+          0.27,
+          0.28,
+          0.29,
+          0.3,
+          0.31,
+          0.32,
+          0.33,
+          0.34,
+          0.35,
+          0.36,
+          0.37,
+          0.38,
+          0.39,
+          0.4,
+          0.41,
+          0.42,
+          0.43,
+          0.44,
+          0.45,
+          0.46,
+          0.47,
+          0.48,
+          0.49,
+          0.5,
+          0.51,
+          0.52,
+          0.53,
+          0.54,
+          0.55,
+          0.56,
+          0.57,
+          0.58,
+          0.59,
+          0.6,
+          0.61,
+          0.62,
+          0.63,
+          0.64,
+          0.65,
+          0.66,
+          0.67,
+          0.68,
+          0.69,
+          0.7,
+          0.71,
+          0.72,
+          0.73,
+          0.74,
+          0.75,
+          0.76,
+          0.77,
+          0.78,
+          0.79,
+          0.8,
+          0.81,
+          0.82,
+          0.83,
+          0.84,
+          0.85,
+          0.86,
+          0.87,
+          0.88,
+          0.89,
+          0.9,
+          0.91,
+          0.92,
+          0.93,
+          0.94,
+          0.95,
+          0.96,
+          0.97,
+          0.98,
+          0.99,
+        ]),
+        'yaxis': 'y2',
+      }),
+    ]),
+    'layout': dict({
+      'template': dict({
+        'data': dict({
+          'bar': list([
+            dict({
+              'error_x': dict({
+                'color': '#2a3f5f',
+              }),
+              'error_y': dict({
+                'color': '#2a3f5f',
+              }),
+              'marker': dict({
+                'line': dict({
+                  'color': '#E5ECF6',
+                  'width': 0.5,
+                }),
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'bar',
+            }),
+          ]),
+          'barpolar': list([
+            dict({
+              'marker': dict({
+                'line': dict({
+                  'color': '#E5ECF6',
+                  'width': 0.5,
+                }),
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'barpolar',
+            }),
+          ]),
+          'carpet': list([
+            dict({
+              'aaxis': dict({
+                'endlinecolor': '#2a3f5f',
+                'gridcolor': 'white',
+                'linecolor': 'white',
+                'minorgridcolor': 'white',
+                'startlinecolor': '#2a3f5f',
+              }),
+              'baxis': dict({
+                'endlinecolor': '#2a3f5f',
+                'gridcolor': 'white',
+                'linecolor': 'white',
+                'minorgridcolor': 'white',
+                'startlinecolor': '#2a3f5f',
+              }),
+              'type': 'carpet',
+            }),
+          ]),
+          'choropleth': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'choropleth',
+            }),
+          ]),
+          'contour': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'contour',
+            }),
+          ]),
+          'contourcarpet': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'contourcarpet',
+            }),
+          ]),
+          'heatmap': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'heatmap',
+            }),
+          ]),
+          'histogram': list([
+            dict({
+              'marker': dict({
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'histogram',
+            }),
+          ]),
+          'histogram2d': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'histogram2d',
+            }),
+          ]),
+          'histogram2dcontour': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'histogram2dcontour',
+            }),
+          ]),
+          'mesh3d': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'mesh3d',
+            }),
+          ]),
+          'parcoords': list([
+            dict({
+              'line': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'parcoords',
+            }),
+          ]),
+          'pie': list([
+            dict({
+              'automargin': True,
+              'type': 'pie',
+            }),
+          ]),
+          'scatter': list([
+            dict({
+              'fillpattern': dict({
+                'fillmode': 'overlay',
+                'size': 10,
+                'solidity': 0.2,
+              }),
+              'type': 'scatter',
+            }),
+          ]),
+          'scatter3d': list([
+            dict({
+              'line': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatter3d',
+            }),
+          ]),
+          'scattercarpet': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattercarpet',
+            }),
+          ]),
+          'scattergeo': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattergeo',
+            }),
+          ]),
+          'scattergl': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattergl',
+            }),
+          ]),
+          'scattermap': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattermap',
+            }),
+          ]),
+          'scattermapbox': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattermapbox',
+            }),
+          ]),
+          'scatterpolar': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterpolar',
+            }),
+          ]),
+          'scatterpolargl': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterpolargl',
+            }),
+          ]),
+          'scatterternary': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterternary',
+            }),
+          ]),
+          'surface': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'surface',
+            }),
+          ]),
+          'table': list([
+            dict({
+              'cells': dict({
+                'fill': dict({
+                  'color': '#EBF0F8',
+                }),
+                'line': dict({
+                  'color': 'white',
+                }),
+              }),
+              'header': dict({
+                'fill': dict({
+                  'color': '#C8D4E3',
+                }),
+                'line': dict({
+                  'color': 'white',
+                }),
+              }),
+              'type': 'table',
+            }),
+          ]),
+        }),
+        'layout': dict({
+          'annotationdefaults': dict({
+            'arrowcolor': '#2a3f5f',
+            'arrowhead': 0,
+            'arrowwidth': 1,
+          }),
+          'autotypenumbers': 'strict',
+          'coloraxis': dict({
+            'colorbar': dict({
+              'outlinewidth': 0,
+              'ticks': '',
+            }),
+          }),
+          'colorscale': dict({
+            'diverging': list([
+              list([
+                0,
+                '#8e0152',
+              ]),
+              list([
+                0.1,
+                '#c51b7d',
+              ]),
+              list([
+                0.2,
+                '#de77ae',
+              ]),
+              list([
+                0.3,
+                '#f1b6da',
+              ]),
+              list([
+                0.4,
+                '#fde0ef',
+              ]),
+              list([
+                0.5,
+                '#f7f7f7',
+              ]),
+              list([
+                0.6,
+                '#e6f5d0',
+              ]),
+              list([
+                0.7,
+                '#b8e186',
+              ]),
+              list([
+                0.8,
+                '#7fbc41',
+              ]),
+              list([
+                0.9,
+                '#4d9221',
+              ]),
+              list([
+                1,
+                '#276419',
+              ]),
+            ]),
+            'sequential': list([
+              list([
+                0.0,
+                '#0d0887',
+              ]),
+              list([
+                0.111,
+                '#46039f',
+              ]),
+              list([
+                0.222,
+                '#7201a8',
+              ]),
+              list([
+                0.333,
+                '#9c179e',
+              ]),
+              list([
+                0.444,
+                '#bd3786',
+              ]),
+              list([
+                0.556,
+                '#d8576b',
+              ]),
+              list([
+                0.667,
+                '#ed7953',
+              ]),
+              list([
+                0.778,
+                '#fb9f3a',
+              ]),
+              list([
+                0.889,
+                '#fdca26',
+              ]),
+              list([
+                1.0,
+                '#f0f921',
+              ]),
+            ]),
+            'sequentialminus': list([
+              list([
+                0.0,
+                '#0d0887',
+              ]),
+              list([
+                0.111,
+                '#46039f',
+              ]),
+              list([
+                0.222,
+                '#7201a8',
+              ]),
+              list([
+                0.333,
+                '#9c179e',
+              ]),
+              list([
+                0.444,
+                '#bd3786',
+              ]),
+              list([
+                0.556,
+                '#d8576b',
+              ]),
+              list([
+                0.667,
+                '#ed7953',
+              ]),
+              list([
+                0.778,
+                '#fb9f3a',
+              ]),
+              list([
+                0.889,
+                '#fdca26',
+              ]),
+              list([
+                1.0,
+                '#f0f921',
+              ]),
+            ]),
+          }),
+          'colorway': list([
+            '#636efa',
+            '#EF553B',
+            '#00cc96',
+            '#ab63fa',
+            '#FFA15A',
+            '#19d3f3',
+            '#FF6692',
+            '#B6E880',
+            '#FF97FF',
+            '#FECB52',
+          ]),
+          'font': dict({
+            'color': '#2a3f5f',
+          }),
+          'geo': dict({
+            'bgcolor': 'white',
+            'lakecolor': 'white',
+            'landcolor': '#E5ECF6',
+            'showlakes': True,
+            'showland': True,
+            'subunitcolor': 'white',
+          }),
+          'hoverlabel': dict({
+            'align': 'left',
+          }),
+          'hovermode': 'closest',
+          'mapbox': dict({
+            'style': 'light',
+          }),
+          'paper_bgcolor': 'white',
+          'plot_bgcolor': '#E5ECF6',
+          'polar': dict({
+            'angularaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'bgcolor': '#E5ECF6',
+            'radialaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+          }),
+          'scene': dict({
+            'xaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+            'yaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+            'zaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+          }),
+          'shapedefaults': dict({
+            'line': dict({
+              'color': '#2a3f5f',
+            }),
+          }),
+          'ternary': dict({
+            'aaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'baxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'bgcolor': '#E5ECF6',
+            'caxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+          }),
+          'title': dict({
+            'x': 0.05,
+          }),
+          'xaxis': dict({
+            'automargin': True,
+            'gridcolor': 'white',
+            'linecolor': 'white',
+            'ticks': '',
+            'title': dict({
+              'standoff': 15,
+            }),
+            'zerolinecolor': 'white',
+            'zerolinewidth': 2,
+          }),
+          'yaxis': dict({
+            'automargin': True,
+            'gridcolor': 'white',
+            'linecolor': 'white',
+            'ticks': '',
+            'title': dict({
+              'standoff': 15,
+            }),
+            'zerolinecolor': 'white',
+            'zerolinewidth': 2,
+          }),
+        }),
+      }),
+      'title': dict({
+        'text': 'Uniform(-1.5832800759113523, 2.4216537539976826)',
+      }),
+      'xaxis': dict({
+        'anchor': 'y',
+        'domain': list([
+          0.0,
+          0.45,
+        ]),
+        'title': dict({
+          'text': 'x_2',
+        }),
+      }),
+      'xaxis2': dict({
+        'anchor': 'y2',
+        'domain': list([
+          0.55,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'x_2',
+        }),
+      }),
+      'yaxis': dict({
+        'anchor': 'x',
+        'domain': list([
+          0.0,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'Probability density function',
+        }),
+      }),
+      'yaxis2': dict({
+        'anchor': 'x2',
+        'domain': list([
+          0.0,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'Cumulative distribution function',
+        }),
+      }),
+    }),
+  })
+# ---
+# name: test_plot_html.2
+  dict({
+    'data': list([
+      dict({
+        'name': 'PDF',
+        'type': 'scatter',
+        'x': dict({
+          'bdata': 'dToRh9/RqT9ddGL0lDPUP7Vg8ft2luI/PIexfSMT6z/i1rj/58fxPybqmEA+BvY/af14gZRE+j+sEFnC6oL+P/iRnIGgYAFAmpsMost/A0A8pXzC9p4FQN2u7OIhvgdAf7hcA03dCUAhwswjePwLQMLLPESjGw5AsmpWMmcdEECDb47C/CwRQFR0xlKSPBJAJXn+4idME0D2fTZzvVsUQMeCbgNTaxVAl4emk+h6FkBojN4jfooXQDmRFrQTmhhACpZORKmpGUDbmobUPrkaQKyfvmTUyBtAfaT29GnYHEBNqS6F/+cdQB6uZhWV9x5Ad1nPUpUDIEDgW+saYIsgQEheB+MqEyFAsGAjq/WaIUAZYz9zwCIiQIFlWzuLqiJA6md3A1YyI0BSapPLILojQLtsr5PrQSRAI2/LW7bJJECMcecjgVElQPRzA+xL2SVAXHYftBZhJkDFeDt84egmQC17V0SscCdAln1zDHf4J0D+f4/UQYAoQGeCq5wMCClAz4THZNePKUA3h+MsohcqQKCJ//RsnypACIwbvTcnK0BxjjeFAq8rQNmQU03NNixAQpNvFZi+LECqlYvdYkYtQBKYp6Utzi1Ae5rDbfhVLkDjnN81w90uQEyf+/2NZS9AtKEXxljtL0AO0hnHkTowQEPTJyt3fjBAd9Q1j1zCMECr1UPzQQYxQN/WUVcnSjFAE9hfuwyOMUBI2W0f8tExQHzae4PXFTJAsNuJ57xZMkDk3JdLop0yQBnepa+H4TJATd+zE20lM0CB4MF3UmkzQLXhz9s3rTNA6eLdPx3xM0Ae5OujAjU0QFLl+QfoeDRAhuYHbM28NEC65xXQsgA1QO/oIzSYRDVAI+oxmH2INUBX6z/8Ysw1QIvsTWBIEDZAv+1bxC1UNkD07mkoE5g2QCjwd4z42zZAXPGF8N0fN0CQ8pNUw2M3QMTzobiopzdA+fSvHI7rN0At9r2Acy84QGH3y+RYczhAlfjZSD63OEDK+eesI/s4QP769RAJPzlAMvwDde6COUBm/RHZ08Y5QJr+Hz25CjpAz/8toZ5OOkA=',
+          'dtype': 'f8',
+        }),
+        'xaxis': 'x',
+        'y': list([
+          0.0,
+          0.881,
+          0.638,
+          0.462,
+          0.335,
+          0.243,
+          0.176,
+          0.127,
+          0.0922,
+          0.0668,
+          0.0484,
+          0.0351,
+          0.0254,
+          0.0184,
+          0.0133,
+          0.00965,
+          0.00699,
+          0.00507,
+          0.00367,
+          0.00266,
+          0.00193,
+          0.0014,
+          0.00101,
+          0.000732,
+          0.000531,
+          0.000384,
+          0.000278,
+          0.000202,
+          0.000146,
+          0.000106,
+          7.67e-05,
+          5.56e-05,
+          4.02e-05,
+          2.92e-05,
+          2.11e-05,
+          1.53e-05,
+          1.11e-05,
+          8.03e-06,
+          5.82e-06,
+          4.21e-06,
+          3.05e-06,
+          2.21e-06,
+          1.6e-06,
+          1.16e-06,
+          8.41e-07,
+          6.09e-07,
+          4.41e-07,
+          3.2e-07,
+          2.32e-07,
+          1.68e-07,
+          1.22e-07,
+          8.81e-08,
+          6.38e-08,
+          4.62e-08,
+          3.35e-08,
+          2.43e-08,
+          1.76e-08,
+          1.27e-08,
+          9.22e-09,
+          6.68e-09,
+          4.84e-09,
+          3.51e-09,
+          2.54e-09,
+          1.84e-09,
+          1.33e-09,
+          9.65e-10,
+          6.99e-10,
+          5.07e-10,
+          3.67e-10,
+          2.66e-10,
+          1.93e-10,
+          1.4e-10,
+          1.01e-10,
+          7.32e-11,
+          5.31e-11,
+          3.84e-11,
+          2.78e-11,
+          2.02e-11,
+          1.46e-11,
+          1.06e-11,
+          7.67e-12,
+          5.56e-12,
+          4.02e-12,
+          2.92e-12,
+          2.11e-12,
+          1.53e-12,
+          1.11e-12,
+          8.03e-13,
+          5.82e-13,
+          4.21e-13,
+          3.05e-13,
+          2.21e-13,
+          1.6e-13,
+          1.16e-13,
+          8.41e-14,
+          6.09e-14,
+          4.41e-14,
+          3.2e-14,
+          2.32e-14,
+          1.68e-14,
+        ]),
+        'yaxis': 'y',
+      }),
+      dict({
+        'name': 'CDF',
+        'type': 'scatter',
+        'x': dict({
+          'bdata': 'dToRh9/RqT9ddGL0lDPUP7Vg8ft2luI/PIexfSMT6z/i1rj/58fxPybqmEA+BvY/af14gZRE+j+sEFnC6oL+P/iRnIGgYAFAmpsMost/A0A8pXzC9p4FQN2u7OIhvgdAf7hcA03dCUAhwswjePwLQMLLPESjGw5AsmpWMmcdEECDb47C/CwRQFR0xlKSPBJAJXn+4idME0D2fTZzvVsUQMeCbgNTaxVAl4emk+h6FkBojN4jfooXQDmRFrQTmhhACpZORKmpGUDbmobUPrkaQKyfvmTUyBtAfaT29GnYHEBNqS6F/+cdQB6uZhWV9x5Ad1nPUpUDIEDgW+saYIsgQEheB+MqEyFAsGAjq/WaIUAZYz9zwCIiQIFlWzuLqiJA6md3A1YyI0BSapPLILojQLtsr5PrQSRAI2/LW7bJJECMcecjgVElQPRzA+xL2SVAXHYftBZhJkDFeDt84egmQC17V0SscCdAln1zDHf4J0D+f4/UQYAoQGeCq5wMCClAz4THZNePKUA3h+MsohcqQKCJ//RsnypACIwbvTcnK0BxjjeFAq8rQNmQU03NNixAQpNvFZi+LECqlYvdYkYtQBKYp6Utzi1Ae5rDbfhVLkDjnN81w90uQEyf+/2NZS9AtKEXxljtL0AO0hnHkTowQEPTJyt3fjBAd9Q1j1zCMECr1UPzQQYxQN/WUVcnSjFAE9hfuwyOMUBI2W0f8tExQHzae4PXFTJAsNuJ57xZMkDk3JdLop0yQBnepa+H4TJATd+zE20lM0CB4MF3UmkzQLXhz9s3rTNA6eLdPx3xM0Ae5OujAjU0QFLl+QfoeDRAhuYHbM28NEC65xXQsgA1QO/oIzSYRDVAI+oxmH2INUBX6z/8Ysw1QIvsTWBIEDZAv+1bxC1UNkD07mkoE5g2QCjwd4z42zZAXPGF8N0fN0CQ8pNUw2M3QMTzobiopzdA+fSvHI7rN0At9r2Acy84QGH3y+RYczhAlfjZSD63OEDK+eesI/s4QP769RAJPzlAMvwDde6COUBm/RHZ08Y5QJr+Hz25CjpAz/8toZ5OOkA=',
+          'dtype': 'f8',
+        }),
+        'xaxis': 'x2',
+        'y': list([
+          0.0,
+          0.276,
+          0.475,
+          0.62,
+          0.725,
+          0.8,
+          0.855,
+          0.895,
+          0.924,
+          0.945,
+          0.96,
+          0.971,
+          0.979,
+          0.985,
+          0.989,
+          0.992,
+          0.994,
+          0.996,
+          0.997,
+          0.998,
+          0.998,
+          0.999,
+          0.999,
+          0.999,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+        ]),
+        'yaxis': 'y2',
+      }),
+    ]),
+    'layout': dict({
+      'template': dict({
+        'data': dict({
+          'bar': list([
+            dict({
+              'error_x': dict({
+                'color': '#2a3f5f',
+              }),
+              'error_y': dict({
+                'color': '#2a3f5f',
+              }),
+              'marker': dict({
+                'line': dict({
+                  'color': '#E5ECF6',
+                  'width': 0.5,
+                }),
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'bar',
+            }),
+          ]),
+          'barpolar': list([
+            dict({
+              'marker': dict({
+                'line': dict({
+                  'color': '#E5ECF6',
+                  'width': 0.5,
+                }),
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'barpolar',
+            }),
+          ]),
+          'carpet': list([
+            dict({
+              'aaxis': dict({
+                'endlinecolor': '#2a3f5f',
+                'gridcolor': 'white',
+                'linecolor': 'white',
+                'minorgridcolor': 'white',
+                'startlinecolor': '#2a3f5f',
+              }),
+              'baxis': dict({
+                'endlinecolor': '#2a3f5f',
+                'gridcolor': 'white',
+                'linecolor': 'white',
+                'minorgridcolor': 'white',
+                'startlinecolor': '#2a3f5f',
+              }),
+              'type': 'carpet',
+            }),
+          ]),
+          'choropleth': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'choropleth',
+            }),
+          ]),
+          'contour': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'contour',
+            }),
+          ]),
+          'contourcarpet': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'contourcarpet',
+            }),
+          ]),
+          'heatmap': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'heatmap',
+            }),
+          ]),
+          'histogram': list([
+            dict({
+              'marker': dict({
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'histogram',
+            }),
+          ]),
+          'histogram2d': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'histogram2d',
+            }),
+          ]),
+          'histogram2dcontour': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'histogram2dcontour',
+            }),
+          ]),
+          'mesh3d': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'mesh3d',
+            }),
+          ]),
+          'parcoords': list([
+            dict({
+              'line': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'parcoords',
+            }),
+          ]),
+          'pie': list([
+            dict({
+              'automargin': True,
+              'type': 'pie',
+            }),
+          ]),
+          'scatter': list([
+            dict({
+              'fillpattern': dict({
+                'fillmode': 'overlay',
+                'size': 10,
+                'solidity': 0.2,
+              }),
+              'type': 'scatter',
+            }),
+          ]),
+          'scatter3d': list([
+            dict({
+              'line': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatter3d',
+            }),
+          ]),
+          'scattercarpet': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattercarpet',
+            }),
+          ]),
+          'scattergeo': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattergeo',
+            }),
+          ]),
+          'scattergl': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattergl',
+            }),
+          ]),
+          'scattermap': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattermap',
+            }),
+          ]),
+          'scattermapbox': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattermapbox',
+            }),
+          ]),
+          'scatterpolar': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterpolar',
+            }),
+          ]),
+          'scatterpolargl': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterpolargl',
+            }),
+          ]),
+          'scatterternary': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterternary',
+            }),
+          ]),
+          'surface': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'surface',
+            }),
+          ]),
+          'table': list([
+            dict({
+              'cells': dict({
+                'fill': dict({
+                  'color': '#EBF0F8',
+                }),
+                'line': dict({
+                  'color': 'white',
+                }),
+              }),
+              'header': dict({
+                'fill': dict({
+                  'color': '#C8D4E3',
+                }),
+                'line': dict({
+                  'color': 'white',
+                }),
+              }),
+              'type': 'table',
+            }),
+          ]),
+        }),
+        'layout': dict({
+          'annotationdefaults': dict({
+            'arrowcolor': '#2a3f5f',
+            'arrowhead': 0,
+            'arrowwidth': 1,
+          }),
+          'autotypenumbers': 'strict',
+          'coloraxis': dict({
+            'colorbar': dict({
+              'outlinewidth': 0,
+              'ticks': '',
+            }),
+          }),
+          'colorscale': dict({
+            'diverging': list([
+              list([
+                0,
+                '#8e0152',
+              ]),
+              list([
+                0.1,
+                '#c51b7d',
+              ]),
+              list([
+                0.2,
+                '#de77ae',
+              ]),
+              list([
+                0.3,
+                '#f1b6da',
+              ]),
+              list([
+                0.4,
+                '#fde0ef',
+              ]),
+              list([
+                0.5,
+                '#f7f7f7',
+              ]),
+              list([
+                0.6,
+                '#e6f5d0',
+              ]),
+              list([
+                0.7,
+                '#b8e186',
+              ]),
+              list([
+                0.8,
+                '#7fbc41',
+              ]),
+              list([
+                0.9,
+                '#4d9221',
+              ]),
+              list([
+                1,
+                '#276419',
+              ]),
+            ]),
+            'sequential': list([
+              list([
+                0.0,
+                '#0d0887',
+              ]),
+              list([
+                0.111,
+                '#46039f',
+              ]),
+              list([
+                0.222,
+                '#7201a8',
+              ]),
+              list([
+                0.333,
+                '#9c179e',
+              ]),
+              list([
+                0.444,
+                '#bd3786',
+              ]),
+              list([
+                0.556,
+                '#d8576b',
+              ]),
+              list([
+                0.667,
+                '#ed7953',
+              ]),
+              list([
+                0.778,
+                '#fb9f3a',
+              ]),
+              list([
+                0.889,
+                '#fdca26',
+              ]),
+              list([
+                1.0,
+                '#f0f921',
+              ]),
+            ]),
+            'sequentialminus': list([
+              list([
+                0.0,
+                '#0d0887',
+              ]),
+              list([
+                0.111,
+                '#46039f',
+              ]),
+              list([
+                0.222,
+                '#7201a8',
+              ]),
+              list([
+                0.333,
+                '#9c179e',
+              ]),
+              list([
+                0.444,
+                '#bd3786',
+              ]),
+              list([
+                0.556,
+                '#d8576b',
+              ]),
+              list([
+                0.667,
+                '#ed7953',
+              ]),
+              list([
+                0.778,
+                '#fb9f3a',
+              ]),
+              list([
+                0.889,
+                '#fdca26',
+              ]),
+              list([
+                1.0,
+                '#f0f921',
+              ]),
+            ]),
+          }),
+          'colorway': list([
+            '#636efa',
+            '#EF553B',
+            '#00cc96',
+            '#ab63fa',
+            '#FFA15A',
+            '#19d3f3',
+            '#FF6692',
+            '#B6E880',
+            '#FF97FF',
+            '#FECB52',
+          ]),
+          'font': dict({
+            'color': '#2a3f5f',
+          }),
+          'geo': dict({
+            'bgcolor': 'white',
+            'lakecolor': 'white',
+            'landcolor': '#E5ECF6',
+            'showlakes': True,
+            'showland': True,
+            'subunitcolor': 'white',
+          }),
+          'hoverlabel': dict({
+            'align': 'left',
+          }),
+          'hovermode': 'closest',
+          'mapbox': dict({
+            'style': 'light',
+          }),
+          'paper_bgcolor': 'white',
+          'plot_bgcolor': '#E5ECF6',
+          'polar': dict({
+            'angularaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'bgcolor': '#E5ECF6',
+            'radialaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+          }),
+          'scene': dict({
+            'xaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+            'yaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+            'zaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+          }),
+          'shapedefaults': dict({
+            'line': dict({
+              'color': '#2a3f5f',
+            }),
+          }),
+          'ternary': dict({
+            'aaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'baxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'bgcolor': '#E5ECF6',
+            'caxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+          }),
+          'title': dict({
+            'x': 0.05,
+          }),
+          'xaxis': dict({
+            'automargin': True,
+            'gridcolor': 'white',
+            'linecolor': 'white',
+            'ticks': '',
+            'title': dict({
+              'standoff': 15,
+            }),
+            'zerolinecolor': 'white',
+            'zerolinewidth': 2,
+          }),
+          'yaxis': dict({
+            'automargin': True,
+            'gridcolor': 'white',
+            'linecolor': 'white',
+            'ticks': '',
+            'title': dict({
+              'standoff': 15,
+            }),
+            'zerolinecolor': 'white',
+            'zerolinewidth': 2,
+          }),
+        }),
+      }),
+      'title': dict({
+        'text': 'Exponential(1.2154556863534915, 0.0504293300988267)',
+      }),
+      'xaxis': dict({
+        'anchor': 'y',
+        'domain': list([
+          0.0,
+          0.45,
+        ]),
+        'title': dict({
+          'text': 'x_3[0]',
+        }),
+      }),
+      'xaxis2': dict({
+        'anchor': 'y2',
+        'domain': list([
+          0.55,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'x_3[0]',
+        }),
+      }),
+      'yaxis': dict({
+        'anchor': 'x',
+        'domain': list([
+          0.0,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'Probability density function',
+        }),
+      }),
+      'yaxis2': dict({
+        'anchor': 'x2',
+        'domain': list([
+          0.0,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'Cumulative distribution function',
+        }),
+      }),
+    }),
+  })
+# ---
+# name: test_plot_html.3
+  dict({
+    'data': list([
+      dict({
+        'name': 'PDF',
+        'type': 'scatter',
+        'x': dict({
+          'bdata': 'hoRbP32OiD9YgbQzlNbUP0YTtz5adOQ/4OWTY2p97j89XDhEPUP0P4rFplbFR/k/1y4VaU1M/j8TzMG9aqgBQLkA+cauKgRAXzUw0PKsBkAGamfZNi8JQK2enuJ6sQtAU9PV674zDkD8g4Z6AVsQQFAeIn8jnBFAo7i9g0XdEkD2UlmIZx4UQEnt9IyJXxVAnIeQkaugFkDwISyWzeEXQEO8x5rvIhlAllZjnxFkGkDq8P6jM6UbQD2LmqhV5hxAkCU2rXcnHkDjv9GxmWgfQButNtvdVCBARXqE3W71IEBvR9Lf/5UhQJgUIOKQNiJAwuFt5CHXIkDrrrvmsncjQBV8CelDGCRAP0lX69S4JEBoFqXtZVklQJLj8u/2+SVAu7BA8oeaJkDlfY70GDsnQA9L3Pap2ydAOBgq+Tp8KEBi5Xf7yxwpQIyyxf1cvSlAtX8TAO5dKkDfTGECf/4qQAkarwQQnytAMuf8BqE/LEBctEoJMuAsQIWBmAvDgC1Ar07mDVQhLkDZGzQQ5cEuQALpgRJ2Yi9AFttnioMBMECrwY4LzFEwQECotYwUojBA1Y7cDV3yMEBqdQOPpUIxQP9bKhDukjFAk0JRkTbjMUAoKXgSfzMyQL0Pn5PHgzJAUvbFFBDUMkDn3OyVWCQzQHvDExehdDNAEKo6mOnEM0ClkGEZMhU0QDp3iJp6ZTRAz12vG8O1NEBjRNacCwY1QPgq/R1UVjVAjREkn5ymNUAi+Eog5fY1QLfecaEtRzZAS8WYInaXNkDgq7+jvuc2QHWS5iQHODdACnkNpk+IN0CfXzQnmNg3QDRGW6jgKDhAyCyCKSl5OEBdE6mqcck4QPL5zyu6GTlAh+D2rAJqOUAcxx0uS7o5QLCtRK+TCjpARZRrMNxaOkDaepKxJKs6QG9huTJt+zpABEjgs7VLO0CZLgc1/ps7QC0VLrZG7DtAwvtUN488PEBX4nu414w8QOzIojkg3TxAga/JumgtPUAVlvA7sX09QKp8F735zT1AP2M+PkIePkDUSWW/im4+QGkwjEDTvj5A/RazwRsPP0CS/dlCZF8/QA==',
+          'dtype': 'f8',
+        }),
+        'xaxis': 'x',
+        'y': list([
+          0.0,
+          0.745,
+          0.539,
+          0.391,
+          0.283,
+          0.205,
+          0.149,
+          0.108,
+          0.078,
+          0.0565,
+          0.0409,
+          0.0296,
+          0.0215,
+          0.0156,
+          0.0113,
+          0.00817,
+          0.00592,
+          0.00429,
+          0.0031,
+          0.00225,
+          0.00163,
+          0.00118,
+          0.000855,
+          0.000619,
+          0.000449,
+          0.000325,
+          0.000235,
+          0.000171,
+          0.000124,
+          8.95e-05,
+          6.49e-05,
+          4.7e-05,
+          3.4e-05,
+          2.47e-05,
+          1.79e-05,
+          1.29e-05,
+          9.37e-06,
+          6.79e-06,
+          4.92e-06,
+          3.56e-06,
+          2.58e-06,
+          1.87e-06,
+          1.36e-06,
+          9.82e-07,
+          7.11e-07,
+          5.15e-07,
+          3.73e-07,
+          2.7e-07,
+          1.96e-07,
+          1.42e-07,
+          1.03e-07,
+          7.45e-08,
+          5.39e-08,
+          3.91e-08,
+          2.83e-08,
+          2.05e-08,
+          1.49e-08,
+          1.08e-08,
+          7.8e-09,
+          5.65e-09,
+          4.09e-09,
+          2.96e-09,
+          2.15e-09,
+          1.56e-09,
+          1.13e-09,
+          8.17e-10,
+          5.92e-10,
+          4.29e-10,
+          3.1e-10,
+          2.25e-10,
+          1.63e-10,
+          1.18e-10,
+          8.55e-11,
+          6.19e-11,
+          4.49e-11,
+          3.25e-11,
+          2.35e-11,
+          1.71e-11,
+          1.24e-11,
+          8.95e-12,
+          6.49e-12,
+          4.7e-12,
+          3.4e-12,
+          2.47e-12,
+          1.79e-12,
+          1.29e-12,
+          9.37e-13,
+          6.79e-13,
+          4.92e-13,
+          3.56e-13,
+          2.58e-13,
+          1.87e-13,
+          1.36e-13,
+          9.82e-14,
+          7.11e-14,
+          5.15e-14,
+          3.73e-14,
+          2.7e-14,
+          1.96e-14,
+          1.42e-14,
+          1.03e-14,
+        ]),
+        'yaxis': 'y',
+      }),
+      dict({
+        'name': 'CDF',
+        'type': 'scatter',
+        'x': dict({
+          'bdata': 'hoRbP32OiD9YgbQzlNbUP0YTtz5adOQ/4OWTY2p97j89XDhEPUP0P4rFplbFR/k/1y4VaU1M/j8TzMG9aqgBQLkA+cauKgRAXzUw0PKsBkAGamfZNi8JQK2enuJ6sQtAU9PV674zDkD8g4Z6AVsQQFAeIn8jnBFAo7i9g0XdEkD2UlmIZx4UQEnt9IyJXxVAnIeQkaugFkDwISyWzeEXQEO8x5rvIhlAllZjnxFkGkDq8P6jM6UbQD2LmqhV5hxAkCU2rXcnHkDjv9GxmWgfQButNtvdVCBARXqE3W71IEBvR9Lf/5UhQJgUIOKQNiJAwuFt5CHXIkDrrrvmsncjQBV8CelDGCRAP0lX69S4JEBoFqXtZVklQJLj8u/2+SVAu7BA8oeaJkDlfY70GDsnQA9L3Pap2ydAOBgq+Tp8KEBi5Xf7yxwpQIyyxf1cvSlAtX8TAO5dKkDfTGECf/4qQAkarwQQnytAMuf8BqE/LEBctEoJMuAsQIWBmAvDgC1Ar07mDVQhLkDZGzQQ5cEuQALpgRJ2Yi9AFttnioMBMECrwY4LzFEwQECotYwUojBA1Y7cDV3yMEBqdQOPpUIxQP9bKhDukjFAk0JRkTbjMUAoKXgSfzMyQL0Pn5PHgzJAUvbFFBDUMkDn3OyVWCQzQHvDExehdDNAEKo6mOnEM0ClkGEZMhU0QDp3iJp6ZTRAz12vG8O1NEBjRNacCwY1QPgq/R1UVjVAjREkn5ymNUAi+Eog5fY1QLfecaEtRzZAS8WYInaXNkDgq7+jvuc2QHWS5iQHODdACnkNpk+IN0CfXzQnmNg3QDRGW6jgKDhAyCyCKSl5OEBdE6mqcck4QPL5zyu6GTlAh+D2rAJqOUAcxx0uS7o5QLCtRK+TCjpARZRrMNxaOkDaepKxJKs6QG9huTJt+zpABEjgs7VLO0CZLgc1/ps7QC0VLrZG7DtAwvtUN488PEBX4nu414w8QOzIojkg3TxAga/JumgtPUAVlvA7sX09QKp8F735zT1AP2M+PkIePkDUSWW/im4+QGkwjEDTvj5A/RazwRsPP0CS/dlCZF8/QA==',
+          'dtype': 'f8',
+        }),
+        'xaxis': 'x2',
+        'y': list([
+          0.0,
+          0.276,
+          0.475,
+          0.62,
+          0.725,
+          0.8,
+          0.855,
+          0.895,
+          0.924,
+          0.945,
+          0.96,
+          0.971,
+          0.979,
+          0.985,
+          0.989,
+          0.992,
+          0.994,
+          0.996,
+          0.997,
+          0.998,
+          0.998,
+          0.999,
+          0.999,
+          0.999,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+        ]),
+        'yaxis': 'y2',
+      }),
+    ]),
+    'layout': dict({
+      'template': dict({
+        'data': dict({
+          'bar': list([
+            dict({
+              'error_x': dict({
+                'color': '#2a3f5f',
+              }),
+              'error_y': dict({
+                'color': '#2a3f5f',
+              }),
+              'marker': dict({
+                'line': dict({
+                  'color': '#E5ECF6',
+                  'width': 0.5,
+                }),
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'bar',
+            }),
+          ]),
+          'barpolar': list([
+            dict({
+              'marker': dict({
+                'line': dict({
+                  'color': '#E5ECF6',
+                  'width': 0.5,
+                }),
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'barpolar',
+            }),
+          ]),
+          'carpet': list([
+            dict({
+              'aaxis': dict({
+                'endlinecolor': '#2a3f5f',
+                'gridcolor': 'white',
+                'linecolor': 'white',
+                'minorgridcolor': 'white',
+                'startlinecolor': '#2a3f5f',
+              }),
+              'baxis': dict({
+                'endlinecolor': '#2a3f5f',
+                'gridcolor': 'white',
+                'linecolor': 'white',
+                'minorgridcolor': 'white',
+                'startlinecolor': '#2a3f5f',
+              }),
+              'type': 'carpet',
+            }),
+          ]),
+          'choropleth': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'choropleth',
+            }),
+          ]),
+          'contour': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'contour',
+            }),
+          ]),
+          'contourcarpet': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'contourcarpet',
+            }),
+          ]),
+          'heatmap': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'heatmap',
+            }),
+          ]),
+          'histogram': list([
+            dict({
+              'marker': dict({
+                'pattern': dict({
+                  'fillmode': 'overlay',
+                  'size': 10,
+                  'solidity': 0.2,
+                }),
+              }),
+              'type': 'histogram',
+            }),
+          ]),
+          'histogram2d': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'histogram2d',
+            }),
+          ]),
+          'histogram2dcontour': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'histogram2dcontour',
+            }),
+          ]),
+          'mesh3d': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'type': 'mesh3d',
+            }),
+          ]),
+          'parcoords': list([
+            dict({
+              'line': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'parcoords',
+            }),
+          ]),
+          'pie': list([
+            dict({
+              'automargin': True,
+              'type': 'pie',
+            }),
+          ]),
+          'scatter': list([
+            dict({
+              'fillpattern': dict({
+                'fillmode': 'overlay',
+                'size': 10,
+                'solidity': 0.2,
+              }),
+              'type': 'scatter',
+            }),
+          ]),
+          'scatter3d': list([
+            dict({
+              'line': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatter3d',
+            }),
+          ]),
+          'scattercarpet': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattercarpet',
+            }),
+          ]),
+          'scattergeo': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattergeo',
+            }),
+          ]),
+          'scattergl': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattergl',
+            }),
+          ]),
+          'scattermap': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattermap',
+            }),
+          ]),
+          'scattermapbox': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scattermapbox',
+            }),
+          ]),
+          'scatterpolar': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterpolar',
+            }),
+          ]),
+          'scatterpolargl': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterpolargl',
+            }),
+          ]),
+          'scatterternary': list([
+            dict({
+              'marker': dict({
+                'colorbar': dict({
+                  'outlinewidth': 0,
+                  'ticks': '',
+                }),
+              }),
+              'type': 'scatterternary',
+            }),
+          ]),
+          'surface': list([
+            dict({
+              'colorbar': dict({
+                'outlinewidth': 0,
+                'ticks': '',
+              }),
+              'colorscale': list([
+                list([
+                  0.0,
+                  '#0d0887',
+                ]),
+                list([
+                  0.111,
+                  '#46039f',
+                ]),
+                list([
+                  0.222,
+                  '#7201a8',
+                ]),
+                list([
+                  0.333,
+                  '#9c179e',
+                ]),
+                list([
+                  0.444,
+                  '#bd3786',
+                ]),
+                list([
+                  0.556,
+                  '#d8576b',
+                ]),
+                list([
+                  0.667,
+                  '#ed7953',
+                ]),
+                list([
+                  0.778,
+                  '#fb9f3a',
+                ]),
+                list([
+                  0.889,
+                  '#fdca26',
+                ]),
+                list([
+                  1.0,
+                  '#f0f921',
+                ]),
+              ]),
+              'type': 'surface',
+            }),
+          ]),
+          'table': list([
+            dict({
+              'cells': dict({
+                'fill': dict({
+                  'color': '#EBF0F8',
+                }),
+                'line': dict({
+                  'color': 'white',
+                }),
+              }),
+              'header': dict({
+                'fill': dict({
+                  'color': '#C8D4E3',
+                }),
+                'line': dict({
+                  'color': 'white',
+                }),
+              }),
+              'type': 'table',
+            }),
+          ]),
+        }),
+        'layout': dict({
+          'annotationdefaults': dict({
+            'arrowcolor': '#2a3f5f',
+            'arrowhead': 0,
+            'arrowwidth': 1,
+          }),
+          'autotypenumbers': 'strict',
+          'coloraxis': dict({
+            'colorbar': dict({
+              'outlinewidth': 0,
+              'ticks': '',
+            }),
+          }),
+          'colorscale': dict({
+            'diverging': list([
+              list([
+                0,
+                '#8e0152',
+              ]),
+              list([
+                0.1,
+                '#c51b7d',
+              ]),
+              list([
+                0.2,
+                '#de77ae',
+              ]),
+              list([
+                0.3,
+                '#f1b6da',
+              ]),
+              list([
+                0.4,
+                '#fde0ef',
+              ]),
+              list([
+                0.5,
+                '#f7f7f7',
+              ]),
+              list([
+                0.6,
+                '#e6f5d0',
+              ]),
+              list([
+                0.7,
+                '#b8e186',
+              ]),
+              list([
+                0.8,
+                '#7fbc41',
+              ]),
+              list([
+                0.9,
+                '#4d9221',
+              ]),
+              list([
+                1,
+                '#276419',
+              ]),
+            ]),
+            'sequential': list([
+              list([
+                0.0,
+                '#0d0887',
+              ]),
+              list([
+                0.111,
+                '#46039f',
+              ]),
+              list([
+                0.222,
+                '#7201a8',
+              ]),
+              list([
+                0.333,
+                '#9c179e',
+              ]),
+              list([
+                0.444,
+                '#bd3786',
+              ]),
+              list([
+                0.556,
+                '#d8576b',
+              ]),
+              list([
+                0.667,
+                '#ed7953',
+              ]),
+              list([
+                0.778,
+                '#fb9f3a',
+              ]),
+              list([
+                0.889,
+                '#fdca26',
+              ]),
+              list([
+                1.0,
+                '#f0f921',
+              ]),
+            ]),
+            'sequentialminus': list([
+              list([
+                0.0,
+                '#0d0887',
+              ]),
+              list([
+                0.111,
+                '#46039f',
+              ]),
+              list([
+                0.222,
+                '#7201a8',
+              ]),
+              list([
+                0.333,
+                '#9c179e',
+              ]),
+              list([
+                0.444,
+                '#bd3786',
+              ]),
+              list([
+                0.556,
+                '#d8576b',
+              ]),
+              list([
+                0.667,
+                '#ed7953',
+              ]),
+              list([
+                0.778,
+                '#fb9f3a',
+              ]),
+              list([
+                0.889,
+                '#fdca26',
+              ]),
+              list([
+                1.0,
+                '#f0f921',
+              ]),
+            ]),
+          }),
+          'colorway': list([
+            '#636efa',
+            '#EF553B',
+            '#00cc96',
+            '#ab63fa',
+            '#FFA15A',
+            '#19d3f3',
+            '#FF6692',
+            '#B6E880',
+            '#FF97FF',
+            '#FECB52',
+          ]),
+          'font': dict({
+            'color': '#2a3f5f',
+          }),
+          'geo': dict({
+            'bgcolor': 'white',
+            'lakecolor': 'white',
+            'landcolor': '#E5ECF6',
+            'showlakes': True,
+            'showland': True,
+            'subunitcolor': 'white',
+          }),
+          'hoverlabel': dict({
+            'align': 'left',
+          }),
+          'hovermode': 'closest',
+          'mapbox': dict({
+            'style': 'light',
+          }),
+          'paper_bgcolor': 'white',
+          'plot_bgcolor': '#E5ECF6',
+          'polar': dict({
+            'angularaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'bgcolor': '#E5ECF6',
+            'radialaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+          }),
+          'scene': dict({
+            'xaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+            'yaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+            'zaxis': dict({
+              'backgroundcolor': '#E5ECF6',
+              'gridcolor': 'white',
+              'gridwidth': 2,
+              'linecolor': 'white',
+              'showbackground': True,
+              'ticks': '',
+              'zerolinecolor': 'white',
+            }),
+          }),
+          'shapedefaults': dict({
+            'line': dict({
+              'color': '#2a3f5f',
+            }),
+          }),
+          'ternary': dict({
+            'aaxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'baxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+            'bgcolor': '#E5ECF6',
+            'caxis': dict({
+              'gridcolor': 'white',
+              'linecolor': 'white',
+              'ticks': '',
+            }),
+          }),
+          'title': dict({
+            'x': 0.05,
+          }),
+          'xaxis': dict({
+            'automargin': True,
+            'gridcolor': 'white',
+            'linecolor': 'white',
+            'ticks': '',
+            'title': dict({
+              'standoff': 15,
+            }),
+            'zerolinecolor': 'white',
+            'zerolinewidth': 2,
+          }),
+          'yaxis': dict({
+            'automargin': True,
+            'gridcolor': 'white',
+            'linecolor': 'white',
+            'ticks': '',
+            'title': dict({
+              'standoff': 15,
+            }),
+            'zerolinecolor': 'white',
+            'zerolinewidth': 2,
+          }),
+        }),
+      }),
+      'title': dict({
+        'text': 'Exponential(1.027919022316779, 0.011990526672379664)',
+      }),
+      'xaxis': dict({
+        'anchor': 'y',
+        'domain': list([
+          0.0,
+          0.45,
+        ]),
+        'title': dict({
+          'text': 'x_3[1]',
+        }),
+      }),
+      'xaxis2': dict({
+        'anchor': 'y2',
+        'domain': list([
+          0.55,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'x_3[1]',
+        }),
+      }),
+      'yaxis': dict({
+        'anchor': 'x',
+        'domain': list([
+          0.0,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'Probability density function',
+        }),
+      }),
+      'yaxis2': dict({
+        'anchor': 'x2',
+        'domain': list([
+          0.0,
+          1.0,
+        ]),
+        'title': dict({
+          'text': 'Cumulative distribution function',
+        }),
+      }),
+    }),
+  })
+# ---
 # name: test_tolerance_interval_wrong_confidence[-0.5]
   "The argument 'confidence' must be a number in [0,1]."
 # ---

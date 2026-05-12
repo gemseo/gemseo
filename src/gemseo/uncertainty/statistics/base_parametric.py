@@ -258,6 +258,7 @@ class BaseParametricStatistics(
         directory: str | Path = ".",
         index: int = 0,
         fig_size: FigSizeType = (6.4, 3.2),
+        file_extension: str = "png",
     ) -> Figure:
         """Plot criteria for a given variable name.
 
@@ -269,6 +270,7 @@ class BaseParametricStatistics(
             directory: The directory path, either absolute or relative.
             index: The index of the component of the variable.
             fig_size: The width and height of the figure in inches, e.g. `(w, h)`.
+            file_extension: The extension of the plot file.
 
         Raises:
             ValueError: If the variable is missing from the dataset.
@@ -325,7 +327,16 @@ class BaseParametricStatistics(
         if title:
             plt.suptitle(title)
 
-        save_show_figure(fig, show, Path(directory) / "criteria.pdf" if save else "")
+        if save:
+            file_path = (
+                Path(directory)
+                / f"{variable}_{self.distributions[variable].name}_criteria."
+                f"{file_extension}"
+            )
+        else:
+            file_path = ""
+
+        save_show_figure(fig, show, file_path)
 
         return fig
 
@@ -593,6 +604,7 @@ class BaseParametricStatistics(
                     show=show,
                     directory_path=directory_path,
                     file_extension=file_format,
+                    variable_name=repr_variable(name, index, size),
                 )
 
         return plots
