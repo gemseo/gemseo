@@ -513,6 +513,12 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 ot_algo.setUseAsymptoticDistribution(use_asymptotic_distributions)
                 ot_algo.setConfidenceLevel(confidence_level)
                 algos.append(ot_algo)
+                # Prime bootstrap-based intervals inside the seeded scope so that
+                # later get_intervals() calls do not depend on global RNG state.
+                if state is not None:
+                    ot_algo.getFirstOrderIndicesInterval()
+                    if not use_rank_algorithm:
+                        ot_algo.getTotalOrderIndicesInterval()
 
         if state is not None:
             RandomGenerator.SetState(state)
@@ -695,6 +701,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
         output_names = self._get_output_names(output_names)
         self.__output_name_to_sobol_algos = {}
+        self.__use_control_variates = bool(control_variates)
         if control_variates:
             if algo != self.Algorithm.SALTELLI:
                 msg = (
@@ -706,7 +713,6 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             if isinstance(control_variates, self.ControlVariate):
                 control_variates = [control_variates]
 
-            self.__use_control_variates = True
             return self.__compute_indices_using_cv(
                 output_names,
                 control_variates,

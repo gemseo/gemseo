@@ -804,11 +804,11 @@ def test_rank_based_sobol(rank_based_sobol, snapshot_matplotlib):
 @pytest.mark.parametrize(
     ("kwargs", "expected"),
     [
-        ({}, [[0.1701791], [0.4228924]]),
+        ({}, [[0.1903898], [0.4456537]]),
         # Check the confidence intervals with 10 replicates instead of 100.
-        ({"n_replicates": 10}, [[0.2362999], [0.3917675]]),
+        ({"n_replicates": 10}, [[0.1602552], [0.4817939]]),
         # Check the confidence intervals with a 90% confidence level instead of 95%
-        ({"confidence_level": 0.90}, [[0.2104981], [0.4356857]]),
+        ({"confidence_level": 0.90}, [[0.2103695], [0.4231993]]),
     ],
 )
 def test_rank_based_sobol_bootstrap(rank_based_sobol, kwargs, expected):
@@ -832,5 +832,5 @@ def test_ranked_based_sobol_from_samples(discipline, uncertain_space):
     analysis = SobolAnalysis(samples)
     analysis.compute_indices()
     assert_almost_equal(
-        analysis.get_intervals()["y"][0]["x1"], array([[0.1724129], [0.4527147]])
+        analysis.get_intervals()["y"][0]["x1"], array([[0.1903898], [0.4456537]])
     )
