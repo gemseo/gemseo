@@ -106,11 +106,15 @@ illustrates this feature.
 
 !!! quote "References"
 
-    Amine Aziz Alaoui.
-    Contributions to multidisciplinary design optimization under uncertainty,
-    with applications to aircraft design.
-    Theses, Université de Toulouse, February 2025.
-    URL: https://theses.hal.science/tel-05059696.
+    - Matthias De Lozzo, Olivier Roustant and Amine Aziz-Alaoui,
+      Make an optimization problem multidisciplinary.
+      Preprint.
+      URL: <https://arxiv.org/abs/2512.19217>.
+    - Amine Aziz-Alaoui.
+      Contributions to multidisciplinary design optimization under uncertainty,
+      with applications to aircraft design.
+      Theses, Université de Toulouse, February 2025.
+      URL: <https://theses.hal.science/tel-05059696>.
 """
 
 from __future__ import annotations
