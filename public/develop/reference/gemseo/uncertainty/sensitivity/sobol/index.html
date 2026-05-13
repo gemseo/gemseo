@@ -161,13 +161,7 @@
 
   
       dataclass
-   (gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.SensitivityIndices)" href=#gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.SensitivityIndices>SensitivityIndices</a></code> – <div class=doc-md-description><p>The sensitivity indices.</p><p>Given a sensitivity method, an input variable and an output variable, the sensitivity index is a NumPy array that can be accessed through <code>indices.method_name[output_name][output_component][input_name]</code>.</p><p>For constant output components, <code>indices.method_name[output_name][output_component]</code> is <code>None</code>.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>If control variates are provided and the algorithm is not <code>Algorithm.SALTELLI</code>, if <code>Algorithm.RANK</code> is used with pick-and-freeze (PF) samples or if another algorithm is used with non-PF samples.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/sensitivity/sobol.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>627</span>
-<span class=normal>628</span>
-<span class=normal>629</span>
-<span class=normal>630</span>
-<span class=normal>631</span>
-<span class=normal>632</span>
-<span class=normal>633</span>
+   (gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.SensitivityIndices)" href=#gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.SensitivityIndices>SensitivityIndices</a></code> – <div class=doc-md-description><p>The sensitivity indices.</p><p>Given a sensitivity method, an input variable and an output variable, the sensitivity index is a NumPy array that can be accessed through <code>indices.method_name[output_name][output_component][input_name]</code>.</p><p>For constant output components, <code>indices.method_name[output_name][output_component]</code> is <code>None</code>.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>If control variates are provided and the algorithm is not <code>Algorithm.SALTELLI</code>, if <code>Algorithm.RANK</code> is used with pick-and-freeze (PF) samples or if another algorithm is used with non-PF samples.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/sensitivity/sobol.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>633</span>
 <span class=normal>634</span>
 <span class=normal>635</span>
 <span class=normal>636</span>
@@ -259,7 +253,13 @@
 <span class=normal>722</span>
 <span class=normal>723</span>
 <span class=normal>724</span>
-<span class=normal>725</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_indices</span><span class=p>(</span>
+<span class=normal>725</span>
+<span class=normal>726</span>
+<span class=normal>727</span>
+<span class=normal>728</span>
+<span class=normal>729</span>
+<span class=normal>730</span>
+<span class=normal>731</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_indices</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=nb>str</span> <span class=o>|</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
     <span class=n>algo</span><span class=p>:</span> <span class=n>Algorithm</span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
@@ -330,6 +330,7 @@
 
     <span class=n>output_names</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_get_output_names</span><span class=p>(</span><span class=n>output_names</span><span class=p>)</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>__output_name_to_sobol_algos</span> <span class=o>=</span> <span class=p>{}</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>__use_control_variates</span> <span class=o>=</span> <span class=nb>bool</span><span class=p>(</span><span class=n>control_variates</span><span class=p>)</span>
     <span class=k>if</span> <span class=n>control_variates</span><span class=p>:</span>
         <span class=k>if</span> <span class=n>algo</span> <span class=o>!=</span> <span class=bp>self</span><span class=o>.</span><span class=n>Algorithm</span><span class=o>.</span><span class=n>SALTELLI</span><span class=p>:</span>
             <span class=n>msg</span> <span class=o>=</span> <span class=p>(</span>
@@ -341,7 +342,6 @@
         <span class=k>if</span> <span class=nb>isinstance</span><span class=p>(</span><span class=n>control_variates</span><span class=p>,</span> <span class=bp>self</span><span class=o>.</span><span class=n>ControlVariate</span><span class=p>):</span>
             <span class=n>control_variates</span> <span class=o>=</span> <span class=p>[</span><span class=n>control_variates</span><span class=p>]</span>
 
-        <span class=bp>self</span><span class=o>.</span><span class=n>__use_control_variates</span> <span class=o>=</span> <span class=kc>True</span>
         <span class=k>return</span> <span class=bp>self</span><span class=o>.</span><span class=n>__compute_indices_using_cv</span><span class=p>(</span>
             <span class=n>output_names</span><span class=p>,</span>
             <span class=n>control_variates</span><span class=p>,</span>
@@ -594,13 +594,7 @@
             <span class=p>}</span>
         <span class=p>]</span>
     <span class=p>}</span>
-</code></pre></div></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/sensitivity/sobol.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>843</span>
-<span class=normal>844</span>
-<span class=normal>845</span>
-<span class=normal>846</span>
-<span class=normal>847</span>
-<span class=normal>848</span>
-<span class=normal>849</span>
+</code></pre></div></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/sensitivity/sobol.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>849</span>
 <span class=normal>850</span>
 <span class=normal>851</span>
 <span class=normal>852</span>
@@ -652,7 +646,13 @@
 <span class=normal>898</span>
 <span class=normal>899</span>
 <span class=normal>900</span>
-<span class=normal>901</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_intervals</span><span class=p>(</span>
+<span class=normal>901</span>
+<span class=normal>902</span>
+<span class=normal>903</span>
+<span class=normal>904</span>
+<span class=normal>905</span>
+<span class=normal>906</span>
+<span class=normal>907</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_intervals</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>first_order</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n>FirstOrderIndicesType</span><span class=p>:</span>
@@ -724,13 +724,7 @@
     <span class=n>sort</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
     <span class=n>sort_by_total</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" title=matplotlib.figure.Figure href=https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure>Figure</a></span>
-</code></pre></div><div class="doc doc-contents "><p>Plot the first- and total-order Sobol' indices.</p><p>For the <span class=arithmatex>\(i\)</span>-th input variable, plot its first-order Sobol' index <span class=arithmatex>\(S_i^{1}\)</span> and its total-order Sobol' index <span class=arithmatex>\(S_i^{T}\)</span> with dots and their confidence intervals with vertical lines.</p><p>The subtitle displays the standard deviation (StD) and the variance (Var) of the output of interest.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>output</code></b> (<code><span title=gemseo.utils.string_tools.VariableType>VariableType</span></code>) – <div class=doc-md-description><p>The output for which to display sensitivity indices, either a name or a tuple of the form (name, component). If name, its first component is considered.</p></div></li><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The input variables for which to display the sensitivity indices. If empty, display all the input variables.</p></div></li><li class="doc-section-item field-body"><b><code>title</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The title of the plot. If empty, use a default one.</p></div></li><li class="doc-section-item field-body"><b><code>save</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>If <code>True</code>, save the figure.</p></div></li><li class="doc-section-item field-body"><b><code>show</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>If <code>True</code>, show the figure.</p></div></li><li class="doc-section-item field-body"><b><code>file_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a> | <a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>A file path. Either a complete file path, a directory name or a file name. If empty, use a default file name and a default directory. The file extension is inferred from filepath extension, if any.</p></div></li><li class="doc-section-item field-body"><b><code>directory_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a> | <a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The path to the directory where to save the plots.</p></div></li><li class="doc-section-item field-body"><b><code>file_name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The name of the file.</p></div></li><li class="doc-section-item field-body"><b><code>file_format</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>A file format, e.g. 'png', 'pdf', 'svg', ... Used when <code>file_path</code> does not have any extension. If empty, use a default file extension.</p></div></li><li class="doc-section-item field-body"><b><code>sort</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to sort the input variables by decreasing order.</p></div></li><li class="doc-section-item field-body"><b><code>sort_by_total</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to sort according to the total-order Sobol' indices when <code>sort</code> is <code>True</code> and total-order Sobol' indices are available. Otherwise, use the first-order Sobol' indices.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" title=matplotlib.figure.Figure href=https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure>Figure</a></code> – <div class=doc-md-description><p>The plot figure.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/sensitivity/sobol.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal> 903</span>
-<span class=normal> 904</span>
-<span class=normal> 905</span>
-<span class=normal> 906</span>
-<span class=normal> 907</span>
-<span class=normal> 908</span>
-<span class=normal> 909</span>
+</code></pre></div><div class="doc doc-contents "><p>Plot the first- and total-order Sobol' indices.</p><p>For the <span class=arithmatex>\(i\)</span>-th input variable, plot its first-order Sobol' index <span class=arithmatex>\(S_i^{1}\)</span> and its total-order Sobol' index <span class=arithmatex>\(S_i^{T}\)</span> with dots and their confidence intervals with vertical lines.</p><p>The subtitle displays the standard deviation (StD) and the variance (Var) of the output of interest.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>output</code></b> (<code><span title=gemseo.utils.string_tools.VariableType>VariableType</span></code>) – <div class=doc-md-description><p>The output for which to display sensitivity indices, either a name or a tuple of the form (name, component). If name, its first component is considered.</p></div></li><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The input variables for which to display the sensitivity indices. If empty, display all the input variables.</p></div></li><li class="doc-section-item field-body"><b><code>title</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The title of the plot. If empty, use a default one.</p></div></li><li class="doc-section-item field-body"><b><code>save</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>If <code>True</code>, save the figure.</p></div></li><li class="doc-section-item field-body"><b><code>show</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>If <code>True</code>, show the figure.</p></div></li><li class="doc-section-item field-body"><b><code>file_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a> | <a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>A file path. Either a complete file path, a directory name or a file name. If empty, use a default file name and a default directory. The file extension is inferred from filepath extension, if any.</p></div></li><li class="doc-section-item field-body"><b><code>directory_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a> | <a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The path to the directory where to save the plots.</p></div></li><li class="doc-section-item field-body"><b><code>file_name</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>The name of the file.</p></div></li><li class="doc-section-item field-body"><b><code>file_format</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code>&#39;&#39;</code> ) – <div class=doc-md-description><p>A file format, e.g. 'png', 'pdf', 'svg', ... Used when <code>file_path</code> does not have any extension. If empty, use a default file extension.</p></div></li><li class="doc-section-item field-body"><b><code>sort</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to sort the input variables by decreasing order.</p></div></li><li class="doc-section-item field-body"><b><code>sort_by_total</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to sort according to the total-order Sobol' indices when <code>sort</code> is <code>True</code> and total-order Sobol' indices are available. Otherwise, use the first-order Sobol' indices.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" title=matplotlib.figure.Figure href=https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure>Figure</a></code> – <div class=doc-md-description><p>The plot figure.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/sensitivity/sobol.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal> 909</span>
 <span class=normal> 910</span>
 <span class=normal> 911</span>
 <span class=normal> 912</span>
@@ -875,7 +869,13 @@
 <span class=normal>1051</span>
 <span class=normal>1052</span>
 <span class=normal>1053</span>
-<span class=normal>1054</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>plot</span><span class=p>(</span>
+<span class=normal>1054</span>
+<span class=normal>1055</span>
+<span class=normal>1056</span>
+<span class=normal>1057</span>
+<span class=normal>1058</span>
+<span class=normal>1059</span>
+<span class=normal>1060</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>plot</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>output</span><span class=p>:</span> <span class=n>VariableType</span><span class=p>,</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
@@ -1992,13 +1992,7 @@
     <span class=n>indices</span><span class=p>:</span> <span class=n><span title=gemseo.uncertainty.sensitivity.base.FirstOrderIndicesType>FirstOrderIndicesType</span></span> <span class=o>|</span> <span class=n><span title=gemseo.uncertainty.sensitivity.base.SecondOrderIndicesType>SecondOrderIndicesType</span></span><span class=p>,</span>
     <span class=n>use_variance</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n><span title=gemseo.uncertainty.sensitivity.base.FirstOrderIndicesType>FirstOrderIndicesType</span></span> <span class=o>|</span> <span class=n><span title=gemseo.uncertainty.sensitivity.base.SecondOrderIndicesType>SecondOrderIndicesType</span></span>
-</code></pre></div><div class="doc doc-contents "><p>Unscale the Sobol' indices.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>indices</code></b> (<code><span title=gemseo.uncertainty.sensitivity.base.FirstOrderIndicesType>FirstOrderIndicesType</span> | <span title=gemseo.uncertainty.sensitivity.base.SecondOrderIndicesType>SecondOrderIndicesType</span></code>) – <div class=doc-md-description><p>The Sobol' indices.</p></div></li><li class="doc-section-item field-body"><b><code>use_variance</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to express an unscaled Sobol' index as a share of output variance; otherwise, express it as the square root of this part and therefore with the same unit as the output.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><span title=gemseo.uncertainty.sensitivity.base.FirstOrderIndicesType>FirstOrderIndicesType</span> | <span title=gemseo.uncertainty.sensitivity.base.SecondOrderIndicesType>SecondOrderIndicesType</span></code> – <div class=doc-md-description><p>The unscaled Sobol' indices.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/sensitivity/sobol.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>812</span>
-<span class=normal>813</span>
-<span class=normal>814</span>
-<span class=normal>815</span>
-<span class=normal>816</span>
-<span class=normal>817</span>
-<span class=normal>818</span>
+</code></pre></div><div class="doc doc-contents "><p>Unscale the Sobol' indices.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>indices</code></b> (<code><span title=gemseo.uncertainty.sensitivity.base.FirstOrderIndicesType>FirstOrderIndicesType</span> | <span title=gemseo.uncertainty.sensitivity.base.SecondOrderIndicesType>SecondOrderIndicesType</span></code>) – <div class=doc-md-description><p>The Sobol' indices.</p></div></li><li class="doc-section-item field-body"><b><code>use_variance</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>Whether to express an unscaled Sobol' index as a share of output variance; otherwise, express it as the square root of this part and therefore with the same unit as the output.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><span title=gemseo.uncertainty.sensitivity.base.FirstOrderIndicesType>FirstOrderIndicesType</span> | <span title=gemseo.uncertainty.sensitivity.base.SecondOrderIndicesType>SecondOrderIndicesType</span></code> – <div class=doc-md-description><p>The unscaled Sobol' indices.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/uncertainty/sensitivity/sobol.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>818</span>
 <span class=normal>819</span>
 <span class=normal>820</span>
 <span class=normal>821</span>
@@ -2021,7 +2015,13 @@
 <span class=normal>838</span>
 <span class=normal>839</span>
 <span class=normal>840</span>
-<span class=normal>841</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>unscale_indices</span><span class=p>(</span>
+<span class=normal>841</span>
+<span class=normal>842</span>
+<span class=normal>843</span>
+<span class=normal>844</span>
+<span class=normal>845</span>
+<span class=normal>846</span>
+<span class=normal>847</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>unscale_indices</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>indices</span><span class=p>:</span> <span class=n>FirstOrderIndicesType</span> <span class=o>|</span> <span class=n>SecondOrderIndicesType</span><span class=p>,</span>
     <span class=n>use_variance</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>True</span><span class=p>,</span>
