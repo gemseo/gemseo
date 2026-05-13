@@ -125,9 +125,9 @@ def snapshot_allclose(snapshot):
     Two floats within tolerance therefore canonicalize to the same value
     and compare equal in the snapshot.
 
-    Args:
-        rtol: The relative tolerance.
-        atol: The absolute tolerance.
+    The arguments of the fixture are
+    the relative tolerance `rtol`
+    and the absolute tolerance `atol`.
     """
 
     def make(rtol: float = 1e-9, atol: float = 0.0):
