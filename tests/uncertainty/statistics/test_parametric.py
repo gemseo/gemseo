@@ -54,10 +54,11 @@ def dataset() -> Dataset:
     """This fixture is a random sample of four random variables distributed according to
     the uniform, normal, weibull and exponential probability distributions."""
     n_samples = 100
-    uniform_rand = RNG.random(n_samples)
-    normal_rand = RNG.normal(size=n_samples)
-    weibull_rand = RNG.weibull(1.5, size=n_samples)
-    exponential_rand = RNG.exponential(size=n_samples)
+    rng = RandomState(0)
+    uniform_rand = rng.random(n_samples)
+    normal_rand = rng.normal(size=n_samples)
+    weibull_rand = rng.weibull(1.5, size=n_samples)
+    exponential_rand = rng.exponential(size=n_samples)
     return Dataset.from_array(
         vstack((uniform_rand, normal_rand, weibull_rand, exponential_rand)).T,
         ["x_1", "x_2", "x_3"],
