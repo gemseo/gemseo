@@ -23,6 +23,7 @@ from functools import partial
 from pathlib import Path
 
 import pytest
+from matplotlib import pyplot
 
 from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
@@ -38,22 +39,16 @@ POWER_HDF5_PATH = PARENT_PATH / "power2_opt_pb.h5"
 MOD_SELLAR_HDF5_PATH = PARENT_PATH / "modified_sellar_opt_pb.h5"
 
 
-@pytest.fixture(scope="module")
-def factory():
-    return POST_FACTORY
-
-
-def test_correlations(tmp_wd, factory, snapshot_matplotlib) -> None:
+def test_correlations(tmp_wd, snapshot_matplotlib) -> None:
     """Test correlations with the Rosenbrock problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
     """
     problem = Rosenbrock(20)
     OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=L_BFGS_B_Settings())
 
-    post = factory.execute(
+    post = POST_FACTORY.execute(
         problem,
         Correlations_Settings(
             save=True,
@@ -67,16 +62,17 @@ def test_correlations(tmp_wd, factory, snapshot_matplotlib) -> None:
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
+    assert pyplot.gcf() == snapshot_matplotlib(tolerance=1.0)
 
-def test_correlations_import(tmp_wd, factory) -> None:
+
+def test_correlations_import(tmp_wd) -> None:
     """Test correlations with imported problem.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
     """
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    post = factory.execute(
+    post = POST_FACTORY.execute(
         problem,
         Correlations_Settings(
             save=True,
@@ -91,17 +87,13 @@ def test_correlations_import(tmp_wd, factory) -> None:
         assert Path(outf).exists()
 
 
-def test_correlations_func_name_error(factory, snapshot) -> None:
-    """Test ValueError for non-existent function.
-
-    Args:
-        factory: Fixture that returns a post-processing factory.
-    """
+def test_correlations_func_name_error(snapshot) -> None:
+    """Test ValueError for non-existent function."""
     problem = Rosenbrock(20)
     OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=L_BFGS_B_Settings())
 
     with assert_exception(ValueError, snapshot):
-        factory.execute(
+        POST_FACTORY.execute(
             problem, Correlations_Settings(save=False, show=False, func_names=["toto"])
         )
 
@@ -110,17 +102,16 @@ def test_correlations_func_name_error(factory, snapshot) -> None:
     ("func_names"),
     [["pow2", "ineq1"], []],
 )
-def test_correlations_func_names(factory, func_names, snapshot_matplotlib) -> None:
+def test_correlations_func_names(func_names, snapshot_matplotlib) -> None:
     """Test func_names filter.
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
         func_names: The function names subset for which the correlations
             are computed. If None, all functions are considered.
     """
     problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    factory.execute(
+    POST_FACTORY.execute(
         problem,
         Correlations_Settings(
             func_names=func_names,
@@ -134,7 +125,7 @@ def test_correlations_func_names(factory, func_names, snapshot_matplotlib) -> No
     )
 
 
-def test_func_name_sorting(factory, snapshot_matplotlib) -> None:
+def test_func_name_sorting(snapshot_matplotlib) -> None:
     """Test that the function names sorting.
 
     Use a database from a modified Sellar problem
@@ -144,10 +135,9 @@ def test_func_name_sorting(factory, snapshot_matplotlib) -> None:
 
     Args:
         tmp_wd : Fixture to move into a temporary directory.
-        factory: Fixture that returns a post-processing factory.
     """
     problem = OptimizationProblem.from_hdf(MOD_SELLAR_HDF5_PATH)
-    factory.execute(
+    POST_FACTORY.execute(
         problem,
         Correlations_Settings(
             func_names=["obj", "c_1", "obj_constr"],

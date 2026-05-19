@@ -34,6 +34,8 @@ from gemseo.core.execution_status import ExecutionStatus
 from gemseo.disciplines.wrappers._base_wrapper_discipline import BaseWrapperDiscipline
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gemseo.core.discipline import Discipline
     from gemseo.typing import StrKeyMapping
 
@@ -89,7 +91,7 @@ class RetryDiscipline(BaseWrapperDiscipline):
         n_trials: int = 5,
         wait_time: float = 0.0,
         timeout: float = math.inf,
-        fatal_exceptions: tuple[type[Exception], ...] = (),
+        fatal_exceptions: Iterable[type[Exception]] = (),
         timeout_with_process: bool = False,
     ) -> None:
         """
