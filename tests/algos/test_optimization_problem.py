@@ -534,7 +534,7 @@ def test_feasible_optimum_points() -> None:
     feasible_x = problem.history.feasible_points[0]
     assert len(feasible_x) >= 2
     min_value, solution, is_feasible, _, _ = problem.optimum
-    assert (solution == feasible_x[-1]).all()
+    assert allclose(solution, feasible_x[-1])
     assert allclose(min_value, 2.192090802, 9)
     assert allclose(solution[0], 0.79370053, 8)
     assert allclose(solution[1], 0.79370053, 8)

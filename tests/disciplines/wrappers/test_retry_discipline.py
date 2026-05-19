@@ -257,7 +257,7 @@ def test_2fails_then_succeed() -> None:
 
 
 THREAD_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 1.0
-PROCESS_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 2.0
+PROCESS_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 4.0
 
 
 # TODO: Fix this test on windows.

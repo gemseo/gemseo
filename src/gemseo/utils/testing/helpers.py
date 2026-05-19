@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import contextlib
 import re
+import sys
 from contextlib import nullcontext
 from typing import TYPE_CHECKING
 from typing import Any
@@ -89,6 +90,9 @@ def assert_exception(
     message = str(exc_info.value)
     if isinstance(exc_info.value, ValidationError):
         message = _PYDANTIC_VERSION_IN_URL.sub(r"\1X.Y\2", message)
+    elif sys.version_info < (3, 14) and isinstance(exc_info.value, ZeroDivisionError):
+        # Python 3.14 dropped the "float " prefix from ZeroDivisionError messages.
+        message = message.removeprefix("float ")
 
     assert message == snapshot
 

@@ -208,7 +208,12 @@ def test_strong_couplings_self_coupled() -> None:
         ),
     ],
 )
-def test_n2_no_coupling(show_data_names, descriptions, snapshot_matplotlib) -> None:
+def test_n2_no_coupling(
+    tmp_wd,
+    show_data_names,
+    descriptions,
+    snapshot_matplotlib,
+) -> None:
     """Test that an N2 plot is generated correctly when there are no couplings.
 
     Args:

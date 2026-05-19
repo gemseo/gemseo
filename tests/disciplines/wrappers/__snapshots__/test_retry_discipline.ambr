@@ -1,33 +1,33 @@
 # serializer version: 1
 # name: test_1_3times_failing[1]
-  'float division by zero'
+  'division by zero'
 # ---
 # name: test_1_3times_failing[3]
-  'float division by zero'
+  'division by zero'
 # ---
 # name: test_a_not_implemented_error_analytic_discipline
   'Error: This method is not implemented.'
 # ---
 # name: test_failure_zero_division_error
-  'float division by zero'
+  'division by zero'
 # ---
 # name: test_failure_zero_division_error_n_trials[1-fatal_exceptions0]
-  'float division by zero'
+  'division by zero'
 # ---
 # name: test_failure_zero_division_error_n_trials[1-fatal_exceptions1]
-  'float division by zero'
+  'division by zero'
 # ---
 # name: test_failure_zero_division_error_n_trials[1-fatal_exceptions2]
-  'float division by zero'
+  'division by zero'
 # ---
 # name: test_failure_zero_division_error_n_trials[3-fatal_exceptions0]
-  'float division by zero'
+  'division by zero'
 # ---
 # name: test_failure_zero_division_error_n_trials[3-fatal_exceptions1]
-  'float division by zero'
+  'division by zero'
 # ---
 # name: test_failure_zero_division_error_n_trials[3-fatal_exceptions2]
-  'float division by zero'
+  'division by zero'
 # ---
 # name: test_n_trials_zero_raises
   'n_trials must be >= 1, got 0'
