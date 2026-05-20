@@ -39,14 +39,16 @@ check-typing *args:
     uv run --only-group typing mypy {{args}}
 
 # Build and serve documentation
-[group('doc')]
-doc $DOCSTRING_INHERITANCE_ENABLE="1" *args:
+[group('doc'),
+env("DOCSTRING_INHERITANCE_ENABLE", "1"),
+env("DISABLE_MKDOCS_2_WARNING", "true")]
+doc *args:
     uv run --python {{python}} --group doc --extra all mkdocs serve {{args}}
 
 # Build and serve documentation without API
 [group('doc')]
 doc-fast *args:
-    just doc -- --config-file mkdocs-fast.yml {{args}}
+    just doc --config-file mkdocs-fast.yml {{args}}
 
 # Create and check PyPI distribution
 [group('packaging')]
