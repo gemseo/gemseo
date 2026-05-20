@@ -273,12 +273,11 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_name: The name of the variable.
 
         Returns:
-            The names of the groups that contain the variable.
+            The names of the groups that contain the variable, if any.
 
         Warning:
             The names are sorted with the Python function `sorted`.
         """
-        # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
             return sorted(
                 self
@@ -295,17 +294,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         Args:
             group_name: The name of the group.
 
-        Notes:
-            Assure compatibility pandas 1 and 2
-            by returning an empty list if KeyError is raised.
-
         Returns:
-            The names of the variables contained in the group.
+            The names of the variables contained in the group, if any.
 
         Warning:
             The names are sorted with the Python function `sorted`.
         """
-        # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
             return sorted(
                 self
@@ -323,14 +317,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             group_name: The name of the group.
             variable_name: The name of the variable.
 
-        Notes:
-            Assure compatibility pandas 1 and 2
-            by returning an empty list if KeyError is raised.
-
         Returns:
-             The components of the variables.
+             The components of the variable, if it exists.
         """
-        # TODO: remove Try/Except when using exclusively Pandas>=2.0
         try:
             return (
                 self
