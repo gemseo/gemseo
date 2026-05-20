@@ -521,12 +521,17 @@ def test_get_best_infeasible_point() -> None:
     )
 
 
+def test_no_points_in_database(snapshot):
+    """Test the exception if the problem is empty while accessing the optimum,"""
+    problem = Power2()
+    with assert_exception(ValueError, snapshot):
+        problem.optimum  # noqa:B018
+    with assert_exception(ValueError, snapshot):
+        problem.history.last_point  # noqa: B018
+
+
 def test_feasible_optimum_points() -> None:
     problem = Power2()
-    with pytest.raises(ValueError):
-        problem.optimum  # noqa:B018
-    with pytest.raises(ValueError):
-        problem.history.last_point  # noqa: B018
 
     OPTIMIZATION_LIBRARY_FACTORY.execute(
         problem, settings=SLSQP_Settings(eq_tolerance=1e-6, ineq_tolerance=1e-6)
@@ -534,11 +539,11 @@ def test_feasible_optimum_points() -> None:
     feasible_x = problem.history.feasible_points[0]
     assert len(feasible_x) >= 2
     min_value, solution, is_feasible, _, _ = problem.optimum
-    assert allclose(solution, feasible_x[-1])
-    assert allclose(min_value, 2.192090802, 9)
-    assert allclose(solution[0], 0.79370053, 8)
-    assert allclose(solution[1], 0.79370053, 8)
-    assert allclose(solution[2], 0.96548938, 8)
+    assert_allclose(solution, feasible_x[-1], 1e-7)
+    assert_allclose(min_value, 2.192090802, 1e-7)
+    assert_allclose(solution[0], 0.79370053, 1e-7)
+    assert_allclose(solution[1], 0.79370053, 1e-7)
+    assert_allclose(solution[2], 0.96548938, 1e-7)
     assert is_feasible
 
 

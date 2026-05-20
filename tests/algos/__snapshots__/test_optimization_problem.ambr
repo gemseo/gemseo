@@ -41,6 +41,12 @@
 # name: test_missing_constjac
   'The function computing the Jacobian of [sum+1] is not implemented.'
 # ---
+# name: test_no_points_in_database
+  'The optimization history is empty.'
+# ---
+# name: test_no_points_in_database.1
+  'The optimization history is empty.'
+# ---
 # name: test_parallel_differentiation_setting_after_functions_preprocessing
   'The parallel differentiation cannot be changed because the functions have already been pre-processed.'
 # ---
