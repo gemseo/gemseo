@@ -21,7 +21,6 @@ size.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from numbers import Number
 from typing import Any
 from typing import TypeVar
 
@@ -29,7 +28,7 @@ from gemseo.datasets.dataset import Dataset
 from gemseo.typing import NumberArray
 from gemseo.utils.metrics.base_composite_metric import BaseCompositeMetric
 
-_InputT = TypeVar("_InputT", Iterable[NumberArray], Iterable[Number], Dataset)
+_InputT = TypeVar("_InputT", Iterable[NumberArray], Iterable[complex], Dataset)
 
 
 class ElementWiseMetric(BaseCompositeMetric[_InputT, Any]):

@@ -30,7 +30,6 @@ import inspect
 import logging
 from collections.abc import Callable
 from collections.abc import Sized
-from numbers import Complex
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -59,14 +58,13 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
-    from numbers import Number
 
     from gemseo.algos.database import Database
     from gemseo.algos.design_space import DesignSpace
 
 LOGGER = logging.getLogger(__name__)
 
-OutputType = NumberArray | Complex
+OutputType = NumberArray | complex
 """The type of value returned by an output function."""
 
 WrappedFunctionType = Callable[[NumberArray], OutputType]
@@ -456,7 +454,7 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
             self._jac, NotImplementedCallable
         )
 
-    def __add__(self, other: ArrayFunction | Number) -> ArrayFunction:
+    def __add__(self, other: ArrayFunction | complex) -> ArrayFunction:
         """Operator defining the sum of the function and another one.
 
         This operator supports automatic differentiation
@@ -470,7 +468,7 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
         """
         return _AdditionFunctionMaker(ArrayFunction, self, other).function
 
-    def __sub__(self, other: ArrayFunction | Number) -> ArrayFunction:
+    def __sub__(self, other: ArrayFunction | complex) -> ArrayFunction:
         """Operator defining the difference of the function and another one.
 
         This operator supports automatic differentiation

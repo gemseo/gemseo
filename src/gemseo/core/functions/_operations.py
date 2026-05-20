@@ -54,7 +54,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         self,
         cls: type[ArrayFunction],
         first_operand: ArrayFunction,
-        second_operand: ArrayFunction | ndarray | Number,
+        second_operand: ArrayFunction | ndarray | complex,
         operator: OperatorType,
         operator_repr: str,
     ) -> None:
@@ -269,7 +269,7 @@ class _AdditionFunctionMaker(_OperationFunctionMaker):
         self,
         cls: type[ArrayFunction],
         first_operand: ArrayFunction,
-        second_operand: ArrayFunction | Number,
+        second_operand: ArrayFunction | complex,
         inverse: bool = False,
     ) -> None:
         """

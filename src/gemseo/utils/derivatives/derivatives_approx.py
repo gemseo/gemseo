@@ -47,7 +47,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from numbers import Number
 
     from matplotlib.pyplot import Figure
     from numpy import ndarray
@@ -89,7 +88,7 @@ class DisciplineJacApprox:
         self,
         discipline: BaseDiscipline,
         approx_method: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
-        step: Number | Iterable[Number] = 1e-7,
+        step: complex | Iterable[complex] = 1e-7,
         parallel: bool = False,
         n_processes: int = N_CPUS,
         use_threading: bool = False,

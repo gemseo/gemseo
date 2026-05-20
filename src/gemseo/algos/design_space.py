@@ -110,7 +110,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from numbers import Number
 
     from numpy import int64
 
@@ -399,9 +398,9 @@ class DesignSpace:
         name: str,
         size: int = 1,
         type_: DataType = DesignVariableType.FLOAT,
-        lower_bound: Number | Iterable[Number] = -inf,
-        upper_bound: Number | Iterable[Number] = inf,
-        value: Number | Iterable[Number] | None = None,
+        lower_bound: complex | Iterable[complex] = -inf,
+        upper_bound: complex | Iterable[complex] = inf,
+        value: complex | Iterable[complex] | None = None,
     ) -> None:
         r"""Add a variable to the design space.
 
@@ -505,7 +504,7 @@ class DesignSpace:
 
     @staticmethod
     def __is_integer(
-        values: ndarray | Number,
+        values: ndarray | complex,
     ) -> ndarray:
         """Check whether each value is either an integer, infinite, or None.
 
@@ -1771,7 +1770,7 @@ class DesignSpace:
         return {name: value_as_dict[name] for name in variable_names}
 
     def set_lower_bound(
-        self, name: str, lower_bound: Number | Iterable[Number]
+        self, name: str, lower_bound: complex | Iterable[complex]
     ) -> None:
         """Set the lower bound of a variable.
 
@@ -1791,7 +1790,7 @@ class DesignSpace:
     def set_upper_bound(
         self,
         name: str,
-        upper_bound: Number | Iterable[Number],
+        upper_bound: complex | Iterable[complex],
     ) -> None:
         """Set the upper bound of a variable.
 

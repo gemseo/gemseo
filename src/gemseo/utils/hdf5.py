@@ -31,16 +31,14 @@ from numpy import number
 from numpy import object_
 
 if TYPE_CHECKING:
-    from numbers import Number
-
     from h5py import Group
 
-    from gemseo.typing import RealArray
+    from gemseo.typing import ComplexArray
 
 
 def store_h5data(
     group: Any,
-    data_array: RealArray[Number] | str | list[str | Number],
+    data_array: ComplexArray | str | list[str | complex],
     dataset_name: str,
     dtype: str | None = None,
 ) -> None:
