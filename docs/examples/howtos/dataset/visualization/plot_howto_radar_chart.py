@@ -52,9 +52,9 @@ dataset.index = ["series_1", "series_2"]
 # Set `connect=True` to close each polygon and `radial_ticks=True`
 # to display tick labels along the radial axis.
 # Use `rmin` and `rmax` to control the radial range:
-plot = RadarChart(dataset, RadarChart_Settings(connect=True, radial_ticks=True))
-plot.rmin = -0.5
-plot.rmax = 1.0
+plot = RadarChart(
+    dataset, RadarChart_Settings(connect=True, radial_ticks=True, rmin=-0.5, rmax=1.0)
+)
 plot.execute(save=False, show=True)
 
 # %%
