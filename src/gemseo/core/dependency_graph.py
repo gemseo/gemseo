@@ -287,7 +287,12 @@ class DependencyGraph:
         return output_names & input_names
 
     def __render_graph(
-        self, graph: DiGraph, file_path: str | Path, is_full: bool, clean_up: bool
+        self,
+        graph: DiGraph,
+        file_path: str | Path,
+        is_full: bool,
+        clean_up: bool,
+        show_edge_labels: bool = True,
     ) -> GraphView | None:
         """Render the graph when graphviz is installed.
 
@@ -297,6 +302,7 @@ class DependencyGraph:
                 If empty, the graphical representation is not saved.
             is_full: Whether the graph is full.
             clean_up: Whether to remove the DOT source file.
+            show_edge_labels: Whether to display the coupling variable names on edges.
 
         Returns:
             Either the graph or `None` when graphviz is not installed.
@@ -347,6 +353,7 @@ class DependencyGraph:
                 tail_name,
                 head_name,
                 add_tooltip,
+                show_edge_labels=show_edge_labels,
             )
 
         # 2. Add the edges with same head and tail nodes
@@ -365,6 +372,7 @@ class DependencyGraph:
                         name,
                         name,
                         add_tooltip,
+                        show_edge_labels=show_edge_labels,
                     )
 
         # 3. Add the edges without head node
@@ -389,6 +397,7 @@ class DependencyGraph:
                 f"_{leaf_node}",
                 add_tooltip,
                 hide_head=True,
+                show_edge_labels=show_edge_labels,
             )
 
         if file_path:
@@ -412,6 +421,7 @@ class DependencyGraph:
         head_name: str,
         add_tooltip: bool,
         hide_head: bool = False,
+        show_edge_labels: bool = True,
     ) -> None:
         """Add an edge to a graph view.
 
@@ -426,6 +436,7 @@ class DependencyGraph:
                 the original and current names of the coupling variables
                 when hovered over.
             hide_head: Whether to hide the head node.
+            show_edge_labels: Whether to display the coupling variable names on edges.
         """
         if add_tooltip:
             lines = []
@@ -455,16 +466,21 @@ class DependencyGraph:
                         f"{head_original_name}"
                     )
 
-            kwargs = {"labeltooltip": "\n".join(lines)}
+            key = "labeltooltip" if show_edge_labels else "edgetooltip"
+            kwargs = {key: "\n".join(lines)}
         else:
             kwargs = {}
 
-        graph_view.edge(tail_name, head_name, pretty_str(coupling_names), **kwargs)
+        label = pretty_str(coupling_names) if show_edge_labels else None
+        graph_view.edge(tail_name, head_name, label, **kwargs)
         if hide_head:
             graph_view.hide_node(head_name)
 
     def render_full_graph(
-        self, file_path: str | Path, clean_up: bool = True
+        self,
+        file_path: str | Path,
+        clean_up: bool = True,
+        show_edge_labels: bool = True,
     ) -> GraphView | None:
         """Render the full graph.
 
@@ -473,14 +489,20 @@ class DependencyGraph:
                 to save the graphical representation of the full graph.
                 If empty, the graphical representation is not saved.
             clean_up: Whether to remove the DOT source file.
+            show_edge_labels: Whether to display the coupling variable names on edges.
 
         Returns:
             Either the full graph or `None` when graphviz is not installed.
         """
-        return self.__render_graph(self.__graph, file_path, True, clean_up)
+        return self.__render_graph(
+            self.__graph, file_path, True, clean_up, show_edge_labels
+        )
 
     def render_condensed_graph(
-        self, file_path: str | Path, clean_up: bool = True
+        self,
+        file_path: str | Path,
+        clean_up: bool = True,
+        show_edge_labels: bool = True,
     ) -> GraphView | None:
         """Render the condensed graph.
 
@@ -489,12 +511,17 @@ class DependencyGraph:
                 to save the graphical representation of the condensed graph.
                 If empty, the graphical representation is not saved.
             clean_up: Whether to remove the DOT source file.
+            show_edge_labels: Whether to display the coupling variable names on edges.
 
         Returns:
             Either the condensed graph or `None` when graphviz is not installed.
         """
         return self.__render_graph(
-            self.__create_condensed_graph(), file_path, False, clean_up
+            self.__create_condensed_graph(),
+            file_path,
+            False,
+            clean_up,
+            show_edge_labels,
         )
 
     @staticmethod

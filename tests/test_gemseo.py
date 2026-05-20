@@ -195,6 +195,18 @@ def test_generate_coupling_graph_without_saving(
     assert not list(tmp_wd.iterdir())
 
 
+@pytest.mark.parametrize("full", [False, True])
+@pytest.mark.parametrize("show_edge_labels", [False, True])
+def test_generate_coupling_graph_show_edge_labels(
+    full, show_edge_labels, sobieski_disciplines
+) -> None:
+    """Check that show_edge_labels controls the coupling variable names on edges."""
+    source = generate_coupling_graph(
+        sobieski_disciplines, file_path="", full=full, show_edge_labels=show_edge_labels
+    ).source
+    assert ("label=y_4" in source) is show_edge_labels
+
+
 def test_get_algorithm_options_schema(snapshot) -> None:
     """Test that all available options are printed."""
     schema_dict = get_algorithm_options_schema("SLSQP")

@@ -135,6 +135,23 @@ def test_render_without_saving(tmp_wd, method_name) -> None:
     assert not os.listdir(tmp_wd)
 
 
+@pytest.mark.parametrize("method_name", ["render_full_graph", "render_condensed_graph"])
+@pytest.mark.parametrize("show_edge_labels", [False, True])
+def test_render_show_edge_labels(method_name, show_edge_labels) -> None:
+    """Check that show_edge_labels controls the coupling variable names on edges."""
+    graph = DependencyGraph((Sellar1(), Sellar2(), SellarSystem()))
+    source = getattr(graph, method_name)(
+        file_path="", show_edge_labels=show_edge_labels
+    ).source
+    assert ("label=" in source) is show_edge_labels
+    if method_name == "render_condensed_graph":
+        assert "labeltooltip=" not in source
+        assert "edgetooltip=" not in source
+    else:
+        key = "labeltooltip=" if show_edge_labels else "edgetooltip"
+        assert key in source
+
+
 def test_render_condensed_graph(tmp_wd, name_and_graph) -> None:
     """Test writing the condensed graph to disk.
 

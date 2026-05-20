@@ -186,6 +186,7 @@ def generate_coupling_graph(
     file_path: str | Path = "coupling_graph.pdf",
     full: bool = True,
     clean_up: bool = True,
+    show_edge_labels: bool = True,
 ) -> GraphView | None:
     """Generate a graph of the couplings between disciplines.
 
@@ -196,6 +197,7 @@ def generate_coupling_graph(
         full: Whether to generate the full coupling graph.
             Otherwise, the condensed coupling graph is generated.
         clean_up: Whether to remove the DOT source file.
+        show_edge_labels: Whether to display the coupling variable names on edges.
 
     Returns:
         Either the graph of the couplings between disciplines
@@ -203,10 +205,9 @@ def generate_coupling_graph(
     """
     from gemseo.core.coupling_structure import CouplingStructure
 
-    coupling_structure = CouplingStructure(disciplines)
-    if full:
-        return coupling_structure.graph.render_full_graph(file_path, clean_up=clean_up)
-    return coupling_structure.graph.render_condensed_graph(file_path, clean_up)
+    graph = CouplingStructure(disciplines).graph
+    render_graph = graph.render_full_graph if full else graph.render_condensed_graph
+    return render_graph(file_path, clean_up=clean_up, show_edge_labels=show_edge_labels)
 
 
 def get_available_formulations() -> list[str]:
