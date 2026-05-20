@@ -157,7 +157,9 @@
   
       class-attribute
       instance-attribute
-   (gemseo.core.functions.array_function.ArrayFunction.ApproximationMode)" href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.ApproximationMode>ApproximationMode</a></code>, default: <code><span title=gemseo.core.functions.array_function.ArrayFunction.ApproximationMode.FINITE_DIFFERENCES>FINITE_DIFFERENCES</span></code> ) – <div class=doc-md-description><p>The approximation mode.</p></div></li><li class="doc-section-item field-body"><b><code>step</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>1e-06</code> ) – <div class=doc-md-description><p>The step for the approximation of the gradients.</p></div></li><li class="doc-section-item field-body"><b><code>error_max</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>1e-08</code> ) – <div class=doc-md-description><p>The maximum value of the error.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>Either if the approximation method is unknown, if the shapes of the analytical and approximated Jacobian matrices are inconsistent or if the analytical gradients are wrong.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>604</span>
+   (gemseo.core.functions.array_function.ArrayFunction.ApproximationMode)" href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.ApproximationMode>ApproximationMode</a></code>, default: <code><span title=gemseo.core.functions.array_function.ArrayFunction.ApproximationMode.FINITE_DIFFERENCES>FINITE_DIFFERENCES</span></code> ) – <div class=doc-md-description><p>The approximation mode.</p></div></li><li class="doc-section-item field-body"><b><code>step</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>1e-06</code> ) – <div class=doc-md-description><p>The step for the approximation of the gradients.</p></div></li><li class="doc-section-item field-body"><b><code>error_max</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>1e-08</code> ) – <div class=doc-md-description><p>The maximum value of the error.</p></div></li></ul><p><span class=doc-section-title>Raises:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/exceptions.html#ValueError>ValueError</a></code> – <div class=doc-md-description><p>Either if the approximation method is unknown, if the shapes of the analytical and approximated Jacobian matrices are inconsistent or if the analytical gradients are wrong.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>602</span>
+<span class=normal>603</span>
+<span class=normal>604</span>
 <span class=normal>605</span>
 <span class=normal>606</span>
 <span class=normal>607</span>
@@ -205,9 +207,7 @@
 <span class=normal>649</span>
 <span class=normal>650</span>
 <span class=normal>651</span>
-<span class=normal>652</span>
-<span class=normal>653</span>
-<span class=normal>654</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>check_grad</span><span class=p>(</span>
+<span class=normal>652</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>check_grad</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>x_vect</span><span class=p>:</span> <span class=n>NumberArray</span><span class=p>,</span>
     <span class=n>approximation_mode</span><span class=p>:</span> <span class=n>ApproximationMode</span> <span class=o>=</span> <span class=n>ApproximationMode</span><span class=o>.</span><span class=n>FINITE_DIFFERENCES</span><span class=p>,</span>
@@ -289,7 +289,9 @@
 
   
       instance-attribute
-  " href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.force_real>force_real</a> is <code>True</code>.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>346</span>
+  " href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.force_real>force_real</a> is <code>True</code>.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>344</span>
+<span class=normal>345</span>
+<span class=normal>346</span>
 <span class=normal>347</span>
 <span class=normal>348</span>
 <span class=normal>349</span>
@@ -311,9 +313,7 @@
 <span class=normal>365</span>
 <span class=normal>366</span>
 <span class=normal>367</span>
-<span class=normal>368</span>
-<span class=normal>369</span>
-<span class=normal>370</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>evaluate</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>x_vect</span><span class=p>:</span> <span class=n>NumberArray</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>OutputType</span><span class=p>:</span>
+<span class=normal>368</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>evaluate</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>x_vect</span><span class=p>:</span> <span class=n>NumberArray</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>OutputType</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Evaluate the function.</span>
 
 <span class=sd>    When the output dimension</span>
@@ -361,7 +361,9 @@
 
   
       module-attribute
-   (gemseo.typing.NumberArray)" href=../../../typing/#gemseo.typing.NumberArray>NumberArray</a></code> – <div class=doc-md-description><p>The original vector whose non-significant components have been set at zero.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>676</span>
+   (gemseo.typing.NumberArray)" href=../../../typing/#gemseo.typing.NumberArray>NumberArray</a></code> – <div class=doc-md-description><p>The original vector whose non-significant components have been set at zero.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>674</span>
+<span class=normal>675</span>
+<span class=normal>676</span>
 <span class=normal>677</span>
 <span class=normal>678</span>
 <span class=normal>679</span>
@@ -374,9 +376,7 @@
 <span class=normal>686</span>
 <span class=normal>687</span>
 <span class=normal>688</span>
-<span class=normal>689</span>
-<span class=normal>690</span>
-<span class=normal>691</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>689</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>filt_0</span><span class=p>(</span><span class=n>arr</span><span class=p>:</span> <span class=n>NumberArray</span><span class=p>,</span> <span class=n>floor_value</span><span class=p>:</span> <span class=nb>float</span> <span class=o>=</span> <span class=mf>1e-6</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>NumberArray</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Set the non-significant components of a vector to zero.</span>
 
@@ -395,7 +395,9 @@
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.core.functions.concatenate.Concatenate.generate_input_names class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">generate_input_names</span><span class="doc doc-labels"><small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small></span><a href=#gemseo.core.functions.concatenate.Concatenate.generate_input_names class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>generate_input_names</span><span class=p>(</span>
     <span class=n>input_dim</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></span><span class=p>,</span> <span class=n>input_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Sequence href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence>Sequence</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>()</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Sequence href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence>Sequence</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span>
-</code></pre></div><div class="doc doc-contents "><p>Generate the names of the inputs of the function.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>input_dim</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code>) – <div class=doc-md-description><p>The dimension of the input space of the function.</p></div></li><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Sequence href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence>Sequence</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The initial names of the inputs of the function. If the number of names matches the dimension of the input space, use these names as is. Otherwise, if there is only one name, e.g. <code>["var"]</code>, and if the dimension of the input space is equal to 3, use this name as a base name and generate the names of the inputs, e.g. <code>["var[0]", "var[1]", "var[2]"]</code>. If empty, use <code>"x"</code> as a base name and generate the names of the inputs, i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" title=collections.abc.Sequence href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence>Sequence</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code> – <div class=doc-md-description><p>The names of the inputs of the function.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>769</span>
+</code></pre></div><div class="doc doc-contents "><p>Generate the names of the inputs of the function.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>input_dim</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code>) – <div class=doc-md-description><p>The dimension of the input space of the function.</p></div></li><li class="doc-section-item field-body"><b><code>input_names</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Sequence href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence>Sequence</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code>, default: <code>()</code> ) – <div class=doc-md-description><p>The initial names of the inputs of the function. If the number of names matches the dimension of the input space, use these names as is. Otherwise, if there is only one name, e.g. <code>["var"]</code>, and if the dimension of the input space is equal to 3, use this name as a base name and generate the names of the inputs, e.g. <code>["var[0]", "var[1]", "var[2]"]</code>. If empty, use <code>"x"</code> as a base name and generate the names of the inputs, i.e. <code>["x[0]", "x[1]", "x[2]"]</code>.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" title=collections.abc.Sequence href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence>Sequence</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]</code> – <div class=doc-md-description><p>The names of the inputs of the function.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>767</span>
+<span class=normal>768</span>
+<span class=normal>769</span>
 <span class=normal>770</span>
 <span class=normal>771</span>
 <span class=normal>772</span>
@@ -423,9 +425,7 @@
 <span class=normal>794</span>
 <span class=normal>795</span>
 <span class=normal>796</span>
-<span class=normal>797</span>
-<span class=normal>798</span>
-<span class=normal>799</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@classmethod</span>
+<span class=normal>797</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@classmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>generate_input_names</span><span class=p>(</span>
     <span class=bp>cls</span><span class=p>,</span> <span class=n>input_dim</span><span class=p>:</span> <span class=nb>int</span><span class=p>,</span> <span class=n>input_names</span><span class=p>:</span> <span class=n>Sequence</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>()</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n>Sequence</span><span class=p>[</span><span class=nb>str</span><span class=p>]:</span>
@@ -457,16 +457,16 @@
     <span class=n>name</span> <span class=o>=</span> <span class=n>input_names</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=k>if</span> <span class=n>n_input_names</span> <span class=o>==</span> <span class=mi>1</span> <span class=k>else</span> <span class=bp>cls</span><span class=o>.</span><span class=n>__INPUT_NAME_PATTERN</span>
     <span class=k>return</span> <span class=p>[</span><span class=n>repr_variable</span><span class=p>(</span><span class=n>name</span><span class=p>,</span> <span class=n>i</span><span class=p>,</span> <span class=n>input_dim</span><span class=p>)</span> <span class=k>for</span> <span class=n>i</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>input_dim</span><span class=p>)]</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.core.functions.concatenate.Concatenate.get_indexed_name class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">get_indexed_name</span><a href=#gemseo.core.functions.concatenate.Concatenate.get_indexed_name class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>get_indexed_name</span><span class=p>(</span><span class=n>index</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span>
-</code></pre></div><div class="doc doc-contents "><p>Return the name of function component.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>index</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code>) – <div class=doc-md-description><p>The index of the function component.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code> – <div class=doc-md-description><p>The name of the function component.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>810</span>
+</code></pre></div><div class="doc doc-contents "><p>Return the name of function component.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>index</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></code>) – <div class=doc-md-description><p>The index of the function component.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code> – <div class=doc-md-description><p>The name of the function component.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>808</span>
+<span class=normal>809</span>
+<span class=normal>810</span>
 <span class=normal>811</span>
 <span class=normal>812</span>
 <span class=normal>813</span>
 <span class=normal>814</span>
 <span class=normal>815</span>
 <span class=normal>816</span>
-<span class=normal>817</span>
-<span class=normal>818</span>
-<span class=normal>819</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_indexed_name</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>index</span><span class=p>:</span> <span class=nb>int</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>str</span><span class=p>:</span>
+<span class=normal>817</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>get_indexed_name</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>index</span><span class=p>:</span> <span class=nb>int</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>str</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Return the name of function component.</span>
 
 <span class=sd>    Args:</span>
@@ -487,7 +487,9 @@
 
   
       class-attribute
-  " href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.DICT_REPR_ATTR>DICT_REPR_ATTR</a>.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>711</span>
+  " href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.DICT_REPR_ATTR>DICT_REPR_ATTR</a>.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>709</span>
+<span class=normal>710</span>
+<span class=normal>711</span>
 <span class=normal>712</span>
 <span class=normal>713</span>
 <span class=normal>714</span>
@@ -514,9 +516,7 @@
 <span class=normal>735</span>
 <span class=normal>736</span>
 <span class=normal>737</span>
-<span class=normal>738</span>
-<span class=normal>739</span>
-<span class=normal>740</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>738</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>init_from_dict_repr</span><span class=p>(</span><span class=o>**</span><span class=n>attributes</span><span class=p>:</span> <span class=n>Any</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>ArrayFunction</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Initialize an function.</span>
 
@@ -547,15 +547,15 @@
             <span class=k>raise</span> <span class=ne>ValueError</span><span class=p>(</span><span class=n>msg</span><span class=p>)</span>
     <span class=k>return</span> <span class=n>ArrayFunction</span><span class=p>(</span><span class=n>func</span><span class=o>=</span><span class=kc>None</span><span class=p>,</span> <span class=o>**</span><span class=n>attributes</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.core.functions.concatenate.Concatenate.is_constraint class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">is_constraint</span><a href=#gemseo.core.functions.concatenate.Concatenate.is_constraint class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>is_constraint</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span>
-</code></pre></div><div class="doc doc-contents "><p>Check if the function is a constraint.</p><p>The constraint type is either <code>"eq"</code> or "<code>ineq"</code>.</p><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code> – <div class=doc-md-description><p>Whether the function is a constraint.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>405</span>
+</code></pre></div><div class="doc doc-contents "><p>Check if the function is a constraint.</p><p>The constraint type is either <code>"eq"</code> or "<code>ineq"</code>.</p><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code> – <div class=doc-md-description><p>Whether the function is a constraint.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>403</span>
+<span class=normal>404</span>
+<span class=normal>405</span>
 <span class=normal>406</span>
 <span class=normal>407</span>
 <span class=normal>408</span>
 <span class=normal>409</span>
 <span class=normal>410</span>
-<span class=normal>411</span>
-<span class=normal>412</span>
-<span class=normal>413</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>is_constraint</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>bool</span><span class=p>:</span>
+<span class=normal>411</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>is_constraint</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>bool</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Check if the function is a constraint.</span>
 
 <span class=sd>    The constraint type is either `&quot;eq&quot;` or &quot;`ineq&quot;`.</span>
@@ -575,7 +575,9 @@
 
   
       module-attribute
-   (gemseo.core.functions.array_function.OutputType)" href=../array_function/#gemseo.core.functions.array_function.OutputType>OutputType</a></code>) – <div class=doc-md-description><p>The offset value.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            ArrayFunction (gemseo.core.functions.array_function.ArrayFunction)" href=../array_function/#gemseo.core.functions.array_function.ArrayFunction>ArrayFunction</a></code> – <div class=doc-md-description><p>The offsetted function.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>573</span>
+   (gemseo.core.functions.array_function.OutputType)" href=../array_function/#gemseo.core.functions.array_function.OutputType>OutputType</a></code>) – <div class=doc-md-description><p>The offset value.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-internal" title="            ArrayFunction (gemseo.core.functions.array_function.ArrayFunction)" href=../array_function/#gemseo.core.functions.array_function.ArrayFunction>ArrayFunction</a></code> – <div class=doc-md-description><p>The offsetted function.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>571</span>
+<span class=normal>572</span>
+<span class=normal>573</span>
 <span class=normal>574</span>
 <span class=normal>575</span>
 <span class=normal>576</span>
@@ -602,9 +604,7 @@
 <span class=normal>597</span>
 <span class=normal>598</span>
 <span class=normal>599</span>
-<span class=normal>600</span>
-<span class=normal>601</span>
-<span class=normal>602</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>offset</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>value</span><span class=p>:</span> <span class=n>OutputType</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>ArrayFunction</span><span class=p>:</span>
+<span class=normal>600</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>offset</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>value</span><span class=p>:</span> <span class=n>OutputType</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=n>ArrayFunction</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Add an offset value to the function.</span>
 
 <span class=sd>    Args:</span>
@@ -659,7 +659,9 @@
 
   
       module-attribute
-   (gemseo.typing.NumberArray)" href=../../../typing/#gemseo.typing.NumberArray>NumberArray</a></code>) – <div class=doc-md-description><p>A second vector, used as a reference.</p></div></li><li class="doc-section-item field-body"><b><code>error_max</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>) – <div class=doc-md-description><p>The maximum value of the error.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The difference between two vectors, normalized if required.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>656</span>
+   (gemseo.typing.NumberArray)" href=../../../typing/#gemseo.typing.NumberArray>NumberArray</a></code>) – <div class=doc-md-description><p>A second vector, used as a reference.</p></div></li><li class="doc-section-item field-body"><b><code>error_max</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>) – <div class=doc-md-description><p>The maximum value of the error.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code> – <div class=doc-md-description><p>The difference between two vectors, normalized if required.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>654</span>
+<span class=normal>655</span>
+<span class=normal>656</span>
 <span class=normal>657</span>
 <span class=normal>658</span>
 <span class=normal>659</span>
@@ -675,9 +677,7 @@
 <span class=normal>669</span>
 <span class=normal>670</span>
 <span class=normal>671</span>
-<span class=normal>672</span>
-<span class=normal>673</span>
-<span class=normal>674</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
+<span class=normal>672</span></pre></div></td><td class=code><div><pre><span></span><code><span class=nd>@staticmethod</span>
 <span class=k>def</span><span class=w> </span><span class=nf>rel_err</span><span class=p>(</span><span class=n>a_vect</span><span class=p>:</span> <span class=n>NumberArray</span><span class=p>,</span> <span class=n>b_vect</span><span class=p>:</span> <span class=n>NumberArray</span><span class=p>,</span> <span class=n>error_max</span><span class=p>:</span> <span class=nb>float</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>float</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Compute the 2-norm of the difference between two vectors.</span>
 
@@ -715,7 +715,9 @@
   
       property
       writable
-  " href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.jac>jac</a>.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>database</code></b> (<code><a class="autorefs autorefs-internal" title="            Database (gemseo.algos.database.Database)" href=../../../algos/database/#gemseo.algos.database.Database>Database</a></code>) – <div class=doc-md-description><p>The database to read.</p></div></li><li class="doc-section-item field-body"><b><code>design_space</code></b> (<code><a class="autorefs autorefs-internal" title="            DesignSpace (gemseo.algos.design_space.DesignSpace)" href=../../../algos/design_space/#gemseo.algos.design_space.DesignSpace>DesignSpace</a></code>) – <div class=doc-md-description><p>The design space used for normalization.</p></div></li><li class="doc-section-item field-body"><b><code>normalize</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>If <code>True</code>, the values of the inputs are unnormalized before call.</p></div></li><li class="doc-section-item field-body"><b><code>jac</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>If <code>True</code>, a Jacobian pointer is also generated.</p></div></li><li class="doc-section-item field-body"><b><code>x_tolerance</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>1e-10</code> ) – <div class=doc-md-description><p>The tolerance on the distance between inputs.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>742</span>
+  " href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.jac>jac</a>.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>database</code></b> (<code><a class="autorefs autorefs-internal" title="            Database (gemseo.algos.database.Database)" href=../../../algos/database/#gemseo.algos.database.Database>Database</a></code>) – <div class=doc-md-description><p>The database to read.</p></div></li><li class="doc-section-item field-body"><b><code>design_space</code></b> (<code><a class="autorefs autorefs-internal" title="            DesignSpace (gemseo.algos.design_space.DesignSpace)" href=../../../algos/design_space/#gemseo.algos.design_space.DesignSpace>DesignSpace</a></code>) – <div class=doc-md-description><p>The design space used for normalization.</p></div></li><li class="doc-section-item field-body"><b><code>normalize</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>If <code>True</code>, the values of the inputs are unnormalized before call.</p></div></li><li class="doc-section-item field-body"><b><code>jac</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>True</code> ) – <div class=doc-md-description><p>If <code>True</code>, a Jacobian pointer is also generated.</p></div></li><li class="doc-section-item field-body"><b><code>x_tolerance</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>1e-10</code> ) – <div class=doc-md-description><p>The tolerance on the distance between inputs.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>740</span>
+<span class=normal>741</span>
+<span class=normal>742</span>
 <span class=normal>743</span>
 <span class=normal>744</span>
 <span class=normal>745</span>
@@ -738,9 +740,7 @@
 <span class=normal>762</span>
 <span class=normal>763</span>
 <span class=normal>764</span>
-<span class=normal>765</span>
-<span class=normal>766</span>
-<span class=normal>767</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>set_pt_from_database</span><span class=p>(</span>
+<span class=normal>765</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>set_pt_from_database</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>database</span><span class=p>:</span> <span class=n>Database</span><span class=p>,</span>
     <span class=n>design_space</span><span class=p>:</span> <span class=n>DesignSpace</span><span class=p>,</span>
@@ -772,7 +772,9 @@
 
   
       class-attribute
-  " href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.DICT_REPR_ATTR>DICT_REPR_ATTR</a>.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>693</span>
+  " href=../array_function/#gemseo.core.functions.array_function.ArrayFunction.DICT_REPR_ATTR>DICT_REPR_ATTR</a>.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/functions/array_function.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>691</span>
+<span class=normal>692</span>
+<span class=normal>693</span>
 <span class=normal>694</span>
 <span class=normal>695</span>
 <span class=normal>696</span>
@@ -786,9 +788,7 @@
 <span class=normal>704</span>
 <span class=normal>705</span>
 <span class=normal>706</span>
-<span class=normal>707</span>
-<span class=normal>708</span>
-<span class=normal>709</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>to_dict</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=nb>str</span> <span class=o>|</span> <span class=nb>int</span> <span class=o>|</span> <span class=nb>list</span><span class=p>[</span><span class=nb>str</span><span class=p>]]:</span>
+<span class=normal>707</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>to_dict</span><span class=p>(</span><span class=bp>self</span><span class=p>)</span> <span class=o>-&gt;</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=nb>str</span> <span class=o>|</span> <span class=nb>int</span> <span class=o>|</span> <span class=nb>list</span><span class=p>[</span><span class=nb>str</span><span class=p>]]:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Create a dictionary representation of the function.</span>
 
 <span class=sd>    This is used for serialization.</span>

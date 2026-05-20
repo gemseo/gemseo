@@ -4,12 +4,12 @@
 
   
       module-attribute
-   (gemseo.typing.NumberArray)" href=../../../typing/#gemseo.typing.NumberArray>NumberArray</a>]</code></p><p>The mean of an element-wise metric.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>metric</code></b> (<code><a class="autorefs autorefs-internal" title="            BaseCompositeMetric (gemseo.utils.metrics.base_composite_metric.BaseCompositeMetric)" href=../base_composite_metric/#gemseo.utils.metrics.base_composite_metric.BaseCompositeMetric>BaseCompositeMetric</a>[<a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>, <a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>]</code>) – <div class=doc-md-description><p>The metric applied at element level.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/metrics/mean_metric.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>41</span>
+   (gemseo.typing.NumberArray)" href=../../../typing/#gemseo.typing.NumberArray>NumberArray</a>]</code></p><p>The mean of an element-wise metric.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>metric</code></b> (<code><a class="autorefs autorefs-internal" title="            BaseCompositeMetric (gemseo.utils.metrics.base_composite_metric.BaseCompositeMetric)" href=../base_composite_metric/#gemseo.utils.metrics.base_composite_metric.BaseCompositeMetric>BaseCompositeMetric</a>[<a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>, <a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>]</code>) – <div class=doc-md-description><p>The metric applied at element level.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/metrics/mean_metric.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>40</span>
+<span class=normal>41</span>
 <span class=normal>42</span>
 <span class=normal>43</span>
 <span class=normal>44</span>
-<span class=normal>45</span>
-<span class=normal>46</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>metric</span><span class=p>:</span> <span class=n>BaseCompositeMetric</span><span class=p>[</span><span class=n>Any</span><span class=p>,</span> <span class=n>Any</span><span class=p>]):</span>
+<span class=normal>45</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>metric</span><span class=p>:</span> <span class=n>BaseCompositeMetric</span><span class=p>[</span><span class=n>Any</span><span class=p>,</span> <span class=n>Any</span><span class=p>]):</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;</span>
 <span class=sd>    Args:</span>
 <span class=sd>        metric: The metric applied at element level.</span>
@@ -26,10 +26,10 @@
 
   
       module-attribute
-   (gemseo.typing.NumberArray)" href=../../../typing/#gemseo.typing.NumberArray>NumberArray</a></code> – <div class=doc-md-description><p>The metric associated with <code>a</code> and <code>b</code>.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/metrics/mean_metric.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>48</span>
+   (gemseo.typing.NumberArray)" href=../../../typing/#gemseo.typing.NumberArray>NumberArray</a></code> – <div class=doc-md-description><p>The metric associated with <code>a</code> and <code>b</code>.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/metrics/mean_metric.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>47</span>
+<span class=normal>48</span>
 <span class=normal>49</span>
-<span class=normal>50</span>
-<span class=normal>51</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute</span><span class=p>(</span>  <span class=c1># noqa: D102</span>
+<span class=normal>50</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute</span><span class=p>(</span>  <span class=c1># noqa: D102</span>
     <span class=bp>self</span><span class=p>,</span> <span class=n>a</span><span class=p>:</span> <span class=n>_InputT</span><span class=p>,</span> <span class=n>b</span><span class=p>:</span> <span class=n>_InputT</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n>NumberArray</span><span class=p>:</span>
     <span class=k>return</span> <span class=n>nanmean</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>_metric</span><span class=o>.</span><span class=n>compute</span><span class=p>(</span><span class=n>a</span><span class=p>,</span> <span class=n>b</span><span class=p>))</span>  <span class=c1># type: ignore[no-any-return]</span>
