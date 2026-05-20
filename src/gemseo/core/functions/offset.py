@@ -21,15 +21,13 @@ from typing import TYPE_CHECKING
 from gemseo.core.functions.array_function import ArrayFunction
 
 if TYPE_CHECKING:
-    from numbers import Number
-
     from gemseo.typing import NumberArray
 
 
 class Offset(ArrayFunction):
     """Wrap an ArrayFunction plus an offset value."""
 
-    def __init__(self, value: NumberArray | Number, function: ArrayFunction) -> None:
+    def __init__(self, value: NumberArray | complex, function: ArrayFunction) -> None:
         """
         Args:
             value: The offset value.
