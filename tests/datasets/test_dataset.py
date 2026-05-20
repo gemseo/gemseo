@@ -30,10 +30,8 @@ from numpy import savetxt
 from numpy import unique
 from numpy import vstack
 from numpy.testing import assert_equal
-from packaging import version
 from pandas import DataFrame
 from pandas import MultiIndex
-from pandas import __version__ as pandas_version
 from pandas import concat
 from pandas.testing import assert_frame_equal
 
@@ -837,22 +835,6 @@ def test_rename_variable_group_name(data) -> None:
     assert_frame_equal(dataset, expected_dataset)
 
 
-@pytest.mark.skipif(
-    version.parse(pandas_version) >= version.parse("2.0.0"),
-    reason="DataFrame does not get the append method in Pandas >= 2.0.0",
-)
-def test_append(dataset, data) -> None:
-    """Test the method DataFrame.append."""
-    new_dataset = dataset.append(dataset, ignore_index=True)
-    expected_dataset = Dataset.from_array(
-        vstack((data, data)),
-        ["var_1", "var_2"],
-        {"var_1": 1, "var_2": 2},
-        {"var_2": "foo"},
-    )
-    assert_frame_equal(new_dataset, expected_dataset)
-
-
 def test_concat(dataset, data) -> None:
     """Test the function concat of pandas."""
     new_dataset = concat([dataset, dataset], ignore_index=True)
@@ -989,20 +971,6 @@ def test_get_view(
     assert (view.to_numpy() == expected_array).all()
 
 
-@pytest.mark.skipif(
-    version.parse(pandas_version) >= version.parse("2.0.0"),
-    reason="Does not work with Pandas >= 2.0.0",
-)
-@pytest.mark.parametrize("arg", ["group_names", "variable_names", "components"])
-def test_get_view_empty(dataset, arg) -> None:
-    """Test that asking for a unknown column returns an empty dataset."""
-    assert dataset.get_view(**{arg: "x"}).empty
-
-
-@pytest.mark.skipif(
-    version.parse(pandas_version) < version.parse("2.0.0"),
-    reason="Does not work with Pandas < 2.0.0",
-)
 @pytest.mark.parametrize("arg", ["group_names", "variable_names", "components"])
 def test_get_view_key_error(dataset, arg) -> None:
     """Test that asking for a unknown column raises a KeyError."""
