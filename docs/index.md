@@ -120,7 +120,6 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 - ### __Optimization__
 
     [:octicons-book-24: User guide][optimization-and-doe-framework]
-    [:octicons-play-24: Examples][optimization-examples]
     [:octicons-gear-24: Algorithms][available-optimization-algorithms]
 
     ---

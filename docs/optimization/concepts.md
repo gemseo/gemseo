@@ -31,7 +31,7 @@ See [the API documentation][gemseo.algos.design_space.DesignSpace] and [the exam
 
 ## Optimization problem
 
-See [the API documentation][gemseo.algos.optimization_problem.OptimizationProblem] and [the examples][optimization-examples].
+See [the API documentation][gemseo.algos.optimization_problem.OptimizationProblem].
 
 ## Driver
 
