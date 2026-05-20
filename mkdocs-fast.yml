@@ -68,12 +68,11 @@ nav:
           - Tutorial - Manipulating a dataset: generated/examples/tutorials/basic/plot_tutorial_dataset.md
           - Define an MDO problem: interface/study_analysis.md
           - Optimization and DOE framework: mdo/optimization.md
-          - Make a monodisciplinary optimization problem multidisciplinary: generated/examples/bulk/mdo/plot_make_monodisciplinary_optimization_problem_multidisciplinary.md
-          - Sobieski's Super Sonic Business Jet: generated/examples/bulk/mdo/plot_sobieski_use_case.md
       - Tutorials (advanced):
           - Tutorial - Solve a mixed optimization problem: generated/examples/tutorials/advanced/plot_tutorial_mixed_optimization.md
           - Tutorial - Use namespaces to run the same discipline in multiple contexts: generated/examples/tutorials/advanced/plot_tutorial_namespace.md
           - Tutorial - Compute a Pareto front with a BiLevel formulation: generated/examples/tutorials/advanced/plot_tutorial_bilevel_multi_objective.md
+          - Tutorial - From a monodisciplinary problem to an MDO problem: generated/examples/tutorials/advanced/plot_tutorial_make_monodisciplinary_optimization_problem_multidisciplinary.md
           - Tutorial - Topology optimization: generated/examples/tutorials/advanced/plot_tutorial_topology_optimization_L_shape.md
           - Ordinary differential equations (ODE): generated/examples/bulk/ode
       - Changelog: changelog.md

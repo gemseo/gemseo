@@ -100,7 +100,7 @@ using the previous expressions of $h_1,\ldots,h_N$ and $L$.
 More advanced disciplines could be imagined,
 using the arguments `coupling_equations` and `link_discipline`.
 
-[This example][make-a-monodisciplinary-optimization-problem-multidisciplinary]
+[Tutorial - From a monodisciplinary problem to an MDO problem][]
 from the documentation
 illustrates this feature.
 

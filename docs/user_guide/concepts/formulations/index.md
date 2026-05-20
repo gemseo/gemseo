@@ -52,9 +52,6 @@ In the following, general concepts about the formulations are given.
 The [MDF][the-mdf-formulation] and [IDF][the-idf-formulation] text
 is integrally taken from the paper[@Vanaret2017].
 
-To see how to set up practical test cases with such formulations,
-please see the [Sobieski][application-sobieskis-super-sonic-business-jet-mdo] example.
-
 !!! tip
       For a review of MDO formulations, see Martins and Lambe [@MartinsSurvey].
 
