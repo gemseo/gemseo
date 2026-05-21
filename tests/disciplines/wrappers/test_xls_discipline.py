@@ -45,7 +45,7 @@ INPUT_DATA = {"a": array([20.25]), "b": array([3.25])}
 
 
 def test_missing_xlwings(skip_if_xlwings_is_usable, snapshot) -> None:
-    """Check error when excel is not available.
+    """Check the error when Excel is not available.
 
     Args:
         skip_if_xlwings_is_usable: Fixture to skip the test when xlwings is usable.
