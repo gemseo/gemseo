@@ -33,7 +33,7 @@ and `objectives_labels` to assign readable labels to the objectives.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.post import ParetoFront_Settings
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
@@ -45,7 +45,7 @@ from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 # (see [BinhKorn][gemseo.problems.multiobjective_optimization.binh_korn.BinhKorn])
 # and sample it with an optimised LHS:
 problem = BinhKorn()
-DOELibraryFactory().execute(problem, OT_OPT_LHS_Settings(n_samples=100))
+DOE_LIBRARY_FACTORY.execute(problem, OT_OPT_LHS_Settings(n_samples=100))
 
 # %%
 # ### 2. Plot the Pareto front without non-feasible points

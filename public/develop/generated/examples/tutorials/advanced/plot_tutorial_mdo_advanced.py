@@ -32,14 +32,14 @@ from __future__ import annotations
 from logging import WARNING
 
 from gemseo import create_discipline
-from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
-from gemseo.formulations.bilevel_settings import BiLevel_Settings
-from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.settings.formulations import BiLevel_Settings
+from gemseo.settings.linear_solvers import LGMRES_Settings
 from gemseo.settings.mda import MDAGaussSeidel_Settings
 from gemseo.settings.opt import NLOPT_COBYLA_Settings
 from gemseo.settings.opt import SLSQP_Settings
+from gemseo.settings.post import OptHistoryView_Settings
 
 # %%
 # ## Step 1 - Instantiate the  disciplines and the design space

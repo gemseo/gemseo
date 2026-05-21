@@ -31,15 +31,15 @@ We illustrate this tutorial using:
 from __future__ import annotations
 
 from gemseo import sample_disciplines
-from gemseo.algos.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.machine_learning.regression.models.rbf import RBFRegressor
-from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
 from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
 from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
     WingWeightUncertainSpace,
 )
+from gemseo.settings.doe import OT_MONTE_CARLO_Settings
+from gemseo.settings.doe import OT_OPT_LHS_Settings
+from gemseo.settings.machine_learning import RBFRegressor_Settings
 
 # %%
 # ## Step 1 — Define the reference model

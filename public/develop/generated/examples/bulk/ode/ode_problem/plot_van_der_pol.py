@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 from numpy import array
 from numpy import zeros
 
-from gemseo.algos.ode.factory import ODESolverLibraryFactory
+from gemseo.algos.ode.factory import ODE_SOLVER_LIBRARY_FACTORY
 from gemseo.algos.ode.ode_problem import ODEProblem
 from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.problems.ode.van_der_pol import VanDerPol
@@ -138,8 +138,8 @@ ode_problem_with_jacobian = ODEProblem(
 # solver is called on the [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem]
 # by using the
 # [ODESolverLibraryFactory][gemseo.algos.ode.factory.ODESolverLibraryFactory]:
-ODESolverLibraryFactory().execute(ode_problem, RK45_Settings())
-ODESolverLibraryFactory().execute(ode_problem_with_jacobian, RK45_Settings())
+ODE_SOLVER_LIBRARY_FACTORY.execute(ode_problem, RK45_Settings())
+ODE_SOLVER_LIBRARY_FACTORY.execute(ode_problem_with_jacobian, RK45_Settings())
 
 # %%
 # By default, the Runge-Kutta method of order 4(5) (`"RK45"`) is used, but other
@@ -172,4 +172,4 @@ plt.show()
 # The class [VanDerPol][gemseo.problems.ode.van_der_pol.VanDerPol] is available in the package
 # [gemseo.problems.ode][gemseo.problems.ode], so it just needs to be imported to be used.
 ode_problem = VanDerPol()
-ODESolverLibraryFactory().execute(ode_problem, RK45_Settings())
+ODE_SOLVER_LIBRARY_FACTORY.execute(ode_problem, RK45_Settings())
