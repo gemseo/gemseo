@@ -1,4 +1,4 @@
 # serializer version: 1
 # name: test_restricted_function
-  'Inconsistent shapes for restriction values and indices.'
+  'Arrays of frozen indexes and values must have the same shape.'
 # ---

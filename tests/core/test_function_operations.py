@@ -69,13 +69,9 @@ def test_restricted_function(snapshot):
     x = zeros(3)
     f_ref = fg.get_function(["fidelity", "x"], ["rosen"])
 
-    f1 = RestrictedFunction(
-        f_ref, restriction_indices=array([0]), restriction_values=array([0])
-    )
+    f1 = RestrictedFunction(f_ref, frozen_indexes=array([0]), frozen_values=array([0]))
 
-    f2 = RestrictedFunction(
-        f_ref, restriction_indices=array([0]), restriction_values=array([1])
-    )
+    f2 = RestrictedFunction(f_ref, frozen_indexes=array([0]), frozen_values=array([1]))
 
     assert f1.evaluate(x) == 0.0
     assert f2.evaluate(x) == 2.0
@@ -85,5 +81,5 @@ def test_restricted_function(snapshot):
 
     with assert_exception(ValueError, snapshot):
         RestrictedFunction(
-            f_ref, restriction_indices=array([0, 1]), restriction_values=array([0])
+            f_ref, frozen_indexes=array([0, 1]), frozen_values=array([0])
         )
