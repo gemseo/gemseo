@@ -374,7 +374,10 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
 
     @jac.setter
     def jac(self, jac: WrappedJacobianType | None) -> None:
-        self._jac = jac or NotImplementedCallable(self.name, "Jacobian")
+        if jac is None:
+            self._jac = NotImplementedCallable(self.name, "Jacobian")
+        else:
+            self._jac = jac
 
     @property
     def input_names(self) -> list[str]:

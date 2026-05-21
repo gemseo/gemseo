@@ -46,7 +46,8 @@ from gemseo.algos.problem_function import ProblemFunction
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.functions.concatenate import Concatenate
 from gemseo.core.functions.convex_linear_approx import ConvexLinearApprox
-from gemseo.core.functions.function_restriction import FunctionRestriction
+from gemseo.core.functions.not_implementable_callable import NotImplementedCallable
+from gemseo.core.functions.restricted_function import RestrictedFunction
 from gemseo.core.functions.set_pt_from_database import SetPtFromDatabase
 from gemseo.core.functions.taylor_polynomials import compute_linear_approximation
 from gemseo.core.functions.taylor_polynomials import compute_quadratic_approximation
@@ -311,16 +312,64 @@ def test_wrong_jac_shape() -> None:
         ),
     ],
 )
-def test_restriction(function) -> None:
+@pytest.mark.parametrize(
+    ("frozen_indexes", "frozen_values", "active_indexes"),
+    [
+        (array([0]), array([1.0]), array([1, 2])),
+        (array([1]), array([2.0]), array([0, 2])),
+        (array([2]), array([3.0]), array([0, 1])),
+        (array([0, 2]), array([1.0, 3.0]), array([1])),
+        (array([2, 0]), array([3.0, 1.0]), array([1])),
+    ],
+)
+def test_restriction(function, frozen_indexes, frozen_values, active_indexes) -> None:
     """Test the restriction of a function."""
     x_vect = array([1.0, 2.0, 3.0])
-    sub_x_vect = x_vect[array([0, 2])]
-    restriction = FunctionRestriction(array([1]), array([2.0]), 3, function, "f_y")
+    sub_x_vect = x_vect[active_indexes]
+    restriction = RestrictedFunction(
+        function, frozen_indexes, frozen_values, name="f_y"
+    )
     assert allclose(restriction.evaluate(sub_x_vect), function.evaluate(x_vect))
     assert allclose(
-        restriction.jac(sub_x_vect), function.jac(x_vect)[..., array([0, 2])]
+        restriction.jac(sub_x_vect), function.jac(x_vect)[..., active_indexes]
     )
     restriction.check_grad(sub_x_vect, error_max=1e-6)
+
+
+def test_restriction_duplicated_frozen_indices(snapshot):
+    """Test the exception raised when using duplicated frozen indices."""
+    function = ArrayFunction(itemgetter(0), name="f")
+    with assert_exception(ValueError, snapshot):
+        RestrictedFunction(function, array([1, 1]), array([0.0, 0.0]))
+
+
+def test_restriction_default_name() -> None:
+    """Test the default name of a RestrictedFunction."""
+    function = ArrayFunction(itemgetter(0), name="f")
+    restriction = RestrictedFunction(function, array([1]), array([0.0]))
+    assert restriction.name == "f_restriction"
+
+
+def test_restriction_propagates_attributes() -> None:
+    """Test that RestrictedFunction propagates attributes from the original function."""
+    function = ArrayFunction(
+        itemgetter(0),
+        name="f",
+        f_type=ArrayFunction.FunctionType.EQ,
+        expr="x[0]",
+        force_real=True,
+        input_names=["a", "b", "c"],
+    )
+    restriction = RestrictedFunction(function, array([1]), array([0.0]))
+    assert restriction.f_type == ArrayFunction.FunctionType.EQ
+    assert restriction.expr == "x[0]"
+    assert restriction.force_real is True
+    assert restriction.input_names == ["a", "c"]
+    assert isinstance(restriction.jac, NotImplementedCallable)
+    assert (
+        restriction.jac._NotImplementedCallable__message
+        == "The function computing the Jacobian of f_restriction is not implemented."
+    )
 
 
 def test_linearization() -> None:

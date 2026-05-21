@@ -17,3 +17,6 @@
 # name: test_quadratic_approximation_error[x_vect1]
   'Hessian approximation must be a square ndarray.'
 # ---
+# name: test_restriction_duplicated_frozen_indices
+  'frozen_indexes must contain unique indices.'
+# ---
