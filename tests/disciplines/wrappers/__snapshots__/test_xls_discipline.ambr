@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_error_execute
+  'Inconsistent Outputs sheet, names (first columns) and values column (second) must be of the same length.'
+# ---
+# name: test_excel_error_defaults
+  'Inputs sheet contains Excel errors in the second column at rows [2]'
+# ---
+# name: test_excel_error_execute
+  'Outputs sheet contains Excel errors in the second column at rows [1]'
+# ---
