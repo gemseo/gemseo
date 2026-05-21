@@ -68,13 +68,13 @@ from numpy import array
 
 from gemseo import execute_post
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.bilevel_settings import BiLevel_Settings
-from gemseo.post import OptHistoryView_Settings
-from gemseo.post import ParetoFront_Settings
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.settings.doe import PYDOE_FULLFACT_Settings
+from gemseo.settings.formulations import BiLevel_Settings
+from gemseo.settings.opt import NLOPT_SLSQP_Settings
+from gemseo.settings.post import OptHistoryView_Settings
+from gemseo.settings.post import ParetoFront_Settings
 
 # %%
 # ## Step 1 - Define the disciplines

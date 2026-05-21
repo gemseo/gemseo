@@ -46,10 +46,10 @@ from numpy import array
 
 from gemseo import generate_coupling_graph
 from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.problems.mdo.opt_as_mdo_scenario import OptAsMDOScenario
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.settings.opt import NLOPT_SLSQP_Settings
 
 # %%
 # ## Step 1 — Define the discipline and design space

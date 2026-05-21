@@ -45,10 +45,10 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.mda.jacobi_settings import MDAJacobi_Settings
-from gemseo.post import OptHistoryView_Settings
 from gemseo.settings.mda import MDAChain_Settings
+from gemseo.settings.mda import MDAJacobi_Settings
+from gemseo.settings.opt import SLSQP_Settings
+from gemseo.settings.post import OptHistoryView_Settings
 
 # %%
 # These imports are needed to compute mathematical expressions and to
