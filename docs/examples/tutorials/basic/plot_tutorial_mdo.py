@@ -34,13 +34,13 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import generate_n2_plot
-from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.formulations.mdf_settings import MDF_Settings
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
-from gemseo.post import OptHistoryView_Settings
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.settings.formulations import MDF_Settings
+from gemseo.settings.linear_solvers import LGMRES_Settings
+from gemseo.settings.mda import MDAGaussSeidel_Settings
+from gemseo.settings.opt import SLSQP_Settings
+from gemseo.settings.post import OptHistoryView_Settings
 
 # %%
 # ## Step 1 — The disciplines

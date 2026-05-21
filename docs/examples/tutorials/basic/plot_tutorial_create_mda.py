@@ -45,7 +45,7 @@ from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.settings.mda import MDAGaussSeidel_Settings
 
 # %%
 # ## Step 1 - Create Sobieski disciplines

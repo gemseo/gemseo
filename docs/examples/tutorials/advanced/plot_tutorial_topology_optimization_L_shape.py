@@ -24,13 +24,13 @@ You will go through configuration to post-processing steps.
 
 from __future__ import annotations
 
-from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
-from gemseo.post import BasicHistory_Settings
-from gemseo.post import TopologyView_Settings
 from gemseo.problems.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.settings.opt import NLOPT_MMA_Settings
+from gemseo.settings.post import BasicHistory_Settings
+from gemseo.settings.post import TopologyView_Settings
 
 # %%
 # ## Step 1 - Configure the topology optimization problem
