@@ -89,7 +89,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
                     variable_name not in all_function_names
                     and variable_name not in all_design_names
                     and variable_name
-                    not in optimization_metadata.output_names_to_constraint_names
+                    not in optimization_metadata.output_name_to_constraint_names
                 ):
                     msg = (
                         "Cannot build scatter plot matrix: "
@@ -104,10 +104,10 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
                     design_names.append(variable_name)
                 elif (
                     variable_name
-                    in optimization_metadata.output_names_to_constraint_names
+                    in optimization_metadata.output_name_to_constraint_names
                 ):
                     function_names.extend(
-                        optimization_metadata.output_names_to_constraint_names[
+                        optimization_metadata.output_name_to_constraint_names[
                             variable_name
                         ]
                     )

@@ -57,7 +57,7 @@ class WarmStartedDisciplineChain(DisciplineChain):
         """  # noqa: D205, D212, D415
         super().__init__(disciplines=disciplines, name=name)
         self._variable_names_to_warm_start = variable_names_to_warm_start
-        self._warm_start_variable_names_to_values = {}
+        self._warm_start_variable_name_to_value = {}
         if variable_names_to_warm_start and not self.io.output_grammar.has_names(
             variable_names_to_warm_start
         ):
@@ -81,10 +81,10 @@ class WarmStartedDisciplineChain(DisciplineChain):
         raise NotImplementedError(msg)
 
     def _execute(self) -> None:
-        if self._warm_start_variable_names_to_values:
-            self.io.data.update(self._warm_start_variable_names_to_values)
+        if self._warm_start_variable_name_to_value:
+            self.io.data.update(self._warm_start_variable_name_to_value)
         super()._execute()
         if self._variable_names_to_warm_start:
-            self._warm_start_variable_names_to_values = {
+            self._warm_start_variable_name_to_value = {
                 name: self.io.data[name] for name in self._variable_names_to_warm_start
             }

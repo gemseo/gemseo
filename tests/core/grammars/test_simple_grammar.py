@@ -32,7 +32,7 @@ def grammar_class(request):
 def test_init(grammar_class, required_names) -> None:
     """Verify init with non-empty inputs."""
     grammar = grammar_class(
-        "g", names_to_types={"name": str}, required_names=required_names
+        "g", name_to_type={"name": str}, required_names=required_names
     )
     assert grammar.keys() == {"name"}
     assert list(grammar.values()) == [str]
@@ -43,15 +43,15 @@ def test_init(grammar_class, required_names) -> None:
 def test_init_errors(grammar_class, snapshot) -> None:
     """Verify init errors."""
     with assert_exception(TypeError, snapshot):
-        grammar_class("g", names_to_types={"name": 0})
+        grammar_class("g", name_to_type={"name": 0})
 
     with assert_exception(KeyError, snapshot):
-        grammar_class("g", names_to_types={"name": str}, required_names=["foo"])
+        grammar_class("g", name_to_type={"name": str}, required_names=["foo"])
 
 
 def test_getitem(grammar_class) -> None:
     """Verify getitem."""
-    grammar = grammar_class("g", names_to_types={"name": str})
+    grammar = grammar_class("g", name_to_type={"name": str})
     assert grammar["name"] is str
 
 
@@ -64,15 +64,15 @@ def test_update_error(grammar_class, snapshot) -> None:
 
 
 @pytest.mark.parametrize(
-    ("names_to_types", "data"),
+    ("name_to_type", "data"),
     [
         # None values element means any type.
         ({"name": None}, {"name": {}}),
     ],
 )
-def test_validate(grammar_class, names_to_types, data) -> None:
+def test_validate(grammar_class, name_to_type, data) -> None:
     """Verify validate."""
-    grammar = grammar_class("g", names_to_types=names_to_types)
+    grammar = grammar_class("g", name_to_type=name_to_type)
     grammar.validate(data)
 
 
@@ -89,7 +89,7 @@ def test_validate(grammar_class, names_to_types, data) -> None:
 def test_validate_error(data, error_msg, raise_exception, caplog, snapshot) -> None:
     """Verify that validate raises the expected errors."""
     grammar = SimpleGrammar(
-        "g", names_to_types={"name1": None, "name2": int}, required_names=["name1"]
+        "g", name_to_type={"name1": None, "name2": int}, required_names=["name1"]
     )
 
     if raise_exception:

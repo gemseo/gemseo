@@ -142,7 +142,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             + self._dataset.observable_names
         )
         scale_gradient = self._dataset.misc["input_space"].unnormalize_vect
-        function_names_to_gradients = {}
+        function_name_to_gradient = {}
         for function_name in function_names:
             if compute_missing_gradients and gradient_values:
                 gradient_value = gradient_values[function_name]
@@ -176,11 +176,11 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             for i, gradient_value_ in enumerate(gradient_value):
                 if scale_gradients:
                     gradient_value_ = scale_gradient(gradient_value_, minus_lb=False)
-                function_names_to_gradients[repr_variable(function_name, i, size)] = (
+                function_name_to_gradient[repr_variable(function_name, i, size)] = (
                     gradient_value_
                 )
 
-        return function_names_to_gradients
+        return function_name_to_gradient
 
     def __generate_subplots(
         self,

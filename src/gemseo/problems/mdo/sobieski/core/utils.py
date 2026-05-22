@@ -74,7 +74,7 @@ _DESIGN_BOUNDS = array([
     (40.0, 70.0),
     (500.0, 1500.0),
 ])
-_NAMES_TO_BOUNDS = {
+_NAME_TO_BOUNDS = {
     "x_1": _DESIGN_BOUNDS[0:2],
     "x_2": _DESIGN_BOUNDS[2],
     "x_3": _DESIGN_BOUNDS[3],
@@ -180,7 +180,7 @@ class SobieskiBase:
         bounds = atleast_2d(
             concatenate(
                 [
-                    _NAMES_TO_BOUNDS[variable_name]
+                    _NAME_TO_BOUNDS[variable_name]
                     for variable_name in convert_strings_to_iterable(variable_names)
                 ],
                 axis=0,

@@ -133,8 +133,8 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
         JACOBIAN = "jacobian"
         """The label for the Jacobian."""
 
-    __names_to_sizes: dict[str, int]
-    """The mapping from data names to sizes."""
+    __name_to_size: dict[str, int]
+    """The map from a data name to its size."""
 
     __input_names: list[str]
     """The names of the input data."""
@@ -160,7 +160,7 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
         """  # noqa: D205, D212, D415
         self._tolerance = tolerance
         self.name = name or self.__class__.__name__
-        self.__names_to_sizes = {}
+        self.__name_to_size = {}
         self.__input_names = []
         self._output_names = []
 
@@ -200,13 +200,13 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
         return self._output_names
 
     @property
-    def names_to_sizes(self) -> dict[str, int]:
+    def name_to_size(self) -> dict[str, int]:
         """The sizes of the variables of the last entry.
 
         For a Numpy array, its size is used. For a container, its length is used.
         Otherwise, a size of 1 is used.
         """
-        if not self.__names_to_sizes:
+        if not self.__name_to_size:
             last_entry = self.last_entry
             for name, data in chain(
                 last_entry.inputs.items(), last_entry.outputs.items()
@@ -217,9 +217,9 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
                     size = len(data)
                 else:
                     size = 1
-                self.__names_to_sizes[name] = size
+                self.__name_to_size[name] = size
 
-        return self.__names_to_sizes
+        return self.__name_to_size
 
     def _get_string_representation(self) -> MultiLineString:
         """The string representation of the cache."""
@@ -284,7 +284,7 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
 
     def clear(self) -> None:
         """Clear the cache."""
-        self.__names_to_sizes = {}
+        self.__name_to_size = {}
         self.__input_names = []
         self._output_names = []
 

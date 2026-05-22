@@ -54,13 +54,13 @@ class Scatter(BaseDatasetPlot[Scatter_Settings]):
         x_values = self.dataset.get_view(variable_names=x, components=x_comp).to_numpy()
         y_values = self.dataset.get_view(variable_names=y, components=y_comp).to_numpy()
         if "xlabel" not in self.settings.model_fields_set:
-            if self.dataset.variable_names_to_n_components[x] == 1:
+            if self.dataset.variable_name_to_n_components[x] == 1:
                 self.settings.xlabel = x
             else:
                 self.settings.xlabel = f"{x}({x_comp})"
 
         if "ylabel" not in self.settings.model_fields_set:
-            if self.dataset.variable_names_to_n_components[y] == 1:
+            if self.dataset.variable_name_to_n_components[y] == 1:
                 self.settings.ylabel = y
             else:
                 self.settings.ylabel = f"{y}({y_comp})"

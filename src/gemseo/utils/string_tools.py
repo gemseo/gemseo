@@ -216,14 +216,14 @@ def filter_names(
 
 
 def get_variables_with_components(
-    variables: VariableType | Iterable[VariableType], names_to_sizes: Mapping[str, int]
+    variables: VariableType | Iterable[VariableType], name_to_size: Mapping[str, int]
 ) -> Iterator[tuple[str, int]]:
     """Convert a set of variables to `tuple(str, int)` objects.
 
     Args:
         variables: One or several variable defined as `name` or `(name, component)`.
             When `name`, all the components of the variable are considered.
-        names_to_sizes: The sizes of the variables.
+        name_to_size: The sizes of the variables.
 
     Returns:
         The variables defined as `(name, component)`.
@@ -231,7 +231,7 @@ def get_variables_with_components(
     return chain.from_iterable(
         (variable,)
         if isinstance(variable, tuple)
-        else ((variable, index) for index in range(names_to_sizes[variable]))
+        else ((variable, index) for index in range(name_to_size[variable]))
         for variable in (
             (variables,)
             if (

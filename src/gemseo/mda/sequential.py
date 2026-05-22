@@ -91,14 +91,14 @@ class MDASequential(BaseMDA):
     # (or why not using BaseMDASolver as base class?)
     def set_bounds(  # noqa: D102
         self,
-        variable_names_to_bounds: Mapping[
+        variable_name_to_bounds: Mapping[
             str, tuple[RealArray | None, RealArray | None]
         ],
     ) -> None:
         """Set the bounds for the resolved variables.
 
         Args:
-            variable_names_to_bounds: The mapping from variable names to bounds.
+            variable_name_to_bounds: The mapping from variable names to bounds.
         """
         for inner_mda in self.mda_sequence:
-            inner_mda.set_bounds(variable_names_to_bounds)
+            inner_mda.set_bounds(variable_name_to_bounds)

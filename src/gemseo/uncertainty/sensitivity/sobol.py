@@ -275,7 +275,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         else:
             output_variances = split_array_to_dict_of_arrays(
                 dataset.get_view(group_names=dataset.OUTPUT_GROUP).to_numpy().var(0),
-                dataset.variable_names_to_n_components,
+                dataset.variable_name_to_n_components,
                 dataset.output_names,
             )
             self.__output_variances = output_variances
@@ -362,13 +362,13 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 .get_view(group_names=dataset.OUTPUT_GROUP)
                 .to_numpy()[: 2 * sample_size]
                 .var(0),
-                dataset.variable_names_to_n_components,
+                dataset.variable_name_to_n_components,
                 dataset.output_names,
             )
         else:
             output_variances = split_array_to_dict_of_arrays(
                 dataset.get_view(group_names=dataset.OUTPUT_GROUP).to_numpy().var(0),
-                dataset.variable_names_to_n_components,
+                dataset.variable_name_to_n_components,
                 dataset.output_names,
             )
             dataset.misc["sample_size"] = len(dataset)
@@ -748,14 +748,14 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         ):
             return {}
 
-        names_to_sizes = dataset.variable_names_to_n_components
+        name_to_size = dataset.variable_name_to_n_components
         indices = {
             output_name: [
                 None
                 if algorithm is None
                 else split_array_to_dict_of_arrays(
                     array(getattr(algorithm, method_name)()),
-                    names_to_sizes,
+                    name_to_size,
                     self._input_names,
                 )
                 for algorithm in algorithms
@@ -769,7 +769,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                     if output_component_indices is None
                     else {
                         k: split_array_to_dict_of_arrays(
-                            v.T, names_to_sizes, self._input_names
+                            v.T, name_to_size, self._input_names
                         )
                         for k, v in output_component_indices.items()
                     }
@@ -876,7 +876,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             ```
         """
         use_cv = self.__use_control_variates
-        names_to_sizes = self.dataset.variable_names_to_n_components
+        name_to_size = self.dataset.variable_name_to_n_components
         intervals = {}
         for output_name, sobol_algos in self.__output_name_to_sobol_algos.items():
             intervals[output_name] = []
@@ -890,16 +890,16 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                         interval().getLowerBound(),
                         interval().getUpperBound(),
                     ])
-                names_to_lower_bounds = split_array_to_dict_of_arrays(
-                    interval[0], names_to_sizes, self._input_names
+                name_to_lower_bounds = split_array_to_dict_of_arrays(
+                    interval[0], name_to_size, self._input_names
                 )
-                names_to_upper_bounds = split_array_to_dict_of_arrays(
-                    interval[1], names_to_sizes, self._input_names
+                name_to_upper_bounds = split_array_to_dict_of_arrays(
+                    interval[1], name_to_size, self._input_names
                 )
                 intervals[output_name].append({
                     input_name: array([
-                        names_to_lower_bounds[input_name],
-                        names_to_upper_bounds[input_name],
+                        name_to_lower_bounds[input_name],
+                        name_to_upper_bounds[input_name],
                     ])
                     for input_name in self._input_names
                 })
@@ -965,13 +965,11 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         names = filter_names(names, input_names)
 
         first_order_indices = self.indices.first[output_name][output_component]
-        names_to_sizes = {
-            name: value.size for name, value in first_order_indices.items()
-        }
+        name_to_size = {name: value.size for name, value in first_order_indices.items()}
         values_first_order = [
             first_order_indices[name][index]
             for name in names
-            for index in range(names_to_sizes[name])
+            for index in range(name_to_size[name])
         ]
 
         if self.indices.total:
@@ -979,15 +977,15 @@ class SobolAnalysis(BaseSensitivityAnalysis):
             values_total_order = [
                 total_order_indices[name][index]
                 for name in names
-                for index in range(names_to_sizes[name])
+                for index in range(name_to_size[name])
             ]
 
         x_labels = []
         for name in names:
-            if names_to_sizes[name] == 1:
+            if name_to_size[name] == 1:
                 x_labels.append(name)
             else:
-                size = names_to_sizes[name]
+                size = name_to_size[name]
                 x_labels.extend([
                     repr_variable(name, index, size) for index in range(size)
                 ])
@@ -1014,7 +1012,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                 intervals[name][1, index] - first_order_indices[name][index],
             ]
             for name in names
-            for index in range(names_to_sizes[name])
+            for index in range(name_to_size[name])
         ]).T
         transform = Affine2D().translate(+0.01, 0.0) + ax.transData
         ax.errorbar(
@@ -1035,7 +1033,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                     intervals[name][1, index] - total_order_indices[name][index],
                 ]
                 for name in names
-                for index in range(names_to_sizes[name])
+                for index in range(name_to_size[name])
             ]).T
             transform = Affine2D().translate(-0.01, 0.0) + ax.transData
             ax.errorbar(

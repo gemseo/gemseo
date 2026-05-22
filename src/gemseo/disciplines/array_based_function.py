@@ -45,25 +45,25 @@ class ArrayBasedFunctionDiscipline(Discipline):
     __jac_function: Callable[[RealArray], RealArray] | None
     """The function computing the derivatives of the function of interest, if any."""
 
-    __variable_names_to_sizes: dict[str, int]
-    """The mapping from the names to the sizes for the variables."""
+    __variable_name_to_size: dict[str, int]
+    """The map from a variable name to its size."""
 
-    __output_names_to_sizes: dict[str, int]
-    """The mapping from the names to the sizes for the output."""
+    __output_name_to_size: dict[str, int]
+    """The map from an output name to its size."""
 
     def __init__(
         self,
         function: Callable[[RealArray], RealArray],
-        input_names_to_sizes: dict[str, int],
-        output_names_to_sizes: dict[str, int],
+        input_name_to_size: dict[str, int],
+        output_name_to_size: dict[str, int],
         jac_function: Callable[[RealArray], RealArray] | None = None,
     ):
         """
         Args:
             function: The function of interest
                 whose both the unique argument and the output are NumPy arrays.
-            input_names_to_sizes: The mapping from the names to the sizes for the input.
-            output_names_to_sizes: The mapping
+            input_name_to_size: The mapping from the names to the sizes for the input.
+            output_name_to_size: The mapping
                 from the names to the sizes for the output.
             jac_function: The function
                 computing the derivatives of the function of interest;
@@ -73,21 +73,21 @@ class ArrayBasedFunctionDiscipline(Discipline):
         """  # noqa: D205, D212
         super().__init__()
         self.__function = function
-        self.io.input_grammar.update_from_names(input_names_to_sizes)
-        self.io.output_grammar.update_from_names(output_names_to_sizes)
+        self.io.input_grammar.update_from_names(input_name_to_size)
+        self.io.output_grammar.update_from_names(output_name_to_size)
         self.io.input_grammar.defaults = {
-            name: zeros(size) for name, size in input_names_to_sizes.items()
+            name: zeros(size) for name, size in input_name_to_size.items()
         }
-        self.__output_names_to_sizes = output_names_to_sizes.copy()
-        self.__variable_names_to_sizes = output_names_to_sizes.copy()
-        self.__variable_names_to_sizes.update(input_names_to_sizes)
+        self.__output_name_to_size = output_name_to_size.copy()
+        self.__variable_name_to_size = output_name_to_size.copy()
+        self.__variable_name_to_size.update(input_name_to_size)
         self.__jac_function = jac_function
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         input_vector = concatenate_dict_of_arrays_to_array(input_data, input_data)
         output_vector = self.__function(input_vector)
         return split_array_to_dict_of_arrays(
-            output_vector, self.__output_names_to_sizes, self.io.output_grammar
+            output_vector, self.__output_name_to_size, self.io.output_grammar
         )
 
     def _compute_jacobian(
@@ -109,7 +109,7 @@ class ArrayBasedFunctionDiscipline(Discipline):
         )
         self.jac = split_array_to_dict_of_arrays(
             self.__jac_function(input_vector),
-            self.__variable_names_to_sizes,
+            self.__variable_name_to_size,
             self.io.output_grammar,
             self.io.input_grammar,
         )

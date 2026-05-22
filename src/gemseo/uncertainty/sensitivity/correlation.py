@@ -150,7 +150,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         }
         indices = {}
         # For each correlation method
-        sizes = self.dataset.variable_names_to_n_components
+        sizes = self.dataset.variable_name_to_n_components
         for method in self.Method:
             # The version of OpenTURNS offers this correlation method.
             method_name = self.__METHODS_TO_OT_METHOD_NAMES[method]
@@ -212,7 +212,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         output_name = repr_variable(
             output_name,
             output_index,
-            size=self.dataset.variable_names_to_n_components[output_name],
+            size=self.dataset.variable_name_to_n_components[output_name],
         )
         settings = RadarChart_Settings(
             title=title or f"Correlation indices for the output {output_name}",

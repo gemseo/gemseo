@@ -626,7 +626,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                     (Dataset.PARAMETER_GROUP, input_name, index)
                     for input_name in input_names
                     for index in range(
-                        self.dataset.variable_names_to_n_components[input_name]
+                        self.dataset.variable_name_to_n_components[input_name]
                     )
                 ],
                 names=Dataset.COLUMN_LEVEL_NAMES,
@@ -635,7 +635,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         dataset.index = [
             repr_variable(
-                name, component, size=self.dataset.variable_names_to_n_components[name]
+                name, component, size=self.dataset.variable_name_to_n_components[name]
             )
             for name, component in outputs
         ]
@@ -645,7 +645,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                 by = repr_variable(
                     name,
                     component,
-                    size=self.dataset.variable_names_to_n_components[name],
+                    size=self.dataset.variable_name_to_n_components[name],
                 )
             else:
                 by = dataset.index[0]
@@ -836,7 +836,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The sensitivity indices as a dataset.
         """
-        sizes = self.dataset.variable_names_to_n_components
+        sizes = self.dataset.variable_name_to_n_components
 
         row_names = []
         for input_name in self.input_names:
@@ -845,7 +845,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
                     repr_variable(
                         input_name,
                         input_component,
-                        size=self.dataset.variable_names_to_n_components[input_name],
+                        size=self.dataset.variable_name_to_n_components[input_name],
                     )
                 )
 

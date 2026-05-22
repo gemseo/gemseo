@@ -44,7 +44,7 @@ def dataset():
     dataset = Dataset.from_array(
         data_array,
         variable_names=["output"],
-        variable_names_to_n_components={"output": 2},
+        variable_name_to_n_components={"output": 2},
     )
     dataset.misc["mesh"] = array([[0.0], [1.0]])
     return dataset

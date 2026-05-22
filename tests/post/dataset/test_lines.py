@@ -36,11 +36,11 @@ def dataset():
     sample2 = [0.75, 0.0, 0.5, 1.0]
     sample3 = [1.0, 1.0, 0.75, 0.0]
     data_array = array([sample1, sample2, sample3])
-    variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
+    variable_name_to_n_components = {"x": 1, "y": 1, "z": 2}
     return Dataset.from_array(
         data_array,
         variable_names=["x", "y", "z"],
-        variable_names_to_n_components=variable_names_to_n_components,
+        variable_name_to_n_components=variable_name_to_n_components,
     )
 
 

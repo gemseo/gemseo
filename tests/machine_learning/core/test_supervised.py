@@ -59,10 +59,10 @@ def io_dataset() -> IODataset:
     """The dataset used to train the supervised machine learning models."""
     data = arange(60).reshape(10, 6)
     variables = ["x_1", "x_2", "y_1"]
-    variable_names_to_n_components = {"x_1": 1, "x_2": 2, "y_1": 3}
-    variable_names_to_group_names = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
+    variable_name_to_n_components = {"x_1": 1, "x_2": 2, "y_1": 3}
+    variable_name_to_group_name = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
     dataset = IODataset.from_array(
-        data, variables, variable_names_to_n_components, variable_names_to_group_names
+        data, variables, variable_name_to_n_components, variable_name_to_group_name
     )
     dataset.name = "dataset_name"
     return dataset

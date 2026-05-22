@@ -38,25 +38,25 @@ class Splitter(Discipline):
     def __init__(
         self,
         input_name: str,
-        output_names_to_input_indices: dict[str, Iterable[int] | int],
+        output_name_to_input_indices: dict[str, Iterable[int] | int],
     ) -> None:
         """
         Args:
             input_name: The name of the input to split.
-            output_names_to_input_indices: The input indices associated with the
+            output_name_to_input_indices: The input indices associated with the
                 output names.
         """  # noqa: D205, D212, D415
         self.__input_name = input_name
-        for output_name, input_indices in output_names_to_input_indices.items():
+        for output_name, input_indices in output_name_to_input_indices.items():
             if not isinstance(input_indices, ndarray) and not isinstance(
                 input_indices, list
             ):
-                output_names_to_input_indices[output_name] = [input_indices]
-        self.__slicing_structure = output_names_to_input_indices
+                output_name_to_input_indices[output_name] = [input_indices]
+        self.__slicing_structure = output_name_to_input_indices
 
         super().__init__()
         self.io.input_grammar.update_from_names([input_name])
-        self.io.output_grammar.update_from_names(output_names_to_input_indices.keys())
+        self.io.output_grammar.update_from_names(output_name_to_input_indices.keys())
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         input_data = input_data[self.__input_name]

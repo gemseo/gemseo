@@ -909,7 +909,7 @@ def test_get_result(mdf_scenario, snapshot) -> None:
     assert mdf_scenario.get_result() is None
 
     mdf_scenario.execute(SLSQP_Settings(max_iter=1))
-    assert mdf_scenario.get_result().design_variable_names_to_values
+    assert mdf_scenario.get_result().design_variable_name_to_value
 
     with assert_exception(ImportError, snapshot):
         mdf_scenario.get_result("foo")

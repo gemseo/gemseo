@@ -81,7 +81,7 @@ class Correlations(BasePost[Correlations_Settings]):
         if not func_names:
             func_names = all_func_names
 
-        dict_ = optimization_metadata.output_names_to_constraint_names
+        dict_ = optimization_metadata.output_name_to_constraint_names
         func_names = [
             names
             for func_name in func_names

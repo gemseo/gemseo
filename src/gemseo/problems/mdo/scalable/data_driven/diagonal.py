@@ -738,7 +738,7 @@ class ScalableDiagonalApproximation:
 
         # Get the indices of the 1D interpolation functions
         # associated with the components of the new output.
-        outputs_to_original_ones = self.output_dependency[function_name]
+        output_to_original_ones = self.output_dependency[function_name]
 
         def scalable_function(input_data: Iterable[float]) -> NDArray[float]:
             """Compute the output vector.
@@ -751,7 +751,7 @@ class ScalableDiagonalApproximation:
             """
             result = zeros(output_size)
             for output_index in range(output_size):
-                func = interpolated_fun_1d[outputs_to_original_ones[output_index]]
+                func = interpolated_fun_1d[output_to_original_ones[output_index]]
                 coefficients = io_dependency[output_index]
                 result[output_index] = sum(
                     coefficient * func(input_value)
@@ -773,7 +773,7 @@ class ScalableDiagonalApproximation:
             """
             result = zeros([output_size, input_size])
             for output_index in range(output_size):
-                func = interpolated_dfun_1d[outputs_to_original_ones[output_index]]
+                func = interpolated_dfun_1d[output_to_original_ones[output_index]]
                 coefficients = io_dependency[output_index]
                 result[output_index, :] = array([
                     coefficient * func(input_value)

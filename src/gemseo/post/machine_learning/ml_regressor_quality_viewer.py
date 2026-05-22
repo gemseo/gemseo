@@ -500,12 +500,12 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         observed_dataset.add_input_group(
             data=self.__regressor.input_data,
             variable_names=self.__regressor.input_names,
-            variable_names_to_n_components=self.__regressor.sizes,
+            variable_name_to_n_components=self.__regressor.sizes,
         )
         observed_dataset.add_output_group(
             data=result[-1],
             variable_names=self.__regressor.output_names,
-            variable_names_to_n_components=self.__regressor.sizes,
+            variable_name_to_n_components=self.__regressor.sizes,
         )
         return observed_dataset
 

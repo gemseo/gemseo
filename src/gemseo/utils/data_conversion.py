@@ -67,7 +67,7 @@ def concatenate_dict_of_arrays_to_array(
 
 def split_array_to_dict_of_arrays(
     array: ndarray,
-    names_to_sizes: Mapping[str, int],
+    name_to_size: Mapping[str, int],
     *names: Iterable[str],
     check_consistency: bool = False,
 ) -> dict[str, ndarray | dict[str, ndarray]]:
@@ -75,7 +75,7 @@ def split_array_to_dict_of_arrays(
 
     Args:
         array: The NumPy array.
-        names_to_sizes: The sizes of the values related to names.
+        name_to_size: The sizes of the values related to names.
         *names: The names related to the NumPy array dimensions,
             starting from the last one;
             in the second example (see `result_2`),
@@ -93,7 +93,7 @@ def split_array_to_dict_of_arrays(
     """
     dimension = -len(names)
     if check_consistency:
-        variables_size = sum(names_to_sizes[name] for name in names[0])
+        variables_size = sum(name_to_size[name] for name in names[0])
         array_dimension_size = array.shape[dimension]
         if variables_size != array_dimension_size:
             msg = (
@@ -106,7 +106,7 @@ def split_array_to_dict_of_arrays(
     result = {}
     first_index = 0
     for name in names[0]:
-        size = names_to_sizes[name]
+        size = name_to_size[name]
         indices = [slice(None)] * array.ndim
         indices[dimension] = slice(first_index, first_index + size)
         if dimension == -1:
@@ -114,7 +114,7 @@ def split_array_to_dict_of_arrays(
         else:
             result[name] = split_array_to_dict_of_arrays(
                 array[tuple(indices)],
-                names_to_sizes,
+                name_to_size,
                 *names[1:],
                 check_consistency=check_consistency,
             )

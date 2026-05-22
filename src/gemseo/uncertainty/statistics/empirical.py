@@ -310,7 +310,7 @@ class EmpiricalStatistics(BaseStatistics):
         """
         plots = {}
         for name in self.names:
-            size = self.dataset.variable_names_to_n_components[name]
+            size = self.dataset.variable_name_to_n_components[name]
             for index, samples in enumerate(
                 self.dataset.get_view(variable_names=name).to_numpy().T
             ):
@@ -364,7 +364,7 @@ class EmpiricalStatistics(BaseStatistics):
         """
         plots = {}
         for name in self.names:
-            size = self.dataset.variable_names_to_n_components[name]
+            size = self.dataset.variable_name_to_n_components[name]
             for index, samples in enumerate(
                 self.dataset.get_view(variable_names=name).to_numpy().T
             ):

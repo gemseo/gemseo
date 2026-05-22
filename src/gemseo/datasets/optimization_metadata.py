@@ -56,7 +56,7 @@ class OptimizationMetadata:
     tolerances: ConstraintTolerances
     """The equality and inequality constraint tolerances."""
 
-    output_names_to_constraint_names: Mapping[str, list[str]]
+    output_name_to_constraint_names: Mapping[str, list[str]]
     """The mapping from the output names to the constraint names."""
 
     feasible_iterations: list[int]

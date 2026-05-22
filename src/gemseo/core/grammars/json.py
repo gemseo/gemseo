@@ -221,12 +221,12 @@ class JSONGrammar(BaseGrammar):
 
     def _update_from_types(  # noqa: D102
         self,
-        names_to_types: SimpleGrammarTypes,
+        name_to_type: SimpleGrammarTypes,
         merge: bool,
     ) -> None:
         try:
             properties: Properties = {}
-            for element_name, element_type in names_to_types.items():
+            for element_name, element_type in name_to_type.items():
                 if element_type is None:
                     sub_property = {}
                 else:
@@ -462,8 +462,8 @@ class JSONGrammar(BaseGrammar):
 
         return value
 
-    def _get_names_to_types(self) -> SimpleGrammarTypes:
-        names_to_types = {}
+    def _get_name_to_type(self) -> SimpleGrammarTypes:
+        name_to_type = {}
 
         for property_name, property_description in self.schema.get(
             "properties"
@@ -474,9 +474,9 @@ class JSONGrammar(BaseGrammar):
                 property_type = self.__JSON_TO_PYTHON_TYPES[
                     property_description["type"]
                 ]
-            names_to_types[property_name] = property_type
+            name_to_type[property_name] = property_type
 
-        return names_to_types
+        return name_to_type
 
     def __init_dependencies(self) -> None:
         """Resets the validator and schema dict."""

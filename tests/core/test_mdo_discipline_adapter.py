@@ -43,13 +43,13 @@ INPUT_VECTOR = array([1.0, 1.0])
 
 def create_disciplinary_function(
     default_input_data: GrammarProperties = READ_ONLY_EMPTY_DICT,
-    names_to_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+    name_to_size: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
 ) -> DisciplineAdapter:
     """Create a disciplinary function.
 
     Args:
         default_input_data: The default inputs passed at instantiation.
-        names_to_sizes: The input sizes passed at instantiation.
+        name_to_size: The input sizes passed at instantiation.
     """
 
     def my_func(x: float, y: float = 0.0) -> float:
@@ -67,7 +67,7 @@ def create_disciplinary_function(
         ["z"],
         default_input_data or {},  # Because READ_ONLY_EMPTY_DICT cannot be pickled.
         discipline,
-        names_to_sizes=names_to_sizes,
+        name_to_size=name_to_size,
     )
 
 
@@ -115,5 +115,5 @@ def test_default_inputs() -> None:
 
 def test_names_to_sizes() -> None:
     """Check that input sizes can be guessed from the function's input sizes."""
-    disciplinary_function = create_disciplinary_function(names_to_sizes={"x": 1})
+    disciplinary_function = create_disciplinary_function(name_to_size={"x": 1})
     check_func_and_jac_evaluation(disciplinary_function)

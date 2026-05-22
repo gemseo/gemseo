@@ -36,7 +36,7 @@ class BaseDiscipline(ABC):
     name: str
     """The name of the discipline."""
 
-    input_names_to_default_values: Mapping[str, RealArray]
+    input_name_to_default_value: Mapping[str, RealArray]
     """The default values of the input variables."""
 
     input_names: list[str]
@@ -45,5 +45,5 @@ class BaseDiscipline(ABC):
     output_names: list[str]
     """The names of the output variables."""
 
-    names_to_sizes: dict[str, int]
+    name_to_size: dict[str, int]
     """The sizes of the input and output variables."""

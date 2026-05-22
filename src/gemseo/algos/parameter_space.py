@@ -137,8 +137,9 @@ class ParameterSpace(DesignSpace):
     _BLANK = ""
     _PARAMETER_SPACE = "Parameter space"
 
-    __random_vector_names_to_settings: dict[str, tuple[BaseSettings, ...]]
-    """The settings of the marginal probability distributions of the random vectors."""
+    __random_vector_name_to_settings: dict[str, tuple[BaseSettings, ...]]
+    """The map from a random vector name
+    to the settings of its marginal distributions."""
 
     __copulas: list[tuple[tuple[str, ...], Any]]
     """The independent copulas defined by blocks of random variables."""
@@ -154,7 +155,7 @@ class ParameterSpace(DesignSpace):
         self.uncertain_variables = []
         self.distributions = {}
         self.distribution = None
-        self.__random_vector_names_to_settings = {}
+        self.__random_vector_name_to_settings = {}
         self.__copulas = []
         self.__distribution_library_name = ""
         self.__supports_dependency = True
@@ -204,7 +205,7 @@ class ParameterSpace(DesignSpace):
             return
 
         marginal_settings = []
-        for settings in self.__random_vector_names_to_settings.values():
+        for settings in self.__random_vector_name_to_settings.values():
             marginal_settings.extend(settings)
 
         marginal_class_name = marginal_settings[0].target_class_name
@@ -297,7 +298,7 @@ class ParameterSpace(DesignSpace):
             )
             raise ValueError(msg)
 
-        if len(self.__random_vector_names_to_settings) == 0:
+        if len(self.__random_vector_name_to_settings) == 0:
             marginal_class_name = settings[0].target_class_name
             marginal_class = DISTRIBUTION_FACTORY.get_class(marginal_class_name)
             joint_class = marginal_class.JOINT_DISTRIBUTION_CLASS
@@ -306,7 +307,7 @@ class ParameterSpace(DesignSpace):
 
         marginals = [DISTRIBUTION_FACTORY.create_from_settings(s) for s in settings]
         self.__distribution_library_name = next(iter(distribution_library_names))
-        self.__random_vector_names_to_settings[name] = settings
+        self.__random_vector_name_to_settings[name] = settings
 
         # Define the distribution of the random vector with a joint distribution.
         cls = marginals[0].JOINT_DISTRIBUTION_CLASS
@@ -387,7 +388,7 @@ class ParameterSpace(DesignSpace):
         """
         if name in self.uncertain_variables:
             del self.distributions[name]
-            del self.__random_vector_names_to_settings[name]
+            del self.__random_vector_name_to_settings[name]
             for copula in list(self.__copulas):
                 if name in copula[0]:
                     self.__copulas.remove(copula)
@@ -888,7 +889,7 @@ class ParameterSpace(DesignSpace):
         if current_name in self.uncertain_variables:
             position = self.uncertain_variables.index(current_name)
             self.uncertain_variables[position] = new_name
-            dict_ = self.__random_vector_names_to_settings
+            dict_ = self.__random_vector_name_to_settings
             dict_[new_name] = dict_.pop(current_name)
             dict_ = self.distributions
             dict_[new_name] = dict_.pop(current_name)
@@ -902,7 +903,7 @@ class ParameterSpace(DesignSpace):
             if name in space.uncertain_variables:
                 self.add_random_vector(
                     name,
-                    *space.__random_vector_names_to_settings[name],
+                    *space.__random_vector_name_to_settings[name],
                 )
                 self.set_current_variable(name, space._current_value[name])
             else:

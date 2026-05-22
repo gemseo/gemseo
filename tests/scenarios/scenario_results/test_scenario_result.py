@@ -37,8 +37,8 @@ def test_scenario_result(scenario) -> None:
     scenario.execute()
     scenario_result = ScenarioResult(scenario)
 
-    optimization_results = scenario_result.optimization_problems_to_results
-    optimum_design = scenario_result.design_variable_names_to_values
+    optimization_results = scenario_result.optimization_problem_to_result
+    optimum_design = scenario_result.design_variable_name_to_value
     first_optimization_result = optimization_results[
         scenario_result._MAIN_PROBLEM_LABEL
     ]
@@ -51,7 +51,7 @@ def test_scenario_result(scenario) -> None:
 def test_hdf_file() -> None:
     """Check ScenarioResult with an HDF file instead of a Scenario."""
     scenario_result = ScenarioResult(Path(__file__).parent / "scenario.hdf5")
-    assert scenario_result.design_variable_names_to_values == {"x": array([0.0])}
+    assert scenario_result.design_variable_name_to_value == {"x": array([0.0])}
 
 
 def test_plot(scenario) -> None:

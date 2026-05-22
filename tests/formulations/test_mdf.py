@@ -78,7 +78,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
         factory = OPTIMIZATION_LIBRARY_FACTORY
-        cls = factory.get_class(factory.algo_names_to_libraries[algo])
+        cls = factory.get_class(factory.algo_name_to_library[algo])
         settings = cls.ALGORITHM_INFOS[algo].settings_class(
             max_iter=100,
             ftol_rel=1e-10,

@@ -79,8 +79,8 @@ class BaseFullCache(BaseCache):
     Ensure safe multiprocessing and multithreading concurrent access to the cache.
     """
 
-    _hashes_to_indices: DictProxy[int, IntegerArray]
-    """The indices associated with the hashes."""
+    _hash_to_indices: DictProxy[int, IntegerArray]
+    """The map from a hash to the indices of the associated cache entries."""
 
     _max_index: Synchronized[int]
     """The maximum index of the data stored in the cache."""
@@ -96,7 +96,7 @@ class BaseFullCache(BaseCache):
         super().__init__(tolerance, name)
         self.__hashes_lock = get_multi_processing_manager().RLock()
         self._lock = get_multi_processing_manager().RLock()
-        self._hashes_to_indices = get_multi_processing_manager().dict()
+        self._hash_to_indices = get_multi_processing_manager().dict()
         self._max_index = cast("Synchronized[int]", Value("i", 0))
         self._last_accessed_index = cast("Synchronized[int]", Value("i", 0))
 
@@ -122,13 +122,13 @@ class BaseFullCache(BaseCache):
         data_hash = hash_data(input_data)
 
         # Check if there is an entry with this hash in the cache.
-        indices = self._hashes_to_indices.get(data_hash)
+        indices = self._hash_to_indices.get(data_hash)
 
         # If no, initialize a new entry.
         if indices is None:
             self._max_index.value += 1
             self._last_accessed_index.value = self._max_index.value
-            self._hashes_to_indices[data_hash] = array([self._max_index.value])
+            self._hash_to_indices[data_hash] = array([self._max_index.value])
             self._initialize_entry(self._max_index.value)
             return False
 
@@ -145,7 +145,7 @@ class BaseFullCache(BaseCache):
         # update the indices related to the `data_hash`.
         self._max_index.value += 1
         self._last_accessed_index.value = self._max_index.value
-        self._hashes_to_indices[data_hash] = append(indices, self._max_index.value)
+        self._hash_to_indices[data_hash] = append(indices, self._max_index.value)
         self._initialize_entry(self._max_index.value)
         return False
 
@@ -254,7 +254,7 @@ class BaseFullCache(BaseCache):
     @synchronized
     def clear(self) -> None:  # noqa: D102
         super().clear()
-        self._hashes_to_indices.clear()
+        self._hash_to_indices.clear()
         self._max_index.value = 0
         self._last_accessed_index.value = 0
 
@@ -318,9 +318,9 @@ class BaseFullCache(BaseCache):
         """
         # Only need synchronization if we are in a multiprocessing context.
         if parent_process() is None:
-            return self._hashes_to_indices.get(data_hash)
+            return self._hash_to_indices.get(data_hash)
         with self.__hashes_lock:
-            return self._hashes_to_indices.get(data_hash)
+            return self._hash_to_indices.get(data_hash)
 
     def _read_input_output_data(
         self,
@@ -359,7 +359,7 @@ class BaseFullCache(BaseCache):
 
             return self._read_input_output_data(indices, input_data)
 
-        for indices in self._hashes_to_indices.values():
+        for indices in self._hash_to_indices.values():
             for index in indices:
                 cached_input_data = self._read_data(index, self.Group.INPUTS)
                 if self.compare_dict_of_arrays(
@@ -374,7 +374,7 @@ class BaseFullCache(BaseCache):
     @property
     def _all_groups(self) -> list[int]:
         """Sorted the indices of the entries."""
-        return sorted(chain(*(v.tolist() for v in self._hashes_to_indices.values())))
+        return sorted(chain(*(v.tolist() for v in self._hash_to_indices.values())))
 
     @synchronized
     def get_all_entries(self) -> Iterator[CacheEntry]:  # noqa: D102
@@ -399,7 +399,7 @@ class BaseFullCache(BaseCache):
             output_names: The names of the outputs to export.
                 If empty, export all of them.
         """
-        if not self._hashes_to_indices:
+        if not self._hash_to_indices:
             msg = "An empty cache cannot be exported to XML file."
             raise ValueError(msg)
 
@@ -407,7 +407,7 @@ class BaseFullCache(BaseCache):
         shared_output_names: set[str] = set()
         all_input_data = []
         all_output_data = []
-        names_to_sizes = {}
+        name_to_size = {}
 
         for data in self.get_all_entries():
             input_data = data.inputs or {}
@@ -424,8 +424,8 @@ class BaseFullCache(BaseCache):
                 continue
 
             # Compute the size of the data
-            names_to_sizes.update({key: val.size for key, val in input_data.items()})
-            names_to_sizes.update({key: val.size for key, val in output_data.items()})
+            name_to_size.update({key: val.size for key, val in input_data.items()})
+            name_to_size.update({key: val.size for key, val in output_data.items()})
             current_input_names = set(input_data.keys())
             current_output_names = set(output_data.keys())
             shared_input_names = (
@@ -443,7 +443,7 @@ class BaseFullCache(BaseCache):
 
         variable_names = []
         for data_name in list(shared_input_names) + list(shared_output_names):
-            data_size = names_to_sizes[data_name]
+            data_size = name_to_size[data_name]
             if data_size == 1:
                 variable_names.append(data_name)
             else:

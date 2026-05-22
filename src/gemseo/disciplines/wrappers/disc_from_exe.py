@@ -259,8 +259,8 @@ class DiscFromExe(_BaseDiscFromExe):
         input_names = self._input_data.keys()
         self.io.input_grammar.update_from_names(input_names)
 
-        names_to_values, self._out_pos = parse_template(self._out_lines, False)
-        output_names = names_to_values.keys()
+        name_to_value, self._out_pos = parse_template(self._out_lines, False)
+        output_names = name_to_value.keys()
         self.io.output_grammar.update_from_names(output_names)
         LOGGER.debug(
             "Initialize discipline from template. Input grammar: %s", input_names
@@ -304,14 +304,14 @@ def parse_template(
     """Parse the input or output template.
 
     This function parses the input (or output) template.
-    It returns the tuple (names_to_values, names_to_positions), where:
+    It returns the tuple (name_to_value, name_to_positions), where:
 
-    - `names_to_values` is the `{name:value}` dict:
+    - `name_to_value` is the `{name:value}` dict:
 
        - name is the data name
        - value is the parsed input or output value in the template
 
-    - `names_to_positions` describes the template format {name:(start,end,line_number)}:
+    - `name_to_positions` describes the template format {name:(start,end,line_number)}:
 
        - `name` is the name of the input data
        - `start` is the index of the starting point in the input file template.
@@ -328,12 +328,12 @@ def parse_template(
     """
     regex = re.compile(INPUT_REGEX if grammar_is_input else OUTPUT_REGEX)
     # , re.MULTILINE
-    names_to_values = {}
-    names_to_positions = {}
+    name_to_value = {}
+    name_to_positions = {}
     for line_index, line in enumerate(template_lines):
         for match in regex.finditer(line):
             name, value = match.groups()[0].split("::")
-            names_to_values[name] = value
+            name_to_value[name] = value
             if grammar_is_input:
                 # If input mode: erase the template value.
                 start, end = match.start(), match.end()
@@ -342,9 +342,9 @@ def parse_template(
                 start = match.start()
                 end = start + len(value)
 
-            names_to_positions[name] = (start, end, line_index)
+            name_to_positions[name] = (start, end, line_index)
 
-    return names_to_values, names_to_positions
+    return name_to_value, name_to_positions
 
 
 def write_input_file(

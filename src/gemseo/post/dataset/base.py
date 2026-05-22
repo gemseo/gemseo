@@ -74,8 +74,8 @@ class BaseDatasetPlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     __figures: list[BasePlot]
     """The figures."""
 
-    __names_to_labels: Mapping[str, str]
-    """The variable names bound to the variable labels."""
+    __name_to_label: Mapping[str, str]
+    """The map from a variable name to its label."""
 
     __specific_data: tuple[Any, ...]
     """The data pre-processed specifically for this `DatasetPlot`."""
@@ -125,7 +125,7 @@ class BaseDatasetPlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__common_dataset = dataset
         self.__figure_file_paths = []
         self.__figures = []
-        self.__names_to_labels = {}
+        self.__name_to_label = {}
         self.__specific_data = self._create_specific_data_from_dataset()
 
     @property
@@ -222,7 +222,7 @@ class BaseDatasetPlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         new_columns = []
         for column in dataframe_columns:
             name = self._get_component_name(
-                column[1], column[2], self.dataset.variable_names_to_n_components
+                column[1], column[2], self.dataset.variable_name_to_n_components
             )
             new_columns.append(name)
 
@@ -230,19 +230,19 @@ class BaseDatasetPlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @staticmethod
     def _get_component_name(
-        name: str, component: int, names_to_sizes: Mapping[str, int]
+        name: str, component: int, name_to_size: Mapping[str, int]
     ) -> str:
         """Return the name of a variable component.
 
         Args:
             name: The name of the variable.
             component: The component of the variable.
-            names_to_sizes: The sizes of the variables.
+            name_to_size: The sizes of the variables.
 
         Returns:
             The name of the variable component.
         """
-        if names_to_sizes[name] == 1:
+        if name_to_size[name] == 1:
             return name
         return f"{name}({component})"
 

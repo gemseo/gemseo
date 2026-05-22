@@ -49,8 +49,8 @@ def test_bilevel_scenario_result_after_execution(scenario) -> None:
 
     # Use the BiLevelScenarioResult to retrieve the optimum (x*, z*).
     scenario_result = BiLevelScenarioResult(scenario)
-    optimization_results = scenario_result.optimization_problems_to_results
-    optimum_design = scenario_result.design_variable_names_to_values
+    optimization_results = scenario_result.optimization_problem_to_result
+    optimum_design = scenario_result.design_variable_name_to_value
     assert len(optimization_results) == 2
     label = BiLevelScenarioResult._MAIN_PROBLEM_LABEL
     assert optimization_results[label].x_opt == array([0.0])
@@ -73,7 +73,7 @@ def test_get_sub_optimization_result(scenario, snapshot) -> None:
 
     assert (
         scenario_result.get_sub_optimization_result(0)
-        == scenario_result.optimization_problems_to_results["sub_0"]
+        == scenario_result.optimization_problem_to_result["sub_0"]
     )
 
 
@@ -110,5 +110,5 @@ def test_no_databases():
     scenario.execute(CustomDOE_Settings(samples=array([[0.0], [1.0]])))
 
     result = BiLevelScenarioResult(scenario)
-    assert len(result.optimization_problems_to_results) == 1
+    assert len(result.optimization_problem_to_result) == 1
     assert result.get_sub_optimization_result(0) is None

@@ -275,12 +275,12 @@ def test_feasibility(default_scalable_problem) -> None:
 def test_add_random_variables() -> None:
     """Check add_random_variables."""
     problem = ScalableProblem()
-    assert "u_1" not in problem.scalable_disciplines[0].input_names_to_default_values
+    assert "u_1" not in problem.scalable_disciplines[0].input_name_to_default_value
     assert "u_1" not in problem.scalable_disciplines[0].input_names
 
     problem = ScalableProblem(add_random_variables=True)
     assert "u_1" in problem.scalable_disciplines[0].input_names
     assert_equal(
-        problem.scalable_disciplines[0].input_names_to_default_values["u_1"],
+        problem.scalable_disciplines[0].input_name_to_default_value["u_1"],
         array([0.0]),
     )

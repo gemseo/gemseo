@@ -51,16 +51,16 @@ def _get_ot_distribution_factories() -> dict[str, type[DistributionFactory]]:
     Returns:
         The mapping from the distributions to their factories.
     """
-    distribution_names_to_ot_factories = {}
+    distribution_name_to_ot_factory = {}
     for ot_factory in DistributionFactory.GetContinuousUniVariateFactories():
         if "SmoothedUniformFactory" not in str(ot_factory):
             factory_class_name = ot_factory.getImplementation().getClassName()
             distribution_name = factory_class_name.split("Factory")[0]
-            distribution_names_to_ot_factories[distribution_name] = getattr(
+            distribution_name_to_ot_factory[distribution_name] = getattr(
                 ots, factory_class_name
             )
 
-    return distribution_names_to_ot_factories
+    return distribution_name_to_ot_factory
 
 
 class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):

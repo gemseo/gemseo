@@ -67,7 +67,7 @@ class Lines(BaseDatasetPlot[Lines_Settings]):
             elif abscissa_variable in variable_names:
                 variable_names.remove(abscissa_variable)
 
-        y_names_to_values = {
+        y_name_to_value = {
             variable_name: self.dataset
             .get_view(variable_names=variable_name)
             .to_numpy()
@@ -75,7 +75,7 @@ class Lines(BaseDatasetPlot[Lines_Settings]):
             for variable_name in variable_names
         }
         n_lines = sum(
-            self.dataset.variable_names_to_n_components[name] for name in variable_names
+            self.dataset.variable_name_to_n_components[name] for name in variable_names
         )
         self.settings.n_items = n_lines
-        return x_values, y_names_to_values, abscissa_variable or "Index", n_lines
+        return x_values, y_name_to_value, abscissa_variable or "Index", n_lines

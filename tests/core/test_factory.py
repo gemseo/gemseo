@@ -61,9 +61,9 @@ def test_multiton_cache_clear() -> None:
     """Verify the clearing of the cache of the multiton."""
     # The cache is not empty because of the Multiton* classes declared in the module.
     MultitonFactory()
-    assert BaseABCMultiton._BaseMultiton__keys_to_class_instances
+    assert BaseABCMultiton._BaseMultiton__key_to_class_instance
     BaseFactory.clear_cache()
-    assert not BaseABCMultiton._BaseMultiton__keys_to_class_instances
+    assert not BaseABCMultiton._BaseMultiton__key_to_class_instance
 
 
 def test_print_configuration(reset_factory) -> None:

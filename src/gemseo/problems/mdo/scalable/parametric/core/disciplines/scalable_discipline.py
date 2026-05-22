@@ -115,19 +115,19 @@ class ScalableDiscipline(BaseDiscipline):
         """  # noqa: D205 D212
         self.name = f"{self.__class__.__name__}[{index}]"
         self.index = index
-        self.input_names_to_default_values = default_input_values
+        self.input_name_to_default_value = default_input_values
         self.coefficients = Coefficients(a_i, D_i0, D_ii, C_ij)
         self.__x_i_name = get_x_local_name(index)
         self.__u_i_name = get_u_local_name(index)
         self.__y_i_name = get_coupling_name(index)
         self.__output_size = a_i.size
-        self.input_names = sorted(self.input_names_to_default_values.keys())
+        self.input_names = sorted(self.input_name_to_default_value.keys())
         self.output_names = [self.__y_i_name]
-        self.names_to_sizes = {
+        self.name_to_size = {
             input_name: default_value.size
             for input_name, default_value in default_input_values.items()
         }
-        self.names_to_sizes.update({self.output_names[0]: len(D_ii)})
+        self.name_to_size.update({self.output_names[0]: len(D_ii)})
 
     def __call__(
         self,
@@ -157,16 +157,16 @@ class ScalableDiscipline(BaseDiscipline):
             Either the value of math:`y_i` or that of its derivatives.
         """
         if x_0 is None:
-            x_0 = self.input_names_to_default_values[SHARED_DESIGN_VARIABLE_NAME]
+            x_0 = self.input_name_to_default_value[SHARED_DESIGN_VARIABLE_NAME]
 
         if x_i is None:
-            x_i = self.input_names_to_default_values[self.__x_i_name]
+            x_i = self.input_name_to_default_value[self.__x_i_name]
 
         if u_i is None:
-            u_i = self.input_names_to_default_values.get(self.__u_i_name, 0.0)
+            u_i = self.input_name_to_default_value.get(self.__u_i_name, 0.0)
 
         y_j_ = {
-            name: self.input_names_to_default_values[name]
+            name: self.input_name_to_default_value[name]
             for name in self.coefficients.C_ij
         }
         y_j_.update(y_j)
@@ -176,12 +176,12 @@ class ScalableDiscipline(BaseDiscipline):
             for output_name in self.output_names:
                 jacobian[output_name] = {
                     input_name: zeros((
-                        self.names_to_sizes[output_name],
-                        self.names_to_sizes[input_name],
+                        self.name_to_size[output_name],
+                        self.name_to_size[input_name],
                     ))
                     for input_name in self.input_names
                 }
-            coupling_size = self.names_to_sizes[self.__y_i_name]
+            coupling_size = self.name_to_size[self.__y_i_name]
             jac = jacobian[self.__y_i_name]
             jac[SHARED_DESIGN_VARIABLE_NAME] = -self.coefficients.D_i0
             jac[self.__x_i_name] = -self.coefficients.D_ii

@@ -39,14 +39,14 @@ class Lines(MatplotlibPlot[Lines_Settings]):
         fig: Figure | None,
         ax: Axes | None,
         x_values: ArrayLike,
-        y_names_to_values: Mapping[str, ArrayLike],
+        y_name_to_value: Mapping[str, ArrayLike],
         default_xlabel: str,
         n_lines: int,
     ) -> list[Figure]:
         """
         Args:
             x_values: The values on the x-axis.
-            y_names_to_values: The variable names bound to the values on the y-axis.
+            y_name_to_value: The variable names bound to the values on the y-axis.
             default_xlabel: The default x-label.
             n_lines: The number of lines.
         """  # noqa: D205 D212 D415
@@ -56,7 +56,7 @@ class Lines(MatplotlibPlot[Lines_Settings]):
         settings.set_linestyles(settings.linestyle or "-")
         settings.set_markers(settings.marker or "o")
         line_index = -1
-        for y_name, y_values in y_names_to_values.items():
+        for y_name, y_values in y_name_to_value.items():
             for yi_name, yi_values in zip(
                 self._common_dataset.get_columns(y_name), y_values, strict=False
             ):

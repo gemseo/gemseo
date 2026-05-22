@@ -230,7 +230,7 @@ class AutoPyDiscipline(Discipline):
 
         # First, determine if both the inputs and outputs have type hints, otherwise
         # that would make things complicated for no good reason.
-        names_to_input_types = {}
+        name_to_input_type = {}
         raise_if_inconsistency = True
 
         if type_hints:
@@ -245,18 +245,18 @@ class AutoPyDiscipline(Discipline):
                 )
                 raise_if_inconsistency = False
             else:
-                names_to_input_types = {
+                name_to_input_type = {
                     name: self.__get_original_type(tp)
                     for name, tp in type_hints.items()
                 }
 
-        names_to_output_types = {}
+        name_to_output_type = {}
 
         if return_type is not None:
             # There could be only one return value of type tuple, or multiple return
             # values that would also be type hinted with tuple.
             if len(self.__output_names) == 1:
-                names_to_output_types = {
+                name_to_output_type = {
                     self.__output_names[0]: self.__get_original_type(return_type)
                 }
             else:
@@ -283,7 +283,7 @@ class AutoPyDiscipline(Discipline):
                         LOGGER.warning(msg, self.name, n_output_names, n_type_args)
                         raise_if_inconsistency = False
                     else:
-                        names_to_output_types = dict(
+                        name_to_output_type = dict(
                             zip(
                                 self.__output_names,
                                 map(self.__get_original_type, type_args),
@@ -299,14 +299,14 @@ class AutoPyDiscipline(Discipline):
             input_descriptions = {}
 
         # Second, create the grammar according to the pre-processing above.
-        if names_to_input_types and names_to_output_types:
-            self.io.input_grammar.update_from_types(names_to_input_types)
+        if name_to_input_type and name_to_output_type:
+            self.io.input_grammar.update_from_types(name_to_input_type)
             self.io.input_grammar.defaults = defaults
             self.io.input_grammar.descriptions.update(input_descriptions)
-            self.io.output_grammar.update_from_types(names_to_output_types)
+            self.io.output_grammar.update_from_types(name_to_output_type)
             return True
 
-        if raise_if_inconsistency and (names_to_input_types or names_to_output_types):
+        if raise_if_inconsistency and (name_to_input_type or name_to_output_type):
             msg = (
                 f"{self.__LOG_PREFIX} inconsistent type hints: "
                 "either both the signature arguments and the return values shall have "

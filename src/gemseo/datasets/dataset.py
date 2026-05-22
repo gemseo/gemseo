@@ -251,7 +251,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         return sorted(self.columns.droplevel(self.__COMPONENT_LEVEL).unique())
 
     @property
-    def variable_names_to_n_components(self) -> dict[str, int]:
+    def variable_name_to_n_components(self) -> dict[str, int]:
         """The names of the variables bound to their number of components."""
         return {
             variable_name: self.get_view(variable_names=variable_name).shape[1]
@@ -259,7 +259,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         }
 
     @property
-    def group_names_to_n_components(self) -> dict[str, int]:
+    def group_name_to_n_components(self) -> dict[str, int]:
         """The names of the groups bound to their number of components."""
         return {
             group_name: self.get_view(group_names=group_name).shape[1]
@@ -531,7 +531,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         group_name: str,
         data: DataType,
         variable_names: StrColumnType = (),
-        variable_names_to_n_components: dict[str, int] | None = None,
+        variable_name_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to a new group.
 
@@ -541,7 +541,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_names: The names of the variables.
                 If empty, use
                 [DEFAULT_VARIABLE_NAME][gemseo.datasets.dataset.Dataset.DEFAULT_VARIABLE_NAME].
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
                 If `None`,
@@ -562,9 +562,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             if len(variable_names) == 1:
                 variables.extend([(variable_names[0], i) for i in range(n_columns)])
             else:
-                variable_names_to_n_components = variable_names_to_n_components or {}
+                variable_name_to_n_components = variable_name_to_n_components or {}
                 for variable_name in atleast_1d(variable_names):
-                    n_components = variable_names_to_n_components.get(variable_name, 1)
+                    n_components = variable_name_to_n_components.get(variable_name, 1)
                     variables.extend([(variable_name, i) for i in range(n_components)])
         else:
             variables = [(self.DEFAULT_VARIABLE_NAME, i) for i in range(n_columns)]
@@ -781,8 +781,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         cls,
         data: DataType,
         variable_names: StrColumnType = (),
-        variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
-        variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_group_name: dict[str, str] = READ_ONLY_EMPTY_DICT,
     ) -> Dataset:
         """Create a dataset from a NumPy array.
 
@@ -790,11 +790,11 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             data: The data to be stored, with the shape (n_entries, n_components).
             variable_names: The names of the variables.
                 If empty, use default names.
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If empty,
                 assume that all the variables have a single component.
                 Ignored if `variable_names` is empty.
-            variable_names_to_group_names: The groups of the variables.
+            variable_name_to_group_name: The groups of the variables.
                 If empty,
                 use
                 [DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]
@@ -805,8 +805,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             A dataset built from the NumPy array.
         """
         if variable_names:
-            variable_to_group = variable_names_to_group_names or {}
-            variable_to_n_component = variable_names_to_n_components or {}
+            variable_to_group = variable_name_to_group_name or {}
+            variable_to_n_component = variable_name_to_n_components or {}
         else:
             _, n_total_components = data.shape
             variable_names = [
@@ -836,8 +836,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         cls,
         file_path: Path | str,
         variable_names: Iterable[str] = (),
-        variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
-        variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_group_name: dict[str, str] = READ_ONLY_EMPTY_DICT,
         delimiter: str = ",",
         header: bool = True,
     ) -> Dataset:
@@ -856,10 +856,10 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
                 If empty and `header` is `False`,
                 use default names depending on the different groups.
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If empty,
                 assume that all the variables have a single component.
-            variable_names_to_group_names: The groups of the variables.
+            variable_name_to_group_name: The groups of the variables.
                 If empty,
                 use
                 [DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]
@@ -893,8 +893,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         dataset = cls.from_array(
             data.to_numpy(),
             variable_names,
-            variable_names_to_n_components,
-            variable_names_to_group_names,
+            variable_name_to_n_components,
+            variable_name_to_group_name,
         )
 
         return dataset.astype({
@@ -1129,10 +1129,10 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                     group_name,
                     pretty_str(variable_names_and_sizes, use_and=True),
                 )
-        total = sum(self.group_names_to_n_components.values())
+        total = sum(self.group_name_to_n_components.values())
         string.dedent()
         string.add("Number of dimensions (total = {}) by group:", total)
         string.indent()
-        for group_name, group_size in sorted(self.group_names_to_n_components.items()):
+        for group_name, group_size in sorted(self.group_name_to_n_components.items()):
             string.add("{}: {}", group_name, group_size)
         return str(string)

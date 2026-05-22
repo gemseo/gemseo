@@ -53,19 +53,19 @@ class SimpleGrammar(BaseGrammar):
 
     DATA_CONVERTER_CLASS: ClassVar[str] = "SimpleGrammarDataConverter"
 
-    __names_to_types: dict[str, type | None]
-    """The mapping from element names to element types."""
+    __name_to_type: dict[str, type | None]
+    """The map from an element name to its type."""
 
     def __init__(
         self,
         name: str,
-        names_to_types: SimpleGrammarTypes | None = None,
+        name_to_type: SimpleGrammarTypes | None = None,
         required_names: Iterable[str] | None = None,
         **kwargs: Any,
     ) -> None:
         """
         Args:
-            names_to_types: The mapping defining the data names as keys,
+            name_to_type: The mapping defining the data names as keys,
                 and data types as values.
                 If `None`, the grammar is empty.
             required_names: The names of the required elements.
@@ -73,29 +73,29 @@ class SimpleGrammar(BaseGrammar):
             **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
         super().__init__(name)
-        if names_to_types:
-            self.update_from_types(names_to_types)
+        if name_to_type:
+            self.update_from_types(name_to_type)
         if required_names is not None:
             self._required_names.clear()
             self._required_names |= set(required_names)
 
     def __getitem__(self, name: str) -> type | None:
-        return self.__names_to_types[name]
+        return self.__name_to_type[name]
 
     def __len__(self) -> int:
-        return len(self.__names_to_types)
+        return len(self.__name_to_type)
 
     def __iter__(self) -> Iterator[str]:
-        return iter(self.__names_to_types)
+        return iter(self.__name_to_type)
 
     def _delitem(self, name: str) -> None:  # noqa:D102
-        del self.__names_to_types[name]
+        del self.__name_to_type[name]
 
     def _copy(self, grammar: Self) -> None:  # noqa:D102
-        grammar.__names_to_types = deepcopy(self.__names_to_types)
+        grammar.__name_to_type = deepcopy(self.__name_to_type)
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa: D102
-        self.__names_to_types[new_name] = self.__names_to_types.pop(current_name)
+        self.__name_to_type[new_name] = self.__name_to_type.pop(current_name)
 
     def _update(  # noqa: D102
         self,
@@ -128,7 +128,7 @@ class SimpleGrammar(BaseGrammar):
 
     def _update_from_types(
         self,
-        names_to_types: SimpleGrammarTypes,
+        name_to_type: SimpleGrammarTypes,
         merge: bool,
     ) -> None:
         """
@@ -138,7 +138,7 @@ class SimpleGrammar(BaseGrammar):
                 for [SimpleGrammar][gemseo.core.grammars.simple.SimpleGrammar].
         """  # noqa: D205, D212, D415
         self.__check_merge(merge)
-        self.__update(names_to_types)
+        self.__update(name_to_type)
 
     @classmethod
     def __check_merge(cls, merge: bool) -> None:
@@ -183,12 +183,12 @@ class SimpleGrammar(BaseGrammar):
 
             # Generalize dict to support DisciplineData objects.
             if element_type is dict:
-                self.__names_to_types[element_name] = collections.abc.Mapping
+                self.__name_to_type[element_name] = collections.abc.Mapping
             else:
-                self.__names_to_types[element_name] = element_type
+                self.__name_to_type[element_name] = element_type
 
     def _clear(self) -> None:  # noqa: D102
-        self.__names_to_types = {}
+        self.__name_to_type = {}
 
     def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
         repr_.add(f"Type: {properties}")
@@ -199,7 +199,7 @@ class SimpleGrammar(BaseGrammar):
         error_message: MultiLineString,
     ) -> bool:
         data_is_valid = True
-        for element_name, element_type in self.__names_to_types.items():
+        for element_name, element_type in self.__name_to_type.items():
             if (
                 element_name in data
                 and element_type is not None
@@ -216,13 +216,13 @@ class SimpleGrammar(BaseGrammar):
         self,
         names: Iterable[str],
     ) -> None:
-        for element_name in self.__names_to_types.keys() - names:
-            del self.__names_to_types[element_name]
+        for element_name in self.__name_to_type.keys() - names:
+            del self.__name_to_type[element_name]
 
     def to_simple_grammar(self) -> Self:  # noqa: D102
         return self
 
-    def _get_names_to_types(self) -> SimpleGrammarTypes:  # pragma: no cover
+    def _get_name_to_type(self) -> SimpleGrammarTypes:  # pragma: no cover
         # This method is never called but is abstract.
         return self
 
@@ -239,6 +239,6 @@ class SimpleGrammar(BaseGrammar):
 
     def _check_name(self, *names: str) -> None:
         for name in names:
-            if name not in self.__names_to_types:
+            if name not in self.__name_to_type:
                 msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
                 raise KeyError(msg)

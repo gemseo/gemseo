@@ -288,13 +288,13 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
     def read_hashes(
         self,
-        hashes_to_indices: DictProxy[int, IntegerArray],
+        hash_to_indices: DictProxy[int, IntegerArray],
         hdf_node_path: str,
     ) -> int:
         """Read the hashes in the HDF file.
 
         Args:
-            hashes_to_indices: The indices associated to the hashes.
+            hash_to_indices: The indices associated to the hashes.
             hdf_node_path: The name of the HDF group where the entries are stored,
                 possibly passed as a path `root_name/.../group_name/.../node_name`.
 
@@ -317,12 +317,12 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             for index, entry in root.items():
                 index = int(index)
                 hash_ = int(array(entry[self.HASH_TAG])[0])
-                indices = hashes_to_indices.get(hash_)
+                indices = hash_to_indices.get(hash_)
 
                 if indices is None:
-                    hashes_to_indices[hash_] = array([index])
+                    hash_to_indices[hash_] = array([index])
                 else:
-                    hashes_to_indices[hash_] = append(indices, array([index]))
+                    hash_to_indices[hash_] = append(indices, array([index]))
 
                 max_index = max(max_index, index)
 

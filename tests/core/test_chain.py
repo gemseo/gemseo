@@ -248,7 +248,7 @@ def test_virtual_exe_chain(two_virtual_disciplines) -> None:
 def test_jacobian_of_chain_including_splitter() -> None:
     """Test the jacobian of an DisciplineChain including a splitter."""
     splitter_disc = Splitter(
-        input_name="x", output_names_to_input_indices={"x_1": [0], "x_2": [1]}
+        input_name="x", output_name_to_input_indices={"x_1": [0], "x_2": [1]}
     )
     analytic_disc = AnalyticDiscipline({"y": "x_1+x_2"})
     chain = DisciplineChain([splitter_disc, analytic_disc])

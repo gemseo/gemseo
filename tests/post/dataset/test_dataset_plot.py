@@ -57,7 +57,7 @@ def test_empty_dataset() -> None:
 
 def test_get_label() -> None:
     dataset = Dataset.from_array(
-        array([[1, 2]]), variable_names=["x"], variable_names_to_n_components={"x": 2}
+        array([[1, 2]]), variable_names=["x"], variable_name_to_n_components={"x": 2}
     )
     post = RadarChart(dataset)
     label, varname = post._get_label(("foo", "x", 0))
@@ -73,7 +73,7 @@ def test_get_label() -> None:
 def dataset() -> Dataset:
     """A very simple dataset with a single value: x=[1]."""
     return Dataset.from_array(
-        array([[1]]), variable_names=["x"], variable_names_to_n_components={"x": 1}
+        array([[1]]), variable_names=["x"], variable_name_to_n_components={"x": 1}
     )
 
 

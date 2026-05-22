@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 def create_converters() -> list[BaseDataConverter]:
     """Create all the converter types."""
-    names_to_types = {
+    name_to_type = {
         "a_bool": bool,
         "a_float": float,
         "a_int": int,
@@ -49,7 +49,7 @@ def create_converters() -> list[BaseDataConverter]:
 
     for cls in (SimpleGrammar, JSONGrammar, PydanticGrammar):
         grammar = cls("g")
-        grammar.update_from_types(names_to_types)
+        grammar.update_from_types(name_to_type)
         converters.append(grammar.data_converter)
 
     return converters
@@ -216,22 +216,22 @@ ARRAY = array([0.0, 0, 1.0j, 0.0, 0.0, "0"], dtype=object)
 
 def test_compute_name_to_slices(converter) -> None:
     """Verify compute_name_to_slices."""
-    # Without names_to_sizes.
-    names_to_slices, end = converter.compute_names_to_slices(DATA.keys(), DATA)
+    # Without name_to_size.
+    name_to_slice, end = converter.compute_name_to_slice(DATA.keys(), DATA)
 
-    assert names_to_slices == NAMES_TO_SLICES
+    assert name_to_slice == NAMES_TO_SLICES
     assert end == 6
 
-    # Without names_to_sizes.
-    names_to_sizes = {
+    # Without name_to_size.
+    name_to_size = {
         "a_int": 1,
         "a_ndarray": 2,
     }
-    names_to_slices, end = converter.compute_names_to_slices(
-        DATA.keys(), DATA, names_to_sizes=names_to_sizes
+    name_to_slice, end = converter.compute_name_to_slice(
+        DATA.keys(), DATA, name_to_size=name_to_size
     )
 
-    assert names_to_slices == NAMES_TO_SLICES
+    assert name_to_slice == NAMES_TO_SLICES
     assert end == 6
 
 
@@ -245,9 +245,9 @@ def test_compute_name_to_sizes(converter) -> None:
         "a_str": 1,
     }
 
-    names_to_sizes = converter.compute_names_to_sizes(DATA.keys(), DATA)
+    name_to_size = converter.compute_name_to_size(DATA.keys(), DATA)
 
-    assert names_to_sizes == expected
+    assert name_to_size == expected
 
 
 def test_convert_array_to_data(converter) -> None:

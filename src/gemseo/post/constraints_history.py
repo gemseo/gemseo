@@ -79,7 +79,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
         line_style = settings.line_style
         add_points = settings.add_points
         all_constraint_names = (
-            self._optimization_metadata.output_names_to_constraint_names.keys()
+            self._optimization_metadata.output_name_to_constraint_names.keys()
         )
         for constraint_name in constraint_names:
             if constraint_name not in all_constraint_names:
@@ -93,7 +93,7 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
             item
             for variable in constraint_names
             for item in (
-                self._optimization_metadata.output_names_to_constraint_names[variable]
+                self._optimization_metadata.output_name_to_constraint_names[variable]
             )
         ]
 

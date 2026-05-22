@@ -176,7 +176,7 @@ class BasePlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
                 repr_variable(
                     name,
                     dataset_column[2],
-                    self._common_dataset.variable_names_to_n_components[name],
+                    self._common_dataset.variable_name_to_n_components[name],
                 )
             )
 

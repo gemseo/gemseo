@@ -96,7 +96,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     Used when `use_hmat` is `True`.
     """
 
-    __COVARIANCE_MODELS_TO_CLASSES: Final[
+    __COVARIANCE_MODEL_TO_CLASS: Final[
         dict[CovarianceModel, tuple[CovarianceModelImplementation, dict[str, float]]]
     ] = {
         CovarianceModel.MATERN12: (MaternModel, {"setNu": 0.5}),
@@ -107,7 +107,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         CovarianceModel.SQUARED_EXPONENTIAL: (SquaredExponential, {}),
     }
 
-    __TRENDS_TO_FACTORIES: Final[dict[Trend, type]] = {
+    __TREND_TO_FACTORY: Final[dict[Trend, type]] = {
         Trend.CONSTANT: ConstantBasisFactory,
         Trend.LINEAR: LinearBasisFactory,
         Trend.QUADRATIC: QuadraticBasisFactory,
@@ -198,7 +198,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             return covariance_model(self.input_dimension)
 
         if isinstance(covariance_model, CovarianceModel):
-            cls, options = self.__COVARIANCE_MODELS_TO_CLASSES[covariance_model]
+            cls, options = self.__COVARIANCE_MODEL_TO_CLASS[covariance_model]
             covariance_model = cls(self.input_dimension)
             for k, v in options.items():
                 getattr(covariance_model, k)(v)
@@ -235,7 +235,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             output_data,
             self.__covariance_model,
             create_trend_basis(
-                self.__TRENDS_TO_FACTORIES[self.__trend],
+                self.__TREND_TO_FACTORY[self.__trend],
                 input_data.shape[1],
                 output_data.shape[1],
             ),

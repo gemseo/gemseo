@@ -542,7 +542,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
             Returns:
                 The driver library associated with the algorithm.
             """
-            return algo_factory.get_class(algo_factory.algo_names_to_libraries[algo])
+            return algo_factory.get_class(algo_factory.algo_name_to_library[algo])
 
         return get_class
 

@@ -32,9 +32,9 @@ class GradientApproximatorFactory(BaseFactory[BaseGradientApproximator]):
     _PACKAGE_NAMES = ("gemseo.utils.derivatives",)
 
     @property
-    def _names_to_class_info(self) -> dict[str, _ClassInfo[BaseGradientApproximator]]:
-        names_to_class_info = super()._names_to_class_info
-        for class_info in tuple(names_to_class_info.values()):
+    def _name_to_class_info(self) -> dict[str, _ClassInfo[BaseGradientApproximator]]:
+        name_to_class_info = super()._name_to_class_info
+        for class_info in tuple(name_to_class_info.values()):
             approximation_mode = class_info.class_._APPROXIMATION_MODE
-            names_to_class_info[approximation_mode] = class_info
-        return names_to_class_info
+            name_to_class_info[approximation_mode] = class_info
+        return name_to_class_info

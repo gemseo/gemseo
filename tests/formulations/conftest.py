@@ -107,7 +107,7 @@ def build_and_run_idf_scenario_with_constraints(
 
     scenario.formulation.problem.objective *= 0.001
     factory = OPTIMIZATION_LIBRARY_FACTORY
-    cls = factory.get_class(factory.algo_names_to_libraries[algo])
+    cls = factory.get_class(factory.algo_name_to_library[algo])
     settings = cls.ALGORITHM_INFOS[algo].settings_class(
         max_iter=max_iter, eq_tolerance=eq_tolerance, ineq_tolerance=ineq_tolerance
     )

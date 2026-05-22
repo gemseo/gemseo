@@ -191,7 +191,7 @@ def test_remove_variable() -> None:
     assert space.variable_names == ["x1", "y2"]
     assert space.uncertain_variables == ["y2"]
     assert "y1" not in space.distributions
-    assert "y1" not in space._ParameterSpace__random_vector_names_to_settings
+    assert "y1" not in space._ParameterSpace__random_vector_name_to_settings
 
 
 def test_remove_variable_if_copula() -> None:
@@ -390,14 +390,14 @@ def io_dataset() -> IODataset:
     outputs = arange(20).reshape(10, 2)
     data = concatenate([inputs, outputs], axis=1)
     variables = ["in_1", "in_2", "out_1"]
-    variable_names_to_n_components = {"in_1": 2, "in_2": 3, "out_1": 2}
-    variable_names_to_group_names = {
+    variable_name_to_n_components = {"in_1": 2, "in_2": 3, "out_1": 2}
+    variable_name_to_group_name = {
         "in_1": "inputs",
         "in_2": "inputs",
         "out_1": "outputs",
     }
     return IODataset.from_array(
-        data, variables, variable_names_to_n_components, variable_names_to_group_names
+        data, variables, variable_name_to_n_components, variable_name_to_group_name
     )
 
 

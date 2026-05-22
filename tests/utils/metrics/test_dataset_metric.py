@@ -28,7 +28,7 @@ from gemseo.utils.testing.helpers import assert_exception
 dataset_duplicate_variable_name = Dataset.from_array(
     array([[1, 5, 10], [2, 6, 11]]),
     variable_names=["a", "d", "b"],
-    variable_names_to_group_names={"a": "outputs", "d": "inputs", "b": "outputs"},
+    variable_name_to_group_name={"a": "outputs", "d": "inputs", "b": "outputs"},
 )
 dataset_duplicate_variable_name.add_variable("d", data=[10, 11], group_name="outputs")
 
@@ -51,7 +51,7 @@ def test_duplicate_variable_name(snapshot):
             Dataset.from_array(
                 array([[1, 5, 10, 15], [2, 6, 11, 16]]),
                 variable_names=["a", "b", "c"],
-                variable_names_to_n_components={"a": 1, "b": 1, "c": 2},
+                variable_name_to_n_components={"a": 1, "b": 1, "c": 2},
             ),
             (),
         ),
@@ -114,8 +114,8 @@ def test_sub_selection(
     dataset = Dataset.from_array(
         array([[1, 5, 10, 15], [2, 6, 11, 16]]),
         variable_names=["a", "b", "c"],
-        variable_names_to_group_names={"a": "inputs", "b": "inputs", "c": "outputs"},
-        variable_names_to_n_components={"a": 1, "b": 1, "c": 2},
+        variable_name_to_group_name={"a": "inputs", "b": "inputs", "c": "outputs"},
+        variable_name_to_n_components={"a": 1, "b": 1, "c": 2},
     )
     dm = DatasetMetric(
         SquaredErrorMetric(),

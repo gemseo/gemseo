@@ -324,27 +324,27 @@ class MDOScenarioAdapter(ProcessDiscipline):
     def _add_output_multipliers(self) -> None:
         """Add the Lagrange multipliers of the scenario optimal solution as outputs."""
         # Fill a dictionary with data of typical shapes
-        names_to_values = {}
+        name_to_value = {}
         problem = self.scenario.formulation.problem
         # bound-constraints multipliers
         current_value = problem.design_space.get_current_value(as_dict=True)
-        names_to_values.update({
+        name_to_value.update({
             self.get_bnd_mult_name(variable_name, False): variable_value
             for variable_name, variable_value in current_value.items()
         })
-        names_to_values.update({
+        name_to_value.update({
             self.get_bnd_mult_name(variable_name, True): variable_value
             for variable_name, variable_value in current_value.items()
         })
         # equality- and inequality-constraints multipliers
-        names_to_values.update({
+        name_to_value.update({
             self.get_cstr_mult_name(constraint_name): zeros(1)
             for constraint_name in problem.constraints.get_names()
         })
 
         # Update the output grammar
         multipliers_grammar = self.io.output_grammar.__class__("multipliers")
-        multipliers_grammar.update_from_data(names_to_values)
+        multipliers_grammar.update_from_data(name_to_value)
         self.io.output_grammar.update(multipliers_grammar)
 
     def _init_shared_memory_attrs_after(self) -> None:

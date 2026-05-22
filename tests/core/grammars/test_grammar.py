@@ -118,7 +118,7 @@ def test_getitem_error(grammar, snapshot):
 
 
 parametrized_names_to_types = pytest.mark.parametrize(
-    "names_to_types",
+    "name_to_type",
     [
         {},
         {"name": str},
@@ -127,58 +127,58 @@ parametrized_names_to_types = pytest.mark.parametrize(
 
 
 @parametrized_names_to_types
-def test_len(grammar, names_to_types) -> None:
+def test_len(grammar, name_to_type) -> None:
     """Verify __len__."""
-    grammar.update_from_types(names_to_types)
-    assert len(grammar) == len(names_to_types)
+    grammar.update_from_types(name_to_type)
+    assert len(grammar) == len(name_to_type)
 
 
 @parametrized_names_to_types
-def test_iter(grammar, names_to_types) -> None:
+def test_iter(grammar, name_to_type) -> None:
     """Verify __iter__."""
-    grammar.update_from_types(names_to_types)
-    assert list(iter(grammar)) == list(names_to_types)
+    grammar.update_from_types(name_to_type)
+    assert list(iter(grammar)) == list(name_to_type)
 
 
 @parametrized_names_to_types
-def test_names(grammar, names_to_types) -> None:
+def test_names(grammar, name_to_type) -> None:
     """Verify names getter."""
-    grammar.update_from_types(names_to_types)
-    assert grammar.names == names_to_types.keys()
+    grammar.update_from_types(name_to_type)
+    assert grammar.names == name_to_type.keys()
 
 
 @parametrized_names_to_types
-def test_names_without_namespace(grammar, names_to_types) -> None:
+def test_names_without_namespace(grammar, name_to_type) -> None:
     """Verify names_without_namespace."""
-    grammar.update_from_types(names_to_types)
-    assert tuple(grammar.names_without_namespace) == tuple(names_to_types.keys())
+    grammar.update_from_types(name_to_type)
+    assert tuple(grammar.names_without_namespace) == tuple(name_to_type.keys())
 
-    if names_to_types:
+    if name_to_type:
         grammar.add_namespace("name", "n")
-        assert tuple(grammar.names_without_namespace) == tuple(names_to_types.keys())
+        assert tuple(grammar.names_without_namespace) == tuple(name_to_type.keys())
 
 
-def create_defaults(names_to_types: Mapping[str, type]) -> dict[str, Any]:
+def create_defaults(name_to_type: Mapping[str, type]) -> dict[str, Any]:
     """Return default data from names to types.
 
     Args:
-        names_to_types: The mapping from names to types.
+        name_to_type: The mapping from names to types.
 
     Returns:
         The default data.
     """
     defaults = {}
-    for name, type_ in names_to_types.items():
+    for name, type_ in name_to_type.items():
         defaults[name] = type_(0)
     return defaults
 
 
 @parametrized_names_to_types
-def test_clear(grammar, names_to_types) -> None:
+def test_clear(grammar, name_to_type) -> None:
     """Verify clear."""
-    grammar.update_from_types(names_to_types)
-    grammar.defaults.update(create_defaults(names_to_types))
-    grammar.descriptions.update(dict.fromkeys(names_to_types, "A description."))
+    grammar.update_from_types(name_to_type)
+    grammar.defaults.update(create_defaults(name_to_type))
+    grammar.descriptions.update(dict.fromkeys(name_to_type, "A description."))
     grammar.clear()
     assert not grammar
     assert not grammar.required_names
@@ -197,11 +197,11 @@ NAMES = [
 @pytest.mark.parametrize("required_names", [None, *NAMES])
 def test_restrict_to(grammar, names, required_names) -> None:
     """Verify restrict_to."""
-    names_to_types = {"name1": int, "name2": int}
-    grammar.update_from_names(names_to_types)
-    defaults = create_defaults(names_to_types)
+    name_to_type = {"name1": int, "name2": int}
+    grammar.update_from_names(name_to_type)
+    defaults = create_defaults(name_to_type)
     grammar.defaults.update(defaults)
-    grammar.descriptions.update(dict.fromkeys(names_to_types, "A description"))
+    grammar.descriptions.update(dict.fromkeys(name_to_type, "A description"))
     g_required_names_before = set(grammar.required_names)
 
     grammar.restrict_to(names)
@@ -225,22 +225,22 @@ def test_restrict_to_error(grammar, snapshot) -> None:
 
 def test_convert_to_simple_grammar(grammar) -> None:
     """Verify conversion to simple grammar."""
-    names_to_types = {"name1": int, "name2": int}
-    grammar.update_from_types(names_to_types)
+    name_to_type = {"name1": int, "name2": int}
+    grammar.update_from_types(name_to_type)
     simple_grammar = grammar.to_simple_grammar()
     assert set(grammar) == set(simple_grammar)
     assert grammar.required_names == simple_grammar.required_names
     assert grammar.defaults == simple_grammar.defaults
     assert grammar.descriptions == simple_grammar.descriptions
     assert isinstance(simple_grammar, SimpleGrammar)
-    assert simple_grammar.items() == names_to_types.items()
+    assert simple_grammar.items() == name_to_type.items()
 
 
 def test_required_names(grammar) -> None:
     """Verify required_names."""
-    names_to_types = {"name1": int, "name2": int}
-    grammar.update_from_types(names_to_types)
-    assert grammar.required_names == set(names_to_types.keys())
+    name_to_type = {"name1": int, "name2": int}
+    grammar.update_from_types(name_to_type)
+    assert grammar.required_names == set(name_to_type.keys())
 
 
 def test_rename(grammar) -> None:
@@ -303,8 +303,8 @@ def test_validate_empty_grammar(grammar) -> None:
 
 def test_repr(grammar) -> None:
     """Verify __repr__."""
-    names_to_types = {"name1": int, "name2": str}
-    grammar.update_from_types(names_to_types)
+    name_to_type = {"name1": int, "name2": str}
+    grammar.update_from_types(name_to_type)
     grammar.required_names.remove("name2")
     grammar.defaults["name2"] = "foo"
     grammar.descriptions["name2"] = "A description."
@@ -466,10 +466,10 @@ def prepare_grammar(grammar: BaseGrammar) -> None:
     grammar_type = grammar.__class__
 
     if grammar_type in {SimpleGrammar, SimplerGrammar}:
-        grammar._SimpleGrammar__names_to_types["required_name1"] = int
-        grammar._SimpleGrammar__names_to_types["optional_name1"] = int
-        grammar._SimpleGrammar__names_to_types["required_name2"] = int
-        grammar._SimpleGrammar__names_to_types["optional_name2"] = int
+        grammar._SimpleGrammar__name_to_type["required_name1"] = int
+        grammar._SimpleGrammar__name_to_type["optional_name1"] = int
+        grammar._SimpleGrammar__name_to_type["required_name2"] = int
+        grammar._SimpleGrammar__name_to_type["optional_name2"] = int
     elif grammar_type is PydanticGrammar:
         grammar._PydanticGrammar__model.model_fields["required_name1"] = FieldInfo(
             annotation=int

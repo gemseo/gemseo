@@ -80,7 +80,7 @@ class Robustness(BasePost[Robustness_Settings]):
             ):
                 func_name = optimization_metadata.objective_name
 
-            dim = self._dataset.variable_names_to_n_components[func]
+            dim = self._dataset.variable_name_to_n_components[func]
             at_most_niter = int(1.5 * n_x)
             for func_index in range(dim):
                 robustness.compute_approximation(

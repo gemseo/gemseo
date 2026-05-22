@@ -165,7 +165,7 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
     @property
     def original_sizes(self) -> Mapping[str, int]:
         """The original sizes of variables."""
-        return self.data.variable_names_to_n_components
+        return self.data.variable_name_to_n_components
 
     @property
     def output_names(self) -> list[str]:

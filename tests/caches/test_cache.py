@@ -210,11 +210,11 @@ def test_collision(tmp_wd) -> None:
 
     # Fake a collision of hashes
     c1.cache_outputs(input_data, output_data)
-    hash_0 = next(iter(c1._hashes_to_indices.keys()))
-    groups = c1._hashes_to_indices.pop(hash_0)
+    hash_0 = next(iter(c1._hash_to_indices.keys()))
+    groups = c1._hash_to_indices.pop(hash_0)
     input_data2 = {"i": 2 * arange(3)}
     hash_1 = hash_data(input_data2)
-    c1._hashes_to_indices[hash_1] = groups
+    c1._hash_to_indices[hash_1] = groups
     output_data2 = {"o": 2.0 * arange(3)}
     c1.cache_outputs(input_data2, output_data2)
 
@@ -667,9 +667,9 @@ def test_export_to_dataset_and_entries(
     ],
 )
 def test_names_to_sizes(simple_cache, data) -> None:
-    """Verify the `names_to_sizes` attribute."""
+    """Verify the `name_to_size` attribute."""
     simple_cache.cache_outputs({"index": 1}, {"o": data})
-    assert simple_cache.names_to_sizes == {"index": 1, "o": 2}
+    assert simple_cache.name_to_size == {"index": 1, "o": 2}
 
 
 def _compare_dict_of_arrays(*args, **kwargs):

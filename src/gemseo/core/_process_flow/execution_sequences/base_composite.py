@@ -94,10 +94,10 @@ class BaseCompositeExecSequence(BaseExecutionSequence):
         Returns:
             The statuses mapping atom uuid to status.
         """
-        uuids_to_statuses = {}
+        uuid_to_status = {}
         for sequence in self.sequences:
-            uuids_to_statuses.update(sequence.get_statuses())
-        return uuids_to_statuses
+            uuid_to_status.update(sequence.get_statuses())
+        return uuid_to_status
 
     def update_child_status(self, child: BaseExecutionSequence) -> None:
         """Manage status change of child execution sequences.

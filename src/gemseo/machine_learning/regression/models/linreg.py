@@ -214,7 +214,7 @@ class LinearRegressor(BaseRegressor):
             raise ValueError(msg)
         intercept = split_array_to_dict_of_arrays(
             intercept,
-            self.learning_set.variable_names_to_n_components,
+            self.learning_set.variable_name_to_n_components,
             self.output_names,
         )
         return {key: list(val) for key, val in intercept.items()}
@@ -231,7 +231,7 @@ class LinearRegressor(BaseRegressor):
         Returns:
             The converted data.
         """
-        varsizes = self.learning_set.variable_names_to_n_components
+        varsizes = self.learning_set.variable_name_to_n_components
         data = [
             split_array_to_dict_of_arrays(row, varsizes, self.input_names)
             for row in data

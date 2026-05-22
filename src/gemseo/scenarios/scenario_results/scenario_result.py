@@ -40,10 +40,10 @@ class ScenarioResult:
     _MAIN_PROBLEM_LABEL: Final[str] = "main"
     """The default label for the main problem."""
 
-    optimization_problems_to_results: dict[str, OptimizationResult]
+    optimization_problem_to_result: dict[str, OptimizationResult]
     """The optimization results associated with the different optimization problems."""
 
-    design_variable_names_to_values: dict[str, ndarray]
+    design_variable_name_to_value: dict[str, ndarray]
     """The design variable names bound to the optimal values."""
 
     __obj_to_be_post_processed: MDOScenario | OptimizationProblem
@@ -71,8 +71,8 @@ class ScenarioResult:
             msg = "A ScenarioResult requires a scenario that has been executed."
             raise ValueError(msg)
 
-        self.design_variable_names_to_values = optimization_result.x_opt_as_dict
-        self.optimization_problems_to_results = {
+        self.design_variable_name_to_value = optimization_result.x_opt_as_dict
+        self.optimization_problem_to_result = {
             self._MAIN_PROBLEM_LABEL: optimization_result
         }
 
@@ -87,7 +87,7 @@ class ScenarioResult:
         For scenarios with a single optimization problem, the current optimization
         result corresponds to this unique optimization problem.
         """
-        return self.optimization_problems_to_results[self._MAIN_PROBLEM_LABEL]
+        return self.optimization_problem_to_result[self._MAIN_PROBLEM_LABEL]
 
     def plot(self, settings: BasePostSettings) -> BasePost:
         """Visualize the result.

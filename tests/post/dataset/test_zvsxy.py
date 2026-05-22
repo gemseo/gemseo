@@ -39,11 +39,11 @@ def dataset():
     sample4 = [1.0, 1.0, 1.0, 0.0]
     sample5 = [0.5, 0.5, 0.5, 0.5]
     data_array = array([sample1, sample2, sample3, sample4, sample5])
-    variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
+    variable_name_to_n_components = {"x": 1, "y": 1, "z": 2}
     return Dataset.from_array(
         data_array,
         variable_names=["x", "y", "z"],
-        variable_names_to_n_components=variable_names_to_n_components,
+        variable_name_to_n_components=variable_name_to_n_components,
     )
 
 
@@ -53,11 +53,11 @@ sample3 = [1.0, 0.0, 0.0, 1.0]
 sample4 = [1.0, 1.0, 1.0, 0.0]
 sample5 = [0.5, 0.5, 0.5, 0.5]
 data_array = array([[0.25, 0.25, 0.25, 0.25], [0.75, 0.75, 0.75, 0.75]])
-variable_names_to_n_components = {"x": 1, "y": 1, "z": 2}
+variable_name_to_n_components = {"x": 1, "y": 1, "z": 2}
 other_dataset = Dataset.from_array(
     data_array,
     variable_names=["x", "y", "z"],
-    variable_names_to_n_components=variable_names_to_n_components,
+    variable_name_to_n_components=variable_name_to_n_components,
 )
 other_dataset.name = "foo"
 

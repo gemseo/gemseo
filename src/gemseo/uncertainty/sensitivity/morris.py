@@ -203,7 +203,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
             raise ValueError(msg)
 
         return len(self.dataset) // (
-            1 + self.dataset.group_names_to_n_components[self.dataset.INPUT_GROUP]
+            1 + self.dataset.group_name_to_n_components[self.dataset.INPUT_GROUP]
         )
 
     def compute_indices(
@@ -220,7 +220,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
         output_data = self.dataset.get_view(
             group_names=self.dataset.OUTPUT_GROUP, variable_names=output_names
         ).to_numpy()
-        input_size = self.dataset.group_names_to_n_components[self.dataset.INPUT_GROUP]
+        input_size = self.dataset.group_name_to_n_components[self.dataset.INPUT_GROUP]
         r = self.n_replicates
         output_differences = [
             output_data[slice(i + 1, i + 2 + input_size * r, input_size + 1)]

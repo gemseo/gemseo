@@ -45,8 +45,8 @@ def test_algorithms(factory) -> None:
 
 
 def test_algo_names_to_libraries(factory) -> None:
-    """Check that the property algo_names_to_libraries works."""
-    assert factory.algo_names_to_libraries["PYDOE_FULLFACT"] == "PyDOELibrary"
+    """Check that the property algo_name_to_library works."""
+    assert factory.algo_name_to_library["PYDOE_FULLFACT"] == "PyDOELibrary"
 
 
 def test_libraries(factory) -> None:

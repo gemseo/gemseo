@@ -99,7 +99,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
             if as_dict:
                 return split_array_to_dict_of_arrays(
                     output_data,
-                    model.learning_set.variable_names_to_n_components,
+                    model.learning_set.variable_name_to_n_components,
                     model.output_names,
                 )
 
@@ -259,7 +259,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                         input_data = model._transform_data_from_variable_names(
                             input_data,
                             model.input_names,
-                            model.learning_set.variable_names_to_n_components,
+                            model.learning_set.variable_name_to_n_components,
                             model._input_variables_to_transform,
                             False,
                         )

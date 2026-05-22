@@ -69,31 +69,31 @@ class ScalableDesignSpace:
             ScalableDisciplineSettings
         ] = DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
         d_0: int = DEFAULT_D_0,
-        names_to_default_values: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        name_to_default_value: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         r"""
         Args:
             scalable_discipline_settings: The configurations of the scalable
                 disciplines.
             d_0: The size of the shared design variable $x_0$.
-            names_to_default_values: The default values of the variables.
+            name_to_default_value: The default values of the variables.
         """  # noqa: D205 D212
         self.variables = []
         name = SHARED_DESIGN_VARIABLE_NAME
-        self.__add_variable(name, d_0, names_to_default_values.get(name))
+        self.__add_variable(name, d_0, name_to_default_value.get(name))
         for index, settings in enumerate(scalable_discipline_settings):
             name = get_x_local_name(index + 1)
             self.__add_variable(
                 name,
                 settings.d_i,
-                names_to_default_values.get(name),
+                name_to_default_value.get(name),
             )
         for index, settings in enumerate(scalable_discipline_settings):
             name = get_coupling_name(index + 1)
             self.__add_variable(
                 name,
                 settings.p_i,
-                names_to_default_values.get(name),
+                name_to_default_value.get(name),
             )
 
     def __add_variable(

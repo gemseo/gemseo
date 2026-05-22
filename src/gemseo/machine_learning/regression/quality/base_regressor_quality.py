@@ -53,7 +53,7 @@ class BaseRegressorQuality(BaseMLModelQuality):
         True: "raw_values",
         False: "uniform_average",
     }
-    """Map from the argument "multioutput" of GEMSEO to that of sklearn."""
+    """The map from the argument "multioutput" of GEMSEO to that of sklearn."""
 
     model: BaseMLSupervisedModel
 
@@ -273,5 +273,5 @@ class BaseRegressorQuality(BaseMLModelQuality):
             return {self.__OUTPUT_NAME_SEPARATOR.join(names): data}
 
         return split_array_to_dict_of_arrays(
-            data, self.model.learning_set.variable_names_to_n_components, names
+            data, self.model.learning_set.variable_name_to_n_components, names
         )
