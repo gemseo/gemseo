@@ -305,6 +305,22 @@
          <lastmod>2026-05-22</lastmod>
     </url>
     <url>
+         <loc>https://gemseo.org/latest/generated/examples/howtos/database/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/howtos/database/mg_execution_times/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/howtos/database/plot_howto_backup_history/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
+         <loc>https://gemseo.org/latest/generated/examples/howtos/database/plot_howto_listeners/</loc>
+         <lastmod>2026-05-22</lastmod>
+    </url>
+    <url>
          <loc>https://gemseo.org/latest/generated/examples/howtos/dataset/</loc>
          <lastmod>2026-05-22</lastmod>
     </url>
