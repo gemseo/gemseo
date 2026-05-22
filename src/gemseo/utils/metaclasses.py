@@ -17,8 +17,15 @@
 from __future__ import annotations
 
 from abc import ABCMeta
+from typing import TYPE_CHECKING
 
-from docstring_inheritance import GoogleDocstringInheritanceMeta
+if TYPE_CHECKING:
+    # The runtime import returns either `type` or the real metaclass depending on
+    # the ``DOCSTRING_INHERITANCE_ENABLE`` environment variable, which confuses
+    # static type checkers; import the concrete class for type checking only.
+    from docstring_inheritance._internal import GoogleDocstringInheritanceMeta
+else:
+    from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 
 class ABCGoogleDocstringInheritanceMeta(ABCMeta, GoogleDocstringInheritanceMeta):

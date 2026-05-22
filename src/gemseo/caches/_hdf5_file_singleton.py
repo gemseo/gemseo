@@ -425,7 +425,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             yield
         else:
             self.__file = h5py.File(self.hdf_file_path, mode=mode)
-            yield
+            yield  # noqa: RUF075
             if not self.__keep_open:
                 self.__close()
 
@@ -433,7 +433,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     def keep_open(self) -> Iterator[None]:
         """Keep the file open for all file operations done in this context manager."""
         self.__keep_open = True
-        yield
+        yield  # noqa: RUF075
         self.__keep_open = False
         self.__close()
 

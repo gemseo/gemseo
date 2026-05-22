@@ -83,7 +83,7 @@ class _MergeStrategy(Object):  # type: ignore[misc]
         """A context manager to handle the update vs merge."""
         # Pass the update switch to _SchemaNode.
         self.node_class.update = self.update
-        yield
+        yield  # noqa: RUF075
         # Reset to the merge behavior because _SchemaNode may be used by other instances
         # that should merge.
         self.node_class.update = False
