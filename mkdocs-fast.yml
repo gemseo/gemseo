@@ -207,6 +207,7 @@ nav:
       - Post-processing: generated/examples/howtos/post_process
       - Data persistence:
           - Cache: generated/examples/howtos/cache
+          - Database: generated/examples/howtos/database
           - Dataset: generated/examples/howtos/dataset
       - Machine learning: generated/examples/howtos/machine_learning
       - Constraint aggregation: generated/examples/howtos/constraint_aggregation
