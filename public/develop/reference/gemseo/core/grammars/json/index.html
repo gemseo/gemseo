@@ -385,7 +385,7 @@
 
     <span class=n>grammar</span> <span class=o>=</span> <span class=n>SimpleGrammar</span><span class=p>(</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>name</span><span class=p>,</span>
-        <span class=n>names_to_types</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>_get_names_to_types</span><span class=p>(),</span>
+        <span class=n>name_to_type</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>_get_name_to_type</span><span class=p>(),</span>
         <span class=n>required_names</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>_required_names</span><span class=p>,</span>
     <span class=p>)</span>
     <span class=n>grammar</span><span class=o>.</span><span class=n>defaults</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_defaults</span>
@@ -618,9 +618,9 @@
                 <span class=bp>self</span><span class=o>.</span><span class=n>_descriptions</span><span class=p>[</span><span class=n>property_name</span><span class=p>]</span> <span class=o>=</span> <span class=n>description</span>
                 <span class=k>break</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.core.grammars.json.JSONGrammar.update_from_types class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">update_from_types</span><a href=#gemseo.core.grammars.json.JSONGrammar.update_from_types class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>update_from_types</span><span class=p>(</span>
-    <span class=n>names_to_types</span><span class=p>:</span> <span class=n><span title=gemseo.core.grammars.base.SimpleGrammarTypes>SimpleGrammarTypes</span></span><span class=p>,</span> <span class=n>merge</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>False</span>
+    <span class=n>name_to_type</span><span class=p>:</span> <span class=n><span title=gemseo.core.grammars.base.SimpleGrammarTypes>SimpleGrammarTypes</span></span><span class=p>,</span> <span class=n>merge</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span> <span class=o>=</span> <span class=kc>False</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Update the grammar from names bound to types.</p><p>The updated elements are required.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>names_to_types</code></b> (<code><span title=gemseo.core.grammars.base.SimpleGrammarTypes>SimpleGrammarTypes</span></code>) – <div class=doc-md-description><p>The mapping defining the data names as keys, and data types as values.</p></div></li><li class="doc-section-item field-body"><b><code>merge</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether to merge or update the grammar.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/grammars/base.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>346</span>
+</code></pre></div><div class="doc doc-contents "><p>Update the grammar from names bound to types.</p><p>The updated elements are required.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>name_to_type</code></b> (<code><span title=gemseo.core.grammars.base.SimpleGrammarTypes>SimpleGrammarTypes</span></code>) – <div class=doc-md-description><p>The mapping defining the data names as keys, and data types as values.</p></div></li><li class="doc-section-item field-body"><b><code>merge</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether to merge or update the grammar.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/grammars/base.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>346</span>
 <span class=normal>347</span>
 <span class=normal>348</span>
 <span class=normal>349</span>
@@ -639,7 +639,7 @@
 <span class=normal>362</span>
 <span class=normal>363</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>update_from_types</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
-    <span class=n>names_to_types</span><span class=p>:</span> <span class=n>SimpleGrammarTypes</span><span class=p>,</span>
+    <span class=n>name_to_type</span><span class=p>:</span> <span class=n>SimpleGrammarTypes</span><span class=p>,</span>
     <span class=n>merge</span><span class=p>:</span> <span class=nb>bool</span> <span class=o>=</span> <span class=kc>False</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Update the grammar from names bound to types.</span>
@@ -647,14 +647,14 @@
 <span class=sd>    The updated elements are required.</span>
 
 <span class=sd>    Args:</span>
-<span class=sd>        names_to_types: The mapping defining the data names as keys,</span>
+<span class=sd>        name_to_type: The mapping defining the data names as keys,</span>
 <span class=sd>            and data types as values.</span>
 <span class=sd>        merge: Whether to merge or update the grammar.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
-    <span class=k>if</span> <span class=ow>not</span> <span class=n>names_to_types</span><span class=p>:</span>
+    <span class=k>if</span> <span class=ow>not</span> <span class=n>name_to_type</span><span class=p>:</span>
         <span class=k>return</span>
-    <span class=bp>self</span><span class=o>.</span><span class=n>_update_from_types</span><span class=p>(</span><span class=n>names_to_types</span><span class=p>,</span> <span class=n>merge</span><span class=p>)</span>
-    <span class=bp>self</span><span class=o>.</span><span class=n>_required_names</span> <span class=o>|=</span> <span class=n>names_to_types</span><span class=o>.</span><span class=n>keys</span><span class=p>()</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>_update_from_types</span><span class=p>(</span><span class=n>name_to_type</span><span class=p>,</span> <span class=n>merge</span><span class=p>)</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>_required_names</span> <span class=o>|=</span> <span class=n>name_to_type</span><span class=o>.</span><span class=n>keys</span><span class=p>()</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.core.grammars.json.JSONGrammar.validate class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">validate</span><a href=#gemseo.core.grammars.json.JSONGrammar.validate class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>validate</span><span class=p>(</span>
     <span class=n>data</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            StrKeyMapping
 

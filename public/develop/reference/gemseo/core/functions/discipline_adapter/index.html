@@ -8,7 +8,7 @@
       module-attribute
    (gemseo.typing.StrKeyMapping)" href=../../../typing/#gemseo.typing.StrKeyMapping>StrKeyMapping</a></span><span class=p>,</span>
     <span class=n>discipline</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href=../../discipline/discipline/#gemseo.core.discipline.discipline.Discipline>Discipline</a></span><span class=p>,</span>
-    <span class=n>names_to_sizes</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.MutableMapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping>MutableMapping</a></span><span class=p>[</span>
+    <span class=n>name_to_size</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.MutableMapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping>MutableMapping</a></span><span class=p>[</span>
         <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></span>
     <span class=p>]</span> <span class=o>=</span> <span class=n><a class="autorefs autorefs-internal" title="            READ_ONLY_EMPTY_DICT
 
@@ -25,7 +25,7 @@
 
   
       module-attribute
-   (gemseo.typing.StrKeyMapping)" href=../../../typing/#gemseo.typing.StrKeyMapping>StrKeyMapping</a></code>) – <div class=doc-md-description><p>The default input values to overload the ones of the discipline at each evaluation of the outputs with <code>_fun()</code> or their derivatives with <code>_jac()</code>. If empty, do not overload them.</p></div></li><li class="doc-section-item field-body"><b><code>discipline</code></b> (<code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href=../../discipline/discipline/#gemseo.core.discipline.discipline.Discipline>Discipline</a></code>) – <div class=doc-md-description><p>The discipline to be adapted.</p></div></li><li class="doc-section-item field-body"><b><code>names_to_sizes</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.MutableMapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping>MutableMapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a>]</code>, default: <code><a class="autorefs autorefs-internal" title="            READ_ONLY_EMPTY_DICT
+   (gemseo.typing.StrKeyMapping)" href=../../../typing/#gemseo.typing.StrKeyMapping>StrKeyMapping</a></code>) – <div class=doc-md-description><p>The default input values to overload the ones of the discipline at each evaluation of the outputs with <code>_fun()</code> or their derivatives with <code>_jac()</code>. If empty, do not overload them.</p></div></li><li class="doc-section-item field-body"><b><code>discipline</code></b> (<code><a class="autorefs autorefs-internal" title="            Discipline (gemseo.core.discipline.Discipline)" href=../../discipline/discipline/#gemseo.core.discipline.discipline.Discipline>Discipline</a></code>) – <div class=doc-md-description><p>The discipline to be adapted.</p></div></li><li class="doc-section-item field-body"><b><code>name_to_size</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.MutableMapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping>MutableMapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a>]</code>, default: <code><a class="autorefs autorefs-internal" title="            READ_ONLY_EMPTY_DICT
 
 
   
@@ -87,7 +87,7 @@
     <span class=n>output_names</span><span class=p>:</span> <span class=n>Sequence</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>default_input_data</span><span class=p>:</span> <span class=n>StrKeyMapping</span><span class=p>,</span>
     <span class=n>discipline</span><span class=p>:</span> <span class=n>Discipline</span><span class=p>,</span>
-    <span class=n>names_to_sizes</span><span class=p>:</span> <span class=n>MutableMapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=nb>int</span><span class=p>]</span> <span class=o>=</span> <span class=n>READ_ONLY_EMPTY_DICT</span><span class=p>,</span>
+    <span class=n>name_to_size</span><span class=p>:</span> <span class=n>MutableMapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=nb>int</span><span class=p>]</span> <span class=o>=</span> <span class=n>READ_ONLY_EMPTY_DICT</span><span class=p>,</span>
     <span class=n>differentiated_input_names_substitute</span><span class=p>:</span> <span class=n>Sequence</span><span class=p>[</span><span class=nb>str</span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;</span>
@@ -100,7 +100,7 @@
 <span class=sd>            or their derivatives with `_jac()`.</span>
 <span class=sd>            If empty, do not overload them.</span>
 <span class=sd>        discipline: The discipline to be adapted.</span>
-<span class=sd>        names_to_sizes: The sizes of the input variables.</span>
+<span class=sd>        name_to_size: The sizes of the input variables.</span>
 <span class=sd>            If empty, determine them from the default inputs and local data</span>
 <span class=sd>            of the discipline.</span>
 <span class=sd>        differentiated_input_names_substitute: The names of the inputs</span>
@@ -122,9 +122,9 @@
     <span class=bp>self</span><span class=o>.</span><span class=n>__differentiated_input_size</span> <span class=o>=</span> <span class=mi>0</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>__jacobian</span> <span class=o>=</span> <span class=n>array</span><span class=p>(())</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>__discipline</span> <span class=o>=</span> <span class=n>discipline</span>
-    <span class=bp>self</span><span class=o>.</span><span class=n>__input_names_to_slices</span> <span class=o>=</span> <span class=p>{}</span>
-    <span class=bp>self</span><span class=o>.</span><span class=n>__input_names_to_sizes</span> <span class=o>=</span> <span class=n>names_to_sizes</span> <span class=ow>or</span> <span class=p>{}</span>
-    <span class=bp>self</span><span class=o>.</span><span class=n>__differentiated_input_names_to_slices</span> <span class=o>=</span> <span class=p>{}</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>__input_name_to_slice</span> <span class=o>=</span> <span class=p>{}</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>__input_name_to_size</span> <span class=o>=</span> <span class=n>name_to_size</span> <span class=ow>or</span> <span class=p>{}</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>__differentiated_input_name_to_slice</span> <span class=o>=</span> <span class=p>{}</span>
     <span class=n>input_names</span> <span class=o>=</span> <span class=nb>set</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>input_names</span><span class=p>)</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>__is_linear</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>have_linear_relationships</span><span class=p>(</span>
         <span class=n>input_names</span><span class=p>,</span> <span class=n>output_names</span>

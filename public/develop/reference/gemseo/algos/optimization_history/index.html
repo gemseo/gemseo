@@ -186,10 +186,10 @@
     <span class=bp>self</span><span class=o>.</span><span class=n>__raise_when_database_is_empty</span><span class=p>()</span>
     <span class=n>violation</span> <span class=o>=</span> <span class=mf>0.0</span>
     <span class=n>x_vect_is_feasible</span> <span class=o>=</span> <span class=kc>True</span>
-    <span class=n>output_names_to_values</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__database</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>x_vect</span><span class=p>)</span>
+    <span class=n>output_name_to_value</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__database</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>x_vect</span><span class=p>)</span>
     <span class=n>constraints</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__constraints</span>
     <span class=k>for</span> <span class=n>constraint</span> <span class=ow>in</span> <span class=n>constraints</span><span class=p>:</span>
-        <span class=n>constraint_value</span> <span class=o>=</span> <span class=n>output_names_to_values</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>constraint</span><span class=o>.</span><span class=n>name</span><span class=p>)</span>
+        <span class=n>constraint_value</span> <span class=o>=</span> <span class=n>output_name_to_value</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=n>constraint</span><span class=o>.</span><span class=n>name</span><span class=p>)</span>
         <span class=k>if</span> <span class=n>constraint_value</span> <span class=ow>is</span> <span class=kc>None</span><span class=p>:</span>
             <span class=k>break</span>
 

@@ -123,7 +123,7 @@ scalable.scalable_model.plot_1d_interpolations(save=False, show=True)
 # ### Twice as many inputs
 #
 # For example, we can increase the size of each input by a factor of 2.
-sizes = {name: dataset.variable_names_to_n_components[name] * 2 for name in input_names}
+sizes = {name: dataset.variable_name_to_n_components[name] * 2 for name in input_names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 
@@ -132,7 +132,7 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 #
 # Or we can increase the size of each output by a factor of 2.
 sizes = {
-    name: discipline.cache.names_to_sizes[name] * 2
+    name: discipline.cache.name_to_size[name] * 2
     for name in discipline.io.output_grammar.names
 }
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
@@ -143,7 +143,7 @@ scalable.scalable_model.plot_dependency(save=False, show=True)
 #
 # Or we can increase the size of each input and each output by a factor of 2.
 names = input_names + list(discipline.io.output_grammar.names)
-sizes = {name: dataset.variable_names_to_n_components[name] * 2 for name in names}
+sizes = {name: dataset.variable_name_to_n_components[name] * 2 for name in names}
 scalable = create_scalable("ScalableDiagonalModel", dataset, sizes)
 scalable.scalable_model.plot_dependency(save=False, show=True)
 

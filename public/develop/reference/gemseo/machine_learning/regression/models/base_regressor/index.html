@@ -70,7 +70,7 @@
         <span class=p>}</span>
 
     <span class=bp>self</span><span class=o>.</span><span class=n>algo</span> <span class=o>=</span> <span class=kc>None</span>
-    <span class=bp>self</span><span class=o>.</span><span class=n>sizes</span> <span class=o>=</span> <span class=n>deepcopy</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>learning_set</span><span class=o>.</span><span class=n>variable_names_to_n_components</span><span class=p>)</span>
+    <span class=bp>self</span><span class=o>.</span><span class=n>sizes</span> <span class=o>=</span> <span class=n>deepcopy</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>learning_set</span><span class=o>.</span><span class=n>variable_name_to_n_components</span><span class=p>)</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>_trained</span> <span class=o>=</span> <span class=kc>False</span>
     <span class=bp>self</span><span class=o>.</span><span class=n>_learning_samples_indices</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>learning_set</span><span class=o>.</span><span class=n>index</span><span class=o>.</span><span class=n>to_list</span><span class=p>()</span>
     <span class=n>transformer_keys</span> <span class=o>=</span> <span class=nb>set</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>transformer</span><span class=p>)</span>

@@ -315,7 +315,7 @@
     <span class=k>if</span> <span class=ow>not</span> <span class=n>data</span><span class=p>:</span>
         <span class=c1># Copy via casting in order to consistently have a dict object</span>
         <span class=c1># instead of a GrammarProperty which may have side effects</span>
-        <span class=c1># and does not play well with the strictness of  pydantic grammars.</span>
+        <span class=c1># and does not play well with the strictness of pydantic grammars.</span>
         <span class=k>return</span> <span class=nb>dict</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>defaults</span><span class=p>)</span>
 
     <span class=n>input_data</span> <span class=o>=</span> <span class=p>{}</span>

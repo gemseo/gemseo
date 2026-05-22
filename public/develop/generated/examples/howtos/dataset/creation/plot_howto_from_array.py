@@ -73,8 +73,8 @@ dataset
 #
 # Pass the variable names and a dictionary mapping each name to its number of components.
 # The total number of components must equal the number of columns of the array:
-names_to_sizes = {"x_1": 1, "x_2": 2, "y_1": 3}
-dataset = Dataset.from_array(data, ["x_1", "x_2", "y_1"], names_to_sizes)
+name_to_size = {"x_1": 1, "x_2": 2, "y_1": 3}
+dataset = Dataset.from_array(data, ["x_1", "x_2", "y_1"], name_to_size)
 dataset
 
 # %%
@@ -90,7 +90,7 @@ dataset
 # Variables not listed fall back to
 # [Dataset.DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]:
 groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
-dataset = Dataset.from_array(data, ["x_1", "x_2", "y_1"], names_to_sizes, groups)
+dataset = Dataset.from_array(data, ["x_1", "x_2", "y_1"], name_to_size, groups)
 dataset
 
 # %%

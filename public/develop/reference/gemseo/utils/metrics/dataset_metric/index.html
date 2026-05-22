@@ -159,10 +159,10 @@
             <span class=k>for</span> <span class=n>a</span><span class=p>,</span> <span class=n>b</span> <span class=ow>in</span> <span class=nb>zip</span><span class=p>(</span><span class=o>*</span><span class=n>name_to_a_b_data</span><span class=p>[</span><span class=n>name</span><span class=p>],</span> <span class=n>strict</span><span class=o>=</span><span class=kc>False</span><span class=p>)</span>
         <span class=p>])</span><span class=o>.</span><span class=n>T</span><span class=p>,</span>
         <span class=n>variable_names</span><span class=o>=</span><span class=n>variable_names</span><span class=p>,</span>
-        <span class=n>variable_names_to_group_names</span><span class=o>=</span><span class=p>{</span>
+        <span class=n>variable_name_to_group_name</span><span class=o>=</span><span class=p>{</span>
             <span class=n>name</span><span class=p>:</span> <span class=n>a</span><span class=o>.</span><span class=n>get_group_names</span><span class=p>(</span><span class=n>name</span><span class=p>)[</span><span class=mi>0</span><span class=p>]</span> <span class=k>for</span> <span class=n>name</span> <span class=ow>in</span> <span class=n>variable_names</span>
         <span class=p>},</span>
-        <span class=n>variable_names_to_n_components</span><span class=o>=</span><span class=p>{</span>
+        <span class=n>variable_name_to_n_components</span><span class=o>=</span><span class=p>{</span>
             <span class=n>name</span><span class=p>:</span> <span class=n>name_to_a_b_data</span><span class=p>[</span><span class=n>name</span><span class=p>][</span><span class=mi>0</span><span class=p>]</span><span class=o>.</span><span class=n>shape</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=k>for</span> <span class=n>name</span> <span class=ow>in</span> <span class=n>variable_names</span>
         <span class=p>},</span>
     <span class=p>)</span>

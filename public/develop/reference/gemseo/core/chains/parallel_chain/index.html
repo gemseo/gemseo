@@ -335,7 +335,9 @@
 
   
       module-attribute
-   (gemseo.utils.constants.READ_ONLY_EMPTY_DICT)" href=../../../utils/constants/#gemseo.utils.constants.READ_ONLY_EMPTY_DICT>READ_ONLY_EMPTY_DICT</a></code> ) – <div class=doc-md-description><p>The indices of the inputs and outputs for the different sub-Jacobian matrices, formatted as <code>{variable_name: variable_components}</code> where <code>variable_components</code> can be either an integer, e.g. <code>2</code> a sequence of integers, e.g. <code>[0, 3]</code>, a slice, e.g. <code>slice(0,3)</code>, the ellipsis symbol (<code>...</code>) or <code>None</code>, which is the same as ellipsis. If a variable name is missing, consider all its components. If <code>None</code>, consider all the components of all the <code>inputs</code> and <code>outputs</code>.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code> – <div class=doc-md-description><p>Whether the analytical Jacobian is correct with respect to the reference one.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>571</span>
+   (gemseo.utils.constants.READ_ONLY_EMPTY_DICT)" href=../../../utils/constants/#gemseo.utils.constants.READ_ONLY_EMPTY_DICT>READ_ONLY_EMPTY_DICT</a></code> ) – <div class=doc-md-description><p>The indices of the inputs and outputs for the different sub-Jacobian matrices, formatted as <code>{variable_name: variable_components}</code> where <code>variable_components</code> can be either an integer, e.g. <code>2</code> a sequence of integers, e.g. <code>[0, 3]</code>, a slice, e.g. <code>slice(0,3)</code>, the ellipsis symbol (<code>...</code>) or <code>None</code>, which is the same as ellipsis. If a variable name is missing, consider all its components. If <code>None</code>, consider all the components of all the <code>inputs</code> and <code>outputs</code>.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code> – <div class=doc-md-description><p>Whether the analytical Jacobian is correct with respect to the reference one.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/discipline/discipline.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>569</span>
+<span class=normal>570</span>
+<span class=normal>571</span>
 <span class=normal>572</span>
 <span class=normal>573</span>
 <span class=normal>574</span>
@@ -466,9 +468,7 @@
 <span class=normal>699</span>
 <span class=normal>700</span>
 <span class=normal>701</span>
-<span class=normal>702</span>
-<span class=normal>703</span>
-<span class=normal>704</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>check_jacobian</span><span class=p>(</span>
+<span class=normal>702</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>check_jacobian</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>input_data</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>ndarray</span><span class=p>]</span> <span class=o>=</span> <span class=n>READ_ONLY_EMPTY_DICT</span><span class=p>,</span>
     <span class=n>derr_approx</span><span class=p>:</span> <span class=n>ApproximationMode</span> <span class=o>=</span> <span class=n>ApproximationMode</span><span class=o>.</span><span class=n>FINITE_DIFFERENCES</span><span class=p>,</span>

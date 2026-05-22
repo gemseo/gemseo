@@ -162,10 +162,10 @@
 <span class=sd>    Returns:</span>
 <span class=sd>        The statuses mapping atom uuid to status.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
-    <span class=n>uuids_to_statuses</span> <span class=o>=</span> <span class=p>{}</span>
+    <span class=n>uuid_to_status</span> <span class=o>=</span> <span class=p>{}</span>
     <span class=k>for</span> <span class=n>sequence</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>sequences</span><span class=p>:</span>
-        <span class=n>uuids_to_statuses</span><span class=o>.</span><span class=n>update</span><span class=p>(</span><span class=n>sequence</span><span class=o>.</span><span class=n>get_statuses</span><span class=p>())</span>
-    <span class=k>return</span> <span class=n>uuids_to_statuses</span>
+        <span class=n>uuid_to_status</span><span class=o>.</span><span class=n>update</span><span class=p>(</span><span class=n>sequence</span><span class=o>.</span><span class=n>get_statuses</span><span class=p>())</span>
+    <span class=k>return</span> <span class=n>uuid_to_status</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.core._process_flow.execution_sequences.parallel.ParallelExecSequence.is_enabled class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">is_enabled</span><a href=#gemseo.core._process_flow.execution_sequences.parallel.ParallelExecSequence.is_enabled class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>is_enabled</span><span class=p>(</span><span class=n>enable</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></span><span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
 </code></pre></div><div class="doc doc-contents "><p>Whether the sequence is enabled.</p><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/core/_process_flow/execution_sequences/parallel.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>36</span>
 <span class=normal>37</span>

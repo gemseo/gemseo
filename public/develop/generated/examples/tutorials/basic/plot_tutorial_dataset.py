@@ -122,7 +122,7 @@ dataset.add_group("G2", array([[1.1, 2.1, 3.1], [4.1, 5.1, 6.1]]), ["x", "y", "z
 dataset
 
 # %%
-# Both `variable_names` and `variable_names_to_n_components` are optional.
+# Both `variable_names` and `variable_name_to_n_components` are optional.
 # When omitted, GEMSEO uses the
 # [DEFAULT_VARIABLE_NAME][gemseo.datasets.dataset.Dataset.DEFAULT_VARIABLE_NAME]
 # `"x"` with as many components as there are columns:
@@ -137,7 +137,7 @@ dataset.group_names
 
 # %%
 # The total number of components per group:
-dataset.group_names_to_n_components
+dataset.group_name_to_n_components
 
 # %%
 # The unique variable names (across all groups), in alphabetical order.
@@ -147,7 +147,7 @@ dataset.variable_names
 
 # %%
 # The total number of components per variable name:
-dataset.variable_names_to_n_components
+dataset.variable_name_to_n_components
 
 # %%
 # All variable identifiers as `(group_name, variable_name)` pairs:

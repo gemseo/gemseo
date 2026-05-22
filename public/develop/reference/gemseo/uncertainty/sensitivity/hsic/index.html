@@ -414,7 +414,7 @@
         <span class=p>):</span>
             <span class=k>continue</span>
 
-        <span class=n>sizes</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>dataset</span><span class=o>.</span><span class=n>variable_names_to_n_components</span>
+        <span class=n>sizes</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>dataset</span><span class=o>.</span><span class=n>variable_name_to_n_components</span>
         <span class=n>input_covariance_models</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>__compute_covariance_models</span><span class=p>(</span>
             <span class=n>input_samples</span><span class=p>,</span> <span class=n>input_covariance_model_class</span>
         <span class=p>)</span>
@@ -700,12 +700,12 @@
 <span class=sd>            and the type of HSIC is conditional.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
     <span class=k>if</span> <span class=n>use_asymptotic</span><span class=p>:</span>
-        <span class=n>output_names_to_p_values</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_indices</span><span class=o>.</span><span class=n>p_value_asymptotic</span>
-        <span class=k>if</span> <span class=ow>not</span> <span class=n>output_names_to_p_values</span><span class=p>:</span>
+        <span class=n>output_name_to_p_values</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_indices</span><span class=o>.</span><span class=n>p_value_asymptotic</span>
+        <span class=k>if</span> <span class=ow>not</span> <span class=n>output_name_to_p_values</span><span class=p>:</span>
             <span class=n>msg</span> <span class=o>=</span> <span class=s2>&quot;Asymptotic p-values are not available for conditional HSIC.&quot;</span>
             <span class=k>raise</span> <span class=ne>ValueError</span><span class=p>(</span><span class=n>msg</span><span class=p>)</span>
     <span class=k>else</span><span class=p>:</span>
-        <span class=n>output_names_to_p_values</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_indices</span><span class=o>.</span><span class=n>p_value_permutation</span>
+        <span class=n>output_name_to_p_values</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_indices</span><span class=o>.</span><span class=n>p_value_permutation</span>
 
     <span class=k>return</span> <span class=p>{</span>
         <span class=n>output_name</span><span class=p>:</span> <span class=p>[</span>
@@ -716,7 +716,7 @@
             <span class=p>}</span>
             <span class=k>for</span> <span class=n>output_component</span> <span class=ow>in</span> <span class=n>output_components</span>
         <span class=p>]</span>
-        <span class=k>for</span> <span class=n>output_name</span><span class=p>,</span> <span class=n>output_components</span> <span class=ow>in</span> <span class=n>output_names_to_p_values</span><span class=o>.</span><span class=n>items</span><span class=p>()</span>
+        <span class=k>for</span> <span class=n>output_name</span><span class=p>,</span> <span class=n>output_components</span> <span class=ow>in</span> <span class=n>output_name_to_p_values</span><span class=o>.</span><span class=n>items</span><span class=p>()</span>
     <span class=p>}</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.plot class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">plot</span><a href=#gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.plot class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>plot</span><span class=p>(</span>
     <span class=n>output</span><span class=p>:</span> <span class=n><span title=gemseo.utils.string_tools.VariableType>VariableType</span></span><span class=p>,</span>
@@ -1720,7 +1720,7 @@
 <span class=sd>    Returns:</span>
 <span class=sd>        The sensitivity indices as a dataset.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
-    <span class=n>sizes</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>dataset</span><span class=o>.</span><span class=n>variable_names_to_n_components</span>
+    <span class=n>sizes</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>dataset</span><span class=o>.</span><span class=n>variable_name_to_n_components</span>
 
     <span class=n>row_names</span> <span class=o>=</span> <span class=p>[]</span>
     <span class=k>for</span> <span class=n>input_name</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>input_names</span><span class=p>:</span>
@@ -1729,7 +1729,7 @@
                 <span class=n>repr_variable</span><span class=p>(</span>
                     <span class=n>input_name</span><span class=p>,</span>
                     <span class=n>input_component</span><span class=p>,</span>
-                    <span class=n>size</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>dataset</span><span class=o>.</span><span class=n>variable_names_to_n_components</span><span class=p>[</span><span class=n>input_name</span><span class=p>],</span>
+                    <span class=n>size</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>dataset</span><span class=o>.</span><span class=n>variable_name_to_n_components</span><span class=p>[</span><span class=n>input_name</span><span class=p>],</span>
                 <span class=p>)</span>
             <span class=p>)</span>
 

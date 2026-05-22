@@ -129,7 +129,7 @@
         <span class=k>if</span> <span class=n>as_dict</span><span class=p>:</span>
             <span class=k>return</span> <span class=n>split_array_to_dict_of_arrays</span><span class=p>(</span>
                 <span class=n>output_data</span><span class=p>,</span>
-                <span class=n>model</span><span class=o>.</span><span class=n>learning_set</span><span class=o>.</span><span class=n>variable_names_to_n_components</span><span class=p>,</span>
+                <span class=n>model</span><span class=o>.</span><span class=n>learning_set</span><span class=o>.</span><span class=n>variable_name_to_n_components</span><span class=p>,</span>
                 <span class=n>model</span><span class=o>.</span><span class=n>output_names</span><span class=p>,</span>
             <span class=p>)</span>
 
@@ -282,7 +282,7 @@
         <span class=n>single_sample</span> <span class=o>=</span> <span class=nb>len</span><span class=p>(</span><span class=n>input_data</span><span class=o>.</span><span class=n>shape</span><span class=p>)</span> <span class=o>==</span> <span class=mi>1</span>
         <span class=n>jacobians</span> <span class=o>=</span> <span class=n>func</span><span class=p>(</span><span class=n>model</span><span class=p>,</span> <span class=n>input_data</span><span class=p>,</span> <span class=o>*</span><span class=n>args</span><span class=p>,</span> <span class=o>**</span><span class=n>kwargs</span><span class=p>)</span>
         <span class=k>if</span> <span class=n>as_dict</span><span class=p>:</span>
-            <span class=n>varsizes</span> <span class=o>=</span> <span class=n>model</span><span class=o>.</span><span class=n>learning_set</span><span class=o>.</span><span class=n>variable_names_to_n_components</span>
+            <span class=n>varsizes</span> <span class=o>=</span> <span class=n>model</span><span class=o>.</span><span class=n>learning_set</span><span class=o>.</span><span class=n>variable_name_to_n_components</span>
             <span class=k>if</span> <span class=n>single_sample</span><span class=p>:</span>
                 <span class=n>jacobians</span> <span class=o>=</span> <span class=n>split_array_to_dict_of_arrays</span><span class=p>(</span>
                     <span class=n>jacobians</span><span class=p>,</span> <span class=n>varsizes</span><span class=p>,</span> <span class=n>model</span><span class=o>.</span><span class=n>output_names</span><span class=p>,</span> <span class=n>model</span><span class=o>.</span><span class=n>input_names</span>
@@ -921,7 +921,7 @@
                     <span class=n>input_data</span> <span class=o>=</span> <span class=n>model</span><span class=o>.</span><span class=n>_transform_data_from_variable_names</span><span class=p>(</span>
                         <span class=n>input_data</span><span class=p>,</span>
                         <span class=n>model</span><span class=o>.</span><span class=n>input_names</span><span class=p>,</span>
-                        <span class=n>model</span><span class=o>.</span><span class=n>learning_set</span><span class=o>.</span><span class=n>variable_names_to_n_components</span><span class=p>,</span>
+                        <span class=n>model</span><span class=o>.</span><span class=n>learning_set</span><span class=o>.</span><span class=n>variable_name_to_n_components</span><span class=p>,</span>
                         <span class=n>model</span><span class=o>.</span><span class=n>_input_variables_to_transform</span><span class=p>,</span>
                         <span class=kc>False</span><span class=p>,</span>
                     <span class=p>)</span>

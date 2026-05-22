@@ -626,8 +626,8 @@
     <span class=k>if</span> <span class=ow>not</span> <span class=n>all_data_names</span><span class=p>:</span>
         <span class=n>all_data_names</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>problem</span><span class=o>.</span><span class=n>design_space</span><span class=o>.</span><span class=n>variable_names</span>
 
-    <span class=n>names_to_sizes</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>variable_sizes</span>
-    <span class=n>mask_size</span> <span class=o>=</span> <span class=nb>sum</span><span class=p>(</span><span class=n>names_to_sizes</span><span class=p>[</span><span class=n>name</span><span class=p>]</span> <span class=k>for</span> <span class=n>name</span> <span class=ow>in</span> <span class=n>masking_data_names</span><span class=p>)</span>
+    <span class=n>name_to_size</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>variable_sizes</span>
+    <span class=n>mask_size</span> <span class=o>=</span> <span class=nb>sum</span><span class=p>(</span><span class=n>name_to_size</span><span class=p>[</span><span class=n>name</span><span class=p>]</span> <span class=k>for</span> <span class=n>name</span> <span class=ow>in</span> <span class=n>masking_data_names</span><span class=p>)</span>
 
     <span class=k>if</span> <span class=p>(</span><span class=n>n_samples</span> <span class=o>:=</span> <span class=n>x_masked</span><span class=o>.</span><span class=n>shape</span><span class=p>[</span><span class=o>-</span><span class=mi>1</span><span class=p>]</span> <span class=o>//</span> <span class=n>mask_size</span><span class=p>)</span> <span class=o>==</span> <span class=mi>1</span><span class=p>:</span>
         <span class=k>return</span> <span class=bp>self</span><span class=o>.</span><span class=n>__unmask_x_swap_order_if_one_sample</span><span class=p>(</span>

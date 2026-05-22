@@ -359,9 +359,9 @@
 <span class=sd>        output_names: The names of the outputs that must be kept.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
     <span class=n>output_names</span> <span class=o>=</span> <span class=nb>set</span><span class=p>(</span><span class=n>output_names</span><span class=p>)</span>
-    <span class=k>for</span> <span class=n>output_names_to_values</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>values</span><span class=p>():</span>
-        <span class=k>for</span> <span class=n>function_name</span> <span class=ow>in</span> <span class=n>output_names_to_values</span><span class=o>.</span><span class=n>keys</span><span class=p>()</span> <span class=o>-</span> <span class=n>output_names</span><span class=p>:</span>
-            <span class=k>del</span> <span class=n>output_names_to_values</span><span class=p>[</span><span class=n>function_name</span><span class=p>]</span>
+    <span class=k>for</span> <span class=n>output_name_to_value</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>values</span><span class=p>():</span>
+        <span class=k>for</span> <span class=n>function_name</span> <span class=ow>in</span> <span class=n>output_name_to_value</span><span class=o>.</span><span class=n>keys</span><span class=p>()</span> <span class=o>-</span> <span class=n>output_names</span><span class=p>:</span>
+            <span class=k>del</span> <span class=n>output_name_to_value</span><span class=p>[</span><span class=n>function_name</span><span class=p>]</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.algos.database.Database.from_hdf class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">from_hdf</span><span class="doc doc-labels"><small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small></span><a href=#gemseo.algos.database.Database.from_hdf class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>from_hdf</span><span class=p>(</span>
     <span class=n>file_path</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>|</span> <span class=n><a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></span> <span class=o>=</span> <span class=s2>&quot;optimization_history.h5&quot;</span><span class=p>,</span>
     <span class=n>name</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>=</span> <span class=s2>&quot;&quot;</span><span class=p>,</span>
@@ -558,8 +558,8 @@
 <span class=sd>        The names of the outputs in alphabetical order.</span>
 <span class=sd>    &quot;&quot;&quot;</span>
     <span class=n>output_names</span> <span class=o>=</span> <span class=nb>set</span><span class=p>()</span>
-    <span class=k>for</span> <span class=n>output_names_to_values</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>__data</span><span class=o>.</span><span class=n>values</span><span class=p>():</span>
-        <span class=k>for</span> <span class=n>outputs</span> <span class=ow>in</span> <span class=n>output_names_to_values</span><span class=p>:</span>
+    <span class=k>for</span> <span class=n>output_name_to_value</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>__data</span><span class=o>.</span><span class=n>values</span><span class=p>():</span>
+        <span class=k>for</span> <span class=n>outputs</span> <span class=ow>in</span> <span class=n>output_name_to_value</span><span class=p>:</span>
             <span class=k>if</span> <span class=n>skip_grad</span> <span class=ow>and</span> <span class=n>outputs</span><span class=o>.</span><span class=n>startswith</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>GRAD_TAG</span><span class=p>):</span>
                 <span class=k>continue</span>
             <span class=n>output_names</span><span class=o>.</span><span class=n>add</span><span class=p>(</span><span class=n>outputs</span><span class=p>)</span>
@@ -910,11 +910,11 @@
 
     <span class=n>output_history</span> <span class=o>=</span> <span class=p>[]</span>
     <span class=n>input_history</span> <span class=o>=</span> <span class=p>[]</span>
-    <span class=k>for</span> <span class=n>x</span><span class=p>,</span> <span class=n>output_names_to_values</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
+    <span class=k>for</span> <span class=n>x</span><span class=p>,</span> <span class=n>output_name_to_value</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
         <span class=n>output_values</span> <span class=o>=</span> <span class=p>[]</span>
         <span class=k>for</span> <span class=n>function_name</span> <span class=ow>in</span> <span class=n>function_names</span><span class=p>:</span>
-            <span class=k>if</span> <span class=n>function_name</span> <span class=ow>in</span> <span class=n>output_names_to_values</span><span class=p>:</span>
-                <span class=n>output_values</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=n>output_names_to_values</span><span class=p>[</span><span class=n>function_name</span><span class=p>])</span>
+            <span class=k>if</span> <span class=n>function_name</span> <span class=ow>in</span> <span class=n>output_name_to_value</span><span class=p>:</span>
+                <span class=n>output_values</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=n>output_name_to_value</span><span class=p>[</span><span class=n>function_name</span><span class=p>])</span>
             <span class=k>elif</span> <span class=n>add_missing_tag</span><span class=p>:</span>
                 <span class=n>output_values</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=n>missing_tag</span><span class=p>)</span>
 
@@ -1408,7 +1408,7 @@
       dataclass
    (gemseo.datasets.optimization_metadata.OptimizationMetadata)" href=../../datasets/optimization_metadata/#gemseo.datasets.optimization_metadata.OptimizationMetadata>OptimizationMetadata</a></span> <span class=o>|</span> <span class=kc>None</span>
     <span class=p>)</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
-    <span class=n>groups_to_variables</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a></span><span class=p>[</span>
+    <span class=n>group_to_variables</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a></span><span class=p>[</span>
         <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span>
     <span class=p>]</span> <span class=o>=</span> <span class=n><a class="autorefs autorefs-internal" title="            READ_ONLY_EMPTY_DICT
 
@@ -1432,13 +1432,13 @@
 
   
       class-attribute
-   (gemseo.datasets.dataset.Dataset.DEFAULT_GROUP)" href=../../datasets/dataset/#gemseo.datasets.dataset.Dataset.DEFAULT_GROUP>DEFAULT_GROUP</a></code> ) – <div class=doc-md-description><p>The name of the group to store the output values. This argument is ignored when <code>groups_to_variables</code> is defined.</p></div></li><li class="doc-section-item field-body"><b><code>gradient_group</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code><a class="autorefs autorefs-internal" title="            GRADIENT_GROUP
+   (gemseo.datasets.dataset.Dataset.DEFAULT_GROUP)" href=../../datasets/dataset/#gemseo.datasets.dataset.Dataset.DEFAULT_GROUP>DEFAULT_GROUP</a></code> ) – <div class=doc-md-description><p>The name of the group to store the output values. This argument is ignored when <code>group_to_variables</code> is defined.</p></div></li><li class="doc-section-item field-body"><b><code>gradient_group</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></code>, default: <code><a class="autorefs autorefs-internal" title="            GRADIENT_GROUP
 
 
   
       class-attribute
       instance-attribute
-   (gemseo.datasets.dataset.Dataset.GRADIENT_GROUP)" href=../../datasets/dataset/#gemseo.datasets.dataset.Dataset.GRADIENT_GROUP>GRADIENT_GROUP</a></code> ) – <div class=doc-md-description><p>The name of the group to store the gradient values.</p></div></li><li class="doc-section-item field-body"><b><code>groups_to_variables</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]]</code>, default: <code><a class="autorefs autorefs-internal" title="            READ_ONLY_EMPTY_DICT
+   (gemseo.datasets.dataset.Dataset.GRADIENT_GROUP)" href=../../datasets/dataset/#gemseo.datasets.dataset.Dataset.GRADIENT_GROUP>GRADIENT_GROUP</a></code> ) – <div class=doc-md-description><p>The name of the group to store the gradient values.</p></div></li><li class="doc-section-item field-body"><b><code>group_to_variables</code></b> (<code><a class="autorefs autorefs-external" title=collections.abc.Mapping href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping>Mapping</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>]]</code>, default: <code><a class="autorefs autorefs-internal" title="            READ_ONLY_EMPTY_DICT
 
 
   
@@ -1571,7 +1571,7 @@
     <span class=n>output_group</span><span class=p>:</span> <span class=nb>str</span> <span class=o>=</span> <span class=n>Dataset</span><span class=o>.</span><span class=n>DEFAULT_GROUP</span><span class=p>,</span>
     <span class=n>gradient_group</span><span class=p>:</span> <span class=nb>str</span> <span class=o>=</span> <span class=n>Dataset</span><span class=o>.</span><span class=n>GRADIENT_GROUP</span><span class=p>,</span>
     <span class=n>optimization_metadata</span><span class=p>:</span> <span class=n>OptimizationMetadata</span> <span class=o>|</span> <span class=kc>None</span> <span class=o>=</span> <span class=kc>None</span><span class=p>,</span>
-    <span class=n>groups_to_variables</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]]</span> <span class=o>=</span> <span class=n>READ_ONLY_EMPTY_DICT</span><span class=p>,</span>
+    <span class=n>group_to_variables</span><span class=p>:</span> <span class=n>Mapping</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>]]</span> <span class=o>=</span> <span class=n>READ_ONLY_EMPTY_DICT</span><span class=p>,</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=n>Dataset</span><span class=p>:</span>
 <span class=w>    </span><span class=sd>&quot;&quot;&quot;Export the database to a [Dataset][gemseo.datasets.dataset.Dataset].</span>
 
@@ -1586,9 +1586,9 @@
 <span class=sd>        dataset_class: The dataset class.</span>
 <span class=sd>        input_group: The name of the group to store the input values.</span>
 <span class=sd>        output_group: The name of the group to store the output values.</span>
-<span class=sd>            This argument is ignored when `groups_to_variables` is defined.</span>
+<span class=sd>            This argument is ignored when `group_to_variables` is defined.</span>
 <span class=sd>        gradient_group: The name of the group to store the gradient values.</span>
-<span class=sd>        groups_to_variables: The variable names</span>
+<span class=sd>        group_to_variables: The variable names</span>
 <span class=sd>            mapped to their corresponding group to be stored in.</span>
 
 <span class=sd>    Returns:</span>
@@ -1598,8 +1598,8 @@
     <span class=c1># Add database inputs</span>
     <span class=n>input_history</span> <span class=o>=</span> <span class=n>array</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>get_x_vect_history</span><span class=p>())</span>
     <span class=n>input_space</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>input_space</span>
-    <span class=n>names_to_sizes</span> <span class=o>=</span> <span class=n>input_space</span><span class=o>.</span><span class=n>variable_sizes</span>
-    <span class=n>names_to_types</span> <span class=o>=</span> <span class=p>{</span>
+    <span class=n>name_to_size</span> <span class=o>=</span> <span class=n>input_space</span><span class=o>.</span><span class=n>variable_sizes</span>
+    <span class=n>name_to_type</span> <span class=o>=</span> <span class=p>{</span>
         <span class=p>(</span><span class=n>input_group</span><span class=p>,</span> <span class=n>name</span><span class=p>,</span> <span class=n>component</span><span class=p>):</span> <span class=n>dtype</span><span class=p>(</span>
             <span class=n>input_space</span><span class=o>.</span><span class=n>VARIABLE_TYPES_TO_DTYPES</span><span class=p>[</span><span class=n>type_</span><span class=p>]</span>
         <span class=p>)</span>
@@ -1617,17 +1617,17 @@
     <span class=n>columns</span> <span class=o>=</span> <span class=p>[</span>
         <span class=p>(</span><span class=n>input_group</span><span class=p>,</span> <span class=n>name</span><span class=p>,</span> <span class=n>index</span><span class=p>)</span>
         <span class=k>for</span> <span class=n>name</span> <span class=ow>in</span> <span class=n>input_space</span>
-        <span class=k>for</span> <span class=n>index</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>names_to_sizes</span><span class=p>[</span><span class=n>name</span><span class=p>])</span>
+        <span class=k>for</span> <span class=n>index</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>name_to_size</span><span class=p>[</span><span class=n>name</span><span class=p>])</span>
     <span class=p>]</span>
     <span class=c1># Add database outputs</span>
-    <span class=k>if</span> <span class=ow>not</span> <span class=n>groups_to_variables</span><span class=p>:</span>
-        <span class=n>groups_to_variables</span> <span class=o>=</span> <span class=p>{</span><span class=n>output_group</span><span class=p>:</span> <span class=bp>self</span><span class=o>.</span><span class=n>get_function_names</span><span class=p>()}</span>
+    <span class=k>if</span> <span class=ow>not</span> <span class=n>group_to_variables</span><span class=p>:</span>
+        <span class=n>group_to_variables</span> <span class=o>=</span> <span class=p>{</span><span class=n>output_group</span><span class=p>:</span> <span class=bp>self</span><span class=o>.</span><span class=n>get_function_names</span><span class=p>()}</span>
 
-    <span class=k>for</span> <span class=n>group_name</span><span class=p>,</span> <span class=n>variable_names</span> <span class=ow>in</span> <span class=n>groups_to_variables</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
+    <span class=k>for</span> <span class=n>group_name</span><span class=p>,</span> <span class=n>variable_names</span> <span class=ow>in</span> <span class=n>group_to_variables</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>__update_data_and_columns_for_dataset</span><span class=p>(</span>
             <span class=n>data</span><span class=p>,</span>
             <span class=n>columns</span><span class=p>,</span>
-            <span class=n>names_to_types</span><span class=p>,</span>
+            <span class=n>name_to_type</span><span class=p>,</span>
             <span class=n>variable_names</span><span class=p>,</span>
             <span class=n>n_samples</span><span class=p>,</span>
             <span class=n>group_name</span><span class=p>,</span>
@@ -1640,7 +1640,7 @@
         <span class=bp>self</span><span class=o>.</span><span class=n>__update_data_and_columns_for_dataset</span><span class=p>(</span>
             <span class=n>data</span><span class=p>,</span>
             <span class=n>columns</span><span class=p>,</span>
-            <span class=n>names_to_types</span><span class=p>,</span>
+            <span class=n>name_to_type</span><span class=p>,</span>
             <span class=n>output_names</span><span class=p>,</span>
             <span class=n>n_samples</span><span class=p>,</span>
             <span class=n>gradient_group</span><span class=p>,</span>
@@ -1660,26 +1660,26 @@
     <span class=n>dataset</span><span class=o>.</span><span class=n>misc</span><span class=p>[</span><span class=s2>&quot;optimization_metadata&quot;</span><span class=p>]</span> <span class=o>=</span> <span class=n>optimization_metadata</span>
     <span class=n>dataset</span><span class=o>.</span><span class=n>misc</span><span class=p>[</span><span class=s2>&quot;input_space&quot;</span><span class=p>]</span> <span class=o>=</span> <span class=n>deepcopy</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>input_space</span><span class=p>)</span>
 
-    <span class=n>names_to_types_without_int</span> <span class=o>=</span> <span class=p>{</span>
-        <span class=n>k</span><span class=p>:</span> <span class=n>v</span> <span class=k>for</span> <span class=n>k</span><span class=p>,</span> <span class=n>v</span> <span class=ow>in</span> <span class=n>names_to_types</span><span class=o>.</span><span class=n>items</span><span class=p>()</span> <span class=k>if</span> <span class=ow>not</span> <span class=n>issubdtype</span><span class=p>(</span><span class=n>v</span><span class=p>,</span> <span class=n>integer</span><span class=p>)</span>
+    <span class=n>name_to_type_without_int</span> <span class=o>=</span> <span class=p>{</span>
+        <span class=n>k</span><span class=p>:</span> <span class=n>v</span> <span class=k>for</span> <span class=n>k</span><span class=p>,</span> <span class=n>v</span> <span class=ow>in</span> <span class=n>name_to_type</span><span class=o>.</span><span class=n>items</span><span class=p>()</span> <span class=k>if</span> <span class=ow>not</span> <span class=n>issubdtype</span><span class=p>(</span><span class=n>v</span><span class=p>,</span> <span class=n>integer</span><span class=p>)</span>
     <span class=p>}</span>
-    <span class=n>names_to_types_without_int</span><span class=o>.</span><span class=n>update</span><span class=p>({</span>
-        <span class=n>k</span><span class=p>:</span> <span class=nb>float</span> <span class=k>for</span> <span class=n>k</span><span class=p>,</span> <span class=n>v</span> <span class=ow>in</span> <span class=n>names_to_types</span><span class=o>.</span><span class=n>items</span><span class=p>()</span> <span class=k>if</span> <span class=n>issubdtype</span><span class=p>(</span><span class=n>v</span><span class=p>,</span> <span class=n>integer</span><span class=p>)</span>
+    <span class=n>name_to_type_without_int</span><span class=o>.</span><span class=n>update</span><span class=p>({</span>
+        <span class=n>k</span><span class=p>:</span> <span class=nb>float</span> <span class=k>for</span> <span class=n>k</span><span class=p>,</span> <span class=n>v</span> <span class=ow>in</span> <span class=n>name_to_type</span><span class=o>.</span><span class=n>items</span><span class=p>()</span> <span class=k>if</span> <span class=n>issubdtype</span><span class=p>(</span><span class=n>v</span><span class=p>,</span> <span class=n>integer</span><span class=p>)</span>
     <span class=p>})</span>
 
     <span class=c1># The type for integers must be &quot;pandas.Int64Dtype()&quot;</span>
     <span class=c1># to manage NaN with integers.</span>
     <span class=c1># It&#39;s a Pandas experimental feature.</span>
     <span class=c1># See https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html</span>
-    <span class=n>names_to_types</span><span class=o>.</span><span class=n>update</span><span class=p>({</span>
-        <span class=n>k</span><span class=p>:</span> <span class=s2>&quot;Int64&quot;</span> <span class=k>for</span> <span class=n>k</span><span class=p>,</span> <span class=n>v</span> <span class=ow>in</span> <span class=n>names_to_types</span><span class=o>.</span><span class=n>items</span><span class=p>()</span> <span class=k>if</span> <span class=n>issubdtype</span><span class=p>(</span><span class=n>v</span><span class=p>,</span> <span class=n>integer</span><span class=p>)</span>
+    <span class=n>name_to_type</span><span class=o>.</span><span class=n>update</span><span class=p>({</span>
+        <span class=n>k</span><span class=p>:</span> <span class=s2>&quot;Int64&quot;</span> <span class=k>for</span> <span class=n>k</span><span class=p>,</span> <span class=n>v</span> <span class=ow>in</span> <span class=n>name_to_type</span><span class=o>.</span><span class=n>items</span><span class=p>()</span> <span class=k>if</span> <span class=n>issubdtype</span><span class=p>(</span><span class=n>v</span><span class=p>,</span> <span class=n>integer</span><span class=p>)</span>
     <span class=p>})</span>
 
     <span class=c1># &quot;0.0&quot; cannot be cast to int directly (try int(&quot;0.0&quot;)).</span>
     <span class=c1># So</span>
     <span class=c1># 1) we cast the str-like int to float</span>
     <span class=c1># 2) these float-like int to int.</span>
-    <span class=k>return</span> <span class=n>dataset</span><span class=o>.</span><span class=n>astype</span><span class=p>(</span><span class=n>names_to_types_without_int</span><span class=p>)</span><span class=o>.</span><span class=n>astype</span><span class=p>(</span><span class=n>names_to_types</span><span class=p>)</span>
+    <span class=k>return</span> <span class=n>dataset</span><span class=o>.</span><span class=n>astype</span><span class=p>(</span><span class=n>name_to_type_without_int</span><span class=p>)</span><span class=o>.</span><span class=n>astype</span><span class=p>(</span><span class=n>name_to_type</span><span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.algos.database.Database.to_ggobi class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">to_ggobi</span><a href=#gemseo.algos.database.Database.to_ggobi class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>to_ggobi</span><span class=p>(</span>
     <span class=n>function_names</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Iterable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable>Iterable</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>]</span> <span class=o>=</span> <span class=p>(),</span>
     <span class=n>file_path</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>|</span> <span class=n><a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></span> <span class=o>=</span> <span class=s2>&quot;opt_hist.xml&quot;</span><span class=p>,</span>

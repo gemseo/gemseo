@@ -1740,7 +1740,7 @@ s\leq 0
 <span class=sd>            [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP]</span>
 <span class=sd>            [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP]).</span>
 <span class=sd>    &quot;&quot;&quot;</span>  <span class=c1># noqa: D205, D212</span>
-    <span class=n>groups_to_variables</span> <span class=o>=</span> <span class=p>{}</span>
+    <span class=n>group_to_variables</span> <span class=o>=</span> <span class=p>{}</span>
     <span class=k>if</span> <span class=n>categorize</span><span class=p>:</span>
         <span class=n>gradient_group</span> <span class=o>=</span> <span class=n>Dataset</span><span class=o>.</span><span class=n>GRADIENT_GROUP</span>
         <span class=k>if</span> <span class=n>opt_naming</span><span class=p>:</span>
@@ -1748,7 +1748,7 @@ s\leq 0
             <span class=n>input_group</span> <span class=o>=</span> <span class=n>OptimizationDataset</span><span class=o>.</span><span class=n>DESIGN_GROUP</span>
             <span class=n>output_group</span> <span class=o>=</span> <span class=n>OptimizationDataset</span><span class=o>.</span><span class=n>FUNCTION_GROUP</span>
             <span class=k>if</span> <span class=n>group_functions</span><span class=p>:</span>
-                <span class=n>groups_to_variables</span> <span class=o>=</span> <span class=p>{</span>
+                <span class=n>group_to_variables</span> <span class=o>=</span> <span class=p>{</span>
                     <span class=n>OptimizationDataset</span><span class=o>.</span><span class=n>OBJECTIVE_GROUP</span><span class=p>:</span> <span class=p>[</span>
                         <span class=bp>self</span><span class=o>.</span><span class=n>standardized_objective_name</span>
                         <span class=k>if</span> <span class=bp>self</span><span class=o>.</span><span class=n>use_standardized_objective</span> <span class=ow>is</span> <span class=kc>True</span>
@@ -1785,7 +1785,7 @@ s\leq 0
         <span class=n>output_group</span><span class=o>=</span><span class=n>output_group</span><span class=p>,</span>
         <span class=n>gradient_group</span><span class=o>=</span><span class=n>gradient_group</span><span class=p>,</span>
         <span class=n>optimization_metadata</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>_get_optimization_metadata</span><span class=p>(),</span>
-        <span class=n>groups_to_variables</span><span class=o>=</span><span class=n>groups_to_variables</span><span class=p>,</span>
+        <span class=n>group_to_variables</span><span class=o>=</span><span class=n>group_to_variables</span><span class=p>,</span>
     <span class=p>)</span>
 </code></pre></div></td></tr></table></div></details></div></div><div class="doc doc-object doc-function"><h6 id=gemseo.problems.uncertainty.ishigami.ishigami_problem.IshigamiProblem.to_hdf class="doc doc-heading"><code class="doc-symbol doc-symbol-heading doc-symbol-method"></code><span class="doc doc-object-name doc-function-name">to_hdf</span><a href=#gemseo.problems.uncertainty.ishigami.ishigami_problem.IshigamiProblem.to_hdf class=headerlink title="Permanent link">&para;</a></h6><div class="doc-signature highlight"><pre><span></span><code><span class=nf>to_hdf</span><span class=p>(</span>
     <span class=n>file_path</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span> <span class=o>|</span> <span class=n><a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></span><span class=p>,</span>
