@@ -234,7 +234,7 @@ class DisciplineJacApprox:
         if self.discipline.cache is not None:
             old_cache_tol = self.discipline.cache.tolerance
             self.discipline.cache.tolerance = 0.0
-            yield
+            yield  # noqa: RUF075
             self.discipline.cache.tolerance = old_cache_tol
         else:
             yield

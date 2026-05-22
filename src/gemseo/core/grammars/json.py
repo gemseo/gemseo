@@ -369,7 +369,7 @@ class JSONGrammar(BaseGrammar):
     def __sync_required_names(self) -> Iterator[None]:
         """Synchronize the required names while processing the schema builder."""
         self.__schema_builder.required.update(self._required_names)
-        yield
+        yield  # noqa: RUF075
         self.__schema_builder.required.clear()
 
     @property

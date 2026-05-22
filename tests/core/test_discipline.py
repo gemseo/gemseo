@@ -231,7 +231,7 @@ def enable_status(request) -> bool:
 
 
 def test_execute_status_error(sobieski_chain, enable_status) -> None:
-    """Test the execution with a failed status."""
+    """Verify execution from a FAILED status raises only when status is enabled."""
     chain, indata = sobieski_chain
     chain.execution_status.value = ExecutionStatus.Status.FAILED
     if enable_status:
@@ -242,7 +242,7 @@ def test_execute_status_error(sobieski_chain, enable_status) -> None:
 
 
 def test_check_input_data_exception_chain(sobieski_chain) -> None:
-    """Test the check input data exception."""
+    """Verify a missing input raises ``InvalidDataError`` on a chain grammar."""
     chain, indata = sobieski_chain
     del indata["x_1"]
     with pytest.raises(InvalidDataError):
@@ -253,7 +253,7 @@ def test_check_input_data_exception_chain(sobieski_chain) -> None:
     "grammar_type", [Discipline.GrammarType.JSON, Discipline.GrammarType.SIMPLE]
 )
 def test_check_input_data_exception(grammar_type, snapshot) -> None:
-    """Test the check input data exception."""
+    """Verify a missing input raises ``InvalidDataError`` for each grammar type."""
     if grammar_type == Discipline.GrammarType.SIMPLE:
         struct = SobieskiStructureSG()
     else:
@@ -286,7 +286,7 @@ def test_outputs() -> None:
 
 
 def test_get_input_data(sobieski_chain) -> None:
-    """Test get_input_data."""
+    """Verify ``get_input_data`` returns the same keys as the execution input."""
     chain, indata_ref = sobieski_chain
     chain.execute(indata_ref)
     indata = chain.get_input_data()
@@ -294,12 +294,13 @@ def test_get_input_data(sobieski_chain) -> None:
 
 
 def test_reset_statuses_for_run_error(sobieski_chain, enable_status) -> None:
-    """Test the reset of the discipline status."""
+    """Verify the execution status can be set to FAILED or DONE."""
     chain, _ = sobieski_chain
-    if enable_status:
-        chain.execution_status.value = ExecutionStatus.Status.FAILED
-    else:
-        chain.execution_status.value = ExecutionStatus.Status.DONE
+    target = (
+        ExecutionStatus.Status.FAILED if enable_status else ExecutionStatus.Status.DONE
+    )
+    chain.execution_status.value = target
+    assert chain.execution_status.value == target
 
 
 def test_check_jac_fdapprox() -> None:
@@ -376,22 +377,24 @@ def test_check_lin_threshold() -> None:
     aero.check_jacobian(indata, threshold=1e-50)
 
 
-def test_input_exist() -> None:
-    """Test is_input_existing."""
-    sr = SobieskiAerodynamics()
-    problem = SobieskiProblem()
-    indata = problem.get_default_inputs(names=sr.io.input_grammar)
-    assert next(iter(indata.keys())) in sr.io.input_grammar
-    assert "bidon" not in sr.io.input_grammar
+def test_input_grammar_membership() -> None:
+    """Verify ``in`` membership testing on the input grammar."""
+    discipline = SobieskiAerodynamics()
+    default_inputs = SobieskiProblem().get_default_inputs(
+        names=discipline.io.input_grammar
+    )
+    assert next(iter(default_inputs.keys())) in discipline.io.input_grammar
+    assert "bidon" not in discipline.io.input_grammar
 
 
-def test_get_all_inputs_outputs_name() -> None:
-    """Test get_all_input_outputs_name method."""
-    aero = SobieskiAerodynamics()
-    problem = SobieskiProblem()
-    indata = problem.get_default_inputs(names=aero.io.input_grammar)
-    for data_name in indata:
-        assert data_name in aero.io.input_grammar
+def test_input_grammar_contains_all_default_input_names() -> None:
+    """Verify every default input name is registered in the input grammar."""
+    discipline = SobieskiAerodynamics()
+    default_inputs = SobieskiProblem().get_default_inputs(
+        names=discipline.io.input_grammar
+    )
+    for data_name in default_inputs:
+        assert data_name in discipline.io.input_grammar
 
 
 @pytest.mark.xfail
@@ -412,7 +415,7 @@ def test_get_all_inputs_outputs() -> None:
 
 
 def test_serialize_deserialize(tmp_wd) -> None:
-    """Test the serialization/deserialization method."""
+    """Verify pickle preserves io.data and honors ``get_attributes_to_serialize``."""
     aero = SobieskiAerodynamics()
     aero.io.data_processor = ComplexDataProcessor()
     out_file = "sellar1.o"
@@ -435,15 +438,13 @@ def test_serialize_deserialize(tmp_wd) -> None:
         to_pickle(aero, out_file)
 
     saero_u_dict = saero_u.__dict__
-    ok = True
-    for k in aero.__dict__:
-        if k not in saero_u_dict and k != "get_attributes_to_serialize":
-            ok = False
-    assert ok
+    assert all(
+        k in saero_u_dict or k == "get_attributes_to_serialize" for k in aero.__dict__
+    )
 
 
 def test_serialize_run_deserialize(tmp_wd, enable_discipline_status) -> None:
-    """Test serialization, run and deserialization."""
+    """Verify pickle round-trips around execute calls keep io.data identical."""
     aero = SobieskiAerodynamics()
     out_file = "sellar1.o"
     input_data = SobieskiProblem().get_default_inputs()
@@ -462,7 +463,7 @@ def test_serialize_run_deserialize(tmp_wd, enable_discipline_status) -> None:
 
 
 def test_serialize_hdf_cache(tmp_wd) -> None:
-    """Test the serialization into a HDF5 cache."""
+    """Verify pickle round-trip preserves an HDF5 cache entry."""
     aero = SobieskiAerodynamics()
     cache_hdf_file = "aero_cache.h5"
     aero.set_cache(aero.CacheType.HDF5, hdf_file_path=cache_hdf_file)
@@ -474,7 +475,7 @@ def test_serialize_hdf_cache(tmp_wd) -> None:
 
 
 def test_data_processor() -> None:
-    """Test the data processor."""
+    """Verify a data processor is applied during execution and works with the cache."""
     aero = SobieskiAerodynamics()
     input_data = SobieskiProblem().get_default_inputs()
     aero.io.data_processor = ComplexDataProcessor()
@@ -482,7 +483,7 @@ def test_data_processor() -> None:
     for v in aero.get_output_data().values():
         assert isinstance(v, ndarray)
         assert v.dtype == complex128
-    # Mix data processor and cache
+    # Re-execute to hit the cache and verify the cached outputs match.
     out_data2 = aero.execute(input_data)
     for k, v in out_data.items():
         assert (out_data2[k] == v).all()
@@ -583,7 +584,7 @@ def test_check_jacobian(snapshot) -> None:
 
 
 def test_check_jacobian_2() -> None:
-    """Test check_jacobian."""
+    """Test ``linearize`` errors on malformed Jacobians."""
     x = array([1.0, 2.0])
 
     class LinDisc(Discipline):
@@ -603,19 +604,24 @@ def test_check_jacobian_2() -> None:
             self.jac = {"y": {self.jac_key: array([[0.0] * self.jac_len])}}
 
     disc = LinDisc()
+
+    # Unknown input key in the Jacobian.
     disc.jac_key = "z"
     with pytest.raises(KeyError):
         disc.linearize({"x": x}, compute_all_jacobians=True)
+
+    # Jacobian column count does not match the input size.
     disc.jac_key = "x"
     disc.jac_len = 3
     with pytest.raises(ValueError):
         disc.linearize({"x": x}, compute_all_jacobians=True)
-    #         # Test not multiple d/dX
+
+    # Jacobian row count does not match the output size.
     disc.jac = {"y": {"x": array([[0.0], [1.0], [3.0]])}}
     with pytest.raises(ValueError):
         disc.linearize({"x": x}, compute_all_jacobians=True)
-    #         # Test inconsistent output size for gradient
-    #         # Test too small d/dX
+
+    # Jacobian column count too small.
     disc.jac = {"y": {"x": array([[0.0]])}}
     with pytest.raises(ValueError):
         disc.linearize({"x": x}, compute_all_jacobians=True)
@@ -655,7 +661,7 @@ def test_check_jacobian_parallel_cplx() -> None:
 
 
 def test_execute_rerun_errors(enable_discipline_status) -> None:
-    """Test the execution and errors during re-run of Discipline."""
+    """Verify execute raises while status is RUNNING and succeeds once set to DONE."""
 
     class MyDisc(Discipline):
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
@@ -674,7 +680,7 @@ def test_execute_rerun_errors(enable_discipline_status) -> None:
 
 
 def test_cache(enable_discipline_statistics) -> None:
-    """Test the Discipline cache."""
+    """Verify the default cache skips execution within tolerance and runs otherwise."""
     sm = SobieskiMission(enable_delay=0.1)
     sm.cache.tolerance = 1e-6
     xs = sm.io.input_grammar.defaults["x_shared"]
@@ -692,7 +698,7 @@ def test_cache(enable_discipline_statistics) -> None:
 
 
 def test_cache_h5(tmp_wd, enable_discipline_statistics) -> None:
-    """Test the HDF5 cache."""
+    """Verify the HDF5 cache skips execution within tolerance and rejects bad types."""
     sm = SobieskiMission(enable_delay=0.1)
     hdf_file = sm.name + ".hdf5"
     sm.set_cache(sm.CacheType.HDF5, hdf_file_path=hdf_file)
@@ -715,7 +721,7 @@ def test_cache_h5(tmp_wd, enable_discipline_statistics) -> None:
 
 
 def test_cache_h5_inpts(tmp_wd) -> None:
-    """Test the HD5 cache for inputs."""
+    """Verify the HDF5 cache restores cached outputs for repeated inputs."""
     sm = SobieskiMission()
     hdf_file = sm.name + ".hdf5"
     sm.set_cache(sm.CacheType.HDF5, hdf_file_path=hdf_file)
@@ -729,7 +735,7 @@ def test_cache_h5_inpts(tmp_wd) -> None:
 
 
 def test_cache_memory_inpts() -> None:
-    """Test the CacheType.MEMORY_FULL."""
+    """Verify the MEMORY_FULL cache restores cached outputs for repeated inputs."""
     sm = SobieskiMission()
     sm.set_cache(sm.CacheType.MEMORY_FULL)
     xs = sm.io.input_grammar.defaults["x_shared"]
@@ -822,7 +828,7 @@ def test_jac_set_optimal_fd_step_compute_all_jacobians() -> None:
 
 
 def test_jac_set_optimal_fd_step_input_output() -> None:
-    """Test the computation of the optimal time step with compute_all_jacobians=True."""
+    """Test the computation of the optimal step for specific inputs and outputs."""
     sm = SobieskiMission()
     sm.set_jacobian_approximation()
     sm.set_optimal_fd_step(input_names=["y_14"], output_names=["y_4"])
@@ -830,8 +836,7 @@ def test_jac_set_optimal_fd_step_input_output() -> None:
 
 
 def test_jac_set_optimal_fd_step_no_jac_approx(snapshot) -> None:
-    """Test that the optimal_fd_step cannot be called before settijng the approx
-    method."""
+    """Test that ``set_optimal_fd_step`` errors when no approximation is configured."""
     sm = SobieskiMission()
     with assert_exception(ValueError, snapshot):
         sm.set_optimal_fd_step(compute_all_jacobians=True)
@@ -861,7 +866,7 @@ def test_jac_cache_trigger_shapecheck() -> None:
 
 def test_has_jacobian(enable_discipline_statistics) -> None:
     """Test that Discipline can be linearized."""
-    # Test at the jacobian is not computed if _has_jacobian is
+    # Test that the jacobian is not computed if _has_jacobian is
     # set to true by the discipline
     aero = SobieskiAerodynamics()
     aero.execute()
@@ -930,7 +935,7 @@ def test_init_jacobian(init_method, fill_missing_keys) -> None:
 
 
 def test_repr_str() -> None:
-    """Test the representation of a Discipline."""
+    """Verify ``str`` and ``repr`` formats of a discipline."""
 
     def myfunc(x=1, y=2):
         z = x + y
@@ -958,40 +963,41 @@ def test_activate_counters(enable_discipline_statistics) -> None:
 def test_deactivate_counters(snapshot) -> None:
     """Check that the discipline counters are set to None when deactivated."""
     activate_counters = ExecutionStatistics.is_enabled
-
     ExecutionStatistics.is_enabled = False
+    try:
+        discipline = DummyDiscipline()
+        assert discipline.execution_statistics.n_executions is None
+        assert discipline.execution_statistics.n_linearizations is None
+        assert discipline.execution_statistics.duration is None
 
-    discipline = DummyDiscipline()
-    assert discipline.execution_statistics.n_executions is None
-    assert discipline.execution_statistics.n_linearizations is None
-    assert discipline.execution_statistics.duration is None
+        discipline.execute()
+        assert discipline.execution_statistics.n_executions is None
+        assert discipline.execution_statistics.n_linearizations is None
+        assert discipline.execution_statistics.duration is None
 
-    discipline.execute()
-    assert discipline.execution_statistics.n_executions is None
-    assert discipline.execution_statistics.n_linearizations is None
-    assert discipline.execution_statistics.duration is None
+        with assert_exception(RuntimeError, snapshot):
+            discipline.execution_statistics.n_executions = 1
 
-    with assert_exception(RuntimeError, snapshot):
-        discipline.execution_statistics.n_executions = 1
+        with assert_exception(RuntimeError, snapshot):
+            discipline.execution_statistics.n_linearizations = 1
 
-    with assert_exception(RuntimeError, snapshot):
-        discipline.execution_statistics.n_linearizations = 1
-
-    with assert_exception(RuntimeError, snapshot):
-        discipline.execution_statistics.duration = 1
-
-    ExecutionStatistics.is_enabled = activate_counters
+        with assert_exception(RuntimeError, snapshot):
+            discipline.execution_statistics.duration = 1
+    finally:
+        ExecutionStatistics.is_enabled = activate_counters
 
 
 def test_cache_none() -> None:
     """Check that the discipline cache can be deactivated."""
     cache_type_before = Discipline.default_cache_type
     Discipline.default_cache_type = Discipline.CacheType.NONE
-    discipline = DummyDiscipline()
-    assert discipline.cache is None
-    discipline.execute()
-    assert BaseMDA.default_cache_type is BaseMDA.CacheType.SIMPLE
-    Discipline.default_cache_type = cache_type_before
+    try:
+        discipline = DummyDiscipline()
+        assert discipline.cache is None
+        discipline.execute()
+        assert BaseMDA.default_cache_type is BaseMDA.CacheType.SIMPLE
+    finally:
+        Discipline.default_cache_type = cache_type_before
 
 
 def test_grammar_inheritance() -> None:
@@ -1021,56 +1027,20 @@ def test_grammar_file_search():
     assert grand_son_discipline.input_grammar == discipline.input_grammar
 
 
-# @pytest.mark.parametrize(
-#     ("grammar_directory", "comp_dir", "in_or_out", "expected"),
-#     [
-#         (
-#             None,
-#             None,
-#             "in",
-#             Path(sys.modules[Sellar1.__module__].__file__).parent.absolute()
-#             / "foo_input.json",
-#         ),
-#         (None, "instance_gd", "out", Path("instance_gd") / "foo_output.json"),
-#         ("class_gd", None, "out", Path("class_gd") / "foo_output.json"),
-#         ("class_gd", "instance_gd", "out", Path("instance_gd") / "foo_output.json"),
-#     ],
-# )
-# def test_get_grammar_file_path(
-#     grammar_directory, comp_dir, in_or_out, expected
-# ) -> None:
-#     """Check the grammar file path."""
-#     original_grammar_directory = Sellar1.GRAMMAR_DIRECTORY
-#     Sellar1.GRAMMAR_DIRECTORY = grammar_directory
-#     get_grammar_file_path = Discipline._Discipline
-#     path = get_grammar_file_path(Sellar1, comp_dir, in_or_out, "foo")
-#     assert path == expected
-#     Sellar1.GRAMMAR_DIRECTORY = original_grammar_directory
-#
-
-# def test_residuals_fail():
-#     """Tests the check of residual variables with state_equations_are_solved=False."""
-#     disc = SobieskiMission()
-#     disc.io.residual_to_state_variable = {"y_4": "x_shared"}
-#     with pytest.raises(
-#         RuntimeError,
-#         match="Discipline that do not solve their residuals "
-#         "are not supported yet.",
-#     ):
-#         disc.execute()
-
-
 def test_activate_checks() -> None:
+    """Verify the discipline produces the same output when validations are disabled."""
     out_ref = SobieskiMission().execute()["y_4"]
     SobieskiMission.validate_input_data = False
     SobieskiMission.validate_output_data = False
-    disc = SobieskiMission()
-    assert out_ref == disc.execute()["y_4"]
-    SobieskiMission.validate_input_data = True
-    SobieskiMission.validate_output_data = True
+    try:
+        assert out_ref == SobieskiMission().execute()["y_4"]
+    finally:
+        SobieskiMission.validate_input_data = True
+        SobieskiMission.validate_output_data = True
 
 
 def test_no_cache(enable_discipline_statistics) -> None:
+    """Verify a discipline without a cache re-executes for repeated identical inputs."""
     disc = SobieskiMission()
     disc.execute()
     disc.execute()
@@ -1508,3 +1478,93 @@ def test_default_cache(cache_type, cache_class):
     DummyDiscipline.default_cache_type = cache_type
     discipline = DummyDiscipline()
     assert isinstance(discipline.cache, cache_class)
+
+
+def test_linearization_mode_getter() -> None:
+    """Verify the ``linearization_mode`` property returns the stored value."""
+    discipline = DummyDiscipline()
+    assert discipline.linearization_mode == discipline.LinearizationMode.AUTO
+
+
+def test_linearize_subset_outputs_prunes_jac() -> None:
+    """Verify ``linearize`` deletes Jacobian entries outside the differentiated set."""
+    aero = SobieskiAerodynamics()
+    aero.add_differentiated_inputs(["x_shared"])
+    aero.add_differentiated_outputs(["y_2"])
+    jac = aero.linearize(compute_all_jacobians=False)
+    assert set(jac) == {"y_2"}
+    assert set(jac["y_2"]) == {"x_shared"}
+
+
+def test_check_jacobian_auto_set_step() -> None:
+    """Verify ``check_jacobian`` runs with ``auto_set_step=True``."""
+    aero = SobieskiAerodynamics()
+    aero.check_jacobian(
+        input_names=["x_shared"],
+        output_names=["y_2"],
+        auto_set_step=True,
+        threshold=1e-3,
+    )
+
+
+def test_compose_hybrid_jacobian_fills_missing_output() -> None:
+    """Verify the hybrid Jacobian path adds entries for outputs missing from self.jac.
+
+    ``_compute_jacobian`` fills only one input of ``y_1`` and skips ``y_2`` entirely
+    so that the hybrid composition must add a fresh ``y_2`` entry.
+    """
+
+    class PartialJacDiscipline(Discipline):
+        def __init__(self) -> None:
+            super().__init__()
+            self.io.input_grammar.update_from_names(["x_1", "x_2"])
+            self.io.output_grammar.update_from_names(["y_1", "y_2"])
+            self.io.input_grammar.defaults = {
+                "x_1": array([1.0]),
+                "x_2": array([1.0]),
+            }
+
+        def _run(self, input_data):
+            x_1 = input_data["x_1"]
+            x_2 = input_data["x_2"]
+            return {"y_1": 2.0 * x_1 + x_2, "y_2": 3.0 * x_1 + x_2}
+
+        def _compute_jacobian(self, input_names=(), output_names=()) -> None:
+            self.jac = {"y_1": {"x_1": array([[2.0]])}}
+
+    disc = PartialJacDiscipline()
+    disc.set_jacobian_approximation("hybrid_finite_differences")
+    jac = disc.linearize(compute_all_jacobians=True)
+    assert_allclose(jac["y_1"]["x_1"], array([[2.0]]))
+    assert_allclose(jac["y_1"]["x_2"], array([[1.0]]), atol=1e-5)
+    assert_allclose(jac["y_2"]["x_1"], array([[3.0]]), atol=1e-5)
+    assert_allclose(jac["y_2"]["x_2"], array([[1.0]]), atol=1e-5)
+
+
+def test_base_discipline_io_accessors() -> None:
+    """Verify the BaseDiscipline property accessors delegate to io."""
+    discipline = DummyDiscipline()
+
+    new_input_grammar = GRAMMAR_FACTORY.create(
+        discipline.io.grammar_type, name="new_input"
+    )
+    discipline.input_grammar = new_input_grammar
+    assert discipline.io.input_grammar is new_input_grammar
+
+    new_output_grammar = GRAMMAR_FACTORY.create(
+        discipline.io.grammar_type, name="new_output"
+    )
+    discipline.output_grammar = new_output_grammar
+    assert discipline.io.output_grammar is new_output_grammar
+
+    discipline.input_grammar.update_from_data({"x": array([0.0])})
+    discipline.output_grammar.update_from_data({"y": array([0.0])})
+
+    discipline.default_input_data = {"x": array([1.0])}
+    assert discipline.default_input_data == {"x": array([1.0])}
+
+    discipline.default_output_data = {"y": array([2.0])}
+    assert discipline.default_output_data == {"y": array([2.0])}
+
+    discipline.local_data = {"x": array([3.0])}
+    assert discipline.local_data == {"x": array([3.0])}

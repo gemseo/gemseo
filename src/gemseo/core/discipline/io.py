@@ -142,7 +142,7 @@ class IO:
         if not data:
             # Copy via casting in order to consistently have a dict object
             # instead of a GrammarProperty which may have side effects
-            # and does not play well with the strictness of  pydantic grammars.
+            # and does not play well with the strictness of pydantic grammars.
             return dict(self.input_grammar.defaults)
 
         input_data = {}

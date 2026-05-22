@@ -20,6 +20,7 @@ import pytest
 from numpy import array
 
 from gemseo.core.discipline.data_processor import DataProcessor
+from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.discipline.io import IO
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.factory import GrammarType
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
 
 @pytest.mark.parametrize("grammar_type", GrammarType)
 def test_grammar_type(grammar_type):
+    """Verify ``grammar_type`` returns the grammar type used at construction."""
     io = IO(type, "", grammar_type)
     assert io.grammar_type == grammar_type
 
@@ -41,38 +43,59 @@ def io() -> IO:
     return IO(type, "io", GrammarType.SIMPLE)
 
 
-def test_prepare_input_data_from(io: IO):
+def test_prepare_input_data_empty(io: IO):
+    """Verify ``prepare_input_data`` is empty when the grammar is empty."""
     assert not io.prepare_input_data({})
 
-    # The value is mutable to check deep/shallow copying.
-    data_with_default = {"input": []}
-    data = {**data_with_default, "input-no-default": 0}
-    io.input_grammar.update_from_data(data)
-    io.input_grammar.defaults.update(data_with_default)
 
-    # For empty argument: a deepcopy of the defaults are returned.
+def test_prepare_input_data_returns_copy_of_defaults(io: IO):
+    """Verify ``prepare_input_data({})`` returns a shallow copy of the defaults.
+
+    Mutating the returned data must not mutate the stored defaults.
+    """
+    default_value = []
+    io.input_grammar.update_from_data({"input": []})
+    io.input_grammar.defaults.update({"input": default_value})
     prepared_data = io.prepare_input_data({})
-    assert prepared_data == data_with_default
+    assert prepared_data == {"input": []}
     prepared_data["input"] += [0]
-    assert data["input"] == [0]
-
-    # For non-empty argument: a shallow copy of the defaults are returned,
-    # the alien items are removed.
-    prepared_data = io.prepare_input_data({"dummy": 0, "input-no-default": 0})
-    assert prepared_data == data
-    prepared_data["input"] += [0]
-    assert data["input"] == [0, 0]
-
-    # Items with defaults are passed.
-    prepared_data = io.prepare_input_data({"input": [0]})
-    assert prepared_data == {"input": [0]}
+    assert default_value == [0]
+    del prepared_data["input"]
+    assert "input" in io.input_grammar.defaults
 
 
-def test_data(io: IO):
+def test_prepare_input_data_drops_alien_items(io: IO):
+    """Verify ``prepare_input_data`` drops items not in the input grammar."""
+    io.input_grammar.update_from_data({"input": 0})
+    prepared = io.prepare_input_data({"input": 0, "dummy": 0})
+    assert prepared == {"input": 0}
+
+
+def test_prepare_input_data_completes_with_defaults(io: IO):
+    """Verify ``prepare_input_data`` completes missing items with defaults."""
+    io.input_grammar.update_from_data({"with_default": 0, "without_default": 0})
+    io.input_grammar.defaults.update({"with_default": 1})
+    prepared = io.prepare_input_data({"without_default": 2})
+    assert prepared == {"with_default": 1, "without_default": 2}
+
+
+def test_prepare_input_data_overrides_defaults(io: IO):
+    """Verify ``prepare_input_data`` overrides defaults with passed items."""
+    io.input_grammar.update_from_data({"input": 0})
+    io.input_grammar.defaults.update({"input": 0})
+    assert io.prepare_input_data({"input": 1}) == {"input": 1}
+
+
+def test_data_default_is_empty(io: IO):
+    """Verify the default ``data`` is empty."""
     assert not io.data
 
+
+def test_data_setter_wraps_in_discipline_data(io: IO):
+    """Verify the ``data`` setter wraps the value in a ``DisciplineData``."""
     io.data = {0: 0}
     assert io.data == {0: 0}
+    assert isinstance(io.data, DisciplineData)
 
 
 def assert_get_io_data(io: IO, attr_naming: str) -> None:
@@ -98,27 +121,36 @@ def assert_get_io_data(io: IO, attr_naming: str) -> None:
 
 
 def test_get_input_data(io: IO):
+    """Verify ``get_input_data`` restricts ``data`` to input grammar items."""
     assert_get_io_data(io, "input")
 
 
 def test_get_output_data(io: IO):
+    """Verify ``get_output_data`` restricts ``data`` to output grammar items."""
     assert_get_io_data(io, "output")
 
 
-def test_update(io: IO):
-    io.input_grammar.update_from_data({"input": 0})
-    io.output_grammar.update_from_data({"output1": 0, "output2": 0})
+def test_update_output_data_filters_non_outputs(io: IO):
+    """Verify ``update_output_data`` ignores items not in the output grammar."""
+    io.output_grammar.update_from_data({"output": 0})
+    io.update_output_data({"input": 0, "dummy": 0, "output": 0})
+    assert io.data == {"output": 0}
 
-    # Without namespace.
-    assert not io.data
-    io.update_output_data({"input": 0, "dummy": 0, "output1": 0})
-    assert io.data == {"output1": 0}
 
-    # With namespace.
-    io.data.clear()
-    io.output_grammar.add_namespace("output1", "n")
-    io.update_output_data({"input": 0, "dummy": 0, "output1": 0})
-    assert io.data == {"n:output1": 0}
+def test_update_output_data_handles_namespaces(io: IO):
+    """Verify ``update_output_data`` prefixes the namespace to namespaced outputs."""
+    io.output_grammar.update_from_data({"output": 0})
+    io.output_grammar.add_namespace("output", "n")
+    io.update_output_data({"output": 0})
+    assert io.data == {"n:output": 0}
+
+
+def test_update_output_data_keeps_already_namespaced_keys(io: IO):
+    """Verify ``update_output_data`` accepts already-namespaced keys as-is."""
+    io.output_grammar.update_from_data({"output": 0})
+    io.output_grammar.add_namespace("output", "n")
+    io.update_output_data({"n:output": 1})
+    assert io.data == {"n:output": 1}
 
 
 class Processor(DataProcessor):

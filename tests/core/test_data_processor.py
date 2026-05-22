@@ -26,10 +26,11 @@ from numpy import array
 from numpy import complex128
 from numpy import float64
 from numpy import ndarray
-from scipy import linalg
+from numpy.testing import assert_array_equal
 
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.data_processor import ComplexDataProcessor
+from gemseo.core.discipline.data_processor import DataProcessor
 from gemseo.core.discipline.data_processor import FloatDataProcessor
 from gemseo.core.discipline.data_processor import NameMapping
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
@@ -38,52 +39,64 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 
-def test_float_data_processor() -> None:
-    """"""
-    dp = FloatDataProcessor()
-    in_data = {"a": array([1.1]), "b": array([3.1, 4.1])}
-    pre_data = dp.pre_process_data(in_data)
-    assert len(pre_data) == len(in_data)
-    for k, v in pre_data.items():
-        assert k in in_data
-        if k == "a":
-            assert isinstance(v, float)
-        else:
-            assert isinstance(v, list)
-
-    post_data = dp.post_process_data(pre_data)
-    assert len(post_data) == len(in_data)
-    for k, v in post_data.items():
-        assert k in in_data
-        assert isinstance(v, ndarray)
+class LocalDisc(Discipline):
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        return {
+            "o1": input_data["a"] + input_data["b"],
+            "o2": input_data["a"] - input_data["b"],
+        }
 
 
-def test_complex_data_processor() -> None:
-    """"""
-    dp = ComplexDataProcessor()
+def test_data_processor_is_abstract() -> None:
+    """Verify ``DataProcessor`` cannot be instantiated."""
+    with pytest.raises(TypeError, match="abstract"):
+        DataProcessor()
+
+
+def test_float_data_processor_pre_process() -> None:
+    """Verify ``FloatDataProcessor.pre_process_data`` casts to float or float list."""
+    in_data = {"scalar": array([1.1]), "vector": array([3.1, 4.1])}
+    pre_data = FloatDataProcessor().pre_process_data(in_data)
+    assert pre_data["scalar"] == 1.1
+    assert isinstance(pre_data["scalar"], float)
+    assert pre_data["vector"] == [3.1, 4.1]
+    assert all(isinstance(v, float) for v in pre_data["vector"])
+
+
+def test_float_data_processor_post_process() -> None:
+    """Verify ``FloatDataProcessor.post_process_data`` wraps values in ndarrays."""
+    in_data = {"scalar": 1.1, "vector": [3.1, 4.1]}
+    post_data = FloatDataProcessor().post_process_data(in_data)
+    assert_array_equal(post_data["scalar"], array([1.1]))
+    assert_array_equal(post_data["vector"], array([3.1, 4.1]))
+    assert all(isinstance(v, ndarray) for v in post_data.values())
+
+
+def test_complex_data_processor_pre_process() -> None:
+    """Verify ``ComplexDataProcessor.pre_process_data`` keeps only the real part."""
     in_data = {"a": array([1.1 + 2j]), "b": array([3.1, 4.1 + 3j])}
-    pre_data = dp.pre_process_data(in_data)
-    assert len(pre_data) == len(in_data)
-    for k, v in pre_data.items():
-        assert k in in_data
-        assert linalg.norm(v - in_data[k].real) == 0.0
-        assert linalg.norm(v.imag) == 0
-        assert v.dtype == float64
+    pre_data = ComplexDataProcessor().pre_process_data(in_data)
+    assert_array_equal(pre_data["a"], array([1.1]))
+    assert_array_equal(pre_data["b"], array([3.1, 4.1]))
+    assert all(v.dtype == float64 for v in pre_data.values())
 
-    post_data = dp.post_process_data(pre_data)
-    assert len(post_data) == len(in_data)
-    for k, v in post_data.items():
-        assert k in in_data
-        assert isinstance(v, ndarray)
-        assert v.dtype == complex128
 
-    sm = SobieskiMission("float64")
-    sm.io.data_processor = dp
-    sm.execute({
-        "x_shared": array(sm.io.input_grammar.defaults["x_shared"], dtype="complex128")
-    })
+def test_complex_data_processor_post_process() -> None:
+    """Verify ``ComplexDataProcessor.post_process_data`` casts to complex128."""
+    in_data = {"a": array([1.1]), "b": array([3.1, 4.1])}
+    post_data = ComplexDataProcessor().post_process_data(in_data)
+    assert_array_equal(post_data["a"], array([1.1 + 0j]))
+    assert_array_equal(post_data["b"], array([3.1 + 0j, 4.1 + 0j]))
+    assert all(v.dtype == complex128 for v in post_data.values())
 
-    assert sm.io.data["y_4"].dtype == complex128
+
+def test_complex_data_processor_with_discipline() -> None:
+    """Verify ``ComplexDataProcessor`` lets a real discipline accept complex input."""
+    discipline = SobieskiMission("float64")
+    discipline.io.data_processor = ComplexDataProcessor()
+    defaults = discipline.io.input_grammar.defaults
+    discipline.execute({"x_shared": array(defaults["x_shared"], dtype="complex128")})
+    assert discipline.io.data["y_4"].dtype == complex128
 
 
 @pytest.mark.parametrize(
@@ -147,9 +160,29 @@ def test_name_mapping(
     assert out[o2_name] == array([-1.0])
 
 
-class LocalDisc(Discipline):
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        return {
-            "o1": input_data["a"] + input_data["b"],
-            "o2": input_data["a"] - input_data["b"],
-        }
+def test_name_mapping_pre_process() -> None:
+    """Verify ``NameMapping.pre_process_data`` renames global keys to local keys."""
+    processor = NameMapping({"global_a": "local_a", "global_b": "local_b"})
+    pre = processor.pre_process_data({"global_a": 1, "global_b": 2})
+    assert pre == {"local_a": 1, "local_b": 2}
+
+
+def test_name_mapping_pre_process_passes_unmapped_keys() -> None:
+    """Verify unmapped keys go through ``pre_process_data`` unchanged."""
+    processor = NameMapping({"global_a": "local_a"})
+    pre = processor.pre_process_data({"global_a": 1, "passthrough": 2})
+    assert pre == {"local_a": 1, "passthrough": 2}
+
+
+def test_name_mapping_post_process() -> None:
+    """Verify ``NameMapping.post_process_data`` reverses the renaming."""
+    processor = NameMapping({"global_a": "local_a", "global_b": "local_b"})
+    post = processor.post_process_data({"local_a": 1, "local_b": 2})
+    assert post == {"global_a": 1, "global_b": 2}
+
+
+def test_name_mapping_post_process_passes_unmapped_keys() -> None:
+    """Verify unmapped keys go through ``post_process_data`` unchanged."""
+    processor = NameMapping({"global_a": "local_a"})
+    post = processor.post_process_data({"local_a": 1, "passthrough": 2})
+    assert post == {"global_a": 1, "passthrough": 2}
