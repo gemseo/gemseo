@@ -101,7 +101,7 @@ def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> 
             "store_outer_av": True,
             "prepend_outer_v": True,
         })
-    library_name = factory.algo_names_to_libraries[algo_name]
+    library_name = factory.algo_name_to_library[algo_name]
     settings = (
         factory
         .get_class(library_name)

@@ -143,12 +143,12 @@ class ConstraintAggregation(Discipline):
         evaluation_function = self._EVALUATION_FUNCTION_MAP[self.__method_name]
         output_data = atleast_1d(evaluation_function(input_data, **self.__meth_options))
         output_names = self.io.output_grammar
-        output_names_to_output_values = split_array_to_dict_of_arrays(
+        output_name_to_output_value = split_array_to_dict_of_arrays(
             output_data,
             dict.fromkeys(output_names, 1),
             output_names,
         )
-        self.io.update_output_data(output_names_to_output_values)
+        self.io.update_output_data(output_name_to_output_value)
         if not self.__data_sizes:
             self.__data_sizes = {
                 variable_name: variable_value.size

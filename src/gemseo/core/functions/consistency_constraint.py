@@ -72,7 +72,7 @@ class ConsistencyConstraint(ArrayFunction):
         else:
             self.__norm_fact = 1.0
 
-        self.__input_names_to_sizes = self.__formulation.design_space.variable_sizes
+        self.__input_name_to_size = self.__formulation.design_space.variable_sizes
 
         expr = ""
         for out_c in self.__output_couplings:
@@ -134,9 +134,9 @@ class ConsistencyConstraint(ArrayFunction):
             for output_name in self.__output_couplings:
                 i_min = 0
                 i_max = 0
-                o_max += self.__input_names_to_sizes[output_name]
+                o_max += self.__input_name_to_size[output_name]
                 for input_name in input_names:
-                    i_max += (input_size := self.__input_names_to_sizes[input_name])
+                    i_max += (input_size := self.__input_name_to_size[input_name])
                     if input_name == output_name:
                         yt_jac[o_min:o_max, i_min:i_max] = eye(input_size)
                     i_min = i_max
@@ -148,8 +148,7 @@ class ConsistencyConstraint(ArrayFunction):
             shape = (
                 *x_vect.shape[:-1],
                 sum(
-                    self.__input_names_to_sizes[name]
-                    for name in self.__output_couplings
+                    self.__input_name_to_size[name] for name in self.__output_couplings
                 ),
             )
             yt_jac = self.__formulation.unmask_x_swap_order(

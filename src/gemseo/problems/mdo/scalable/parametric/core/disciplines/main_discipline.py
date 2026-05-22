@@ -76,7 +76,7 @@ class MainDiscipline(BaseDiscipline):
             **default_input_values: The default values of the input variables.
         """  # noqa: D205 D212
         self.name = self.__class__.__name__
-        self.input_names_to_default_values = default_input_values
+        self.input_name_to_default_value = default_input_values
         self.__n_scalable_disciplines = len(t_i)
         scalable_discipline_indices = range(1, self.__n_scalable_disciplines + 1)
         self.__y_i_names = [
@@ -87,23 +87,23 @@ class MainDiscipline(BaseDiscipline):
             get_constraint_name(scalable_discipline_index)
             for scalable_discipline_index in scalable_discipline_indices
         ]
-        self.__y_i_names_to_default_values = {
-            coupling_name: self.input_names_to_default_values[coupling_name]
+        self.__y_i_name_to_default_value = {
+            coupling_name: self.input_name_to_default_value[coupling_name]
             for coupling_name in self.__y_i_names
         }
         self.__t_i = t_i
-        self.input_names = sorted(self.input_names_to_default_values.keys())
+        self.input_names = sorted(self.input_name_to_default_value.keys())
         self.output_names = [OBJECTIVE_NAME]
         self.output_names.extend(self.__c_i_names)
-        self.names_to_sizes = {
+        self.name_to_size = {
             input_name: default_value.size
             for input_name, default_value in default_input_values.items()
         }
         for cstr_name, cpl_name in zip(
             self.__c_i_names, self.__y_i_names, strict=False
         ):
-            self.names_to_sizes[cstr_name] = self.names_to_sizes[cpl_name]
-        self.names_to_sizes[OBJECTIVE_NAME] = 1
+            self.name_to_size[cstr_name] = self.name_to_size[cpl_name]
+        self.name_to_size[OBJECTIVE_NAME] = 1
 
     def __call__(
         self,
@@ -125,9 +125,9 @@ class MainDiscipline(BaseDiscipline):
             Either the values of the objective and constraints or their derivatives.
         """
         if x_0 is None:
-            x_0 = self.input_names_to_default_values[SHARED_DESIGN_VARIABLE_NAME]
+            x_0 = self.input_name_to_default_value[SHARED_DESIGN_VARIABLE_NAME]
 
-        y_i_ = self.__y_i_names_to_default_values.copy()
+        y_i_ = self.__y_i_name_to_default_value.copy()
         y_i_.update(y_i)
 
         if compute_jacobian:
@@ -135,8 +135,8 @@ class MainDiscipline(BaseDiscipline):
             for output_name in self.output_names:
                 jacobian[output_name] = {
                     input_name: zeros((
-                        self.names_to_sizes[output_name],
-                        self.names_to_sizes[input_name],
+                        self.name_to_size[output_name],
+                        self.name_to_size[input_name],
                     ))
                     for input_name in self.input_names
                 }
@@ -146,11 +146,11 @@ class MainDiscipline(BaseDiscipline):
                 self.__y_i_names, self.__c_i_names, strict=False
             ):
                 jacobian[OBJECTIVE_NAME][y_i_name] = 2 * y_i_[y_i_name][newaxis, :]
-                jacobian[c_i_name][y_i_name] = -eye(self.names_to_sizes[y_i_name])
+                jacobian[c_i_name][y_i_name] = -eye(self.name_to_size[y_i_name])
 
             return jacobian
 
-        output_names_to_values = {
+        output_name_to_value = {
             OBJECTIVE_NAME: array([
                 sum((y_i__**2).sum() for y_i__ in y_i_.values()) + (x_0**2).sum()
             ])
@@ -158,6 +158,6 @@ class MainDiscipline(BaseDiscipline):
         for c_i_name, y_i__, t_i in zip(
             self.__c_i_names, y_i_.values(), self.__t_i, strict=False
         ):
-            output_names_to_values[c_i_name] = t_i - y_i__
+            output_name_to_value[c_i_name] = t_i - y_i__
 
-        return output_names_to_values
+        return output_name_to_value

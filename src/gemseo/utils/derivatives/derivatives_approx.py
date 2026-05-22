@@ -213,8 +213,8 @@ class DisciplineJacApprox:
             LOGGER.info(errors)
 
         data = self.discipline.io.input_grammar.defaults or self.discipline.io.data
-        names_to_slices = (
-            self.discipline.io.input_grammar.data_converter.compute_names_to_slices(
+        name_to_slice = (
+            self.discipline.io.input_grammar.data_converter.compute_name_to_slice(
                 input_names,
                 data,
             )[0]
@@ -222,7 +222,7 @@ class DisciplineJacApprox:
 
         self.auto_steps = (
             self.discipline.io.input_grammar.data_converter.convert_array_to_data(
-                steps_opt, names_to_slices
+                steps_opt, name_to_slice
             )
         )
 
@@ -308,14 +308,14 @@ class DisciplineJacApprox:
                 self.approximator.f_gradient(x_vect, x_indices=x_indices, step=step)
             )
 
-        data_names_to_sizes = (
-            self.discipline.io.output_grammar.data_converter.compute_names_to_sizes(
+        data_name_to_size = (
+            self.discipline.io.output_grammar.data_converter.compute_name_to_size(
                 output_names,
                 self.discipline.io.data,
             )
         )
-        input_names_to_sizes = (
-            self.discipline.io.input_grammar.data_converter.compute_names_to_sizes(
+        input_name_to_size = (
+            self.discipline.io.input_grammar.data_converter.compute_name_to_size(
                 input_names,
                 self.discipline.io.data,
             )
@@ -325,15 +325,15 @@ class DisciplineJacApprox:
             flat_jac_complete = flat_jac
         else:
             flat_jac_complete = zeros([
-                sum(data_names_to_sizes.values()),
-                sum(input_names_to_sizes.values()),
+                sum(data_name_to_size.values()),
+                sum(input_name_to_size.values()),
             ])
             flat_jac_complete[:, x_indices] = flat_jac
 
-        data_names_to_sizes.update(input_names_to_sizes)
+        data_name_to_size.update(input_name_to_size)
 
         return split_array_to_dict_of_arrays(
-            flat_jac_complete, data_names_to_sizes, output_names, input_names
+            flat_jac_complete, data_name_to_size, output_names, input_names
         )
 
     def check_jacobian(
@@ -402,14 +402,14 @@ class DisciplineJacApprox:
         Returns:
             Whether the analytical Jacobian is correct.
         """
-        input_names_to_indices = {}
+        input_name_to_indices = {}
         input_indices = {}
 
         if indices:
-            input_indices, input_names_to_indices = self._compute_variable_indices(
+            input_indices, input_name_to_indices = self._compute_variable_indices(
                 indices,
                 input_names,
-                self.discipline.io.input_grammar.data_converter.compute_names_to_sizes(
+                self.discipline.io.input_grammar.data_converter.compute_name_to_size(
                     input_names,
                     self.discipline.io.input_grammar.defaults,
                 ),
@@ -435,22 +435,22 @@ class DisciplineJacApprox:
             with Path(reference_jacobian_path).open("wb") as outfile:
                 pickle.dump(approximated_jacobian, outfile)
 
-        output_names_to_indices = {}
+        output_name_to_indices = {}
 
         if indices:
             output_sizes = {
                 output_name: output_jacobian[next(iter(output_jacobian))].shape[0]
                 for output_name, output_jacobian in approximated_jacobian.items()
             }
-            _, output_names_to_indices = self._compute_variable_indices(
+            _, output_name_to_indices = self._compute_variable_indices(
                 indices, output_names, output_sizes
             )
 
-        if not input_names_to_indices:
-            input_names_to_indices = Ellipsis
+        if not input_name_to_indices:
+            input_name_to_indices = Ellipsis
 
-        if not output_names_to_indices:
-            output_names_to_indices = Ellipsis
+        if not output_name_to_indices:
+            output_name_to_indices = Ellipsis
 
         succeed = True
 
@@ -458,8 +458,8 @@ class DisciplineJacApprox:
             for input_name, approx_jac in output_jacobian.items():
                 computed_jac = analytic_jacobian[output_name][input_name]
                 if indices:
-                    row_idx = atleast_2d(output_names_to_indices[output_name]).T
-                    col_idx = input_names_to_indices[input_name]
+                    row_idx = atleast_2d(output_name_to_indices[output_name]).T
+                    col_idx = input_name_to_indices[input_name]
                     computed_jac = computed_jac[row_idx, col_idx]
                     approx_jac = approx_jac[row_idx, col_idx]
 
@@ -544,7 +544,7 @@ class DisciplineJacApprox:
             The indices of the variables.
         """
         indices_sequence = []
-        names_to_indices = {}
+        name_to_indices = {}
         variable_position = 0
         for variable_name in variable_names:
             variable_size = variable_sizes[variable_name]
@@ -560,7 +560,7 @@ class DisciplineJacApprox:
             if indices_sequence[-1] in (Ellipsis, None):
                 indices_sequence[-1] = variable_indices
 
-            names_to_indices[variable_name] = indices_sequence[-1]
+            name_to_indices[variable_name] = indices_sequence[-1]
             indices_sequence[-1] = [
                 variable_index + variable_position
                 for variable_index in indices_sequence[-1]
@@ -568,7 +568,7 @@ class DisciplineJacApprox:
             variable_position += variable_size
 
         indices_sequence = [item for sublist in indices_sequence for item in sublist]
-        return indices_sequence, names_to_indices
+        return indices_sequence, name_to_indices
 
     @staticmethod
     def __concatenate_jacobian_per_output_names(

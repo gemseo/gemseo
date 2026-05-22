@@ -43,7 +43,7 @@ def test_custom_sizes() -> None:
         ScalableDesignSpace(
             [ScalableDisciplineSettings(2, 4)],
             d_0=3,
-            names_to_default_values={"x_0": array([0.3, 0.3, 0.3])},
+            name_to_default_value={"x_0": array([0.3, 0.3, 0.3])},
         ).variables,
         [
             Variable(

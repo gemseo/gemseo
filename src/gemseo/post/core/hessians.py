@@ -172,7 +172,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
                 group_names=self.history.DESIGN_GROUP
             ).to_numpy()
             grad_name = Database.get_gradient_name(funcname)
-            func_components = self.history.variable_names_to_n_components[funcname]
+            func_components = self.history.variable_name_to_n_components[funcname]
             grad_hist = self.history.get_view(variable_names=grad_name).to_numpy()
             if grad_hist.shape != x_hist.shape:
                 shape = (len(x_hist), func_components, -1)

@@ -333,7 +333,7 @@ class OptimizationDataset(Dataset):
         self,
         data: DataType,
         variable_names: StrColumnType = "c",
-        variable_names_to_n_components: dict[str, int] | None = None,
+        variable_name_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the constraint group.
 
@@ -342,7 +342,7 @@ class OptimizationDataset(Dataset):
             variable_names: The names of the variables.
                 If empty, use
                 [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
                 If `None`,
@@ -352,14 +352,14 @@ class OptimizationDataset(Dataset):
             self.CONSTRAINT_GROUP,
             data,
             variable_names=variable_names,
-            variable_names_to_n_components=variable_names_to_n_components,
+            variable_name_to_n_components=variable_name_to_n_components,
         )
 
     def add_equality_constraint_group(
         self,
         data: DataType,
         variable_names: StrColumnType = "c",
-        variable_names_to_n_components: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_n_components: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """Add the data related to the equality constraint group.
 
@@ -368,7 +368,7 @@ class OptimizationDataset(Dataset):
             variable_names: The names of the variables.
                 If empty, use
                 [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
                 If `None`,
@@ -378,14 +378,14 @@ class OptimizationDataset(Dataset):
             self.EQUALITY_CONSTRAINT_GROUP,
             data,
             variable_names=variable_names,
-            variable_names_to_n_components=variable_names_to_n_components,
+            variable_name_to_n_components=variable_name_to_n_components,
         )
 
     def add_inequality_constraint_group(
         self,
         data: DataType,
         variable_names: StrColumnType = "c",
-        variable_names_to_n_components: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_n_components: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """Add the data related to the inequality constraint group.
 
@@ -394,7 +394,7 @@ class OptimizationDataset(Dataset):
             variable_names: The names of the variables.
                 If empty, use
                 [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
                 If `None`,
@@ -404,14 +404,14 @@ class OptimizationDataset(Dataset):
             self.INEQUALITY_CONSTRAINT_GROUP,
             data,
             variable_names=variable_names,
-            variable_names_to_n_components=variable_names_to_n_components,
+            variable_name_to_n_components=variable_name_to_n_components,
         )
 
     def add_design_group(
         self,
         data: DataType,
         variable_names: StrColumnType = "d",
-        variable_names_to_n_components: dict[str, int] | None = None,
+        variable_name_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the design variable group.
 
@@ -420,7 +420,7 @@ class OptimizationDataset(Dataset):
             variable_names: The names of the variables.
                 If empty, use
                 [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
                 If `None`,
@@ -430,14 +430,14 @@ class OptimizationDataset(Dataset):
             self.DESIGN_GROUP,
             data,
             variable_names=variable_names,
-            variable_names_to_n_components=variable_names_to_n_components,
+            variable_name_to_n_components=variable_name_to_n_components,
         )
 
     def add_objective_group(
         self,
         data: DataType,
         variable_names: StrColumnType = "f",
-        variable_names_to_n_components: dict[str, int] | None = None,
+        variable_name_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the objective group.
 
@@ -446,7 +446,7 @@ class OptimizationDataset(Dataset):
             variable_names: The names of the variables.
                 If empty, use
                 [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
                 If `None`,
@@ -456,14 +456,14 @@ class OptimizationDataset(Dataset):
             self.OBJECTIVE_GROUP,
             data,
             variable_names=variable_names,
-            variable_names_to_n_components=variable_names_to_n_components,
+            variable_name_to_n_components=variable_name_to_n_components,
         )
 
     def add_observable_group(
         self,
         data: DataType,
         variable_names: StrColumnType = "o",
-        variable_names_to_n_components: dict[str, int] | None = None,
+        variable_name_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the observable group.
 
@@ -472,7 +472,7 @@ class OptimizationDataset(Dataset):
             variable_names: The names of the variables.
                 If empty, use
                 [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
                 If `None`,
@@ -482,7 +482,7 @@ class OptimizationDataset(Dataset):
             self.OBSERVABLE_GROUP,
             data,
             variable_names=variable_names,
-            variable_names_to_n_components=variable_names_to_n_components,
+            variable_name_to_n_components=variable_name_to_n_components,
         )
 
     def get_best_iteration_history(

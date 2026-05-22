@@ -373,7 +373,7 @@ class PostOptimalAnalysis:
         active_ineq_constraints = self.optimization_problem.constraints.get_active(
             self.x_opt, self.ineq_tol
         )
-        input_names_to_jacobians = {}
+        input_name_to_jacobian = {}
         for input_name in input_names:
             jacobians = [
                 jacobian[constraint.name][input_name][atleast_1d(components_are_active)]
@@ -384,11 +384,11 @@ class PostOptimalAnalysis:
             contains_sparse = any(isinstance(jac, sparse_classes) for jac in jacobians)
 
             if jacobians:
-                input_names_to_jacobians[input_name] = (
+                input_name_to_jacobian[input_name] = (
                     spvstack(jacobians) if contains_sparse else vstack(jacobians)
                 )
 
-        return input_names_to_jacobians
+        return input_name_to_jacobian
 
     def _get_eq_jac(
         self, jacobians: dict[str, dict[str, ndarray]], input_names: Iterable[str]

@@ -213,10 +213,10 @@ class DependencyGraph:
         Returns:
             The graph of disciplines.
         """
-        nodes_to_ios = {}
+        node_to_ios = {}
 
         for disc in disciplines:
-            nodes_to_ios[disc] = (
+            node_to_ios[disc] = (
                 set(disc.io.input_grammar),
                 set(disc.io.output_grammar),
             )
@@ -225,8 +225,8 @@ class DependencyGraph:
         graph.add_nodes_from(disciplines)
         graph_add_edge = graph.add_edge
         # Create the graph edges by discovering the coupled disciplines
-        for disc_i, (_, outputs_i) in nodes_to_ios.items():
-            for disc_j, (inputs_j, _) in nodes_to_ios.items():
+        for disc_i, (_, outputs_i) in node_to_ios.items():
+            for disc_j, (inputs_j, _) in node_to_ios.items():
                 if disc_i != disc_j:
                     coupled_io = outputs_i & inputs_j
                     if coupled_io:
@@ -324,12 +324,12 @@ class DependencyGraph:
         )
         if add_tooltip:
             get_properties = get_discipline_variable_properties
-            discipline_names_to_properties = {
+            discipline_name_to_properties = {
                 discipline.name: get_properties(discipline)
                 for discipline in self.__graph.nodes
             }
         else:
-            discipline_names_to_properties = {}
+            discipline_name_to_properties = {}
 
         if get_node_name_from_discipline == self._get_node_name_from_disc_id:
             for discipline in graph.nodes:
@@ -349,7 +349,7 @@ class DependencyGraph:
             self.__add_edge(
                 graph_view,
                 coupling_names,
-                discipline_names_to_properties,
+                discipline_name_to_properties,
                 tail_name,
                 head_name,
                 add_tooltip,
@@ -368,7 +368,7 @@ class DependencyGraph:
                     self.__add_edge(
                         graph_view,
                         coupling_names,
-                        discipline_names_to_properties,
+                        discipline_name_to_properties,
                         name,
                         name,
                         add_tooltip,
@@ -392,7 +392,7 @@ class DependencyGraph:
             self.__add_edge(
                 graph_view,
                 output_names,
-                discipline_names_to_properties,
+                discipline_name_to_properties,
                 node_name,
                 f"_{leaf_node}",
                 add_tooltip,
@@ -410,7 +410,7 @@ class DependencyGraph:
     def __add_edge(
         graph_view: GraphView,
         coupling_names: Iterable[str],
-        discipline_names_to_properties: Mapping[
+        discipline_name_to_properties: Mapping[
             str,
             tuple[
                 Mapping[str, DisciplineVariableProperties],
@@ -428,7 +428,7 @@ class DependencyGraph:
         Args:
             graph_view: The graph view.
             coupling_names: The names of the coupling variables.
-            discipline_names_to_properties: The variables properties
+            discipline_name_to_properties: The variables properties
                 associated with the discipline names.
             tail_name: The name of the tail discipline.
             head_name: The name of the head discipline.
@@ -450,13 +450,13 @@ class DependencyGraph:
                     f"Name in discipline {head_name!r}\n"
                 )
 
-            tail_properties = discipline_names_to_properties[tail_name][1]
+            tail_properties = discipline_name_to_properties[tail_name][1]
             if hide_head:
                 for coupling_name in coupling_names:
                     tail_original_name = tail_properties[coupling_name].original_name
                     lines.append(f"{coupling_name}{sep}{tail_original_name}")
             else:
-                head_properties = discipline_names_to_properties[head_name][0]
+                head_properties = discipline_name_to_properties[head_name][0]
                 for coupling_name in coupling_names:
                     head_original_name = head_properties[coupling_name].original_name
                     tail_original_name = tail_properties[coupling_name].original_name

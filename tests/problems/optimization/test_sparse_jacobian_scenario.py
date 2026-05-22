@@ -63,7 +63,7 @@ def scenario(request) -> MDOScenario:
         ),
         Splitter(
             input_name="delta",
-            output_names_to_input_indices={"delta_1": 0, "delta_2": 1},
+            output_name_to_input_indices={"delta_1": 0, "delta_2": 1},
         ),
         LinearCombination(
             input_names=["delta_1", "delta_2"],

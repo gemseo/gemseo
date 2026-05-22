@@ -825,7 +825,7 @@ class OptimizationProblem(EvaluationProblem):
                 [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP]
                 [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP]).
         """  # noqa: D205, D212
-        groups_to_variables = {}
+        group_to_variables = {}
         if categorize:
             gradient_group = Dataset.GRADIENT_GROUP
             if opt_naming:
@@ -833,7 +833,7 @@ class OptimizationProblem(EvaluationProblem):
                 input_group = OptimizationDataset.DESIGN_GROUP
                 output_group = OptimizationDataset.FUNCTION_GROUP
                 if group_functions:
-                    groups_to_variables = {
+                    group_to_variables = {
                         OptimizationDataset.OBJECTIVE_GROUP: [
                             self.standardized_objective_name
                             if self.use_standardized_objective is True
@@ -870,7 +870,7 @@ class OptimizationProblem(EvaluationProblem):
             output_group=output_group,
             gradient_group=gradient_group,
             optimization_metadata=self._get_optimization_metadata(),
-            groups_to_variables=groups_to_variables,
+            group_to_variables=group_to_variables,
         )
 
     @property
@@ -1014,7 +1014,7 @@ class OptimizationProblem(EvaluationProblem):
             minimize_objective=self.minimize_objective,
             use_standardized_objective=self.use_standardized_objective,
             tolerances=self.tolerances,
-            output_names_to_constraint_names=self.constraints.original_to_current_names,
+            output_name_to_constraint_names=self.constraints.original_to_current_names,
             feasible_iterations=feasible_iterations,
             optimum_iteration=optimum_iteration,
         )

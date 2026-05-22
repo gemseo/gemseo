@@ -86,14 +86,12 @@ def test_input_names_to_default_values(
     scalable_discipline, default_input_values
 ) -> None:
     """Check the default values of the input variables."""
-    assert_equal(
-        scalable_discipline.input_names_to_default_values, default_input_values
-    )
+    assert_equal(scalable_discipline.input_name_to_default_value, default_input_values)
 
 
 def test_names_to_sizes(scalable_discipline) -> None:
     """Check the sizes of the variables."""
-    assert scalable_discipline.names_to_sizes == {
+    assert scalable_discipline.name_to_size == {
         "x_1": 2,
         "x_0": 3,
         "y_1": 2,

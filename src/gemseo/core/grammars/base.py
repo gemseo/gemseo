@@ -345,7 +345,7 @@ class BaseGrammar(
 
     def update_from_types(
         self,
-        names_to_types: SimpleGrammarTypes,
+        name_to_type: SimpleGrammarTypes,
         merge: bool = False,
     ) -> None:
         """Update the grammar from names bound to types.
@@ -353,25 +353,25 @@ class BaseGrammar(
         The updated elements are required.
 
         Args:
-            names_to_types: The mapping defining the data names as keys,
+            name_to_type: The mapping defining the data names as keys,
                 and data types as values.
             merge: Whether to merge or update the grammar.
         """
-        if not names_to_types:
+        if not name_to_type:
             return
-        self._update_from_types(names_to_types, merge)
-        self._required_names |= names_to_types.keys()
+        self._update_from_types(name_to_type, merge)
+        self._required_names |= name_to_type.keys()
 
     @abstractmethod
     def _update_from_types(
         self,
-        names_to_types: SimpleGrammarTypes,
+        name_to_type: SimpleGrammarTypes,
         merge: bool,
     ) -> None:
         """Update specifically the grammar from names bound to types.
 
         Args:
-            names_to_types: The mapping defining the data names as keys,
+            name_to_type: The mapping defining the data names as keys,
                 and data types as values.
             merge: Whether to merge or update the grammar.
         """
@@ -511,7 +511,7 @@ class BaseGrammar(
 
         grammar = SimpleGrammar(
             self.name,
-            names_to_types=self._get_names_to_types(),
+            name_to_type=self._get_name_to_type(),
             required_names=self._required_names,
         )
         grammar.defaults = self._defaults
@@ -519,7 +519,7 @@ class BaseGrammar(
         return grammar
 
     @abstractmethod
-    def _get_names_to_types(self) -> SimpleGrammarTypes:
+    def _get_name_to_type(self) -> SimpleGrammarTypes:
         """Create the mapping from element names to elements types.
 
         The elements for which types definitions cannot be expressed as a unique Python

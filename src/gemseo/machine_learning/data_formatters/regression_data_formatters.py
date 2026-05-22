@@ -94,7 +94,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
             single_sample = len(input_data.shape) == 1
             jacobians = func(model, input_data, *args, **kwargs)
             if as_dict:
-                varsizes = model.learning_set.variable_names_to_n_components
+                varsizes = model.learning_set.variable_name_to_n_components
                 if single_sample:
                     jacobians = split_array_to_dict_of_arrays(
                         jacobians, varsizes, model.output_names, model.input_names

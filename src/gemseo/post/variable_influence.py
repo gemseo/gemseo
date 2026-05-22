@@ -94,7 +94,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         x_0 = dataset.design_dataset.iloc[0].to_numpy()
         absolute_value = log_scale or absolute_value
 
-        names_to_sensitivities = {}
+        name_to_sensitivity = {}
         for function_name in function_names:
             grad_name = Database.get_gradient_name(function_name)
             if grad_name in dataset.variable_names:
@@ -127,20 +127,18 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
                 sensitivity *= (f_opt - f_0) / sensitivity.sum()
                 if absolute_value:
                     sensitivity = absolute(sensitivity)
-                names_to_sensitivities[function_name] = sensitivity
+                name_to_sensitivity[function_name] = sensitivity
             else:
                 for i, grad_ in enumerate(grad):
                     sensitivity = grad_ * (x_opt - x_0)
                     sensitivity *= (f_opt - f_0)[i] / sensitivity.sum()
                     if absolute_value:
                         sensitivity = absolute(sensitivity)
-                    names_to_sensitivities[repr_variable(function_name, i)] = (
-                        sensitivity
-                    )
+                    name_to_sensitivity[repr_variable(function_name, i)] = sensitivity
 
         self._add_figure(
             self.__generate_subplots(
-                names_to_sensitivities,
+                name_to_sensitivity,
                 level,
                 log_scale,
                 save_var_files,
@@ -205,7 +203,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
 
     def __generate_subplots(
         self,
-        names_to_sensitivities: Mapping[str, RealArray],
+        name_to_sensitivity: Mapping[str, RealArray],
         level: float,
         log_scale: bool,
         save: bool,
@@ -214,7 +212,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         """Generate the gradients subplots from the data.
 
         Args:
-            names_to_sensitivities: The output sensitivities
+            name_to_sensitivity: The output sensitivities
                 w.r.t. the design variables.
             level: The proportion of the total sensitivity
                 to use as a threshold to filter the variables.
@@ -225,9 +223,9 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
             The gradients subplots.
 
         Raises:
-            ValueError: If the `names_to_sensitivities` is empty.
+            ValueError: If the `name_to_sensitivity` is empty.
         """
-        n_funcs = len(names_to_sensitivities)
+        n_funcs = len(name_to_sensitivity)
         if not n_funcs:
             msg = "No gradients to plot at current iteration."
             raise ValueError(msg)
@@ -243,14 +241,14 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         # x-axis. Since the data history can be edited by the user after the
         # problem was solved, we do not use something like opt_problem.dimension
         # because the problem dimension is not updated when the history is filtered.
-        abscissas = range(len(next(iter(names_to_sensitivities.values()))))
+        abscissas = range(len(next(iter(name_to_sensitivity.values()))))
 
         LOGGER.info(
             "Output name; "
             "most influential variables to explain %s%% of the output variation ",
             level,
         )
-        sorted_names = sorted(names_to_sensitivities)
+        sorted_names = sorted(name_to_sensitivity)
         n_outputs = len(sorted_names)
         for index in range(n_rows * n_cols):
             i = index // n_cols
@@ -258,7 +256,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
             ax = axs[i][j]
             if index < n_outputs:
                 name = sorted_names[index]
-                sensitivity = names_to_sensitivities[name]
+                sensitivity = name_to_sensitivity[name]
                 quantile, threshold = self.__get_quantile(
                     sensitivity, name, level=level, save=save
                 )

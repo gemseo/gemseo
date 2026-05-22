@@ -34,7 +34,7 @@ exclude_names = pytest.mark.parametrize(
 def properties() -> GrammarProperties:
     """Return a GrammarProperties object."""
     return GrammarProperties(
-        SimpleGrammar("g", names_to_types={"name": None, "other_name": None}), {}
+        SimpleGrammar("g", name_to_type={"name": None, "other_name": None}), {}
     )
 
 
@@ -42,7 +42,7 @@ def test_init() -> None:
     """Verify the initialization from an existing dictionary."""
     data = {"name": 0}
     properties = GrammarProperties(
-        SimpleGrammar("g", names_to_types={"name": None}),
+        SimpleGrammar("g", name_to_type={"name": None}),
         data,
     )
     assert properties == data

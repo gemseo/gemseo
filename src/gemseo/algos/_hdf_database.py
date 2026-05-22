@@ -593,14 +593,14 @@ class HDFDatabase:
                 str_index = str(raw_index)
                 keys = [k.decode() for k in get_hdf5_group(keys_group, str_index)]
 
-                names_to_arrays = HDFDatabase.__read_values_from_group(
+                name_to_array = HDFDatabase.__read_values_from_group(
                     str_index,
                     keys,
                     values_group,
                     HDFDatabase._ValueDataType.ARR,
                 )
 
-                names_to_strings = HDFDatabase.__read_values_from_group(
+                name_to_string = HDFDatabase.__read_values_from_group(
                     str_index,
                     keys,
                     values_group,
@@ -613,8 +613,7 @@ class HDFDatabase:
                             (
                                 k
                                 for k in keys
-                                if k not in names_to_arrays
-                                and k not in names_to_strings
+                                if k not in name_to_array and k not in name_to_string
                             ),
                             get_hdf5_group(values_group, str_index),
                             strict=False,
@@ -622,8 +621,8 @@ class HDFDatabase:
                     )
                 else:
                     scalar_dict = {}
-                scalar_dict.update(names_to_arrays)
-                scalar_dict.update(names_to_strings)
+                scalar_dict.update(name_to_array)
+                scalar_dict.update(name_to_string)
                 database.store(array(design_vars_grp[str_index]), scalar_dict)
 
     @staticmethod

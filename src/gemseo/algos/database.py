@@ -306,9 +306,9 @@ class Database(Mapping):
             output_names: The names of the outputs that must be kept.
         """
         output_names = set(output_names)
-        for output_names_to_values in self.values():
-            for function_name in output_names_to_values.keys() - output_names:
-                del output_names_to_values[function_name]
+        for output_name_to_value in self.values():
+            for function_name in output_name_to_value.keys() - output_names:
+                del output_name_to_value[function_name]
 
     def get_last_n_x_vect(self, n: int) -> list[ndarray]:
         """Return the last `n` input values.
@@ -489,10 +489,10 @@ class Database(Mapping):
         if isinstance(x, HashableNdarray):
             x = x.wrapped_array
 
-        for db_input_value, db_output_names_to_values in self.items():
+        for db_input_value, db_output_name_to_value in self.items():
             db_in_value = db_input_value.wrapped_array
             if norm(db_in_value - x) <= tolerance * norm(db_in_value):
-                return db_output_names_to_values
+                return db_output_name_to_value
 
         return None
 
@@ -708,8 +708,8 @@ class Database(Mapping):
             The names of the outputs in alphabetical order.
         """
         output_names = set()
-        for output_names_to_values in self.__data.values():
-            for outputs in output_names_to_values:
+        for output_name_to_value in self.__data.values():
+            for outputs in output_name_to_value:
                 if skip_grad and outputs.startswith(self.GRAD_TAG):
                     continue
                 output_names.add(outputs)
@@ -759,11 +759,11 @@ class Database(Mapping):
 
         output_history = []
         input_history = []
-        for x, output_names_to_values in self.items():
+        for x, output_name_to_value in self.items():
             output_values = []
             for function_name in function_names:
-                if function_name in output_names_to_values:
-                    output_values.append(output_names_to_values[function_name])
+                if function_name in output_name_to_value:
+                    output_values.append(output_name_to_value[function_name])
                 elif add_missing_tag:
                     output_values.append(missing_tag)
 
@@ -937,20 +937,20 @@ class Database(Mapping):
             the names of the columns of the array.
         """
         flat_values = []
-        names_to_flat_names = {}
+        name_to_flat_names = {}
         for values in history:
             flat_value = []
             for value, name in zip(values, names, strict=False):
                 value = atleast_1d(value)
                 size = value.size
                 flat_value.extend(value)
-                names_to_flat_names[name] = [
+                name_to_flat_names[name] = [
                     repr_variable(name, i, size) for i in range(size)
                 ]
 
             flat_values.append(flat_value)
 
-        return list(chain(*names_to_flat_names.values())), flat_values
+        return list(chain(*name_to_flat_names.values())), flat_values
 
     def to_ggobi(
         self,
@@ -1051,7 +1051,7 @@ class Database(Mapping):
         output_group: str = Dataset.DEFAULT_GROUP,
         gradient_group: str = Dataset.GRADIENT_GROUP,
         optimization_metadata: OptimizationMetadata | None = None,
-        groups_to_variables: Mapping[str, Iterable[str]] = READ_ONLY_EMPTY_DICT,
+        group_to_variables: Mapping[str, Iterable[str]] = READ_ONLY_EMPTY_DICT,
     ) -> Dataset:
         """Export the database to a [Dataset][gemseo.datasets.dataset.Dataset].
 
@@ -1066,9 +1066,9 @@ class Database(Mapping):
             dataset_class: The dataset class.
             input_group: The name of the group to store the input values.
             output_group: The name of the group to store the output values.
-                This argument is ignored when `groups_to_variables` is defined.
+                This argument is ignored when `group_to_variables` is defined.
             gradient_group: The name of the group to store the gradient values.
-            groups_to_variables: The variable names
+            group_to_variables: The variable names
                 mapped to their corresponding group to be stored in.
 
         Returns:
@@ -1078,8 +1078,8 @@ class Database(Mapping):
         # Add database inputs
         input_history = array(self.get_x_vect_history())
         input_space = self.input_space
-        names_to_sizes = input_space.variable_sizes
-        names_to_types = {
+        name_to_size = input_space.variable_sizes
+        name_to_type = {
             (input_group, name, component): dtype(
                 input_space.VARIABLE_TYPES_TO_DTYPES[type_]
             )
@@ -1097,17 +1097,17 @@ class Database(Mapping):
         columns = [
             (input_group, name, index)
             for name in input_space
-            for index in range(names_to_sizes[name])
+            for index in range(name_to_size[name])
         ]
         # Add database outputs
-        if not groups_to_variables:
-            groups_to_variables = {output_group: self.get_function_names()}
+        if not group_to_variables:
+            group_to_variables = {output_group: self.get_function_names()}
 
-        for group_name, variable_names in groups_to_variables.items():
+        for group_name, variable_names in group_to_variables.items():
             self.__update_data_and_columns_for_dataset(
                 data,
                 columns,
-                names_to_types,
+                name_to_type,
                 variable_names,
                 n_samples,
                 group_name,
@@ -1120,7 +1120,7 @@ class Database(Mapping):
             self.__update_data_and_columns_for_dataset(
                 data,
                 columns,
-                names_to_types,
+                name_to_type,
                 output_names,
                 n_samples,
                 gradient_group,
@@ -1140,32 +1140,32 @@ class Database(Mapping):
         dataset.misc["optimization_metadata"] = optimization_metadata
         dataset.misc["input_space"] = deepcopy(self.input_space)
 
-        names_to_types_without_int = {
-            k: v for k, v in names_to_types.items() if not issubdtype(v, integer)
+        name_to_type_without_int = {
+            k: v for k, v in name_to_type.items() if not issubdtype(v, integer)
         }
-        names_to_types_without_int.update({
-            k: float for k, v in names_to_types.items() if issubdtype(v, integer)
+        name_to_type_without_int.update({
+            k: float for k, v in name_to_type.items() if issubdtype(v, integer)
         })
 
         # The type for integers must be "pandas.Int64Dtype()"
         # to manage NaN with integers.
         # It's a Pandas experimental feature.
         # See https://pandas.pydata.org/pandas-docs/stable/user_guide/integer_na.html
-        names_to_types.update({
-            k: "Int64" for k, v in names_to_types.items() if issubdtype(v, integer)
+        name_to_type.update({
+            k: "Int64" for k, v in name_to_type.items() if issubdtype(v, integer)
         })
 
         # "0.0" cannot be cast to int directly (try int("0.0")).
         # So
         # 1) we cast the str-like int to float
         # 2) these float-like int to int.
-        return dataset.astype(names_to_types_without_int).astype(names_to_types)
+        return dataset.astype(name_to_type_without_int).astype(name_to_type)
 
     def __update_data_and_columns_for_dataset(
         self,
         data: list[RealArray],
         columns: list[tuple[str, str, int]],
-        names_to_types: dict[tuple[str, str, int], dtype],
+        name_to_type: dict[tuple[str, str, int], dtype],
         output_names: Iterable[str],
         n_samples: int,
         group: str,
@@ -1176,7 +1176,7 @@ class Database(Mapping):
         Args:
             data: The sequence of data arrays to be augmented with the output data.
             columns: The multi-index columns to be augmented with the output names.
-            names_to_types: The types of the variables
+            name_to_type: The types of the variables
                 to be augmented with the output names.
             output_names: The names of the outputs in the database.
             n_samples: The total number of samples,
@@ -1214,7 +1214,7 @@ class Database(Mapping):
             data.append(history)
             columns_ = [(group, function_name, i) for i in range(history.shape[1])]
             columns.extend(columns_)
-            names_to_types.update(dict.fromkeys(columns_, history_dtype))
+            name_to_type.update(dict.fromkeys(columns_, history_dtype))
 
     @staticmethod
     def __replace_missing_values(

@@ -522,15 +522,13 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             self.InitJacobianType(init_type)
 
         input_names = input_names or self._differentiated_input_names
-        input_names_to_sizes = (
-            self.io.input_grammar.data_converter.compute_names_to_sizes(
-                input_names, self.io._data
-            )
+        input_name_to_size = self.io.input_grammar.data_converter.compute_name_to_size(
+            input_names, self.io._data
         )
 
         output_names = output_names or self._differentiated_output_names
-        output_names_to_sizes = (
-            self.io.output_grammar.data_converter.compute_names_to_sizes(
+        output_name_to_size = (
+            self.io.output_grammar.data_converter.compute_name_to_size(
                 output_names, self.io._data
             )
         )
@@ -538,9 +536,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         if fill_missing_keys:
             jac = self.jac
             # Only fill the missing sub jacobians
-            for output_name, output_size in output_names_to_sizes.items():
+            for output_name, output_size in output_name_to_size.items():
                 jac_loc = jac.setdefault(output_name, defaultdict(None))
-                for input_name, input_size in input_names_to_sizes.items():
+                for input_name, input_size in input_name_to_size.items():
                     sub_jac = jac_loc.get(input_name)
                     if sub_jac is None:
                         jac_loc[input_name] = default_matrix((output_size, input_size))
@@ -549,9 +547,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             # the Jacobian; return an empty defaultdict(None)
             jac = defaultdict(_default_dict_factory)
             if input_names:
-                for output_name, output_size in output_names_to_sizes.items():
+                for output_name, output_size in output_name_to_size.items():
                     jac_loc = jac[output_name]
-                    for input_name, input_size in input_names_to_sizes.items():
+                    for input_name, input_size in input_name_to_size.items():
                         jac_loc[input_name] = default_matrix((output_size, input_size))
             self.jac = jac
 

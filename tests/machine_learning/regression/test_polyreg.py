@@ -78,8 +78,8 @@ def dataset() -> IODataset:
 
     data = hstack([x_1, x_2, y_1, y_2, y_3])
     variables = ["x_1", "x_2", "y_1", "y_2", "y_3"]
-    variable_names_to_n_components = {"x_1": 1, "x_2": 1, "y_1": 1, "y_2": 1, "y_3": 1}
-    variable_names_to_group_names = {
+    variable_name_to_n_components = {"x_1": 1, "x_2": 1, "y_1": 1, "y_2": 1, "y_3": 1}
+    variable_name_to_group_name = {
         "x_1": IODataset.INPUT_GROUP,
         "x_2": IODataset.INPUT_GROUP,
         "y_1": IODataset.OUTPUT_GROUP,
@@ -88,7 +88,7 @@ def dataset() -> IODataset:
     }
 
     return IODataset.from_array(
-        data, variables, variable_names_to_n_components, variable_names_to_group_names
+        data, variables, variable_name_to_n_components, variable_name_to_group_name
     )
 
 

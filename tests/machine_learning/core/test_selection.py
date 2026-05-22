@@ -49,13 +49,13 @@ def dataset() -> IODataset:
     data = np.linspace(0, 2 * np.pi, 10)
     data = np.vstack((data, np.sin(data), np.cos(data))).T
     variables = ["x_1", "x_2"]
-    variable_names_to_n_components = {"x_1": 1, "x_2": 2}
-    variable_names_to_group_names = {
+    variable_name_to_n_components = {"x_1": 1, "x_2": 2}
+    variable_name_to_group_name = {
         "x_1": IODataset.INPUT_GROUP,
         "x_2": IODataset.OUTPUT_GROUP,
     }
     return IODataset.from_array(
-        data, variables, variable_names_to_n_components, variable_names_to_group_names
+        data, variables, variable_name_to_n_components, variable_name_to_group_name
     )
 
 

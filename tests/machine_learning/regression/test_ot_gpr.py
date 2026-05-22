@@ -136,7 +136,7 @@ def test_kriging_use_hmat_default(n_samples, use_hmat):
     dataset = IODataset.from_array(
         zeros((n_samples, 2)),
         variable_names=["in", "out"],
-        variable_names_to_group_names={
+        variable_name_to_group_name={
             "in": IODataset.INPUT_GROUP,
             "out": IODataset.OUTPUT_GROUP,
         },

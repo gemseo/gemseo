@@ -161,10 +161,10 @@ class OptimizationHistory:
         self.__raise_when_database_is_empty()
         violation = 0.0
         x_vect_is_feasible = True
-        output_names_to_values = self.__database.get(x_vect)
+        output_name_to_value = self.__database.get(x_vect)
         constraints = self.__constraints
         for constraint in constraints:
-            constraint_value = output_names_to_values.get(constraint.name)
+            constraint_value = output_name_to_value.get(constraint.name)
             if constraint_value is None:
                 break
 

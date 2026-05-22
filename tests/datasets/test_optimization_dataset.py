@@ -315,13 +315,13 @@ def test_get_best_iter_history(optim_data) -> None:
     assert_equal(best_iteration_history, [1, 2, 3, 3, 3, 6, 6])
 
     dataset.add_equality_constraint_group(
-        eq, ("ec1", "ec2"), variable_names_to_n_components={"ec1": 1, "ec2": 2}
+        eq, ("ec1", "ec2"), variable_name_to_n_components={"ec1": 1, "ec2": 2}
     )
     best_iteration_history = dataset.get_best_iteration_history()
     assert_equal(best_iteration_history, [1, 2, 2, 4, 5, 6, 6])
 
     dataset.add_inequality_constraint_group(
-        ineq, ("ic1", "ic2"), variable_names_to_n_components={"ic1": 1, "ic2": 2}
+        ineq, ("ic1", "ic2"), variable_name_to_n_components={"ic1": 1, "ic2": 2}
     )
     best_iteration_history = dataset.get_best_iteration_history()
     assert_equal(best_iteration_history, [1, 2, 2, 2, 2, 2, 7])

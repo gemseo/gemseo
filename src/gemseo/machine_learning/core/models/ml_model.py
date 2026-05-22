@@ -152,7 +152,7 @@ class BaseMLModel(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
             }
 
         self.algo = None
-        self.sizes = deepcopy(self.learning_set.variable_names_to_n_components)
+        self.sizes = deepcopy(self.learning_set.variable_name_to_n_components)
         self._trained = False
         self._learning_samples_indices = self.learning_set.index.to_list()
         transformer_keys = set(self.transformer)

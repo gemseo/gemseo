@@ -157,11 +157,11 @@ class PydanticGrammar(BaseGrammar):
         excluded_names: Iterable[str],
         merge: bool,
     ) -> None:
-        names_to_annotations = {}
+        name_to_annotation = {}
         for field_name, field_info in grammar.__model.__pydantic_fields__.items():
             if field_name not in excluded_names:
-                names_to_annotations[field_name] = field_info.annotation
-        self.__update_from_annotations(names_to_annotations, merge)
+                name_to_annotation[field_name] = field_info.annotation
+        self.__update_from_annotations(name_to_annotation, merge)
 
     def _update_from_names(  # noqa:D102
         self,
@@ -175,17 +175,17 @@ class PydanticGrammar(BaseGrammar):
         data: StrKeyMapping,
         merge: bool,
     ) -> None:
-        names_to_types = {}
+        name_to_type = {}
         for name, value in data.items():
             if isinstance(value, ndarray):
-                names_to_types[name] = _NDArrayPydantic[Any, np_dtype[value.dtype.type]]
+                name_to_type[name] = _NDArrayPydantic[Any, np_dtype[value.dtype.type]]
             else:
-                names_to_types[name] = type(value)
-        self._update_from_types(names_to_types, merge=merge)
+                name_to_type[name] = type(value)
+        self._update_from_types(name_to_type, merge=merge)
 
     def _update_from_types(
         self,
-        names_to_types: SimpleGrammarTypes,
+        name_to_type: SimpleGrammarTypes,
         merge: bool,
     ) -> None:
         """Update the grammar from names bound to types.
@@ -193,11 +193,11 @@ class PydanticGrammar(BaseGrammar):
         For convenience, when a type is exactly `ndarray`,
         it is automatically converted to `NDArrayPydantic`.
         """
-        names_to_annotations = dict(names_to_types)
-        for name, annotation in names_to_types.items():
+        name_to_annotation = dict(name_to_type)
+        for name, annotation in name_to_type.items():
             if annotation is ndarray:
-                names_to_annotations[name] = NDArrayPydantic
-        self.__update_from_annotations(names_to_annotations, merge)
+                name_to_annotation[name] = NDArrayPydantic
+        self.__update_from_annotations(name_to_annotation, merge)
 
     def update_from_model(self, model: ModelType, merge: bool = False) -> None:
         """Update the grammar from a Pydantic model.
@@ -244,17 +244,17 @@ class PydanticGrammar(BaseGrammar):
 
     def __update_from_annotations(
         self,
-        names_to_annotations: SimpleGrammarTypes,
+        name_to_annotation: SimpleGrammarTypes,
         merge: bool,
     ) -> None:
         """Update the grammar from names bound to annotations.
 
         Args:
-            names_to_annotations: The mapping from names to annotations.
+            name_to_annotation: The mapping from names to annotations.
             merge: Whether to merge or update the grammar.
         """
         fields = self.__model.__pydantic_fields__
-        for name, annotation in names_to_annotations.items():
+        for name, annotation in name_to_annotation.items():
             if merge and name in fields:
                 # Pydantic typing for the argument annotation does not handle Union,
                 # we cast it.
@@ -298,13 +298,13 @@ class PydanticGrammar(BaseGrammar):
             del self.__model.__pydantic_fields__[name]
             self.__model_needs_rebuild = True
 
-    def _get_names_to_types(self) -> SimpleGrammarTypes:
+    def _get_name_to_type(self) -> SimpleGrammarTypes:
         """
         Notes:
             For the elements for which types definitions cannot be expressed as a unique
             Python type, the type is set to `None`.
         """  # noqa: D205, D212, D415
-        names_to_types = {}
+        name_to_type = {}
         for name, field in self.__model.__pydantic_fields__.items():
             annotation = field.annotation
             origin = get_origin(annotation)
@@ -321,9 +321,9 @@ class PydanticGrammar(BaseGrammar):
             if pydantic_type is _NDArrayPydantic:
                 pydantic_type = ndarray
 
-            names_to_types[name] = pydantic_type
+            name_to_type[name] = pydantic_type
 
-        return names_to_types
+        return name_to_type
 
     # TODO: API: turn into a getter since it is costly.
     @property

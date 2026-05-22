@@ -323,13 +323,13 @@ class ScalableProblem:
             mls.add("Inputs")
             mls.indent()
             for name in discipline.input_names:
-                mls.add(f"{name} ({discipline.names_to_sizes[name]})")
+                mls.add(f"{name} ({discipline.name_to_size[name]})")
 
             mls.dedent()
             mls.add("Outputs")
             mls.indent()
             for name in discipline.output_names:
-                mls.add(f"{name} ({discipline.names_to_sizes[name]})")
+                mls.add(f"{name} ({discipline.name_to_size[name]})")
 
             mls.dedent()
             mls.dedent()

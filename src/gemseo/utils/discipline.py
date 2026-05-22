@@ -387,10 +387,10 @@ class VariableRenamer:
         renamer = cls()
         for (
             discipline_name,
-            variable_names_to_new_variable_names,
+            variable_name_to_new_variable_name,
         ) in translations.items():
             renamer.add_translations_by_discipline(
-                discipline_name, variable_names_to_new_variable_names
+                discipline_name, variable_name_to_new_variable_name
             )
 
         return renamer
@@ -488,19 +488,19 @@ class VariableRenamer:
     def add_translations_by_discipline(
         self,
         discipline_name: str,
-        variable_names_to_new_variable_names: Mapping[str, str],
+        variable_name_to_new_variable_name: Mapping[str, str],
     ) -> None:
         """Add one or more translations for a given discipline.
 
         Args:
             discipline_name: The name of the discipline.
-            variable_names_to_new_variable_names: The new variable names
+            variable_name_to_new_variable_name: The new variable names
                 bound to the old variable names.
         """
         for (
             variable_name,
             new_variable_name,
-        ) in variable_names_to_new_variable_names.items():
+        ) in variable_name_to_new_variable_name.items():
             self.add_translation(
                 VariableTranslation(
                     discipline_name=discipline_name,
@@ -512,20 +512,20 @@ class VariableRenamer:
     def add_translations_by_variable(
         self,
         new_variable_name: str,
-        discipline_names_to_variable_names: Mapping[str, str],
+        discipline_name_to_variable_name: Mapping[str, str],
     ) -> None:
         """Add one or more translations for a same variable.
 
         Args:
             new_variable_name: The new name of the variable
                 to rename discipline variables.
-            discipline_names_to_variable_names: The variable names
+            discipline_name_to_variable_name: The variable names
                 bound to the discipline names.
         """
         for (
             discipline_name,
             variable_name,
-        ) in discipline_names_to_variable_names.items():
+        ) in discipline_name_to_variable_name.items():
             self.add_translation(
                 VariableTranslation(
                     discipline_name=discipline_name,
@@ -625,13 +625,13 @@ def get_discipline_variable_properties(
         The properties of the input variables,
         then the properties of the output variables.
     """
-    input_names_to_properties = {}
-    output_names_to_properties = {}
+    input_name_to_properties = {}
+    output_name_to_properties = {}
     data_processor = discipline.io.data_processor
     is_name_mapping = isinstance(data_processor, NameMapping)
-    for grammar, names_to_properties in zip(
+    for grammar, name_to_properties in zip(
         (discipline.io.input_grammar, discipline.io.output_grammar),
-        (input_names_to_properties, output_names_to_properties),
+        (input_name_to_properties, output_name_to_properties),
         strict=False,
     ):
         from_namespaced = grammar.from_namespaced
@@ -650,32 +650,32 @@ def get_discipline_variable_properties(
             else:
                 original_name = current_name_without_namespace
 
-            names_to_properties[current_name] = DisciplineVariableProperties(
+            name_to_properties[current_name] = DisciplineVariableProperties(
                 current_name=current_name,
                 current_name_without_namespace=current_name_without_namespace,
                 original_name=original_name,
                 description=grammar.descriptions.get(current_name, ""),
             )
 
-    return input_names_to_properties, output_names_to_properties
+    return input_name_to_properties, output_name_to_properties
 
 
 def update_default_input_values(
     disciplines: Iterable[Discipline],
-    input_names_to_default_values: StrKeyMapping,
+    input_name_to_default_value: StrKeyMapping,
     input_names: Iterable[str] = (),
 ) -> None:
     """Update the default values of certain inputs of given disciplines.
 
     Args:
         disciplines: The disciplines.
-        input_names_to_default_values: The mapping
+        input_name_to_default_value: The mapping
             between the names of the input variables and their default input values.
         input_names: The names of the input variables to be considered.
             If empty, all the input variables are considered.
     """
-    input_names = input_names or set(input_names_to_default_values)
+    input_names = input_names or set(input_name_to_default_value)
     for discipline in disciplines:
         defaults = discipline.io.input_grammar.defaults
         for input_name in set(discipline.io.input_grammar).intersection(input_names):
-            defaults[input_name] = input_names_to_default_values[input_name]
+            defaults[input_name] = input_name_to_default_value[input_name]

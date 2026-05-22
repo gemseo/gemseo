@@ -397,20 +397,20 @@ class PCERegressor(BaseFCERegressor):
         return self._evaluate_basis_functions(input_sample)[0]
 
     def _compute_sobol_indices(self) -> None:
-        names_to_positions = {}
+        name_to_positions = {}
         start = 0
-        names_to_sizes = self.learning_set.variable_names_to_n_components
+        name_to_size = self.learning_set.variable_name_to_n_components
         for name in self.input_names:
-            stop = start + names_to_sizes[name]
-            names_to_positions[name] = range(start, stop)
+            stop = start + name_to_size[name]
+            name_to_positions[name] = range(start, stop)
             start = stop
         ot_sobol_indices = FunctionalChaosSobolIndices(self.algo)
         self.__compute_first_or_total_order_indices(
-            names_to_positions, ot_sobol_indices, True
+            name_to_positions, ot_sobol_indices, True
         )
-        self.__compute_second_order_indices(names_to_positions, ot_sobol_indices)
+        self.__compute_second_order_indices(name_to_positions, ot_sobol_indices)
         self.__compute_first_or_total_order_indices(
-            names_to_positions, ot_sobol_indices, False
+            name_to_positions, ot_sobol_indices, False
         )
 
     def _compute_statistics(self) -> None:
@@ -436,13 +436,13 @@ class PCERegressor(BaseFCERegressor):
 
     def __compute_second_order_indices(
         self,
-        names_to_positions: Mapping[str, Iterable[int]],
+        name_to_positions: Mapping[str, Iterable[int]],
         ot_sobol_indices: FunctionalChaosSobolIndices,
     ) -> None:
         """Compute the second-order Sobol' indices.
 
         Args:
-            names_to_positions: The input names
+            name_to_positions: The input names
                 bound to the positions in the uncertain input vector.
             ot_sobol_indices: The Sobol' indices.
         """
@@ -464,9 +464,9 @@ class PCERegressor(BaseFCERegressor):
                             )
                             if first_index != second_index
                             else 0
-                            for second_index in names_to_positions[second_name]
+                            for second_index in name_to_positions[second_name]
                         ]
-                        for first_index in names_to_positions[first_name]
+                        for first_index in name_to_positions[first_name]
                     ])
                     for second_name in self.input_names
                 }
@@ -474,21 +474,21 @@ class PCERegressor(BaseFCERegressor):
             }
             for output_index in range(self._reduced_output_dimension)
         ]
-        for names_to_names_to_indices in self._second_order_sobol_indices:
-            for input_name, names_to_indices in names_to_names_to_indices.items():
-                if not isinstance(names_to_indices[input_name], list):
-                    names_to_indices.pop(input_name)
+        for name_to_name_to_indices in self._second_order_sobol_indices:
+            for input_name, name_to_indices in name_to_name_to_indices.items():
+                if not isinstance(name_to_indices[input_name], list):
+                    name_to_indices.pop(input_name)
 
     def __compute_first_or_total_order_indices(
         self,
-        names_to_positions: Mapping[str, Iterable[int]],
+        name_to_positions: Mapping[str, Iterable[int]],
         ot_sobol_indices: FunctionalChaosSobolIndices,
         use_first: True,
     ) -> None:
         """Compute either the first- or total-order Sobol' indices.
 
         Args:
-            names_to_positions: The input names
+            name_to_positions: The input names
                 bound to the positions in the uncertain input vector.
             ot_sobol_indices: The Sobol' indices.
             use_first: Whether to compute the first-order Sobol' indices.
@@ -502,7 +502,7 @@ class PCERegressor(BaseFCERegressor):
             {
                 input_name: self.__simplify_sobol_indices([
                     method(input_index, output_index)
-                    for input_index in names_to_positions[input_name]
+                    for input_index in name_to_positions[input_name]
                 ])
                 for input_name in self.input_names
             }

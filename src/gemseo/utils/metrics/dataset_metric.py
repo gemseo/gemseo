@@ -122,10 +122,10 @@ class DatasetMetric(BaseCompositeMetric[Dataset, Dataset]):
                 for a, b in zip(*name_to_a_b_data[name], strict=False)
             ]).T,
             variable_names=variable_names,
-            variable_names_to_group_names={
+            variable_name_to_group_name={
                 name: a.get_group_names(name)[0] for name in variable_names
             },
-            variable_names_to_n_components={
+            variable_name_to_n_components={
                 name: name_to_a_b_data[name][0].shape[0] for name in variable_names
             },
         )

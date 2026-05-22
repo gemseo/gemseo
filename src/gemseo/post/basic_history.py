@@ -84,7 +84,7 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
                 names
                 for variable_name in variable_names
                 for names in (
-                    optimization_metadata.output_names_to_constraint_names.get(
+                    optimization_metadata.output_name_to_constraint_names.get(
                         variable_name, [variable_name]
                     )
                 )

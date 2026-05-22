@@ -197,8 +197,8 @@ class DesignSpace:
     This can be used when forcing the execution of an optimization library
     restricted to float variables on a problem containing integer variables."""
 
-    __names_to_indices: dict[str, range]
-    """The names bound to the indices in a design vector."""
+    __name_to_indices: dict[str, range]
+    """The map from a variable name to its indices in the design vector."""
 
     def __init__(self, name: str = "") -> None:
         """
@@ -226,7 +226,7 @@ class DesignSpace:
         self.__has_current_value = False
         self.__common_dtype = self.__DEFAULT_COMMON_DTYPE
         self.__clear_dependent_data()
-        self.__names_to_indices = {}
+        self.__name_to_indices = {}
 
     @property
     def _current_value(self) -> dict[str, ndarray]:
@@ -288,15 +288,15 @@ class DesignSpace:
         self.__norm_data_is_computed = False
         size = self._variables[name].size
         self.dimension -= size
-        del self.__names_to_indices[name]
+        del self.__name_to_indices[name]
         variable_is_reached = False
         for variable_name in self:
             if variable_name == name:
                 variable_is_reached = True
             elif variable_is_reached:
-                indices = self.__names_to_indices[variable_name]
+                indices = self.__name_to_indices[variable_name]
                 # N.B. the steps of the ranges of indices are assumed equal to 1
-                self.__names_to_indices[variable_name] = range(
+                self.__name_to_indices[variable_name] = range(
                     indices.start - size,
                     indices.stop - size,
                 )
@@ -377,15 +377,15 @@ class DesignSpace:
 
         # Update the mapping from names to array indices
         name_reached = False
-        for name_, indices in self.__names_to_indices.items():
+        for name_, indices in self.__name_to_indices.items():
             if name_ == name:
                 name_reached = True
-                self.__names_to_indices[name_] = range(
+                self.__name_to_indices[name_] = range(
                     indices.start,
                     indices.stop - n_removed,
                 )
             elif name_reached:
-                self.__names_to_indices[name_] = range(
+                self.__name_to_indices[name_] = range(
                     indices.start - n_removed,
                     indices.stop - n_removed,
                 )
@@ -428,7 +428,7 @@ class DesignSpace:
             lower_bound=lower_bound,
             upper_bound=upper_bound,
         )
-        self.__names_to_indices[name] = range(self.dimension, self.dimension + size)
+        self.__name_to_indices[name] = range(self.dimension, self.dimension + size)
         self.dimension += size
         self._add_norm_policy(name)
         if value is not None:
@@ -468,9 +468,9 @@ class DesignSpace:
             raise ValueError(msg)
 
     @property
-    def names_to_indices(self) -> dict[str, range]:
+    def name_to_indices(self) -> dict[str, range]:
         """The names bound to the indices."""
-        return self.__names_to_indices
+        return self.__name_to_indices
 
     def _add_norm_policy(
         self,
@@ -1196,7 +1196,7 @@ class DesignSpace:
         else:
             names = variable_names
 
-        return concatenate([self.__names_to_indices[name] for name in names])
+        return concatenate([self.__name_to_indices[name] for name in names])
 
     def __update_normalization_vars(self) -> None:
         """Compute the inner attributes used for normalization and unnormalization."""
@@ -2424,7 +2424,7 @@ class DesignSpace:
             msg = f"The variable {current_name} is not in the design space."
             raise ValueError(msg)
 
-        for dictionary in [self.normalize, self._variables, self.__names_to_indices]:
+        for dictionary in [self.normalize, self._variables, self.__name_to_indices]:
             dictionary[new_name] = dictionary.pop(current_name)
 
         current_value = self._current_value.pop(current_name, None)

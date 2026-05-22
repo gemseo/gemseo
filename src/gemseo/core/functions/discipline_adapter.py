@@ -68,7 +68,7 @@ class DisciplineAdapter(ArrayFunction):
         output_names: Sequence[str],
         default_input_data: StrKeyMapping,
         discipline: Discipline,
-        names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
+        name_to_size: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
         differentiated_input_names_substitute: Sequence[str] = (),
     ) -> None:
         """
@@ -81,7 +81,7 @@ class DisciplineAdapter(ArrayFunction):
                 or their derivatives with `_jac()`.
                 If empty, do not overload them.
             discipline: The discipline to be adapted.
-            names_to_sizes: The sizes of the input variables.
+            name_to_size: The sizes of the input variables.
                 If empty, determine them from the default inputs and local data
                 of the discipline.
             differentiated_input_names_substitute: The names of the inputs
@@ -103,9 +103,9 @@ class DisciplineAdapter(ArrayFunction):
         self.__differentiated_input_size = 0
         self.__jacobian = array(())
         self.__discipline = discipline
-        self.__input_names_to_slices = {}
-        self.__input_names_to_sizes = names_to_sizes or {}
-        self.__differentiated_input_names_to_slices = {}
+        self.__input_name_to_slice = {}
+        self.__input_name_to_size = name_to_size or {}
+        self.__differentiated_input_name_to_slice = {}
         input_names = set(self.input_names)
         self.__is_linear = self.__discipline.io.have_linear_relationships(
             input_names, output_names
@@ -151,8 +151,8 @@ class DisciplineAdapter(ArrayFunction):
                 for input_name in self.input_names
             )
 
-        if len(self.__input_names_to_sizes) > 0:
-            return sum(self.__input_names_to_sizes.values())
+        if len(self.__input_name_to_size) > 0:
+            return sum(self.__input_name_to_size.values())
 
         default_input_data = self.__discipline.io.input_grammar.defaults
 
@@ -263,7 +263,7 @@ class DisciplineAdapter(ArrayFunction):
         jacobian_ = self.__jacobian
         jacobian_data_ = jacobian_data[self.output_names[0]]
         for input_name in self.differentiated_input_names_substitute:
-            input_slice = self.__differentiated_input_names_to_slices[input_name]
+            input_slice = self.__differentiated_input_name_to_slice[input_name]
             # jacobian_data__ is a (n*pi, n*dj) array
             jacobian_data__ = jacobian_data_[input_name]
             # TODO: This precaution is meant to disappear when sparse 1-D array will
@@ -317,7 +317,7 @@ class DisciplineAdapter(ArrayFunction):
         """
         n_inputs = len(self.differentiated_input_names_substitute)
         n_outputs = len(self.output_names)
-        output_names_to_sizes = {
+        output_name_to_size = {
             k: next(iter(v.values())).shape[0] // n_samples
             for k, v in jacobian_data.items()
         }
@@ -326,13 +326,13 @@ class DisciplineAdapter(ArrayFunction):
             arrays = [[None] * n_inputs] * n_outputs
             for output_index, output_name in enumerate(self.output_names):
                 jacobian_data_ = jacobian_data[output_name]
-                output_size = output_names_to_sizes[output_name]
+                output_size = output_name_to_size[output_name]
                 arrays_ = arrays[output_index]
                 for input_index, input_name in enumerate(
                     self.differentiated_input_names_substitute
                 ):
                     jacobian_data__ = jacobian_data_[input_name]
-                    input_size = self.__input_names_to_sizes[input_name]
+                    input_size = self.__input_name_to_size[input_name]
                     arrays_[input_index] = jacobian_data__[
                         i * output_size : (i + 1) * output_size,
                         i * input_size : (i + 1) * input_size,
@@ -365,7 +365,7 @@ class DisciplineAdapter(ArrayFunction):
         create_array = dok_array if n_samples > 1 else empty
         self.__jacobian = create_array(shape)
 
-    def __create_input_names_to_slices(self) -> None:
+    def __create_input_name_to_slice(self) -> None:
         """Create the map from discipline input names to input vector slices.
 
         Raises:
@@ -373,15 +373,15 @@ class DisciplineAdapter(ArrayFunction):
         """
         input_data = self.__discipline.io.get_input_data()
         input_data.update(self.__discipline.io.input_grammar.defaults)
-        self.__input_names_to_sizes.update(
-            self.__discipline.io.input_grammar.data_converter.compute_names_to_sizes(
+        self.__input_name_to_size.update(
+            self.__discipline.io.input_grammar.data_converter.compute_name_to_size(
                 input_data.keys(), input_data
             )
         )
 
         missing_names = (
             set(self.input_names)
-            .difference(self.__input_names_to_sizes.keys())
+            .difference(self.__input_name_to_size.keys())
             .difference(input_data.keys())
         )
 
@@ -394,18 +394,18 @@ class DisciplineAdapter(ArrayFunction):
             raise ValueError(msg)
 
         (
-            self.__input_names_to_slices,
+            self.__input_name_to_slice,
             self.__input_size,
-        ) = self.__discipline.io.input_grammar.data_converter.compute_names_to_slices(
-            self.input_names, input_data, self.__input_names_to_sizes
+        ) = self.__discipline.io.input_grammar.data_converter.compute_name_to_slice(
+            self.input_names, input_data, self.__input_name_to_size
         )
         (
-            self.__differentiated_input_names_to_slices,
+            self.__differentiated_input_name_to_slice,
             self.__differentiated_input_size,
-        ) = self.__discipline.io.input_grammar.data_converter.compute_names_to_slices(
+        ) = self.__discipline.io.input_grammar.data_converter.compute_name_to_slice(
             self.differentiated_input_names_substitute,
             input_data,
-            self.__input_names_to_sizes,
+            self.__input_name_to_size,
         )
 
     def _create_discipline_input_data(
@@ -426,12 +426,12 @@ class DisciplineAdapter(ArrayFunction):
         if self.__default_inputs:
             self.__discipline.io.input_grammar.defaults.update(self.__default_inputs)
 
-        if not self.__input_names_to_slices:
-            self.__create_input_names_to_slices()
+        if not self.__input_name_to_slice:
+            self.__create_input_name_to_slice()
 
         input_data = (
             self.__discipline.io.input_grammar.data_converter.convert_array_to_data(
-                x_vect, self.__input_names_to_slices
+                x_vect, self.__input_name_to_slice
             )
         )
         variable_types = x_vect.dtype.metadata

@@ -128,11 +128,11 @@ class HDF5Cache(BaseFullCache):
     def _read_hashes(self) -> None:
         """Read the hashes dict in the HDF file."""
         max_index = self.__hdf_file.read_hashes(
-            self._hashes_to_indices, self.__hdf_node_path
+            self._hash_to_indices, self.__hdf_node_path
         )
         self._last_accessed_index.value = max_index
         self._max_index.value = max_index
-        cache_size = len(self._hashes_to_indices)
+        cache_size = len(self._hash_to_indices)
         if cache_size > 0:
             msg = "Found %s entries in the cache file : %s node : %s"
             LOGGER.info(

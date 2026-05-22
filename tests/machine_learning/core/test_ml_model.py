@@ -46,8 +46,8 @@ def dataset() -> IODataset:
     """The dataset used to train the machine learning models."""
     data = arange(30).reshape(10, 3)
     variables = ["x_1", "x_2"]
-    variable_names_to_n_components = {"x_1": 1, "x_2": 2}
-    samples = IODataset.from_array(data, variables, variable_names_to_n_components)
+    variable_name_to_n_components = {"x_1": 1, "x_2": 2}
+    samples = IODataset.from_array(data, variables, variable_name_to_n_components)
     samples.name = "dataset_name"
     return samples
 

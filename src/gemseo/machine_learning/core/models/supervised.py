@@ -135,8 +135,8 @@ class BaseMLSupervisedModel(BaseMLModel):
     __input_dimension: int
     """The dimension of the input space."""
 
-    __groups_to_names: dict[str, str]
-    """The variable names associated with group names."""
+    __group_to_names: dict[str, str]
+    """The map from a group name to the associated variable names."""
 
     __output_dimension: int
     """The dimension of the output space."""
@@ -188,7 +188,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         self.output_names = list(
             self._settings.output_names
         ) or data.get_variable_names(data.OUTPUT_GROUP)
-        self.__groups_to_names = {
+        self.__group_to_names = {
             data.INPUT_GROUP: self.input_names,
             data.OUTPUT_GROUP: self.output_names,
         }
@@ -284,7 +284,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         self,
         data: ndarray,
         names: Iterable[str],
-        names_to_sizes: Mapping[str, int],
+        name_to_size: Mapping[str, int],
         names_to_transform: Sequence[str],
         inverse: bool,
     ) -> ndarray:
@@ -293,14 +293,14 @@ class BaseMLSupervisedModel(BaseMLModel):
         Args:
             data: The original data array.
             names: The variables representing the columns of the array.
-            names_to_sizes: The sizes of the variables.
+            name_to_size: The sizes of the variables.
             names_to_transform: The names of the variables to transform.
             inverse: Whether to use the inverse transformation.
 
         Returns:
             The transformed data array.
         """
-        data = split_array_to_dict_of_arrays(data, names_to_sizes, names)
+        data = split_array_to_dict_of_arrays(data, name_to_size, names)
         transformed_data = []
         for name in names:
             if name in names_to_transform:
@@ -327,7 +327,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         ).to_numpy()[indices]
         self.input_space_center = split_array_to_dict_of_arrays(
             input_data.mean(0),
-            self.learning_set.variable_names_to_n_components,
+            self.learning_set.variable_name_to_n_components,
             self.input_names,
         )
 
@@ -393,7 +393,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         """
         dataset = self.learning_set
         transformed_data = []
-        for name in self.__groups_to_names[self.__get_group_name(input_group)]:
+        for name in self.__group_to_names[self.__get_group_name(input_group)]:
             if name not in names:
                 transformed_data.append(
                     dataset.get_view(variable_names=name).to_numpy()
@@ -438,7 +438,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         """
         group = self.__get_group_name(input_group)
         return self.__transform_data(
-            self.__groups_to_names[group],
+            self.__group_to_names[group],
             self.transformer[group],
             indices,
             input_group,
@@ -594,7 +594,7 @@ class BaseMLSupervisedModel(BaseMLModel):
                 transformer, BaseDimensionReduction
             ):
                 self._transformed_variable_sizes[name] = (
-                    self.learning_set.variable_names_to_n_components[name]
+                    self.learning_set.variable_name_to_n_components[name]
                 )
             else:
                 self._transformed_variable_sizes[name] = transformer.n_components

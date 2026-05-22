@@ -335,7 +335,7 @@ def test_filter_dimensions(current_value) -> None:
     if current_value is not None:
         assert_array_equal(space.get_current_value(), [-0.5, 0.2, 0.2, 8])
 
-    assert space.names_to_indices == {
+    assert space.name_to_indices == {
         "z": range(1),
         "x": range(1, 2),
         "x1": range(2, 3),
@@ -1349,11 +1349,11 @@ def test_rename_variable(value) -> None:
     """Check the renaming of a variable."""
     design_space = DesignSpace()
     design_space.add_variable("x", 2, "integer", 0.0, 2.0, value)
-    names_to_indices = design_space._DesignSpace__names_to_indices
-    indices = names_to_indices["x"]
+    name_to_indices = design_space._DesignSpace__name_to_indices
+    indices = name_to_indices["x"]
     design_space.rename_variable("x", "y")
-    assert "x" not in names_to_indices
-    assert names_to_indices["y"] == indices
+    assert "x" not in name_to_indices
+    assert name_to_indices["y"] == indices
     assert "x" not in design_space
     assert "y" in design_space
     variable = design_space._variables["y"]

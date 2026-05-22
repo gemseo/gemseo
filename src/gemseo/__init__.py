@@ -1278,9 +1278,9 @@ def create_dataset(
     if isinstance(data, ndarray):
         dataset = dataset_class.from_array(
             data,
-            variable_names,
-            variable_names_to_n_components,
-            variable_names_to_group_names,
+            variable_names=variable_names,
+            variable_name_to_n_components=variable_names_to_n_components,
+            variable_name_to_group_name=variable_names_to_group_names,
         )
     elif not data:
         dataset = dataset_class()
@@ -1292,11 +1292,11 @@ def create_dataset(
         elif extension == ".txt":
             dataset = dataset_class.from_txt(
                 data,
-                variable_names,
-                variable_names_to_n_components,
-                variable_names_to_group_names,
-                delimiter,
-                header,
+                variable_names=variable_names,
+                variable_name_to_n_components=variable_names_to_n_components,
+                variable_name_to_group_name=variable_names_to_group_names,
+                delimiter=delimiter,
+                header=header,
             )
         else:
             msg = (

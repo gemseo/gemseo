@@ -287,7 +287,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
             ):
                 continue
 
-            sizes = self.dataset.variable_names_to_n_components
+            sizes = self.dataset.variable_name_to_n_components
             input_covariance_models = self.__compute_covariance_models(
                 input_samples, input_covariance_model_class
             )
@@ -370,12 +370,12 @@ class HSICAnalysis(BaseSensitivityAnalysis):
                 and the type of HSIC is conditional.
         """
         if use_asymptotic:
-            output_names_to_p_values = self._indices.p_value_asymptotic
-            if not output_names_to_p_values:
+            output_name_to_p_values = self._indices.p_value_asymptotic
+            if not output_name_to_p_values:
                 msg = "Asymptotic p-values are not available for conditional HSIC."
                 raise ValueError(msg)
         else:
-            output_names_to_p_values = self._indices.p_value_permutation
+            output_name_to_p_values = self._indices.p_value_permutation
 
         return {
             output_name: [
@@ -386,5 +386,5 @@ class HSICAnalysis(BaseSensitivityAnalysis):
                 }
                 for output_component in output_components
             ]
-            for output_name, output_components in output_names_to_p_values.items()
+            for output_name, output_components in output_name_to_p_values.items()
         }

@@ -266,7 +266,7 @@ class SobieskiProblem:
         self.__l_b, self.__u_b = self.__base.design_bounds
         self.__design_space = None
         self.__design_space_with_physical_naming = None
-        self.__names_to_feasible_values = {
+        self.__name_to_feasible_value = {
             "x_1": array([0.14951, 7.5e-01], dtype=self.__dtype),
             "x_2": array([7.5e-01], dtype=self.__dtype),
             "x_3": array([0.1675], dtype=self.__dtype),
@@ -337,7 +337,7 @@ class SobieskiProblem:
         """
         dtype = self.__dtype
         constants = self.__base.constants
-        names_to_default_values = {
+        name_to_default_value = {
             "x_shared": design_vector[4:10],
             "y_12": array([50606.9742, 0.95], dtype=dtype),
             "y_14": array((50606.9741711, 7306.20262124), dtype=dtype),
@@ -364,12 +364,12 @@ class SobieskiProblem:
         }
 
         if not names:
-            return names_to_default_values
+            return name_to_default_value
 
         return {
-            names: names_to_default_values[names]
+            names: name_to_default_value[names]
             for names in convert_strings_to_iterable(names)
-            if names in names_to_default_values
+            if names in name_to_default_value
         }
 
     def get_default_inputs(
@@ -421,7 +421,7 @@ class SobieskiProblem:
         design_vector = self.initial_design
         dtype = self.__dtype
         constants = self.__base.constants
-        names_to_default_values = {
+        name_to_default_value = {
             "x_shared": array(design_vector[4:], dtype=dtype),
             "y_34": array([1.10754577], dtype=dtype),
             "y_32": array([0.50279625], dtype=dtype),
@@ -452,9 +452,9 @@ class SobieskiProblem:
         }
 
         if names:
-            return {name: names_to_default_values[name] for name in names}
+            return {name: name_to_default_value[name] for name in names}
 
-        return names_to_default_values
+        return name_to_default_value
 
     def get_random_input(
         self,
@@ -477,7 +477,7 @@ class SobieskiProblem:
 
         lower_bound, upper_bound = self.design_bounds
         dtype = self.__dtype
-        names_to_random_values = {
+        name_to_random_value = {
             "x_shared": array(uniform(lower_bound[4:], upper_bound[4:]), dtype=dtype),
             "y_34": array([uniform(0.8, 1.2)], dtype=dtype),
             "y_21": array((uniform(1.0, 6e4),), dtype=dtype),
@@ -498,9 +498,9 @@ class SobieskiProblem:
         }
 
         if names:
-            return {name: names_to_random_values[name] for name in names}
+            return {name: name_to_random_value[name] for name in names}
 
-        return names_to_random_values
+        return name_to_random_value
 
     def get_x0_feasible(self, names: str | Iterable[str] = "") -> ndarray:
         """Return a feasible starting point related to some input variables.
@@ -517,7 +517,7 @@ class SobieskiProblem:
         else:
             names = self.__DESIGN_VARIABLE_NAMES
 
-        return concatenate([self.__names_to_feasible_values[name] for name in names])
+        return concatenate([self.__name_to_feasible_value[name] for name in names])
 
     @property
     def design_bounds(self) -> tuple[ndarray, ndarray]:

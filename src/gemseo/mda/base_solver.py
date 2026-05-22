@@ -76,13 +76,13 @@ class BaseMDASolver(BaseMDA):
     __upper_bound_vector: RealArray | None
     """The vector of upper bounds."""
 
-    __resolved_variable_names_to_bounds: dict[
+    __resolved_variable_name_to_bounds: dict[
         str, tuple[RealArray | None, RealArray | None]
     ]
-    """The mapping from variable names to lower/upper bounds."""
+    """The map from a resolved variable name to its lower and upper bounds."""
 
-    __resolved_variable_names_to_slices: dict[str, slice]
-    """The mapping from names to slices for converting array to data structures."""
+    __resolved_variable_name_to_slice: dict[str, slice]
+    """The map from a resolved variable name to its slice in the residual vector."""
 
     __resolved_variable_names: tuple[str, ...]
     """The names of the resolved variables.
@@ -118,7 +118,7 @@ class BaseMDASolver(BaseMDA):
             self.settings.acceleration_method,
         )
 
-        self.__resolved_variable_names_to_slices = {}
+        self.__resolved_variable_name_to_slice = {}
         self.__resolved_variable_names = ()
 
         self.__resolved_residual_names = ()
@@ -128,7 +128,7 @@ class BaseMDASolver(BaseMDA):
 
         self.__lower_bound_vector = None
         self.__upper_bound_vector = None
-        self.__resolved_variable_names_to_bounds = {}
+        self.__resolved_variable_name_to_bounds = {}
 
         self.__iteration_callbacks = []
 
@@ -190,18 +190,18 @@ class BaseMDASolver(BaseMDA):
 
     def set_bounds(
         self,
-        variable_names_to_bounds: Mapping[
+        variable_name_to_bounds: Mapping[
             str, tuple[RealArray | None, RealArray | None]
         ],
     ) -> None:
         """Set the bounds for the resolved variables.
 
         Args:
-            variable_names_to_bounds: The mapping from variable names to bounds.
+            variable_name_to_bounds: The mapping from variable names to bounds.
         """
-        self.__resolved_variable_names_to_bounds |= {
+        self.__resolved_variable_name_to_bounds |= {
             name: bounds
-            for name, bounds in variable_names_to_bounds.items()
+            for name, bounds in variable_name_to_bounds.items()
             if name in self._resolved_variable_names
         }
 
@@ -283,7 +283,7 @@ class BaseMDASolver(BaseMDA):
 
         self.__resolved_residual_names = tuple(residuals)
 
-    def _compute_names_to_slices(self) -> None:
+    def _compute_name_to_slice(self) -> None:
         """Compute the mapping of variable names to slices for converting data to array.
 
         Two mappings are computed, one for the resolved variables (couplings and state
@@ -293,11 +293,11 @@ class BaseMDASolver(BaseMDA):
         grammar (input or output) of a converter that contains all the coupling data is
         chosen. Otherwise, converters from the 2 grammars are used.
         """
-        if self.__resolved_variable_names_to_slices:
+        if self.__resolved_variable_name_to_slice:
             return
 
-        self.__resolved_variable_names_to_slices = (
-            self.io.input_grammar.data_converter.compute_names_to_slices(
+        self.__resolved_variable_name_to_slice = (
+            self.io.input_grammar.data_converter.compute_name_to_slice(
                 self._resolved_variable_names,
                 self.io.data,
             )[0]
@@ -306,7 +306,7 @@ class BaseMDASolver(BaseMDA):
         # Initialize the vectors of bounds once the variable sizes are known.
         total_size = sum(
             slice_.stop - slice_.start
-            for slice_ in self.__resolved_variable_names_to_slices.values()
+            for slice_ in self.__resolved_variable_name_to_slice.values()
         )
 
         self.__lower_bound_vector = -inf * ones(total_size)
@@ -322,7 +322,7 @@ class BaseMDASolver(BaseMDA):
         """
         self.io.data |= self.io.output_grammar.data_converter.convert_array_to_data(
             array_,
-            self.__resolved_variable_names_to_slices,
+            self.__resolved_variable_name_to_slice,
         )
 
     def _compute_normalized_residual_norm(self) -> float:
@@ -358,7 +358,7 @@ class BaseMDASolver(BaseMDA):
         elif scaling == ResidualScaling.INITIAL_SUBRESIDUAL_NORM:
             if scaling_data is None:
                 scaling_data = []
-                for slice_ in self.__resolved_variable_names_to_slices.values():
+                for slice_ in self.__resolved_variable_name_to_slice.values():
                     initial_norm = float(norm(residual[slice_]))
                     initial_norm = initial_norm if initial_norm != 0.0 else 1.0
                     scaling_data.append((slice_, initial_norm))
@@ -445,8 +445,8 @@ class BaseMDASolver(BaseMDA):
         for name, (
             lower_bound,
             upper_bound,
-        ) in self.__resolved_variable_names_to_bounds.items():
-            slice_ = self.__resolved_variable_names_to_slices[name]
+        ) in self.__resolved_variable_name_to_bounds.items():
+            slice_ = self.__resolved_variable_name_to_slice[name]
             self.__lower_bound_vector[slice_] = (
                 lower_bound if lower_bound is not None else -inf
             )

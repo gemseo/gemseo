@@ -297,14 +297,14 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         start = end = 0
         sizes = self.variable_sizes
-        names_to_indices = {}
+        name_to_indices = {}
         for name in names:
             size = sizes[name]
             end += size
-            names_to_indices[name] = (start, end, size)
+            name_to_indices[name] = (start, end, size)
             start = end
 
-        return names_to_indices
+        return name_to_indices
 
     def unmask_x_swap_order(
         self,
@@ -334,8 +334,8 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         if not all_data_names:
             all_data_names = self.problem.design_space.variable_names
 
-        names_to_sizes = self.variable_sizes
-        mask_size = sum(names_to_sizes[name] for name in masking_data_names)
+        name_to_size = self.variable_sizes
+        mask_size = sum(name_to_size[name] for name in masking_data_names)
 
         if (n_samples := x_masked.shape[-1] // mask_size) == 1:
             return self.__unmask_x_swap_order_if_one_sample(
@@ -366,11 +366,11 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The unmasked array.
         """
-        names_to_sizes = self.variable_sizes
+        name_to_size = self.variable_sizes
         x_unmasked = zeros(
             (
                 *x_masked.shape[:-1],
-                sum(names_to_sizes[name] for name in all_data_names),
+                sum(name_to_size[name] for name in all_data_names),
             ),
             dtype=x_masked.dtype,
         )
@@ -406,16 +406,16 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             The unmasked array.
         """
         masked_position = 0
-        names_to_indices = {
+        name_to_indices = {
             name: index
             for index, name in enumerate(all_data_names)
             if name in masking_data_names
         }
         n_variables = len(all_data_names)
         arrays = [None] * n_samples * n_variables
-        names_to_sizes = self.variable_sizes
-        for variable_name, variable_index in names_to_indices.items():
-            size = names_to_sizes[variable_name]
+        name_to_size = self.variable_sizes
+        for variable_name, variable_index in name_to_indices.items():
+            size = name_to_size[variable_name]
             a = variable_index - n_variables
             b = masked_position - mask_size
             for _ in range(n_samples):

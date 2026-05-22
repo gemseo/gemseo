@@ -96,7 +96,7 @@ class IODataset(Dataset):
         self,
         data: DataType,
         variable_names: StrColumnType = "i",
-        variable_names_to_n_components: dict[str, int] | None = None,
+        variable_name_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the input group.
 
@@ -105,7 +105,7 @@ class IODataset(Dataset):
             variable_names: The names of the variables.
                 If empty, use
                 [DEFAULT_VARIABLE_NAME][gemseo.datasets.dataset.Dataset.DEFAULT_VARIABLE_NAME].
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
                 If `None`,
@@ -115,14 +115,14 @@ class IODataset(Dataset):
             self.INPUT_GROUP,
             data,
             variable_names=variable_names,
-            variable_names_to_n_components=variable_names_to_n_components,
+            variable_name_to_n_components=variable_name_to_n_components,
         )
 
     def add_output_group(
         self,
         data: DataType,
         variable_names: StrColumnType = "o",
-        variable_names_to_n_components: dict[str, int] | None = None,
+        variable_name_to_n_components: dict[str, int] | None = None,
     ) -> None:
         """Add the data related to the output group.
 
@@ -131,7 +131,7 @@ class IODataset(Dataset):
             variable_names: The names of the variables.
                 If empty, use
                 [DEFAULT_VARIABLE_NAME][gemseo.datasets.dataset.Dataset.DEFAULT_VARIABLE_NAME].
-            variable_names_to_n_components: The number of components of the variables.
+            variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
                 If `None`,
@@ -141,7 +141,7 @@ class IODataset(Dataset):
             self.OUTPUT_GROUP,
             data,
             variable_names=variable_names,
-            variable_names_to_n_components=variable_names_to_n_components,
+            variable_name_to_n_components=variable_name_to_n_components,
         )
 
     @property

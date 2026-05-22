@@ -53,23 +53,23 @@ class DisciplineAdapterGenerator:
     _adapter_class: ClassVar[type[DisciplineAdapter]] = DisciplineAdapter
     """The class of discipline adapter generated."""
 
-    __names_to_sizes: MutableMapping[str, int]
-    """The names of the inputs bound to their sizes, if known."""
+    __name_to_size: MutableMapping[str, int]
+    """The map from an input name to its size, if known."""
 
     def __init__(
         self,
         discipline: Discipline,
-        names_to_sizes: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
+        name_to_size: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
         Args:
             discipline: The discipline from which to generate discipline adapters.
-            names_to_sizes: The sizes of the input variables.
+            name_to_size: The sizes of the input variables.
                 If empty,
                 determine them from the default inputs and local data of the discipline.
         """  # noqa: D205, D212, D415
         self.discipline = discipline
-        self.__names_to_sizes = names_to_sizes or {}
+        self.__name_to_size = name_to_size or {}
 
     def get_function(
         self,
@@ -138,7 +138,7 @@ class DisciplineAdapterGenerator:
             output_names,
             default_input_data or {},
             self.discipline,
-            self.__names_to_sizes,
+            self.__name_to_size,
             differentiated_input_names_substitute=differentiated_input_names_substitute,
         )
 

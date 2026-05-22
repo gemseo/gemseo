@@ -52,7 +52,7 @@ class ConstraintRadar(BasePost[ConstraintRadar_Settings]):
         )
         iteration = settings.iteration
         constraint_names_mapping = (
-            self._optimization_metadata.output_names_to_constraint_names
+            self._optimization_metadata.output_name_to_constraint_names
         )
 
         if constraint_names:

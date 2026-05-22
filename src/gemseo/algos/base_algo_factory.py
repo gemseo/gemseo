@@ -149,7 +149,7 @@ class BaseAlgoFactory(metaclass=_AlgoFactoryMeta):
         return list(self.__algo_name_to_lib_name.keys())
 
     @property
-    def algo_names_to_libraries(self) -> dict[str, str]:
+    def algo_name_to_library(self) -> dict[str, str]:
         """The mapping from the algorithm names to the library names."""
         return self.__algo_name_to_lib_name
 

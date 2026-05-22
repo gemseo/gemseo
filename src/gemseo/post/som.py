@@ -82,7 +82,7 @@ class SOM(BasePost[SOM_Settings]):
             self._optimization_metadata.standardized_objective_name,
             *(
                 name
-                for name in self._optimization_metadata.output_names_to_constraint_names
+                for name in self._optimization_metadata.output_name_to_constraint_names
             ),
         ]
         available_output_names = self.__get_available_output_names()
@@ -153,21 +153,21 @@ class SOM(BasePost[SOM_Settings]):
             ax: The axes.
             annotate: Whether to display the average output value for every cell.
         """
-        clusters_to_averages = {}
+        cluster_to_average = {}
         for cluster in unique(clusters):
-            clusters_to_averages[cluster] = output_data[clusters == cluster].mean()
+            cluster_to_average[cluster] = output_data[clusters == cluster].mean()
 
         n_x = x.max()
         n_y = y.max()
-        xy_to_averages = full((n_x, n_y), nan, dtype=float64)
+        xy_to_average = full((n_x, n_y), nan, dtype=float64)
         for x_, y_, cluster in zip(x, y, clusters, strict=True):
-            xy_to_averages[int(x_) - 1, int(y_) - 1] = clusters_to_averages[cluster]
+            xy_to_average[int(x_) - 1, int(y_) - 1] = cluster_to_average[cluster]
 
-        self.materials_for_plotting[index] = xy_to_averages
-        minimum_average_output = nanmin(xy_to_averages)
-        maximum_average_output = nanmax(xy_to_averages)
+        self.materials_for_plotting[index] = xy_to_average
+        minimum_average_output = nanmin(xy_to_average)
+        maximum_average_output = nanmax(xy_to_average)
         im1 = ax.imshow(
-            xy_to_averages,
+            xy_to_average,
             vmin=minimum_average_output - 0.01 * abs(minimum_average_output),
             vmax=maximum_average_output + 0.01 * abs(maximum_average_output),
             cmap=self.__CMAP,
@@ -178,7 +178,7 @@ class SOM(BasePost[SOM_Settings]):
         font_size = 12
         if annotate:
             average_output_format = "%1.2g"
-            for x, row in enumerate(xy_to_averages):
+            for x, row in enumerate(xy_to_average):
                 for y, cell in enumerate(row):
                     _ = ax.text(
                         y,

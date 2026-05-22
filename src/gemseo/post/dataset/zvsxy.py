@@ -60,15 +60,15 @@ class ZvsXY(BaseDatasetPlot[ZvsXY_Settings]):
         z, z_comp = self.settings.z
         if "xlabel" not in self.settings.model_fields_set:
             self.settings.xlabel = self._get_component_name(
-                x, x_comp, self.dataset.variable_names_to_n_components
+                x, x_comp, self.dataset.variable_name_to_n_components
             )
         if "ylabel" not in self.settings.model_fields_set:
             self.settings.ylabel = self._get_component_name(
-                y, y_comp, self.dataset.variable_names_to_n_components
+                y, y_comp, self.dataset.variable_name_to_n_components
             )
         if "zlabel" not in self.settings.model_fields_set:
             self.settings.zlabel = self._get_component_name(
-                z, z_comp, self.dataset.variable_names_to_n_components
+                z, z_comp, self.dataset.variable_name_to_n_components
             )
         if "title" not in self.settings.model_fields_set:
             self.settings.title = self.settings.zlabel

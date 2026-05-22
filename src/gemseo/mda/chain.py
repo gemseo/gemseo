@@ -140,12 +140,12 @@ class MDAChain(BaseMDA):
 
     def set_bounds(  # noqa: D102
         self,
-        variable_names_to_bounds: Mapping[
+        variable_name_to_bounds: Mapping[
             str, tuple[RealArray | None, RealArray | None]
         ],
     ) -> None:
         for inner_mda in self.inner_mdas:
-            inner_mda.set_bounds(variable_names_to_bounds)
+            inner_mda.set_bounds(variable_name_to_bounds)
 
     def _create_discipline_chain(self) -> DisciplineChain:
         """Create an discipline chain from the execution sequence of the disciplines."""

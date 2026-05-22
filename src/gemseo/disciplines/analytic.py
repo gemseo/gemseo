@@ -56,7 +56,7 @@ class AnalyticDiscipline(Discipline):
     expressions: Mapping[str, str | Expr]
     """The outputs expressed as functions of the inputs."""
 
-    output_names_to_symbols: dict[str, list[str]]
+    output_name_to_symbols: dict[str, list[str]]
     """The names of the inputs associated to the outputs.
 
     E.g. `{"out": ["in_1", "in_2"]}`.
@@ -81,7 +81,7 @@ class AnalyticDiscipline(Discipline):
         """  # noqa: D205, D212, D415
         super().__init__(name=name)
         self.expressions = expressions
-        self.output_names_to_symbols = {}
+        self.output_name_to_symbols = {}
         self.input_names = []
         self._sympy_exprs = {}
         self._sympy_funcs = {}
@@ -118,7 +118,7 @@ class AnalyticDiscipline(Discipline):
 
             self._sympy_exprs[output_name] = output_expression
             all_real_input_symbols.extend(real_input_symbols.values())
-            self.output_names_to_symbols[output_name] = list(real_input_symbols)
+            self.output_name_to_symbols[output_name] = list(real_input_symbols)
             self._sympy_jac_exprs[output_name] = {
                 input_symbol_name: output_expression_to_derive.diff(input_symbol)
                 for input_symbol_name, input_symbol in real_input_symbols.items()
@@ -152,7 +152,7 @@ class AnalyticDiscipline(Discipline):
 
         modules = [numpy_str, {"Heaviside": lambda x: heaviside(x, 1)}]
         for output_name, output_expression in self._sympy_exprs.items():
-            input_names = self.output_names_to_symbols[output_name]
+            input_names = self.output_name_to_symbols[output_name]
             self._sympy_funcs[output_name] = lambdify(
                 list(output_expression.free_symbols), output_expression
             )
@@ -193,7 +193,7 @@ class AnalyticDiscipline(Discipline):
         # fail when tokens contain dots, or slow down the process
         input_data = {name: input_data[name].item() for name in input_data}
         for output_name, output_function in self._sympy_funcs.items():
-            input_symbols = self.output_names_to_symbols[output_name]
+            input_symbols = self.output_name_to_symbols[output_name]
             output_value = output_function(
                 *(input_data[input_symbol] for input_symbol in input_symbols)
             )
@@ -213,7 +213,7 @@ class AnalyticDiscipline(Discipline):
         for output_name in output_names:
             gradient_function = self._sympy_jac_funcs[output_name]
             input_data = tuple(
-                input_values[name] for name in self.output_names_to_symbols[output_name]
+                input_values[name] for name in self.output_name_to_symbols[output_name]
             )
             jac = self.jac[output_name]
             for input_symbol, derivative_function in gradient_function.items():

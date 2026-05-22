@@ -182,11 +182,11 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
 
         return value.size
 
-    def compute_names_to_slices(
+    def compute_name_to_slice(
         self,
         names: Iterable[str],
         data: StrKeyMapping,
-        names_to_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        name_to_size: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> tuple[dict[str, slice], int]:
         """Compute a mapping from data names to data value slices.
 
@@ -196,7 +196,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         Args:
             data: The data structure.
             names: The data names.
-            names_to_sizes: The mapping from the data names to the data sizes.
+            name_to_size: The mapping from the data names to the data sizes.
                 If empty, it will be computed.
 
         Returns:
@@ -204,9 +204,9 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
             of the expected concatenated NumPy array.
             and the size of this array.
         """
-        names_to_slices = {}
+        name_to_slice = {}
         get_size = self.get_value_size
-        get_size_from_name = names_to_sizes.get
+        get_size_from_name = name_to_size.get
         start = 0
         end = 0
         for name in names:
@@ -214,12 +214,12 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
             if size is None:
                 size = get_size(name, data[name])
             end = start + size
-            names_to_slices[name] = slice(start, end)
+            name_to_slice[name] = slice(start, end)
             start = end
 
-        return names_to_slices, end
+        return name_to_slice, end
 
-    def compute_names_to_sizes(
+    def compute_name_to_size(
         self, names: Iterable[str], data: StrKeyMapping
     ) -> dict[str, int]:
         """Compute a mapping from data names to data value sizes.
@@ -240,7 +240,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     def convert_array_to_data(
         self,
         array: NumberArray,
-        names_to_slices: Mapping[str, slice],
+        name_to_slice: Mapping[str, slice],
     ) -> dict[str, ValueType]:
         """Convert a NumPy array to a data structure.
 
@@ -249,7 +249,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
 
         Args:
             array: The NumPy array to slice.
-            names_to_slices: The mapping from the data names to the array slices.
+            name_to_slice: The mapping from the data names to the array slices.
 
         Returns:
             The mapping from the data names to the array slices.
@@ -257,7 +257,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         to_value = self.convert_array_to_value
         return {
             name: to_value(name, array[..., slice_])
-            for name, slice_ in names_to_slices.items()
+            for name, slice_ in name_to_slice.items()
         }
 
     def convert_data_to_array(

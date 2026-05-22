@@ -39,19 +39,19 @@ class BaseMultiton(GoogleDocstringInheritanceMeta):
     otherwise a new instance is created and stored into the cache.
     """
 
-    __keys_to_class_instances: ClassVar[dict[Any, Any]] = {}
-    """The cache that keeps the class instances."""
+    __key_to_class_instance: ClassVar[dict[Any, Any]] = {}
+    """The map from a key to its cached class instance."""
 
     def __call__(self) -> Any:  # noqa: D107 D102
-        obj = self.__keys_to_class_instances.get(self)
+        obj = self.__key_to_class_instance.get(self)
         if obj is not None:
             return obj
-        return self.__keys_to_class_instances.setdefault(self, type.__call__(self))
+        return self.__key_to_class_instance.setdefault(self, type.__call__(self))
 
     @classmethod
     def clear_cache(cls) -> None:
         """Clear the cache."""
-        cls.__keys_to_class_instances.clear()
+        cls.__key_to_class_instance.clear()
 
 
 class BaseABCMultiton(ABCMeta, BaseMultiton):

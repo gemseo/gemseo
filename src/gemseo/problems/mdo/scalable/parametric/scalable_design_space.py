@@ -60,7 +60,7 @@ class ScalableDesignSpace(ParameterSpace):
             ScalableDisciplineSettings
         ] = DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
         d_0: int = DEFAULT_D_0,
-        names_to_default_values: Mapping[str, RealArray] = READ_ONLY_EMPTY_DICT,
+        name_to_default_value: Mapping[str, RealArray] = READ_ONLY_EMPTY_DICT,
         add_uncertain_variables: bool = False,
     ) -> None:
         r"""Args:
@@ -70,7 +70,7 @@ class ScalableDesignSpace(ParameterSpace):
                 with default
                 [ScalableDisciplineSettings][gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings.ScalableDisciplineSettings].
             d_0: The size of the shared design variable $x_0$.
-            names_to_default_values: The default values of the variables.
+            name_to_default_value: The default values of the variables.
             add_uncertain_variables: Whether to add the uncertain variables
                 impacting the coupling variables
                 as $y_{i,j}:=y_{i,j}+\epsilon_{i,j}$
@@ -88,7 +88,7 @@ class ScalableDesignSpace(ParameterSpace):
         design_space = _ScalableDesignSpace(
             scalable_discipline_settings=discipline_settings,
             d_0=d_0,
-            names_to_default_values=names_to_default_values,
+            name_to_default_value=name_to_default_value,
         )
         for variable in design_space.variables:
             self.add_variable(

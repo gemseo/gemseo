@@ -66,12 +66,12 @@ def test_output_names(main_discipline) -> None:
 
 def test_input_names_to_default_values(main_discipline, default_input_values) -> None:
     """Check the default values of the input variables."""
-    assert_equal(main_discipline.input_names_to_default_values, default_input_values)
+    assert_equal(main_discipline.input_name_to_default_value, default_input_values)
 
 
 def test_names_to_sizes(main_discipline, default_input_values) -> None:
     """Check the sizes of the variables."""
-    assert main_discipline.names_to_sizes == {
+    assert main_discipline.name_to_size == {
         "c_1": 3,
         "c_2": 2,
         "f": 1,

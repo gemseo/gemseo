@@ -34,6 +34,6 @@ def test_multiton() -> None:
 def test_multiton_cache_clear() -> None:
     """Verify the clearing of the cache of the multiton."""
     A()
-    assert A._BaseMultiton__keys_to_class_instances
+    assert A._BaseMultiton__key_to_class_instance
     A.clear_cache()
-    assert not A._BaseMultiton__keys_to_class_instances
+    assert not A._BaseMultiton__key_to_class_instance

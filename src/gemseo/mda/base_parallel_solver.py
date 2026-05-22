@@ -133,4 +133,4 @@ class BaseMDAParallelSolver(BaseMDASolver):
         for discipline in self._disciplines:
             self.io.data.update(discipline.get_output_data())
 
-        self._compute_names_to_slices()
+        self._compute_name_to_slice()

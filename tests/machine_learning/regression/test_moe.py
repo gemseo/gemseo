@@ -88,15 +88,15 @@ def dataset() -> IODataset:
     z_2[0, 0] = 0
     data = hstack([x_1, x_2, y_1, z_1, z_2])
     variables = ["x_1", "x_2", "y", "z"]
-    variable_names_to_n_components = {"x_1": 1, "x_2": 1, "y": 1, "z": 2}
-    variable_names_to_group_names = {
+    variable_name_to_n_components = {"x_1": 1, "x_2": 1, "y": 1, "z": 2}
+    variable_name_to_group_name = {
         "x_1": "inputs",
         "x_2": "inputs",
         "y": "outputs",
         "z": "outputs",
     }
     tmp = IODataset.from_array(
-        data, variables, variable_names_to_n_components, variable_names_to_group_names
+        data, variables, variable_name_to_n_components, variable_name_to_group_name
     )
     tmp.name = "dataset_name"
     return tmp

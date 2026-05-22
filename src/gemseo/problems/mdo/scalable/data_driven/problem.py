@@ -132,7 +132,7 @@ class ScalableProblem:
         }
         self.varsizes = {}
         for dataset in datasets:
-            self.varsizes.update(dataset.variable_names_to_n_components)
+            self.varsizes.update(dataset.variable_name_to_n_components)
         self.design_variables = design_variables
         self.objective_function = objective_function
         self.ineq_constraints = ineq_constraints

@@ -51,7 +51,7 @@ class BiLevelScenarioResult(ScenarioResult):
             for scenario_adapter in scenario_adapters
             for variable_name in scenario_adapter.scenario.design_space.variable_names
         }
-        self.design_variable_names_to_values.update(optimal_local_design_values)
+        self.design_variable_name_to_value.update(optimal_local_design_values)
         self.__n_sub_problems = len(scenario_adapters)
         if not scenario_adapters[0].databases:
             return
@@ -63,7 +63,7 @@ class BiLevelScenarioResult(ScenarioResult):
             sub_problem.database = scenario_adapter.databases[i_opt]
             result = OptimizationResult.from_optimization_problem(sub_problem)
             label = self.__SUB_LABEL_FORMATTER.format(index)
-            self.optimization_problems_to_results[label] = result
+            self.optimization_problem_to_result[label] = result
             sub_problem.database = database
 
     def get_top_optimization_result(self) -> OptimizationResult:
@@ -90,6 +90,6 @@ class BiLevelScenarioResult(ScenarioResult):
                 f"must be between 0 and {max_index}."
             )
             raise ValueError(msg)
-        return self.optimization_problems_to_results.get(
+        return self.optimization_problem_to_result.get(
             self.__SUB_LABEL_FORMATTER.format(index)
         )

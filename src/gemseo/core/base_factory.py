@@ -124,14 +124,14 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     PLUGIN_ENTRY_POINT: ClassVar[str] = "gemseo_plugins"
     """The name of the setuptools entry point for declaring plugins."""
 
-    __names_to_class_info: dict[str, _ClassInfo[T]]
-    """The class names bound to the class information."""
+    __name_to_class_info: dict[str, _ClassInfo[T]]
+    """The map from a class name to a class information."""
 
     __failed_imports: dict[str, str]
     """The class names bound to the import errors."""
 
     def __init__(self) -> None:  # noqa: D107
-        self.__names_to_class_info = {}
+        self.__name_to_class_info = {}
         self.__failed_imports = {}
 
     @property
@@ -145,16 +145,17 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         """The fully qualified names of the packages to search."""
 
     @property
-    def _names_to_class_info(self) -> dict[str, _ClassInfo[T]]:
-        if not self.__names_to_class_info:
+    def _name_to_class_info(self) -> dict[str, _ClassInfo[T]]:
+        """The map from a class name to a class info."""
+        if not self.__name_to_class_info:
             self.update()
-        return self.__names_to_class_info
+        return self.__name_to_class_info
 
     @property
     def failed_imports(self) -> dict[str, str]:
-        """Return the class names bound to the import errors."""
+        """The map from a class name to an import error."""
         # Trigger the search.
-        self._names_to_class_info  # noqa: B018
+        self._name_to_class_info  # noqa: B018
         return self.__failed_imports
 
     def update(self) -> None:
@@ -186,14 +187,14 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
         module_names += self.__import_modules_from_env_var()
 
-        names_to_classes = self.__get_sub_classes(self._CLASS)
+        name_to_class = self.__get_sub_classes(self._CLASS)
 
         if not isabstract(self._CLASS):
-            names_to_classes[self._CLASS.__name__] = self._CLASS
+            name_to_class[self._CLASS.__name__] = self._CLASS
 
-        for name, cls in names_to_classes.items():
+        for name, cls in name_to_class.items():
             if self.__is_class_in_modules(module_names, cls) and not isabstract(cls):
-                self.__names_to_class_info[name] = _ClassInfo(
+                self.__name_to_class_info[name] = _ClassInfo(
                     cls, cls.__module__.split(".")[0]
                 )
 
@@ -297,7 +298,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
     @property
     def class_names(self) -> list[str]:
         """The sorted names of the available classes."""
-        return sorted(self._names_to_class_info.keys())
+        return sorted(self._name_to_class_info.keys())
 
     def is_available(self, name: str) -> bool:
         """Return whether a class can be instantiated.
@@ -308,7 +309,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         Returns:
             Whether the class can be instantiated.
         """
-        return name in self._names_to_class_info
+        return name in self._name_to_class_info
 
     def get_library_name(self, name: str) -> str:
         """Return the name of the library related to the name of a class.
@@ -319,7 +320,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         Returns:
             The name of the library.
         """
-        return self._names_to_class_info[name].library_name
+        return self._name_to_class_info[name].library_name
 
     def get_class(self, name: str) -> type[T]:
         """Return a class from its name.
@@ -333,7 +334,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         Raises:
             ImportError: If the class is not available.
         """
-        class_info = self._names_to_class_info.get(name)
+        class_info = self._name_to_class_info.get(name)
         if class_info is None:
             names = ", ".join(self.class_names)
             msg = f"The class {name} is not available; the available ones are: {names}."
@@ -477,8 +478,8 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             max_table_width=120,
         )
 
-        names_to_import_statuses = {}
-        for class_info in self._names_to_class_info.values():
+        name_to_import_status = {}
+        for class_info in self._name_to_class_info.values():
             cls = class_info.class_
             msg = ""
             if cls.__doc__ is not None:
@@ -488,14 +489,14 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
                     del class_docstring_lines[0]
 
             class_name = cls.__name__
-            names_to_import_statuses[class_name] = [class_name, "Yes", msg]
+            name_to_import_status[class_name] = [class_name, "Yes", msg]
 
         for package_name, err in self.__failed_imports.items():
-            names_to_import_statuses[package_name] = [package_name, "No", err]
+            name_to_import_status[package_name] = [package_name, "No", err]
 
         # Take them all and then sort them for pretty printing
-        for name in sorted(names_to_import_statuses.keys()):
-            table.add_row(names_to_import_statuses[name])
+        for name in sorted(name_to_import_status.keys()):
+            table.add_row(name_to_import_status[name])
 
         return table
 

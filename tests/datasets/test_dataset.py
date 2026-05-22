@@ -110,13 +110,13 @@ def file_dataset(
     """The information to build a dataset from a file."""
     data = io_dataset.to_numpy()
     variables = io_dataset.variable_names
-    variable_names_to_n_components = io_dataset.variable_names_to_n_components
+    variable_name_to_n_components = io_dataset.variable_name_to_n_components
     groups = {
         variable: io_dataset.get_group_names(variable)[0] for variable in variables
     }
     filename = "dataset.txt"
     savetxt(filename, data, delimiter=",")
-    return filename, data, variables, variable_names_to_n_components, groups
+    return filename, data, variables, variable_name_to_n_components, groups
 
 
 @pytest.mark.parametrize(
@@ -394,8 +394,8 @@ def test_update_data_errors(dataset) -> None:
 from_array_parameters = pytest.mark.parametrize(
     (
         "variable_names",
-        "variable_names_to_n_components",
-        "variable_names_to_group_names",
+        "variable_name_to_n_components",
+        "variable_name_to_group_name",
         "expected_column_multi_index",
     ),
     [
@@ -441,16 +441,16 @@ from_array_parameters = pytest.mark.parametrize(
 def test_from_array(
     data,
     variable_names,
-    variable_names_to_n_components,
-    variable_names_to_group_names,
+    variable_name_to_n_components,
+    variable_name_to_group_name,
     expected_column_multi_index,
 ) -> None:
     """Test the method `from_array` with its options."""
     dataset = Dataset.from_array(
         data,
         variable_names=variable_names,
-        variable_names_to_n_components=variable_names_to_n_components,
-        variable_names_to_group_names=variable_names_to_group_names,
+        variable_name_to_n_components=variable_name_to_n_components,
+        variable_name_to_group_name=variable_name_to_group_name,
     )
     columns = MultiIndex.from_tuples(
         expected_column_multi_index,
@@ -543,7 +543,7 @@ def test_transform_data() -> None:
         "group_name",
         "data",
         "variables",
-        "variable_names_to_n_components",
+        "variable_name_to_n_components",
         "expected_variable",
         "expected_components",
     ),
@@ -566,13 +566,13 @@ def test_add_groups(
     group_name,
     data,
     variables,
-    variable_names_to_n_components,
+    variable_name_to_n_components,
     expected_variable,
     expected_components,
 ) -> None:
     """Test `add_groups`."""
     dataset = Dataset()
-    dataset.add_group(group_name, data, variables, variable_names_to_n_components)
+    dataset.add_group(group_name, data, variables, variable_name_to_n_components)
     assert dataset.group_names == [group_name]
     assert np.isin(dataset.variable_names, expected_variable).all()
     for variable in dataset.variable_names:
@@ -613,16 +613,16 @@ def test_from_txt(
     small_file_dataset,
     small_data,
     variable_names,
-    variable_names_to_n_components,
-    variable_names_to_group_names,
+    variable_name_to_n_components,
+    variable_name_to_group_name,
     expected_column_multi_index,
 ) -> None:
     """Test the `from_txt` method."""
     dataset = Dataset.from_txt(
         small_file_dataset,
         variable_names,
-        variable_names_to_n_components,
-        variable_names_to_group_names,
+        variable_name_to_n_components,
+        variable_name_to_group_name,
         header=False,
     ).astype("int32")
 
@@ -641,8 +641,8 @@ def test_from_txt_with_header(
     tmp_wd,
     small_data,
     variable_names,
-    variable_names_to_n_components,
-    variable_names_to_group_names,
+    variable_name_to_n_components,
+    variable_name_to_group_name,
     expected_column_multi_index,
 ):
     """Test `from_txt` with a header.
@@ -661,8 +661,8 @@ def test_from_txt_with_header(
 
     dataset = Dataset.from_txt(
         data_file,
-        variable_names_to_n_components=variable_names_to_n_components,
-        variable_names_to_group_names=variable_names_to_group_names,
+        variable_name_to_n_components=variable_name_to_n_components,
+        variable_name_to_group_name=variable_name_to_group_name,
         header=bool(header),  # If no header defined in the file, then False.
     ).astype("int32")
 
@@ -760,13 +760,13 @@ def test_variable_identifiers(dataset, reverse_column_order) -> None:
 
 
 def test_variable_names_to_n_components(dataset) -> None:
-    """Test the property variable_names_to_n_components."""
-    assert dataset.variable_names_to_n_components == {"var_1": 1, "var_2": 2}
+    """Test the property variable_name_to_n_components."""
+    assert dataset.variable_name_to_n_components == {"var_1": 1, "var_2": 2}
 
 
 def test_group_names_to_n_components(io_dataset) -> None:
-    """Test the property group_names_to_n_components."""
-    assert io_dataset.group_names_to_n_components == {"g1": 5, "g2": 2}
+    """Test the property group_name_to_n_components."""
+    assert io_dataset.group_name_to_n_components == {"g1": 5, "g2": 2}
 
 
 def test_get_variable_names(dataset) -> None:
@@ -1210,24 +1210,24 @@ def test_create_dataset_from_txt_file(
     small_file_dataset,
     small_data,
     variable_names,
-    variable_names_to_n_components,
-    variable_names_to_group_names,
+    variable_name_to_n_components,
+    variable_name_to_group_name,
     expected_column_multi_index,
 ) -> None:
     """Check the high-level function create_dataset from a .txt file."""
     dataset = Dataset.from_txt(
         small_file_dataset,
         variable_names,
-        variable_names_to_n_components,
-        variable_names_to_group_names,
+        variable_name_to_n_components,
+        variable_name_to_group_name,
         header=False,
     )
     other_dataset = create_dataset(
         "Dataset",
         small_file_dataset,
         variable_names,
-        variable_names_to_n_components,
-        variable_names_to_group_names,
+        variable_name_to_n_components,
+        variable_name_to_group_name,
         header=False,
     )
     assert_frame_equal(dataset, other_dataset)

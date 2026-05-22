@@ -79,8 +79,8 @@ dataset = OptimizationDataset.from_csv("results.csv")
 #
 # **Constraint name mapping** — maps each constraint output name to its
 # associated constraint names. Here there are no name changes:
-output_names_to_constraint_names = {
-    name: name
+output_name_to_constraint_names = {
+    name: [name]
     for name in dataset.inequality_constraint_names + dataset.equality_constraint_names
 }
 
@@ -118,7 +118,7 @@ dataset.misc["optimization_metadata"] = OptimizationMetadata(
     minimize_objective=True,
     use_standardized_objective=False,
     tolerances=tolerances,
-    output_names_to_constraint_names=output_names_to_constraint_names,
+    output_name_to_constraint_names=output_name_to_constraint_names,
     feasible_iterations=feasible_iterations,
     optimum_iteration=optimum_iteration,
 )

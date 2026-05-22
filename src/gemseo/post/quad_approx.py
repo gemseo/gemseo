@@ -74,8 +74,8 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
                 b_mat *= -1
                 function = optimization_metadata.standardized_objective_name
         else:
-            if function in optimization_metadata.output_names_to_constraint_names:
-                function = optimization_metadata.output_names_to_constraint_names[
+            if function in optimization_metadata.output_name_to_constraint_names:
+                function = optimization_metadata.output_name_to_constraint_names[
                     function
                 ][0]
 

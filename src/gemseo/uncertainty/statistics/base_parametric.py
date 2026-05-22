@@ -208,7 +208,7 @@ class BaseParametricStatistics(
         distributions = list(self._all_distributions[variables[0]][0].keys())
         table = PrettyTable(["Variable", *distributions, "Selection"])
         for variable in variables:
-            for index in range(self.dataset.variable_names_to_n_components[variable]):
+            for index in range(self.dataset.variable_name_to_n_components[variable]):
                 row = (
                     [variable]
                     + [
@@ -235,19 +235,19 @@ class BaseParametricStatistics(
             as well as whether this fitting criterion is a statistical test
             and so this value a p-value.
         """
-        distribution_names_to_criterion_values = {
+        distribution_name_to_criterion_values = {
             name: result["criterion"]
             for name, result in self._all_distributions[variable][index].items()
         }
         criterion_value_is_p_value = False
         if self.fitting_criterion in self.SignificanceTest.__members__:
-            distribution_names_to_criterion_values = {
+            distribution_name_to_criterion_values = {
                 name: result[1]["p-value"]
-                for name, result in distribution_names_to_criterion_values.items()
+                for name, result in distribution_name_to_criterion_values.items()
             }
             criterion_value_is_p_value = True
 
-        return distribution_names_to_criterion_values, criterion_value_is_p_value
+        return distribution_name_to_criterion_values, criterion_value_is_p_value
 
     def plot_criteria(
         self,
@@ -321,7 +321,7 @@ class BaseParametricStatistics(
         ax2.set_title("Probability density function")
         ax2.set_xlabel(
             repr_variable(
-                variable, index, self.dataset.variable_names_to_n_components[variable]
+                variable, index, self.dataset.variable_name_to_n_components[variable]
             )
         )
         if title:
@@ -481,13 +481,13 @@ class BaseParametricStatistics(
         new_thresh = {}
         for name, value in thresh.items():
             if isinstance(value, float):
-                new_thresh[name] = [
-                    value
-                ] * self.dataset.variable_names_to_n_components[name]
+                new_thresh[name] = [value] * self.dataset.variable_name_to_n_components[
+                    name
+                ]
             elif len(value) == 1:
                 new_thresh[name] = [
                     value[0]
-                ] * self.dataset.variable_names_to_n_components[name]
+                ] * self.dataset.variable_name_to_n_components[name]
             else:
                 new_thresh[name] = value
 
@@ -597,7 +597,7 @@ class BaseParametricStatistics(
         """
         plots = {}
         for name in self.names:
-            size = self.dataset.variable_names_to_n_components[name]
+            size = self.dataset.variable_name_to_n_components[name]
             for index, distribution in enumerate(self.__distributions[name]):
                 plots[repr_variable(name, index, size)] = distribution.value.plot(
                     save=save,

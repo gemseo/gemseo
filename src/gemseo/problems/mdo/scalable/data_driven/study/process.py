@@ -253,11 +253,11 @@ class ScalabilityStudy:
         for output_name in data.get_variable_names(data.OUTPUT_GROUP):
             self.set_fill_factor(data.name, output_name, self._default_fill_factor)
         inputs = ", ".join([
-            f"{name}({data.variable_names_to_n_components[name]})"
+            f"{name}({data.variable_name_to_n_components[name]})"
             for name in data.get_variable_names(data.INPUT_GROUP)
         ])
         outputs = ", ".join([
-            f"{name}({data.variable_names_to_n_components[name]})"
+            f"{name}({data.variable_name_to_n_components[name]})"
             for name in data.get_variable_names(data.OUTPUT_GROUP)
         ])
         msg = MultiLineString()
