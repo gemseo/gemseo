@@ -281,6 +281,7 @@ extra_css:
 extra_javascript:
   - assets/js/mathjax.js
   - assets/js/xdsmjs.js
+  - assets/js/legacy-versions.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
@@ -292,10 +293,3 @@ watch:
 extra:
   version:
     provider: mike
-  legacy_versions:
-    - label: "6.3 (legacy)"
-      url: "https://gemseo.readthedocs.io/en/stable/index.html"
-    - label: "6.2 (legacy)"
-      url: "https://gemseo.readthedocs.io/en/6.2.0/index.html"
-    - label: "6.1 (legacy)"
-      url: "https://gemseo.readthedocs.io/en/6.1.0/index.html"
