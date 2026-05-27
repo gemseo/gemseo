@@ -49,8 +49,8 @@ from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.core.derivatives import derivation_modes
+from gemseo.core.derivatives.graph_traversal import set_mda_differentiated_ios
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
-from gemseo.core.derivatives.mda_derivatives import traverse_add_diff_io_mda
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.matplotlib_figure import save_show_figure
@@ -605,8 +605,8 @@ class JacobianAssembly:
         """
         diff_ios = (set(variables), set(functions))
         if self.__last_diff_inouts != diff_ios:
-            diff_ios_merged = traverse_add_diff_io_mda(
-                coupling_structure, variables, functions
+            diff_ios_merged = set_mda_differentiated_ios(
+                coupling_structure.graph.graph, variables, functions
             )
             self.__last_diff_inouts = diff_ios
 

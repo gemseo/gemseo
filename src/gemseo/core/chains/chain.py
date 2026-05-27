@@ -29,7 +29,7 @@ from strenum import StrEnum
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.dependency_graph import DependencyGraph
-from gemseo.core.derivatives.chain_rule import traverse_add_diff_io
+from gemseo.core.derivatives.graph_traversal import set_differentiated_ios
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import Discipline
 from gemseo.core.process_discipline import ProcessDiscipline
@@ -228,7 +228,7 @@ class DisciplineChain(ProcessDiscipline):
 
         diff_ios = (set(input_names), set(output_names))
         if self._last_diff_inouts != diff_ios:
-            traverse_add_diff_io(
+            set_differentiated_ios(
                 self._coupling_structure.graph.graph, input_names, output_names
             )
             self._last_diff_inouts = diff_ios
