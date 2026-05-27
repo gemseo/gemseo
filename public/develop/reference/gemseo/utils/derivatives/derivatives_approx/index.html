@@ -196,7 +196,9 @@
 <span class=normal>226</span>
 <span class=normal>227</span>
 <span class=normal>228</span>
-<span class=normal>229</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>auto_set_step</span><span class=p>(</span>
+<span class=normal>229</span>
+<span class=normal>230</span>
+<span class=normal>231</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>auto_set_step</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n>Sequence</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n>Sequence</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
@@ -248,7 +250,9 @@
         <span class=p>)</span>
         <span class=n>LOGGER</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=n>errors</span><span class=p>)</span>
 
-    <span class=n>data</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>defaults</span> <span class=ow>or</span> <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>data</span>
+    <span class=n>data</span> <span class=o>=</span> <span class=p>(</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>defaults</span> <span class=ow>or</span> <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_data</span>
+    <span class=p>)</span>
     <span class=n>name_to_slice</span> <span class=o>=</span> <span class=p>(</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>data_converter</span><span class=o>.</span><span class=n>compute_name_to_slice</span><span class=p>(</span>
             <span class=n>input_names</span><span class=p>,</span>
@@ -328,9 +332,7 @@
   
       property
       writable
-  " href=../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.default_input_data>Discipline.default_input_data</a>.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code> – <div class=doc-md-description><p>Whether the analytical Jacobian is correct.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/derivatives/derivatives_approx.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>339</span>
-<span class=normal>340</span>
-<span class=normal>341</span>
+  " href=../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.default_input_data>Discipline.default_input_data</a>.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code> – <div class=doc-md-description><p>Whether the analytical Jacobian is correct.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/derivatives/derivatives_approx.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>341</span>
 <span class=normal>342</span>
 <span class=normal>343</span>
 <span class=normal>344</span>
@@ -510,7 +512,9 @@
 <span class=normal>518</span>
 <span class=normal>519</span>
 <span class=normal>520</span>
-<span class=normal>521</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>check_jacobian</span><span class=p>(</span>
+<span class=normal>521</span>
+<span class=normal>522</span>
+<span class=normal>523</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>check_jacobian</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
@@ -717,9 +721,7 @@
   
       property
       writable
-  " href=../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.default_input_data>Discipline.default_input_data</a>.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=numpy.ndarray href=https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray>ndarray</a>]]</code> – <div class=doc-md-description><p>The approximated Jacobian.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/derivatives/derivatives_approx.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>265</span>
-<span class=normal>266</span>
-<span class=normal>267</span>
+  " href=../../../core/discipline/discipline/#gemseo.core.discipline.discipline.Discipline.default_input_data>Discipline.default_input_data</a>.</p></div></li></ul><p><span class=doc-section-title>Returns:</span></p><ul><li class="doc-section-item field-body"><code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=numpy.ndarray href=https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray>ndarray</a>]]</code> – <div class=doc-md-description><p>The approximated Jacobian.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/derivatives/derivatives_approx.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>267</span>
 <span class=normal>268</span>
 <span class=normal>269</span>
 <span class=normal>270</span>
@@ -789,7 +791,9 @@
 <span class=normal>334</span>
 <span class=normal>335</span>
 <span class=normal>336</span>
-<span class=normal>337</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_approx_jac</span><span class=p>(</span>
+<span class=normal>337</span>
+<span class=normal>338</span>
+<span class=normal>339</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>compute_approx_jac</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>output_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
     <span class=n>input_names</span><span class=p>:</span> <span class=n>Iterable</span><span class=p>[</span><span class=nb>str</span><span class=p>],</span>
@@ -824,7 +828,7 @@
     <span class=k>else</span><span class=p>:</span>
         <span class=n>step</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>step</span>
 
-    <span class=n>x_vect</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_prepare_xvect</span><span class=p>(</span><span class=n>input_names</span><span class=p>,</span> <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>data</span><span class=p>)</span>
+    <span class=n>x_vect</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>_prepare_xvect</span><span class=p>(</span><span class=n>input_names</span><span class=p>,</span> <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_data</span><span class=p>)</span>
 
     <span class=k>if</span> <span class=nb>isinstance</span><span class=p>(</span><span class=n>step</span><span class=p>,</span> <span class=n>Sized</span><span class=p>)</span> <span class=ow>and</span> <span class=mi>1</span> <span class=o>&lt;</span> <span class=nb>len</span><span class=p>(</span><span class=n>step</span><span class=p>)</span> <span class=o>!=</span> <span class=nb>len</span><span class=p>(</span><span class=n>x_vect</span><span class=p>):</span>
         <span class=n>msg</span> <span class=o>=</span> <span class=sa>f</span><span class=s2>&quot;Inconsistent step size, expected </span><span class=si>{</span><span class=n>x_vect</span><span class=o>.</span><span class=n>size</span><span class=si>}</span><span class=s2> got </span><span class=si>{</span><span class=nb>len</span><span class=p>(</span><span class=n>step</span><span class=p>)</span><span class=si>}</span><span class=s2>.&quot;</span>
@@ -838,13 +842,13 @@
     <span class=n>data_name_to_size</span> <span class=o>=</span> <span class=p>(</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_grammar</span><span class=o>.</span><span class=n>data_converter</span><span class=o>.</span><span class=n>compute_name_to_size</span><span class=p>(</span>
             <span class=n>output_names</span><span class=p>,</span>
-            <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>data</span><span class=p>,</span>
+            <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_data</span><span class=p>,</span>
         <span class=p>)</span>
     <span class=p>)</span>
     <span class=n>input_name_to_size</span> <span class=o>=</span> <span class=p>(</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_grammar</span><span class=o>.</span><span class=n>data_converter</span><span class=o>.</span><span class=n>compute_name_to_size</span><span class=p>(</span>
             <span class=n>input_names</span><span class=p>,</span>
-            <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>data</span><span class=p>,</span>
+            <span class=bp>self</span><span class=o>.</span><span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>input_data</span><span class=p>,</span>
         <span class=p>)</span>
     <span class=p>)</span>
 
@@ -890,9 +894,7 @@
 
   
       module-attribute
-   (gemseo.typing.JacobianData)" href=../../../typing/#gemseo.typing.JacobianData>JacobianData</a></code>) – <div class=doc-md-description><p>The approximated Jacobian.</p></div></li><li class="doc-section-item field-body"><b><code>file_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a> | <a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></code>, default: <code>&#39;jacobian_errors.pdf&#39;</code> ) – <div class=doc-md-description><p>The path to the output file if <code>plot_result</code> is <code>True</code>.</p></div></li><li class="doc-section-item field-body"><b><code>show</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether to open the figure.</p></div></li><li class="doc-section-item field-body"><b><code>fig_size_x</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>10.0</code> ) – <div class=doc-md-description><p>The x-size of the figure in inches.</p></div></li><li class="doc-section-item field-body"><b><code>fig_size_y</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>10.0</code> ) – <div class=doc-md-description><p>The y-size of the figure in inches.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/derivatives/derivatives_approx.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>643</span>
-<span class=normal>644</span>
-<span class=normal>645</span>
+   (gemseo.typing.JacobianData)" href=../../../typing/#gemseo.typing.JacobianData>JacobianData</a></code>) – <div class=doc-md-description><p>The approximated Jacobian.</p></div></li><li class="doc-section-item field-body"><b><code>file_path</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a> | <a class="autorefs autorefs-external" title=pathlib.Path href=https://docs.python.org/3/library/pathlib.html#pathlib.Path>Path</a></code>, default: <code>&#39;jacobian_errors.pdf&#39;</code> ) – <div class=doc-md-description><p>The path to the output file if <code>plot_result</code> is <code>True</code>.</p></div></li><li class="doc-section-item field-body"><b><code>show</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#bool>bool</a></code>, default: <code>False</code> ) – <div class=doc-md-description><p>Whether to open the figure.</p></div></li><li class="doc-section-item field-body"><b><code>fig_size_x</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>10.0</code> ) – <div class=doc-md-description><p>The x-size of the figure in inches.</p></div></li><li class="doc-section-item field-body"><b><code>fig_size_y</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#float>float</a></code>, default: <code>10.0</code> ) – <div class=doc-md-description><p>The y-size of the figure in inches.</p></div></li></ul><details class=mkdocstrings-source><summary>Source code in <code>src/gemseo/utils/derivatives/derivatives_approx.py</code></summary><div class=highlight><table class=highlighttable><tr><td class=linenos><div class=linenodiv><pre><span></span><span class=normal>645</span>
 <span class=normal>646</span>
 <span class=normal>647</span>
 <span class=normal>648</span>
@@ -970,7 +972,9 @@
 <span class=normal>720</span>
 <span class=normal>721</span>
 <span class=normal>722</span>
-<span class=normal>723</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>plot_jac_errors</span><span class=p>(</span>
+<span class=normal>723</span>
+<span class=normal>724</span>
+<span class=normal>725</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>plot_jac_errors</span><span class=p>(</span>
     <span class=bp>self</span><span class=p>,</span>
     <span class=n>computed_jac</span><span class=p>:</span> <span class=n>JacobianData</span><span class=p>,</span>
     <span class=n>approx_jac</span><span class=p>:</span> <span class=n>JacobianData</span><span class=p>,</span>

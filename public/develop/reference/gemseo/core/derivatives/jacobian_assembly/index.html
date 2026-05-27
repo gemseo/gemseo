@@ -712,7 +712,7 @@
         <span class=c1># get an arbitrary Jacobian and compute the number of rows</span>
         <span class=bp>self</span><span class=o>.</span><span class=n>sizes</span><span class=p>[</span><span class=n>output</span><span class=p>]</span> <span class=o>=</span> <span class=p>(</span>
             <span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_grammar</span><span class=o>.</span><span class=n>data_converter</span><span class=o>.</span><span class=n>get_value_size</span><span class=p>(</span>
-                <span class=n>output</span><span class=p>,</span> <span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>data</span><span class=p>[</span><span class=n>output</span><span class=p>]</span>
+                <span class=n>output</span><span class=p>,</span> <span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_data</span><span class=p>[</span><span class=n>output</span><span class=p>]</span>
             <span class=p>)</span>
         <span class=p>)</span>
 
@@ -951,7 +951,7 @@
         <span class=k>for</span> <span class=n>discipline</span> <span class=ow>in</span> <span class=bp>self</span><span class=o>.</span><span class=n>coupling_structure</span><span class=o>.</span><span class=n>disciplines</span><span class=p>:</span>
             <span class=k>if</span> <span class=n>name</span> <span class=ow>in</span> <span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_grammar</span><span class=p>:</span>
                 <span class=n>to_array</span> <span class=o>=</span> <span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_grammar</span><span class=o>.</span><span class=n>data_converter</span><span class=o>.</span><span class=n>convert_value_to_array</span>  <span class=c1># noqa: E501</span>
-                <span class=n>local_data_array</span> <span class=o>=</span> <span class=n>to_array</span><span class=p>(</span><span class=n>name</span><span class=p>,</span> <span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>data</span><span class=p>[</span><span class=n>name</span><span class=p>])</span>
+                <span class=n>local_data_array</span> <span class=o>=</span> <span class=n>to_array</span><span class=p>(</span><span class=n>name</span><span class=p>,</span> <span class=n>discipline</span><span class=o>.</span><span class=n>io</span><span class=o>.</span><span class=n>output_data</span><span class=p>[</span><span class=n>name</span><span class=p>])</span>
                 <span class=n>in_data_array</span> <span class=o>=</span> <span class=n>to_array</span><span class=p>(</span><span class=n>name</span><span class=p>,</span> <span class=n>in_data</span><span class=p>[</span><span class=n>name</span><span class=p>])</span>
                 <span class=n>residuals</span><span class=o>.</span><span class=n>append</span><span class=p>(</span><span class=n>local_data_array</span> <span class=o>-</span> <span class=n>in_data_array</span><span class=p>)</span>
 
