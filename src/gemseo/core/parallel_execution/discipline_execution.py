@@ -88,11 +88,16 @@ class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineD
             ):
                 self._disciplines[0].execution_statistics.n_executions += len(inputs)  # type: ignore[operator] # checked with activate_counter
         else:
-            for disc, output in zip(self._disciplines, ordered_outputs, strict=False):
+            for disc, input_, output in zip(
+                self._disciplines, inputs, ordered_outputs, strict=False
+            ):
                 # When the discipline in the worker failed, output is None.
-                # We do not update the local_data such that the issue is caught by the
-                # output grammar.
+                # We do not update the input/output data such that the issue is
+                # caught by the output grammar.
                 if output is not None:
-                    disc.io.data = output
+                    disc.io.input_data = DisciplineData(
+                        disc.io.prepare_input_data(input_)
+                    )
+                    disc.io.output_data = DisciplineData(output)
 
         return ordered_outputs

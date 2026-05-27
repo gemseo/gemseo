@@ -87,9 +87,9 @@ class MainDiscipline(BaseDiscipline):
     ) -> None:
         self._init_jacobian(input_names, output_names)
         jac = self._discipline(
-            self.io.data[SHARED_DESIGN_VARIABLE_NAME],
+            self.io.input_data[SHARED_DESIGN_VARIABLE_NAME],
             compute_jacobian=True,
-            **{y_i_name: self.io.data[y_i_name] for y_i_name in self.__y_i_names},
+            **{y_i_name: self.io.input_data[y_i_name] for y_i_name in self.__y_i_names},
         )
         for output_name in jac:
             self_sub_jac = self.jac[output_name]

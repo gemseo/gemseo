@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from abc import abstractmethod
 from copy import deepcopy
 from typing import TYPE_CHECKING
@@ -28,6 +29,7 @@ from strenum import StrEnum
 from gemseo.caches.factory import CacheFactory
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core._process_flow.base_flow import BaseFlow
+from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.discipline.io import IO
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
@@ -44,7 +46,6 @@ if TYPE_CHECKING:
 
     from gemseo.caches.base import BaseCache
     from gemseo.caches.cache_entry import CacheEntry
-    from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.core.grammars.base import BaseGrammar
     from gemseo.core.grammars.properties import GrammarProperties
     from gemseo.typing import MutableStrKeyMapping
@@ -81,8 +82,10 @@ class BaseDiscipline(BaseMonitoredProcess):
     i.e. `{variable_name: variable_value, ...}`.
     The input-output data resulting from an execution
     can be accessed via
-    [local_data][gemseo.core.discipline.base_discipline.BaseDiscipline.local_data]
-    or separately via
+    [input_data][gemseo.core.discipline.base_discipline.BaseDiscipline.input_data]
+    and
+    [output_data][gemseo.core.discipline.base_discipline.BaseDiscipline.output_data]
+    or via the helpers
     [get_input_data()][gemseo.core.discipline.base_discipline.BaseDiscipline.get_input_data]
     and
     [get_output_data()][gemseo.core.discipline.base_discipline.BaseDiscipline.get_output_data].
@@ -210,9 +213,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         if not output_grammar:
             return
 
-        output_data = self.io._data.copy()
-        for name in output_data.keys() - output_grammar:
-            del output_data[name]
+        output_data = self.io.output_data.copy()
 
         self.cache.cache_outputs(input_data, output_data)  # type: ignore[union-attr]  # because cache is checked to be not None in the caller
 
@@ -243,13 +244,13 @@ class BaseDiscipline(BaseMonitoredProcess):
         return input_data_
 
     def _set_data_from_cache(self, cache_entry: CacheEntry) -> None:
-        """Update the local data from a cache entry.
+        """Restore the input and output data from a cache entry.
 
         Args:
             cache_entry: The cache entry.
         """
-        self.io.data = cache_entry.inputs
-        self.io._data.update(cache_entry.outputs)
+        self.io.input_data = DisciplineData(cache_entry.inputs)
+        self.io.output_data = DisciplineData(cache_entry.outputs)
 
     def _can_load_cache(self, input_data: StrKeyMapping) -> bool:
         """Search and load the cached output data from input data.
@@ -360,7 +361,7 @@ class BaseDiscipline(BaseMonitoredProcess):
                 [default_input_data][gemseo.core.discipline.base_discipline.BaseDiscipline.default_input_data].
 
         Returns:
-            The input and output data.
+            The output data.
         """
         self._has_jacobian = False
         io = self.io
@@ -372,8 +373,8 @@ class BaseDiscipline(BaseMonitoredProcess):
         if use_cache:
             if self._can_load_cache(input_data):
                 if self.validate_output_data:
-                    io.output_grammar.validate(io._data)
-                return io._data
+                    io.output_grammar.validate(io.output_data)
+                return io.output_data
 
             # Keep a pristine copy of the input data before it is eventually changed.
             input_data_for_cache = self.__create_input_data_for_cache(input_data)
@@ -392,7 +393,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         if use_cache:
             self._store_cache(input_data_for_cache)
 
-        return io._data
+        return io.output_data
 
     def _execute(self) -> None:
         io = self.io
@@ -400,7 +401,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             input_data = io.get_input_data(with_namespaces=False)
         else:
             # No namespaces, avoid useless processing.
-            input_data = io._data
+            input_data = io.input_data
 
         data_processor = io.data_processor
         if data_processor is not None:
@@ -415,7 +416,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             io.update_output_data(output_data)
 
     @abstractmethod
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
         """Compute the outputs from the inputs.
 
         This method shall be implemented in derived classes.
@@ -536,10 +537,50 @@ class BaseDiscipline(BaseMonitoredProcess):
         return self.io.get_output_data(with_namespaces)
 
     @property
+    def input_data(self) -> DisciplineData:
+        """The input data of the last execution.
+
+        The returned
+        [DisciplineData][gemseo.core.discipline.discipline_data.DisciplineData]
+        is the underlying store: it is mutable and reflects changes immediately.
+        """
+        return self.io.input_data
+
+    @property
+    def output_data(self) -> DisciplineData:
+        """The output data of the last execution.
+
+        The returned
+        [DisciplineData][gemseo.core.discipline.discipline_data.DisciplineData]
+        is the underlying store: it is mutable and reflects changes immediately.
+        """
+        return self.io.output_data
+
+    @property
     def local_data(self) -> DisciplineData:
-        """The current input and output data."""
-        return self.io._data
+        """The merged input and output data (deprecated).
+
+        Use
+        [input_data][gemseo.core.discipline.base_discipline.BaseDiscipline.input_data]
+        and
+        [output_data][gemseo.core.discipline.base_discipline.BaseDiscipline.output_data]
+        instead.
+        """
+        warnings.warn(
+            "`Discipline.local_data` is deprecated; "
+            "use `input_data` / `output_data` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.io.get_merged_data(as_dict=False)
 
     @local_data.setter
     def local_data(self, data: MutableStrKeyMapping) -> None:
-        self.io.data = data
+        warnings.warn(
+            "`Discipline.local_data` is deprecated; "
+            "use `input_data` / `output_data` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        # Delegate routing to the IO helper to keep the split logic in one place.
+        self.io._set_data_no_warn(data)

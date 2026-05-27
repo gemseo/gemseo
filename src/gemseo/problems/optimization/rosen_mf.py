@@ -64,8 +64,8 @@ class RosenMF(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        x_val = self.io.data["x"]
-        fidelity = self.io.data["fidelity"]
+        x_val = self.io.input_data["x"]
+        fidelity = self.io.input_data["fidelity"]
         self.jac = {
             "rosen": {
                 "x": atleast_2d(fidelity * rosen_der(x_val)),

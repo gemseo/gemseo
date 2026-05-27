@@ -363,7 +363,7 @@ class JacobianAssembly:
             # get an arbitrary Jacobian and compute the number of rows
             self.sizes[output] = (
                 discipline.io.output_grammar.data_converter.get_value_size(
-                    output, discipline.io.data[output]
+                    output, discipline.io.output_data[output]
                 )
             )
 
@@ -908,7 +908,7 @@ class JacobianAssembly:
             for discipline in self.coupling_structure.disciplines:
                 if name in discipline.io.output_grammar:
                     to_array = discipline.io.output_grammar.data_converter.convert_value_to_array  # noqa: E501
-                    local_data_array = to_array(name, discipline.io.data[name])
+                    local_data_array = to_array(name, discipline.io.output_data[name])
                     in_data_array = to_array(name, in_data[name])
                     residuals.append(local_data_array - in_data_array)
 

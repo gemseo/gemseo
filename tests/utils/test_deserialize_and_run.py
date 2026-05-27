@@ -200,7 +200,7 @@ def test_main(
             input_data,
             execute="--execute-at-linearize" in linearize,
         )
-        ref_data = disc.io.data
+        ref_data = disc.io.output_data
 
     # Compare the outputs.
     data, jac = from_pickle(outputs_path)

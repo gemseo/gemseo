@@ -122,10 +122,10 @@ class RHSMassDisciplineLeft(Discipline):
         self.add_differentiated_inputs(["position_0", "velocity_0"])
 
     def _run(self, input_data: StrKeyMapping):
-        time = self.io.data["time"]
-        position_0 = self.io.data["position_0"]
-        velocity_0 = self.io.data["velocity_0"]
-        position_1_vec = self.io.data["position_1"]
+        time = input_data["time"]
+        position_0 = input_data["position_0"]
+        velocity_0 = input_data["velocity_0"]
+        position_1_vec = input_data["position_1"]
 
         interp_function = interp1d(times, position_1_vec, assume_sorted=True)
         position_1 = interp_function(time)
@@ -135,8 +135,10 @@ class RHSMassDisciplineLeft(Discipline):
             -(stiffness_0 + stiffness_1) * position_0 + stiffness_1 * position_1
         ) / mass_0
 
-        self.local_data["position_0_dot"] = position_0_dot
-        self.local_data["velocity_0_dot"] = velocity_0_dot
+        return {
+            "position_0_dot": position_0_dot,
+            "velocity_0_dot": velocity_0_dot,
+        }
 
 
 class RHSMassDisciplineRight(Discipline):
@@ -159,10 +161,10 @@ class RHSMassDisciplineRight(Discipline):
         self.add_differentiated_inputs(["position_1", "velocity_1"])
 
     def _run(self, input_data: StrKeyMapping):
-        time = self.io.data["time"]
-        position_1 = self.io.data["position_1"]
-        velocity_1 = self.io.data["velocity_1"]
-        position_0_vec = self.io.data["position_0"]
+        time = input_data["time"]
+        position_1 = input_data["position_1"]
+        velocity_1 = input_data["velocity_1"]
+        position_0_vec = input_data["position_0"]
 
         interp_function = interp1d(times, position_0_vec, assume_sorted=True)
         position_0 = interp_function(time)
@@ -172,8 +174,10 @@ class RHSMassDisciplineRight(Discipline):
             -(stiffness_0 + stiffness_1) * position_1 + stiffness_0 * position_0
         ) / mass_1
 
-        self.local_data["position_1_dot"] = position_1_dot
-        self.local_data["velocity_1_dot"] = velocity_1_dot
+        return {
+            "position_1_dot": position_1_dot,
+            "velocity_1_dot": velocity_1_dot,
+        }
 
 
 # %%

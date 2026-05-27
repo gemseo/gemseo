@@ -286,13 +286,30 @@ sellar_system.get_output_data()
 > {'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'obj': array([ 1.36787944+0.j])}
 ```
 
-## How to store data in the `local_data` attribute?
+## How to read input and output data
 
-We can store data in the [Discipline.local_data][gemseo.core.discipline.discipline.Discipline.local_data] attribute by means of the `Discipline.io.update_output_data()` method whose arguments are the names of the variables to store. We can store either data for variables from input or output grammars, or data for other variables, e.g.:
+The input and output data of the last execution are exposed as two separate
+attributes:
+[Discipline.input_data][gemseo.core.discipline.discipline.Discipline.input_data]
+and
+[Discipline.output_data][gemseo.core.discipline.discipline.Discipline.output_data].
 
 ``` python
-print(sellar_system.local_data)
-> {'obj': array([ 1.36787944+0.j]), 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
-sellar_system.io.update_output_data({'obj': array([1.]), 'new_variable': 'value'})
-> {'obj': array([ 1.]), 'new_variable': 'value', 'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
+print(sellar_system.input_data)
+> {'y_2': array([ 1.+0.j]), 'y_1': array([ 1.+0.j]), 'x_shared': array([ 1.+0.j,  0.+0.j]), 'x_local': array([ 0.+0.j])}
+print(sellar_system.output_data)
+> {'obj': array([ 1.36787944+0.j]), 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j])}
 ```
+
+To update output values, use `Discipline.io.update_output_data()`:
+
+``` python
+sellar_system.io.update_output_data({'obj': array([1.]), 'new_variable': 'value'})
+print(sellar_system.output_data)
+> {'obj': array([ 1.]), 'new_variable': 'value', 'c_1': array([ 2.16+0.j]), 'c_2': array([-23.+0.j])}
+```
+
+The legacy `Discipline.local_data` attribute (and `IO.data`) is still
+available as a deprecated read-only union of the two stores; accessing it
+emits a `DeprecationWarning`. New code should use `input_data` and
+`output_data` directly.

@@ -86,11 +86,11 @@ def test_discipline(dataset) -> None:
         measure_evaluation_method_name="LOO",
     )
     result = disc.execute({"degree": array([3])})
-    assert "degree" in result
+    assert "degree" in disc.input_data
     assert "criterion" in result
     assert "learning" in result
     assert allclose(result["criterion"], array([32107]), atol=1e0)
-    assert result["degree"] == 3
+    assert disc.input_data["degree"] == 3
 
 
 @pytest.fixture(scope="module")

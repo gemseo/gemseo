@@ -128,7 +128,7 @@ def test_jacobi_sobieski() -> None:
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
 
-    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
+    assert mda.io.output_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
 
 
 def test_mda_jacobi_parallel() -> None:
@@ -154,7 +154,7 @@ def test_jacobi_sellar(sellar_with_2d_array, sellar_disciplines) -> None:
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-4
-    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
+    assert mda.io.output_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
 
 
 def test_expected_workflow() -> None:
@@ -271,16 +271,16 @@ def test_no_coupling():
     assert not mda.get_process_flow()._get_disciplines_couplings(
         DependencyGraph(disciplines)
     )
-    local_data = mda.execute()
+    output_data = mda.execute()
     assert_equal(
-        local_data,
+        output_data,
         {
-            "a": array([1.0]),
             "y": array([1.0]),
             "z": array([2.0]),
             "MDA residuals norm": array([0.0]),
         },
     )
+    assert_equal(mda.input_data["a"], array([1.0]))
 
 
 def test_settings():

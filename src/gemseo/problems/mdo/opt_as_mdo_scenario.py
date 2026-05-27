@@ -273,7 +273,7 @@ class BaseLinkDiscipline(Discipline):
 
         self._init_jacobian(input_names, output_names)
         self.jac[self._original_x_names[0]][self._x_names[0]] = eye(
-            self.io.data[self._original_x_names[0]].size
+            self.io.output_data[self._original_x_names[0]].size
         )
 
         # The derivatives of the coupling variables from the analytical MDA.
@@ -328,7 +328,7 @@ class LinearLinkDiscipline(BaseLinkDiscipline):
     def _compute_jacobian_from_intermediate_data(
         self, x: tuple[RealArray, ...], d_expected_y_dx: RealArray
     ) -> None:
-        data = self.io.data
+        data = self.io.output_data
         x0_dim = data[self._original_x_names[0]].size
         start_xi = 0
         for i in range(1, self._n_strongly_coupled_disciplines + 1):

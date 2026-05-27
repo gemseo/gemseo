@@ -91,7 +91,7 @@ def test_error(disciplinary_function, snapshot) -> None:
 
 def test_discipline_local_data(disciplinary_function) -> None:
     """Check that input sizes can be guessed from the discipline's local data."""
-    disciplinary_function._DisciplineAdapter__discipline.io.data.update({
+    disciplinary_function._DisciplineAdapter__discipline.io.input_data.update({
         "x": array([1.0])
     })
     check_func_and_jac_evaluation(disciplinary_function)

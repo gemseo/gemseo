@@ -195,10 +195,10 @@ def _compute_jacobian(self, input_names=(), output_names=()):
     """
     Compute the partial derivatives of all outputs wrt all inputs
     """
-    y_14 = self.local_data["y_14"]
-    y_24 = self.local_data["y_24"]
-    y_34 = self.local_data["y_34"]
-    x_shared = self.local_data["x_shared"]
+    y_14 = self.input_data["y_14"]
+    y_24 = self.input_data["y_24"]
+    y_34 = self.input_data["y_34"]
+    x_shared = self.input_data["x_shared"]
     self.jac = self.sobieski_problem.derive_blackbox_mission(x_shared, y_14, y_24, y_34)
 ```
 

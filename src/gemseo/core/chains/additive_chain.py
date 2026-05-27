@@ -72,11 +72,11 @@ class AdditiveDisciplineChain(ParallelDisciplineChain):
         # Sum the required outputs across disciplines
         for output_name in self._outputs_to_sum:
             disciplinary_outputs = [
-                discipline.io.data[output_name]
+                discipline.io.output_data[output_name]
                 for discipline in self.disciplines
-                if output_name in discipline.io.data
+                if output_name in discipline.io.output_data
             ]
-            self.io.data[output_name] = (
+            self.io.output_data[output_name] = (
                 sum(disciplinary_outputs) if disciplinary_outputs else None
             )
 

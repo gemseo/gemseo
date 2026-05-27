@@ -148,7 +148,7 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
             self._update_local_data_from_array(x_vect)
 
             for discipline in self._disciplines:
-                discipline.linearize(self.io.data)
+                discipline.linearize(self.io.get_merged_data())
 
             self.assembly.compute_sizes(
                 self._resolved_variable_names,
@@ -199,7 +199,7 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
         """
         self._update_local_data_from_array(x_vect)
 
-        local_data_before_execution = self.io.data.copy()
+        local_data_before_execution = self.io.get_merged_data()
         self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
 
@@ -214,7 +214,7 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
                 "disciplines once."
             )
             LOGGER.warning(msg)
-            self.io.data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
+            self.io.output_data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
             return False
 
         self._current_iter = 0

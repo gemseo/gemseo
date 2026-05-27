@@ -140,7 +140,7 @@ def test_sellar_chain_linearize(sellar_with_2d_array, sellar_disciplines) -> Non
         threshold=1e-5,
     )
 
-    assert mda_chain.io.data[mda_chain.NORMALIZED_RESIDUAL_NORM][0] < 1e-13
+    assert mda_chain.io.output_data[mda_chain.NORMALIZED_RESIDUAL_NORM][0] < 1e-13
 
 
 def test_16_disc_parallel() -> None:

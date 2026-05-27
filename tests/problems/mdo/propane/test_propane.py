@@ -78,7 +78,7 @@ class TestPropaneScenario(unittest.TestCase):
 
         """
         data_names = scenario.formulation.problem.design_space.variable_names
-        data = [self.io_data.data[name] for name in data_names]
+        data = [self.io_data.input_data[name] for name in data_names]
         return concatenate(data)
 
     def build_mdo_scenario(self, formulation_name="MDF"):

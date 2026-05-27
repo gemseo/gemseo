@@ -50,7 +50,7 @@ class IshigamiDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        local_data = self.io.data
+        local_data = self.io.input_data
         inputs_array = concatenate([local_data[name] for name in self.io.input_grammar])
         self.jac = {
             "y": {

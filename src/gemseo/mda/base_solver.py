@@ -175,7 +175,7 @@ class BaseMDASolver(BaseMDA):
         return concatenate([
             self.io.input_grammar.data_converter.convert_data_to_array(
                 self.__resolved_variable_names,
-                self.io.data,
+                self.io.get_merged_data(),
             )
         ])
 
@@ -299,7 +299,7 @@ class BaseMDASolver(BaseMDA):
         self.__resolved_variable_name_to_slice = (
             self.io.input_grammar.data_converter.compute_name_to_slice(
                 self._resolved_variable_names,
-                self.io.data,
+                self.io.get_merged_data(),
             )[0]
         )
 
@@ -317,13 +317,20 @@ class BaseMDASolver(BaseMDA):
     def _update_local_data_from_array(self, array_: ndarray) -> None:
         """Update the local data from an array.
 
+        The resolved variables are couplings; they are written to the output
+        store and propagated to the input store so the next iteration of the
+        discipline calls picks them up.
+
         Args:
             array_: An array.
         """
-        self.io.data |= self.io.output_grammar.data_converter.convert_array_to_data(
+        updates = self.io.output_grammar.data_converter.convert_array_to_data(
             array_,
             self.__resolved_variable_name_to_slice,
         )
+
+        self.io.output_data |= updates
+        self.io.propagate_to_input(updates)
 
     def _compute_normalized_residual_norm(self) -> float:
         """Compute the normalized residual norm at the current point.
@@ -421,7 +428,7 @@ class BaseMDASolver(BaseMDA):
             input_data: The input data to compute residual of coupling variables.
         """
         to_array = self.io.output_grammar.data_converter.convert_value_to_array
-        data = self.io.data
+        data = self.io.output_data
 
         for residual_name in self._resolved_residual_names:
             residual = to_array(residual_name, data[residual_name])

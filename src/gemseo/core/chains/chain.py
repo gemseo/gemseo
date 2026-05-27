@@ -127,8 +127,12 @@ class DisciplineChain(ProcessDiscipline):
             self.io.output_grammar.update(discipline.io.output_grammar)
 
     def _execute(self) -> None:
+        out_data = self.io.output_data
+        merged = self.io.get_merged_data()
         for discipline in self._disciplines:
-            self.io.data.update(discipline.execute(self.io.data))
+            output = discipline.execute(merged)
+            out_data |= output
+            merged.update(output)
 
     def reverse_chain_rule(
         self,

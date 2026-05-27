@@ -145,7 +145,7 @@ class SelfCoupledDisc(Discipline):
         self.io.input_grammar.defaults["y"] = array([0.2])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self.io.data["y"] = 1.0 - self.io.data["y"]
+        self.io.output_data["y"] = 1.0 - input_data["y"]
 
 
 def get_strong_couplings(analytic_expressions):

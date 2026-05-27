@@ -92,7 +92,7 @@ class Concatenater(Discipline):
         )
 
         input_names = self.io.input_grammar
-        local_data = self.io.data
+        local_data = self.io.input_data
         input_sizes = [local_data[name].size for name in self.io.input_grammar]
         total_size = sum(input_sizes)
 

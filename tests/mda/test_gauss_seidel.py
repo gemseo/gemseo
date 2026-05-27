@@ -221,10 +221,9 @@ class SelfCoupledDisc(Discipline):
             self.coeff = -1.0
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self.io.data["y"] = (
-            1.0 + self.coeff * 0.5 * self.io.data["y"] + self.io.data["x"]
-        )
-        self.io.data["o"] = self.io.data["y"] + self.io.data["x"]
+        y = 1.0 + self.coeff * 0.5 * input_data["y"] + input_data["x"]
+        self.io.output_data["y"] = y
+        self.io.output_data["o"] = y + input_data["x"]
 
     def _compute_jacobian(
         self,

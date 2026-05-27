@@ -29,7 +29,6 @@ from gemseo.core.parallel_execution.discipline_linearization import (
 )
 from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.mda.base_solver import BaseMDASolver
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -126,11 +125,12 @@ class BaseMDAParallelSolver(BaseMDASolver):
         """
         self.__parallel_linearization.execute([input_data] * len(self._disciplines))
 
-    def _execute_disciplines_and_update_local_data(
-        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
-    ) -> None:
-        self._execute_disciplines(input_data or self.io.data)
+    def _execute_disciplines_and_update_local_data(self) -> None:
+        self._execute_disciplines(self.io.input_data)
+
         for discipline in self._disciplines:
-            self.io.data.update(discipline.get_output_data())
+            output_data = discipline.io.output_data
+            self.io.output_data |= output_data
+            self.io.propagate_to_input(output_data)
 
         self._compute_name_to_slice()

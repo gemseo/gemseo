@@ -226,7 +226,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             # The data shall be reset to their original values
             # in case an input is also an output,
             # if we don't want to keep the computed state (as in MDAs).
-            self.io._data.update(input_data)
+            self.io.input_data.update(input_data)
 
         # TODO: that should be before the previous bloc,
         # but a test_parallel_chain_combinatorial_thread fails,
@@ -458,7 +458,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
                 )
                 raise KeyError(msg)
 
-            output_value = self.io._data.get(output_name)
+            output_value = self.io.output_data.get(output_name)
             if output_value is None:
                 # Unknown dimension, don't check the shape.
                 continue
@@ -466,7 +466,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             output_size = get_output_size(output_name, output_value)
 
             for input_name in input_names:
-                input_value = self.io._data.get(input_name)
+                input_value = self.io.input_data.get(input_name)
                 if input_value is None:
                     # Unknown dimension, don't check the shape.
                     continue
@@ -523,13 +523,13 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         input_names = input_names or self._differentiated_input_names
         input_name_to_size = self.io.input_grammar.data_converter.compute_name_to_size(
-            input_names, self.io._data
+            input_names, self.io.input_data
         )
 
         output_names = output_names or self._differentiated_output_names
         output_name_to_size = (
             self.io.output_grammar.data_converter.compute_name_to_size(
-                output_names, self.io._data
+                output_names, self.io.output_data
             )
         )
 
@@ -883,7 +883,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             jac_input_output = self._jac_approx.compute_approx_jac(
                 [output_name], [input_name]
             )
-            self.io.data |= input_data
+            self.io.input_data |= input_data
             approximated_jac[output_name][input_name] = jac_input_output[output_name][
                 input_name
             ]

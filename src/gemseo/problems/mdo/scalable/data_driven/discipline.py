@@ -133,7 +133,7 @@ class DataDrivenScalableDiscipline(Discipline):
         self._init_jacobian(
             input_names, output_names, Discipline.InitJacobianType.EMPTY
         )
-        jac = self.scalable_model.scalable_derivatives(self.io.data)
+        jac = self.scalable_model.scalable_derivatives(self.io.input_data)
         input_names = self.scalable_model.input_names
         jac = {
             fname: split_array_to_dict_of_arrays(

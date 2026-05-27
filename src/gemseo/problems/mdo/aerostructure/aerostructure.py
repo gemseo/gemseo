@@ -201,7 +201,7 @@ class Mission(Discipline):
     ) -> None:
         # Initialize all matrices to zeros
         self._init_jacobian(input_names, output_names)
-        local_data = self.io.data
+        local_data = self.io.input_data
         drag = local_data["drag"]
         lift = local_data["lift"]
         mass = local_data["mass"]
@@ -311,7 +311,7 @@ class Aerodynamics(Discipline):
     ) -> None:
         # Initialize all matrices to zeros
         self._init_jacobian(input_names, output_names)
-        local_data = self.io.data
+        local_data = self.io.input_data
         self.jac["drag"]["sweep"] = atleast_2d(
             array([0.1 * 2.0 * local_data["sweep"][0] / 360.0**2.0])
         )
@@ -420,7 +420,7 @@ class Structure(Discipline):
         self._init_jacobian(input_names, output_names)
         jac = self.jac["mass"]
         jac["sweep"] = atleast_2d(
-            array([4000.0 * 3.0 * self.io.data["sweep"][0] ** 2 / 360.0**3])
+            array([4000.0 * 3.0 * self.io.input_data["sweep"][0] ** 2 / 360.0**3])
         )
         jac["thick_panels"] = atleast_2d(array([100.0]))
         jac["forces"] = atleast_2d(array([200.0]))

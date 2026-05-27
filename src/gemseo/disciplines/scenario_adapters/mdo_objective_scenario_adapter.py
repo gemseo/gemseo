@@ -51,20 +51,20 @@ class MDOObjectiveScenarioAdapter(MDOScenarioAdapter):
             msg = "The objective function must be single-valued."
             raise ValueError(msg)
 
-        # Overwrite the adapter local data
+        # Overwrite the adapter output data
         objective = opt_problem.objective.output_names[0]
         if objective in self._output_names:
-            self.io.data[objective] = atleast_1d(f_opt)
+            self.io.output_data[objective] = atleast_1d(f_opt)
 
         for output in self._output_names:
             if output != objective:
                 for discipline in top_level_disciplines:
                     if output in discipline.io.output_grammar and output not in optimum:
-                        self.io.data[output] = discipline.io.data[output]
+                        self.io.output_data[output] = discipline.io.output_data[output]
 
                 value = optimum.get(output)
                 if value is not None:
-                    self.io.data[output] = value
+                    self.io.output_data[output] = value
 
     def _compute_jacobian(
         self,

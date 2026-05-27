@@ -111,27 +111,25 @@ class ParallelDisciplineChain(ProcessDiscipline):
         # The outputs of a discipline may be a coupling, and shall therefore
         # not be passed as input of another since the execution are assumed
         # to be independent here
+        input_data = self.io.input_data
         if self._use_deep_copy:
             return [
-                DisciplineData(deepcopy_dict_of_arrays(self.io.data))
+                DisciplineData(deepcopy_dict_of_arrays(input_data))
                 for _ in range(len(self._disciplines))
             ]
 
-        for value in self.io.data.values():
+        for value in input_data.values():
             if isinstance(value, ndarray):
                 value.flags.writeable = False
 
-        return [self.io.data] * len(self._disciplines)
+        return [input_data] * len(self._disciplines)
 
     def _execute(self) -> None:
         self.parallel_execution.execute(self._get_input_data_copies())
 
         # Update data according to input order of priority
         for discipline in self._disciplines:
-            self.io.data.update({
-                output_name: discipline.io.data[output_name]
-                for output_name in discipline.io.output_grammar
-            })
+            self.io.output_data.update(discipline.io.output_data)
 
     def _compute_jacobian(
         self,

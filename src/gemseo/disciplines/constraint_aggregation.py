@@ -152,7 +152,8 @@ class ConstraintAggregation(Discipline):
         if not self.__data_sizes:
             self.__data_sizes = {
                 variable_name: variable_value.size
-                for variable_name, variable_value in self.io.data.items()
+                for store in (self.io.input_data, self.io.output_data)
+                for variable_name, variable_value in store.items()
             }
 
     def _compute_jacobian(
@@ -164,7 +165,7 @@ class ConstraintAggregation(Discipline):
         evaluation_function = self._JACOBIAN_EVALUATION_FUNCTION_MAP[self.__method_name]
         self.jac = split_array_to_dict_of_arrays(
             evaluation_function(
-                concatenate_dict_of_arrays_to_array(self.io.data, input_names),
+                concatenate_dict_of_arrays_to_array(self.io.input_data, input_names),
                 **self.__meth_options,
             ),
             self.__data_sizes,

@@ -274,7 +274,7 @@ class JobSchedulerDisciplineWrapper(BaseWrapperDiscipline):
 
         If an exception is contained inside, raises it.
 
-        If the outputs contain data, it updates self.io.data with it.
+        If the outputs contain data, it updates the discipline's output data with it.
 
         Args:
             current_workdir: The current working directory.
@@ -341,7 +341,7 @@ class JobSchedulerDisciplineWrapper(BaseWrapperDiscipline):
         discipline_path.write_bytes(self.pickled_discipline)
         inputs_path = current_workdir / self.DISC_INPUT_FILE_NAME
         serialized_data = pickle.dumps((
-            self.io.data,
+            self.io.get_merged_data(),
             differentiated_inputs,
             differentiated_outputs,
         ))

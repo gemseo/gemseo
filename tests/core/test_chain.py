@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import os
 import pickle
-import unittest
 from itertools import permutations
 from typing import TYPE_CHECKING
 
@@ -52,63 +51,47 @@ if TYPE_CHECKING:
 DIRNAME = os.path.dirname(__file__)
 
 
-class TestDisciplineChain(unittest.TestCase):
-    """"""
+def get_disciplines_list(perm, dtype="complex128"):
+    disciplines = [
+        SobieskiStructure(dtype),
+        SobieskiAerodynamics(dtype),
+        SobieskiPropulsion(dtype),
+        SobieskiMission(dtype),
+    ]
 
-    def get_disciplines_list(self, perm, dtype="complex128"):
-        disciplines = [
-            SobieskiStructure(dtype),
-            SobieskiAerodynamics(dtype),
-            SobieskiPropulsion(dtype),
-            SobieskiMission(dtype),
-        ]
+    return [disciplines[p] for p in perm]
 
-        return [disciplines[p] for p in perm]
 
-    def test_linearize_sobieski_chain_combinatorial(self) -> None:
-        """"""
-        for perm in permutations(range(4)):
-            disciplines = self.get_disciplines_list(perm)
-            chain = DisciplineChain(disciplines)
-            ok = chain.check_jacobian(
-                derr_approx="complex_step", step=1e-30, threshold=1e-6
-            )
-            assert ok
-
-    def test_add_differentiated_inputs(self) -> None:
-        disciplines = [
-            SobieskiStructure(),
-            SobieskiAerodynamics(),
-            SobieskiPropulsion(),
-            SobieskiMission(),
-        ]
+def test_linearize_sobieski_chain_combinatorial() -> None:
+    for perm in permutations(range(4)):
+        disciplines = get_disciplines_list(perm)
         chain = DisciplineChain(disciplines)
-        chain.add_differentiated_inputs()
-        chain.add_differentiated_outputs()
+        ok = chain.check_jacobian(
+            derr_approx="complex_step", step=1e-30, threshold=1e-6
+        )
+        assert ok
 
-    def test_parallel_chain_combinatorial_thread(self) -> None:
-        for perm in permutations(range(4)):
-            for use_deep_copy in [True, False]:
-                disciplines = self.get_disciplines_list(perm)
-                chain = ParallelDisciplineChain(
-                    disciplines, use_threading=True, use_deep_copy=use_deep_copy
-                )
-                chain.linearize(compute_all_jacobians=True)
-                ok = chain.check_jacobian(
-                    chain.io.input_grammar.defaults,
-                    derr_approx="complex_step",
-                    step=1e-30,
-                    threshold=1e-6,
-                )
-                assert ok
 
-    @pytest.mark.skip_under_windows
-    def test_parallel_chain_combinatorial_mprocess(self) -> None:
-        # Keep the two first only as MP is slow there
-        perms = list(permutations(range(4)))[:2]
-        for perm in perms:
-            disciplines = self.get_disciplines_list(perm)
-            chain = ParallelDisciplineChain(disciplines, use_threading=False)
+def test_add_differentiated_inputs() -> None:
+    disciplines = [
+        SobieskiStructure(),
+        SobieskiAerodynamics(),
+        SobieskiPropulsion(),
+        SobieskiMission(),
+    ]
+    chain = DisciplineChain(disciplines)
+    chain.add_differentiated_inputs()
+    chain.add_differentiated_outputs()
+
+
+def test_parallel_chain_combinatorial_thread() -> None:
+    for perm in permutations(range(4)):
+        for use_deep_copy in [True, False]:
+            disciplines = get_disciplines_list(perm)
+            chain = ParallelDisciplineChain(
+                disciplines, use_threading=True, use_deep_copy=use_deep_copy
+            )
+            chain.linearize(compute_all_jacobians=True)
             ok = chain.check_jacobian(
                 chain.io.input_grammar.defaults,
                 derr_approx="complex_step",
@@ -117,41 +100,60 @@ class TestDisciplineChain(unittest.TestCase):
             )
             assert ok
 
-    def test_workflow_dataflow(self) -> None:
-        disciplines = self.get_disciplines_list(range(4))
-        chain = ParallelDisciplineChain(disciplines)
-        assert isinstance(
-            chain.get_process_flow().get_execution_flow(), ParallelExecSequence
+
+@pytest.mark.skip_under_windows
+def test_parallel_chain_combinatorial_mprocess() -> None:
+    # Keep the two first only as MP is slow there
+    perms = list(permutations(range(4)))[:2]
+    for perm in perms:
+        disciplines = get_disciplines_list(perm)
+        chain = ParallelDisciplineChain(disciplines, use_threading=False)
+        ok = chain.check_jacobian(
+            chain.io.input_grammar.defaults,
+            derr_approx="complex_step",
+            step=1e-30,
+            threshold=1e-6,
         )
-        assert chain.get_process_flow().get_data_flow() == []
+        assert ok
 
-    def test_common_in_out(self) -> None:
-        # Check that the linearization works with a discipline
-        # that has inputs and outputs of the same name
-        a = AnalyticDiscipline({"x": "x"}, name="a")
-        o = AnalyticDiscipline({"o": "x+y"}, name="o")
-        chain = DisciplineChain([a, o])
-        assert chain.check_jacobian(
-            {"x": ones(1), "y": ones(1)},
-            step=1e-6,
-            threshold=1e-5,
-            derr_approx="finite_differences",
-        )
 
-    def test_double_mission_chain(self) -> None:
-        # Create a chain that adds two missions
-        disciplines = [SobieskiMission(), SobieskiMission()]
-        outputs_to_sum = ["y_4"]
-        chain = AdditiveDisciplineChain(disciplines, outputs_to_sum)
+def test_workflow_dataflow() -> None:
+    disciplines = get_disciplines_list(range(4))
+    chain = ParallelDisciplineChain(disciplines)
+    assert isinstance(
+        chain.get_process_flow().get_execution_flow(), ParallelExecSequence
+    )
+    assert chain.get_process_flow().get_data_flow() == []
 
-        # Check the output value
-        chain.execute()
-        mission = SobieskiMission()
-        mission.execute()
-        assert allclose(chain.io.data["y_4"], mission.io.data["y_4"] * 2.0)
 
-        # Check the output Jacobian
-        chain.check_jacobian(threshold=1e-5)
+def test_common_in_out() -> None:
+    # Check that the linearization works with a discipline
+    # that has inputs and outputs of the same name
+    a = AnalyticDiscipline({"x": "x"}, name="a")
+    o = AnalyticDiscipline({"o": "x+y"}, name="o")
+    chain = DisciplineChain([a, o])
+    assert chain.check_jacobian(
+        {"x": ones(1), "y": ones(1)},
+        step=1e-6,
+        threshold=1e-5,
+        derr_approx="finite_differences",
+    )
+
+
+def test_double_mission_chain() -> None:
+    # Create a chain that adds two missions
+    disciplines = [SobieskiMission(), SobieskiMission()]
+    outputs_to_sum = ["y_4"]
+    chain = AdditiveDisciplineChain(disciplines, outputs_to_sum)
+
+    # Check the output value
+    chain.execute()
+    mission = SobieskiMission()
+    mission.execute()
+    assert allclose(chain.io.data["y_4"], mission.io.data["y_4"] * 2.0)
+
+    # Check the output Jacobian
+    chain.check_jacobian(threshold=1e-5)
 
 
 def test_discipline_chain_serialization(tmp_wd) -> None:
@@ -268,10 +270,10 @@ def test_non_ndarray_inputs():
             self.io.input_grammar.defaults["in"] = "foo"
 
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-            self.io.data["out"] = self.io.data["in"] * 2
+            self.io.output_data["out"] = input_data["in"] * 2
 
     mdo_parallel_chain = ParallelDisciplineChain([StringDuplicator()])
     mdo_parallel_chain.execute()
-    assert mdo_parallel_chain.io.data["out"] == "foofoo"
+    assert mdo_parallel_chain.output_data["out"] == "foofoo"
     mdo_parallel_chain.execute({"in": "bar"})
-    assert mdo_parallel_chain.io.data["out"] == "barbar"
+    assert mdo_parallel_chain.output_data["out"] == "barbar"

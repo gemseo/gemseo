@@ -42,7 +42,6 @@ from gemseo.core.coupling_structure import DependencyGraph
 from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import Discipline
 from gemseo.core.process_discipline import ProcessDiscipline
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.matplotlib_figure import save_show_figure
 from gemseo.utils.pydantic import create_model
 
@@ -57,7 +56,6 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline.base_discipline import _CacheType
     from gemseo.mda.base_settings import BaseMDASettings
-    from gemseo.typing import StrKeyMapping
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
@@ -414,7 +412,7 @@ class BaseMDA(ProcessDiscipline):
         )
 
         self.jac = self.assembly.total_derivatives(
-            self.io.data,
+            self.io.get_merged_data(),
             output_names,
             input_names,
             couplings_adjoint,
@@ -546,7 +544,8 @@ class BaseMDA(ProcessDiscipline):
             return
 
         if isinstance(self.cache, SimpleCache):
-            self.io.data.update(dict(self.__get_cached_outputs(cached_outputs)))
+            # Cached coupling outputs prime the input side for the next iteration.
+            self.io.input_data.update(dict(self.__get_cached_outputs(cached_outputs)))
         else:
             # Non simple caches require NumPy arrays.
             to_value = self.io.input_grammar.data_converter.convert_array_to_value
@@ -588,12 +587,5 @@ class BaseMDA(ProcessDiscipline):
     def _solve(self) -> None:
         """Solve the MDA."""
 
-    def _execute_disciplines_and_update_local_data(
-        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
-    ) -> None:
-        """Execute the disciplines and update the local data with their output data.
-
-        Args:
-            input_data: The input data to execute the disciplines.
-                If empty, use the local data.
-        """
+    def _execute_disciplines_and_update_local_data(self) -> None:
+        """Execute the disciplines and update the local data with their output data."""

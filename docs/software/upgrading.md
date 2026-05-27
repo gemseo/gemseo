@@ -19,6 +19,23 @@ search:
 
 This page contains the history of the breaking changes in GEMSEO. The codes using those shall be updated according to the target GEMSEO version.
 
+## Unreleased
+
+### Discipline local data split
+
+The single merged `Discipline.local_data` / `IO.data` attribute has been split
+into two independent stores, one for input data and one for output data.
+
+- `Discipline.local_data` and `IO.data` are deprecated; replacements:
+    - `Discipline.input_data` / `IO.input_data` — input data of the last execution.
+    - `Discipline.output_data` / `IO.output_data` — output data of the last execution.
+    - `IO.get(name)` — read by name; the input store is searched first, then the output store.
+- The deprecated attributes still work and return a fresh union of the two stores; accessing them emits a `DeprecationWarning`.
+- **Breaking change**: `BaseDiscipline.execute()` now returns the **output data only** (the `_output_data` store), where it previously returned the merged dict of inputs and outputs. Code that read inputs from the return value must be migrated:
+    - Before: `result = discipline.execute(...); x = result["some_input"]`.
+    - After: `discipline.execute(...); x = discipline.input_data["some_input"]`.
+- Auto-coupled variables (names present in both input and output grammars) live in `_output_data` only after `_run`. MDA solvers explicitly propagate them back to `_input_data` between iterations; user-level code that reuses the output value as an input for the next discipline call must do the same (or use the union view).
+
 ## 6.0.0
 
 The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to help converting your code to GEMSEO 6.

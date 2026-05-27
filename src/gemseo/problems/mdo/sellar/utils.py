@@ -80,6 +80,6 @@ def get_y_opt(mda: BaseMDA) -> ndarray:
         The optimal `y` array.
     """
     return array([
-        mda.io.data[Y_1][0].real,
-        mda.io.data[Y_2][0].real,
+        mda.io.output_data[Y_1][0].real,
+        mda.io.output_data[Y_2][0].real,
     ])

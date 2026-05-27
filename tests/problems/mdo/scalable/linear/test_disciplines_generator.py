@@ -64,7 +64,7 @@ def test_creation(descriptions) -> None:
     for disc, description in zip(disciplines, descriptions, strict=False):
         assert disc.name == description[0]
         out = disc.execute()
-        assert sorted(out.keys()) == sorted(list(description[2]) + list(description[1]))
+        assert sorted(out.keys()) == sorted(description[2])
 
 
 @pytest.mark.parametrize("desc", DESCRIPTIONS[:-1])

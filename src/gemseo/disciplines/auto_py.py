@@ -386,12 +386,14 @@ class AutoPyDiscipline(Discipline):
             raise RuntimeError(msg)
 
         if not self.__sizes:
-            for name, value in self.io.data.items():
-                if name in self.io.input_grammar:
-                    converter = self.io.input_grammar.data_converter
-                else:
-                    converter = self.io.output_grammar.data_converter
-                self.__sizes[name] = converter.get_value_size(name, value)
+            for store, grammar in (
+                (self.io.input_data, self.io.input_grammar),
+                (self.io.output_data, self.io.output_grammar),
+            ):
+                converter = grammar.data_converter
+                for name, value in store.items():
+                    if name not in self.__sizes:
+                        self.__sizes[name] = converter.get_value_size(name, value)
 
             in_to_ns = self.io.input_grammar.to_namespaced
             self.__input_names_with_namespaces = tuple(

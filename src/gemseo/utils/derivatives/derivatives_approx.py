@@ -212,7 +212,9 @@ class DisciplineJacApprox:
             )
             LOGGER.info(errors)
 
-        data = self.discipline.io.input_grammar.defaults or self.discipline.io.data
+        data = (
+            self.discipline.io.input_grammar.defaults or self.discipline.io.input_data
+        )
         name_to_slice = (
             self.discipline.io.input_grammar.data_converter.compute_name_to_slice(
                 input_names,
@@ -255,7 +257,7 @@ class DisciplineJacApprox:
             The input array.
         """
         if not data:
-            data = self.discipline.io.data
+            data = self.discipline.io.input_data
 
         return self.discipline.io.input_grammar.data_converter.convert_data_to_array(
             input_names,
@@ -297,7 +299,7 @@ class DisciplineJacApprox:
         else:
             step = self.step
 
-        x_vect = self._prepare_xvect(input_names, self.discipline.io.data)
+        x_vect = self._prepare_xvect(input_names, self.discipline.io.input_data)
 
         if isinstance(step, Sized) and 1 < len(step) != len(x_vect):
             msg = f"Inconsistent step size, expected {x_vect.size} got {len(step)}."
@@ -311,13 +313,13 @@ class DisciplineJacApprox:
         data_name_to_size = (
             self.discipline.io.output_grammar.data_converter.compute_name_to_size(
                 output_names,
-                self.discipline.io.data,
+                self.discipline.io.output_data,
             )
         )
         input_name_to_size = (
             self.discipline.io.input_grammar.data_converter.compute_name_to_size(
                 input_names,
-                self.discipline.io.data,
+                self.discipline.io.input_data,
             )
         )
 

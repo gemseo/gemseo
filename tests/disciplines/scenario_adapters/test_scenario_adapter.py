@@ -389,7 +389,7 @@ def check_obj_scenario_adapter(
     adapter = MDOObjectiveScenarioAdapter(scenario, ["x_shared"], outputs)
 
     adapter.execute()
-    local_value = adapter.io.data[output_names[0]]
+    local_value = adapter.io.output_data[output_names[0]]
     assert (minimize and allclose(local_value, array(123.456))) or allclose(
         local_value, array(-123.456)
     )
@@ -563,8 +563,8 @@ class DisciplineMain(Discipline):
         self.io.output_grammar.update_from_names(["beta"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        alpha = self.io.data["alpha"]
-        self.io.data["beta"] = 2.0 * alpha
+        alpha = input_data["alpha"]
+        self.io.output_data["beta"] = 2.0 * alpha
         self._has_jacobian = True
         self.jac = {"beta": {"alpha": 2.0 * atleast_2d(ones_like(alpha))}}
 
@@ -581,16 +581,16 @@ class DisciplineMainWithJacobian(Discipline):
         self.io.output_grammar.update_from_names(["beta"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        alpha = self.io.data["alpha"]
-        self.io.data["beta"] = 2.0 * alpha
+        alpha = input_data["alpha"]
+        self.io.output_data["beta"] = 2.0 * alpha
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        alpha = self.io.data["alpha"]
-        self.io.data["beta"] = 2.0 * alpha
+        alpha = self.io.input_data["alpha"]
+        self.io.output_data["beta"] = 2.0 * alpha
         self.jac = {"beta": {"alpha": 2.0 * atleast_2d(ones_like(alpha))}}
 
 
@@ -603,8 +603,8 @@ class DisciplineSub1(Discipline):
         self.io.output_grammar.update_from_names(["f"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x = self.io.data["x"]
-        self.io.data["f"] = 3.0 * x
+        x = input_data["x"]
+        self.io.output_data["f"] = 3.0 * x
         self._has_jacobian = True
         self.jac = {"f": {"x": 3.0 * atleast_2d(ones_like(x))}}
 
@@ -619,9 +619,9 @@ class DisciplineSub2(Discipline):
         self.io.input_grammar.defaults = {"x": array([0.0]), "beta": array([0.0])}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x = self.io.data["x"]
-        beta = self.io.data["beta"]
-        self.io.data["g"] = x + beta
+        x = input_data["x"]
+        beta = input_data["beta"]
+        self.io.output_data["g"] = x + beta
         self._has_jacobian = True
         self.jac = {
             "g": {"x": atleast_2d(ones_like(x)), "beta": atleast_2d(ones_like(beta))}
