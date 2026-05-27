@@ -2185,11 +2185,11 @@
          <lastmod>2026-05-27</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/reference/gemseo/core/derivatives/chain_rule/</loc>
+         <loc>https://gemseo.org/latest/reference/gemseo/core/derivatives/derivation_modes/</loc>
          <lastmod>2026-05-27</lastmod>
     </url>
     <url>
-         <loc>https://gemseo.org/latest/reference/gemseo/core/derivatives/derivation_modes/</loc>
+         <loc>https://gemseo.org/latest/reference/gemseo/core/derivatives/graph_traversal/</loc>
          <lastmod>2026-05-27</lastmod>
     </url>
     <url>
@@ -2198,10 +2198,6 @@
     </url>
     <url>
          <loc>https://gemseo.org/latest/reference/gemseo/core/derivatives/jacobian_operator/</loc>
-         <lastmod>2026-05-27</lastmod>
-    </url>
-    <url>
-         <loc>https://gemseo.org/latest/reference/gemseo/core/derivatives/mda_derivatives/</loc>
          <lastmod>2026-05-27</lastmod>
     </url>
     <url>
