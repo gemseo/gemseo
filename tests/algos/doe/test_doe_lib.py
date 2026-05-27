@@ -488,11 +488,13 @@ class _DummyDisc(Discipline):
         })
 
     def _run(self, input_data: StrKeyMapping):
-        x = self.io.data["x"]
-        self.io.data["z"] = array([sum(x)])
-        self.io.data["t"] = 2 * x + 3
-        self.io.data["s1"] = x[0]
-        self.io.data["s2"] = x[1]
+        x = input_data["x"]
+        return {
+            "z": array([sum(x)]),
+            "t": 2 * x + 3,
+            "s1": x[0],
+            "s2": x[1],
+        }
 
 
 def test_parallel_doe_db(tmp_wd):

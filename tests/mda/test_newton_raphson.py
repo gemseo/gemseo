@@ -258,8 +258,8 @@ def test_weak_and_strong_couplings() -> None:
         "x": array([0.0]),
     })
     assert mda.inner_mdas[0].residual_history[-1] < TRESHOLD_MDA_TOL
-    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < TRESHOLD_MDA_TOL
-    assert mda.io.data["obj"] == pytest.approx(array([2.0 / 1.3]))
+    assert mda.io.output_data[mda.NORMALIZED_RESIDUAL_NORM][0] < TRESHOLD_MDA_TOL
+    assert mda.io.output_data["obj"] == pytest.approx(array([2.0 / 1.3]))
 
 
 def test_weak_and_strong_couplings_two_cycles() -> None:
@@ -404,7 +404,8 @@ def test_mda_newton_serialization(tmp_wd) -> None:
     with open(out_file, "rb") as file:
         mda_d = pickle.load(file)
 
-    assert_equal(mda_d.io.data, out)
+    assert_equal(mda_d.io.output_data, out)
+    assert_equal(mda_d.io.input_data, mda.io.input_data)
 
 
 def test_mda_newton_weak_couplings(snapshot) -> None:

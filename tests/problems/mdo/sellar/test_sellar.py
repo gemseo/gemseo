@@ -113,7 +113,7 @@ def test_execution(sellar_with_2d_array, discipline, output_data, n) -> None:
     """Check the output data of the Sellar disciplines with default input values."""
     discipline.execute()
     for output_name, output_value in output_data.items():
-        assert_allclose(discipline.io.data[output_name], output_value, rtol=1e-8)
+        assert_allclose(discipline.io.output_data[output_name], output_value, rtol=1e-8)
 
 
 def test_linearization(sellar_with_2d_array, discipline, input_data) -> None:
@@ -145,16 +145,17 @@ def test_mda_linearization(
 ) -> None:
     """Check the Jacobian value of the MDA."""
     mda = cls(disciplines, settings=cls.settings_class(**options))
-    mda_output_data = mda.execute(input_data)
+    mda.execute(input_data)
+    data = mda.input_data
     for discipline in disciplines:
         assert discipline.check_jacobian(
-            mda_output_data,
+            data,
             derr_approx=discipline.LinearizationMode.COMPLEX_STEP,
             step=1e-30,
         )
 
     assert mda.check_jacobian(
-        mda_output_data,
+        data,
         threshold=1e-4,
         derr_approx=discipline.LinearizationMode.COMPLEX_STEP,
         step=1e-30,

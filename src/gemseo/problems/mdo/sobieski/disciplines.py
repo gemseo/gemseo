@@ -152,7 +152,7 @@ class SobieskiMission(SobieskiDiscipline):
             else:
                 time.sleep(1.0)
 
-        local_data = self.io.data
+        local_data = self.io.input_data
         self.jac = self.sobieski_problem.mission.linearize(
             local_data["x_shared"],
             local_data["y_14"],
@@ -230,7 +230,7 @@ class SobieskiStructure(SobieskiDiscipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        local_data = self.io.data
+        local_data = self.io.input_data
         self.jac = self.sobieski_problem.structure.linearize(
             local_data["x_shared"],
             local_data["y_21"],
@@ -307,7 +307,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        local_data = self.io.data
+        local_data = self.io.input_data
         self.jac = self.sobieski_problem.aerodynamics.linearize(
             local_data["x_shared"],
             local_data["y_12"],
@@ -385,7 +385,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        local_data = self.io.data
+        local_data = self.io.input_data
         self.jac = self.sobieski_problem.propulsion.linearize(
             local_data["x_shared"],
             local_data["y_23"],

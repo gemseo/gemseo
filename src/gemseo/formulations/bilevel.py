@@ -610,9 +610,6 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 {
                     k: v
                     for discipline in self._settings.disciplines_as_sub_scenario
-                    # TODO: replace local_data with output_data after the local_data
-                    #  splitting.
-                    for k, v in discipline.local_data.items()
-                    if k in discipline.output_grammar.names
+                    for k, v in discipline.output_data.items()
                 },
             )

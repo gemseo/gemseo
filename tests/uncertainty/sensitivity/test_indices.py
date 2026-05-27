@@ -84,10 +84,9 @@ class Ishigami1D(Discipline):
         self.io.output_grammar.update_from_names(["out"])
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        local_data = self.io.data
-        x_1 = local_data["x1"]
-        x_2 = local_data["x2"]
-        x_3 = local_data["x3"]
+        x_1 = input_data["x1"]
+        x_2 = input_data["x2"]
+        x_3 = input_data["x3"]
         time = linspace(0, 1, 100)
         output = sin(x_1) + 7 * sin(x_2) ** 2 + 0.1 * x_3**4 * sin(x_1) * time
         return {"out": output}

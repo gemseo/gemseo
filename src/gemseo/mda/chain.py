@@ -315,11 +315,13 @@ class MDAChain(BaseMDA):
         return super().execute(input_data=input_data)
 
     def _solve(self) -> None:
-        self.io.data = self.discipline_chain.execute(self.io.data)
+        output = self.discipline_chain.execute(self.io.get_merged_data())
+        self.io.output_data.update(output)
+        self.io.propagate_to_input(output)
 
         res_sum = 0.0
         for mda in self.inner_mdas:
-            res_local = mda.io.data.get(self.NORMALIZED_RESIDUAL_NORM)
+            res_local = mda.io.output_data.get(self.NORMALIZED_RESIDUAL_NORM)
             if res_local is not None:
                 res_sum += res_local[-1] ** 2
 

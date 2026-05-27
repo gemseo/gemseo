@@ -79,9 +79,9 @@ class NewDiscipline(Discipline):
         self.io.input_grammar.defaults = default_input_data
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self.io.data["out_1"] = self.io.data["in_1"] + 1
-        self.io.data["out_2"] = self.io.data["in_2"] - 1
-        self.io.data["out_3"] = array([f"{self.io.data['in_3'][0]} plus one"])
+        self.io.output_data["out_1"] = input_data["in_1"] + 1
+        self.io.output_data["out_2"] = input_data["in_2"] - 1
+        self.io.output_data["out_3"] = array([f"{input_data['in_3'][0]} plus one"])
 
     def _compute_jacobian(
         self,

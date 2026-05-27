@@ -82,9 +82,10 @@ class WarmStartedDisciplineChain(DisciplineChain):
 
     def _execute(self) -> None:
         if self._warm_start_variable_name_to_value:
-            self.io.data.update(self._warm_start_variable_name_to_value)
+            self.io.input_data.update(self._warm_start_variable_name_to_value)
         super()._execute()
         if self._variable_names_to_warm_start:
             self._warm_start_variable_name_to_value = {
-                name: self.io.data[name] for name in self._variable_names_to_warm_start
+                name: self.io.output_data[name]
+                for name in self._variable_names_to_warm_start
             }

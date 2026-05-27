@@ -109,10 +109,10 @@ class ScalableDiscipline(BaseDiscipline):
     ) -> None:
         self._init_jacobian(input_names, output_names)
         jac = self._discipline(
-            self.io.data[SHARED_DESIGN_VARIABLE_NAME],
-            self.io.data[self.__x_i_name],
+            self.io.input_data[SHARED_DESIGN_VARIABLE_NAME],
+            self.io.input_data[self.__x_i_name],
             {
-                y_j_name: self.io.data[y_j_name]
+                y_j_name: self.io.input_data[y_j_name]
                 for y_j_name in self._discipline.coefficients.C_ij
             },
             compute_jacobian=True,

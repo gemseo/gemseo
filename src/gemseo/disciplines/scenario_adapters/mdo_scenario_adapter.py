@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-from copy import copy
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -392,7 +391,8 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
     def _pre_run(self) -> None:
         """Pre-run the scenario."""
-        data = self.io.data
+        # Adapter inputs and any previously-set outputs may both be needed here.
+        data = self.io.get_merged_data()
         design_space = self.scenario.formulation.problem.design_space
 
         # Update the top level discipline default inputs with adapter inputs
@@ -464,7 +464,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         This method overwrites the adapter outputs with the top-level discipline outputs
         and the optimal design parameters.
         """
-        data = self.io.data
+        data = self.io.output_data
         formulation = self.scenario.formulation
         top_level_disciplines = formulation.get_top_level_disciplines()
         current_value = formulation.problem.design_space.get_current_value(as_dict=True)
@@ -474,7 +474,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
                     output_name in discipline.io.output_grammar
                     and output_name not in current_value
                 ):
-                    data[output_name] = discipline.io.data[output_name]
+                    data[output_name] = discipline.io.output_data[output_name]
 
             if (output_value := current_value.get(output_name)) is not None:
                 data[output_name] = output_value
@@ -492,19 +492,19 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
         # Store the Lagrange multipliers in the local data
         multipliers = lagrange.get_multipliers_arrays()
-        self.io.data.update({
+        self.io.output_data.update({
             self.get_bnd_mult_name(name, False): mult
             for name, mult in multipliers[lagrange.LOWER_BOUNDS].items()
         })
-        self.io.data.update({
+        self.io.output_data.update({
             self.get_bnd_mult_name(name, True): mult
             for name, mult in multipliers[lagrange.UPPER_BOUNDS].items()
         })
-        self.io.data.update({
+        self.io.output_data.update({
             self.get_cstr_mult_name(name): mult
             for name, mult in multipliers[lagrange.EQUALITY].items()
         })
-        self.io.data.update({
+        self.io.output_data.update({
             self.get_cstr_mult_name(name): mult
             for name, mult in multipliers[lagrange.INEQUALITY].items()
         })
@@ -649,7 +649,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
         )
         # Update the local data with the optimal design parameters
         # [The adapted scenario is assumed to have been run beforehand.]
-        post_opt_data = copy(self.io.data)
+        post_opt_data = self.io.get_merged_data()
         post_opt_data.update(opt_problem.design_space.get_current_value(as_dict=True))
         parallel_linearization.execute([post_opt_data] * len(unique_disciplines))
 

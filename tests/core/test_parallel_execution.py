@@ -177,8 +177,8 @@ def test_disc_parallel_doe(
         else:
             inputs[X_SHARED][0] = i
         s_1.execute(inputs)
-        assert s_1.io.data[Y_1] == outs[i][Y_1]
-        assert s_1.io.data[Y_1] == output_list[i]
+        assert s_1.io.output_data[Y_1] == outs[i][Y_1]
+        assert s_1.io.output_data[Y_1] == output_list[i]
 
 
 def test_parallel_lin() -> None:

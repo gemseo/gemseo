@@ -71,6 +71,6 @@ class Splitter(Discipline):
         output_names: Iterable[str] = (),
     ) -> None:
         self._init_jacobian(init_type=self.InitJacobianType.SPARSE)
-        identity = eye(self.io.data[self.__input_name].size, format="csr")
+        identity = eye(self.io.input_data[self.__input_name].size, format="csr")
         for output_name, input_indices in self.__slicing_structure.items():
             self.jac[output_name][self.__input_name] = identity[input_indices, :]

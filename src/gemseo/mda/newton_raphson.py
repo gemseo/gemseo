@@ -162,7 +162,7 @@ class MDANewtonRaphson(BaseMDAParallelSolver):
         return newton_step
 
     def _iterate_once(self) -> bool:
-        local_data_before_execution = self.io.data.copy()
+        local_data_before_execution = self.io.get_merged_data()
         input_couplings = self.get_current_resolved_variables_vector()
 
         self._execute_disciplines_and_update_local_data()

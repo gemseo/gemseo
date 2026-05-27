@@ -27,14 +27,12 @@ from gemseo.mda.base import BaseProcessFlow
 from gemseo.mda.base import _BaseMDAProcessFlow
 from gemseo.mda.base_solver import BaseMDASolver
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
-    from gemseo.typing import StrKeyMapping
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):
@@ -149,13 +147,15 @@ class MDAGaussSeidel(BaseMDASolver):
             )
             self.io.output_grammar.update(discipline.io.output_grammar)
 
-    def _execute_disciplines_and_update_local_data(
-        self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT
-    ) -> None:
-        input_data = input_data or self.io.data
+    def _execute_disciplines_and_update_local_data(self) -> None:
+        out_data = self.io.output_data
+        merged = self.io.get_merged_data()
         for discipline in self._disciplines:
-            discipline.execute(input_data)
-            self.io.data.update(discipline.io.get_output_data())
+            output = discipline.execute(merged)
+            out_data |= output
+            merged.update(output)
+
+        self.io.propagate_to_input(out_data)
 
         self._compute_name_to_slice()
 
@@ -166,7 +166,7 @@ class MDAGaussSeidel(BaseMDASolver):
         return self.settings.max_mda_iter != 0
 
     def _iterate_once(self) -> bool:
-        local_data_before_execution = self.io.data.copy()
+        local_data_before_execution = self.io.get_merged_data()
         self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
 

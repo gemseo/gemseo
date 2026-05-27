@@ -239,7 +239,7 @@ class ODEDiscipline(Discipline):
         super().__init__(name=name)
 
         mapping_initial_state = {
-            initial_name: self.local_data.get(
+            initial_name: self.input_data.get(
                 initial_name, rhs_discipline.default_input_data[state_name]
             )
             for (initial_name, state_name) in zip(
@@ -248,17 +248,17 @@ class ODEDiscipline(Discipline):
         }
 
         mapping_parameters = {
-            parameter: self.local_data.get(
+            parameter: self.input_data.get(
                 parameter, rhs_discipline.default_input_data[parameter]
             )
             for parameter in self.__design_variables_names
         }
 
         mapping_inputs = {
-            self.__initial_time_name: self.local_data.get(
+            self.__initial_time_name: self.input_data.get(
                 self.__initial_time_name, float(times[0])
             ),
-            self.__final_time_name: self.local_data.get(
+            self.__final_time_name: self.input_data.get(
                 self.__final_time_name, float(times[-1])
             ),
             **mapping_initial_state,
@@ -324,12 +324,12 @@ class ODEDiscipline(Discipline):
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         mapping_parameters = {
-            k: self.local_data[k] for k in self.__design_variables_names
+            k: self.input_data[k] for k in self.__design_variables_names
         }
         self._ode_problem.update_times(
-            initial_time=self.local_data.get(self.__initial_time_name, None),
-            final_time=self.local_data.get(self.__final_time_name, None),
-            times=self.local_data.get(self.__TIMES, None),
+            initial_time=self.input_data.get(self.__initial_time_name, None),
+            final_time=self.input_data.get(self.__final_time_name, None),
+            times=self.input_data.get(self.__TIMES, None),
         )
 
         self._rhs_discipline.default_input_data.update(mapping_parameters)

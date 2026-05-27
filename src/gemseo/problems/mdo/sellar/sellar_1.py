@@ -97,10 +97,10 @@ class Sellar1(BaseSellar):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        input_data = self.io.data
+        input_data = self.io.input_data
         x_shared = input_data[X_SHARED]
         x_1 = input_data[X_1]
-        y_1 = input_data[Y_1]
+        y_1 = self.io.output_data[Y_1]
         y_2 = input_data[Y_2]
         gamma = input_data[GAMMA]
         n_samples = 1

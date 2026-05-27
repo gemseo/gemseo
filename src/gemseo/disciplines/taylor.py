@@ -93,7 +93,7 @@ class TaylorDiscipline(Discipline):
         }
         self.io.input_grammar.defaults = {k: input_data[k] for k in input_names}
         self.__offset = {}
-        data = discipline.io.data
+        data = discipline.io.output_data
         input_defaults = self.io.input_grammar.defaults
         output_defaults = self.io.output_grammar.defaults
         for output_name in output_names:

@@ -114,7 +114,7 @@ class Sellar2(BaseSellar):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        input_data = self.io.data
+        input_data = self.io.input_data
         x_shared = input_data[X_SHARED]
         x_2 = input_data[X_2]
         y_1 = input_data[Y_1]

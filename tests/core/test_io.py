@@ -63,39 +63,59 @@ def test_prepare_input_data_returns_copy_of_defaults(io: IO):
     del prepared_data["input"]
     assert "input" in io.input_grammar.defaults
 
-
-def test_prepare_input_data_drops_alien_items(io: IO):
-    """Verify ``prepare_input_data`` drops items not in the input grammar."""
-    io.input_grammar.update_from_data({"input": 0})
-    prepared = io.prepare_input_data({"input": 0, "dummy": 0})
-    assert prepared == {"input": 0}
+    # Items with defaults are passed.
+    prepared_data = io.prepare_input_data({"input": [0]})
+    assert prepared_data == {"input": [0]}
 
 
-def test_prepare_input_data_completes_with_defaults(io: IO):
-    """Verify ``prepare_input_data`` completes missing items with defaults."""
-    io.input_grammar.update_from_data({"with_default": 0, "without_default": 0})
-    io.input_grammar.defaults.update({"with_default": 1})
-    prepared = io.prepare_input_data({"without_default": 2})
-    assert prepared == {"with_default": 1, "without_default": 2}
+def test_input_output_data_attributes(io: IO):
+    """`input_data` and `output_data` are public, mutable stores."""
+    assert isinstance(io.input_data, DisciplineData)
+    assert isinstance(io.output_data, DisciplineData)
+    assert not io.input_data
+    assert not io.output_data
 
 
-def test_prepare_input_data_overrides_defaults(io: IO):
-    """Verify ``prepare_input_data`` overrides defaults with passed items."""
-    io.input_grammar.update_from_data({"input": 0})
-    io.input_grammar.defaults.update({"input": 0})
-    assert io.prepare_input_data({"input": 1}) == {"input": 1}
+def test_io_get_helper(io: IO):
+    """`IO.get(name)` reads from input first, then output."""
+    io.input_data["a"] = 1
+    io.output_data["b"] = 2
+    io.output_data["a"] = 99  # overlap: input wins
+    assert io.get("a") == 1
+    assert io.get("b") == 2
+    with pytest.raises(KeyError):
+        io.get("missing")
 
 
-def test_data_default_is_empty(io: IO):
-    """Verify the default ``data`` is empty."""
-    assert not io.data
+def test_data_deprecation_get(io: IO):
+    """Reading the deprecated `data` returns the union and warns."""
+    io.input_data["i"] = 1
+    io.output_data["o"] = 2
+    io.output_data["i"] = 9  # overlap: output wins on read
+    with pytest.warns(DeprecationWarning, match="IO.data"):
+        merged = io.data
+    assert merged == {"i": 9, "o": 2}
 
 
-def test_data_setter_wraps_in_discipline_data(io: IO):
-    """Verify the ``data`` setter wraps the value in a ``DisciplineData``."""
-    io.data = {0: 0}
-    assert io.data == {0: 0}
-    assert isinstance(io.data, DisciplineData)
+def test_data_deprecation_set(io: IO):
+    """Setting the deprecated `data` routes by grammar and warns."""
+    io.input_grammar.update_from_data({"i": 0})
+    io.output_grammar.update_from_data({"o": 0})
+    with pytest.warns(DeprecationWarning, match="IO.data"):
+        io.data = {"i": 1, "o": 2, "extra": 3}
+    assert io.input_data == {"i": 1}
+    assert io.output_data == {"o": 2, "extra": 3}
+
+
+def test_data(io: IO):
+    """Backwards-compatible round-trip through the deprecated `data` property."""
+    with pytest.warns(DeprecationWarning, match="IO.data"):
+        assert not io.data
+
+    with pytest.warns(DeprecationWarning, match="IO.data"):
+        io.data = {0: 0}
+    with pytest.warns(DeprecationWarning, match="IO.data"):
+        assert io.data == {0: 0}
 
 
 def assert_get_io_data(io: IO, attr_naming: str) -> None:
@@ -107,15 +127,18 @@ def assert_get_io_data(io: IO, attr_naming: str) -> None:
     grammar.update_from_data(data)
 
     # Without namespace.
-    # Add an item not in the grammar.
-    io.data.update({**data, "dummy": 0})
+    # After the structural split, the store only contains grammar-routed keys,
+    # so the getter simply copies the store as-is.
+    store = getattr(io, f"{attr_naming}_data")
+    store.update(data)
     assert get_io_data() == data
 
     # With namespace.
+    store.clear()
     grammar.add_namespace("name", "n")
     assert not get_io_data()
     data_with_ns = {"n:name": 0}
-    io.data.update({**data_with_ns, "dummy": 0})
+    store.update(data_with_ns)
     assert get_io_data() == data_with_ns
     assert get_io_data(with_namespaces=False) == data
 
@@ -130,27 +153,41 @@ def test_get_output_data(io: IO):
     assert_get_io_data(io, "output")
 
 
-def test_update_output_data_filters_non_outputs(io: IO):
-    """Verify ``update_output_data`` ignores items not in the output grammar."""
-    io.output_grammar.update_from_data({"output": 0})
-    io.update_output_data({"input": 0, "dummy": 0, "output": 0})
-    assert io.data == {"output": 0}
+def test_update_output_data(io: IO):
+    """`update_output_data` writes to `_output_data` only — no mirror."""
+    io.input_grammar.update_from_data({"input": 0})
+    io.output_grammar.update_from_data({"output1": 0, "output2": 0})
+
+    # Without namespace.
+    assert not io.output_data
+    io.update_output_data({"input": 0, "dummy": 0, "output1": 0})
+    assert io.output_data == {"output1": 0}
+    # Input store is untouched even if `input` is in the payload.
+    assert not io.input_data
+
+    # With namespace.
+    io.output_data.clear()
+    io.output_grammar.add_namespace("output1", "n")
+    io.update_output_data({"input": 0, "dummy": 0, "output1": 0})
+    assert io.output_data == {"n:output1": 0}
 
 
-def test_update_output_data_handles_namespaces(io: IO):
-    """Verify ``update_output_data`` prefixes the namespace to namespaced outputs."""
-    io.output_grammar.update_from_data({"output": 0})
-    io.output_grammar.add_namespace("output", "n")
-    io.update_output_data({"output": 0})
-    assert io.data == {"n:output": 0}
+def test_update_output_data_no_mirror_for_auto_coupled():
+    """Auto-coupled keys land in `_output_data` only after `update_output_data`."""
+    io = IO(type, "io", GrammarType.SIMPLE)
+    # Make `y` an auto-coupled name (present in both grammars).
+    io.input_grammar.update_from_data({"y": 0.0})
+    io.output_grammar.update_from_data({"y": 0.0})
 
+    io.initialize({"y": 1.0}, validate=False)
+    assert io.input_data == {"y": 1.0}
+    assert io.output_data == {}
 
-def test_update_output_data_keeps_already_namespaced_keys(io: IO):
-    """Verify ``update_output_data`` accepts already-namespaced keys as-is."""
-    io.output_grammar.update_from_data({"output": 0})
-    io.output_grammar.add_namespace("output", "n")
-    io.update_output_data({"n:output": 1})
-    assert io.data == {"n:output": 1}
+    io.update_output_data({"y": 2.0})
+    # Output side is updated.
+    assert io.output_data == {"y": 2.0}
+    # Input side retains its pre-execution snapshot — explicit no-mirror policy.
+    assert io.input_data == {"y": 1.0}
 
 
 class Processor(DataProcessor):
@@ -177,34 +214,39 @@ def test_initialize(io: IO, snapshot):
 
     validate = False
     io.initialize({"dummy": 0}, validate)
-    assert io.data == {"dummy": 0}
+    assert io.input_data == {"dummy": 0}
+    assert not io.output_data
     io.initialize({"input": 0}, validate)
-    assert io.data == {"input": 0}
+    assert io.input_data == {"input": 0}
+    assert not io.output_data
 
     validate = True
     io.initialize({"input": 0}, validate)
-    assert io.data == {"input": 0}
+    assert io.input_data == {"input": 0}
 
     with assert_exception(InvalidDataError, snapshot):
         io.initialize({}, validate)
 
-    assert io.data == {"input": 0}
+    assert io.input_data == {"input": 0}
 
 
 def test_finalize(io: IO, snapshot):
     io.input_grammar.update_from_data({"input": 0})
     io.output_grammar.update_from_data({"output": 0})
 
-    io.data = {"dummy": 0, "input": 0, "output": 0}
+    io.input_data.update({"dummy": 0, "input": 0})
+    io.output_data.update({"output": 0})
     io.finalize(False)
     io.finalize(True)
-    assert io.data == {"dummy": 0, "input": 0, "output": 0}
+    assert io.input_data == {"dummy": 0, "input": 0}
+    assert io.output_data == {"output": 0}
 
-    # Check validation.
-    io.data = {"dummy": 0, "input": "0", "output": "0"}
+    # Check validation: invalid output type.
+    io.output_data.clear()
+    io.output_data.update({"output": "0"})
     with assert_exception(InvalidDataError, snapshot):
         io.finalize(True)
-    assert io.data == {"dummy": 0, "input": "0", "output": "0"}
+    assert io.output_data == {"output": "0"}
 
 
 def test_initialize_finalize_data_processor(snapshot):
@@ -218,7 +260,8 @@ def test_initialize_finalize_data_processor(snapshot):
     # x = 1 after pre-processing
     # y = 3 after _run
     # y = 2 after post-processing
-    assert discipline.io.data == {"x": array([0.0]), "y": array([2.0])}
+    assert discipline.input_data == {"x": array([0.0])}
+    assert discipline.output_data == {"y": array([2.0])}
 
     # Raises an InvalidDataError when passing scalar input data.
     with assert_exception(InvalidDataError, snapshot):
@@ -280,3 +323,31 @@ def test_set_linear_relationships_error(io: IO, snapshot):
 
     with assert_exception(ValueError, snapshot):
         io.set_linear_relationships((), ("dummy",))
+
+
+def test_legacy_pickle_upgrade():
+    """`IO.__setstate__` rebuilds the two stores from a legacy `_data` state."""
+    io = IO(type, "io", GrammarType.SIMPLE)
+    io.input_grammar.update_from_data({"i": 0})
+    io.output_grammar.update_from_data({"o": 0, "y": 0})
+    io.input_grammar.update_from_data({"y": 0})  # auto-coupled
+
+    state = io.__dict__.copy()
+    # Remove the new keys, add a legacy `_data` key.
+    state.pop("input_data")
+    state.pop("output_data")
+    state["_data"] = {"i": 1, "o": 2, "y": 3, "extra": 4}
+
+    new_io = IO(type, "io", GrammarType.SIMPLE)
+    new_io.__setstate__(state)
+
+    # Pure input goes to input store.
+    assert new_io.input_data["i"] == 1
+    assert "o" not in new_io.input_data
+    # Pure output goes to output store.
+    assert new_io.output_data["o"] == 2
+    # Auto-coupled appears in both.
+    assert new_io.input_data["y"] == 3
+    assert new_io.output_data["y"] == 3
+    # Non-grammar key lands in output store.
+    assert new_io.output_data["extra"] == 4

@@ -510,7 +510,7 @@ def test_linearize_errors(snapshot) -> None:
             self.io.output_grammar.update_from_names(["y"])
 
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-            self.io.data["y"] = array([2.0])
+            self.io.output_data["y"] = array([2.0])
 
         def _compute_jacobian(self, input_names=(), output_names=()) -> None:
             self._init_jacobian()
@@ -522,7 +522,7 @@ def test_linearize_errors(snapshot) -> None:
     with pytest.raises(ValueError):
         d2.linearize({"x": array([1])}, compute_all_jacobians=True)
 
-    d2.io.data["y"] = 1
+    d2.io.output_data["y"] = 1
     with assert_exception(ValueError, snapshot):
         d2._check_jacobian_shape(["x"], ["y"])
 
@@ -597,7 +597,7 @@ def test_check_jacobian_2() -> None:
             self.jac_len = 2
 
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-            self.io.data["y"] = array([2.0])
+            self.io.output_data["y"] = array([2.0])
 
         def _compute_jacobian(self, input_names=(), output_names=()) -> None:
             self._init_jacobian()
@@ -665,7 +665,7 @@ def test_execute_rerun_errors(enable_discipline_status) -> None:
 
     class MyDisc(Discipline):
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-            self.io.data["b"] = array([1.0])
+            self.io.output_data["b"] = array([1.0])
 
     d = MyDisc()
     d.io.input_grammar.update_from_names(["a"])
@@ -1275,7 +1275,7 @@ class DisciplineWithPaths(Discipline):
         self.local_path = Path()
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self.io.data["out_path"] = self.io.data["path"]
+        self.io.output_data["out_path"] = self.io.input_data["path"]
 
 
 def __is_path_correct(local_path: Path | PurePosixPath | PureWindowsPath) -> None:
@@ -1302,8 +1302,8 @@ def test_path_serialization(tmp_path) -> None:
     deserialized = from_pickle(disc_path)
 
     assert isinstance(deserialized.local_path, Path)
-    assert isinstance(deserialized.io.data["path"], Path)
-    assert isinstance(deserialized.io.data["out_path"], Path)
+    assert isinstance(deserialized.io.input_data["path"], Path)
+    assert isinstance(deserialized.io.output_data["out_path"], Path)
 
     for local_path in [
         discipline.__getstate__()["local_path"],

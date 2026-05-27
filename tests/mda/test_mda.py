@@ -308,7 +308,10 @@ def test_log_convergence(base_mda_solver, caplog) -> None:
     caplog.set_level(logging.INFO)
 
     base_mda_solver._set_resolved_variables(["y_1", "y_2"])
-    base_mda_solver.io.data.update({"y_1": array([1.0]), "y_2": array([1.0])})
+    base_mda_solver.io.output_data.update({
+        "y_1": array([1.0]),
+        "y_2": array([1.0]),
+    })
     base_mda_solver._compute_residuals({"y_1": array([2.0]), "y_2": array([1.0])})
 
     base_mda_solver.settings.log_convergence = False
@@ -438,10 +441,13 @@ class LinearImplicitDiscipline(Discipline):
         self.io.input_grammar.defaults = {k: 0.5 * ones(size) for k in input_names}
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        a = input_data["a"]
         if self.io.state_equations_are_solved:
-            self.io.data["w"] = solve(self.mat, self.io.data["a"])
-
-        self.io.data["r"] = self.mat.dot(self.io.data["w"]) - self.io.data["a"]
+            w = solve(self.mat, a)
+        else:
+            w = input_data["w"]
+        self.io.output_data["w"] = w
+        self.io.output_data["r"] = self.mat.dot(w) - a
 
     def _compute_jacobian(
         self,

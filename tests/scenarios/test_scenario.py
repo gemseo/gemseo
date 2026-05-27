@@ -574,7 +574,7 @@ def complex_step_scenario() -> MDOScenario:
             self.io.output_grammar.update_from_names(["y"])
 
         def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-            self.io.data["y"] = self.io.data["x"]
+            return {"y": input_data["x"]}
 
     scenario = MDOScenario([MyDiscipline()], design_space)
     scenario.add_objective("y")

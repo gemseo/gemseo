@@ -43,8 +43,8 @@ def test_integer_casting(base_mda_solver):
     """Tests residual computation with integers."""
     base_mda_solver._set_resolved_variables(["y_1", "y_2"])
 
-    base_mda_solver.io.data["y_1"] = array([2], dtype=int32)
-    base_mda_solver.io.data["y_2"] = array([2.0])
+    base_mda_solver.io.output_data["y_1"] = array([2], dtype=int32)
+    base_mda_solver.io.output_data["y_2"] = array([2.0])
 
     base_mda_solver._compute_residuals({"y_1": array([1.0]), "y_2": array([1.0])})
 

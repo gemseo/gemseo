@@ -94,22 +94,20 @@ class DictSellarBase(Discipline):
 class DictSellar1(DictSellarBase):
     """The first Sellar discipline with dictionaries as inputs/outputs."""
 
-    _INPUT_NAMES: ClassVar[tuple[str]] = (X_1, X_SHARED, Y_2)
+    _INPUT_NAMES: ClassVar[tuple[str, ...]] = (X_1, X_SHARED, Y_2)
 
     _OUTPUT_NAMES: ClassVar[tuple[str]] = (Y_1,)
 
     NAME: str = "DictSellar1"
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x_1 = self.io.data[X_1][X_1]
-        x_shared = self.io.data[X_SHARED][X_SHARED]
-        y_2 = self.io.data[Y_2][Y_2]
-
-        y_1 = x_shared[0] ** 2 + x_shared[1] + x_1 - 0.2 * y_2
-        self.io.data[Y_1] = {Y_1: y_1}
+        x_1 = input_data[X_1][X_1]
+        x_shared = input_data[X_SHARED][X_SHARED]
+        y_2 = input_data[Y_2][Y_2]
+        return {Y_1: {Y_1: x_shared[0] ** 2 + x_shared[1] + x_1 - 0.2 * y_2}}
 
     def _compute_jacobian(self, input_names, output_names) -> None:
-        x_shared = self.io.data[X_SHARED][X_SHARED]
+        x_shared = self.io.input_data[X_SHARED][X_SHARED]
 
         self.jac = {name: {} for name in self._OUTPUT_NAMES}
         jac = self.jac[Y_1]
@@ -122,21 +120,19 @@ class DictSellar1(DictSellarBase):
 class DictSellar2(DictSellarBase):
     """The second Sellar discipline with dictionaries as inputs/outputs."""
 
-    _INPUT_NAMES: ClassVar[tuple[str]] = (X_SHARED, Y_1)
+    _INPUT_NAMES: ClassVar[tuple[str, ...]] = (X_SHARED, Y_1)
 
     _OUTPUT_NAMES: ClassVar[tuple[str]] = (Y_2,)
 
     NAME: str = "DictSellar2"
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x_shared = self.io.data[X_SHARED][X_SHARED]
-        y_1 = self.io.data[Y_1][Y_1]
-
-        y_2 = sqrt(abs(y_1)) + x_shared[0] + x_shared[1]
-        self.io.data[Y_2] = {Y_2: y_2}
+        x_shared = input_data[X_SHARED][X_SHARED]
+        y_1 = input_data[Y_1][Y_1]
+        return {Y_2: {Y_2: sqrt(abs(y_1)) + x_shared[0] + x_shared[1]}}
 
     def _compute_jacobian(self, input_names, output_names) -> None:
-        y_1 = self.io.data[Y_1][Y_1]
+        y_1 = self.io.input_data[Y_1][Y_1]
         self.jac = {name: {} for name in self._OUTPUT_NAMES}
         jac = self.jac[Y_2]
         jac[X_SHARED] = array([[1, 1]]).T

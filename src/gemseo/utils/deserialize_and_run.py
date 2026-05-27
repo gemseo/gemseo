@@ -113,7 +113,7 @@ def _execute_discipline(
         discipline.add_differentiated_inputs(linearize_inputs)
         discipline.add_differentiated_outputs(linearize_outputs)
         jac = discipline.linearize(input_data, execute=parsed_args.execute_at_linearize)
-        data = discipline.io.data
+        data = discipline.io.output_data
     else:
         data = discipline.execute(input_data)
         jac = {} if not discipline._has_jacobian else discipline.jac

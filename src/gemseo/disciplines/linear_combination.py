@@ -121,7 +121,7 @@ class LinearCombination(Discipline):
         self._init_jacobian(
             input_names, output_names, init_type=self.InitJacobianType.SPARSE
         )
-        identity = eye(self.io.data[self.__output_name].size, format="csr")
+        identity = eye(self.io.output_data[self.__output_name].size, format="csr")
 
         jac = self.jac[self.__output_name]
         for input_name in self.io.input_grammar:

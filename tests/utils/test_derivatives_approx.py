@@ -282,12 +282,12 @@ class ToyDiscipline(Discipline):
         self.dtype = dtype
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self.io.data["y1"] = self.io.data["x1"] + 2 * self.io.data["x2"][0]
-        self.io.data["y2"] = array([
-            self.io.data["x1"] + 2 * self.io.data["x2"][0] + 3 * self.io.data["x2"][1],
-            2 * self.io.data["x1"]
-            + 4 * self.io.data["x2"][0]
-            + 6 * self.io.data["x2"][1],
+        x1 = input_data["x1"]
+        x2 = input_data["x2"]
+        self.io.output_data["y1"] = x1 + 2 * x2[0]
+        self.io.output_data["y2"] = array([
+            x1 + 2 * x2[0] + 3 * x2[1],
+            2 * x1 + 4 * x2[0] + 6 * x2[1],
         ])
 
     def _compute_jacobian(self, input_names=(), output_names=()) -> None:

@@ -19,6 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import NamedTuple
 
+from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
@@ -32,7 +33,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
     from gemseo.typing import JacobianData
 
@@ -40,15 +40,16 @@ if TYPE_CHECKING:
 class _WorkerData(NamedTuple):
     """The computed data of a worker (discipline)."""
 
-    io_data: DisciplineData
+    input_data: DisciplineData
+    output_data: DisciplineData
     jacobian: JacobianData
 
 
 class _Functor:
     """A functor to call a discipline linearization.
 
-    When called, the `Discipline.io.data` and `Discipline.jac`
-    are returned.
+    When called, the `Discipline.io.input_data`, `Discipline.io.output_data`
+    and `Discipline.jac` are returned.
     """
 
     def __init__(self, discipline: Discipline, execute: bool = True) -> None:
@@ -75,7 +76,11 @@ class _Functor:
             The discipline input, output and Jacobian data.
         """  # noqa:D205 D212 D415
         jacobian = self.__disc.linearize(inputs, execute=self.__execute)
-        return _WorkerData(self.__disc.io.data, jacobian)
+        return _WorkerData(
+            self.__disc.io.input_data,
+            self.__disc.io.output_data,
+            jacobian,
+        )
 
 
 class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _WorkerData]):
@@ -134,14 +139,15 @@ class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _Worker
             if output_0 is not None:
                 disc_0 = self._disciplines[0]
                 if len(self._disciplines) == 1:
-                    disc_0.io.data = output_0.io_data
+                    disc_0.io.input_data = DisciplineData(output_0.input_data)
+                    disc_0.io.output_data = DisciplineData(output_0.output_data)
                     disc_0.jac = output_0.jacobian
                 if (
                     not self.use_threading
                     and self.MULTI_PROCESSING_START_METHOD
                     == self.MultiProcessingStartMethod.SPAWN
                     and ExecutionStatistics.is_enabled
-                    and output_0.io_data
+                    and output_0.output_data
                 ):
                     # Only increase the number of calls if the Jacobian was computed.
                     disc_0.execution_statistics.n_executions += len(inputs)  # type: ignore[operator] # checked with activate_counter
@@ -152,7 +158,8 @@ class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _Worker
                 # We do not update the data such that the issue is caught by the
                 # output grammar.
                 if output is not None:
-                    disc.io.data = output.io_data
+                    disc.io.input_data = DisciplineData(output.input_data)
+                    disc.io.output_data = DisciplineData(output.output_data)
                     disc.jac = output.jacobian
 
         return [out.jacobian for out in ordered_outputs if out is not None or None]

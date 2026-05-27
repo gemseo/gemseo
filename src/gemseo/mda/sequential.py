@@ -78,7 +78,9 @@ class MDASequential(BaseMDA):
             self.residual_history = []
 
         for mda in self.mda_sequence:
-            self.io.data = mda.execute(self.io.data)
+            output = mda.execute(self.io.get_merged_data())
+            self.io.output_data.update(output)
+            self.io.propagate_to_input(output)
 
             self.residual_history += mda.residual_history
             self._normalized_residual_norm = mda._normalized_residual_norm

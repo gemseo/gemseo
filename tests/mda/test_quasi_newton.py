@@ -107,7 +107,7 @@ def test_broyden_sellar2() -> None:
     mda.reset_history_each_run = True
     mda.execute()
 
-    assert mda.io.data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
+    assert mda.io.output_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
 
 
 def test_self_coupled() -> None:

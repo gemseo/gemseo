@@ -88,14 +88,14 @@ def test_analytic_disc_ns(grammar_type, use_defaults) -> None:
     assert sorted(disc_ns.io.input_grammar) == ["ns:x", "u"]
     assert sorted(disc_ns.io.input_grammar.names_without_namespace) == ["u", "x"]
 
-    outs_ref = disc.execute({"x": array([1.0])})
+    disc.execute({"x": array([1.0])})
     if use_defaults:
         assert "ns:x" in disc_ns.io.input_grammar.defaults
-        outs_ns = disc_ns.execute()
+        disc_ns.execute()
     else:
-        outs_ns = disc_ns.execute({"ns:x": array([1.0])})
+        disc_ns.execute({"ns:x": array([1.0])})
 
-    assert outs_ref["x"] == outs_ns["ns:x"]
+    assert disc.input_data["x"] == disc_ns.input_data["ns:x"]
 
 
 def test_chain_disc_ns(grammar_type) -> None:
