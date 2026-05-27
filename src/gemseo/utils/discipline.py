@@ -27,7 +27,6 @@ from pandas import read_csv
 from pandas import read_excel
 from prettytable import PrettyTable
 
-from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.data_processor import NameMapping
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.process_discipline import ProcessDiscipline
@@ -42,34 +41,12 @@ if TYPE_CHECKING:
     from pandas import DataFrame
     from typing_extensions import Self
 
+    from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.formulations.base import BaseFormulation
     from gemseo.scenarios.mdo import MDOScenario
     from gemseo.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
-
-
-# TODO: try to keep only one of these two dummy disciplines
-class DummyBaseDiscipline(BaseDiscipline):
-    """A dummy base discipline that does nothing."""
-
-    def __init__(
-        self,
-        name: str = "",
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-    ) -> None:
-        """
-        Args:
-            input_names: The names of the input variables, if any.
-            output_names: The names of the output variables, if any.
-        """  # noqa: D205 D212 D415
-        super().__init__(name=name)
-        self.io.input_grammar.update_from_names(input_names)
-        self.io.output_grammar.update_from_names(output_names)
-
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        pass  # pragma: no cover
 
 
 class DummyDiscipline(Discipline):
