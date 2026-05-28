@@ -77,11 +77,11 @@ def test_input_output_data_attributes(io: IO):
 
 
 def test_io_get_helper(io: IO):
-    """`IO.get(name)` reads from input first, then output."""
+    """`IO.get(name)` reads from output first, then input."""
     io.input_data["a"] = 1
     io.output_data["b"] = 2
-    io.output_data["a"] = 99  # overlap: input wins
-    assert io.get("a") == 1
+    io.output_data["a"] = 99  # overlap: output wins, matching get_merged_data
+    assert io.get("a") == 99
     assert io.get("b") == 2
     with pytest.raises(KeyError):
         io.get("missing")

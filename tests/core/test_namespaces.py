@@ -68,6 +68,8 @@ def test_split_namespace() -> None:
     assert split_namespace("bar") == ["bar"]
     assert split_namespace("ns:") == ["ns", ""]
     assert split_namespace(":bar") == ["", "bar"]
+    # Split on the last separator only: the namespace may itself be nested.
+    assert split_namespace("my:namespace:a") == ["my:namespace", "a"]
 
 
 @pytest.fixture(params=[Discipline.GrammarType.SIMPLE, Discipline.GrammarType.JSON])

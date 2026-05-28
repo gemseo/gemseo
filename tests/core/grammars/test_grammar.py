@@ -680,6 +680,13 @@ def test_add_namespace(grammar, snapshot) -> None:
     with assert_exception(ValueError, snapshot):
         grammar.add_namespace("n:x", "")
 
+    # The reported namespace must be correct even when it shares characters
+    # with the variable name (regression: a char-set strip returned '').
+    grammar.update_from_types({"abc": int})
+    grammar.add_namespace("abc", "cab")
+    with assert_exception(ValueError, snapshot):
+        grammar.add_namespace("cab:abc", "x")
+
 
 def test_has_names(grammar):
     """Check has_names."""

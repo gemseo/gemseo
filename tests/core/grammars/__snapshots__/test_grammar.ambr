@@ -8,6 +8,9 @@
 # name: test_add_namespace[JSONGrammar].2
   "The variable 'x' already has a namespace ('n')."
 # ---
+# name: test_add_namespace[JSONGrammar].3
+  "The variable 'abc' already has a namespace ('cab')."
+# ---
 # name: test_add_namespace[PydanticGrammar]
   '"The name \'dummy\' is not in the grammar."'
 # ---
@@ -16,6 +19,9 @@
 # ---
 # name: test_add_namespace[PydanticGrammar].2
   "The variable 'x' already has a namespace ('n')."
+# ---
+# name: test_add_namespace[PydanticGrammar].3
+  "The variable 'abc' already has a namespace ('cab')."
 # ---
 # name: test_add_namespace[SimpleGrammar]
   '"The name \'dummy\' is not in the grammar."'
@@ -26,6 +32,9 @@
 # name: test_add_namespace[SimpleGrammar].2
   "The variable 'x' already has a namespace ('n')."
 # ---
+# name: test_add_namespace[SimpleGrammar].3
+  "The variable 'abc' already has a namespace ('cab')."
+# ---
 # name: test_add_namespace[SimplerGrammar]
   '"The name \'dummy\' is not in the grammar."'
 # ---
@@ -34,6 +43,9 @@
 # ---
 # name: test_add_namespace[SimplerGrammar].2
   "The variable 'x' already has a namespace ('n')."
+# ---
+# name: test_add_namespace[SimplerGrammar].3
+  "The variable 'abc' already has a namespace ('cab')."
 # ---
 # name: test_delitem_error[JSONGrammar]
   '"The name \'foo\' is not in the grammar."'

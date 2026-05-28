@@ -274,10 +274,12 @@ class IO:
                 self.input_data[name] = value
 
     def get(self, name: str) -> Any:
-        """Return the value of `name` from the input or output data.
+        """Return the value of `name` from the output or input data.
 
-        The input store is searched first; if `name` is absent, the output
-        store is searched.
+        The output store is searched first; if `name` is absent, the input
+        store is searched. This matches the override semantics of
+        [get_merged_data][gemseo.core.discipline.io.IO.get_merged_data],
+        where output values take precedence over input values on overlap.
 
         Args:
             name: The name of the variable.
@@ -288,9 +290,9 @@ class IO:
         Raises:
             KeyError: If `name` is in neither store.
         """
-        if name in self.input_data:
-            return self.input_data[name]
-        return self.output_data[name]
+        if name in self.output_data:
+            return self.output_data[name]
+        return self.input_data[name]
 
     @staticmethod
     def __strip_namespaces(data: dict[str, Any], grammar: BaseGrammar) -> None:
@@ -302,7 +304,8 @@ class IO:
         """
         if grammar.to_namespaced:
             for key in tuple(data.keys()):
-                data[key.rsplit(namespaces_separator, 1)[-1]] = data.pop(key)
+                if namespaces_separator in key:
+                    data[key.rsplit(namespaces_separator, 1)[-1]] = data.pop(key)
 
     def get_input_data(self, with_namespaces: bool = True) -> dict[str, Any]:
         """Return the items of the data that are inputs.
