@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 import operator
-from collections.abc import Generator
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import NamedTuple
@@ -36,7 +35,6 @@ from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
 
 if TYPE_CHECKING:
     from collections.abc import Generator
-    from typing import Any
 
     from gemseo.core.discipline.discipline import Discipline
 
