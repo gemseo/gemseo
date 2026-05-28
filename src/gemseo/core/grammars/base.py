@@ -33,6 +33,7 @@ from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.properties import GrammarProperties
 from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.core.namespaces import namespaces_separator
+from gemseo.core.namespaces import split_namespace
 from gemseo.core.namespaces import update_namespaces
 from gemseo.typing import StrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -643,7 +644,7 @@ class BaseGrammar(
 
         if namespaces_separator in name:
             original_name = self.from_namespaced[name]
-            ns = name.strip(original_name).strip(namespaces_separator)
+            ns = split_namespace(name)[0]
             msg = f"The variable {original_name!r} already has a namespace ({ns!r})."
             raise ValueError(msg)
 

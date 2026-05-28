@@ -59,7 +59,7 @@ def split_namespace(name: str) -> list[str]:
     Returns:
         The namespace name and the data name.
     """
-    return name.rsplit(namespaces_separator, -1)
+    return name.rsplit(namespaces_separator, 1)
 
 
 def remove_prefix(names: Iterable[str]) -> Iterator[str]:

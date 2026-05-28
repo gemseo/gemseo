@@ -150,7 +150,7 @@ def test_double_mission_chain() -> None:
     chain.execute()
     mission = SobieskiMission()
     mission.execute()
-    assert allclose(chain.io.data["y_4"], mission.io.data["y_4"] * 2.0)
+    assert allclose(chain.io.output_data["y_4"], mission.io.output_data["y_4"] * 2.0)
 
     # Check the output Jacobian
     chain.check_jacobian(threshold=1e-5)
@@ -243,8 +243,8 @@ def test_virtual_exe_chain(two_virtual_disciplines) -> None:
     """Test a chain with disciplines in virtual execution mode."""
     chain = DisciplineChain(two_virtual_disciplines)
     chain.execute()
-    assert chain.io.data["z"] == 4.0
-    assert chain.io.data["y"] == 2.0
+    assert chain.io.output_data["z"] == 4.0
+    assert chain.io.output_data["y"] == 2.0
 
 
 def test_jacobian_of_chain_including_splitter() -> None:
