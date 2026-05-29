@@ -18,6 +18,12 @@ search:
 
 ## Introduction { #concept-introduction }
 
+The logging configuration applies to GEMSEO and its plugins only (any logger whose name starts with `gemseo_`).
+By default, it does not configure the root logger nor the loggers of client code or third-party libraries,
+in line with the [Python recommendation for library logging](https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library).
+To see logs from your own code, configure your own loggers, for instance with [`logging.basicConfig`](https://docs.python.org/3/library/logging.html#logging.basicConfig),
+or set `logging.configure_root_logger = True` to let GEMSEO configure the root logger as well.
+
 ## Default configuration { #concept-default-configuration }
 
 <!-- TODO: replace by automatic print of pydantic model. -->
@@ -80,6 +86,7 @@ The global configuration can also be changed using one of these environment vari
 - GEMSEO_ENABLE_FUNCTION_STATISTICS,
 - GEMSEO_ENABLE_PARALLEL_EXECUTION,
 - GEMSEO_ENABLE_PROGRESS_BAR,
+- GEMSEO_LOGGING_CONFIGURE_ROOT_LOGGER
 - GEMSEO_LOGGING_DATE_FORMAT
 - GEMSEO_LOGGING_ENABLE
 - GEMSEO_LOGGING_LEVEL
@@ -101,6 +108,7 @@ GEMSEO_ENABLE_DISCIPLINE_STATUS = False
 GEMSEO_ENABLE_FUNCTION_STATISTICS = False
 GEMSEO_ENABLE_PARALLEL_EXECUTION = True
 GEMSEO_ENABLE_PROGRESS_BAR = True
+GEMSEO_LOGGING_CONFIGURE_ROOT_LOGGER = False
 GEMSEO_LOGGING_DATE_FORMAT = %H:%M:%S
 GEMSEO_LOGGING_ENABLE = False
 GEMSEO_LOGGING_LEVEL = 20

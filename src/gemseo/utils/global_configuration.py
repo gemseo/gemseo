@@ -51,6 +51,7 @@ class GlobalConfiguration(
     BaseSettings,
     validate_assignment=True,
     env_nested_delimiter="_",
+    env_nested_max_split=1,
     env_prefix="GEMSEO_",
     env_file=".env",
     extra="ignore",

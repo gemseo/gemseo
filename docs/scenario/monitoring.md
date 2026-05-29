@@ -61,6 +61,9 @@ scenario = create_scenario(
 
 The simplest way to monitor a change in the statuses of the disciplines is to log them in the console or in a file using GEMSEO's logger.
 Use `from gemseo import configuration` and set the [configuration.logging][gemseo.utils.logging.LoggingConfiguration] attribute to configure GEMSEO logging.
+See [Global configuration][concept-global-configuration] for the scope of the logging configuration
+(GEMSEO loggers only by default)
+and how to also configure the root logger via `configure_root_logger`.
 
 The method [xdsmize()][gemseo.scenarios.mdo.MDOScenario.xdsmize] of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] can be used to this aim (`monitor=True`).
 If the option `save_html` is set to `True`, a self-contained HTML file will be generated.
