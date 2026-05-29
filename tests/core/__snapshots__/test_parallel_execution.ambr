@@ -1,4 +1,22 @@
 # serializer version: 1
+# name: test_callback_error
+  "'str' object is not callable"
+# ---
+# name: test_check_method_in_init
+  'The multiprocessing start method fork cannot be used on the Windows platform. Only spawn is available.'
+# ---
+# name: test_disc_parallel_threading_proc
+  'When using multithreading, all workers shall be different objects.'
+# ---
 # name: test_re_raise_exceptions[exceptions1-True]
   'Undefined'
+# ---
+# name: test_task_submitted_callback_error
+  "'str' object is not callable"
+# ---
+# name: test_uninitialized_worker_sentinel
+  'The worker task callables are not initialized; _init_worker did not run in this worker.'
+# ---
+# name: test_worker_count_mismatch_raises
+  'list index out of range'
 # ---
