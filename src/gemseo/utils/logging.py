@@ -33,7 +33,6 @@ from pathlib import Path
 from sys import stderr
 from sys import stdout
 from typing import TYPE_CHECKING
-from typing import Final
 from typing import TypeVar
 
 from pydantic import BaseModel
@@ -53,14 +52,25 @@ if TYPE_CHECKING:
     from _typeshed import SupportsWrite
     from typing_extensions import Self
 
-_GEMSEO_LOGGER: Final[Logger] = getLogger("gemseo")
-"""The GEMSEO's logger."""
-
 _StreamT = TypeVar("_StreamT", bound="SupportsWrite[str]")
 
 
 class LoggingConfiguration(BaseModel, validate_assignment=True):
-    """The configuration for GEMSEO loggers."""
+    """The configuration for GEMSEO loggers.
+
+    See [Global configuration][global-configuration] for the scope of the logging
+    configuration and how to configure logs from client code.
+    """
+
+    configure_root_logger: bool = Field(
+        default=False,
+        description="""Whether to also configure the root logger.
+
+When `True`,
+the root logger is configured with the same handlers, level and formatting
+as the GEMSEO loggers,
+so that logs from client code and third-party libraries are emitted too.""",
+    )
 
     date_format: str = Field(
         default=_LOGGING_DATE_FORMAT,
@@ -101,24 +111,34 @@ Values can either be
     def __validate(self) -> Self:
         """Create the logger."""
         # Configure the loggers for GEMSEO and its plugins.
-        # Do not configure the loggers for their modules.
+        # Do not configure non-GEMSEO loggers unless asked for via the root logger.
+        gemseo_names = [
+            name for name in root.manager.loggerDict if _is_gemseo_logger(name)
+        ]
+        names = list(gemseo_names)
+        if self.configure_root_logger:
+            names.append("")
+
         if self.enable:
-            for name in root.manager.loggerDict:
-                if _is_gemseo_logger(name):
-                    _configure_logger(
-                        name,
-                        self.level,
-                        self.message_format,
-                        self.date_format,
-                        self.file_path,
-                        self.file_mode,
-                    )
+            for name in names:
+                _configure_logger(
+                    name,
+                    self.level,
+                    self.message_format,
+                    self.date_format,
+                    self.file_path,
+                    self.file_mode,
+                )
         else:
-            for name in root.manager.loggerDict:
-                if _is_gemseo_logger(name):
-                    logger = getLogger(name)
-                    for handler in logger.handlers[:]:
-                        logger.removeHandler(handler)
+            for name in names:
+                logger = getLogger(name)
+                for handler in logger.handlers[:]:
+                    logger.removeHandler(handler)
+
+        # When the root logger is configured, GEMSEO loggers must not propagate;
+        # otherwise their records would also be emitted by the root handler.
+        for name in gemseo_names:
+            getLogger(name).propagate = not self.configure_root_logger
 
         return self
 

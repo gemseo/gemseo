@@ -131,3 +131,55 @@ def test_configured_loggers():
     assert gemseo_module_logger.level == logging.NOTSET
     for logger in (gemseo_logger, gemseo_plugin_logger):
         assert logger.level == logging.WARNING
+
+
+@pytest.fixture
+def root_logger():
+    """Yield the root logger with its initial level and handlers restored."""
+    logger = logging.getLogger()
+    initial_level = logger.level
+    initial_handlers = logger.handlers[:]
+    yield logger
+    logger.level = initial_level
+    logger.handlers = initial_handlers
+
+
+def test_configure_root_logger_default(root_logger):
+    """Root logger untouched when `configure_root_logger` is False (the default)."""
+    initial_level = root_logger.level
+    initial_handlers = root_logger.handlers[:]
+
+    LoggingConfiguration(level=logging.WARNING)
+
+    assert root_logger.level == initial_level
+    assert root_logger.handlers == initial_handlers
+
+
+def test_configure_root_logger_enabled(root_logger):
+    """Root logger configured when `configure_root_logger` is True."""
+    LoggingConfiguration(level=logging.WARNING, configure_root_logger=True)
+
+    assert root_logger.level == logging.WARNING
+    assert any(isinstance(h, logging.StreamHandler) for h in root_logger.handlers)
+
+    # The GEMSEO logger is still configured alongside the root logger.
+    gemseo_logger = getLogger("gemseo")
+    assert gemseo_logger.level == logging.WARNING
+    assert any(isinstance(h, logging.StreamHandler) for h in gemseo_logger.handlers)
+
+    LoggingConfiguration(enable=False, configure_root_logger=True)
+    assert root_logger.handlers == []
+
+
+def test_configure_root_logger_disables_gemseo_propagation(root_logger):
+    """GEMSEO loggers stop propagating when the root logger is configured.
+
+    Otherwise, the same record would be emitted by the GEMSEO handler and
+    the root handler.
+    """
+    gemseo_logger = getLogger("gemseo")
+    LoggingConfiguration(configure_root_logger=True)
+    assert not gemseo_logger.propagate
+
+    LoggingConfiguration(configure_root_logger=False)
+    assert gemseo_logger.propagate
