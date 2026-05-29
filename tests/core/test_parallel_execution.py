@@ -27,11 +27,9 @@ import pytest
 from numpy import array
 from numpy import complex128
 from numpy import equal
-from numpy import ones
 from scipy.optimize import rosen
 
 from gemseo import create_design_space
-from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.core.functions.discipline_adapter_generator import (
@@ -40,6 +38,9 @@ from gemseo.core.functions.discipline_adapter_generator import (
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
+from gemseo.core.parallel_execution.callable_parallel_execution import _init_worker
+from gemseo.core.parallel_execution.callable_parallel_execution import _run_task
+from gemseo.core.parallel_execution.callable_parallel_execution import _TaskCallables
 from gemseo.core.parallel_execution.discipline_execution import DiscParallelExecution
 from gemseo.core.parallel_execution.discipline_linearization import (
     DiscParallelLinearization,
@@ -63,10 +64,15 @@ class CallableWorker:
         return 2 * counter
 
 
-def function_raising_exception(counter) -> None:
+def function_raising_exception(_) -> None:
     """Raises an Exception."""
     msg = "This is an Exception"
     raise RuntimeError(msg)
+
+
+def _double(x: float) -> float:
+    """Return ``2 * x``; lightweight worker for fast tests."""
+    return 2 * x
 
 
 def test_functional() -> None:
@@ -96,9 +102,9 @@ def test_callback() -> None:
     assert counter.total == 4.0
 
 
-def test_callback_error() -> None:
+def test_callback_error(snapshot) -> None:
     parallel_execution = CallableParallelExecution([rosen])
-    with pytest.raises(TypeError):
+    with assert_exception(TypeError, snapshot):
         parallel_execution.execute(
             [[0.5] * i for i in range(1, 3)], exec_callbacks="toto"
         )
@@ -113,12 +119,13 @@ def test_callable() -> None:
     assert output_list == [2] * n
 
 
-def test_callable_exception() -> None:
-    """Test CallableParallelExecution with a Callable worker."""
-    n = 2
+def test_callable_exception(caplog) -> None:
+    """A non-re-raised exception is logged and the failing slot is ``None``."""
     function_list = [function_raising_exception, CallableWorker()]
     parallel_execution = CallableParallelExecution(function_list, use_threading=True)
-    parallel_execution.execute([1] * n)
+    outputs = parallel_execution.execute([1, 1])
+    assert outputs == [None, 2]
+    assert "This is an Exception" in caplog.text
 
 
 def test_disc_parallel_doe_scenario() -> None:
@@ -142,8 +149,9 @@ def test_disc_parallel_doe(
     """Test the execution of disciplines in parallel."""
     s_1 = sellar_disciplines.sellar1
     n = 10
+    wait_time = 0.02
     parallel_execution = DiscParallelExecution(
-        [s_1], n_processes=2, wait_time_between_fork=0.1
+        [s_1], n_processes=2, wait_time_between_fork=wait_time
     )
     input_list = []
     for i in range(n):
@@ -159,7 +167,7 @@ def test_disc_parallel_doe(
     t_f = timer()
 
     elapsed_time = t_f - t_0
-    assert elapsed_time > 0.1 * (n - 1)
+    assert elapsed_time > wait_time * (n - 1)
 
     assert s_1.execution_statistics.n_executions == n
 
@@ -206,7 +214,9 @@ def test_parallel_lin() -> None:
                 assert (dfdx == outs[i][f][x]).all()
 
 
-def test_disc_parallel_threading_proc(sellar_with_2d_array, sellar_disciplines) -> None:
+def test_disc_parallel_threading_proc(
+    sellar_with_2d_array, sellar_disciplines, snapshot
+) -> None:
     disciplines = copy(sellar_disciplines)
     parallel_execution = DiscParallelExecution(
         disciplines, n_processes=2, use_threading=True
@@ -223,7 +233,7 @@ def test_disc_parallel_threading_proc(sellar_with_2d_array, sellar_disciplines) 
 
     disciplines = [sellar_disciplines.sellar1] * 2
 
-    with pytest.raises(ValueError):
+    with assert_exception(ValueError, snapshot):
         DiscParallelExecution(
             disciplines,
             n_processes=2,
@@ -231,17 +241,19 @@ def test_disc_parallel_threading_proc(sellar_with_2d_array, sellar_disciplines) 
         )
 
 
-def test_async_call() -> None:
-    disc = create_discipline("SobieskiMission")
-    func = DisciplineAdapterGenerator(disc).get_function([X_SHARED], ["y_4"])
+def test_task_submitted_callback() -> None:
+    """The ``task_submitted_callback`` runs once between submit and gather."""
+    seen = []
 
-    x_list = [i * ones(6) for i in range(4)]
+    def on_submitted() -> None:
+        seen.append("submitted")
 
-    def do_work():
-        return list(map(func.evaluate, x_list))
-
-    par = CallableParallelExecution([func.evaluate] * 2, n_processes=2)
-    par.execute([i * ones(6) + 1 for i in range(2)], task_submitted_callback=do_work)
+    par = CallableParallelExecution(
+        [CallableWorker(), CallableWorker()], n_processes=2, use_threading=True
+    )
+    outputs = par.execute([3, 4], task_submitted_callback=on_submitted)
+    assert outputs == [6, 8]
+    assert seen == ["submitted"]
 
 
 def test_not_worker(caplog) -> None:
@@ -326,6 +338,7 @@ def test_multiprocessing_context(
     expected_n_calls,
     reset_default_multiproc_method,
     enable_discipline_statistics,
+    snapshot,
 ) -> None:
     """Test the multiprocessing where the method for the context is changed.
 
@@ -343,6 +356,16 @@ def test_multiprocessing_context(
         sellar.add_differentiated_inputs()
         sellar.add_differentiated_outputs()
     workers = [sellar, deepcopy(sellar)] if use_threading else [sellar]
+
+    if (
+        PLATFORM_IS_WINDOWS
+        and mp_method == CallableParallelExecution.MultiProcessingStartMethod.FORK
+    ):
+        # The start-method guard now raises at construction time on Windows.
+        with assert_exception(ValueError, snapshot):
+            parallel_class(workers, use_threading=use_threading)
+        return
+
     parallel_execution = parallel_class(workers, use_threading=use_threading)
 
     atom_inputs = get_initial_data()
@@ -353,25 +376,137 @@ def test_multiprocessing_context(
 
     input_list = [atom_inputs, atom_inputs_half]
 
-    if (
-        PLATFORM_IS_WINDOWS
-        and mp_method == CallableParallelExecution.MultiProcessingStartMethod.FORK
-    ):
-        with pytest.raises(ValueError):
-            parallel_execution.execute(input_list)
-    else:
-        parallel_execution.execute(input_list)
-        if use_threading:
-            expected_n_calls /= 2
-        assert getattr(sellar.execution_statistics, n_calls_attr) == expected_n_calls
+    parallel_execution.execute(input_list)
+    if use_threading:
+        expected_n_calls /= 2
+    assert getattr(sellar.execution_statistics, n_calls_attr) == expected_n_calls
 
 
-def test_task_submitted_callback_error() -> None:
+def test_task_submitted_callback_error(snapshot) -> None:
     function_list = [rosen] * 3
     parallel_execution = CallableParallelExecution(function_list)
 
-    with pytest.raises(TypeError):
+    with assert_exception(TypeError, snapshot):
         parallel_execution.execute(
             [[0.5] * i for i in range(1, 3)],
             task_submitted_callback="not_callable",
         )
+
+
+@pytest.mark.parametrize("use_threading", [True, False])
+def test_execute_empty_inputs(use_threading) -> None:
+    """An empty input list yields an empty output list."""
+    par = CallableParallelExecution([_double], use_threading=use_threading)
+    assert par.execute([]) == []
+
+
+@pytest.mark.parametrize("use_threading", [True, False])
+@pytest.mark.parametrize(
+    ("n_processes", "n_tasks", "expected"),
+    [(8, 2, 2), (2, 8, 2), (4, 4, 4)],
+)
+def test_executor_caps_workers_at_n_tasks(
+    use_threading, n_processes, n_tasks, expected
+) -> None:
+    """The executor never spawns more workers than tasks.
+
+    Spawning more workers than tasks wastes a process/thread creation and, for the
+    process pool, a pickling of the task callables through ``initargs`` for no work.
+    """
+    par = CallableParallelExecution(
+        [_double], n_processes=n_processes, use_threading=use_threading
+    )
+    task_callables = _TaskCallables([_double], ())
+    with par._build_executor(task_callables, n_tasks) as executor:
+        assert executor._max_workers == expected
+
+
+def test_preprocessors_receive_task_index() -> None:
+    """Preprocessors are called with the task index of each input."""
+    seen = []
+
+    def preprocessor(index: int) -> None:
+        seen.append(index)
+
+    par = CallableParallelExecution([_double], use_threading=True)
+    outputs = par.execute([10, 20, 30], preprocessors=(preprocessor,))
+    assert outputs == [20, 40, 60]
+    # With a single worker the index is always ``0``.
+    assert sorted(seen) == [0, 0, 0]
+
+
+def test_preprocessors_per_worker_index() -> None:
+    """With several workers the preprocessor is called with the worker index."""
+    seen = []
+
+    def preprocessor(index: int) -> None:
+        seen.append(index)
+
+    workers = [CallableWorker(), CallableWorker(), CallableWorker()]
+    par = CallableParallelExecution(workers, use_threading=True)
+    par.execute([1, 1, 1], preprocessors=(preprocessor,))
+    assert sorted(seen) == [0, 1, 2]
+
+
+def test_multiple_exec_callbacks_all_run() -> None:
+    """Every callback in ``exec_callbacks`` is invoked for each result."""
+    a_calls: list[tuple[int, float]] = []
+    b_calls: list[tuple[int, float]] = []
+
+    par = CallableParallelExecution([_double], use_threading=True)
+    outputs = par.execute(
+        [1, 2, 3],
+        exec_callbacks=(
+            lambda i, v: a_calls.append((i, v)),
+            lambda i, v: b_calls.append((i, v)),
+        ),
+    )
+    assert outputs == [2, 4, 6]
+    assert sorted(a_calls) == [(0, 2), (1, 4), (2, 6)]
+    assert sorted(b_calls) == [(0, 2), (1, 4), (2, 6)]
+
+
+def test_uninitialized_worker_sentinel(snapshot) -> None:
+    """Calling ``_run_task`` outside a worker raises a clear error."""
+    with assert_exception(RuntimeError, snapshot):
+        _run_task(0, None)
+
+
+def test_init_worker_stashes_callables(monkeypatch) -> None:
+    """``_init_worker`` stashes the task callables into the module global."""
+    from gemseo.core.parallel_execution import callable_parallel_execution as module
+
+    monkeypatch.setattr(
+        module, "_WORKER_TASK_CALLABLES", module._uninitialized_worker_task_callables
+    )
+    task_callables = _TaskCallables([_double], ())
+    _init_worker(task_callables)
+    assert module._WORKER_TASK_CALLABLES is task_callables
+    assert _run_task(0, 5) == 10
+
+
+def test_worker_count_mismatch_raises(snapshot) -> None:
+    """Out-of-range task index from a worker is surfaced as ``IndexError``."""
+    par = CallableParallelExecution(
+        [CallableWorker(), CallableWorker()],
+        n_processes=2,
+        use_threading=True,
+        exceptions_to_re_raise=(IndexError,),
+    )
+    # Three inputs but two workers: the third task uses index 2 → out of range.
+    with assert_exception(IndexError, snapshot):
+        par.execute([1, 2, 3])
+
+
+def test_check_method_in_init(monkeypatch, snapshot) -> None:
+    """The Windows-only start-method check runs at construction time."""
+    from gemseo.core.parallel_execution import callable_parallel_execution as module
+
+    monkeypatch.setattr(module, "PLATFORM_IS_WINDOWS", True)
+    monkeypatch.setattr(
+        CallableParallelExecution,
+        "MULTI_PROCESSING_START_METHOD",
+        CallableParallelExecution.MultiProcessingStartMethod.FORK,
+    )
+    with assert_exception(ValueError, snapshot):
+        CallableParallelExecution([_double])
