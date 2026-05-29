@@ -96,7 +96,7 @@ nav:
           - Uncertainty quantification: user_guide/use_cases/uncertainty_quantification.md
       - Concepts:
           - Disciplines: user_guide/concepts/discipline/discipline.md
-          - Coupling:
+          - Coupled systems:
               - Overview: user_guide/concepts/coupling/index.md
               - Visualization: user_guide/concepts/coupling/visualization.md
               - Namespaces: user_guide/concepts/coupling/namespaces.md
