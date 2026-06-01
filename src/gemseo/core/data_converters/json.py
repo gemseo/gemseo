@@ -44,11 +44,11 @@ class JSONGrammarDataConverter(BaseDataConverter["JSONGrammar"]):
         """
         return tuple(PYTHON_TO_JSON_TYPES.get(type_, type_) for type_ in types)
 
-    def _has_type(self, name: str, types: tuple[str, ...]) -> bool:
-        types = self.__convert_types(types)
+    def _has_type(self, name: str, types: tuple[type, ...]) -> bool:
+        json_types = self.__convert_types(types)
         prop = self._grammar.schema["properties"][name]
         type_ = prop.get("type")
-        if type_ not in types:
+        if type_ not in json_types:
             return False
         if type_ != "array":
             return True
@@ -57,4 +57,4 @@ class JSONGrammarDataConverter(BaseDataConverter["JSONGrammar"]):
             # If the sub_prob is not defined, we assume that it is a numeric value
             # TODO: Keep that behavior?
             return True
-        return sub_prop.get("type") in types
+        return sub_prop.get("type") in json_types

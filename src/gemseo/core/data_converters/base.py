@@ -165,7 +165,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     def get_value_size(cls, name: str, value: ValueType) -> int:
         """Return the size of a data value.
 
-        The size is typically what is returned by `ndarray.size` or `len(list)`.
+        The size is typically what is returned by `ndarray.size`.
         The size of a number is 1.
 
         Args:
@@ -194,14 +194,14 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         concatenating the data values associated with these data names.
 
         Args:
-            data: The data structure.
             names: The data names.
+            data: The data structure.
             name_to_size: The mapping from the data names to the data sizes.
                 If empty, it will be computed.
 
         Returns:
             The mapping from the data names to the data slices
-            of the expected concatenated NumPy array.
+            of the expected concatenated NumPy array,
             and the size of this array.
         """
         name_to_slice = {}
@@ -252,7 +252,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
             name_to_slice: The mapping from the data names to the array slices.
 
         Returns:
-            The mapping from the data names to the array slices.
+            The mapping from the data names to the data values.
         """
         to_value = self.convert_array_to_value
         return {
@@ -306,7 +306,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
 
     @abstractmethod
     def _has_type(self, name: str, types: tuple[type, ...]) -> bool:
-        """Return the type of grammar item has an expected type.
+        """Return whether the type of a grammar item is one of the expected types.
 
         Args:
             name: The name of the grammar item.
