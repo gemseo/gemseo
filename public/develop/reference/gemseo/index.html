@@ -2859,7 +2859,7 @@
    (gemseo.typing.NumberArray)" href=typing/#gemseo.typing.NumberArray>NumberArray</a></span><span class=p>],</span> <span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></span><span class=p>]],</span>
     <span class=n>to_size</span><span class=p>:</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a></span><span class=p>[</span><span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a></span><span class=p>,</span> <span class=n><a class="autorefs autorefs-external" title=collections.abc.Callable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable>Callable</a></span><span class=p>[[</span><span class=n><a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a></span><span class=p>],</span> <span class=n><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/functions.html#int>int</a></span><span class=p>]],</span>
 <span class=p>)</span> <span class=o>-&gt;</span> <span class=kc>None</span>
-</code></pre></div><div class="doc doc-contents "><p>Set data converters for custom disciplines variable types.</p><p>Natively, GEMSEO supports disciplines that have the following variable types: <code>int</code>, <code>float</code>, <code>complex</code>, <code>str</code> and 1D NumPy array. Using custom variable types may require to add converters to transform the value of a variable to a 1D NumPy array back and forth, as well as to provide the size of the expected 1D NumPy array.</p><p>See this <a class="autorefs autorefs-internal" title="Use data converters" href=../../generated/examples/howtos/disciplines/grammars/plot_howto_data_converters/#use-data-converters>example</a>.</p><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>to_array</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=collections.abc.Callable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable>Callable</a>[[<a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>], <a class="autorefs autorefs-internal" title="            NumberArray
+</code></pre></div><div class="doc doc-contents "><p>Set data converters for custom disciplines variable types.</p><p>Natively, GEMSEO supports disciplines that have the following variable types: <code>int</code>, <code>float</code>, <code>complex</code>, <code>str</code> and 1D NumPy array. Using custom variable types may require to add converters to transform the value of a variable to a 1D NumPy array back and forth, as well as to provide the size of the expected 1D NumPy array.</p><p>See this <a class="autorefs autorefs-internal" title="Use data converters" href=../../generated/examples/howtos/disciplines/grammars/plot_howto_data_converters/#use-data-converters>example</a>.</p><details class=warning open><summary>Warning</summary><p>The converters are stored as global state shared by every grammar and discipline, and are keyed only by variable name. Two variables sharing the same name will therefore use the same converters, regardless of the discipline they belong to. Each call replaces the previously set converters rather than merging with them; pass all the converters in a single call.</p></details><p><span class=doc-section-title>Parameters:</span></p><ul><li class="doc-section-item field-body"><b><code>to_array</code></b> (<code><a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#dict>dict</a>[<a class="autorefs autorefs-external" href=https://docs.python.org/3/library/stdtypes.html#str>str</a>, <a class="autorefs autorefs-external" title=collections.abc.Callable href=https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable>Callable</a>[[<a class="autorefs autorefs-external" title=typing.Any href=https://docs.python.org/3/library/typing.html#typing.Any>Any</a>], <a class="autorefs autorefs-internal" title="            NumberArray
 
 
   
@@ -2897,7 +2897,15 @@
 <span class=normal>1752</span>
 <span class=normal>1753</span>
 <span class=normal>1754</span>
-<span class=normal>1755</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>set_data_converters</span><span class=p>(</span>
+<span class=normal>1755</span>
+<span class=normal>1756</span>
+<span class=normal>1757</span>
+<span class=normal>1758</span>
+<span class=normal>1759</span>
+<span class=normal>1760</span>
+<span class=normal>1761</span>
+<span class=normal>1762</span>
+<span class=normal>1763</span></pre></div></td><td class=code><div><pre><span></span><code><span class=k>def</span><span class=w> </span><span class=nf>set_data_converters</span><span class=p>(</span>
     <span class=n>to_array</span><span class=p>:</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>Callable</span><span class=p>[[</span><span class=n>Any</span><span class=p>],</span> <span class=n>NumberArray</span><span class=p>]],</span>
     <span class=n>from_array</span><span class=p>:</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>Callable</span><span class=p>[[</span><span class=n>NumberArray</span><span class=p>],</span> <span class=n>Any</span><span class=p>]],</span>
     <span class=n>to_size</span><span class=p>:</span> <span class=nb>dict</span><span class=p>[</span><span class=nb>str</span><span class=p>,</span> <span class=n>Callable</span><span class=p>[[</span><span class=n>Any</span><span class=p>],</span> <span class=nb>int</span><span class=p>]],</span>
@@ -2912,6 +2920,14 @@
 
 <span class=sd>    See this</span>
 <span class=sd>    [example][use-data-converters].</span>
+
+<span class=sd>    Warning:</span>
+<span class=sd>        The converters are stored as global state shared by every grammar and</span>
+<span class=sd>        discipline, and are keyed only by variable name.</span>
+<span class=sd>        Two variables sharing the same name will therefore use the same converters,</span>
+<span class=sd>        regardless of the discipline they belong to.</span>
+<span class=sd>        Each call replaces the previously set converters rather than merging with</span>
+<span class=sd>        them; pass all the converters in a single call.</span>
 
 <span class=sd>    Args:</span>
 <span class=sd>        to_array: The mapping from disciplines variable names</span>
