@@ -1740,6 +1740,14 @@ def set_data_converters(
     See this
     [example][use-data-converters].
 
+    Warning:
+        The converters are stored as global state shared by every grammar and
+        discipline, and are keyed only by variable name.
+        Two variables sharing the same name will therefore use the same converters,
+        regardless of the discipline they belong to.
+        Each call replaces the previously set converters rather than merging with
+        them; pass all the converters in a single call.
+
     Args:
         to_array: The mapping from disciplines variable names
             to functions converting a variable value to an array.
