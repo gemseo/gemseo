@@ -36,6 +36,7 @@ Fixed
 -----
 
 - Update the version of the ``pillow`` package which had vulnerabilities.
+- Pin the upper version of the ``minisom`` package which had some regressions.
 
 Version 6.3.1 (2025-11-24)
 **************************
