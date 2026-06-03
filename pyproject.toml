@@ -41,7 +41,7 @@ dependencies = [
   "typing-extensions >=4,<5",
   "xdsmjs >=1.0.0,<=2.0.0",
   "xxhash >=3.0.0,<=3.5.0",
-  "minisom >=2.3.5,< 2.4",
+  "minisom >=2.3.5,<=2.3.5",
 ]
 
 [project.optional-dependencies]
@@ -52,7 +52,7 @@ all = [
   # For pandas excel reader.
   "openpyxl >=3.0.10,<=3.1.5",
   "openturns >=1.20,<=1.25",
-  "pillow >=9.5.0,<=11.3.0",
+  "pillow >=9.5.0,<=12.2.0",
   "plotly >=5.7.0,<=6.3.0",
   "pyDOE3 >=1.0.1,<=1.4.0",
   "scikit-learn >=1.2,<=1.7.2",
@@ -99,10 +99,7 @@ gemseo-study = "gemseo.utils.study_analyses.study_analysis_cli:main"
 gemseo-deserialize-run = "gemseo.utils.deserialize_and_run:main"
 
 [build-system]
-requires = [
-    "setuptools",
-    "setuptools_scm[toml]",
-]
+requires = ["setuptools", "setuptools_scm[toml]"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
