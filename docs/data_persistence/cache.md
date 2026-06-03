@@ -60,13 +60,13 @@ In GEMSEO, different cache types are available:
 - on the disk:
     - the [HDF5Cache][gemseo.caches.hdf5.HDF5Cache] stores in a node of an HDF file the data associated with all the calls to [execute()][gemseo.core.discipline.discipline.Discipline.execute].
 
-        HDF5 (Hierarchical Data Format version 5) is a file format designed to store
-        and organize large and complex datasets.
-        An HDF5 file has a hierarchical structure,
-        similar to a file system,
-        where data is stored in groups (like folders) and datasets (like files).
+      HDF5 (Hierarchical Data Format version 5) is a file format designed to store
+      and organize large and complex datasets.
+      An HDF5 file has a hierarchical structure,
+      similar to a file system,
+      where data is stored in groups (like folders) and datasets (like files).
 
-        This structure allows multiple datasets to coexist in a single file, each accessible through a unique path. Metadata can also be attached to groups and datasets using attributes, making HDF5 well suited for scientific and engineering applications.
+      This structure allows multiple datasets to coexist in a single file, each accessible through a unique path. Metadata can also be attached to groups and datasets using attributes, making HDF5 well suited for scientific and engineering applications.
 
 !!! warning
     - The [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache] relies on some multiprocessing features.
