@@ -30,6 +30,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Generic
+from typing import TypeVar
 
 from numpy import array
 from numpy import hstack
@@ -84,8 +86,10 @@ OutputsType = str | tuple[str, int], Sequence[str | tuple[str, int]]
 FirstOrderIndicesType = dict[str, list[dict[str, RealArray] | None]]
 SecondOrderIndicesType = dict[str, list[dict[str, dict[str, RealArray]] | None]]
 
+T = TypeVar("T", bound=StrEnum)
 
-class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
+
+class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base class for sensitivity analysis.
 
     A sensitivity analysis aims to qualify or quantify
@@ -119,18 +123,13 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples].
     """
 
-    class Method(StrEnum):
-        """The names of the sensitivity methods."""
-
-        NONE = "none"
-
     _INTERACTION_METHODS: ClassVar[tuple[str, ...]] = ()
     """The names of the sensitivity methods considering interaction effects."""
 
     DEFAULT_DRIVER: ClassVar[str] = ""
     """The default DOE algorithm to sample the disciplines."""
 
-    _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.NONE
+    _DEFAULT_MAIN_METHOD: ClassVar[StrEnum]
     """The name of the default main sensitivity analysis method."""
 
     _input_names: list[str]
@@ -142,7 +141,7 @@ class BaseSensitivityAnalysis(metaclass=ABCGoogleDocstringInheritanceMeta):
     _file_path_manager: FilePathManager
     """The file path manager for the figures."""
 
-    main_method: Method
+    main_method: T
     """The name of the main sensitivity analysis method."""
 
     @dataclass(frozen=True)

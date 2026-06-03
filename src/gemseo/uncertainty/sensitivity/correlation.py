@@ -56,7 +56,35 @@ if TYPE_CHECKING:
 from openturns import CorrelationAnalysis as OTCorrelationAnalysis
 
 
-class CorrelationAnalysis(BaseSensitivityAnalysis):
+class CorrelationAnalysisMethod(StrEnum):
+    """A correlation analysis method."""
+
+    KENDALL = "Kendall"
+    """The Kendall rank correlation coefficient."""
+
+    PCC = "PCC"
+    """The partial correlation coefficient."""
+
+    PEARSON = "Pearson"
+    """The Pearson coefficient."""
+
+    PRCC = "PRCC"
+    """The partial rank correlation coefficient."""
+
+    SPEARMAN = "Spearman"
+    """The Spearman coefficient."""
+
+    SRC = "SRC"
+    """The standard regression coefficient."""
+
+    SRRC = "SRRC"
+    """The standard rank regression coefficient."""
+
+    SSRC = "SSRC"
+    """The squared standard regression coefficient."""
+
+
+class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
     """Sensitivity analysis based on correlation measures."""
 
     @dataclass(frozen=True)
@@ -87,39 +115,21 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
 
     _indices: SensitivityIndices
 
-    class Method(StrEnum):
-        """The names of the sensitivity methods."""
-
-        KENDALL = "Kendall"
-        """The Kendall rank correlation coefficient."""
-        PCC = "PCC"
-        """The partial correlation coefficient."""
-        PEARSON = "Pearson"
-        """The Pearson coefficient."""
-        PRCC = "PRCC"
-        """The partial rank correlation coefficient."""
-        SPEARMAN = "Spearman"
-        """The Spearman coefficient."""
-        SRC = "SRC"
-        """The standard regression coefficient."""
-        SRRC = "SRRC"
-        """The standard rank regression coefficient."""
-        SSRC = "SSRC"
-        """The squared standard regression coefficient."""
-
-    __METHODS_TO_OT_METHOD_NAMES: Final[dict[Method, str]] = {
-        Method.KENDALL: "computeKendallTau",
-        Method.PCC: "computePCC",
-        Method.PEARSON: PEARSON_METHOD_NAME,
-        Method.PRCC: "computePRCC",
-        Method.SPEARMAN: "computeSpearmanCorrelation",
-        Method.SRC: "computeSRC",
-        Method.SRRC: "computeSRRC",
-        Method.SSRC: "computeSquaredSRC",
+    __METHODS_TO_OT_METHOD_NAMES: Final[dict[CorrelationAnalysisMethod, str]] = {
+        CorrelationAnalysisMethod.KENDALL: "computeKendallTau",
+        CorrelationAnalysisMethod.PCC: "computePCC",
+        CorrelationAnalysisMethod.PEARSON: PEARSON_METHOD_NAME,
+        CorrelationAnalysisMethod.PRCC: "computePRCC",
+        CorrelationAnalysisMethod.SPEARMAN: "computeSpearmanCorrelation",
+        CorrelationAnalysisMethod.SRC: "computeSRC",
+        CorrelationAnalysisMethod.SRRC: "computeSRRC",
+        CorrelationAnalysisMethod.SSRC: "computeSquaredSRC",
     }
     """The mapping from the sensitivity method names to the OpenTURNS method names."""
 
-    _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.SPEARMAN
+    _DEFAULT_MAIN_METHOD: ClassVar[CorrelationAnalysisMethod] = (
+        CorrelationAnalysisMethod.SPEARMAN
+    )
 
     DEFAULT_DRIVER: ClassVar[str] = "OT_MONTE_CARLO"
 
@@ -151,7 +161,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         indices = {}
         # For each correlation method
         sizes = self.dataset.variable_name_to_n_components
-        for method in self.Method:
+        for method in CorrelationAnalysisMethod:
             # The version of OpenTURNS offers this correlation method.
             method_name = self.__METHODS_TO_OT_METHOD_NAMES[method]
             indices[str(method).lower()] = {
@@ -192,7 +202,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis):
         """  # noqa: D212, D205
         output_name, output_index = get_name_and_component(output)
 
-        all_indices = tuple(self.Method)
+        all_indices = tuple(CorrelationAnalysisMethod)
         dataset = Dataset()
         for input_name in filter_names(self._input_names, input_names):
             # Store all the sensitivity indices

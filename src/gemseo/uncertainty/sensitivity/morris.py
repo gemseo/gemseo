@@ -60,7 +60,17 @@ if TYPE_CHECKING:
     from gemseo.utils.string_tools import VariableType
 
 
-class MorrisAnalysis(BaseSensitivityAnalysis):
+class MorrisAnalysisMethod(StrEnum):
+    """A Morris analysis method."""
+
+    MU_STAR = "MU_STAR"
+    """The mean of the absolute finite difference."""
+
+    SIGMA = "SIGMA"
+    """The standard deviation of the absolute finite difference."""
+
+
+class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
     r"""Sensitivity analysis based on the Morris method.
 
     The Morris method is a screening technique used in sensitivity analysis
@@ -124,16 +134,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis):
 
     DEFAULT_DRIVER: ClassVar[str] = "PYDOE_LHS"
 
-    class Method(StrEnum):
-        """The names of the sensitivity methods."""
-
-        MU_STAR = "MU_STAR"
-        """The mean of the absolute finite difference."""
-
-        SIGMA = "SIGMA"
-        """The standard deviation of the absolute finite difference."""
-
-    _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.MU_STAR
+    _DEFAULT_MAIN_METHOD: ClassVar[MorrisAnalysisMethod] = MorrisAnalysisMethod.MU_STAR
 
     def compute_samples(
         self,

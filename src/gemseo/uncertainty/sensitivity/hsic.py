@@ -60,7 +60,23 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
 
 
-class HSICAnalysis(BaseSensitivityAnalysis):
+class HSICAnalysisMethod(StrEnum):
+    """An HSIC analysis method."""
+
+    HSIC = "HSIC"
+    """The HSIC indices."""
+
+    P_VALUE_ASYMPTOTIC = "p-value-asymptotic"
+    """The p-value obtained with an asymptotic formula."""
+
+    P_VALUE_PERMUTATION = "p-value-permutation"
+    """The p-value estimated through permutations."""
+
+    R2_HSIC = "R2-HSIC"
+    """The normalized HSIC (R2-HSIC) indices."""
+
+
+class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
     """Sensitivity analysis based on the Hilbert-Schmidt independence criterion (HSIC).
 
     The
@@ -129,26 +145,11 @@ class HSICAnalysis(BaseSensitivityAnalysis):
 
         return covariance_models
 
-    class Method(StrEnum):
-        """The name of the sensitivity method."""
-
-        HSIC = "HSIC"
-        """The HSIC indices."""
-
-        P_VALUE_ASYMPTOTIC = "p-value-asymptotic"
-        """The p-value obtained with an asymptotic formula."""
-
-        P_VALUE_PERMUTATION = "p-value-permutation"
-        """The p-value estimated through permutations."""
-
-        R2_HSIC = "R2-HSIC"
-        """The normalized HSIC (R2-HSIC) indices."""
-
-    __METHODS_TO_OT_METHODS: Final[dict[Method, str]] = {
-        Method.HSIC: "getHSICIndices",
-        Method.P_VALUE_ASYMPTOTIC: "getPValuesAsymptotic",
-        Method.P_VALUE_PERMUTATION: "getPValuesPermutation",
-        Method.R2_HSIC: "getR2HSICIndices",
+    __METHODS_TO_OT_METHODS: Final[dict[HSICAnalysisMethod, str]] = {
+        HSICAnalysisMethod.HSIC: "getHSICIndices",
+        HSICAnalysisMethod.P_VALUE_ASYMPTOTIC: "getPValuesAsymptotic",
+        HSICAnalysisMethod.P_VALUE_PERMUTATION: "getPValuesPermutation",
+        HSICAnalysisMethod.R2_HSIC: "getR2HSICIndices",
     }
     """The mapping from the sensitivity indices to the OT classes."""
 
@@ -210,7 +211,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
 
     DEFAULT_DRIVER: ClassVar[str] = "OT_MONTE_CARLO"
 
-    _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.R2_HSIC
+    _DEFAULT_MAIN_METHOD: ClassVar[HSICAnalysisMethod] = HSICAnalysisMethod.R2_HSIC
 
     def compute_indices(
         self,
@@ -279,7 +280,7 @@ class HSICAnalysis(BaseSensitivityAnalysis):
         )
         hsic_class = self.__ANALYSIS_TO_OT_CLASSES[analysis_type]
         indices = {}
-        for method in self.Method:
+        for method in HSICAnalysisMethod:
             indices_ = indices[str(method).lower().replace("-", "_")] = {}
             if (
                 method == method.P_VALUE_ASYMPTOTIC

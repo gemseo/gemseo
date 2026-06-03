@@ -45,6 +45,7 @@ from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.sensitivity.hsic import HSICAnalysis
+from gemseo.uncertainty.sensitivity.hsic import HSICAnalysisMethod
 from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
@@ -244,7 +245,7 @@ def test_sort_input_variables(hsic_analysis):
 def test_methods(hsic_analysis_2) -> None:
     """Check the methods for which the indices have been computed."""
     assert {f.name for f in fields(hsic_analysis_2.indices)} == {
-        str(m).lower().replace("-", "_") for m in hsic_analysis_2.Method
+        str(m).lower().replace("-", "_") for m in HSICAnalysisMethod
     }
 
 

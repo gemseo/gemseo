@@ -48,6 +48,7 @@ from gemseo.uncertainty.distributions.openturns.uniform_settings import (
 from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
 from gemseo.uncertainty.sensitivity.base import SecondOrderIndicesType
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
+from gemseo.uncertainty.sensitivity.sobol import SobolAnalysisMethod
 from gemseo.utils.comparisons import compare_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -200,7 +201,7 @@ def test_algo(discipline, uncertain_space) -> None:
     )
 
 
-@pytest.mark.parametrize("method", ["total", SobolAnalysis.Method.TOTAL])
+@pytest.mark.parametrize("method", ["total", SobolAnalysisMethod.TOTAL])
 def test_method(sobol, method) -> None:
     """Check the use of the main method."""
     main_method = sobol.main_method

@@ -30,6 +30,7 @@ from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysisMethod
 
 
 @pytest.fixture(scope="module")
@@ -54,7 +55,7 @@ def test_indices(correlation) -> None:
     assert indices is correlation.indices
 
     # Check the methods for which the indices have been computed.
-    all_methods = {method.name.lower() for method in correlation.Method}
+    all_methods = {method.name.lower() for method in CorrelationAnalysisMethod}
     available_methods = {field.name for field in fields(indices)}
     assert available_methods == all_methods
 
