@@ -27,6 +27,16 @@ and this project adheres to
 
 .. towncrier release notes start
 
+Version 6.3.2 (2026-06-03)
+**************************
+
+
+
+Fixed
+-----
+
+- Update the version of the ``pillow`` package which had vulnerabilities.
+
 Version 6.3.1 (2025-11-24)
 **************************
 
