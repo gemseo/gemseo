@@ -82,7 +82,17 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class SobolAnalysis(BaseSensitivityAnalysis):
+class SobolAnalysisMethod(StrEnum):
+    """A Sobol' analysis method."""
+
+    FIRST = "first"
+    """The first-order Sobol' index."""
+
+    TOTAL = "total"
+    """The total-order Sobol' index."""
+
+
+class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
     r"""Sensitivity analysis based on the Sobol' indices.
 
     Sobol' indices are variance-based sensitivity measures
@@ -180,15 +190,6 @@ class SobolAnalysis(BaseSensitivityAnalysis):
     }
     """The mapping from the sensitivity algorithms to the OT classes."""
 
-    class Method(StrEnum):
-        """The names of the sensitivity methods."""
-
-        FIRST = "first"
-        """The first-order Sobol' index."""
-
-        TOTAL = "total"
-        """The total-order Sobol' index."""
-
     @dataclass
     class ControlVariate:
         """A control variate based on a cheap discipline.
@@ -204,7 +205,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
         used by `SobolAnalysis`.
         """
 
-        indices: Mapping[SobolAnalysis.Method, FirstOrderIndicesType] = field(
+        indices: Mapping[SobolAnalysisMethod, FirstOrderIndicesType] = field(
             default_factory=dict
         )
         """The mapping between method names and first-order Sobol' indices.
@@ -259,7 +260,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
 
     DEFAULT_DRIVER: ClassVar[str] = "OT_SOBOL_INDICES"
 
-    _DEFAULT_MAIN_METHOD: ClassVar[Method] = Method.FIRST
+    _DEFAULT_MAIN_METHOD: ClassVar[SobolAnalysisMethod] = SobolAnalysisMethod.FIRST
 
     def __init__(self, samples: IODataset | str | Path = "") -> None:  # noqa: D107
         super().__init__(samples)
@@ -608,7 +609,7 @@ class SobolAnalysis(BaseSensitivityAnalysis):
                             method: getattr(cv.indices, str(method).lower())[
                                 output_name
                             ][i]
-                            for method in list(self.Method)
+                            for method in list(SobolAnalysisMethod)
                         },
                     )
                     for cv in control_variates

@@ -39,7 +39,6 @@ classDiagram
    }
 
    class BaseSensitivityAnalysis {
-      +Method
       +dataset
       +default_output_names
       +indices
@@ -58,14 +57,13 @@ classDiagram
    }
 
    class SpecificAnalysis {
-      +Method
       +main_method
       +compute_samples()
       +compute_indices()
       +plot()
    }
 
-   SpecificAnalysis <|-- BaseSensitivityAnalysis
-   BaseSensitivityAnalysis *-- Method
+   SpecificAnalysis ..> Method
+   BaseSensitivityAnalysis <|-- SpecificAnalysis
    BaseSensitivityAnalysis *-- SensitivityIndices
 ```

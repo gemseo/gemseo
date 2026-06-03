@@ -50,6 +50,7 @@ from gemseo.uncertainty.distributions.openturns.uniform_settings import (
 )
 from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysisMethod
 from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.utils.testing.helpers import concretize_classes
@@ -271,7 +272,7 @@ def test_plot_comparison(
     spearman.compute_indices()
     pearson = CorrelationAnalysis()
     pearson.compute_samples([discipline], parameter_space, 10)
-    pearson.main_method = pearson.Method.PEARSON
+    pearson.main_method = CorrelationAnalysisMethod.PEARSON
     pearson.compute_indices()
     plot = pearson.plot_comparison(
         spearman, "out", save=False, title="foo", use_bar_plot=use_bar_plot
@@ -397,7 +398,7 @@ def test_standardize_indices() -> None:
 
 
 def test_multiple_disciplines(parameter_space) -> None:
-    """Test a BaseSensitivityAnalysis with multiple disciplines.
+    """Test a sensitivity analysis with multiple disciplines.
 
     Args:
         parameter_space: A parameter space for the analysis.
@@ -407,11 +408,10 @@ def test_multiple_disciplines(parameter_space) -> None:
     d2 = create_discipline("AnalyticDiscipline", expressions[1])
     d3 = create_discipline("AnalyticDiscipline", expressions[2])
 
-    with concretize_classes(BaseSensitivityAnalysis):
-        sensitivity_analysis = BaseSensitivityAnalysis()
-        sensitivity_analysis.compute_samples(
-            [d1, d2, d3], parameter_space, 5, algo_settings=OT_MONTE_CARLO_Settings()
-        )
+    sensitivity_analysis = CorrelationAnalysis()
+    sensitivity_analysis.compute_samples(
+        [d1, d2, d3], parameter_space, 5, algo_settings=OT_MONTE_CARLO_Settings()
+    )
 
     assert sensitivity_analysis.dataset.get_variable_names("inputs") == [
         "x1",
