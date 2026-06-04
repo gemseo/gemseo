@@ -731,35 +731,39 @@ def test_name_custom() -> None:
     assert Dataset(dataset_name="foo").name == "foo"
 
 
-@pytest.mark.parametrize("reverse_column_order", [False, True])
-def test_variable_names(dataset, reverse_column_order) -> None:
+def test_variable_names(dataset) -> None:
     """Test the property variable_names."""
-    if reverse_column_order:
-        # Reverse the column order to check the alphabetical order.
-        dataset = dataset[dataset.columns[::-1]]
     assert dataset.variable_names == ["var_1", "var_2"]
 
 
-@pytest.mark.parametrize("reverse_column_order", [False, True])
-def test_group_names(dataset, reverse_column_order) -> None:
+def test_group_names(dataset) -> None:
     """Test the property group_names."""
-    if reverse_column_order:
-        dataset = dataset[dataset.columns[::-1]]
-    assert dataset.group_names == ["foo", "parameters"]
+    assert dataset.group_names == ["parameters", "foo"]
 
 
-@pytest.mark.parametrize("reverse_column_order", [False, True])
-def test_variable_identifiers(dataset, reverse_column_order) -> None:
+def test_variable_identifiers(dataset) -> None:
     """Test the property variable_identifiers."""
-    if reverse_column_order:
-        dataset = dataset[dataset.columns[::-1]]
-    assert dataset.variable_identifiers == [
-        ("foo", "var_2"),
-        ("parameters", "var_1"),
-    ]
+    assert dataset.variable_identifiers == [("parameters", "var_1"), ("foo", "var_2")]
 
 
-def test_variable_names_to_n_components(dataset) -> None:
+def test_variable_names_insertion_order() -> None:
+    """Test that variable_names preserves insertion order, not alphabetical order."""
+    d = Dataset()
+    d.add_variable("z_var", array([[1], [2]]))
+    d.add_variable("a_var", array([[3], [4]]))
+    assert d.variable_names == ["z_var", "a_var"]
+    assert d.variable_name_to_n_components == {"z_var": 1, "a_var": 1}
+
+
+def test_group_names_insertion_order() -> None:
+    """Test that group_names preserves insertion order, not alphabetical order."""
+    d = Dataset()
+    d.add_variable("x", array([[1], [2]]), group_name="z_group")
+    d.add_variable("y", array([[3], [4]]), group_name="a_group")
+    assert d.group_names == ["z_group", "a_group"]
+
+
+def test_variable_name_to_n_components(dataset) -> None:
     """Test the property variable_name_to_n_components."""
     assert dataset.variable_name_to_n_components == {"var_1": 1, "var_2": 2}
 
@@ -1076,7 +1080,7 @@ def test_get_group_names() -> None:
     dataset.add_variable("y", array([[5], [6]]), components=1)
     dataset.add_variable("z", array([[5], [6]]), group_name="Foo")
 
-    assert dataset.get_group_names("x") == ["g", "parameters"]
+    assert dataset.get_group_names("x") == ["parameters", "g"]
     assert dataset.get_group_names("y") == ["parameters"]
     assert dataset.get_group_names("z") == ["Foo"]
 
@@ -1156,12 +1160,12 @@ def test_summary() -> None:
         "   Number of entries: 150\n"
         "   Number of variable identifiers: 5\n"
         "   Variables names and sizes by group:\n"
-        "      labels: specy (1)\n"
         "      parameters: petal_length (1), petal_width (1), sepal_length (1) and "
         "sepal_width (1)\n"
+        "      labels: specy (1)\n"
         "   Number of dimensions (total = 5) by group:\n"
-        "      labels: 1\n"
-        "      parameters: 4"
+        "      parameters: 4\n"
+        "      labels: 1"
     )
     assert create_iris_dataset(True).summary == (
         "Iris\n"

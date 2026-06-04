@@ -146,20 +146,12 @@ class IODataset(Dataset):
 
     @property
     def input_names(self) -> list[str]:
-        """The names of the inputs.
-
-        Warning:
-            The names are sorted with the Python function `sorted`.
-        """
+        """The names of the inputs."""
         return self.get_variable_names(self.INPUT_GROUP)
 
     @property
     def output_names(self) -> list[str]:
-        """The names of the outputs.
-
-        Warning:
-            The names are sorted with the Python function `sorted`.
-        """
+        """The names of the outputs."""
         return self.get_variable_names(self.OUTPUT_GROUP)
 
     @property
