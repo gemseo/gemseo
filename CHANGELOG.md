@@ -19,6 +19,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 There is also a page containing the history of the breaking changes in GEMSEO:
 <https://gemseo.readthedocs.io/en/stable/software/upgrading.html>.
 
+## Version 6.3.2 (2026-06-03)
+
+### Fixed
+
+- Update the version of the `pillow` package which had vulnerabilities.
+- Pin the upper version of the `minisom` package which had some regressions.
+
+## Version 6.3.1 (2025-11-24)
+
+### Fixed
+
+- The `compare_dict_of_arrays` function now works with arrays of string with multiple components.
+  `#1662 <https://gitlab.com/gemseo/dev/gemseo/-/issues/1662>`_
+
 ## Version 6.3.0 (2025-10-14)
 
 ### Added
