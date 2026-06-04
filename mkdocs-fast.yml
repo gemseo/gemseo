@@ -120,9 +120,9 @@ nav:
               - Bi-Level: user_guide/concepts/formulations/bilevel.md
               - Bi-Level BCD: user_guide/concepts/formulations/bilevel_bcd.md
           - Uncertainty:
-              - Uncertainty specification: user_guide/concepts/uncertainty/uncertainty_specification.md
+              - Introduction: user_guide/concepts/uncertainty/introduction.md
+              - Uncertainty characterization: user_guide/concepts/uncertainty/uncertainty_characterization.md
               - Uncertainty propagation: user_guide/concepts/uncertainty/uncertainty_propagation.md
-              - Uncertainty quantification: user_guide/concepts/uncertainty/uncertainty_quantification.md
               - Sensitivity analysis: user_guide/concepts/uncertainty/sensitivity_analysis.md
           - Machine learning: user_guide/concepts/machine_learning.md
           - Data persistence:
