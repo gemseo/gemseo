@@ -218,21 +218,13 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
     @property
     def group_names(self) -> list[str]:
-        """The names of the groups of variables in alphabetical order.
-
-        Warning:
-            The names are sorted with the Python function `sorted`.
-        """
-        return sorted(self.columns.levels[self.__GROUP_LEVEL].unique())
+        """The names of the groups of variables."""
+        return list(self.columns.get_level_values(self.__GROUP_LEVEL).unique())
 
     @property
     def variable_names(self) -> list[str]:
-        """The names of the variables in alphabetical order.
-
-        Warning:
-            The names are sorted with the Python function `sorted`.
-        """
-        return sorted(self.columns.levels[self.__VARIABLE_LEVEL].unique())
+        """The names of the variables."""
+        return list(self.columns.get_level_values(self.__VARIABLE_LEVEL).unique())
 
     @property
     def variable_identifiers(self) -> list[tuple[str, str]]:
@@ -244,18 +236,17 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             A variable name can belong to more than one group
             while a variable identifier is unique
             as a group name is unique.
-
-        Warning:
-            The names are sorted with the Python function `sorted`.
         """
-        return sorted(self.columns.droplevel(self.__COMPONENT_LEVEL).unique())
+        return list(self.columns.droplevel(self.__COMPONENT_LEVEL).unique())
 
     @property
     def variable_name_to_n_components(self) -> dict[str, int]:
         """The names of the variables bound to their number of components."""
         return {
             variable_name: self.get_view(variable_names=variable_name).shape[1]
-            for variable_name in self.columns.levels[self.__VARIABLE_LEVEL].unique()
+            for variable_name in self.columns.get_level_values(
+                self.__VARIABLE_LEVEL
+            ).unique()
         }
 
     @property
@@ -274,12 +265,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The names of the groups that contain the variable, if any.
-
-        Warning:
-            The names are sorted with the Python function `sorted`.
         """
         try:
-            return sorted(
+            return list(
                 self
                 .get_view(variable_names=variable_name)
                 .columns.get_level_values(self.__GROUP_LEVEL)
@@ -296,12 +284,9 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         Returns:
             The names of the variables contained in the group, if any.
-
-        Warning:
-            The names are sorted with the Python function `sorted`.
         """
         try:
-            return sorted(
+            return list(
                 self
                 .get_view(group_names=group_name)
                 .columns.get_level_values(self.__VARIABLE_LEVEL)
@@ -1133,6 +1118,6 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         string.dedent()
         string.add("Number of dimensions (total = {}) by group:", total)
         string.indent()
-        for group_name, group_size in sorted(self.group_name_to_n_components.items()):
+        for group_name, group_size in self.group_name_to_n_components.items():
             string.add("{}: {}", group_name, group_size)
         return str(string)

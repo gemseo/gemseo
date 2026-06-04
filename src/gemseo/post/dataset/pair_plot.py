@@ -71,7 +71,7 @@ class PairPlot(BaseDatasetPlot[PairPlot_Settings]):
             msg = (
                 f"{classifier} cannot be used as a classifier "
                 f"because it is not a variable name; "
-                f"available ones are: {self.dataset.variable_names}."
+                f"available ones are: {sorted(self.dataset.variable_names)}."
             )
             raise ValueError(msg)
 
