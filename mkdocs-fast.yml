@@ -97,24 +97,25 @@ nav:
       - Concepts:
           - Disciplines: user_guide/concepts/discipline/discipline.md
           - Coupled systems:
-              - Overview: user_guide/concepts/coupling/index.md
+              - Introduction: user_guide/concepts/coupling/introduction.md
               - Visualization: user_guide/concepts/coupling/visualization.md
               - Namespaces: user_guide/concepts/coupling/namespaces.md
               - Solving (MDA): user_guide/concepts/coupling/solving_mda.md
               - Gradient computation: user_guide/concepts/coupling/gradient_computation.md
           - Design space: user_guide/concepts/design_space.md
           - Scenarios:
-              - Overview: user_guide/concepts/scenarios/index.md
+              - Introduction: user_guide/concepts/scenarios/introduction.md
               - Types: user_guide/concepts/scenarios/types.md
-              - Visualization: user_guide/concepts/scenarios/visualization.md
+              - Monitoring: user_guide/concepts/scenarios/monitoring.md
+          - Post-processors: user_guide/concepts/post_processor.md
           - Algorithms:
-              - Overview: user_guide/concepts/algorithms/index.md
+              - Introduction: user_guide/concepts/algorithms/introduction.md
               - Optimizers: user_guide/concepts/algorithms/optimizers.md
               - Samplers (DOE): user_guide/concepts/algorithms/samplers.md
               - Linear solvers: user_guide/concepts/algorithms/linear_solvers.md
               - ODE solvers: user_guide/concepts/algorithms/ode_solvers.md
           - Formulations:
-              - Overview: user_guide/concepts/formulations/index.md
+              - Introduction: user_guide/concepts/formulations/introduction.md
               - MDF: user_guide/concepts/formulations/mdf.md
               - IDF: user_guide/concepts/formulations/idf.md
               - Bi-Level: user_guide/concepts/formulations/bilevel.md
@@ -130,7 +131,7 @@ nav:
               - Database: user_guide/concepts/data_persistence/database.md
               - Dataset: user_guide/concepts/data_persistence/dataset.md
           - Problems:
-              - Overview: user_guide/concepts/problems/index.md
+              - Introduction: user_guide/concepts/problems/introduction.md
               - Evaluation problem: user_guide/concepts/problems/evaluation.md
               - Optimization problem: user_guide/concepts/problems/optimization.md
               - Linear problem: user_guide/concepts/problems/linear.md
@@ -143,7 +144,7 @@ nav:
                   - Data-driven: user_guide/concepts/benchmarking/scalable_mdo/data_driven.md
               - MDO-like optimization problems: user_guide/concepts/benchmarking/mdo_like_optimization_problems.md
       - User experience:
-          - Overview: user_guide/user_experience/index.md
+          - Introduction: user_guide/user_experience/introduction.md
           - High-level functions: user_guide/user_experience/high_level_functions.md
           - Global configuration: user_guide/user_experience/global_configuration.md
           - Settings: user_guide/user_experience/settings.md
@@ -159,7 +160,7 @@ nav:
           - Design space: design_space/design_space.md
           - Scenario: scenario/scenario.md
       - Formulations:
-          - Overview: mdo/formulations/index.md
+          - Introduction: mdo/formulations/index.md
           - MDF: mdo/formulations/mdf.md
           - IDF: mdo/formulations/idf.md
           - Bi-Level: mdo/formulations/bilevel.md
@@ -192,7 +193,6 @@ nav:
       - Disciplines: generated/examples/howtos/disciplines
       - Design Space: generated/examples/howtos/design_space
       - Scenario:
-          - Monitoring the execution of a scenario: scenario/monitoring.md
           - Coupling: generated/examples/howtos/coupling
           - Scenario examples: generated/examples/howtos/scenario
           - Multi-disciplinary analysis (MDA): generated/examples/howtos/mda

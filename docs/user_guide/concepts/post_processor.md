@@ -15,10 +15,4 @@ search:
  Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
-# Scenarios { #concept-scenarios }
-
-## Different types of scenarios { #concept-different-types-of-scenarios }
-
-## Visualization { #concept-visualization }
-
-## Going further { #concept-going-further }
+# The post-processors { #concept-post-processor }

@@ -86,7 +86,7 @@ made on:
 - Use a cheap scalable model instead of an costly discipline in order to compare different formulation
   performances [[Read more]](scalable_models/original_paper.md)
 - Monitor the execution of a scenario using logs, [XDSM][xdsm-visualization] diagram or an
-  observer design pattern [[Read more]](scenario/monitoring.md)
+  observer design pattern [[Read more]][monitoring-a-scenario]
 
 ### Development
 

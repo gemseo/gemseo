@@ -45,6 +45,7 @@
 :root {
   --md-admonition-icon--tutorial: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="m48 195.8 209.2 86.1c9.8 4 20.2 6.1 30.8 6.1s21-2.1 30.8-6.1l242.4-99.8c9-3.7 14.8-12.4 14.8-22.1s-5.8-18.4-14.8-22.1L318.8 38.1c-9.8-4-20.2-6.1-30.8-6.1s-21 2.1-30.8 6.1L14.8 137.9C5.8 141.6 0 150.3 0 160v296c0 13.3 10.7 24 24 24s24-10.7 24-24zm48 71.7V384c0 53 86 96 192 96s192-43 192-96V267.4l-142.9 58.9c-15.6 6.4-32.2 9.7-49.1 9.7s-33.5-3.3-49.1-9.7L96 267.4z"/></svg>');
   --md-admonition-icon--how-to: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M509.4 98.6c7.6-7.6 20.3-5.7 24.1 4.3 6.8 17.7 10.5 37 10.5 57.1 0 88.4-71.6 160-160 160-17.5 0-34.4-2.8-50.2-8L146.9 498.9c-28.1 28.1-73.7 28.1-101.8 0s-28.1-73.7 0-101.8L232 210.2c-5.2-15.8-8-32.6-8-50.2C224 71.6 295.6 0 384 0c20.1 0 39.4 3.7 57.1 10.5 10 3.8 11.8 16.5 4.3 24.1l-88.7 88.7c-3 3-4.7 7.1-4.7 11.3V176c0 8.8 7.2 16 16 16h41.4c4.2 0 8.3-1.7 11.3-4.7z"/></svg>');
+  --md-admonition-icon--explanations: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m0 14H5.2L4 17.2V4h16zM12.2 5.5c-.9 0-1.6.2-2.1.5-.6.4-.9 1-.8 1.7h2q0-.45.3-.6c.2-.1.4-.2.7-.2s.6.1.8.3.3.4.3.7-.1.5-.2.7c-.2.2-.4.4-.6.5-.5.3-.9.6-1.1.8-.4.3-.5.6-.5 1.1h2c0-.3.1-.5.1-.7.1-.2.3-.3.5-.5.5-.2.8-.5 1.1-.9s.4-.8.4-1.2c0-.7-.3-1.3-.8-1.7-.4-.3-1.2-.5-2.1-.5M11 12v2h2v-2z"/></svg>');
 }
 
 .md-typeset .admonition.tutorial,
@@ -75,4 +76,19 @@
   background-color: rgb(255, 152, 0);
   -webkit-mask-image: var(--md-admonition-icon--how-to);
   mask-image: var(--md-admonition-icon--how-to);
+}
+
+.md-typeset .admonition.explanations,
+.md-typeset details.explanations {
+  border-color: rgb(126, 86, 194);
+}
+.md-typeset .explanations > .admonition-title,
+.md-typeset .explanations > summary {
+  background-color: rgba(126, 86, 194, 0.1);
+}
+.md-typeset .explanations > .admonition-title::before,
+.md-typeset .explanations > summary::before {
+  background-color: rgb(126, 86, 194);
+  -webkit-mask-image: var(--md-admonition-icon--explanations);
+  mask-image: var(--md-admonition-icon--explanations);
 }
