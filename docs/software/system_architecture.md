@@ -152,7 +152,6 @@ The present figures display the main classes of GEMSEO. They are simplified clas
 
 ``` mermaid
 classDiagram
-    Discipline <|-- MDOScenario
     MDOScenario "1" *-- "n" Discipline
     MDOScenario "1" *-- "1" BaseMDOFormulation
     BaseMDOFormulation "1" *-- "n" OptimizationProblem

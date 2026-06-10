@@ -37,8 +37,8 @@ From this information, GEMSEO carries out the following steps:
      choose its favorite [MDO formulation][mdo-formulations] (or architecture) or test another one, by simply
      giving the name of the formulation to the
      scenario.
-     [Bi-level MDO formulations][the-bi-level-formulation] allow to use disciplines
-     that are themselves scenarios.
+     [Bi-level MDO formulations][the-bi-level-formulation] allow scenarios
+     to be used as disciplines, via scenario adapters.
 > 2. **Solve** this design problem, using either an optimization algorithm or a DOE.
 > 3. **Plot** the results and logs of the optimization problem resolution.
 

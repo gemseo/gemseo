@@ -1528,8 +1528,7 @@ def wrap_discipline_in_job_scheduler(
     the discipline and its inputs, execute it and serialize the outputs.
     Finally, the deserialized outputs are returned by the wrapper.
 
-    All process classes [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
-    or [BaseMDA][gemseo.mda.base.BaseMDA], inherit from
+    Process classes such as [BaseMDA][gemseo.mda.base.BaseMDA] inherit from
     [Discipline][gemseo.core.discipline.discipline.Discipline] so can be sent to HPCs in this way.
 
     The job scheduler template script can be provided directly or the predefined
