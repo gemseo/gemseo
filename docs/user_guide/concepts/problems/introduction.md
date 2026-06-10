@@ -14,7 +14,7 @@ search:
  Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
-# Problems { #concept-problems }
+# Introduction { #concept-problems }
 
 Generally,
 a problem can be defined as a question that needs an answer.
