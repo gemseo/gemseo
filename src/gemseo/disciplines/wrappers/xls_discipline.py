@@ -21,33 +21,161 @@
 
 from __future__ import annotations
 
-import atexit
+import contextlib
 import os
+import random
 import shutil
 import tempfile
+import threading
+import time
+import weakref
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Final
 from uuid import uuid4
 
 from numpy import array
 
 from gemseo.core.discipline import Discipline
+from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from numpy import ndarray
+
     from gemseo.typing import StrKeyMapping
 
-cwd = Path.cwd()
+# A failed `import xlwings` has historically been observed to leave the process
+# in a different working directory. Capture the cwd before the import and
+# restore it on failure so importing this module is a no-op for the caller.
+_cwd_before_xlwings_import = Path.cwd()
 try:
     import xlwings
 except ImportError:
     # error will be reported if the discipline is used
-    os.chdir(str(cwd))
+    os.chdir(str(_cwd_before_xlwings_import))
     xlwings = None
+del _cwd_before_xlwings_import
 
-if xlwings is not None:
+# pythoncom is only available on Windows; xlwings itself also runs on macOS.
+if xlwings is not None and PLATFORM_IS_WINDOWS:
     import pythoncom
+else:
+    pythoncom = None
+
+
+_APP_CREATION_MAX_ATTEMPTS: Final[int] = 3
+_APP_CREATION_RETRY_BACKOFF: Final[float] = 1.0
+"""Seconds to wait between retries; scaled by the attempt index."""
+
+_APP_CREATION_RETRY_JITTER: Final[float] = 0.5
+"""Upper bound of the random delay added to each retry backoff.
+
+De-synchronizes the retries of parallel worker processes that collided on
+their first launch attempt and would otherwise collide again.
+"""
+
+_APP_CREATION_LOCK: Final[threading.Lock] = threading.Lock()
+"""Serializes in-process `xlwings.App` launches.
+
+Concurrent `CoCreateInstanceEx` calls from multiple threads regularly fail
+with `Server execution failed` (HRESULT 0x80080005); serializing them
+prevents that contention instead of recovering from it.
+"""
+
+
+def _create_xls_app() -> object:
+    """Launch a hidden xlwings `App` configured for manual calculation.
+
+    In-process launches are serialized by `_APP_CREATION_LOCK` so threads
+    never race `CoCreateInstanceEx`. Launches from parallel worker processes
+    (parallel DOE) can still collide with `Server execution failed`
+    (HRESULT 0x80080005); a short retry loop with linear backoff and random
+    jitter absorbs that contention. The app whose configuration fails
+    mid-launch is killed before retrying so the Excel process is not leaked.
+
+    Returns:
+        A hidden, non-interactive xlwings `App` in manual calculation mode.
+
+    Raises:
+        RuntimeError: If every attempt fails. Chained from the last error
+            raised by xlwings.
+    """
+    last_err: BaseException | None = None
+    for attempt in range(_APP_CREATION_MAX_ATTEMPTS):
+        app: object | None = None
+        try:
+            with _APP_CREATION_LOCK:
+                app = xlwings.App(visible=False)
+            app.interactive = False
+            # Manual mode: recalculate cells only when explicitly requested.
+            app.calculation = "manual"
+        except BaseException as err:  # noqa: BLE001, PERF203
+            last_err = err
+            _kill_xls_app_silently(app)
+            if not isinstance(err, Exception):
+                raise
+            if attempt < _APP_CREATION_MAX_ATTEMPTS - 1:
+                time.sleep(
+                    _APP_CREATION_RETRY_BACKOFF * (attempt + 1)
+                    + random.uniform(0.0, _APP_CREATION_RETRY_JITTER)  # noqa: S311
+                )
+            continue
+        return app
+    msg = "xlwings requires Microsoft Excel"
+    raise RuntimeError(msg) from last_err
+
+
+def _kill_xls_app_silently(app: object) -> None:
+    """Kill an xlwings `App`, swallowing every error.
+
+    Used as a `weakref.finalize` callback for `XLSDiscipline` and from its
+    cleanup paths. By the time it runs the app may already be dead (e.g.,
+    killed by an earlier reset); raising would surface as an unraisable
+    warning at interpreter shutdown or mask the original exception.
+
+    Args:
+        app: The xlwings `App` instance to kill.
+    """
+    if app is None:
+        return
+    with contextlib.suppress(Exception):
+        app.kill()
+
+
+def _remove_silently(path: Path) -> None:
+    """Delete `path` if it still exists, swallowing OS errors.
+
+    Used as a `weakref.finalize` callback, where raising would surface as an
+    unraisable warning at interpreter shutdown.
+
+    Args:
+        path: The file to remove.
+    """
+    with contextlib.suppress(OSError):
+        path.unlink(missing_ok=True)
+
+
+def _copy_xls_to_temp(src_path: Path, owner: object) -> Path:
+    """Copy `src_path` to a unique temp location tied to `owner`'s lifetime.
+
+    A `weakref.finalize` is registered against `owner` so the temp copy is
+    removed when the owner is garbage collected or at interpreter exit.
+
+    Args:
+        src_path: The workbook to copy.
+        owner: The object whose lifetime governs the temp copy.
+
+    Returns:
+        The path of the temp copy.
+    """
+    temp_path = (
+        Path(tempfile.gettempdir()) / f"{src_path.stem}_{uuid4()}{src_path.suffix}"
+    )
+    shutil.copy2(str(src_path), str(temp_path))
+    weakref.finalize(owner, _remove_silently, temp_path)
+    return temp_path
 
 
 class XLSDiscipline(Discipline):
@@ -149,16 +277,29 @@ class XLSDiscipline(Discipline):
         # In multiprocessing or multithreading,
         # the book is closed once grammars and default values have been initialized.
         quit_xls_at_exit = not (recreate_book_at_run or copy_xls_at_setstate)
-        self.__create_book(quit_xls_at_exit=quit_xls_at_exit)
-        self._init_grammars()
-        self._init_defaults()
+        try:
+            self.__create_book(quit_xls_at_exit=quit_xls_at_exit)
+            self._init_grammars()
+            self._init_defaults()
+        except BaseException:
+            # Without quit_xls_at_exit no finalizer was registered;
+            # kill the app here so the Excel process is not leaked.
+            self.__reset_xls_objects()
+            raise
         if recreate_book_at_run or copy_xls_at_setstate:
             self.__reset_xls_objects()
 
     def __reset_xls_objects(self) -> None:
-        """Close the xls app and set `_xls_app` and `_book` to `None`."""
-        if self._xls_app is not None:
-            self._xls_app.kill()
+        """Close the xls app and set `_xls_app` and `_book` to `None`.
+
+        The kill is silent: this method runs from cleanup paths (e.g. the
+        `finally` clause of `_run`) where a COM error raised by an already
+        dead app would mask the original exception. Uses `getattr` so that
+        the call is safe on an instance whose `__init__` failed before
+        binding `_xls_app` (e.g. when `xlwings` is missing).
+        """
+        if getattr(self, "_xls_app", None) is not None:
+            _kill_xls_app_silently(self._xls_app)
             self._book = None
             self._xls_app = None
 
@@ -174,22 +315,15 @@ class XLSDiscipline(Discipline):
                 named "Inputs" or if there is no sheet named
                 "Outputs".
         """
-        try:
-            self._xls_app = xlwings.App(visible=False)
-            self._xls_app.interactive = False
-            # Open workbook in manual mode to recalculate cells only when instructed.
-            self._xls_app.calculation = "manual"
+        self._xls_app = _create_xls_app()
 
-        # Wide except because I cannot tell what is the exception raised by xlwings.
-        except BaseException:  # noqa: BLE001
-            msg = "xlwings requires Microsoft Excel"
-            raise RuntimeError(msg) from None
-
-        # In multiprocessing or sequential execution, excel closes in each process.
+        # In multiprocessing or sequential execution, Excel closes in each process.
         # Each process keeps its own _xls_app instance from init to end.
-        # It is therefore possible to register the quit() call at exit.
+        # Use weakref.finalize rather than atexit so the discipline can still be
+        # garbage collected during the run; the App captured here is killed when
+        # the discipline dies or, failing that, at interpreter exit.
         if quit_xls_at_exit:
-            atexit.register(self.__reset_xls_objects)
+            weakref.finalize(self, _kill_xls_app_silently, self._xls_app)
 
         self._book = self._xls_app.books.open(str(self._xls_file_path))
         sh_names = [sheet.name for sheet in self._book.sheets]
@@ -199,29 +333,21 @@ class XLSDiscipline(Discipline):
                 "Workbook must contain a sheet named 'Inputs' "
                 "that define the inputs of the discipline"
             )
-            raise ValueError(msg) from None
+            raise ValueError(msg)
 
         if "Outputs" not in sh_names:
             msg = (
                 "Workbook must contain a sheet named 'Outputs' "
                 "that define the outputs of the discipline"
             )
-            raise ValueError(msg) from None
-
-    def __del__(self) -> None:
-        self.__reset_xls_objects()
+            raise ValueError(msg)
 
     def __setstate__(self, state: StrKeyMapping) -> None:
         super().__setstate__(state)
         # If the book is recreated at _run, there is no need to create one for each
         # process.
         if self._copy_xls_at_setstate and not self._recreate_book_at_run:
-            temp_dir = Path(tempfile.gettempdir())
-            temp_path = temp_dir / self._xls_file_path.name.replace(
-                ".xls", str(uuid4()) + ".xls"
-            )
-            shutil.copy2(str(self._xls_file_path), str(temp_path))
-            self._xls_file_path = temp_path
+            self._xls_file_path = _copy_xls_to_temp(self._xls_file_path, self)
             self.__create_book()
 
     def __read_sheet_col(
@@ -246,7 +372,7 @@ class XLSDiscipline(Discipline):
         self,
         names: list[str],
         values: list[float | None],
-    ) -> tuple[dict[str, array], list[int]]:
+    ) -> tuple[dict[str, ndarray], list[int]]:
         """Build the data dictionary while listing Excel rows where errors are found.
 
         A `None` value is interpreted as an Excel error in that cell.
@@ -302,16 +428,32 @@ class XLSDiscipline(Discipline):
             raise ValueError(msg)
         self.io.input_grammar.defaults = input_defaults
 
-    def __write_inputs(self, input_data: Mapping[str, float]) -> None:
-        """Write the inputs values to the Inputs sheet."""
+    def __write_inputs(self, input_data: Mapping[str, ndarray]) -> None:
+        """Write the input values to the Inputs sheet.
+
+        Each value is written to the row matching the position of its name in
+        the ``Inputs`` sheet (column A), not to the iteration order of
+        ``input_data``.
+
+        Args:
+            input_data: The input values, keyed by name.
+        """
         sht = self._book.sheets["Inputs"]
-        for i, key in enumerate(input_data):
-            sht[i, 1].value = input_data[key][0]
+        for i, name in enumerate(self.input_names):
+            input_value = input_data.get(name)
+            if input_value is not None:
+                sht[i, 1].value = input_value[0]
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         """Run the discipline.
 
         Eventually calls the execute macro.
+
+        Args:
+            input_data: The input values, keyed by name.
+
+        Returns:
+            The output values read from the Outputs sheet, keyed by name.
 
         Raises:
             RuntimeError: If the macro fails to be executed.
@@ -326,45 +468,57 @@ class XLSDiscipline(Discipline):
         # We then initialize the workbook again to run the computation inside each
         # thread.
         # In this case, the Excel process is closed at the end of this _run method.
-        if self._recreate_book_at_run:
+        if self._recreate_book_at_run and pythoncom is not None:
             pythoncom.CoInitialize()
-            self.__create_book(quit_xls_at_exit=False)
 
-        self.__write_inputs(input_data)
+        try:
+            if self._recreate_book_at_run:
+                # Inside the try block so that a workbook opening failure
+                # also resets the Excel objects in the finally clause.
+                self.__create_book(quit_xls_at_exit=False)
 
-        # Explicitly call calculate() because the workbook is in manual mode.
-        self._xls_app.calculate()
+            self.__write_inputs(input_data)
 
-        if self._xls_file_path.match("*.xlsm") and self.macro_name:
-            try:
-                self._xls_app.api.Application.Run(self.macro_name)
-            except BaseException as err:  # noqa: BLE001
-                msg = f"Failed to run '{self.macro_name}' macro: {err}."
-                raise RuntimeError(msg) from None
+            # Explicitly call calculate() because the workbook is in manual mode.
+            self._xls_app.calculate()
 
-        out_vals = self.__read_sheet_col("Outputs", 1)
+            if self._xls_file_path.match("*.xlsm") and self.macro_name:
+                try:
+                    self._xls_app.api.Application.Run(self.macro_name)
+                except Exception as err:
+                    msg = f"Failed to run '{self.macro_name}' macro: {err}."
+                    raise RuntimeError(msg) from err
 
-        if len(out_vals) != len(self.output_names):
-            msg = (
-                "Inconsistent Outputs sheet, names (first columns) and "
-                "values column (second) must be of the same length."
+            out_vals = self.__read_sheet_col("Outputs", 1)
+
+            if len(out_vals) != len(self.output_names):
+                msg = (
+                    "Inconsistent Outputs sheet, names (first columns) and "
+                    "values column (second) must be of the same length."
+                )
+                raise ValueError(msg)
+
+            output_data, error_rows = self.__build_data_dict(
+                self.output_names, out_vals
             )
-            raise ValueError(msg) from None
-
-        output_data, error_rows = self.__build_data_dict(self.output_names, out_vals)
-        if error_rows:
-            msg = (
-                "Outputs sheet contains Excel errors in the second column at rows "
-                f"{error_rows}"
-            )
-            raise ValueError(msg)
-
-        # When using threads, each computation is made with a unique `_xls_app`.
-        # If we do not quit at this point, we loose the reference and
-        # the process ends up hung.
-        # Therefore, we close everything once we have stored all we need.
-        # For this same reason, overloading __del__ is not an option.
-        if self._recreate_book_at_run:
-            self.__reset_xls_objects()
+            if error_rows:
+                msg = (
+                    "Outputs sheet contains Excel errors in the second column at "
+                    f"rows {error_rows}"
+                )
+                raise ValueError(msg)
+        finally:
+            # When using threads, each computation is made with a unique `_xls_app`.
+            # If we do not quit here, we lose the reference and the process ends up
+            # hung. The reset must also happen on failure so that a raised exception
+            # does not leak the Excel process.
+            if self._recreate_book_at_run:
+                self.__reset_xls_objects()
+                if pythoncom is not None:
+                    # Balance the CoInitialize() call above, after the COM
+                    # proxies have been released by __reset_xls_objects(),
+                    # so the apartment reference count does not grow on
+                    # long-lived worker threads.
+                    pythoncom.CoUninitialize()
 
         return output_data
