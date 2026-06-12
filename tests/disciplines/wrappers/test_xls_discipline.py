@@ -19,6 +19,9 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import gc
+import shutil
+import weakref
 from pathlib import Path
 
 import pytest
@@ -34,6 +37,7 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
 from gemseo.core.parallel_execution.discipline_execution import DiscParallelExecution
+from gemseo.disciplines.wrappers import xls_discipline
 from gemseo.disciplines.wrappers.xls_discipline import XLSDiscipline
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
@@ -44,14 +48,170 @@ FILE_PATH_PATTERN = str(DIR_PATH / "test_excel_fail{}.xlsx")
 INPUT_DATA = {"a": array([20.25]), "b": array([3.25])}
 
 
-def test_missing_xlwings(skip_if_xlwings_is_usable, snapshot) -> None:
-    """Check the error when Excel is not available.
+class _FakeBooks:
+    """Stand-in for `App.books` whose `open` always fails."""
+
+    def open(self, path: str) -> None:
+        """Simulate a workbook that cannot be opened.
+
+        Args:
+            path: The workbook path (ignored).
+
+        Raises:
+            OSError: Always.
+        """
+        msg = "simulated workbook open failure"
+        raise OSError(msg)
+
+
+class _FakeApp:
+    """Stand-in for an xlwings `App` recording whether it was killed."""
+
+    def __init__(self, fail_with: type[BaseException] | None = None) -> None:
+        """
+        Args:
+            fail_with: Exception type to raise when setting `interactive`,
+                simulating a failure right after the app is created.
+                ``None`` means no failure.
+        """
+        self.killed = False
+        self.calculation = ""
+        self.books = _FakeBooks()
+        self._fail_with = fail_with
+
+    @property
+    def interactive(self) -> bool:
+        """Whether the app is interactive."""
+        return False
+
+    @interactive.setter
+    def interactive(self, value: bool) -> None:
+        if self._fail_with is not None:
+            msg = "simulated failure"
+            raise self._fail_with(msg)
+
+    def kill(self) -> None:
+        """Record that the app was killed."""
+        self.killed = True
+
+
+def test_missing_xlwings(monkeypatch, snapshot) -> None:
+    """Check the error when xlwings cannot be imported."""
+    monkeypatch.setattr(xls_discipline, "xlwings", None)
+    with assert_exception(ImportError, snapshot):
+        XLSDiscipline("dummy_file_path")
+
+
+def test_excel_unavailable(skip_if_xlwings_is_usable, monkeypatch, snapshot) -> None:
+    """Check the error when xlwings is importable but Excel cannot be launched.
 
     Args:
         skip_if_xlwings_is_usable: Fixture to skip the test when xlwings is usable.
     """
     with assert_exception(RuntimeError, snapshot):
+        monkeypatch.setattr(xls_discipline, "_APP_CREATION_MAX_ATTEMPTS", 1)
+        monkeypatch.setattr(xls_discipline, "_APP_CREATION_RETRY_BACKOFF", 0.0)
+        monkeypatch.setattr(xls_discipline, "_APP_CREATION_RETRY_JITTER", 0.0)
         XLSDiscipline("dummy_file_path")
+
+
+def test_app_killed_when_configuration_fails(monkeypatch, snapshot) -> None:
+    """The partially configured Excel app is killed inside `_create_xls_app`.
+
+    Args:
+        monkeypatch: pytest monkeypatch fixture.
+        snapshot: syrupy snapshot fixture.
+    """
+    apps: list[_FakeApp] = []
+
+    def make_app(*args, **kwargs):
+        app = _FakeApp(fail_with=RuntimeError)
+        apps.append(app)
+        return app
+
+    fake_xlwings = type("FakeXlwings", (), {"App": staticmethod(make_app)})
+    monkeypatch.setattr(xls_discipline, "xlwings", fake_xlwings)
+    monkeypatch.setattr(xls_discipline, "_APP_CREATION_MAX_ATTEMPTS", 1)
+    monkeypatch.setattr(xls_discipline, "_APP_CREATION_RETRY_BACKOFF", 0.0)
+    monkeypatch.setattr(xls_discipline, "_APP_CREATION_RETRY_JITTER", 0.0)
+    with assert_exception(RuntimeError, snapshot):
+        XLSDiscipline("dummy_file_path")
+    assert apps
+    assert all(app.killed for app in apps)
+
+
+def test_app_killed_when_init_fails_without_finalizer(monkeypatch, snapshot) -> None:
+    """The Excel app is killed when `__init__` fails after the app is created.
+
+    With `copy_xls_at_setstate=True` no finalizer is registered at book
+    creation, so a failure while opening the workbook must not leak the app.
+
+    Args:
+        monkeypatch: pytest monkeypatch fixture.
+        snapshot: syrupy snapshot fixture.
+    """
+    app = _FakeApp()
+    monkeypatch.setattr(xls_discipline, "xlwings", object())
+    monkeypatch.setattr(xls_discipline, "_create_xls_app", lambda: app)
+    with assert_exception(OSError, snapshot):
+        XLSDiscipline("dummy_file_path", copy_xls_at_setstate=True)
+    assert app.killed
+
+
+@pytest.mark.parametrize("exception_type", [KeyboardInterrupt, SystemExit])
+def test_create_xls_app_does_not_retry_base_exception(
+    monkeypatch, exception_type, snapshot
+) -> None:
+    """KeyboardInterrupt / SystemExit raised by xlwings.App are re-raised immediately.
+
+    Args:
+        monkeypatch: pytest monkeypatch fixture.
+        exception_type: The BaseException subclass to simulate.
+        snapshot: syrupy snapshot fixture.
+    """
+    attempts = {"value": 0}
+
+    def raising_app(*args, **kwargs):
+        attempts["value"] += 1
+        raise exception_type()
+
+    fake_xlwings = type("FakeXlwings", (), {"App": staticmethod(raising_app)})
+    monkeypatch.setattr(xls_discipline, "xlwings", fake_xlwings)
+    monkeypatch.setattr(xls_discipline, "_APP_CREATION_MAX_ATTEMPTS", 3)
+
+    with assert_exception(exception_type, snapshot):
+        xls_discipline._create_xls_app()
+
+    assert attempts["value"] == 1
+
+
+@pytest.mark.parametrize("exception_type", [KeyboardInterrupt, SystemExit])
+def test_create_xls_app_kills_app_on_base_exception(
+    monkeypatch, exception_type, snapshot
+) -> None:
+    """A partially configured app is killed before a BaseException re-raises.
+
+    Args:
+        monkeypatch: pytest monkeypatch fixture.
+        exception_type: The BaseException subclass to simulate.
+        snapshot: syrupy snapshot fixture.
+    """
+    apps: list[_FakeApp] = []
+
+    def make_app(*args, **kwargs):
+        app = _FakeApp(fail_with=exception_type)
+        apps.append(app)
+        return app
+
+    fake_xlwings = type("FakeXlwings", (), {"App": staticmethod(make_app)})
+    monkeypatch.setattr(xls_discipline, "xlwings", fake_xlwings)
+    monkeypatch.setattr(xls_discipline, "_APP_CREATION_MAX_ATTEMPTS", 3)
+
+    with assert_exception(exception_type, snapshot):
+        xls_discipline._create_xls_app()
+
+    assert len(apps) == 1
+    assert apps[0].killed
 
 
 def test_basic(skip_if_xlwings_is_not_usable) -> None:
@@ -66,16 +226,31 @@ def test_basic(skip_if_xlwings_is_not_usable) -> None:
     assert xlsd.io.data["c"] == 23.5
 
 
+def test_restricted_grammar(skip_if_xlwings_is_not_usable) -> None:
+    """Test that a subset of the input grammar can be used.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
+            usable.
+    """
+    xlsd = XLSDiscipline(DIR_PATH / "test_excel.xlsx")
+    xlsd.io.input_grammar.clear()
+    xlsd.io.input_grammar.update_from_names("a")
+    xlsd.execute(INPUT_DATA)
+    assert xlsd.io.data["c"] == 23.25
+
+
 @pytest.mark.parametrize("file_id", range(1, 4))
-def test_error_init(skip_if_xlwings_is_not_usable, file_id) -> None:
+def test_error_init(skip_if_xlwings_is_not_usable, file_id, snapshot) -> None:
     """Test that errors are raised for files without the proper format.
 
     Args:
         skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
             usable.
         file_id: The id of the test file.
+        snapshot: syrupy snapshot fixture.
     """
-    with pytest.raises(ValueError):
+    with assert_exception(ValueError, snapshot):
         XLSDiscipline(FILE_PATH_PATTERN.format(file_id))
 
 
@@ -112,6 +287,132 @@ def test_excel_error_execute(skip_if_xlwings_is_not_usable, snapshot) -> None:
     disc = XLSDiscipline(FILE_PATH_PATTERN.format(6))
     with assert_exception(ValueError, snapshot):
         disc.execute(INPUT_DATA)
+
+
+def test_copy_xls_to_temp_preserves_extension(tmp_path) -> None:
+    """`_copy_xls_to_temp` must keep the suffix when the stem contains `.xls`.
+
+    Args:
+        tmp_path: pytest fixture providing a temporary directory.
+    """
+    src = tmp_path / "model.xls.backup.xlsx"
+    src.write_bytes(b"fake content")
+
+    class Owner:
+        pass
+
+    temp_path = xls_discipline._copy_xls_to_temp(src, Owner())
+    assert temp_path.suffix == ".xlsx"
+    assert temp_path.name.startswith("model.xls.backup")
+
+
+def test_copy_xls_to_temp_cleans_up_on_gc(tmp_path) -> None:
+    """The temp file copied by `_copy_xls_to_temp` is removed when its owner is GC'd.
+
+    Args:
+        tmp_path: pytest fixture providing a temporary directory.
+    """
+    src = tmp_path / "src.xlsx"
+    src.write_bytes(b"fake content")
+
+    class Owner:
+        pass
+
+    owner = Owner()
+    temp_path = xls_discipline._copy_xls_to_temp(src, owner)
+    assert temp_path.exists()
+    assert temp_path != src
+
+    del owner
+    gc.collect()
+
+    assert not temp_path.exists()
+
+
+def test_app_creation_retries_on_transient_failure(
+    skip_if_xlwings_is_not_usable, monkeypatch
+) -> None:
+    """Transient COM failures while launching Excel are retried.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
+            usable.
+        monkeypatch: pytest monkeypatch fixture.
+    """
+    real_app = xls_discipline.xlwings.App
+    attempts = {"value": 0}
+
+    def flaky_app(*args, **kwargs):
+        attempts["value"] += 1
+        if attempts["value"] < 3:
+            msg = "simulated transient COM failure"
+            raise RuntimeError(msg)
+        return real_app(*args, **kwargs)
+
+    monkeypatch.setattr(xls_discipline.xlwings, "App", flaky_app)
+    monkeypatch.setattr(xls_discipline, "_APP_CREATION_RETRY_BACKOFF", 0.0)
+    monkeypatch.setattr(xls_discipline, "_APP_CREATION_RETRY_JITTER", 0.0)
+
+    disc = XLSDiscipline(DIR_PATH / "test_excel.xlsx")
+    assert attempts["value"] == 3
+    assert disc._xls_app is not None
+
+
+def test_discipline_can_be_garbage_collected(skip_if_xlwings_is_not_usable) -> None:
+    """The discipline must not be kept alive by an interpreter-exit hook.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
+            usable.
+    """
+    disc = XLSDiscipline(DIR_PATH / "test_excel.xlsx")
+    ref = weakref.ref(disc)
+    del disc
+    gc.collect()
+
+    assert ref() is None
+
+
+def test_run_cleans_up_on_failure(skip_if_xlwings_is_not_usable, snapshot) -> None:
+    """The Excel app is reset when `_run` raises with `recreate_book_at_run=True`.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
+            usable.
+        snapshot: syrupy snapshot fixture.
+    """
+    disc = XLSDiscipline(FILE_PATH_PATTERN.format(6), recreate_book_at_run=True)
+    assert disc._xls_app is None
+
+    with assert_exception(ValueError, snapshot):
+        disc.execute(INPUT_DATA)
+
+    assert disc._xls_app is None
+
+
+def test_run_resets_app_when_book_creation_fails(
+    skip_if_xlwings_is_not_usable, tmp_path
+) -> None:
+    """The Excel app is reset when `_run` fails to open the workbook.
+
+    With `recreate_book_at_run=True` the workbook is opened at each run; a
+    failure there must not leak the Excel process.
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
+            usable.
+        tmp_path: pytest fixture providing a temporary directory.
+    """
+    xls_path = tmp_path / "test_excel.xlsx"
+    shutil.copy2(DIR_PATH / "test_excel.xlsx", xls_path)
+    disc = XLSDiscipline(xls_path, recreate_book_at_run=True)
+    assert disc._xls_app is None
+
+    xls_path.unlink()
+    with pytest.raises(FileNotFoundError):
+        disc.execute(INPUT_DATA)
+
+    assert disc._xls_app is None
 
 
 def test_multiprocessing(skip_if_xlwings_is_not_usable) -> None:
@@ -222,6 +523,33 @@ def test_doe_multiproc_multithread(skip_if_xlwings_is_not_usable) -> None:
     scenario.add_constraint("c_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.execute(DiagonalDOE_Settings(n_samples=2, n_processes=2))
     assert isclose(scenario.optimization_result.f_opt, 101.0, 1e-8, 1e-8)
+
+
+def test_input_order(skip_if_xlwings_is_not_usable) -> None:
+    """Test that input values are written correctly regardless of input data order.
+
+    The order or the input_data dictionary generally corresponds to the order of the
+    input names in the grammar, which is inferred from the row order of the Excel file.
+    If the user modifies the grammar, this order could be altered.
+
+    This Excel sheet computes: c = 100*z + 10*a + m
+    The order in the sheet is z, a, m
+
+    Args:
+        skip_if_xlwings_is_not_usable: Fixture to skip the test when xlwings is not
+            usable.
+    """
+    xlsd = XLSDiscipline(DIR_PATH / "test_excel_input_order.xlsx")
+    xlsd.io.input_grammar.clear()
+    # Grammar in different order than the Inputs sheet (z, a, m)
+    xlsd.io.input_grammar.update_from_names(["a", "m", "z"])
+    input_data = {
+        "m": array([2.0]),
+        "z": array([3.0]),
+        "a": array([1.0]),
+    }
+    xlsd.execute(input_data)
+    assert xlsd.io.data["c"] == array([312.0])
 
 
 #         def test_macro(self):

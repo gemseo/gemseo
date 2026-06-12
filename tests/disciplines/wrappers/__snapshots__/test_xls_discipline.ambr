@@ -1,10 +1,46 @@
 # serializer version: 1
+# name: test_app_killed_when_configuration_fails
+  'xlwings requires Microsoft Excel'
+# ---
+# name: test_app_killed_when_init_fails_without_finalizer
+  'simulated workbook open failure'
+# ---
+# name: test_create_xls_app_does_not_retry_base_exception[KeyboardInterrupt]
+  ''
+# ---
+# name: test_create_xls_app_does_not_retry_base_exception[SystemExit]
+  ''
+# ---
+# name: test_create_xls_app_kills_app_on_base_exception[KeyboardInterrupt]
+  'simulated failure'
+# ---
+# name: test_create_xls_app_kills_app_on_base_exception[SystemExit]
+  'simulated failure'
+# ---
 # name: test_error_execute
   'Inconsistent Outputs sheet, names (first columns) and values column (second) must be of the same length.'
+# ---
+# name: test_error_init[1]
+  "Workbook must contain a sheet named 'Inputs' that define the inputs of the discipline"
+# ---
+# name: test_error_init[2]
+  "Workbook must contain a sheet named 'Outputs' that define the outputs of the discipline"
+# ---
+# name: test_error_init[3]
+  'Inconsistent Inputs sheet, names (first columns) and values column (second) must be of the same length'
 # ---
 # name: test_excel_error_defaults
   'Inputs sheet contains Excel errors in the second column at rows [2]'
 # ---
 # name: test_excel_error_execute
+  'Outputs sheet contains Excel errors in the second column at rows [1]'
+# ---
+# name: test_excel_unavailable
+  'xlwings requires Microsoft Excel'
+# ---
+# name: test_missing_xlwings
+  'cannot import xlwings'
+# ---
+# name: test_run_cleans_up_on_failure
   'Outputs sheet contains Excel errors in the second column at rows [1]'
 # ---
