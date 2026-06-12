@@ -24,7 +24,7 @@
 
 In this tutorial, you will learn to create and manipulate a design space.
 
-As specified in the [user guide][the-design-space],
+As specified in the [user guide][concept-design-space],
 a design space defines the optimization variables:
 their names, types, dimensions, bounds, and current values (if any).
 We will first create an instance of a

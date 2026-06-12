@@ -120,7 +120,7 @@ sc_str.set_algorithm(slsqp_settings)
 # [create_scenario()][gemseo.create_scenario] function gathers both
 # [disciplines][gemseo.core.discipline.discipline.Discipline] and
 # [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
-# The [BiLevel formulation][the-bi-level-formulation] will automatically transform the scenarios into disciplines.
+# The [BiLevel formulation][concept-the-bi-level-formulation] will automatically transform the scenarios into disciplines.
 #
 # !!! note
 #     An [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
@@ -231,17 +231,15 @@ len(structure_databases)
 # !!! note
 #     The value contained in `system_scenario.optimization_result` can be retrieved by this mean as well.
 
-# TODO: fix the get_result() method
-# bilevel_result = system_scenario.get_result()
-# bilevel_result.get_top_optimization_result()
+bilevel_result = system_scenario.get_result()
+bilevel_result.get_top_optimization_result()
 
 # %%
 # Let's focus on the Structure optimization.
 # The structure optimization can be found at index=2.
 
-# TODO: fix the get_result() method
-# structure_result = bilevel_result.get_sub_optimization_result(2)
-# structure_result
+structure_result = bilevel_result.get_sub_optimization_result(2)
+structure_result
 
 # %%
 #

@@ -34,8 +34,10 @@ whenever new values are stored during the run.
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
+from gemseo import configuration
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -43,6 +45,16 @@ from gemseo.scenarios.mdo import MDOScenario
 
 if TYPE_CHECKING:
     from gemseo.algos.optimization_problem import OptimizationProblem
+
+
+# %%
+#
+# We configure the logger to see the listener's output in the console.
+# In this case we use GEMSEO's default configuration.
+# See [Global configuration][concept-global-configuration] for the scope of the logging configuration.
+LOGGER = logging.getLogger(__name__)
+configuration.logging.configure_root_logger = True
+
 
 # %%
 # ### 1. Create the scenario
@@ -70,7 +82,8 @@ scenario.add_objective("obj")
 #
 # Here we track the objective at each iteration by capturing a reference to
 # the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-# in a closure:
+# in a closure; additionally, we log the design vector to demonstrate the live
+# tracking of the process:
 problem: OptimizationProblem = scenario.formulation.problem
 obj_history = []
 
@@ -78,6 +91,7 @@ obj_history = []
 def track_objective(x_vect):
     value = problem.database.get_function_value("obj", x_vect)
     obj_history.append(float(value))
+    LOGGER.info("\t Listener: x_vector = %s, obj = %s", x_vect, float(value))
 
 
 # %%
@@ -94,6 +108,8 @@ problem.add_listener(track_objective)
 scenario.execute(SLSQP_Settings(max_iter=20))
 
 # %%
+# The log output shows the design vector and corresponding objective value captured at each iteration.
+#
 # After execution, `obj_history` holds one entry per iteration,
 # showing the objective converging toward zero.
 # These values can be observed in the log as well.

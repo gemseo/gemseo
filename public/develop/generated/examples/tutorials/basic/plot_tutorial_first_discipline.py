@@ -39,7 +39,7 @@ from gemseo.core.grammars.pydantic import PydanticGrammar
 # %%
 # ## Step 1 - Your first discipline
 #
-# As seen in the [user guide][the-discipline-a-key-concept],
+# As seen in the [user guide][concept-discipline],
 # a discipline is a set of calculations that:
 #
 # - produces a dictionary of arrays as outputs

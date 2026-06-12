@@ -49,7 +49,7 @@ list(discipline.CacheType)
 # %%
 # !!! warning
 #     Some caches have usage restrictions.
-#     Do not hesitate to read the [user guide][different-cache-types].
+#     Do not hesitate to read the [user guide][concept-different-cache-types].
 #
 # ### 3. Set another cache
 #

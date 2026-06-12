@@ -24,7 +24,7 @@
 ## Problem
 
 You have multiple disciplines and you want to
-visualize their couplings as a [N2 chart][n2-chart-visualization].
+visualize their couplings as a [N2 chart][concept-n2-chart].
 
 ## Solution
 

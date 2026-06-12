@@ -71,7 +71,7 @@ for discipline in disciplines:
 #
 # !!! note
 #     A much more detailed explanation of coupling
-#     visualization is available [here][coupling-visualization].
+#     visualization is available [here][concept-coupling-visualization].
 generate_n2_plot(disciplines, save=False, show=True)
 
 # %%
@@ -99,7 +99,7 @@ design_space
 #
 # !!! note
 #     The list of the available formulations, and their description, is available in
-#     [MDO formulations][mdo-formulations].
+#     [MDO formulations][concept-mdo-formulations].
 #
 # The [MDF][gemseo.formulations.mdf.MDF] formulation will create MDAs in the workflow,
 # if needed.
@@ -197,7 +197,7 @@ scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 # You've learnt to combine different important concepts of GEMSEO
 # to create your first optimisation workflow.
 # The [MDOScenario][gemseo.scenarios.mdo.MDOScenario] uses a
-# [MDO formulation][mdo-formulations] which is in charge of building the process
+# [MDO formulation][concept-mdo-formulations] which is in charge of building the process
 # with the [Disciplines][gemseo.core.discipline.discipline.Discipline],
 # where the way how couplings are solved depends on the selected strategy.
 #

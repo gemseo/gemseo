@@ -163,7 +163,7 @@ disc_sellar_1.default_input_data
 # You may also be interested in plotting the couplings of your disciplines.
 # A quick way of getting this information is the high-level function
 # [generate_n2_plot()][gemseo.generate_n2_plot]. A much more detailed explanation of coupling
-# visualization is available [here][coupling-visualization].
+# visualization is available [here][concept-coupling-visualization].
 generate_n2_plot(disciplines, save=False, show=True)
 
 # %%

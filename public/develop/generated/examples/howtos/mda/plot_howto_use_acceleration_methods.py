@@ -27,7 +27,7 @@ and you would like to speed-up the convergence.
 
 ## Solution
 
-[MDA acceleration methods][accelerationrelaxation-methods]
+[MDA acceleration methods][concept-mda-acceleration-relaxation]
 may decrease the number of needed iterations.
 
 ## Step-by-step guide
