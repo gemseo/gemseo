@@ -56,15 +56,17 @@ class BiLevelScenarioResult(ScenarioResult):
         if not scenario_adapters[0].databases:
             return
 
-        i_opt = main_problem.database.get_iteration(main_problem.solution.x_opt) - 1
+        i_opt = main_problem.solution.optimum_index
         for index, scenario_adapter in enumerate(scenario_adapters):
             sub_problem = scenario_adapter.scenario.formulation.problem
             database = sub_problem.database
-            sub_problem.database = scenario_adapter.databases[i_opt]
-            result = OptimizationResult.from_optimization_problem(sub_problem)
-            label = self.__SUB_LABEL_FORMATTER.format(index)
-            self.optimization_problem_to_result[label] = result
-            sub_problem.database = database
+            try:
+                sub_problem.database = scenario_adapter.databases[i_opt]
+                result = OptimizationResult.from_optimization_problem(sub_problem)
+                label = self.__SUB_LABEL_FORMATTER.format(index)
+                self.optimization_problem_to_result[label] = result
+            finally:
+                sub_problem.database = database
 
     def get_top_optimization_result(self) -> OptimizationResult:
         """Return the optimization result of the top-level optimization problem."""

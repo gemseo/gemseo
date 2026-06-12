@@ -58,7 +58,7 @@ class OptimizationHistory:
     __constraints: Constraints
     """The constraints."""
 
-    __database: Database
+    database: Database
     """The database attached to the optimization problem.."""
 
     __design_space: DesignSpace
@@ -96,7 +96,7 @@ class OptimizationHistory:
         """  # noqa: D205, D212
         self.objective_name = ""
         self.__constraints = constraints
-        self.__database = database
+        self.database = database
         self.__design_space = design_space
 
     @property
@@ -117,7 +117,7 @@ class OptimizationHistory:
         self.__raise_when_database_is_empty()
         x_history = []
         f_history = []
-        for input_value, output_values in self.__database.items():
+        for input_value, output_values in self.database.items():
             # if all constraints are satisfied, store the vector
             if self.__constraints.is_point_feasible(output_values):
                 x_history.append(input_value.unwrap())
@@ -161,7 +161,7 @@ class OptimizationHistory:
         self.__raise_when_database_is_empty()
         violation = 0.0
         x_vect_is_feasible = True
-        output_name_to_value = self.__database.get(x_vect)
+        output_name_to_value = self.database.get(x_vect)
         constraints = self.__constraints
         for constraint in constraints:
             constraint_value = output_name_to_value.get(constraint.name)
@@ -200,7 +200,7 @@ class OptimizationHistory:
         f_history = []
         is_feasible = []
         viol_criteria = []
-        for x_vect, out_val in self.__database.items():
+        for x_vect, out_val in self.database.items():
             is_pt_feasible, f_violation = self.check_design_point_is_feasible(x_vect)
             is_feasible.append(is_pt_feasible)
             viol_criteria.append(f_violation)
@@ -295,7 +295,7 @@ class OptimizationHistory:
             ValueError: When the database is empty.
         """
         self.__raise_when_database_is_empty()
-        data = self.__database.to_dataset(name="OptimizationProblem").get_view(
+        data = self.database.to_dataset(name="OptimizationProblem").get_view(
             variable_names=names
         )
         data = data.to_dict(orient="list") if as_dict else data.to_numpy()
@@ -303,7 +303,7 @@ class OptimizationHistory:
             return data
 
         feasible_indices = [
-            self.__database.get_iteration(x) - 1 for x in self.feasible_points[0]
+            self.database.get_iteration(x) - 1 for x in self.feasible_points[0]
         ]
         if not as_dict:
             return data[feasible_indices, :]
@@ -342,7 +342,7 @@ class OptimizationHistory:
         Raises:
             ValueError: When the database is empty.
         """
-        database = self.__database
+        database = self.database
         if not database:
             msg = "The optimization history is empty."
             raise ValueError(msg)

@@ -112,8 +112,10 @@ scenario.execute(PYDOE_FULLFACT_Settings(n_samples=11**2))
 # [Dataset][gemseo.datasets.dataset.Dataset].
 #
 # Two different groups are made in the [Dataset][gemseo.datasets.dataset.Dataset]:
+#
 # - `inputs` to store the evaluated points
 # - `outputs` to store the observables.
+#
 # In our case, the `y` variable appears as `Result`.
 scenario.to_dataset()
 
