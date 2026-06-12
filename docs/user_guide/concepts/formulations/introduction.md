@@ -39,17 +39,17 @@ In this section we describe the MDO formulations features of GEMSEO.
 
 GEMSEO contains the following formulations:
 
-- [MDF (Multi-Disciplinary Feasible)][the-mdf-formulation];
-- [IDF (Individual Discipline Feasible)][the-idf-formulation];
+- [MDF (Multi-Disciplinary Feasible)][concept-the-mdf-formulation];
+- [IDF (Individual Discipline Feasible)][concept-the-idf-formulation];
 - a simple disciplinary optimization formulation for a weakly coupled problem;
-- a particular [bi-level][the-bi-level-formulation] formulation from IRT Saint Exupéry;
+- a particular [bi-level][concept-the-bi-level-formulation] formulation from IRT Saint Exupéry;
 - another bi-level formulation,
-  denoted [bi-level BCD][the-bi-level-block-coordinate-descent-formulation] formulation,
+  denoted [bi-level BCD][concept-the-bi-level-block-coordinate-descent-formulation] formulation,
   from IRT Saint Exupéry that enhances the previous one with a
   Block Coordinate Descent (BCD) algorithm.
 
 In the following, general concepts about the formulations are given.
-The [MDF][the-mdf-formulation] and [IDF][the-idf-formulation] text
+The [MDF][concept-the-mdf-formulation] and [IDF][concept-the-idf-formulation] text
 is integrally taken from the paper[@Vanaret2017].
 
 !!! tip

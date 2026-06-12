@@ -234,5 +234,5 @@ _configuration = GlobalConfiguration()
 """The global GEMSEO configuration.
 
 The feature is described
-on the page [Global configuration][global-configuration] of the user guide.
+on the page [Global configuration][concept-global-configuration] of the user guide.
 """

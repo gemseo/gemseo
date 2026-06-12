@@ -103,7 +103,7 @@ generate_coupling_graph(disciplines, file_path="", full=False)
 #
 # !!! note
 #     To understand everything on the N2 diagram, please refer to
-#     [N2 chart visualization][n2-chart-visualization].
+#     [N2 chart visualization][concept-n2-chart].
 generate_n2_plot(disciplines, save=False, show=True)
 
 # %%
@@ -154,7 +154,7 @@ output_data
 # ## Step 4 - Residuals
 #
 # The convergence of MDAs is computed thanks to residuals,
-# as explained in [MDA Stopping criteria][stopping-criteria].
+# as explained in [MDA Stopping criteria][concept-mda-stopping-criteria].
 #
 # The MDA algorithm will stop if one of the following criteria is fulfilled:
 #

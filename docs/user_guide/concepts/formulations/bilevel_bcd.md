@@ -18,9 +18,9 @@ search:
 # The Bi-level Block Coordinate Descent formulation { #concept-the-bi-level-block-coordinate-descent-formulation }
 
 The Bi-level BCD formulation adds more robustness and stability with respect to the
-previous [bi-level formulation][the-bi-level-formulation],
+previous [bi-level formulation][concept-the-bi-level-formulation],
 solving more accurately the inner sub-problem.
-The decomposition discussed in [bi-level formulation][the-bi-level-formulation] section
+The decomposition discussed in [bi-level formulation][concept-the-bi-level-formulation] section
 remains the same
 and motivated by the same considerations.
 The next figure shows
@@ -64,7 +64,7 @@ the Bi-level BCD-MDF version where all the couplings are solved within each bloc
 which is explicitly denoted by the dependence of $f$ and $g_i$ to $\Psi(x, z)$,
 meaning that the couplings are recomputed
 and not fixed during sub-optimization
-conversely to the previous [bi-level formulation][the-bi-level-formulation].
+conversely to the previous [bi-level formulation][concept-the-bi-level-formulation].
 While MDA 1 and 2 may not be theoretically necessary,
 in practice they allow to respectively compute more relevant initial
 coupling values for the BCD loop

@@ -61,4 +61,4 @@ and restored using [from_hdf()][gemseo.algos.optimization_problem.OptimizationPr
 
 [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] does with [functions][concept-functions]
 what [MDOScenario][gemseo.scenarios.mdo.MDOScenario] does with [disciplines][concept-discipline].
-Please refer to the [scenario section][scenario-user-guide] for more information.
+Please refer to the [scenario section][concept-scenarios] for more information.

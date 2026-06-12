@@ -35,7 +35,7 @@ than regression: clustering, classification, dimension reduction, data scaling,
 
 !!! info "See Also"
 
-      [Surrogate models](../surrogate.md)
+      [Surrogate models](../user_guide/needs/surrogate_modelling.md)
 
 ## Development
 

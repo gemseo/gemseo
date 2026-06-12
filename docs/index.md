@@ -42,7 +42,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __Discipline__
 
-    [:octicons-book-24: User guide][the-discipline-a-key-concept]
+    [:octicons-book-24: User guide][concept-discipline]
     [:octicons-play-24: Examples][disciplines-examples]
     [:octicons-gear-24: Types][available-disciplines]
 
@@ -54,11 +54,11 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
     [analytic expressions][use-analytic-expressions],
     [executable][tutorial-wrap-an-executable],
     [surrogate model][surrogate-models] and
-    [much more][the-discipline-a-key-concept].
+    [much more][concept-discipline].
 
 - ### __Design space__
 
-    [:octicons-book-24: User guide][the-design-space]
+    [:octicons-book-24: User guide][concept-design-space]
     [:octicons-play-24: Examples][design-space-examples]
 
     ---
@@ -71,7 +71,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __Scenario__
 
-    [:octicons-book-24: User guide][scenario-user-guide]
+    [:octicons-book-24: User guide][concept-scenarios]
     [:octicons-play-24: Examples][scenario-examples]
 
     ---
@@ -84,12 +84,12 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __Data persistence__
 
-    [:octicons-book-24: User guide][data-persistence-overview]
+    [:octicons-book-24: User guide][concept-data-persistence]
     [:octicons-play-24: Examples][cache-examples]
 
     ---
 
-    Store disciplinary evaluations in a [cache][caching-and-recording-discipline-data]
+    Store disciplinary evaluations in a [cache][concept-cache]
     either in memory or saved in a file.
     Use a [dataset][gemseo.datasets.dataset] to store many kinds of data
     and make them easy to handle for visualization, display and query purposes.
@@ -112,9 +112,9 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
     From an Excel workbook,
     specify your disciplines, design space, objective and constraints,
     select an MDO formulation and plot both coupling structure
-    ([N2 chart][n2-chart-visualization]
+    ([N2 chart][concept-n2-chart]
     and MDO process
-    ([XDSM][xdsm-visualization]),
+    ([XDSM][concept-xdsm-visualization]),
     even before wrapping any software.
 
 - ### __Optimization__
@@ -136,7 +136,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __DOE & trade-off__
 
-    [:octicons-book-24: User guide](doe.md)
+    [:octicons-book-24: User guide][concept-evaluation-problem]
     [:octicons-play-24: Examples][design-of-experiments-doe]
     [:octicons-gear-24: Algorithms][available-doe-algorithms]
 
@@ -150,7 +150,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __MDO formulations__ { #overview-mdo-formulations }
 
-    [:octicons-book-24: User guide][mdo-formulations]
+    [:octicons-book-24: User guide][concept-mdo-formulations]
     [:octicons-play-24: Examples][mdo-formulation]
     [:octicons-gear-24: Algorithms][available-mdo-formulations]
 
@@ -160,7 +160,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __MDA__
 
-    [:octicons-book-24: User guide][multi-disciplinary-analyses]
+    [:octicons-book-24: User guide][concept-solving-multi-disciplinary-analysis]
     [:octicons-play-24: Examples][multidisciplinary-analysis-mda]
     [:octicons-gear-24: Algorithms][available-mda-algorithms]
 
@@ -193,7 +193,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 - ### __Surrogate models__ { #overview-surrogate-models }
 
     [:octicons-play-24: Examples][use-a-surrogate-model]
-    [:octicons-gear-24: Algorithms][surrogate-models-introduction]
+    [:octicons-gear-24: Algorithms][needs-surrogate-modelling]
 
     ---
 
@@ -237,7 +237,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __Uncertainty__
 
-    [:octicons-book-24: User guide][introduction-to-uncertainty-quantification-and-management]
+    [:octicons-book-24: User guide][concept-uncertainty-introduction]
     [:octicons-play-24: Examples][uncertainty-examples]
     [:octicons-gear-24: Algorithms][uncertainty-algorithms]
 

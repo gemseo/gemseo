@@ -33,7 +33,7 @@ It can be interfaced with multiple workflow engines of disciplines when requeste
 
 GEMSEO must provide generic interfaces, so that it can be integrated within any MDO platform technology.
 
-- Interfaces with external workflow engines , see [The discipline, a key concept][the-discipline-a-key-concept].
+- Interfaces with external workflow engines , see [The discipline, a key concept][concept-discipline].
 - Interfaces with external optimization algorithms , and DOE methods, MDA solvers, surrogate model.
 - Interfaces with the MDO platform.
 
@@ -86,7 +86,7 @@ During the process execution :
 ![Process execution](../assets/images/architecture/components_execute_process.png)
 *Components interactions at execution of the process*
 
-The sequence diagram shows the data exchanges during the execution. Here the generic process may be a [Multi Disciplinary Analyses](../mdo/mda.md) in the case of MDF, which calls the disciplines. We represent only the objective function calls, since the constraints are handled in a similar way. The calls to the objective and its gradient are made within a loop, until convergence of the optimization algorithm (the driver). The scenario then retrieves the optimum from the driver.
+The sequence diagram shows the data exchanges during the execution. Here the generic process may be a [Multi Disciplinary Analyses](../user_guide/concepts/coupling/solving_mda.md) in the case of MDF, which calls the disciplines. We represent only the objective function calls, since the constraints are handled in a similar way. The calls to the objective and its gradient are made within a loop, until convergence of the optimization algorithm (the driver). The scenario then retrieves the optimum from the driver.
 
 ``` mermaid
 sequenceDiagram

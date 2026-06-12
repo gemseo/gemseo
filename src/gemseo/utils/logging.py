@@ -58,8 +58,9 @@ _StreamT = TypeVar("_StreamT", bound="SupportsWrite[str]")
 class LoggingConfiguration(BaseModel, validate_assignment=True):
     """The configuration for GEMSEO loggers.
 
-    See [Global configuration][global-configuration] for the scope of the logging
-    configuration and how to configure logs from client code.
+    See [Global configuration][concept-global-configuration]
+    for the scope of the logging configuration
+    and how to configure logs from client code.
     """
 
     configure_root_logger: bool = Field(

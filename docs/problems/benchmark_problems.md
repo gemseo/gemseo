@@ -234,7 +234,7 @@ Both implementations led to the same results.
 As all gradients can be computed, we resort to gradient-based optimization methods.
 All Jacobian matrices are coded analytically in GEMSEO.
 
-Reference results using the [MDF formulation][the-mdf-formulation] are presented in the next table.
+Reference results using the [MDF formulation][concept-the-mdf-formulation] are presented in the next table.
 
 | Variable                          | Initial      | Optimum       |
 | --------------------------------- | ------------ | ------------- |

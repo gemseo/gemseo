@@ -28,7 +28,7 @@ are put in a so-called system level optimization sub-problem.
 In so-called disciplinary optimization sub-problems,
 only the design variables that have a direct impact on one discipline are used.
 Then,
-the coupling variables may be solved by a [MDA][multi-disciplinary-analyses],
+the coupling variables may be solved by a [MDA][concept-solving-multi-disciplinary-analysis],
 as in formulations derived from MDF (BLISS, ASO or CSSO),
 or by using consistency constraints (eventually handled through a penalty approach)
 like in IDF-like formulations (CO or ATC).
@@ -85,7 +85,7 @@ to solve accurately the lower problem and the system level algorithm may not con
 to the right solution.
 In such a situation,
 an enhancement is proposed with the
-[bi-level BCD formulation][coupled-derivatives-and-gradients-computation]
+[bi-level BCD formulation][concept-the-bi-level-block-coordinate-descent-formulation]
 which extends the range of problems that can be solved with Bi-level approaches.
 
 ## Going further { #concept-going-further }

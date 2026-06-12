@@ -89,7 +89,7 @@ and are commonly used for sensitivity analysis, design space exploration, or val
 
 [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem] does with [functions][concept-functions]
 what [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario] does with [disciplines][concept-discipline].
-Please refer to the [scenario section][scenario-user-guide] for more information.
+Please refer to the [scenario section][concept-scenarios] for more information.
 
 !!! warning
 

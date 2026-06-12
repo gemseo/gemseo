@@ -146,8 +146,6 @@ scenario.xdsmize(show_html=True, save_html=False)
 # This spreadsheet format is convenient for early-stage design reviews,
 # letting domain experts contribute without writing any code.
 #
-# ![MDO study](../../../../assets/images/study_analysis_example/mdo_study.png)
-#
 # Pass the path to the Excel file to
 # [CouplingStudyAnalysis][gemseo.utils.study_analyses.coupling_study_analysis.CouplingStudyAnalysis]:
 
@@ -167,8 +165,6 @@ coupling_study.generate_n2(save=False, show=True)
 #
 # Pass this file to
 # [MDOStudyAnalysis][gemseo.utils.study_analyses.mdo_study_analysis.MDOStudyAnalysis]:
-#
-# ![MDO study](../../../../assets/images/study_analysis_example/mdo_study.png)
 mdo_study = MDOStudyAnalysis("mdo_study.xlsx")
 mdo_study.generate_n2(save=False, show=True)
 mdo_study.generate_xdsm(".")

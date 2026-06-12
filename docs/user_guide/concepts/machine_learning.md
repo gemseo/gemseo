@@ -24,7 +24,7 @@ Machine learning (ML) is the art of building models from data.
 In GEMSEO, these models are called *ML models*.
 A typical application of ML is
 the construction of surrogate models to replace costly disciplines,
-as explained in [this page][surrogate-models-introduction].
+as explained in [this page][needs-surrogate-modelling].
 
 The data consist of $n$ samples:
 

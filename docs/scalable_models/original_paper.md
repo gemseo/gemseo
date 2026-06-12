@@ -36,7 +36,7 @@ or scalable discipline feature, based on the paper [@Vanaret2017]:
 
       The scalable model is illustrated in [several examples][scalable-model].
 
-Based on computationally cheap disciplines, the scalable problem allows to choose an [MDO formulation][mdo-formulations]:
+Based on computationally cheap disciplines, the scalable problem allows to choose an [MDO formulation][concept-mdo-formulations]:
 
 - for the problem from which derives the scalable problem or
 - for a family of problems having:
@@ -44,7 +44,7 @@ Based on computationally cheap disciplines, the scalable problem allows to choos
     - common properties with the original problem.
 
 According to the authors, this scalable problem *"preserve[s] the functional characteristics of
-the original problem, and they proved useful in performing a rapid benchmarking of* [MDO formulations][mdo-formulations]:". This
+the original problem, and they proved useful in performing a rapid benchmarking of* [MDO formulations][concept-mdo-formulations]:". This
 *"provides insights on the scalability of MDO architectures with respect to the
 dimensions of the problem. This may be achieved without having to execute the* MDO *processes with the
 original models. Our methodology thus requires a limited number of evaluations of the original models that

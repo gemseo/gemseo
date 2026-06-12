@@ -35,7 +35,7 @@
 {% if user_guide_anchor %}
 !!! note
 
-    You can find more information about this family of algorithms in [the user guide][design-of-experiments].
+    You can find more information about this family of algorithms in [the user guide][design-of-experiments-doe].
 {% endif %}
 
 {% if features is not none %}
