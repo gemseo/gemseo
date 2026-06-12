@@ -25,14 +25,14 @@ Contributors:
 In this section we describe GEMSEO's optimization and DOE framework.
 
 The standard way to use GEMSEO is through an [MDOScenario][gemseo.scenarios.mdo.MDOScenario], which
-automatically creates an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] from an [MDO formulation][mdo-formulations] and a set of
+automatically creates an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] from an [MDO formulation][concept-mdo-formulations] and a set of
 [Discipline][gemseo.core.discipline.discipline.Discipline].
 
 However, one may be interested in directly creating an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] using the class [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem],
 which can be solved using an optimization algorithm or sampled with a DOE algorithm.
 
 !!! warning
-      [MDO formulation][mdo-formulations] and optimization problem developers should also understand this part of GEMSEO.
+      [MDO formulation][concept-mdo-formulations] and optimization problem developers should also understand this part of GEMSEO.
 
 ## Setting up an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
 

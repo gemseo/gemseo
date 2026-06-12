@@ -18,7 +18,7 @@
 ## Problem
 
 You want to visualize the workflow that corresponds to your scenario,
-depending on the [MDO formulation][mdo-formulations].
+depending on the [MDO formulation][concept-mdo-formulations].
 
 ## Solution
 

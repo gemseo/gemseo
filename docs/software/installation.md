@@ -50,7 +50,7 @@ you can fully check your configuration.
 The required dependencies provide the core features of GEMSEO, these are defined the `dependencies` entry
 of [pyproject.toml](https://gitlab.com/gemseo/dev/gemseo/-/blob/master/pyproject.toml).
 
-The minimal dependencies will allow to execute [MDO processes][mdo-formulations] but not all post processing tools will be available.
+The minimal dependencies will allow to execute [MDO processes][concept-mdo-formulations] but not all post processing tools will be available.
 
 ### Full features
 

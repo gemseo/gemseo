@@ -43,7 +43,7 @@ it does with [disciplines][concept-discipline]
 what an [evaluation-problem][concept-evaluation-problem]
 does with [functions][concept-functions].
 The underlying process is built from the provided disciplines by an [MDO formulation][concept-mdo-formulations].
-The default MDO formulation is [MDF][the-mdf-formulation];
+The default MDO formulation is [MDF][concept-the-mdf-formulation];
 it performs a [multidisciplinary design analysis (MDA)][concept-solving-multi-disciplinary-analysis]
 for each input value.
 

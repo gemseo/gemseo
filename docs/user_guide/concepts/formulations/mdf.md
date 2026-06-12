@@ -48,9 +48,9 @@ $\phi \in \{f, g\}$ and $v \in \{x,
 z\}$.
 
 For details on the MDAs,
-see [this page][multi-disciplinary-analyses].
+see [this page][concept-solving-multi-disciplinary-analysis].
 For details on coupled derivatives and gradients computation,
-see [this page][coupled-derivatives-and-gradients-computation].
+see [this page][concept-coupled-gradient-computation].
 
 !!! warning
       Any [Discipline][gemseo.core.discipline.discipline.Discipline]

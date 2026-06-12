@@ -23,7 +23,7 @@ As GEMSEO code evolves, some calling signatures and behavior may change. These c
 
 ## Create a simple DOE on a single discipline
 
-Use the [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation and a [MDOScenario][gemseo.scenarios.mdo.MDOScenario] scenario. Even for simple DOEs, GEMSEO formulates an optimization problem, so requires a [MDO formulation][mdo-formulations]. The [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation executes the [Discipline][gemseo.core.discipline.discipline.Discipline] alone, or the list of [Discipline][gemseo.core.discipline.discipline.Discipline] in the order passed by the user. This means that you must specify an objective function which will be set for the visualizations. The minimum value through the DOE will be considered as the best one.
+Use the [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation and a [MDOScenario][gemseo.scenarios.mdo.MDOScenario] scenario. Even for simple DOEs, GEMSEO formulates an optimization problem, so requires a [MDO formulation][concept-mdo-formulations]. The [DisciplinaryOpt][gemseo.formulations.disciplinary_opt.DisciplinaryOpt] formulation executes the [Discipline][gemseo.core.discipline.discipline.Discipline] alone, or the list of [Discipline][gemseo.core.discipline.discipline.Discipline] in the order passed by the user. This means that you must specify an objective function which will be set for the visualizations. The minimum value through the DOE will be considered as the best one.
 
 !!! info "See Also"
     For more details, we invite you to read [our tutorial][tutorial-execute-your-first-design-of-experiment-doe].
@@ -43,14 +43,14 @@ and [machine learners][algorithms-of-machine-learning] (accessible from [this pa
 
 ## How to extend GEMSEO features?
 
-See [Extending Gemseo][extend-gemseo-features].
+See [Extending Gemseo][extensibility].
 
 ## What are JSON schemas?
 
 JSON schemas describe the format (i.e. structure) of JSON files, in a similar way as XML schemas define the format of XML files. JSON schemas come along with validators, that check that a JSON data structure is valid against a JSON schema, this is used in GEMSEO' Grammars.
 
 !!! info "See Also"
-    We invite you to read our documentation: ["Input and output description: grammars"][input-and-output-description-grammars].
+    We invite you to read our documentation: ["Input and output description: grammars"][concept-grammars].
 
 !!! info "See Also"
     The details about the [JSON schema specification](https://json-schema.org/docs).
@@ -60,7 +60,7 @@ JSON schemas describe the format (i.e. structure) of JSON files, in a similar wa
 Use HDF5 caches to persist the discipline output on the disk.
 
 !!! info "See Also"
-    We invite you to read our documentation: [Cache](data_persistence/cache.md).
+    We invite you to read our documentation: [Cache](user_guide/concepts/data_persistence/cache.md).
 
 ## Error when using a HDF5 cache
 

@@ -66,7 +66,7 @@ distributive formulations) defining the names of the objectives,
 constraints, design variables, disciplines, formulation and options.
 
 The result of the analysis are a N2 (or DSM) and XDSM diagrams
-(see more explanations here [XDSM][xdsm-visualization]).
+(see more explanations here [XDSM][concept-xdsm-visualization]).
 
 ## Examples
 

@@ -120,7 +120,7 @@ sc_str.set_algorithm(slsqp_settings)
 # [create_scenario()][gemseo.create_scenario] function gathers both
 # [disciplines][gemseo.core.discipline.discipline.Discipline] and
 # [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
-# The [BiLevel formulation][the-bi-level-formulation] will automatically transform the scenarios into disciplines.
+# The [BiLevel formulation][concept-the-bi-level-formulation] will automatically transform the scenarios into disciplines.
 #
 # !!! note
 #     An [MDOScenario][gemseo.scenarios.mdo.MDOScenario]

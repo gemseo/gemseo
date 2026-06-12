@@ -27,7 +27,7 @@ An [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] is the s
 
 The function $f(t, y)$ defining the right-hand side of the ODE and the termination functions are encoded by
 instances of [Discipline][gemseo.core.discipline.discipline.Discipline] with suitable inputs and outputs, allowing to couple different instances of
-[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] in an [MDA][multi-disciplinary-analyses].
+[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] in an [MDA][concept-solving-multi-disciplinary-analysis].
 
 ## Inputs and outputs
 
@@ -54,7 +54,7 @@ Further parameters can be specified at the time of the instantiation of the [ODE
 ## Coupling
 
 Like for other types of discipline, it is possible to couple instances of [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] to other disciplines
-in an [MDA][multi-disciplinary-analyses].
+in an [MDA][concept-solving-multi-disciplinary-analysis].
 Coupled instances of [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] can be used to model the dynamics of coupled physical
 systems.
 
@@ -73,7 +73,7 @@ A different approach consists in defining a single [ODEDiscipline][gemseo.discip
 variables the collection of all the variables representing each component of the coupled system, and as dynamic the
 result of an *MDA* on all disciplines describing the dynamics of the components of the system.
 variables the collection of all the variables representing each component of the coupled system.
-The dynamic of such [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] is the result of an [MDA][multi-disciplinary-analyses] on all disciplines describing
+The dynamic of such [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] is the result of an [MDA][concept-solving-multi-disciplinary-analysis] on all disciplines describing
 the dynamics of the components of the system.
 
 ![Time integration of the coupled system](../assets/images/ode/time_integration.png)
