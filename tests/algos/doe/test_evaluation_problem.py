@@ -20,6 +20,7 @@ from math import prod
 from numpy import array
 from numpy.testing import assert_equal
 
+from gemseo.algos.database import Database
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
@@ -59,3 +60,21 @@ Running the algorithm CustomDOE:
     50%\|█████     \| 1\/2 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
    100%\|██████████\| 2\/2 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]$"""
     assert re.match(expected_result, result)
+
+
+def test_set_database():
+    """Test the setter `database`."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", size=1)
+
+    evaluation_problem = EvaluationProblem(design_space)
+    evaluation_problem.add_observable(ArrayFunction(sum, name="sum"))
+    evaluation_problem.add_observable(ArrayFunction(prod, name="prod"))
+
+    database = Database(name="test_database", input_space=design_space)
+    database.store(array([0.0]), array([1.0, 1.0]))
+
+    assert evaluation_problem.database.n_iterations == 0
+    evaluation_problem.database = database
+    assert evaluation_problem.database.n_iterations == 1
+    assert evaluation_problem.database.name == "test_database"

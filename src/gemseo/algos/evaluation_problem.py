@@ -83,7 +83,7 @@ class EvaluationProblem(BaseProblem):
     check_bounds: ClassVar[bool] = _CHECK_DESVARS_BOUNDS
     """Whether to check if a point is in the design space before calling functions."""
 
-    database: Database
+    _database: Database
     """The database to store the function evaluations."""
 
     design_space: DesignSpace
@@ -154,7 +154,7 @@ class EvaluationProblem(BaseProblem):
         self.__new_iter_observables = Observables()
         self.differentiation_step = differentiation_step
         self.differentiation_method = differentiation_method
-        self.database = (
+        self._database = (
             Database(input_space=design_space) if database is None else database
         )
         self.design_space = design_space
@@ -185,6 +185,15 @@ class EvaluationProblem(BaseProblem):
         mls.indent()
         mls.add("Evaluate the functions: {}", pretty_str(self.function_names))
         return mls
+
+    @property
+    def database(self) -> Database:
+        """The database to store the function evaluations."""
+        return self._database
+
+    @database.setter
+    def database(self, database: Database):
+        self._database = database
 
     @property
     def stop_if_nan(self) -> bool:

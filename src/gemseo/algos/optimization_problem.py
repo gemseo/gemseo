@@ -169,6 +169,14 @@ class OptimizationProblem(EvaluationProblem):
             self.constraints, self.database, self.design_space
         )
 
+    @EvaluationProblem.database.setter
+    def database(self, database: Database) -> None:
+        """Set the database and update history."""
+        # Note: Delegate the setter call to the base class
+        # to get the same base behaviour.
+        super(OptimizationProblem, type(self)).database.fset(self, database)
+        self.history.database = database
+
     @property
     def is_linear(self) -> bool:
         """Whether the optimization problem is linear.

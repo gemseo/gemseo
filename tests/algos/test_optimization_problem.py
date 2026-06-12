@@ -2360,3 +2360,10 @@ def test_evaluate_jacobian_functions(jacobian_functions, expected):
     """Check the jacobian_functions argument of evaluate_functions."""
     data = Rosenbrock().evaluate_functions(jacobian_functions=jacobian_functions)[1]
     assert_equal(data, expected)
+
+
+def test_database_setter_syncs_history(problem):
+    """The OptimizationProblem setter keeps history.database in sync."""
+    new_database = Database(input_space=problem.design_space)
+    problem.database = new_database
+    assert problem.history.database is new_database
