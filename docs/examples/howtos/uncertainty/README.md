@@ -7,7 +7,6 @@
  Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
-<!-- markdownlint-disable-next-line MD041 -->
-## Probability distributions
+# Uncertainty examples
 
-Define a probability distribution either from knowledge expert or from data.
+Characterize uncertain inputs, propagate them through disciplines, and rank their influence with sensitivity analyses.

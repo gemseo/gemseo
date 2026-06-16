@@ -38,7 +38,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
+from numpy import abs as np_abs
 
 from gemseo import execute_post
 from gemseo.algos.constraint_tolerances import ConstraintTolerances
@@ -96,10 +96,10 @@ tolerances = ConstraintTolerances()
 # **Feasible iterations** — iterations where all constraints are satisfied
 # within the given tolerances:
 equality_feasible_mask = (
-    np.abs(dataset.equality_constraint_dataset) <= tolerances.equality
+    np_abs(dataset.equality_constraint_dataset) <= tolerances.equality
 ).all(axis=1)
 inequality_feasible_mask = (
-    np.abs(dataset.inequality_constraint_dataset) <= tolerances.inequality
+    np_abs(dataset.inequality_constraint_dataset) <= tolerances.inequality
 ).all(axis=1)
 feasible_iterations = dataset.index[
     equality_feasible_mask & inequality_feasible_mask

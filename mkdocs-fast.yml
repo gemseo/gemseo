@@ -184,7 +184,7 @@ nav:
       - Exterior penalty: generated/examples/howtos/exterior_penalty
       - Scalable model: generated/examples/bulk/scalable
       - Multi-objective: generated/examples/howtos/multi_objective
-      - Uncertainty: generated/examples/bulk/uncertainty
+      - Uncertainty: generated/examples/howtos/uncertainty
       - Upgrading: software/upgrading.md
 
   - API: reference/gemseo/

@@ -168,3 +168,9 @@ used to generate samples for propagation and sensitivity analysis.
 
 !!! explanations
     - [Uncertainty propagation][concept-uncertainty-propagation]
+
+!!! how-to
+    - [Define probability distributions][probability-distributions]
+    - [Fit a probability distribution from data][]
+    - [Define an uncertain space][]
+    - [Define a parameter space with deterministic and uncertain variables][]

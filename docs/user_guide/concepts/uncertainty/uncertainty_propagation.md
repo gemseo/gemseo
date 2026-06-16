@@ -97,4 +97,7 @@ Two modes are available:
     - [Sensitivity analysis][concept-sensitivity-analysis]
 
 !!! how-to
-    - [Execute a scenario][execute-a-scenario]
+    - [Propagate uncertainty through a discipline][propagate-uncertainty-through-a-discipline]
+    - [Compute empirical statistics from a dataset][compute-empirical-statistics-from-a-dataset]
+    - [Compute parametric statistics from a dataset][compute-parametric-statistics-from-a-dataset]
+    - [Compute statistics from a statistics object][compute-statistics-from-a-statistics-object]

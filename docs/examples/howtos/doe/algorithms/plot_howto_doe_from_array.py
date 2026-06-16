@@ -30,7 +30,7 @@ and pass your samples via the `samples` setting.
 
 from __future__ import annotations
 
-import numpy as np
+from numpy import array
 
 from gemseo.algos.design_space import DesignSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
@@ -52,14 +52,14 @@ design_space.add_variable("c", size=2, lower_bound=1.0, upper_bound=10.0)
 #
 samples = [
     {
-        "a": np.array([1.0]),
-        "b": np.array([2.0]),
-        "c": np.array([1.0, 1.0]),
+        "a": array([1.0]),
+        "b": array([2.0]),
+        "c": array([1.0, 1.0]),
     },
     {
-        "a": np.array([2.0]),
-        "b": np.array([3.0]),
-        "c": np.array([5.0, 5.0]),
+        "a": array([2.0]),
+        "b": array([3.0]),
+        "c": array([5.0, 5.0]),
     },
 ]
 

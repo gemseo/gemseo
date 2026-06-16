@@ -50,8 +50,10 @@ classes.
 from __future__ import annotations
 
 import logging
+from abc import abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import ClassVar
 from typing import Generic
 from typing import NamedTuple
@@ -74,6 +76,7 @@ from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
@@ -182,13 +185,13 @@ class BaseParametricStatistics(
                 to select a distribution among `distributions`.
         """  # noqa: D205,D212,D415
         super().__init__(dataset, variable_names, name)
-        self.fitting_criterion = (
+        self.fitting_criterion = self.FittingCriterion(
             fitting_criterion or self._DISTRIBUTION_FITTER.default_fitting_criterion
         )
         self.selection_criterion = selection_criterion
         LOGGER.info("| Set goodness-of-fit criterion: %s.", fitting_criterion)
         self.level = level
-        if self.fitting_criterion in self.SignificanceTest.__members__:
+        if self.fitting_criterion in set(self.SignificanceTest):
             LOGGER.info("| Set significance level of hypothesis test: %s.", level)
 
         self._all_distributions = self._fit_distributions(distributions)
@@ -240,7 +243,7 @@ class BaseParametricStatistics(
             for name, result in self._all_distributions[variable][index].items()
         }
         criterion_value_is_p_value = False
-        if self.fitting_criterion in self.SignificanceTest.__members__:
+        if self.fitting_criterion in set(self.SignificanceTest):
             distribution_name_to_criterion_values = {
                 name: result[1]["p-value"]
                 for name, result in distribution_name_to_criterion_values.items()
@@ -311,7 +314,7 @@ class BaseParametricStatistics(
         distributions = self._all_distributions[variable][index]
         ax2.hist(data, density=True)
         for dist_name, dist_value in distributions.items():
-            pdf = dist_value["fitted_distribution"].distribution.computePDF
+            pdf = self._get_pdf(dist_value["fitted_distribution"].distribution)
             y_values = [pdf([x_value])[0] for x_value in x_values]
             ax2.plot(x_values, y_values, label=dist_name, linewidth=2.0)
 
@@ -339,6 +342,17 @@ class BaseParametricStatistics(
         save_show_figure(fig, show, file_path)
 
         return fig
+
+    @abstractmethod
+    def _get_pdf(self, distribution: Any) -> Callable[[float], float]:
+        """Return the probability density function.
+
+        Args:
+            distribution: The distribution.
+
+        Returns:
+            The probability density function.
+        """
 
     def _select_best_distributions(
         self, distribution_names: Sequence[_DistributionNameT]
