@@ -7,6 +7,8 @@
  Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
-# Uncertainty examples
+<!-- markdownlint-disable-next-line MD041 -->
+## Statistics
 
-How the uncertain inputs of a model impact its outputs.
+Compute empirical and parametric statistics from a dataset,
+including mean, standard deviation, quantiles, tolerance intervals, and B-values.

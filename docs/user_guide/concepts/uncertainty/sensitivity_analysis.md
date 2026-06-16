@@ -31,33 +31,101 @@ GEMSEO provides four sensitivity analysis techniques.
 
 ## Available sensitivity analyses { #concept-sensitivity-analyses }
 
-| Analysis    | Class                                                                                 | Approach            | Key indices                          |
-|-------------|---------------------------------------------------------------------------------------|---------------------|--------------------------------------|
-| Correlation | [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis] | Linear / Monotonous | Pearson, Spearman, PCC, PRCC         |
-| Morris      | [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]                | Screening           | $\mu^*$, $\sigma$                    |
-| Sobol'      | [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]                   | Variance-based      | First-order $S_1$, total-order $S_T$ |
-| HSIC        | [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]                      | Kernel-based        | HSIC, $R^2$-HSIC                     |
+| Analysis    | Class                                                                                 | Approach           | Key indices                          |
+|-------------|---------------------------------------------------------------------------------------|--------------------|--------------------------------------|
+| Correlation | [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis] | Linear / Monotonic | Pearson, Spearman, PCC, PRCC         |
+| Morris      | [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]                | Screening          | $\mu^*$, $\sigma$                    |
+| Sobol'      | [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]                   | Variance-based     | First-order $S_i$, total-order $S_T$ |
+| HSIC        | [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]                      | Kernel-based       | HSIC, $R^2$-HSIC                     |
 
 Correlation, Sobol' and HSIC analyses integrate features from [OpenTURNS](https://openturns.github.io/www/)
 while Morris analysis is a custom implementation.
 
+The choice of method depends on the available budget and the type of relationship expected.
+Broadly speaking, the following guidelines can be provided:
+
+| Method      | Use when                                            | Typical sample budget       | Assumption on input-output relationship |
+|-------------|-----------------------------------------------------|-----------------------------|-----------------------------------------|
+| Correlation | Model is linear or monotonic; fast screening needed | Hundreds                    | Linear or monotonic                     |
+| Morris      | Many inputs; initial screening before Sobol'        | $r(d+1)$, typically $< 100$ | None (finite differences)               |
+| Sobol'      | Full variance decomposition needed                  | 10 000+                     | None                                    |
+| HSIC        | Non-monotonic dependence; target/conditional SA     | Hundreds                    | None (kernel-based)                     |
+
 ### Correlation analysis
 
-Correlation analysis measures the linear (Pearson) or rank-based (Spearman) association
-between each input and each output.
-Partial correlation coefficients (PCC, PRCC) remove the effect of the other inputs,
-isolating the direct contribution of each one.
-This method is cheap but limited to linear or monotonic relationships.
+Correlation analysis measures the strength of the association between each input and each output
+by computing eight indices in three families:
+
+- **Raw association** —
+  [Pearson](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) (linear),
+  [Spearman](https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient) (rank-based, monotonic),
+  and [Kendall](https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient) (rank-based concordance);
+- **[Partial correlation](https://en.wikipedia.org/wiki/Partial_correlation)** —
+  PCC and its rank-based version PRCC, which remove the linear effect of the other inputs
+  to isolate the direct contribution of each one;
+- **Regression-based** —
+  SRC, SRRC, and SSRC,
+  the standardized coefficients of a linear (or rank) regression of the output on the inputs;
+  SSRC is the square of SRC and measures the share of output variance explained by each input.
+
+All eight indices are summarized in the following table:
+
+| Index    | Type                                     | Characteristic                                     |
+|----------|------------------------------------------|----------------------------------------------------|
+| Pearson  | Linear correlation                       | Assumes linear relationship                        |
+| Spearman | Rank correlation                         | Robust for monotonic relationships                 |
+| Kendall  | Rank correlation                         | Robust concordance measure                         |
+| PCC      | Partial correlation                      | Removes linear effect of other inputs              |
+| PRCC     | Partial rank correlation                 | Rank-based version of PCC                          |
+| SRC      | Standardized regression coefficient      | Linear regression-based                            |
+| SRRC     | Standardized rank regression coefficient | Rank regression-based                              |
+| SSRC     | Squared SRC                              | Always positive; measures explained variance share |
+
+All values lie in $[-1, 1]$ (except SSRC which lies in $[0, 1]$).
+The default [main_method][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis.main_method]
+is Spearman, which is robust for monotonic but not necessarily linear relationships.
+
+[CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]
+overrides [plot()][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis.plot]
+with a radar chart that displays all eight indices at once for a given output:
+
+![Correlation indices for output y](figs/correlation_analysis.png)
+
+This method is cheap (a few dozens or hundred samples suffice) but limited to linear or monotonic models.
 
 ### Morris analysis
 
 Morris analysis is a screening method designed for high-dimensional problems.
-It repeats a one-at-a-time (OAT) perturbation scheme $R$ times and estimates for each input:
-$\mu_i^*$ — the mean absolute elementary effect, measuring the overall degree of influence —
-and $\sigma_i$ — its standard deviation, which reveals nonlinearity and interaction with other inputs.
-Inputs with small $\mu_i^*$ are non-influential and can be fixed;
-inputs with large $\sigma_i$ relative to $\mu_i^*$ interact strongly with others.
-It is efficient for initial screening but does not quantify the exact share of variance.
+It is an [elementary effects method](https://en.wikipedia.org/wiki/Elementary_effects_method):
+along $r$ random trajectories in the input space,
+each input is perturbed one at a time (OAT)
+and the resulting finite difference of the output — the *elementary effect* — is recorded.
+Averaging these effects over the trajectories yields six statistics per input:
+
+| Index            | Interpretation                                                            |
+|------------------|---------------------------------------------------------------------------|
+| $\mu$            | Mean of the elementary effects (sign indicates direction)                 |
+| $\mu^*$          | Mean of the **absolute** elementary effects — overall influence           |
+| $\sigma$         | Standard deviation of elementary effects — non-linearity and interactions |
+| `relative_sigma` | Ratio $\sigma / \mu^*$                                                    |
+| `min`            | Minimum of the absolute elementary effects                                |
+| `max`            | Maximum of the absolute elementary effects                                |
+
+Interpretation: a high $\mu^*$ signals an influential input;
+a high $\sigma$ relative to $\mu^*$ signals non-linear effects or interactions with other inputs;
+a low $\mu^*$ and low $\sigma$ indicates a non-influential input that can be fixed.
+
+[MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]
+overrides [plot()][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.plot]
+with a unique two-dimensional scatter plot of $\mu^*$ vs. $\sigma$
+that is not available in other analysis classes.
+Each point $(\mu_i^*, \sigma_i)$ represents one input;
+inputs in the upper-right quadrant are both influential and non-linear/interactive,
+while inputs near the origin can be screened out:
+
+![Morris μ* vs σ scatter plot](figs/morris_analysis.png)
+
+It is efficient for initial screening but does not quantify the exact contributions of the uncertain inputs.
 
 ### Sobol' analysis
 
@@ -66,22 +134,70 @@ Sobol' analysis decomposes the total output variance by the [Sobol'-Hoeffding id
 $$\mathbb{V}[Y] = \sum_i V_i + \sum_{i<j} V_{ij} + \cdots$$
 
 where $V_i = \mathbb{V}[\mathbb{E}[Y|X_i]]$ is the variance explained by $X_i$ alone.
-The first-order index $S_i = V_i / \mathbb{V}[Y]$ measures the direct effect of $X_i$,
-while the total-order index $S_{T_i}$ sums all terms involving $X_i$ (direct and interactions).
-Both indices lie in $[0,1]$; a large gap $S_{T_i} - S_i$ signals strong interaction effects.
-It is the most informative method but requires a large number of model evaluations.
+The normalized indices $S_i = V_i / \mathbb{V}[Y]$ lie in $[0, 1]$ and sum to $1$.
+This decomposition yields three types of indices:
+
+| Index        | Symbol      | Interpretation                                   |
+|--------------|-------------|--------------------------------------------------|
+| First-order  | $S_i$       | Direct contribution of $X_i$ alone               |
+| Total-order  | $S_i^T$     | Direct + interaction contribution of $X_i$       |
+| Second-order | $S_{ij}$    | Pure interaction between $X_i$ and $X_j$         |
+
+A large gap $S_i^T - S_i$ signals strong interaction effects.
+
+[SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
+overrides [plot()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.plot]
+to display first-order and total-order indices as dots
+together with their confidence intervals as vertical bars:
+
+![Sobol' first and total-order indices](figs/sobol_analysis.png)
+
+Several estimators are available via the `algo` argument of
+[compute_indices()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.compute_indices]:
+SALTELLI (default), JANSEN, MAUNTZ_KUCHERENKO, MARTINEZ, and RANK.
+Confidence intervals are retrieved with
+[get_intervals()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.get_intervals].
+
+This method requires a large number of model evaluations (typically 10 000+).
 
 ### HSIC analysis
 
 HSIC analysis uses the Hilbert–Schmidt independence criterion (HSIC),
 a kernel-based statistical dependence measure that detects any type of relationship,
 including nonlinear and non-monotonic ones.
+Each variable is mapped into a reproducing kernel Hilbert space (RKHS)
+with a covariance (kernel) function,
+and HSIC is the Hilbert-Schmidt norm of the cross-covariance operator
+between the input and output RKHS embeddings.
+It compares the joint input-output distribution against the product of the marginals,
+so it is zero if and only if the input and the output are independent.
+
+[HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis] reports three quantities per input:
+
+| Index   | Interpretation                                     |
+|---------|----------------------------------------------------|
+| HSIC    | Raw dependence measure between input and output    |
+| R²-HSIC | Normalized version in $[0, 1]$, analogous to $R^2$ |
+| p-value | Statistical significance of the dependence         |
+
+The default [main_method][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.main_method]
+is R²-HSIC (normalized, always positive, comparable across inputs).
+[filter()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.filter]
+keeps only the inputs whose dependence is statistically significant.
+
 In addition to GSA (default),
-GEMSEO can use HSIC indices
-to identify the input variables
-most likely to cause the output to reach a certain domain (target sensitivity analysis)
-or most likely to cause the output to deviate from a nominal value
-under the condition that the considered output is in a certain domain (conditional sensitivity analysis).
+GEMSEO supports three analysis modes via the `analysis_type` argument of
+[compute_indices()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]:
+
+| Mode        | Question answered                                                                |
+|-------------|----------------------------------------------------------------------------------|
+| GLOBAL      | Which inputs drive overall output variability?                                   |
+| TARGET      | Which inputs cause the output to enter a target region (e.g. extreme values)?    |
+| CONDITIONAL | Which inputs matter given a conditioning event (output in a certain domain)?     |
+
+TARGET and CONDITIONAL modes require specifying `output_bounds` to define the region of interest.
+
+![HSIC R²-HSIC indices](figs/hsic_analysis.png)
 
 ## Common interface { #concept-sensitivity-interface }
 
@@ -99,6 +215,15 @@ All sensitivity analyses follow the same workflow:
 Indices can be standardized so that different methods are compared on the same scale
 (e.g. using [plot_comparison()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.plot_comparison]),
 and inputs can be sorted by decreasing influence via [sort_input_variables()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.sort_input_variables].
+
+!!! how-to
+    - [Compute sensitivity indices][compute-sensitivity-indices]
+    - [Plot sensitivity indices][plot-sensitivity-indices]
+    - [Export sensitivity indices to a dataset][export-sensitivity-indices-to-a-dataset]
+    - [Sort inputs by influence][sort-inputs-by-influence]
+    - [Change the main sensitivity method][change-the-main-sensitivity-method]
+    - [Compare sensitivity analyses][compare-sensitivity-analyses]
+    - [Save and reuse sensitivity analysis samples][save-and-reuse-sensitivity-analysis-samples]
 
 ## Going further
 

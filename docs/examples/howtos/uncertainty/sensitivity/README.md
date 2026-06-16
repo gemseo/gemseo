@@ -8,6 +8,8 @@
 -->
 
 <!-- markdownlint-disable-next-line MD041 -->
-## Sensitivity analys { #sensitivity-analysis-examples }
+## Sensitivity analysis
 
-Define, propagate, quantify and manage uncertainties.
+Run variance-based (Sobol), screening (Morris), and correlation-based (Pearson, Spearman, HSIC)
+sensitivity analyses to rank the influence of uncertain inputs on discipline outputs,
+compare methods, and save or reload results.

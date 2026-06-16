@@ -8,6 +8,9 @@
 -->
 
 <!-- markdownlint-disable-next-line MD041 -->
-## Statistics
+## Distributions and uncertain spaces
 
-Estimate statistics from data or get them fro mprobabiliti distributions.
+Define probability distributions backed by OpenTURNS or SciPy,
+fit them to observed data,
+and assemble uncertain variables into a
+[ParameterSpace][gemseo.algos.parameter_space.ParameterSpace].

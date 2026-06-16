@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
@@ -23,6 +24,11 @@ from gemseo.uncertainty.distributions.scipy.distribution_fitter import (
     SPDistributionFitter,
 )
 from gemseo.uncertainty.statistics.base_parametric import BaseParametricStatistics
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from scipy.stats._distn_infrastructure import rv_continuous_frozen
 
 
 class SPParametricStatistics(
@@ -46,3 +52,6 @@ class SPParametricStatistics(
         SPDistributionFitter.SignificanceTest
     )
     _DISTRIBUTION_FITTER: ClassVar[SPDistributionFitter] = SPDistributionFitter
+
+    def _get_pdf(self, distribution: rv_continuous_frozen) -> Callable[[float], float]:
+        return distribution.pdf

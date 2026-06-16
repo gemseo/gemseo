@@ -476,3 +476,9 @@ def test_sp_fitting_criteria(sp_dataset, fitting_criterion):
         goodness_of_fit.call_args.kwargs["statistic"]
         == SPDistributionFitter._CRITERIA_TO_WRAPPED_OBJECTS[fitting_criterion]
     )
+
+
+def test_sp_parametric_plot_criteria(dataset, snapshot_matplotlib):
+    """Check the plot_criteria() method of SPParametricStatistics."""
+    statistics = SPParametricStatistics(dataset, ["expon"])
+    statistics.plot_criteria("x_2", show=False)

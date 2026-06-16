@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
@@ -23,6 +24,11 @@ from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
     OTDistributionFitter,
 )
 from gemseo.uncertainty.statistics.base_parametric import BaseParametricStatistics
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from openturns import DistributionImplementation
 
 
 class OTParametricStatistics(
@@ -46,3 +52,8 @@ class OTParametricStatistics(
         OTDistributionFitter.SignificanceTest
     )
     _DISTRIBUTION_FITTER: ClassVar[OTDistributionFitter] = OTDistributionFitter
+
+    def _get_pdf(
+        self, distribution: DistributionImplementation
+    ) -> Callable[[float], float]:
+        return distribution.computePDF
