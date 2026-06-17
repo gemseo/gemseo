@@ -7,7 +7,4 @@
  Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
-<!-- markdownlint-disable-next-line MD041 -->
-## ODEProblem and ODEResult examples
-
-Examples concerning the classes [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem] and [ODEResult][gemseo.algos.ode.ode_result.ODEResult] for the solution of initial value problems.
+# Ordinary differential equations { #ode-tutorials }

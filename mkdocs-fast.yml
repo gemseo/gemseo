@@ -53,6 +53,10 @@ plugins:
   search: { }
   section-index: { }
 
+not_in_nav: |
+  index.md
+  **/mg_execution_times.md
+
 nav:
   - Getting started:
       - Installation: software/installation.md
@@ -71,10 +75,14 @@ nav:
       - Tutorials (advanced):
           - Tutorial - Solve a mixed optimization problem: generated/examples/tutorials/advanced/plot_tutorial_mixed_optimization.md
           - Tutorial - Use namespaces to run the same discipline in multiple contexts: generated/examples/tutorials/advanced/plot_tutorial_namespace.md
+          - Tutorial - Solve a bi-level MDO problem: generated/examples/tutorials/advanced/plot_tutorial_mdo_advanced.md
           - Tutorial - Compute a Pareto front with a BiLevel formulation: generated/examples/tutorials/advanced/plot_tutorial_bilevel_multi_objective.md
           - Tutorial - From a monodisciplinary problem to an MDO problem: generated/examples/tutorials/advanced/plot_tutorial_make_monodisciplinary_optimization_problem_multidisciplinary.md
+          - Tutorial - Assessing the quality of an ML model: generated/examples/tutorials/advanced/mlearning/plot_tutorial_quality.md
           - Tutorial - Topology optimization: generated/examples/tutorials/advanced/plot_tutorial_topology_optimization_L_shape.md
-          - Ordinary differential equations (ODE): generated/examples/bulk/ode
+          - Tutorial - Solving an ODE with GEMSEO: generated/examples/tutorials/advanced/ode/plot_tutorial_harmonic_oscillator.md
+          - Tutorial - Solving a system of coupled ODEs: generated/examples/tutorials/advanced/ode/plot_tutorial_springs_discipline.md
+          - Tutorial - Solving an ODE with ODEProblem: generated/examples/tutorials/advanced/ode/plot_tutorial_van_der_pol.md
       - Changelog: changelog.md
       - Licenses: software/licenses.md
       - Credits: credits.md
@@ -185,6 +193,7 @@ nav:
       - Scalable model: generated/examples/bulk/scalable
       - Multi-objective: generated/examples/howtos/multi_objective
       - Uncertainty: generated/examples/howtos/uncertainty
+      - Ordinary differential equations: generated/examples/howtos/ode
       - Upgrading: software/upgrading.md
 
   - API: reference/gemseo/

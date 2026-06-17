@@ -243,7 +243,7 @@ The available quality measures are:
 
 !!! tutorial
 
-    - [Assessing the quality of an ML model][assessing-the-quality-of-an-ml-model].
+    - [Assessing the quality of an ML model][tutorial-assessing-the-quality-of-an-ml-model].
 
 !!! how-to
 
