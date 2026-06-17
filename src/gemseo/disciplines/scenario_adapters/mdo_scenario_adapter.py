@@ -260,13 +260,19 @@ class MDOScenarioAdapter(ProcessDiscipline):
         input_grammar = self.io.input_grammar
         output_grammar = self.io.output_grammar
         for discipline in formulation.get_top_level_disciplines():
-            input_grammar.update(discipline.io.input_grammar)
-            output_grammar.update(discipline.io.output_grammar)
+            input_grammar.update(
+                discipline.io.input_grammar, allow_namespace_nesting=True
+            )
+            output_grammar.update(
+                discipline.io.output_grammar, allow_namespace_nesting=True
+            )
             # The output may also be the optimum value of the design
             # variables, so the output grammar may contain inputs
             # of the disciplines. All grammars are filtered just after
             # this loop
-            output_grammar.update(discipline.io.input_grammar)
+            output_grammar.update(
+                discipline.io.input_grammar, allow_namespace_nesting=True
+            )
             input_grammar.defaults.update(discipline.io.input_grammar.defaults)
 
         try:

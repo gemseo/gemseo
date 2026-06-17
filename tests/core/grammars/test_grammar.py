@@ -554,13 +554,19 @@ def test_update(grammar, merge, excluded_names) -> None:
         assert_updated(grammar, merge=merge, excluded_names=set(excluded_names))
 
 
-def test_update_with_namespace(grammar) -> None:
-    """Check update with namespace."""
+def test_update_with_namespace(grammar, snapshot) -> None:
+    """A conflicting namespace update raises unless nesting is allowed."""
     grammar.update_from_names(["x"])
     other_grammar = deepcopy(grammar)
     grammar.add_namespace("x", "n")
     other_grammar.add_namespace("x", "other_n")
-    grammar.update(other_grammar)
+
+    # Default (leaf) path: nesting "x" under two namespaces raises.
+    with assert_exception(ValueError, snapshot):
+        grammar.update(other_grammar)
+
+    # Process path: nesting is allowed.
+    grammar.update(other_grammar, allow_namespace_nesting=True)
     assert grammar.to_namespaced == {"x": ["n:x", "other_n:x"]}
     assert grammar.from_namespaced == {"n:x": "x", "other_n:x": "x"}
 

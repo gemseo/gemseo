@@ -35,6 +35,7 @@ from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.core.namespaces import namespaces_separator
 from gemseo.core.namespaces import split_namespace
 from gemseo.core.namespaces import update_namespaces
+from gemseo.core.namespaces import update_nested_namespaces
 from gemseo.typing import StrKeyMapping
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import MultiLineString
@@ -303,6 +304,8 @@ class BaseGrammar(
         grammar: Self,
         excluded_names: Iterable[str] = (),
         merge: bool = False,
+        *,
+        allow_namespace_nesting: bool = False,
     ) -> None:
         """Update the grammar from another grammar.
 
@@ -312,11 +315,20 @@ class BaseGrammar(
             grammar: The grammar to update from.
             excluded_names: The names of the elements that shall not be updated.
             merge: Whether to merge or update the grammar.
+            allow_namespace_nesting: Whether a name may map to several namespaced
+                names, as needed when a process discipline aggregates
+                sub-disciplines that share a name under different namespaces.
+                Leaf disciplines must keep this `False`: a name then maps to a
+                single namespaced name and a conflicting mapping raises.
+
+        Raises:
+            ValueError: If `allow_namespace_nesting` is `False` and a name is
+                already mapped to a different namespaced name.
         """
         if not grammar:
             return
         self._update(grammar, excluded_names, merge)
-        self.__update_namespaces_from_grammar(grammar)
+        self.__update_namespaces_from_grammar(grammar, allow_namespace_nesting)
         for properties, other_properties in (
             (self._defaults, grammar._defaults),
             (self._descriptions, grammar._descriptions),
@@ -599,15 +611,24 @@ class BaseGrammar(
             KeyError: If a name is not valid.
         """
 
-    def __update_namespaces_from_grammar(self, grammar: Self) -> None:
+    def __update_namespaces_from_grammar(
+        self, grammar: Self, allow_namespace_nesting: bool
+    ) -> None:
         """Update the namespaces according to another grammar namespaces.
 
         Args:
             grammar: The grammar to update from.
+            allow_namespace_nesting: Whether a name may map to several namespaced
+                names in `to_namespaced`.
         """
         if grammar.to_namespaced:
-            update_namespaces(self.to_namespaced, grammar.to_namespaced)
+            if allow_namespace_nesting:
+                update_nested_namespaces(self.to_namespaced, grammar.to_namespaced)
+            else:
+                update_namespaces(self.to_namespaced, grammar.to_namespaced)
         if grammar.from_namespaced:
+            # from_namespaced is always 1:1 (namespaced name -> base name), so it
+            # never nests, regardless of allow_namespace_nesting.
             update_namespaces(self.from_namespaced, grammar.from_namespaced)
 
     def add_namespace(self, name: str, namespace: str) -> None:

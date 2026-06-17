@@ -33,3 +33,4 @@ The module `gemseo.core.grammars.simple_grammar` was renamed to `gemseo.core.gra
 The module `gemseo.core.grammars.simpler_grammar` was renamed to `gemseo.core.grammars.simpler`.
 The module `gemseo.core.parallel_execution.disc_parallel_execution` was renamed to `gemseo.core.parallel_execution.discipline_execution`.
 The module `gemseo.core.parallel_execution.disc_parallel_linearization` was renamed to `gemseo.core.parallel_execution.discipline_linearization`.
+`BaseGrammar.update()` now raises a `ValueError` when an element name would map to two different namespaced names, unless the new keyword-only argument `allow_namespace_nesting=True` is passed. Only process disciplines (chains, MDAs, scenario adapters) allow such nested namespaces; leaf disciplines keep a single namespaced name per element. The helper `update_namespaces` is now the non-nested variant (it raises on conflict); the nesting-capable merge moved to the new `update_nested_namespaces`.

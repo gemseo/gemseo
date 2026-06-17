@@ -30,7 +30,9 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.namespaces import remove_prefix
 from gemseo.core.namespaces import split_namespace
 from gemseo.core.namespaces import update_namespaces
+from gemseo.core.namespaces import update_nested_namespaces
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.utils.testing.helpers import assert_exception
 
 
 def func_1(x=1.0, u=2.0):
@@ -256,9 +258,26 @@ def test_namespaces_chain() -> None:
 
 
 def test_update_namespaces() -> None:
+    """The non-nested variant merges disjoint names and re-adds the same mapping."""
+    namespaces = {"a": "ns:a", "b": "ns:b"}
+    update_namespaces(namespaces, {"a": "ns:a", "c": "ns:c"})
+    # "a" -> "ns:a" is re-added (no-op), "c" is merged in.
+    assert namespaces == {"a": "ns:a", "b": "ns:b", "c": "ns:c"}
+
+
+def test_update_namespaces_conflict(snapshot) -> None:
+    """The non-nested variant raises when a name would map to two namespaced names."""
+    namespaces = {"a": "ns1:a"}
+    with assert_exception(ValueError, snapshot):
+        update_namespaces(namespaces, {"a": "ns2:a"})
+
+
+def test_update_nested_namespaces() -> None:
+    """The nested variant builds lists across all merge branches."""
     namespaces = {"a": "b", "c": ["a", "b"], "d": "e", "f": ["g"], "g": ["h"], "i": "j"}
-    update_namespaces(
-        namespaces, {"a": "1", "c": ["1"], "x": "1", "g": "1", "i": ["1"]}
+    update_nested_namespaces(
+        namespaces,
+        {"a": "1", "c": ["1"], "x": "1", "y": ["1", "2"], "g": "1", "i": ["1"]},
     )
     assert namespaces == {
         "a": ["b", "1"],
@@ -266,6 +285,18 @@ def test_update_namespaces() -> None:
         "d": "e",
         "f": ["g"],
         "x": "1",
+        "y": ["1", "2"],
         "g": ["h", "1"],
         "i": ["j", "1"],
     }
+
+
+def test_update_nested_namespaces_preserves_source() -> None:
+    """A later in-place update must not mutate the source mapping."""
+    source = {"x": ["ns1:x"]}
+    namespaces = {}
+    update_nested_namespaces(namespaces, source)
+    # A second merge of the same name triggers an in-place append.
+    update_nested_namespaces(namespaces, {"x": "ns2:x"})
+    assert namespaces == {"x": ["ns1:x", "ns2:x"]}
+    assert source == {"x": ["ns1:x"]}

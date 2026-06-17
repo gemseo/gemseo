@@ -98,8 +98,12 @@ class ParallelDisciplineChain(ProcessDiscipline):
         self.io.input_grammar.clear()
         self.io.output_grammar.clear()
         for discipline in self._disciplines:
-            self.io.input_grammar.update(discipline.io.input_grammar)
-            self.io.output_grammar.update(discipline.io.output_grammar)
+            self.io.input_grammar.update(
+                discipline.io.input_grammar, allow_namespace_nesting=True
+            )
+            self.io.output_grammar.update(
+                discipline.io.output_grammar, allow_namespace_nesting=True
+            )
 
     def _get_input_data_copies(self) -> list[DisciplineData]:
         """Return copies of the input data, one per discipline.

@@ -144,8 +144,11 @@ class MDAGaussSeidel(BaseMDASolver):
             self.io.input_grammar.update(
                 discipline.io.input_grammar,
                 excluded_names=self.io.output_grammar,
+                allow_namespace_nesting=True,
             )
-            self.io.output_grammar.update(discipline.io.output_grammar)
+            self.io.output_grammar.update(
+                discipline.io.output_grammar, allow_namespace_nesting=True
+            )
 
     def _execute_disciplines_and_update_local_data(self) -> None:
         out_data = self.io.output_data

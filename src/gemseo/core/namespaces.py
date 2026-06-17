@@ -74,14 +74,47 @@ def remove_prefix(names: Iterable[str]) -> Iterator[str]:
     return (d.rsplit(namespaces_separator, 1)[-1] for d in names)
 
 
-# TODO: API: create a specific update_namespace for process disciplines,
-# that are the only namespaces allowed to use nested namespaces.
-# This will also fix the mypy ignore.
 def update_namespaces(
     namespaces: MutableNamespacesMapping,
-    other_namespaces: MutableNamespacesMapping,
+    other_namespaces: NamespacesMapping,
 ) -> None:
-    """Update namespaces with the key/value pairs from other, overwriting existing keys.
+    """Update namespaces with the key/value pairs from other.
+
+    This is the non-nested variant: a name maps to a single namespaced name.
+    It is the only variant allowed for leaf disciplines.
+    Process disciplines, which may aggregate the same name under several
+    namespaces, must use
+    [update_nested_namespaces][gemseo.core.namespaces.update_nested_namespaces].
+
+    Args:
+        namespaces: The namespaces to update.
+        other_namespaces: The namespaces to update from.
+
+    Raises:
+        ValueError: If a name is already mapped to a different namespaced name,
+            which would require nesting.
+    """
+    for name, other_ns in other_namespaces.items():
+        curr_ns = namespaces.get(name)
+        if curr_ns is not None and curr_ns != other_ns:
+            msg = (
+                f"The name {name!r} is already mapped to the namespaced name "
+                f"{curr_ns!r}; mapping it to {other_ns!r} would require nesting, "
+                "which is only allowed for process disciplines."
+            )
+            raise ValueError(msg)
+        namespaces[name] = other_ns
+
+
+def update_nested_namespaces(
+    namespaces: MutableNamespacesMapping,
+    other_namespaces: NamespacesMapping,
+) -> None:
+    """Update namespaces with the key/value pairs from other, allowing nesting.
+
+    A name may map to several namespaced names (a list), as happens when a
+    process discipline aggregates sub-disciplines that share a name under
+    different namespaces.
 
     Args:
         namespaces: The namespaces to update.
@@ -90,13 +123,18 @@ def update_namespaces(
     for name, other_ns in other_namespaces.items():
         curr_ns = namespaces.get(name)
         if curr_ns is None:
-            namespaces[name] = other_ns
+            # Copy the list so a later in-place update does not mutate
+            # other_namespaces, which may be another grammar's mapping.
+            namespaces[name] = (
+                list(other_ns) if isinstance(other_ns, list) else other_ns
+            )
         elif isinstance(curr_ns, str):
             if isinstance(other_ns, str):
                 namespaces[name] = [curr_ns, other_ns]
             else:
                 namespaces[name] = [curr_ns, *other_ns]
         elif isinstance(other_ns, str):
-            namespaces[name].append(other_ns)  # type:ignore[union-attr]
+            # curr_ns is the list stored in namespaces[name]; mutate it in place.
+            curr_ns.append(other_ns)
         else:
-            namespaces[name].extend(other_ns)  # type:ignore[union-attr]
+            curr_ns.extend(other_ns)
