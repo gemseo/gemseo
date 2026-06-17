@@ -259,4 +259,4 @@ structure_result
 # please refer to the following how-to guides:
 #
 # - [Transform a scenario into a discipline][transform-a-scenario-into-a-discipline].
-# - Post-process a database (TODO: create how-to)
+# - [Post-process an OptimizationDataset][post-process-an-optimizationdataset]
