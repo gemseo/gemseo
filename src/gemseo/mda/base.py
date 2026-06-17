@@ -260,8 +260,12 @@ class BaseMDA(ProcessDiscipline):
     def _initialize_grammars(self) -> None:
         """Define the grammars as the union of the disciplines' grammars."""
         for discipline in self._disciplines:
-            self.io.input_grammar.update(discipline.io.input_grammar)
-            self.io.output_grammar.update(discipline.io.output_grammar)
+            self.io.input_grammar.update(
+                discipline.io.input_grammar, allow_namespace_nesting=True
+            )
+            self.io.output_grammar.update(
+                discipline.io.output_grammar, allow_namespace_nesting=True
+            )
 
     def _check_consistency(self) -> None:
         """Check if there are not more than one equation per variable.

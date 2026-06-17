@@ -107,6 +107,18 @@
 # name: test_restrict_to_error[SimplerGrammar]
   '"The name \'foo\' is not in the grammar."'
 # ---
+# name: test_update_with_namespace[JSONGrammar]
+  "The name 'x' is already mapped to the namespaced name 'n:x'; mapping it to 'other_n:x' would require nesting, which is only allowed for process disciplines."
+# ---
+# name: test_update_with_namespace[PydanticGrammar]
+  "The name 'x' is already mapped to the namespaced name 'n:x'; mapping it to 'other_n:x' would require nesting, which is only allowed for process disciplines."
+# ---
+# name: test_update_with_namespace[SimpleGrammar]
+  "The name 'x' is already mapped to the namespaced name 'n:x'; mapping it to 'other_n:x' would require nesting, which is only allowed for process disciplines."
+# ---
+# name: test_update_with_namespace[SimplerGrammar]
+  "The name 'x' is already mapped to the namespaced name 'n:x'; mapping it to 'other_n:x' would require nesting, which is only allowed for process disciplines."
+# ---
 # name: test_validate_error_missing_required[JSONGrammar-True]
   '''
   Grammar g: validation failed.

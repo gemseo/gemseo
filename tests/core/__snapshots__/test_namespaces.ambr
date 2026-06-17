@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_update_namespaces_conflict
+  "The name 'a' is already mapped to the namespaced name 'ns1:a'; mapping it to 'ns2:a' would require nesting, which is only allowed for process disciplines."
+# ---
