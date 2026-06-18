@@ -26,8 +26,7 @@ without going back to the original scenario or HDF5 file.
 Pass the [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
 directly to [execute_post()][gemseo.execute_post],
 just as you would pass a scenario or an HDF5 file path.
-The dataset must have been built with `group_functions=True`
-so that functions are correctly mapped to their optimisation role
+Functions are automatically mapped to their optimisation role
 (objective, constraints, observables).
 
 ## Step-by-step guide
@@ -49,10 +48,8 @@ from gemseo.settings.post import OptHistoryView_Settings
 # we load an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
 # from an HDF5 file stored in the documentation directory
 # and convert it to an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset].
-# The argument `group_functions=True` is required
-# so that functions are grouped by their optimisation role:
 problem = OptimizationProblem.from_hdf("power2_opt_pb.h5")
-dataset = problem.to_dataset(group_functions=True)
+dataset = problem.to_dataset()
 
 # %%
 # ### 2. Post-process the dataset
@@ -73,5 +70,4 @@ execute_post(
 # [execute_post()][gemseo.execute_post] accepts an
 # [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
 # as its first argument.
-# The dataset must be built with `group_functions=True`
-# to ensure functions are correctly mapped to their optimisation role.
+# Functions are automatically mapped to their optimisation role.

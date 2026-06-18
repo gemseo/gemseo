@@ -12,31 +12,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#       :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""A cache item."""
+
 from __future__ import annotations
 
-import pytest
+from typing import TYPE_CHECKING
+from typing import NamedTuple
 
-from gemseo.post import ObjConstrHist_Settings
-from gemseo.post.obj_constr_hist import ObjConstrHist
+if TYPE_CHECKING:
+    from gemseo.typing import JacobianData
+    from gemseo.typing import StrKeyMapping
 
 
-@pytest.mark.parametrize(
-    "use_standardized_objective",
-    [True, False],
-)
-def test_common_scenario(
-    use_standardized_objective, common_problem, snapshot_matplotlib
-) -> None:
-    """Check ObjConstrHist."""
-    opt = ObjConstrHist(common_problem)
-    opt.execute(
-        ObjConstrHist_Settings(
-            constraint_names=["eq", "neg", "pos"],
-            save=False,
-            use_standardized_objective=use_standardized_objective,
-        )
-    )
+class CacheItem(NamedTuple):
+    """An item of a cache."""
+
+    inputs: StrKeyMapping
+    """The input data."""
+
+    outputs: StrKeyMapping
+    """The output data."""
+
+    jacobian: JacobianData
+    """The Jacobian data."""

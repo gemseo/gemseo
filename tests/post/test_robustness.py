@@ -32,9 +32,13 @@ def test_common_scenario(
     use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check Robustness with objective, standardized or not."""
-    common_problem.use_standardized_objective = use_standardized_objective
     opt = Robustness(common_problem)
-    opt.execute(Robustness_Settings(save=False))
+    opt.execute(
+        Robustness_Settings(
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )
 
 
 def test_common_scenario_std(common_problem, snapshot_matplotlib) -> None:

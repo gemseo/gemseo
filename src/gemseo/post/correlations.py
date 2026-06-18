@@ -117,7 +117,7 @@ class Correlations(BasePost[Correlations_Settings]):
 
         if (
             optimization_metadata.standardized_objective_name in variable_names
-            and self._change_obj
+            and self._change_objective(settings.use_standardized_objective)
         ):
             obj_index = variable_names.index(
                 optimization_metadata.standardized_objective_name

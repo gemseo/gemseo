@@ -47,8 +47,8 @@ from gemseo.utils.string_tools import MultiLineString
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Iterator
 
+    from gemseo.caches.cache_item import CacheItem
     from gemseo.typing import JacobianData
     from gemseo.utils.comparisons import DataToCompare
 
@@ -92,9 +92,9 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
 
     Notes:
         `cache_entry` is a [CacheEntry][gemseo.caches.cache_entry.CacheEntry]
-        with the ordered fields *input*, *output* and *jacobian*
-        accessible either by index, e.g. `input_data = cache_entry[0]`,
-        or by name, e.g. `input_data = cache_entry.inputs`.
+        with the ordered fields *output* and *jacobian*
+        accessible either by index, e.g. `output_data = cache_entry[0]`,
+        or by name, e.g. `output_data = cache_entry.outputs`.
 
     Notes:
         If an output name is also an input name,
@@ -102,9 +102,9 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
 
     One can also get the number of cache entries with `size = len(cache)`
     and iterate over the cache,
-    e.g. `for input_data, output_data, _ in cache`
-    `for index, (input_data, _, jacobian_data) in enumerate(cache)`
-    or `[entry.outputs for entry in cache]`.
+    e.g. `for input_data in cache`
+    `for index, input_data in enumerate(cache)`
+    or `{input_data["x"]: cache[input_data].outputs for input_data in cache}`.
 
     See Also:
         [SimpleCache][gemseo.caches.simple.SimpleCache]
@@ -187,30 +187,49 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
 
     @property
     def input_names(self) -> list[str]:
-        """The names of the inputs of the last entry."""
+        """The sorted names of the inputs.
+
+        These names are supposed to be the same for each entry.
+        They are read from the first entry.
+        """
         if not self.__input_names:
-            self.__input_names = sorted(self.last_entry.inputs.keys())
+            first_input = next(iter(self), None)
+            if first_input is not None:
+                self.__input_names = sorted(first_input)
         return self.__input_names
 
     @property
     def output_names(self) -> list[str]:
-        """The names of the outputs of the last entry."""
+        """The sorted names of the outputs.
+
+        These names are supposed to be the same for each entry.
+        They are read from the first entry.
+        """
         if not self._output_names:
-            self._output_names = sorted(self.last_entry.outputs.keys())
+            first_input = next(iter(self), None)
+            if first_input is not None:
+                self._output_names = sorted(self[first_input].outputs)
         return self._output_names
 
     @property
     def name_to_size(self) -> dict[str, int]:
-        """The sizes of the variables of the last entry.
+        """The sizes of the variables.
 
-        For a Numpy array, its size is used. For a container, its length is used.
-        Otherwise, a size of 1 is used.
+        The variables are supposed to be the same for each entry.
+        Their sizes are read from the first entry.
+
+        The size is determined by the nature of the object:
+
+        - the size of the array in the case of a NumPy array,
+        - the length of the container in the case of a container, e.g. `list`,
+        - 1 otherwise.
         """
         if not self.__name_to_size:
-            last_entry = self.last_entry
-            for name, data in chain(
-                last_entry.inputs.items(), last_entry.outputs.items()
-            ):
+            first = next(iter(self.items()), None)
+            if first is None:
+                return self.__name_to_size
+            first_input, first_entry = first
+            for name, data in chain(first_input.items(), first_entry.outputs.items()):
                 if isinstance(data, ndarray):
                     size = data.size
                 elif isinstance(data, Sized):
@@ -290,8 +309,8 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
 
     @property
     @abstractmethod
-    def last_entry(self) -> CacheEntry:
-        """The last cache entry."""
+    def last_item(self) -> CacheItem:
+        """The last item of the cache."""
 
     @overload
     def to_dataset(
@@ -357,13 +376,10 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
             strict=False,
         ):
             cache_entries = defaultdict(list)
-            for cache_entry in self.get_all_entries():
+            for input_data, cache_entry in self.items():
                 for variable_name in variable_names:
                     if cache_entry.outputs:
-                        if is_output_group:
-                            values = cache_entry.outputs
-                        else:
-                            values = cache_entry.inputs
+                        values = cache_entry.outputs if is_output_group else input_data
                         cache_entries[variable_name].append(values[variable_name])
 
             for variable_name in variable_names:
@@ -381,19 +397,5 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
                 names=dataset_class.COLUMN_LEVEL_NAMES,
             ),
         )
-
-    @abstractmethod
-    def get_all_entries(self) -> Iterator[CacheEntry]:
-        """Return an iterator over all the entries.
-
-        The tolerance is ignored.
-
-        Yields:
-            The entries.
-        """
-
-    # TODO: API: make it behave like mappings, ie. like .keys().
-    def __iter__(self) -> Iterator[CacheEntry]:  # type: ignore[override]
-        return self.get_all_entries()
 
     compare_dict_of_arrays = staticmethod(compare_dict_of_arrays)

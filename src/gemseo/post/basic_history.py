@@ -57,7 +57,7 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
         variable_names = list(settings.variable_names)
         if optimization_metadata.objective_name in variable_names:
             if (
-                optimization_metadata.use_standardized_objective
+                settings.use_standardized_objective
                 and not optimization_metadata.minimize_objective
             ):
                 obj_index = variable_names.index(optimization_metadata.objective_name)
@@ -65,7 +65,7 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
                     optimization_metadata.standardized_objective_name
                 )
 
-            if self._change_obj:
+            if self._change_objective(settings.use_standardized_objective):
                 dataset.transform_data(
                     operator.neg,
                     variable_names=optimization_metadata.standardized_objective_name,

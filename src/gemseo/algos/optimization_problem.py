@@ -810,7 +810,6 @@ class OptimizationProblem(EvaluationProblem):
         export_gradients: bool = False,
         input_values: Iterable[RealArray] = (),
         opt_naming: bool = True,
-        group_functions: bool = False,
     ) -> Dataset:
         """
         Args:
@@ -820,18 +819,16 @@ class OptimizationProblem(EvaluationProblem):
                 put the design variables
                 in the
                 [DESIGN_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.DESIGN_GROUP]
-                and the functions and their derivatives in the
-                [FUNCTION_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.FUNCTION_GROUP].
+                and the functions in their specific groups
+                ([OBJECTIVE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
+                [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP],
+                [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP],
+                [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP]).
                 Otherwise,
                 put the design variables in the
                 [INPUT_GROUP][gemseo.datasets.io_dataset.IODataset.INPUT_GROUP]
                 and the functions and their derivatives in the
                 [OUTPUT_GROUP][gemseo.datasets.io_dataset.IODataset.OUTPUT_GROUP].
-            group_functions: Whether to group the functions by category
-                ([OBJECTIVE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
-                [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP]
-                [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP]
-                [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP]).
         """  # noqa: D205, D212
         group_to_variables = {}
         if categorize:
@@ -839,28 +836,34 @@ class OptimizationProblem(EvaluationProblem):
             if opt_naming:
                 dataset_class = OptimizationDataset
                 input_group = OptimizationDataset.DESIGN_GROUP
-                output_group = OptimizationDataset.FUNCTION_GROUP
-                if group_functions:
-                    group_to_variables = {
-                        OptimizationDataset.OBJECTIVE_GROUP: [
-                            self.standardized_objective_name
-                            if self.use_standardized_objective is True
-                            else self.objective.name
-                        ],
-                        OptimizationDataset.EQUALITY_CONSTRAINT_GROUP: [
-                            constraint.name
-                            for constraint in self.constraints.get_equality_constraints()  # noqa: E501
-                        ],
-                        OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP: [
-                            constraint.name
-                            for constraint in self.constraints.get_inequality_constraints()  # noqa: E501
-                        ],
-                        OptimizationDataset.OBSERVABLE_GROUP: [
-                            observable.name for observable in self.observables
-                        ]
-                        + self.database.listener_output_names,
-                    }
-
+                output_group = OptimizationDataset.OBJECTIVE_GROUP
+                db_names = set(self.database.get_function_names())
+                obj_name = (
+                    self.standardized_objective_name
+                    if self.use_standardized_objective is True
+                    else self.objective.name
+                )
+                eq_names = [c.name for c in self.constraints.get_equality_constraints()]
+                ineq_names = [
+                    c.name for c in self.constraints.get_inequality_constraints()
+                ]
+                obs_names = [
+                    o.name for o in self.observables
+                ] + self.database.listener_output_names
+                group_to_variables = {
+                    OptimizationDataset.OBJECTIVE_GROUP: [obj_name]
+                    if obj_name in db_names
+                    else [],
+                    OptimizationDataset.EQUALITY_CONSTRAINT_GROUP: [
+                        name for name in eq_names if name in db_names
+                    ],
+                    OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP: [
+                        name for name in ineq_names if name in db_names
+                    ],
+                    OptimizationDataset.OBSERVABLE_GROUP: [
+                        name for name in obs_names if name in db_names
+                    ],
+                }
             else:
                 dataset_class = IODataset
                 input_group = IODataset.INPUT_GROUP
@@ -1020,7 +1023,6 @@ class OptimizationProblem(EvaluationProblem):
             objective_name=self.objective_name,
             standardized_objective_name=self.standardized_objective_name,
             minimize_objective=self.minimize_objective,
-            use_standardized_objective=self.use_standardized_objective,
             tolerances=self.tolerances,
             output_name_to_constraint_names=self.constraints.original_to_current_names,
             feasible_iterations=feasible_iterations,

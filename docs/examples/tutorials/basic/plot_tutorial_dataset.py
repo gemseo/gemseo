@@ -317,7 +317,6 @@ io_dataset.output_dataset
 # optimization history:
 # [DESIGN_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.DESIGN_GROUP],
 # [OBJECTIVE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
-# [CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.CONSTRAINT_GROUP],
 # [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP],
 # as well as
 # [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP]
@@ -329,7 +328,7 @@ opt_dataset = OptimizationDataset()
 opt_dataset.add_design_variable("x", [[1.0, 2.0], [4.0, 5.0]])
 opt_dataset.add_design_variable("z", [[3.0], [6.0]])
 opt_dataset.add_objective_variable("f", [[-1.0], [-2.0]])
-opt_dataset.add_constraint_variable("c", [[-0.5], [0.1]])
+opt_dataset.add_inequality_constraint_variable("c", [[-0.5], [0.1]])
 opt_dataset.add_observable_variable("o", [[-3.0], [8.0]])
 opt_dataset.add_variable("a", [[10.0], [20.0]])
 opt_dataset
@@ -338,14 +337,15 @@ opt_dataset
 # ... or whole groups at once with
 # [add_design_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_design_group],
 # [add_objective_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_objective_group],
-# [add_constraint_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_constraint_group]
+# [add_equality_constraint_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_equality_constraint_group],
+# [add_inequality_constraint_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_inequality_constraint_group]
 # and [add_observable_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_observable_group]:
 opt_dataset = OptimizationDataset()
 opt_dataset.add_design_group(
     [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], ["x", "z"], {"x": 2, "z": 1}
 )
 opt_dataset.add_objective_group([[-1.0], [-2.0]], ["f"])
-opt_dataset.add_constraint_group([[-0.5], [0.1]], ["c"])
+opt_dataset.add_inequality_constraint_group([[-0.5], [0.1]], ["c"])
 opt_dataset.add_observable_group([[-3.0], [8.0]], ["o"])
 opt_dataset.add_variable("a", [[10.0], [20.0]])
 opt_dataset
@@ -361,7 +361,11 @@ opt_dataset
 opt_dataset.design_variable_names
 
 # %%
-opt_dataset.objective_names, opt_dataset.constraint_names, opt_dataset.observable_names
+(
+    opt_dataset.objective_names,
+    opt_dataset.inequality_constraint_names,
+    opt_dataset.observable_names,
+)
 
 # %%
 # and the full list of variable names across all groups:
@@ -381,8 +385,7 @@ opt_dataset.design_dataset
 # %%
 opt_dataset.objective_dataset
 
-# %%
-opt_dataset.constraint_dataset
+opt_dataset.inequality_constraint_dataset
 
 # %%
 opt_dataset.observable_dataset

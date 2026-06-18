@@ -29,13 +29,10 @@ from typing import overload
 
 from gemseo.caches._hdf5_file_singleton import HDF5FileSingleton
 from gemseo.caches.base_full import BaseFullCache
-from gemseo.caches.cache_entry import CacheEntry
 from gemseo.utils.data_conversion import nest_flat_bilevel_dict
 from gemseo.utils.locks import synchronized
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from gemseo.core.data_converters.base import BaseDataConverter
     from gemseo.typing import JacobianData
     from gemseo.typing import MutableStrKeyMapping
@@ -206,15 +203,6 @@ class HDF5Cache(BaseFullCache):
             index,
             self.__hdf_node_path,
         )
-
-    @synchronized
-    def get_all_entries(self) -> Iterator[CacheEntry]:  # noqa: D102
-        with self.__hdf_file.keep_open():
-            for index in self._all_groups:
-                input_data = self._read_data(index, self.Group.INPUTS)
-                output_data = self._read_data(index, self.Group.OUTPUTS)
-                jacobian_data = self._read_data(index, self.Group.JACOBIAN)
-                yield CacheEntry(input_data, output_data, jacobian_data)
 
     @staticmethod
     def update_file_format(

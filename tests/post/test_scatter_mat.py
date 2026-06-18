@@ -242,10 +242,11 @@ def test_common_scenario(
     use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check ScatterPlotMatrix with objective, standardized or not."""
-    common_problem.use_standardized_objective = use_standardized_objective
     opt = ScatterPlotMatrix(common_problem)
     opt.execute(
         ScatterPlotMatrix_Settings(
-            variable_names=["obj", "eq", "neg", "pos", "x"], save=False
+            variable_names=["obj", "eq", "neg", "pos", "x"],
+            save=False,
+            use_standardized_objective=use_standardized_objective,
         )
     )

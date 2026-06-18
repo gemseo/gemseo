@@ -123,8 +123,7 @@ def test_cache_str(tmp_wd, tolerance) -> None:
     inputs = {"i": array(["some_string"]), "var_1": ones(1)}
     outputs = {"o": ones(1)}
     cache.cache_outputs(inputs, outputs)
-    assert cache.get(inputs)[0] == inputs
-    assert cache.get(inputs)[1] == outputs
+    assert cache.get(inputs).outputs == outputs
 
 
 def test_hdf_node_path(tmp_wd) -> None:

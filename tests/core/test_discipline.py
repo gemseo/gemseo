@@ -350,8 +350,8 @@ def test_check_jac_hybrid_approx(
             else:
                 assert_allclose(hybrid_val, ref, step, step)
     cache = [
-        {"inputs": inputs, "outputs": outputs, "jac": jac}
-        for inputs, outputs, jac in disc.cache.get_all_entries()
+        {"inputs": inputs, "outputs": entry.outputs, "jac": entry.jacobian}
+        for inputs, entry in disc.cache.items()
     ]
     cached_jac = [entry["jac"] for entry in cache if "y_1" in entry["jac"]]
     assert len(cache) == (
@@ -491,7 +491,7 @@ def test_serialize_hdf_cache(tmp_wd) -> None:
     out_file = "sob_aero.pckl"
     to_pickle(aero, out_file)
     saero_u = from_pickle(out_file)
-    assert saero_u.cache.last_entry.outputs["y_2"] is not None
+    assert saero_u.cache.last_item.outputs["y_2"] is not None
 
 
 def test_data_processor() -> None:

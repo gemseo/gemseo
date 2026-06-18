@@ -988,14 +988,14 @@ def test_observable(pow2_problem) -> None:
 
     # Check that the observable is exported
     dataset = problem.to_dataset("dataset")
-    func_data = dataset.get_view(group_names="functions").to_dict()
-    design_norm_levels = ("functions", design_norm, 0)
-    obs_data = func_data.get(design_norm_levels)
-    assert obs_data is not None
+    obs_group = dataset.OBSERVABLE_GROUP
+    obs_data = dataset.get_view(group_names=obs_group).to_dict()
+    design_norm_levels = (obs_group, design_norm, 0)
+    assert obs_data.get(design_norm_levels) is not None
     assert (
         iter_norms
         == dataset
-        .get_view(group_names="functions", variable_names=design_norm)
+        .get_view(group_names=obs_group, variable_names=design_norm)
         .to_numpy()
         .T
     ).all()
@@ -1590,8 +1590,10 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
     if categorize:
         if export_gradients:
             assert (
-                dataset.get_view(group_names="functions", indices=4).to_numpy()
-                == np.array([0.0, 0.0])
+                dataset.get_view(
+                    group_names=dataset.OBJECTIVE_GROUP, indices=4
+                ).to_numpy()
+                == np.array([[0.0]])
             ).all()
             assert (
                 dataset
@@ -1604,7 +1606,7 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
         else:
             assert (
                 dataset
-                .get_view(group_names="functions", indices=2)
+                .get_view(group_names=dataset.OBJECTIVE_GROUP, indices=2)
                 .isnull()
                 .to_numpy()
                 .all()
@@ -1739,10 +1741,10 @@ def test_export_to_dataset(input_values, expected) -> None:
 
 
 def test_export_to_dataset_with_grouped_functions():
-    """Check that functions are properly grouped when the option is true."""
+    """Check that functions are properly grouped."""
     problem = Power2()
     OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
-    dataset = problem.to_dataset(group_functions=True)
+    dataset = problem.to_dataset()
 
     groups = [
         OptimizationDataset.EQUALITY_CONSTRAINT_GROUP,

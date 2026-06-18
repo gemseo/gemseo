@@ -116,7 +116,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
                 .to_numpy()
             )
             if (
-                self._change_obj
+                self._change_objective(settings.use_standardized_objective)
                 and function_name == f"-{optimization_metadata.objective_name}"
             ):
                 grad = -grad

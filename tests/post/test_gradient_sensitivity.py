@@ -208,9 +208,13 @@ def test_common_scenario(
     use_standardized_objective, common_problem, snapshot_matplotlib
 ) -> None:
     """Check GradientSensitivity with objective, standardized or not."""
-    common_problem.use_standardized_objective = use_standardized_objective
     opt = GradientSensitivity(common_problem)
-    opt.execute(GradientSensitivity_Settings(save=False))
+    opt.execute(
+        GradientSensitivity_Settings(
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )
 
 
 @pytest.mark.parametrize(

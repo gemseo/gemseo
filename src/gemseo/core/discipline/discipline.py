@@ -848,8 +848,10 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         if self._has_jacobian:
             self.cache.cache_jacobian(input_data, self.jac)
 
-    def _set_data_from_cache(self, cache_entry: CacheEntry) -> None:
-        super()._set_data_from_cache(cache_entry)
+    def _set_data_from_cache(
+        self, input_data: StrKeyMapping, cache_entry: CacheEntry
+    ) -> None:
+        super()._set_data_from_cache(input_data, cache_entry)
         self._has_jacobian = True
         if cache_entry.jacobian:
             self.jac = cache_entry.jacobian

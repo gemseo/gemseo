@@ -121,6 +121,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             obj_min=settings.obj_min,
             obj_max=settings.obj_max,
             obj_relative=settings.obj_relative,
+            use_standardized_objective=settings.use_standardized_objective,
         )
 
         self._create_x_star_plot(x_history, n_iter, settings.fig_size)
@@ -276,9 +277,10 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         n_iter: int,
         fig_size: tuple[float, float],
         x_xstar: RealArray,
-        obj_min: float | None = None,
-        obj_max: float | None = None,
-        obj_relative: bool = False,
+        obj_min: float | None,
+        obj_max: float | None,
+        obj_relative: bool,
+        use_standardized_objective: bool,
     ) -> None:
         """Creates the design variables plot.
 
@@ -292,8 +294,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             obj_relative: If `True`, plot the objective value difference
                 with the initial value.
             x_xstar: The distance between the designs and the optimum design.
+            use_standardized_objective: Whether to use the standardized objective.
         """
-        if self._change_obj:
+        if self._change_objective(use_standardized_objective):
             obj_history = -obj_history
 
         if obj_relative:

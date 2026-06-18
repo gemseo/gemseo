@@ -231,8 +231,8 @@ def test_bilevel_warm_start(scenario, request) -> None:
     )
     mda1_cache = scenario.formulation.chain.disciplines[0].cache
     scenario.execute(NLOPT_COBYLA_Settings(max_iter=3))
-    mda1_inputs = [entry.inputs for entry in mda1_cache.get_all_entries()]
-    chain_outputs = [entry.outputs for entry in bilevel_chain_cache.get_all_entries()]
+    mda1_inputs = tuple(mda1_cache)
+    chain_outputs = [entry.outputs for entry in bilevel_chain_cache.values()]
 
     assert mda1_inputs[1]["y_21"] == chain_outputs[0]["y_21"]
     assert (mda1_inputs[1]["y_12"] == chain_outputs[0]["y_12"]).all()
@@ -912,11 +912,9 @@ def test_bilevel_warm_start_disciplines_as_subscenario():
     )
 
     sc_system.execute(NLOPT_COBYLA_Settings(max_iter=3))
-    mda1_inputs = [entry.inputs for entry in mda1_cache]
-    chain_outputs = [entry.outputs for entry in bilevel_chain_cache]
-    disciplines_as_sub_scenario_inputs = [
-        entry.inputs for entry in disciplines_as_sub_scenario_cache
-    ]
+    mda1_inputs = list(mda1_cache)
+    chain_outputs = [entry.outputs for entry in bilevel_chain_cache.values()]
+    disciplines_as_sub_scenario_inputs = list(disciplines_as_sub_scenario_cache)
 
     assert disciplines_as_sub_scenario_inputs[1]["x_2"] == chain_outputs[0]["x_2"]
     assert mda1_inputs[1]["y_21"] == chain_outputs[0]["y_21"]

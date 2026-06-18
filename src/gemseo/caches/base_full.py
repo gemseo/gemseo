@@ -33,6 +33,7 @@ from numpy import vstack
 
 from gemseo.caches.base import BaseCache
 from gemseo.caches.cache_entry import CacheEntry
+from gemseo.caches.cache_item import CacheItem
 from gemseo.caches.utils import hash_data
 from gemseo.utils.data_conversion import flatten_nested_bilevel_dict
 from gemseo.utils.ggobi_export import save_data_arrays_to_xml
@@ -260,15 +261,14 @@ class BaseFullCache(BaseCache):
 
     @property
     @synchronized
-    def last_entry(self) -> CacheEntry:  # noqa: D102
+    def last_item(self) -> CacheItem:  # noqa: D102
         if not self:
-            return CacheEntry({}, {}, {})
+            return CacheItem({}, {}, {})
 
-        return CacheEntry(
-            self._read_data(self._last_accessed_index.value, self.Group.INPUTS),
-            self._read_data(self._last_accessed_index.value, self.Group.OUTPUTS),
-            self._read_data(self._last_accessed_index.value, self.Group.JACOBIAN),
-        )
+        inputs = self._read_data(self._last_accessed_index.value, self.Group.INPUTS)
+        outputs = self._read_data(self._last_accessed_index.value, self.Group.OUTPUTS)
+        jacobian = self._read_data(self._last_accessed_index.value, self.Group.JACOBIAN)
+        return CacheItem(inputs, outputs, jacobian)
 
     @synchronized
     def __len__(self) -> int:
@@ -304,47 +304,24 @@ class BaseFullCache(BaseCache):
             The output and Jacobian data corresponding to these index and group.
         """
 
-    def __has_hash(
+    def __get_indices(
         self,
         data_hash: int,
-    ) -> IntegerArray | None:
+    ) -> IntegerArray:
         """Get the indices corresponding to a data hash.
 
         Args:
-            The data hash.
+            data_hash: The data hash.
 
         Returns:
             The indices corresponding to this data hash.
         """
         # Only need synchronization if we are in a multiprocessing context.
         if parent_process() is None:
-            return self._hash_to_indices.get(data_hash)
+            indices = self._hash_to_indices.get(data_hash)
         with self.__hashes_lock:
-            return self._hash_to_indices.get(data_hash)
-
-    def _read_input_output_data(
-        self,
-        indices: Iterable[int],
-        input_data: StrKeyMapping,
-    ) -> CacheEntry:
-        """Read the output and Jacobian data for a given input data.
-
-        Args:
-            indices: The indices of the entries among from which the entry to read data.
-            input_data: The input data.
-
-        Returns:
-            The output and Jacobian data if they exist, `None` otherwise.
-        """
-        for index in indices:
-            if self.compare_dict_of_arrays(
-                input_data, self._read_data(index, self.Group.INPUTS)
-            ):
-                output_data = self._read_data(index, self.Group.OUTPUTS)
-                jacobian_data = self._read_data(index, self.Group.JACOBIAN)
-                return CacheEntry(input_data, output_data, jacobian_data)
-
-        return CacheEntry(input_data, {}, {})
+            indices = self._hash_to_indices.get(data_hash)
+        return array([], dtype="int") if indices is None else indices
 
     @synchronized
     def __getitem__(
@@ -353,11 +330,14 @@ class BaseFullCache(BaseCache):
     ) -> CacheEntry:
         if self._tolerance == 0.0:
             data_hash = hash_data(input_data)
-            indices = self.__has_hash(data_hash)
-            if indices is None:
-                return CacheEntry(input_data, {}, {})
-
-            return self._read_input_output_data(indices, input_data)
+            indices = self.__get_indices(data_hash)
+            for index in indices:
+                if self.compare_dict_of_arrays(
+                    input_data, self._read_data(index, self.Group.INPUTS)
+                ):
+                    output_data = self._read_data(index, self.Group.OUTPUTS)
+                    jacobian_data = self._read_data(index, self.Group.JACOBIAN)
+                    return CacheEntry(output_data, jacobian_data)
 
         for indices in self._hash_to_indices.values():
             for index in indices:
@@ -367,9 +347,9 @@ class BaseFullCache(BaseCache):
                 ):
                     output_data = self._read_data(index, self.Group.OUTPUTS)
                     jacobian_data = self._read_data(index, self.Group.JACOBIAN)
-                    return CacheEntry(input_data, output_data, jacobian_data)
+                    return CacheEntry(output_data, jacobian_data)
 
-        return CacheEntry(input_data, {}, {})
+        return CacheEntry({}, {})
 
     @property
     def _all_groups(self) -> list[int]:
@@ -377,12 +357,9 @@ class BaseFullCache(BaseCache):
         return sorted(chain(*(v.tolist() for v in self._hash_to_indices.values())))
 
     @synchronized
-    def get_all_entries(self) -> Iterator[CacheEntry]:  # noqa: D102
+    def __iter__(self) -> Iterator[StrKeyMapping]:  # type: ignore[override]
         for index in self._all_groups:
-            input_data = self._read_data(index, self.Group.INPUTS)
-            output_data = self._read_data(index, self.Group.OUTPUTS)
-            jacobian_data = self._read_data(index, self.Group.JACOBIAN)
-            yield CacheEntry(input_data, output_data, jacobian_data)
+            yield self._read_data(index, self.Group.INPUTS)
 
     def to_ggobi(
         self,
@@ -409,8 +386,8 @@ class BaseFullCache(BaseCache):
         all_output_data = []
         name_to_size = {}
 
-        for data in self.get_all_entries():
-            input_data = data.inputs or {}
+        for input_data, data in self.items():
+            input_data = input_data or {}
             output_data = data.outputs or {}
             try:
                 if input_names:
@@ -470,9 +447,9 @@ class BaseFullCache(BaseCache):
         Args:
             other_cache: The cache to update the current one.
         """
-        for input_data, output_data, jacobian_data in other_cache.get_all_entries():
-            if output_data or jacobian_data:
-                self[input_data] = (output_data, jacobian_data)
+        for input_data, cache_entry in other_cache.items():
+            if cache_entry.outputs or cache_entry.jacobian:
+                self[input_data] = (cache_entry.outputs, cache_entry.jacobian)
 
     @abstractmethod
     def _copy_empty_cache(self) -> BaseFullCache:

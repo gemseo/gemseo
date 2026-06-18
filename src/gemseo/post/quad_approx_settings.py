@@ -22,10 +22,11 @@ from pydantic import Field
 from pydantic import NonNegativeInt
 
 from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
 from gemseo.typing import StrKeyMapping
 
 
-class QuadApprox_Settings(BasePostSettings):  # noqa: D101, N801
+class QuadApprox_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (9.0, 6.0)}
     function: str = Field(
         ...,

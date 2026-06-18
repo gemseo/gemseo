@@ -100,9 +100,13 @@ def test_common_scenario(
     snapshot_matplotlib,
 ) -> None:
     """Check HessianHistory with objective, standardized or not."""
-    three_length_common_problem.use_standardized_objective = use_standardized_objective
     opt = HessianHistory(three_length_common_problem)
-    opt.execute(HessianHistory_Settings(save=False))
+    opt.execute(
+        HessianHistory_Settings(
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )
 
 
 @pytest.mark.parametrize(

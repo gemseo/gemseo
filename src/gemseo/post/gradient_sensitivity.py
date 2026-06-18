@@ -79,6 +79,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             ),
             settings.scale_gradients,
             settings.fig_size,
+            settings.use_standardized_objective,
         )
         fig.tight_layout()
         self._add_figure(fig)
@@ -100,14 +101,14 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
                 selected iteration if they were not computed by the algorithm.
 
         Warning:
-                   Activating this option may add considerable computation time
-                   depending on the cost of the gradient evaluation.
-                   This option will not compute the gradients if the
-                   [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-                   instance was imported from an HDF5 file.
-                   This option requires an
-                   [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-                   with a gradient-based algorithm.
+            Activating this option may add considerable computation time
+            depending on the cost of the gradient evaluation.
+            This option will not compute the gradients if the
+            [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+            instance was imported from an HDF5 file.
+            This option requires an
+            [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+            with a gradient-based algorithm.
 
         Returns:
             The gradients of the outputs
@@ -189,6 +190,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
         gradients: dict[str, RealArray],
         scale_gradients: bool,
         fig_size: tuple[float, float],
+        use_standardized_objective: bool,
     ) -> Figure:
         """Generate the gradients subplots from the data.
 
@@ -199,6 +201,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             scale_gradients: Whether to normalize the gradients
                 w.r.t. the design variables.
             fig_size: The size of the figure.
+            use_standardized_objective: Whether to use the standardized objective.
 
         Returns:
             The gradients subplots.
@@ -219,7 +222,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
         )
 
         abscissa = arange(len(design_value))
-        if self._change_obj:
+        if self._change_objective(use_standardized_objective):
             gradients[self._optimization_metadata.objective_name] = -gradients.pop(
                 self._optimization_metadata.standardized_objective_name
             )

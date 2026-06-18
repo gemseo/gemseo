@@ -75,7 +75,7 @@ class Robustness(BasePost[Robustness_Settings]):
         for func in all_function_names:
             func_name = dataset_func_name = func
             if (
-                self._change_obj
+                self._change_objective(settings.use_standardized_objective)
                 and func_name == f"-{optimization_metadata.objective_name}"
             ):
                 func_name = optimization_metadata.objective_name
@@ -91,7 +91,7 @@ class Robustness(BasePost[Robustness_Settings]):
                 )
                 x_ref = robustness.x_ref
                 mean = robustness.compute_expected_value(x_ref, cov)
-                if self._change_obj:
+                if self._change_objective(settings.use_standardized_objective):
                     mean = -mean
 
                 variance = robustness.compute_variance(x_ref, cov)

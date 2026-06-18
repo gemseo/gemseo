@@ -19,8 +19,9 @@ from __future__ import annotations
 from typing import ClassVar
 
 from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
 from gemseo.typing import StrKeyMapping
 
 
-class ParallelCoordinates_Settings(BasePostSettings):  # noqa: D101, N801
+class ParallelCoordinates_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 5.0)}

@@ -222,17 +222,17 @@ class SOM(BasePost[SOM_Settings]):
         self._dataset.add_variable(
             variable_name="SOM_indx",
             data=cluster_indices,
-            group_name=self._dataset.FUNCTION_GROUP,
+            group_name=self._dataset.OBSERVABLE_GROUP,
         )
         self._dataset.add_variable(
             variable_name="SOM_i",
             data=x,
-            group_name=self._dataset.FUNCTION_GROUP,
+            group_name=self._dataset.OBSERVABLE_GROUP,
         )
         self._dataset.add_variable(
             variable_name="SOM_j",
             data=y,
-            group_name=self._dataset.FUNCTION_GROUP,
+            group_name=self._dataset.OBSERVABLE_GROUP,
         )
         return x, y, cluster_indices
 

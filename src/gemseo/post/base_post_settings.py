@@ -18,10 +18,32 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from pydantic import BaseModel
 from pydantic import Field
 from pydantic import PositiveFloat
 
 from gemseo.utils.pydantic import BaseSettings
+
+_USE_STANDARDIZED_OBJECTIVE_DESCRIPTION = (
+    "Whether to use the standardized objective for post-processing. "
+    "The standardized objective corresponds to the original one expressed as a "
+    "cost function to minimize. "
+    "A [BaseDriverLibrary][gemseo.algos.base_driver_library.BaseDriverLibrary] "
+    "works with this standardized objective and the "
+    "[Database][gemseo.algos.database.Database] stores its values. "
+    "However, for convenience, "
+    "it may be more relevant to log the expression "
+    "and the values of the original objective."
+)
+
+
+class UseStandardizedObjectiveMixin(BaseModel):
+    """Mixin adding ``use_standardized_objective`` to post-processor settings."""
+
+    use_standardized_objective: bool = Field(
+        default=True,
+        description=_USE_STANDARDIZED_OBJECTIVE_DESCRIPTION,
+    )
 
 
 class BasePostSettings(BaseSettings):

@@ -28,3 +28,15 @@
 - The `is_linear` argument of `OptimizationProblem` has been removed because it was useless. The `OptimizationProblem.is_linear` property is deduced from the constraints and objective.
 - The `**kwargs` arguments of `EvaluationProblem.get_functions` were removed.
 - The deprecated `**dataset_options` arguments of `EvaluationProblem.to_dataset` were removed.
+- The `DisciplineJacApprox.generator_class` class attribute was removed.
+- The `FunctionFromDiscipline.generator_class` class attribute was removed.
+- The `CacheEntry.inputs` field was removed; caches are dictionaries whose keys are the inputs and values are the cache entries.
+- The `BaseCache.get_all_entries` field was removed; use `BaseCache.items`.
+- The `OptimizationDataset.FUNCTION_GROUP` class attribute was removed; use `OBJECTIVE_GROUP`, `EQUALITY_CONSTRAINT_GROUP`, `INEQUALITY_CONSTRAINT_GROUP`, or `OBSERVABLE_GROUP` instead.
+- The `OptimizationDataset.CONSTRAINT_GROUP` class attribute was removed; use `EQUALITY_CONSTRAINT_GROUP` and/or `INEQUALITY_CONSTRAINT_GROUP` instead.
+- The `OptimizationDataset.add_constraint_variable` method was removed; use `add_equality_constraint_variable` or `add_inequality_constraint_variable` instead.
+- The `OptimizationDataset.add_constraint_group` method was removed; use `add_equality_constraint_group` or `add_inequality_constraint_group` instead.
+- The `OptimizationDataset.constraint_names` method was removed; use `inequality_constraint_names` or `equality_constraint_names` instead.
+- The `OptimizationDataset.constraint_dataset` method was removed; use `inequality_constraint_dataset` or `equality_constraint_dataset` instead.
+- The `group_functions` argument of `OptimizationProblem.to_dataset` was removed; functions are now always grouped by category.
+- The `use_standardized_objective` field of `OptimizationMetadata` was removed; use the `use_standardized_objective` field of the post-processor settings (via `UseStandardizedObjectiveMixin`).

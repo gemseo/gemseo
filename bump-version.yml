@@ -439,6 +439,8 @@ classes:
       input_names_to_sizes: input_name_to_size
       output_names_to_sizes: output_name_to_size
   BaseCache:
+    get_all_entries: items
+    last_entry: last_item
     names_to_sizes: name_to_size
   BaseDataConverter:
     compute_names_to_slices:
@@ -478,6 +480,7 @@ classes:
       names_to_sizes: name_to_size
   OptimizationMetadata:
     output_names_to_constraint_names: output_name_to_constraint_names
+    use_standardized_objective: null # use `use_standardized_objective` field of the post-processor settings instead.
   ScalableDesignSpace:
     __init__:
       names_to_default_values: name_to_default_value
@@ -520,6 +523,39 @@ classes:
       restriction_indices: frozen_indexes
       restriction_values: frozen_values
       input_dim: null
+
+  JobSchedulerDiscipline:
+    TEMPLATES_DIR_PATH: JOB_TEMPLATES_DIR_PATH
+
+  CacheEntry:
+    inputs: null
+    __init__:
+      inputs: null
+
+  DisciplineJacApprox:
+    generator_class: null
+
+  FunctionFromDiscipline:
+    generator_class: null
+
+  OptimizationDataset:
+    FUNCTION_GROUP: null
+    # Use `OBJECTIVE_GROUP`, `EQUALITY_CONSTRAINT_GROUP`, `INEQUALITY_CONSTRAINT_GROUP`, or `OBSERVABLE_GROUP` instead.
+    CONSTRAINT_GROUP: null
+    # use `EQUALITY_CONSTRAINT_GROUP` and/or `INEQUALITY_CONSTRAINT_GROUP` instead.
+    add_constraint_variable: null
+    # use `add_equality_constraint_variable` or `add_inequality_constraint_variable` instead.
+    add_constraint_group: null
+    # use `add_equality_constraint_group` or `add_inequality_constraint_group` instead.
+    constraint_names: null
+    # use `inequality_constraint_names` or `equality_constraint_names` instead.
+    constraint_dataset: null
+    # use `inequality_constraint_dataset` or `equality_constraint_dataset` instead.
+
+  OptimizationProblem:
+    to_dataset:
+      group_functions: null
+
 
 # Transforms applied to free functions. Keys are old argument names; positions
 # are resolved from the old API signatures in the griffe dump, so a position is

@@ -56,18 +56,18 @@ discipline.cache.to_dataset()
 # %%
 # ... or iterate over the cache to retrieve every
 # [CacheEntry][gemseo.caches.cache_entry.CacheEntry].
-for entry in discipline.cache:
-    print(entry)
+for inputs, entry in discipline.cache.items():
+    print(inputs, entry)
 
 # %%
 #
-# If you only want the last entry (inputs or outputs),
+# If you only want the last data (inputs, outputs and Jacobian),
 # you can use the
-# [last_entry][gemseo.caches.base.BaseCache.last_entry] property:
-inputs, outputs, jacobian = discipline.cache.last_entry
-print(f"Last inputs: {inputs}")
-print(f"Last outputs: {outputs}")
-print(f"Last jacobian: {jacobian}")
+# [last_item][gemseo.caches.base.BaseCache.last_item] property:
+last_item = discipline.cache.last_item
+print(f"Last inputs: {last_item.inputs}")
+print(f"Last outputs: {last_item.outputs}")
+print(f"Last jacobian: {last_item.jacobian}")
 
 # %%
 # ### 3. Clear the cache
@@ -81,7 +81,7 @@ discipline.cache
 # called [CacheEntry][gemseo.caches.cache_entry.CacheEntry];
 # - Data can be retrieved from a cache as a dataset with the
 # [to_dataset()][gemseo.caches.base.BaseCache.to_dataset] method;
-# - The last entry of a cache is gotten with the
-# [last_entry][gemseo.caches.base.BaseCache.last_entry] property;
+# - The last cached data is gotten with the
+# [last_item][gemseo.caches.base.BaseCache.last_item] property;
 # - The cache can be cleared with the
 # [clear()][gemseo.caches.base.BaseCache.clear] method;

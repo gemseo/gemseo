@@ -23,10 +23,11 @@ from pydantic import NegativeInt
 from pydantic import PositiveInt
 
 from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
 from gemseo.typing import StrKeyMapping
 
 
-class GradientSensitivity_Settings(BasePostSettings):  # noqa: D101, N801
+class GradientSensitivity_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
     iteration: NegativeInt | PositiveInt | None = Field(
         default=None,

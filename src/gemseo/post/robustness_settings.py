@@ -21,10 +21,11 @@ from typing import ClassVar
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
 from gemseo.typing import StrKeyMapping
 
 
-class Robustness_Settings(BasePostSettings):  # noqa: D101, N801
+class Robustness_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (8.0, 5.0)}
     stddev: float = Field(
         default=0.01,
