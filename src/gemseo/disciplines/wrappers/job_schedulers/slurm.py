@@ -19,9 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
-    JobSchedulerDisciplineWrapper,
-)
+from gemseo.disciplines.wrappers.job_schedulers.discipline import JobSchedulerDiscipline
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -29,7 +27,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 
-class SLURM(JobSchedulerDisciplineWrapper):
+class SLURM(JobSchedulerDiscipline):
     """A discipline that wraps the execution of the SLURM Job scheduler.
 
     The discipline is serialized to the disk, its input too, then a job file is created

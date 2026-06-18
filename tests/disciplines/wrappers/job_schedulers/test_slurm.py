@@ -31,12 +31,7 @@ from gemseo.utils.testing.helpers import assert_exception
 
 @pytest.fixture
 def discipline(tmpdir):
-    """Create a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
-    using the SLURM template.
-
-    Returns:
-        The wrapped discipline.
-    """
+    """A SLURM discipline wrapping SobieskiMission, using the mock template."""
     return SLURM(
         discipline=create_discipline("SobieskiMission"),
         workdir_path=tmpdir,

@@ -19,9 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (  # noqa: E501
-    JobSchedulerDisciplineWrapper,
-)
+from gemseo.disciplines.wrappers.job_schedulers.discipline import JobSchedulerDiscipline
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -29,7 +27,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 
-class LSF(JobSchedulerDisciplineWrapper):
+class LSF(JobSchedulerDiscipline):
     """A discipline that wraps the execution of the LSF Job scheduler.
 
     The discipline is serialized to the disk, its input too, then a job file is created
@@ -53,7 +51,7 @@ class LSF(JobSchedulerDisciplineWrapper):
         ntasks: int = 1,
         ntasks_per_node: int = 1,
         mem_per_cpu: str = "1G",
-        **options: dict[str:Any],
+        **options: Any,
     ) -> None:
         """
         Args:
