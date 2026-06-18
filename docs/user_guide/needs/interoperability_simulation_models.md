@@ -53,16 +53,16 @@ GEMSEO knows they are connected.
 GEMSEO provides multiple options
 to turn an existing simulation tool into a discipline:
 
-| Source | GEMSEO wrapper |
-|---|---|
-| Python function | `AutoPyDiscipline` |
+| Source | GEMSEO wrapper                                              |
+|---|-------------------------------------------------------------|
+| Python function | `AutoPyDiscipline`                                          |
 | Analytic expressions | `AnalyticDiscipline` (with automatic derivatives via SymPy) |
-| Excel workbook | `XLSDiscipline` |
-| MATLAB function | `gemseo-matlab` plugin |
-| Scilab function | `gemseo-scilab` plugin |
-| Executable with file I/O | `DiscFromExe` |
-| Existing evaluation data (DOE) | `SurrogateDiscipline` |
-| Custom Python code | Inherit from `Discipline` |
+| Excel workbook | `gemseo-excel` plugin                                       |
+| MATLAB function | `gemseo-matlab` plugin                                      |
+| Scilab function | `gemseo-scilab` plugin                                      |
+| Executable with file I/O | `DiscFromExe`                                               |
+| Existing evaluation data (DOE) | `SurrogateDiscipline`                                       |
+| Custom Python code | Inherit from `Discipline`                                   |
 
 All these options can be mixed within the same process,
 enabling strong flexibility and incremental adoption.
