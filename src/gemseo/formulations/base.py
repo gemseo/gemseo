@@ -135,7 +135,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             The objective function.
         """
 
-    def _create_function(
+    def create_function(
         self,
         output_names: Iterable[str],
         discipline: BaseDiscipline | None = None,

@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_type_errors
+  'OT_SystemFORM requires a reliability analysis problem with at least one event.'
+# ---

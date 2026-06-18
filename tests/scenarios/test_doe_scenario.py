@@ -309,10 +309,7 @@ def test_lib_serialization(tmp_wd, doe_scenario) -> None:
     with open("doe.pkl", "rb") as file:
         pickled_scenario = pickle.load(file)
 
-    assert (
-        pickled_scenario._EvaluationScenario__algorithm_settings
-        == doe_scenario._EvaluationScenario__algorithm_settings
-    )
+    assert pickled_scenario._algorithm_settings == doe_scenario._algorithm_settings
 
     pickled_scenario.execute(CustomDOE_Settings(samples=array([[0.5]])))
 

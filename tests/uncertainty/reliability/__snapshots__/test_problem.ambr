@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_event_without_function
+  "The function field of the elementary event 'f' cannot be None."
+# ---

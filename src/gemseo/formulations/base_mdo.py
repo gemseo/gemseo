@@ -41,7 +41,7 @@ class BaseMDOFormulation(BaseFormulation[T]):
     def create_objective(  # noqa: D102
         self, output_names: Iterable[str], objective_name: str = ""
     ) -> ArrayFunction:
-        return self._create_function(output_names, name=objective_name)
+        return self.create_function(output_names, name=objective_name)
 
     def add_observable(  # noqa: D102
         self,
@@ -49,7 +49,7 @@ class BaseMDOFormulation(BaseFormulation[T]):
         observable_name: str = "",
         discipline: Discipline | None = None,
     ) -> None:
-        function = self._create_function(
+        function = self.create_function(
             output_names, discipline=discipline, name=observable_name
         )
         self.problem.add_observable(function)
@@ -63,7 +63,7 @@ class BaseMDOFormulation(BaseFormulation[T]):
         positive: bool = False,
         **kwargs: Any,
     ) -> ArrayFunction:
-        function = self._create_function(output_names, name=constraint_name)
+        function = self.create_function(output_names, name=constraint_name)
         return Constraints.format(
             function, value=value, constraint_type=constraint_type, positive=positive
         )
