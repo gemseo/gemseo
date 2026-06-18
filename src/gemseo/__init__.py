@@ -562,10 +562,10 @@ def get_scenario_inputs_schema(
     """
     from gemseo.algos.base_driver_settings import BaseDriverSettings
 
-    if scenario._EvaluationScenario__algorithm_settings is None:
+    if scenario._algorithm_settings is None:
         settings = BaseDriverSettings
     else:
-        settings = scenario._EvaluationScenario__algorithm_settings
+        settings = scenario._algorithm_settings
 
     return settings.model_json_schema()
 

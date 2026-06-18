@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 from datetime import timedelta
 from pathlib import Path
@@ -142,7 +143,7 @@ class EvaluationScenario(BaseMonitoredProcess):
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ScenarioProcessFlow
 
-    __algorithm_settings: BaseDriverSettings | None
+    _algorithm_settings: BaseDriverSettings | None
     """The algorithm settings once they have been specified."""
 
     def __init__(
@@ -164,12 +165,20 @@ class EvaluationScenario(BaseMonitoredProcess):
                 use [MDF_Settings][gemseo.formulations.mdf_settings.MDF_Settings].
         """  # noqa: D205, D212
         super().__init__(name)
-        self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
+        # TODO: replace by self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
+        # once MR 2434 has been merged.
+        func = self._ALGO_FACTORY_CLASS
+        kwargs = (
+            {"use_cache": True}
+            if "use_cache" in inspect.signature(func).parameters
+            else {}
+        )
+        self._algo_factory = func(**kwargs)
         self.clear_database_before_execute = False
         self._execution_result = None
         self._backup_evaluations = False
         self._backup_file_path = Path()
-        self.__algorithm_settings = None
+        self._algorithm_settings = None
         if formulation_settings is None:
             formulation_settings = MDF_Settings()
 
@@ -306,11 +315,9 @@ class EvaluationScenario(BaseMonitoredProcess):
         Returns:
             The input values.
         """
-        if isinstance(self.__algorithm_settings, BaseDOESettings):
+        if isinstance(self._algorithm_settings, BaseDOESettings):
             # The algo is not instantiated again since it is in the factory cache.
-            algo = self._algo_factory.create(
-                self.__algorithm_settings.target_class_name
-            )
+            algo = self._algo_factory.create(self._algorithm_settings.target_class_name)
             algo: BaseDOELibrary
             return algo.samples
 
@@ -322,7 +329,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         Args:
             algorithm_settings: The algorithm settings
         """
-        self.__algorithm_settings = algorithm_settings
+        self._algorithm_settings = algorithm_settings
 
     def __get_execution_metrics(self) -> MultiLineString:
         """Return the string representation of the execution metrics of the scenario.
@@ -384,7 +391,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         if algorithm_settings is not None:
             self.set_algorithm(algorithm_settings)
 
-        if self.__algorithm_settings is None:
+        if self._algorithm_settings is None:
             msg = (
                 "Algorithm settings are necessary for executing a scenario. "
                 "Pass the settings in the execute method "
@@ -399,7 +406,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         # So the original functions must be used.
         # As it is possible that other types of driver do the same as optimizers,
         # the original functions are restored each time a DOE is used.
-        if isinstance(self.__algorithm_settings, BaseDOESettings):
+        if isinstance(self._algorithm_settings, BaseDOESettings):
             self.formulation.problem.reset(
                 database=False,
                 current_iter=False,
@@ -437,7 +444,7 @@ class EvaluationScenario(BaseMonitoredProcess):
 
     def _execute(self) -> None:
         self._execution_result = self._algo_factory.execute(
-            self.formulation.problem, settings=self.__algorithm_settings
+            self.formulation.problem, settings=self._algorithm_settings
         )
 
     def to_ggobi(self, file_path: str | Path) -> None:

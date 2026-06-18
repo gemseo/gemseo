@@ -30,6 +30,7 @@ import gemseo.settings.ode as ode
 import gemseo.settings.opt as opt
 import gemseo.settings.post as post
 import gemseo.settings.probability_distributions as probability_distributions
+import gemseo.settings.reliability as reliability
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
@@ -43,6 +44,9 @@ from gemseo.mda.base_settings import BaseMDASettings
 from gemseo.post.base_post_settings import BasePostSettings
 from gemseo.uncertainty.distributions.base_settings import (
     BaseGenericDistributionSettings,
+)
+from gemseo.uncertainty.reliability.base_settings import (
+    BaseReliabilityAlgorithmSettings,
 )
 from gemseo.utils.pydantic import BaseSettings
 
@@ -215,6 +219,19 @@ def test_mda_settings(module_and_cls):
     ),
 )
 def test_probability_distribution_settings(module_and_cls):
+    module, cls = module_and_cls
+    assert cls in module.__dict__.values()
+
+
+@pytest.mark.parametrize(
+    "module_and_cls",
+    get_setting_classes(
+        BaseReliabilityAlgorithmSettings,
+        "gemseo.uncertainty.reliability",
+        reliability,
+    ),
+)
+def test_reliability_algorithm_settings(module_and_cls):
     module, cls = module_and_cls
     assert cls in module.__dict__.values()
 
