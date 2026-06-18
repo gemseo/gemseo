@@ -68,7 +68,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
             )
             if not (
                 optimization_metadata.minimize_objective
-                or optimization_metadata.use_standardized_objective
+                or settings.use_standardized_objective
             ):
                 grad_opt *= -1
                 b_mat *= -1

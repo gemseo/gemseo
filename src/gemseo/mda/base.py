@@ -542,7 +542,7 @@ class BaseMDA(ProcessDiscipline):
 
     def _prepare_warm_start(self) -> None:
         """Load the previous couplings values to local data."""
-        cached_outputs = self.cache.last_entry.outputs
+        cached_outputs = self.cache.last_item.outputs
 
         if not cached_outputs:
             return

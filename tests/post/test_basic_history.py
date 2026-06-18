@@ -41,10 +41,14 @@ def test_common_scenario(
     snapshot_matplotlib,
 ) -> None:
     """Check BasicHistory with objective, standardized or not."""
-    common_problem.use_standardized_objective = use_standardized_objective
     opt = BasicHistory(common_problem)
     opt.execute(
-        BasicHistory_Settings(variable_names=variable_names, save=False, **options)
+        BasicHistory_Settings(
+            variable_names=variable_names,
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+            **options,
+        )
     )
 
 

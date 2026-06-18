@@ -38,6 +38,7 @@ from gemseo import create_scenario
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.caches._hdf5_file_singleton import HDF5FileSingleton
 from gemseo.caches.cache_entry import CacheEntry
+from gemseo.caches.cache_item import CacheItem
 from gemseo.caches.factory import CacheFactory
 from gemseo.caches.hdf5 import HDF5Cache
 from gemseo.caches.simple import SimpleCache
@@ -81,6 +82,23 @@ def hdf5_cache(tmp_wd):
     )
 
 
+def test_io_names(simple_cache):
+    """Verify input_names and output_names properties."""
+    # NO IO names at instantiation.
+    assert simple_cache.input_names == []
+    assert simple_cache.output_names == []
+
+    # After a first entry.
+    simple_cache[{"b": 0, "a": 1}] = ({"d": 2, "c": 3}, {})
+    assert simple_cache.input_names == ["a", "b"]
+    assert simple_cache.output_names == ["c", "d"]
+
+    # After a new entry: the names are the same as those in the first entry.
+    simple_cache[{"b_": 0, "a_": 1}] = ({"d_": 2, "c_": 3}, {})
+    assert simple_cache.input_names == ["a", "b"]
+    assert simple_cache.output_names == ["c", "d"]
+
+
 @pytest.mark.parametrize("cache", map(FACTORY.create, FACTORY.class_names))
 def test_tolerance(cache, snapshot):
     """Verify tolerance property."""
@@ -97,7 +115,7 @@ def test_jac_and_outputs_caching(
     for cache in [simple_cache, hdf5_cache, memory_full_cache, memory_full_cache_loc]:
         # Test the cache are empty
         assert not cache
-        assert not cache.last_entry.inputs
+        assert not cache.last_item.outputs
 
         # Create input, output and jacobian
         input_data = {"i1": arange(3), "i2": arange(3)}
@@ -106,14 +124,14 @@ def test_jac_and_outputs_caching(
 
         # Cache and retrieve output
         cache.cache_outputs(input_data, output_data)
-        _, out_loaded, jac_loaded = cache[input_data]
+        out_loaded, jac_loaded = cache[input_data]
         assert out_loaded
         assert not jac_loaded
         assert_items_equal(out_loaded, output_data)
 
         # Cache and retrieve jacobian
         cache.cache_jacobian(input_data, jac)
-        _, out_loaded, jac_loaded = cache[input_data]
+        out_loaded, jac_loaded = cache[input_data]
         assert out_loaded is not None
         assert compare_dict_of_arrays(jac, jac_loaded)
 
@@ -130,9 +148,9 @@ def test_jac_and_outputs_caching(
     assert len(simple_cache) == 1
 
     for cache in [simple_cache, hdf5_cache, memory_full_cache, memory_full_cache_loc]:
-        last_entry = cache.last_entry
-        assert last_entry.inputs
-        assert last_entry.outputs
+        last_item = cache.last_item
+        assert last_item.inputs
+        assert last_item.outputs
 
         cache.clear()
         assert not cache
@@ -193,11 +211,13 @@ def test_update_caches(tmp_wd) -> None:
     input_data2 = {"i": 2 * arange(3)}
     c2.cache_outputs(input_data2, {"o": 2 * arange(4)})
     c2.cache_jacobian(input_data2, {"o": {"i": 3 * arange(4)}})
+    # This empty entry will not be used to update c1.
+    c2.cache_outputs({"i": 3 * arange(3)}, {})
 
     c1.update(c2)
     assert len(c1) == 2
 
-    _, outs, jacs = c1[input_data2]
+    outs, jacs = c1[input_data2]
     assert (outs["o"] == 2 * arange(4)).all()
     assert (jacs["o"]["i"] == 3 * arange(4)).all()
 
@@ -218,7 +238,7 @@ def test_collision(tmp_wd) -> None:
     output_data2 = {"o": 2.0 * arange(3)}
     c1.cache_outputs(input_data2, output_data2)
 
-    _, c1_outs, _ = c1[input_data2]
+    c1_outs, _ = c1[input_data2]
     assert (c1_outs["o"] == output_data2["o"]).all()
 
 
@@ -330,8 +350,7 @@ def test_read_group(tmp_wd) -> None:
     input_data = {"x": arange(3), "y": arange(3)}
     output_data = {"f": array([1])}
     cache.cache_outputs(input_data, output_data)
-    cache_entry = cache._read_input_output_data([1], {"x": arange(3), "y": arange(3)})
-    assert_items_equal(cache_entry.inputs, input_data)
+    cache_entry = cache[{"x": arange(3), "y": arange(3)}]
     assert_items_equal(cache_entry.outputs, output_data)
 
 
@@ -342,11 +361,12 @@ def test_get_all_data(
     outputs = {"f": array([1])}
     for cache in [simple_cache, hdf5_cache, memory_full_cache, memory_full_cache_loc]:
         cache.cache_outputs(inputs, outputs)
-        all_data = list(cache.get_all_entries())
+        all_data = list(cache.items())
         assert len(all_data) == 1
-        assert_items_equal(all_data[0].inputs, inputs)
-        assert_items_equal(all_data[0].outputs, outputs)
-        assert not all_data[0].jacobian
+        input_data_0, cache_entry_0 = all_data[0]
+        assert_items_equal(input_data_0, inputs)
+        assert_items_equal(cache_entry_0.outputs, outputs)
+        assert not cache_entry_0.jacobian
         assert cache[inputs].outputs["f"] == outputs["f"]
 
     jac = {"f": {"x": eye(1, 3), "y": eye(1, 3)}}
@@ -359,13 +379,13 @@ def test_all_data(memory_full_cache, memory_full_cache_loc, hdf5_cache) -> None:
         cache.cache_outputs({"x": arange(3), "y": arange(3)}, {"f": array([1])})
         cache.cache_jacobian({"x": arange(3), "y": arange(3)}, jac)
         cache.cache_outputs({"x": arange(3) * 2, "y": arange(3)}, {"f": array([2])})
-        all_data = iter(cache.get_all_entries())
-        data = next(all_data)
-        assert_items_equal(data.inputs, {"x": arange(3), "y": arange(3)})
-        assert_items_equal(data.outputs, {"f": array([1])})
-        data = next(all_data)
-        assert_items_equal(data.inputs, {"x": arange(3) * 2, "y": arange(3)})
-        assert_items_equal(data.outputs, {"f": array([2])})
+        all_data = iter(cache.items())
+        input_data_0, entry_0 = next(all_data)
+        assert_items_equal(input_data_0, {"x": arange(3), "y": arange(3)})
+        assert_items_equal(entry_0.outputs, {"f": array([1])})
+        input_data_1, entry_1 = next(all_data)
+        assert_items_equal(input_data_1, {"x": arange(3) * 2, "y": arange(3)})
+        assert_items_equal(entry_1.outputs, {"f": array([2])})
 
 
 def assert_items_equal(data1, data2) -> None:
@@ -388,13 +408,13 @@ def test_addition() -> None:
     cache2.cache_outputs({"x": arange(3) * 2, "y": arange(3)}, {"f": array([1]) * 2})
     cache3 = cache1 + cache2
     assert len(cache3) == 2
-    all_data = iter(cache3.get_all_entries())
-    data = next(all_data)
-    assert_items_equal(data.inputs, {"x": arange(3), "y": arange(3)})
-    assert_items_equal(data.outputs, {"f": array([1])})
-    data = next(all_data)
-    assert_items_equal(data.inputs, {"x": arange(3) * 2, "y": arange(3)})
-    assert_items_equal(data.outputs, {"f": array([2])})
+    all_data = iter(cache3.items())
+    input_data_0, entry_0 = next(all_data)
+    assert_items_equal(input_data_0, {"x": arange(3), "y": arange(3)})
+    assert_items_equal(entry_0.outputs, {"f": array([1])})
+    input_data_1, entry_1 = next(all_data)
+    assert_items_equal(input_data_1, {"x": arange(3) * 2, "y": arange(3)})
+    assert_items_equal(entry_1.outputs, {"f": array([2])})
 
 
 def test_duplicate_from_scratch(memory_full_cache, hdf5_cache) -> None:
@@ -574,13 +594,10 @@ def test_get_entries(memory_full_cache) -> None:
     """Check that a cache can be iterated with namedtuple values."""
     memory_full_cache.cache_outputs({"x": array([0])}, {"y": array([0])})
     memory_full_cache.cache_outputs({"x": array([1])}, {"y": array([1])})
-    for index, data in enumerate(memory_full_cache.get_all_entries()):
-        assert data[0]["x"] == array([index])
-        assert data[1]["y"] == array([index])
-        assert not data[2]
-        assert data.inputs["x"] == array([index])
-        assert data.outputs["y"] == array([index])
-        assert not data.jacobian
+    for index, (input_data, entry) in enumerate(memory_full_cache.items()):
+        assert input_data["x"] == array([index])
+        assert entry.outputs["y"] == array([index])
+        assert not entry.jacobian
 
 
 @pytest.mark.parametrize(
@@ -590,19 +607,18 @@ def test_get_entries(memory_full_cache) -> None:
 def test_setitem_getitem(simple_cache, jacobian_data) -> None:
     """Check that a cache can be read and set with __getitem__ and __setitem__."""
     simple_cache[{"x": array([0])}] = ({"y": array([1])}, jacobian_data)
-    assert simple_cache.last_entry.inputs["x"] == array([0])
-    assert simple_cache.last_entry.outputs["y"] == array([1])
+    assert next(iter(simple_cache))["x"] == array([0])
+    assert simple_cache.last_item.outputs["y"] == array([1])
 
     if jacobian_data:
-        assert simple_cache.last_entry.jacobian == {"y": {"x": array([[1]])}}
+        assert simple_cache.last_item.jacobian == {"y": {"x": array([[1]])}}
     else:
-        assert not simple_cache.last_entry.jacobian
+        assert not simple_cache.last_item.jacobian
 
 
 def test_getitem_missing_entry(simple_cache) -> None:
     """Verify that querying a missing entry returns an empty CacheEntry."""
     data = simple_cache[{"x": array([2])}]
-    assert data.inputs["x"] == array([2])
     assert not data.outputs
     assert not data.jacobian
 
@@ -646,13 +662,16 @@ def test_export_to_dataset_and_entries(
     assert dataset.get_view(variable_names="y").to_numpy()[0, 0] == 2.0
 
     second_jacobian = second_jacobian or {}
-    last_entry = CacheEntry(second_inputs, second_outputs, second_jacobian or {})
-    assert simple_cache.last_entry == last_entry
+    last_item = CacheItem(second_inputs, second_outputs, second_jacobian or {})
+    assert simple_cache.last_item == last_item
 
-    # Check __iter__
-    entries = list(simple_cache.get_all_entries())
+    # Check get_all_entries
+    entries = list(simple_cache.items())
     assert len(entries) == 1
-    assert entries[0] == last_entry
+    assert entries[0] == (
+        second_inputs,
+        CacheEntry(last_item.outputs, last_item.jacobian),
+    )
 
 
 @pytest.mark.parametrize(
@@ -668,6 +687,7 @@ def test_export_to_dataset_and_entries(
 )
 def test_names_to_sizes(simple_cache, data) -> None:
     """Verify the `name_to_size` attribute."""
+    assert not simple_cache.name_to_size
     simple_cache.cache_outputs({"index": 1}, {"o": data})
     assert simple_cache.name_to_size == {"index": 1, "o": 2}
 

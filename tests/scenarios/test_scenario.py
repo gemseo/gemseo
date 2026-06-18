@@ -1091,7 +1091,7 @@ def test_listener_dataset():
     )
     scenario.execute(CustomDOE_Settings(samples=array([[1.0]])))
 
-    dataset = scenario.formulation.problem.to_dataset(group_functions=True)
+    dataset = scenario.formulation.problem.to_dataset()
 
     expected = OptimizationDataset()
     expected.add_design_variable("x", array([[1.0]]))

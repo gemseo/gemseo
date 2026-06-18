@@ -26,7 +26,6 @@ from collections.abc import Sized
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
-from typing import ClassVar
 
 from numpy import atleast_1d
 from scipy.sparse import hstack as sparse_hstack
@@ -78,12 +77,6 @@ class DisciplineJacApprox:
     approximator: BaseGradientApproximator | None
     """The gradient approximation method."""
 
-    # TODO: API remove this class attribute
-    generator_class: ClassVar[type[DisciplineAdapterGenerator]] = (
-        DisciplineAdapterGenerator
-    )
-    """The generator class used to create `ArrayFunction` from an `Discipline`."""
-
     def __init__(
         self,
         discipline: BaseDiscipline,
@@ -120,7 +113,7 @@ class DisciplineJacApprox:
         self.discipline = discipline
         self.approx_method = approx_method
         self.step = step
-        self.generator = self.generator_class(discipline)
+        self.generator = DisciplineAdapterGenerator(discipline)
         self.func = None
         self.approximator = None
         self.auto_steps = {}

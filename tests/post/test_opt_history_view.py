@@ -97,9 +97,13 @@ def test_common_scenario(
     snapshot_matplotlib,
 ) -> None:
     """Check OptHistoryView with objective, standardized or not."""
-    three_length_common_problem.use_standardized_objective = use_standardized_objective
     opt = OptHistoryView(three_length_common_problem)
-    opt.execute(OptHistoryView_Settings(save=False))
+    opt.execute(
+        OptHistoryView_Settings(
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )
 
 
 @pytest.mark.parametrize(

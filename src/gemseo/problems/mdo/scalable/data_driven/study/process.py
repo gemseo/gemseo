@@ -169,10 +169,9 @@ class ScalabilityStudy:
         self.datasets = []
         self.objective = objective
         self.design_variables = design_variables
-        # TODO: API: remove "or []"
-        self.eq_constraints = eq_constraints or []
-        self.ineq_constraints = ineq_constraints or []
-        self.coupling_variables = coupling_variables or []
+        self.eq_constraints = list(eq_constraints)
+        self.ineq_constraints = list(ineq_constraints)
+        self.coupling_variables = list(coupling_variables)
         self.maximize_objective = maximize_objective
         self.formulations = []
         self.formulations_options = []

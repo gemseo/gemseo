@@ -229,7 +229,7 @@ def test_get_post_processing_options_schema() -> None:
     """Test that all available options are printed."""
     schema_dict = get_post_processing_options_schema("OptHistoryView")
     assert "properties" in schema_dict
-    assert len(schema_dict["properties"]) == 12
+    assert len(schema_dict["properties"]) == 13
 
     schema_json = get_post_processing_options_schema("OptHistoryView", output_json=True)
     out_dict = json.loads(schema_json)
@@ -303,7 +303,7 @@ def test_execute_post(scenario, obj_type, tmp_wd) -> None:
 
 def test_execute_post_with_optimization_dataset(scenario):
     """Test the method execute_post with an OptimizationDataset."""
-    dataset = scenario.formulation.problem.to_dataset(group_functions=True)
+    dataset = scenario.formulation.problem.to_dataset()
     post = execute_post(
         dataset, settings_model=OptHistoryView_Settings(save=False, show=False)
     )

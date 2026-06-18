@@ -58,7 +58,7 @@ from gemseo.settings.post import OptHistoryView_Settings
 # convert it to an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset],
 # and save it as a CSV file:
 problem = OptimizationProblem.from_hdf("power2_opt_pb.h5")
-problem.to_dataset(group_functions=True).to_csv("results.csv")
+problem.to_dataset().to_csv("results.csv")
 
 # %%
 # The file can be seen:
@@ -116,7 +116,6 @@ dataset.misc["optimization_metadata"] = OptimizationMetadata(
     objective_name="pow2",
     standardized_objective_name="pow2",
     minimize_objective=True,
-    use_standardized_objective=False,
     tolerances=tolerances,
     output_name_to_constraint_names=output_name_to_constraint_names,
     feasible_iterations=feasible_iterations,

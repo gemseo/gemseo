@@ -19,9 +19,10 @@ from __future__ import annotations
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
 
 
-class VariableInfluence_Settings(BasePostSettings):  # noqa: D101, N801
+class VariableInfluence_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
     level: float = Field(
         default=0.99,
         description="The proportion of the total sensitivity to use as a threshold to "

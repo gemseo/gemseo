@@ -41,30 +41,8 @@ class OptimizationDataset(Dataset):
     DESIGN_GROUP: Final[str] = "designs"
     """The group name for the design variables."""
 
-    # TODO: API: Remove this group name.
-    FUNCTION_GROUP: Final[str] = "functions"
-    """The group name for the functions.
-
-    This group name is deprecated in favour of
-    [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP],
-    [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP],
-    [OBJECTIVE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP]
-    and
-    [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP].
-    """
-
     OBJECTIVE_GROUP: Final[str] = "objectives"
     """The group name for the objectives."""
-
-    # TODO: API: Remove this group name.
-    CONSTRAINT_GROUP: Final[str] = "constraints"
-    """The group name for the constraints.
-
-    This group name is deprecated in favour of
-    [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP]
-    and
-    [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP].
-    """
 
     INEQUALITY_CONSTRAINT_GROUP: Final[str] = "inequality_constraints"
     """The group name for the inequality constraints."""
@@ -95,11 +73,6 @@ class OptimizationDataset(Dataset):
         return self.get_variable_names(self.DESIGN_GROUP)
 
     @property
-    def constraint_names(self) -> list[str]:
-        """The names of the constraints."""
-        return self.get_variable_names(self.CONSTRAINT_GROUP)
-
-    @property
     def equality_constraint_names(self) -> list[str]:
         """The names of the equality constraints."""
         return self.get_variable_names(self.EQUALITY_CONSTRAINT_GROUP)
@@ -125,11 +98,6 @@ class OptimizationDataset(Dataset):
         return self.get_view(group_names=self.DESIGN_GROUP)
 
     @property
-    def constraint_dataset(self) -> OptimizationDataset:
-        """The view of the constraint dataset."""
-        return self.get_view(group_names=self.CONSTRAINT_GROUP)
-
-    @property
     def equality_constraint_dataset(self) -> OptimizationDataset:
         """The view of the equality constraint dataset."""
         return self.get_view(group_names=self.EQUALITY_CONSTRAINT_GROUP)
@@ -148,32 +116,6 @@ class OptimizationDataset(Dataset):
     def observable_dataset(self) -> OptimizationDataset:
         """The view of the observable dataset."""
         return self.get_view(group_names=self.OBSERVABLE_GROUP)
-
-    def add_constraint_variable(
-        self,
-        variable_name: str,
-        data: DataType,
-        components: ComponentType = (),
-    ) -> None:
-        """Add data related to a constraint.
-
-        Args:
-            variable_name: The name of the variable.
-            data: The data,
-                either an array shaped as `(n_entries, n_features)`,
-                an array shaped as `(n_entries,)`
-                that will be reshaped as `(n_entries, 1)`
-                or a scalar that will be converted into an array
-                shaped as `(n_entries, 1)`.
-            components: The components considered.
-                If empty, use `[0, ..., n_features]`.
-        """
-        self.add_variable(
-            variable_name,
-            data,
-            group_name=self.CONSTRAINT_GROUP,
-            components=components,
-        )
 
     def add_equality_constraint_variable(
         self,
@@ -303,32 +245,6 @@ class OptimizationDataset(Dataset):
             data,
             group_name=self.OBSERVABLE_GROUP,
             components=components,
-        )
-
-    def add_constraint_group(
-        self,
-        data: DataType,
-        variable_names: StrColumnType = "c",
-        variable_name_to_n_components: dict[str, int] | None = None,
-    ) -> None:
-        """Add the data related to the constraint group.
-
-        Args:
-            data: The data.
-            variable_names: The names of the variables.
-                If empty, use
-                [DEFAULT_VARIABLE_NAME][gemseo.datasets.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
-            variable_name_to_n_components: The number of components of the variables.
-                If `variable_names` is empty,
-                this argument is not considered.
-                If `None`,
-                assume that all the variables have a single component.
-        """
-        self.add_group(
-            self.CONSTRAINT_GROUP,
-            data,
-            variable_names=variable_names,
-            variable_name_to_n_components=variable_name_to_n_components,
         )
 
     def add_equality_constraint_group(

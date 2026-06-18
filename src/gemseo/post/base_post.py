@@ -107,7 +107,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             and len(opt_problem.database) > 0
         ):
             self._dataset = opt_problem.to_dataset(
-                export_gradients=self._USE_JACOBIAN_DATA, group_functions=True
+                export_gradients=self._USE_JACOBIAN_DATA
             )
             self.database = opt_problem.database
         elif isinstance(opt_problem, OptimizationDataset):
@@ -133,12 +133,14 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__nameless_figure_counter = 0
         self._dataset_plots = []
 
-    @property
-    def _change_obj(self) -> bool:
-        """Whether to change the objective value and names by using the opposite."""
+    def _change_objective(self, use_standardized_objective: bool) -> bool:
+        """Whether to change the objective value and names by using the opposite.
+
+        Args:
+            use_standardized_objective: Whether to use the standardized objective.
+        """
         return not (
-            self._optimization_metadata.minimize_objective
-            or self._optimization_metadata.use_standardized_objective
+            self._optimization_metadata.minimize_objective or use_standardized_objective
         )
 
     @property

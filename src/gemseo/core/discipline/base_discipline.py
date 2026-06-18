@@ -243,13 +243,16 @@ class BaseDiscipline(BaseMonitoredProcess):
 
         return input_data_
 
-    def _set_data_from_cache(self, cache_entry: CacheEntry) -> None:
+    def _set_data_from_cache(
+        self, input_data: StrKeyMapping, cache_entry: CacheEntry
+    ) -> None:
         """Restore the input and output data from a cache entry.
 
         Args:
+            input_data: The input data.
             cache_entry: The cache entry.
         """
-        self.io.input_data = DisciplineData(cache_entry.inputs)
+        self.io.input_data = DisciplineData(input_data)
         self.io.output_data = DisciplineData(cache_entry.outputs)
 
     def _can_load_cache(self, input_data: StrKeyMapping) -> bool:
@@ -268,7 +271,7 @@ class BaseDiscipline(BaseMonitoredProcess):
         if not cache_entry.outputs:
             return False
 
-        self._set_data_from_cache(cache_entry)
+        self._set_data_from_cache(input_data, cache_entry)
         return True
 
     def set_cache(

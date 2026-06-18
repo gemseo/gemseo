@@ -66,8 +66,7 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
     DISC_OUTPUT_FILE_NAME: ClassVar[str] = "output_data.pckl"
     """The name of the pickle file for the discipline outputs."""
 
-    # TODO: API: rename to JOB_TEMPLATES_DIR_PATH
-    TEMPLATES_DIR_PATH: ClassVar[Path] = Path(__file__).parent / "templates"
+    JOB_TEMPLATES_DIR_PATH: ClassVar[Path] = Path(__file__).parent / "templates"
     """The path to the directory with the job templates."""
 
     _job_template_path: Path
@@ -127,7 +126,7 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
                 self._job_template_path = Path(job_template_path)
             else:
                 self._job_template_path = (
-                    self.TEMPLATES_DIR_PATH / self.__class__.__name__
+                    self.JOB_TEMPLATES_DIR_PATH / self.__class__.__name__
                 )
 
         self._scheduler_run_command = scheduler_run_command

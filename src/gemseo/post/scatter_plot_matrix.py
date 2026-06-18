@@ -144,7 +144,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
         if (
             optimization_metadata.standardized_objective_name in variable_labels
             and not optimization_metadata.minimize_objective
-            and not optimization_metadata.use_standardized_objective
+            and not settings.use_standardized_objective
         ):
             index = variable_labels.index(
                 optimization_metadata.standardized_objective_name

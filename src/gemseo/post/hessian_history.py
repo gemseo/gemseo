@@ -77,7 +77,7 @@ class HessianHistory(BasePost):
 
         # Add first iteration blank
         diag = array([ones_like(diag[0]), *diag]).T
-        if self._change_obj:
+        if self._change_objective(settings.use_standardized_objective):
             diag = -diag
 
         variable_names = settings.variable_names

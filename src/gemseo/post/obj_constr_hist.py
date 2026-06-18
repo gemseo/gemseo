@@ -79,7 +79,7 @@ class ObjConstrHist(BasePost[ObjConstrHist_Settings]):
         obj_history, x_history = np.array(obj_history).real, np.array(x_history).real
         if not (
             optimization_metadata.minimize_objective
-            or optimization_metadata.use_standardized_objective
+            or settings.use_standardized_objective
         ):
             # Use the opposite of the standardized history.
             obj_history = -obj_history

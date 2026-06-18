@@ -24,7 +24,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import ClassVar
 
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.functions.discipline_adapter_generator import (
@@ -89,12 +88,6 @@ class FunctionFromDiscipline(ArrayFunction):
 
     __discipline_adapter: DisciplineAdapter
     """The discipline adapter."""
-
-    # TODO: API remove this class attribute
-    generator_class: ClassVar[type[DisciplineAdapterGenerator]] = (
-        DisciplineAdapterGenerator
-    )
-    """The class used to generate the discipline adapter."""
 
     def __init__(
         self,
@@ -235,7 +228,7 @@ class FunctionFromDiscipline(ArrayFunction):
             ValueError: If no discipline is found.
         """
         if discipline is not None:
-            return cls.generator_class(discipline, formulation.variable_sizes)
+            return DisciplineAdapterGenerator(discipline, formulation.variable_sizes)
 
         for discipline in (
             formulation.get_top_level_disciplines()
@@ -243,7 +236,9 @@ class FunctionFromDiscipline(ArrayFunction):
             else formulation.disciplines
         ):
             if discipline.io.output_grammar.has_names(output_names):
-                return cls.generator_class(discipline, formulation.variable_sizes)
+                return DisciplineAdapterGenerator(
+                    discipline, formulation.variable_sizes
+                )
 
         msg = (
             f"No discipline known by formulation {formulation.__class__.__name__}"

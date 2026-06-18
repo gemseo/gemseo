@@ -22,10 +22,11 @@ from typing import ClassVar
 from pydantic import Field
 
 from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
 from gemseo.typing import StrKeyMapping
 
 
-class ScatterPlotMatrix_Settings(BasePostSettings):  # noqa: D101, N801
+class ScatterPlotMatrix_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
     filter_non_feasible: bool = Field(
         default=False,

@@ -324,9 +324,11 @@ class MDOScenario(EvaluationScenario):
         Args:
             opt_naming: Whether to use
                 [DESIGN_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.DESIGN_GROUP]
-                and
-                [FUNCTION_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.FUNCTION_GROUP]
-                as groups.
+                and the function-specific groups
+                ([OBJECTIVE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
+                [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP],
+                [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP],
+                [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP]).
                 Otherwise,
                 [INPUT_GROUP][gemseo.datasets.io_dataset.IODataset.INPUT_GROUP]
                 and

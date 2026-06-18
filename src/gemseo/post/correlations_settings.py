@@ -23,10 +23,11 @@ from pydantic import Field
 from pydantic import PositiveInt
 
 from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
 from gemseo.typing import StrKeyMapping
 
 
-class Correlations_Settings(BasePostSettings):  # noqa: D101, N801
+class Correlations_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (15.0, 10.0)}
     n_plots_x: PositiveInt = Field(
         default=5,

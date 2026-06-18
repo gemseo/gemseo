@@ -27,10 +27,6 @@ if TYPE_CHECKING:
 class CacheEntry(NamedTuple):
     """An entry of a cache."""
 
-    # TODO: API: remove this since a mapping's value does not need to return its key.
-    inputs: StrKeyMapping
-    """The input data."""
-
     outputs: StrKeyMapping
     """The output data."""
 

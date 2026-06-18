@@ -87,7 +87,7 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
             optimization_metadata.standardized_objective_name
         )
         objective_history = variable_history[:, objective_index]
-        if self._change_obj:
+        if self._change_objective(settings.use_standardized_objective):
             objective_history = -objective_history
             variable_history[:, objective_index] = objective_history
             function_names[objective_index] = optimization_metadata.objective_name

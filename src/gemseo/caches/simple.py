@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.caches.base import BaseCache
 from gemseo.caches.cache_entry import CacheEntry
+from gemseo.caches.cache_item import CacheItem
 from gemseo.utils.data_conversion import deepcopy_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -60,9 +61,9 @@ class SimpleCache(BaseCache):
         self.__outputs = {}
         self.__jacobian = {}
 
-    def get_all_entries(self) -> Iterator[CacheEntry]:  # noqa: D102
+    def __iter__(self) -> Iterator[StrKeyMapping]:  # type: ignore[override]
         if self.__inputs:
-            yield self.last_entry
+            yield self.__inputs
 
     def __len__(self) -> int:
         return 1 if self.__inputs else 0
@@ -105,8 +106,8 @@ class SimpleCache(BaseCache):
         input_data: StrKeyMapping,
     ) -> CacheEntry:
         if not self.__is_cached(input_data):
-            return CacheEntry(input_data, {}, {})
-        return self.last_entry
+            return CacheEntry({}, {})
+        return CacheEntry(self.last_item.outputs, self.last_item.jacobian)
 
     def cache_jacobian(  # noqa:D102
         self,
@@ -123,5 +124,5 @@ class SimpleCache(BaseCache):
         self.__outputs = {}
 
     @property
-    def last_entry(self) -> CacheEntry:  # noqa:D102
-        return CacheEntry(self.__inputs, self.__outputs, self.__jacobian)
+    def last_item(self) -> CacheItem:  # noqa:D102
+        return CacheItem(self.__inputs, self.__outputs, self.__jacobian)

@@ -24,13 +24,14 @@ from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
 from gemseo.typing import StrKeyMapping
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-class OptHistoryView_Settings(BasePostSettings):  # noqa: D101, N801
+class OptHistoryView_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
     _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (11.0, 6.0)}
     variable_names: Sequence[str] = Field(
         default=(),

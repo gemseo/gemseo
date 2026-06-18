@@ -38,15 +38,19 @@ def test_common_scenario(
     use_standardized_objective, function, common_problem_, snapshot_matplotlib
 ) -> None:
     """Check QuadApprox with objective, standardized or not."""
-    common_problem_.use_standardized_objective = use_standardized_objective
     opt = QuadApprox(common_problem_)
-    opt.execute(QuadApprox_Settings(function=function, save=False))
+    opt.execute(
+        QuadApprox_Settings(
+            function=function,
+            save=False,
+            use_standardized_objective=use_standardized_objective,
+        )
+    )
 
 
 def test_function_not_in_constraints():
     """Tests QuadApprox when the passed function is not part of the constraints."""
     problem = Power2()
-    problem.use_standardized_objective = True
     OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings(max_iter=5))
     opt = QuadApprox(problem)
     opt.execute(QuadApprox_Settings(function="ineq1", save=False))

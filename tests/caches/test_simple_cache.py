@@ -54,5 +54,4 @@ def test_cache_str(input_string, tolerance) -> None:
     outputs = {"o": ones(1)}
     cache.cache_outputs(inputs, outputs)
     cache.cache_outputs(inputs, outputs)
-    assert cache.get(inputs)[0] == inputs
-    assert cache.get(inputs)[1] == outputs
+    assert cache.get(inputs).outputs == outputs
