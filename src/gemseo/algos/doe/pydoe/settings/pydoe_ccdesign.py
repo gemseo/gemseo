@@ -25,28 +25,28 @@ from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESetting
 class Alpha(StrEnum):
     """A parameter to describe how the variance is distributed."""
 
-    orthogonal = "orthogonal"
-    o = "o"
-    rotatable = "rotatable"
-    r = "r"
+    ORTHOGONAL = "orthogonal"
+    O = "o"  # noqa: E741
+    ROTATABLE = "rotatable"
+    R = "r"
 
 
 class Face(StrEnum):
     """The relation between the start points and the corner (factorial) points."""
 
-    circumscribed = "circumscribed"
-    ccc = "ccc"
-    inscribed = "inscribed"
-    cci = "cci"
-    faced = "faced"
-    ccf = "ccf"
+    CIRCUMSCRIBED = "circumscribed"
+    CCC = "ccc"
+    INSCRIBED = "inscribed"
+    CCI = "cci"
+    FACED = "faced"
+    CCF = "ccf"
 
 
 class PYDOE_CCDESIGN_Settings(BasePyDOESettings):  # noqa: N801
     """The settings for the central composite DOE from the pyDOE library."""
 
     alpha: Alpha = Field(
-        default=Alpha.orthogonal,
+        default=Alpha.ORTHOGONAL,
         description="""A parameter to describe how the variance is distributed.
 
 Either "orthogonal" or "rotatable".""",
@@ -58,6 +58,6 @@ Either "orthogonal" or "rotatable".""",
     )
 
     face: Face = Field(
-        default=Face.circumscribed,
+        default=Face.CIRCUMSCRIBED,
         description="The relation between the start and corner (factorial) points.",
     )

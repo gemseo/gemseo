@@ -26,15 +26,15 @@ from gemseo.algos.doe.pydoe.settings.base_pydoe_settings import BasePyDOESetting
 class Criterion(StrEnum):
     """The criteria for the LHS."""
 
-    center = "center"
-    c = "c"
-    maximin = "maximin"
-    m = "m"
-    centermaximin = "centermaximin"
-    cm = "cm"
-    correlation = "correlation"
-    corr = "corr"
-    lhsmu = "lhsmu"
+    CENTER = "center"
+    C = "c"
+    MAXIMIN = "maximin"
+    M = "m"
+    CENTERMAXIMIN = "centermaximin"
+    CM = "cm"
+    CORRELATION = "correlation"
+    CORR = "corr"
+    LHSMU = "lhsmu"
 
 
 class PYDOE_LHS_Settings(BasePyDOESettings):  # noqa: N801

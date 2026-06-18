@@ -19,13 +19,9 @@ from __future__ import annotations
 from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import NonNegativeFloat  # noqa: TC002
-from strenum import StrEnum
 
-from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.mda.base_settings import BaseMDASettings
-
-LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
 
 class BaseMDASolverSettings(BaseMDASettings):

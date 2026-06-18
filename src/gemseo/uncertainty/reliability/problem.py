@@ -39,7 +39,7 @@ class ReliabilityProblem(EvaluationProblem):
     def __init__(  # noqa: D107
         self,
         design_space: ParameterSpace,
-        differentiation_method: EvaluationProblem.DifferentiationMethod = EvaluationProblem.DifferentiationMethod.USER_GRAD,  # noqa: E501
+        differentiation_method: EvaluationProblem.DifferentiationMethod = EvaluationProblem.DifferentiationMethod.USER,  # noqa: E501
         differentiation_step: float = 1e-7,
         parallel_differentiation: bool = False,
         **parallel_differentiation_options: int | bool,

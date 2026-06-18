@@ -29,8 +29,8 @@ from gemseo.algos.doe.base_n_samples_based_doe_settings import (
 class Hypersphere(StrEnum):
     """The Hypersphere options."""
 
-    volume = "volume"
-    surface = "surface"
+    VOLUME = "volume"
+    SURFACE = "surface"
 
 
 class Optimizer(StrEnum):
@@ -43,8 +43,8 @@ class Optimizer(StrEnum):
 class Strength(IntEnum):
     """The strength of the LHS."""
 
-    one = 1
-    two = 2
+    ONE = 1
+    TWO = 2
 
 
 class BaseSciPyDOESettings(BaseNSamplesBasedDOESettings):

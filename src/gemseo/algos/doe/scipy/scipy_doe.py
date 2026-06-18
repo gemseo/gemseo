@@ -29,11 +29,12 @@ from scipy.stats.qmc import LatinHypercube
 from scipy.stats.qmc import PoissonDisk
 from scipy.stats.qmc import QMCEngine
 from scipy.stats.qmc import Sobol
-from strenum import StrEnum
 
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import BaseSciPyDOESettings
+from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import Hypersphere
+from gemseo.algos.doe.scipy.settings.base_scipy_doe_settings import Optimizer
 from gemseo.algos.doe.scipy.settings.halton import Halton_Settings
 from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.algos.doe.scipy.settings.mc import MC_Settings
@@ -141,18 +142,11 @@ class SciPyDOE(BaseDOELibrary[BaseSciPyDOESettings]):
         ),
     }
 
-    class Hypersphere(StrEnum):
-        """The sampling strategy for the poisson disk algorithm."""
+    Hypersphere = Hypersphere
+    """The sampling strategy for the poisson disk algorithm."""
 
-        VOLUME = "volume"
-        SURFACE = "surface"
-
-    class Optimizer(StrEnum):
-        """The optimization scheme to improve the quality of the DOE after sampling."""
-
-        RANDOM_CD = "random-cd"
-        LLOYD = "lloyd"
-        NONE = ""
+    Optimizer = Optimizer
+    """The optimization scheme to improve the quality of the DOE after sampling."""
 
     def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
         algo = self.__NAMES_TO_CLASSES[self._algo_name](

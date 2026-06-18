@@ -140,7 +140,7 @@ class OptimizationProblem(EvaluationProblem):
         self,
         design_space: DesignSpace,
         database: Database | None = None,
-        differentiation_method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
+        differentiation_method: DifferentiationMethod = DifferentiationMethod.USER,
         differentiation_step: float = 1e-7,
         parallel_differentiation: bool = False,
         use_standardized_objective: bool = True,

@@ -43,7 +43,7 @@ If `None`, use the DOE as is. New in SciPy 1.10.0.""",
     )
 
     hypersphere: Hypersphere = Field(
-        default=Hypersphere.volume,
+        default=Hypersphere.VOLUME,
         description="""The sampling strategy to generate potential candidates.
 
 The candidates will be added in the final sample.""",

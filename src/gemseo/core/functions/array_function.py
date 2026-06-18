@@ -50,7 +50,6 @@ from gemseo.typing import NumberArray
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.factory import GradientApproximatorFactory
-from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.metaclasses import GoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
@@ -72,6 +71,16 @@ WrappedFunctionType = Callable[[NumberArray], OutputType]
 
 WrappedJacobianType = Callable[[NumberArray], NumberArray]
 """The type of Jacobian function that can be wrapped."""
+
+
+class ConstraintType(StrEnum):
+    """The type of constraint."""
+
+    EQ = "eq"
+    """The type of function for equality constraints."""
+
+    INEQ = "ineq"
+    """The type of function for inequality constraints."""
 
 
 class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
@@ -149,17 +158,11 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
        based on the name of the function and the names of its inputs.
     """
 
-    class ConstraintType(StrEnum):
-        """The type of constraint."""
+    class FunctionType(StrEnum):
+        """All function types, merging objective/observable types and constraints.
 
-        EQ = "eq"
-        """The type of function for equality constraint."""
-
-        INEQ = "ineq"
-        """The type of function for inequality constraint."""
-
-    class _FunctionType(StrEnum):
-        """The type of function complementary to the constraints."""
+        Each member aliases the corresponding sub-enum member so values stay in sync.
+        """
 
         OBJ = "obj"
         """The type of function for objective."""
@@ -170,8 +173,14 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
         NONE = ""
         """The type of function is not set."""
 
-    FunctionType = merge_enums("FunctionType", StrEnum, _FunctionType, ConstraintType)
-    """Enumeration of function types."""
+        EQ = ConstraintType.EQ
+        """The type of function for equality constraints."""
+
+        INEQ = ConstraintType.INEQ
+        """The type of function for inequality constraints."""
+
+    ConstraintType = ConstraintType
+    """Enumeration of constraint types."""
 
     ApproximationMode = ApproximationMode
     """Enumeration of approximation derivation modes."""

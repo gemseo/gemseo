@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from collections.abc import Mapping
 from contextlib import contextmanager
@@ -194,6 +195,29 @@ def convert_strings_to_iterable(str_or_strs: str | Iterable[str]) -> Iterable[st
         Names.
     """
     return [str_or_strs] if isinstance(str_or_strs, str) else str_or_strs
+
+
+# regex pattern for finding a camel case word preceded by another character
+_RE_PATTERN_CAMEL_CASE_WORD = re.compile(r"(.)([A-Z][a-z]+)")
+
+# regex pattern for finding a lower case or digit followed by an upper case
+_RE_PATTERN_CAMEL_CASE_BOUNDARY = re.compile(r"([a-z0-9])([A-Z])")
+
+
+def convert_camel_case_to_screaming_snake_case(name: str) -> str:
+    """Convert a camel case string to a screaming snake case string.
+
+    For instance, `"ProgressBarData"` becomes `"PROGRESS_BAR_DATA"` and
+    `"IODataset"` becomes `"IO_DATASET"`.
+
+    Args:
+        name: The camel case string.
+
+    Returns:
+        The screaming snake case string.
+    """
+    name = _RE_PATTERN_CAMEL_CASE_WORD.sub(r"\1_\2", name)
+    return _RE_PATTERN_CAMEL_CASE_BOUNDARY.sub(r"\1_\2", name).upper()
 
 
 def filter_names(

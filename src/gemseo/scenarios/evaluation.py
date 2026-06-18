@@ -244,7 +244,7 @@ class EvaluationScenario(BaseMonitoredProcess):
 
     def set_differentiation_method(
         self,
-        method: EvaluationProblem.DifferentiationMethod = EvaluationProblem.DifferentiationMethod.USER_GRAD,  # noqa: E501
+        method: EvaluationProblem.DifferentiationMethod = EvaluationProblem.DifferentiationMethod.USER,  # noqa: E501
         step: float = 1e-6,
         cast_default_inputs_to_complex: bool = False,
     ) -> None:

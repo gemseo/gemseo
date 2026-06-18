@@ -48,7 +48,7 @@ from strenum import StrEnum
 from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.linear_problem import LinearProblem
 from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
-from gemseo.core.derivatives import derivation_modes
+from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.derivatives.graph_traversal import set_mda_differentiated_ios
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.utils.compatibility.scipy import sparse_classes
@@ -61,7 +61,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
     from collections.abc import Mapping
-    from typing import TypeAlias
 
     from scipy.sparse import dok_matrix
 
@@ -182,6 +181,24 @@ class AssembledJacobianOperator(LinearOperator):  # type: ignore[misc] # because
         return result
 
 
+class MDADerivationMode(StrEnum):
+    """The derivation modes of an MDA.
+
+    Each member aliases the corresponding
+    [DerivationMode][gemseo.core.derivatives.derivation_modes.DerivationMode] member so
+    values stay in sync.
+    """
+
+    DIRECT = DerivationMode.DIRECT
+    """The direct resolution mode, solving one linear system per input."""
+
+    ADJOINT = DerivationMode.ADJOINT
+    """The adjoint resolution mode, solving one linear system per output."""
+
+    AUTO = DerivationMode.AUTO
+    """Automatic switch between the direct and adjoint modes based on the data sizes."""
+
+
 class JacobianAssembly:
     """Assembly of Jacobians.
 
@@ -209,7 +226,8 @@ class JacobianAssembly:
     __linear_solver_factory: LinearSolverLibraryFactory
     """The linear solver factory."""
 
-    DerivationMode: TypeAlias = derivation_modes.DerivationMode
+    MDADerivationMode = MDADerivationMode
+    """The enumeration of MDA derivation modes."""
 
     class JacobianType(StrEnum):
         """The available types for the Jacobian matrix."""
@@ -385,10 +403,10 @@ class JacobianAssembly:
     @classmethod
     def _get_derivation_mode(
         cls,
-        mode: DerivationMode,
+        mode: MDADerivationMode,
         n_variables: int,
         n_functions: int,
-    ) -> DerivationMode:
+    ) -> MDADerivationMode:
         """Get the differentiation mode.
 
         Args:
@@ -399,11 +417,11 @@ class JacobianAssembly:
         Returns:
             The differentiation mode.
         """
-        if mode != cls.DerivationMode.AUTO:
+        if mode != cls.MDADerivationMode.AUTO:
             return mode
         if n_variables <= n_functions:
-            return cls.DerivationMode.DIRECT
-        return cls.DerivationMode.ADJOINT
+            return cls.MDADerivationMode.DIRECT
+        return cls.MDADerivationMode.ADJOINT
 
     def compute_dimension(self, names: Iterable[str]) -> int:
         """Compute the total number of functions/variables/couplings of the full system.
@@ -631,7 +649,7 @@ class JacobianAssembly:
         variables: Collection[str],
         couplings: Iterable[str],
         linear_solver_settings: BaseLinearSolverSettings | None = None,
-        mode: DerivationMode = DerivationMode.AUTO,
+        mode: MDADerivationMode = MDADerivationMode.AUTO,
         matrix_type: JacobianType = JacobianType.MATRIX,
         exec_cache_tol: float | None = None,
         execute: bool = True,
@@ -732,7 +750,7 @@ class JacobianAssembly:
         mode = self._get_derivation_mode(mode, n_variables, n_functions)
 
         # compute the total derivatives
-        if mode == self.DerivationMode.DIRECT:
+        if mode == self.MDADerivationMode.DIRECT:
             # sparse square matrix ∂R/∂y
 
             dres_dy = self.assemble_jacobian(
@@ -752,7 +770,7 @@ class JacobianAssembly:
                 dfun_dy,
                 linear_solver_settings,
             )
-        elif mode == self.DerivationMode.ADJOINT:
+        elif mode == self.MDADerivationMode.ADJOINT:
             # transposed square matrix ∂R/∂y^T
             dres_dy_t = self.assemble_jacobian(
                 couplings_and_res,

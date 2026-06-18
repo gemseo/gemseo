@@ -360,7 +360,9 @@ def test_abvalue_normal() -> None:
 
 def test_available(statistics) -> None:
     """Verify that Normal is a DistributionName and a key of the fitting matrix."""
-    assert "Normal" in OTParametricStatistics.DistributionName.__members__
+    assert "Normal" in {
+        distribution.value for distribution in OTParametricStatistics.DistributionName
+    }
     assert "Normal" in statistics.get_fitting_matrix()
 
 

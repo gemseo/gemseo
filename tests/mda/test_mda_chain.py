@@ -164,9 +164,9 @@ def test_simple_grammar_type(in_gtype) -> None:
 @pytest.mark.parametrize(
     "linearization_mode",
     [
-        JacobianAssembly.DerivationMode.AUTO,
-        JacobianAssembly.DerivationMode.DIRECT,
-        JacobianAssembly.DerivationMode.ADJOINT,
+        JacobianAssembly.MDADerivationMode.AUTO,
+        JacobianAssembly.MDADerivationMode.DIRECT,
+        JacobianAssembly.MDADerivationMode.ADJOINT,
     ],
 )
 def test_self_coupled_mda_jacobian(matrix_type, linearization_mode) -> None:

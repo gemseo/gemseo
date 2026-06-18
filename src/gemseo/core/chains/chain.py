@@ -23,19 +23,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from strenum import LowercaseStrEnum
 from strenum import StrEnum
 
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.dependency_graph import DependencyGraph
+from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.derivatives.graph_traversal import set_differentiated_ios
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import Discipline
 from gemseo.core.process_discipline import ProcessDiscipline
 from gemseo.utils.compatibility.scipy import array_classes
-from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.enumeration import merge_enums
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -77,27 +75,32 @@ class _ProcessFlow(BaseProcessFlow):
         return DependencyGraph(disciplines).get_disciplines_couplings()
 
 
+class ChainDerivationMode(StrEnum):
+    """The derivation modes of a chain of disciplines.
+
+    Each member aliases the corresponding
+    [DerivationMode][gemseo.core.derivatives.derivation_modes.DerivationMode] member so
+    values stay in sync.
+    """
+
+    FORWARD = DerivationMode.FORWARD
+    """The forward chain rule, accumulating from inputs to outputs."""
+
+    REVERSE = DerivationMode.REVERSE
+    """The reverse chain rule, accumulating from outputs to inputs."""
+
+    AUTO = DerivationMode.AUTO
+    """Automatic switch between the forward and reverse modes based on the data
+    sizes."""
+
+
 class DisciplineChain(ProcessDiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
 
-    class _DerivationMode(LowercaseStrEnum):
-        """The derivation modes."""
-
-        REVERSE = "reverse"
-        """The reverse Jacobian accumulation, chain rule from outputs to inputs."""
-
-        AUTO = "auto"
-        """Automatic switch between direct, reverse or adjoint depending on data
-        sizes."""
-
-    LinearizationMode = merge_enums(
-        "LinearizationMode",
-        StrEnum,
-        ApproximationMode,
-        _DerivationMode,
-    )
+    ChainDerivationMode = ChainDerivationMode
+    """The enumeration of chain derivation modes."""
 
     def __init__(
         self,

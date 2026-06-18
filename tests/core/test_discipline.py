@@ -360,6 +360,26 @@ def test_check_jac_hybrid_approx(
     assert len(cached_jac) == 1
 
 
+@pytest.mark.parametrize("hybrid_mode", Discipline.HybridApproximationMode)
+def test_linearization_mode_setter_hybrid(
+    hybrid_jacobian_discipline, hybrid_mode
+) -> None:
+    """Setting the linearization mode to a hybrid mode configures the approximator."""
+    discipline = hybrid_jacobian_discipline
+
+    discipline.linearization_mode = hybrid_mode
+
+    assert discipline.linearization_mode == hybrid_mode
+    assert discipline._jac_approx is not None
+
+    hybrid_jacobian = discipline.linearize(compute_all_jacobians=True)
+    exact_jacobian = discipline.exact_jacobian
+    for y in ["y_1", "y_2", "y_3"]:
+        for x in ["x_1", "x_2", "x_3"]:
+            if x in discipline.exact_outputs_to_inputs[y]:
+                assert hybrid_jacobian[y][x][0, 0] == exact_jacobian[y][x]
+
+
 def test_check_jac_approx_plot(tmp_wd) -> None:
     """Test the generation of the gradient plot."""
     aero = SobieskiAerodynamics()

@@ -27,7 +27,6 @@ from scipy.sparse import csr_array
 from strenum import StrEnum
 
 from gemseo.core._discipline_class_injector import ClassInjector
-from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
@@ -36,13 +35,11 @@ from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.approximation_modes import HybridApproximationMode
 from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
 from gemseo.utils.derivatives.error_estimators import EPSILON
-from gemseo.utils.enumeration import merge_enums
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from enum import EnumType
     from pathlib import Path
 
     from numpy import ndarray
@@ -93,18 +90,42 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         SPARSE = "sparse"
         """Initialized as SciPy CSR arrays filled with zeros."""
 
-    ApproximationMode: EnumType = merge_enums(
-        "ApproximationMode", StrEnum, ApproximationMode, HybridApproximationMode
-    )
+    class LinearizationMode(StrEnum):
+        """All linearization modes available for disciplines.
+
+        Either compute the analytical Jacobian (`AUTO`) or approximate it; the
+        approximation members alias the corresponding `ApproximationMode` and
+        `HybridApproximationMode` members so values stay in sync.
+        """
+
+        AUTO = "auto"
+        """Compute the analytical Jacobian of the discipline."""
+
+        COMPLEX_STEP = ApproximationMode.COMPLEX_STEP
+        """Complex-step method: perturb each variable with a small imaginary number."""
+
+        FINITE_DIFFERENCES = ApproximationMode.FINITE_DIFFERENCES
+        """Finite differences: perturb each variable with a small real number."""
+
+        CENTERED_DIFFERENCES = ApproximationMode.CENTERED_DIFFERENCES
+        """Centered finite differences: two-sided perturbation with a small step."""
+
+        HYBRID_COMPLEX_STEP = HybridApproximationMode.HYBRID_COMPLEX_STEP
+        """Complex-step applied only to Jacobian blocks unavailable analytically."""
+
+        HYBRID_FINITE_DIFFERENCES = HybridApproximationMode.HYBRID_FINITE_DIFFERENCES
+        """Finite differences applied only to unavailable analytical Jacobian blocks."""
+
+        HYBRID_CENTERED_DIFFERENCES = (
+            HybridApproximationMode.HYBRID_CENTERED_DIFFERENCES
+        )
+        """Centered differences applied only to unavailable analytical blocks."""
+
+    ApproximationMode = ApproximationMode
     """Enumeration of approximation modes."""
 
-    LinearizationMode: EnumType = merge_enums(
-        "LinearizationMode",
-        StrEnum,
-        DerivationMode,
-        ApproximationMode,
-    )
-    """Enumeration of linearization modes."""
+    HybridApproximationMode = HybridApproximationMode
+    """Enumeration of hybrid (semi-analytical) approximation modes."""
 
     _linearize_on_last_state: ClassVar[bool] = False
     """Whether to update the local data from the input data before linearizing."""
@@ -133,13 +154,18 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
     __output_names: Iterable[str]
     """The output names used for handling execution status and statistics."""
 
-    __hybrid_approximation_name_to_mode: ClassVar[
-        Mapping[ApproximationMode, ApproximationMode]
+    __hybrid_to_base_approximation_mode: ClassVar[
+        Mapping[HybridApproximationMode, ApproximationMode]
     ] = {
-        ApproximationMode.HYBRID_FINITE_DIFFERENCES: ApproximationMode.FINITE_DIFFERENCES,  # noqa: E501
-        ApproximationMode.HYBRID_CENTERED_DIFFERENCES: ApproximationMode.CENTERED_DIFFERENCES,  # noqa: E501
-        ApproximationMode.HYBRID_COMPLEX_STEP: ApproximationMode.COMPLEX_STEP,
+        hybrid_mode: ApproximationMode(hybrid_mode.removeprefix("hybrid_"))
+        for hybrid_mode in HybridApproximationMode
     }
+    """The base approximation mode underlying each hybrid approximation mode."""
+
+    __approximation_modes: ClassVar[frozenset[str]] = frozenset(
+        ApproximationMode
+    ) | frozenset(HybridApproximationMode)
+    """The linearization modes involving approximation methods."""
 
     def __init__(  # noqa: D107
         self,
@@ -160,17 +186,18 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
         return self._linearization_mode
 
     @linearization_mode.setter
-    def linearization_mode(
-        self,
-        linearization_mode: LinearizationMode,
-    ) -> None:
+    def linearization_mode(self, linearization_mode: LinearizationMode) -> None:
         self._linearization_mode = linearization_mode
 
         if (
-            linearization_mode in set(self.ApproximationMode)
+            linearization_mode in self.__approximation_modes
             and self._jac_approx is None
         ):
-            self.set_jacobian_approximation(linearization_mode)
+            self.set_jacobian_approximation(
+                HybridApproximationMode(linearization_mode)
+                if linearization_mode in set(HybridApproximationMode)
+                else ApproximationMode(linearization_mode)
+            )
 
     def linearize(
         self,
@@ -276,7 +303,7 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
     def __compute_jacobian(self):
         """Callable used for handling execution status and statistics."""
-        if self._linearization_mode in set(self.ApproximationMode):
+        if self._linearization_mode in self.__approximation_modes:
             if self._linearization_mode in set(HybridApproximationMode):
                 self._compose_hybrid_jacobian(self.__output_names, self.__input_names)
             else:
@@ -288,7 +315,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
     def set_jacobian_approximation(
         self,
-        jac_approx_type: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
+        jac_approx_type: ApproximationMode | HybridApproximationMode = (
+            ApproximationMode.FINITE_DIFFERENCES
+        ),
         jax_approx_step: float = 1e-7,
         jac_approx_n_processes: int = 1,
         jac_approx_use_threading: bool = False,
@@ -303,7 +332,10 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
 
         Args:
             jac_approx_type: The approximation method,
-                either "complex_step" or "finite_differences".
+                either an
+                [ApproximationMode][gemseo.utils.derivatives.approximation_modes.ApproximationMode]
+                or a
+                [HybridApproximationMode][gemseo.utils.derivatives.approximation_modes.HybridApproximationMode].
             jax_approx_step: The differentiation step.
             jac_approx_n_processes: The maximum simultaneous number of threads,
                 if `jac_approx_use_threading` is True, or processes otherwise,
@@ -318,22 +350,25 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             jac_approx_wait_time: The time waited between two forks
                 of the process / thread.
         """
-        approx_method = (
-            self.__hybrid_approximation_name_to_mode[jac_approx_type]
-            if jac_approx_type in set(HybridApproximationMode)
-            else jac_approx_type
-        )
+        if jac_approx_type in set(HybridApproximationMode):
+            approximation_method = self.__hybrid_to_base_approximation_mode[
+                HybridApproximationMode(jac_approx_type)
+            ]
+        else:
+            approximation_method = ApproximationMode(jac_approx_type)
+
         self._jac_approx = DisciplineJacApprox(
             # TODO: pass the bare minimum instead of self.
             self,
-            approx_method=approx_method,
+            approx_method=approximation_method,
             step=jax_approx_step,
             parallel=jac_approx_n_processes > 1,
             n_processes=jac_approx_n_processes,
             use_threading=jac_approx_use_threading,
             wait_time_between_fork=jac_approx_wait_time,
         )
-        self._linearization_mode = jac_approx_type
+
+        self._linearization_mode = self.LinearizationMode(jac_approx_type)
 
     def set_optimal_fd_step(
         self,
@@ -614,9 +649,9 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             derr_approx: The approximation method,
                 either "complex_step" or "finite_differences".
             threshold: The acceptance threshold for the Jacobian error.
-            linearization_mode: the mode of linearization: direct, adjoint
-                or automated switch depending on dimensions
-                of inputs and outputs (Default value = 'auto')
+            linearization_mode: The mode of linearization,
+                either the analytical Jacobian (`AUTO`)
+                or one of the approximation modes.
             input_names: The names of the inputs wrt which to differentiate the outputs.
             output_names: The names of the outputs to be differentiated.
             step: The differentiation step.

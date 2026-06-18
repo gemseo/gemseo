@@ -25,17 +25,31 @@ from strenum import StrEnum
 
 
 class DerivationMode(StrEnum):
-    """The derivation modes."""
+    """The derivation modes of the GEMSEO processes.
+
+    `DIRECT` and `ADJOINT` apply to an MDA, which solves one linear system per input
+    (direct) or per output (adjoint). `FORWARD` and `REVERSE` apply to a chain of
+    disciplines, accumulating the chain rule from inputs to outputs (forward) or from
+    outputs to inputs (reverse). `AUTO` lets GEMSEO switch automatically depending on
+    the data sizes.
+
+    The MDA-specific modes are gathered in
+    [MDADerivationMode][gemseo.core.derivatives.jacobian_assembly.MDADerivationMode]
+    and the chain-specific modes in
+    [ChainDerivationMode][gemseo.core.chains.chain.ChainDerivationMode].
+    """
 
     DIRECT = "direct"
-    """The direct Jacobian accumulation, chain rule from inputs to outputs, or
-    derivation of an MDA that solves one system per input."""
-
-    REVERSE = "reverse"
-    """The reverse Jacobian accumulation, chain rule from outputs to inputs."""
+    """The direct resolution mode for an MDA, solving one linear system per input."""
 
     ADJOINT = "adjoint"
-    """The adjoint resolution mode for MDAs, solves one system per output."""
+    """The adjoint resolution mode for an MDA, solving one linear system per output."""
+
+    FORWARD = "forward"
+    """The forward chain rule for a chain, accumulating from inputs to outputs."""
+
+    REVERSE = "reverse"
+    """The reverse chain rule for a chain, accumulating from outputs to inputs."""
 
     AUTO = "auto"
-    """Automatic switch between direct, reverse or adjoint depending on data sizes."""
+    """Automatic switch between the modes depending on the data sizes."""
