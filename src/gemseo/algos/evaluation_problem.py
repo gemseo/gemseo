@@ -47,7 +47,6 @@ from gemseo.typing import RealArray
 from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.enumeration import merge_enums
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
@@ -106,20 +105,26 @@ class EvaluationProblem(BaseProblem):
     ApproximationMode = ApproximationMode
     """The enumeration of approximation modes."""
 
-    class _DifferentiationMethod(StrEnum):
-        """The additional differentiation methods."""
+    class DifferentiationMethod(StrEnum):
+        """All differentiation methods, merging user/no-derivative and approximations.
 
-        USER_GRAD = "user"
+        Each member aliases the corresponding sub-enum member so values stay in sync.
+        """
+
+        USER = "user"
+        """User-provided gradient."""
+
         NO_DERIVATIVE = "no_derivative"
+        """No derivative computation."""
 
-    DifferentiationMethod = merge_enums(
-        "DifferentiationMethod",
-        StrEnum,
-        ApproximationMode,
-        _DifferentiationMethod,
-        doc="The differentiation methods.",
-    )
-    """The enumeration of differentation methods."""
+        COMPLEX_STEP = ApproximationMode.COMPLEX_STEP
+        """Complex-step approximation."""
+
+        FINITE_DIFFERENCES = ApproximationMode.FINITE_DIFFERENCES
+        """Finite differences approximation."""
+
+        CENTERED_DIFFERENCES = ApproximationMode.CENTERED_DIFFERENCES
+        """Centered differences approximation."""
 
     differentiation_method: DifferentiationMethod
     """The differentiation method."""
@@ -128,7 +133,7 @@ class EvaluationProblem(BaseProblem):
         self,
         design_space: DesignSpace,
         database: Database | None = None,
-        differentiation_method: DifferentiationMethod = DifferentiationMethod.USER_GRAD,
+        differentiation_method: DifferentiationMethod = DifferentiationMethod.USER,
         differentiation_step: float = 1e-7,
         parallel_differentiation: bool = False,
     ) -> None:

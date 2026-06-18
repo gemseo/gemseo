@@ -119,11 +119,11 @@ class HybridDiscipline(Discipline):
 #
 # We then need to set one of the hybrid available modes
 # which are accessible from the attribute
-# [ApproximationMode][gemseo.core.discipline.discipline.Discipline.ApproximationMode].
+# [HybridApproximationMode][gemseo.core.discipline.discipline.Discipline.HybridApproximationMode].
 # We can set the step for the computation of the non-defined derivatives.
 discipline = HybridDiscipline()
 discipline.set_jacobian_approximation(
-    discipline.ApproximationMode.HYBRID_FINITE_DIFFERENCES,
+    discipline.HybridApproximationMode.HYBRID_FINITE_DIFFERENCES,
     jax_approx_step=0.3,
 )
 

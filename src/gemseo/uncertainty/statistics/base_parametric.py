@@ -191,7 +191,7 @@ class BaseParametricStatistics(
         self.selection_criterion = selection_criterion
         LOGGER.info("| Set goodness-of-fit criterion: %s.", fitting_criterion)
         self.level = level
-        if self.fitting_criterion in set(self.SignificanceTest):
+        if self.fitting_criterion in {test.value for test in self.SignificanceTest}:
             LOGGER.info("| Set significance level of hypothesis test: %s.", level)
 
         self._all_distributions = self._fit_distributions(distributions)
@@ -243,7 +243,7 @@ class BaseParametricStatistics(
             for name, result in self._all_distributions[variable][index].items()
         }
         criterion_value_is_p_value = False
-        if self.fitting_criterion in set(self.SignificanceTest):
+        if self.fitting_criterion in {test.value for test in self.SignificanceTest}:
             distribution_name_to_criterion_values = {
                 name: result[1]["p-value"]
                 for name, result in distribution_name_to_criterion_values.items()

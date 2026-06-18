@@ -52,6 +52,8 @@ if TYPE_CHECKING:
 CWD = Path(__file__).parent
 RNG = default_rng()
 
+MDADerivationMode = JacobianAssembly.MDADerivationMode
+
 
 @pytest.fixture(scope="module")
 def assembly() -> JacobianAssembly:
@@ -177,10 +179,7 @@ def mda(in_data, functions, variables, couplings) -> SobieskiMDAGaussSeidel:
     return gs_mda
 
 
-@pytest.mark.parametrize(
-    "mode",
-    [JacobianAssembly.DerivationMode.DIRECT, JacobianAssembly.DerivationMode.ADJOINT],
-)
+@pytest.mark.parametrize("mode", [MDADerivationMode.DIRECT, MDADerivationMode.ADJOINT])
 @pytest.mark.parametrize("matrix_type", JacobianAssembly.JacobianType)
 @pytest.mark.parametrize("linear_solver_settings", [None, LGMRES_Settings()])
 def test_sobieski_all_modes(
@@ -223,10 +222,26 @@ def test_total_derivatives(mda, variables, couplings) -> None:
         None,
         variables,
         couplings,
-        mode=JacobianAssembly.DerivationMode.ADJOINT,
+        mode=MDADerivationMode.ADJOINT,
     )
     assert jac["y_4"]["x_shared"] is None
     assert jac["y_1"]["TOTO"] is None
+
+
+@pytest.mark.parametrize(
+    ("mode", "n_variables", "n_functions", "expected"),
+    [
+        (MDADerivationMode.DIRECT, 2, 1, MDADerivationMode.DIRECT),
+        (MDADerivationMode.AUTO, 1, 2, MDADerivationMode.DIRECT),
+        (MDADerivationMode.AUTO, 2, 1, MDADerivationMode.ADJOINT),
+    ],
+)
+def test_get_derivation_mode(mode, n_variables, n_functions, expected) -> None:
+    """Check the derivation mode resolved from the auto-selection."""
+    assert (
+        JacobianAssembly._get_derivation_mode(mode, n_variables, n_functions)
+        == expected
+    )
 
 
 @pytest.mark.parametrize(
@@ -292,18 +307,9 @@ def test_lu_convergence_warning(assembly, caplog) -> None:
     assert expected in caplog.text
 
 
-@pytest.mark.parametrize(
-    "mode",
-    [JacobianAssembly.DerivationMode.ADJOINT, JacobianAssembly.DerivationMode.DIRECT],
-)
-@pytest.mark.parametrize(
-    "jacobian_type",
-    JacobianAssembly.JacobianType,
-)
-@pytest.mark.parametrize(
-    "matrix_format",
-    LinearDiscipline.MatrixFormat,
-)
+@pytest.mark.parametrize("mode", [MDADerivationMode.ADJOINT, MDADerivationMode.DIRECT])
+@pytest.mark.parametrize("jacobian_type", JacobianAssembly.JacobianType)
+@pytest.mark.parametrize("matrix_format", LinearDiscipline.MatrixFormat)
 def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format) -> None:
     io_size = 10
 

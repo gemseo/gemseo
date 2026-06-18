@@ -19,17 +19,13 @@ from __future__ import annotations
 from typing import ClassVar
 
 from pydantic import Field
-from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,  # noqa: TC001
 )
-from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.typing import StrKeyMapping  # noqa: TC001
-
-LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
 
 class MDANewtonRaphson_Settings(BaseMDAParallelSolverSettings):  # noqa: N801

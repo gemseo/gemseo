@@ -47,7 +47,10 @@ class SPDistributionFitter(BaseDistributionFitter[SPDistribution]):
 
     DistributionName: ClassVar[StrEnum] = StrEnum(
         "DistributionName",
-        [rv.__name__.rsplit("_gen")[0] for rv in rv_continuous.__subclasses__()],
+        {
+            rv.__name__.rsplit("_gen")[0].upper(): rv.__name__.rsplit("_gen")[0]
+            for rv in rv_continuous.__subclasses__()
+        },
     )
 
     class FittingCriterion(StrEnum):  # noqa: D106

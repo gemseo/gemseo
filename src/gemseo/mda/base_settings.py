@@ -20,17 +20,13 @@ from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import NonNegativeInt
-from strenum import StrEnum
 
 from gemseo.algos.linear_solvers.base_linear_solver_settings import (
     BaseLinearSolverSettings,
 )
-from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
 from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
 from gemseo.core.coupling_structure import CouplingStructure  # noqa: TC001
 from gemseo.utils.pydantic import BaseSettings
-
-LinearSolver = StrEnum("LinearSolver", names=LinearSolverLibraryFactory().algorithms)
 
 
 class BaseMDASettings(BaseSettings):

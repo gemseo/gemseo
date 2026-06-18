@@ -1242,7 +1242,7 @@ def create_dataset(
     variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
     delimiter: str = ",",
     header: bool = True,
-    class_name: DatasetClassName = DatasetClassName.Dataset,
+    class_name: DatasetClassName = DatasetClassName.DATASET,
 ) -> Dataset:
     """Create a dataset from a NumPy array or a data file.
 

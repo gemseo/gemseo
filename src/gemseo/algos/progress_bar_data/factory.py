@@ -22,6 +22,7 @@ from strenum import StrEnum
 
 from gemseo.algos.progress_bar_data.base import BaseProgressBarData
 from gemseo.core.base_factory import BaseFactory
+from gemseo.utils.string_tools import convert_camel_case_to_screaming_snake_case
 
 
 class ProgressBarDataFactory(BaseFactory):
@@ -35,6 +36,10 @@ PROGRESS_BAR_DATA_FACTORY: Final[ProgressBarDataFactory] = ProgressBarDataFactor
 """The factory for `BaseProgressBarData` objects."""
 
 ProgressBarDataName = StrEnum(
-    "ProgressBarDataName", names=PROGRESS_BAR_DATA_FACTORY.class_names
+    "ProgressBarDataName",
+    {
+        convert_camel_case_to_screaming_snake_case(name): name
+        for name in PROGRESS_BAR_DATA_FACTORY.class_names
+    },
 )
 """A name of a [BaseProgressBarData][gemseo.algos.progress_bar_data.base.BaseProgressBarData] subclass."""  # noqa: E501

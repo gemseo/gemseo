@@ -19,6 +19,13 @@ from __future__ import annotations
 from strenum import StrEnum
 
 from gemseo.datasets.factory import DatasetFactory
+from gemseo.utils.string_tools import convert_camel_case_to_screaming_snake_case
 
-DatasetClassName = StrEnum("DatasetClassName", DatasetFactory().class_names)
+DatasetClassName = StrEnum(
+    "DatasetClassName",
+    {
+        convert_camel_case_to_screaming_snake_case(name): name
+        for name in DatasetFactory().class_names
+    },
+)
 """The enumeration of [Dataset][gemseo.datasets.dataset.Dataset] class names."""

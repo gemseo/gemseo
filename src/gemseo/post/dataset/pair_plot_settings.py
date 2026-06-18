@@ -34,7 +34,9 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-ColormapName = StrEnum("ColormapName", sorted(colormaps.keys()))
+ColormapName = StrEnum(
+    "ColormapName", {name.upper(): name for name in sorted(colormaps.keys())}
+)
 
 
 class PairPlot_Settings(BaseDatasetPlotSettings):  # noqa: N801
@@ -94,7 +96,7 @@ class PairPlot_Settings(BaseDatasetPlotSettings):  # noqa: N801
     )
 
     colormap_name: ColormapName = Field(
-        default=ColormapName.cool, description="The name of the matplotlib colormap."
+        default=ColormapName.COOL, description="The name of the matplotlib colormap."
     )
 
     exclude_classifier: bool = Field(

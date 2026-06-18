@@ -37,6 +37,7 @@ from gemseo.uncertainty.distributions.openturns.distribution import OTDistributi
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
     OTDistribution_Settings,
 )
+from gemseo.utils.string_tools import convert_camel_case_to_screaming_snake_case
 
 if TYPE_CHECKING:
     from openturns import TestResult
@@ -71,23 +72,29 @@ class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
     ] = _get_ot_distribution_factories()
 
     DistributionName: ClassVar[StrEnum] = StrEnum(
-        "DistributionName", sorted(_OT_DISTRIBUTION_NAMES_TO_OT_FACTORIES.keys())
+        "DistributionName",
+        {
+            convert_camel_case_to_screaming_snake_case(name): name
+            for name in sorted(_OT_DISTRIBUTION_NAMES_TO_OT_FACTORIES.keys())
+        },
     )
 
     FittingCriterion: ClassVar[StrEnum] = StrEnum(
-        "FittingCriterion", "BIC ChiSquared Kolmogorov"
+        "FittingCriterion",
+        {"BIC": "BIC", "CHI_SQUARED": "ChiSquared", "KOLMOGOROV": "Kolmogorov"},
     )
 
     default_fitting_criterion: ClassVar[FittingCriterion] = FittingCriterion.BIC
 
     _CRITERIA_TO_WRAPPED_OBJECTS: ClassVar[dict[FittingCriterion, FittingTest]] = {
         FittingCriterion.BIC: FittingTest.BIC,
-        FittingCriterion.ChiSquared: FittingTest.ChiSquared,
-        FittingCriterion.Kolmogorov: FittingTest.Kolmogorov,
+        FittingCriterion.CHI_SQUARED: FittingTest.ChiSquared,
+        FittingCriterion.KOLMOGOROV: FittingTest.Kolmogorov,
     }
 
     SignificanceTest: ClassVar[StrEnum] = StrEnum(
-        "SignificanceTest", "ChiSquared Kolmogorov"
+        "SignificanceTest",
+        {"CHI_SQUARED": "ChiSquared", "KOLMOGOROV": "Kolmogorov"},
     )
 
     _FITTING_CRITERIA_TO_MINIMIZE: ClassVar[set[FittingCriterion]] = {

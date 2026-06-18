@@ -161,7 +161,7 @@ class BaseMDA(ProcessDiscipline):
         """
 
         INITIAL_RESIDUAL_NORM = auto()
-        r"""The :math:k`-th residual vector is scaled by the Euclidean norm of the
+        r"""The $k$-th residual vector is scaled by the Euclidean norm of the
         initial residual (if not null, else it is not scaled). The MDA is considered
         converged when its Euclidean norm satisfies,
 
@@ -169,7 +169,7 @@ class BaseMDA(ProcessDiscipline):
         """
 
         INITIAL_SUBRESIDUAL_NORM = auto()
-        r"""The :math:k`-th residual vector is scaled discipline-wise. The sub-residual
+        r"""The $k$-th residual vector is scaled discipline-wise. The sub-residual
         associated wich each discipline is scaled by the Euclidean norm of the initial
         sub-residual (if not null, else it is not scaled). The MDA is considered
         converged when the Euclidean norm of each sub-residual satisfies,
@@ -178,14 +178,14 @@ class BaseMDA(ProcessDiscipline):
         """
 
         N_COUPLING_VARIABLES = auto()
-        r"""The :math:k`-th residual vector is scaled using the number of coupling
+        r"""The $k$-th residual vector is scaled using the number of coupling
         variables. The MDA is considered converged when its Euclidean norm satisfies,
 
         $$\frac{ \|R_k\|_2 }{ \sqrt{n_\text{coupl.}} } \leq \text{tol}.$$
         """
 
         INITIAL_RESIDUAL_COMPONENT = auto()
-        r"""The :math:k`-th residual is scaled component-wise. Each component is scaled
+        r"""The $k$-th residual is scaled component-wise. Each component is scaled
         by the corresponding component of the initial residual (if not null, else it is
         not scaled). The MDA is considered converged when each component satisfies,
 
@@ -193,7 +193,7 @@ class BaseMDA(ProcessDiscipline):
         """
 
         SCALED_INITIAL_RESIDUAL_COMPONENT = auto()
-        r"""The :math:k`-th residual vector is scaled component-wise and by the number
+        r"""The $k$-th residual vector is scaled component-wise and by the number
         coupling variables. If $\div$ denotes the component-wise division between
         two vectors, then the MDA is considered converged when the residual vector
         satisfies,

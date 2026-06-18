@@ -995,12 +995,12 @@ def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:
 def test_create_dataset_without_name() -> None:
     """Check create_dataset without name."""
     assert create_dataset().name == "Dataset"
-    assert create_dataset(class_name=DatasetClassName.IODataset).name == "IODataset"
+    assert create_dataset(class_name=DatasetClassName.IO_DATASET).name == "IODataset"
 
 
 def test_create_dataset_class_name() -> None:
     """Check create_dataset with class_name set from the enum DatasetClassName."""
-    isinstance(create_dataset(class_name=DatasetClassName.IODataset), IODataset)
+    isinstance(create_dataset(class_name=DatasetClassName.IO_DATASET), IODataset)
 
 
 def test_configure_logger_deprecated() -> None:

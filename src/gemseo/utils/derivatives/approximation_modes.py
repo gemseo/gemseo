@@ -20,32 +20,38 @@ from strenum import StrEnum
 
 
 class ApproximationMode(StrEnum):
-    """The approximation derivation modes."""
+    """The modes to approximate all the Jacobian blocks of a discipline."""
 
     COMPLEX_STEP = "complex_step"
-    """The complex step method used to approximate the Jacobians by perturbing each
-    variable with a small complex number."""
+    """Approximate all the Jacobian blocks with the complex-step method,
+    perturbing each input with a small imaginary number."""
 
     FINITE_DIFFERENCES = "finite_differences"
-    """The finite differences method used to approximate the Jacobians by perturbing
-    each variable with a small real number."""
+    """Approximate all the Jacobian blocks with first-order forward finite differences,
+    perturbing each input with a small real number."""
 
     CENTERED_DIFFERENCES = "centered_differences"
-    """The centered differences method used to approximate the Jacobians by perturbing
-    each variable with a small real number."""
+    """Approximate all the Jacobian blocks with second-order centered finite
+    differences, perturbing each input on both sides with a small real number."""
 
 
 class HybridApproximationMode(StrEnum):
-    """The approximation derivation modes for semi-analytical computations."""
+    """The modes for semi-analytical computation of the Jacobian.
+
+    The Jacobian blocks available analytically are computed analytically;
+    only the blocks unavailable analytically are approximated.
+    """
 
     HYBRID_COMPLEX_STEP = "hybrid_complex_step"
-    """"The complex step method used to approximiate the Jacobian not available
-     analytically by perturbing those variables with a small complex number."""
+    """Approximate only the analytically-unavailable Jacobian blocks with the
+    complex-step method, perturbing the related inputs with a small imaginary number."""
 
     HYBRID_FINITE_DIFFERENCES = "hybrid_finite_differences"
-    """"The finite differences method used to approxiamate the Jacobian not available
-     analytically by perturbing those variables with a small real number."""
+    """Approximate only the analytically-unavailable Jacobian blocks with first-order
+    forward finite differences, perturbing the related inputs with a small real
+    number."""
 
     HYBRID_CENTERED_DIFFERENCES = "hybrid_centered_differences"
-    """The centered differences method used to approxiamate the Jacobian not available
-     analytically by perturbing those variables with a small real number."""
+    """Approximate only the analytically-unavailable Jacobian blocks with second-order
+    centered finite differences, perturbing the related inputs on both sides with a
+    small real number."""

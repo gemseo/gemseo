@@ -41,6 +41,6 @@ If `None`, use the DOE as is. New in SciPy 1.10.0.""",
     )
 
     strength: Strength = Field(
-        default=Strength.one,
+        default=Strength.ONE,
         description="""The strength of the LHS.""",
     )
