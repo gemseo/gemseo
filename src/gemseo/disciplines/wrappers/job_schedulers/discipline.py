@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 LOGGER = getLogger(__name__)
 
 
-class JobSchedulerDisciplineWrapper(BaseWrapperDiscipline):
+class JobSchedulerDiscipline(BaseWrapperDiscipline):
     """A discipline that wraps the execution with job schedulers.
 
     The discipline is serialized to the disk, its inputs too, then a job file is created

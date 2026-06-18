@@ -25,9 +25,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
-    JobSchedulerDisciplineWrapper,
-)
+from gemseo.disciplines.wrappers.job_schedulers.discipline import JobSchedulerDiscipline
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -35,10 +33,10 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 
-class JobSchedulerDisciplineWrapperFactory(BaseFactory):
+class JobSchedulerDisciplineFactory(BaseFactory):
     """A factory of job scheduler interfaces."""
 
-    _CLASS = JobSchedulerDisciplineWrapper
+    _CLASS = JobSchedulerDiscipline
     _PACKAGE_NAMES = ("gemseo.disciplines.wrappers.job_schedulers",)
 
     def wrap_discipline(
@@ -47,7 +45,7 @@ class JobSchedulerDisciplineWrapperFactory(BaseFactory):
         scheduler_name: str,
         workdir_path: str | Path,
         **options: dict[str, Any],
-    ) -> JobSchedulerDisciplineWrapper:
+    ) -> JobSchedulerDiscipline:
         """Wrap the discipline within another one to delegate its execution to a job
         scheduler.
 

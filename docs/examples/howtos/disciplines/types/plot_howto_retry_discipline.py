@@ -93,8 +93,7 @@ retry_discipline.n_executions
 # ## Summary
 #
 # Wrap your discipline with the
-# [RetryDiscipline][gemseo.disciplines.wrappers.retry_discipline.RetryDiscipline]
-# discipline wrapper.
+# [RetryDiscipline][gemseo.disciplines.wrappers.retry_discipline.RetryDiscipline].
 #
 # The execution of your discipline can be retried when:
 #

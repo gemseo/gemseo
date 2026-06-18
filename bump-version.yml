@@ -72,6 +72,9 @@ modules:
   gemseo.core.mdo_functions.function_restriction: restricted_function
   gemseo.core.mdo_functions: functions
 
+  gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper.JobSchedulerDisciplineWrapper: JobSchedulerDiscipline
+  gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper: discipline
+  gemseo.disciplines.wrappers.job_schedulers.factory.JobSchedulerDisciplineWrapperFactory: JobSchedulerDisciplineFactory
   gemseo.disciplines.utils: gemseo.utils.discipline
 
   gemseo.formulations.bilevel_bcd_settings.BiLevel_BCD_Settings: BiLevelBCD_Settings

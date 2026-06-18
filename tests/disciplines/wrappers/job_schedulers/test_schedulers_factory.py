@@ -21,13 +21,13 @@ from __future__ import annotations
 import pytest
 
 from gemseo.disciplines.wrappers.job_schedulers.factory import (
-    JobSchedulerDisciplineWrapperFactory,
+    JobSchedulerDisciplineFactory,
 )
 
 
 @pytest.fixture
-def factory() -> JobSchedulerDisciplineWrapperFactory:
-    return JobSchedulerDisciplineWrapperFactory()
+def factory() -> JobSchedulerDisciplineFactory:
+    return JobSchedulerDisciplineFactory()
 
 
 def test_available_schedulers(factory) -> None:

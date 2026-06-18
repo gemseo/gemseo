@@ -31,12 +31,7 @@ from gemseo.utils.testing.helpers import assert_exception
 
 @pytest.fixture
 def discipline(tmpdir):
-    """Create a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
-    using the SLURM template.
-
-    Returns:
-        The wrapped discipline.
-    """
+    """An LSF discipline wrapping SobieskiMission, using the mock template."""
     return LSF(
         discipline=create_discipline("SobieskiMission"),
         workdir_path=tmpdir,
@@ -44,8 +39,6 @@ def discipline(tmpdir):
         job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
         user_email="toto@irt.com",
         job_out_filename="run_disc.py",
-        ntasks=1,
-        ntasks_per_node=1,
         cpus_per_task=1,
         nodes_number=1,
         mem_per_cpu="2G",

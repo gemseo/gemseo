@@ -100,8 +100,8 @@ if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.disciplines.surrogate import SurrogateDiscipline
-    from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (
-        JobSchedulerDisciplineWrapper,
+    from gemseo.disciplines.wrappers.job_schedulers.discipline import (
+        JobSchedulerDiscipline,
     )
     from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.machine_learning.core.models.ml_model import (
@@ -1518,7 +1518,7 @@ def wrap_discipline_in_job_scheduler(
     scheduler_name: str,
     workdir_path: str | Path,
     **options: Any,
-) -> JobSchedulerDisciplineWrapper:
+) -> JobSchedulerDiscipline:
     """Wrap the discipline within another one to delegate its execution to a job
     scheduler.
 
@@ -1556,10 +1556,10 @@ def wrap_discipline_in_job_scheduler(
         see [Handling paths for cross-platforms][handling-paths-for-different-oses].
     """  # noqa:D205 D212 D415 E501
     from gemseo.disciplines.wrappers.job_schedulers.factory import (
-        JobSchedulerDisciplineWrapperFactory,
+        JobSchedulerDisciplineFactory,
     )
 
-    return JobSchedulerDisciplineWrapperFactory().wrap_discipline(
+    return JobSchedulerDisciplineFactory().wrap_discipline(
         discipline=discipline,
         scheduler_name=scheduler_name,
         workdir_path=workdir_path,

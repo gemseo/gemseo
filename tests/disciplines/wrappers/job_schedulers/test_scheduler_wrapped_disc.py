@@ -29,9 +29,7 @@ from gemseo import wrap_discipline_in_job_scheduler
 from gemseo.core.chains.chain import DisciplineChain
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.wrappers import job_schedulers
-from gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper import (  # noqa: E501
-    JobSchedulerDisciplineWrapper,
-)
+from gemseo.disciplines.wrappers.job_schedulers.discipline import JobSchedulerDiscipline
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.problems.topology_optimization.volume_fraction_disc import VolumeFraction
 from gemseo.utils.comparisons import compare_dict_of_arrays
@@ -40,14 +38,14 @@ from gemseo.utils.testing.helpers import assert_exception
 
 @pytest.fixture
 def discipline(tmp_wd):
-    """Create a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
+    """Create a JobSchedulerDiscipline based on JobSchedulerDiscipline
     using the SLURM template.
 
     Returns:
         The wrapped discipline.
     """
     template_path = Path(job_schedulers.__file__).parent / "templates" / "SLURM"
-    return JobSchedulerDisciplineWrapper(
+    return JobSchedulerDiscipline(
         discipline=create_discipline("SobieskiMission"),
         workdir_path=tmp_wd,
         scheduler_run_command="sbatch",
@@ -63,14 +61,14 @@ def discipline(tmp_wd):
 
 
 @pytest.fixture
-def discipline_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
-    """Creates a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
+def discipline_mocked_js(tmp_wd) -> JobSchedulerDiscipline:
+    """Creates a JobSchedulerDiscipline based on JobSchedulerDiscipline
     using the mock template.
 
     Returns:
         The wrapped discipline
     """
-    return JobSchedulerDisciplineWrapper(
+    return JobSchedulerDiscipline(
         create_discipline("SobieskiMission"),
         job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
         workdir_path=tmp_wd,
@@ -124,7 +122,7 @@ def test_generate_job_template_fail(discipline, tmp_wd, snapshot) -> None:
 
 
 @pytest.mark.skip_under_windows
-def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmp_wd, snapshot) -> None:
+def test_run_fail(discipline: JobSchedulerDiscipline, tmp_wd, snapshot) -> None:
     """Test the run failure is correctly handled."""
     discipline._scheduler_run_command = "IDONTEXIST"
     with assert_exception(FileNotFoundError, snapshot):
@@ -132,7 +130,7 @@ def test_run_fail(discipline: JobSchedulerDisciplineWrapper, tmp_wd, snapshot) -
 
 
 def test_handle_outputs_errors(
-    discipline: JobSchedulerDisciplineWrapper,
+    discipline: JobSchedulerDiscipline,
     tmp_wd,
     snapshot,
 ) -> None:
@@ -201,14 +199,14 @@ def test_linearize(discipline_mocked_js, compute_all_jacobians, execute) -> None
 
 
 @pytest.fixture
-def discipline_diff_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
-    """Creates a JobSchedulerDisciplineWrapper based on JobSchedulerDisciplineWrapper
+def discipline_diff_mocked_js(tmp_wd) -> JobSchedulerDiscipline:
+    """Creates a JobSchedulerDiscipline based on JobSchedulerDiscipline
     using the mock template.
 
     Returns:
         The wrapped discipline
     """
-    return JobSchedulerDisciplineWrapper(
+    return JobSchedulerDiscipline(
         VolumeFraction(),
         job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
         workdir_path=tmp_wd,
@@ -259,9 +257,9 @@ def test_run_or_compute_jacobian(discipline_diff_mocked_js):
 
 
 @pytest.fixture
-def cfd_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
+def cfd_mocked_js(tmp_wd) -> JobSchedulerDiscipline:
     """Creates a LinearDiscipline that linearizes at _run
-    based on JobSchedulerDisciplineWrapper using the mock template.
+    based on JobSchedulerDiscipline using the mock template.
 
     Returns:
         The wrapped discipline
@@ -269,7 +267,7 @@ def cfd_mocked_js(tmp_wd) -> JobSchedulerDisciplineWrapper:
     cfd = LinearDiscipline(
         "CFD", input_names=["xa", "bc"], output_names=["cd"], compute_jac_at_run=True
     )
-    return JobSchedulerDisciplineWrapper(
+    return JobSchedulerDiscipline(
         cfd,
         job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
         workdir_path=tmp_wd,
@@ -317,7 +315,7 @@ def test_differentied_io(tmp_wd):
     discipline.add_differentiated_inputs(["x"])
     discipline.add_differentiated_outputs(["z"])
 
-    wrapper = JobSchedulerDisciplineWrapper(
+    wrapper = JobSchedulerDiscipline(
         discipline=discipline,
         workdir_path=tmp_wd,
         job_template_path=Path(job_schedulers.__file__).parent / "templates" / "SLURM",
