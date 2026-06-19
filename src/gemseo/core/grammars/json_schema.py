@@ -175,11 +175,7 @@ class MutableMappingSchemaBuilder(
 
     @property
     def properties(self) -> SchemaBuilderProperties:
-        """Return the properties.
-
-        Returns:
-            The existing properties, otherwise an empty dictionary.
-        """
+        """The properties."""
         try:
             return cast(
                 "SchemaBuilderProperties",
@@ -190,11 +186,7 @@ class MutableMappingSchemaBuilder(
 
     @property
     def required(self) -> set[str]:
-        """Return the required properties.
-
-        Returns:
-            The required properties, otherwise an empty set.
-        """
+        """The required properties."""
         try:
             required = self._root_node._active_strategies[0]._required
         except (AttributeError, IndexError):
