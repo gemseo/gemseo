@@ -192,7 +192,7 @@ class BaseMLModel(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
 
     @property
     def is_trained(self) -> bool:
-        """Return whether the model is trained."""
+        """Whether the model is trained."""
         return self._trained
 
     @property
