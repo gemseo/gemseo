@@ -119,6 +119,7 @@ if TYPE_CHECKING:
         DataDrivenScalableDiscipline,
     )
     from gemseo.scenarios.backup_settings import BackupSettings
+    from gemseo.scenarios.evaluation import EvaluationScenario
     from gemseo.scenarios.scenario_results.scenario_result import (
         ScenarioResult as ScenarioResult,
     )
@@ -1677,7 +1678,7 @@ def sample_disciplines(
 
 
 def generate_xdsm(
-    discipline: Discipline,
+    process: EvaluationScenario | BaseDiscipline,
     directory_path: str | Path = ".",
     file_name: str = "xdsm",
     show_html: bool = False,
@@ -1688,9 +1689,21 @@ def generate_xdsm(
     pdf_cleanup: bool = True,
     pdf_batchmode: bool = True,
 ) -> XDSM:
-    """Create the XDSM diagram of a discipline.
+    """Visualize a disciplinary process using an XDSM diagram.
+
+    An XDSM (eXtended Design Structure Matrix) diagram
+    describes the data flow and execution sequence of a multidisciplinary process.
+    The main multidisciplinary disciplinary process is the scenario.
+    However,
+    GEMSEO can also create an XDSM from a discipline.
+    In this case,
+    it will be supplemented by a block named *Caller*
+    that calls this discipline using all of its inputs
+    and receives all of its outputs from it.
 
     Args:
+        process: The multidisciplinary process,
+            which can be either a scenario or a discipline.
         directory_path: The path of the directory to save the files.
         file_name: The file name without the file extension.
         show_html: Whether to open the web browser and display the XDSM.
@@ -1706,11 +1719,11 @@ def generate_xdsm(
         pdf_batchmode: Whether to suppress compilation logs.
 
     Returns:
-        The XDSM diagram of the discipline.
+        The XDSM diagram of the multidisciplinary process.
     """
     from gemseo.utils.xdsm.xdsmizer import XDSMizer
 
-    return XDSMizer(discipline).run(
+    return XDSMizer(process).run(
         directory_path=directory_path,
         save_pdf=save_pdf,
         show_html=show_html,

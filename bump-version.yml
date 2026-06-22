@@ -524,6 +524,10 @@ classes:
       restriction_values: frozen_values
       input_dim: null
 
+  XDSMizer:
+    __init__:
+      discipline: process
+
   JobSchedulerDiscipline:
     TEMPLATES_DIR_PATH: JOB_TEMPLATES_DIR_PATH
 
@@ -574,6 +578,8 @@ functions:
   create_surrogate:
     surrogate: regressor
     disc_name: name
+  generate_xdsm:
+    discipline: process
 
   # key_to_value naming convention (changelog 1797)
   update_default_input_values:

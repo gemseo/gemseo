@@ -91,14 +91,19 @@ class XDSMizer:
 
     def __init__(
         self,
-        discipline: BaseDiscipline | EvaluationScenario,
+        process: BaseDiscipline | EvaluationScenario,
         hashref: str = "root",
         level: int = 0,
         expected_workflow: BaseCompositeExecSequence | None = None,
     ) -> None:
         """
         Args:
-            discipline: The discipline or scenario to be represented as an XDSM diagram.
+            process: The multidisciplinary process,
+                which can be either a scenario or a discipline.
+                In the case of a discipline,
+                its XDSM will be supplemented by a block named *Caller*
+                that calls it using all of its inputs
+                and receives all of its outputs from it.
             hashref: The keyword used in the JSON structure
                 to reference the dictionary data structure
                 whose keys are "nodes", "edges", "workflow" and "optpb".
@@ -109,8 +114,8 @@ class XDSMizer:
                 [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario],
                  [BaseMDA][gemseo.mda.base.BaseMDA], etc.)
         """  # noqa:D205 D212 D415
-        if isinstance(discipline, EvaluationScenario):
-            scenario = discipline
+        if isinstance(process, EvaluationScenario):
+            scenario = process
             self._is_scenario = True
             if isinstance(scenario, MDOScenario):
                 self._scenario_node_title = "Optimizer"
@@ -119,14 +124,14 @@ class XDSMizer:
         else:
             self._is_scenario = False
             design_space = DesignSpace()
-            for name in discipline.io.input_grammar:
+            for name in process.io.input_grammar:
                 design_space.add_variable(name)
             scenario = EvaluationScenario(
-                [discipline],
+                [process],
                 design_space,
                 formulation_settings=DisciplinaryOpt_Settings(),
             )
-            for output_name in discipline.io.output_grammar:
+            for output_name in process.io.output_grammar:
                 scenario.add_observable(output_name)
 
             self._scenario_node_title = "Caller"
