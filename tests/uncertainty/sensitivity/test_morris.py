@@ -88,6 +88,16 @@ def morris(discipline, parameter_space):
     return analysis
 
 
+def test_n_replicates(morris):
+    """Test the n_replicates property."""
+    # Reading n_replicates from the dataset.
+    assert morris.n_replicates == 5
+    del morris.dataset.misc["n_replicates"]
+    # Computing n_replicates and writing in the dataset.
+    assert morris.n_replicates == 5
+    assert morris.dataset.misc["n_replicates"] == 5
+
+
 def test_morris_main_indices_outputs(morris) -> None:
     """Check that all the outputs have main indices."""
     assert {"y1", "y2"} == morris.main_indices.keys()

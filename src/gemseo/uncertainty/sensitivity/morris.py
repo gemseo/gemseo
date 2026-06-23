@@ -56,6 +56,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.scenarios.backup_settings import BackupSettings
+    from gemseo.typing import RealArray
     from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
     from gemseo.utils.string_tools import VariableType
 
@@ -141,7 +142,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         disciplines: Collection[Discipline],
         parameter_space: ParameterSpace,
         n_samples: int,
-        output_names: Iterable[str] = (),
+        output_names: str | Iterable[str] = (),
         algo_settings: BaseDOESettings | None = None,
         backup_settings: BackupSettings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,
@@ -189,8 +190,8 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         return self.dataset
 
     @property
-    def outputs_bounds(self) -> dict[str, list[float]]:
-        """The empirical bounds of the outputs."""
+    def outputs_bounds(self) -> dict[str, tuple[RealArray, RealArray]]:
+        """The empirical `(minimum, maximum)` bounds of the outputs."""
         return self.dataset.misc.get("outputs_bounds", {})
 
     @property
@@ -203,9 +204,13 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
             )
             raise ValueError(msg)
 
-        return len(self.dataset) // (
-            1 + self.dataset.group_name_to_n_components[self.dataset.INPUT_GROUP]
-        )
+        n_replicates = self.dataset.misc.get("n_replicates")
+        if n_replicates is None:
+            n_replicates = len(self.dataset) // (
+                1 + self.dataset.group_name_to_n_components[self.dataset.INPUT_GROUP]
+            )
+            self.dataset.misc["n_replicates"] = n_replicates
+        return n_replicates
 
     def compute_indices(
         self,
@@ -308,7 +313,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         directory_path: str | Path = "",
         file_name: str = "",
         file_format: str = "",
-        offset: float = 1,
+        offset: float = 1.0,
         lower_mu: float | None = None,
         lower_sigma: float | None = None,
     ) -> Figure:
