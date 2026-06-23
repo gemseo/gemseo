@@ -28,8 +28,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 
-from numpy import array
-from numpy import newaxis
 from numpy import nonzero
 from openturns import HSICEstimatorConditionalSensitivity
 from openturns import HSICEstimatorGlobalSensitivity
@@ -38,13 +36,13 @@ from openturns import HSICUStat
 from openturns import HSICVStat
 from openturns import IndicatorFunction
 from openturns import Interval
-from openturns import RandomGenerator
 from openturns import Sample
 from openturns import SquaredExponential
 from strenum import StrEnum
 
+from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
 from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
@@ -216,12 +214,14 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
     def compute_indices(
         self,
         output_names: str | Iterable[str] = (),
-        output_bounds: Mapping[str, tuple[Iterable[float], Iterable[float]]] = (),
+        output_bounds: Mapping[
+            str, tuple[Iterable[float], Iterable[float]]
+        ] = READ_ONLY_EMPTY_DICT,
         statistic_estimator: StatisticEstimator = StatisticEstimator.USTAT,
         input_covariance_model: CovarianceModel = CovarianceModel.GAUSSIAN,
         output_covariance_model: CovarianceModel = CovarianceModel.GAUSSIAN,
         analysis_type: AnalysisType = AnalysisType.GLOBAL,
-        seed: int = SEED,
+        seed: int | None = SEED,
         n_permutations: int = 100,
     ) -> SensitivityIndices:
         """
@@ -250,10 +250,12 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
                 estimator associated to the output variables.
             analysis_type: The sensitivity analysis type.
             seed: The seed for reproducible results.
+                If `None`,
+                the current state of `openturns.RandomGenerator` is used
+                (no reseeding).
             n_permutations: The number of permutations used to estimate the p-values.
         """  # noqa: D205 D212 D415
-        RandomGenerator.SetSeed(seed)
-        if analysis_type == analysis_type.CONDITIONAL:
+        if analysis_type == self.AnalysisType.CONDITIONAL:
             statistic_estimator = self.StatisticEstimator.VSTAT
 
         output_names = self._get_output_names(output_names)
@@ -262,7 +264,7 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
             statistic_estimator
         ]
 
-        if analysis_type in {analysis_type.CONDITIONAL, analysis_type.TARGET}:
+        if analysis_type in {self.AnalysisType.CONDITIONAL, self.AnalysisType.TARGET}:
             output_bounds = {
                 name: tuple(zip(*value, strict=False))
                 for name, value in output_bounds.items()
@@ -275,75 +277,68 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
         output_covariance_model_class = self.__COVARIANCE_MODELS_TO_OT_CLASSES[
             output_covariance_model
         ]
-        input_samples = Sample(
-            self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
-        )
+        input_samples = Sample(self._get_input_sample_array())
         hsic_class = self.__ANALYSIS_TO_OT_CLASSES[analysis_type]
-        indices = {}
-        for method in HSICAnalysisMethod:
-            indices_ = indices[str(method).lower().replace("-", "_")] = {}
-            if (
-                method == method.P_VALUE_ASYMPTOTIC
-                and analysis_type == analysis_type.CONDITIONAL
-            ):
-                continue
-
-            sizes = self.dataset.variable_name_to_n_components
-            input_covariance_models = self.__compute_covariance_models(
-                input_samples, input_covariance_model_class
-            )
-            for output_name in output_names:
-                output_indices = []
-                for i, output_component_samples in enumerate(
-                    self.dataset
-                    .get_view(
-                        group_names=self.dataset.OUTPUT_GROUP,
-                        variable_names=output_name,
-                    )
-                    .to_numpy()
-                    .T
-                ):
-                    output_data = output_component_samples[:, newaxis]
-                    if output_data.var() == 0.0:
+        # The input covariance models do not depend on the output: build them once.
+        input_covariance_models = self.__compute_covariance_models(
+            input_samples, input_covariance_model_class
+        )
+        # The asymptotic p-value does not exist for conditional analysis.
+        skip_asymptotic = analysis_type == self.AnalysisType.CONDITIONAL
+        active_methods = [
+            method
+            for method in HSICAnalysisMethod
+            if not (method == HSICAnalysisMethod.P_VALUE_ASYMPTOTIC and skip_asymptotic)
+        ]
+        # Keep every method field so the dataclass is fully built;
+        # a skipped method (e.g. the asymptotic p-value for CSA) stays empty.
+        indices = {
+            self._get_index_field_name(method): {} for method in HSICAnalysisMethod
+        }
+        with seed_ot_random_generator(seed):
+            for output_name, i, data in self._iter_output_components(output_names):
+                method_to_output_indices = {
+                    self._get_index_field_name(method): indices[
+                        self._get_index_field_name(method)
+                    ].setdefault(output_name, [])
+                    for method in active_methods
+                }
+                if data is None:
+                    for output_indices in method_to_output_indices.values():
                         output_indices.append(None)
-                        continue
-                    output_samples = Sample(output_component_samples[:, newaxis])
-                    output_covariance_models = self.__compute_covariance_models(
+                    continue
+
+                output_samples = Sample(data)
+                covariance_models = [
+                    *input_covariance_models,
+                    *self.__compute_covariance_models(
                         output_samples, output_covariance_model_class
+                    ),
+                ]
+                if analysis_type == self.AnalysisType.GLOBAL:
+                    args = (statistic_estimator_class(),)
+                elif analysis_type == self.AnalysisType.TARGET:
+                    args = (
+                        statistic_estimator_class(),
+                        IndicatorFunction(Interval(*output_bounds[output_name][i])),
                     )
-                    covariance_models = [
-                        *input_covariance_models,
-                        *output_covariance_models,
-                    ]
-                    if analysis_type == analysis_type.GLOBAL:
-                        args = (statistic_estimator_class(),)
-                    elif analysis_type == analysis_type.TARGET:
-                        args = (
-                            statistic_estimator_class(),
-                            IndicatorFunction(Interval(*output_bounds[output_name][i])),
-                        )
-                    else:
-                        args = (
-                            IndicatorFunction(Interval(*output_bounds[output_name][i])),
-                        )
-
-                    hsic_estimator = hsic_class(
-                        covariance_models, input_samples, output_samples, *args
+                else:
+                    args = (
+                        IndicatorFunction(Interval(*output_bounds[output_name][i])),
                     )
-                    hsic_estimator.setPermutationSize(n_permutations)
 
+                # A single estimator provides all the methods for this component.
+                hsic_estimator = hsic_class(
+                    covariance_models, input_samples, output_samples, *args
+                )
+                hsic_estimator.setPermutationSize(n_permutations)
+                for method in active_methods:
                     get_indices = getattr(
                         hsic_estimator, self.__METHODS_TO_OT_METHODS[method]
                     )
-                    output_indices.append(
-                        split_array_to_dict_of_arrays(
-                            array(get_indices()),
-                            sizes,
-                            self._input_names,
-                        )
+                    method_to_output_indices[self._get_index_field_name(method)].append(
+                        self._split_index_array(get_indices())
                     )
-
-                indices_[output_name] = output_indices
 
         self._indices = self.SensitivityIndices(**indices)
         return self.indices

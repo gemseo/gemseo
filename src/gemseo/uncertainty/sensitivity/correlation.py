@@ -28,8 +28,6 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 
-from numpy import array
-from numpy import newaxis
 from numpy import vstack
 from openturns import Sample
 from strenum import StrEnum
@@ -39,14 +37,12 @@ from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
 from gemseo.utils.compatibility.openturns import PEARSON_METHOD_NAME
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.string_tools import filter_names
 from gemseo.utils.string_tools import get_name_and_component
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from collections.abc import Sequence
     from pathlib import Path
 
     from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
@@ -134,50 +130,34 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
     DEFAULT_DRIVER: ClassVar[str] = "OT_MONTE_CARLO"
 
     def compute_indices(  # noqa: D102
-        self, output_names: str | Sequence[str] = ()
+        self, output_names: str | Iterable[str] = ()
     ) -> SensitivityIndices:
         output_names = self._get_output_names(output_names)
 
-        input_samples = Sample(
-            self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
-        )
-        correlation_analyses = {
-            output_name: [
+        input_samples = Sample(self._get_input_sample_array())
+        # One OpenTURNS correlation analysis per output component (None if constant).
+        correlation_analyses: dict[str, list[OTCorrelationAnalysis | None]] = {}
+        for output_name, _, data in self._iter_output_components(output_names):
+            correlation_analyses.setdefault(output_name, []).append(
                 None
-                if (data := output_component_samples[:, newaxis]).var() == 0.0
+                if data is None
                 else OTCorrelationAnalysis(input_samples, Sample(data))
-                # For each component of the output variable
-                for output_component_samples in self.dataset
-                .get_view(
-                    group_names=self.dataset.OUTPUT_GROUP,
-                    variable_names=output_name,
-                )
-                .to_numpy()
-                .T
-            ]
-            # For each output variable
-            for output_name in output_names
-        }
+            )
+
         indices = {}
-        # For each correlation method
-        sizes = self.dataset.variable_name_to_n_components
+        # The same analysis objects are reused to extract every correlation method.
         for method in CorrelationAnalysisMethod:
-            # The version of OpenTURNS offers this correlation method.
             method_name = self.__METHODS_TO_OT_METHOD_NAMES[method]
-            indices[str(method).lower()] = {
+            indices[self._get_index_field_name(method)] = {
                 output_name: [
                     None
                     if correlation_analysis is None
-                    else split_array_to_dict_of_arrays(
-                        array(getattr(correlation_analysis, method_name)()),
-                        sizes,
-                        self._input_names,
+                    else self._split_index_array(
+                        getattr(correlation_analysis, method_name)()
                     )
-                    # For each component of the output variable
-                    for correlation_analysis in correlation_analyses[output_name]
+                    for correlation_analysis in analyses
                 ]
-                # For each output variable
-                for output_name in output_names
+                for output_name, analyses in correlation_analyses.items()
             }
 
         self._indices = self.SensitivityIndices(**indices)
@@ -250,6 +230,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
         self,
         outputs: OutputsType = (),
         input_names: Iterable[str] = (),
+        standardize: bool = False,
         title: str = "",
         save: bool = True,
         show: bool = False,
@@ -257,6 +238,8 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
         directory_path: str | Path = "",
         file_name: str = "",
         file_format: str = "",
+        sort: bool = True,
+        sorting_output: VariableType = "",
         radar_chart_settings: RadarChart_Settings | None = None,
     ) -> RadarChart:
         """
@@ -276,6 +259,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
         return super().plot_radar(
             outputs,
             input_names=input_names,
+            standardize=standardize,
             title=title,
             save=save,
             show=show,
@@ -283,5 +267,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
             file_name=file_name,
             file_format=file_format,
             directory_path=directory_path,
+            sort=sort,
+            sorting_output=sorting_output,
             radar_chart_settings=radar_chart_settings,
         )

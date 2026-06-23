@@ -33,14 +33,12 @@ import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 from numpy import array
 from numpy import hstack
-from numpy import newaxis
 from numpy import sign
 from numpy import vstack
 from numpy.random import default_rng
 from openturns import JansenSensitivityAlgorithm
 from openturns import MartinezSensitivityAlgorithm
 from openturns import MauntzKucherenkoSensitivityAlgorithm
-from openturns import RandomGenerator
 from openturns import RankSobolSensitivityAlgorithm
 from openturns import SaltelliSensitivityAlgorithm
 from openturns import Sample
@@ -53,6 +51,7 @@ from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
     OT_SOBOL_INDICES_Settings,
 )
 from gemseo.uncertainty.sensitivity._cv_sobol_algorithm import CVSobolAlgorithm
+from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
 from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
@@ -289,7 +288,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         disciplines: Collection[Discipline],
         parameter_space: ParameterSpace,
         n_samples: int,
-        output_names: Iterable[str] = (),
+        output_names: str | Iterable[str] = (),
         algo_settings: BaseDOESettings | None = None,
         backup_settings: BackupSettings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,
@@ -481,12 +480,9 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         """
         algo_class = self.__ALGO_NAME_TO_CLASS[algo]
         use_rank_algorithm = issubclass(algo_class, RankSobolSensitivityAlgorithm)
-        state = None
-        if (
-            use_rank_algorithm or not use_asymptotic_distributions
-        ) and seed is not None:
-            state = RandomGenerator.GetState()
-            RandomGenerator.SetSeed(seed)
+        # Bootstrap-based estimation (rank algorithm or non-asymptotic intervals)
+        # consumes the random generator, so reseed it for reproducible results.
+        do_seed = use_rank_algorithm or not use_asymptotic_distributions
 
         dataset = self.dataset
         input_data = Sample(
@@ -494,20 +490,17 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
                 group_names=dataset.INPUT_GROUP, variable_names=self._input_names
             ).to_numpy()
         )
-        for output_name in output_names:
-            output_data = dataset.get_view(
-                group_names=dataset.OUTPUT_GROUP, variable_names=output_name
-            ).to_numpy()
-            algos = self.__output_name_to_sobol_algos[output_name] = []
-            for sub_output_data in output_data.T:
-                if sub_output_data.var() == 0.0:
+        with seed_ot_random_generator(seed if do_seed else None) as seeded:
+            for output_name, _, data in self._iter_output_components(output_names):
+                algos = self.__output_name_to_sobol_algos.setdefault(output_name, [])
+                if data is None:
                     algos.append(None)
                     continue
 
                 ot_algo = algo_class()
                 ot_algo.setDesign(
                     input_data,
-                    Sample(sub_output_data[:, newaxis]),
+                    Sample(data),
                     dataset.misc.get("sample_size", len(input_data)),
                 )
                 ot_algo.setBootstrapSize(n_replicates)
@@ -516,13 +509,10 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
                 algos.append(ot_algo)
                 # Prime bootstrap-based intervals inside the seeded scope so that
                 # later get_intervals() calls do not depend on global RNG state.
-                if state is not None:
+                if seeded:
                     ot_algo.getFirstOrderIndicesInterval()
                     if not use_rank_algorithm:
                         ot_algo.getTotalOrderIndicesInterval()
-
-        if state is not None:
-            RandomGenerator.SetState(state)
 
         if use_rank_algorithm:
             self._indices = self.SensitivityIndices(
@@ -553,8 +543,10 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
             confidence_level: The confidence level.
             n_replicates: The number of bootstrap replicates
                 used for the computation of the confidence intervals.
-            seed: The seed of the random generator for bootstrapping.
-                If `None`, fresh, unpredictable entropy will be pulled from the OS.
+            seed: The seed for reproducible results.
+                If `None`,
+                the current state of `openturns.RandomGenerator` is used
+                (no reseeding).
 
         Returns:
             The sensitivity indices.
@@ -606,9 +598,9 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
                     (
                         cv.variance[output_name][i],
                         {
-                            method: getattr(cv.indices, str(method).lower())[
-                                output_name
-                            ][i]
+                            method: getattr(
+                                cv.indices, self._get_index_field_name(method)
+                            )[output_name][i]
                             for method in list(SobolAnalysisMethod)
                         },
                     )
@@ -743,9 +735,8 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
             The first-, second- or total-order indices.
         """
         dataset = self.dataset
-        if (
-            method_name == self.__GET_SECOND_ORDER_INDICES
-            and not dataset.misc["eval_second_order"]
+        if method_name == self.__GET_SECOND_ORDER_INDICES and not dataset.misc.get(
+            "eval_second_order", False
         ):
             return {}
 
@@ -850,6 +841,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
     def get_intervals(
         self,
         first_order: bool = True,
+        output_names: str | Iterable[str] = (),
     ) -> FirstOrderIndicesType:
         """Get the confidence intervals for the Sobol' indices.
 
@@ -860,6 +852,9 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         Args:
             first_order: If `True`, compute the intervals for the first-order indices.
                 Otherwise, for the total-order indices.
+            output_names: The name(s) of the output(s)
+                for which to get the confidence intervals.
+                If empty, use all the outputs for which the indices were computed.
 
         Returns:
             The confidence intervals for the Sobol' indices.
@@ -879,7 +874,10 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         use_cv = self.__use_control_variates
         name_to_size = self.dataset.variable_name_to_n_components
         intervals = {}
-        for output_name, sobol_algos in self.__output_name_to_sobol_algos.items():
+        for output_name in self._get_output_names(
+            output_names, self.__output_name_to_sobol_algos
+        ):
+            sobol_algos = self.__output_name_to_sobol_algos[output_name]
             intervals[output_name] = []
             for sobol_algorithm in sobol_algos:
                 interval = getattr(
@@ -1005,7 +1003,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
 
         errorbar_options = {"marker": "o", "linestyle": "", "markersize": 7}
 
-        all_intervals = self.get_intervals()
+        all_intervals = self.get_intervals(output_names=output_name)
         intervals = all_intervals[output_name][output_component]
         yerr = array([
             [
@@ -1026,7 +1024,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         )
 
         if self.indices.total:
-            all_intervals = self.get_intervals(False)
+            all_intervals = self.get_intervals(False, output_names=output_name)
             intervals = all_intervals[output_name][output_component]
             yerr = array([
                 [

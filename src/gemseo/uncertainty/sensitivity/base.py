@@ -56,6 +56,7 @@ from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
 from gemseo.scenarios.evaluation import EvaluationScenario
 from gemseo.typing import RealArray
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.discipline import get_all_outputs
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
@@ -82,7 +83,7 @@ if TYPE_CHECKING:
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.utils.string_tools import VariableType
 
-OutputsType = str | tuple[str, int], Sequence[str | tuple[str, int]]
+OutputsType = str | tuple[str, int] | Sequence[str | tuple[str, int]]
 FirstOrderIndicesType = dict[str, list[dict[str, RealArray] | None]]
 SecondOrderIndicesType = dict[str, list[dict[str, dict[str, RealArray]] | None]]
 
@@ -195,7 +196,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         disciplines: Collection[Discipline],
         parameter_space: ParameterSpace,
         n_samples: int,
-        output_names: Iterable[str] = (),
+        output_names: str | Iterable[str] = (),
         algo_settings: BaseDOESettings | None = None,
         backup_settings: BackupSettings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,
@@ -267,7 +268,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
     @abstractmethod
     def compute_indices(
         self, output_names: str | Iterable[str] = ()
-    ) -> dict[str, FirstOrderIndicesType | SecondOrderIndicesType]:
+    ) -> SensitivityIndices:
         """Compute the sensitivity indices.
 
         Args:
@@ -311,7 +312,67 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         For constant output components,
         `indices.method_name[output_name][output_component]` is `None`.
         """
-        return getattr(self.indices, str(self.main_method).lower().replace("-", "_"))
+        return getattr(self.indices, self._get_index_field_name(self.main_method))
+
+    @staticmethod
+    def _get_index_field_name(method: StrEnum) -> str:
+        """Get the `SensitivityIndices` field name for a sensitivity analysis method.
+
+        Args:
+            method: A sensitivity analysis method.
+
+        Returns:
+            The name of the field of `SensitivityIndices`
+            related to the sensitivity analysis method.
+        """
+        return str(method).lower().replace("-", "_")
+
+    def _get_input_sample_array(self) -> RealArray:
+        """Return the input samples as a 2D NumPy array.
+
+        Returns:
+            The input samples shaped as `(n_samples, input_dimension)`.
+        """
+        return self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
+
+    def _iter_output_components(
+        self, output_names: Iterable[str]
+    ) -> Iterable[tuple[str, int, RealArray | None]]:
+        """Iterate over the components of the outputs of interest.
+
+        Args:
+            output_names: The names of the outputs to iterate over.
+
+        Yields:
+            For each output component,
+            a tuple `(output_name, component_index, data)`
+            where `data` is the `(n_samples, 1)` array of the component samples,
+            or `None` when the component is constant.
+        """
+        dataset = self.dataset
+        for output_name in output_names:
+            samples = dataset.get_view(
+                group_names=dataset.OUTPUT_GROUP, variable_names=output_name
+            ).to_numpy()
+            for component_index, component_samples in enumerate(samples.T):
+                data = component_samples[:, newaxis]
+                yield output_name, component_index, None if data.var() == 0.0 else data
+
+    def _split_index_array(self, raw_array: Sequence[float]) -> dict[str, RealArray]:
+        """Split a flat sensitivity-index array into a `{input_name: array}` dict.
+
+        Args:
+            raw_array: The sensitivity indices for a single output component,
+                ordered along the input components.
+
+        Returns:
+            The sensitivity indices indexed by input name.
+        """
+        return split_array_to_dict_of_arrays(
+            array(raw_array),
+            self.dataset.variable_name_to_n_components,
+            self._input_names,
+        )
 
     def sort_input_variables(self, output: VariableType) -> list[str]:
         """Return the input variables sorted in descending order.
@@ -343,6 +404,8 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         save: bool = True,
         show: bool = False,
         file_path: str | Path = "",
+        directory_path: str | Path = "",
+        file_name: str = "",
         file_format: str = "",
     ) -> BaseDatasetPlot | Figure:
         """Plot the sensitivity indices.
@@ -362,6 +425,10 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
                 Either a complete file path, a directory name or a file name.
                 If empty, use a default file name and a default directory.
                 The file extension is inferred from filepath extension, if any.
+            directory_path: The path of the directory to save the figures.
+                If empty, use the current working directory.
+            file_name: The name of the file to save the figures.
+                If empty, use a default one generated by the post-processing.
             file_format: A file format, e.g. 'png', 'pdf', 'svg', ...
                 Used when `file_path` does not have any extension.
                 If empty, use a default file extension.
@@ -369,7 +436,17 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         Returns:
             The plot figure.
         """
-        raise NotImplementedError
+        return self.plot_bar(
+            outputs=output,
+            input_names=input_names,
+            title=title,
+            save=save,
+            show=show,
+            file_path=file_path,
+            directory_path=directory_path,
+            file_name=file_name,
+            file_format=file_format,
+        )
 
     def plot_field(
         self,
@@ -567,7 +644,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         input_names: Iterable[str],
         outputs: OutputsType,
         standardize: bool,
-        sort: True,
+        sort: bool,
         sorting_output: VariableType,
     ) -> Dataset:
         r"""Create the dataset to plot.
@@ -745,7 +822,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
 
     def plot_comparison(
         self,
-        indices: list[BaseSensitivityAnalysis],
+        indices: BaseSensitivityAnalysis | Iterable[BaseSensitivityAnalysis],
         output: VariableType,
         input_names: Iterable[str] = (),
         title: str = "",
@@ -892,17 +969,23 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
 
         return new_indices
 
-    def _get_output_names(self, output_names: str | Iterable[str]) -> Iterable[str]:
+    def _get_output_names(
+        self,
+        output_names: str | Iterable[str],
+        default_output_names: Iterable[str] = (),
+    ) -> Iterable[str]:
         """Return the output names.
 
         Args:
             output_names: The initial output name(s).
                 If empty, return the default output names.
+            default_output_names: The default output names.
+                If empty, use the property `default_output_names`.
 
         Returns:
             The output names.
         """
         if not output_names:
-            return self.default_output_names
+            return tuple(default_output_names) or self.default_output_names
 
         return convert_strings_to_iterable(output_names)

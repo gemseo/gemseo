@@ -305,3 +305,10 @@ def test_constant_output(discipline_with_constant_output_and_space):
     indices = analysis.compute_indices()
     assert indices.hsic["constant"][0] is None
     assert indices.hsic["varying"][0] is not None
+
+
+def test_plot(hsic_analysis, tmp_wd):
+    """Check that HSICAnalysis.plot returns a bar plot of the main indices."""
+    hsic_analysis.compute_indices()
+    plot = hsic_analysis.plot("y1", save=False)
+    assert plot.__class__.__name__ == "BarPlot"
