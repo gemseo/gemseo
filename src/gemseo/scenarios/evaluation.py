@@ -41,8 +41,10 @@ from gemseo.core._process_flow.execution_sequences.sequential import (
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.discipline import get_all_outputs
 from gemseo.utils.discipline import get_sub_disciplines
+from gemseo.utils.discipline import update_default_input_values
 from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import pretty_str
@@ -63,6 +65,7 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.formulations.factory import MDOFormulationFactory
     from gemseo.typing import RealArray
+    from gemseo.typing import StrKeyMapping
     from gemseo.utils.xdsm.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
@@ -151,6 +154,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         design_space: DesignSpace,
         name: str = "",
         formulation_settings: BaseFormulationSettings | None = None,
+        default_input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
         Args:
@@ -162,6 +166,10 @@ class EvaluationScenario(BaseMonitoredProcess):
                 to generate the multidisciplinary evaluation process.
                 If `None`,
                 use [MDF_Settings][gemseo.formulations.mdf_settings.MDF_Settings].
+            default_input_data: Some default input data of the disciplines.
+                A scenario operates on a design space
+                composed of certain input variables from various disciplines.
+                This argument allows to change the values of other input variables.
         """  # noqa: D205, D212
         super().__init__(name)
         self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
@@ -172,6 +180,9 @@ class EvaluationScenario(BaseMonitoredProcess):
         self.__algorithm_settings = None
         if formulation_settings is None:
             formulation_settings = MDF_Settings()
+
+        if default_input_data:
+            update_default_input_values(disciplines, default_input_data)
 
         evaluation_problem = self._evaluation_problem_class(design_space)
         self.formulation = self._formulation_factory.create(
