@@ -108,14 +108,6 @@ ExecutionStatistics.is_time_stamps_enabled = True
 scenario.execute(SLSQP_Settings(max_iter=10))
 
 # %%
-# !!! info "See also"
-#
-#     The formulation settings passed to [create_scenario()][gemseo.create_scenario]
-#     and the algorithm settings passed to [MDOScenario.execute()][gemseo.scenarios.mdo.MDOScenario.execute]
-#     can be provided via Pydantic models.
-#     For more information,
-#     see [this page][algorithm-settings].
-#
 # ## Plot the Gantt chart
 #
 # Lastly,
