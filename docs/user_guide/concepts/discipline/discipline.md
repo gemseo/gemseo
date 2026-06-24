@@ -55,11 +55,21 @@ These derivatives are either analytic,
 implemented by the user,
 or numerically approximated.
 
+Analytic derivatives are stored in the
+[Discipline.jac][gemseo.core.discipline.discipline.Discipline.jac]
+dictionary as dense NumPy arrays or SciPy sparse arrays.
+When the Jacobian is too large or too expensive to assemble as a matrix,
+it can instead be stored as a
+[JacobianOperator][gemseo.core.derivatives.jacobian_operator.JacobianOperator],
+a matrix-free representation defined only by the products of the Jacobian
+and of its transpose with a vector.
+
 !!! how-to
     - [Compute the Jacobian of a discipline][]
     - [Change the differentiation settings][]
     - [Check the Jacobian of a discipline][]
     - [Partial analytical Jacobian with numerical completion][]
+    - [Use a matrix-free Jacobian][]
 
 ## Cache { #concept-discipline-cache }
 

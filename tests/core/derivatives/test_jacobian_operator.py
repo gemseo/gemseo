@@ -18,214 +18,241 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import allclose
+from numpy import complex128
+from numpy import dtype
+from numpy import eye
 from numpy.random import default_rng
 from scipy.sparse import rand
+from scipy.sparse import random_array
 
 from gemseo.core.derivatives.jacobian_operator import JacobianOperator
+from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-RNG = default_rng()
+    from gemseo.typing import SparseOrDenseRealArray
+
+RNG = default_rng(SEED)
 
 RECTANGULAR_SHAPE = (10, 5)
-SQUARE_SHAPE = (5, 5)
+
+ARRAY_FACTORIES = {
+    "dense": lambda shape: RNG.normal(size=shape),
+    "spmatrix": lambda shape: rand(*shape, density=0.25, rng=RNG),
+    "sparray": lambda shape: random_array(shape, density=0.25, rng=RNG),
+}
 
 
-@pytest.fixture(scope="module")
-def square_jacobian() -> tuple[ndarray, JacobianOperator]:
-    """Generate a square Jacobian operator from a NumPy array.
+class MatrixJacobianOperator(JacobianOperator):
+    """A Jacobian operator wrapping an explicit matrix."""
+
+    matrix: ndarray
+    """The matrix defining the linear operator."""
+
+    def __init__(self, matrix: ndarray) -> None:
+        """
+        Args:
+            matrix: The matrix defining the linear operator.
+        """  # noqa: D205 D212 D415
+        super().__init__(matrix.dtype, matrix.shape)
+        self.matrix = matrix
+
+    def _matvec(self, x: ndarray) -> ndarray:
+        """
+        Args:
+            x: The vector to apply the operator to.
+
+        Returns:
+            The matrix-vector product.
+        """  # noqa: D205 D212
+        return self.matrix @ x
+
+    def _rmatvec(self, x: ndarray) -> ndarray:
+        """
+        Args:
+            x: The vector to apply the adjoint operator to.
+
+        Returns:
+            The transposed matrix-vector product.
+        """  # noqa: D205 D212
+        return self.matrix.T @ x
+
+
+@pytest.fixture(params=ARRAY_FACTORIES.values(), ids=list(ARRAY_FACTORIES))
+def array(request) -> SparseOrDenseRealArray:
+    """Generate a random NumPy array or SciPy sparse array.
 
     Returns:
-        The NumPy array and the JacobianOperator wrapping it.
+        A random array of rectangular shape.
     """
-    matrix = RNG.normal(size=SQUARE_SHAPE)
-    operator = JacobianOperator(
-        dtype=matrix.dtype,
-        shape=matrix.shape,
-    )
-
-    def matvec(x):
-        return matrix @ x
-
-    def rmatvec(x):
-        return matrix.T @ x
-
-    operator._matvec = matvec
-    operator._rmatvec = rmatvec
-
-    return matrix, operator
+    return request.param(RECTANGULAR_SHAPE)
 
 
-@pytest.fixture(scope="module")
-def rectangular_jacobian() -> tuple[ndarray, JacobianOperator]:
-    """Generate a rectangular Jacobian operator from a NumPy array.
+@pytest.fixture
+def jacobian_operator() -> MatrixJacobianOperator:
+    """Generate a Jacobian operator wrapping a random rectangular matrix.
 
     Returns:
-        The NumPy array and the JacobianOperator wrapping it.
+        The Jacobian operator.
     """
-    matrix = RNG.normal(size=RECTANGULAR_SHAPE)
-    operator = JacobianOperator(
-        dtype=matrix.dtype,
-        shape=matrix.shape,
-    )
-
-    def matvec(x):
-        return matrix @ x
-
-    def rmatvec(x):
-        return matrix.T @ x
-
-    operator._matvec = matvec
-    operator._rmatvec = rmatvec
-
-    return matrix, operator
+    return MatrixJacobianOperator(RNG.normal(size=RECTANGULAR_SHAPE))
 
 
-def test_matvec() -> None:
-    """Tests the matrix-vector product."""
-    matrix = RNG.normal(size=RECTANGULAR_SHAPE)
+def assert_equivalent_to_matrix(
+    operator: JacobianOperator, matrix: SparseOrDenseRealArray
+) -> None:
+    """Check that a Jacobian operator and its adjoint behave as a given matrix.
 
-    m, n = matrix.shape
-    x, y = RNG.normal(size=n), RNG.normal(size=m)
+    Args:
+        operator: The Jacobian operator.
+        matrix: The reference matrix.
+    """
+    assert isinstance(operator, JacobianOperator)
+    assert allclose(operator.get_matrix_representation(), matrix, atol=1e-12)
+    assert allclose(operator.T.get_matrix_representation(), matrix.T, atol=1e-12)
 
-    jacobian = JacobianOperator(
-        dtype=matrix.dtype,
-        shape=matrix.shape,
-    )
+
+def test_unimplemented_products() -> None:
+    """Tests errors raised when the matrix-vector products are not implemented."""
+    jacobian = JacobianOperator(dtype(float), RECTANGULAR_SHAPE)
 
     with pytest.raises(RecursionError):
-        jacobian.matvec(x)
+        jacobian.matvec(RNG.normal(size=RECTANGULAR_SHAPE[1]))
 
     with pytest.raises(NotImplementedError):
-        jacobian.rmatvec(y)
-
-    jacobian._matvec = lambda x: matrix @ x
-    jacobian._rmatvec = lambda x: matrix.T @ x
-
-    assert (jacobian.dot(x) == matrix.dot(x)).all()
-    assert (jacobian.T.dot(y) == matrix.T.dot(y)).all()
+        jacobian.rmatvec(RNG.normal(size=RECTANGULAR_SHAPE[0]))
 
 
-def test_copy(rectangular_jacobian) -> None:
+def test_matvec(jacobian_operator) -> None:
+    """Tests the matrix-vector products of the operator and its adjoint."""
+    m, n = jacobian_operator.shape
+    x, y = RNG.normal(size=n), RNG.normal(size=m)
+
+    assert (jacobian_operator.dot(x) == jacobian_operator.matrix @ x).all()
+    assert (jacobian_operator.T.dot(y) == jacobian_operator.matrix.T @ y).all()
+
+
+def test_copy(jacobian_operator) -> None:
     """Tests the copying."""
-    _, jacobian = rectangular_jacobian
-
-    m, n = jacobian.shape
+    m, n = jacobian_operator.shape
     x, y = RNG.normal(size=n), RNG.normal(size=m)
 
-    jacobian_copy = jacobian.copy()
+    jacobian_copy = jacobian_operator.copy()
 
-    assert id(jacobian_copy) != id(jacobian)
-    assert (jacobian_copy.dot(x) == jacobian.dot(x)).all()
-    assert (jacobian_copy.T.dot(y) == jacobian.T.dot(y)).all()
+    assert jacobian_copy is not jacobian_operator
+    assert (jacobian_copy.dot(x) == jacobian_operator.dot(x)).all()
+    assert (jacobian_copy.T.dot(y) == jacobian_operator.T.dot(y)).all()
 
 
-def test_transpose(rectangular_jacobian) -> None:
+def test_transpose(jacobian_operator) -> None:
     """Tests the transposition."""
-    _, jacobian = rectangular_jacobian
+    jacobian_transposed = jacobian_operator.T
 
-    m, n = jacobian.shape
-    x, y = RNG.normal(size=n), RNG.normal(size=m)
-
-    jacobian_transposed = jacobian.T
-
-    assert jacobian_transposed.shape == (n, m)
-    assert (jacobian_transposed.dot(y) == jacobian.T.dot(y)).all()
-    assert (jacobian_transposed.T.dot(x) == jacobian.dot(x)).all()
+    assert jacobian_transposed.shape == jacobian_operator.shape[::-1]
+    assert jacobian_transposed.T is jacobian_operator
+    assert_equivalent_to_matrix(jacobian_transposed, jacobian_operator.matrix.T)
 
 
-def test_shift_identity(square_jacobian) -> None:
-    """Tests the shifting."""
-    _, jacobian = square_jacobian
+def test_shift_identity() -> None:
+    """Tests the shifting by minus the identity."""
+    jacobian_operator = MatrixJacobianOperator(RNG.normal(size=(5, 5)))
 
-    m, _ = jacobian.shape
-    x = RNG.normal(size=m)
-
-    jacobian_shifted = jacobian.shift_identity()
-
-    assert (jacobian_shifted.dot(x) == (jacobian.dot(x) - x)).all()
+    assert_equivalent_to_matrix(
+        jacobian_operator.shift_identity(),
+        jacobian_operator.matrix - eye(5),
+    )
 
 
-def test_matrix_representation(rectangular_jacobian) -> None:
+def test_real() -> None:
+    """Tests the real casting of the Jacobian operator output."""
+    matrix = RNG.normal(size=RECTANGULAR_SHAPE) + 1j * RNG.normal(
+        size=RECTANGULAR_SHAPE
+    )
+    jacobian_operator = MatrixJacobianOperator(matrix)
+
+    assert_equivalent_to_matrix(jacobian_operator.real, matrix.real)
+
+
+def test_dtype_promotion(jacobian_operator) -> None:
+    """Tests the data type promotion of operations between Jacobian operators."""
+    complex_operator = MatrixJacobianOperator(
+        RNG.normal(size=RECTANGULAR_SHAPE).astype(complex128)
+    )
+
+    assert (jacobian_operator + complex_operator).dtype == complex128
+    assert (jacobian_operator - complex_operator).dtype == complex128
+    assert (jacobian_operator @ complex_operator.T).dtype == complex128
+
+
+def test_matrix_representation(jacobian_operator) -> None:
     """Tests the computation of matrix representation."""
-    matrix, jacobian = rectangular_jacobian
+    matrix_representation = jacobian_operator.get_matrix_representation()
 
-    jacobian_matrix = jacobian.get_matrix_representation()
-
-    assert (jacobian_matrix == matrix).all()
+    assert (matrix_representation == jacobian_operator.matrix).all()
 
 
-@pytest.mark.parametrize(
-    "matrix",
-    [RNG.normal(size=RECTANGULAR_SHAPE), rand(*RECTANGULAR_SHAPE, density=0.25)],
-)
-def test_algebra_with_arrays(matrix, rectangular_jacobian) -> None:
-    """Tests the algebraic operations with array-like objects."""
-    jacobian_matrix, jacobian_operator = rectangular_jacobian
-
-    # Addition with NumPy array or SciPy sparse matrix
-    result = jacobian_operator + matrix
-    assert isinstance(result, JacobianOperator)
-    assert allclose(
-        result.get_matrix_representation(), jacobian_matrix + matrix, atol=1e-12
-    )
-    assert allclose(
-        result.T.get_matrix_representation(), jacobian_matrix.T + matrix.T, atol=1e-12
-    )
-
-    # Substraction with NumPy array or SciPy sparse matrix
-    result = jacobian_operator - matrix
-    assert isinstance(result, JacobianOperator)
-    assert allclose(
-        result.get_matrix_representation(), jacobian_matrix - matrix, atol=1e-12
-    )
-    assert allclose(
-        result.T.get_matrix_representation(), jacobian_matrix.T - matrix.T, atol=1e-12
-    )
-
-    # Left composition with NumPy array or SciPy sparse matrix
-    result = jacobian_operator @ matrix.T
-    assert isinstance(result, JacobianOperator)
-    assert allclose(
-        result.get_matrix_representation(), jacobian_matrix @ matrix.T, atol=1e-12
-    )
-    assert allclose(
-        result.T.get_matrix_representation(), matrix @ jacobian_matrix.T, atol=1e-12
-    )
-
-    # Right composition with NumPy array or SciPy sparse matrix
-    result = jacobian_operator.__rmatmul__(matrix.T)
-    assert isinstance(result, JacobianOperator)
-    assert allclose(
-        result.get_matrix_representation(), matrix.T @ jacobian_matrix, atol=1e-12
-    )
-    assert allclose(
-        result.T.get_matrix_representation(), jacobian_matrix.T @ matrix, atol=1e-12
+def test_operator_plus_array(jacobian_operator, array) -> None:
+    """Tests the addition of an array to a Jacobian operator."""
+    assert_equivalent_to_matrix(
+        jacobian_operator + array, jacobian_operator.matrix + array
     )
 
 
-def test_algebra_between_jacobian_operators(rectangular_jacobian) -> None:
-    """Tests the algebraic operations between JacobianOperators."""
-    jacobian_matrix, jacobian_operator = rectangular_jacobian
+def test_array_plus_operator(jacobian_operator, array) -> None:
+    """Tests the addition of a Jacobian operator to an array."""
+    assert_equivalent_to_matrix(
+        array + jacobian_operator, array + jacobian_operator.matrix
+    )
 
-    # Addition between JacobianOperator
-    result = jacobian_operator + jacobian_operator
-    result_mat = jacobian_matrix + jacobian_matrix
-    assert isinstance(result, JacobianOperator)
-    assert allclose(result.get_matrix_representation(), result_mat, atol=1e-12)
-    assert allclose(result.T.get_matrix_representation(), result_mat.T, atol=1e-12)
 
-    # Substraction between JacobianOperator
-    result = jacobian_operator - jacobian_operator
-    result_mat = jacobian_matrix - jacobian_matrix
-    assert isinstance(result, JacobianOperator)
-    assert allclose(result.get_matrix_representation(), result_mat, atol=1e-12)
-    assert allclose(result.T.get_matrix_representation(), result_mat.T, atol=1e-12)
+def test_operator_minus_array(jacobian_operator, array) -> None:
+    """Tests the subtraction of an array from a Jacobian operator."""
+    assert_equivalent_to_matrix(
+        jacobian_operator - array, jacobian_operator.matrix - array
+    )
 
-    # Composition between JacobianOperator
-    result = jacobian_operator @ jacobian_operator.T
-    result_mat = jacobian_matrix @ jacobian_matrix.T
-    assert isinstance(result, JacobianOperator)
-    assert allclose(result.get_matrix_representation(), result_mat, atol=1e-12)
-    assert allclose(result.T.get_matrix_representation(), result_mat.T, atol=1e-12)
+
+def test_array_minus_operator(jacobian_operator, array) -> None:
+    """Tests the subtraction of a Jacobian operator from an array."""
+    assert_equivalent_to_matrix(
+        array - jacobian_operator, array - jacobian_operator.matrix
+    )
+
+
+def test_operator_matmul_array(jacobian_operator, array) -> None:
+    """Tests the composition of a Jacobian operator with an array."""
+    assert_equivalent_to_matrix(
+        jacobian_operator @ array.T, jacobian_operator.matrix @ array.T
+    )
+
+
+def test_array_matmul_operator(jacobian_operator, array) -> None:
+    """Tests the composition of an array with a Jacobian operator."""
+    assert_equivalent_to_matrix(
+        array.T @ jacobian_operator, array.T @ jacobian_operator.matrix
+    )
+
+
+def test_operator_plus_operator(jacobian_operator) -> None:
+    """Tests the addition of two Jacobian operators."""
+    assert_equivalent_to_matrix(
+        jacobian_operator + jacobian_operator,
+        jacobian_operator.matrix + jacobian_operator.matrix,
+    )
+
+
+def test_operator_minus_operator(jacobian_operator) -> None:
+    """Tests the subtraction of two Jacobian operators."""
+    assert_equivalent_to_matrix(
+        jacobian_operator - jacobian_operator,
+        jacobian_operator.matrix - jacobian_operator.matrix,
+    )
+
+
+def test_operator_matmul_operator(jacobian_operator) -> None:
+    """Tests the composition of two Jacobian operators."""
+    assert_equivalent_to_matrix(
+        jacobian_operator @ jacobian_operator.T,
+        jacobian_operator.matrix @ jacobian_operator.matrix.T,
+    )
