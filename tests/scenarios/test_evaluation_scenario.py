@@ -29,6 +29,7 @@ from gemseo.mda.chain import MDAChain
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.scenarios.evaluation import EvaluationScenario
+from gemseo.scenarios.mdo import MDOScenario
 
 
 @pytest.fixture
@@ -136,3 +137,33 @@ def test_raise_exception_when_missing_algo_settings(discipline_a, design_space):
     )
     with pytest.raises(ValueError, match=msg):
         scenario.execute()
+
+
+@pytest.mark.parametrize(
+    ("cls", "method"),
+    [(EvaluationScenario, "add_observable"), (MDOScenario, "add_objective")],
+)
+def test_default_input_data(cls, method):
+    """The default_input_data argument of EvaluationScenario and MDOScenario
+    change the default input of disciplines"""
+    disciplines = [
+        AnalyticDiscipline({"y": "x+1"}, name="A"),
+        AnalyticDiscipline({"z": "y+offset"}, name="B"),
+    ]
+    assert disciplines[1].io.input_grammar.defaults["offset"] == 0.0
+
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+
+    scenario = cls(
+        disciplines,
+        design_space,
+        default_input_data={"offset": array([1.5])},
+    )
+    getattr(scenario, method)("z")
+    scenario.execute(CustomDOE_Settings(samples=array([[2.0], [3.0]])))
+    assert disciplines[1].io.input_grammar.defaults["offset"] == 1.5
+    assert_equal(
+        scenario.formulation.problem.database.get_function_history("z"),
+        array([4.5, 5.5]),
+    )

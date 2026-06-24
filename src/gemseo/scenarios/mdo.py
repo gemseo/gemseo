@@ -35,6 +35,7 @@ from gemseo.post import OptHistoryView_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.scenarios.evaluation import EvaluationScenario
 from gemseo.scenarios.scenario_results.factory import ScenarioResultFactory
+from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.string_tools import convert_strings_to_iterable
 
 if TYPE_CHECKING:
@@ -54,6 +55,7 @@ if TYPE_CHECKING:
     from gemseo.post.base_post_settings import BasePostSettings
     from gemseo.post.factory import PostFactory
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
+    from gemseo.typing import StrKeyMapping
 
 
 class MDOScenario(EvaluationScenario):
@@ -109,12 +111,14 @@ class MDOScenario(EvaluationScenario):
         design_space: DesignSpace,
         name: str = "",
         formulation_settings: BaseFormulationSettings | None = None,
+        default_input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
     ) -> None:
         super().__init__(
             disciplines,
             design_space,
             name=name,
             formulation_settings=formulation_settings,
+            default_input_data=default_input_data,
         )
         self.__objectives_to_minimize = {}
 
