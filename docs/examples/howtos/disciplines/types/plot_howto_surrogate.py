@@ -18,7 +18,7 @@
 ## Problem
 
 Given a training dataset,
-how can I create a surrogate model and use it as a discipline?
+you want to create a surrogate model and use it as a discipline.
 
 ## Solution
 
@@ -46,7 +46,7 @@ from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
 # ### 1. Define the reference model.
 #
 # In this how-to guide,
-# we consider the wing weight problem
+# you consider the wing weight problem
 # defined in [this page][gemseo.problems.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
@@ -55,7 +55,7 @@ input_space = WingWeightUncertainSpace()
 # %%
 # ### 2. Build a small training dataset
 #
-# We generate $3 \times d$ training samples
+# You generate $3 \times d$ training samples
 # using optimized Latin hypercube sampling strategy.
 
 training_dataset = sample_disciplines(
@@ -68,7 +68,7 @@ training_dataset = sample_disciplines(
 # %%
 # ### 3. Create a surrogate discipline
 #
-# We create a discipline based on a regressor trained from this training dataset.
+# You create a discipline based on a regressor trained from this training dataset.
 
 discipline = SurrogateDiscipline.from_settings(
     RBFRegressor_Settings(), training_dataset

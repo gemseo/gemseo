@@ -48,8 +48,8 @@ from gemseo import create_design_space
 # ### 1. Create an initial design space
 #
 # First,
-# let's create a design space with multiple variables of different types and sizes.
-# This will serve as our starting point for demonstrating the reduction methods.
+# create a design space with multiple variables of different types and sizes.
+# This will serve as your starting point for demonstrating the reduction methods.
 
 design_space = create_design_space()
 design_space.add_variable("x1", value=array([1.0]))
@@ -74,7 +74,7 @@ design_space
 # ### 2. Remove a specific variable
 #
 # Use the `remove_variable()` method to delete a single variable from the design space.
-# Here, we remove the variable `'x4'`.
+# Here, you remove the variable `'x4'`.
 
 design_space.remove_variable("x4")
 print("After removing 'x4':")
@@ -85,7 +85,7 @@ design_space
 #
 # The `filter()` method allows you to keep only a subset of variables.
 # All other variables will be removed from the design space.
-# Here, we keep only `'x1'`, `'x2'`, `'x3'`, and `'x6'`.
+# Here, you keep only `'x1'`, `'x2'`, `'x3'`, and `'x6'`.
 
 design_space.filter(["x1", "x2", "x3", "x6"])
 print("After filtering to keep only selected variables:")
@@ -96,7 +96,7 @@ design_space
 #
 # For multi-dimensional variables,
 # use `filter_dimensions()` to keep only specific components.
-# Here, we keep only the first component (index 0) of the variable `'x3'`,
+# Here, you keep only the first component (index 0) of the variable `'x3'`,
 # reducing it from a 2D to a 1D variable.
 
 design_space.filter_dimensions("x3", [0])

@@ -41,8 +41,11 @@ from gemseo.uncertainty.distributions.openturns.uniform_settings import (
 # %%
 # ## Problem
 #
+# You want to build a polynomial chaos expansion (PCE) regression model from data,
+# and assess how well it approximates the underlying function.
+#
 # In this example,
-# we represent the function $f(x)=(6x-2)^2\sin(12x-4)$
+# you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
 # by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
@@ -54,13 +57,13 @@ discipline = create_discipline(
     name="f",
 )
 # %%
-# and seek to approximate it over the input space
+# and you seek to approximate it over the input space
 input_space = create_parameter_space()
 input_space.add_random_variable("x", OTUniformDistribution_Settings())
 
 # %%
 # To do this,
-# we create a training dataset with 6 equispaced points:
+# you create a training dataset with 6 equispaced points:
 training_dataset = sample_disciplines(
     [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=10
 )
@@ -71,7 +74,7 @@ training_dataset = sample_disciplines(
 # ### Training
 #
 # Then,
-# we train an PCE regression model from these samples:
+# you train an PCE regression model from these samples:
 model = create_regression_model("PCERegressor", training_dataset)
 model.learn()
 
@@ -79,7 +82,7 @@ model.learn()
 # ### Prediction
 #
 # Once it is built,
-# we can predict the output value of $f$ at a new input point:
+# you can predict the output value of $f$ at a new input point:
 input_value = {"x": array([0.65])}
 output_value = model.predict(input_value)
 output_value
@@ -117,7 +120,7 @@ plt.show()
 model = create_regression_model("PCERegressor", training_dataset, degree=3)
 model.learn()
 # %%
-# and see that this model seems to be better:
+# and you see that this model seems to be better:
 predicted_output_data_ = model.predict(input_data).ravel()
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")

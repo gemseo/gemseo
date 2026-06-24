@@ -33,7 +33,7 @@ The [create_gantt_chart()][gemseo.post.core.gantt_chart.create_gantt_chart] func
 in the form of a [Gantt chart](https://en.wikipedia.org/wiki/Gantt_chart).
 
 In this example,
-we illustrate the use of this function
+you will see how to use this function
 on the Sobieski's SSBJ problem.
 """
 
@@ -55,10 +55,10 @@ configure(enable_discipline_statistics=True)
 # %%
 # ## Create the scenario
 #
-# First, we define the Sobieski's SSBJ problem as a scenario.
+# First, you define the Sobieski's SSBJ problem as a scenario.
 #
 # For this,
-# we instantiate the disciplines:
+# you instantiate the disciplines:
 disciplines = create_discipline([
     "SobieskiPropulsion",
     "SobieskiAerodynamics",
@@ -73,7 +73,7 @@ design_space = SobieskiDesignSpace()
 # %%
 # Then,
 # given these disciplines and design space,
-# we build an MDO scenario using the MDF formulation
+# you build an MDO scenario using the MDF formulation
 # in order to maximize the range `"y_4"` with respect to the design variables:
 scenario = create_scenario(
     disciplines,
@@ -94,7 +94,7 @@ for constraint in ["g_1", "g_2", "g_3"]:
 #
 # By default,
 # a scenario does *not* produce execution statistics.
-# We need to enable this *global* mechanism before executing the scenario:
+# You need to enable this *global* mechanism before executing the scenario:
 ExecutionStatistics.is_time_stamps_enabled = True
 # %%
 # !!! warning
@@ -119,7 +119,7 @@ scenario.execute(SLSQP_Settings(max_iter=10))
 # ## Plot the Gantt chart
 #
 # Lastly,
-# we plot the Gantt chart from the global [ExecutionStatistics.time_stamps][gemseo.core.execution_statistics.ExecutionStatistics.time_stamps]:
+# you plot the Gantt chart from the global [ExecutionStatistics.time_stamps][gemseo.core.execution_statistics.ExecutionStatistics.time_stamps]:
 create_gantt_chart(save=False, show=True)
 # %%
 # This graph shows the evolution over time:
@@ -134,7 +134,7 @@ create_gantt_chart(save=False, show=True)
 # ## Disable recording
 #
 # Finally,
-# we disable the recording of time stamps for other executions:
+# you disable the recording of time stamps for other executions:
 ExecutionStatistics.is_time_stamps_enabled = False
 # %%
 # !!! note

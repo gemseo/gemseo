@@ -17,14 +17,14 @@
 
 ## Problem
 
-After an optimisation, you want to track the objective function history
+After an optimization, you want to track the objective function history
 while keeping an eye on the overall constraint feasibility at each iteration.
 
 ## Solution
 
 Use [ObjConstrHist][gemseo.post.obj_constr_hist.ObjConstrHist],
 which plots the objective history against the iterations
-with a colour-coded background indicating the most violated constraint:
+with a color-coded background indicating the most violated constraint:
 red if violated, white if active, and green if satisfied.
 
 ## Step-by-step guide
@@ -57,7 +57,7 @@ execute_post(
 # ## Summary
 #
 # [ObjConstrHist][gemseo.post.obj_constr_hist.ObjConstrHist] combines the objective
-# history with a colour-coded feasibility indicator in a single plot,
+# history with a color-coded feasibility indicator in a single plot,
 # making it easy to correlate objective improvements with constraint satisfaction.
 # Pass any HDF5 file from a previously executed scenario to
 # [execute_post()][gemseo.execute_post].

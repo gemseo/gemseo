@@ -26,6 +26,7 @@ r"""# Remapping the variables
 In the context of a multidisciplinary study,
 a discipline may output a vector $x=(x_1,\ldots,x_10)$
 when a scalar output $a=x_1$ and a vector $b=(x_3,\ldots,x_6)$ are relevant.
+You want to remap this output into the variables that matter for your study.
 
 ## Solution
 
@@ -50,7 +51,7 @@ if TYPE_CHECKING:
 # %%
 # ### 1. Create the discipline
 #
-# Let us consider a discipline that sums up the fruits of the market.
+# Consider a discipline that sums up the fruits of the market.
 # The fruits can be classified into three categories:
 # pears, Gala apples and Fuji apples.
 # Then,
@@ -83,7 +84,7 @@ fruit_counting
 # ### 2. Create a clearer discipline
 #
 # Then,
-# we create a new discipline renaming `fruits` as `pear` and `apples`
+# you create a new discipline renaming `fruits` as `pear` and `apples`
 # and `n_fruits` and `n_fruits_per_category` as `total` and `sub_total`
 # to improve the naming:
 clearer_fruit_counting = RemappingDiscipline(
@@ -110,7 +111,7 @@ clearer_fruit_counting
 #     or an iterable of integers `range(i, j+1)`
 #     (from the `i`-th to the `j`-th components of `y`).
 #
-# We can execute this discipline with the original default input values,
+# You can execute this discipline with the original default input values,
 # namely 1 pear, 2 Gala apples and 3 Fuji apples:
 clearer_fruit_counting.execute()
 clearer_fruit_counting.get_input_data(), clearer_fruit_counting.get_output_data()

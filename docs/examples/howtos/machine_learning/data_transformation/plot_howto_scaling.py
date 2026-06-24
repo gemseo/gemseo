@@ -24,7 +24,7 @@ This is all the more true as
 the variables have different ranges
 or the fitting relies on numerical optimization techniques.
 
-How can I use a scaling policy?
+You want to use a scaling policy.
 
 ## Solution
 
@@ -51,7 +51,7 @@ from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
 # %%
 # ### 1. Define the reference model
 #
-# We consider the wing weight problem
+# You consider the wing weight problem
 # defined in [this page][gemseo.problems.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
@@ -60,7 +60,7 @@ input_space = WingWeightUncertainSpace()
 # %%
 # ### 2. Create the training dataset
 #
-# We generate $3 \times d$ training samples
+# You generate $3 \times d$ training samples
 # using optimized Latin hypercube sampling strategy.
 
 training_dataset = sample_disciplines(
@@ -73,7 +73,7 @@ training_dataset = sample_disciplines(
 # %%
 # ### 3. Create the validation dataset
 #
-# We generate many validation samples using Monte Carlo sampling.
+# You generate many validation samples using Monte Carlo sampling.
 
 test_dataset = sample_disciplines(
     [discipline],
@@ -119,11 +119,11 @@ r2 = R2Measure(regressor)
 r2.compute_test_measure(test_dataset)
 
 # %%
-# We can see that the scaling improves the R2 quality (recall: the higher, the better):
+# You can see that the scaling improves the R2 quality (recall: the higher, the better):
 #
 # #### Scale the outputs only
 #
-# We can also scale the outputs only:
+# You can also scale the outputs only:
 regressor = GaussianProcessRegressor(
     training_dataset,
     settings=GaussianProcessRegressor_Settings(transformer={"outputs": "MinMaxScaler"}),
@@ -135,7 +135,7 @@ r2.compute_test_measure(test_dataset)
 # %%
 # #### Scale using mean/std
 #
-# We can also scale the data
+# You can also scale the data
 # by subtracting the mean and dividing by the standard deviation
 # (see [StandardScaler][gemseo.machine_learning.transformers.scaler.standard_scaler.StandardScaler]).
 regressor = GaussianProcessRegressor(

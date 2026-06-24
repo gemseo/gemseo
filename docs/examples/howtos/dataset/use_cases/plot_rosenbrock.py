@@ -46,7 +46,7 @@ from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 # %%
 # ## Load Rosenbrock dataset
 #
-# We can easily load this dataset
+# You can easily load this dataset
 # by means of the high-level function [create_benchmark_dataset()][gemseo.create_benchmark_dataset]:
 
 dataset = create_benchmark_dataset("RosenbrockDataset")

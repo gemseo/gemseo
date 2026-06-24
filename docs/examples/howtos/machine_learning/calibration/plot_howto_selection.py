@@ -18,7 +18,7 @@
 ## Problem
 
 Given a list of ML models,
-how to select the best one?
+you want to select the best one.
 
 ## Solution
 
@@ -124,6 +124,6 @@ plt.legend()
 #
 # ## One step further
 #
-# At Step 3, we used ML calibration when adding the RBF candidate.
-# If you want to get more inforation about this topic,
+# At Step 3, you used ML calibration when adding the RBF candidate.
+# If you want to get more information about this topic,
 # you can read [this how-to guide][calibrate-an-ml-model].

@@ -28,6 +28,7 @@ For example,
 the output of one model and the input of another model
 represent the same parameter in the study,
 but are called differently.
+You want to rename these variables so that GEMSEO can connect the disciplines.
 
 ## Solution
 
@@ -52,28 +53,28 @@ from gemseo.utils.discipline import rename_discipline_variables
 # %%
 # ### 1. Create the disciplines
 #
-# Let us consider four analytic disciplines.
+# Consider four analytic disciplines.
 # There is the first discipline, named `"A"`,
-# for which we would like to rename `"a"` to `"x"` and `"c"` to `"z"`:
+# for which you would like to rename `"a"` to `"x"` and `"c"` to `"z"`:
 disciplines = [AnalyticDiscipline({"c": "2*a"}, name="A")]
 # %%
 # the second discipline, named `"C"`, to be used as is:
 disciplines.append(AnalyticDiscipline({"t": "3*g"}, name="C"))
 # %%
 # the third disciplines, also named `"A"`,
-# for which we would like to rename `"a"` to `"x"` and `"c"` to `"z"`
+# for which you would like to rename `"a"` to `"x"` and `"c"` to `"z"`
 # (as said above):
 disciplines.append(AnalyticDiscipline({"c": "4*a"}, name="A"))
 # %%
 # and the last one, named `"B"`,
-# for which we would like to rename `"b"` to `"y"`:
+# for which you would like to rename `"b"` to `"y"`:
 disciplines.append(AnalyticDiscipline({"b": "5*j"}, name="B"))
 
 # %%
 # ### 2. Variable translation
 #
 # First,
-# we need to introduce the notion of
+# you need to introduce the notion of
 # [VariableTranslation][gemseo.utils.discipline.VariableTranslation]
 # to translate a discipline variable name according to a global taxonomy:
 variable_translation = VariableTranslation(

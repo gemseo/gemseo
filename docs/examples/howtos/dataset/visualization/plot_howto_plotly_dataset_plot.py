@@ -17,8 +17,9 @@
 
 ## Problem
 
-GEMSEO uses [matplotlib](https://matplotlib.org/) by default for visualisation.
+GEMSEO uses [matplotlib](https://matplotlib.org/) by default for visualization.
 For web-based interactive figures, a plotly output is sometimes preferred.
+You want to generate your dataset plot with plotly instead of matplotlib.
 
 ## Solution
 

@@ -18,11 +18,11 @@
 ## Goal
 
 In this tutorial,
-we will solve a very simple mixed optimization problem with a full factorial approach.
-To do so, we will split the problem into a discrete optimization problem
+you will solve a very simple mixed optimization problem with a full factorial approach.
+To do so, you will split the problem into a discrete optimization problem
 to enumerate all the combinations
 and a continuous one to solve the associated sub-problem.
-Thus, we will use the
+Thus, you will use the
 [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
 to wrap an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 and treat it as a discipline whose inputs are some or all of its design space variables
@@ -53,7 +53,7 @@ from gemseo.settings.post import OptHistoryView_Settings
 #
 # ### Initial problem
 #
-# We define the following optimization problem:
+# You define the following optimization problem:
 #
 # $$
 #    \begin{aligned}
@@ -80,7 +80,7 @@ from gemseo.settings.post import OptHistoryView_Settings
 #
 # The problem can be split using the
 # [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter].
-# To do this we will divide the design space in two,
+# To do this you will divide the design space in two,
 # a continuous one and a discrete one.
 # The
 # [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
@@ -119,20 +119,20 @@ from gemseo.settings.post import OptHistoryView_Settings
 #    \end{aligned}
 # $$
 #
-# In the next steps, we will build both scenarios and connect them to solve the full
+# In the next steps, you will build both scenarios and connect them to solve the full
 # problem.
 
 
 # %%
 # ## Step 1 - Create the discipline
 #
-# Since the expressions of our toy problem are very simple,
-# we can use an
+# Since the expressions of your toy problem are very simple,
+# you can use an
 # [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
 # to compute the objective and constraints.
-# Note that there are no strong couplings in our expressions,
-# which means we could also compute both the objective and constraints
-# with a single discipline if we wished to.
+# Note that there are no strong couplings in your expressions,
+# which means you could also compute both the objective and constraints
+# with a single discipline if you wished to.
 def obj(x: ndarray, y: ndarray) -> float:
     """A simple Python function to compute f(x,y).
 
@@ -167,7 +167,7 @@ constraint = AutoPyDiscipline(name="g(x,y)", py_func=const)
 # %%
 # ## Step 2 - Create the design space for the entire problem
 #
-# We can define a [DesignSpace][gemseo.algos.design_space.DesignSpace]
+# You can define a [DesignSpace][gemseo.algos.design_space.DesignSpace]
 # for the whole problem
 # and then filter either the continuous variables or the discrete ones.
 design_space = DesignSpace()
@@ -182,15 +182,15 @@ design_space
 # The inner scenario is the one that solves the continuous optimization problem,
 # and as such,
 # it only needs to include the continuous design variables.
-# We use the
+# You use the
 # [filter()][gemseo.algos.design_space.DesignSpace.filter] method
 # to keep `x`
-# and we set `copy` to `True` to keep the original `design_space` unchanged,
-# as we will use it later.
+# and you set `copy` to `True` to keep the original `design_space` unchanged,
+# as you will use it later.
 design_space_inner_scenario = design_space.filter(keep_variables=["x"], copy=True)
 design_space_inner_scenario
 # %%
-# We then create our [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
+# You then create your [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
 # The default solver will be `NLOPT_COBYLA` with at most 100 iterations.
 inner_scenario = MDOScenario([objective, constraint], design_space_inner_scenario)
 inner_scenario.add_objective("f")
@@ -205,13 +205,13 @@ inner_scenario.set_algorithm(NLOPT_COBYLA_Settings(max_iter=100))
 # as a [Discipline][gemseo.core.discipline.discipline.Discipline],
 # its inputs are all or part of the design space variables
 # and its outputs are all or part of the objective values, constraints or observables.
-# Here we select the variables of the inner scenario
-# that we wish to set as inputs/outputs for the adapter.
+# Here you select the variables of the inner scenario
+# that you wish to set as inputs/outputs for the adapter.
 input_names = ["y"]
 output_names = ["f", "g"]
 
 # %%
-# The argument `set_x0_before_opt` allows us to set the starting point
+# The argument `set_x0_before_opt` allows you to set the starting point
 # of the adapted scenario from the outer DOE scenario values.
 adapted_inner_scenario = MDOScenarioAdapter(
     inner_scenario,
@@ -248,7 +248,7 @@ adapted_inner_scenario = MDOScenarioAdapter(
 # and as such,
 # it only needs to include the integer design variables.
 # Once again,
-# we use the
+# you use the
 # [filter()][gemseo.algos.design_space.DesignSpace.filter] method to keep `y`,
 # the `copy` argument ensuring that
 # the original `design_space` remains unchanged
@@ -256,20 +256,20 @@ adapted_inner_scenario = MDOScenarioAdapter(
 design_space_outer_scenario = design_space.filter(keep_variables="y", copy=True)
 design_space_outer_scenario
 # %%
-# We then create our [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
-# and we set the same objective function.
+# You then create your [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
+# and you set the same objective function.
 #
 outer_scenario = MDOScenario((adapted_inner_scenario,), design_space_outer_scenario)
 outer_scenario.add_objective("f")
 
 # %%
-# Here, we add the constraints on the outer scenario in order to be able to know if a
+# Here, you add the constraints on the outer scenario in order to be able to know if a
 # given set of integers returns a feasible solution once the inner scenario has been
 # executed.
 outer_scenario.add_constraint("g", constraint_type="ineq", value=2)
 
 # %%
-# ##  Step 6 - Visualize our bilevel process
+# ##  Step 6 - Visualize your bilevel process
 #
 # You can plot the xDSM, which will include both the outer and inner scenarios.
 outer_scenario.xdsmize(save_html=False)
@@ -290,9 +290,9 @@ outer_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=9))
 #
 # !!! tip
 #     When using a DoE algorithm,
-#     we know a priori the samples that will be evaluated.
-#     This means we can run the outer scenario in parallel
-#     if we set the setting `n_processes` to at least 2.
+#     you know a priori the samples that will be evaluated.
+#     This means you can run the outer scenario in parallel
+#     if you set the setting `n_processes` to at least 2.
 #     Note that if you are running the outer scenario in parallel
 #     and requesting the databases of the continuous optimizations on the disk,
 #     you will need to instantiate the
@@ -300,13 +300,13 @@ outer_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=9))
 #     with the argument `naming="UUID"`,
 #     which is multiprocessing-safe.
 #     Running in parallel also means that the option `keep_opt_history` will not work
-#     because we are unable to copy the databases
+#     because GEMSEO is unable to copy the databases
 #     from the sub-processes to the main process.
 
 # %%
 # ## Step 8 -  Plot the objective and constraint history for the scenario
 #
-# At the end of the optimization we see the results of the problem. The optimal
+# At the end of the optimization you see the results of the problem. The optimal
 # solution would be in this case the iteration of the DOE that gave the minimum for
 # $f(x,y)$ while respecting the constraint $g(x,y)$. The full problem
 # optimal result will contain the values for $x$, $y$, $f$, and

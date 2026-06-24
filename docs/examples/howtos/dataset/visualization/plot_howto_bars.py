@@ -17,13 +17,13 @@
 
 ## Problem
 
-Visualise and compare multiple series of values across several variables
+You want to visualize and compare multiple series of values across several variables
 as grouped bars.
 
 ## Solution
 
 Use [BarPlot][gemseo.post.dataset.bars.BarPlot],
-which renders one colour per dataset row (series)
+which renders one color per dataset row (series)
 with values grouped by variable name along the x-axis.
 
 ## Step-by-step guide
@@ -51,7 +51,7 @@ dataset.index = ["series_1", "series_2"]
 # ### 2. Plot the bar chart
 #
 # Use `n_digits` to control the number of digits displayed on the bars
-# and `colormap` to set the colour scheme:
+# and `colormap` to set the color scheme:
 plot = BarPlot(dataset, BarPlot_Settings(n_digits=2))
 plot.colormap = "PiYG"
 plot.execute(save=False, show=True)

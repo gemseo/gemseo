@@ -23,7 +23,7 @@ This tutorial shows how
 automatically transforms any monodisciplinary optimization problem into a
 multidisciplinary one, introducing strongly coupled disciplines and coupling variables
 without changing the optimal solution.
-We will learn what design variable renaming means,
+You will learn what design variable renaming means,
 how to read the resulting coupling graph,
 and how the MDO solution compares to the original.
 
@@ -54,7 +54,7 @@ from gemseo.settings.opt import NLOPT_SLSQP_Settings
 # %%
 # ## Step 1 — Define the discipline and design space
 #
-# We use the 3-dimensional Rosenbrock function as our test problem:
+# You use the 3-dimensional Rosenbrock function as your test problem:
 #
 # $$f(z) = 100(z_2-z_1^2)^2 + (1-z_1)^2 + 100(z_1-z_0^2)^2 + (1-z_0)^2$$
 #
@@ -79,8 +79,8 @@ design_space.set_current_value(initial_point)
 # %%
 # ## Step 2 — Solve the monodisciplinary baseline
 #
-# Before introducing MDO, we solve the original single-discipline problem.
-# This gives us a reference solution to compare against later.
+# Before introducing MDO, you solve the original single-discipline problem.
+# This gives you a reference solution to compare against later.
 opt_scenario = MDOScenario([discipline], design_space)
 opt_scenario.add_objective("f")
 opt_scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
@@ -93,7 +93,7 @@ opt_scenario.optimization_result
 # requires at least three scalar inputs and one output.
 # It splits the design variables across strongly coupled disciplines automatically.
 # The only choice to make here is the MDO formulation;
-# we use the default one, namely MDF.
+# you use the default one, namely MDF.
 design_space.set_current_value(initial_point)
 
 mdo_scenario = OptAsMDOScenario(discipline, design_space)

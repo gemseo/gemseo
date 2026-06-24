@@ -13,13 +13,14 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-"""# Customise a post-processing figure with matplotlib
+"""# Customize a post-processing figure with matplotlib
 
 ## Problem
 
 The settings of a post-processor cover the most common formatting needs,
-but some fine-tuning (e.g. axis labels, colour bar labels) requires
+but some fine-tuning (e.g. axis labels, color bar labels) requires
 direct access to the underlying matplotlib figures.
+You want to access these figures to customize your post-processing further.
 
 ## Solution
 
@@ -71,7 +72,7 @@ figures
 #     The keys vary depending on the post-processor used;
 #     print them to discover how to access each figure.
 #
-# ### 3. Customise the figure with matplotlib
+# ### 3. Customize the figure with matplotlib
 #
 # Access the axes of the `"variables"` figure and update the labels:
 figure = figures["variables"]
@@ -96,4 +97,4 @@ plt.show()
 # then modify them through `figure.axes` before calling `plt.show()` or
 # `figure.savefig()`.
 # Always check first whether a post-processor setting already covers the needed
-# customisation; fall back to the matplotlib API only when it does not.
+# customization; fall back to the matplotlib API only when it does not.

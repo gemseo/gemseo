@@ -34,7 +34,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 # %%
 # ### 1. Create a discipline
 #
-# Here, we consider an analytic discipline.
+# Here, you consider an analytic discipline.
 discipline = AnalyticDiscipline({"y": "x1+x2"})
 discipline.cache
 # %%

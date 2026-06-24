@@ -20,6 +20,7 @@
 By default, a DOE algorithm evaluates a function one sample at a time.
 This can be inefficient when the function natively supports batch evaluation,
 i.e., computing all outputs at once from a 2D array of inputs.
+You want to evaluate the function in batches to speed up the sampling.
 
 ## Solution
 

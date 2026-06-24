@@ -23,9 +23,8 @@
 
 ## Problem
 
-I would like to chain data transformations, e.g. scaling then dimension reduction.
-
-How can I implement this pipeline?
+You want to chain data transformations, e.g. scaling then dimension reduction,
+by implementing a pipeline.
 
 ## Solution
 
@@ -48,14 +47,14 @@ from gemseo.machine_learning.transformers.scaler.scaler import Scaler
 # ### 1. Generate data
 #
 # To illustrate the concept of pipeline,
-# we consider very simple data:
+# you consider very simple data:
 data = linspace(0, 1, 100)[:, newaxis]
 
 # %%
 # ### 2. Create the pipeline
 #
 # Here,
-# we want a pipeline that:
+# you want a pipeline that:
 # 1. shifts the data by 1,
 # 2. reduces their amplitude by 2.
 pipeline = Pipeline(transformers=[Scaler(offset=1), Scaler(coefficient=2)])
@@ -75,7 +74,7 @@ transformed_jac_data = pipeline.compute_jacobian(data)
 # %%
 # ### 6. Verify the pipeline
 #
-# We could implement this pipeline by hand,
+# You could implement this pipeline by hand,
 # with a shifter:
 shifter = Scaler(offset=1)
 shifted_data = shifter.fit_transform(data)

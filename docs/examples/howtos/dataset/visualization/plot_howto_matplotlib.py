@@ -22,6 +22,7 @@ The attributes of
 cover the most common formatting needs,
 but some fine-tuning (e.g. adding a grid, changing tick formatting)
 requires direct access to the underlying matplotlib figure.
+You want to access this figure to customize your plot further.
 
 ## Solution
 
@@ -48,7 +49,7 @@ dataset.add_variable("b", [[1], [0], [1]])
 
 # %%
 # Then,
-# we define a [YvsX][gemseo.post.dataset.yvsx.YvsX] chart,
+# you define a [YvsX][gemseo.post.dataset.yvsx.YvsX] chart,
 # which is a particular [BaseDatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot]:
 yvsx = YvsX(dataset, YvsX_Settings(x="a", y="b"))
 
@@ -58,7 +59,7 @@ figures = yvsx.execute(save=False)
 figure = figures[0]
 
 # %%
-# ### 3. Customise the figure with matplotlib
+# ### 3. Customize the figure with matplotlib
 #
 # Access the `Axes` object and apply any standard matplotlib modifications:
 ax = figure.axes[0]
@@ -79,5 +80,5 @@ plt.show()
 # then modify them via `figure.axes[0]` before saving or displaying.
 # Always check first whether a
 # [BaseDatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot]
-# attribute (e.g. `xlabel`, `ylabel`) already covers the needed customisation;
+# attribute (e.g. `xlabel`, `ylabel`) already covers the needed customization;
 # fall back to the matplotlib API only when it does not.

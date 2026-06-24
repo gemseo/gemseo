@@ -17,7 +17,7 @@
 
 ## Problem
 
-After an optimisation, you want to visualise the values of multiple constraints
+After an optimization, you want to visualize the values of multiple constraints
 at a given iteration in a compact, readable chart,
 especially when the number of constraints is large.
 

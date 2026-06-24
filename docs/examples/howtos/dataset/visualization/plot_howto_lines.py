@@ -17,14 +17,14 @@
 
 ## Problem
 
-Visualise the evolution of several variables against the dataset index
+You want to visualize the evolution of several variables against the dataset index
 on a single chart.
 
 ## Solution
 
 Use [Lines][gemseo.post.dataset.lines.Lines],
 which renders one line per selected variable,
-with customisable line styles.
+with customizable line styles.
 
 ## Step-by-step guide
 """
@@ -71,7 +71,7 @@ plot.execute(save=False, show=True)
 # ## One step further
 #
 # Retrieving the figure as explained in
-# [How to customise a plot with matplotlib][how-to-customize-a-plot-with-matplotlib]
+# [How to customize a plot with matplotlib][how-to-customize-a-plot-with-matplotlib]
 # may help to add other customized lines in this plot.
 #
 # Set `file_format="html"` in `execute()` to produce an interactive plotly figure.

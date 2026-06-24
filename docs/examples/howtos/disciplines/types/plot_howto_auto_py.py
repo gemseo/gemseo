@@ -18,7 +18,7 @@ r"""# Use a Python function
 
 ## Problem
 
-How can I create a discipline from a Python function?
+You want to create a discipline from a Python function.
 
 ## Solution
 
@@ -73,7 +73,7 @@ def f(x, y=0.0):
 #     the arguments and the returned variables of the Python function
 #     are supposed to be either `float` numbers
 #     or NumPy arrays with dimensions greater than 1.
-#     At the end of this guide, we will see how to use other types.
+#     At the end of this guide, you will see how to use other types.
 #
 # ### 2. Create the discipline from this function
 discipline = AutoPyDiscipline(f)
@@ -136,11 +136,11 @@ discipline.linearize(input_data={"x": array([1.0])}, compute_all_jacobians=True)
 # the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] assumes that
 # the arguments and the returned variables of the Python function are
 # either `float` numbers or NumPy arrays with dimensions greater than 1.
-# This behaviour can be changed in two different ways.
+# This behavior can be changed in two different ways.
 #
 # #### NumPy arrays
 #
-# We can force [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
+# You can force [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
 # to consider all arguments and variables as NumPy arrays
 # by setting the option `use_arrays` to `True`,
 # as illustrated here:
@@ -155,7 +155,7 @@ discipline.execute({"a": array([1.0])})
 # %%
 # #### User types
 #
-# We can also define specific types for each argument and return variable.
+# You can also define specific types for each argument and return variable.
 #
 # !!! warning
 #
@@ -163,7 +163,7 @@ discipline.execute({"a": array([1.0])})
 #     all the types you have specified will be ignored.
 #
 # As a very simple example,
-# we can consider a Python function which replicates a string *n* times:
+# you can consider a Python function which replicates a string *n* times:
 
 
 def replicate_string(string: str = "a", n: int = 3) -> str:

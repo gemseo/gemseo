@@ -25,7 +25,7 @@
 
 Sometimes,
 the execution of a discipline can fail or be stuck and work after several repetitions.
-How can you retry until success?
+You want to retry until success.
 
 ## Solution
 

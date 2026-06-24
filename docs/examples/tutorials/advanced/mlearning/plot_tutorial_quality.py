@@ -20,7 +20,7 @@ r"""# Tutorial - Assessing the quality of an ML model
 In this tutorial,
 you will learn **why and how to assess the quality of a machine learning model**.
 
-We illustrate this tutorial using:
+This tutorial is illustrated using:
 
 * an aeronautical example,
 * a radial basis function (RBF) regressor,
@@ -45,11 +45,11 @@ from gemseo.settings.machine_learning import RBFRegressor_Settings
 # ## Step 1 — Define the reference model
 #
 # In this tutorial,
-# we consider the wing weight problem
+# you consider the wing weight problem
 # defined in [this page][gemseo.problems.uncertainty.wing_weight].
 # This model computes the weight of an aircraft wing from ten inputs,
 # such as the wing area and the paint weight.
-# We begin by instantiating the discipline and the input space,
+# You begin by instantiating the discipline and the input space,
 # the latter being an uncertain space comprising independent uniform variables.
 discipline = WingWeightDiscipline()
 input_space = WingWeightUncertainSpace()
@@ -57,7 +57,7 @@ input_space = WingWeightUncertainSpace()
 # %%
 # ## Step 2 — Build a small training dataset
 #
-# We deliberately use only $3 \times d$ training points,
+# You deliberately use only $3 \times d$ training points,
 # where $d=10$ is the input dimension,
 # because of the supposedly high cost of $f$.
 # Note that $2 \times d$ or $3 \times d$ are classic rules of thumb.
@@ -73,8 +73,8 @@ training_dataset = sample_disciplines(
 # %%
 # ## Step 3 — Train a regression model
 #
-# We fit an RBF regressor using the full training dataset.
-# We take care to normalize the data
+# You fit an RBF regressor using the full training dataset.
+# You take care to normalize the data
 # because the inputs have very different orders of magnitude,
 # which could lead to a poor predictive ML model.
 
@@ -89,7 +89,7 @@ regressor.learn()
 #
 # ### Learning quality
 #
-# We measure the prediction accuracy of this regressor
+# You measure the prediction accuracy of this regressor
 # using the coefficient of determination R²
 # (the higher, the better; upper-bounded by 1)
 # evaluated using the training dataset.
@@ -100,18 +100,18 @@ r2.compute_learning_measure()
 # %%
 # This value reflects how well the model fits the training data
 # but not how well it generalizes.
-# We can see that the R² score is equal to 1
+# You can see that the R² score is equal to 1
 # because RBF regressors are interpolating by design.
 # From a learning perspective,
 # the model is undoubtedly excellent.
 # Now,
-# we need to address the error of generalization
+# you need to address the error of generalization
 # to avoid overfitting.
 #
 # ### Generalization quality
 #
 # Because the reference discipline is cheap to evaluate,
-# we can ideally approximate the *true* generalization error
+# you can ideally approximate the *true* generalization error
 # using an independent test dataset.
 
 test_dataset = sample_disciplines(
@@ -122,13 +122,13 @@ test_dataset = sample_disciplines(
 )
 
 # %%
-# We compute the test R².
+# You compute the test R².
 
 r2.compute_test_measure(test_dataset)
 
 # %%
 # This time,
-# we can see that the quality of the model could be improved,
+# you can see that the quality of the model could be improved,
 # even though the score displayed already indicates a very good quality model.
 #
 # ### Cross-validation
@@ -159,7 +159,7 @@ r2.compute_cross_validation_measure()
 #
 # When CV use as many folds as samples,
 # i.e. one sample per fold,
-# we refer to as leave-one-out validation (LOO).
+# it is referred to as leave-one-out validation (LOO).
 #
 # 1. Splitting the training dataset into $n$ folds,
 #    where $n$ is the number of training samples.
@@ -174,11 +174,11 @@ r2.compute_leave_one_out_measure()
 
 # %%
 #
-# We can see that the LOO R² is less pessimistic than the CV one.
+# You can see that the LOO R² is less pessimistic than the CV one.
 #
 # ### Bootstrap
 #
-# We can also approximate the generalization error by bootstrap.
+# You can also approximate the generalization error by bootstrap.
 # This resampling technique creates many new training datasets
 # by repeatedly sampling with replacement from the original training dataset,
 # each the same size as the original.

@@ -43,8 +43,8 @@ if TYPE_CHECKING:
 # %%
 # ## Step 1 — Create an executable
 #
-# First, let's create an executable representing a model to be run with a CLI.
-# Here, let's create a python file `my_script.py`
+# First, create an executable representing a model to be run with a CLI.
+# Here, create a python file `my_script.py`
 # which will be run with the command line:
 # `python my_script.py -i input_file -o output_file`.
 # The script will need to get a JSON input file:
@@ -123,9 +123,9 @@ class MyExecutableDiscipline(_BaseDiscFromExe):
         # and the CLI call.
         #
         # Here,
-        # we want our script to be copied within the unique directory
+        # you want your script to be copied within the unique directory
         # that is created with the UUID method (default).
-        # Then, our script can be called within the directory.
+        # Then, your script can be called within the directory.
         exec_runner = _BaseExecutableRunner(
             "python ./my_script.py -i inputs.json -o outputs.txt",
             ".",
@@ -142,9 +142,9 @@ class MyExecutableDiscipline(_BaseDiscFromExe):
         self.default_input_data = {"a": array([10.0]), "b": array([32.0])}
 
     def _create_inputs(self, input_data: StrKeyMapping) -> None:
-        # Here, we define how the discipline must create the input JSON file.
-        # We create the `inputs.json` file within the last created directory.
-        # Warning: ndarray is not serializable. We must first convert data.
+        # Here, you define how the discipline must create the input JSON file.
+        # You create the `inputs.json` file within the last created directory.
+        # Warning: ndarray is not serializable. You must first convert data.
         input = {key: float(value[0]) for key, value in input_data.items()}
         with (
             self._executable_runner.directory_creator.last_directory / "inputs.json"
@@ -152,7 +152,7 @@ class MyExecutableDiscipline(_BaseDiscFromExe):
             json.dump(input, f)
 
     def _parse_outputs(self) -> StrKeyMapping:
-        # Here, we define how to read the output file to fill the discipline outputs.
+        # Here, you define how to read the output file to fill the discipline outputs.
         data = {}
         with Path(
             self._executable_runner.directory_creator.last_directory / "outputs.txt"

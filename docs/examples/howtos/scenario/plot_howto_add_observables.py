@@ -20,8 +20,7 @@
 You have executed an MDO scenario and you can retrieve the values of your design variables,
 constraints and objective functions.
 However, you are also interested in some other discipline outputs.
-
-How can you tell your scenario to store these output values at each iteration?
+You want to tell your scenario to store these output values at each iteration.
 
 ## Solution
 
@@ -46,7 +45,7 @@ from gemseo.formulations.mdf_settings import MDF_Settings
 # %%
 # ### 1. Define your scenario
 #
-# Let's consider the Sellar's problem, defined with two constraints.
+# Consider the Sellar's problem, defined with two constraints.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
 
 design_space = DesignSpace()
@@ -70,7 +69,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 # Only the design variables, objective function and constraints are stored by
 # default in the history database.
 # In order to also store any extra variable, you can add it as an observable.
-# All we have to do is enter
+# All you have to do is enter
 # the variable name as a string to the
 # [add_observable()][gemseo.scenarios.mdo.MDOScenario.add_observable].
 # If more than one output name is provided (as a list of strings),
@@ -78,14 +77,14 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 scenario.add_observable("y_1")
 # %%
 # It is also possible to add the observable with a custom name,
-# using the option `observable_name`. Let us store the variable `y_2` as `y2`.
+# using the option `observable_name`. Store the variable `y_2` as `y2`.
 scenario.add_observable("y_2", observable_name="y2")
 
 # %%
 # ### 3. Execute the scenario
 #
 # Then,
-# we execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
+# you execute the MDO scenario with the inputs of the MDO scenario as a dictionary.
 # In this example,
 # the gradient-based `SLSQP` optimizer is selected, with 10 iterations at maximum:
 scenario.execute(SLSQP_Settings(max_iter=10))

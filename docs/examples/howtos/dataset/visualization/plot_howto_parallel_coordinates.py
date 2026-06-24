@@ -17,7 +17,7 @@
 
 ## Problem
 
-Visualise multiple variables simultaneously across many samples,
+You want to visualize multiple variables simultaneously across many samples,
 and identify patterns or clusters by class.
 
 ## Solution
@@ -45,7 +45,7 @@ iris = create_benchmark_dataset("IrisDataset")
 # %%
 # ### 2. Plot the parallel coordinates chart
 #
-# Pass a `classifier` variable name to colour each polyline by class:
+# Pass a `classifier` variable name to color each polyline by class:
 ParallelCoordinates(iris, ParallelCoordinates_Settings(classifier="specy")).execute(
     save=False, show=True
 )
@@ -55,5 +55,5 @@ ParallelCoordinates(iris, ParallelCoordinates_Settings(classifier="specy")).exec
 #
 # [ParallelCoordinates][gemseo.post.dataset.parallel_coordinates.ParallelCoordinates]
 # displays each sample as a polyline across all variable axes.
-# Use the `classifier` argument to colour lines by a categorical variable
+# Use the `classifier` argument to color lines by a categorical variable
 # and reveal cluster structure.

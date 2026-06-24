@@ -23,7 +23,7 @@
 
 A [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor] is a mixture of experts for regression purposes.
 
-In this demo, we load a dataset (the Rosenbrock function in 2D) and apply a
+In this demo, you load a dataset (the Rosenbrock function in 2D) and apply a
 mixture of experts regression model to obtain an approximation.
 """
 
@@ -51,7 +51,7 @@ from gemseo.machine_learning.regression.models.gpr_settings import (
 # %%
 # ## Dataset (Rosenbrock)
 #
-# We here consider the Rosenbrock function with two inputs, on the interval
+# You here consider the Rosenbrock function with two inputs, on the interval
 # $[-2, 2] \times [-2, 2]$.
 
 # %%
@@ -78,13 +78,13 @@ dataset
 # %%
 # ## Mixture of experts (MoE)
 #
-# In this section we load a mixture of experts regression model through the
+# In this section you load a mixture of experts regression model through the
 # machine learning API, using clustering, classification and regression models.
 
 # %%
 # ### Mixture of experts model
 #
-# We construct the MoE model using the predefined parameters,
+# You construct the MoE model using the predefined parameters,
 # and fit the model to the dataset through the [learn()][gemseo.machine_learning.regression.models.moe.MOERegressor.learn] method.
 model = create_regression_model("MOERegressor", dataset)
 model.set_clusterer(KMeans_Settings(n_clusters=3))
@@ -95,7 +95,7 @@ model.learn()
 # %%
 # ### Tests
 #
-# Here, we test the mixture of experts method applied to two points:
+# Here, you test the mixture of experts method applied to two points:
 # (1, 1), the global minimum, where the function is zero, and (-2, -2), an
 # extreme point where the function has a high value (max on the domain). The
 # classes are expected to be different at the two points.
@@ -109,7 +109,7 @@ for _value in [input_value, another_input_value]:
 # %%
 # ### Plot clusters
 #
-# Here, we plot the 10x10 = 100 Rosenbrock function data points, with colors
+# Here, you plot the 10x10 = 100 Rosenbrock function data points, with colors
 # representing the obtained clusters. The Rosenbrock function is represented
 # by a contour plot in the background.
 n_samples = dataset.n_samples
@@ -138,7 +138,7 @@ plt.show()
 # %%
 # ### Plot data and predictions from final model
 #
-# We construct a refined input space, and compute the model predictions.
+# You construct a refined input space, and compute the model predictions.
 refinement = 200
 
 fine_x = linspace(x[0], x[-1], refinement)

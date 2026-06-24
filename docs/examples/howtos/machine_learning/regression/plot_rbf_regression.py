@@ -43,8 +43,11 @@ from gemseo.machine_learning.regression.models.rbf_settings import RBF
 # %%
 # ## Problem
 #
+# You want to build a radial basis function (RBF) regression model from data,
+# and assess how well it approximates the underlying function.
+#
 # In this example,
-# we represent the function $f(x)=(6x-2)^2\sin(12x-4)$
+# you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
 # by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
@@ -56,13 +59,13 @@ discipline = create_discipline(
     name="f",
 )
 # %%
-# and seek to approximate it over the input space
+# and you seek to approximate it over the input space
 input_space = create_design_space()
 input_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # To do this,
-# we create a training dataset with 6 equispaced points:
+# you create a training dataset with 6 equispaced points:
 training_dataset = sample_disciplines(
     [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=6
 )
@@ -73,7 +76,7 @@ training_dataset = sample_disciplines(
 # ### Training
 #
 # Then,
-# we train an RBF regression model from these samples:
+# you train an RBF regression model from these samples:
 model = create_regression_model("RBFRegressor", training_dataset)
 model.learn()
 
@@ -81,7 +84,7 @@ model.learn()
 # ### Prediction
 #
 # Once it is built,
-# we can predict the output value of $f$ at a new input point:
+# you can predict the output value of $f$ at a new input point:
 input_value = {"x": array([0.65])}
 output_value = model.predict(input_value)
 output_value
@@ -145,7 +148,7 @@ model = create_regression_model("RBFRegressor", training_dataset, function=rbf)
 model.learn()
 predicted_output_data_c = model.predict(input_data).ravel()
 # %%
-# We can see that the predictions are different:
+# You can see that the predictions are different:
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
 plt.plot(input_data.ravel(), predicted_output_data_g, label="Regression - Gaussian RBF")
@@ -161,7 +164,7 @@ plt.show()
 # whose default value is the average distance between input data.
 # This is the case of `"multiquadric"`, `"gaussian"` and `"inverse"` RBFs.
 # For example,
-# we can train a first multiquadric RBF model with an `epsilon` set to 0.5
+# you can train a first multiquadric RBF model with an `epsilon` set to 0.5
 model = create_regression_model("RBFRegressor", training_dataset, epsilon=0.5)
 model.learn()
 predicted_output_data_1 = model.predict(input_data).ravel()
@@ -176,7 +179,7 @@ model = create_regression_model("RBFRegressor", training_dataset, epsilon=2.0)
 model.learn()
 predicted_output_data_3 = model.predict(input_data).ravel()
 # %%
-# and see that this parameter represents the regularity of the regression model:
+# and you see that this parameter represents the regularity of the regression model:
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
 plt.plot(input_data.ravel(), predicted_output_data_1, label="Regression - Epsilon(0.5)")
@@ -192,12 +195,12 @@ plt.show()
 # By default,
 # an RBF model interpolates the training points.
 # This is parametrized by the `smooth` option which is set to 0.
-# We can increase the smoothness of the model by increasing this value:
+# You can increase the smoothness of the model by increasing this value:
 model = create_regression_model("RBFRegressor", training_dataset, smooth=0.1)
 model.learn()
 predicted_output_data_ = model.predict(input_data).ravel()
 # %%
-# and see that the model is not interpolating:
+# and you see that the model is not interpolating:
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
 plt.plot(input_data.ravel(), predicted_output_data_, label="Regression - Smooth")
@@ -217,7 +220,7 @@ model = create_regression_model("TPSRegressor", training_dataset)
 model.learn()
 predicted_output_data_ = model.predict(input_data).ravel()
 # %%
-# We can see that the difference between this model
+# You can see the difference between this model
 # and the default multiquadric RBF model:
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")

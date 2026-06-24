@@ -21,7 +21,8 @@ Stochastic DOE algorithms such as
 [Latin hypercube sampling](https://en.wikipedia.org/wiki/Latin_hypercube_sampling)
 produce different results each time they are executed,
 because GEMSEO auto-increments the random seed at every execution.
-This makes it difficult to retrieve or reproduce a specific set of samples.
+You want to fix the seed so that you can retrieve or reproduce a specific set of
+samples.
 
 ## Solution
 
@@ -49,7 +50,7 @@ design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)
 scenario = EvaluationScenario([discipline], design_space)
 scenario.add_observable("y")
 # %%
-# ### 2. Observe the auto-increment behaviour
+# ### 2. Observe the auto-increment behavior
 #
 # By default, the seed starts at 0 and is incremented at each execution.
 # Running the scenario twice therefore produces different samples:

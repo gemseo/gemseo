@@ -53,8 +53,8 @@ from gemseo.post import OptHistoryView_Settings
 # %%
 # ### 1. Define the objective function
 #
-# We wrap functions returning a NumPy array from a NumPy array into [ArrayFunctions][gemseo.core.functions.array_function.ArrayFunction], and compose these array functions with arithmetic operators.
-# Here we build the objective function $f(x) = \sin(x) - \exp(x)$ with its analytic Jacobian:
+# You wrap functions returning a NumPy array from a NumPy array into [ArrayFunctions][gemseo.core.functions.array_function.ArrayFunction], and compose these array functions with arithmetic operators.
+# Here you build the objective function $f(x) = \sin(x) - \exp(x)$ with its analytic Jacobian:
 
 f = ArrayFunction(sin, name="f", jac=cos, expr="sin(x)")
 g = ArrayFunction(exp, name="g", jac=exp, expr="exp(x)")

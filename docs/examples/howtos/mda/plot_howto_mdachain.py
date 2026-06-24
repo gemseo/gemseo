@@ -42,7 +42,7 @@ from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 # %%
 # ### 1. Create your disciplines
 #
-# Here, we take the Sobieski disciplines.
+# Here, you take the Sobieski disciplines.
 # The *Structure*, *Propulsion* and *Aerodynamics* disciplines are highly coupled.
 # The *Mission* discipline is weakly couple with the others.
 
@@ -57,7 +57,7 @@ disciplines = create_discipline([
 # ### 2. Create the MDA chain
 #
 # You can specify which MDA algorithm you want to use inside the chain.
-# Here, we set the Gauss-Seidel algorithm.
+# Here, you set the Gauss-Seidel algorithm.
 # Other settings can be provided.
 mda = create_mda(
     "MDAChain",
@@ -82,7 +82,7 @@ mda_gauss_seidel = mda.inner_mdas[0]
 mda_gauss_seidel.disciplines
 
 # %%
-# We can see that GEMSEO automatically excludes the *Mission* discipline in the MDA,
+# You can see that GEMSEO automatically excludes the *Mission* discipline in the MDA,
 # because this discipline is not strongly coupled.
 #
 # ## Summary

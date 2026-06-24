@@ -17,7 +17,7 @@
 
 ## Problem
 
-Visualise how a scalar quantity `z` varies over a 2D input space `(x, y)`.
+You want to visualize how a scalar quantity `z` varies over a 2D input space `(x, y)`.
 
 ## Solution
 
@@ -49,4 +49,4 @@ plot.execute(save=False, show=True)
 # ## Summary
 #
 # Pass the two input components as `x` and `y` and the scalar output as `z`
-# to [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY] to visualise the response surface.
+# to [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY] to visualize the response surface.

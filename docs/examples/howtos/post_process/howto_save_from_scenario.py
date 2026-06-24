@@ -18,7 +18,7 @@
 ## Problem
 
 After executing a scenario, you want to save the results to disk
-so they can be post-processed later without re-running the optimisation.
+so they can be post-processed later without re-running the optimization.
 
 ## Solution
 
@@ -64,4 +64,4 @@ scenario.to_hdf("my_results.hdf")
 # ## One step further
 #
 # See [Post-process an HDF5 file][post-process-an-hdf5-file]
-# to learn how to visualise the saved results.
+# to learn how to visualize the saved results.

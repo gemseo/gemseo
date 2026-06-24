@@ -49,13 +49,13 @@ from gemseo.utils.discipline import check_disciplines_consistency
 # ## Step 1 - Create the satellite mass discipline
 #
 # A satellite mass is the sum of its structural (bus) mass and its propellant mass.
-# This is our base discipline: one input per mass component, one output.
+# This is your base discipline: one input per mass component, one output.
 satellite = AnalyticDiscipline(
     {"mass": "structure_mass + propellant_mass"}, name="Satellite mass"
 )
 
 # %%
-# Let's verify it works on a single satellite:
+# Verify it works on a single satellite:
 satellite.execute({
     "structure_mass": array([500.0]),
     "propellant_mass": array([120.0]),
@@ -65,7 +65,7 @@ print(f"Single satellite mass: {satellite.io.data['mass']} kg")
 # %%
 # ## Step 2 - GEMSEO forbids duplicate outputs
 #
-# Suppose we naively instantiate three copies of this discipline,
+# Suppose you naively instantiate three copies of this discipline,
 # one per satellite, and try to use them together in a workflow.
 satellites_no_ns = [
     AnalyticDiscipline({"mass": "structure_mass + propellant_mass"}),
@@ -75,15 +75,15 @@ satellites_no_ns = [
 
 # %%
 # GEMSEO enforces that each output is produced by exactly one discipline.
-# Let's verify this rule:
+# Verify this rule:
 try:
     check_disciplines_consistency(satellites_no_ns, log_message=False, raise_error=True)
 except ValueError as err:
     print(err)
 
 # %%
-# We cannot build a valid workflow with three disciplines all producing `"mass"`.
-# We need a way to disambiguate each instance.
+# You cannot build a valid workflow with three disciplines all producing `"mass"`.
+# You need a way to disambiguate each instance.
 #
 # ## Step 3 - Add namespaces to differentiate the instances
 #
@@ -91,12 +91,12 @@ except ValueError as err:
 # The separator between namespace and name is `":"` by default,
 # so adding namespace `"sat1"` to `"mass"` gives `"sat1:mass"`.
 #
-# For each satellite, we namespace:
+# For each satellite, you namespace:
 #
 # - the **input** `propellant_mass`: each satellite has its own propellant budget,
 # - the **output** `mass`: each satellite produces a distinct mass value.
 #
-# We leave `structure_mass` without a namespace.
+# You leave `structure_mass` without a namespace.
 # This means all satellite instances share the same structural mass —
 # they all use the same satellite bus design.
 n_satellites = 3
@@ -116,7 +116,7 @@ for i in range(n_satellites):
 # %%
 # ## Step 4 - Inspect the grammar
 #
-# Let's confirm that the namespaces have been applied correctly.
+# Confirm that the namespaces have been applied correctly.
 for disc in satellites:
     print(
         f"{disc.name}:  "
@@ -135,7 +135,7 @@ for disc in satellites:
 #
 # ## Step 5 - Aggregate the masses
 #
-# We need one more discipline that sums all satellite masses
+# You need one more discipline that sums all satellite masses
 # into a single `total_mass` output.
 # The built-in
 # [LinearCombination][gemseo.disciplines.linear_combination.LinearCombination]
@@ -152,7 +152,7 @@ aggregator = LinearCombination(
 # ## Step 6 - Assemble the workflow and visualize it
 #
 # All disciplines are now consistent: no output is produced twice.
-# We can visualize the data flow with an N2 diagram.
+# You can visualize the data flow with an N2 diagram.
 # The shared input `structure_mass` will not appear,
 # but each `sat_i:mass` flows only from its discipline to the aggregator.
 all_disciplines = [*satellites, aggregator]
@@ -161,7 +161,7 @@ generate_n2_plot(all_disciplines, save=False, show=True)
 # %%
 # ## Step 7 - Execute
 #
-# We assemble the disciplines into an
+# You assemble the disciplines into an
 # [MDAChain][gemseo.mda.chain.MDAChain]
 # and execute with realistic values.
 # The three satellites target different orbits, hence different propellant budgets.

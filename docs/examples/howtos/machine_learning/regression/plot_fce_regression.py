@@ -38,7 +38,7 @@ in the hope of improving the quality of the surrogate model
 for the same evaluation budget.
 
 In this example,
-we will compare different types of [FCERegressor][gemseo.machine_learning.regression.models.fce.FCERegressor]
+you will compare different types of [FCERegressor][gemseo.machine_learning.regression.models.fce.FCERegressor]
 to approximate the Ishigami function
 
 $$f(X) = \sin(X_1) + 7\sin(X_2)^2 + 0.1X_3^4\sin(X_1)$$
@@ -92,7 +92,7 @@ from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
 
 # %%
 # First,
-# we define the Ishigami discipline and its uncertain space:
+# you define the Ishigami discipline and its uncertain space:
 discipline = IshigamiDiscipline()
 uncertain_space = IshigamiSpace(IshigamiSpace.UniformDistribution.OPENTURNS)
 
@@ -116,7 +116,7 @@ validation_dataset = sample_disciplines(
 
 # %%
 # Then,
-# we create standard and gradient-enhanced FCEs
+# you create standard and gradient-enhanced FCEs
 # using an orthonormal polynomial basis (default basis)
 # with a maximum total degree of 7
 # and different regression techniques from scikit-learn to estimate the coefficients,
@@ -128,7 +128,7 @@ validation_dataset = sample_disciplines(
 # and [orthogonal matching pursuit](https://scikit-learn.org/stable/modules/linear_model.html#orthogonal-matching-pursuit-omp).
 # Note that all these models have been finely tuned using cross-validation,
 # except ordinary least squares regression for which there is no parameter to tune.
-# We also add the [SPGL1 algorithm](https://friedlander.io/spgl1)
+# You also add the [SPGL1 algorithm](https://friedlander.io/spgl1)
 # to solve a basis pursuit denoise (BPN) problem,
 # as well as a null space algorithm.
 #
@@ -184,7 +184,7 @@ for linear_model_fitter_settings in [
     r2_validation_ge.append(r2.compute_test_measure(validation_dataset).round(2)[0])
 
 # %%
-# We create also a [PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor]
+# You also create a [PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor]
 # using the LARS algorithm implemented in OpenTURNS:
 pce = PCERegressor(training_dataset, PCERegressor_Settings(degree=7, use_lars=True))
 pce.learn()
@@ -196,7 +196,7 @@ r2_validation_ge.append(0)
 
 # %%
 # From these results,
-# we can plot the quality of the different surrogate models,
+# you can plot the quality of the different surrogate models,
 # expressed in terms of coefficient of determination $R^2$
 # (the higher, the better):
 dataset = Dataset()
@@ -212,21 +212,21 @@ barplot.execute(save=False)
 
 # %%
 # First,
-# let us focus on the standard FCEs
+# focus on the standard FCEs
 # that have not learned derivatives ("Learning" and "Validation" in the legend).
-# We can see that
+# You can see that
 # the quality of learning is perfect, regardless of the method.
 # That's good, but not enough.
-# But what interests us is the quality of prediction of the validation dataset
+# But what interests you is the quality of prediction of the validation dataset
 # to see if the surrogate model avoids overfitting.
 # In this regard,
 # ordinary least squares regression and ridge regression are wrong
 # while the other techniques are very good,
 # without really being able to tell them apart.
 # Now,
-# if we have a look to the gradient-enhanced FCEs
+# if you have a look to the gradient-enhanced FCEs
 # ("Learning-GE" and "Validation-GE" in the legend).
-# we can see that the quality is significantly better, except for the LARS method.
+# you can see that the quality is significantly better, except for the LARS method.
 #
 # Lastly,
 # these numerical experiments can be repeated
@@ -292,7 +292,7 @@ barplot = BarPlot(dataset, BarPlot_Settings(annotate=False))
 barplot.execute(save=False)
 
 # %%
-# We then see the same type of ranking, with even better validation qualities.
+# You then see the same type of ranking, with even better validation qualities.
 # This can be easily explained by the nature of Ishigami's function,
 # in which trigonometric terms are important.
 # Furthermore,

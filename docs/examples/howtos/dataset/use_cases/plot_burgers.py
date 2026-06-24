@@ -33,7 +33,7 @@ from gemseo.post.dataset.curves_settings import Curves_Settings
 # %%
 # ## Load Burgers' dataset
 #
-# We can easily load this dataset
+# You can easily load this dataset
 # by means of the high-level function [create_benchmark_dataset()][gemseo.create_benchmark_dataset]:
 dataset = create_benchmark_dataset("BurgersDataset")
 dataset

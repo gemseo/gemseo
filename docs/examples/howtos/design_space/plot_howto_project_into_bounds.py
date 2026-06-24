@@ -22,11 +22,9 @@
 
 ## Problem
 
-In this example, we will see how to project design paramters into a design space.
-
-Sometimes, components of a design vector are greater than the upper bounds or
-lower than the upper bounds.
-The design vector is outside its definition, and you have to bring it back.
+Sometimes, components of a design vector exceed the upper bounds or fall below
+the lower bounds, so the vector lies outside its definition domain.
+You want to bring it back within the bounds.
 
 ## Solution
 
@@ -35,7 +33,7 @@ the [project_into_bounds()][gemseo.algos.design_space.DesignSpace.project_into_b
 
 ## Step-by-step guide
 
-We will create a design space,
+You will create a design space,
 and see the impact of the
 [project_into_bounds()][gemseo.algos.design_space.DesignSpace.project_into_bounds]
 method.
@@ -51,7 +49,7 @@ from gemseo import create_design_space
 # %%
 # ###  1. Create a design space
 #
-# First, let's create a design space.
+# First, create a design space.
 design_space = create_design_space()
 design_space.add_variable("x1", lower_bound=-10, upper_bound=10)
 design_space.add_variable("x2", lower_bound=-10, upper_bound=10)

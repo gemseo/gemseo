@@ -29,8 +29,9 @@
 
 ## Problem
 
-Design parameters can be defined in different ways:
-arrays, dict, rela or complex...
+Design parameters can be expressed in different forms
+(arrays, dictionaries, real or complex values).
+You want to cast a design vector from one representation to another.
 
 ## Solution
 
@@ -57,7 +58,7 @@ from gemseo import create_design_space
 # %%
 # ### 1. Create a design space
 #
-# First, let's create a design space.
+# First, create a design space.
 design_space = create_design_space()
 design_space.add_variable("x1", lower_bound=-10, upper_bound=10)
 design_space.add_variable(
@@ -69,7 +70,7 @@ design_space.add_variable("x4", value=ones(1), lower_bound=-10, upper_bound=10)
 # %%
 # ### 2. Cast a design point from array to dict
 #
-# We can cast a design point from `array` to `dict`,
+# You can cast a design point from `array` to `dict`,
 # by means of the
 # [convert_array_to_dict()][gemseo.algos.design_space.DesignSpace.convert_array_to_dict] method:
 array_point = array([1, 2, 3, 4])
@@ -79,7 +80,7 @@ dict_point
 # %%
 # ### 3. Cast a design point from dict to array
 #
-# We can cast a design point from `dict` to `array` by means of
+# You can cast a design point from `dict` to `array` by means of
 # the [convert_dict_to_array()][gemseo.algos.design_space.DesignSpace.convert_dict_to_array] method.
 #
 # !!! note
@@ -93,7 +94,7 @@ new_array_point
 # %%
 # ### 4. Cast the current value to complex
 #
-# We can cast the current value to complex by means of
+# You can cast the current value to complex by means of
 # the [to_complex()][gemseo.algos.design_space.DesignSpace.to_complex] method:
 design_space.set_current_value(array([3.0, 1.0, 1.0, 1.0]))
 design_space.to_complex()

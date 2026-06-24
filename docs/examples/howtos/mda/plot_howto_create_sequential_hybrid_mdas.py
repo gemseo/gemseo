@@ -43,7 +43,7 @@ from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 # %%
 # ### 1. Create your disciplines
 #
-# Here, we take the Sobieski disciplines.
+# Here, you take the Sobieski disciplines.
 # The *Structure*, *Propulsion* and *Aerodynamics* disciplines are strongly coupled.
 # The *Mission* discipline is weakly coupled with the three others.
 
@@ -57,7 +57,7 @@ disciplines = create_discipline([
 # %%
 # ### 2. Create the different MDAs
 #
-# We want at most 5 iterations of Jacobi,
+# You want at most 5 iterations of Jacobi,
 # and then use Gauss-Seidel.
 mda1 = create_mda(
     "MDAJacobi", disciplines, settings_model=MDAJacobi_Settings(max_mda_iter=5)
@@ -76,7 +76,7 @@ res = mda.execute()
 # %%
 # ### 4. Analyze the result through the residuals
 #
-# We can clearly see the 5 first iterations through an MDA (here, Jacobi),
+# You can clearly see the 5 first iterations through an MDA (here, Jacobi),
 # and then executing another MDA (Gauss-Seidel).
 mda.plot_residual_history(logscale=(1e-8, 10.0), save=False, show=True)
 

@@ -19,7 +19,7 @@
 
 You have solved an
 [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-directly (without a scenario) and want to visualise the history.
+directly (without a scenario) and want to visualize the history.
 
 ## Solution
 
@@ -44,7 +44,7 @@ from gemseo.settings import NLOPT_COBYLA_Settings
 # %%
 # ### 1. Build and solve the optimization problem
 #
-# We consider a minimization problem over the interval $[0,1]$
+# You consider a minimization problem over the interval $[0,1]$
 # of the $f(x)=x^2$ objective function:
 
 objective = ArrayFunction(

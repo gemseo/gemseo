@@ -19,7 +19,7 @@ r"""# Use analytic expressions
 ## Problem
 
 Given simple mathematical expressions,
-how can I create a differentiable discipline?
+you want to create a differentiable discipline.
 
 ## Solution
 

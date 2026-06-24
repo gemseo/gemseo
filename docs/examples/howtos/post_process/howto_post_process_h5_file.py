@@ -17,13 +17,13 @@
 
 ## Problem
 
-After saving the results of an evaluation or optimisation to an HDF5 file,
-you need to visualise the history or access the raw data without re-running
+After saving the results of an evaluation or optimization to an HDF5 file,
+you need to visualize the history or access the raw data without re-running
 the problem.
 
 ## Solution
 
-Use [execute_post()][gemseo.execute_post] to visualise the history directly
+Use [execute_post()][gemseo.execute_post] to visualize the history directly
 from the HDF5 file, and [import_database()][gemseo.import_database] to access
 the raw data and convert it to a [Dataset][gemseo.datasets.dataset.Dataset].
 
@@ -37,7 +37,7 @@ from gemseo import import_database
 from gemseo.post import BasicHistory_Settings
 
 # %%
-# ### 1. Visualise the evaluation history
+# ### 1. Visualize the evaluation history
 #
 # Pass the HDF5 file path and a post-processing settings model to
 # [execute_post()][gemseo.execute_post].
@@ -70,7 +70,7 @@ dataset = database.to_dataset()
 # %%
 # ## Summary
 #
-# Use [execute_post()][gemseo.execute_post] to visualise an HDF5 results file
+# Use [execute_post()][gemseo.execute_post] to visualize an HDF5 results file
 # without re-running the problem, and [import_database()][gemseo.import_database]
 # to access the raw data as a [Dataset][gemseo.datasets.dataset.Dataset].
 #

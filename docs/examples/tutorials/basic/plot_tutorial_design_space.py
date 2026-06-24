@@ -27,7 +27,7 @@ In this tutorial, you will learn to create and manipulate a design space.
 As specified in the [user guide][concept-design-space],
 a design space defines the optimization variables:
 their names, types, dimensions, bounds, and current values (if any).
-We will first create an instance of a
+You will first create an instance of a
 [DesignSpace][gemseo.algos.design_space.DesignSpace] with multiple variables,
 then learn how to query information about these variables,
 and finally modify their values and bounds.
@@ -43,7 +43,7 @@ from gemseo.algos.design_space import DesignSpace
 # %%
 # ## Step 1 - Create a design space
 #
-# Let's imagine that we want to build a design space with the following requirements:
+# Imagine that you want to build a design space with the following requirements:
 #
 # - *x1* is a one-dimensional unbounded float variable,
 # - *x2* is a one-dimensional unbounded integer variable,
@@ -53,7 +53,7 @@ from gemseo.algos.design_space import DesignSpace
 # - *x6* is a one-dimensional unbounded float variable,
 # - *x7* is a two-dimensional bounded integer variable with lower bound equal to -1, upper bound equal to 1 and current values to (0,1).
 #
-# We can create this design space from scratch.
+# You can create this design space from scratch.
 # Use the [add_variable()][gemseo.algos.design_space.DesignSpace.add_variable] method
 # of the [DesignSpace][gemseo.algos.design_space.DesignSpace] class to add variables:
 
@@ -85,7 +85,7 @@ design_space
 #     each dimension of this variable is printed (e.g. `x3` and `x7`).
 #
 # !!! note
-#     We can get a list of the variable names with their indices
+#     You can get a list of the variable names with their indices
 #     by means of the [get_indexed_variable_names()][gemseo.algos.design_space.DesignSpace.get_indexed_variable_names] method:
 #
 #     ``` python
@@ -94,7 +94,7 @@ design_space
 #     > ['x1', 'x2', 'x3!0', 'x3!1', 'x4', 'x5', 'x6', 'x7!0', 'x7!1']
 #     ```
 #
-#     We see that the multidimensional variables have an index (here `0` and `1`) preceded by a `!` separator.
+#     You see that the multidimensional variables have an index (here `0` and `1`) preceded by a `!` separator.
 
 # %%
 # ## Step 2 - Get information about the design space
@@ -103,7 +103,7 @@ design_space
 #
 # ### Individual variable information
 #
-# We can query the size, type, and bounds of a specific variable:
+# You can query the size, type, and bounds of a specific variable:
 
 print(f"The size of the `x3` variable is: {design_space.get_size('x3')}")
 print(f"The type of the `x2` variable is: {design_space.get_type('x2')}")
@@ -143,7 +143,7 @@ print(f"Every variable has a current value: {design_space.has_current_value}")
 #
 # ### Check the active bounds
 #
-# We can get the active bounds by means of the [get_active_bounds()][gemseo.algos.design_space.DesignSpace.get_active_bounds] method,
+# You can get the active bounds by means of the [get_active_bounds()][gemseo.algos.design_space.DesignSpace.get_active_bounds] method,
 # either at current parameter values or at a given point.
 #
 # At the current design value:
@@ -162,11 +162,11 @@ active_at_given_point
 # %%
 # ## Step 3 - Modify the design space
 #
-# We can change the current values and bounds contained in a design space.
+# You can change the current values and bounds contained in a design space.
 #
 # ### Change all current values at once
 #
-# We can set all current values to a given array:
+# You can set all current values to a given array:
 
 design_space.set_current_value(ones(9))
 design_space
@@ -174,7 +174,7 @@ design_space
 # %%
 # ### Change a specific variable
 #
-# We can also change the current value of a specific variable:
+# You can also change the current value of a specific variable:
 
 design_space.set_current_variable("x1", array([3.0]))
 design_space
@@ -182,7 +182,7 @@ design_space
 # %%
 # ### Update bounds
 #
-# We can modify the lower and upper bounds of variables:
+# You can modify the lower and upper bounds of variables:
 
 design_space.set_lower_bound("x1", array([-10.0]))
 design_space.set_lower_bound("x2", array([-10]))

@@ -17,10 +17,10 @@
 
 ## Problem
 
-When an optimisation problem involves a large number of inequality constraints,
+When an optimization problem involves a large number of inequality constraints,
 each iteration becomes expensive because the solver must evaluate all of them.
-Constraint aggregation reduces this cost by replacing the full set of constraints
-with a single aggregated scalar constraint.
+You want to reduce this cost by aggregating the full set of constraints
+into a single scalar constraint.
 
 ## Solution
 

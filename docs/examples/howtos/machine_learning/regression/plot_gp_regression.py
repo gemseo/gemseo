@@ -46,8 +46,11 @@ from gemseo.machine_learning import create_regression_model
 # %%
 # ## Problem
 #
+# You want to build a Gaussian process regression model from data,
+# and assess how well it approximates the underlying function.
+#
 # In this example,
-# we represent the function $f(x)=(6x-2)^2\sin(12x-4)$
+# you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
 # by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
@@ -59,13 +62,13 @@ discipline = create_discipline(
     name="f",
 )
 # %%
-# and seek to approximate it over the input space
+# and you seek to approximate it over the input space
 input_space = create_design_space()
 input_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # To do this,
-# we create a training dataset with 6 equispaced points:
+# you create a training dataset with 6 equispaced points:
 training_dataset = sample_disciplines(
     [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=6
 )
@@ -76,7 +79,7 @@ training_dataset = sample_disciplines(
 # ### Training
 #
 # Then,
-# we train a GP regression model from these samples:
+# you train a GP regression model from these samples:
 model = create_regression_model("GaussianProcessRegressor", training_dataset)
 model.learn()
 
@@ -84,7 +87,7 @@ model.learn()
 # ### Prediction
 #
 # Once it is built,
-# we can predict the output value of $f$ at a new input point:
+# you can predict the output value of $f$ at a new input point:
 input_value = {"x": array([0.65])}
 output_value = model.predict(input_value)
 output_value
@@ -114,7 +117,7 @@ standard_deviation
 # You can see that the GP model interpolates the training points
 # but is very bad elsewhere.
 # This case-dependent problem is due to poor auto-tuning of these length scales.
-# We will look at how to correct this next.
+# You will look at how to correct this next.
 test_dataset = sample_disciplines(
     [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=100
 )
@@ -143,7 +146,7 @@ plt.show()
 # with input length scales belonging to the interval $[0.01,100]$,
 # initialized at 1
 # and optimized by the L-BFGS-B algorithm.
-# We can replace this kernel by the Matérn 5/2 kernel
+# You can replace this kernel by the Matérn 5/2 kernel
 # with input length scales fixed at 1:
 model = create_regression_model(
     "GaussianProcessRegressor",
@@ -205,14 +208,14 @@ plt.show()
 # the GP model interpolates the training points
 # at which the standard deviation is equal to zero.
 # The larger `alpha` is, the less interpolating the GP model is.
-# For example, we can increase the value to 0.1:
+# For example, you can increase the value to 0.1:
 predicted_output_data_1 = predicted_output_data_
 model = create_regression_model(
     "GaussianProcessRegressor", training_dataset, bounds=(1e-1, 1e2), alpha=0.1
 )
 model.learn()
 # %%
-# and see that the model moves away from the training points:
+# and you see that the model moves away from the training points:
 predicted_output_data_2 = model.predict(input_data).ravel()
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data_1, label="Regression - Alpha(1e-10)")

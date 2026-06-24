@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 # %%
 # ### 1. Create the discipline
 # First,
-# we create a discipline computing
+# you create a discipline computing
 # $f(x,y)=e^{-(1-x)^2-(1-y)^2}$
 # and
 # $g(x,y)=x^2+y^2-1$
@@ -89,7 +89,7 @@ class BuggedDiscipline(Discipline):
 # %%
 # ### 2. Check the implemented Jacobian function
 #
-# We want to check if the implemented Jacobian functions is correct.
+# You want to check if the implemented Jacobian functions is correct.
 # For practical applications, this is not a simple task.
 # GEMSEO automates such tests thanks to the
 # [check_jacobian()][gemseo.core.discipline.discipline.Discipline.check_jacobian]
@@ -107,10 +107,10 @@ discipline.check_jacobian(
 
 # %%
 # The step here is chosen big enough to underline the truncation error.
-# From this graph, we can see that almost all the provided components  of the Jacobians
+# From this graph, you can see that almost all the provided components  of the Jacobians
 # (blue dots) are close but distinct from the approximated by finite differences using
 # a step of 0.1 (red dots). This kind of graph can be used to spot implementation
-# mistakes in fact we can already spot a large mistake in the wrong components.
+# mistakes in fact you can already spot a large mistake in the wrong components.
 #
 #
 # The `derr_approx` argument can be either `"finite_differences"`, `"centered_differences"` or

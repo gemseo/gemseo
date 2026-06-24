@@ -44,7 +44,7 @@ from gemseo import create_design_space
 # %%
 # ### 1. Create a design space
 #
-# First, let's create a design space.
+# First, create a design space.
 design_space = create_design_space()
 design_space.add_variable("x1", lower_bound=-10, upper_bound=10)
 design_space.add_variable("x2", lower_bound=-10, upper_bound=10)

@@ -37,7 +37,7 @@ You will learn how to:
 - **execute** it with default and custom inputs,
 - **compare** the numerical solution with the analytical one.
 
-As a running example, we use the harmonic oscillator:
+As a running example, this tutorial uses the harmonic oscillator:
 
 $$\\frac{d^2 x(t)}{dt^2} + \\omega^2 x(t) = 0$$
 
@@ -79,7 +79,7 @@ from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 # Its outputs must be the time derivatives of the state variables,
 # named with the `_dot` suffix by convention.
 #
-# We use an [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
+# You use an [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
 # built from a plain Python function:
 _time = array([0.0])
 initial_position_1 = array([1.0])
@@ -138,7 +138,7 @@ ode_res_1 = ode_discipline.execute()
 #
 # Different initial conditions and design variables can be passed
 # as a dictionary to `execute()`.
-# Here we solve the problem with $\omega = 1$, $x_0 = 2$ and $v_0 = 0.5$:
+# Here you solve the problem with $\omega = 1$, $x_0 = 2$ and $v_0 = 0.5$:
 initial_position_2 = array([2.0])
 initial_velocity_2 = array([0.5])
 omega_2 = array([1.0])
@@ -152,7 +152,7 @@ ode_res_2 = ode_discipline.execute({
 # %%
 # ## Step 5 — Compare with the analytical solution
 #
-# We verify the numerical solutions against the analytical formula
+# You verify the numerical solutions against the analytical formula
 # $x(t) = x_0 \cos(\omega t) + \frac{v_0}{\omega} \sin(\omega t)$.
 #
 # First solution ($\omega = 2$, $x_0 = 1$, $v_0 = 0$):

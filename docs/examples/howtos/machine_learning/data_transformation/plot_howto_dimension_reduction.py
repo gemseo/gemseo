@@ -30,7 +30,7 @@ which can lead to overfitting.
 Furthermore,
 some learning algorithms do not scale well with the input dimension.
 
-How can I reduce the data dimension?
+You want to reduce the data dimension.
 
 ## Solution
 
@@ -59,7 +59,7 @@ from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
 # %%
 # ### 1. Define the reference model
 #
-# We consider the functional discipline $f(x)=\{\cos(xt): t\in[0,2]\}$
+# You consider the functional discipline $f(x)=\{\cos(xt): t\in[0,2]\}$
 # defined over the input space $[0, 2\pi]$
 # and the function output is discretized over a mesh of 1000 equispaced nodes.
 
@@ -79,7 +79,7 @@ design_space.add_variable("x", lower_bound=0.0, upper_bound=2 * pi)
 # %%
 # ### 2. Create the training dataset
 #
-# We generate 20 training samples
+# You generate 20 training samples
 # using optimized Latin hypercube sampling strategy.
 training_dataset = sample_disciplines(
     [discipline],
@@ -94,7 +94,7 @@ plt.show()
 # %%
 # ### 3. Create the validation dataset
 #
-# We generate many validation samples using Monte Carlo sampling.
+# You generate many validation samples using Monte Carlo sampling.
 
 test_dataset = sample_disciplines(
     [discipline], design_space, ["y"], algo_settings_model=MC_Settings(n_samples=1000)
@@ -103,7 +103,7 @@ test_dataset = sample_disciplines(
 # %%
 # ### 4. Use an ML model without normalization
 #
-# We create a regressor,
+# You create a regressor,
 # e.g. radial basis function (RBF) regressor,
 # and reduce the output dimension to $K\in\{5,6,7,8,9,10\}$ components
 # using the principal components analysis (PCA) technique.
@@ -125,7 +125,7 @@ plt.legend()
 plt.show()
 
 # %%
-# We can see that the validation quality $R^2$ increases with the number of components
+# You can see that the validation quality $R^2$ increases with the number of components
 # and is approximately 1, i.e. excelllent, starting from 10 components.
 #
 # !!! note

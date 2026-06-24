@@ -25,7 +25,7 @@ the methods
 [compute_leave_one_out_measure()][gemseo.machine_learning.core.quality.base_ml_model_quality.BaseMLModelQuality.compute_leave_one_out_measure] and
 [compute_bootstrap_measure()][gemseo.machine_learning.core.quality.base_ml_model_quality.BaseMLModelQuality.compute_bootstrap_measure]
 do not save these models.
-How can I get this resampling result?
+You want to get this resampling result.
 
 ## Solution
 

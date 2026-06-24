@@ -20,7 +20,7 @@
 By default, an
 [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
 solves the ODE over the entire time interval.
-In some cases, the integration should stop early
+You want the integration to stop early
 when a specific condition is met - for example,
 when a state variable crosses a given threshold.
 
@@ -52,7 +52,7 @@ from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 # %%
 # ### 1. Build the RHS discipline
 #
-# We reuse the harmonic oscillator RHS from the ODE tutorial.
+# You reuse the harmonic oscillator RHS from the ODE tutorial.
 #
 # !!! tutorial
 #     - [tutorial - Solving an ODE with GEMSEO][tutorial-solving-an-ode-with-gemseo]
@@ -86,7 +86,7 @@ rhs_discipline = create_discipline(
 # The termination discipline must have the same inputs as the RHS discipline
 # and return a single real-valued output.
 # The integration stops when this output crosses zero.
-# Here we stop when the oscillator reaches the equilibrium position ($x = 0$):
+# Here you stop when the oscillator reaches the equilibrium position ($x = 0$):
 def termination_function(
     time: ndarray = _time,
     position: ndarray = initial_position,

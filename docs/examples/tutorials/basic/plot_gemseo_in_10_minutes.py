@@ -27,13 +27,13 @@
 #
 #
 # This is a short introduction to GEMSEO, geared mainly for new users.  In this
-# example, we will set up a simple Multi-disciplinary Design Optimization
+# example, you will set up a simple Multi-disciplinary Design Optimization
 # (MDO) problem based on a simple analytic problem.
 #
 # ## Imports
 #
 #
-# First, we will import all the classes and functions needed for the tutorials.
+# First, you will import all the classes and functions needed for the tutorials.
 from __future__ import annotations
 
 from math import exp
@@ -58,7 +58,7 @@ from gemseo.settings.post import OptHistoryView_Settings
 #
 # ## A simple MDO test case: the Sellar Problem
 #
-# We will consider in this example the [Sellar's problem][sellars-problem].
+# This example considers the [Sellar's problem][sellars-problem].
 #
 # ## Definition of the disciplines using Python functions
 #
@@ -144,18 +144,18 @@ disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
 # [Tutorial - Your first discipline][tutorial-your-first-discipline].
 
 # %%
-# We then create a list of disciplines, which will be used later to create an
+# You then create a list of disciplines, which will be used later to create an
 # [MDOScenario][gemseo.scenarios.mdo.MDOScenario]:
 disciplines = [disc_sellar_system, disc_sellar_1, disc_sellar_2]
 
 # %%
-# We can quickly access the most relevant information of any discipline (name, inputs,
+# You can quickly access the most relevant information of any discipline (name, inputs,
 # and outputs) with their string representations:
 disc_sellar_1
 
 # %%
 # Moreover,
-# we can get the default input values of a discipline
+# you can get the default input values of a discipline
 # with the attribute [Discipline.default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data]:
 disc_sellar_1.default_input_data
 
@@ -173,7 +173,7 @@ generate_n2_plot(disciplines, save=False, show=True)
 #     Yet, GEMSEO enables the definition of much more complex disciplines,
 #     such as wrapping complex COTS.
 #     Check out the other [discipline examples][disciplines-examples] and
-#     our [publications](https://gemseo.gitlab.io/dev/gemseo-org/develop/publications) for more information.
+#     the [publications](https://gemseo.gitlab.io/dev/gemseo-org/develop/publications) for more information.
 
 # %%
 # ## Definition of the design space
@@ -198,10 +198,10 @@ design_space
 # ## Definition of the MDO scenario
 #
 # Once the disciplines and the design space have been defined,
-# we can create our MDO scenario
+# you can create your MDO scenario
 # by using the high-level function [create_scenario()][gemseo.create_scenario].
 # In this simple example,
-# we are using a Multiple Disciplinary Feasible (MDF) strategy.
+# you are using a Multiple Disciplinary Feasible (MDF) strategy.
 # The Multiple Disciplinary Analyses (MDA) are carried out using the
 # Gauss-Seidel method. The scenario definition reads:
 
@@ -236,7 +236,7 @@ scenario = create_scenario(
 # ## Setting the constraints
 #
 # Most of the MDO problems are under constraints.
-# In our problem, we have two inequality constraints,
+# In your problem, you have two inequality constraints,
 # and their declaration reads:
 
 scenario.add_constraint("c_1", constraint_type="ineq")
@@ -247,7 +247,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 #
 # The scenario is now complete and ready to be executed.
 # When running the optimization process,
-# the user can choose the optimization algorithm and
+# you can choose the optimization algorithm and
 # the maximum number of iterations to perform.
 # The execution of the scenario reads:
 
@@ -259,7 +259,7 @@ scenario.execute(SLSQP_Settings(max_iter=10))
 #
 # !!! note
 #
-#     GEMSEO provides the user with a lot of optimization algorithms and options.
+#     GEMSEO provides you with a lot of optimization algorithms and options.
 #     An exhaustive list of the algorithms available in GEMSEO can be found in the
 #     [available optimization algorithms section][available-optimization-algorithms].
 

@@ -43,7 +43,7 @@ from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 # %%
 # ### 1. Create your disciplines
 #
-# Let's start creating the well-known Sobieski disciplines.
+# Start creating the well-known Sobieski disciplines.
 
 disciplines = create_discipline([
     "SobieskiStructure",
@@ -79,7 +79,7 @@ accelerated_gauss_seidel_mda.plot_residual_history(
 )
 
 # %%
-# In our case, the selected acceleration method allowed to save 3 iterations.
+# In your case, the selected acceleration method allowed to save 3 iterations.
 # In some cases, the number of iterations can be cut-off more significantly.
 #
 # ## Summary

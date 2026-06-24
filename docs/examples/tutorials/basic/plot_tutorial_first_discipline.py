@@ -56,7 +56,7 @@ from gemseo.core.grammars.pydantic import PydanticGrammar
 # - the computation method,
 # contained in the `_run()` method.
 #
-# Let's consider this following implementation:
+# Consider this following implementation:
 class NewDiscipline(Discipline):
     def __init__(self, name: str = ""):
         super().__init__(name)
@@ -80,7 +80,7 @@ class NewDiscipline(Discipline):
 # according the following equations:
 # $f = x \times z$ and $g = x (z + 1)^2$.
 #
-# You can already use it! Let's make your first computation:
+# You can already use it! Make your first computation:
 discipline = NewDiscipline("MyFirstDiscipline")
 discipline.execute({"x": array([5.0]), "z": array([1])})
 
@@ -111,7 +111,7 @@ discipline.default_input_data = {"x": array([0.0]), "z": array([0.0])}
 #
 # You can then execute your discipline by giving a subset of inputs, or no input at all.
 # In this case, since the two inputs have default values,
-# we can execute it without giving any information on the inputs:
+# you can execute it without giving any information on the inputs:
 discipline.execute()
 
 
@@ -127,7 +127,7 @@ discipline.execute()
 # The [Discipline][gemseo.core.discipline.discipline.Discipline]
 # may also provide the derivatives of their outputs
 # with respect to their inputs.
-# So let's complexify your gradient-free discipline,
+# So complexify your gradient-free discipline,
 # by adding the gradient computation.
 class GradientDiscipline(Discipline):
     def __init__(self, name: str = ""):
@@ -180,7 +180,7 @@ class GradientDiscipline(Discipline):
 #   for a matrix-free Jacobian defined only by its products with a vector,
 #   see [Use a matrix-free Jacobian][].
 #
-# Now, we can also compute the gradient,
+# Now, you can also compute the gradient,
 # by calling the
 # [linearize()][gemseo.core.discipline.discipline.Discipline.linearize] method.
 discipline = GradientDiscipline("MyFirstGradientDiscipline")
@@ -212,7 +212,7 @@ discipline.input_grammar
 #     Grammars are different: some allow a lot while others are very restrictive.
 #     Please refer to the [Grammar section][concept-grammars] for more information.
 #
-# Let's make your discipline more restrictive, by saying that $x$ is now an integer.
+# Make your discipline more restrictive, by saying that $x$ is now an integer.
 # One way to do so is to update the grammar with the
 # [update_from_data][gemseo.core.grammars.base.BaseGrammar.update_from_data]
 # method.
@@ -235,15 +235,15 @@ except InvalidDataError:
 # %%
 # ## Step 4 - A complete discipline
 #
-# Let's create another discipline, a little bit more complex than the previous one.
+# Create another discipline, a little bit more complex than the previous one.
 # You will create Pydantic grammars to perfectly control both input and outputs.
 #
 # !!! note
 #     Pydantic allows you to control whatever you want, since you can create validators.
 #     Please check Pydantic documentation for further details.
 #
-# Let's consider $x$ as an integer, so that $0 \leq x \leq 5$.
-# Moreover, let's consider that you want your inputs to be int and float;
+# Consider $x$ as an integer, so that $0 \leq x \leq 5$.
+# Moreover, consider that you want your inputs to be int and float;
 # no more arrays.
 #
 class MyInputGrammar(BaseModel):

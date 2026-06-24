@@ -17,14 +17,14 @@
 
 ## Problem
 
-After an optimisation, you want to track how each constraint evolved across
+After an optimization, you want to track how each constraint evolved across
 iterations and clearly identify where it was violated, active, or satisfied.
 
 ## Solution
 
 Use [ConstraintsHistory][gemseo.post.constraints_history.ConstraintsHistory],
 which plots the history of selected constraints against the iteration index.
-Each constraint is shown in a dedicated subplot with a colour-coded background:
+Each constraint is shown in a dedicated subplot with a color-coded background:
 red for violated, white for active, and green for satisfied regions.
 
 ## Step-by-step guide
@@ -64,7 +64,7 @@ execute_post(
 #
 # [ConstraintsHistory][gemseo.post.constraints_history.ConstraintsHistory] plots
 # the iteration-by-iteration history of selected constraints,
-# with colour-coded backgrounds to indicate violation, activity, and satisfaction.
+# with color-coded backgrounds to indicate violation, activity, and satisfaction.
 # It provides more detailed constraint information than
 # [OptHistoryView][gemseo.post.opt_history_view.OptHistoryView]
 # but is better suited for a small number of constraints.
