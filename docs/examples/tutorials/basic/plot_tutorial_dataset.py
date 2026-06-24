@@ -95,7 +95,7 @@ dataset
 # %%
 # By default the component indices start at `0`.
 # Use `components` to assign custom indices.
-# Here we place the single component of `"c"` at index `3`:
+# Here you place the single component of `"c"` at index `3`:
 dataset.add_variable("c", array([[1.5], [3.5]]), components=[3])
 dataset
 
@@ -200,7 +200,7 @@ dataset.variable_names
 # applies a function to the underlying NumPy array of a selection of data.
 # The selection follows the same `group_names / variable_names / components / indices`
 # filtering logic used throughout the API.
-# Here we double the values of `"bar"`:
+# Here you double the values of `"bar"`:
 dataset.transform_data(lambda x: 2 * x, variable_names="bar")
 dataset.get_view(variable_names="bar")
 
@@ -226,13 +226,13 @@ dataset.get_view(variable_names=["b", "x"], components=[0])
 # [update_data()][gemseo.datasets.dataset.Dataset.update_data]
 # replaces a slice of the dataset identified by
 # group, variable, component and/or row index.
-# Here we overwrite row index `1` of the `"inputs"` group:
+# Here you overwrite row index `1` of the `"inputs"` group:
 dataset.update_data([[10, 10, 10]], "inputs", indices=[1])
 dataset
 
 # %%
-# We can focus on a specific variable as well.
-# Here, let's change the first row of the variable "a".
+# You can focus on a specific variable as well.
+# Here, change the first row of the variable "a".
 dataset.update_data([[5, 5]], variable_names="a", indices=[0])
 dataset
 

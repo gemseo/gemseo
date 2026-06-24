@@ -22,8 +22,8 @@
 
 ## Problem
 
-My ML model is not good enough.
-How can I calibrate its hyperparameters to improve its quality?
+Your ML model is not good enough.
+You want to calibrate its hyperparameters to improve its quality.
 
 ## Solution
 

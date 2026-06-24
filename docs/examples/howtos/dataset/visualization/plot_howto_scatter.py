@@ -17,14 +17,14 @@
 
 ## Problem
 
-Visualise the relationship between two variables `x` and `y` as individual points,
-with optional per-point colour coding.
+You want to visualize the relationship between two variables `x` and `y` as individual points,
+with optional per-point color coding.
 
 ## Solution
 
 Use [Scatter][gemseo.post.dataset.scatter.Scatter],
 which renders a scatter plot of `y` against `x`
-and supports per-point colour assignment.
+and supports per-point color assignment.
 
 ## Step-by-step guide
 """
@@ -50,9 +50,9 @@ dataset.add_variable("x", inputs, "inputs")
 dataset.add_variable("y", outputs, "outputs")
 
 # %%
-# ### 2. Define a per-point colour
+# ### 2. Define a per-point color
 #
-# Each point is coloured according to whether its output value exceeds 0.5 in magnitude:
+# Each point is colored according to whether its output value exceeds 0.5 in magnitude:
 color = ["b" if abs(output) > 0.5 else "r" for output in outputs]
 
 # %%
@@ -66,4 +66,4 @@ plot.execute(save=False, show=True)
 # ## Summary
 #
 # Pass the variable names as `x` and `y` to [Scatter][gemseo.post.dataset.scatter.Scatter]
-# and set `color` to a list of colour values to highlight specific points.
+# and set `color` to a list of color values to highlight specific points.

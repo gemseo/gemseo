@@ -50,7 +50,7 @@ BACKUP_FILE = Path("backup.hdf5")
 # ### 1. Create the scenario
 #
 # For this optimization scenario,
-# we minimize the sphere function $f(x, y) = x^2 + y^2$ over two variables,
+# you minimize the sphere function $f(x, y) = x^2 + y^2$ over two variables,
 # both bounded in $[-5, 5]$ with starting point $(4, 4)$.
 # The global minimum is at the origin with $f = 0$.
 discipline = AnalyticDiscipline({"obj": "x**2 + y**2"})
@@ -96,7 +96,7 @@ scenario.set_backup_settings(BACKUP_FILE)
 scenario.execute(SLSQP_Settings(max_iter=20))
 
 # %%
-# After execution we confirm that the file was written
+# After execution you confirm that the file was written
 # and check how many unique design points were stored in the database.
 print(f"Backup file exists: {BACKUP_FILE.exists()}")
 print(f"Evaluations stored: {len(scenario.formulation.problem.database)}")
@@ -141,7 +141,7 @@ scenario_2.execute(SLSQP_Settings(max_iter=20))
 #     returns cached values instantly when a point is already known,
 #     so no discipline evaluation takes place for those points.
 #
-# We remove the file for documentation purposes:
+# You remove the file for documentation purposes:
 BACKUP_FILE.unlink()
 
 # %%

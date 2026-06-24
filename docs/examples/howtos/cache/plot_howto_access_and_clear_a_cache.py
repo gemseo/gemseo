@@ -38,8 +38,8 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 # %%
 # ### 1. Create and execute a discipline
 #
-# Here, we consider an analytic discipline.
-# For the purpose of this example, let's set a full cache and
+# Here, you consider an analytic discipline.
+# For the purpose of this example, set a full cache and
 # execute the discipline a few times.
 discipline = AnalyticDiscipline({"y": "x1+x2"})
 discipline.set_cache(discipline.CacheType.MEMORY_FULL)

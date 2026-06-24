@@ -67,7 +67,7 @@ chain
 #     `DisciplineChain([discipline_a, discipline_b])` executes `discipline_a` before `discipline_b`
 #     while `DisciplineChain([discipline_b, discipline_a])` executes `discipline_b` before `discipline_a`.
 #
-# We can execute the chain using its default inputs:
+# You can execute the chain using its default inputs:
 chain.execute()
 
 # %%
@@ -85,7 +85,7 @@ chain.execute({"x": array([5])})
 #
 # Multiple disciplines can be chained together thanks to the
 # [DisciplineChain][gemseo.core.chains.chain.DisciplineChain].
-# The order of execution is specified by the user.
+# You specify the order of execution.
 #
 # ## One step further
 #

@@ -43,8 +43,11 @@ from gemseo.machine_learning import create_regression_model
 # %%
 # ## Problem
 #
+# You want to build a linear regression model from data,
+# and assess how well it approximates the underlying function.
+#
 # In this example,
-# we represent the function $f(x)=(6x-2)^2\sin(12x-4)$
+# you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
 # by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
@@ -56,13 +59,13 @@ discipline = create_discipline(
     name="f",
 )
 # %%
-# and seek to approximate it over the input space
+# and you seek to approximate it over the input space
 input_space = create_design_space()
 input_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # To do this,
-# we create a training dataset with 6 equispaced points:
+# you create a training dataset with 6 equispaced points:
 training_dataset = sample_disciplines(
     [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=6
 )
@@ -73,7 +76,7 @@ training_dataset = sample_disciplines(
 # ### Training
 #
 # Then,
-# we train a linear regression model from these samples:
+# you train a linear regression model from these samples:
 model = create_regression_model("LinearRegressor", training_dataset)
 model.learn()
 
@@ -81,7 +84,7 @@ model.learn()
 # ### Prediction
 #
 # Once it is built,
-# we can predict the output value of $f$ at a new input point:
+# you can predict the output value of $f$ at a new input point:
 input_value = {"x": array([0.65])}
 output_value = model.predict(input_value)
 output_value
@@ -129,9 +132,9 @@ model.learn()
 #
 #     This notion applies in the space of transformed variables.
 #     This is the reason why
-#     we removed the default transformers by setting `transformer` to `{}`.
+#     you removed the default transformers by setting `transformer` to `{}`.
 #
-# We can see the impact of this option in the following visualization:
+# You can see the impact of this option in the following visualization:
 predicted_output_data_ = model.predict(input_data).ravel()
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
@@ -158,7 +161,7 @@ plt.show()
 # parametrized by this `l2_penalty_ratio`.
 #
 # For example,
-# we can use the ridge penalty with a level of 1.2
+# you can use the ridge penalty with a level of 1.2
 model = create_regression_model("LinearRegressor", training_dataset, penalty_level=1.2)
 model.learn()
 predicted_output_data_ = model.predict(input_data).ravel()
@@ -169,10 +172,10 @@ plt.grid()
 plt.legend()
 plt.show()
 # %%
-# We can see that the coefficient of the linear model is lower due to the penalty.
+# You can see that the coefficient of the linear model is lower due to the penalty.
 #
 # !!! note
 #
 #     In the case of a model with many inputs,
-#     we could have used the lasso penalty
+#     you could have used the lasso penalty
 #     and seen that some coefficients would have been set to zero.

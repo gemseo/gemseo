@@ -17,7 +17,7 @@
 
 ## Problem
 
-You want to solve a constrained optimisation problem
+You want to solve a constrained optimization problem
 but the algorithm of your choice does not support constraints.
 
 ## Solution
@@ -39,7 +39,7 @@ from gemseo.settings import L_BFGS_B_Settings
 # %%
 # ### 1. Build the disciplines, design space and scenario
 #
-# We use the Sobieski SSBJ test case.
+# You use the Sobieski SSBJ test case.
 # See [the benchmark problems][benchmark-problems] for a full description.
 disciplines = create_discipline([
     "SobieskiPropulsion",
@@ -76,14 +76,14 @@ scenario.formulation.problem.apply_exterior_penalty(
 # ### 4. Execute your scenario
 #
 # L-BFGS-B is a gradient-based algorithm that does not handle constraints.
-# It can now be used safely on the penalised problem:
+# It can now be used safely on the penalized problem:
 scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
 # %%
 # ### 5. Inspect the constraint history
 #
 # Even though the constraints were folded into the objective,
-# their history is still tracked and can be visualised:
+# their history is still tracked and can be visualized:
 scenario.post_process(
     BasicHistory_Settings(variable_names=["g_1", "g_2", "g_3"], save=False, show=True)
 )
@@ -94,7 +94,7 @@ scenario.post_process(
 # Call `apply_exterior_penalty()` on the formulation problem after adding constraints
 # and before executing the scenario.
 # This converts a constrained problem into an unconstrained one
-# by penalising constraint violations in the objective function,
+# by penalizing constraint violations in the objective function,
 # making it compatible with algorithms like L-BFGS-B.
 #
 # ## One step further

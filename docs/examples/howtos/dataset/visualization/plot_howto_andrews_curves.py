@@ -17,7 +17,7 @@
 
 ## Problem
 
-Visualise high-dimensional data and reveal cluster structure
+You want to visualize high-dimensional data and reveal cluster structure
 by representing each sample as a smooth curve.
 
 ## Solution
@@ -44,7 +44,7 @@ iris = create_benchmark_dataset("IrisDataset")
 # %%
 # ### 2. Plot the Andrews curves
 #
-# Pass the classifier variable name to colour each curve by class:
+# Pass the classifier variable name to color each curve by class:
 AndrewsCurves(iris, AndrewsCurves_Settings(classifier="specy")).execute(
     save=False, show=True
 )
@@ -53,5 +53,5 @@ AndrewsCurves(iris, AndrewsCurves_Settings(classifier="specy")).execute(
 # ## Summary
 #
 # [AndrewsCurves][gemseo.post.dataset.andrews_curves.AndrewsCurves] maps each sample
-# to a smooth Fourier curve, coloured by the classifier variable.
-# Overlapping curves of the same colour indicate a cluster structure in the data.
+# to a smooth Fourier curve, colored by the classifier variable.
+# Overlapping curves of the same color indicate a cluster structure in the data.

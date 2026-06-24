@@ -60,12 +60,12 @@ scenario.add_observable("y_4")
 # ### 2. Execute the scenario with multiprocessing
 #
 # It is possible to run a DOE in parallel using multiprocessing, in order to do
-# this, we specify the number of processes to be used for the computation of
+# this, you specify the number of processes to be used for the computation of
 # the samples.
 #
 # !!! warning
 #       The multiprocessing option has some limitations on Windows,
-#       so we deactivate it in case of Windows usage.
+#       so you deactivate it in case of Windows usage.
 n_processes = 4 if not PLATFORM_IS_WINDOWS else 1
 
 # %%

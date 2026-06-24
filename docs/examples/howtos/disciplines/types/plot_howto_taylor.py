@@ -17,9 +17,9 @@ r"""# Use a Taylor linearization
 
 ## Problem
 
-How can I create a discipline
+You want to create a discipline
 computing the first-order Taylor polynomial of a given discipline
-at a specific point?
+at a specific point.
 
 ## Solution
 

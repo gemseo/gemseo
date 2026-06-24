@@ -18,7 +18,7 @@
 ## Problem
 
 Cross-validation uses 5 folds by default.
-How can I change this value?
+You want to change this value.
 
 ## Solution
 
@@ -45,7 +45,7 @@ from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
 # ### 1. Define the reference model
 #
 # In this how-to guide,
-# we consider the wing weight problem
+# you consider the wing weight problem
 # defined in [this page][gemseo.problems.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
@@ -54,7 +54,7 @@ input_space = WingWeightUncertainSpace()
 # %%
 # ### 2. Create the training dataset
 #
-# We generate $3 \times d$ training samples
+# You generate $3 \times d$ training samples
 # using optimized Latin hypercube sampling strategy.
 
 training_dataset = sample_disciplines(
@@ -67,7 +67,7 @@ training_dataset = sample_disciplines(
 # %%
 # ### 3. Create the ML model
 #
-# We create a regressor from this training dataset,
+# You create a regressor from this training dataset,
 # taking care to normalize the data to facilitate learning.
 
 regressor = RBFRegressor(
@@ -79,7 +79,7 @@ regressor.learn()
 # %%
 # ### 4. Evaluate its quality by cross-validation
 #
-# We assess the quality of this regressor by cross-validation.
+# You assess the quality of this regressor by cross-validation.
 #
 # By default,
 # this technique uses 5 folds.

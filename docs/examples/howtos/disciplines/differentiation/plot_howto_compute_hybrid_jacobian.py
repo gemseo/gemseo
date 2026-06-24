@@ -112,15 +112,15 @@ class HybridDiscipline(Discipline):
 # %%
 # ### 2. Hybrid Jacobian approximation
 #
-# As you can see, we define the Jacobian function of the discipline with the discipline's method `_compute_jacobian()`.
+# As you can see, you define the Jacobian function of the discipline with the discipline's method `_compute_jacobian()`.
 # However,
-# we are only defining the derivatives that
-# we have or care about.
+# you are only defining the derivatives that
+# you have or care about.
 #
-# We then need to set one of the hybrid available modes
+# You then need to set one of the hybrid available modes
 # which are accessible from the attribute
 # [HybridApproximationMode][gemseo.core.discipline.discipline.Discipline.HybridApproximationMode].
-# We can set the step for the computation of the non-defined derivatives.
+# You can set the step for the computation of the non-defined derivatives.
 discipline = HybridDiscipline()
 discipline.set_jacobian_approximation(
     discipline.HybridApproximationMode.HYBRID_FINITE_DIFFERENCES,
@@ -139,13 +139,13 @@ discipline.set_jacobian_approximation(
 #
 # ### 3. Compute and compare the Jacobian
 #
-# We can compute the Jacobian.
+# You can compute the Jacobian.
 jacobian_data = discipline.linearize(compute_all_jacobians=True)
 jacobian_data
 
 # %%
 # And compare with the full not-implemented analytical Jacobian.
-# We compute the exact Jacobian manually at the default point
+# You compute the exact Jacobian manually at the default point
 x1, x2, x3 = 1.0, 1.0, 1.0
 
 exact = {
@@ -185,7 +185,7 @@ for y in ["y_1", "y_2", "y_3"]:
 
 table
 # %%
-# As we can see,
+# As you can see,
 # some entries are exact
 # (since they are analytically defined in the discipline),
 # while others are approximated.

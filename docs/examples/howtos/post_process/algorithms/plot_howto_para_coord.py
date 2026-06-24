@@ -17,7 +17,7 @@
 
 ## Problem
 
-After an optimisation, you want to visualise how the design variables evolved
+After an optimization, you want to visualize how the design variables evolved
 across iterations and identify correlations between their values
 and the objective function.
 
@@ -25,8 +25,8 @@ and the objective function.
 
 Use [ParallelCoordinates][gemseo.post.dataset.parallel_coordinates.ParallelCoordinates],
 which plots the design variable history as a cobweb chart.
-Each vertical axis corresponds to a design variable normalised by its bounds.
-Each iteration is represented as a polyline coloured by the objective function value,
+Each vertical axis corresponds to a design variable normalized by its bounds.
+Each iteration is represented as a polyline colored by the objective function value,
 highlighting correlations between design variables and objective.
 
 ## Step-by-step guide
@@ -59,7 +59,7 @@ execute_post(
 # ## Summary
 #
 # [ParallelCoordinates][gemseo.post.dataset.parallel_coordinates.ParallelCoordinates]
-# displays the design variable history as a cobweb chart coloured by objective value,
+# displays the design variable history as a cobweb chart colored by objective value,
 # making correlations between design variables and the objective visible at a glance.
 # Pass any HDF5 file from a previously executed scenario to
 # [execute_post()][gemseo.execute_post].

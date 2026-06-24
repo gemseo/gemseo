@@ -24,8 +24,7 @@
 
 ## Problem
 
-I would like to group data according to their similarities.
-How can I use clustering for that purpose?
+You want to group data according to their similarities using clustering.
 
 ## Solution
 
@@ -60,7 +59,7 @@ model = KMeans(
     training_dataset,
     settings=KMeans_Settings(
         n_clusters=3,
-        # We remove the variable "specy"
+        # Remove the variable "specy"
         # that corresponds to the expected cluster from a biological perspective;
         # otherwise it would be cheating!
         var_names=training_dataset.get_variable_names(training_dataset.PARAMETER_GROUP),

@@ -39,7 +39,7 @@ You will learn how to:
   [ODESolverLibraryFactory][gemseo.algos.ode.factory.ODESolverLibraryFactory],
 - **inspect** the results.
 
-As a running example, we use the Van der Pol equation,
+As a running example, this tutorial uses the Van der Pol equation,
 describing the position over time of an oscillator with non-linear damping:
 
 $$\\frac{d^2 x(t)}{dt^2} - \\mu (1 - x^2(t)) \\frac{dx(t)}{dt} + x(t) = 0$$
@@ -75,7 +75,7 @@ if TYPE_CHECKING:
 # %%
 # ## Step 1 — Define the RHS function
 #
-# We define $f(t, s(t))$ as a Python function.
+# You define $f(t, s(t))$ as a Python function.
 # The stiffness parameter $\mu$ controls the degree of non-linearity:
 mu = 5
 
@@ -145,7 +145,7 @@ ode_problem_with_jacobian = ODEProblem(
 #
 # Use [ODESolverLibraryFactory][gemseo.algos.ode.factory.ODESolverLibraryFactory]
 # to solve the problem.
-# Here we use the Runge-Kutta RK45 method:
+# Here you use the Runge-Kutta RK45 method:
 ODESolverLibraryFactory().execute(ode_problem, RK45_Settings())
 ODESolverLibraryFactory().execute(ode_problem_with_jacobian, RK45_Settings())
 

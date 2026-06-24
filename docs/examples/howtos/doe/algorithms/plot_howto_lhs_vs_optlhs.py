@@ -22,7 +22,7 @@ Given a number of samples and a dimension,
 calling an LHS algorithm twice will lead to two different sets of points.
 For studies where space-fillingness matters,
 e.g. surrogate modelling,
-we are looking for a set that maximizes the coverage of the space.
+you are looking for a set that maximizes the coverage of the space.
 
 ## Solution
 
@@ -89,7 +89,7 @@ plt.plot(samples[:, 0], samples[:, 1], "o")
 plt.xticks(linspace(0, 1, n + 1), minor=True)
 plt.yticks(linspace(0, 1, n + 1), minor=True)
 plt.grid(which="both")
-plt.title("LHS optimised by Monte Carlo")
+plt.title("LHS optimized by Monte Carlo")
 plt.show()
 
 # %%
@@ -97,7 +97,7 @@ plt.show()
 #
 # `"OT_OPT_LHS"` with its default settings (`annealing=True`) goes further:
 # starting from the best Monte Carlo candidate,
-# it applies simulated annealing — a global optimisation algorithm that
+# it applies simulated annealing — a global optimization algorithm that
 # iteratively perturbs the design and accepts degradations with a decreasing
 # probability, allowing it to escape local optima and converge to a
 # near-optimal space-filling design.
@@ -108,7 +108,7 @@ plt.plot(samples[:, 0], samples[:, 1], "o")
 plt.xticks(linspace(0, 1, n + 1), minor=True)
 plt.yticks(linspace(0, 1, n + 1), minor=True)
 plt.grid(which="both")
-plt.title("LHS optimised by simulated annealing")
+plt.title("LHS optimized by simulated annealing")
 plt.show()
 
 # %%
@@ -123,9 +123,9 @@ plt.show()
 # ## One step further
 #
 # The optimized LHS `"OT_OPT_LHS"` exposes additional settings
-# to fine-tune the optimisation:
+# to fine-tune the optimization:
 # `criterion` to change the space-filling criterion,
 # `n_replicates` to control the number of Monte Carlo candidates,
 # and `temperature` to adjust the simulated annealing profile.
-# SciPy's `"LHS"` algorithm offers similar optimisation capabilities
+# SciPy's `"LHS"` algorithm offers similar optimization capabilities
 # via its `optimization` option (`"random-cd"` or `"lloyd"`).

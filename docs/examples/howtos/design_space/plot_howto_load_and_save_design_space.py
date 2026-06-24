@@ -41,7 +41,7 @@ from gemseo import write_design_space
 # %%
 # ### 1. Read a design space from a file
 #
-# Let's imagine we get a design space stored as:
+# Imagine you get a design space stored as:
 #
 # ``` txt
 # name lower_bound value upper_bound type
@@ -50,7 +50,7 @@ from gemseo import write_design_space
 # x 2. 3. 5. integer
 # ```
 #
-# The user can read a design space from a file using the
+# You can read a design space from a file using the
 # [read_design_space()][gemseo.read_design_space] function.
 design_space = read_design_space("design_space.csv")
 design_space
@@ -64,7 +64,7 @@ design_space
 #
 # !!! warning
 #
-#     -   User must provide the following minimal fields in the file defining the design space: `'name'`, `'lower_bound'` and `'upper_bound'`.
+#     -   You must provide the following minimal fields in the file defining the design space: `'name'`, `'lower_bound'` and `'upper_bound'`.
 #     -   For each variable `'name'`, the inequality `'lower_bound'` <= `'upper_bound'` must be satisfied.
 #     If given, the `'value'` must satisfy `'lower_bound'` <= `'value'` <= `'upper_bound'`.
 #

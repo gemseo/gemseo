@@ -49,8 +49,8 @@ if TYPE_CHECKING:
 
 # %%
 #
-# We configure the logger to see the listener's output in the console.
-# In this case we use GEMSEO's default configuration.
+# You configure the logger to see the listener's output in the console.
+# In this case you use GEMSEO's default configuration.
 # See [Global configuration][concept-global-configuration] for the scope of the logging configuration.
 LOGGER = logging.getLogger(__name__)
 configuration.logging.configure_root_logger = True
@@ -60,7 +60,7 @@ configuration.logging.configure_root_logger = True
 # ### 1. Create the scenario
 #
 # For this optimization scenario,
-# We minimize the sphere function $f(x, y) = x^2 + y^2$ over two variables,
+# you minimize the sphere function $f(x, y) = x^2 + y^2$ over two variables,
 # both bounded in $[-5, 5]$ with starting point $(4, 4)$.
 discipline = AnalyticDiscipline({"obj": "x**2 + y**2"})
 
@@ -80,9 +80,9 @@ scenario.add_objective("obj")
 # [Database.get_function_value][gemseo.algos.database.Database.get_function_value]
 # to retrieve the corresponding output value.
 #
-# Here we track the objective at each iteration by capturing a reference to
+# Here you track the objective at each iteration by capturing a reference to
 # the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-# in a closure; additionally, we log the design vector to demonstrate the live
+# in a closure; additionally, you log the design vector to demonstrate the live
 # tracking of the process:
 problem: OptimizationProblem = scenario.formulation.problem
 obj_history = []

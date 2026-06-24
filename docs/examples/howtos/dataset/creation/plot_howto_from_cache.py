@@ -45,7 +45,7 @@ from gemseo.caches.memory_full import MemoryFullCache
 # %%
 # ### 1. Create a cache
 #
-# Let us consider an [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache] storing two parameters:
+# Consider an [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache] storing two parameters:
 #
 # - x with dimension 1 which is a cache input,
 # - y with dimension 2 which is a cache output.
@@ -65,7 +65,7 @@ dataset
 # %%
 # The input variables belong to the input group
 # and the output variables to the output group.
-# We can avoid this categorization and simply build a [Dataset][gemseo.datasets.dataset.Dataset]:
+# You can avoid this categorization and simply build a [Dataset][gemseo.datasets.dataset.Dataset]:
 dataset = cache.to_dataset("toy_cache", categorize=False)
 dataset
 

@@ -64,7 +64,7 @@ from gemseo.settings.opt import MNBI_Settings
 # %%
 # ### 1. Define the optimization problem
 #
-# We use the
+# You use the
 # [BinhKorn][gemseo.problems.multiobjective_optimization.binh_korn.BinhKorn]
 # benchmark problem:
 #
@@ -118,7 +118,7 @@ execute_post(problem, ParetoFront_Settings(save=False, show=True))
 # %%
 # ## Summary
 #
-# We used the [MNBI][gemseo.algos.opt.mnbi.mnbi.MNBI] algorithm to compute
+# You used the [MNBI][gemseo.algos.opt.mnbi.mnbi.MNBI] algorithm to compute
 # a well-spread Pareto front for the constrained
 # [BinhKorn][gemseo.problems.multiobjective_optimization.binh_korn.BinhKorn] problem.
 # The number of Pareto-optimal points is controlled by `n_sub_optim`.

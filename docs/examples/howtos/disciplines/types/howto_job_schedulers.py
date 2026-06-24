@@ -18,7 +18,7 @@ r"""# Interface with HPC job schedulers (SLURM, LSF, PBS, etc)
 
 ## Problem
 
-How can I send any discipline,
+You want to send any discipline,
 or sub-process such as an MDA,
 to an HPC using the job scheduler interfaces.
 

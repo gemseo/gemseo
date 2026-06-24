@@ -116,7 +116,7 @@ times = linspace(0.0, 2.0, 30)
 # %%
 # ## Step 2 - Strategy 1: MDA between ODEDiscipline instances
 #
-# We define one RHS discipline per mass.
+# You define one RHS discipline per mass.
 # Each discipline takes the trajectory of the neighbouring mass
 # as an input (interpolated at each time step)
 # to account for the coupling:
@@ -187,7 +187,7 @@ class RHSMassDisciplineRight(Discipline):
 
 
 # %%
-# We create one [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+# You create one [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
 # per mass and couple them with a
 # [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel].
 # ![image](../../../../../assets/images/ode/springs-disciplines.png)
@@ -225,7 +225,7 @@ plt.show()
 # %%
 # ## Step 3 - Strategy 2: single ODEDiscipline with coupled dynamics
 #
-# We define the RHS of both masses as plain Python functions
+# You define the RHS of both masses as plain Python functions
 # and wrap them in an [DisciplineChain][gemseo.core.chains.chain.DisciplineChain].
 # The coupling is then resolved internally at each time step
 # during the integration.
@@ -294,7 +294,7 @@ plt.show()
 # ## Step 4 - Compare the two strategies
 #
 # Both strategies should yield the same trajectories.
-# We verify this by plotting the absolute difference between the results:
+# You verify this by plotting the absolute difference between the results:
 error_1 = abs(result_strategy_1["position_1"] - result_strategy_2["position_1"])
 error_2 = abs(result_strategy_1["position_2"] - result_strategy_2["position_2"])
 

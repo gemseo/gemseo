@@ -133,7 +133,7 @@ for an MDO problem solved using the MDF formulation with the Jacobi MDA method.
 configures an HDF backup file updated at each function call and/or iteration,
 so that no evaluation is lost if the run is interrupted.
 The mechanism can resume from a previous backup or start fresh by overwriting it.
-It can also save an [optimization history view][full-optimisation-history-overview] at each iteration.
+It can also save an [optimization history view][full-optimization-history-overview] at each iteration.
 
 ### Differentiation method { #concept-scenario-differentiation-method }
 

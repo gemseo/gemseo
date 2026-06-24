@@ -17,7 +17,7 @@
 
 ## Problem
 
-Compare multiple series of values across several variables on a single polar chart.
+You want to compare multiple series of values across several variables on a single polar chart.
 
 ## Solution
 

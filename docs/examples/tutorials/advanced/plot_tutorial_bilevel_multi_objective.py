@@ -39,7 +39,7 @@ The idea is to treat the first objective $f_1$ as a system-level DOE parameter
 sub-level for each target value.
 Only sub-level solutions that match the target appear on the Pareto front.
 
-We use the [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation
+This tutorial uses the [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation
 to nest a lower-level [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
 (minimizing $f_2$ for a given `obj1_target`)
 inside a system-level [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
@@ -79,7 +79,7 @@ from gemseo.settings.post import ParetoFront_Settings
 # %%
 # ## Step 1 - Define the disciplines
 #
-# We define two
+# You define two
 # [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline] objects
 # from symbolic expressions.
 # The first discipline computes $f_1$, $f_2$, $g_1$, and $g_2$.
@@ -125,7 +125,7 @@ sub_scenario.add_objective("obj2")
 sub_scenario.set_algorithm(NLOPT_SLSQP_Settings(max_iter=50))
 
 # %%
-# We add the Binh-Korn inequality constraints $g_1$ and $g_2$.
+# You add the Binh-Korn inequality constraints $g_1$ and $g_2$.
 sub_scenario.add_constraint("cstr1", constraint_type="ineq")
 sub_scenario.add_constraint("cstr2", constraint_type="ineq")
 
@@ -201,7 +201,7 @@ system_scenario.post_process(
 # ## Step 8 - Inspect the sub-scenario optimization histories
 #
 # Since `keep_opt_history=True` (default), the database of each sub-level run
-# is stored in memory. We inspect the first two.
+# is stored in memory. You inspect the first two.
 
 # %%
 # !!! note

@@ -24,7 +24,7 @@ Similarly,
 bootstrap is based on a pseudo-random resampling
 so that
 two bootstrap validations with the same number of replicates lead to different results.
-How can I make these results reproducible?
+You want to make these results reproducible.
 
 ## Solution
 
@@ -55,7 +55,7 @@ from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
 # ### 1. Define the reference model
 #
 # In this how-to guide,
-# we consider the wing weight problem
+# you consider the wing weight problem
 # defined in [this page][gemseo.problems.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
@@ -64,7 +64,7 @@ input_space = WingWeightUncertainSpace()
 # %%
 # ### 2. Create the training dataset
 #
-# We generate $3 \times d$ training samples
+# You generate $3 \times d$ training samples
 # using the optimized Latin hypercube sampling strategy.
 
 training_dataset = sample_disciplines(
@@ -77,7 +77,7 @@ training_dataset = sample_disciplines(
 # %%
 # ### 2. Create the ML model
 #
-# We create a regressor from this training dataset,
+# You create a regressor from this training dataset,
 # taking care to normalize the data to facilitate learning.
 
 regressor = RBFRegressor(
@@ -91,7 +91,7 @@ regressor.learn()
 #
 # #### Cross-validation
 #
-# We assess the quality of this regressor by cross-validation.
+# You assess the quality of this regressor by cross-validation.
 r2 = R2Measure(regressor)
 r2.compute_cross_validation_measure()
 
@@ -113,7 +113,7 @@ r2.compute_cross_validation_measure(seed=123)
 #
 # #### Bootstrap
 #
-# We assess the quality of the regressor by bootstrap.
+# You assess the quality of the regressor by bootstrap.
 r2 = R2Measure(regressor)
 r2.compute_bootstrap_measure()
 

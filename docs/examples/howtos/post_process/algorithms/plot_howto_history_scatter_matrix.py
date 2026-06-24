@@ -17,7 +17,7 @@
 
 ## Problem
 
-After an optimisation or a DOE, you want a pairwise overview of the bivariate relationships
+After an optimization or a DOE, you want a pairwise overview of the bivariate relationships
 between selected design variables and output functions.
 
 ## Solution
@@ -63,7 +63,7 @@ execute_post(
 # ## Summary
 #
 # [ScatterPlotMatrix][gemseo.post.scatter_plot_matrix.ScatterPlotMatrix] provides
-# a pairwise view of selected variables from the optimisation or DOE history.
+# a pairwise view of selected variables from the optimization or DOE history.
 # Use `variable_names` to restrict the matrix to the variables of interest.
 # Pass any HDF5 file from a previously executed scenario to
 # [execute_post()][gemseo.execute_post].

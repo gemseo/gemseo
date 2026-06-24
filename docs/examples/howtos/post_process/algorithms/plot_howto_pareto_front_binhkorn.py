@@ -17,13 +17,13 @@
 
 ## Problem
 
-For a multi-objective problem, you want to visualise the Pareto front
+For a multi-objective problem, you want to visualize the Pareto front
 and control whether non-feasible points are displayed.
 
 ## Solution
 
 Use [ParetoFront][gemseo.post.pareto_front.ParetoFront] directly on the
-optimisation problem after running a DOE.
+optimization problem after running a DOE.
 Use `show_non_feasible` to toggle the display of non-feasible points
 and `objectives_labels` to assign readable labels to the objectives.
 
@@ -39,11 +39,11 @@ from gemseo.post import ParetoFront_Settings
 from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
-# ### 1. Build and sample the optimisation problem
+# ### 1. Build and sample the optimization problem
 #
-# We use the Binh and Korn problem
+# You use the Binh and Korn problem
 # (see [BinhKorn][gemseo.problems.multiobjective_optimization.binh_korn.BinhKorn])
-# and sample it with an optimised LHS:
+# and sample it with an optimized LHS:
 problem = BinhKorn()
 DOE_LIBRARY_FACTORY.execute(problem, OT_OPT_LHS_Settings(n_samples=100))
 
@@ -81,6 +81,6 @@ execute_post(
 # ## Summary
 #
 # [ParetoFront][gemseo.post.pareto_front.ParetoFront] can be applied directly
-# to an optimisation problem after a DOE.
+# to an optimization problem after a DOE.
 # Use `show_non_feasible=False` to hide non-feasible points
 # and `objectives_labels` to assign readable names to the objective components.

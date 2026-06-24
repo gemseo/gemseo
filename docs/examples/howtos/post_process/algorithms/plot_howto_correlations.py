@@ -13,17 +13,17 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-r"""# Correlation analysis of optimisation variables
+r"""# Correlation analysis of optimization variables
 
 ## Problem
 
-After an optimisation or a DOE, you want to identify which pairs of design
+After an optimization or a DOE, you want to identify which pairs of design
 variables, objective and constraints are linearly correlated.
 
 ## Solution
 
 Use [Correlations][gemseo.post.correlations.Correlations], which computes
-the normalised correlation coefficient
+the normalized correlation coefficient
 
 $$R_{xy} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}
 {\sqrt{\sum_{i=1}^n (x_i - \bar{x})^2 \sum_{i=1}^n (y_i - \bar{y})^2}}$$

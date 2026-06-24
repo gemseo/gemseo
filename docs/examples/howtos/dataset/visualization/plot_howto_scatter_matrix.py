@@ -69,4 +69,4 @@ PairPlot(iris, PairPlot_Settings(use_ranks=True)).execute(save=False, show=True)
 #
 # [PairPlot][gemseo.post.dataset.pair_plot.PairPlot]
 # provides an overview of all pairwise relationships in a single figure.
-# Use the `classifier` argument to colour points by a categorical variable.
+# Use the `classifier` argument to color points by a categorical variable.

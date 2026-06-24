@@ -39,7 +39,7 @@ from gemseo.settings.doe import PYDOE_FULLFACT_Settings
 # ## Step 1 — The discipline to evaluate
 #
 # Firstly,
-# we create a [Discipline][gemseo.core.discipline.discipline.Discipline] of
+# you create a [Discipline][gemseo.core.discipline.discipline.Discipline] of
 # [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline] type
 # from a Python function:
 discipline = AnalyticDiscipline({"y": "x1+x2"})
@@ -47,7 +47,7 @@ discipline = AnalyticDiscipline({"y": "x1+x2"})
 # %%
 # ## Step 2 - Define your design space
 #
-# Now, we want to evaluate this
+# Now, you want to evaluate this
 # [Discipline][gemseo.core.discipline.discipline.Discipline]
 # over a design of experiments (DOE).
 # The points to evaluate will be chosen in a given
@@ -66,7 +66,7 @@ design_space.add_variable("x2", lower_bound=-5, upper_bound=5, type_="integer")
 # ## Step 3 - Define your DoE scenario
 #
 # Then,
-# we define an [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario]
+# you define an [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario]
 # from the [Discipline][gemseo.core.discipline.discipline.Discipline]
 # and the [DesignSpace][gemseo.algos.design_space.DesignSpace] defined above:
 
@@ -75,26 +75,26 @@ scenario = EvaluationScenario((discipline,), design_space, name="My evaluation")
 # %%
 # !!! note
 #     Here,
-#     we chose the `DisciplinaryOpt` formulation since we get only one discipline.
+#     you chose the `DisciplinaryOpt` formulation since you get only one discipline.
 #     Other formulations can be chosen for more complex evaluation workflows.
 #
-# We specify which variables to observe.
-# In our case,
+# You specify which variables to observe.
+# In your case,
 # the `y` variable is important.
-# We chose to give this variable a new name (`Result`),
+# You chose to give this variable a new name (`Result`),
 # for plot purposes.
 scenario.add_observable("y", observable_name="Result")
 # %%
 # ## Step 4 - Execute your DoE scenario
 #
-# The sampling strategy of our
+# The sampling strategy of your
 # [DesignSpace][gemseo.algos.design_space.DesignSpace],
 # is determinded through the selection of a DoE algorithm.
-# In our case,
+# In your case,
 # since all possible combinations correspond to only 121 points,
-# we want to evaluate all of them.
+# you want to evaluate all of them.
 # To this end,
-# we choose a
+# you choose a
 # [full factorial design](https://en.wikipedia.org/wiki/Factorial_experiment)
 # of size $11^2$:
 
@@ -116,7 +116,7 @@ scenario.execute(PYDOE_FULLFACT_Settings(n_samples=11**2))
 # - `inputs` to store the evaluated points
 # - `outputs` to store the observables.
 #
-# In our case, the `y` variable appears as `Result`.
+# In your case, the `y` variable appears as `Result`.
 scenario.to_dataset()
 
 # %%

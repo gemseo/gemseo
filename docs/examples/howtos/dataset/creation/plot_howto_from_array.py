@@ -41,9 +41,9 @@ from gemseo.datasets.dataset import Dataset
 # %%
 # ### 1. Generate the data
 #
-# Let us consider three parameters $x_1$, $x_2$ and $x_3$
+# Consider three parameters $x_1$, $x_2$ and $x_3$
 # of size 1, 2 and 3 respectively.
-# We generate 5 random samples of the inputs where
+# You generate 5 random samples of the inputs where
 #
 # - x_1 is stored in the first column,
 # - x_2 is stored in the 2nd and 3rd columns

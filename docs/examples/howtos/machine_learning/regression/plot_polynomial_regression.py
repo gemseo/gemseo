@@ -49,8 +49,11 @@ from gemseo.machine_learning import create_regression_model
 # %%
 # ## Problem
 #
+# You want to build a polynomial regression model from data,
+# and assess how well it approximates the underlying function.
+#
 # In this example,
-# we represent the function $f(x)=(6x-2)^2\sin(12x-4)$
+# you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
 # by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
@@ -62,13 +65,13 @@ discipline = create_discipline(
     name="f",
 )
 # %%
-# and seek to approximate it over the input space
+# and you seek to approximate it over the input space
 input_space = create_design_space()
 input_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # To do this,
-# we create a training dataset with 6 equispaced points:
+# you create a training dataset with 6 equispaced points:
 training_dataset = sample_disciplines(
     [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=6
 )
@@ -79,7 +82,7 @@ training_dataset = sample_disciplines(
 # ### Training
 #
 # Then,
-# we train a polynomial regression model with a degree of 2 (default)
+# you train a polynomial regression model with a degree of 2 (default)
 # from these samples:
 model = create_regression_model("PolynomialRegressor", training_dataset)
 model.learn()
@@ -88,7 +91,7 @@ model.learn()
 # ### Prediction
 #
 # Once it is built,
-# we can predict the output value of $f$ at a new input point:
+# you can predict the output value of $f$ at a new input point:
 input_value = {"x": array([0.65])}
 output_value = model.predict(input_value)
 output_value
@@ -123,14 +126,14 @@ plt.show()
 # Most of them are presented
 # in [the example about the linear regression model][polynomial-regression].
 #
-# The only one we will look at here is the degree of the polynomial regression model.
+# The only one you will look at here is the degree of the polynomial regression model.
 # This information can be set with the `degree` keyword.
 # For example,
-# we can use a cubic regression model instead of a quadratic one:
+# you can use a cubic regression model instead of a quadratic one:
 model = create_regression_model("PolynomialRegressor", training_dataset, degree=3)
 model.learn()
 # %%
-# and see that this model seems to be better:
+# and you see that this model seems to be better:
 predicted_output_data_ = model.predict(input_data).ravel()
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")

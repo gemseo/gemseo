@@ -17,7 +17,7 @@
 
 ## Problem
 
-Visualise how a variable `y` evolves as a function of another variable `x`.
+You want to visualize how a variable `y` evolves as a function of another variable `x`.
 
 ## Solution
 
@@ -58,7 +58,7 @@ plot.execute(save=False, show=True)
 # ## Summary
 #
 # Pass the input variable name as `x` and the output variable name as `y`
-# to [YvsX][gemseo.post.dataset.yvsx.YvsX] to visualise their relationship.
+# to [YvsX][gemseo.post.dataset.yvsx.YvsX] to visualize their relationship.
 #
 # ## One step further
 #

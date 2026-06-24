@@ -17,7 +17,7 @@ r"""# Quadratic approximation of a function
 
 ## Problem
 
-After an optimisation, you want to understand the second-order sensitivity
+After an optimization, you want to understand the second-order sensitivity
 of a function with respect to the design variables,
 and identify which variables have the most influence at the optimum.
 

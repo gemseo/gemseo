@@ -18,7 +18,7 @@
 ## Problem
 
 You have an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
-in memory and want to visualise the optimisation history
+in memory and want to visualize the optimization history
 without going back to the original scenario or HDF5 file.
 
 ## Solution
@@ -26,7 +26,7 @@ without going back to the original scenario or HDF5 file.
 Pass the [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
 directly to [execute_post()][gemseo.execute_post],
 just as you would pass a scenario or an HDF5 file path.
-Functions are automatically mapped to their optimisation role
+Functions are automatically mapped to their optimization role
 (objective, constraints, observables).
 
 ## Step-by-step guide
@@ -41,11 +41,11 @@ from gemseo.settings.post import OptHistoryView_Settings
 # %%
 # ### 1. Build the dataset
 #
-# In this how-to, we assume that only an
+# In this how-to, you assume that only an
 # [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
 # is available — no live scenario, no HDF5 file.
 # As a workaround to create the prerequisite,
-# we load an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# you load an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
 # from an HDF5 file stored in the documentation directory
 # and convert it to an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset].
 problem = OptimizationProblem.from_hdf("power2_opt_pb.h5")
@@ -70,4 +70,4 @@ execute_post(
 # [execute_post()][gemseo.execute_post] accepts an
 # [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
 # as its first argument.
-# Functions are automatically mapped to their optimisation role.
+# Functions are automatically mapped to their optimization role.

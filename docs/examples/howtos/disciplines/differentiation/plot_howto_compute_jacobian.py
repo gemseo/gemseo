@@ -86,7 +86,7 @@ jacobian_data = discipline.linearize({"a": array([1.0])})
 jacobian_data
 
 # %%
-# We can also force the discipline to compute
+# You can also force the discipline to compute
 # the derivatives of all the outputs with respect to all the inputs.
 jacobian_data = discipline.linearize(compute_all_jacobians=True)
 jacobian_data

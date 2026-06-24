@@ -17,7 +17,7 @@
 
 ## Problem
 
-After an optimisation, you want to quantify how sensitive the optimal objective
+After an optimization, you want to quantify how sensitive the optimal objective
 and constraint values are to small perturbations of the design variables.
 
 ## Solution
@@ -25,7 +25,7 @@ and constraint values are to small perturbations of the design variables.
 Use [Robustness][gemseo.post.robustness.Robustness], which propagates analytically
 a normal distribution with 1% standard deviation on all design variables
 (assuming no cross-correlations) using quadratic approximations of the output functions.
-The resulting distribution is visualised as a box plot,
+The resulting distribution is visualized as a box plot,
 showing the spread of function values relative to the optimum.
 
 ## Step-by-step guide

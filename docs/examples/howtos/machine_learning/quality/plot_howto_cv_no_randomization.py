@@ -19,7 +19,7 @@
 
 Cross-validation shuffles the training samples before splitting,
 in order to avoid problems with ordered data.
-How can I use the training samples without shuffling?
+You want to use the training samples without shuffling.
 
 ## Solution
 
@@ -46,7 +46,7 @@ from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
 # ### 1. Define the reference model
 #
 # In this how-to guide,
-# we consider the wing weight problem
+# you consider the wing weight problem
 # defined in [this page][gemseo.problems.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
@@ -55,7 +55,7 @@ input_space = WingWeightUncertainSpace()
 # %%
 # ### 2. Create the training dataset
 #
-# We generate $3 \times d$ training samples
+# You generate $3 \times d$ training samples
 # using optimized Latin hypercube sampling strategy.
 
 training_dataset = sample_disciplines(
@@ -68,7 +68,7 @@ training_dataset = sample_disciplines(
 # %%
 # ### 2. Create the ML model
 #
-# We create a regressor from this training dataset,
+# You create a regressor from this training dataset,
 # taking care to normalize the data to facilitate learning.
 
 regressor = RBFRegressor(
@@ -93,7 +93,7 @@ r2.compute_cross_validation_measure(randomize=False)
 
 
 # %%
-# Let's do it again.
+# Do it again.
 r2.compute_cross_validation_measure(randomize=False)
 
 # %%

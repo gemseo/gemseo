@@ -29,8 +29,8 @@ real-world disciplines often involve complex data structures
 such as multi-dimensional arrays,
 nested dictionaries,
 or custom objects.
-How can these high-dimensional
-or non-standard data types be seamlessly integrated into a GEMSEO-compliant workflow?
+You want to integrate these high-dimensional
+or non-standard data types into a GEMSEO-compliant workflow.
 
 ## Solution
 
@@ -176,7 +176,7 @@ from_array = {
 # %%
 # This one shall return the size of a value of a variable.
 # The builtin converters already handle NumPy arrays via the `size` attribute,
-# so we only need to handle `y_1`.
+# so you only need to handle `y_1`.
 def get_size(data):
     return data["dummy"].size
 

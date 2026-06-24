@@ -20,7 +20,7 @@
 After solving an
 [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem],
 you want to save the results to disk so they can be post-processed later
-without re-running the optimisation.
+without re-running the optimization.
 
 ## Solution
 
@@ -41,7 +41,7 @@ from gemseo.core.functions.array_function import ArrayFunction
 # %%
 # ### 1. Build and solve the optimization problem
 #
-# We consider a minimization problem over the interval $[0,1]$
+# You consider a minimization problem over the interval $[0,1]$
 # of the $f(x)=x^2$ objective function:
 
 objective = ArrayFunction(
@@ -71,4 +71,4 @@ optimization_problem.to_hdf("my_results.hdf")
 # ## One step further
 #
 # See [Post-process an HDF5 file][post-process-an-hdf5-file]
-# to learn how to visualise the saved results.
+# to learn how to visualize the saved results.

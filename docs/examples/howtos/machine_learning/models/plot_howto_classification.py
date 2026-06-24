@@ -24,8 +24,7 @@
 
 ## Problem
 
-I would like to model the relationship between properties and a label.
-How can I use classification for that purpose?
+You want to model the relationship between properties and a label using classification.
 
 ## Solution
 

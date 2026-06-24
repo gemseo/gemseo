@@ -17,8 +17,8 @@
 
 ## Problem
 
-You have optimisation results stored in a CSV file
-and want to visualise the history using GEMSEO post-processing algorithms,
+You have optimization results stored in a CSV file
+and want to visualize the history using GEMSEO post-processing algorithms,
 without access to the original scenario or HDF5 file.
 
 ## Solution
@@ -51,9 +51,9 @@ from gemseo.settings.post import OptHistoryView_Settings
 # %%
 # ### 1. Create the CSV file
 #
-# In this how-to, we assume that only a CSV file is available.
+# In this how-to, you assume that only a CSV file is available.
 # As a workaround to create the prerequisite,
-# we load an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# you load an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
 # from an HDF5 file stored in the documentation directory,
 # convert it to an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset],
 # and save it as a CSV file:
@@ -75,7 +75,7 @@ dataset = OptimizationDataset.from_csv("results.csv")
 # ### 3. Build the optimization metadata
 #
 # When loading from a CSV, the metadata that GEMSEO normally derives from the
-# optimisation problem must be provided manually.
+# optimization problem must be provided manually.
 #
 # **Constraint name mapping** — maps each constraint output name to its
 # associated constraint names. Here there are no name changes:

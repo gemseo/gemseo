@@ -69,7 +69,7 @@ rng = default_rng(1)
 # %%
 # ## Load Iris dataset
 #
-# We can easily load this dataset
+# You can easily load this dataset
 # by means of the high-level function [create_benchmark_dataset()][gemseo.create_benchmark_dataset]:
 
 iris = create_benchmark_dataset("IrisDataset")
@@ -81,11 +81,11 @@ iris
 # %%
 # ## Manipulate the dataset
 #
-# We randomly select 10 samples to display.
+# You randomly select 10 samples to display.
 samples = rng.choice(len(iris), size=10, replace=False)
 
 # %%
-# We can easily access the 10 samples previously selected,
+# You can easily access the 10 samples previously selected,
 # either globally
 data = iris.get_view(indices=samples)
 
@@ -100,13 +100,13 @@ iris.get_view(group_names="labels", indices=samples)
 # %%
 # ## Plot the dataset
 #
-# Lastly, we can plot the dataset in various ways. We will note that the
+# Lastly, you can plot the dataset in various ways. You will note that the
 # samples are colored according to their labels.
 
 # %%
 # ### Plot pair plot
 #
-# We can use the [PairPlot][gemseo.post.dataset.pair_plot.PairPlot] plot where each non-diagonal block
+# You can use the [PairPlot][gemseo.post.dataset.pair_plot.PairPlot] plot where each non-diagonal block
 # represents the samples according to the x- and y- coordinates names
 # while the diagonal ones approximate the probability distributions of the
 # variables, using either an histogram or a kernel-density estimator.
@@ -117,7 +117,7 @@ PairPlot(iris, PairPlot_Settings(classifier="specy", use_kde=True)).execute(
 # %%
 # ### Plot parallel coordinates
 #
-# We can use the
+# You can use the
 # [ParallelCoordinates][gemseo.post.dataset.parallel_coordinates.ParallelCoordinates] plot,
 # a.k.a. cowebplot, where each samples
 # is represented by a continuous straight line in pieces whose nodes are
@@ -129,7 +129,7 @@ ParallelCoordinates(iris, ParallelCoordinates_Settings(classifier="specy")).exec
 # %%
 # ### Plot Andrews curves
 #
-# We can use the [AndrewsCurves][gemseo.post.dataset.andrews_curves.AndrewsCurves] plot
+# You can use the [AndrewsCurves][gemseo.post.dataset.andrews_curves.AndrewsCurves] plot
 # which can be viewed as a smooth
 # version of the parallel coordinates. Each sample is represented by a curve
 # and if there is structure in data, it may be visible in the plot.
@@ -140,5 +140,5 @@ AndrewsCurves(iris, AndrewsCurves_Settings(classifier="specy")).execute(
 # %%
 # ### Plot Radar
 #
-# We can use the [RadViz][gemseo.post.dataset.radviz.RadViz] plot
+# You can use the [RadViz][gemseo.post.dataset.radviz.RadViz] plot
 RadViz(iris, RadViz_Settings(classifier="specy")).execute(save=False, show=True)

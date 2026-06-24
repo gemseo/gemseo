@@ -20,6 +20,7 @@
 By default, a DOE algorithm evaluates a scenario one sample at a time,
 calling each discipline once per sample.
 This can be inefficient when disciplines natively support batch evaluation.
+You want to evaluate the scenario in batches to speed up the sampling.
 
 ## Solution
 

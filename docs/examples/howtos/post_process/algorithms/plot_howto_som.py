@@ -23,7 +23,7 @@
 
 ## Problem
 
-After an optimisation or a DOE, you want a qualitative 2D overview of how
+After an optimization or a DOE, you want a qualitative 2D overview of how
 the objective function and constraints behave across the design space,
 even when the design space has a high dimension.
 
@@ -31,10 +31,10 @@ even when the design space has a high dimension.
 
 Use [SOM][gemseo.post.som.SOM], which builds a Self-Organizing Map (SOM):
 an unsupervised neural network that reduces the design space to a 2D grid of neurons.
-Each neuron is coloured according to the average value of a chosen criterion
+Each neuron is colored according to the average value of a chosen criterion
 for the samples clustered around it,
 giving a qualitative view of the objective, the constraints,
-and their relative behaviours.
+and their relative behaviors.
 
 !!!quote "References"
     T. Kohonen et al. Self-Organizing Maps. Springer, 3rd edition, 2001.
@@ -63,7 +63,7 @@ from gemseo.settings.post import SOM_Settings
 #     A white neuron on the map means no sample was close enough to it:
 #     not enough evaluations were provided to train the SOM.
 #     A DOE with a large number of samples (e.g. 10 000 points) produces
-#     more relevant SOM plots than a gradient-based optimisation history.
+#     more relevant SOM plots than a gradient-based optimization history.
 
 # %%
 # ### 2. Run the SOM post-processing
@@ -76,8 +76,8 @@ execute_post(
 # %%
 # ## Summary
 #
-# [SOM][gemseo.post.som.SOM] projects the optimisation or DOE history onto a 2D
-# neuron grid, colouring each neuron by the average criterion value of its samples.
+# [SOM][gemseo.post.som.SOM] projects the optimization or DOE history onto a 2D
+# neuron grid, coloring each neuron by the average criterion value of its samples.
 # It provides a qualitative view of the objective and constraints across the design space.
 # Pass any HDF5 file from a previously executed scenario or DOE to
 # [execute_post()][gemseo.execute_post].

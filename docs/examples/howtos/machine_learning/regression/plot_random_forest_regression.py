@@ -40,8 +40,11 @@ from gemseo.machine_learning import create_regression_model
 # %%
 # ## Problem
 #
+# You want to build a random forest regression model from data,
+# and assess how well it approximates the underlying function.
+#
 # In this example,
-# we represent the function $f(x)=(6x-2)^2\sin(12x-4)$
+# you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
 # by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
@@ -53,13 +56,13 @@ discipline = create_discipline(
     name="f",
 )
 # %%
-# and seek to approximate it over the input space
+# and you seek to approximate it over the input space
 input_space = create_design_space()
 input_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
 
 # %%
 # To do this,
-# we create a training dataset with 6 equispaced points:
+# you create a training dataset with 6 equispaced points:
 training_dataset = sample_disciplines(
     [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=6
 )
@@ -70,7 +73,7 @@ training_dataset = sample_disciplines(
 # ### Training
 #
 # Then,
-# we train an random forest regression model from these samples:
+# you train an random forest regression model from these samples:
 model = create_regression_model("RandomForestRegressor", training_dataset)
 model.learn()
 
@@ -78,7 +81,7 @@ model.learn()
 # ### Prediction
 #
 # Once it is built,
-# we can predict the output value of $f$ at a new input point:
+# you can predict the output value of $f$ at a new input point:
 input_value = {"x": array([0.65])}
 output_value = model.predict(input_value)
 output_value
@@ -136,12 +139,12 @@ plt.show()
 #
 # The `RandomForestRegressor` class of scikit-learn has a lot of settings
 # ([read more](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html)),
-# and we have chosen to exhibit only `n_estimators`.
+# and only `n_estimators` is exhibited here.
 # However,
 # any argument of `RandomForestRegressor` can be set
 # using the dictionary `parameters`.
 # For example,
-# we can impose a minimum of two samples per leaf:
+# you can impose a minimum of two samples per leaf:
 model = create_regression_model(
     "RandomForestRegressor", training_dataset, parameters={"min_samples_leaf": 2}
 )

@@ -26,7 +26,7 @@ This tutorial will guide you to create and execute a Multidisciplinary Design
 Analysis (MDA).
 
 In cases where a set of disciplines is strongly coupled,
-one must solve the underlying coupled system to get consistent variables values.
+you must solve the underlying coupled system to get consistent variables values.
 Even in the absence of strong coupling,
 an MDA is relevant
 because it allows disciplines
@@ -51,7 +51,7 @@ from gemseo.settings.mda import MDAGaussSeidel_Settings
 # ## Step 1 - Create Sobieski disciplines
 #
 # Sobieski disciplines are already implemented in GEMSEO so to be used as examples.
-# Therefore, we just need to use the
+# Therefore, you just need to use the
 # [create_discipline][gemseo.create_discipline] high level API function.
 #
 # !!! warning
@@ -116,7 +116,7 @@ generate_n2_plot(disciplines, save=False, show=True)
 # In this tutorial, the focus is given to the Gauss-Seidel algorithm.
 # It executes the disciplines sequentially, and the solution given at every iteration
 # is physically feasible.
-# It means that even if the algorithm does not converge,
+# This means that even if the algorithm does not converge,
 # the solution of your problem has a physical meaning.
 #
 # !!! note
@@ -132,7 +132,7 @@ gauss_seidel_mda = create_mda(
 
 # %%
 # !!! how-to
-#     Here, we create an MDA with the 4 disciplines,
+#     Here, you create an MDA with the 4 disciplines,
 #     even if the *Mission* is not highly coupled with the other 3 disciplines.
 #     It is sub-optimal, since the *Mission* discipline will be executed many times.
 #     You may want to create
@@ -176,7 +176,7 @@ gauss_seidel_mda.normalized_residual_norm
 # [plot_residual_history()][gemseo.mda.base.BaseMDA.plot_residual_history] method.
 gauss_seidel_mda.plot_residual_history(logscale=[1e-8, 10.0], save=False, show=True)
 # %%
-# In our case, the MDA converged in 8 iterations:
+# In this case, the MDA converged in 8 iterations:
 # the disciplines have been executed 8 times to make the couplings converge.
 # The given solution is a feasible and converged point.
 #

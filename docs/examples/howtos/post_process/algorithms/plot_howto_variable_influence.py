@@ -17,7 +17,7 @@ r"""# Influence of variables on the objective
 
 ## Problem
 
-After an optimisation, you want to quantify how much each design variable
+After an optimization, you want to quantify how much each design variable
 contributed to the change in the objective function,
 from the initial design to the optimal one.
 

@@ -42,8 +42,8 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 # %%
 # ### 1. Create two disciplines and fill their cache
 #
-# Here, we consider the same discipline twice,
-# and we execute them with random numbers so their cache are not the same.
+# Here, you consider the same discipline twice,
+# and you execute them with random numbers so their cache are not the same.
 rng = default_rng(seed=42)
 expression = {"y": "2*x"}
 disciplines = [AnalyticDiscipline(expression), AnalyticDiscipline(expression)]

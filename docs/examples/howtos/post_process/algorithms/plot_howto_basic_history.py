@@ -17,7 +17,7 @@
 
 ## Problem
 
-After an optimisation or a DOE, you want to plot the evolution of selected
+After an optimization or a DOE, you want to plot the evolution of selected
 problem functions across iterations or sampling snapshots.
 
 ## Solution

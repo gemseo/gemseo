@@ -13,11 +13,11 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-"""# Full optimisation history overview
+"""# Full optimization history overview
 
 ## Problem
 
-After an optimisation, you want a comprehensive view of the history:
+After an optimization, you want a comprehensive view of the history:
 design variables, objective, constraint feasibility, and convergence,
 all in a single post-processing.
 
@@ -26,12 +26,12 @@ all in a single post-processing.
 Use [OptHistoryView][gemseo.post.opt_history_view.OptHistoryView],
 which produces a series of plots:
 
-- **Design variables history**: normalised values of selected design variable
-  components across iterations, represented as a colour map.
+- **Design variables history**: normalized values of selected design variable
+  components across iterations, represented as a color map.
 - **Objective function history**: evolution of the objective value across iterations.
 - **Distance to best design**: Euclidean distance $||x - x^*||_2$ between each
   iterate and the best point found, in log scale.
-- **Inequality constraint history**: evolution of constraint values, colour-coded
+- **Inequality constraint history**: evolution of constraint values, color-coded
   as red (violated), white (active), or green (satisfied).
 
 ## Step-by-step guide
@@ -53,7 +53,7 @@ from gemseo.settings.post import OptHistoryView_Settings
 #     or `OptimzationProblem`.
 
 # %%
-# ### 2. Run the optimisation history view
+# ### 2. Run the optimization history view
 #
 # Use `variable_names` to restrict the design variable history plot
 # to a subset of variables:
@@ -70,7 +70,7 @@ execute_post(
 # ## Summary
 #
 # [OptHistoryView][gemseo.post.opt_history_view.OptHistoryView] provides a
-# comprehensive overview of the optimisation history in a single post-processing:
+# comprehensive overview of the optimization history in a single post-processing:
 # design variable evolution, objective history, convergence distance,
 # and constraint feasibility.
 # Pass any HDF5 file from a previously executed scenario to

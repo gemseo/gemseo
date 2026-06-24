@@ -20,6 +20,7 @@
 During a DOE execution, some samples may be invalid
 (e.g. a function is undefined for certain input values).
 By default, an unhandled exception would stop the entire run.
+You want to skip these invalid samples and let the DOE continue.
 
 ## Solution
 
@@ -78,14 +79,14 @@ design_space = DesignSpace()
 design_space.add_variable("a", lower_bound=-1.0, upper_bound=10.0)
 
 # %%
-# For that, we can create a scenario and execute it with a [CustomDOE][gemseo.algos.doe.custom_doe.custom_doe.CustomDOE]
+# For that, you can create a scenario and execute it with a [CustomDOE][gemseo.algos.doe.custom_doe.custom_doe.CustomDOE]
 # with the setting "samples":
 scenario = EvaluationScenario([discipline], design_space)
 scenario.add_observable("y")
 # %%
 # ### 3. Evaluate the scenario
 #
-# We want to evaluate this discipline over this design space
+# You want to evaluate this discipline over this design space
 # at points 1, -1 and 4:
 samples = array([[1.0], [-1.0], [4.0]])
 scenario.execute(CustomDOE_Settings(samples=samples))

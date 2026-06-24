@@ -17,7 +17,7 @@
 
 ## Problem
 
-After an optimisation, you want to visualise the sensitivity of the objective
+After an optimization, you want to visualize the sensitivity of the objective
 and constraints to the design variables at the optimum,
 using histograms of the gradients.
 

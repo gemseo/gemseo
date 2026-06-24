@@ -17,8 +17,8 @@
 
 ## Problem
 
-After an optimisation or a DOE, you want to identify the trade-off between
-two or more objectives and visualise the Pareto-optimal points.
+After an optimization or a DOE, you want to identify the trade-off between
+two or more objectives and visualize the Pareto-optimal points.
 
 ## Solution
 
@@ -63,7 +63,7 @@ execute_post(
 # %%
 # ## Summary
 #
-# [ParetoFront][gemseo.post.pareto_front.ParetoFront] identifies and visualises
+# [ParetoFront][gemseo.post.pareto_front.ParetoFront] identifies and visualizes
 # trade-offs between selected objectives.
 # Red points are locally non-dominated for a given objective;
 # green points are globally Pareto-optimal across all selected objectives.

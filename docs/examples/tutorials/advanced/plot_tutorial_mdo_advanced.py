@@ -44,7 +44,7 @@ from gemseo.settings.post import OptHistoryView_Settings
 # %%
 # ## Step 1 - Instantiate the  disciplines and the design space
 #
-# First, we instantiate the four disciplines of the use case:
+# First, you instantiate the four disciplines of the use case:
 # [SobieskiPropulsion][gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion],
 # [SobieskiAerodynamics][gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics],
 # [SobieskiMission][gemseo.problems.mdo.sobieski.disciplines.SobieskiMission]
@@ -57,14 +57,14 @@ propulsion, aerodynamics, mission, structure = create_discipline([
 ])
 
 # %%
-# Then, we build the design space.
+# Then, you build the design space.
 design_space = SobieskiDesignSpace()
 design_space
 
 # %%
 # Step 2 - Create the sub-scenarios
 #
-# Then, we build a sub-scenario for each disciplinary optimization,
+# Then, you build a sub-scenario for each disciplinary optimization,
 # using the following algorithm, maximum number of iterations and
 # algorithm settings:
 
@@ -235,7 +235,7 @@ bilevel_result = system_scenario.get_result()
 bilevel_result.get_top_optimization_result()
 
 # %%
-# Let's focus on the Structure optimization.
+# Focus on the Structure optimization.
 # The structure optimization can be found at index=2.
 
 structure_result = bilevel_result.get_sub_optimization_result(2)

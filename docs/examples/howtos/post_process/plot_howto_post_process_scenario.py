@@ -17,7 +17,7 @@
 
 ## Problem
 
-After executing a scenario, you need to visualise the optimisation history.
+After executing a scenario, you need to visualize the optimization history.
 
 ## Solution
 
@@ -73,7 +73,7 @@ execute_post(
 # %%
 # ## Summary
 #
-# After executing a scenario, visualise the history by calling
+# After executing a scenario, visualize the history by calling
 # [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] on the scenario
 # or [execute_post()][gemseo.execute_post] with the scenario as the first argument.
 # Both methods accept the same post-processing settings models.

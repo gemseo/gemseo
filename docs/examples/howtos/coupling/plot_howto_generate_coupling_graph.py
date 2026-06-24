@@ -21,9 +21,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Generate a coupling graph.
 
-In this example,
-you will learn how to generate a coupling graph from a list of disciplines.
-
 ## Problem
 
 You have multiple disciplines.

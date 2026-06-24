@@ -17,7 +17,7 @@
 
 ## Problem
 
-Visualise the distribution of one or more variables,
+You want to visualize the distribution of one or more variables,
 and compare distributions across multiple datasets.
 
 ## Solution
@@ -70,7 +70,7 @@ plot.title = "With centering"
 plot.execute(save=False, show=True)
 
 # %%
-# Use `scale=True` to normalise by the standard deviation:
+# Use `scale=True` to normalize by the standard deviation:
 plot = Boxplot(dataset, Boxplot_Settings(scale=True))
 plot.title = "With scaling"
 plot.execute(save=False, show=True)
