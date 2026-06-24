@@ -172,6 +172,14 @@ class GradientDiscipline(Discipline):
 #     This data structure is sparse and makes easy the access
 #     and the iteration over the elements of the Jacobian.
 #
+# Each Jacobian block can be stored in three forms:
+#
+# - a NumPy array, for a dense Jacobian (as in this example),
+# - a SciPy sparse array or matrix, for a sparse Jacobian,
+# - a [JacobianOperator][gemseo.core.derivatives.jacobian_operator.JacobianOperator],
+#   for a matrix-free Jacobian defined only by its products with a vector,
+#   see [Use a matrix-free Jacobian][].
+#
 # Now, we can also compute the gradient,
 # by calling the
 # [linearize()][gemseo.core.discipline.discipline.Discipline.linearize] method.
