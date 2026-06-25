@@ -62,7 +62,11 @@ class BarPlot(PlotlyPlot[BarPlot_Settings]):
             settings.color,
             strict=False,
         ):
-            text = series_data.tolist() if settings.annotate else None
+            text = (
+                [round(float(t), settings.n_digits) for t in series_data]
+                if settings.annotate
+                else None
+            )
             fig.add_trace(
                 Bar(
                     x=feature_positions,
@@ -87,10 +91,12 @@ class BarPlot(PlotlyPlot[BarPlot_Settings]):
             tickvals=[position + 0.375 for position in first_series_positions],
             ticktext=feature_names,
             tickangle=-settings.xtick_rotation,
+            automargin=True,
         )
         fig.update_yaxes(showgrid=settings.grid)
         fig.update_traces(
             textposition="outside",
             textangle=-settings.annotation_rotation,
+            textfont_size=settings.font_size,
         )
         return fig

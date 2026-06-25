@@ -143,3 +143,28 @@ def test_not_implemented(dataset, snapshot):
     lines = Lines(dataset, settings)
     with assert_exception(NotImplementedError, snapshot):
         lines.execute(save=False, file_format="html")
+
+
+def test_matplotlib_labels(snapshot_matplotlib):
+    """Check that a line can be labelled."""
+    dataset = Dataset.from_array(
+        [[0.0, 1.0, 2.0], [4.0, 5.0, 6.0]], variable_names=["x1", "x2", "x3"]
+    )
+    settings = Lines_Settings(
+        variables=("x1", "x2"), abscissa_variable="x1", labels={"x2": "my_label"}
+    )
+    plot = Lines(dataset, settings)
+    plot.execute(save=False)
+
+
+def test_plotly_labels(snapshot):
+    """Check that a line can be labelled."""
+    dataset = Dataset.from_array(
+        [[0.0, 1.0, 2.0], [4.0, 5.0, 6.0]], variable_names=["x1", "x2", "x3"]
+    )
+    settings = Lines_Settings(
+        variables=("x1", "x2"), abscissa_variable="x1", labels={"x2": "my_label"}
+    )
+    plot = Lines(dataset, settings)
+    graph = plot.execute(save=False, file_format="html")[0]
+    assert graph.to_json() == snapshot

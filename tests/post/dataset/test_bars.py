@@ -82,3 +82,24 @@ def test_bars_plotly(kwargs, properties, snapshot, dataset):
     plot = BarPlot(dataset, settings)
     figure = plot.execute(save=False, file_format="html")[0]
     assert figure.to_json() == snapshot
+
+
+def test_matplotlib_labels(snapshot_matplotlib):
+    """Check that labels can be used to reference the samples."""
+    dataset = Dataset.from_array(
+        [[0.0, 1.0, 2.0], [4.0, 5.0, 6.0]], variable_names=["x1", "x2", "x3"]
+    )
+    dataset.index = ["foo", "bar"]
+    plot = BarPlot(dataset)
+    plot.execute(save=False)
+
+
+def test_plotly_labels(snapshot):
+    """Check that labels can be used to reference the samples."""
+    dataset = Dataset.from_array(
+        [[0.0, 1.0, 2.0], [4.0, 5.0, 6.0]], variable_names=["x1", "x2", "x3"]
+    )
+    dataset.index = ["foo", "bar"]
+    plot = BarPlot(dataset)
+    graph = plot.execute(save=False, file_format="html")[0]
+    assert graph.to_json() == snapshot
