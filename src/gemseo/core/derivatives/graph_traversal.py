@@ -38,10 +38,10 @@ _IO = DependencyGraph.IO
 class DisciplineIOs(NamedTuple):
     """Coupling inputs and outputs of a discipline within a set of disciplines."""
 
-    inputs: list[str]
+    inputs: frozenset[str]
     """Upstream coupling inputs and own differentiation inputs."""
 
-    outputs: list[str]
+    outputs: frozenset[str]
     """Downstream coupling outputs and own differentiation outputs."""
 
 
@@ -111,8 +111,11 @@ def set_differentiated_ios(
     predecessors = graph.predecessors
     get_edge_data = graph.get_edge_data
 
+    active = forward & backward
     discipline_to_ios = {}
-    for discipline in forward & backward:
+    for discipline in graph.nodes:
+        if discipline not in active:
+            continue
         diff_inputs = set(sources.get(discipline, ()))
         diff_outputs = set(destinations.get(discipline, ()))
 
@@ -128,10 +131,11 @@ def set_differentiated_ios(
         discipline.add_differentiated_outputs(diff_outputs)
 
         discipline_to_ios[discipline] = DisciplineIOs(
-            inputs=sorted(diff_inputs),
-            outputs=sorted(diff_outputs),
+            inputs=frozenset(diff_inputs),
+            outputs=frozenset(diff_outputs),
         )
 
+    # dict preserves graph.nodes insertion order — both chain-rule sweeps rely on it.
     return discipline_to_ios
 
 
@@ -178,8 +182,8 @@ def set_mda_differentiated_ios(
         discipline.add_differentiated_outputs(differentiated_outputs)
 
         discipline_to_ios[discipline] = DisciplineIOs(
-            inputs=sorted(differentiated_inputs),
-            outputs=sorted(differentiated_outputs),
+            inputs=frozenset(differentiated_inputs),
+            outputs=frozenset(differentiated_outputs),
         )
 
     return discipline_to_ios

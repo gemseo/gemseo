@@ -23,24 +23,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
+from networkx import DiGraph
 from strenum import StrEnum
 
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
-from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.derivatives.graph_traversal import set_differentiated_ios
-from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import Discipline
 from gemseo.core.process_discipline import ProcessDiscipline
-from gemseo.utils.compatibility.scipy import array_classes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from numpy import ndarray
-
+    from gemseo.core.derivatives.graph_traversal import DisciplineIOs
     from gemseo.core.discipline.base_discipline import BaseDiscipline
 
 
@@ -97,31 +94,37 @@ class ChainDerivationMode(StrEnum):
 class DisciplineChain(ProcessDiscipline):
     """Chain of disciplines that is based on a predefined order of execution."""
 
-    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
-
     ChainDerivationMode = ChainDerivationMode
     """The enumeration of chain derivation modes."""
 
-    def __init__(
-        self,
-        disciplines: Sequence[BaseDiscipline],
-        name: str = "",
-    ) -> None:
+    _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
+
+    __execution_graph: DiGraph
+    """Forward-only dependency graph built from the execution order."""
+
+    __last_differentiated_io_key: tuple[frozenset[str], frozenset[str]] | None
+    """Cache key for the last differentiated I/O pair."""
+
+    __discipline_to_ios: dict[Discipline, DisciplineIOs]
+    """Mapping from each active discipline to its coupling I/Os for the sweep."""
+
+    def __init__(self, disciplines: Sequence[BaseDiscipline], name: str = "") -> None:
         """
         Args:
             disciplines: The disciplines.
             name: The name of the discipline.
-                If `None`, use the class name.
+                If empty, use the name of the class.
         """  # noqa: D205, D212, D415
         super().__init__(disciplines, name=name)
-        self._coupling_structure = None
-        self._last_diff_inouts = None
+
+        self.__discipline_to_ios = {}
+        self.__execution_graph = DiGraph()
+        self.__last_differentiated_io_key = None
+
         self._initialize_grammars()
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""
-        self.io.input_grammar.clear()
-        self.io.output_grammar.clear()
         for discipline in self._disciplines:
             self.io.input_grammar.update(
                 discipline.io.input_grammar,
@@ -132,6 +135,27 @@ class DisciplineChain(ProcessDiscipline):
                 discipline.io.output_grammar, allow_namespace_nesting=True
             )
 
+    def __construct_execution_graph(self) -> None:
+        """Construct the coupling graph based on chain execution order.
+
+        Each consumer input is bound to its closest upstream producer: a later
+        producer overwrites an earlier one, as in execution. Backward edges are
+        excluded by construction.
+        """
+        self.__execution_graph.add_nodes_from(self._disciplines)
+        outputs = {
+            discipline: set(discipline.io.output_grammar)
+            for discipline in self._disciplines
+        }
+        for i, consumer in enumerate(self._disciplines):
+            unclaimed = set(consumer.io.input_grammar)
+            for producer in reversed(self._disciplines[:i]):
+                if shared := unclaimed & outputs[producer]:
+                    self.__execution_graph.add_edge(producer, consumer, io=shared)
+                    unclaimed -= shared
+                    if not unclaimed:
+                        break
+
     def _execute(self) -> None:
         out_data = self.io.output_data
         merged = self.io.get_merged_data()
@@ -140,170 +164,179 @@ class DisciplineChain(ProcessDiscipline):
             out_data |= output
             merged.update(output)
 
-    def reverse_chain_rule(
+    def __select_linearization_mode(
         self,
-        chain_outputs: Iterable[str],
-        discipline: Discipline,
-    ) -> None:
-        """Chain the derivatives with a new discipline in the chain in reverse mode.
-
-        Perform chain ruling:
-        (notation: D is total derivative, d is partial derivative)
-
-        D out    d out      dinpt_1    d output      dinpt_2
-        -----  = -------- . ------- + -------- . --------
-        D new_in  d inpt_1  d new_in   d inpt_2   d new_in
-
-
-        D out    d out        d out      dinpt_2
-        -----  = -------- + -------- . --------
-        D z      d z         d inpt_2     d z
-
-
-        D out    d out      [dinpt_1   d out      d inpt_1    dinpt_2 ]
-        -----  = -------- . [------- + -------- . --------  . --------]
-        D z      d inpt_1   [d z       d inpt_1   d inpt_2     d z    ]
+        input_names: frozenset[str],
+        output_names: frozenset[str],
+    ) -> ChainDerivationMode:
+        """Select reverse or forward mode based on total I/O variable sizes.
 
         Args:
-            chain_outputs: The outputs to lineariza.
-            discipline: The new discipline to compose in the chain.
+            input_names: The chain-level inputs to differentiate with respect to.
+            output_names: The chain-level outputs to differentiate.
+
+        Returns:
+            `ChainDerivationMode.REVERSE` if total output size ≤ total input size,
+            `ChainDerivationMode.FORWARD` otherwise.
         """
-        # TODO : only linearize wrt needed inputs/inputs
-        # use coupling_structure graph path for that
-        last_cached = discipline.io.get_input_data()
-        # The graph traversal algorithm avoid to compute unnecessary Jacobians
-        discipline.linearize(last_cached, execute=False, compute_all_jacobians=False)
+        # Read the input and output stores directly: chain inputs live in the
+        # input grammar, chain outputs in the output grammar. Guard with `in`:
+        # data may be absent if AUTO is called before the first execute.
+        input_data = self.io.input_data
+        get_input_size = self.io.input_grammar.data_converter.get_value_size
+        n_inputs = sum(
+            get_input_size(n, input_data[n]) for n in input_names if n in input_data
+        )
 
-        for output_name in chain_outputs:
-            if output_name in self.jac:
-                # This output has already been taken from previous disciplines
-                # Derivatives must be composed using the chain rule
+        output_data = self.io.output_data
+        get_output_size = self.io.output_grammar.data_converter.get_value_size
+        n_outputs = sum(
+            get_output_size(n, output_data[n]) for n in output_names if n in output_data
+        )
 
-                # Make a copy of the keys because the dict is changed in the
-                # loop
-                common_inputs = sorted(
-                    set(self.jac[output_name].keys()).intersection(discipline.jac)
-                )
-                for input_name in common_inputs:
-                    # Store reference to the current Jacobian
-                    curr_jac = self.jac[output_name][input_name]
-                    for new_in, new_jac in discipline.jac[input_name].items():
-                        # Chain rule the derivatives
-                        # TODO: sum BEFORE dot
-                        if isinstance(new_jac, JacobianOperator):
-                            # NumPy array @ JacobianOperator is not supported, thus
-                            # imposing to explicitly use the __rmatmul__ method.
-                            loc_dot = new_jac.__rmatmul__(curr_jac)
-                        else:
-                            loc_dot = curr_jac @ new_jac
+        return (
+            ChainDerivationMode.REVERSE
+            if n_outputs <= n_inputs
+            else ChainDerivationMode.FORWARD
+        )
 
-                        # when input_name==new_in, we are in the case of an
-                        # input being also an output
-                        # in this case we must only compose the derivatives
-                        if new_in in self.jac[output_name] and input_name != new_in:
-                            # The output is already linearized wrt this
-                            # input_name. We are in the case:
-                            # d o     d o    d o     di_2
-                            # ----  = ---- + ----- . -----
-                            # d z     d z    d i_2    d z
-                            if isinstance(loc_dot, JacobianOperator):
-                                self.jac[output_name][new_in] = (
-                                    loc_dot + self.jac[output_name][new_in]
-                                )
-                            else:
-                                self.jac[output_name][new_in] += loc_dot
-                        else:
-                            # The output is not yet linearized wrt this
-                            # input_name.  We are in the case:
-                            #  d o      d o     di_1   d o     di_2
-                            # -----  = ------ . ---- + ----  . ----
-                            #  d x      d i_1   d x    d i_2    d x
-                            self.jac[output_name][new_in] = loc_dot
+    def __accumulate_reverse_chain_rule(self, output_names: frozenset[str]) -> None:
+        """Accumulate the chain rule from outputs to inputs (adjoint sweep).
 
-            elif output_name in discipline.jac:
-                # Output of the chain not yet filled in jac,
-                # Take the jacobian dict of the current discipline to
-                # Initialize. Make a copy !
-                self.jac[output_name] = DisciplineChain.copy_jacs(
-                    discipline.jac[output_name]
-                )
+        Args:
+            output_names: The chain-level outputs to differentiate.
+        """
+        self.jac = {}
+        # __discipline_to_ios is ordered by execution; reversed here for adjoint sweep.
+        for discipline, ios in reversed(self.__discipline_to_ios.items()):
+            discipline.linearize(discipline.io.get_input_data(), execute=False)
 
-    def _compute_diff_in_outs(
-        self,
-        input_names: Iterable[str],
-        output_names: Iterable[str],
+            for accumulated_row in self.jac.values():
+                # Expand couplings this discipline produces that appear in the row.
+                # Such entries can only come from downstream disciplines, so they
+                # are derivatives with respect to this discipline's outputs.
+                for coupling in ios.outputs & accumulated_row.keys():
+                    # Pop, not get: coupling is intermediate and must not survive into
+                    # the final Jacobian; leaving it would corrupt the addition when
+                    # input_name == coupling (self-coupled discipline, ∂c/∂c term).
+                    d_out_d_coupling = accumulated_row.pop(coupling)
+                    local_jacobians = discipline.jac[coupling]
+                    for input_name in ios.inputs & local_jacobians.keys():
+                        d_coupling_d_in = local_jacobians[input_name]
+                        # Perform ∂o/∂i = ∂o/∂c · ∂c/∂i
+                        term = d_out_d_coupling @ d_coupling_d_in
+                        if input_name in accumulated_row:
+                            # ∂o/∂i += prior contribution from another coupling path
+                            term = term + accumulated_row[input_name]
+                        accumulated_row[input_name] = term
+
+            # Seed self.jac for chain-level outputs owned by this discipline.
+            # Seeding must follow the expansion above: a seeded row is already
+            # expressed in this discipline's inputs, and a self-coupled entry
+            # (a variable both consumed and produced here) must not be expanded
+            # by the local ∂c/∂c term.
+            # ios.inputs guards stale entries from prior add_differentiated_inputs.
+            for output_name in output_names - self.jac.keys():
+                if output_name in discipline.jac:
+                    local_jacobians = discipline.jac[output_name]
+                    # Copy: self.jac must never alias a sub-discipline's blocks,
+                    # so that mutating it cannot corrupt discipline.jac.
+                    self.jac[output_name] = {
+                        name: local_jacobians[name].copy()
+                        for name in ios.inputs
+                        if name in local_jacobians
+                    }
+
+    def __accumulate_forward_chain_rule(
+        self, input_names: frozenset[str], output_names: frozenset[str]
     ) -> None:
-        if self._coupling_structure is None:
-            self._coupling_structure = CouplingStructure(self._disciplines)
+        """Accumulate the chain rule from inputs to outputs (tangent sweep).
 
-        diff_ios = (set(input_names), set(output_names))
-        if self._last_diff_inouts != diff_ios:
-            set_differentiated_ios(
-                self._coupling_structure.graph.graph, input_names, output_names
-            )
-            self._last_diff_inouts = diff_ios
+        Args:
+            input_names: The chain-level inputs to differentiate with respect to.
+            output_names: The chain-level outputs to differentiate.
+        """
+        # No stale-entry guard needed: accumulated_jacobians is rebuilt fresh each
+        # call, so inputs_from_upstream only contains cleanly-accumulated entries.
+        accumulated_jacobians = {}
+        # __discipline_to_ios is ordered by execution.
+        for discipline, ios in self.__discipline_to_ios.items():
+            discipline.linearize(discipline.io.get_input_data(), execute=False)
 
-    def _compute_jacobian(
+            # Discipline inputs already produced upstream (tangent accumulated).
+            inputs_from_upstream = ios.inputs & accumulated_jacobians.keys()
+
+            # Chain-level inputs not yet reached by any upstream coupling path.
+            direct_inputs = input_names - accumulated_jacobians.keys()
+
+            # Discipline outputs consumed downstream or at chain level;
+            # ios.outputs already includes the chain-level outputs owned here.
+            relevant_outputs = ios.outputs & discipline.jac.keys()
+            for discipline_output in relevant_outputs:
+                local_jacobians = discipline.jac[discipline_output]
+                # ∂o/∂i for direct chain inputs (no upstream coupling path).
+                # Copy: self.jac must never alias a sub-discipline's blocks,
+                # so that mutating it cannot corrupt discipline.jac.
+                d_out = {
+                    chain_input: local_jacobians[chain_input].copy()
+                    for chain_input in direct_inputs
+                    if chain_input in local_jacobians
+                }
+
+                # Intersect with local_jacobians: a discipline may omit the
+                # blocks of an output that does not depend on a given coupling.
+                for coupling in inputs_from_upstream & local_jacobians.keys():
+                    d_out_d_coupling = local_jacobians[coupling]
+                    accumulated_row = accumulated_jacobians[coupling]
+                    for chain_input, d_coupling_d_in in accumulated_row.items():
+                        # Perform ∂o/∂i = ∂o/∂c · ∂c/∂i
+                        term = d_out_d_coupling @ d_coupling_d_in
+                        if chain_input in d_out:
+                            # ∂o/∂i += prior contribution from another upstream coupling
+                            term = term + d_out[chain_input]
+                        d_out[chain_input] = term
+
+                # Unconditional: producing a variable overwrites any upstream
+                # accumulation, even when the new row is empty (shadowing).
+                accumulated_jacobians[discipline_output] = d_out
+
+        self.jac = {
+            output_name: accumulated_jacobians.get(output_name, {})
+            for output_name in output_names
+        }
+
+    def _compute_jacobian(  # noqa: D102
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        self._compute_diff_in_outs(input_names, output_names)
+        if not self.__execution_graph:
+            self.__construct_execution_graph()
 
-        # Initializes self jac with copy of last discipline (reverse mode)
-        last_discipline = self._disciplines[-1]
-        # TODO : only linearize wrt needed inputs/inputs
-        # use coupling_structure graph path for that
-        last_cached = last_discipline.io.get_input_data()
+        input_names = frozenset(input_names)
+        output_names = frozenset(output_names)
 
-        # The graph traversal algorithm avoid to compute unnecessary Jacobians
-        last_discipline.linearize(last_cached, execute=False)
-        self.jac = self.copy_jacs(last_discipline.jac)
+        io_key = (input_names, output_names)
+        if self.__last_differentiated_io_key != io_key:
+            self.__discipline_to_ios = set_differentiated_ios(
+                self.__execution_graph,
+                input_names,
+                output_names,
+            )
+            self.__last_differentiated_io_key = io_key
 
-        # reverse mode of remaining disciplines
-        remaining_disciplines = self._disciplines[:-1]
-        for discipline in remaining_disciplines[::-1]:
-            self.reverse_chain_rule(output_names, discipline)
+        mode = self.linearization_mode
+        if mode == ChainDerivationMode.AUTO:
+            mode = self.__select_linearization_mode(input_names, output_names)
 
-        # Remove differentiations that should not be there,
-        # because inputs are not inputs of the chain
-        for output_jacobian in self.jac.values():
-            # Copy keys because the dict in changed in the loop
-            input_names_before_loop = list(output_jacobian.keys())
-            for input_name in input_names_before_loop:
-                if input_name not in input_names:
-                    del output_jacobian[input_name]
+        if mode == ChainDerivationMode.FORWARD:
+            self.__accumulate_forward_chain_rule(input_names, output_names)
+        else:
+            self.__accumulate_reverse_chain_rule(output_names)
 
-        # Add differentiations that should be there,
-        # because inputs of the chain but not of all disciplines.
         self._init_jacobian(
             input_names,
             output_names,
             fill_missing_keys=True,
             init_type=Discipline.InitJacobianType.SPARSE,
         )
-
-    @staticmethod
-    def copy_jacs(
-        jacobian: dict[str, dict[str, ndarray]],
-    ) -> dict[str, dict[str, ndarray]]:
-        """Deepcopy a Jacobian dictionary.
-
-        Args:
-            jacobian: The Jacobian dictionary,
-                which is a nested dictionary as `{'out': {'in': derivatives}}`.
-
-        Returns:
-            The deepcopy of the Jacobian dictionary.
-        """
-        jacobian_copy = {}
-        for output_name, output_jacobian in jacobian.items():
-            if isinstance(output_jacobian, dict):
-                output_jacobian_copy = {}
-                jacobian_copy[output_name] = output_jacobian_copy
-                for input_name, derivatives in output_jacobian.items():
-                    output_jacobian_copy[input_name] = derivatives.copy()
-            elif isinstance(output_jacobian, (array_classes, JacobianOperator)):
-                jacobian_copy[output_name] = output_jacobian.copy()
-
-        return jacobian_copy

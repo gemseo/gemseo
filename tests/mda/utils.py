@@ -26,7 +26,6 @@ from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
 from gemseo.mda.factory import MDA_FACTORY
 from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from ..core.test_chain import two_virtual_disciplines  # noqa: F401
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
