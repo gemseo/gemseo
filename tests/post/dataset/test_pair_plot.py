@@ -25,9 +25,15 @@ import pytest
 from matplotlib import pyplot as plt
 from scipy.interpolate import Rbf
 
+from gemseo import sample_disciplines
+from gemseo.algos.doe.scipy.settings.mc import MC_Settings
 from gemseo.post.dataset.pair_plot import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 from gemseo.problems.dataset.iris import create_iris_dataset
+from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
+from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
+    WingWeightUncertainSpace,
+)
 from gemseo.utils.testing.helpers import assert_exception
 
 
@@ -128,3 +134,15 @@ def test_trend_surface(snapshot):
     """Test the error when using a trend with density surfaces."""
     with assert_exception(ValueError, snapshot):
         PairPlot_Settings(use_scatter=False, trend="linear")
+
+
+def test_large_number_of_variables(snapshot_matplotlib) -> None:
+    """Check that subplots are not shrunk to near-zero
+    when n exceeds the default fig size."""
+    space = WingWeightUncertainSpace()
+    discipline = WingWeightDiscipline()
+    dataset = sample_disciplines(
+        [discipline], space, ["Ww"], algo_settings_model=MC_Settings(n_samples=100)
+    )
+    settings = PairPlot_Settings()
+    PairPlot(dataset, settings).execute(save=False)

@@ -82,7 +82,11 @@ class MatplotlibPlot(BasePlot[T]):
         """
         figures = self._create_figures(fig, ax, *specific_data)
         for figure in figures:
-            figure.tight_layout()
+            # Do not call tight_layout on figures using the constrained layout engine
+            # (e.g. PairPlot): tight_layout collapses their fixed-aspect cells.
+            engine = figure.get_layout_engine()
+            if engine is None or engine.adjust_compatible:
+                figure.tight_layout()
 
         return figures
 

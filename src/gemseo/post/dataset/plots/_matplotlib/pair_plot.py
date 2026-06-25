@@ -104,7 +104,10 @@ class PairPlot(MatplotlibPlot[PairPlot_Settings]):
         upper_data = dataframe.rank(pct=True).to_numpy() if use_ranks else data
 
         # Create empty figure.
-        fig, axs = plt.subplots(n, n, figsize=settings.fig_size)
+        # Use the constrained layout engine: it correctly handles the square
+        # (box_aspect=1) cells, unlike tight_layout, which collapses them
+        # when n is large.
+        fig, axs = plt.subplots(n, n, figsize=settings.fig_size, layout="constrained")
 
         # Draw diagonal blocks, using either histogram or 1-D KDE.
         # If classifier, add one layer per category.
