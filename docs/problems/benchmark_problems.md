@@ -139,7 +139,7 @@ The objective and constraints are computed by four disciplines:
 3. [SobieskiPropulsion][gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion] (indexed by 3)
    computes the constraint `"g_3"` from `"x_shared"` and `"x_3"`,
 4. [SobieskiMission][gemseo.problems.mdo.sobieski.disciplines.SobieskiMission] (indexed by 4)
-   computes the constraint `"y_4"` from `"x_shared"`.
+   computes the objective `"y_4"` from `"x_shared"`.
 
 `"x_shared"` denotes the global design variables <shared design variables> (a.k.a. shared design variables),
 which means that these variables are shared by at least two disciplines (here, all).
