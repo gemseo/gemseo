@@ -30,6 +30,7 @@ from typing import TYPE_CHECKING
 from numpy import atleast_1d
 from scipy.sparse import hstack as sparse_hstack
 
+from gemseo.core.derivatives.jacobian_operator import JacobianOperator
 from gemseo.core.functions.discipline_adapter_generator import (
     DisciplineAdapterGenerator,
 )
@@ -452,6 +453,8 @@ class DisciplineJacApprox:
         for output_name, output_jacobian in approximated_jacobian.items():
             for input_name, approx_jac in output_jacobian.items():
                 computed_jac = analytic_jacobian[output_name][input_name]
+                if isinstance(computed_jac, JacobianOperator):
+                    computed_jac = computed_jac.get_matrix_representation()
                 if indices:
                     row_idx = atleast_2d(output_name_to_indices[output_name]).T
                     col_idx = input_name_to_indices[input_name]

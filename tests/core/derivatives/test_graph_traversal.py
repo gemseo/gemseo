@@ -64,10 +64,10 @@ def test_set_differentiated_ios_basic() -> None:
     assert not i._differentiated_output_names
 
     assert set(mapping) == {a, b, d, e}
-    assert mapping[a] == (["x"], ["q"])
-    assert mapping[b] == (["x"], ["r"])
-    assert mapping[d] == (["q", "r"], ["s"])
-    assert mapping[e] == (["s"], ["o"])
+    assert mapping[a] == (frozenset(["x"]), frozenset(["q"]))
+    assert mapping[b] == (frozenset(["x"]), frozenset(["r"]))
+    assert mapping[d] == (frozenset(["q", "r"]), frozenset(["s"]))
+    assert mapping[e] == (frozenset(["s"]), frozenset(["o"]))
 
 
 def test_set_mda_differentiated_ios_basic() -> None:
@@ -98,9 +98,9 @@ def test_set_mda_differentiated_ios_basic() -> None:
     assert not e._differentiated_output_names
 
     assert set(mapping) == {a, c, d}
-    assert mapping[a] == (["x1"], ["a"])
-    assert mapping[c] == (["a", "y1"], ["y2"])
-    assert mapping[d] == (["y2"], ["o1", "y1"])
+    assert mapping[a] == (frozenset(["x1"]), frozenset(["a"]))
+    assert mapping[c] == (frozenset(["a", "y1"]), frozenset(["y2"]))
+    assert mapping[d] == (frozenset(["y2"]), frozenset(["o1", "y1"]))
 
 
 def test_set_differentiated_ios_seed_and_edge() -> None:
@@ -119,9 +119,9 @@ def test_set_differentiated_ios_seed_and_edge() -> None:
     mapping = set_differentiated_ios(graph, ["x"], ["y"])
 
     assert set(mapping) == {a, b, c}
-    assert mapping[a] == (["x"], ["a"])
-    assert mapping[b] == (["a", "x"], ["b", "y"])
-    assert mapping[c] == (["b"], ["y"])
+    assert mapping[a] == (frozenset(["x"]), frozenset(["a"]))
+    assert mapping[b] == (frozenset(["a", "x"]), frozenset(["b", "y"]))
+    assert mapping[c] == (frozenset(["b"]), frozenset(["y"]))
 
 
 def test_set_differentiated_ios_no_active_path() -> None:
@@ -144,8 +144,8 @@ def test_set_mda_differentiated_ios_self_coupling() -> None:
     mapping = set_mda_differentiated_ios(coupl.graph.graph, ["x"], ["o"])
 
     assert set(mapping) == {a, b}
-    assert mapping[a] == (["x", "y"], ["a", "y"])
-    assert mapping[b] == (["a"], ["o"])
+    assert mapping[a] == (frozenset(["x", "y"]), frozenset(["a", "y"]))
+    assert mapping[b] == (frozenset(["a"]), frozenset(["o"]))
 
 
 def test_set_mda_differentiated_ios_with_residuals() -> None:
@@ -161,5 +161,5 @@ def test_set_mda_differentiated_ios_with_residuals() -> None:
     mapping = set_mda_differentiated_ios(coupl.graph.graph, ["x"], ["y"])
 
     assert set(mapping) == {a, b}
-    assert mapping[a] == (["w", "x"], ["a", "r", "w"])
-    assert mapping[b] == (["a", "w"], ["y"])
+    assert mapping[a] == (frozenset(["w", "x"]), frozenset(["a", "r", "w"]))
+    assert mapping[b] == (frozenset(["a", "w"]), frozenset(["y"]))

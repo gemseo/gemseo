@@ -43,7 +43,6 @@ from gemseo.utils.discipline import DummyDiscipline
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
 
-from ..core.test_chain import two_virtual_disciplines  # noqa: F401
 from .mda_gauss_seidel import SobieskiMDAGaussSeidel
 from .utils import generate_parallel_doe
 

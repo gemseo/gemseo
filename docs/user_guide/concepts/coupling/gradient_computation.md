@@ -60,8 +60,12 @@ assembled from a process (such as a chain or an MDA)
 using the partial derivatives provided by all the disciplines.
 
 In GEMSEO, for weakly coupled problems,
-the generalized chain rule is used in reverse mode (from the outputs to the inputs)
-based on [DisciplineChain][gemseo.core.chains.chain.DisciplineChain].
+the generalized chain rule is used
+based on [DisciplineChain][gemseo.core.chains.chain.DisciplineChain],
+with two variants, either forward (from the inputs to the outputs)
+or reverse (from the outputs to the inputs),
+the switch being automatic by default depending on the total size of the inputs
+compared to the total size of the outputs.
 
 For strongly coupled problems,
 when the process is based on a MDA [BaseMDA][gemseo.mda.base.BaseMDA],

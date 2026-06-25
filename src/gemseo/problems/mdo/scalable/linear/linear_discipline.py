@@ -157,13 +157,21 @@ class LinearDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        self.jac = split_array_to_dict_of_arrays(
+        full_jac = split_array_to_dict_of_arrays(
             self.mat, self.__sizes_d, self.output_names, self.input_names
         )
 
+        self.jac = {
+            output_name: {
+                input_name: full_jac[output_name][input_name]
+                for input_name in input_names
+            }
+            for output_name in output_names
+        }
+
         if self.matrix_free_jacobian:
-            for output_name in self.output_names:
-                for input_name in self.input_names:
+            for output_name in output_names:
+                for input_name in input_names:
                     jac = self.jac[output_name][input_name]
 
                     operator = JacobianOperator(

@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_warm_started_discipline_chain_jac
+  'WarmStartedDisciplineChain cannot be linearized.'
+# ---
+# name: test_warm_started_mdo_chain_variables[variable_names0]
+  "The following variable names are not outputs of the chain: {'i_dont_exist'}. Available outputs are: ['y_4']."
+# ---
+# name: test_warm_started_mdo_chain_variables[variable_names1]
+  "The following variable names are not outputs of the chain: {'i_dont_exist'}. Available outputs are: ['y_4']."
+# ---

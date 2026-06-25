@@ -31,6 +31,7 @@ from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sellar.variables import X_SHARED
+from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
 
 if TYPE_CHECKING:
@@ -75,6 +76,28 @@ def sellar_disciplines() -> SellarDisciplines:
         * A SellarSystem discipline.
     """
     return SellarDisciplines(Sellar1(), Sellar2(), SellarSystem())
+
+
+@pytest.fixture
+def two_virtual_disciplines() -> list[Discipline]:
+    """Create two dummy disciplines that can only be executed in virtual mode."""
+
+    class VirtualDummy(DummyDiscipline):
+        virtual_execution = True
+
+    disc_1 = VirtualDummy("d1")
+    disc_1.io.input_grammar.update_from_names(["x"])
+    disc_1.io.output_grammar.update_from_names(["y"])
+    disc_1.io.input_grammar.defaults = {"x": array([1.0])}
+    disc_1.default_output_data = {"y": array([2.0])}
+
+    disc_2 = VirtualDummy("d2")
+    disc_2.io.input_grammar.update_from_names(["y"])
+    disc_2.io.output_grammar.update_from_names(["z"])
+    disc_2.io.input_grammar.defaults = {"y": array([3.0])}
+    disc_2.default_output_data = {"z": array([4.0])}
+
+    return [disc_1, disc_2]
 
 
 @pytest.fixture
