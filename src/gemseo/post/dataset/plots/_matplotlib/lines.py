@@ -63,8 +63,9 @@ class Lines(MatplotlibPlot[Lines_Settings]):
                 line_index += 1
                 linestyle = settings.linestyle[line_index]
                 color = settings.color[line_index]
+                label = settings.labels.get(yi_name, yi_name)
                 ax.plot(
-                    x_values, yi_values, linestyle=linestyle, color=color, label=yi_name
+                    x_values, yi_values, linestyle=linestyle, color=color, label=label
                 )
                 if settings.add_markers:
                     ax.scatter(

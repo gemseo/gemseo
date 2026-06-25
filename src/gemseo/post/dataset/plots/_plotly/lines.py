@@ -60,11 +60,12 @@ class Lines(PlotlyPlot[Lines_Settings]):
             ):
                 line_index += 1
                 mode = "lines+markers" if settings.add_markers else "lines"
+                label = settings.labels.get(yi_name, yi_name)
                 fig.add_trace(
                     Scatter(
                         x=list(x_values),
                         y=yi_values,
-                        name=yi_name,
+                        name=label,
                         mode=mode,
                         showlegend=True,
                         line={
