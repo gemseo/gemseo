@@ -20,8 +20,10 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 
+from numpy import array
 from openturns import FORM
 from openturns import AbdoRackwitz
+from openturns import AnalyticalResult
 from openturns import Cobyla
 from openturns import NearestPointProblem
 from openturns import NLopt
@@ -29,13 +31,16 @@ from openturns import OptimizationAlgorithmImplementation
 from openturns import Point
 
 from gemseo.uncertainty.reliability.openturns.base import BaseOTReliabilityAlgorithm
+from gemseo.uncertainty.reliability.openturns.form_result import MPFP
+from gemseo.uncertainty.reliability.openturns.form_result import FORMResult
+from gemseo.uncertainty.reliability.openturns.form_result import ImportanceFactors
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
+from gemseo.uncertainty.reliability.openturns.multi_form_result import MultiFORMResult
 from gemseo.uncertainty.reliability.openturns.optimizer import BaseOTOptimizer
-from gemseo.uncertainty.reliability.result import ReliabilityResult
 
 if TYPE_CHECKING:
     from openturns import Analytical
-    from openturns import FORMResult
+    from openturns import FORMResult as OTFORMResult
 
     from gemseo.uncertainty.reliability.problem import ReliabilityProblem
 
@@ -54,12 +59,15 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
     }
     """The map from the name of an optimization algorithm to its class."""
 
+    _USE_MULTIFORM_RESULT: ClassVar[bool] = False
+    """Whether the algorithm returns a `MultiFORMResult`."""
+
     def _execute(
         self,
         event_name: str,
         problem: ReliabilityProblem,
         settings: OT_FORM_Settings,
-    ) -> ReliabilityResult:
+    ) -> FORMResult | MultiFORMResult:
         opt_settings = settings.optimizer
         opt_class = self.__NAMES_TO_CLASSES[opt_settings.__class__.__name__]
         ot_settings = opt_settings.model_dump(exclude=set(BaseOTOptimizer.model_fields))
@@ -80,10 +88,67 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
         algo.run()
 
         result = algo.getResult()
-        return ReliabilityResult(
+        if self._USE_MULTIFORM_RESULT:
+            return MultiFORMResult(
+                name=event_name,
+                probability=self._extract_probability(result, settings),
+                raw_result=result,
+                reliability_index=result.getGeneralisedReliabilityIndex(),
+                form_results=tuple(
+                    self.__create_form_result(
+                        event_name, problem, form_result, settings
+                    )
+                    for form_result in result.getFORMResultCollection()
+                ),
+            )
+
+        return self.__create_form_result(event_name, problem, result, settings)
+
+    def __create_form_result(
+        self,
+        event_name: str,
+        problem: ReliabilityProblem,
+        result: OTFORMResult,
+        settings: OT_FORM_Settings,
+    ) -> FORMResult:
+        """Create a FORMResult from an OpenTURNS FORMResult.
+
+        Args:
+            event_name: The name of the event.
+            problem: The reliability problem.
+            result: The OpenTURNS FORMResult.
+            settings: The settings of the reliability algorithm.
+
+        Returns:
+            The FORMResult.
+        """
+        physical_mpfp = array(result.getPhysicalSpaceDesignPoint())
+        standard_mpfp = array(result.getStandardSpaceDesignPoint())
+        convert_array_to_dict = problem.design_space.convert_array_to_dict
+        design_point = MPFP(
+            physical=physical_mpfp,
+            standard=standard_mpfp,
+            physical_as_dict=convert_array_to_dict(physical_mpfp),
+            standard_as_dict=convert_array_to_dict(standard_mpfp),
+        )
+        classical = array(result.getImportanceFactors(AnalyticalResult.CLASSICAL))
+        elliptical = array(result.getImportanceFactors(AnalyticalResult.ELLIPTICAL))
+        physical = array(result.getImportanceFactors(AnalyticalResult.PHYSICAL))
+        importance_factors = ImportanceFactors(
+            classical=classical,
+            classical_as_dict=convert_array_to_dict(classical),
+            elliptical=elliptical,
+            elliptical_as_dict=convert_array_to_dict(elliptical),
+            physical=physical,
+            physical_as_dict=convert_array_to_dict(physical),
+        )
+        return FORMResult(
+            design_point=design_point,
+            importance_factors=importance_factors,
             name=event_name,
             probability=self._extract_probability(result, settings),
             raw_result=result,
+            reliability_index=result.getHasoferReliabilityIndex(),
         )
 
     @staticmethod
@@ -95,7 +160,7 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
         """
 
     @staticmethod
-    def _extract_probability(result: FORMResult, settings: OT_FORM_Settings) -> float:
+    def _extract_probability(result: OTFORMResult, settings: OT_FORM_Settings) -> float:
         """Get the probability from an OpenTURNS result.
 
         Args:

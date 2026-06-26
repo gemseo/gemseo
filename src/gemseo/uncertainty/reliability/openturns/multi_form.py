@@ -33,6 +33,8 @@ class OT_MultiFORM(OT_FORM):  # noqa: N801
 
     _ALGO_CLASS: ClassVar[type[MultiFORM]] = MultiFORM
 
+    _USE_MULTIFORM_RESULT: ClassVar[bool] = True
+
     @staticmethod
     def _set_algo_options(algo: MultiFORM, settings: OT_MultiFORM_Settings) -> None:
         algo.setMaximumDesignPointsNumber(settings.max_design_points)
