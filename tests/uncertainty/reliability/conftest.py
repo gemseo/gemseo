@@ -64,6 +64,65 @@ def j(u: RealArray) -> RealArray:
 
 
 @pytest.fixture(params=[False, True])
+def parametric_f_and_j(
+    request,
+) -> (
+    tuple[Callable[[RealArray], float], Callable[[RealArray], RealArray]]
+    | tuple[Callable[[RealArray], RealArray], Callable[[RealArray], RealArray]]
+):
+    """The identity function and its gradient function, with scalar or vector output."""
+    if request.param:
+
+        def _f(u: RealArray) -> RealArray:
+            """The identity function.
+
+            Args:
+                u: The input value.
+
+            Returns:
+                The scalar output value.
+            """
+            return u[0]
+
+        def _j(u: RealArray) -> RealArray:
+            """The Jacobian function of the identity function.
+
+            Args:
+                u: The input value.
+
+            Returns:
+                The 1D Jacobian value.
+            """
+            return array([1.0])
+
+    else:
+
+        def _f(u: RealArray) -> RealArray:
+            """The identity function.
+
+            Args:
+                u: The input value.
+
+            Returns:
+                The output value.
+            """
+            return u
+
+        def _j(u: RealArray) -> RealArray:
+            """The Jacobian function of the identity function.
+
+            Args:
+                u: The input value.
+
+            Returns:
+                The 2D Jacobian value.
+            """
+            return array([[1.0]])
+
+    return _f, _j
+
+
+@pytest.fixture(params=[False, True])
 def function(request, f) -> ArrayFunction:
     """The ArrayFunction wrapping the identity function."""
     return ArrayFunction(f, name="y", jac=j if request.param else None)

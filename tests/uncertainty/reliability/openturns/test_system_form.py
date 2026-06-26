@@ -124,6 +124,7 @@ def test_system_form(
 ):
     """Test OT_SystemFORM."""
     system_form = OT_SystemFORM()
+    assert system_form._USE_MULTIFORM_RESULT
     kwargs = {}
     if settings is not None:
         kwargs["settings"] = OT_SystemFORM_Settings(optimizer=settings())
@@ -137,10 +138,12 @@ def test_system_form(
     assert len(results) == 1
     assert results["a"].name == "a"
     probability = results["a"].probability
+    reliability_index = results["a"].reliability_index
     raw_result = results["a"].raw_result
     assert probability == pytest.approx(expected, abs=1e-4)
     assert isinstance(raw_result, MultiFORMResult)
     assert raw_result.getEventProbability() == probability
+    assert raw_result.getGeneralisedReliabilityIndex() == reliability_index
 
 
 def test_type_errors(uncertain_space, f, snapshot):

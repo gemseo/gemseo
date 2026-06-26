@@ -51,7 +51,9 @@ def test_sorm(
     assert len(results) == 1
     assert results["a"].name == "a"
     probability = results["a"].probability
+    reliability_index = results["a"].reliability_index
     raw_result = results["a"].raw_result
     assert probability == pytest.approx(expected, abs=1e-3)
     assert isinstance(raw_result, SORMResult)
     assert raw_result.getEventProbabilityBreitung() == probability
+    assert raw_result.getHasoferReliabilityIndex() == reliability_index

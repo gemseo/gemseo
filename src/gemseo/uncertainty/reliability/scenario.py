@@ -39,15 +39,14 @@ if TYPE_CHECKING:
 class ReliabilityScenario(EvaluationScenario):
     """A reliability analysis scenario."""
 
+    _evaluation_problem_class: type[ReliabilityProblem] = ReliabilityProblem
+
     _ALGO_FACTORY_CLASS: ClassVar[type[ReliabilityAlgorithmFactory]] = (
         ReliabilityAlgorithmFactory
     )
 
     __name_to_function: dict[str, FunctionFromDiscipline]
     """The map from a disciplinary output name to a function."""
-
-    __problem: ReliabilityProblem
-    """The reliability analysis problem."""
 
     def __init__(  # noqa: D107
         self,
@@ -63,7 +62,6 @@ class ReliabilityScenario(EvaluationScenario):
             formulation_settings=formulation_settings,
         )
         self.__name_to_function = {}
-        self.__problem = ReliabilityProblem(design_space)
         self._execution_result = {}
 
     def add_event(self, event: Event, event_name: str = "") -> None:
@@ -90,12 +88,14 @@ class ReliabilityScenario(EvaluationScenario):
 
                 elementary_event.function = function
 
-        self.__problem.add_event(processed_event, event_name=event_name)
+        self.formulation.problem.add_event(processed_event, event_name=event_name)
 
     def _execute(self) -> None:
         settings = self._algorithm_settings
         algo = self._algo_factory.create(settings.target_class_name)
-        self._execution_result = algo.execute(self.__problem, settings=settings)
+        self._execution_result = algo.execute(
+            self.formulation.problem, settings=settings
+        )
 
     @property
     def event_name_to_reliability_result(self) -> dict[str, ReliabilityResult]:

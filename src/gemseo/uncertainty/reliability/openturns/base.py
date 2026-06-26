@@ -76,9 +76,9 @@ class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
             for elementary_event in intersection_event:
                 # Use the ProblemFunction related to event.function
                 function = observables[elementary_event.function.name]
-                func = _FunctionForOpenTURNS(function.evaluate)
+                func = _FunctionForOpenTURNS(function.evaluate, False)
                 jac = (
-                    _FunctionForOpenTURNS(function.jac)
+                    _FunctionForOpenTURNS(function.jac, True)
                     if elementary_event.function.has_jac
                     else None
                 )
@@ -114,12 +114,19 @@ class _FunctionForOpenTURNS:
     __function: Callable[[NumberArray], OutputType]
     """The wrapped function."""
 
-    def __init__(self, function: Callable[[NumberArray], OutputType]) -> None:
+    __is_jacobian: bool
+    """Whether the function is a Jacobian function."""
+
+    def __init__(
+        self, function: Callable[[NumberArray], OutputType], is_jacobian: bool
+    ) -> None:
         """
         Args:
             function: The function to be wrapped.
+            is_jacobian: Whether the function is a Jacobian function.
         """  # noqa: D205 D212
         self.__function = function
+        self.__is_jacobian = is_jacobian
 
     def __call__(self, input_value) -> RealArray:
         """Evaluate the function.
@@ -130,4 +137,7 @@ class _FunctionForOpenTURNS:
         Returns:
             The output value of the function.
         """
-        return atleast_1d(self.__function(array(input_value)))
+        result = atleast_1d(self.__function(array(input_value)))
+        # openturns.PythonFunction expects an output value shaped as (d,)
+        # and a Jacobian value shaped as (d, 1).
+        return result.reshape((result.size, 1)) if self.__is_jacobian else result

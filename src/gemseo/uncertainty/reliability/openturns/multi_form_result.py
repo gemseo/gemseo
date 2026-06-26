@@ -12,23 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Reliability analysis result."""
+"""Result of a FORM study with multiple design points."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING
+
+from gemseo.uncertainty.reliability.result import ReliabilityResult
+
+if TYPE_CHECKING:
+    from gemseo.uncertainty.reliability.openturns.form_result import FORMResult
 
 
 @dataclass(frozen=True)
-class ReliabilityResult:
-    """A reliability analysis result."""
+class MultiFORMResult(ReliabilityResult):
+    """The result of a FORM study with multiple design points."""
 
-    name: str
-    """The name of the event."""
+    reliability_index: float
+    """The generalised reliability index."""
 
-    probability: float
-    """The probability of the event."""
-
-    raw_result: Any
-    """The raw result from the interfaced library."""
+    form_results: tuple[FORMResult, ...]
+    """The results of the sub-FORM studies."""
