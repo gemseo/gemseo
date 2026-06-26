@@ -58,7 +58,7 @@ class PLS(BaseDimensionReduction):
     ) -> None:
         """
         Args:
-            **parameters: The optional parameters for sklearn PCA constructor.
+            **parameters: The optional parameters for sklearn PLSRegression constructor.
         """  # noqa: D205 D212
         super().__init__(name, n_components=n_components, **parameters)
         self.algo = PLSRegression(n_components, **parameters)

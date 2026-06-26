@@ -22,17 +22,17 @@ from typing import TYPE_CHECKING
 from numpy import array_equal
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from gemseo.typing import IntegerArray
 
 
 @dataclass
 class Split:
     """A train-test split."""
 
-    train: NDArray[int]
+    train: IntegerArray
     """The indices of the train samples."""
 
-    test: NDArray[int]
+    test: IntegerArray
     """The indices of the test samples."""
 
     def __eq__(self, other: Split) -> bool:

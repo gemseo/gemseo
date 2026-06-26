@@ -115,11 +115,11 @@ class Scaler(BaseTransformer):
 
     @BaseTransformer._use_2d_array
     def transform(self, data: RealArray) -> RealArray:  # noqa: D102
-        return data @ diag(self.coefficient) + self.offset
+        return data * self.coefficient + self.offset
 
     @BaseTransformer._use_2d_array
     def inverse_transform(self, data: RealArray) -> RealArray:  # noqa: D102
-        return (data - self.offset) @ diag(1 / self.coefficient)
+        return (data - self.offset) / self.coefficient
 
     @BaseTransformer._use_2d_array
     def compute_jacobian(self, data: RealArray) -> RealArray:  # noqa: D102

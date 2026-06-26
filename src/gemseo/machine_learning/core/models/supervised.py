@@ -135,7 +135,7 @@ class BaseMLSupervisedModel(BaseMLModel):
     __input_dimension: int
     """The dimension of the input space."""
 
-    __group_to_names: dict[str, str]
+    __group_to_names: dict[str, list[str]]
     """The map from a group name to the associated variable names."""
 
     __output_dimension: int
@@ -179,7 +179,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         BaseMLSupervisedModelSettings
     )
 
-    def _post_init(self):
+    def _post_init(self) -> None:
         super()._post_init()
         data = self.learning_set
         self.input_names = list(self._settings.input_names) or data.get_variable_names(
@@ -333,12 +333,20 @@ class BaseMLSupervisedModel(BaseMLModel):
 
         if self._transform_input_group or self._input_variables_to_transform:
             input_data = self.__transform_data_from_group_or_names(
-                indices, True, self._input_variables_to_transform, fit_transformers
+                indices,
+                True,
+                self._input_variables_to_transform,
+                fit_transformers,
+                input_data,
             )
 
         if self._transform_output_group or self._output_variables_to_transform:
             output_data = self.__transform_data_from_group_or_names(
-                indices, False, self._output_variables_to_transform, fit_transformers
+                indices,
+                False,
+                self._output_variables_to_transform,
+                fit_transformers,
+                output_data,
             )
 
         self._fit(input_data, output_data)
@@ -350,6 +358,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         input_group: bool,
         names: Sequence[str],
         fit: bool,
+        data: ndarray | None = None,
     ) -> ndarray:
         """Transform data from variable names or a group name.
 
@@ -359,6 +368,10 @@ class BaseMLSupervisedModel(BaseMLModel):
                 Otherwise, consider the output one.
             names: The variable names having dedicated transformers.
             fit: Whether to fit the transformers before applying transformation.
+            data: The group data already materialized as an array,
+                used only when transforming a whole group
+                to avoid fetching it again from the learning dataset.
+                If `None`, the data is fetched from the learning dataset.
 
         Returns:
             The transformed data.
@@ -366,7 +379,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         if names:
             return self.__transform_data_from_names(input_group, names, indices, fit)
 
-        return self.__transform_data_from_group(input_group, indices, fit)
+        return self.__transform_data_from_group(input_group, indices, fit, data)
 
     def __transform_data_from_names(
         self,
@@ -396,7 +409,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         for name in self.__group_to_names[self.__get_group_name(input_group)]:
             if name not in names:
                 transformed_data.append(
-                    dataset.get_view(variable_names=name).to_numpy()
+                    dataset.get_view(variable_names=name).to_numpy()[indices]
                 )
                 continue
 
@@ -423,7 +436,11 @@ class BaseMLSupervisedModel(BaseMLModel):
         return self.learning_set.OUTPUT_GROUP
 
     def __transform_data_from_group(
-        self, input_group: bool, indices: Ellipsis | Sequence[int], fit: bool
+        self,
+        input_group: bool,
+        indices: Ellipsis | Sequence[int],
+        fit: bool,
+        data: ndarray | None = None,
     ) -> ndarray:
         """Transform data from a group name.
 
@@ -432,6 +449,9 @@ class BaseMLSupervisedModel(BaseMLModel):
                 Otherwise, consider the output one.
             indices: The indices of the learning samples.
             fit: Whether to fit the transformers before applying transformation.
+            data: The group data already materialized as an array,
+                used to avoid fetching it again from the learning dataset.
+                If `None`, the data is fetched from the learning dataset.
 
         Returns:
             The transformed data.
@@ -443,6 +463,7 @@ class BaseMLSupervisedModel(BaseMLModel):
             indices,
             input_group,
             fit,
+            data,
         )
 
     def __transform_data(
@@ -452,6 +473,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         indices: Ellipsis | Sequence[int],
         input_group: bool,
         fit: bool,
+        data: ndarray | None = None,
     ) -> ndarray:
         """Transform data.
 
@@ -462,6 +484,9 @@ class BaseMLSupervisedModel(BaseMLModel):
             input_group: Whether to consider the input group.
                 Otherwise, consider the output one.
             fit: Whether to fit the transformers before applying transformation.
+            data: The data of the variables `names` already materialized
+                as an array, used to avoid fetching it again from the learning
+                dataset. If `None`, the data is fetched from the learning dataset.
 
         Returns:
             The transformed data.
@@ -470,7 +495,8 @@ class BaseMLSupervisedModel(BaseMLModel):
             NotImplementedError: When the output transformer needs to be fitted
                 from both input and output data.
         """
-        data = self.learning_set.get_view(variable_names=(names)).to_numpy()[indices]
+        if data is None:
+            data = self.learning_set.get_view(variable_names=names).to_numpy()[indices]
         if not transformer.CROSSED:
             if fit:
                 return transformer.fit_transform(data)

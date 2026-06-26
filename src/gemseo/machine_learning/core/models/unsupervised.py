@@ -55,7 +55,7 @@ class BaseMLUnsupervisedModel(BaseMLModel):
     Inheriting classes shall overload the `BaseMLUnsupervisedModel._fit()` method.
     """
 
-    input_names: list[str]
+    var_names: list[str]
     """The names of the variables."""
 
     SHORT_NAME: ClassVar[str] = "BaseMLUnsupervisedModel"
@@ -64,7 +64,7 @@ class BaseMLUnsupervisedModel(BaseMLModel):
         BaseMLUnsupervisedModelSettings
     )
 
-    def _post_init(self):
+    def _post_init(self) -> None:
         super()._post_init()
         self.var_names = self._settings.var_names or list(
             self.learning_set.columns.levels[1].unique()

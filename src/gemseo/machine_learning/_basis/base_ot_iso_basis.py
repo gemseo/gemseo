@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-"""Base class for OpenTURNS multivariate orthonormal bases wih iso-sub-basis."""
+"""Base class for OpenTURNS multivariate orthonormal bases with iso-sub-basis."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 
 class BaseOTIsoBasis(BaseOTBasis):
-    """The base class for OpenTURNS multivariate orthonormal bases wih iso-sub-basis."""
+    """The base class for OpenTURNS multivariate orthonormal bases with iso-sub-basis."""  # noqa: E501
 
     _FACTORY: ClassVar[type[OrthogonalUniVariateFunctionFactory]]
     """The OpenTURNS orthogonal univariate function factory."""

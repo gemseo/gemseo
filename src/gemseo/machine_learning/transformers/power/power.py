@@ -53,7 +53,6 @@ class Power(BaseTransformer):
     def __init__(self, name: str = "", standardize: bool = True) -> None:
         """
         Args:
-            name: A name for this transformer. If `None`, use the class name.
             standardize: Whether to apply zero-mean, unit-variance
                 normalization to the transformed output.
         """  # noqa: D205 D212

@@ -33,10 +33,10 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from numpy import ndarray
-    from numpy.typing import NDArray
 
     from gemseo.machine_learning.core.models.ml_model import BaseMLModel
     from gemseo.machine_learning.resampling.splits import Splits
+    from gemseo.typing import IntegerArray
 
 
 class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -48,7 +48,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
     Use the class name by default.
     """
 
-    _sample_indices: NDArray[int]
+    _sample_indices: IntegerArray
     """The original indices of the samples."""
 
     _seed: int | None
@@ -70,7 +70,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        sample_indices: NDArray[int],
+        sample_indices: IntegerArray,
         n_splits: int,
         seed: int | None = SEED,
     ) -> None:
@@ -93,7 +93,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Create the train-test splits."""
 
     @property
-    def sample_indices(self) -> NDArray[int]:
+    def sample_indices(self) -> IntegerArray:
         """The indices of the samples after shuffling."""
         return self._sample_indices
 

@@ -25,6 +25,7 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from numpy import arange
 from numpy import unique
 from numpy import zeros
 
@@ -76,7 +77,7 @@ class BaseClassifier(BaseMLSupervisedModel):
         input_data: DataType,
         hard: bool = True,
     ) -> DataType:
-        """Predict the probability of belonging to each cluster from input data.
+        """Predict the probability of belonging to each class from input data.
 
         The user can specify these input data either as a numpy array,
         e.g. `array([1., 2., 3.])`
@@ -94,10 +95,10 @@ class BaseClassifier(BaseMLSupervisedModel):
 
         Args:
             input_data: The input data.
-            hard: Whether clustering should be hard (True) or soft (False).
+            hard: Whether classification should be hard (True) or soft (False).
 
         Returns:
-            The probability of belonging to each cluster.
+            The probability of belonging to each class.
         """
         return self._predict_proba(input_data, hard)
 
@@ -137,9 +138,9 @@ class BaseClassifier(BaseMLSupervisedModel):
         prediction = self._predict(input_data).astype(int)
         n_outputs = prediction.shape[1]
         probas = zeros((n_samples, self.n_classes, n_outputs))
-        for sample in range(n_samples):
-            for n_output in range(n_outputs):
-                probas[sample, prediction[sample, n_output], n_output] = 1
+        sample_indices = arange(n_samples)[:, None]
+        output_indices = arange(n_outputs)[None, :]
+        probas[sample_indices, prediction, output_indices] = 1
         return probas
 
     @abstractmethod
