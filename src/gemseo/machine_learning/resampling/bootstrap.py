@@ -28,7 +28,7 @@ from gemseo.machine_learning.resampling.splits import Splits
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from gemseo.typing import IntegerArray
 
 
 class Bootstrap(BaseResampler):
@@ -36,7 +36,7 @@ class Bootstrap(BaseResampler):
 
     def __init__(
         self,
-        sample_indices: NDArray[int],
+        sample_indices: IntegerArray,
         n_replicates: int = 100,
         seed: int | None = SEED,
     ) -> None:

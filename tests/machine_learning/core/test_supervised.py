@@ -135,6 +135,21 @@ def test_learn(io_dataset) -> None:
     assert array_equal(model.get_coefficients(False), reference)
 
 
+def test_learn_subset_with_variable_transformer(io_dataset) -> None:
+    """A per-variable transformer must not break learning on a sample subset.
+
+    Regression test: the variables without a dedicated transformer used to be
+    materialized for all the samples while the transformed ones were restricted
+    to the requested samples, raising a shape-mismatch error during training.
+    """
+    model = LinearRegressor(
+        io_dataset, LinearRegressor_Settings(transformer={"x_1": "MinMaxScaler"})
+    )
+    model.learn(samples=[1, 2, 3])
+    prediction = model.predict({"x_1": array([1.0]), "x_2": array([2.0, 3.0])})
+    assert prediction["y_1"].shape == (3,)
+
+
 def test_io_shape(io_dataset) -> None:
     """Test input output shapes."""
     model = LinearRegressor(io_dataset)

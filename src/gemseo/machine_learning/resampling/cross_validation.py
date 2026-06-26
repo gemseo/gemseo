@@ -32,9 +32,9 @@ from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
     from numpy import ndarray
-    from numpy.typing import NDArray
 
     from gemseo.machine_learning.core.models.ml_model import BaseMLModel
+    from gemseo.typing import IntegerArray
 
 
 class CrossValidation(BaseResampler):
@@ -43,12 +43,12 @@ class CrossValidation(BaseResampler):
     __randomize: bool
     """Whether the sample indices are shuffled before splitting."""
 
-    __shuffled_sample_indices: NDArray[int]
+    __shuffled_sample_indices: IntegerArray
     """The indices of the samples after shuffling."""
 
     def __init__(
         self,
-        sample_indices: NDArray[int],
+        sample_indices: IntegerArray,
         n_folds: int = 5,
         randomize: bool = False,
         seed: int | None = SEED,
@@ -105,7 +105,7 @@ class CrossValidation(BaseResampler):
         ])
 
     @property
-    def shuffled_sample_indices(self) -> NDArray[int]:
+    def shuffled_sample_indices(self) -> IntegerArray:
         """The original indices of the samples."""
         return self.__shuffled_sample_indices
 

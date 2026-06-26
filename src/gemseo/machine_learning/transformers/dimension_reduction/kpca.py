@@ -21,7 +21,7 @@
 
 The
 [KPCA][gemseo.machine_learning.transformers.dimension_reduction.kpca.KPCA]
-class implements the KCPA wraps the KPCA from Scikit-learn.
+class wraps the Kernel PCA from Scikit-learn.
 
 ## Dependence
 

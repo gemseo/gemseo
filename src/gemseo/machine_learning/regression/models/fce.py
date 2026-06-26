@@ -115,7 +115,7 @@ class FCERegressor(BaseFCERegressor):
         self._first_order_sobol_indices = [
             convert(
                 array([
-                    sum(coefficients[j] ** 2 for j in indices[i])
+                    (coefficients[indices[i]] ** 2).sum()
                     for i in range(input_dimension)
                 ])
                 / variance
@@ -139,7 +139,7 @@ class FCERegressor(BaseFCERegressor):
         self._total_order_sobol_indices = [
             convert(
                 array([
-                    sum(coefficients[j] ** 2 for j in indices[i])
+                    (coefficients[indices[i]] ** 2).sum()
                     for i in range(input_dimension)
                 ])
                 / variance
