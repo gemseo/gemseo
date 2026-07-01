@@ -1,3 +1,8 @@
+# JSON dump of the old API (produced by `griffe dump`), giving old function
+# signatures so parameter configs can use names instead of raw positions.
+# A relative path is resolved against this config file's directory.
+griffe_dump: griffe-dump.json
+
 # Maps old fully-qualified names to new names. Drives the import renamers:
 # imports, and references to the imported names, are rewritten accordingly.
 # This covers modules, classes, and module-level attributes (including functions
@@ -559,7 +564,6 @@ classes:
   OptimizationProblem:
     to_dataset:
       group_functions: null
-
 
 # Transforms applied to free functions. Keys are old argument names; positions
 # are resolved from the old API signatures in the griffe dump, so a position is
