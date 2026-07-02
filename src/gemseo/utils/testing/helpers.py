@@ -90,6 +90,13 @@ def assert_exception(
     message = str(exc_info.value)
     if isinstance(exc_info.value, ValidationError):
         message = _PYDANTIC_VERSION_IN_URL.sub(r"\1X.Y\2", message)
+    elif isinstance(exc_info.value, FileNotFoundError):
+        # Normalize FileNotFoundError messages across platforms.
+        message = re.sub(
+            r"\[WinError \d+\] The system cannot find the file specified",
+            r"[Errno 2] No such file or directory",
+            message,
+        )
     elif sys.version_info < (3, 14) and isinstance(exc_info.value, ZeroDivisionError):
         # Python 3.14 dropped the "float " prefix from ZeroDivisionError messages.
         message = message.removeprefix("float ")

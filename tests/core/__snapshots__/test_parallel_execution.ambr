@@ -8,6 +8,15 @@
 # name: test_disc_parallel_threading_proc
   'When using multithreading, all workers shall be different objects.'
 # ---
+# name: test_multiprocessing_context[fork-DiscParallelExecution-n_executions-False-2]
+  'The multiprocessing start method fork cannot be used on the Windows platform. Only spawn is available.'
+# ---
+# name: test_multiprocessing_context[fork-DiscParallelLinearization-n_linearizations-False-0]
+  'The multiprocessing start method fork cannot be used on the Windows platform. Only spawn is available.'
+# ---
+# name: test_multiprocessing_context[fork-DiscParallelLinearization-n_linearizations-True-2]
+  'The multiprocessing start method fork cannot be used on the Windows platform. Only spawn is available.'
+# ---
 # name: test_re_raise_exceptions[exceptions1-True]
   'Undefined'
 # ---
