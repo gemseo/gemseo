@@ -178,8 +178,12 @@ class RemappingDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
+        input_mapping = self._input_mapping
+        original_input_names = {input_mapping[n][0] for n in input_names}
+        output_mapping = self._output_mapping
+        original_output_names = {output_mapping[n][0] for n in output_names}
         self._discipline._compute_jacobian(
-            input_names=input_names, output_names=output_names
+            input_names=original_input_names, output_names=original_output_names
         )
         original_jac = self._discipline.jac
         self.jac = {}

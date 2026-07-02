@@ -25,6 +25,7 @@ from numpy.testing import assert_equal
 
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammars.simple import SimpleGrammar
+from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.remapping import RemappingDiscipline
 from gemseo.utils.discipline import DummyDiscipline
 from gemseo.utils.pickle import from_pickle
@@ -314,3 +315,21 @@ def test_no_outputs_discipline():
     remapping_discipline.execute({"bar": array([10.0])})
     assert not remapping_discipline.get_output_data()
     assert_equal(discipline.io.data["foo"], array([10.0]))
+
+
+def test_linearize():
+    """Check if the linearize method is correctly handled in a RemappingDiscipline."""
+    old_discipline = AnalyticDiscipline({"old_a": "0.5 * old_b + old_c"})
+    old_jac = old_discipline.linearize(
+        {"old_b": array([2.0]), "old_c": array([1.0])}, compute_all_jacobians=True
+    )
+    new_discipline = RemappingDiscipline(
+        old_discipline,
+        input_mapping={"new_b": "old_b", "new_c": "old_c"},
+        output_mapping={"new_a": "old_a"},
+    )
+    new_jac = new_discipline.linearize(
+        {"new_b": array([2.0]), "new_c": array([1.0])}, compute_all_jacobians=True
+    )
+    assert_equal(old_jac["old_a"]["old_b"], new_jac["new_a"]["new_b"])
+    assert_equal(old_jac["old_a"]["old_c"], new_jac["new_a"]["new_c"])
