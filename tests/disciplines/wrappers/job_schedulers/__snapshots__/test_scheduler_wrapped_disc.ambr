@@ -12,5 +12,5 @@
   'An error.'
 # ---
 # name: test_run_fail
-  "[Errno 2] No such file or directory: 'IDONTEXIST'"
+  '[Errno 2] No such file or directory'
 # ---

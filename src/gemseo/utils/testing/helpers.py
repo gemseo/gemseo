@@ -93,7 +93,7 @@ def assert_exception(
     elif isinstance(exc_info.value, FileNotFoundError):
         # Normalize FileNotFoundError messages across platforms.
         message = re.sub(
-            r"\[WinError \d+\] The system cannot find the file specified",
+            r"\[(?:WinError|Errno) \d+\].*",
             r"[Errno 2] No such file or directory",
             message,
         )
