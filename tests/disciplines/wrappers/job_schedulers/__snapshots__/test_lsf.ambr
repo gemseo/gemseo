@@ -3,5 +3,5 @@
   '"Value not passed to template for key: \'queue_name\'"'
 # ---
 # name: test_wrap_discipline_in_job_scheduler.1
-  "[Errno 2] No such file or directory: 'bsub'"
+  '[Errno 2] No such file or directory'
 # ---
