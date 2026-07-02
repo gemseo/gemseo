@@ -2751,15 +2751,15 @@ wheels = [
 
 [[package]]
 name = "pymdown-extensions"
-version = "11.0"
+version = "11.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/47/67/f1e79672a5f91985577c7984c9709ca110e4fd37fe7fd167b60422e6ccc2/pymdown_extensions-11.0.tar.gz", hash = "sha256:8269cef0247f9e2d0a62fcea10860aba05c1cbab5470fd4b63230b96434dc589", size = 857049, upload-time = "2026-06-23T02:27:45.146Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/21/a9/5f0c535ba3b08fe09270c16808e053a968868242ecbd5676d4e3a488bf28/pymdown_extensions-11.0.1.tar.gz", hash = "sha256:dd2905ae6fc5b75582fafb139a1266ffc754705efa902aa50067fa7ff4f94ec0", size = 857113, upload-time = "2026-07-02T17:59:22.955Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/af/b6/1ae53367e28b9cffa3be7574e13fbe4589694272fd47710fbdbafd3d63c6/pymdown_extensions-11.0-py3-none-any.whl", hash = "sha256:fbc4acb641814fa9d17521bbd21a5240ef739a662f11c06330c4b78c93e954d6", size = 269415, upload-time = "2026-06-23T02:27:43.826Z" },
+    { url = "https://files.pythonhosted.org/packages/d6/54/da572c98c0b77626a91b5d3b89f0231d8bff5125c225420908632f8b342d/pymdown_extensions-11.0.1-py3-none-any.whl", hash = "sha256:db3943a62bab7e03af1364f0c4083e64b91fb097675a4b6cceccfbe9a77e5eb2", size = 269455, upload-time = "2026-07-02T17:59:21.271Z" },
 ]
 
 [[package]]
@@ -3622,14 +3622,14 @@ wheels = [
 
 [[package]]
 name = "wcmatch"
-version = "10.2"
+version = "10.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bracex" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/98/eb989c3113908e2ef46d940a53695a1ebb4be5a732c4a4f700be8f8d682b/wcmatch-10.2.tar.gz", hash = "sha256:92204839e3e9c945e1e71d7e1e4edeab2601ed50a5c51ff4f3f97ca711eeb738", size = 132499, upload-time = "2026-06-30T00:50:07.198Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/15/dc61746d8c0852f6d711ad09c774b63cf7c8211aa49e30871ac3d342b7e2/wcmatch-10.2.1.tar.gz", hash = "sha256:ecac70a5c70e62ba854b78318d3a1408e8651f8f1c96e5837743b71aa6a4fb92", size = 132497, upload-time = "2026-07-02T17:21:48.484Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/73/aef4aaf16b8d785762e2b14cf321a9178cc84a1bf4c40f58320f499a2d65/wcmatch-10.2-py3-none-any.whl", hash = "sha256:f1a79e80ccbe296907b7eaf57d8d3bc49eab0b428d35f7d09986b5079b6e4a5d", size = 39742, upload-time = "2026-06-30T00:50:05.927Z" },
+    { url = "https://files.pythonhosted.org/packages/82/ba/20b48eedeab5316bf9a502bb9eb7e3b1588bd61d0f565822fefa8f06e10b/wcmatch-10.2.1-py3-none-any.whl", hash = "sha256:2d775395b93f233af66690f62cb9d52b084ec159a31cc4084f4069d72f437acd", size = 39763, upload-time = "2026-07-02T17:21:47.134Z" },
 ]
 
 [[package]]
