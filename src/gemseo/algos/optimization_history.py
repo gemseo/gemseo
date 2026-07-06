@@ -36,6 +36,7 @@ from numpy import ndarray
 from numpy.linalg import norm
 
 from gemseo.algos.database import Database
+from gemseo.algos.hashable_ndarray import HashableNdarray
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.typing import RealArray
 
@@ -302,8 +303,9 @@ class OptimizationHistory:
         if not filter_non_feasible:
             return data
 
+        x_to_index = {x: index for index, x in enumerate(self.database)}
         feasible_indices = [
-            self.database.get_iteration(x) - 1 for x in self.feasible_points[0]
+            x_to_index[HashableNdarray(x)] for x in self.feasible_points[0]
         ]
         if not as_dict:
             return data[feasible_indices, :]

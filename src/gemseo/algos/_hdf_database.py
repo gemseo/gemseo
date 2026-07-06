@@ -677,4 +677,8 @@ class HDFDatabase:
         if existing_array is None or not array_equal(
             data.wrapped_array, existing_array.wrapped_array
         ):
+            # A pending array may outlive the store() call that created it
+            # (until the next to_file()), so it must not alias a caller-owned,
+            # potentially mutable array.
+            data.copy_wrapped_array()
             self.__pending_arrays[data_hash] = data
