@@ -26,6 +26,7 @@ from __future__ import annotations
 import logging
 import sys
 from ast import literal_eval
+from collections import defaultdict
 from collections.abc import Callable
 from collections.abc import Mapping
 from copy import deepcopy
@@ -37,11 +38,12 @@ from xml.etree.ElementTree import parse as parse_element
 
 from numpy import array
 from numpy import array_equal
+from numpy import asarray
 from numpy import atleast_1d
 from numpy import atleast_2d
 from numpy import dtype
+from numpy import full
 from numpy import hstack
-from numpy import insert
 from numpy import integer
 from numpy import issubdtype
 from numpy import nan
@@ -329,10 +331,9 @@ class Database(Mapping):
                 f"than the number of iterations ({n_iterations})."
             )
             raise ValueError(msg)
-        return [
-            x.wrapped_array
-            for x in islice(self.__data.keys(), n_iterations - n, n_iterations)
-        ]
+        last_x_vect = [x.wrapped_array for x in islice(reversed(self.__data), n)]
+        last_x_vect.reverse()
+        return last_x_vect
 
     def get_x_vect_history(self) -> list[ndarray]:
         """Return the history of the input vector.
@@ -453,8 +454,12 @@ class Database(Mapping):
         # The database dictionary uses the input design variables as keys for the
         # function values. Here we convert it to an iterator that returns the
         # key located at the required iteration using the islice method from
-        # itertools.
-        x = next(islice(iter(self.__data), iteration_index, iteration_index + 1))
+        # itertools, walking from the nearest end of the dictionary.
+        index_from_end = len(self) - 1 - iteration_index
+        if index_from_end < iteration_index:
+            x = next(islice(reversed(self.__data), index_from_end, index_from_end + 1))
+        else:
+            x = next(islice(iter(self.__data), iteration_index, iteration_index + 1))
         return x.wrapped_array
 
     def __get_output(
@@ -536,18 +541,21 @@ class Database(Mapping):
             x_vect: The input value.
             outputs: The output value corresponding to the input value.
         """
-        hashed_input_value = self.get_hashable_ndarray(x_vect, True)
-        self.__hdf_database.add_pending_array(hashed_input_value)
-
-        stored_outputs = self.get(hashed_input_value)
+        hashed_input_value = self.get_hashable_ndarray(x_vect)
+        stored_outputs = self.__data.get(hashed_input_value)
         current_outputs_is_empty = not stored_outputs
 
         if stored_outputs is None:
+            # Only copy the input value when it becomes a key of the database;
+            # for an existing key, the copy stored at insertion is kept.
+            hashed_input_value.copy_wrapped_array()
             self.__data[hashed_input_value] = outputs
         else:
             # No new keys = already computed = new iteration
             # otherwise just calls to other functions
             stored_outputs.update(outputs)
+
+        self.__hdf_database.add_pending_array(hashed_input_value)
 
         if self.__store_listeners:
             self.notify_store_listeners(x_vect)
@@ -938,15 +946,18 @@ class Database(Mapping):
         """
         flat_values = []
         name_to_flat_names = {}
+        name_to_size = {}
         for values in history:
             flat_value = []
             for value, name in zip(values, names, strict=False):
                 value = atleast_1d(value)
                 size = value.size
                 flat_value.extend(value)
-                name_to_flat_names[name] = [
-                    repr_variable(name, i, size) for i in range(size)
-                ]
+                if name_to_size.get(name) != size:
+                    name_to_size[name] = size
+                    name_to_flat_names[name] = [
+                        repr_variable(name, i, size) for i in range(size)
+                    ]
 
             flat_values.append(flat_value)
 
@@ -1086,12 +1097,19 @@ class Database(Mapping):
             for name, type_ in input_space.variable_types.items()
             for component in range(input_space.get_size(name))
         }
-        n_samples = len(input_history)
         positions = []
         offset = 1 if issubclass(dataset_class, OptimizationDataset) else 0
-        for input_value in input_values:
-            positions_ = ((input_history == input_value).all(axis=1)).nonzero()[0]
-            positions.extend((positions_ + offset).tolist())
+        input_values = list(input_values)
+        if input_values:
+            # Adding 0.0 normalizes -0.0 to +0.0
+            # so that byte-level keys match value equality.
+            key_to_positions = defaultdict(list)
+            for position, input_value in enumerate(input_history + 0.0):
+                key_to_positions[input_value.tobytes()].append(position + offset)
+
+            for input_value in input_values:
+                key = (asarray(input_value, dtype=input_history.dtype) + 0.0).tobytes()
+                positions.extend(key_to_positions[key])
 
         data = [input_history.real]
         columns = [
@@ -1100,8 +1118,9 @@ class Database(Mapping):
             for index in range(name_to_size[name])
         ]
         # Add database outputs
+        output_names = self.get_function_names()
         if not group_to_variables:
-            group_to_variables = {output_group: self.get_function_names()}
+            group_to_variables = {output_group: output_names}
 
         for group_name, variable_names in group_to_variables.items():
             self.__update_data_and_columns_for_dataset(
@@ -1109,20 +1128,19 @@ class Database(Mapping):
                 columns,
                 name_to_type,
                 variable_names,
-                n_samples,
+                input_history,
                 group_name,
                 False,
             )
 
         # Add database output gradients
         if export_gradients:
-            output_names = self.get_function_names()
             self.__update_data_and_columns_for_dataset(
                 data,
                 columns,
                 name_to_type,
                 output_names,
-                n_samples,
+                input_history,
                 gradient_group,
                 True,
             )
@@ -1167,7 +1185,7 @@ class Database(Mapping):
         columns: list[tuple[str, str, int]],
         name_to_type: dict[tuple[str, str, int], dtype],
         output_names: Iterable[str],
-        n_samples: int,
+        x_vect_history: RealArray,
         group: str,
         store_gradient: bool,
     ) -> None:
@@ -1179,24 +1197,28 @@ class Database(Mapping):
             name_to_type: The types of the variables
                 to be augmented with the output names.
             output_names: The names of the outputs in the database.
-            n_samples: The total number of samples,
+            x_vect_history: The complete input data history,
                 including possible points where the evaluation failed.
             group: The dataset group where the variables will be added.
             store_gradient: Whether the variable of interest
                 is the gradient of the output.
         """
-        x_vect_history = array(self.get_x_vect_history())
+        n_samples = len(x_vect_history)
         for output_name in output_names:
             if store_gradient:
                 function_name = Database.get_gradient_name(output_name)
-                if self.check_output_history_is_empty(function_name):
-                    continue
             else:
                 function_name = output_name
 
-            history, input_history = self.get_function_history(
-                function_name=function_name, with_x_vect=True
-            )
+            try:
+                history, input_history = self.get_function_history(
+                    function_name=function_name, with_x_vect=True
+                )
+            except KeyError:
+                if store_gradient:
+                    # The gradient of this output is not in the database.
+                    continue
+                raise
             # The history data type may change if data is incomplete.
             # In that case, we insert NaNs and convert `history` into float.
             # Thus, the initial data type is kept for future data type conversion.
@@ -1236,17 +1258,18 @@ class Database(Mapping):
 
         if len(input_history) != database_size:
             # There are fewer entries than in the full input history.
-            # Add NaN values at the missing input data.
+            # Set NaN values at the missing input data.
             # N.B. the input data are assumed to be in the same order.
-            index = 0
             output_history = output_history.astype(float)
-            for input_data in input_history:
+            full_output_history = full((database_size, *output_history.shape[1:]), nan)
+            index = 0
+            for position, input_data in enumerate(input_history):
                 while not array_equal(input_data, full_input_history[index]):
-                    output_history = insert(output_history, index, nan, 0)
                     index += 1
 
+                full_output_history[index] = output_history[position]
                 index += 1
 
-            return insert(output_history, [index] * (database_size - index), nan, 0)
+            return full_output_history
 
         return output_history
