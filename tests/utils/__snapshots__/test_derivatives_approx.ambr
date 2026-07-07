@@ -1,6 +1,6 @@
 # serializer version: 1
 # name: test_function_jacobian_checker_error_shape
-  'The Jacobian matrix computed by sin has a wrong shape; expected (1,), got (1, 2).'
+  'The Jacobian matrix computed by ufunc has a wrong shape; expected (1, 1), got (1, 2).'
 # ---
 # name: test_function_jacobian_checker_error_step
   'FunctionJacobianChecker does not support step=None.'
