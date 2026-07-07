@@ -45,6 +45,7 @@ from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settin
 from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.algos.doe.pydoe.settings.pydoe_pbdesign import PYDOE_PBDESIGN_Settings
 from gemseo.typing import RealArray
+from gemseo.utils.compatibility.pydoe import PYDOE3_GREATER_THAN_1_4
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -144,9 +145,13 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
         filtered_settings = self._filter_settings()
         doe_algorithm = self.__NAMES_TO_FUNCTIONS[self._algo_name]
         if self._algo_name == "PYDOE_LHS":
-            filtered_settings["random_state"] = RandomState(
-                self._seeder.get_seed(self._settings.random_state)
-            )
+            filtered_settings.pop("random_state", None)
+            seed = self._seeder.get_seed(self._settings.random_state)
+            # pyDOE3 1.5 replaced random_state with seed and deprecated the former.
+            if PYDOE3_GREATER_THAN_1_4:
+                filtered_settings["seed"] = seed
+            else:
+                filtered_settings["random_state"] = seed
             filtered_settings["samples"] = filtered_settings["n_samples"]
             del filtered_settings["n_samples"]
             return doe_algorithm(design_space.dimension, **filtered_settings)

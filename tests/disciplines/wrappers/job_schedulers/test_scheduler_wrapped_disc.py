@@ -195,7 +195,10 @@ def test_linearize(discipline_mocked_js, compute_all_jacobians, execute) -> None
         ref_data, compute_all_jacobians=compute_all_jacobians, execute=execute
     )
     assert compare_dict_of_arrays(out, out_ref)
-    assert compare_dict_of_arrays(discipline_mocked_js.io.data, mission_local.io.data)
+    assert compare_dict_of_arrays(
+        discipline_mocked_js.io.get_merged_data(as_dict=False),
+        mission_local.io.get_merged_data(as_dict=False),
+    )
 
 
 @pytest.fixture
@@ -230,7 +233,10 @@ def test_linearize_at_exec(discipline_diff_mocked_js) -> None:
     disc_local.execute(ref_data)
     out_ref = disc_local.jac
     assert compare_dict_of_arrays(out, out_ref)
-    assert compare_dict_of_arrays(discipline_diff_mocked_js.io.data, disc_local.io.data)
+    assert compare_dict_of_arrays(
+        discipline_diff_mocked_js.io.get_merged_data(as_dict=False),
+        disc_local.io.get_merged_data(as_dict=False),
+    )
 
 
 def test_api_fail(tmp_wd, snapshot) -> None:

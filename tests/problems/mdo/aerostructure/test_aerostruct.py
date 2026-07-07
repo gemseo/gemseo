@@ -83,17 +83,17 @@ class TestAerostructure(unittest.TestCase):
         """Evaluate discipline Aero."""
         aero = Aerodynamics()
         aero.execute()
-        self.assertAlmostEqual(aero.io.data["drag"][0], 19.60000077, 8)
-        self.assertAlmostEqual(aero.io.data["forces"][0], 10.0, 8)
-        self.assertAlmostEqual(aero.io.data["lift"][0], -0.00026667, 8)
+        self.assertAlmostEqual(aero.io.output_data["drag"][0], 19.60000077, 8)
+        self.assertAlmostEqual(aero.io.output_data["forces"][0], 10.0, 8)
+        self.assertAlmostEqual(aero.io.output_data["lift"][0], -0.00026667, 8)
 
     def test_run_struct(self) -> None:
         """Evaluate discipline Struct."""
         struct = Structure()
         struct.execute()
-        self.assertAlmostEqual(struct.io.data["mass"][0], 200300.00008573389, 10)
-        self.assertAlmostEqual(struct.io.data["reserve_fact"][0], 46.1, 10)
-        self.assertAlmostEqual(struct.io.data["displ"][0], 3.0, 10)
+        self.assertAlmostEqual(struct.io.output_data["mass"][0], 200300.00008573389, 10)
+        self.assertAlmostEqual(struct.io.output_data["reserve_fact"][0], 46.1, 10)
+        self.assertAlmostEqual(struct.io.output_data["displ"][0], 3.0, 10)
 
     def test_run_mission(self) -> None:
         """Evaluate objective function."""
@@ -104,7 +104,7 @@ class TestAerostructure(unittest.TestCase):
         indata["mass"] = np.array([exp(1)])
         indata["drag"] = np.array([1])
         mission.execute(indata)
-        obj = mission.io.data["range"]
+        obj = mission.io.output_data["range"]
         self.assertAlmostEqual(obj, 4915369.8826625682, 10)
 
     def test_jac_mission(self) -> None:
@@ -138,7 +138,7 @@ class TestAerostructure(unittest.TestCase):
         mda.execute(indata)
         mda.settings.tolerance = 1e-14
         mda.max_iter = 40
-        indata = mda.io.data
+        indata = mda.io.get_merged_data(as_dict=False)
         for discipline in disciplines:
             assert discipline.check_jacobian(
                 indata, derr_approx="complex_step", step=1e-30

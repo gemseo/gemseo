@@ -36,6 +36,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.svm import SVC
 
 from gemseo.machine_learning.classification.models.base_classifier import BaseClassifier
@@ -59,12 +60,16 @@ class SVMClassifier(BaseClassifier):
 
     def _post_init(self):
         super()._post_init()
-        self.algo = SVC(
+        svc = SVC(
             C=self._settings.C,
             kernel=self._settings.kernel,
-            probability=self._settings.probability,
             random_state=self._settings.random_state,
             **self._settings.parameters,
+        )
+        self.algo = (
+            CalibratedClassifierCV(svc, ensemble=False, cv=self._settings.cv)
+            if self._settings.probability
+            else svc
         )
 
     def _fit(

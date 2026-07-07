@@ -96,7 +96,7 @@ def test_complex_data_processor_with_discipline() -> None:
     discipline.io.data_processor = ComplexDataProcessor()
     defaults = discipline.io.input_grammar.defaults
     discipline.execute({"x_shared": array(defaults["x_shared"], dtype="complex128")})
-    assert discipline.io.data["y_4"].dtype == complex128
+    assert discipline.io.output_data["y_4"].dtype == complex128
 
 
 @pytest.mark.parametrize(

@@ -48,6 +48,15 @@ Examples of names: "linear", "poly", "rbf", "sigmoid", "precomputed".""",
         default=False, description="Whether to enable the probability estimates."
     )
 
+    cv: int | None = Field(
+        default=None,
+        description="""The number of cross-validation folds.
+
+Used to calibrate the probability estimates
+when `probability` is `True`.
+If `None`, use 5 folds.""",
+    )
+
     random_state: NonNegativeInt | None = Field(
         default=SEED,
         description="""The random state parameter.

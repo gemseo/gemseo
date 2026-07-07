@@ -125,9 +125,12 @@ class Animation(BasePost[Animation_Settings]):
                 ]
             else:
                 figure_names = [self.__FRAME]
-            frames = [
-                Image.open(fp=frame_file_path) for frame_file_path in frame_file_paths
-            ]
+            frames = []
+            for frame_file_path in frame_file_paths:
+                # Copy the image into memory and close the file handle right away
+                # to avoid leaking one open file per frame (ResourceWarning).
+                with Image.open(fp=frame_file_path) as frame:
+                    frames.append(frame.copy())
 
             for figure_name, frame in zip(figure_names, frames, strict=False):
                 if figure_name not in figure_name_to_frames:

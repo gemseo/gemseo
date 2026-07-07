@@ -56,8 +56,8 @@ def test_independent_default_inputs() -> None:
     expr = {"obj": "x1 + x2 + x3"}
     disc = AnalyticDiscipline(expr)
     disc.execute()
-    disc.io.data["x1"] += 1.0
-    assert disc.io.data["x2"] == pytest.approx(0.0)
+    disc.io.input_data["x1"] += 1.0
+    assert disc.io.input_data["x2"] == pytest.approx(0.0)
 
 
 def test_fast_expression_evaluation(expressions) -> None:
@@ -141,7 +141,7 @@ def test_complex_outputs() -> None:
     """Check that complex outputs are supported."""
     discipline = AnalyticDiscipline({"y": "x*I"})
     discipline.execute({"x": array([1.0])})
-    assert discipline.io.data["y"] == 1j
+    assert discipline.io.output_data["y"] == 1j
 
 
 @pytest.mark.parametrize("linearization_mode", ApproximationMode)

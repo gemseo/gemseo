@@ -594,8 +594,8 @@ class DiscWithNonNumericInputs3(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        x = self.io.data["x"][0]
-        y = self.io.data["y"][0]
+        x = self.io.input_data["x"][0]
+        y = self.io.input_data["y"][0]
         self.jac = {
             "obj": {"x": array([[1.0]]), "y": array([[-1.0]]), "b": array([[x - y]])}
         }

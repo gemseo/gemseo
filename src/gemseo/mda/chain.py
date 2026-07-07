@@ -44,11 +44,13 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
 
     from typing_extensions import Self
 
+    from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.mda.base import BaseProcessFlow
@@ -154,11 +156,13 @@ class MDAChain(BaseMDA):
         else:
             sub_coupling_structures = self.settings.sub_coupling_structures
 
-        self.__sub_coupling_structures_iterator = iter(sub_coupling_structures)
+        sub_coupling_structures_iterator = iter(sub_coupling_structures)
 
         chained_disciplines = []
         for parallel_tasks in self.coupling_structure.sequence:
-            process = self.__create_process_from_disciplines(parallel_tasks)
+            process = self.__create_process_from_disciplines(
+                parallel_tasks, sub_coupling_structures_iterator
+            )
             chained_disciplines.append(process)
 
         return DisciplineChain(chained_disciplines, name="MDA chain")
@@ -166,6 +170,7 @@ class MDAChain(BaseMDA):
     def __create_process_from_disciplines(
         self,
         parallel_tasks: list[tuple[Discipline, ...]],
+        sub_coupling_structures_iterator: Iterator[CouplingStructure | None],
     ) -> Discipline:
         """Create a process from disciplines.
 
@@ -182,11 +187,17 @@ class MDAChain(BaseMDA):
 
         Args:
             parallel_tasks: The parallel tasks to be processed.
+            sub_coupling_structures_iterator: An iterator over the coupling
+                structures of the inner MDAs.
+                If `None`, the coupling structure is created from the
+                disciplines of the MDA.
 
         Returns:
             A process.
         """
-        parallel_disciplines = self.__compute_parallel_disciplines(parallel_tasks)
+        parallel_disciplines = self.__compute_parallel_disciplines(
+            parallel_tasks, sub_coupling_structures_iterator
+        )
 
         if len(parallel_disciplines) == 1:
             return parallel_disciplines[0]
@@ -201,6 +212,7 @@ class MDAChain(BaseMDA):
     def __compute_parallel_disciplines(
         self,
         parallel_tasks: list[tuple[Discipline, ...]],
+        sub_coupling_structures_iterator: Iterator[CouplingStructure | None],
     ) -> Sequence[Discipline | BaseMDA]:
         """Compute the parallel disciplines.
 
@@ -212,6 +224,10 @@ class MDAChain(BaseMDA):
 
         Args:
             parallel_tasks: The parallel tasks.
+            sub_coupling_structures_iterator: An iterator over the coupling
+                structures of the inner MDAs.
+                If `None`, the coupling structure is created from the
+                disciplines of the MDA.
 
         Returns:
             The parallel disciplines.
@@ -227,7 +243,7 @@ class MDAChain(BaseMDA):
 
                 settings_model = self.__create_inner_mda_settings()
                 settings_model.coupling_structure = next(
-                    self.__sub_coupling_structures_iterator
+                    sub_coupling_structures_iterator
                 )
 
                 discipline = self.__inner_mda_class(

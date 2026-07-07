@@ -825,7 +825,7 @@ def test_swap_order_inputs():
         return_trajectories=True,
     )
     ode_discipline.execute()
-    expected_final_velocity = ode_discipline.io.data["final_velocity"]
+    expected_final_velocity = ode_discipline.io.output_data["final_velocity"]
 
     ode_discipline_swap = ODEDiscipline(
         rhs_discipline=rhs_discipline,
@@ -835,7 +835,9 @@ def test_swap_order_inputs():
         return_trajectories=True,
     )
     ode_discipline_swap.execute()
-    assert ode_discipline_swap.io.data["final_velocity"] == expected_final_velocity
+    assert (
+        ode_discipline_swap.io.output_data["final_velocity"] == expected_final_velocity
+    )
 
 
 def test_swap_order_inputs_and_derivatives_with_non_conventional_names():
@@ -877,7 +879,7 @@ def test_swap_order_inputs_and_derivatives_with_non_conventional_names():
     )
 
     assert isclose(
-        ode_discipline_map.io.data["final_position"],
+        ode_discipline_map.io.output_data["final_position"],
         expected_final_position,
         atol=1.0e-3,
     )

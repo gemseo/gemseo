@@ -45,6 +45,7 @@ from gemseo.algos.opt.scipy_local.settings.nelder_mead import NELDER_MEAD_Settin
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.algos.opt.scipy_local.settings.tnc import TNC_Settings
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
+from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_15
 from gemseo.utils.constants import C_LONG_MAX
 
 if TYPE_CHECKING:
@@ -161,6 +162,11 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
         ]
 
         filtered_settings = self._filter_settings()
+        if self._algo_name == "L_BFGS_B" and SCIPY_GREATER_THAN_1_15:
+            # SciPy 1.15 deprecated the disp and iprint options for L-BFGS-B;
+            # earlier versions still honor them.
+            filtered_settings.pop("disp", None)
+            filtered_settings.pop("iprint", None)
 
         # Deactivate stopping criteria which are handled by GEMSEO
         tolerance = 0.0

@@ -173,8 +173,8 @@ def test_default_inputs(discipline) -> None:
 def test_execute(discipline) -> None:
     """Check the execution of the discipline."""
     discipline.execute()
-    assert_equal(discipline.io.data["new_out_1"], array([2.0]))
-    assert_equal(discipline.io.data["new_out_2"], array([1.0, 2.0]))
+    assert_equal(discipline.io.output_data["new_out_1"], array([2.0]))
+    assert_equal(discipline.io.output_data["new_out_2"], array([1.0, 2.0]))
 
 
 def test_linearize_all(discipline) -> None:
@@ -300,7 +300,7 @@ def test_no_inputs_discipline():
         output_mapping={"bar": "foo"},
     )
     remapping_discipline.execute()
-    assert_equal(remapping_discipline.io.data["bar"], array([10.0]))
+    assert_equal(remapping_discipline.io.output_data["bar"], array([10.0]))
 
 
 def test_no_outputs_discipline():
@@ -311,10 +311,10 @@ def test_no_outputs_discipline():
     )
     remapping_discipline.execute()
     assert not remapping_discipline.get_output_data()
-    assert_equal(discipline.io.data["foo"], array([0.0]))
+    assert_equal(discipline.io.input_data["foo"], array([0.0]))
     remapping_discipline.execute({"bar": array([10.0])})
     assert not remapping_discipline.get_output_data()
-    assert_equal(discipline.io.data["foo"], array([10.0]))
+    assert_equal(discipline.io.input_data["foo"], array([10.0]))
 
 
 def test_linearize():

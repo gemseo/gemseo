@@ -174,10 +174,10 @@ def test_coupling(factor, mda) -> None:
         design_space.get_current_value(as_dict=True), factor
     )
     mda.execute(input_data)
-    y_1 = mda.io.data["y_1"]
-    y_2 = mda.io.data["y_2"]
-    y_3 = mda.io.data["y_3"]
-    y_4 = mda.io.data["range"]
+    y_1 = mda.io.output_data["y_1"]
+    y_2 = mda.io.output_data["y_2"]
+    y_3 = mda.io.output_data["y_3"]
+    y_4 = mda.io.output_data["range"]
     design_space = create_design_space()
     input_data = compute_input_data(
         design_space.get_current_value(as_dict=True), factor
@@ -189,10 +189,10 @@ def test_coupling(factor, mda) -> None:
         SobieskiMission(),
     ])
     original_mda.execute(input_data)
-    assert_allclose(original_mda.io.data["y_1"], y_1, rtol=1e-2)
-    assert_allclose(original_mda.io.data["y_2"], y_2, rtol=1e-2)
-    assert_allclose(original_mda.io.data["y_3"], y_3, rtol=1e-2)
-    assert_allclose(original_mda.io.data["y_4"], y_4, rtol=1e-2)
+    assert_allclose(original_mda.io.output_data["y_1"], y_1, rtol=1e-2)
+    assert_allclose(original_mda.io.output_data["y_2"], y_2, rtol=1e-2)
+    assert_allclose(original_mda.io.output_data["y_3"], y_3, rtol=1e-2)
+    assert_allclose(original_mda.io.output_data["y_4"], y_4, rtol=1e-2)
 
 
 @pytest.fixture
@@ -300,4 +300,4 @@ def test_solution(mda) -> None:
     }
     mda.execute({k: array([v]) for k, v in input_data.items()})
     optimum_range = problem.optimum_range
-    assert_allclose(mda.io.data["range"], optimum_range, rtol=1e0)
+    assert_allclose(mda.io.output_data["range"], optimum_range, rtol=1e0)

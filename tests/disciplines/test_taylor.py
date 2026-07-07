@@ -112,7 +112,7 @@ def test_input_output_names(analytic_discipline, input_data, expected):
     assert taylor.io.output_grammar.keys() == {"y2"}
 
     taylor.execute()
-    assert taylor.io.data["y2"] == expected[0]
+    assert taylor.io.output_data["y2"] == expected[0]
 
     taylor.execute({"x1": array([3.0])})
-    assert taylor.io.data["y2"] == expected[1]
+    assert taylor.io.output_data["y2"] == expected[1]

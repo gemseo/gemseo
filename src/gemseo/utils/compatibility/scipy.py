@@ -31,6 +31,7 @@ if TYPE_CHECKING:
 
 SCIPY_VERSION: Final[Version] = parse_version(version("scipy"))
 SCIPY_GREATER_THAN_1_14: Final[bool] = parse_version("1.14") <= SCIPY_VERSION
+SCIPY_GREATER_THAN_1_15: Final[bool] = parse_version("1.15") <= SCIPY_VERSION
 SCIPY_GREATER_THAN_1_16: Final[bool] = parse_version("1.16") <= SCIPY_VERSION
 
 

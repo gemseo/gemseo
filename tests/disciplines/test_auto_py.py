@@ -140,21 +140,21 @@ def test_basic() -> None:
     assert list(d1.io.input_grammar) == ["y2", "z"]
     d1.execute()
 
-    assert d1.io.data["y1"] == f1()
+    assert d1.io.output_data["y1"] == f1()
 
     d2 = AutoPyDiscipline(f2)
     assert list(d2.io.input_grammar) == ["y1", "z"]
     assert list(d2.io.output_grammar) == ["y2", "y3"]
 
     d2.execute()
-    assert d2.io.data["y2"] == f2()[0]
+    assert d2.io.output_data["y2"] == f2()[0]
 
     d3 = AutoPyDiscipline(F().f1)
 
     assert list(d3.io.input_grammar) == ["y2", "z"]
     d3.execute()
 
-    assert d3.io.data["y1"] == F().f1()
+    assert d3.io.output_data["y1"] == F().f1()
 
 
 def test_jac() -> None:
@@ -182,9 +182,9 @@ def test_use_arrays() -> None:
     """Test the use of arrays."""
     d1 = AutoPyDiscipline(f1, use_arrays=True)
     d1.execute()
-    assert d1.io.data["y1"] == f1()
+    assert d1.io.output_data["y1"] == f1()
     d1.execute({"x1": array([1.0]), "z": array([2.0])})
-    assert d1.io.data["y1"] == f1()
+    assert d1.io.output_data["y1"] == f1()
 
 
 def test_fail_wrongly_formatted_function(snapshot) -> None:
@@ -232,8 +232,8 @@ def test_multiprocessing() -> None:
         {"y1": array([5.0]), "z": array([3.0])},
     ])
 
-    assert d1.io.data["y1"] == f1(2.0, 1.0)
-    assert d2.io.data["y2"] == f2(5.0, 3.0)[0]
+    assert d1.io.output_data["y1"] == f1(2.0, 1.0)
+    assert d2.io.output_data["y2"] == f2(5.0, 3.0)[0]
 
 
 @pytest.mark.parametrize(
@@ -590,6 +590,6 @@ def test_callable_class():
     functor = Functor()
     discipline = AutoPyDiscipline(functor, py_jac=functor)
     discipline.execute()
-    assert discipline.io.data["y"] == 2
+    assert discipline.io.output_data["y"] == 2
     discipline.linearize(compute_all_jacobians=True)
     assert discipline.jac["y"]["x"] == 2

@@ -288,8 +288,8 @@ def test_virtual_exe_mda(two_virtual_disciplines):  # noqa: F811
     """Test an MDA with disciplines in virtual execution mode."""
     chain = MDAGaussSeidel(two_virtual_disciplines)
     chain.execute()
-    assert chain.io.data["x"] == 1.0
-    assert chain.io.data["y"] == 2.0
+    assert chain.io.input_data["x"] == 1.0
+    assert chain.io.output_data["y"] == 2.0
 
 
 def test_max_mda_iter_0(enable_discipline_statistics):
