@@ -84,6 +84,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.typing import StrKeyMapping
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 Status = ExecutionStatus.Status
 
@@ -303,23 +304,23 @@ def test_reset_statuses_for_run_error(sobieski_chain, enable_status) -> None:
     assert chain.execution_status.value == target
 
 
-def test_check_jac_fdapprox() -> None:
+def test_check_jac_fd_approx() -> None:
     """Test the finite difference approximation."""
-    aero = SobieskiAerodynamics("complex128")
+    aero = SobieskiAerodynamics()
     inpts = aero.io.input_grammar.defaults
     aero.linearization_mode = aero.ApproximationMode.FINITE_DIFFERENCES
     aero.linearize(inpts, compute_all_jacobians=True)
-    aero.check_jacobian(inpts)
+    assert DisciplineJacobianChecker(aero).check(inpts, rtol=1e-1)
     aero.linearization_mode = "auto"
-    aero.check_jacobian(inpts)
+    assert DisciplineJacobianChecker(aero).check(inpts, rtol=1e-1)
 
 
-def test_check_jac_csapprox() -> None:
+def test_check_jac_cs_approx() -> None:
     """Test the complex step approximation."""
     aero = SobieskiAerodynamics("complex128")
     aero.linearization_mode = aero.ApproximationMode.COMPLEX_STEP
     aero.linearize(compute_all_jacobians=True)
-    aero.check_jacobian()
+    assert DisciplineJacobianChecker(aero).check(rtol=1e-1)
 
 
 @pytest.mark.parametrize(
@@ -385,7 +386,8 @@ def test_check_jac_approx_plot(tmp_wd) -> None:
     aero = SobieskiAerodynamics()
     aero.linearize(compute_all_jacobians=True)
     file_path = "gradients_validation.pdf"
-    aero.check_jacobian(step=10.0, plot_result=True, file_path=file_path)
+    checker = DisciplineJacobianChecker(aero)
+    assert not checker.check(plot_result=True, file_path=file_path, step=10.0)
     assert os.path.exists(file_path)
 
 
@@ -394,7 +396,7 @@ def test_check_lin_threshold() -> None:
     aero = SobieskiAerodynamics()
     problem = SobieskiProblem()
     indata = problem.get_default_inputs(names=aero.io.input_grammar)
-    aero.check_jacobian(indata, threshold=1e-50)
+    assert DisciplineJacobianChecker(aero).check(indata, atol=1e-50, rtol=1e-1)
 
 
 def test_input_grammar_membership() -> None:
@@ -554,8 +556,8 @@ def test_linearize_errors(snapshot) -> None:
             self.jac["y_4"]["x_shared"] += 3.0
 
     sm = SM()
-    success = sm.check_jacobian(input_names=["x_shared"], output_names=["y_4"])
-    assert not success
+    checker = DisciplineJacobianChecker(sm)
+    assert not checker.check(inputs=["x_shared"], outputs=["y_4"])
 
 
 def test_check_jacobian_errors() -> None:
@@ -656,26 +658,31 @@ def test_check_jacobian_input_data(sellar_with_2d_array) -> None:
         X_SHARED: value,
         Y_2: array([3.0]),
     }
-    sellar_1.check_jacobian(
-        input_data=input_data,
-        input_names=[Y_2],
-    )
+    checker = DisciplineJacobianChecker(sellar_1)
+    assert checker.check(input_value=input_data, inputs=[Y_2])
 
 
 def test_check_jacobian_parallel_fd() -> None:
     """Test check_jacobian in parallel."""
     sm = SobieskiMission()
-    sm.check_jacobian(step=1e-6, threshold=1e-6, parallel=True, n_processes=6)
+    checker = DisciplineJacobianChecker(sm)
+    assert checker.check(
+        atol=1e-6,
+        rtol=1e-6,
+        step=1e-6,
+        n_processes=6,
+    )
 
 
 def test_check_jacobian_parallel_cplx() -> None:
     """Test check_jacobian in parallel with complex-step."""
-    sm = SobieskiMission()
-    sm.check_jacobian(
-        derr_approx=sm.ApproximationMode.COMPLEX_STEP,
+    sm = SobieskiMission("complex128")
+    checker = DisciplineJacobianChecker(sm)
+    assert checker.check(
+        atol=1e-6,
+        rtol=1e-1,
+        approximation_mode=sm.ApproximationMode.COMPLEX_STEP,
         step=1e-30,
-        threshold=1e-6,
-        parallel=True,
         n_processes=6,
     )
 
@@ -836,7 +843,8 @@ def test_jac_approx_mix_fd() -> None:
         jax_approx_step=1e-30,
         jac_approx_n_processes=4,
     )
-    assert sm.check_jacobian(parallel=True, n_processes=4, threshold=1e-4)
+    checker = DisciplineJacobianChecker(sm)
+    assert checker.check(atol=1e-4, rtol=1e-4, n_processes=4)
 
 
 def test_jac_set_optimal_fd_step_compute_all_jacobians() -> None:
@@ -844,7 +852,7 @@ def test_jac_set_optimal_fd_step_compute_all_jacobians() -> None:
     sm = SobieskiMission()
     sm.set_jacobian_approximation()
     sm.set_optimal_fd_step(compute_all_jacobians=True)
-    assert sm.check_jacobian(n_processes=1, threshold=1e-4)
+    assert DisciplineJacobianChecker(sm).check(atol=1e-4, rtol=1e-4)
 
 
 def test_jac_set_optimal_fd_step_input_output() -> None:
@@ -852,7 +860,7 @@ def test_jac_set_optimal_fd_step_input_output() -> None:
     sm = SobieskiMission()
     sm.set_jacobian_approximation()
     sm.set_optimal_fd_step(input_names=["y_14"], output_names=["y_4"])
-    assert sm.check_jacobian(n_processes=1, threshold=1e-4)
+    assert DisciplineJacobianChecker(sm).check(atol=1e-4, rtol=1e-4)
 
 
 def test_jac_set_optimal_fd_step_no_jac_approx(snapshot) -> None:
@@ -867,7 +875,7 @@ def test_jac_cache_trigger_shapecheck() -> None:
     # if cache is loaded and jacobian has already been computed for given i/o
     # and jacobian is called again but with new i/o
     # it will compute the jacobian with the new i/o
-    aero = SobieskiAerodynamics("complex128")
+    aero = SobieskiAerodynamics()
     inpts = aero.io.input_grammar.defaults
     aero.linearization_mode = aero.ApproximationMode.FINITE_DIFFERENCES
     in_names = ["x_2", "y_12"]
@@ -1519,11 +1527,13 @@ def test_linearize_subset_outputs_prunes_jac() -> None:
 def test_check_jacobian_auto_set_step() -> None:
     """Verify ``check_jacobian`` runs with ``auto_set_step=True``."""
     aero = SobieskiAerodynamics()
-    aero.check_jacobian(
-        input_names=["x_shared"],
-        output_names=["y_2"],
-        auto_set_step=True,
-        threshold=1e-3,
+    checker = DisciplineJacobianChecker(aero)
+    assert checker.check(
+        inputs=["x_shared"],
+        outputs=["y_2"],
+        atol=1e-3,
+        rtol=1e-3,
+        step=None,
     )
 
 

@@ -65,6 +65,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.typing import StrKeyMapping
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 def create_design_space():
@@ -313,18 +314,28 @@ def check_adapter_jacobian(
     constraints = opt_problem.constraints.get_names()
 
     # Test the Jacobian accuracy as objective Jacobian
-    assert adapter.check_jacobian(
-        input_names=inputs, output_names=output_names, threshold=objective_threshold
+    checker = DisciplineJacobianChecker(adapter)
+    assert checker.check(
+        inputs=inputs,
+        outputs=output_names,
+        atol=objective_threshold,
+        rtol=objective_threshold,
     )
 
-    # Test the Jacobian accuracy as Lagrangian Jacobian (should be better)
+    # Test the Jacobian accuracy as Lagrangian Jacobian (should be better).
+    # The checker leaves the adapter linearized at the check point,
+    # so its input data is already the one to differentiate at.
     disc_jac_approx = DisciplineJacApprox(adapter)
     outputs = output_names + constraints
     func_approx_jac = disc_jac_approx.compute_approx_jac(outputs, inputs)
     post_opt_analysis = adapter.post_optimal_analysis
     lagr_jac = post_opt_analysis.compute_lagrangian_jac(func_approx_jac, inputs)
     assert disc_jac_approx.check_jacobian(
-        output_names, inputs, analytic_jacobian=lagr_jac, threshold=lagrangian_threshold
+        output_names,
+        inputs,
+        analytic_jacobian=lagr_jac,
+        atol=lagrangian_threshold,
+        rtol=lagrangian_threshold,
     )
 
 

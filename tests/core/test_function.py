@@ -53,6 +53,7 @@ from gemseo.core.functions.taylor_polynomials import compute_linear_approximatio
 from gemseo.core.functions.taylor_polynomials import compute_quadratic_approximation
 from gemseo.problems.optimization.power_2 import Power2
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 from gemseo.utils.testing.helpers import assert_exception
@@ -185,47 +186,56 @@ def test_mdo_functions_algebra(jacobian_type_1, jacobian_type_2) -> None:
     h = f + g
     assert allclose(h.evaluate(x), f_x + g_x)
     assert allclose(h.jac(x).data, (df_x + dg_x).data)
-    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+    checker = FunctionJacobianChecker(h)
+    assert checker.check(x, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f - g
     assert allclose(h.evaluate(x), f_x - g_x)
     assert allclose(h.jac(x).data, (df_x - dg_x).data)
-    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+    checker = FunctionJacobianChecker(h)
+    assert checker.check(x, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f * g
     assert allclose(h.evaluate(x), f_x * g_x)
     assert allclose(h.jac(x).data, (g_x * df_x + f_x * dg_x).data)
-    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+    checker = FunctionJacobianChecker(h)
+    assert checker.check(x, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f / g
     assert allclose(h.evaluate(x), f_x / g_x)
     assert allclose(h.jac(x).data, (g_x * df_x - f_x * dg_x).data / g_x**2)
-    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+    checker = FunctionJacobianChecker(h)
+    assert checker.check(x, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f + 3.0
     assert allclose(h.evaluate(x), f_x + 3.0)
     assert allclose(h.jac(x).data, df_x.data)
-    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+    checker = FunctionJacobianChecker(h)
+    assert checker.check(x, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f - 3.0
     assert allclose(h.evaluate(x), f_x - 3.0)
     assert allclose(h.jac(x).data, df_x.data)
-    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+    checker = FunctionJacobianChecker(h)
+    assert checker.check(x, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f * 3.0
     assert allclose(h.evaluate(x), f_x * 3.0)
     assert allclose(h.jac(x).data, (df_x * 3.0).data)
-    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+    checker = FunctionJacobianChecker(h)
+    assert checker.check(x, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES)
 
     h = f / 3.0
     assert allclose(h.evaluate(x), f_x / 3.0)
     assert allclose(h.jac(x).data, (df_x / 3.0).data)
-    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+    checker = FunctionJacobianChecker(h)
+    assert checker.check(x, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES)
 
     h = -f
     assert allclose(h.evaluate(x), -f_x)
     assert allclose(h.jac(x).data, (-df_x).data)
-    h.check_grad(x, ApproximationMode.CENTERED_DIFFERENCES)
+    checker = FunctionJacobianChecker(h)
+    assert checker.check(x, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES)
 
 
 def test_todict_fromdict() -> None:
@@ -298,7 +308,7 @@ def test_repr_5(get_full_sin_func) -> None:
 def test_wrong_jac_shape() -> None:
     f = ArrayFunction(sin, name="sin", jac=lambda x: array([cos(x), 1.0]))
     with pytest.raises(ValueError):
-        f.check_grad(array([0.0]))
+        FunctionJacobianChecker(f).check(array([0.0]))
 
 
 @pytest.mark.parametrize(
@@ -333,7 +343,7 @@ def test_restriction(function, frozen_indexes, frozen_values, active_indexes) ->
     assert allclose(
         restriction.jac(sub_x_vect), function.jac(x_vect)[..., active_indexes]
     )
-    restriction.check_grad(sub_x_vect, error_max=1e-6)
+    assert FunctionJacobianChecker(restriction).check(sub_x_vect, atol=1e-6, rtol=1e-6)
 
 
 def test_restriction_duplicated_frozen_indices(snapshot):
@@ -382,7 +392,7 @@ def test_linearization() -> None:
     )
     linearization = compute_linear_approximation(function, array([1.0, 1.0, -2.0]))
     assert allclose(linearization.evaluate(array([2.0, 2.0, 2.0])), array([-3.0, 3.0]))
-    linearization.check_grad(array([2.0, 2.0, 2.0]))
+    assert FunctionJacobianChecker(linearization).check(array([2.0, 2.0, 2.0]))
 
 
 def test_convex_linearization() -> None:
@@ -403,7 +413,9 @@ def test_convex_linearization() -> None:
     assert allclose(convex_lin.evaluate(array([2.0, 2.0, 2.0])), array([7.5, 4.5]))
 
     # Check the Jacobian of the convex linearization
-    convex_lin.check_grad(array([2.0, 2.0, 2.0]), error_max=1e-6)
+    assert FunctionJacobianChecker(convex_lin).check(
+        array([2.0, 2.0, 2.0]), atol=1e-6, rtol=1e-6
+    )
 
     # Scalar function (N.B. scalar value and 1-dimensional Jacobian matrix)
     function = ArrayFunction(
@@ -420,7 +432,9 @@ def test_convex_linearization() -> None:
     assert allclose(value, 7.5)
     gradient = convex_lin.jac(array([2.0, 2.0, 2.0]))
     assert len(gradient.shape) == 1
-    convex_lin.check_grad(array([2.0, 2.0, 2.0]), error_max=1e-6)
+    assert FunctionJacobianChecker(convex_lin).check(
+        array([2.0, 2.0, 2.0]), atol=1e-6, rtol=1e-6
+    )
 
 
 @pytest.fixture(scope="module")
@@ -452,7 +466,7 @@ def test_quadratic_approximation(function_for_quadratic_approximation) -> None:
     )
     assert approx.evaluate(zeros(3)) == pytest.approx(0.0)
     assert allclose(approx.jac(zeros(3)), zeros(3))
-    approx.check_grad(zeros(3), error_max=1e-6)
+    assert FunctionJacobianChecker(approx).check(zeros(3), atol=1e-6, rtol=1e-6)
 
 
 def test_concatenation() -> None:
@@ -464,7 +478,7 @@ def test_concatenation() -> None:
     x_vect = ones(dim)
     assert allclose(h.evaluate(x_vect), array([2.0, 1.0, 1.0]))
     assert allclose(h.jac(x_vect), array([[2.0, 2.0], [1.0, 0.0], [0.0, 1.0]]))
-    h.check_grad(x_vect, error_max=1e-6)
+    assert FunctionJacobianChecker(h).check(x_vect, atol=1e-6, rtol=1e-6)
 
 
 @pytest.mark.parametrize("normalize", [False, True])

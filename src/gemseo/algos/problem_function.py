@@ -31,7 +31,7 @@ from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.serializable import Serializable
 from gemseo.utils.constants import _ENABLE_FUNCTION_STATISTICS
-from gemseo.utils.derivatives.factory import GradientApproximatorFactory
+from gemseo.utils.derivatives.approximators.factory import GradientApproximatorFactory
 
 if TYPE_CHECKING:
     from collections.abc import Callable

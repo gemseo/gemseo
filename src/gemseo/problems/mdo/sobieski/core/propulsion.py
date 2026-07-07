@@ -315,20 +315,17 @@ class SobieskiPropulsion(SobieskiDiscipline):
     def __compute_engine_weight(
         self,
         esf: float,
-        c_3: float | None = None,
+        c_3: float,
     ) -> float:
         """Compute the engine weight.
 
         Args:
             esf: The engine scale factor.
             c_3: The reference engine weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Return:
             The engine weight.
         """
-        c_3 = c_3 or self.constants[3]
         return c_3 * (esf**1.05) * 3
 
     def execute(
@@ -370,13 +367,15 @@ class SobieskiPropulsion(SobieskiDiscipline):
                     - `g_3[1]`: the engine temperature,
                     - `g_3[2]`: the throttle setting.
         """
+        if c_3 is None:
+            c_3 = self.constants[3]
         return self._execute(
             x_shared[1],
             x_shared[2],
             x_3[0],
             y_23[0],
-            true_cstr=true_cstr,
-            ref_weight=c_3,
+            true_cstr,
+            c_3,
         )
 
     def _execute(
@@ -385,8 +384,8 @@ class SobieskiPropulsion(SobieskiDiscipline):
         mach: float,
         throttle: float,
         drag: float,
-        true_cstr: bool = False,
-        ref_weight: float | None = None,
+        true_cstr: bool,
+        ref_weight: float,
     ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the fuel consumption, engine weight and engine scale factor.
 
@@ -399,9 +398,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
-            c_3: The reference engine weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
+            ref_weight: The reference engine weight.
 
         Returns:
             The propulsion outputs:
@@ -414,7 +411,6 @@ class SobieskiPropulsion(SobieskiDiscipline):
                     - `g_3[1]`: the engine temperature,
                     - `g_3[2]`: the throttle setting.
         """
-        c_3 = ref_weight or self.constants[3]
         y_3 = zeros(3, dtype=self.dtype)
         g_3 = zeros(3, dtype=self.dtype)
         y_31 = zeros(1, dtype=self.dtype)
@@ -422,7 +418,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         y_34 = zeros(1, dtype=self.dtype)
 
         y_3[2] = self.__compute_esf(drag, throttle)
-        y_3[1] = self.__compute_engine_weight(y_3[2], c_3)
+        y_3[1] = self.__compute_engine_weight(y_3[2], ref_weight)
         y_3[0] = self.__compute_sfc(altitude, mach, throttle)
 
         y_31[0] = y_3[1]
@@ -452,7 +448,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         self,
         esf: float,
         desf_dx: ndarray,
-        c_3: float | None = None,
+        c_3: float,
     ) -> float:
         """Derive the engine weight with respect to an input variable `x`.
 
@@ -460,13 +456,10 @@ class SobieskiPropulsion(SobieskiDiscipline):
             esf: The engine scale factor (ESF).
             desf_dx: The partial derivative of ESF with respect to an input variable.
             c_3: The reference engine weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The derivative of the engine weight wrt the variable `x`.
         """
-        c_3 = c_3 or self.constants[3]
         return 3 * c_3 * 1.05 * desf_dx * esf**0.05
 
     def __compute_dsfc_dthrottle(
@@ -571,9 +564,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         """
         return self.base.derive_normalization(self.mach_initial, mach)
 
-    def __initialize_jacobian(
-        self, true_cstr: bool = False
-    ) -> dict[str, dict[str, ndarray]]:
+    def __initialize_jacobian(self, true_cstr: bool) -> dict[str, dict[str, ndarray]]:
         """Initialize the Jacobian structure.
 
         Args:
@@ -631,13 +622,15 @@ class SobieskiPropulsion(SobieskiDiscipline):
         Returns:
             The Jacobian of the discipline.
         """
+        if c_3 is None:
+            c_3 = self.constants[3]
         return self._linearize(
             x_shared[1],
             x_shared[2],
             x_3[0],
             y_23[0],
-            true_cstr=true_cstr,
-            ref_weight=c_3,
+            true_cstr,
+            c_3,
         )
 
     def _linearize(
@@ -646,8 +639,8 @@ class SobieskiPropulsion(SobieskiDiscipline):
         mach: float,
         throttle: float,
         drag: float,
-        true_cstr: bool = False,
-        ref_weight: float | None = None,
+        true_cstr: bool,
+        ref_weight: float,
     ) -> dict[str, dict[str, ndarray]]:
         """Derive the fuel consumption, engine weight and engine scale factor.
 
@@ -660,15 +653,11 @@ class SobieskiPropulsion(SobieskiDiscipline):
                 return the value of the constraint outputs.
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
-            c_3: The reference engine weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
+            ref_weight: The reference engine weight.
 
         Returns:
             The Jacobian of the discipline.
         """
-        c_3 = ref_weight or self.constants[3]
-
         # Jacobian matrix as a dictionary
         jacobian = self.__initialize_jacobian(true_cstr)
 
@@ -688,7 +677,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         jacobian["y_3"]["x_3"][2, 0] = self.__compute_desf_dthrottle(drag, throttle)
         # dengineweight_dthrottle
         jacobian["y_3"]["x_3"][1, :] = self.__compute_dengineweight_dvar(
-            esf, jacobian["y_3"]["x_3"][2, 0], c_3
+            esf, jacobian["y_3"]["x_3"][2, 0], ref_weight
         )
         # dSFC_d(t/c) = 0
         # dESF_d(t/c) = 0
@@ -716,7 +705,7 @@ class SobieskiPropulsion(SobieskiDiscipline):
         jacobian["y_3"]["y_23"][2, 0] = self.__compute_desf_ddrag(throttle)
         # dengineweight_ddrag
         jacobian["y_3"]["y_23"][1, :] = self.__compute_dengineweight_dvar(
-            esf, jacobian["y_3"]["y_23"][2, 0]
+            esf, jacobian["y_3"]["y_23"][2, 0], ref_weight
         )
 
         # dtemp_ddrag

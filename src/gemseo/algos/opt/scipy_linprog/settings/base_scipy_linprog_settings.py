@@ -85,5 +85,7 @@ to zero to be considered exactly zero.""",
         the `autoscale` setting is used instead.
         """
         if self.scaling_threshold is not None:
-            self.autoscale = True
+            # Bypass assignment validation to avoid an infinite recursion loop
+            # caused by `validate_assignment=True`.
+            self.__dict__["autoscale"] = True
         return self

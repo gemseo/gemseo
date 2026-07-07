@@ -221,7 +221,7 @@ def test_ode_problem_2d_array_time_state_callable_jacobian() -> None:
         times=arange(0, 1, 0.1),
     )
 
-    problem.check_jacobian(array([1.0]), error_max=1e-6)
+    problem.check_jacobian(array([1.0]), atol=1e-6, rtol=1e-6)
     ODESolverLibraryFactory().execute(
         problem, settings=DOP853_Settings(first_step=1e-6)
     )

@@ -32,6 +32,7 @@ from gemseo.core.namespaces import split_namespace
 from gemseo.core.namespaces import update_namespaces
 from gemseo.core.namespaces import update_nested_namespaces
 from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 
 
@@ -180,8 +181,8 @@ def test_chain_disc_ns_twice(grammar_type, chain_type) -> None:
     out_no_ns = chain.io.get_output_data(with_namespaces=False)
     assert "y" in out_no_ns
 
-    assert chain.check_jacobian(
-        input_names=["ns2:x", "ns1:x", "u"], output_names=["ns1:y", "ns2:y"]
+    assert DisciplineJacobianChecker(chain).check(
+        inputs=["ns2:x", "ns1:x", "u"], outputs=["ns1:y", "ns2:y"]
     )
 
 
@@ -224,10 +225,12 @@ def test_mda_with_namespaces(grammar_type) -> None:
     )
     mda_ns.execute()
 
-    assert disc_1.check_jacobian()
-    assert disc_2.check_jacobian()
+    assert DisciplineJacobianChecker(disc_1).check()
+    assert DisciplineJacobianChecker(disc_2).check()
 
-    assert mda_ns.check_jacobian(input_names=["x"], output_names=["f"], threshold=1e-5)
+    assert DisciplineJacobianChecker(mda_ns).check(
+        inputs=["x"], outputs=["f"], atol=1e-5, rtol=1e-5
+    )
 
 
 def a_func(x=1.0):
@@ -254,7 +257,9 @@ def test_namespaces_chain() -> None:
 
     b_disc.linearization_mode = "finite_differences"
     a_disc_ns.linearization_mode = "finite_differences"
-    assert chain_ns.check_jacobian(input_names=["x", "y"], output_names=["z", "ns:y"])
+    assert DisciplineJacobianChecker(chain_ns).check(
+        inputs=["x", "y"], outputs=["z", "ns:y"]
+    )
 
 
 def test_update_namespaces() -> None:

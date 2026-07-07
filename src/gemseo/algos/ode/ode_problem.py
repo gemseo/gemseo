@@ -33,6 +33,7 @@ from gemseo.algos.ode.ode_result import ODEResult
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.typing import RealArray
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -197,7 +198,8 @@ class ODEProblem(BaseProblem):
         time: float | None = None,
         approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float = 1e-6,
-        error_max: float = 1e-8,
+        atol: float = 1e-8,
+        rtol: float = 1e-8,
     ) -> None:
         """Check if the analytical Jacobian with respect to the state is correct.
 
@@ -206,9 +208,10 @@ class ODEProblem(BaseProblem):
             time: The time of evaluation of the function.
                 If `None`, use
                 [time_interval.initial][gemseo.algos.ode.ode_problem.ODEProblem.time_interval].
-            approximation_mode: The approximation mode.
-            step: The step for the approximation of the gradients.
-            error_max: The maximum value of the error.
+            approximation_mode: The numerical approximation method.
+            step: The discretization step of the numerical approximation method.
+            atol: The absolute tolerance.
+            rtol: The relative tolerance.
 
         Raises:
             ValueError: Either if the approximation method is unknown,
@@ -226,7 +229,16 @@ class ODEProblem(BaseProblem):
             name="f",
             jac=self._compute_jac_of_state,
         )
-        function_of_state.check_grad(state, approximation_mode, step, error_max)
+        checker = FunctionJacobianChecker(function_of_state)
+        if not checker.check(
+            state,
+            atol=atol,
+            rtol=rtol,
+            approximation_mode=approximation_mode,
+            step=step,
+        ):
+            msg = "The Jacobian of the ODE right-hand side is wrong."
+            raise ValueError(msg)
 
     @property
     def evaluation_times(self) -> RealArray | None:

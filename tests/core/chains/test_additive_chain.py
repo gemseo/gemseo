@@ -18,6 +18,7 @@ from numpy import allclose
 
 from gemseo.core.chains.additive_chain import AdditiveDisciplineChain
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 def test_double_mission_chain() -> None:
@@ -30,4 +31,5 @@ def test_double_mission_chain() -> None:
     mission.execute()
     assert allclose(chain.io.data["y_4"], mission.io.data["y_4"] * 2.0)
 
-    chain.check_jacobian(threshold=1e-5)
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(atol=1e-5, rtol=1e-5)

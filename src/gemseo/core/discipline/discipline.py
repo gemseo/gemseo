@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from multiprocessing import cpu_count
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -39,8 +38,6 @@ from gemseo.utils.derivatives.error_estimators import EPSILON
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
-    from collections.abc import Sequence
-    from pathlib import Path
 
     from numpy import ndarray
 
@@ -589,152 +586,6 @@ class Discipline(BaseDiscipline, metaclass=ClassInjector):
             self.jac = jac
 
         return input_names, output_names
-
-    def _prepare_io_for_check_jacobian(
-        self,
-        input_names: Iterable[str],
-        output_names: Iterable[str],
-    ) -> tuple[Iterable[str], Iterable[str]]:
-        if not input_names:
-            input_names = self.io.input_grammar
-        if not output_names:
-            output_names = self.io.output_grammar
-        return input_names, output_names
-
-    def check_jacobian(
-        self,
-        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
-        derr_approx: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
-        step: float = 1e-7,
-        threshold: float = 1e-8,
-        linearization_mode: LinearizationMode = LinearizationMode.AUTO,
-        input_names: Iterable[str] = (),
-        output_names: Iterable[str] = (),
-        parallel: bool = False,
-        n_processes: int = cpu_count(),
-        use_threading: bool = False,
-        wait_time_between_fork: float = 0,
-        auto_set_step: bool = False,
-        plot_result: bool = False,
-        file_path: str | Path = "jacobian_errors.pdf",
-        show: bool = False,
-        fig_size_x: float = 10,
-        fig_size_y: float = 10,
-        reference_jacobian_path: str | Path = "",
-        save_reference_jacobian: bool = False,
-        indices: Mapping[
-            str, int | Sequence[int] | Ellipsis | slice
-        ] = READ_ONLY_EMPTY_DICT,
-    ) -> bool:
-        """Check if the analytical Jacobian is correct with respect to a reference one.
-
-        If `reference_jacobian_path` is not `None`
-        and `save_reference_jacobian` is `True`,
-        compute the reference Jacobian with the approximation method
-        and save it in `reference_jacobian_path`.
-
-        If `reference_jacobian_path` is not `None`
-        and `save_reference_jacobian` is `False`,
-        do not compute the reference Jacobian
-        but read it from `reference_jacobian_path`.
-
-        If `reference_jacobian_path` is `None`,
-        compute the reference Jacobian without saving it.
-
-        Args:
-            input_data: The input data needed to execute the discipline
-                according to the discipline input grammar.
-                If `None`, use the
-                [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
-            derr_approx: The approximation method,
-                either "complex_step" or "finite_differences".
-            threshold: The acceptance threshold for the Jacobian error.
-            linearization_mode: The mode of linearization,
-                either the analytical Jacobian (`AUTO`)
-                or one of the approximation modes.
-            input_names: The names of the inputs wrt which to differentiate the outputs.
-            output_names: The names of the outputs to be differentiated.
-            step: The differentiation step.
-            parallel: Whether to differentiate the discipline in parallel.
-            n_processes: The maximum simultaneous number of threads,
-                if `use_threading` is True, or processes otherwise,
-                used to parallelize the execution.
-            use_threading: Whether to use threads instead of processes
-                to parallelize the execution;
-                multiprocessing will copy (serialize) all the disciplines,
-                while threading will share all the memory
-                This is important to note
-                if you want to execute the same discipline multiple times,
-                you shall use multiprocessing.
-            wait_time_between_fork: The time waited between two forks
-                of the process / thread.
-            auto_set_step: Whether to compute the optimal step
-                for a forward first order finite differences gradient approximation.
-            plot_result: Whether to plot the result of the validation
-                (computed vs approximated Jacobians).
-            file_path: The path to the output file if `plot_result` is `True`.
-            show: Whether to open the figure.
-            fig_size_x: The x-size of the figure in inches.
-            fig_size_y: The y-size of the figure in inches.
-            reference_jacobian_path: The path of the reference Jacobian file.
-            save_reference_jacobian: Whether to save the reference Jacobian.
-            indices: The indices of the inputs and outputs
-                for the different sub-Jacobian matrices,
-                formatted as `{variable_name: variable_components}`
-                where `variable_components` can be either
-                an integer, e.g. `2`
-                a sequence of integers, e.g. `[0, 3]`,
-                a slice, e.g. `slice(0,3)`,
-                the ellipsis symbol (`...`)
-                or `None`, which is the same as ellipsis.
-                If a variable name is missing, consider all its components.
-                If `None`,
-                consider all the components of all the `inputs` and `outputs`.
-
-        Returns:
-            Whether the analytical Jacobian is correct
-            with respect to the reference one.
-        """
-        # Do not use self._jac_approx because we may want to check  complex
-        # step approximation with the finite differences for instance
-        input_names, output_names = self._prepare_io_for_check_jacobian(
-            input_names, output_names
-        )
-
-        # Differentiate analytically
-        self.add_differentiated_inputs(input_names)
-        self.add_differentiated_outputs(output_names)
-        self.linearization_mode = linearization_mode
-
-        approx = DisciplineJacApprox(
-            self,
-            derr_approx,
-            step,
-            parallel,
-            n_processes,
-            use_threading,
-            wait_time_between_fork,
-        )
-
-        if auto_set_step:
-            approx.auto_set_step(output_names, input_names)
-
-        self.linearize(input_data)
-
-        return approx.check_jacobian(
-            output_names,
-            input_names,
-            threshold=threshold,
-            plot_result=plot_result,
-            file_path=file_path,
-            show=show,
-            fig_size_x=fig_size_x,
-            fig_size_y=fig_size_y,
-            reference_jacobian_path=reference_jacobian_path,
-            save_reference_jacobian=save_reference_jacobian,
-            indices=indices,
-            input_data=input_data,
-        )
 
     def _get_differentiated_io(
         self,

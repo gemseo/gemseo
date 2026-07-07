@@ -21,6 +21,7 @@ import pytest
 from numpy import array
 
 from gemseo.problems.optimization.hock_schittkowski_71 import HockSchittkowski71
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 
 
 @pytest.fixture
@@ -41,7 +42,9 @@ def test_obj_jacobian(hock_schittkowski_71):
             `OptimizationProblem`.
     """
     x_dv = array([1.0, 1.0, 1.0, 1.0])
-    hock_schittkowski_71.objective.check_grad(x_dv, error_max=1e-6)
+    assert FunctionJacobianChecker(hock_schittkowski_71.objective).check(
+        x_dv, atol=1e-6, rtol=1e-6
+    )
 
 
 def test_equality_constraint_jacobian(hock_schittkowski_71):
@@ -52,7 +55,9 @@ def test_equality_constraint_jacobian(hock_schittkowski_71):
             `OptimizationProblem`.
     """
     x_dv = array([1.0, 1.0, 1.0, 1.0])
-    hock_schittkowski_71.constraints[0].check_grad(x_dv, error_max=1e-6)
+    assert FunctionJacobianChecker(hock_schittkowski_71.constraints[0]).check(
+        x_dv, atol=1e-6, rtol=1e-6
+    )
 
 
 def test_inequality_constraint_jacobian(hock_schittkowski_71):
@@ -63,7 +68,9 @@ def test_inequality_constraint_jacobian(hock_schittkowski_71):
             `OptimizationProblem`.
     """
     x_dv = array([1.0, 1.0, 1.0, 1.0])
-    hock_schittkowski_71.constraints[1].check_grad(x_dv, error_max=1e-6)
+    assert FunctionJacobianChecker(hock_schittkowski_71.constraints[1]).check(
+        x_dv, atol=1e-6, rtol=1e-6
+    )
 
 
 def test_compute_objective(hock_schittkowski_71):

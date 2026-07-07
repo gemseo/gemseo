@@ -17,11 +17,16 @@
 from __future__ import annotations
 
 from gemseo.problems.multiobjective_optimization.poloni import Poloni
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 
 
 def test_fon():
     """Test the jacobian of Poloni's objective."""
     problem = Poloni()
-    problem.objective.check_grad(
-        problem.design_space.get_current_value(), step=1e-7, error_max=1e-6
+    checker = FunctionJacobianChecker(problem.objective)
+    assert checker.check(
+        problem.design_space.get_current_value(),
+        atol=1e-6,
+        rtol=1e-6,
+        step=1e-7,
     )

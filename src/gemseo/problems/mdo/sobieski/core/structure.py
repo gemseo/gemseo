@@ -126,8 +126,8 @@ class SobieskiStructure(SobieskiDiscipline):
         wing_taper_ratio: float,
         wingbox_area: float,
         lift: float,
-        linearize: bool = False,
-        c_2: float | None = None,
+        linearize: bool,
+        c_2: float,
     ) -> float:
         """Compute the weight of the wing.
 
@@ -141,8 +141,6 @@ class SobieskiStructure(SobieskiDiscipline):
             lift: The lift coefficient.
             linearize: Whether to derive the polynomial approximation.
             c_2: The maximum load factor.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             If `linearize` is `True`,
@@ -150,8 +148,6 @@ class SobieskiStructure(SobieskiDiscipline):
             and the value of the polynomial function.
             Otherwise, the wing weight only.
         """
-        c_2 = c_2 or self.constants[2]
-
         s_new = array([wingbox_area], dtype=self.dtype)
         if linearize:
             f_o, a_i, a_ij, s_shifted = self.base.derive_polynomial_approximation(
@@ -354,9 +350,9 @@ class SobieskiStructure(SobieskiDiscipline):
         y_31: ndarray,
         x_1: ndarray,
         true_cstr: bool = False,
-        c_0: ndarray | None = None,
-        c_1: ndarray | None = None,
-        c_2: ndarray | None = None,
+        c_0: float | None = None,
+        c_1: float | None = None,
+        c_2: float | None = None,
     ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the structural outputs and the structural constraints.
 
@@ -389,6 +385,12 @@ class SobieskiStructure(SobieskiDiscipline):
         Returns:
             The structural outputs and the structural constraints.
         """
+        if c_0 is None:
+            c_0 = self.constants[0]
+        if c_1 is None:
+            c_1 = self.constants[1]
+        if c_2 is None:
+            c_2 = self.constants[2]
         return self._execute(
             x_shared[0],
             x_shared[3],
@@ -398,10 +400,10 @@ class SobieskiStructure(SobieskiDiscipline):
             x_1[1],
             y_21[0],
             y_31[0],
-            true_cstr=true_cstr,
-            c_0=c_0,
-            c_1=c_1,
-            c_2=c_2,
+            true_cstr,
+            c_0,
+            c_1,
+            c_2,
         )
 
     def _execute(
@@ -414,10 +416,10 @@ class SobieskiStructure(SobieskiDiscipline):
         wingbox_area: float,
         lift: float,
         engine_mass: float,
-        true_cstr: bool = False,
-        c_0: ndarray | None = None,
-        c_1: ndarray | None = None,
-        c_2: ndarray | None = None,
+        true_cstr: bool,
+        c_0: float,
+        c_1: float,
+        c_2: float,
     ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the structural outputs and the structural constraints.
 
@@ -435,21 +437,12 @@ class SobieskiStructure(SobieskiDiscipline):
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_0: The minimum fuel weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_1: The miscellaneous weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_2: The maximum load factor.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The structural outputs and the structural constraints.
         """
-        c_0 = c_0 or self.constants[0]
-        c_1 = c_1 or self.constants[1]
-        c_2 = c_2 or self.constants[2]
         y_12 = zeros(2, dtype=self.dtype)
         y_14 = zeros(2, dtype=self.dtype)
 
@@ -465,9 +458,9 @@ class SobieskiStructure(SobieskiDiscipline):
             wingbox_area,
             lift,
             engine_mass,
-            c_0=c_0,
-            c_1=c_1,
-            c_2=c_2,
+            c_0,
+            c_1,
+            c_2,
         )
 
         g_1 = self.__poly_structure_constraints(tc_ratio, wingbox_area, lift)
@@ -569,6 +562,12 @@ class SobieskiStructure(SobieskiDiscipline):
         Returns:
             The derivatives of the structural outputs and the structural constraints.
         """
+        if c_0 is None:
+            c_0 = self.constants[0]
+        if c_1 is None:
+            c_1 = self.constants[1]
+        if c_2 is None:
+            c_2 = self.constants[2]
         return self._linearize(
             x_shared[0],
             x_shared[3],
@@ -578,10 +577,10 @@ class SobieskiStructure(SobieskiDiscipline):
             x_1[1],
             y_21[0],
             y_31[0],
-            true_cstr=true_cstr,
-            c_0=c_0,
-            c_1=c_1,
-            c_2=c_2,
+            true_cstr,
+            c_0,
+            c_1,
+            c_2,
         )
 
     def _linearize(
@@ -594,10 +593,10 @@ class SobieskiStructure(SobieskiDiscipline):
         wingbox_area: float,
         lift: float,
         engine_mass: float,
-        true_cstr: bool = False,
-        c_0: float | None = None,
-        c_1: float | None = None,
-        c_2: float | None = None,
+        true_cstr: bool,
+        c_0: float,
+        c_1: float,
+        c_2: float,
     ) -> dict[str, dict[str, ndarray]]:
         """Derive the structural outputs and the structural constraints.
 
@@ -615,21 +614,12 @@ class SobieskiStructure(SobieskiDiscipline):
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_0: The minimum fuel weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_1: The miscellaneous weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_2: The maximum load factor.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The derivatives of the structural outputs and the structural constraints.
         """
-        c_0 = c_0 or self.constants[0]
-        c_1 = c_1 or self.constants[1]
-        c_2 = c_2 or self.constants[2]
         self.__aero_center = self.base.compute_aero_center(taper_ratio)
         self.__half_span = self.base.compute_half_span(aspect_ratio, wing_area)
         self.__dadimlift_dlift = self.__compute_dadimlift_dlift(lift)
@@ -647,7 +637,9 @@ class SobieskiStructure(SobieskiDiscipline):
             wingbox_area,
             lift,
             engine_mass,
-            c_2=c_2,
+            c_0,
+            c_1,
+            c_2,
         )
 
         y_1, _ = self.__poly_structure(
@@ -659,9 +651,9 @@ class SobieskiStructure(SobieskiDiscipline):
             wingbox_area,
             lift,
             engine_mass,
-            c_0=c_0,
-            c_1=c_1,
-            c_2=c_2,
+            c_0,
+            c_1,
+            c_2,
         )
         f = y_1[0] / (y_1[0] - y_1[1])
         jacobian["y_1"]["c_0"][0, 0] = 1
@@ -682,7 +674,8 @@ class SobieskiStructure(SobieskiDiscipline):
                 taper_ratio,
                 wingbox_area,
                 lift,
-                c_2=c_2,
+                False,
+                c_2,
             )
             * 0.557
             / c_2
@@ -703,7 +696,7 @@ class SobieskiStructure(SobieskiDiscipline):
             taper_ratio,
             wingbox_area,
             lift,
-            true_cstr=true_cstr,
+            true_cstr,
         )
 
         # Twist constraints
@@ -750,7 +743,9 @@ class SobieskiStructure(SobieskiDiscipline):
         wingbox_area: float,
         lift: float,
         engine_mass: float,
-        c_2: float | None = None,
+        c_0: float,
+        c_1: float,
+        c_2: float,
     ):
         """Derive the structural variables.
 
@@ -763,14 +758,13 @@ class SobieskiStructure(SobieskiDiscipline):
             taper_ratio: The wing taper ratio.
             wingbox_area: The wingbox x-sectional area.
             lift: The lift coefficient.
+            c_0: The minimum fuel weight.
+            c_1: The miscellaneous weight.
             c_2: The maximum load factor.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The updated Jacobian of the discipline.
         """
-        c_2 = c_2 or self.constants[2]
         # wing aero. center location
         y_1, _ = self.__poly_structure(
             tc_ratio,
@@ -781,6 +775,9 @@ class SobieskiStructure(SobieskiDiscipline):
             wingbox_area,
             lift,
             engine_mass,
+            c_0=c_0,
+            c_1=c_1,
+            c_2=c_2,
         )
 
         # dWf/d(t/c)
@@ -873,8 +870,8 @@ class SobieskiStructure(SobieskiDiscipline):
             taper_ratio,
             wingbox_area,
             lift,
-            linearize=True,
-            c_2=c_2,
+            True,
+            c_2,
         )
 
         # dtotal_weight_d(t/c)
@@ -928,7 +925,7 @@ class SobieskiStructure(SobieskiDiscipline):
         taper_ratio: float,
         wingbox_area: float,
         lift: float,
-        true_cstr: bool = False,
+        true_cstr: bool,
     ):
         """Derive the structural constraints from a polynomial approximation.
 
@@ -1000,9 +997,9 @@ class SobieskiStructure(SobieskiDiscipline):
         wingbox_area: float,
         lift: float,
         engine_mass: float,
-        c_0: float | None = None,
-        c_1: float | None = None,
-        c_2: float | None = None,
+        c_0: float,
+        c_1: float,
+        c_2: float,
     ) -> tuple[ndarray, ndarray]:
         """Compute the structural variables from a polynomial approximation.
 
@@ -1016,22 +1013,13 @@ class SobieskiStructure(SobieskiDiscipline):
             lift: The lift coefficient.
             engine_mass: The mass of the engine.
             c_0: The minimum fuel weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_1: The miscellaneous weight.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
             c_2: The maximum load factor.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The vector of the total aircraft mass, fuel mass and wing twist,
             as well as the mass term in the Breguet range equation.
         """
-        c_0 = c_0 or self.constants[0]
-        c_1 = c_1 or self.constants[1]
-        c_2 = c_2 or self.constants[2]
         y_1 = zeros(3, dtype=self.dtype)
         #         t = self.base.compute_thickness(x_shared)  # wing thickness
 
@@ -1047,7 +1035,8 @@ class SobieskiStructure(SobieskiDiscipline):
             taper_ratio,
             wingbox_area,
             lift,
-            c_2=c_2,
+            False,
+            c_2,
         )
         fuel_wing_weight = self.__compute_fuelwing_weight(
             tc_ratio, aspect_ratio, wing_area

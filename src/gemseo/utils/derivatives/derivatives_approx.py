@@ -39,8 +39,8 @@ from gemseo.utils.constants import N_CPUS
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.approximators.factory import GradientApproximatorFactory
 from gemseo.utils.derivatives.error_estimators import EPSILON
-from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
@@ -54,9 +54,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import JacobianData
-    from gemseo.utils.derivatives.base_gradient_approximator import (
-        BaseGradientApproximator,
-    )
+    from gemseo.utils.derivatives.approximators.base import BaseGradientApproximator
 
 from matplotlib import pyplot as plt
 from numpy import absolute
@@ -69,6 +67,46 @@ from numpy import divide
 from numpy import zeros
 
 LOGGER = logging.getLogger(__name__)
+
+
+def compare_jacobian_matrices(
+    analytical: ndarray,
+    approximated: ndarray,
+    atol: float = 1e-8,
+    rtol: float = 1e-8,
+    name: str = "",
+) -> bool:
+    """Return whether two Jacobian matrices agree within a threshold.
+
+    Args:
+        analytical: The analytical Jacobian matrix. May be sparse.
+        approximated: The approximated Jacobian matrix.
+        atol: The absolute tolerance.
+        rtol: The relative tolerance.
+        name: An optional label for the Jacobian block, used in log messages.
+
+    Returns:
+        Whether the two matrices are close enough.
+    """
+    if isinstance(analytical, sparse_classes):
+        analytical = analytical.toarray()
+
+    if allclose(analytical, approximated, atol=atol, rtol=rtol):
+        if name:
+            LOGGER.info("Jacobian: %s succeeded.", name)
+        return True
+
+    err = amax(
+        divide(absolute(analytical - approximated), absolute(approximated) + 1.0)
+    )
+    if name:
+        LOGGER.error("Jacobian: %s is wrong by %s%%.", name, err * 100.0)
+    else:
+        LOGGER.error("Jacobian is wrong by %s%%.", err * 100.0)
+    LOGGER.info("Approximate Jacobian =\n%s", approximated)
+    LOGGER.info("Provided analytical Jacobian =\n%s", analytical)
+    LOGGER.info("Difference =\n%s", approximated - analytical)
+    return False
 
 
 # TODO: API: rename to JacobianApproximator?
@@ -337,7 +375,8 @@ class DisciplineJacApprox:
         output_names: Iterable[str],
         input_names: Iterable[str],
         analytic_jacobian: JacobianData = READ_ONLY_EMPTY_DICT,
-        threshold: float = 1e-8,
+        atol: float = 1e-8,
+        rtol: float = 1e-8,
         plot_result: bool = False,
         file_path: str | Path = "jacobian_errors.pdf",
         show: bool = False,
@@ -369,7 +408,8 @@ class DisciplineJacApprox:
             input_names: The names of the inputs used to differentiate the outputs.
             output_names: The names of the outputs to be differentiated.
             analytic_jacobian: The Jacobian to validate.
-            threshold: The acceptance threshold for the Jacobian error.
+            atol: The absolute tolerance.
+            rtol: The relative tolerance.
             plot_result: Whether to plot the result of the validation
                 (computed vs approximated Jacobians).
             file_path: The path to the output file if `plot_result` is `True`.
@@ -470,36 +510,14 @@ class DisciplineJacApprox:
                     )
                     LOGGER.error(msg)
                 else:
-                    if isinstance(computed_jac, sparse_classes):
-                        computed_jac = computed_jac.toarray()
-
-                    success_loc = allclose(
-                        computed_jac, approx_jac, atol=threshold, rtol=threshold
+                    success_loc = compare_jacobian_matrices(
+                        computed_jac,
+                        approx_jac,
+                        atol=atol,
+                        rtol=rtol,
+                        name=f"∂{output_name}/∂{input_name}",
                     )
-                    if not success_loc:
-                        err = amax(
-                            divide(
-                                absolute(computed_jac - approx_jac),
-                                absolute(approx_jac) + 1.0,
-                            )
-                        )
-                        LOGGER.error(
-                            "%s Jacobian: dp %s/d %s is wrong by %s%%.",
-                            self.discipline.name,
-                            output_name,
-                            input_name,
-                            err * 100.0,
-                        )
-                        LOGGER.info("Approximate jacobian = \n%s", approx_jac)
-                        LOGGER.info("Provided by linearize method = \n%s", computed_jac)
-                        LOGGER.info(
-                            "Difference of jacobians = \n%s", approx_jac - computed_jac
-                        )
-                        succeed = succeed and success_loc
-                    else:
-                        LOGGER.info(
-                            "Jacobian: dp %s/dp %s succeeded.", output_name, input_name
-                        )
+                    succeed = succeed and success_loc
 
         LOGGER.info(
             "Linearization of Discipline: %s is %s.",
@@ -691,8 +709,8 @@ class DisciplineJacApprox:
             ax.plot(abscissa, grad, "bo")
             ax.plot(abscissa, app_grad[func], "ro")
             ax.set_title(func)
-            ax.set_xticklabels(x_labels, fontsize=14)
             ax.set_xticks(abscissa)
+            ax.set_xticklabels(x_labels, fontsize=14)
             for tick in ax.get_xticklabels():
                 tick.set_rotation(90)
 
@@ -707,8 +725,8 @@ class DisciplineJacApprox:
             # xlabel must be written with the same fontsize on the 2 columns
             j += 1
             ax = axs[i][j]
-            ax.set_xticklabels(x_labels, fontsize=14)
             ax.set_xticks(abscissa)
+            ax.set_xticklabels(x_labels, fontsize=14)
             for tick in ax.get_xticklabels():
                 tick.set_rotation(90)
 

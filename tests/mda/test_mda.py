@@ -66,6 +66,7 @@ from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
 from gemseo.utils.seeder import SEED
 from gemseo.utils.testing.helpers import assert_exception
 from gemseo.utils.testing.helpers import concretize_classes
@@ -196,7 +197,7 @@ def test_weak_strong_coupling_mda_jac() -> None:
     ))
     mda = MDAGaussSeidel(disciplines)
 
-    assert mda.check_jacobian(input_names=["x"], output_names=["obj"])
+    assert MDAJacobianChecker(mda).check(inputs=["x"], outputs=["obj"])
 
 
 def analytic_disciplines_from_desc(descriptions):
@@ -636,12 +637,13 @@ def test_mda_with_non_numeric_couplings(mda_class, include_weak_coupling_targets
     else:
         assert_almost_equal(mda_output["b"], 1.0, decimal=5)
 
-    assert mda.check_jacobian(
-        input_data=inputs,
-        input_names=["a"],
-        output_names=["obj"] if include_weak_coupling_targets else ["b"],
+    assert MDAJacobianChecker(mda).check(
+        input_value=inputs,
+        inputs=["a"],
+        outputs=["obj"] if include_weak_coupling_targets else ["b"],
         linearization_mode="adjoint",
-        threshold=1e-3,
+        atol=1e-3,
+        rtol=1e-3,
     )
 
 

@@ -29,6 +29,7 @@ from gemseo.core.functions.discipline_adapter_generator import (
 )
 from gemseo.disciplines.linear_combination import LinearCombination
 from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 def test_linear_combination_execution(linear_combination) -> None:
@@ -55,7 +56,8 @@ def test_check_gradient(linear_combination) -> None:
         "alpha": array([1.0]),
         "beta": array([1.0]),
     }
-    assert linear_combination.check_jacobian(threshold=1e-3, step=1e-4)
+    checker = DisciplineJacobianChecker(linear_combination)
+    assert checker.check(atol=1e-3, rtol=1e-3, step=1e-4)
 
 
 def test_check_gradient2points(linear_combination) -> None:
@@ -64,7 +66,8 @@ def test_check_gradient2points(linear_combination) -> None:
         "alpha": array([1.0, 0.0]),
         "beta": array([1.0, -1.0]),
     }
-    assert linear_combination.check_jacobian(threshold=1e-3, step=1e-4)
+    checker = DisciplineJacobianChecker(linear_combination)
+    assert checker.check(atol=1e-3, rtol=1e-3, step=1e-4)
 
 
 def test_parallel_doe_execution(linear_combination) -> None:

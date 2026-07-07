@@ -147,7 +147,8 @@ runtime-evaluated-base-classes = [
     "gemseo.uncertainty.distributions.base_univariate_settings.weibull.BaseWeibullDistributionSettings",
     "gemseo.uncertainty.reliability.base_settings.BaseReliabilityAlgorithmSettings",
     "gemseo.uncertainty.reliability.openturns.base_sampling_settings.BaseOTSamplingSettings",
-    "gemseo.uncertainty.reliability.openturns.form_settings.OT_FORM_Settings"
+    "gemseo.uncertainty.reliability.openturns.form_settings.OT_FORM_Settings",
+    "gemseo.utils.pydantic.BaseModel",
 ]
 
 [lint.isort]

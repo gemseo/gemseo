@@ -189,6 +189,12 @@ modules:
   gemseo.problems.mdo.sobieski.process.mdo_chain: discipline_chain
 
   gemseo.utils.directory_creator.DirectoryNamingMethod: Naming
+  gemseo.utils.derivatives.base_gradient_approximator: approximators.base
+  gemseo.utils.derivatives.centered_differences: approximators.centered_differences
+  gemseo.utils.derivatives.complex_step: approximators.complex_step
+  gemseo.utils.derivatives.factory: approximators.factory
+  gemseo.utils.derivatives.finite_differences.FirstOrderFD: approximators.forward_differences.ForwardDifferences
+
   gemseo.utils.logging_tools: logging
 
   gemseo.utils.xdsm_to_pdf: xdsm.xdsm_to_pdf
@@ -305,6 +311,8 @@ classes:
   #### MDA
   BaseMDA:
     normed_residual: normalized_residual_norm
+    check_jacobian: null
+    # use gemseo.utils.derivatives.check.mda.MDAJacobianChecker instead.
     __init__:
       settings_model: settings={settings_model}_Settings
   BaseMDASettings:
@@ -541,9 +549,6 @@ classes:
     __init__:
       inputs: null
 
-  DisciplineJacApprox:
-    generator_class: null
-
   FunctionFromDiscipline:
     generator_class: null
 
@@ -564,6 +569,26 @@ classes:
   OptimizationProblem:
     to_dataset:
       group_functions: null
+
+
+  # Jacobian checkers (changelog 747)
+  Discipline:
+    check_jacobian: null
+    # use gemseo.check_jacobian instead.
+  ArrayFunction:
+    check_grad: null
+    # use gemseo.utils.derivatives.check.function.FunctionJacobianChecker instead.
+    rel_err: null
+    filt_0: null
+
+  DisciplineJacApprox:
+    generator_class: null
+    check_jacobian:
+      threshold: atol
+
+  ODEProblem:
+    check_jacobian:
+      error_max: atol
 
 # Transforms applied to free functions. Keys are old argument names; positions
 # are resolved from the old API signatures in the griffe dump, so a position is

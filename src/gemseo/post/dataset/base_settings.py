@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
 
-class BaseDatasetPlotSettings(BaseSettings, validate_assignment=True):
+class BaseDatasetPlotSettings(BaseSettings):
     """The base settings for dataset visualizations."""
 
     color: str | tuple = Field(

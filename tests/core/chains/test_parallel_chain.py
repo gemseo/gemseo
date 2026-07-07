@@ -22,15 +22,15 @@ import pytest
 from gemseo.core._process_flow.execution_sequences.parallel import ParallelExecSequence
 from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.core.discipline import Discipline
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
-_CHECK_JACOBIAN_KWARGS = {
-    "derr_approx": "complex_step",
-    "step": 1e-30,
-    "threshold": 1e-6,
-}
+
+_APPROXIMATION_MODE = "complex_step"
+_APPROXIMATION_STEP = 1e-30
+_CHECK_JACOBIAN_KWARGS = {"atol": 1e-6, "rtol": 1e-6}
 
 
 @pytest.mark.parametrize("use_deep_copy", [True, False])
@@ -44,8 +44,12 @@ def test_parallel_chain_combinatorial_thread(
         use_deep_copy=use_deep_copy,
     )
     chain.linearize(compute_all_jacobians=True)
-    assert chain.check_jacobian(
-        chain.io.input_grammar.defaults, **_CHECK_JACOBIAN_KWARGS
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        chain.io.input_grammar.defaults,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
+        **_CHECK_JACOBIAN_KWARGS,
     )
 
 
@@ -55,8 +59,12 @@ def test_parallel_chain_combinatorial_mprocess(sobieski_disciplines, perm) -> No
     chain = ParallelDisciplineChain(
         [sobieski_disciplines[p] for p in perm], use_threading=False
     )
-    assert chain.check_jacobian(
-        chain.io.input_grammar.defaults, **_CHECK_JACOBIAN_KWARGS
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        chain.io.input_grammar.defaults,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
+        **_CHECK_JACOBIAN_KWARGS,
     )
 
 

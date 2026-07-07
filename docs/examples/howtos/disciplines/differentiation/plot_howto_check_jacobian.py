@@ -13,22 +13,18 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-"""
-# Check the Jacobian of a discipline
+r"""# Check the Jacobian of a discipline
 
 ## Problem
 
-You have defined a Jacobian function in your
-[Discipline][gemseo.core.discipline.discipline.Discipline],
-and you want to check if the implementation is correct.
+You have implemented the Jacobian of a
+[Discipline][gemseo.core.discipline.discipline.Discipline]
+and you want to check whether it is correct.
 
 ## Solution
 
-The Jacobian function can be checked by derivative approximation,
-with the
-[check_jacobian()][gemseo.core.discipline.discipline.Discipline.check_jacobian]
-method.
+The Jacobian can be checked against a numerical approximation
+with the [check_jacobian()][gemseo.check_jacobian] function.
 
 ## Step-by-step guide
 """
@@ -38,9 +34,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from numpy import array
-from numpy import exp
 
+from gemseo import check_jacobian
 from gemseo.core.discipline import Discipline
+from gemseo.enums import ApproximationMode
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -50,139 +47,92 @@ if TYPE_CHECKING:
 
 # %%
 # ### 1. Create the discipline
-# First,
-# you create a discipline computing
-# $f(x,y)=e^{-(1-x)^2-(1-y)^2}$
-# and
-# $g(x,y)=x^2+y^2-1$
-# and introduce an error in the implementation of
-# $\frac{\partial f(x,y)}{\partial x}$.
+#
+# We consider a discipline computing $f(x,y)=2x+3y$ and $g(x,y)=x^3+y$,
+# and introduce a bug in the Jacobian of $g$:
+# we code $\frac{\partial g}{\partial x}=x^2$ instead of the correct $3x^2$.
 class BuggedDiscipline(Discipline):
     def __init__(self) -> None:
         super().__init__()
         self.input_grammar.update_from_names(["x", "y"])
         self.output_grammar.update_from_names(["f", "g"])
-        self.default_input_data = {"x": array([0.0]), "y": array([0.0])}
+        self.default_input_data = {"x": array([1.0]), "y": array([1.0])}
 
-    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
         x = input_data["x"]
         y = input_data["y"]
-        return {"f": exp(-((1 - x) ** 2) - (1 - y) ** 2), "g": x**2 + y**2 - 1}
+        return {"f": 2 * x + 3 * y, "g": x**3 + y}
 
     def _compute_jacobian(
         self,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        x = self.io.data["x"]
-        y = self.io.data["y"]
+        x = self.io.input_data["x"]
         self._init_jacobian()
-        g_jac = self.jac["g"]
-        g_jac["x"][:] = 2 * x
-        g_jac["y"][:] = 2 * y
-        f_jac = self.jac["f"]
-        aux = 2 * exp(-((1 - x) ** 2) - (1 - y) ** 2)
-        f_jac["x"][:] = aux  # this is wrong.
-        f_jac["y"][:] = aux * (1 - y)
+        self.jac["f"]["x"][:] = 2.0
+        self.jac["f"]["y"][:] = 3.0
+        self.jac["g"]["x"][:] = x**2  # this is wrong: it should be 3 * x**2.
+        self.jac["g"]["y"][:] = 1.0
 
 
 # %%
-# ### 2. Check the implemented Jacobian function
+# ### 2. Check the implemented Jacobian
 #
-# You want to check if the implemented Jacobian functions is correct.
-# For practical applications, this is not a simple task.
-# GEMSEO automates such tests thanks to the
-# [check_jacobian()][gemseo.core.discipline.discipline.Discipline.check_jacobian]
-# method.
-#
-# #### Finite differences (default)
-#
+# Call [check_jacobian()][gemseo.check_jacobian] from your discipline
 discipline = BuggedDiscipline()
-discipline.check_jacobian(
-    input_data={"x": array([0.0]), "y": array([1.0])},
-    show=True,
-    plot_result=True,
-    step=1e-1,
-)
+check_jacobian(discipline, plot_result=True)
 
 # %%
-# The step here is chosen big enough to underline the truncation error.
-# From this graph, you can see that almost all the provided components  of the Jacobians
-# (blue dots) are close but distinct from the approximated by finite differences using
-# a step of 0.1 (red dots). This kind of graph can be used to spot implementation
-# mistakes in fact you can already spot a large mistake in the wrong components.
-#
-#
-# The `derr_approx` argument can be either `"finite_differences"`, `"centered_differences"` or
-# `"complex_step"`.
-#
-# #### Centered differences
-#
-discipline.check_jacobian(
-    input_data={"x": array([0.0]), "y": array([1.0])},
-    derr_approx=discipline.ApproximationMode.CENTERED_DIFFERENCES,
-    show=True,
-    plot_result=True,
-    step=1e-1,
-)
-
-# %%
-# With the same step the truncation error is in this case much smaller.
-#
-# #### Complex step
-#
-discipline.check_jacobian(
-    input_data={"x": array([0.0]), "y": array([1.0])},
-    derr_approx=discipline.ApproximationMode.COMPLEX_STEP,
-    show=True,
-    plot_result=True,
-    step=1e-1,
-)
-# %%
-# With the same step the truncation error is also smaller than finite differences.
-# This confirms again that an implementation mistake was done.
-#
-# ###  Advantages and drawbacks of each method
-#
-# Finite differences and complex step are first-order methods, they use one
-# sampling point per input and the truncation error goes down linearly with the step.
-# Centered differences are second-order methods which use twice as many points as finite
-# differences and complex step. Complex step derivatives are less prone to numerical
-# cancellation errors so that a tiny step can be used. On the other hand complex step is
-# not compatible with discipline not supporting complex inputs.
-
-discipline.check_jacobian(
-    input_data={"x": array([0.0]), "y": array([1.0])},
-    derr_approx=discipline.ApproximationMode.COMPLEX_STEP,
-    show=True,
-    plot_result=True,
-    step=1e-10,
-)
-# %%
-# #### Automatic time step
-#
-# Finite differences and centered differences steps
-# need to be chosen as a trade between truncation and numerical errors.
-# For this reason, the `auto_set_step` option can be used to automatically compute the step
-# where the total error is minimized.
-
-discipline.check_jacobian(
-    input_data={"x": array([0.0]), "y": array([1.0])},
-    derr_approx=discipline.ApproximationMode.CENTERED_DIFFERENCES,
-    show=True,
-    plot_result=True,
-    auto_set_step=True,
-)
+# The function returns `False`: the Jacobian is wrong.
+# At $x=1$, the correct value is $\frac{\partial g}{\partial x}=3x^2=3$
+# while the discipline returns $x^2=1$;
+# the function logs that `∂g/∂x` is wrong by about 50%
+# (its error is the absolute difference normalized by the approximated value plus one).
+# The graph confirms it:
+# the provided components (blue dots) and the approximated ones (red dots)
+# overlap everywhere except for the $\frac{\partial g}{\partial x}$ component.
 
 # %%
 # ## Summary
 #
-# Your implementation of the Jacobian function can be checked by GEMSEO, by using the
-# [check_jacobian()][gemseo.core.discipline.discipline.Discipline.check_jacobian]
-# method.
+# The implementation of the Jacobian of a discipline can be checked against a numerical
+# approximation with the [check_jacobian()][gemseo.check_jacobian] function.
+# This function returns `False` and, with `plot_result=True`, draws the provided and
+# approximated Jacobian components so that the wrong ones can be spotted.
+
+# %%
+# ## One step further
 #
-# Different approximation methods can be chosen, such as:
+# ### Choose the approximation method
 #
-# - finite differences (default),
-# - centered differences,
-# - complex step.
+# The numerical approximation method is set via the `approximation_mode` argument
+# of `check_jacobian`,
+# either `ApproximationMode.FINITE_DIFFERENCES` (default),
+# `ApproximationMode.CENTERED_DIFFERENCES` or `ApproximationMode.COMPLEX_STEP`,
+# and the discretization step via its `approximation_step` argument.
+#
+# `ApproximationMode.FINITE_DIFFERENCES` uses forward differences.
+# Forward differences and complex step are first-order methods using one sampling point
+# per input, with a truncation error decreasing linearly with the step.
+# Centered differences are second-order, using twice as many points.
+# Complex step is immune to numerical cancellation, so an arbitrarily small step can be
+# used, but it requires a discipline supporting complex inputs.
+check_jacobian(
+    discipline,
+    approximation_mode=ApproximationMode.COMPLEX_STEP,
+    step=1e-30,
+)
+
+# %%
+# ### Set the step automatically
+#
+# For finite and centered differences,
+# the step is a trade-off between truncation and numerical errors.
+# Setting `approximation_step` to `None`
+# computes the step minimizing the total error automatically.
+check_jacobian(
+    discipline,
+    approximation_mode=ApproximationMode.CENTERED_DIFFERENCES,
+    step=None,
+)

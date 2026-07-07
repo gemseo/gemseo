@@ -18,6 +18,7 @@ import pytest
 from numpy import array
 
 from gemseo.disciplines.splitter import Splitter
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 @pytest.fixture
@@ -41,6 +42,10 @@ def test_check_gradient(splitting_discipline_for_test) -> None:
     splitting_discipline_for_test.io.input_grammar.defaults = {
         "E": array([1.0, 2.0, 3.0, 4.0, 5.0])
     }
-    assert splitting_discipline_for_test.check_jacobian(
-        input_data={"E": array([1.0, 2.0, 3.0, 4.0, 5.0])}, threshold=1e-3, step=1e-4
+    checker = DisciplineJacobianChecker(splitting_discipline_for_test)
+    assert checker.check(
+        input_value={"E": array([1.0, 2.0, 3.0, 4.0, 5.0])},
+        atol=1e-3,
+        rtol=1e-3,
+        step=1e-4,
     )

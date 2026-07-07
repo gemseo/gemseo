@@ -19,12 +19,17 @@ from __future__ import annotations
 import pytest
 
 from gemseo.problems.multiobjective_optimization.fonseca_fleming import FonsecaFleming
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 
 
 @pytest.mark.parametrize("dim", [1, 3])
 def test_fon(dim):
     """Test the Jacobian of the Fonseca-Fleming objective."""
     problem = FonsecaFleming(dim)
-    problem.objective.check_grad(
-        problem.design_space.get_current_value(), step=1e-8, error_max=2e-7
+    checker = FunctionJacobianChecker(problem.objective)
+    assert checker.check(
+        problem.design_space.get_current_value(),
+        atol=2e-7,
+        rtol=2e-7,
+        step=1e-8,
     )

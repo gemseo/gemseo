@@ -37,6 +37,7 @@ from gemseo.algos.ode.scipy_ode.settings.radau import Radau_Settings
 from gemseo.algos.ode.scipy_ode.settings.rk23 import RK23_Settings
 from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
 from gemseo.problems.ode.orbital_dynamics import OrbitalDynamics
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 if TYPE_CHECKING:
     from gemseo.typing import RealArray
@@ -159,4 +160,6 @@ def test_orbital_jacobian_explicit_expression(eccentricity) -> None:
         0.0,
         sqrt((1 + eccentricity) / (1 - eccentricity)),
     ])
-    problem.check_jacobian(state, step=1e-7, error_max=1e-6)
+    problem.check_jacobian(
+        state, approximation_mode=ApproximationMode.CENTERED_DIFFERENCES
+    )

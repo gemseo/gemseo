@@ -19,9 +19,11 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo.problems.multiobjective_optimization.viennet import Viennet
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 
 
 def test_obj_jacobian():
     """Test the Jacobian of the Viennet objective function."""
     viennet = Viennet(initial_guess=array([1.0, 1.0]))
-    viennet.objective.check_grad(array([0.0, 0.0]), step=1e-9, error_max=1e-6)
+    checker = FunctionJacobianChecker(viennet.objective)
+    assert checker.check(array([0.0, 0.0]), atol=1e-6, rtol=1e-6, step=1e-9)

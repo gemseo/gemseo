@@ -23,6 +23,7 @@ from numpy import array
 from numpy import ones
 
 from gemseo.problems.topology_optimization.volume_fraction_disc import VolumeFraction
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 THRESHOLD = 1e-10
 
@@ -43,6 +44,10 @@ def test_run(volume_fraction) -> None:
 
 def test_jacobian(volume_fraction) -> None:
     """Check the analytic Jacobian by finite differences."""
-    assert volume_fraction.check_jacobian(
-        volume_fraction.io.get_input_data(), threshold=THRESHOLD, step=1e-5
+    checker = DisciplineJacobianChecker(volume_fraction)
+    assert checker.check(
+        volume_fraction.io.get_input_data(),
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        step=1e-5,
     )

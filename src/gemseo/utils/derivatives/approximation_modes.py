@@ -20,23 +20,23 @@ from strenum import StrEnum
 
 
 class ApproximationMode(StrEnum):
-    """The modes to approximate all the Jacobian blocks of a discipline."""
+    """The modes to approximate Jacobian matrices."""
 
     COMPLEX_STEP = "complex_step"
-    """Approximate all the Jacobian blocks with the complex-step method,
+    """Approximate Jacobian matrices with the complex-step method,
     perturbing each input with a small imaginary number."""
 
     FINITE_DIFFERENCES = "finite_differences"
-    """Approximate all the Jacobian blocks with first-order forward finite differences,
+    """Approximate Jacobian matrices with first-order forward finite differences,
     perturbing each input with a small real number."""
 
     CENTERED_DIFFERENCES = "centered_differences"
-    """Approximate all the Jacobian blocks with second-order centered finite
-    differences, perturbing each input on both sides with a small real number."""
+    """Approximate Jacobian matrices with second-order centered finite differences,
+    perturbing each input on both sides with a small real number."""
 
 
 class HybridApproximationMode(StrEnum):
-    """The modes for semi-analytical computation of the Jacobian.
+    """The modes for semi-analytical computation of the Jacobian of a discipline.
 
     The Jacobian blocks available analytically are computed analytically;
     only the blocks unavailable analytically are approximated.

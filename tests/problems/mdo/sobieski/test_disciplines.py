@@ -27,6 +27,8 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 def test_init_range() -> None:
@@ -45,28 +47,40 @@ def test_init_power() -> None:
     SobieskiPropulsion("float64")
 
 
+def _complex_checker(discipline) -> DisciplineJacobianChecker:
+    return DisciplineJacobianChecker(discipline)
+
+
 def test_execute_range() -> None:
     sr = SobieskiMission("complex128")
     sr.execute()
-    sr.check_jacobian(derr_approx="complex_step", step=1e-30)
+    assert _complex_checker(sr).check(
+        approximation_mode=ApproximationMode.COMPLEX_STEP, step=1e-30
+    )
 
 
 def test_execute_weight() -> None:
     sr = SobieskiStructure("complex128")
     sr.execute()
-    sr.check_jacobian(derr_approx="complex_step", step=1e-30)
+    assert _complex_checker(sr).check(
+        approximation_mode=ApproximationMode.COMPLEX_STEP, step=1e-30
+    )
 
 
 def test_execute_power() -> None:
     sr = SobieskiPropulsion("complex128")
     sr.execute()
-    sr.check_jacobian(derr_approx="complex_step", step=1e-30)
+    assert _complex_checker(sr).check(
+        approximation_mode=ApproximationMode.COMPLEX_STEP, step=1e-30
+    )
 
 
 def test_execute_aerodynamics() -> None:
     sr = SobieskiAerodynamics("complex128")
     sr.execute()
-    sr.check_jacobian(derr_approx="complex_step", step=1e-30)
+    assert _complex_checker(sr).check(
+        approximation_mode=ApproximationMode.COMPLEX_STEP, step=1e-30
+    )
 
 
 DV_NAMES = ["x_shared", "x_1", "x_2", "x_3"]

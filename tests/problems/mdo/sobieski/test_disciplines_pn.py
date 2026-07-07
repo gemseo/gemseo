@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.core.discipline import Discipline
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 FACTORS = [0.5, 1.0, 1.5]
 DECIMAL = 5
@@ -155,9 +156,10 @@ def test_propulsion_execute(factor) -> None:
 @pytest.mark.parametrize("factor", FACTORS)
 def test_mission_linearize(discipline_class, factor) -> None:
     """Check the Jacobian data of the different disciplines."""
-    discipline = discipline_class.create_with_physical_naming()
+    discipline = discipline_class.create_with_physical_naming(dtype="complex128")
     input_data = compute_input_data(discipline.io.input_grammar.defaults, factor)
-    discipline.check_jacobian(input_data=input_data)
+    checker = DisciplineJacobianChecker(discipline)
+    assert checker.check(input_value=input_data, approximation_mode="complex_step")
 
 
 @pytest.fixture

@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.disciplines.concatenater import Concatenater
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 @pytest.fixture(params=[None, {"c_1": 1.0, "c_2": -1.0}])
@@ -114,4 +115,5 @@ def test_check_gradient(
 ) -> None:
     """Test the Jacobian computation by finite differences."""
     concatenation_disc.io.input_grammar.defaults = input_data
-    assert concatenation_disc.check_jacobian(threshold=1e-3, step=1e-4)
+    checker = DisciplineJacobianChecker(concatenation_disc)
+    assert checker.check(atol=1e-3, rtol=1e-3, step=1e-4)

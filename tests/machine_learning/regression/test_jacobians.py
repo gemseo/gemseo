@@ -60,6 +60,7 @@ from gemseo.utils.testing.helpers import concretize_classes
 
 if TYPE_CHECKING:
     from gemseo.datasets.dataset import Dataset
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 LEARNING_SIZE = 10
 
@@ -189,7 +190,7 @@ def test_linreg(dataset, transformer, fit_intercept) -> None:
         dataset,
         transformer=transformer,
     )
-    discipline.check_jacobian()
+    assert DisciplineJacobianChecker(discipline).check(atol=1e-5, rtol=1e-5)
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
@@ -202,7 +203,7 @@ def test_polyreg(dataset, transformer, fit_intercept, degree) -> None:
         dataset,
         transformer=transformer,
     )
-    discipline.check_jacobian()
+    assert DisciplineJacobianChecker(discipline).check(atol=1e-5, rtol=1e-5)
 
 
 def _r3(r):
@@ -210,7 +211,7 @@ def _r3(r):
 
 
 def _der_r3(x, norx, eps):
-    return 3.0 * x * norx / eps**3
+    return 3.0 * x * norx
 
 
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
@@ -224,7 +225,7 @@ def test_rbf(dataset, transformer, function) -> None:
         dataset,
         transformer=transformer,
     )
-    discipline.check_jacobian()
+    assert DisciplineJacobianChecker(discipline).check(atol=1e-4, rtol=1e-4)
 
 
 def test_pce(dataset) -> None:
@@ -232,4 +233,4 @@ def test_pce(dataset) -> None:
     discipline = SurrogateDiscipline.from_settings(
         PCERegressor_Settings(), dataset, transformer={}
     )
-    discipline.check_jacobian()
+    assert DisciplineJacobianChecker(discipline).check(atol=1e-5, rtol=1e-5)

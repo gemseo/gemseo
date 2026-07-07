@@ -25,6 +25,7 @@ from numpy import ones
 from numpy import tile
 
 from gemseo.problems.topology_optimization.fea_disc import FiniteElementAnalysis
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 @pytest.fixture(scope="module")
@@ -75,6 +76,5 @@ def test_run_default(default_finite_element_analysis) -> None:
 def test_jacobian(finite_element_analysis) -> None:
     """Check the analytic Jacobian by finite differences."""
     indata = finite_element_analysis.io.get_input_data()
-    assert finite_element_analysis.check_jacobian(
-        indata, threshold=1e-5, auto_set_step=True
-    )
+    checker = DisciplineJacobianChecker(finite_element_analysis)
+    assert checker.check(indata, atol=1e-5, rtol=1e-5, step=None)

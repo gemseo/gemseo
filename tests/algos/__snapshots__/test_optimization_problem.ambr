@@ -30,7 +30,7 @@
   '''
 # ---
 # name: test_invalid_differentiation_method
-  'The class foo is not available; the available ones are: CenteredDifferences, ComplexStep, FirstOrderFD, centered_differences, complex_step, finite_differences.'
+  'The class foo is not available; the available ones are: CenteredDifferences, ComplexStep, ForwardDifferences, centered_differences, complex_step, finite_differences.'
 # ---
 # name: test_is_multi_objective
   'Cannot determine the dimension of the objective.'

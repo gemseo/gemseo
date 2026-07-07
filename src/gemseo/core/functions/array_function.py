@@ -35,10 +35,7 @@ from typing import Any
 from typing import ClassVar
 from typing import Final
 
-from numpy import abs as np_abs
 from numpy import ndarray
-from numpy import where
-from numpy.linalg import norm
 from strenum import StrEnum
 
 from gemseo.core.functions._operations import _AdditionFunctionMaker
@@ -47,9 +44,7 @@ from gemseo.core.functions._operations import _OperationFunctionMaker
 from gemseo.core.functions.not_implementable_callable import NotImplementedCallable
 from gemseo.core.functions.set_pt_from_database import SetPtFromDatabase
 from gemseo.typing import NumberArray
-from gemseo.utils.compatibility.scipy import sparse_classes
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.factory import GradientApproximatorFactory
 from gemseo.utils.metaclasses import GoogleDocstringInheritanceMeta
 from gemseo.utils.string_tools import pretty_str
 from gemseo.utils.string_tools import repr_variable
@@ -141,7 +136,7 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
 
     Lastly, the user can check the Jacobian function by means of approximation methods
     (see
-    [check_grad()][gemseo.core.functions.array_function.ArrayFunction.check_grad]).
+    [FunctionJacobianChecker][gemseo.utils.derivatives.check.function.FunctionJacobianChecker]).
 
     Note:
        The callable can be set to `None` (default)
@@ -610,95 +605,6 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
             self.special_repr or name, operator, second_operand
         )
         return function
-
-    def check_grad(
-        self,
-        x_vect: NumberArray,
-        approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
-        step: float = 1e-6,
-        error_max: float = 1e-8,
-    ) -> None:
-        """Check the gradients of the function.
-
-        Args:
-            x_vect: The vector at which the function is checked.
-            approximation_mode: The approximation mode.
-            step: The step for the approximation of the gradients.
-            error_max: The maximum value of the error.
-
-        Raises:
-            ValueError: Either if the approximation method is unknown,
-                if the shapes of
-                the analytical and approximated Jacobian matrices
-                are inconsistent
-                or if the analytical gradients are wrong.
-        """
-        gradient_approximator = GradientApproximatorFactory().create(
-            approximation_mode, self.evaluate, step=step
-        )
-
-        approximation = gradient_approximator.f_gradient(x_vect).real
-        reference = self._jac(x_vect).real
-
-        if isinstance(reference, sparse_classes):
-            reference = reference.todense()
-
-        if approximation.shape != reference.shape:
-            approximation_is_1d = approximation.ndim == 1 or approximation.shape[0] == 1
-            reference_is_1d = reference.ndim == 1 or reference.shape[0] == 1
-            shapes_are_1d = approximation_is_1d and reference_is_1d
-            flatten_diff = reference.flatten().shape != approximation.flatten().shape
-            if not shapes_are_1d or (shapes_are_1d and flatten_diff):
-                msg = (
-                    f"The Jacobian matrix computed by {self} has a wrong shape; "
-                    f"got: {reference.shape} while expected: {approximation.shape}."
-                )
-                raise ValueError(msg)
-
-        if self.rel_err(reference, approximation, error_max) > error_max:
-            LOGGER.error("The Jacobian matrix computed by %s is wrong.", self)
-            LOGGER.error("Error =\n%s", self.filt_0(reference - approximation))
-            LOGGER.error("Analytic jacobian=\n%s", self.filt_0(reference))
-            LOGGER.error("Approximate step gradient=\n%s", self.filt_0(approximation))
-            msg = f"The Jacobian matrix computed by {self} is wrong."
-            raise ValueError(msg)
-
-    @staticmethod
-    def rel_err(a_vect: NumberArray, b_vect: NumberArray, error_max: float) -> float:
-        """Compute the 2-norm of the difference between two vectors.
-
-        Normalize it with the 2-norm of the reference vector
-        if the latter is greater than the maximal error.
-
-        Args:
-            a_vect: A first vector.
-            b_vect: A second vector, used as a reference.
-            error_max: The maximum value of the error.
-
-        Returns:
-            The difference between two vectors,
-            normalized if required.
-        """
-        if norm(b_vect) > error_max:
-            return norm(a_vect - b_vect) / norm(b_vect)
-        return norm(a_vect - b_vect)
-
-    @staticmethod
-    def filt_0(arr: NumberArray, floor_value: float = 1e-6) -> NumberArray:
-        """Set the non-significant components of a vector to zero.
-
-        The component of a vector is non-significant
-        if its absolute value is lower than a threshold.
-
-        Args:
-            arr: The original vector.
-            floor_value: The threshold.
-
-        Returns:
-            The original vector
-            whose non-significant components have been set at zero.
-        """
-        return where(np_abs(arr) < floor_value, 0.0, arr)
 
     def to_dict(self) -> dict[str, str | int | list[str]]:
         """Create a dictionary representation of the function.

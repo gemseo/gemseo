@@ -202,7 +202,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         tc_ratio: float,
         sweep: float,
         fo1: float,
-        c_4: float | None = None,
+        c_4: float,
     ) -> float:
         """Compute the 2D minimum drag coefficient.
 
@@ -210,14 +210,10 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             tc_ratio: The thickness-to-chord ratio.
             sweep: The wing sweep.
             fo1: The coefficient for the engine size.
-            c_4: The minimum drag coefficient.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The 2D minimum drag coefficient.
         """
-        c_4 = c_4 or self.constants[4]
         return (
             c_4 * fo1
             + 3.05
@@ -564,7 +560,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         y_32: ndarray,
         x_2: ndarray,
         true_cstr: bool = False,
-        c_4: ndarray | None = None,
+        c_4: float | None = None,
     ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the drag and the lift-to-drag ratio.
 
@@ -602,6 +598,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
                    for the mission discipline,
                 - `g_2`: The pressure gradient to be constrained.
         """
+        if c_4 is None:
+            c_4 = self.constants[4]
         return self._execute(
             x_shared[0],
             x_shared[1],
@@ -612,8 +610,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             y_12[1],
             y_32[0],
             x_2[0],
-            true_cstr=true_cstr,
-            c_4=c_4,
+            true_cstr,
+            c_4,
         )
 
     def _execute(
@@ -627,8 +625,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         twist: float,
         esf: float,
         c_f: float,
-        true_cstr: bool = False,
-        c_4: ndarray | None = None,
+        true_cstr: bool,
+        c_4: ndarray,
     ) -> tuple[ndarray, ndarray, ndarray, ndarray, ndarray]:
         """Compute the drag and the lift-to-drag ratio.
 
@@ -647,8 +645,6 @@ class SobieskiAerodynamics(SobieskiDiscipline):
                 Otherwise,
                 return the distance to the corresponding constraint thresholds.
             c_4: The minimum drag coefficient.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The aerodynamics outputs:
@@ -662,8 +658,6 @@ class SobieskiAerodynamics(SobieskiDiscipline):
                    for the mission discipline,
                 - `g_2`: The pressure gradient to be constrained.
         """
-        c_4 = c_4 or self.constants[4]
-
         y_2 = zeros(3, dtype=self.dtype)
         y_23 = zeros(1, dtype=self.dtype)
         y_24 = zeros(1, dtype=self.dtype)
@@ -823,6 +817,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         Returns:
             The Jacobian of the outputs.
         """
+        if c_4 is None:
+            c_4 = self.constants[4]
         return self._linearize(
             x_shared[0],
             x_shared[1],
@@ -833,7 +829,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             y_12[1],
             y_32[0],
             x_2[0],
-            c_4=c_4,
+            c_4,
         )
 
     def _linearize(
@@ -847,7 +843,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         twist: float,
         esf: float,
         c_f: float,
-        c_4: float | None = None,
+        c_4: float,
     ) -> dict[str, dict[str, ndarray]]:
         """Compute the Jacobian of the drag and lift-to-drag ratio.
 
@@ -862,14 +858,11 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             esf: The engine scale factor.
             c_f: The friction coefficient.
             c_4: The minimum drag coefficient.
-                If `None`, use
-                [SobieskiBase.constants][gemseo.problems.mdo.sobieski.core.utils.SobieskiBase.constants].
 
         Returns:
             The Jacobian of the outputs.
         """
         jacobian = self.__initialize_jacobian()
-        c_4 = c_4 or self.constants[4]
         self.__compute_rho_v(mach, altitude)
         rhov2 = self.__compute_rhov2()
         lift_coeff = ac_mass / (0.5 * rhov2 * wing_area)

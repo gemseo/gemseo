@@ -23,6 +23,7 @@ from numpy import array
 
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 THRESHOLD = 1e-12
 
@@ -114,8 +115,12 @@ def test_d_range_d_wf(problem) -> None:
 
 def test_jac_mission(problem) -> None:
     sr = SobieskiMission("complex128")
-    assert sr.check_jacobian(
-        threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+    checker = DisciplineJacobianChecker(sr)
+    assert checker.check(
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
     )
     inpt_data = {
         "y_24": array([4.16647508]),
@@ -131,4 +136,5 @@ def test_jac_mission(problem) -> None:
         "y_14": array([50808.33445658, 7306.20262124]),
     }
 
-    assert sr.check_jacobian(inpt_data, derr_approx="complex_step", step=1e-30)
+    checker = DisciplineJacobianChecker(sr)
+    assert checker.check(inpt_data, approximation_mode="complex_step", step=1e-30)
