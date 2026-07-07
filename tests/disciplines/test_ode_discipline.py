@@ -47,6 +47,7 @@ from gemseo.core.discipline.base_discipline import CacheType
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 from gemseo.problems.ode.oscillator_discipline import OscillatorDiscipline
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 from gemseo.utils.testing.helpers import assert_exception
@@ -462,17 +463,15 @@ def test_jacobian():
         ode_solver_settings=Radau_Settings(rtol=1e-12, atol=1e-12),
     )
 
-    check_jacobian1 = discipline.check_jacobian(
-        input_data={
+    assert DisciplineJacobianChecker(discipline).check(
+        input_value={
             "time": array([init_time]),
             "x": init_state_x_,
             "y": init_state_y_,
         },
-        input_names=["time", "x", "y"],
-        output_names=["x_dot", "y_dot"],
+        inputs=["time", "x", "y"],
+        outputs=["x_dot", "y_dot"],
     )
-    if not check_jacobian1:
-        raise ValueError
 
     def exact_sol(time):
         if isclose(init_state_x, 0.0, atol=1e-12) and isclose(

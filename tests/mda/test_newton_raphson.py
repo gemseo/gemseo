@@ -48,6 +48,7 @@ from gemseo.problems.mdo.sellar.utils import get_y_opt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
@@ -303,12 +304,14 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
             continue
         assert out[output_name] == pytest.approx(out_ref[output_name], rel=1e-5)
 
-    assert mda.check_jacobian(
-        input_data=mda_input,
-        input_names=["x"],
-        output_names=["obj"],
+    checker = MDAJacobianChecker(mda)
+    assert checker.check(
+        input_value=mda_input,
+        inputs=["x"],
+        outputs=["obj"],
         linearization_mode="adjoint",
-        threshold=1e-3,
+        atol=1e-3,
+        rtol=1e-3,
         step=1e-4,
     )
 

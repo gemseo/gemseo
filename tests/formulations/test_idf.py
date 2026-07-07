@@ -33,6 +33,7 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.evaluation import EvaluationScenario
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 
 
@@ -60,18 +61,46 @@ def test_build_func_from_disc() -> None:
         )
         problem.add_constraint(constraint)
     opt = idf.problem
-    opt.objective.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
+    checker = FunctionJacobianChecker(opt.objective)
+    assert checker.check(
+        x_vect,
+        atol=1e-4,
+        rtol=1e-4,
+        approximation_mode="complex_step",
+        step=1e-30,
+    )
     for cst in opt.constraints:
-        cst.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
+        checker = FunctionJacobianChecker(cst)
+        assert checker.check(
+            x_vect,
+            atol=1e-4,
+            rtol=1e-4,
+            approximation_mode="complex_step",
+            step=1e-30,
+        )
 
     for func_name in list(pb.get_default_inputs().keys()):
         if func_name.startswith("Y"):
             func = idf._build_func_from_outputs([func_name])
-            func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
+            checker = FunctionJacobianChecker(func)
+            assert checker.check(
+                x_vect,
+                atol=1e-4,
+                rtol=1e-4,
+                approximation_mode="complex_step",
+                step=1e-30,
+            )
 
     for coupl in idf.coupling_structure.strong_couplings:
         func = ConsistencyConstraint([coupl], idf)
-        func.check_grad(x_vect, "ComplexStep", 1e-30, error_max=1e-4)
+        checker = FunctionJacobianChecker(func)
+        assert checker.check(
+            x_vect,
+            atol=1e-4,
+            rtol=1e-4,
+            approximation_mode="complex_step",
+            step=1e-30,
+        )
 
 
 @pytest.mark.parametrize(

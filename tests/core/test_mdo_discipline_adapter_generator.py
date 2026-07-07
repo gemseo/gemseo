@@ -37,6 +37,7 @@ from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.formulations.disciplinary_opt import DisciplinaryOpt
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
@@ -92,11 +93,9 @@ def test_grad_ko() -> None:
     gen = DisciplineAdapterGenerator(sr)
     range_f_z = gen.get_function(["x_shared"], ["y_4"])
     x_shared = sr.io.input_grammar.defaults["x_shared"]
-    range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-4)
-    with pytest.raises(ValueError):
-        range_f_z.check_grad(x_shared, step=1e-5, error_max=1e-20)
-    with pytest.raises(ImportError):
-        range_f_z.check_grad(x_shared, approximation_mode="toto")
+    checker = FunctionJacobianChecker(range_f_z)
+    assert checker.check(x_shared, atol=1e-4, rtol=1e-4, step=1e-5)
+    assert not checker.check(x_shared, atol=1e-20, rtol=1e-20, step=1e-5)
 
 
 def test_wrong_default_inputs() -> None:

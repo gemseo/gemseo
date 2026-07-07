@@ -22,40 +22,28 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import ClassVar
 
-from numpy import argmax
 from numpy import concatenate
-from numpy import float64
-from numpy import full
 from numpy import tile
 from numpy import where
-from numpy import zeros
 from numpy.linalg import norm
 
-from gemseo.core.parallel_execution.callable_parallel_execution import (
-    CallableParallelExecution,
-)
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
-from gemseo.utils.derivatives.error_estimators import EPSILON
-from gemseo.utils.derivatives.error_estimators import compute_best_step
+from gemseo.utils.derivatives.approximators.base_finite_differences import (
+    BaseFiniteDifferences,
+)
 
 if TYPE_CHECKING:
-    from numpy import floating
-
     from gemseo.typing import RealArray
 
 
-class CenteredDifferences(BaseGradientApproximator):
+class CenteredDifferences(BaseFiniteDifferences):
     r"""Centered differences approximator.
 
     $$\frac{df(x)}{dx}\approx\frac{f(x+\delta x)-f(x-\delta x)}{2\delta x}$$
     """
 
     _APPROXIMATION_MODE = ApproximationMode.CENTERED_DIFFERENCES
-
-    _DEFAULT_STEP: ClassVar[float] = 1.0e-6
 
     def _compute_parallel_grad(
         self,
@@ -67,8 +55,10 @@ class CenteredDifferences(BaseGradientApproximator):
         input_perturbations = input_perturbations.T
         n_perturbations = len(input_perturbations)
         self._function_kwargs = kwargs
-        parallel_execution = CallableParallelExecution(
-            [self._wrap_function] * n_perturbations, **self._parallel_args
+        parallel_execution = self._create_callable_parallel_execution(
+            self._wrap_function,
+            self._parallel_args.get("use_threading", False),
+            n_perturbations,
         )
         output_perturbations = parallel_execution.execute(input_perturbations)
 
@@ -105,113 +95,6 @@ class CenteredDifferences(BaseGradientApproximator):
                 strict=False,
             )
         ]
-
-    def _get_opt_step(
-        self,
-        f_p: RealArray,
-        f_0: RealArray,
-        f_m: RealArray,
-        numerical_error: float = EPSILON,
-    ) -> tuple[floating, floating]:
-        r"""Compute the optimal step of a function.
-
-        This function may be a vector function.
-        In this case, take the worst case.
-
-        Args:
-            f_p: The value of the function $f$
-                 at the next step $x+\delta_x$.
-            f_0: The value of the function $f$
-                 at the current step $x$.
-            f_m: The value of the function $f$
-                 at the previous step $x-\delta_x$.
-            numerical_error: The numerical error
-                associated to the calculation of $f$.
-                By default, Machine epsilon (appx 1e-16),
-                but can be higher.
-                when the calculation of $f$ requires a numerical resolution.
-
-        Returns:
-            The errors.
-            The optimal steps.
-        """
-        n_out = f_p.size
-        if n_out == 1:
-            t_e, c_e, opt_step = compute_best_step(
-                f_p, f_0, f_m, self.step, epsilon_mach=numerical_error
-            )
-            return (float64(0) if t_e is None else t_e[0] + c_e[0]), opt_step[0]
-
-        errors = zeros(n_out)
-        opt_steps = zeros(n_out)
-        for i in range(n_out):
-            t_e, c_e, opt_step = compute_best_step(
-                f_p[i], f_0[i], f_m[i], self.step, epsilon_mach=numerical_error
-            )
-            opt_steps[i] = opt_step[0]
-            errors[i] = 0.0 if t_e is None else t_e[0] + c_e[0]
-
-        max_i = argmax(errors)
-        return errors[max_i], opt_steps[max_i]
-
-    def compute_optimal_step(
-        self,
-        x_vect: RealArray,
-        numerical_error: float = EPSILON,
-        **kwargs: Any,
-    ) -> tuple[RealArray, RealArray]:
-        r"""Compute the gradient by real step.
-
-        Args:
-            x_vect: The input vector.
-            numerical_error: The numerical error
-                associated to the calculation of $f$.
-                By default, machine epsilon (appx 1e-16),
-                but can be higher.
-                when the calculation of $f$ requires a numerical resolution.
-            **kwargs: The additional arguments passed to the function.
-
-        Returns:
-            The optimal steps.
-            The errors.
-        """
-        n_dim = len(x_vect)
-        x_p_arr = self.generate_perturbations(n_dim, x_vect)[0]
-        x_m_arr = self.generate_perturbations(n_dim, x_vect, step=-self.step)[0]
-        opt_steps = full(n_dim, self.step)
-        errors = zeros(n_dim)
-        comp_step = self._get_opt_step
-        if self._parallel:
-            self._function_kwargs = kwargs
-            workers = [self._wrap_function] * (n_dim * 2 + 1)
-            execution = CallableParallelExecution(workers, **self._parallel_args)
-            outputs = execution.execute([
-                x_vect,
-                *[x_p_arr[:, i] for i in range(n_dim)],
-                *[x_m_arr[:, i] for i in range(n_dim)],
-            ])
-
-            f_0 = outputs[0]
-            for i in range(n_dim):
-                errors[i], opt_steps[i] = comp_step(
-                    outputs[i + 1],
-                    f_0,
-                    outputs[n_dim + i + 1],
-                    numerical_error=numerical_error,
-                )
-        else:
-            compute_output = self.f_pointer
-            f_0 = compute_output(x_vect, **kwargs)
-            for i in range(n_dim):
-                errors[i], opt_steps[i] = comp_step(
-                    compute_output(x_p_arr[:, i], **kwargs),
-                    f_0,
-                    compute_output(x_m_arr[:, i], **kwargs),
-                    numerical_error=numerical_error,
-                )
-
-        self.step = opt_steps
-        return opt_steps, errors
 
     def _generate_perturbations(
         self,

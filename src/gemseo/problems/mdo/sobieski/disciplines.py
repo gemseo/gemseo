@@ -236,6 +236,8 @@ class SobieskiStructure(SobieskiDiscipline):
             local_data["y_21"],
             local_data["y_31"],
             local_data["x_1"],
+            c_0=local_data["c_0"][0],
+            c_1=local_data["c_1"][0],
             c_2=local_data["c_2"][0],
         )
 

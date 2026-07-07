@@ -43,6 +43,8 @@ from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.typing import IntegerArray  # noqa: TC001
 from gemseo.typing import RealArray  # noqa: TC001
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
+from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 
 X_DIM = 4
@@ -160,7 +162,7 @@ def test_basic() -> None:
 def test_jac() -> None:
     """Test a basic jacobian."""
     disc = AutoPyDiscipline(py_func=f5, py_jac=df5)
-    assert disc.check_jacobian()
+    assert DisciplineJacobianChecker(disc).check()
 
 
 @pytest.mark.parametrize(
@@ -262,7 +264,7 @@ def test_jacobian_shape_mismatch(snapshot) -> None:
     """Tests the jacobian shape."""
     disc = AutoPyDiscipline(py_func=obj, py_jac=jac)
 
-    assert disc.check_jacobian(threshold=1e-5)
+    assert DisciplineJacobianChecker(disc).check(atol=1e-5, rtol=1e-5)
 
     disc_wrong = AutoPyDiscipline(py_func=obj, py_jac=jac_wrong_shape)
     with assert_exception(ValueError, snapshot):
@@ -553,10 +555,10 @@ def test_mda(x_1, mda_name, sellar_with_2d_array, sellar_disciplines) -> None:
         k: v for k, v in input_data.items() if k in mda.io.input_grammar
     }
 
-    assert mda.check_jacobian(
-        input_data=input_data,
-        input_names=["x_1", "x_shared"],
-        output_names=["y_1", "y_2"],
+    assert MDAJacobianChecker(mda).check(
+        input_value=input_data,
+        inputs=["x_1", "x_shared"],
+        outputs=["y_1", "y_2"],
     )
 
 

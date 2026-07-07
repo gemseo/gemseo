@@ -29,12 +29,11 @@ from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
 )
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
-_CHECK_JACOBIAN_KWARGS = {
-    "derr_approx": ApproximationMode.COMPLEX_STEP,
-    "step": 1e-30,
-    "threshold": 1e-6,
-}
+_APPROXIMATION_MODE = ApproximationMode.COMPLEX_STEP
+_APPROXIMATION_STEP = 1e-30
+_CHECK_JACOBIAN_KWARGS = {"atol": 1e-6, "rtol": 1e-6}
 
 # The two explicit sweeps. AUTO only dispatches to one of these based on the
 # I/O sizes, so parametrizing correctness tests over it is redundant; AUTO's
@@ -150,8 +149,11 @@ def test_linearization_varying_discipline_orders(
 ) -> None:
     """DisciplineChain Jacobian is correct regardless of discipline ordering."""
     chain = DisciplineChain([sobieski_disciplines[p] for p in order])
-    assert chain.check_jacobian(
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -168,9 +170,12 @@ def test_jacobian_with_passthrough_discipline(expression, mode) -> None:
         AnalyticDiscipline({"x": expression}, name="a"),
         AnalyticDiscipline({"o": "x+y"}, name="o"),
     ])
-    assert chain.check_jacobian(
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
         {"x": ones(1), "y": ones(1)},
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -184,8 +189,11 @@ def test_jacobian_with_heterogeneous_jacobian_formats(
     chain = DisciplineChain([
         heterogeneous_jacobian_type_disciplines[i] for i in permutation
     ])
-    assert chain.check_jacobian(
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -218,8 +226,11 @@ def test_jacobian_with_heterogeneous_sizes(
 ) -> None:
     """Jacobian is correct across non-square and rectangular coupling blocks."""
     chain = DisciplineChain(heterogeneous_sizes_disciplines)
-    assert chain.check_jacobian(
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -242,7 +253,8 @@ def test_discipline_chain_serialization(
     chain.execute()
     assert "y" in chain.io.output_data
 
-    assert chain.check_jacobian()
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check()
 
 
 def test_discipline_chain_execution_with_virtual_disciplines(
@@ -290,10 +302,13 @@ def test_discipline_chain_coupling_variable_as_chain_input(mode) -> None:
         ("C", ["b"], ["z"]),
     ])
     chain = DisciplineChain(disciplines)
-    assert chain.check_jacobian(
-        input_names=["b"],
-        output_names=["z"],
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        inputs=["b"],
+        outputs=["z"],
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -311,10 +326,13 @@ def test_discipline_chain_self_coupling_with_downstream_consumer(mode) -> None:
         ("R", ["p"], ["z"]),
     ])
     chain = DisciplineChain(disciplines)
-    assert chain.check_jacobian(
-        input_names=["p", "x"],
-        output_names=["w", "z"],
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        inputs=["p", "x"],
+        outputs=["w", "z"],
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -328,10 +346,13 @@ def test_discipline_chain_self_coupled_variable_as_output(mode) -> None:
     """
     disciplines = create_disciplines_from_desc([("P", ["p", "x"], ["p", "w"])])
     chain = DisciplineChain(disciplines)
-    assert chain.check_jacobian(
-        input_names=["p", "x"],
-        output_names=["p", "w"],
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        inputs=["p", "x"],
+        outputs=["p", "w"],
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -348,10 +369,13 @@ def test_discipline_chain_unreachable_input_output_pair(mode) -> None:
         ("B", ["u"], ["y"]),
     ])
     chain = DisciplineChain(disciplines)
-    assert chain.check_jacobian(
-        input_names=["x"],
-        output_names=["y"],
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        inputs=["x"],
+        outputs=["y"],
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
     assert chain.jac["y"]["x"].nnz == 0
@@ -371,10 +395,13 @@ def test_discipline_chain_blind_overwrite(mode) -> None:
         ("C", ["o"], ["z"]),
     ])
     chain = DisciplineChain(disciplines)
-    assert chain.check_jacobian(
-        input_names=["x", "u"],
-        output_names=["z"],
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        inputs=["x", "u"],
+        outputs=["z"],
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
     assert chain.jac["z"]["x"].nnz == 0
@@ -395,10 +422,13 @@ def test_discipline_chain_overwrite_with_intermediate_consumer(mode) -> None:
         ("C2", ["o"], ["z2"]),
     ])
     chain = DisciplineChain(disciplines)
-    assert chain.check_jacobian(
-        input_names=["x", "u"],
-        output_names=["z1", "z2"],
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        inputs=["x", "u"],
+        outputs=["z1", "z2"],
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
     assert chain.jac["z1"]["u"].nnz == 0
@@ -418,10 +448,13 @@ def test_discipline_chain_sequential_variable_update(mode) -> None:
         ("C", ["o"], ["z"]),
     ])
     chain = DisciplineChain(disciplines)
-    assert chain.check_jacobian(
-        input_names=["x", "u"],
-        output_names=["z"],
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        inputs=["x", "u"],
+        outputs=["z"],
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -439,11 +472,14 @@ def test_discipline_chain_output_independent_of_upstream_coupling(mode) -> None:
         AnalyticDiscipline({"c": "x"}, name="A"),
         AnalyticDiscipline({"o1": "c+x2", "o2": "2*x2"}, name="B"),
     ])
-    assert chain.check_jacobian(
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
         {"x": ones(1), "x2": ones(1)},
-        input_names=["x", "x2"],
-        output_names=["o1", "o2"],
+        inputs=["x", "x2"],
+        outputs=["o1", "o2"],
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -454,7 +490,13 @@ def test_discipline_chain_single_discipline(mode) -> None:
     chain = DisciplineChain(
         create_disciplines_from_desc([("A", ["x", "u"], ["y", "w"])])
     )
-    assert chain.check_jacobian(linearization_mode=mode, **_CHECK_JACOBIAN_KWARGS)
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
+        **_CHECK_JACOBIAN_KWARGS,
+    )
 
 
 @pytest.mark.parametrize(
@@ -505,14 +547,19 @@ def test_jacobian_recomputed_on_io_subset_change(
 ) -> None:
     """Jacobian is correct after switching the differentiated I/O subset."""
     chain = DisciplineChain(heterogeneous_sizes_disciplines)
-    assert chain.check_jacobian(
-        input_names=["x1"],
-        output_names=["y"],
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        inputs=["x1"],
+        outputs=["y"],
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
-    assert chain.check_jacobian(
-        input_names=["x2", "x3"],
-        output_names=["y"],
+    assert checker.check(
+        inputs=["x2", "x3"],
+        outputs=["y"],
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )
 
@@ -601,9 +648,12 @@ def test_discipline_chain_complex_topology_jacobian(
     sweeps (AUTO dispatches to one of them, exercised elsewhere).
     """
     chain = DisciplineChain(create_disciplines_from_desc(_DESCRIPTION))
-    assert chain.check_jacobian(
-        input_names=input_names,
-        output_names=output_names,
+    checker = DisciplineJacobianChecker(chain)
+    assert checker.check(
+        inputs=input_names,
+        outputs=output_names,
         linearization_mode=mode,
+        approximation_mode=_APPROXIMATION_MODE,
+        step=_APPROXIMATION_STEP,
         **_CHECK_JACOBIAN_KWARGS,
     )

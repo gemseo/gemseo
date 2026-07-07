@@ -37,6 +37,7 @@ from gemseo.algos.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.algos.aggregation.aggregation_func import aggregate_upper_bound_ks
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 
 
@@ -188,7 +189,9 @@ def test_gradients_ineq(sellar_problem, aggregation_meth, indices) -> None:
     """Checks gradients of inequality aggregation methods by finite differences."""
     c = sellar_problem.constraints[0]
     f1 = aggregation_meth(c, indices=indices)
-    f1.check_grad(array([0.5, 0.6, 0.2]), error_max=1e-5)
+    assert FunctionJacobianChecker(f1).check(
+        array([0.5, 0.6, 0.2]), atol=1e-5, rtol=1e-5
+    )
 
 
 @pytest.mark.parametrize("indices", [None, [0]])
@@ -196,7 +199,9 @@ def test_gradients_eq(sellar_problem, indices) -> None:
     """Checks gradients of equality aggregation methods by finite differences."""
     c = create_pb_alleq().constraints[0]
     f4 = aggregate_sum_square(c, indices=indices)
-    f4.check_grad(array([0.5, 0.6, 0.2]), error_max=1e-5)
+    assert FunctionJacobianChecker(f4).check(
+        array([0.5, 0.6, 0.2]), atol=1e-5, rtol=1e-5
+    )
 
 
 def jacobian_function(x):
@@ -249,7 +254,8 @@ def test_real_complex(complex_real_mdo_func_aggregation, indices) -> None:
     complex_mdo_func_agg = aggregation_function(complex_mdo_function, indices=indices)
     real_mdo_func_agg = aggregation_function(real_mdo_function, indices=indices)
     input_data = array([0.5, 0.6, 0.2])
-    complex_mdo_func_agg.check_grad(x_vect=input_data, approximation_mode="ComplexStep")
+    checker = FunctionJacobianChecker(complex_mdo_func_agg)
+    assert checker.check(input_value=input_data, approximation_mode="complex_step")
     assert pytest.approx(
         complex_mdo_func_agg.evaluate(input_data)
     ) == real_mdo_func_agg.evaluate(input_data)

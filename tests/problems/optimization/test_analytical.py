@@ -32,6 +32,8 @@ from gemseo.problems.optimization.power_2 import Power2
 from gemseo.problems.optimization.rastrigin import Rastrigin
 from gemseo.problems.optimization.rosen_mf import RosenMF
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 
 
 def run_and_test_problem(problem, algo_name="SLSQP") -> None:
@@ -50,7 +52,8 @@ def run_and_test_problem(problem, algo_name="SLSQP") -> None:
     x_0 = problem.design_space.get_current_value(normalize=True)
     for func in problem.functions:
         with contextlib.suppress(MaxIterReachedException):
-            func.check_grad(x_0, step=1e-9, error_max=1e-4)
+            checker = FunctionJacobianChecker(func)
+            assert checker.check(x_0, atol=1e-4, rtol=1e-4, step=1e-9)
 
 
 def test_rastrigin() -> None:
@@ -77,12 +80,8 @@ def test_power2() -> None:
 
 def test_rosen_mf() -> None:
     disc = RosenMF(3)
-    assert disc.check_jacobian(
-        {"x": np.zeros(3)},
-        derr_approx="finite_differences",
-        step=1e-8,
-        threshold=1e-4,
-    )
+    checker = DisciplineJacobianChecker(disc)
+    assert checker.check({"x": np.zeros(3)}, atol=1e-4, rtol=1e-4, step=1e-8)
 
 
 def test_hs071() -> None:

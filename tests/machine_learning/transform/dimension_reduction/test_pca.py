@@ -33,6 +33,7 @@ from numpy import tile
 
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -156,8 +157,10 @@ def test_transformation_jacobian(pca) -> None:
     """Check the Jacobian of the transformation."""
     function = ArrayFunction(pca.transform, name="transform", jac=pca.compute_jacobian)
     input_data = array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0])
-    function.check_grad(input_data, error_max=1e-7)
-    function.check_grad(input_data[::-1], error_max=1e-7)
+    assert FunctionJacobianChecker(function).check(input_data, atol=1e-7, rtol=1e-7)
+    assert FunctionJacobianChecker(function).check(
+        input_data[::-1], atol=1e-7, rtol=1e-7
+    )
 
 
 def test_inverse_transformation_jacobian(pca) -> None:
@@ -168,8 +171,10 @@ def test_inverse_transformation_jacobian(pca) -> None:
         jac=pca.compute_jacobian_inverse,
     )
     input_data = array([1.0, 2.0, 3.0])
-    function.check_grad(input_data, error_max=1e-7)
-    function.check_grad(input_data[::-1], error_max=1e-7)
+    assert FunctionJacobianChecker(function).check(input_data, atol=1e-7, rtol=1e-7)
+    assert FunctionJacobianChecker(function).check(
+        input_data[::-1], atol=1e-7, rtol=1e-7
+    )
 
 
 @pytest.mark.parametrize(

@@ -20,6 +20,7 @@ from gemseo.core.chains.warm_started_chain import WarmStartedDisciplineChain
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 
 
@@ -44,8 +45,9 @@ def test_warm_started_discipline_chain_jac(snapshot) -> None:
     chain = WarmStartedDisciplineChain(
         [SobieskiMission()], variable_names_to_warm_start=[]
     )
+    checker = DisciplineJacobianChecker(chain)
     with assert_exception(NotImplementedError, snapshot):
-        chain.check_jacobian()
+        checker.check()
 
 
 @pytest.mark.parametrize("variable_names", [("y_4", "i_dont_exist"), ("i_dont_exist",)])

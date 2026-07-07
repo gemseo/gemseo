@@ -179,10 +179,7 @@ class RBFRegressor(BaseRegressor):
                 The derivative of the function.
             """
             return (
-                (norm_input_data > cls.TOL)
-                * input_data
-                / eps
-                / (norm_input_data + cls.TOL)
+                (norm_input_data > cls.TOL) * input_data / (norm_input_data + cls.TOL)
             )
 
         @classmethod
@@ -202,7 +199,7 @@ class RBFRegressor(BaseRegressor):
             Returns:
                 The derivative of the function.
             """
-            return 3 * norm_input_data * input_data / eps**3
+            return 3 * norm_input_data * input_data
 
         @classmethod
         def der_quintic(
@@ -221,7 +218,7 @@ class RBFRegressor(BaseRegressor):
             Returns:
                 The derivative of the function.
             """
-            return 5 * norm_input_data**3 * input_data / eps**5
+            return 5 * norm_input_data**3 * input_data
 
         @classmethod
         def der_thin_plate(
@@ -245,8 +242,7 @@ class RBFRegressor(BaseRegressor):
             return (
                 (norm_input_data > cls.TOL)
                 * input_data
-                / eps**2
-                * (1 + 2 * log(norm_input_data / eps + cls.TOL))
+                * (1 + 2 * log(norm_input_data + cls.TOL))
             )
 
     def _fit(self, input_data: RealArray, output_data: RealArray) -> None:

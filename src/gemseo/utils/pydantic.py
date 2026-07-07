@@ -26,16 +26,38 @@ from pydantic.fields import FieldInfo
 
 from gemseo.typing import StrKeyMapping
 
+
+class BasePydanticModel(
+    BaseModel,
+    arbitrary_types_allowed=True,
+    extra="forbid",
+    ser_json_inf_nan="null",
+    validate_assignment=True,
+    validate_default=True,
+):
+    """The base class for Pydantic models.
+
+    It differs from [pydantic.BaseModel][pydantic.BaseModel]
+    by the following default configuration:
+
+    - `arbitrary_types_allowed=True`: allow fields whose types
+      have no Pydantic validation (e.g. NumPy arrays).
+    - `extra="forbid"`: raise an error when passing fields
+      that are not defined in the model, instead of ignoring them.
+    - `ser_json_inf_nan="null"`: serialize `inf` and `nan`
+      float values to JSON `null` instead of raising an error.
+    - `validate_assignment=True`: validate the fields
+      when they are assigned after the model creation,
+      not only at creation time.
+    - `validate_default=True`: validate the default values of the fields,
+      which are not validated by default.
+    """
+
+
 T = TypeVar("T", bound=BaseModel)
 
 
-class BaseSettings(
-    BaseModel,
-    extra="forbid",
-    arbitrary_types_allowed=True,
-    ser_json_inf_nan="null",
-    validate_default=True,
-):
+class BaseSettings(BasePydanticModel):
     """The base class for settings.
 
     To change the default values of field defined in base classes,
@@ -99,7 +121,7 @@ class BaseSettings(
         return self.__TARGET_CLASS_NAME
 
 
-def copy_field(name: str, model: type[BaseModel], **kwargs: Any) -> FieldInfo:
+def copy_field(name: str, model: type[BasePydanticModel], **kwargs: Any) -> FieldInfo:
     """Copy a Pydantic model `Field`, eventually overridden.
 
     Args:
@@ -114,7 +136,7 @@ def copy_field(name: str, model: type[BaseModel], **kwargs: Any) -> FieldInfo:
 
 
 def update_field(
-    model: type[BaseModel],
+    model: type[BasePydanticModel],
     field_name: str,
     **kwargs: Any,
 ) -> None:

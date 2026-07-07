@@ -428,43 +428,6 @@ class BaseMDA(ProcessDiscipline):
             linear_solver_settings=self.settings.linear_solver_settings,
         )
 
-    def _prepare_io_for_check_jacobian(
-        self,
-        input_names: Iterable[str],
-        output_names: Iterable[str],
-    ) -> tuple[Iterable[str], Iterable[str]]:
-        # Strong couplings are not linearized.
-        input_names, output_names = super()._prepare_io_for_check_jacobian(
-            input_names, output_names
-        )
-
-        input_names = list(input_names)
-        output_names = list(output_names)
-
-        for coupling in self.coupling_structure.all_couplings:
-            if coupling in output_names:
-                output_names.remove(coupling)
-            if coupling in input_names:
-                input_names.remove(coupling)
-
-        if self.NORMALIZED_RESIDUAL_NORM in output_names:
-            output_names.remove(self.NORMALIZED_RESIDUAL_NORM)
-
-        # Remove non-numeric arrays that cannot be differentiated.
-        # TODO: use self._non_numeric_array_variables,
-        #       also factorize with _compute_jacobian?
-        input_names = [
-            input_
-            for input_ in input_names
-            if self.io.input_grammar.data_converter.is_numeric(input_)
-        ]
-        output_names = [
-            output
-            for output in output_names
-            if self.io.output_grammar.data_converter.is_numeric(output)
-        ]
-        return input_names, output_names
-
     def plot_residual_history(
         self,
         show: bool = False,

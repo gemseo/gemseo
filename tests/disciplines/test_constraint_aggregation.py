@@ -33,6 +33,7 @@ from gemseo import create_scenario
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
 from gemseo.problems.optimization.power_2 import Power2
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 @pytest.fixture
@@ -84,7 +85,9 @@ def test_aggregation_discipline(disc_constr) -> None:
         aggregation_function="lower_bound_KS",
     )
     disc_agg.io.input_grammar.defaults = {"constr": array([1.0, 2.0])}
-    assert disc_agg.check_jacobian(input_data={"constr": array([1.0, 2.0])})
+    assert DisciplineJacobianChecker(disc_agg).check(
+        input_value={"constr": array([1.0, 2.0])}
+    )
 
     disciplines = [disc_constr, disc_agg, obj_disc]
     design_space = create_design_space()
@@ -119,7 +122,8 @@ def test_constr_jac(disc_constr, aggregation_function, indices, input_val) -> No
         indices=indices,
     )
     disc_agg.io.input_grammar.defaults = {"constr": array(input_val)}
-    assert disc_agg.check_jacobian(threshold=1e-6, step=1e-8)
+    checker = DisciplineJacobianChecker(disc_agg)
+    assert checker.check(atol=1e-6, rtol=1e-6, step=1e-8)
 
 
 @pytest.mark.parametrize("scale", [1.0, array([2.0, 3.0])])
@@ -137,7 +141,8 @@ def test_constr_jac_scale(disc_constr, aggregation_function, scale, input_val) -
         scale=scale,
     )
     disc_agg.io.input_grammar.defaults = {"constr": array(input_val)}
-    assert disc_agg.check_jacobian(threshold=1e-6, step=1e-8)
+    checker = DisciplineJacobianChecker(disc_agg)
+    assert checker.check(atol=1e-6, rtol=1e-6, step=1e-8)
 
 
 @pytest.mark.parametrize(

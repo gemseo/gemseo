@@ -22,6 +22,7 @@ import pytest
 from numpy import ones
 
 from gemseo.problems.topology_optimization.density_filter_disc import DensityFilter
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 THRESHOLD = 1e-10
 
@@ -45,6 +46,5 @@ def test_run(density_filter) -> None:
 def test_jacobian(density_filter) -> None:
     """Check the analytic Jacobian by finite differences."""
     input_data = density_filter.io.get_input_data()
-    assert density_filter.check_jacobian(
-        input_data, threshold=THRESHOLD, step=1e-5, auto_set_step=True
-    )
+    checker = DisciplineJacobianChecker(density_filter)
+    assert checker.check(input_data, atol=1e-9, rtol=1e-9, step=None)

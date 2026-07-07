@@ -24,6 +24,7 @@ from numpy import ones
 from gemseo.problems.topology_optimization.material_model_interpolation_disc import (
     MaterialModelInterpolation,
 )
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 THRESHOLD = 1e-7
 
@@ -56,6 +57,10 @@ def test_run_rho(material_model) -> None:
 
 def test_jacobian(material_model) -> None:
     """Check the analytic Jacobian by finite differences."""
-    assert material_model.check_jacobian(
-        material_model.io.get_input_data(), threshold=THRESHOLD, auto_set_step=True
+    checker = DisciplineJacobianChecker(material_model)
+    assert checker.check(
+        material_model.io.get_input_data(),
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        step=None,
     )

@@ -48,6 +48,7 @@ from typing import overload
 from numpy import ndarray
 
 from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.core.derivatives.derivation_modes import DerivationMode
 from gemseo.core.execution_statistics import ExecutionStatistics as _ExecutionStatistics
 from gemseo.datasets import DatasetClassName
 from gemseo.datasets.optimization_dataset import OptimizationDataset
@@ -70,6 +71,7 @@ from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
 from gemseo.utils.constants import _VALIDATE_INPUT_DATA
 from gemseo.utils.constants import _VALIDATE_OUTPUT_DATA
 from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.global_configuration import _configuration as configuration
 from gemseo.utils.logging import _configure_logger
 from gemseo.utils.logging import _is_gemseo_logger as _is_gemseo_logger
@@ -1095,6 +1097,111 @@ def monitor_scenario(
     # Monitoring object is a singleton
     monitor = Monitoring(scenario.get_process_flow().get_execution_flow())
     monitor.add_observer(observer)
+
+
+def check_jacobian(
+    discipline: Discipline,
+    input_value: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+    atol: float = 1e-8,
+    rtol: float = 1e-8,
+    inputs: Iterable[str] = (),
+    outputs: Iterable[str] = (),
+    reference_jacobian_path: str | Path = "",
+    save_reference_jacobian: bool = False,
+    approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
+    step: float | None = 1e-7,
+    n_processes: int = 1,
+    use_threading: bool = False,
+    wait_time_between_fork: float = 0.0,
+    linearization_mode: DerivationMode = DerivationMode.AUTO,
+    plot_result: bool = False,
+    file_path: str | Path = "jacobian_errors.pdf",
+    show: bool = False,
+    fig_size_x: float = 10,
+    fig_size_y: float = 10,
+    indices: Mapping[
+        str, int | Sequence[int] | Ellipsis | slice
+    ] = READ_ONLY_EMPTY_DICT,
+) -> bool:
+    """Check the analytical Jacobian of a discipline against an approximation.
+
+    Args:
+        discipline: The discipline whose Jacobian is to be checked.
+        input_value: The input at which to check the Jacobian.
+            If empty, use the default input data of the discipline.
+        atol: The absolute tolerance.
+        rtol: The relative tolerance.
+        inputs: The names of the inputs wrt which to differentiate the outputs.
+        outputs: The names of the outputs to be differentiated.
+        reference_jacobian_path: The path of the reference Jacobian file.
+            If empty, compute the reference Jacobian numerically.
+        save_reference_jacobian: Whether to save the reference Jacobian
+            to `reference_jacobian_path`.
+        approximation_mode: The numerical differentiation method.
+            Valid values are the members of
+            [ApproximationMode][gemseo.utils.derivatives.approximation_modes.ApproximationMode].
+        step: The step of the numerical differentiation method.
+            If `None`, an optimal step will be used.
+            The latter is not compatible with
+            `approximation_mode=ApproximationMode.COMPLEX_STEP`.
+        n_processes: The maximum number of threads to run simultaneously
+            if `use_threading` is `True`,
+            or processes otherwise,
+            used to parallelize the execution.
+            If `0`, use the number of CPUs available on the system.
+        use_threading: Whether to use threads instead of processes
+            to parallelize the execution;
+            multiprocessing will copy (serialize) all the data,
+            while threading will share all the memory.
+        wait_time_between_fork: The time waited between two forks
+            of the process or thread.
+        linearization_mode: The mode of linearization: direct, adjoint
+            or automated switch depending on dimensions of inputs and outputs.
+        plot_result: Whether to plot the result of the validation
+            (computed vs approximated Jacobians).
+        file_path: The path to the output file if `plot_result` is `True`.
+        show: Whether to open the figure.
+        fig_size_x: The x-size of the figure in inches.
+        fig_size_y: The y-size of the figure in inches.
+        indices: The indices of the inputs and outputs
+            for the different sub-Jacobian matrices,
+            formatted as `{variable_name: variable_components}`
+            where `variable_components` can be either
+            an integer, e.g. `2`,
+            a sequence of integers, e.g. `[0, 3]`,
+            a slice, e.g. `slice(0, 3)`,
+            the ellipsis symbol (`...`)
+            or `None`, which is the same as ellipsis.
+            If a variable name is missing, consider all its components.
+            If empty, consider all the components of all the `inputs` and `outputs`.
+
+    Returns:
+        Whether the analytical Jacobian is correct
+        with respect to the reference one.
+    """
+    from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
+
+    return DisciplineJacobianChecker(discipline).check(
+        input_value,
+        atol=atol,
+        rtol=rtol,
+        inputs=inputs,
+        outputs=outputs,
+        reference_jacobian_path=reference_jacobian_path,
+        save_reference_jacobian=save_reference_jacobian,
+        approximation_mode=approximation_mode,
+        step=step,
+        n_processes=n_processes,
+        use_threading=use_threading,
+        wait_time_between_fork=wait_time_between_fork,
+        linearization_mode=linearization_mode,
+        plot_result=plot_result,
+        file_path=file_path,
+        show=show,
+        fig_size_x=fig_size_x,
+        fig_size_y=fig_size_y,
+        indices=indices,
+    )
 
 
 def print_configuration() -> None:

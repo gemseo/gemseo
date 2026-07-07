@@ -29,6 +29,7 @@ from numpy.testing import assert_equal
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 from gemseo.utils.testing.helpers import assert_exception
@@ -63,7 +64,8 @@ def test_independent_default_inputs() -> None:
 def test_fast_expression_evaluation(expressions) -> None:
     disc = AnalyticDiscipline(expressions)
     input_data = {"x": array([1.0]), "z": array([1.0])}
-    disc.check_jacobian(input_data, step=1e-5, threshold=1e-3)
+    checker = DisciplineJacobianChecker(disc)
+    assert checker.check(input_data, atol=1e-3, rtol=1e-3, step=1e-5)
 
 
 def test_failure_with_malformed_expressions(snapshot) -> None:

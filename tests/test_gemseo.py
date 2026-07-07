@@ -35,6 +35,7 @@ from numpy import sin
 from numpy.testing import assert_equal
 
 from gemseo import LOGGER as GEMSEO_LOGGER
+from gemseo import check_jacobian
 from gemseo import compute_doe
 from gemseo import configuration
 from gemseo import configure
@@ -121,6 +122,7 @@ from gemseo.uncertainty.distributions.openturns.normal_settings import (
 from gemseo.utils.constants import _LOGGING_DATE_FORMAT
 from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
 from gemseo.utils.constants import N_CPUS
+from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.logging import MultiLineStreamHandler
 from gemseo.utils.pickle import to_pickle
 from gemseo.utils.testing.helpers import assert_exception
@@ -280,6 +282,39 @@ def test_monitor_scenario() -> None:
 
     scenario.execute(SLSQP_Settings(max_iter=10))
     assert observer.status_changes >= 2 * scenario.formulation.problem.objective.n_calls
+
+
+class _WrongJacDiscipline(Discipline):
+    """A discipline computing y=x**3 with a wrong Jacobian (x**2 instead of 3x**2)."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.input_grammar.update_from_names(["x"])
+        self.output_grammar.update_from_names(["y"])
+        self.default_input_data = {"x": array([1.0])}
+
+    def _run(self, input_data):
+        return {"y": input_data["x"] ** 3}
+
+    def _compute_jacobian(self, input_names=(), output_names=()) -> None:
+        self._init_jacobian()
+        self.jac["y"]["x"][:] = self.io.input_data["x"] ** 2  # wrong: 3 * x**2
+
+
+def test_check_jacobian() -> None:
+    """Test the check_jacobian API function."""
+    # An AnalyticDiscipline has an exact analytical Jacobian.
+    assert check_jacobian(AnalyticDiscipline({"y": "2*x"}))
+    # The wrong Jacobian is detected.
+    assert not check_jacobian(_WrongJacDiscipline())
+    # The check can be restricted to a subset of inputs/outputs and forwards settings.
+    assert check_jacobian(
+        AnalyticDiscipline({"y": "2*x", "z": "3*w"}),
+        inputs=["x"],
+        outputs=["y"],
+        approximation_mode=ApproximationMode.COMPLEX_STEP,
+        step=1e-30,
+    )
 
 
 @pytest.mark.parametrize("obj_type", [MDOScenario, str, Path])

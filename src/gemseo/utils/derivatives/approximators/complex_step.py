@@ -29,11 +29,8 @@ from numpy import where
 from numpy import zeros
 from numpy.linalg import norm
 
-from gemseo.core.parallel_execution.callable_parallel_execution import (
-    CallableParallelExecution,
-)
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.base_gradient_approximator import BaseGradientApproximator
+from gemseo.utils.derivatives.approximators.base import BaseGradientApproximator
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -90,9 +87,11 @@ class ComplexStep(BaseGradientApproximator):
     ) -> list[ndarray]:
         n_perturbations = input_perturbations.shape[1]
         self._function_kwargs = kwargs
-        functions = [self._wrap_function] * n_perturbations
-        parallel_execution = CallableParallelExecution(functions, **self._parallel_args)
-
+        parallel_execution = self._create_callable_parallel_execution(
+            self._wrap_function,
+            self._parallel_args.get("use_threading", False),
+            n_perturbations,
+        )
         perturbed_inputs: list[ndarray[Any, dtype[bool_]]] = [
             input_values + input_perturbations[:, perturbation_index]
             for perturbation_index in range(n_perturbations)

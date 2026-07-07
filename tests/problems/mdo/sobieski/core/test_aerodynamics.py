@@ -23,6 +23,7 @@ from numpy import array
 
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 THRESHOLD = 1e-12
 
@@ -79,7 +80,7 @@ def test_d_c_dmin_dsweep(problem) -> None:
     fo1 = 0.95 + 1j * 0
     assert lin_cd == pytest.approx(
         sr_aero._SobieskiAerodynamics__compute_cd_min(
-            x_shared[0], x_shared[4], fo1
+            x_shared[0], x_shared[4], fo1, sr_aero.constants[4]
         ).imag
         / h,
         abs=1e-12,
@@ -99,7 +100,9 @@ def test_d_cd_dsweep(problem) -> None:
         x_shared[0], x_shared[2], x_shared[4], cl, fo2
     ).real
     x_shared[4] += 1j * h
-    cdmin = sr_aero._SobieskiAerodynamics__compute_cd_min(x_shared[0], x_shared[4], fo1)
+    cdmin = sr_aero._SobieskiAerodynamics__compute_cd_min(
+        x_shared[0], x_shared[4], fo1, sr_aero.constants[4]
+    )
     sr_aero._SobieskiAerodynamics__compute_k_aero(x_shared[2], x_shared[4])
     assert lin_cd == pytest.approx(
         sr_aero._SobieskiAerodynamics__compute_cd(cl, fo2, cdmin).imag / h,
@@ -124,7 +127,9 @@ def test_d_cd_d_mach(problem) -> None:
         x_shared[0], x_shared[2], x_shared[4], x_shared[5], y_12[0], fo2
     ).real
     x_shared[2] += 1j * h
-    cdmin = sr_aero._SobieskiAerodynamics__compute_cd_min(x_shared[0], x_shared[4], fo1)
+    cdmin = sr_aero._SobieskiAerodynamics__compute_cd_min(
+        x_shared[0], x_shared[4], fo1, sr_aero.constants[4]
+    )
     assert lin_cd == pytest.approx(
         sr_aero._SobieskiAerodynamics__compute_cd(cl, fo2, cdmin).imag / h,
         abs=1e-4,
@@ -146,7 +151,9 @@ def test_d_cd_dsref(problem) -> None:
     lin_cd = sr_aero._SobieskiAerodynamics__compute_dcd_dsref(x_shared[5], fo2)
     x_shared[5] += 1j * h
     cl = sr_aero._SobieskiAerodynamics__compute_cl(x_shared[5], y_12[0])
-    cdmin = sr_aero._SobieskiAerodynamics__compute_cd_min(x_shared[0], x_shared[4], fo1)
+    cdmin = sr_aero._SobieskiAerodynamics__compute_cd_min(
+        x_shared[0], x_shared[4], fo1, sr_aero.constants[4]
+    )
     assert lin_cd == pytest.approx(
         sr_aero._SobieskiAerodynamics__compute_cd(cl, fo2, cdmin).imag / h,
         abs=1e-12,
@@ -377,21 +384,38 @@ def test_d_v_dh_drho_dh(problem) -> None:
 def test_jac_aero(problem) -> None:
     """"""
     sr = SobieskiAerodynamics("complex128")
+    checker = DisciplineJacobianChecker(sr)
     indata = problem.get_default_inputs(names=sr.io.input_grammar)
-    assert sr.check_jacobian(
-        indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+    assert checker.check(
+        indata,
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
     )
     indata = problem.get_default_inputs_feasible(names=sr.io.input_grammar)
-    assert sr.check_jacobian(
-        indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+    assert checker.check(
+        indata,
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
     )
 
     indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar)
-    assert sr.check_jacobian(
-        indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+    assert checker.check(
+        indata,
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
     )
     for _ in range(5):
         indata = problem.get_random_input(names=sr.io.input_grammar, seed=1)
-        assert sr.check_jacobian(
-            indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+        assert checker.check(
+            indata,
+            atol=THRESHOLD,
+            rtol=THRESHOLD,
+            approximation_mode="complex_step",
+            step=1e-30,
         )

@@ -38,6 +38,8 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 from gemseo.utils.pickle import from_pickle
 from gemseo.utils.pickle import to_pickle
 
@@ -222,16 +224,18 @@ class ScalableProblem(unittest.TestCase):
 
         opt_pb.preprocess_functions()
         for func in opt_pb.functions:
-            func.check_grad(opt_pb.design_space.get_current_value())
+            checker = FunctionJacobianChecker(func)
+            assert checker.check(opt_pb.design_space.get_current_value(), step=1e-6)
 
     def test_grad(self) -> None:
         """Verify the analytical gradients against finite differences."""
         for disc in ScalableProblem.scalable_disciplines:
-            assert disc.check_jacobian(
-                derr_approx="finite_differences",
-                step=1e-6,
-                threshold=1e-3,
+            checker = DisciplineJacobianChecker(disc)
+            assert checker.check(
+                atol=1e-3,
+                rtol=1e-3,
                 linearization_mode="auto",
+                step=1e-6,
             )
 
     def test_group_dep(self) -> None:

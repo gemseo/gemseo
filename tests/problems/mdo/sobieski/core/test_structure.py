@@ -28,6 +28,7 @@ from gemseo.problems.mdo.sobieski.core.structure import (
 )
 from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 THRESHOLD = 1e-12
 
@@ -35,6 +36,13 @@ THRESHOLD = 1e-12
 @pytest.fixture(scope="module")
 def problem():
     return SobieskiProblem("complex128")
+
+
+@pytest.fixture(scope="module")
+def checker() -> DisciplineJacobianChecker:
+    """The discipline Jacobian checker."""
+    discipline = SobieskiStructure("complex128")
+    return DisciplineJacobianChecker(discipline)
 
 
 def test_dfuelweightdtoverc(problem) -> None:
@@ -92,25 +100,42 @@ def test_dfuelweightdsref(problem) -> None:
 def test_jac_structure(problem) -> None:
     """"""
     sr = SobieskiStructure("complex128")
+    checker = DisciplineJacobianChecker(sr)
     indata = problem.get_default_inputs(names=sr.io.input_grammar)
-    assert sr.check_jacobian(
-        indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+    assert checker.check(
+        indata,
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
     )
 
     indata = problem.get_default_inputs_feasible(names=sr.io.input_grammar)
-    assert sr.check_jacobian(
-        indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+    assert checker.check(
+        indata,
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
     )
 
     indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar)
-    assert sr.check_jacobian(
-        indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+    assert checker.check(
+        indata,
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
     )
 
     for _ in range(5):
         indata = problem.get_random_input(names=sr.io.input_grammar, seed=1)
-        assert sr.check_jacobian(
-            indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+        assert checker.check(
+            indata,
+            atol=THRESHOLD,
+            rtol=THRESHOLD,
+            approximation_mode="complex_step",
+            step=1e-30,
         )
 
     core_s = CoreStructure(SobieskiBase("complex128"))
@@ -135,6 +160,23 @@ def test_jac_structure(problem) -> None:
     )
 
 
+@pytest.mark.parametrize("i", [0, 1, 2])
+def test_jac_structure_coefficients(checker, i) -> None:
+    """Check the Jacobian when the coefficients are not set to their default values."""
+    input_data = {
+        f"c_{i}": array([
+            checker._discipline.sobieski_problem.structure.constants[i] * 1.2
+        ])
+    }
+    assert checker.check(
+        input_data,
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
+    )
+
+
 def test_jac2_sobieski_struct(problem) -> None:
     inpt_data = {
         "y_31": array([6555.68459235 + 0j]),
@@ -151,7 +193,8 @@ def test_jac2_sobieski_struct(problem) -> None:
     }
 
     st = SobieskiStructure("complex128")
-    assert st.check_jacobian(inpt_data, derr_approx="complex_step", step=1e-30)
+    checker = DisciplineJacobianChecker(st)
+    assert checker.check(inpt_data, approximation_mode="complex_step", step=1e-30)
 
 
 def test_logarithm_invalid_domain():
@@ -162,16 +205,17 @@ def test_logarithm_invalid_domain():
     """
     assert numpy.isnan(
         CoreStructure(SobieskiBase(SobieskiBase.DataType.FLOAT))._execute(
-            tc_ratio=0.01,
-            aspect_ratio=8.5,
-            sweep=70.0,
-            wing_area=1000.0,
-            taper_ratio=0.1,
-            wingbox_area=0.7700018565802997,
-            lift=124646.13088472793,
-            engine_mass=7671.188123402499,
-            c_0=2000.0,
-            c_1=25000.0,
-            c_2=6.0,
+            0.01,
+            8.5,
+            70.0,
+            1000.0,
+            0.1,
+            0.7700018565802997,
+            124646.13088472793,
+            7671.188123402499,
+            False,
+            2000.0,
+            25000.0,
+            6.0,
         )[1]
     )

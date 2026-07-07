@@ -37,6 +37,7 @@ from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
 from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 
 DESCRIPTIONS = [
@@ -85,7 +86,7 @@ def test_lin_disc_jac() -> None:
     desc = [("A", ["x"], ["a"]), ("B", ["a", "x"], ["b", "c"])]
     disciplines = create_disciplines_from_desc(desc)
     for disc in disciplines:
-        assert disc.check_jacobian()
+        assert DisciplineJacobianChecker(disc).check()
 
 
 @pytest.mark.parametrize(

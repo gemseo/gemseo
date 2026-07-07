@@ -181,6 +181,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
         if self._settings.use_ilu_precond and not isinstance(
             problem.lhs, LinearOperator
         ):
+            self._settings.use_ilu_precond = False
             self._settings.M = self._build_ilu_preconditioner(problem.lhs)
 
         if self._settings.store_residuals:

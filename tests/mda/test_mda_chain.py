@@ -50,6 +50,7 @@ from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipli
 from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 
 from .test_mda import analytic_disciplines_from_desc
@@ -110,12 +111,14 @@ def test_sellar(tmp_wd, sellar_with_2d_array, sellar_disciplines) -> None:
     input_data = get_initial_data()
     inputs = ["x_1", "x_shared"]
     outputs = ["obj", "c_1", "c_2"]
-    assert mda_chain.check_jacobian(
+    checker = MDAJacobianChecker(mda_chain)
+    assert checker.check(
         input_data,
-        derr_approx=Discipline.ApproximationMode.COMPLEX_STEP,
-        input_names=inputs,
-        output_names=outputs,
-        threshold=1e-5,
+        inputs=inputs,
+        outputs=outputs,
+        atol=1e-5,
+        rtol=1e-5,
+        approximation_mode=Discipline.ApproximationMode.COMPLEX_STEP,
     )
     mda_chain.plot_residual_history(filename="mda_chain_residuals")
     res_file = "MDAJacobi_mda_chain_residuals.png"
@@ -132,12 +135,13 @@ def test_sellar_chain_linearize(sellar_with_2d_array, sellar_disciplines) -> Non
         ),
     )
 
-    assert mda_chain.check_jacobian(
-        derr_approx=Discipline.ApproximationMode.FINITE_DIFFERENCES,
-        input_names=inputs,
-        output_names=outputs,
+    checker = MDAJacobianChecker(mda_chain)
+    assert checker.check(
+        inputs=inputs,
+        outputs=outputs,
+        atol=1e-5,
+        rtol=1e-5,
         step=1e-6,
-        threshold=1e-5,
     )
 
     assert mda_chain.io.output_data[mda_chain.NORMALIZED_RESIDUAL_NORM][0] < 1e-13
@@ -182,8 +186,10 @@ def test_self_coupled_mda_jacobian(matrix_type, linearization_mode) -> None:
         ),
     )
     mda.matrix_type = matrix_type
-    assert mda.check_jacobian(
-        input_names=["x"], output_names=["obj"], linearization_mode=linearization_mode
+    assert MDAJacobianChecker(mda).check(
+        inputs=["x"],
+        outputs=["obj"],
+        linearization_mode=linearization_mode,
     )
 
     assert mda.normalized_residual_norm == mda.inner_mdas[0].normalized_residual_norm
@@ -192,8 +198,8 @@ def test_self_coupled_mda_jacobian(matrix_type, linearization_mode) -> None:
 def test_no_coupling_jac() -> None:
     """Tests a particular coupling structure."""
     disciplines = analytic_disciplines_from_desc(({"obj": "x"},))
-    mda = MDAChain(disciplines)
-    assert mda.check_jacobian(input_names=["x"], output_names=["obj"])
+    mda = MDAChain(disciplines)  # noqa: F821
+    assert MDAJacobianChecker(mda).check(inputs=["x"], outputs=["obj"])
 
 
 def test_sub_coupling_structures(sellar_with_2d_array, sellar_disciplines) -> None:
@@ -270,7 +276,7 @@ def test_mdachain_parallel_discipline_chain() -> None:
             name="mdachain_lower", mdachain_parallelize_tasks=True
         ),
     )
-    assert mdachain.check_jacobian(input_names=["x"], output_names=["obj"])
+    assert MDAJacobianChecker(mdachain).check(inputs=["x"], outputs=["obj"])
     assert type(mdachain.discipline_chain.disciplines[1]) is ParallelDisciplineChain
     assert type(mdachain.discipline_chain.disciplines[2]) is ParallelDisciplineChain
 
@@ -322,7 +328,7 @@ def test_mdachain_paralleldisciplinechain_options(parallel_options) -> None:
             mdachain_parallel_settings=mdo_parallel_chain_options,
         ),
     )
-    assert mdachain.check_jacobian(input_names=["x"], output_names=["obj"])
+    assert MDAJacobianChecker(mdachain).check(inputs=["x"], outputs=["obj"])
 
 
 def test_scaling_setter(sellar_with_2d_array, sellar_disciplines) -> None:

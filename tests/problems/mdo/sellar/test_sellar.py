@@ -51,10 +51,12 @@ from gemseo.problems.mdo.sellar.variables import X_SHARED
 from gemseo.problems.mdo.sellar.variables import Y_1
 from gemseo.problems.mdo.sellar.variables import Y_2
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
 from gemseo.utils.pickle import to_pickle
 
 if TYPE_CHECKING:
     from numpy import ndarray
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 @pytest.fixture(params=[1, 2])
@@ -118,8 +120,11 @@ def test_execution(sellar_with_2d_array, discipline, output_data, n) -> None:
 
 def test_linearization(sellar_with_2d_array, discipline, input_data) -> None:
     """Check the Jacobian value of the Sellar discipline with default input values."""
-    assert discipline.check_jacobian(
-        input_data, derr_approx=discipline.LinearizationMode.COMPLEX_STEP, step=1e-30
+    checker = DisciplineJacobianChecker(discipline)
+    assert checker.check(
+        input_data,
+        approximation_mode=discipline.LinearizationMode.COMPLEX_STEP,
+        step=1e-30,
     )
 
 
@@ -148,16 +153,19 @@ def test_mda_linearization(
     mda.execute(input_data)
     data = mda.input_data
     for discipline in disciplines:
-        assert discipline.check_jacobian(
+        checker = DisciplineJacobianChecker(discipline)
+        assert checker.check(
             data,
-            derr_approx=discipline.LinearizationMode.COMPLEX_STEP,
+            approximation_mode=discipline.LinearizationMode.COMPLEX_STEP,
             step=1e-30,
         )
 
-    assert mda.check_jacobian(
+    checker = MDAJacobianChecker(mda)
+    assert checker.check(
         data,
-        threshold=1e-4,
-        derr_approx=discipline.LinearizationMode.COMPLEX_STEP,
+        atol=1e-4,
+        rtol=1e-4,
+        approximation_mode=discipline.LinearizationMode.COMPLEX_STEP,
         step=1e-30,
     )
 

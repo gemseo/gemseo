@@ -33,6 +33,7 @@ from gemseo.problems.mdo.scalable.parametric.disciplines.scalable_discipline imp
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 
 @pytest.fixture(scope="module")
@@ -123,8 +124,10 @@ def test_differentiation(scalable_discipline, core_scalable_discipline) -> None:
             compute_jacobian=True,
         ),
     )
-    assert scalable_discipline.check_jacobian(
-        input_data, derr_approx=scalable_discipline.LinearizationMode.COMPLEX_STEP
+    checker = DisciplineJacobianChecker(scalable_discipline)
+    assert checker.check(
+        input_data,
+        approximation_mode=scalable_discipline.LinearizationMode.COMPLEX_STEP,
     )
 
 

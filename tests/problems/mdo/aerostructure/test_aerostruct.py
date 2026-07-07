@@ -35,6 +35,8 @@ from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
     AerostructureDesignSpace,
 )
 from gemseo.scenarios.mdo import MDOScenario
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
+from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
 
 
 class TestAerostructure(unittest.TestCase):
@@ -111,21 +113,22 @@ class TestAerostructure(unittest.TestCase):
         """Test linearization of objective and constraints."""
         mission = Mission()
         indata = TestAerostructure.get_input_data_linearization()
-        assert mission.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
+        checker = DisciplineJacobianChecker(mission)
+        assert checker.check(indata, approximation_mode="complex_step", step=1e-30)
 
     def test_jac_aerodynamics(self) -> None:
         """Test linearization of discipline Aerodynamics."""
         aero = Aerodynamics()
         indata = TestAerostructure.get_input_data_linearization()
-        assert aero.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
+        checker = DisciplineJacobianChecker(aero)
+        assert checker.check(indata, approximation_mode="complex_step", step=1e-30)
 
     def test_jac_structure(self) -> None:
         """Test linearization of discipline Structure."""
         struct = Structure()
         indata = TestAerostructure.get_input_data_linearization()
-        assert struct.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
-        assert struct.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
-        assert struct.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
+        checker = DisciplineJacobianChecker(struct)
+        assert checker.check(indata, approximation_mode="complex_step", step=1e-30)
 
     def test_mda_gauss_seidel_jac(self) -> None:
         """Test linearization of GS MDA."""
@@ -140,11 +143,16 @@ class TestAerostructure(unittest.TestCase):
         mda.max_iter = 40
         indata = mda.io.get_merged_data(as_dict=False)
         for discipline in disciplines:
-            assert discipline.check_jacobian(
-                indata, derr_approx="complex_step", step=1e-30
-            )
-        assert mda.check_jacobian(
-            indata, threshold=1e-4, derr_approx="complex_step", step=1e-30
+            checker = DisciplineJacobianChecker(discipline)
+            assert checker.check(indata, approximation_mode="complex_step", step=1e-30)
+
+        checker = MDAJacobianChecker(mda)
+        assert checker.check(
+            indata,
+            atol=1e-4,
+            rtol=1e-4,
+            approximation_mode="complex_step",
+            step=1e-30,
         )
 
     def test_mda_jacobi_jac(self) -> None:
@@ -157,7 +165,8 @@ class TestAerostructure(unittest.TestCase):
         mda = MDAJacobi(disciplines)
         mda.settings.tolerance = 1e-14
         mda.max_iter = 40
-        assert mda.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
+        checker = MDAJacobianChecker(mda)
+        assert checker.check(indata, approximation_mode="complex_step", step=1e-30)
 
     def test_residual_form_jacs(self) -> None:
         """"""
@@ -167,7 +176,8 @@ class TestAerostructure(unittest.TestCase):
         disciplines = [aerodynamics, structure, mission]
         indata = TestAerostructure.get_input_data_linearization()
         for disc in disciplines:
-            assert disc.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
+            checker = DisciplineJacobianChecker(disc)
+            assert checker.check(indata, approximation_mode="complex_step", step=1e-30)
 
     def test_get_inputs(self) -> None:
         get_inputs()

@@ -22,6 +22,7 @@ import pytest
 
 from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
 from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
+from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
 
 THRESHOLD = 1e-12
 
@@ -85,12 +86,15 @@ def test_d_we_dthrottle(problem) -> None:
     throttle = indata["x_3"][0]
     d_esf_dthrottle = sr._SobieskiPropulsion__compute_desf_dthrottle(drag, throttle)
     esf = sr._SobieskiPropulsion__compute_esf(drag, throttle)
-    lin_we = sr._SobieskiPropulsion__compute_dengineweight_dvar(esf, d_esf_dthrottle)
+    lin_we = sr._SobieskiPropulsion__compute_dengineweight_dvar(
+        esf, d_esf_dthrottle, sr.constants[3]
+    )
 
     throttle += 1j * h
     esf = sr._SobieskiPropulsion__compute_esf(drag, throttle)
     assert lin_we == pytest.approx(
-        sr._SobieskiPropulsion__compute_engine_weight(esf).imag / h, abs=1e-8
+        sr._SobieskiPropulsion__compute_engine_weight(esf, sr.constants[3]).imag / h,
+        abs=1e-8,
     )
 
 
@@ -102,12 +106,15 @@ def test_d_we_ddrag(problem) -> None:
     throttle = indata["x_3"][0]
     d_esf_ddrag = sr._SobieskiPropulsion__compute_desf_ddrag(throttle)
     esf = sr._SobieskiPropulsion__compute_esf(drag, throttle)
-    lin_we = sr._SobieskiPropulsion__compute_dengineweight_dvar(esf, d_esf_ddrag)
+    lin_we = sr._SobieskiPropulsion__compute_dengineweight_dvar(
+        esf, d_esf_ddrag, sr.constants[3]
+    )
 
     drag += 1j * h
     esf = sr._SobieskiPropulsion__compute_esf(drag, throttle)
     assert lin_we == pytest.approx(
-        sr._SobieskiPropulsion__compute_engine_weight(esf).imag / h, abs=1e-8
+        sr._SobieskiPropulsion__compute_engine_weight(esf, sr.constants[3]).imag / h,
+        abs=1e-8,
     )
 
 
@@ -227,20 +234,33 @@ def test_dthrottle_constraint_dmach(problem) -> None:
 
 def test_jac_prop(problem) -> None:
     sr = SobieskiPropulsion("complex128")
+    checker = DisciplineJacobianChecker(sr)
     indata = problem.get_default_inputs(names=sr.io.input_grammar)
-    assert sr.check_jacobian(
-        indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+    assert checker.check(
+        indata,
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
     )
     indata = problem.get_default_inputs_feasible(names=sr.io.input_grammar)
-    assert sr.check_jacobian(indata, derr_approx="complex_step", step=1e-30)
+    assert checker.check(indata, approximation_mode="complex_step", step=1e-30)
 
     indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar)
-    assert sr.check_jacobian(
-        indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+    assert checker.check(
+        indata,
+        atol=THRESHOLD,
+        rtol=THRESHOLD,
+        approximation_mode="complex_step",
+        step=1e-30,
     )
 
     for _ in range(5):
         indata = problem.get_random_input(names=sr.io.input_grammar, seed=1)
-        assert sr.check_jacobian(
-            indata, threshold=THRESHOLD, derr_approx="complex_step", step=1e-30
+        assert checker.check(
+            indata,
+            atol=THRESHOLD,
+            rtol=THRESHOLD,
+            approximation_mode="complex_step",
+            step=1e-30,
         )

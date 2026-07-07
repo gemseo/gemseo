@@ -32,6 +32,7 @@ from gemseo.core.functions.discipline_adapter_generator import (
 from gemseo.core.functions.linear_composite_function import LinearCompositeFunction
 from gemseo.core.functions.restricted_function import RestrictedFunction
 from gemseo.problems.optimization.rosen_mf import RosenMF
+from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
 from gemseo.utils.testing.helpers import assert_exception
 
 
@@ -60,8 +61,8 @@ def test_linear_composition():
     interp_op = array([[0.3], [0.4], [0.5]])
     f_1_1 = LinearCompositeFunction(f1, interp_op)
     f_1_2 = LinearCompositeFunction(f2, interp_op)
-    f_1_1.check_grad(ones(1), error_max=1e-4)
-    f_1_2.check_grad(ones(1), error_max=1e-4)
+    assert FunctionJacobianChecker(f_1_1).check(ones(1), atol=1e-4, rtol=1e-4)
+    assert FunctionJacobianChecker(f_1_2).check(ones(1), atol=1e-4, rtol=1e-4)
 
 
 def test_restricted_function(snapshot):
@@ -76,8 +77,8 @@ def test_restricted_function(snapshot):
     assert f1.evaluate(x) == 0.0
     assert f2.evaluate(x) == 2.0
 
-    f1.check_grad(x, error_max=1e-4)
-    f2.check_grad(x, error_max=1e-4)
+    assert FunctionJacobianChecker(f1).check(x, atol=1e-4, rtol=1e-4)
+    assert FunctionJacobianChecker(f2).check(x, atol=1e-4, rtol=1e-4)
 
     with assert_exception(ValueError, snapshot):
         RestrictedFunction(

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -26,6 +27,9 @@ from numpy import array
 from numpy import float64
 from numpy import ndarray
 
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
@@ -238,3 +242,23 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
             The value of the function output.
         """
         return self.f_pointer(f_input_values, **self._function_kwargs)
+
+    def _create_callable_parallel_execution(
+        self, obj: Any, use_threading: bool, n_workers: int
+    ) -> CallableParallelExecution:
+        """Create the callable parallel execution.
+
+        Args:
+            obj: The object to be wrapped.
+            use_threading: Whether or not to use threads.
+            n_workers: The number of workers to use.
+
+        Returns:
+            The callable parallel execution.
+        """
+        if use_threading:
+            workers = [deepcopy(obj) for _ in range(n_workers)]
+        else:
+            workers = [obj] * n_workers
+
+        return CallableParallelExecution(workers, **self._parallel_args)

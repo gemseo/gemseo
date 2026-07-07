@@ -92,6 +92,7 @@ def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> 
         options["preconditioner"] = LinearOperator(
             problem.lhs.shape, spilu(problem.lhs).solve
         )
+        del options["use_ilu_precond"]
     if algo_name == "lgmres":
         v = rng.random(n)
         options.update({
