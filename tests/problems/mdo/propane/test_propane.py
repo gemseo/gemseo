@@ -177,11 +177,11 @@ def test_combustion_discipline(input_data, cls, output_name, output_value) -> No
     """"""
     discipline = cls()
     discipline.execute(input_data)
-    assert_almost_equal(discipline.io.data[output_name], output_value)
+    assert_almost_equal(discipline.io.output_data[output_name], output_value)
 
 
 def test_reaction_discipline() -> None:
     """"""
     discipline = PropaneReaction()
     discipline.execute({"y_1": ones([2]), "y_2": ones([2]), "y_3": ones([3])})
-    assert_almost_equal(discipline.io.data["obj"], -16.973665961010276)
+    assert_almost_equal(discipline.io.output_data["obj"], -16.973665961010276)

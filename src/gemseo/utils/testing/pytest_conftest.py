@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 import pytest
 from syrupy.matchers import path_type
 
-from gemseo import configure
+from gemseo import configuration
 from gemseo.core.base_factory import BaseFactory
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
@@ -147,22 +147,22 @@ def snapshot_allclose(snapshot):
 @pytest.fixture
 def enable_function_statistics() -> Generator[None, None, None]:
     """Enable functions statistics temporary."""
-    configure(enable_function_statistics=True)
+    configuration.enable_function_statistics = True
     yield
-    configure()
+    configuration.enable_function_statistics = False
 
 
 @pytest.fixture
 def enable_discipline_status() -> Generator[None, None, None]:
     """Enable discipline status temporary."""
-    configure(enable_discipline_status=True)
+    configuration.enable_discipline_status = True
     yield
-    configure()
+    configuration.enable_discipline_status = False
 
 
 @pytest.fixture
 def enable_discipline_statistics() -> Generator[None, None, None]:
     """Enable discipline statistics temporary.."""
-    configure(enable_discipline_statistics=True)
+    configuration.enable_discipline_statistics = True
     yield
-    configure()
+    configuration.enable_discipline_statistics = False

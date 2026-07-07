@@ -23,6 +23,29 @@ from pickle import Unpickler
 from typing import Any
 
 
+class _NumpyCompatUnpickler(Unpickler):
+    """An [Unpickler][pickle.Unpickler] mapping `numpy.core` to `numpy._core`.
+
+    NumPy renamed its private `numpy.core` package to `numpy._core`. Loading a
+    pickle that references the former emits a deprecation warning and will break once
+    the backward-compatibility shim is removed from NumPy.
+    """
+
+    def find_class(self, module: str, name: str) -> Any:
+        """Return the class `name` from `module`, remapping `numpy.core`.
+
+        Args:
+            module: The name of the module.
+            name: The name of the class.
+
+        Returns:
+            The class.
+        """
+        if module == "numpy.core" or module.startswith("numpy.core."):
+            module = module.replace("numpy.core", "numpy._core", 1)
+        return super().find_class(module, name)
+
+
 def to_pickle(
     obj: Any,
     file_path: str | Path,
@@ -50,4 +73,4 @@ def from_pickle(file_path: str | Path) -> Any:
         The object.
     """
     with Path(file_path).open("rb") as f:
-        return Unpickler(f).load()
+        return _NumpyCompatUnpickler(f).load()

@@ -120,7 +120,7 @@ class VectorizedDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        self.jac = {"out": {"in": dfdx_vectorized(self.io.data["in"])}}
+        self.jac = {"out": {"in": dfdx_vectorized(self.io.input_data["in"])}}
 
 
 class Callback:

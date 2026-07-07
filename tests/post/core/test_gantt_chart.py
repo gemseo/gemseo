@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from gemseo import configure
+from gemseo import configuration
 from gemseo import create_discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.post.core.gantt_chart import create_gantt_chart
@@ -34,15 +34,15 @@ TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
 
 
 def setup_module(module):
-    configure(
-        enable_function_statistics=True,
-        enable_discipline_statistics=True,
-        enable_discipline_status=True,
-    )
+    configuration.enable_function_statistics = True
+    configuration.enable_discipline_statistics = True
+    configuration.enable_discipline_status = True
 
 
 def teardown_module(module):
-    configure()
+    configuration.enable_function_statistics = False
+    configuration.enable_discipline_statistics = False
+    configuration.enable_discipline_status = False
 
 
 @pytest.fixture

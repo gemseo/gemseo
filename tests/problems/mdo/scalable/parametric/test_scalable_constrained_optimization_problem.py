@@ -61,7 +61,7 @@ class ScalableDiscipline(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        x = self.io.data["x"]
+        x = self.io.input_data["x"]
         self._init_jacobian()
         self.jac["f"]["x"] = atleast_2d(ones_like(x)) / len(x) / (len(x) + 1) * 2 * 100
         self.jac["g"]["x"] = atleast_2d(

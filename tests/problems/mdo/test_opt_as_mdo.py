@@ -188,9 +188,9 @@ class Rosenbrock(Discipline):
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
     ) -> None:
-        z_0 = self.io.data["z_0"]
-        z_1 = self.io.data["z_1"]
-        z_2 = self.io.data["z_2"]
+        z_0 = self.io.input_data["z_0"]
+        z_1 = self.io.input_data["z_1"]
+        z_2 = self.io.input_data["z_2"]
         jac = rosen_der(hstack([z_0, z_1, z_2]))
         self.jac = {
             "y": {

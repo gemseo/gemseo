@@ -25,7 +25,7 @@ from typing import Any
 import pytest
 from numpy import array
 
-from gemseo import configure
+from gemseo import configuration
 from gemseo import execute_algo
 from gemseo.algos.design_space import DesignSpace
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
@@ -75,7 +75,7 @@ def test_from_dict() -> None:
 @pytest.fixture(scope="module")
 def optimization_result() -> Generator[OptimizationResult | None, Any, None]:
     """An optimization result."""
-    configure(enable_function_statistics=True)
+    configuration.enable_function_statistics = True
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     design_space.add_variable("z", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5)
@@ -107,7 +107,7 @@ def optimization_result() -> Generator[OptimizationResult | None, Any, None]:
     scenario.add_constraint("ineq_n_2", constraint_type=scenario.ConstraintType.INEQ)
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=1))
     yield scenario.optimization_result
-    configure()
+    configuration.enable_function_statistics = False
 
 
 def test_optimization_result(optimization_result) -> None:

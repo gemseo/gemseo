@@ -66,7 +66,7 @@ def dataset() -> IODataset:
 @pytest.fixture
 def model(dataset) -> SVMClassifier:
     """A trained SVMClassifier with two outputs, y_1 and y_2."""
-    svm = SVMClassifier(dataset, SVMClassifier_Settings(probability=True))
+    svm = SVMClassifier(dataset, SVMClassifier_Settings(probability=True, cv=2))
     svm.learn()
     return svm
 
@@ -77,7 +77,7 @@ def model_with_transform(dataset) -> SVMClassifier:
     svm = SVMClassifier(
         dataset,
         SVMClassifier_Settings(
-            transformer={"inputs": MinMaxScaler()}, probability=True
+            transformer={"inputs": MinMaxScaler()}, probability=True, cv=2
         ),
     )
     svm.learn()

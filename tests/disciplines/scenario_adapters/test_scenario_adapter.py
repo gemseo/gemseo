@@ -228,7 +228,7 @@ def test_chain(scenario) -> None:
     x_shared = array([0.06000319728113519, 60000, 1.4, 2.5, 70, 1500])
     chain.execute({"x_shared": x_shared})
 
-    y_4 = chain.io.data["y_4"]
+    y_4 = chain.io.output_data["y_4"]
     assert y_4 > 2908.0
 
 
@@ -441,7 +441,7 @@ def test_lagrange_multipliers_outputs() -> None:
     x_opt = problem.solution.x_opt
     obj_grad = problem.objective.original.jac(x_opt)
     g1_jac = next(problem.constraints.get_originals()).jac(x_opt)
-    local_data = adapter.io.data
+    local_data = adapter.io.get_merged_data(as_dict=False)
     lagr_grad = (
         obj_grad
         + matmul(local_data[g1_mult_name].T, g1_jac)

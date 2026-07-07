@@ -93,7 +93,8 @@ def test_retry_discipline(an_analytic_discipline, timeout, caplog) -> None:
     retry_discipline.execute({"x": array([4.0])})
 
     assert retry_discipline.n_executions == 1
-    assert retry_discipline.local_data == {"x": array([4.0]), "y": array([4.0])}
+    assert retry_discipline.input_data == {"x": array([4.0])}
+    assert retry_discipline.output_data == {"y": array([4.0])}
     assert caplog.text == ""
 
 
@@ -142,7 +143,8 @@ def test_failure_zero_division_error(
     with assert_exception(ZeroDivisionError, snapshot):
         disc.execute({"x": array([0.0])})
 
-    assert disc.local_data == {"x": array([0.0])}
+    assert disc.input_data == {"x": array([0.0])}
+    assert not disc.output_data
     assert disc.n_executions == 1
 
     log_message = "Failed to execute discipline AnalyticDiscipline after 1 attempt."
@@ -179,7 +181,8 @@ def test_failure_zero_division_error_n_trials(
         disc.execute({"x": array([0.0])})
 
     assert disc.n_executions == 1
-    assert disc.local_data == {"x": array([0.0])}
+    assert disc.input_data == {"x": array([0.0])}
+    assert not disc.output_data
 
     log_message = (
         "Failed to execute discipline AnalyticDiscipline,"
@@ -212,7 +215,8 @@ def test_a_not_implemented_error_analytic_discipline(
         retry_discipline.execute({"x": array([1.0])})
 
     assert retry_discipline.n_executions == 1
-    assert retry_discipline.local_data == {}
+    assert not retry_discipline.input_data
+    assert not retry_discipline.output_data
 
     log_message = (
         "Failed to execute discipline Crash_run, aborting retry "
@@ -234,7 +238,7 @@ def test_1_3times_failing(
         disc.execute({"x": array([0.0])})
 
     assert disc.n_executions == n_trials
-    assert disc.io.data == {"x": array([0.0])}
+    assert disc.io.get_merged_data(as_dict=False) == {"x": array([0.0])}
 
     plural_suffix = "s" if n_trials > 1 else ""
     log_message = (
@@ -252,7 +256,7 @@ def test_2fails_then_succeed() -> None:
     )
     disc.execute()
     assert disc.n_executions == 3
-    assert disc.io.data == {}
+    assert disc.io.get_merged_data(as_dict=False) == {}
     assert disc.execution_status.value == ExecutionStatus.Status.DONE
 
 
@@ -305,7 +309,8 @@ def test_wait_time_and_n_trials(
     # retry discipline.
     assert timer.elapsed_time > 0.01 + (n_trials - 1) * wait_time
     assert disc.n_executions == n_trials
-    assert not disc.local_data
+    assert not disc.input_data
+    assert not disc.output_data
 
     plural_suffix = "s" if n_trials > 1 else ""
     log_message = (

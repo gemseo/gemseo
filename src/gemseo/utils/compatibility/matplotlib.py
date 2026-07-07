@@ -31,12 +31,12 @@ MATPLOTLIB_VERSION: Final[Version] = parse_version(version("matplotlib"))
 
 def boxplot(x, labels=None, vert=None, ax=None, **kwargs):  # noqa: D103
     plot = (plt if ax is None else ax).boxplot
-    if parse_version(version("matplotlib")) < parse_version("3.9"):
+    if parse_version("3.9") > MATPLOTLIB_VERSION:
         kwargs["labels"] = labels
     else:
         kwargs["tick_labels"] = labels
 
-    if parse_version(version("matplotlib")) < parse_version("3.11"):
+    if parse_version("3.10") > MATPLOTLIB_VERSION:
         kwargs["vert"] = vert
     else:
         kwargs["orientation"] = "vertical" if vert in [True, None] else "horizontal"

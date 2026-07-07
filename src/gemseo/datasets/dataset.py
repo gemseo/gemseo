@@ -57,11 +57,13 @@ from typing import overload
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import arange
 from numpy import array
+from numpy import asarray
 from numpy import atleast_1d
 from numpy import int64 as np_int64
 from numpy import isin
 from numpy import ndarray
 from numpy import newaxis
+from numpy import promote_types
 from numpy import setdiff1d
 from pandas import DataFrame
 from pandas import MultiIndex
@@ -395,14 +397,20 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         # and set it to its previous value.
         original_sortorder = self.columns.sortorder
         self.columns.sortorder = 0
-        self.loc[
-            self._to_slice_or_list(indices),
-            (
-                self._to_slice_or_list(group_names),
-                self._to_slice_or_list(variable_names),
-                self._to_slice_or_list(components),
-            ),
-        ] = data
+        column_selection = (
+            self._to_slice_or_list(group_names),
+            self._to_slice_or_list(variable_names),
+            self._to_slice_or_list(components),
+        )
+        # Cast the targeted columns up front to a dtype able to hold `data`.
+        # Pandas deprecated the silent in-place dtype upcasting that this assignment
+        # would otherwise rely on; it raises in a future release.
+        incoming_dtype = asarray(data).dtype
+        for column in self.loc[:, column_selection].columns:
+            promoted_dtype = promote_types(self[column].dtype, incoming_dtype)
+            if promoted_dtype != self[column].dtype:
+                self[column] = self[column].astype(promoted_dtype)
+        self.loc[self._to_slice_or_list(indices), column_selection] = data
         self.columns.sortorder = original_sortorder
 
     def add_variable(

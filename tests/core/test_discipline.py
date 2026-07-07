@@ -44,7 +44,7 @@ from numpy import sin
 from numpy.linalg import norm
 from numpy.testing import assert_allclose
 
-from gemseo import configure
+from gemseo import configuration
 from gemseo import create_discipline
 from gemseo.caches.hdf5 import HDF5Cache
 from gemseo.caches.memory_full import MemoryFullCache
@@ -225,9 +225,9 @@ def test_instantiate_grammars() -> None:
 def enable_status(request) -> bool:
     """Enable or not the execution status and return it."""
     enable_status: bool = request.param
-    configure(enable_discipline_status=enable_status)
+    configuration.enable_discipline_status = enable_status
     yield enable_status
-    configure()
+    configuration.enable_discipline_status = False
 
 
 def test_execute_status_error(sobieski_chain, enable_status) -> None:
@@ -278,7 +278,7 @@ def test_outputs() -> None:
     """Test the execution of a Discipline."""
     struct = SobieskiStructure()
     with pytest.raises(InvalidDataError):
-        struct.io.output_grammar.validate(struct.io.data)
+        struct.io.output_grammar.validate(struct.io.get_merged_data(as_dict=False))
     indata = SobieskiProblem().get_default_inputs()
     struct.execute(indata)
     in_array = struct.get_inputs_asarray()
@@ -441,12 +441,12 @@ def test_serialize_deserialize(tmp_wd) -> None:
     out_file = "sellar1.o"
     input_data = SobieskiProblem().get_default_inputs()
     aero.execute(input_data)
-    locd = aero.io.data
+    locd = aero.io.get_merged_data(as_dict=False)
     to_pickle(aero, out_file)
     saero_u = from_pickle(out_file)
     for k, v in locd.items():
-        assert k in saero_u.io.data
-        assert (v == saero_u.io.data[k]).all()
+        assert k in saero_u.io.get_merged_data(as_dict=False)
+        assert (v == saero_u.io.get_merged_data(as_dict=False)[k]).all()
 
     def attr_list():
         return ["numpy_test"]
@@ -477,9 +477,9 @@ def test_serialize_run_deserialize(tmp_wd, enable_discipline_status) -> None:
     saero_loc.execution_status.value = "DONE"
     saero_loc.execute(input_data)
 
-    for k, v in saero_loc.io.data.items():
-        assert k in saero_u.io.data
-        assert (v == saero_u.io.data[k]).all()
+    for k, v in saero_loc.io.get_merged_data(as_dict=False).items():
+        assert k in saero_u.io.get_merged_data(as_dict=False)
+        assert (v == saero_u.io.get_merged_data(as_dict=False)[k]).all()
 
 
 def test_serialize_hdf_cache(tmp_wd) -> None:
@@ -567,9 +567,9 @@ def test_check_jacobian_errors() -> None:
     sm.execute()
     sm.linearize(compute_all_jacobians=True)
     sm._check_jacobian_shape(sm.io.input_grammar, sm.io.output_grammar)
-    sm.io.data.pop("x_shared")
+    sm.io.get_merged_data(as_dict=False).pop("x_shared")
     sm._check_jacobian_shape(sm.io.input_grammar, sm.io.output_grammar)
-    sm.io.data.pop("y_4")
+    sm.io.get_merged_data(as_dict=False).pop("y_4")
     sm._check_jacobian_shape(sm.io.input_grammar, sm.io.output_grammar)
 
 
@@ -747,11 +747,11 @@ def test_cache_h5_inpts(tmp_wd) -> None:
     sm.set_cache(sm.CacheType.HDF5, hdf_file_path=hdf_file)
     xs = sm.io.input_grammar.defaults["x_shared"]
     sm.execute({"x_shared": xs})
-    out_ref = sm.io.data["y_4"]
+    out_ref = sm.io.output_data["y_4"]
     sm.execute({"x_shared": xs + 1.0})
     sm.execute({"x_shared": xs})
-    assert (sm.io.data["x_shared"] == xs).all()
-    assert (sm.io.data["y_4"] == out_ref).all()
+    assert (sm.io.input_data["x_shared"] == xs).all()
+    assert (sm.io.output_data["y_4"] == out_ref).all()
 
 
 def test_cache_memory_inpts() -> None:
@@ -760,11 +760,11 @@ def test_cache_memory_inpts() -> None:
     sm.set_cache(sm.CacheType.MEMORY_FULL)
     xs = sm.io.input_grammar.defaults["x_shared"]
     sm.execute({"x_shared": xs})
-    out_ref = sm.io.data["y_4"]
+    out_ref = sm.io.output_data["y_4"]
     sm.execute({"x_shared": xs + 1.0})
     sm.execute({"x_shared": xs})
-    assert (sm.io.data["x_shared"] == xs).all()
-    assert (sm.io.data["y_4"] == out_ref).all()
+    assert (sm.io.input_data["x_shared"] == xs).all()
+    assert (sm.io.output_data["y_4"] == out_ref).all()
 
 
 def test_cache_h5_jac(tmp_wd) -> None:
@@ -1273,7 +1273,7 @@ def test_virtual_exe(enable_discipline_status, snapshot) -> None:
 
     disc_1.execute()
 
-    assert disc_1.io.data["y"] == ones([1])
+    assert disc_1.io.output_data["y"] == ones([1])
 
     # Test with missing defaults
     disc_1.default_output_data.clear()
@@ -1330,7 +1330,7 @@ def test_path_serialization(tmp_path) -> None:
     ]:
         __is_path_correct(local_path)
 
-    data = deserialized.io.data
+    data = deserialized.io.get_merged_data(as_dict=False)
     __is_path_correct(data["path"])
 
     state = data.__getstate__()
@@ -1586,5 +1586,15 @@ def test_base_discipline_io_accessors() -> None:
     discipline.default_output_data = {"y": array([2.0])}
     assert discipline.default_output_data == {"y": array([2.0])}
 
-    discipline.local_data = {"x": array([3.0])}
-    assert discipline.local_data == {"x": array([3.0])}
+
+def test_local_data_deprecated() -> None:
+    """Verify the deprecated ``local_data`` accessor still works and warns."""
+    discipline = DummyDiscipline()
+    discipline.input_grammar.update_from_data({"x": array([0.0])})
+    discipline.output_grammar.update_from_data({"y": array([0.0])})
+
+    match = r"`Discipline\.local_data` is deprecated"
+    with pytest.warns(DeprecationWarning, match=match):
+        discipline.local_data = {"x": array([3.0])}
+    with pytest.warns(DeprecationWarning, match=match):
+        assert discipline.local_data == {"x": array([3.0])}

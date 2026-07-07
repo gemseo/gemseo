@@ -175,14 +175,14 @@ def test_parallel_execute(linear_discipline, dataset) -> None:
         {"x_1": array([1.0]), "x_2": array([1.0])},
     ])
 
-    local_data = linear_discipline.io.data
+    local_data = linear_discipline.io.get_merged_data(as_dict=False)
     assert_allclose(
         concatenate((local_data["y_1"], local_data["y_2"])),
         array([3.5, -3.5]),
         atol=1e-3,
     )
 
-    local_data = other_linear_discipline.io.data
+    local_data = other_linear_discipline.io.get_merged_data(as_dict=False)
     assert_allclose(
         concatenate((local_data["y_1"], local_data["y_2"])),
         array([6.0, -6.0]),
@@ -198,7 +198,9 @@ def test_serialize(linear_discipline, tmp_wd) -> None:
     loaded_discipline = from_pickle(file_path)
     loaded_discipline.execute()
 
-    assert linear_discipline.io.data == loaded_discipline.io.data
+    assert linear_discipline.io.get_merged_data(
+        as_dict=False
+    ) == loaded_discipline.io.get_merged_data(as_dict=False)
 
 
 def test_get_error_measure(linear_discipline) -> None:

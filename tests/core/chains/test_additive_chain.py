@@ -28,6 +28,6 @@ def test_double_mission_chain() -> None:
     chain.execute()
     mission = SobieskiMission()
     mission.execute()
-    assert allclose(chain.io.data["y_4"], mission.io.data["y_4"] * 2.0)
+    assert allclose(chain.io.output_data["y_4"], mission.io.output_data["y_4"] * 2.0)
 
     chain.check_jacobian(threshold=1e-5)

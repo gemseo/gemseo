@@ -26,4 +26,4 @@ from .....mda.mda_jacobi import SobieskiMDAJacobi
 def test_exec_mda() -> None:
     mda = SobieskiMDAJacobi()
     mda.execute()
-    assert mda.io.data["y_4"][0] == pytest.approx(535.78213193, abs=1e-4)
+    assert mda.io.output_data["y_4"][0] == pytest.approx(535.78213193, abs=1e-4)

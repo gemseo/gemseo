@@ -42,7 +42,7 @@ def test_standard(discipline) -> None:
     assert set(fdisc.io.output_grammar) == set(discipline.io.output_grammar)
     fdisc.execute()
     for name in ["x1", "x2", "x3", "y1", "y2"]:
-        assert name in fdisc.io.data
+        assert name in fdisc.io.get_merged_data(as_dict=False)
     fdisc.linearize()
     for output_name in ["y1", "y2"]:
         assert output_name in fdisc.jac
@@ -64,7 +64,7 @@ def test_keep_in_keep_out(discipline) -> None:
     assert set(fdisc.io.output_grammar) == {"y1"}
     fdisc.execute()
     for name in ["x2", "x3", "y2"]:
-        assert name not in fdisc.io.data
+        assert name not in fdisc.io.get_merged_data(as_dict=False)
     fdisc.linearize()
     assert "y2" not in fdisc.jac
     for input_name in ["x2", "x3"]:
@@ -82,7 +82,7 @@ def test_remove_in_keep_out(discipline) -> None:
     assert set(fdisc.io.output_grammar) == {"y1"}
     fdisc.execute()
     for name in ["x1", "y2"]:
-        assert name not in fdisc.io.data
+        assert name not in fdisc.io.get_merged_data(as_dict=False)
     fdisc.linearize()
     assert "y2" not in fdisc.jac
     assert "x1" not in fdisc.jac["y1"]
@@ -96,7 +96,7 @@ def test_keep_in_remove_out(discipline) -> None:
     assert set(fdisc.io.output_grammar) == {"y2"}
     fdisc.execute()
     for name in ["x2", "x3", "y1"]:
-        assert name not in fdisc.io.data
+        assert name not in fdisc.io.get_merged_data(as_dict=False)
     fdisc.linearize()
     assert "y1" not in fdisc.jac
     for input_name in ["x2", "x3"]:
