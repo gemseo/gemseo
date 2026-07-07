@@ -30,6 +30,7 @@ import pytest
 from numpy import array
 from numpy import inf
 from numpy import ndarray
+from numpy import sin as np_sin
 from numpy import zeros
 from numpy.linalg import norm
 from numpy.testing import assert_equal
@@ -535,7 +536,7 @@ def test_log_failed(caplog, kwargs):
 
 def test_function_jacobian_checker_error_shape(snapshot):
     """FunctionJacobianChecker raises an error if the Jacobian shape is wrong."""
-    function = ArrayFunction(sin, jac=lambda x: array([[cos(x[0]), cos(x[0])]]))
+    function = ArrayFunction(np_sin, jac=lambda x: array([[cos(x[0]), cos(x[0])]]))
     checker = FunctionJacobianChecker(function)
     with assert_exception(ValueError, snapshot):
         checker.check(array([1.0]))
@@ -543,7 +544,7 @@ def test_function_jacobian_checker_error_shape(snapshot):
 
 def test_function_jacobian_checker_error_step(snapshot):
     """FunctionJacobianChecker raises an error if step=None."""
-    function = ArrayFunction(sin)
+    function = ArrayFunction(np_sin)
     checker = FunctionJacobianChecker(function)
     with assert_exception(NotImplementedError, snapshot):
         checker.check(array([1.0]), step=None)
