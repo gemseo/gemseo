@@ -152,19 +152,19 @@ The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to
 - `OptimizationProblem.is_max_iter_reached` (method): `OptimizationProblem.is_max_iter_reached` (property).
 - `OptimizationProblem.get_eq_constraints`: `OptimizationProblem.constraints.get_equality_constraints()`.
 - `OptimizationProblem.get_ineq_constraints`: `OptimizationProblem.constraints.get_inequality_constraints()`.
-- `OptimizationProblem.get_ineq_constraints_number`: removed; use `len(optimization_problem.constraints.get_inequality_constraints())` instead.
-- `OptimizationProblem.get_eq_constraints_number`: removed; use `len(optimization_problem.constraints.get_equality_constraints())` instead.
+- `OptimizationProblem.get_ineq_constraints_number`: removed; use `len(list(optimization_problem.constraints.get_inequality_constraints()))` instead.
+- `OptimizationProblem.get_eq_constraints_number`: removed; use `len(list(optimization_problem.constraints.get_equality_constraints()))` instead.
 - `OptimizationProblem.get_constraints_number`: removed; use `len(optimization_problem.constraints)` instead.
 - `OptimizationProblem.get_design_variable_names` (method): `OptimizationProblem.design_variable_names` (property).
 - `OptimizationProblem.get_all_function_name` (method): `OptimizationProblem.function_names` (property).
-- `OptimizationProblem.has_eq_constraints`: removed; use `bool(optimization_problem.constraints.get_equality_constraints())` instead, e.g. `if optimization_problem.constraints.get_equality_constraints()`.
-- `OptimizationProblem.has_ineq_constraints`: removed; use `bool(optimization_problem.constraints.get_inequality_constraints())` instead, e.g. `if optimization_problem.constraints.get_inequality_constraints()`.
+- `OptimizationProblem.has_eq_constraints`: removed; use `bool(list(optimization_problem.constraints.get_equality_constraints()))` instead, e.g. `if list(optimization_problem.constraints.get_equality_constraints())`.
+- `OptimizationProblem.has_ineq_constraints`: removed; use `bool(list(optimization_problem.constraints.get_inequality_constraints()))` instead, e.g. `if list(optimization_problem.constraints.get_inequality_constraints())`.
 - `OptimizationProblem.has_constraints`: removed; use `bool(optimization_problem.constraints)` instead, e.g. `if optimization_problem.constraints`.
 - `OptimizationProblem.has_nonlinear_constraints`: removed as it did not check whether the problem had non-linear constraints but constraints.
 - `OptimizationProblem.get_dimension`: removed; use `OptimizationProblem.dimension` instead.
 - `OptimizationProblem.check_format`: removed as it was only used internally.
-- `OptimizationProblem.get_eq_cstr_total_dim`: removed; use `OptimizationProblem.constraints.get_equality_constraints().dimension` instead.
-- `OptimizationProblem.get_ineq_cstr_total_dim`: removed; use `OptimizationProblem.constraints.get_inequality_constraints().dimension` instead.
+- `OptimizationProblem.get_eq_cstr_total_dim`: removed; use `optimization_problem.constraints.get_dimension(optimization_problem.constraints.get_equality_constraints())` instead.
+- `OptimizationProblem.get_ineq_cstr_total_dim`: removed; use `optimization_problem.constraints.get_dimension(optimization_problem.constraints.get_inequality_constraints())` instead.
 - `OptimizationProblem.get_optimum` (method): `OptimizationProblem.optimum` (property).
 - `OptimizationProblem.current_names`: `OptimizationProblem.original_to_current_names`.
 - `OptimizationProblem.get_constraint_names`: removed; use `OptimizationProblem.constraints.get_names` instead.
