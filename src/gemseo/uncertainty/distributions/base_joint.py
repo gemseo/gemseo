@@ -199,3 +199,50 @@ class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
         return column_stack([
             marginal.compute_samples(n_samples) for marginal in self.marginals
         ])
+
+    def map_to_uniform(self, value: Iterable[float]) -> RealArray:
+        r"""Map a realization of the random vector to the unit hypercube.
+
+        This iso-probabilistic transform maps the random vector $U$
+        to a random vector with independent components
+        uniformly distributed over $[0,1]$,
+        taking the dependence between the components of $U$ into account.
+        Users are referred to
+        [this explanation](https://openturns.github.io/openturns/latest/theory/numerical_methods/rosenblatt_transformation.html)
+        in the OpenTurns documentation
+        with the only difference being that $\Phi$ is
+        the cumulative distribution function of the uniform distribution in this method.
+
+        It is the inverse of
+        [map_from_uniform()][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.map_from_uniform].
+
+        Args:
+            value: A realization of the random vector.
+
+        Returns:
+            The corresponding point in the unit hypercube.
+        """
+        # compute_cdf evaluates the marginal CDFs.
+        # Subclasses modeling dependence MUST override this method.
+        return self.compute_cdf(value)
+
+    def map_from_uniform(self, value: Iterable[float]) -> RealArray:
+        r"""Map a point of the unit hypercube to a realization of the random vector.
+
+        This iso-probabilistic transform maps a random vector
+        with independent components uniformly distributed over $[0,1]$
+        to the random vector $U$,
+        taking the dependence between the components of $U$ into account.
+
+        It is the inverse of
+        [map_to_uniform()][gemseo.uncertainty.distributions.base_joint.BaseJointDistribution.map_to_uniform].
+
+        Args:
+            value: A point of the unit hypercube.
+
+        Returns:
+            The corresponding realization of the random vector.
+        """
+        # compute_inverse_cdf evaluates the marginal quantiles.
+        # Subclasses modeling dependence MUST override this method.
+        return self.compute_inverse_cdf(value)

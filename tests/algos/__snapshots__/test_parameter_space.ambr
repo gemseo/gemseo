@@ -11,13 +11,13 @@
 # name: test_copula_error_missing_variable
   "There is no variable name 'x'."
 # ---
-# name: test_evaluate_cdf_raising_errors
+# name: test_transform_raising_errors
   'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
 # ---
-# name: test_evaluate_cdf_raising_errors.1
+# name: test_transform_raising_errors.1
   'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
 # ---
-# name: test_evaluate_cdf_raising_errors.2
+# name: test_transform_raising_errors.2
   'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
 # ---
 # name: test_existing_variable

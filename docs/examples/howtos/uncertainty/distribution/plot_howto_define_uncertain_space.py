@@ -39,8 +39,6 @@ to propagate uncertainty through a discipline.
 
 from __future__ import annotations
 
-from numpy import array
-
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.settings.probability_distributions import SPNormalDistribution_Settings
 from gemseo.settings.probability_distributions import SPUniformDistribution_Settings
@@ -101,28 +99,7 @@ uncertain_space.get_range("x")
 uncertain_space.get_support("x")
 
 # %%
-# ### 6. Evaluate the CDF
-#
-# Evaluate the marginal CDF at a point:
-uncertain_space.evaluate_cdf({
-    "x": array([0.0]),
-    "y": array([0.0, 0.0]),
-    "z": array([0.0, 0.0]),
-})
-
-# %%
-# Evaluate the inverse CDF (quantile function) at probability 0.975:
-uncertain_space.evaluate_cdf(
-    {
-        "x": array([0.975]),
-        "y": array([0.975, 0.975]),
-        "z": array([0.975, 0.975]),
-    },
-    inverse=True,
-)
-
-# %%
-# ### 7. Sample from the space
+# ### 6. Sample from the space
 #
 # Draw 5 samples as a concatenated NumPy array:
 uncertain_space.compute_samples(n_samples=5)
@@ -144,8 +121,6 @@ uncertain_space.compute_samples(n_samples=5, as_dict=True)
 # - [get_range()][gemseo.algos.parameter_space.ParameterSpace.get_range]
 #   and [get_support()][gemseo.algos.parameter_space.ParameterSpace.get_support]
 #   return the numerical range and mathematical support of each uncertain variable;
-# - [evaluate_cdf()][gemseo.algos.parameter_space.ParameterSpace.evaluate_cdf]
-#   evaluates the marginal CDF (or its inverse) at given values;
 # - [compute_samples()][gemseo.algos.parameter_space.ParameterSpace.compute_samples]
 #   draws random samples from the joint distribution.
 #

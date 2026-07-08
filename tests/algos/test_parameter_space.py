@@ -25,8 +25,10 @@ from numpy import arange
 from numpy import array
 from numpy import array_equal
 from numpy import concatenate
+from numpy import corrcoef
 from numpy import inf
 from numpy import ndarray
+from numpy.random import default_rng
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 from openturns import CorrelationMatrix
@@ -64,6 +66,43 @@ from gemseo.utils.testing.helpers import assert_exception
 from tests.algos.test_design_space import DesignVariableType
 
 
+@pytest.fixture
+def mixed_space():
+    """A parameter space containing both deterministic and uncertain variables."""
+    space = ParameterSpace()
+    space.add_variable("x1")
+    space.add_variable("x2", value=0.0, lower_bound=0.0, upper_bound=1.0)
+    space.add_random_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    return space
+
+
+@pytest.fixture
+def uncertain_space() -> ParameterSpace:
+    """An uncertain space, i.e. a parameter space with only uncertain variables."""
+    space = ParameterSpace()
+    space.add_random_vector("foo", OTNormalDistribution_Settings())
+    space.add_random_vector(
+        "bar", OTUniformDistribution_Settings(), OTUniformDistribution_Settings()
+    )
+    space.add_random_vector("baz", OTTriangularDistribution_Settings())
+    space.add_random_vector("qux", OTNormalDistribution_Settings())
+    return space
+
+
+@pytest.fixture(scope="module")
+def uncertain_space_with_dependency() -> ParameterSpace:
+    """An uncertain space with two dependent random variables"""
+    space = ParameterSpace()
+    space.add_random_variable("x", OTNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    space.add_random_variable(
+        "y", OTUniformDistribution_Settings(minimum=0.0, maximum=1.0)
+    )
+    correlation = CorrelationMatrix(2)
+    correlation[0, 1] = 0.8
+    space.add_copula(NormalCopula(correlation), "x", "y")
+    return space
+
+
 def test_constructor() -> None:
     """Check that a ParameterSpace is empty after initialization.."""
     space = ParameterSpace()
@@ -91,29 +130,6 @@ def test_add_random_variable() -> None:
     assert space.uncertain_variables == ["y"]
     assert space.deterministic_variables == ["x"]
     assert "y" in space.distributions
-
-
-@pytest.fixture
-def mixed_space():
-    """A parameter space containing both deterministic and uncertain variables."""
-    space = ParameterSpace()
-    space.add_variable("x1")
-    space.add_variable("x2", value=0.0, lower_bound=0.0, upper_bound=1.0)
-    space.add_random_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
-    return space
-
-
-@pytest.fixture
-def uncertain_space() -> ParameterSpace:
-    """An uncertain space, i.e. a parameter space with only uncertain variables."""
-    space = ParameterSpace()
-    space.add_random_vector("foo", OTNormalDistribution_Settings())
-    space.add_random_vector(
-        "bar", OTUniformDistribution_Settings(), OTUniformDistribution_Settings()
-    )
-    space.add_random_vector("baz", OTTriangularDistribution_Settings())
-    space.add_random_vector("qux", OTNormalDistribution_Settings())
-    return space
 
 
 def test_to_design_space(mixed_space) -> None:
@@ -242,8 +258,8 @@ def test_compute_samples() -> None:
         assert len(sample[idx]["y2"]) == 3
 
 
-def test_evaluate_cdf() -> None:
-    """Check that evaluate_cdf works correctly."""
+def test_rosenblatt_transformation() -> None:
+    """Check that the Rosenblatt transformation works correctly."""
     space = ParameterSpace()
     space.add_variable("x1")
     space.add_variable("x2")
@@ -251,16 +267,93 @@ def test_evaluate_cdf() -> None:
     space.add_random_variable(
         "y2", SPNormalDistribution_Settings(mu=0.0, sigma=1.0), size=3
     )
-    cdf = space.evaluate_cdf({"y1": array([0.0]), "y2": array([0.0] * 3)})
-    inv_cdf = space.evaluate_cdf({"y1": array([0.5]), "y2": array([0.5] * 3)}, True)
+    cdf = space._ParameterSpace__transform({"y1": array([0.0]), "y2": array([0.0] * 3)})
+    inv_cdf = space._ParameterSpace__transform(
+        {"y1": array([0.5]), "y2": array([0.5] * 3)}, True
+    )
     with pytest.raises(TypeError):
-        space.evaluate_cdf(array([0.5] * 4), True)
+        space._ParameterSpace__transform(array([0.5] * 4), True)
     assert isinstance(cdf, dict)
     assert isinstance(inv_cdf, dict)
     assert allclose(cdf["y1"], array([0.5]), 1e-3)
     assert allclose(cdf["y2"], array([0.5] * 3), 1e-3)
     assert allclose(inv_cdf["y1"], array([0.0]), 1e-3)
     assert allclose(inv_cdf["y2"], array([0.0] * 3), 1e-3)
+
+
+def test_normalize_vect_with_copula(uncertain_space_with_dependency) -> None:
+    """Check that the Rosenblatt transform uses the joint distribution
+    when a copula is set."""
+    space = uncertain_space_with_dependency
+
+    point = array([0.3, 0.6])
+    normalized = space.normalize_vect(point, use_dist=True)
+
+    # The normalized vector must match the Rosenblatt transform.
+    expected = array(
+        space.distribution.distribution.computeSequentialConditionalCDF([0.3, 0.6])
+    )
+    assert allclose(normalized, expected)
+
+    # The copula makes the second component differ from the marginal CDF.
+    marginal_cdf = concatenate([
+        space.distributions["x"].compute_cdf([0.3]),
+        space.distributions["y"].compute_cdf([0.6]),
+    ])
+    assert not allclose(normalized, marginal_cdf)
+
+    # The transform must be invertible.
+    assert allclose(space.unnormalize_vect(normalized, use_dist=True), point)
+
+
+def test_untransform_vect_with_copula_correlates_samples(
+    uncertain_space_with_dependency,
+) -> None:
+    """Check that unnormalizing unit samples yields copula-correlated samples."""
+    space = uncertain_space_with_dependency
+
+    rng = default_rng(0)
+    unit_samples = rng.random((2000, 2))
+    samples = space.untransform_vect(unit_samples, no_check=True)
+    assert samples.shape == (2000, 2)
+    empirical_correlation = corrcoef(samples[:, 0], samples[:, 1])[0, 1]
+    assert empirical_correlation > 0.5
+
+
+def test_untransform_vect_with_block_independent_copulas() -> None:
+    """Check the transform with several copulas (block-independent dependence).
+
+    The Rosenblatt transform must be applied block-wise so that it remains fast;
+    relying on the conditional distributions of the block-independent copula
+    would make sampling prohibitively slow.
+    """
+    space = ParameterSpace()
+    for name in ["a", "b", "c", "d", "e"]:
+        space.add_random_variable(name, OTNormalDistribution_Settings())
+
+    correlation = CorrelationMatrix(2)
+    correlation[0, 1] = 0.8
+    space.add_copula(NormalCopula(correlation), "a", "b")
+    correlation = CorrelationMatrix(2)
+    correlation[0, 1] = 0.5
+    space.add_copula(NormalCopula(correlation), "c", "d")
+    # "e" is independent of the other variables.
+
+    rng = default_rng(0)
+    unit_samples = rng.random((3000, 5))
+    samples = space.untransform_vect(unit_samples, no_check=True)
+    assert samples.shape == (3000, 5)
+
+    correlations = corrcoef(samples, rowvar=False)
+    # The dependence is captured within each block ...
+    assert correlations[0, 1] > 0.6
+    assert correlations[2, 3] > 0.3
+    # ... while the components of different blocks remain independent.
+    assert abs(correlations[0, 2]) < 0.1
+    assert abs(correlations[0, 4]) < 0.1
+
+    # The transform is invertible.
+    assert allclose(space.transform_vect(samples), unit_samples)
 
 
 def test_range() -> None:
@@ -366,21 +459,21 @@ def test_normalize_vect() -> None:
     assert space.normalize_vect(array([1.0]))[0] == 0.5
 
 
-def test_evaluate_cdf_raising_errors(snapshot) -> None:
-    """Check that evaluate_cdf raises errors."""
+def test_transform_raising_errors(snapshot) -> None:
+    """Check that the Rosenblatt transformation can raise errors."""
     space = ParameterSpace()
     space.add_random_variable(
         "x", SPTriangularDistribution_Settings(minimum=0.0, mode=0.5, maximum=2.0)
     )
 
     with assert_exception(TypeError, snapshot):
-        space.evaluate_cdf({"x": 1}, inverse=True)
+        space._ParameterSpace__transform({"x": 1}, inverse=True)
 
     with assert_exception(ValueError, snapshot):
-        space.evaluate_cdf({"x": array([0.5] * 2)}, inverse=True)
+        space._ParameterSpace__transform({"x": array([0.5] * 2)}, inverse=True)
 
     with assert_exception(ValueError, snapshot):
-        space.evaluate_cdf({"x": array([1.5])}, inverse=True)
+        space._ParameterSpace__transform({"x": array([1.5])}, inverse=True)
 
 
 @pytest.fixture
