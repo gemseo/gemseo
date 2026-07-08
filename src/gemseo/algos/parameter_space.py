@@ -65,8 +65,6 @@ the following methods:
 
 - [compute_samples()][gemseo.algos.parameter_space.ParameterSpace.compute_samples]:
   returns several samples of the uncertain variables,
-- [evaluate_cdf()][gemseo.algos.parameter_space.ParameterSpace.evaluate_cdf]:
-  evaluate the cumulative density function for the different variables component-wise,
 - [get_range()][gemseo.algos.parameter_space.ParameterSpace.get_range]:
   returns the numerical range of the different uncertain parameters,
 - [get_support()][gemseo.algos.parameter_space.ParameterSpace.get_support]:
@@ -426,19 +424,33 @@ class ParameterSpace(DesignSpace):
             ]
         return sample
 
-    def evaluate_cdf(
+    def __transform(
         self,
         value: dict[str, ndarray],
         inverse: bool = False,
     ) -> dict[str, ndarray]:
-        """Evaluate the cumulative density function (or its inverse) of each marginal.
+        """Evaluate the Rosenblatt transform of the uncertain variables.
+
+        This transform maps the uncertain variables
+        to (or from with `inverse=True`) independent random variables
+        uniformly distributed over $[0,1]$,
+        taking the dependence between the uncertain variables into account.
+        When the uncertain variables are independent,
+        it reduces to the cumulative density functions (or their inverses)
+        of the marginal distributions.
 
         Args:
             value: The values of the uncertain variables
                 passed as a dictionary whose keys are the names of the variables.
-            inverse: The type of function to evaluate.
-                If `True`, compute the cumulative density function.
-                Otherwise, compute the inverse cumulative density function.
+                As the transform applies to the whole random vector,
+                all the uncertain variables must be provided;
+                this is in particular the case when this method is called by
+                [normalize_vect()][gemseo.algos.parameter_space.ParameterSpace.normalize_vect]
+                and
+                [unnormalize_vect()][gemseo.algos.parameter_space.ParameterSpace.unnormalize_vect].
+            inverse: Whether the inverse cumulative density function
+                is used as the evaluation function,
+                or the cumulative density function.
 
         Returns:
             A dictionary where the keys are the names of the random variables
@@ -447,19 +459,27 @@ class ParameterSpace(DesignSpace):
         if inverse:
             self.__check_dict_of_array(value)
 
-        method_name = "compute_inverse_cdf" if inverse else "compute_cdf"
-        values = {}
-        for name in self.uncertain_variables:
-            input_samples = value[name]
-            compute = getattr(self.distributions[name], method_name)
-            if input_samples.ndim == 1:
-                output_samples = compute(input_samples)
-            else:
-                output_samples = list(map(compute, input_samples))
+        uncertain_names = self.uncertain_variables
+        if not uncertain_names:
+            return {}
 
-            values[name] = array(output_samples)
+        # Assemble the uncertain variables into a single random vector,
+        # ordered as the marginals of the joint distribution,
+        # so that the dependence between the variables is taken into account.
+        random_vector = concatenate_dict_of_arrays_to_array(value, uncertain_names)
+        transform = (
+            self.distribution.map_from_uniform
+            if inverse
+            else self.distribution.map_to_uniform
+        )
+        if random_vector.ndim == 1:
+            transformed = transform(random_vector)
+        else:
+            transformed = array(list(map(transform, random_vector)))
 
-        return values
+        return split_array_to_dict_of_arrays(
+            transformed, self.variable_sizes, uncertain_names
+        )
 
     def __check_dict_of_array(
         self,
@@ -665,7 +685,7 @@ class ParameterSpace(DesignSpace):
         data_names = self._variables.keys()
         data_sizes = self.variable_sizes
         x_u_geom = super().unnormalize_vect(x_vect, no_check=no_check)
-        x_u = self.evaluate_cdf(
+        x_u = self.__transform(
             split_array_to_dict_of_arrays(x_vect, data_sizes, data_names), inverse=True
         )
         x_u_geom = split_array_to_dict_of_arrays(x_u_geom, data_sizes, data_names)
@@ -737,7 +757,7 @@ class ParameterSpace(DesignSpace):
         data_sizes = self.variable_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
         x_n_geom = super().normalize_vect(x_vect)
-        x_n = self.evaluate_cdf(dict_sample)
+        x_n = self.__transform(dict_sample)
         x_n_geom = split_array_to_dict_of_arrays(x_n_geom, data_sizes, data_names)
         missing_names = [name for name in data_names if name not in x_n]
         for name in missing_names:

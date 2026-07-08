@@ -52,6 +52,23 @@ class OTJointDistribution(BaseJointDistribution):
         OTJointDistribution_Settings
     )
 
+    __copula_blocks: list[tuple[list[int], JointDistribution]]
+    """The independent blocks of dependent components used by the transform.
+
+    Each block is a pair `(indices, distribution)`
+    where `indices` are the positions of the components of the block
+    in the random vector
+    and `distribution` is the joint distribution of these components.
+
+    The components that do not belong to any block are independent;
+    they are not stored here and are handled marginal-wise by the transform.
+
+    The Rosenblatt transform of the whole random vector is the concatenation
+    of the Rosenblatt transforms of these independent blocks,
+    which is much faster than relying on the conditional distributions
+    of a single block-independent copula.
+    """
+
     def __repr__(self) -> str:
         if len(self._settings.marginal_settings) == 1:
             return super().__repr__()
@@ -64,15 +81,37 @@ class OTJointDistribution(BaseJointDistribution):
 
     def _create_distribution(self, settings: OTJointDistribution_Settings) -> None:
         copula = settings.copula
+        whole_vector_is_one_block = False
         if copula == ():
             copula = IndependentCopula(len(self.marginals))
-        elif not isinstance(copula, DistributionImplementation):
+            self.__copula_blocks = []
+        elif isinstance(copula, DistributionImplementation):
+            whole_vector_is_one_block = True
+        else:
+            # Build one joint distribution per independent block of components,
+            # so that the Rosenblatt transform relies on the conditional
+            # distributions of the small per-block copulas (which OpenTURNS can
+            # evaluate efficiently) rather than those of the block-independent
+            # copula assembled below (which it cannot).
+            self.__copula_blocks = [
+                (
+                    list(indices),
+                    JointDistribution(
+                        [self.marginals[index].distribution for index in indices],
+                        block_copula,
+                    ),
+                )
+                for indices, block_copula in copula
+            ]
             copula = self.__create_block_independent_copula(copula)
 
         self.distribution = JointDistribution(
             [marginal.distribution for marginal in self.marginals],
             copula,
         )
+        if whole_vector_is_one_block:
+            self.__copula_blocks = [(list(range(self.dimension)), self.distribution)]
+
         self._set_bounds(self.marginals)
 
     def __create_block_independent_copula(
@@ -137,3 +176,40 @@ class OTJointDistribution(BaseJointDistribution):
             marginal.distribution.computeQuantile(value_)[0]
             for value_, marginal in zip(value, self.marginals, strict=False)
         ])
+
+    def map_to_uniform(  # noqa: D102
+        self,
+        value: Iterable[float],
+    ) -> RealArray:
+        # The sequential conditional CDF is the Rosenblatt transform.
+        # We cast the values to float because OpenTURNS does not support numpy.int32.
+        value = [float(value_) for value_ in value]
+        # The independent components reduce to their marginal CDFs.
+        result = self.compute_cdf(value)
+        # The dependent components are transformed block-wise.
+        for indices, distribution in self.__copula_blocks:
+            block = distribution.computeSequentialConditionalCDF([
+                value[index] for index in indices
+            ])
+            for position, index in enumerate(indices):
+                result[index] = block[position]
+
+        return result
+
+    def map_from_uniform(  # noqa: D102
+        self,
+        value: Iterable[float],
+    ) -> RealArray:
+        # We cast the values to float because OpenTURNS does not support numpy.int32.
+        value = [float(value_) for value_ in value]
+        # The independent components reduce to their inverse marginal CDFs.
+        result = self.compute_inverse_cdf(value)
+        # The dependent components are transformed block-wise.
+        for indices, distribution in self.__copula_blocks:
+            block = distribution.computeSequentialConditionalQuantile([
+                value[index] for index in indices
+            ])
+            for position, index in enumerate(indices):
+                result[index] = block[position]
+
+        return result

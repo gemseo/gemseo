@@ -85,6 +85,14 @@ def test_get_inverse_cdf(joint_distribution) -> None:
     assert allclose(result, array([0.0, 0.0]))
 
 
+def test_transform(joint_distribution) -> None:
+    """SciPy has no copula, so the Rosenblatt transform reduces to the marginal CDFs."""
+    point = array([0.3, -0.7])
+    transformed = joint_distribution.map_to_uniform(point)
+    assert allclose(transformed, joint_distribution.compute_cdf(point))
+    assert allclose(joint_distribution.map_from_uniform(transformed), point)
+
+
 def test_mean(joint_distribution) -> None:
     assert allclose(joint_distribution.mean, array([0.0, 0.0]))
 

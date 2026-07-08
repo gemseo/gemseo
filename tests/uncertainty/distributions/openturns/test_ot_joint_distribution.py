@@ -24,6 +24,7 @@ from numpy import allclose
 from numpy import array
 from numpy import inf
 from numpy import int_
+from openturns import CorrelationMatrix
 from openturns import NormalCopula
 
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
@@ -38,7 +39,7 @@ from gemseo.utils.testing.helpers import assert_exception
 
 @pytest.fixture(scope="module")
 def joint_distribution() -> OTJointDistribution:
-    """A joint probability distribution."""
+    """The distribution of a 2D Gaussian vector with independent components."""
     return OTJointDistribution(
         OTJointDistribution_Settings(
             marginal_settings=[
@@ -106,6 +107,37 @@ def test_get_cdf(joint_distribution) -> None:
 def test_get_inverse_cdf(joint_distribution) -> None:
     result = joint_distribution.compute_inverse_cdf(array([0.5, 0.5]))
     assert allclose(result, array([0.0, 0.0]))
+
+
+def test_transform_independent(joint_distribution) -> None:
+    """Without copula, the Rosenblatt transform reduces to the marginal CDFs."""
+    point = array([0.3, -0.7])
+    transformed = joint_distribution.map_to_uniform(point)
+    assert allclose(transformed, joint_distribution.compute_cdf(point))
+    assert allclose(joint_distribution.map_from_uniform(transformed), point)
+
+
+def test_transform_with_copula() -> None:
+    """With a copula, the Rosenblatt transform accounts for the dependence structure."""
+    correlation = CorrelationMatrix(2)
+    correlation[0, 1] = 0.8
+    distribution = OTJointDistribution(
+        OTJointDistribution_Settings(
+            marginal_settings=[
+                OTNormalDistribution_Settings(),
+                OTNormalDistribution_Settings(),
+            ],
+            copula=NormalCopula(correlation),
+        )
+    )
+    point = array([0.3, -0.7])
+    transformed = distribution.map_to_uniform(point)
+    expected = array(distribution.distribution.computeSequentialConditionalCDF(point))
+    assert allclose(transformed, expected)
+    # The dependence makes the Rosenblatt transform differ from the marginal CDFs.
+    assert not allclose(transformed, distribution.compute_cdf(point))
+    # The transform is invertible.
+    assert allclose(distribution.map_from_uniform(transformed), point)
 
 
 def test_mean(joint_distribution) -> None:
