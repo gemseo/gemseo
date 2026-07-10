@@ -7,6 +7,42 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
+# name: test_init_rejects_model_with_namespace_separator
+  "Element names cannot contain the namespace separator ':': x:y."
+# ---
 # name: test_set_descriptions_no_rebuild
   '"The name \'dummy\' is not in the grammar."'
+# ---
+# name: test_update_error
+  "A PydanticGrammar cannot be updated from a grammar of type: <class 'bool'>"
+# ---
+# name: test_update_from_model_rejects_namespace_separator
+  "Element names cannot contain the namespace separator ':': x:y."
+# ---
+# name: test_validate_error[data0-True]
+  '''
+  Grammar g: validation failed.
+  1 validation error for Model
+  name1
+    Input should be a valid integer [type=int_type, input_value=0.1, input_type=float]
+      For further information visit https://errors.pydantic.dev/2.13/v/int_type
+  '''
+# ---
+# name: test_validate_error[data1-True]
+  '''
+  Grammar g: validation failed.
+  1 validation error for Model
+  name2
+    Input should be an instance of ndarray [type=is_instance_of, input_value=True, input_type=bool]
+      For further information visit https://errors.pydantic.dev/2.13/v/is_instance_of
+  '''
+# ---
+# name: test_validate_error[data2-True]
+  '''
+  Grammar g: validation failed.
+  1 validation error for Model
+  name2
+    Value error, The expected dtype is <class 'int'>: the actual dtype is <class 'numpy.float64'> [type=value_error, input_value=array([0.]), input_type=ndarray]
+      For further information visit https://errors.pydantic.dev/2.13/v/value_error
+  '''
 # ---

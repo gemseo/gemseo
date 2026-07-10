@@ -48,6 +48,7 @@ from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Collection
     from collections.abc import Iterator
 
     from typing_extensions import Self
@@ -112,18 +113,11 @@ class JSONGrammar(BaseGrammar):
     __PYTHON_TO_JSON_TYPES: Final[dict[type, str]] = PYTHON_TO_JSON_TYPES
     """The mapping from Python types to JSON types."""
 
-    __WARNING_TEMPLATE: Final[str] = (
-        "Unsupported %s '%s' in JSONGrammar '%s' "
-        "for property '%s' in conversion to SimpleGrammar."
-    )
-    """The logging warning template for conversion to SimpleGrammar."""
-
     def __init__(
         self,
         name: str,
         file_path: str | Path = "",
         descriptions: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
-        **kwargs: Any,
     ) -> None:
         """
         Args:
@@ -132,7 +126,6 @@ class JSONGrammar(BaseGrammar):
             descriptions: The descriptions of the elements read from `file_path`,
                 in the form: `{element_name: element_meaning}`.
                 If empty, use the descriptions available in the JSON schema if any.
-            **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
         super().__init__(name)
         if file_path:
@@ -150,7 +143,7 @@ class JSONGrammar(BaseGrammar):
 
     def _delitem(self, name: str) -> None:  # noqa:D102
         del self.__schema_builder[name]
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     def _copy(self, grammar: Self) -> None:
         # Updating is much faster than deep copying a schema builder.
@@ -160,12 +153,12 @@ class JSONGrammar(BaseGrammar):
         self.__schema_builder.properties[new_name] = (
             self.__schema_builder.properties.pop(current_name)
         )
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     def _update(
         self,
         grammar: Self,
-        excluded_names: Iterable[str],
+        excluded_names: Collection[str],
         merge: bool = False,
     ) -> None:
         """Update the elements from another grammar or names or a schema.
@@ -193,17 +186,17 @@ class JSONGrammar(BaseGrammar):
             schema_builder = grammar.__schema_builder
 
         self.__schema_builder.add_schema(schema_builder, not merge)
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     def _update_from_names(
         self,
-        names: Iterable[str],
+        names: Collection[str],
         merge: bool,
     ) -> None:
         for name in names:
             self.__schema_builder.add_object({name: [0.0]}, not merge)
         self.__schema_builder.required.clear()
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     def _update_from_data(
         self,
@@ -217,7 +210,7 @@ class JSONGrammar(BaseGrammar):
         """  # noqa: D205, D212, D415
         self.__schema_builder.add_object(self.__cast_data_mapping(data), not merge)
         self.__schema_builder.required.clear()
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     def _update_from_types(  # noqa: D102
         self,
@@ -245,11 +238,11 @@ class JSONGrammar(BaseGrammar):
             "properties": properties,
         }
         self.__schema_builder.add_schema(schema, not merge)
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     def _clear(self) -> None:  # noqa: D102
         self.__schema_builder = MutableMappingSchemaBuilder()
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
         for k, v in properties.to_schema().items():
@@ -293,11 +286,11 @@ class JSONGrammar(BaseGrammar):
 
     def _restrict_to(  # noqa: D102
         self,
-        names: Iterable[str],
+        names: Collection[str],
     ) -> None:
         for element_name in self.__schema_builder.keys() - names:
             del self.__schema_builder[element_name]
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     # API not in the base class.
 
@@ -315,7 +308,7 @@ class JSONGrammar(BaseGrammar):
         if not path.exists():
             msg = f"Cannot update the grammar from non existing file: {path}."
             raise FileNotFoundError(msg)
-        self.update_from_schema(json.loads(path.read_text()), merge)
+        self.update_from_schema(json.loads(path.read_text(encoding="utf-8")), merge)
 
     def update_from_schema(self, schema: Schema, merge: bool = False) -> None:
         """Update the grammar from a json schema.
@@ -324,24 +317,26 @@ class JSONGrammar(BaseGrammar):
             schema: The schema to update from.
             merge: Whether to merge or update the grammar.
         """
+        self._check_names_format(schema.get("properties", {}))
         self.__schema_builder.add_schema(schema, not merge)
-        self.__init_dependencies()
+        self._invalidate_caches()
         self._required_names |= self.__schema_builder.required
         self.__schema_builder.required.clear()
-        for (
-            property_name,
-            property_schema,
-        ) in self.__schema_builder.properties.items():
-            schema = property_schema.to_schema()
-            schemas = schema.get("anyOf", (schema,))
-            for schema_ in schemas:
-                if description := schema_.get("description"):
+        # Only read the descriptions of the incoming properties, otherwise the
+        # descriptions of the other elements would be reset to the ones stored
+        # in the schema builder.
+        properties = self.__schema_builder.properties
+        for property_name in schema.get("properties", {}):
+            property_schema = properties[property_name].to_schema()
+            sub_schemas = property_schema.get("anyOf", (property_schema,))
+            for sub_schema in sub_schemas:
+                if description := sub_schema.get("description"):
                     # We use the first description.
                     self._descriptions[property_name] = description
                     break
 
     def to_file(self, path: Path | str = "") -> None:
-        """Write the grammar ,schema to a json file.
+        """Write the grammar, schema to a json file.
 
         Args:
             path: The file path.
@@ -349,8 +344,7 @@ class JSONGrammar(BaseGrammar):
                 write to a file named after the grammar and with .json extension.
         """
         path = Path(self.name).with_suffix(".json") if not path else Path(path)
-        with self.__sync_required_names():
-            path.write_text(json.dumps(self.schema, indent=2), encoding="utf-8")
+        path.write_text(json.dumps(self.schema, indent=2), encoding="utf-8")
 
     def to_json(self, *args: Any, **kwargs: Any) -> str:
         """Return the JSON representation of the grammar schema.
@@ -362,15 +356,18 @@ class JSONGrammar(BaseGrammar):
         Returns:
             The JSON representation of the schema.
         """
-        with self.__sync_required_names():
-            return cast("str", json.dumps(self.schema, *args, **kwargs))
+        return cast("str", json.dumps(self.schema, *args, **kwargs))
 
     @contextmanager
     def __sync_required_names(self) -> Iterator[None]:
         """Synchronize the required names while processing the schema builder."""
         self.__schema_builder.required.update(self._required_names)
-        yield  # noqa: RUF075
-        self.__schema_builder.required.clear()
+        try:
+            yield
+        finally:
+            # Clear even on error, otherwise the stale required names would leak
+            # into later schema productions and update_from_schema calls.
+            self.__schema_builder.required.clear()
 
     @property
     def schema(self) -> Schema:
@@ -380,27 +377,45 @@ class JSONGrammar(BaseGrammar):
                 self.__schema = self.__schema_builder.to_schema()
 
             descriptions = self._descriptions
+            defaults = self._defaults
             for (
                 property_name,
                 property_schema,
             ) in self.__schema.get("properties", {}).items():
+                schemas = property_schema.get("anyOf", (property_schema,))
                 if description := descriptions.get(property_name):
-                    schemas = property_schema.get("anyOf", (property_schema,))
                     for schema in schemas:
                         schema["description"] = description
+                if property_name in defaults:
+                    # Cast so non-JSON-native defaults (e.g. ndarray, BaseModel)
+                    # survive the eventual `to_file` / `to_json` serialization.
+                    default = self.__cast_value(defaults[property_name])
+                    for schema in schemas:
+                        schema["default"] = default
 
         return self.__schema
 
     def _create_validator(self) -> None:
         """Create the schema validator."""
-        self.schema.pop("id", None)
-        self.schema.pop("required", None)
-        self.__validator = compile_schema(self.schema)
+        # Shallow copy so the pops below do not mutate the cached schema. Strip
+        # `default` from properties as well: it has no role in validation and
+        # fastjsonschema fails to embed values whose `repr` is not valid Python.
+        schema_for_validator = dict(self.schema)
+        schema_for_validator.pop("id", None)
+        schema_for_validator.pop("required", None)
+        if properties := schema_for_validator.get("properties"):
+            stripped = {}
+            for name, property_schema in properties.items():
+                new = property_schema.copy()
+                new.pop("default", None)
+                stripped[name] = new
+            schema_for_validator["properties"] = stripped
+        self.__validator = compile_schema(schema_for_validator)
 
     @BaseGrammar.descriptions.setter
     def descriptions(self, data: StrKeyMapping) -> None:  # noqa: D102
         BaseGrammar.descriptions.fset(self, data)
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     # TODO: API: remove this deprecated method.
     def set_descriptions(self, descriptions: Mapping[str, str]) -> None:
@@ -414,7 +429,7 @@ class JSONGrammar(BaseGrammar):
             return
 
         self._descriptions.update(descriptions)
-        self.__init_dependencies()
+        self._invalidate_caches()
 
     @classmethod
     def __cast_data_mapping(cls, data: StrKeyMapping) -> dict[str, Any]:
@@ -463,22 +478,21 @@ class JSONGrammar(BaseGrammar):
         return value
 
     def _get_name_to_type(self) -> SimpleGrammarTypes:
-        name_to_type = {}
-
+        name_to_type: dict[str, type | None] = {}
         for property_name, property_description in self.schema.get(
-            "properties"
+            "properties", {}
         ).items():
-            if property_description["type"] not in self.__JSON_TO_PYTHON_TYPES:
-                property_type = None
+            # A schema without a single top-level scalar `"type"` (e.g. `anyOf`,
+            # `oneOf` or a union like `["integer", "null"]`) cannot be expressed
+            # as a single Python type; fall back to the catch-all.
+            json_type = property_description.get("type")
+            if not isinstance(json_type, str):
+                name_to_type[property_name] = None
             else:
-                property_type = self.__JSON_TO_PYTHON_TYPES[
-                    property_description["type"]
-                ]
-            name_to_type[property_name] = property_type
-
+                name_to_type[property_name] = self.__JSON_TO_PYTHON_TYPES.get(json_type)
         return name_to_type
 
-    def __init_dependencies(self) -> None:
+    def _invalidate_caches(self) -> None:
         """Resets the validator and schema dict."""
         self.__validator = None
         self.__schema = {}
@@ -505,8 +519,11 @@ class JSONGrammar(BaseGrammar):
     ) -> None:
         # That will create the missing attributes.
         self.clear()
+        # Pop the raw defaults first, otherwise they would end up as a stray
+        # instance attribute shadowed by the defaults property.
+        defaults = cast("StrKeyMapping", state.pop("defaults"))
         self.__dict__.update(state)
         self.__schema_builder.add_schema(
             state[f"_{self.__class__.__name__}__schema"], True
         )
-        self._defaults.update(cast("StrKeyMapping", state.pop("defaults")))
+        self._defaults.update(defaults)

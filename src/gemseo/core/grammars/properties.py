@@ -72,12 +72,14 @@ class GrammarProperties(
             msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
             raise KeyError(msg)
         self.__data[name] = value
+        self.__grammar._invalidate_caches()
 
     def __getitem__(self, key: str) -> Any:
         return self.__data[key]
 
     def __delitem__(self, key: str) -> None:
         del self.__data[key]
+        self.__grammar._invalidate_caches()
 
     def __iter__(self) -> Iterator[str]:
         return iter(self.__data)

@@ -1,1 +1,9 @@
-`Animation` no longer leaks an open file handle per frame when building a GIF; the frame images are now read into memory and their files closed immediately.
+- `Animation` no longer leaks an open file handle per frame when building a GIF; the frame images are now read into memory and their files closed immediately.
+- `PydanticGrammar.schema` is now cached and reused between reads; previously every access rebuilt the Pydantic model.
+- `JSONGrammar` no longer mutates its cached `schema` dict when building the internal validator.
+- `BaseGrammar.rename_element`, `JSONGrammar.update_from_schema`, `PydanticGrammar.update_from_model` and `PydanticGrammar.__init__` now reject element names containing the namespace separator (`:`).
+- Assigning to or mutating `BaseGrammar.defaults` (or `descriptions`) now invalidates the cached `schema` on `JSONGrammar` and `PydanticGrammar`, so the next read reflects the change. Default values now also appear under each property in the `schema` dict on all grammar implementations.
+- `BaseGrammar.add_namespace` now reports the actual existing namespace when re-adding a namespace to an already namespaced element; the previous `str.strip`-based extraction returned a corrupted prefix when the namespace and the base name shared characters.
+- `JSONGrammar._get_name_to_type` (used by `to_simple_grammar`) no longer crashes on an empty grammar nor on properties without a single top-level scalar `"type"` (e.g. `anyOf`/`oneOf` or `["integer", "null"]`); such properties degrade to the catch-all `None` type.
+- `RequiredNames.discard` now raises `KeyError` when asked to drop a name that is not in the bound grammar, matching the validation already done by `add`.
+- `BaseFactory.update` now rediscovers the available classes from scratch: classes whose source is no longer reachable (e.g. a directory removed from the `GEMSEO_PATH` environment variable) no longer linger in the factory.

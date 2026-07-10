@@ -8,3 +8,4 @@
 - The `gemseo.formulations.bilevel.BiLevel` and its derived class `gemseo.formulations.bilevel_bcd.BiLevelBCD` now allow
   users to provide instances of `Discipline` to be used as sub-scenarios of the formulation. These instances shall be
   provided via the `disc_as_sub_scenario` field of the `gemseo.formulations.bilevel_settings.BiLevel_Settings`.
+- `SimpleGrammar.schema` and `SimplerGrammar.schema` return a JSON-schema-shaped dict, matching `JSONGrammar` and `PydanticGrammar`.

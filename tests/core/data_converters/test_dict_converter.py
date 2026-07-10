@@ -33,7 +33,7 @@ from numpy.testing import assert_allclose
 from gemseo import create_mda
 from gemseo.core.data_converters.factory import DataConverterFactory
 from gemseo.core.discipline.discipline import Discipline
-from gemseo.core.grammars.factory import GrammarFactory
+from gemseo.core.grammars.factory import GRAMMAR_FACTORY
 from gemseo.mda.base import BaseMDA
 from gemseo.problems.mdo.sellar.utils import get_initial_data
 from gemseo.problems.mdo.sellar.variables import X_1
@@ -52,7 +52,7 @@ GEMSEO_PATH = str(Path(__file__).parent)
 def change_grammar(monkeypatch):
     # Get the new grammar visible.
     monkeypatch.setenv("GEMSEO_PATH", GEMSEO_PATH)
-    GrammarFactory().update()
+    GRAMMAR_FACTORY.update()
     DataConverterFactory().update()
     old_disc_grammar_type = Discipline.default_grammar_type
     old_mda_grammar_type = BaseMDA.default_grammar_type
@@ -61,6 +61,9 @@ def change_grammar(monkeypatch):
     yield
     Discipline.default_grammar_type = old_disc_grammar_type
     BaseMDA.default_grammar_type = old_mda_grammar_type
+    monkeypatch.delenv("GEMSEO_PATH")
+    GRAMMAR_FACTORY.update()
+    DataConverterFactory().update()
 
 
 class DictSellarBase(Discipline):

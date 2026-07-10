@@ -61,6 +61,22 @@ class RequiredNames(MutableSet[str]):
         self.__grammar._check_name(name)
         self.__names.add(name)
 
+    def _rename(self, current_name: str, new_name: str) -> None:
+        """Rename an existing element bypassing grammar membership checks.
+
+        Used by `BaseGrammar.rename_element` where the rename in the grammar
+        happens between the discard of `current_name` and the add of
+        `new_name`, so neither name is in the grammar at the time the
+        required-names set is updated.
+
+        Args:
+            current_name: The name to drop.
+            new_name: The name to add.
+        """
+        if current_name in self.__names:
+            self.__names.discard(current_name)
+            self.__names.add(new_name)
+
     def __contains__(self, name: Any) -> bool:
         return name in self.__names
 
@@ -85,6 +101,7 @@ class RequiredNames(MutableSet[str]):
         return self.__names.difference(other)
 
     def discard(self, name: str) -> None:  # noqa: D102
+        self.__grammar._check_name(name)
         self.__names.discard(name)
 
     def __str__(self) -> str:

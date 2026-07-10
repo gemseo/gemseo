@@ -21,13 +21,16 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import cast
 
 from numpy import ndarray
 
+from gemseo.core.grammars._python_to_json import PYTHON_TO_JSON_TYPES
 from gemseo.core.grammars._utils import NOT_IN_THE_GRAMMAR_MESSAGE
 from gemseo.core.grammars.base import BaseGrammar
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
     from collections.abc import Iterable
     from collections.abc import Iterator
 
@@ -61,7 +64,7 @@ class SimpleGrammar(BaseGrammar):
         name: str,
         name_to_type: SimpleGrammarTypes | None = None,
         required_names: Iterable[str] | None = None,
-        **kwargs: Any,
+        defaults: StrKeyMapping | None = None,
     ) -> None:
         """
         Args:
@@ -69,8 +72,10 @@ class SimpleGrammar(BaseGrammar):
                 and data types as values.
                 If `None`, the grammar is empty.
             required_names: The names of the required elements.
-                If `None`, all the elements are required.
-            **kwargs: These arguments are not used.
+                If `None`, every element without an entry in `defaults` is required.
+            defaults: The default values bound to element names.
+                Elements with a default value are not marked as required unless
+                `required_names` is given explicitly.
         """  # noqa: D205, D212, D415
         super().__init__(name)
         if name_to_type:
@@ -78,6 +83,10 @@ class SimpleGrammar(BaseGrammar):
         if required_names is not None:
             self._required_names.clear()
             self._required_names |= set(required_names)
+        elif defaults:
+            self._required_names -= set(defaults)
+        if defaults:
+            self.defaults = defaults
 
     def __getitem__(self, name: str) -> type | None:
         return self.__name_to_type[name]
@@ -100,7 +109,7 @@ class SimpleGrammar(BaseGrammar):
     def _update(  # noqa: D102
         self,
         grammar: Self,
-        excluded_names: Iterable[str],
+        excluded_names: Collection[str],
         merge: bool,
     ) -> None:
         """
@@ -114,7 +123,7 @@ class SimpleGrammar(BaseGrammar):
 
     def _update_from_names(  # noqa: D102
         self,
-        names: Iterable[str],
+        names: Collection[str],
         merge: bool,
     ) -> None:
         """
@@ -159,7 +168,7 @@ class SimpleGrammar(BaseGrammar):
     def __update(
         self,
         grammar: Self | StrKeyMapping,
-        excluded_names: Iterable[str] = (),
+        excluded_names: Collection[str] = (),
     ) -> None:
         """Update the elements from another grammar or elements.
 
@@ -214,17 +223,50 @@ class SimpleGrammar(BaseGrammar):
 
     def _restrict_to(  # noqa: D102
         self,
-        names: Iterable[str],
+        names: Collection[str],
     ) -> None:
         for element_name in self.__name_to_type.keys() - names:
             del self.__name_to_type[element_name]
 
     def to_simple_grammar(self) -> Self:  # noqa: D102
-        return self
+        return self.copy()
 
-    def _get_name_to_type(self) -> SimpleGrammarTypes:  # pragma: no cover
-        # This method is never called but is abstract.
-        return self
+    @property
+    def schema(self) -> dict[str, Any]:
+        """A JSON-schema-shaped representation of the grammar.
+
+        Types are mapped with
+        [PYTHON_TO_JSON_TYPES][gemseo.core.grammars._python_to_json.PYTHON_TO_JSON_TYPES].
+        Elements whose Python type has no JSON-schema equivalent, including the
+        catch-all `None` type, appear without a `type` constraint.
+        """
+        properties: dict[str, dict[str, Any]] = {}
+        descriptions = self._descriptions
+        defaults = self._defaults
+        for element_name, element_type in self.__name_to_type.items():
+            json_type: str | None = (
+                None
+                if element_type is None
+                else PYTHON_TO_JSON_TYPES.get(cast("Any", element_type))
+            )
+            property_schema: dict[str, Any] = (
+                {} if json_type is None else {"type": json_type}
+            )
+            if description := descriptions.get(element_name):
+                property_schema["description"] = description
+            if element_name in defaults:
+                property_schema["default"] = defaults[element_name]
+            properties[element_name] = property_schema
+        schema: dict[str, Any] = {"type": "object", "properties": properties}
+        if self._required_names:
+            schema["required"] = sorted(self._required_names)
+        return schema
+
+    def _get_name_to_type(self) -> SimpleGrammarTypes:
+        # `to_simple_grammar` short-circuits in this class so this is rarely
+        # called, but the abstract contract returns the name-to-type mapping
+        # rather than the grammar itself.
+        return dict(self.__name_to_type)
 
     @staticmethod
     def __check_type(name: str, obj: Any) -> None:

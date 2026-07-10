@@ -18,20 +18,18 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.core.grammars.factory import GrammarFactory
+from gemseo.core.grammars.factory import GRAMMAR_FACTORY
 from gemseo.core.grammars.required_names import RequiredNames
 from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.core.grammars.base import BaseGrammar
 
-FACTORY = GrammarFactory()
 
-
-@pytest.fixture(params=tuple(FACTORY.class_names))
+@pytest.fixture(params=tuple(GRAMMAR_FACTORY.class_names))
 def grammar(request) -> BaseGrammar:
     """Return a grammar with an element named `name`."""
-    grammar = FACTORY.create(request.param, name="g")
+    grammar = GRAMMAR_FACTORY.create(request.param, name="g")
     grammar.update_from_names(["name"])
     return grammar
 
@@ -57,12 +55,13 @@ def test_add(grammar, snapshot):
         rn.add("bad")
 
 
-def test_discard(grammar):
+def test_discard(grammar, snapshot):
     """Verify discard."""
     rn = RequiredNames(grammar, names=["name"])
     rn.discard("name")
     assert "name" not in rn
-    rn.discard("bad")
+    with assert_exception(KeyError, snapshot):
+        rn.discard("bad")
 
 
 def test_contains(grammar):
@@ -105,3 +104,30 @@ def test_get_names_difference(grammar):
     assert rn.get_names_difference(()) == {"name"}
     assert rn.get_names_difference(["dummy"]) == {"name"}
     assert rn.get_names_difference(["name"]) == set()
+
+
+def test_update(grammar, snapshot):
+    """Verify in-place union via |=."""
+    grammar.update_from_names(["other"])
+    rn = RequiredNames(grammar)
+    rn |= {"name", "other"}
+    assert set(rn) == {"name", "other"}
+
+    with assert_exception(KeyError, snapshot):
+        rn |= {"bad"}
+
+
+def test_eq(grammar):
+    """Verify __eq__."""
+    rn = RequiredNames(grammar, names=["name"])
+    other = RequiredNames(grammar, names=["name"])
+    assert rn == other
+    assert rn == {"name"}
+    assert rn != RequiredNames(grammar)
+
+
+def test_grammar_delete_propagates(grammar):
+    """Deleting a grammar element drops it from required_names."""
+    assert "name" in grammar.required_names
+    del grammar["name"]
+    assert "name" not in grammar.required_names

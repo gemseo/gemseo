@@ -20,6 +20,7 @@ from typing import NamedTuple
 
 import pytest
 from numpy import array
+from numpy import int64
 from numpy import str_
 from pydantic import ValidationError
 from pydantic import create_model
@@ -45,7 +46,7 @@ TYPES_TO_VALUES = {
     NDArrayPydantic: Data(array([0]), INVALID_DATA),
     NDArrayPydantic[Any]: Data(array([0]), INVALID_DATA),
     NDArrayPydantic[int]: Data(
-        array([0]),
+        array([0], dtype=int),
         (
             array([0.0]),
             array([False]),
@@ -115,3 +116,24 @@ def test_string_array_ignores_item_length(value) -> None:
     """Verify that NDArray[str_] accepts strings regardless of item length."""
     model = create_model("Model", name=(NDArrayPydantic[str_], ...))
     model(name=value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        array([], dtype=int64),
+        array([[0, 1], [2, 3]], dtype=int64),
+        array([[[0]]], dtype=int64),
+    ],
+)
+def test_shape_independent(value) -> None:
+    """Empty, 2-D and 3-D arrays pass when the dtype matches."""
+    model = create_model("Model", name=(NDArrayPydantic[int64], ...))
+    model(name=value)
+
+
+def test_invalid_dtype_annotation() -> None:
+    """A non-numpy dtype annotation raises on validation."""
+    model = create_model("Model", name=(NDArrayPydantic[object], ...))
+    with pytest.raises(ValidationError):
+        model(name=array([0]))

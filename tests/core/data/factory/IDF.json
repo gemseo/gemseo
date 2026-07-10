@@ -4,11 +4,13 @@
   "properties": {
     "differentiated_input_names_substitute": {
       "type": "array",
-      "description": "The names of the discipline inputs with respect to which to differentiate the discipline outputs used as objective, constraints and observables. If empty, consider the inputs of these functions. More precisely, for each function, an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] is built from the `disciplines`, which depend on input variables $x_1,\\ldots,x_d,x_{d+1}$, and over an input space spanned by the input variables $x_1,\\ldots,x_d$ and depending on both the MDO formulation and the `design_space`. Then, the methods [ArrayFunction.evaluate()][gemseo.core.functions.array_function.ArrayFunction.evaluate] and [ArrayFunction.jac()][gemseo.core.functions.array_function.ArrayFunction.jac] are called at a given point of the input space and return the output value and the Jacobian matrix, i.e. the matrix concatenating the partial derivatives with respect to the inputs $x_1,\\ldots,x_d$ at this point of the input space. This argument can be used to compute the matrix concatenating the partial derivatives at the same point of the input space but with respect to custom inputs, e.g. $x_{d-1}$ and $x_{d+1}$. Mathematically speaking, this matrix returned by [ArrayFunction.jac()][gemseo.core.functions.array_function.ArrayFunction.jac] is no longer a Jacobian."
+      "description": "The names of the discipline inputs with respect to which to differentiate the discipline outputs used as objective, constraints and observables. If empty, consider the inputs of these functions. More precisely, for each function, an [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] is built from the `disciplines`, which depend on input variables $x_1,\\ldots,x_d,x_{d+1}$, and over an input space spanned by the input variables $x_1,\\ldots,x_d$ and depending on both the MDO formulation and the `design_space`. Then, the methods [ArrayFunction.evaluate()][gemseo.core.functions.array_function.ArrayFunction.evaluate] and [ArrayFunction.jac()][gemseo.core.functions.array_function.ArrayFunction.jac] are called at a given point of the input space and return the output value and the Jacobian matrix, i.e. the matrix concatenating the partial derivatives with respect to the inputs $x_1,\\ldots,x_d$ at this point of the input space. This argument can be used to compute the matrix concatenating the partial derivatives at the same point of the input space but with respect to custom inputs, e.g. $x_{d-1}$ and $x_{d+1}$. Mathematically speaking, this matrix returned by [ArrayFunction.jac()][gemseo.core.functions.array_function.ArrayFunction.jac] is no longer a Jacobian.",
+      "default": []
     },
     "include_weak_coupling_targets": {
       "type": "boolean",
-      "description": "If `True`, all disciplines are executed in parallel, and all couplings (weak and strong) are set as target variables in the design space. This maximizes the exploitation of the parallelism but leads to a larger design space, so usually more iterations by the optimizer. Otherwise, the coupling graph is analyzed and the disciplines are chained in sequence and in parallel to solve all weak couplings. In this case, only the strong couplings are used as target variables in the design space. This reduces the size of the optimization problem, so usually leads to less iterations. The best option depends on the number of strong vs weak couplings, the availability of gradients, the availability of CPUs versus the number of disciplines, so it is very context dependant. Otherwise, IDF will consider only the strong coupling targets."
+      "description": "If `True`, all disciplines are executed in parallel, and all couplings (weak and strong) are set as target variables in the design space. This maximizes the exploitation of the parallelism but leads to a larger design space, so usually more iterations by the optimizer. Otherwise, the coupling graph is analyzed and the disciplines are chained in sequence and in parallel to solve all weak couplings. In this case, only the strong couplings are used as target variables in the design space. This reduces the size of the optimization problem, so usually leads to less iterations. The best option depends on the number of strong vs weak couplings, the availability of gradients, the availability of CPUs versus the number of disciplines, so it is very context dependant. Otherwise, IDF will consider only the strong coupling targets.",
+      "default": true
     },
     "mda_chain_settings_for_start_at_equilibrium": {
       "type": "object",
@@ -160,23 +162,65 @@
         "use_threading",
         "warm_start"
       ],
-      "description": "The settings for the MDA when `start_at_equilibrium=True`.  See detailed settings in [MDAChain][gemseo.mda.chain.MDAChain]."
+      "description": "The settings for the MDA when `start_at_equilibrium=True`.  See detailed settings in [MDAChain][gemseo.mda.chain.MDAChain].",
+      "default": {
+        "coupling_structure": null,
+        "linear_solver_settings": {
+          "store_residuals": false,
+          "use_ilu_precond": false,
+          "save_when_fail": false
+        },
+        "log_convergence": false,
+        "max_mda_iter": 20,
+        "max_consecutive_unsuccessful_iterations": 8,
+        "name": "",
+        "tolerance": 1e-06,
+        "warm_start": false,
+        "acceleration_method": "NoTransformation",
+        "over_relaxation_factor": 1.0,
+        "execute_before_linearizing": true,
+        "n_processes": 0,
+        "use_threading": true,
+        "chain_linearize": false,
+        "inner_mda_settings": {
+          "coupling_structure": null,
+          "linear_solver_settings": {
+            "store_residuals": false,
+            "use_ilu_precond": false,
+            "save_when_fail": false
+          },
+          "log_convergence": false,
+          "max_mda_iter": 20,
+          "max_consecutive_unsuccessful_iterations": 8,
+          "name": "",
+          "tolerance": 1e-06,
+          "warm_start": false
+        },
+        "initialize_defaults": false,
+        "mdachain_parallel_settings": {},
+        "mdachain_parallelize_tasks": false,
+        "sub_coupling_structures": []
+      }
     },
     "n_processes": {
       "type": "integer",
-      "description": "The maximum simultaneous number of threads if `use_threading` is `True`, or processes otherwise, used to parallelize the execution."
+      "description": "The maximum simultaneous number of threads if `use_threading` is `True`, or processes otherwise, used to parallelize the execution.",
+      "default": 1
     },
     "normalize_constraints": {
       "type": "boolean",
-      "description": "Whether the outputs of the coupling consistency constraints are scaled."
+      "description": "Whether the outputs of the coupling consistency constraints are scaled.",
+      "default": true
     },
     "start_at_equilibrium": {
       "type": "boolean",
-      "description": "Whether an MDA is used to initialize the coupling variables."
+      "description": "Whether an MDA is used to initialize the coupling variables.",
+      "default": false
     },
     "use_threading": {
       "type": "boolean",
-      "description": "Whether to use threads instead of processes to parallelize the execution when `include_weak_coupling_targets` is `True`; multiprocessing will copy (serialize) all the disciplines, while threading will share all the memory. This is important to note if you want to execute the same discipline multiple times, you shall use multiprocessing."
+      "description": "Whether to use threads instead of processes to parallelize the execution when `include_weak_coupling_targets` is `True`; multiprocessing will copy (serialize) all the disciplines, while threading will share all the memory. This is important to note if you want to execute the same discipline multiple times, you shall use multiprocessing.",
+      "default": true
     }
   }
 }

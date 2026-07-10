@@ -42,6 +42,7 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
     from collections.abc import Iterable
     from collections.abc import Iterator
     from collections.abc import KeysView
@@ -259,7 +260,7 @@ class BaseGrammar(
         Returns:
             Whether the names are all element names.
         """
-        return set(self.keys()).issuperset(names)
+        return all(n in self for n in names)
 
     @property
     def defaults(self) -> GrammarProperties:
@@ -284,6 +285,24 @@ class BaseGrammar(
         """The names of the required elements."""
         return self._required_names
 
+    @property
+    @abstractmethod
+    def schema(self) -> dict[str, Any]:
+        """A JSON-schema-shaped representation of the grammar.
+
+        The returned mapping follows the JSON-schema layout with a top-level
+        `"type": "object"`, a `"properties"` mapping from element names to their
+        per-element schema and a `"required"` list of required element names.
+        """
+
+    def _invalidate_caches(self) -> None:
+        """Invalidate derived state when defaults or descriptions change.
+
+        Called by [GrammarProperties][gemseo.core.grammars.properties.GrammarProperties]
+        on every mutation. The default is a no-op; subclasses that cache a derived
+        schema or validator override it.
+        """
+
     def clear(self) -> None:
         """Empty the grammar."""
         # _clear shall be called first because it creates specific attributes
@@ -302,7 +321,7 @@ class BaseGrammar(
     def update(
         self,
         grammar: Self,
-        excluded_names: Iterable[str] = (),
+        excluded_names: Collection[str] = (),
         merge: bool = False,
         *,
         allow_namespace_nesting: bool = False,
@@ -337,15 +356,17 @@ class BaseGrammar(
                 k: v for k, v in other_properties.items() if k not in excluded_names
             })
 
-        self._required_names |= (grammar.keys() - excluded_names).intersection(
-            grammar._required_names.get_names_difference(excluded_names)
+        # The required names are a subset of the element names, no need to
+        # intersect with the grammar keys.
+        self._required_names |= grammar._required_names.get_names_difference(
+            excluded_names
         )
 
     @abstractmethod
     def _update(
         self,
         grammar: Self,
-        excluded_names: Iterable[str],
+        excluded_names: Collection[str],
         merge: bool,
     ) -> None:
         """Update specifically the grammar from another grammar.
@@ -428,7 +449,7 @@ class BaseGrammar(
 
     def update_from_names(
         self,
-        names: Iterable[str],
+        names: Collection[str],
         merge: bool = False,
     ) -> None:
         """Update the grammar from names.
@@ -447,7 +468,7 @@ class BaseGrammar(
     @abstractmethod
     def _update_from_names(
         self,
-        names: Iterable[str],
+        names: Collection[str],
         merge: bool,
     ) -> None:
         """Update specifically the grammar from names.
@@ -544,7 +565,7 @@ class BaseGrammar(
 
     def restrict_to(
         self,
-        names: Iterable[str],
+        names: Collection[str],
     ) -> None:
         """Restrict the grammar to the given names.
 
@@ -565,7 +586,7 @@ class BaseGrammar(
     @abstractmethod
     def _restrict_to(
         self,
-        names: Iterable[str],
+        names: Collection[str],
     ) -> None:
         """Restrict the grammar to the given names but for the defaults.
 
@@ -581,15 +602,40 @@ class BaseGrammar(
             new_name: The new name of the element.
         """
         self._check_name(current_name)
+        self._check_names_format([new_name])
+        self.__rename_element(current_name, new_name)
+
+    def __rename_element(self, current_name: str, new_name: str) -> None:
+        """Rename an element without validating the new name format.
+
+        Args:
+            current_name: The current name of the element.
+            new_name: The new name of the element.
+        """
         self._rename_element(current_name, new_name)
-        if current_name in self._required_names:
-            self._required_names.remove(current_name)
-            self._required_names.add(new_name)
+        self._required_names._rename(current_name, new_name)
 
         for properties in (self._defaults, self._descriptions):
-            default_value = properties.pop(current_name, None)
-            if default_value is not None:
-                properties[new_name] = default_value
+            if current_name in properties:
+                properties[new_name] = properties.pop(current_name)
+
+    @staticmethod
+    def _check_names_format(names: Iterable[str]) -> None:
+        """Reject element names containing the namespace separator.
+
+        Args:
+            names: The names to be validated.
+
+        Raises:
+            ValueError: If any name contains the namespace separator.
+        """
+        bad_names = [name for name in names if namespaces_separator in name]
+        if bad_names:
+            msg = (
+                f"Element names cannot contain the namespace separator "
+                f"{namespaces_separator!r}: {pretty_str(bad_names)}."
+            )
+            raise ValueError(msg)
 
     @abstractmethod
     def _rename_element(self, current_name: str, new_name: str) -> None:
@@ -670,7 +716,7 @@ class BaseGrammar(
             raise ValueError(msg)
 
         new_name = namespace + namespaces_separator + name
-        self.rename_element(name, new_name)
+        self.__rename_element(name, new_name)
         self.to_namespaced[name] = new_name
         self.from_namespaced[new_name] = name
 

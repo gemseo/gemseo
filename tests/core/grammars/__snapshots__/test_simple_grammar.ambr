@@ -41,7 +41,7 @@
 # name: test_update_with_merge_error[SimplerGrammar].3
   'Merge is not supported for SimplerGrammar.'
 # ---
-# name: test_validate_error[True-data0-Bad type for name2: <class 'str'> instead of <class 'int'>.]
+# name: test_validate_bad_type[True]
   '''
   Grammar g: validation failed.
   Bad type for name2: <class 'str'> instead of <class 'int'>.
