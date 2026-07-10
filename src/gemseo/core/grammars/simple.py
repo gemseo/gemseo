@@ -235,8 +235,7 @@ class SimpleGrammar(BaseGrammar):
     def schema(self) -> dict[str, Any]:
         """A JSON-schema-shaped representation of the grammar.
 
-        Types are mapped with
-        [PYTHON_TO_JSON_TYPES][gemseo.core.grammars._python_to_json.PYTHON_TO_JSON_TYPES].
+        Types are mapped with `PYTHON_TO_JSON_TYPES`.
         Elements whose Python type has no JSON-schema equivalent, including the
         catch-all `None` type, appear without a `type` constraint.
         """
