@@ -42,6 +42,8 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
     _CLASS = BaseGrammar
     _PACKAGE_NAMES = ("gemseo.core.grammars",)
 
+    __FILE_PATH_STR: Final[str] = "file_path"
+
     def create(
         self,
         class_name: str,
@@ -70,17 +72,32 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
             file_name_suffix: The suffix of the JSON grammar file.
                 This argument is used when `search_file` is `True`.
             **options: The options to be passed to the initialization.
+
+        Returns:
+            The grammar.
+
+        Raises:
+            ValueError: If `search_file` is `True` and `class_name`
+                is not `"JSONGrammar"`,
+                or if `search_file` is `True` and `discipline_class` is `None`.
         """
-        if class_name == "JSONGrammar" and search_file and not options.get("file_path"):
-            if discipline_class is None:
+        if search_file and not options.get(self.__FILE_PATH_STR):
+            if class_name != "JSONGrammar":
                 msg = (
-                    "The argument discipline_class is needed when the argument "
-                    "when the argument search_file is True."
+                    "search_file=True is only supported for JSONGrammar; "
+                    f"got {class_name}."
                 )
                 raise ValueError(msg)
-            options["file_path"] = self.__search_file(
+            if discipline_class is None:
+                msg = "discipline_class is required when search_file is True."
+                raise ValueError(msg)
+            options[self.__FILE_PATH_STR] = self.__search_file(
                 discipline_class, file_name_suffix, directory_path
             )
+        if class_name != "JSONGrammar" and not options.get(self.__FILE_PATH_STR):
+            # `file_path` is JSONGrammar-specific; drop it when callers pass it as the
+            # empty default so they can build any grammar type generically.
+            options.pop(self.__FILE_PATH_STR, None)
         return super().create(class_name, name=name, **options)
 
     @staticmethod
@@ -96,11 +113,13 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
         or an output grammar file named `name + "_output.json"`.
 
         Args:
+            discipline_class: The class of the discipline used for searching the
+                grammar in the parent classes.
             file_name_suffix: The suffix of the file name (xxx_suffix.json)
             directory_path: The directory in which to search the grammar file.
-                If `None`,
-                use the `BaseDiscipline.GRAMMAR_DIRECTORY` if any,
-                or the directory of the discipline class module.
+                If empty,
+                use the directory of the module defining each class of the
+                discipline class hierarchy.
 
         Returns:
             The grammar file path.
@@ -108,7 +127,8 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
         # To avoid circular dependencies.
         from gemseo.core.discipline.base_discipline import BaseDiscipline
 
-        classes = [discipline_class] + [
+        # The mro starts with discipline_class itself.
+        classes = [
             base
             for base in discipline_class.__mro__
             if issubclass(base, BaseDiscipline)

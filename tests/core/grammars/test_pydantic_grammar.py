@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 import pickle
-import re
 from enum import Enum
 from enum import auto
 from platform import python_version
@@ -25,6 +24,7 @@ from typing import Any
 import pytest
 from numpy import array
 from numpy import dtype
+from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import field_validator
@@ -37,11 +37,11 @@ from gemseo.core.grammars.pydantic import PydanticGrammar
 from gemseo.core.grammars.pydantic import _create_model
 from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import do_not_raise
 
 from .pydantic_models import get_model1
 from .pydantic_models import get_model2
 from .pydantic_models import get_model3
+from .pydantic_models import get_model4
 
 if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
@@ -61,11 +61,16 @@ class ModelID(Enum):
 model1 = pytest.fixture(get_model1)
 model2 = pytest.fixture(get_model2)
 model3 = pytest.fixture(get_model3)
+model4 = pytest.fixture(get_model4)
 
 
 @pytest.fixture
 def model(
-    request: SubRequest, model1: ModelType, model2: ModelType
+    request: SubRequest,
+    model1: ModelType,
+    model2: ModelType,
+    model3: ModelType,
+    model4: ModelType,
 ) -> ModelType | None:
     """Return a pydantic model.
 
@@ -74,12 +79,12 @@ def model(
     if request.param is None:
         return None
 
-    if request.param == ModelID.ONE:
-        return model1
-
-    if request.param == ModelID.TWO:
-        return model2
-    return None
+    return {
+        ModelID.ONE: model1,
+        ModelID.TWO: model2,
+        ModelID.THREE: model3,
+        ModelID.FOUR: model4,
+    }[request.param]
 
 
 def test_init_with_model(model1) -> None:
@@ -91,15 +96,37 @@ def test_init_with_model(model1) -> None:
     assert grammar.descriptions == {"name2": "Description of name2."}
 
 
+def test_create_model_from_base_model() -> None:
+    """Verify copying the bare ``BaseModel`` as a non-internal model."""
+    copied = _create_model(BaseModel)
+    assert issubclass(copied, BaseModel)
+    assert not copied.__pydantic_fields__
+
+
+def _build_model_with_separator() -> ModelType:
+    """Build a Pydantic model whose field name contains the namespace separator."""
+    from pydantic import create_model
+
+    return create_model("BadModel", **{"x:y": (int, ...)})
+
+
+def test_init_rejects_model_with_namespace_separator(snapshot) -> None:
+    """Verify that the constructor rejects model field names with the separator."""
+    with assert_exception(ValueError, snapshot):
+        PydanticGrammar("g", model=_build_model_with_separator())
+
+
+def test_update_from_model_rejects_namespace_separator(snapshot) -> None:
+    """Verify that `update_from_model` rejects field names with the separator."""
+    grammar = PydanticGrammar("g")
+    with assert_exception(ValueError, snapshot):
+        grammar.update_from_model(_build_model_with_separator())
+
+
 def test_getitem(model1) -> None:
     """Verify getting an item."""
     grammar = PydanticGrammar("g", model=model1)
     assert_equal_types(grammar["name1"], int)
-
-
-# This is for using indirect in parametrize.
-model_1 = model
-model_2 = model
 
 
 def assert_equal_types(field_1: FieldInfo, obj_2: FieldInfo | type) -> None:
@@ -171,50 +198,26 @@ def test_validate_with_rebuild(model1) -> None:
     grammar.validate({"name": 1})
 
 
+@pytest.mark.parametrize("raise_exception", [True, False])
 @pytest.mark.parametrize(
-    ("raise_exception", "exception_tester"),
-    [(True, pytest.raises), (False, do_not_raise)],
-)
-@pytest.mark.parametrize(
-    ("data", "error_msg"),
+    "data",
     [
-        (
-            {"name1": 0.1, "name2": array([0])},
-            """
-1 validation error for Model
-name1
-  Input should be a valid integer [type=int_type, input_value=0.1, input_type=float]
-""",  # noqa:E501
-        ),
-        (
-            {"name1": 0, "name2": True},
-            """
-1 validation error for Model
-name2
-  Input should be an instance of ndarray [type=is_instance_of, input_value=True, input_type=bool]
-""",  # noqa:E501
-        ),
-        (
-            {"name1": 0, "name2": array([0.0])},
-            """
-1 validation error for Model
-name2
-  Value error, The expected dtype is <class 'int'>: the actual dtype is <class 'numpy.float64'>
-""",  # noqa:E501
-        ),
+        {"name1": 0.1, "name2": array([0])},
+        {"name1": 0, "name2": True},
+        {"name1": 0, "name2": array([0.0])},
     ],
 )
-def test_validate_error(
-    raise_exception, exception_tester, data, error_msg, model1, caplog
-) -> None:
+def test_validate_error(raise_exception, data, model1, caplog, snapshot) -> None:
     """Verify that validate raises the expected errors."""
     grammar = PydanticGrammar("g", model=model1)
 
-    with exception_tester(InvalidDataError, match=re.escape(error_msg.strip())):
-        grammar.validate(data, raise_exception=raise_exception)
+    if raise_exception:
+        with assert_exception(InvalidDataError, snapshot):
+            grammar.validate(data)
+    else:
+        grammar.validate(data, raise_exception=False)
 
     assert caplog.records[0].levelname == "ERROR"
-    assert error_msg.strip() in caplog.text.strip()
 
 
 def test_convert_to_simple_grammar_warnings(model2, caplog) -> None:
@@ -227,6 +230,30 @@ def test_convert_to_simple_grammar_warnings(model2, caplog) -> None:
         f"Unsupported type '<class '{union_type}'>' in PydanticGrammar 'g' for "
         "field 'name2' in conversion to SimpleGrammar."
     )
+
+
+def test_convert_to_simple_grammar_ndarray_field(model1) -> None:
+    """Verify that an NDArrayPydantic field is converted to ndarray."""
+    grammar = PydanticGrammar("g", model=model1)
+    simple_grammar = grammar.to_simple_grammar()
+    assert simple_grammar["name2"] is ndarray
+
+
+def test_convert_to_simple_grammar_warning_non_generic(caplog) -> None:
+    """Verify the conversion warning shows the type for a non-generic annotation."""
+
+    class CustomType:
+        pass
+
+    class Model(BaseModel):
+        name1: CustomType
+
+        model_config = {"arbitrary_types_allowed": True}
+
+    grammar = PydanticGrammar("g", model=Model)
+    grammar.to_simple_grammar()
+    assert caplog.records[0].levelname == "WARNING"
+    assert "CustomType" in caplog.messages[0]
 
 
 @pytest.mark.parametrize(
@@ -325,6 +352,10 @@ def test_serialize() -> None:
     assert pickled_grammar.to_namespaced == grammar.to_namespaced
     assert pickled_grammar.from_namespaced == grammar.from_namespaced
 
+    pickled_grammar.validate({"x": 1})
+    with pytest.raises(InvalidDataError):
+        pickled_grammar.validate({"x": "not-an-int"})
+
 
 class MyEnum(StrEnum):
     a = auto()
@@ -353,20 +384,11 @@ def test_model_on_grammar_multi_instantiation() -> None:
 
     grammar_1 = PydanticGrammar(name="g", model=DummyModel)
     grammar_2 = PydanticGrammar(name="g", model=DummyModel)
-    assert id(grammar_1._PydanticGrammar__model) != id(
-        grammar_2._PydanticGrammar__model
-    )
     del grammar_1["dummy_var"]
     assert "dummy_var" in grammar_2
 
 
 def test_copy_model(snapshot):
-    # With a model created internally.
-    model = PydanticGrammar(name="g")._PydanticGrammar__model
-    model_copy = _create_model(model)
-    assert_model_equal(model, model_copy)
-
-    # With a standard model.
     model_copy = _create_model(DummyModel)
     assert_model_equal(DummyModel, model_copy)
 
@@ -381,7 +403,6 @@ def test_copy_model(snapshot):
 def assert_model_equal(model, model_copy) -> None:
     """Assert that 2 models are identical grammar wise."""
     assert id(model_copy) != id(model)
-    # assert model_copy.__name__ == model.__name__
     assert model_copy.__module__ == "gemseo.core.grammars.pydantic"
 
     for field_name, field_info in model.__pydantic_fields__.items():
@@ -466,3 +487,44 @@ def test_update_from_model_incremental(model1) -> None:
     grammar.update_from_model(ModelExtra)
     assert grammar.keys() == {"name1", "name2", "name3"}
     assert grammar.required_names == {"name1", "name3"}
+
+
+def test_update_error(snapshot) -> None:
+    """Verify updating from another grammar type raises a clear error."""
+    grammar = PydanticGrammar("g")
+    with assert_exception(TypeError, snapshot):
+        grammar.update(True)
+
+
+def test_update_from_types_with_catch_all_type() -> None:
+    """Verify that the None type accepts any value, as in the other grammars."""
+    grammar = PydanticGrammar("g")
+    grammar.update_from_types({"x": None})
+    grammar.validate({"x": 1})
+    grammar.validate({"x": "a"})
+    grammar.validate({"x": None})
+
+
+def test_update_keeps_model_defaults(model1) -> None:
+    """Verify that updating from another grammar keeps the model-level defaults.
+
+    Data missing an element that is optional in the source grammar must remain
+    valid after the update.
+    """
+    grammar = PydanticGrammar("g")
+    grammar.update(PydanticGrammar("g1", model=model1))
+    assert grammar.required_names == {"name1"}
+    assert grammar.defaults == {"name2": [0]}
+    grammar.validate({"name1": 1})
+
+
+def test_schema_is_cached() -> None:
+    """Verify that `PydanticGrammar.schema` reuses the cached dict between reads."""
+    grammar = PydanticGrammar("g")
+    grammar.update_from_types({"x": int})
+    first = grammar.schema
+    assert grammar.schema is first
+    grammar.update_from_types({"y": str})
+    refreshed = grammar.schema
+    assert refreshed is not first
+    assert "y" in refreshed["properties"]

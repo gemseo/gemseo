@@ -41,7 +41,7 @@ from gemseo.utils.pydantic_ndarray import NDArrayPydantic
 from gemseo.utils.pydantic_ndarray import _NDArrayPydantic
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Collection
     from collections.abc import Iterator
 
     from pydantic import ConfigDict
@@ -91,6 +91,9 @@ class PydanticGrammar(BaseGrammar):
     not reflect any of the changes done after.
     """
 
+    __schema: Schema | None
+    """The cached JSON-schema representation, or `None` when it must be recomputed."""
+
     __SIMPLE_TYPES: ClassVar[set[type]] = {
         _NDArrayPydantic,
         list,
@@ -108,16 +111,15 @@ class PydanticGrammar(BaseGrammar):
         self,
         name: str,
         model: ModelType | None = None,
-        **kwargs: Any,
     ) -> None:
         """
         Args:
             model: A Pydantic model.
                 If `None`, the model will be empty.
-            **kwargs: These arguments are not used.
         """  # noqa: D205, D212, D415
         super().__init__(name)
         if model is not None:
+            self._check_names_format(model.__pydantic_fields__)
             self.__model = _create_model(model)
         # Set the defaults and required names.
         for name, field in self.__model.__pydantic_fields__.items():
@@ -140,32 +142,60 @@ class PydanticGrammar(BaseGrammar):
 
     def _delitem(self, name: str) -> None:  # noqa:D102
         del self.__model.__pydantic_fields__[name]
-        self.__model_needs_rebuild = True
+        self.__mark_dirty()
 
     def _copy(self, grammar: Self) -> None:  # noqa:D102
-        grammar.__model = _create_model(self.__model)
+        grammar.__model = _create_model(self.__model, internal=True)
         grammar.__model_needs_rebuild = self.__model_needs_rebuild
+        # Invalidate rather than deepcopy: rebuild is deterministic from the model
+        # and avoids paying the copy cost when the schema is never read.
+        grammar.__schema = None
 
     def _rename_element(self, current_name: str, new_name: str) -> None:  # noqa:D102
         fields = self.__model.__pydantic_fields__
         fields[new_name] = fields.pop(current_name)
-        self.__model_needs_rebuild = True
+        self.__mark_dirty()
 
-    def _update(  # noqa:D102
+    def _update(
         self,
         grammar: Self,
-        excluded_names: Iterable[str],
+        excluded_names: Collection[str],
         merge: bool,
     ) -> None:
-        name_to_annotation = {}
+        """
+        Raises:
+            TypeError: If the grammar is not
+                a [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar].
+        """  # noqa: D205, D212, D415
+        if not isinstance(grammar, PydanticGrammar):
+            msg = (
+                "A PydanticGrammar cannot be updated from a grammar of type: "
+                f"{type(grammar)}"
+            )
+            raise TypeError(msg)
+
+        # Copy the full field information (not only the annotation) so that
+        # model-level defaults are preserved: otherwise the fields would become
+        # required in the model and validation would wrongly fail on data
+        # missing an optional element.
+        own_fields = self.__model.__pydantic_fields__
         for field_name, field_info in grammar.__model.__pydantic_fields__.items():
-            if field_name not in excluded_names:
-                name_to_annotation[field_name] = field_info.annotation
-        self.__update_from_annotations(name_to_annotation, merge)
+            if field_name in excluded_names:
+                continue
+            field_info = deepcopy(field_info)
+            if merge and field_name in own_fields:
+                # Pydantic typing for the argument annotation does not handle Union,
+                # we cast it.
+                field_info.annotation = cast(
+                    "type[Any]",
+                    own_fields[field_name].annotation | field_info.annotation,
+                )
+            own_fields[field_name] = field_info
+        self.__mark_dirty()
 
     def _update_from_names(  # noqa:D102
         self,
-        names: Iterable[str],
+        names: Collection[str],
         merge: bool,
     ) -> None:
         self.__update_from_annotations(dict.fromkeys(names, NDArrayPydantic), merge)
@@ -192,11 +222,17 @@ class PydanticGrammar(BaseGrammar):
 
         For convenience, when a type is exactly `ndarray`,
         it is automatically converted to `NDArrayPydantic`.
+        A type set to `None` is the catch-all type, as in the other grammars,
+        and is converted to `Any`.
         """
         name_to_annotation = dict(name_to_type)
         for name, annotation in name_to_type.items():
             if annotation is ndarray:
                 name_to_annotation[name] = NDArrayPydantic
+            elif annotation is None:
+                # None is the catch-all type in SimpleGrammarTypes; a None
+                # annotation would instead make Pydantic only accept None.
+                name_to_annotation[name] = Any
         self.__update_from_annotations(name_to_annotation, merge)
 
     def update_from_model(self, model: ModelType, merge: bool = False) -> None:
@@ -215,6 +251,8 @@ class PydanticGrammar(BaseGrammar):
         """  # noqa: E501
         if not model.__pydantic_fields__:
             return
+
+        self._check_names_format(model.__pydantic_fields__)
 
         copied_model = _create_model(model)
         fields = copied_model.__pydantic_fields__
@@ -240,7 +278,7 @@ class PydanticGrammar(BaseGrammar):
             if description := field_info.description:
                 self._descriptions[field_name] = description
 
-        self.__model_needs_rebuild = True
+        self.__mark_dirty()
 
     def __update_from_annotations(
         self,
@@ -260,18 +298,26 @@ class PydanticGrammar(BaseGrammar):
                 # we cast it.
                 annotation = cast("type[Any]", fields[name].annotation | annotation)
             fields[name] = FieldInfo(annotation=annotation)
-        self.__model_needs_rebuild = True
+        self.__mark_dirty()
 
     def _clear(self) -> None:  # noqa:D102
-        self.__model = _create_model(BaseModel)
+        self.__model = _create_model(BaseModel, internal=True)
         self.__model_needs_rebuild = False
-        # The sole purpose of the following attribute is to identify a model created
-        # here,
-        # and not from an external class deriving from BaseModel,
-        self.__model.__internal__ = None  # type: ignore[attr-defined]
+        self.__schema = None
         # TODO: This is no longer needed since pydantic 2.10, remove at some point.
         # This is another workaround for pickling a created model.
         self.__model.__pydantic_parent_namespace__ = {}
+
+    def __mark_dirty(self) -> None:
+        """Flag the model as needing a rebuild and invalidate the cached schema."""
+        self.__model_needs_rebuild = True
+        self.__schema = None
+
+    def _invalidate_caches(self) -> None:  # noqa: D102
+        # A defaults or descriptions change does not alter the underlying Pydantic
+        # fields, so only the cached schema is dropped; the next `schema` read
+        # rebuilds it (and re-syncs descriptions onto the model fields).
+        self.__schema = None
 
     def _update_grammar_repr(self, repr_: MultiLineString, properties: Any) -> None:
         repr_.add(f"Type: {properties.annotation}")
@@ -292,11 +338,11 @@ class PydanticGrammar(BaseGrammar):
 
     def _restrict_to(  # noqa:D102
         self,
-        names: Iterable[str],
+        names: Collection[str],
     ) -> None:
         for name in self.keys() - names:
             del self.__model.__pydantic_fields__[name]
-            self.__model_needs_rebuild = True
+            self.__mark_dirty()
 
     def _get_name_to_type(self) -> SimpleGrammarTypes:
         """
@@ -314,7 +360,7 @@ class PydanticGrammar(BaseGrammar):
                     "Unsupported type '%s' in PydanticGrammar '%s' "
                     "for field '%s' in conversion to SimpleGrammar."
                 )
-                LOGGER.warning(message, origin, self.name, name)
+                LOGGER.warning(message, pydantic_type, self.name, name)
                 # This type cannot be converted, use the catch-all type.
                 pydantic_type = None
 
@@ -325,20 +371,28 @@ class PydanticGrammar(BaseGrammar):
 
         return name_to_type
 
-    # TODO: API: turn into a getter since it is costly.
     @property
-    def schema(self) -> dict[str, Schema]:
+    def schema(self) -> Schema:
         """The dictionary representation of the schema."""
-        # The rebuild cannot be postponed for descriptions because these seem to be
-        # stored in the schema.
+        # Sync grammar descriptions onto model fields; only flag a rebuild when a
+        # description actually changes so repeated reads are cheap.
         descriptions = self.descriptions
         for name, field in self.__model.__pydantic_fields__.items():
-            if description := descriptions.get(name):
+            description = descriptions.get(name)
+            if description and field.description != description:
                 field.description = description
-                self.__model_needs_rebuild = True
+                self.__mark_dirty()
 
         self.__rebuild_model()
-        return self.__model.model_json_schema()
+        if self.__schema is None:
+            schema = self.__model.model_json_schema()
+            defaults = self.defaults
+            properties = schema.get("properties", {})
+            for name, default in defaults.items():
+                assert name in properties
+                properties[name]["default"] = default
+            self.__schema = schema
+        return self.__schema
 
     def _check_name(self, *names: str) -> None:
         if not names:
@@ -353,7 +407,10 @@ class PydanticGrammar(BaseGrammar):
     def __rebuild_model(self) -> None:
         """Rebuild the model if needed."""
         if self.__model_needs_rebuild:
-            assert self.__model.model_rebuild(force=True)
+            # `model_rebuild` returns True on success and None when no rebuild was
+            # needed; the call itself is the side effect, so do not wrap it in an
+            # `assert` (stripped under `python -O`).
+            self.__model.model_rebuild(force=True)
             self.__model_needs_rebuild = False
 
     def __getstate__(self) -> dict[str, Any]:
@@ -377,7 +434,7 @@ class PydanticGrammar(BaseGrammar):
             fields = self.__model.__pydantic_fields__
             for name, info in fields_info.items():
                 fields[name] = info
-            self.__model_needs_rebuild = True
+            self.__mark_dirty()
             self.__rebuild_model()
 
 
@@ -391,13 +448,18 @@ def _patch_model(model: ModelType) -> None:
         model.__pydantic_fields__ = model.model_fields
 
 
-def _create_model(model: ModelType) -> ModelType:
+def _create_model(model: ModelType, internal: bool = False) -> ModelType:
     """Create a pydantic model by subclassing another one.
 
     The model validation is made strict but for Enum fields.
 
     Args:
         model: The model to copy.
+        internal: Whether the derived class is only used within the grammar.
+            Internal models are flagged so pickling serializes their fields
+            rather than the class itself, which avoids registering them in this
+            module's ``__dict__`` and lets them be garbage-collected with the
+            grammar that owns them.
 
     Returns:
         The copied model.
@@ -461,7 +523,12 @@ def _create_model(model: ModelType) -> ModelType:
 
     _patch_model(derived_model)
 
-    if model != BaseModel:
+    if internal:
+        # Internal models are pickled via their fields rather than by class
+        # lookup (see PydanticGrammar.__getstate__), so the class does not need
+        # to be reachable from this module.
+        derived_model.__internal__ = None  # type: ignore[attr-defined]
+    elif model is not BaseModel:
         # Ensure that the class is retrieved when pickling.
         # This is not necessary for BaseModel since the derived class has
         # no specific behavior defined and can be recreated from BaseModel itself.
@@ -469,6 +536,7 @@ def _create_model(model: ModelType) -> ModelType:
             modules[_create_model.__module__], derived_model.__name__, derived_model
         )
 
+    if model is not BaseModel:
         # Ensure that FieldInfo metadata are not shared with the original model.
         fields = derived_model.__pydantic_fields__
         for field_name, field_info in fields.items():

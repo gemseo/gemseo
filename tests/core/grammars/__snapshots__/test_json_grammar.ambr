@@ -5,12 +5,21 @@
 # name: test_update_error
   "A JSONGrammar cannot be updated from a grammar of type: <class 'bool'>"
 # ---
+# name: test_update_from_file_missing
+  'Cannot update the grammar from non existing file: does_not_exist.json.'
+# ---
+# name: test_update_from_schema_rejects_namespace_separator
+  "Element names cannot contain the namespace separator ':': x:y."
+# ---
 # name: test_update_from_types_error
   "Unsupported Python type for a JSON Grammar: <class 'set'>"
 # ---
-# name: test_validate_error[data0-error: data.name2 must be array-True]
+# name: test_validate_error[True]
   '''
   Grammar g: validation failed.
   error: data.name2 must be array
   '''
+# ---
+# name: test_validate_error_required_at_root[True]
+  'Grammar g: validation failed.'
 # ---

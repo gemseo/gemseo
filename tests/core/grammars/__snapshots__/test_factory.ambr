@@ -1,0 +1,13 @@
+# serializer version: 1
+# name: test_create_search_file_missing_discipline_class
+  'discipline_class is required when search_file is True.'
+# ---
+# name: test_create_search_file_non_json
+  'search_file=True is only supported for JSONGrammar; got SimpleGrammar.'
+# ---
+# name: test_create_search_file_not_found
+  'The grammar file DummyDiscipline_input.json is missing.'
+# ---
+# name: test_create_unknown
+  'The class UnknownGrammar is not available; the available ones are: JSONGrammar, PydanticGrammar, SimpleGrammar, SimplerGrammar.'
+# ---

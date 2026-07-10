@@ -47,6 +47,18 @@
 # name: test_add_namespace[SimplerGrammar].3
   "The variable 'abc' already has a namespace ('cab')."
 # ---
+# name: test_add_namespace_already_namespaced_reports_prefix[JSONGrammar]
+  "The variable 'foo' already has a namespace ('fo')."
+# ---
+# name: test_add_namespace_already_namespaced_reports_prefix[PydanticGrammar]
+  "The variable 'foo' already has a namespace ('fo')."
+# ---
+# name: test_add_namespace_already_namespaced_reports_prefix[SimpleGrammar]
+  "The variable 'foo' already has a namespace ('fo')."
+# ---
+# name: test_add_namespace_already_namespaced_reports_prefix[SimplerGrammar]
+  "The variable 'foo' already has a namespace ('fo')."
+# ---
 # name: test_delitem_error[JSONGrammar]
   '"The name \'foo\' is not in the grammar."'
 # ---
@@ -83,6 +95,18 @@
 # name: test_init_error[SimplerGrammar]
   'The grammar name cannot be empty.'
 # ---
+# name: test_rename_element_rejects_namespace_separator[JSONGrammar]
+  "Element names cannot contain the namespace separator ':': x:y."
+# ---
+# name: test_rename_element_rejects_namespace_separator[PydanticGrammar]
+  "Element names cannot contain the namespace separator ':': x:y."
+# ---
+# name: test_rename_element_rejects_namespace_separator[SimpleGrammar]
+  "Element names cannot contain the namespace separator ':': x:y."
+# ---
+# name: test_rename_element_rejects_namespace_separator[SimplerGrammar]
+  "Element names cannot contain the namespace separator ':': x:y."
+# ---
 # name: test_rename_error[JSONGrammar]
   '"The name \'foo\' is not in the grammar."'
 # ---
@@ -106,6 +130,74 @@
 # ---
 # name: test_restrict_to_error[SimplerGrammar]
   '"The name \'foo\' is not in the grammar."'
+# ---
+# name: test_schema[JSONGrammar]
+  dict({
+    '$schema': 'http://json-schema.org/draft-04/schema',
+    'properties': dict({
+      'x': dict({
+        'type': 'integer',
+      }),
+      'y': dict({
+        'type': 'string',
+      }),
+    }),
+    'type': 'object',
+  })
+# ---
+# name: test_schema[PydanticGrammar]
+  dict({
+    'properties': dict({
+      'x': dict({
+        'title': 'X',
+        'type': 'integer',
+      }),
+      'y': dict({
+        'title': 'Y',
+        'type': 'string',
+      }),
+    }),
+    'required': list([
+      'x',
+      'y',
+    ]),
+    'title': 'Model',
+    'type': 'object',
+  })
+# ---
+# name: test_schema[SimpleGrammar]
+  dict({
+    'properties': dict({
+      'x': dict({
+        'type': 'integer',
+      }),
+      'y': dict({
+        'type': 'string',
+      }),
+    }),
+    'required': list([
+      'x',
+      'y',
+    ]),
+    'type': 'object',
+  })
+# ---
+# name: test_schema[SimplerGrammar]
+  dict({
+    'properties': dict({
+      'x': dict({
+        'type': 'integer',
+      }),
+      'y': dict({
+        'type': 'string',
+      }),
+    }),
+    'required': list([
+      'x',
+      'y',
+    ]),
+    'type': 'object',
+  })
 # ---
 # name: test_update_with_namespace[JSONGrammar]
   "The name 'x' is already mapped to the namespaced name 'n:x'; mapping it to 'other_n:x' would require nesting, which is only allowed for process disciplines."

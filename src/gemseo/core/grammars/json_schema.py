@@ -75,6 +75,12 @@ class _MergeStrategy(Object):  # type: ignore[misc]
     # Do not merge the name and id properties.
     KEYWORDS = (*Object.KEYWORDS, "name", "id")
 
+    # TODO: this `update` flag is a class-level switch toggled by the context
+    # manager `__handle_update` to drive the merge-vs-update behavior of every
+    # `_MergeStrategy` and every `_SchemaNode` instance at once. Two grammars
+    # being updated concurrently from different threads will corrupt each
+    # other's state. Move the flag to instance state (or guard it with a lock)
+    # before exposing grammar mutations to multithreaded callers.
     update: ClassVar[bool] = False
     """Whether to update or merge the schema."""
 
@@ -103,6 +109,7 @@ class _SchemaNode(SchemaNode):  # type: ignore[misc]
     By default, genson merges nodes, the update is triggered via a class attribute.
     """
 
+    # TODO: same thread-safety caveat as `_MergeStrategy.update` above.
     update: ClassVar[bool] = False
     """Whether to update or merge the schema."""
 

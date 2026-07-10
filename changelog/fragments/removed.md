@@ -40,3 +40,4 @@
 - The `OptimizationDataset.constraint_dataset` method was removed; use `inequality_constraint_dataset` or `equality_constraint_dataset` instead.
 - The `group_functions` argument of `OptimizationProblem.to_dataset` was removed; functions are now always grouped by category.
 - The `use_standardized_objective` field of `OptimizationMetadata` was removed; use the `use_standardized_objective` field of the post-processor settings (via `UseStandardizedObjectiveMixin`).
+- `JSONGrammar.__init__`, `SimpleGrammar.__init__` and `PydanticGrammar.__init__` no longer accept and silently discard arbitrary keyword arguments.

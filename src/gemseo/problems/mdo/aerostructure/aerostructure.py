@@ -222,8 +222,6 @@ class Aerodynamics(Discipline):
     Evaluate: `[drag, forces, lift] = f(sweep, thick_airfoils, displ)`.
     """
 
-    auto_detect_grammar_files = True
-
     def __init__(self) -> None:  # noqa: D107
         super().__init__()
         self.io.input_grammar.update_from_names(("sweep", "thick_airfoils", "displ"))

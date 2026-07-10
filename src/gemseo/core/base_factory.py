@@ -165,7 +165,14 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
             1. The fully qualified module names
             2. The plugin packages
             3. The packages from the environment variables
+
+        The known classes are rediscovered from scratch, so classes whose source
+        (e.g. a directory previously on the `GEMSEO_PATH` environment variable) is
+        no longer available are removed.
         """
+        self.__name_to_class_info.clear()
+        self.__failed_imports.clear()
+
         module_names = list(self._PACKAGE_NAMES)
 
         # Import the fully qualified modules names.

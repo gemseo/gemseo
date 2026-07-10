@@ -40,3 +40,4 @@ The `TEMPLATES_DIR_PATH` class attribute of `JobSchedulerDiscipline` was renamed
 `BaseCache.__iter__` now yields input data mappings (the keys) instead of `CacheEntry` objects.
 `BaseDiscipline._set_data_from_cache` now takes an explicit `input_data` argument before `cache_entry`.
 The `BaseCeche.last_entry` was renamed to `last_item`.
+`SimpleGrammar.__init__` now accepts a `defaults` argument. When `required_names` is not given, elements present in `defaults` are no longer marked as required, matching the behavior of `JSONGrammar` and `PydanticGrammar`.

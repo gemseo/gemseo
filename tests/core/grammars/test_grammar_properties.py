@@ -20,15 +20,6 @@ from gemseo.core.grammars.properties import GrammarProperties
 from gemseo.core.grammars.simple import SimpleGrammar
 from gemseo.utils.testing.helpers import assert_exception
 
-exclude_names = pytest.mark.parametrize(
-    "excluded_names",
-    [
-        (),
-        ["dummy"],
-        ["name"],
-    ],
-)
-
 
 @pytest.fixture
 def properties() -> GrammarProperties:
@@ -81,7 +72,7 @@ def test_delitem(properties: GrammarProperties, snapshot) -> None:
 
 
 def test_getitem(properties: GrammarProperties, snapshot) -> None:
-    """Verify setitem."""
+    """Verify getitem."""
     # Non existing name.
     with assert_exception(KeyError, snapshot):
         properties["dummy"]
@@ -100,3 +91,22 @@ def test_setitem(properties: GrammarProperties, snapshot) -> None:
     # Non existing name.
     with assert_exception(KeyError, snapshot):
         properties["dummy"] = 0
+
+
+def test_repr(properties: GrammarProperties) -> None:
+    """Verify repr."""
+    properties["name"] = 0
+    assert repr(properties) == repr({"name": 0})
+
+
+def test_copy(properties: GrammarProperties) -> None:
+    """Verify copy."""
+    properties["name"] = 0
+    properties_copy = properties.copy()
+    assert properties_copy == properties
+
+    properties_copy["other_name"] = 1
+    assert "other_name" not in properties
+
+    properties["name"] = 2
+    assert properties_copy["name"] == 0

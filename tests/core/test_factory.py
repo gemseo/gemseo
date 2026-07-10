@@ -19,12 +19,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -38,6 +40,30 @@ from gemseo.utils.testing.helpers import assert_exception
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
+
+
+def normalize_schema(schema: Any) -> Any:
+    """Normalize a JSON schema for machine-independent comparison.
+
+    The default value of `n_processes` is the number of CPUs of the machine;
+    it is replaced by 0.
+
+    Args:
+        schema: The JSON schema or a piece of it.
+
+    Returns:
+        The normalized schema.
+    """
+    if isinstance(schema, dict):
+        return {
+            key: 0
+            if key == "n_processes" and isinstance(value, int)
+            else normalize_schema(value)
+            for key, value in schema.items()
+        }
+    if isinstance(schema, list):
+        return [normalize_schema(item) for item in schema]
+    return schema
 
 
 class MultitonFactory(metaclass=BaseABCMultiton):
@@ -119,10 +145,9 @@ def test_parse_docstrings(reset_factory, tmp_wd, formulation_name) -> None:
 
     grammar = factory.get_options_grammar(formulation_name, write_schema=True)
     file_name = f"{grammar.name}.json"
-    assert (
-        Path(file_name).read_text().split()
-        == Path(DATA / file_name).read_text().split()
-    )
+    assert normalize_schema(
+        json.loads(Path(file_name).read_text())
+    ) == normalize_schema(json.loads((DATA / file_name).read_text()))
 
     grammar.validate(opt_vals)
 

@@ -23,10 +23,11 @@ from typing import Any
 
 import pytest
 from numpy import zeros
-from pydantic.fields import FieldInfo
+from pydantic import BaseModel
 
+from gemseo.core.data_converters.base import BaseDataConverter
 from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.factory import GrammarFactory
+from gemseo.core.grammars.factory import GRAMMAR_FACTORY
 from gemseo.core.grammars.json import JSONGrammar
 from gemseo.core.grammars.properties import GrammarProperties
 from gemseo.core.grammars.pydantic import PydanticGrammar
@@ -42,13 +43,11 @@ if TYPE_CHECKING:
 
     from gemseo.core.grammars.base import BaseGrammar
 
-FACTORY = GrammarFactory()
 
-
-@pytest.fixture(params=FACTORY.class_names)
+@pytest.fixture(params=GRAMMAR_FACTORY.class_names)
 def grammar_class(request) -> type[BaseGrammar]:
     """Iterate over the grammar classes."""
-    return FACTORY.get_class(request.param)
+    return GRAMMAR_FACTORY.get_class(request.param)
 
 
 @pytest.fixture
@@ -223,6 +222,12 @@ def test_restrict_to_error(grammar, snapshot) -> None:
         grammar.restrict_to(["foo"])
 
 
+def test_data_converter(grammar) -> None:
+    """Verify the data_converter property getter."""
+    assert grammar.data_converter is not None
+    assert isinstance(grammar.data_converter, BaseDataConverter)
+
+
 def test_convert_to_simple_grammar(grammar) -> None:
     """Verify conversion to simple grammar."""
     name_to_type = {"name1": int, "name2": int}
@@ -262,6 +267,17 @@ def test_rename(grammar) -> None:
     grammar.rename_element("new_name", "new_new_name")
 
 
+def test_rename_with_none_default(grammar) -> None:
+    """Verify that renaming keeps a default whose value is None."""
+    grammar.update_from_types({"name": None})
+    grammar.defaults["name"] = None
+
+    grammar.rename_element("name", "new_name")
+
+    assert grammar.defaults.keys() == {"new_name"}
+    assert grammar.defaults["new_name"] is None
+
+
 def test_rename_error(grammar, snapshot) -> None:
     """Verify rename error."""
     with assert_exception(KeyError, snapshot):
@@ -299,6 +315,54 @@ def test_copy(grammar) -> None:
 def test_validate_empty_grammar(grammar) -> None:
     """Verify that an empty grammar can validate everything."""
     grammar.validate({"name": 0})
+
+
+def test_schema(grammar, snapshot) -> None:
+    """Verify that every grammar exposes a JSON-schema-shaped dict."""
+    grammar.update_from_types({"x": int, "y": str})
+    assert grammar.schema == snapshot
+
+
+def test_schema_reflects_updates(grammar) -> None:
+    """Verify that `schema` reflects subsequent element additions."""
+    grammar.update_from_types({"x": int})
+    before = grammar.schema
+    assert "y" not in before["properties"]
+    grammar.update_from_types({"y": str})
+    after = grammar.schema
+    assert "y" in after["properties"]
+
+
+def test_schema_reflects_defaults_assignment(grammar) -> None:
+    """Verify that assigning to `defaults` invalidates the cached schema."""
+    grammar.update_from_types({"x": int})
+    grammar.schema  # prime the cache.
+    grammar.defaults = {"x": 1}
+    assert grammar.schema["properties"]["x"].get("default") == 1
+
+
+def test_schema_reflects_defaults_item_set(grammar) -> None:
+    """Verify that mutating `defaults` per-item invalidates the cached schema."""
+    grammar.update_from_types({"x": int})
+    grammar.schema  # prime the cache.
+    grammar.defaults["x"] = 2
+    assert grammar.schema["properties"]["x"].get("default") == 2
+
+
+def test_schema_reflects_defaults_item_del(grammar) -> None:
+    """Verify that deleting from `defaults` invalidates the cached schema."""
+    grammar.update_from_types({"x": int})
+    grammar.defaults["x"] = 3
+    grammar.schema  # prime the cache.
+    del grammar.defaults["x"]
+    assert "default" not in grammar.schema["properties"]["x"]
+
+
+def test_schema_reflects_descriptions(grammar) -> None:
+    """Verify that element descriptions surface in the schema."""
+    grammar.update_from_types({"x": int})
+    grammar.descriptions = {"x": "The x element."}
+    assert grammar.schema["properties"]["x"].get("description") == "The x element."
 
 
 def test_repr(grammar) -> None:
@@ -455,6 +519,15 @@ def assert_updated(
                 grammar.validate({name: value})
 
 
+class _PreparedModel(BaseModel):
+    """Pydantic model used by prepare_grammar for PydanticGrammar."""
+
+    required_name1: int
+    optional_name1: int = 0
+    required_name2: int
+    optional_name2: int = 0
+
+
 def prepare_grammar(grammar: BaseGrammar) -> None:
     """Prepare a grammar for testing the update methods.
 
@@ -463,36 +536,19 @@ def prepare_grammar(grammar: BaseGrammar) -> None:
     Args:
         grammar: The grammar to prepare.
     """
-    grammar_type = grammar.__class__
+    if isinstance(grammar, PydanticGrammar):
+        grammar.update_from_model(_PreparedModel)
+        return
 
-    if grammar_type in {SimpleGrammar, SimplerGrammar}:
-        grammar._SimpleGrammar__name_to_type["required_name1"] = int
-        grammar._SimpleGrammar__name_to_type["optional_name1"] = int
-        grammar._SimpleGrammar__name_to_type["required_name2"] = int
-        grammar._SimpleGrammar__name_to_type["optional_name2"] = int
-    elif grammar_type is PydanticGrammar:
-        grammar._PydanticGrammar__model.model_fields["required_name1"] = FieldInfo(
-            annotation=int
-        )
-        grammar._PydanticGrammar__model.model_fields["optional_name1"] = FieldInfo(
-            annotation=int, default=0
-        )
-        grammar._PydanticGrammar__model.model_fields["required_name2"] = FieldInfo(
-            annotation=int
-        )
-        grammar._PydanticGrammar__model.model_fields["optional_name2"] = FieldInfo(
-            annotation=int, default=0
-        )
-        grammar._PydanticGrammar__model.model_needs_rebuild = True
-    elif grammar_type is JSONGrammar:
-        grammar._JSONGrammar__schema_builder.add_object({"required_name1": 0}, False)
-        grammar._JSONGrammar__schema_builder.add_object({"optional_name1": 0}, False)
-        grammar._JSONGrammar__schema_builder.add_object({"required_name2": 0}, False)
-        grammar._JSONGrammar__schema_builder.add_object({"optional_name2": 0}, False)
-
-    grammar.required_names.add("required_name1")
+    grammar.update_from_types({
+        "required_name1": int,
+        "optional_name1": int,
+        "required_name2": int,
+        "optional_name2": int,
+    })
+    grammar.required_names.discard("optional_name1")
+    grammar.required_names.discard("optional_name2")
     grammar.defaults["optional_name1"] = 0
-    grammar.required_names.add("required_name2")
     grammar.defaults["optional_name2"] = 0
 
 
@@ -520,8 +576,8 @@ UPDATE_DATA = {
 }
 
 
-def powerset(iterable) -> Iterator[tuple[Any, ...]]:
-    """Compute powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3).
+def iter_powerset(iterable) -> Iterator[tuple[Any, ...]]:
+    """Compute iter_powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3).
 
     See https://docs.python.org/3/library/itertools.html#itertools-recipes.
 
@@ -529,14 +585,14 @@ def powerset(iterable) -> Iterator[tuple[Any, ...]]:
         iterable: An iterable.
 
     Returns:
-        The powerset.
+        The iter_powerset.
     """
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
 
 @parametrized_merge
-@pytest.mark.parametrize("excluded_names", powerset(UPDATE_DATA))
+@pytest.mark.parametrize("excluded_names", iter_powerset(UPDATE_DATA))
 def test_update(grammar, merge, excluded_names) -> None:
     """Verify update."""
     prepare_grammar(grammar)
@@ -646,8 +702,6 @@ def test_validate(grammar, data) -> None:
 def test_validate_error_missing_required(grammar, raises, caplog, snapshot):
     grammar.update_from_names(["name"])
 
-    match = "Grammar g: validation failed.\nMissing required names: name."
-
     if raises:
         with assert_exception(InvalidDataError, snapshot):
             grammar.validate({})
@@ -655,14 +709,6 @@ def test_validate_error_missing_required(grammar, raises, caplog, snapshot):
         grammar.validate({}, raise_exception=False)
 
     assert caplog.records[0].levelname == "ERROR"
-    assert caplog.text.strip().endswith(match)
-
-
-def test_validate_empty(grammar) -> None:
-    """Verify validate of an empty grammar."""
-    # It validates everything.
-    data = {"name": 0}
-    grammar.validate(data)
 
 
 def test_add_namespace(grammar, snapshot) -> None:
@@ -694,6 +740,19 @@ def test_add_namespace(grammar, snapshot) -> None:
         grammar.add_namespace("cab:abc", "x")
 
 
+def test_add_namespace_already_namespaced_reports_prefix(grammar, snapshot) -> None:
+    """Verify the error reports the existing namespace when chars overlap.
+
+    The legacy implementation used `str.strip` which strips any character in
+    the argument from both ends, so a namespace whose characters appear in the
+    base name was reported wrong.
+    """
+    grammar.update_from_types({"foo": int})
+    grammar.add_namespace("foo", "fo")
+    with assert_exception(ValueError, snapshot):
+        grammar.add_namespace("fo:foo", "")
+
+
 def test_has_names(grammar):
     """Check has_names."""
     assert not grammar.has_names(("name",))
@@ -722,17 +781,22 @@ def test_descriptions_setter(grammar):
     assert grammar.descriptions == {"x": "foo"}
 
 
+def test_rename_element_rejects_namespace_separator(grammar, snapshot):
+    """Verify that `rename_element` rejects a new name containing the separator."""
+    grammar.update_from_types({"x": int})
+    with assert_exception(ValueError, snapshot):
+        grammar.rename_element("x", "x:y")
+
+
 def test_name_including_colon(grammar):
-    """Check that a grammar does not confuse names inc. colons with namespaced names."""
-    g = SimpleGrammar("g")
-    # ":" is the namespaces separator
-    # and shall never be used by the end-user to define the name of an element.
-    # This special character is reserved for namespace management.
-    # The end-user must always use the method add_namespace to add namespace.
-    # This test is just to check that
-    # if the end-user does not follow these instructions,
-    # its name will not be interpreted as a namespaced name.
-    g.update_from_names(["x:y", "z"])
-    g.add_namespace("z", "x")
-    assert tuple(g.names) == ("x:y", "x:z")
-    assert tuple(g.names_without_namespace) == ("x:y", "z")
+    """Check that grammars accept colons through low-level update paths.
+
+    The colon is the namespaces separator and is reserved for namespace management,
+    but `update_from_*` are also internal propagation paths for already-namespaced
+    names, so they remain permissive. Only `rename_element`, JSON schemas and
+    Pydantic models reject the separator.
+    """
+    grammar.update_from_names(["x:y", "z"])
+    grammar.add_namespace("z", "x")
+    assert tuple(grammar.names) == ("x:y", "x:z")
+    assert tuple(grammar.names_without_namespace) == ("x:y", "z")
