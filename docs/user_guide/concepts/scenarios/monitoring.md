@@ -22,7 +22,7 @@ But a finer monitoring may be needed, especially in case of crash,
 where the current execution status of each [Discipline][gemseo.core.discipline.discipline.Discipline] is useful.
 
 GEMSEO provides different monitoring modes,
-illustrated below on the [Sobieski][sobieskis-ssbj-test-case] MDF test case.
+illustrated below on the [Sobieski][concept-sobieskis-super-sonic-business-jet-ssbj] MDF test case.
 
 ## Basic monitoring using logs { #concept-monitoring-logs }
 

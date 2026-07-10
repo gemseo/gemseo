@@ -58,7 +58,7 @@ from gemseo.settings.post import OptHistoryView_Settings
 #
 # ## A simple MDO test case: the Sellar Problem
 #
-# This example considers the [Sellar's problem][sellars-problem].
+# This example considers the [Sellar's problem][concept-sellars-problem].
 #
 # ## Definition of the disciplines using Python functions
 #

@@ -40,7 +40,7 @@ from gemseo.settings import L_BFGS_B_Settings
 # ### 1. Build the disciplines, design space and scenario
 #
 # You use the Sobieski SSBJ test case.
-# See [the benchmark problems][benchmark-problems] for a full description.
+# See [the benchmark problems][concept-mdo-problems] for a full description.
 disciplines = create_discipline([
     "SobieskiPropulsion",
     "SobieskiAerodynamics",

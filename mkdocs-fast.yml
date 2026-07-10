@@ -146,11 +146,15 @@ nav:
               - ODE problem: user_guide/concepts/problems/ode.md
               - Functions: user_guide/concepts/problems/functions.md
           - Benchmarking:
-              - Scalable MDO problems:
-                  - Linear: user_guide/concepts/benchmarking/scalable_mdo/linear.md
-                  - Quadratic: user_guide/concepts/benchmarking/scalable_mdo/quadratic.md
-                  - Data-driven: user_guide/concepts/benchmarking/scalable_mdo/data_driven.md
-              - MDO-like optimization problems: user_guide/concepts/benchmarking/mdo_like_optimization_problems.md
+              - Introduction: user_guide/concepts/benchmarking/introduction.md
+              - MDO problems: user_guide/concepts/benchmarking/mdo.md
+              - Scalable MDO problems: user_guide/concepts/benchmarking/scalable_mdo.md
+              - Optimization problems: user_guide/concepts/benchmarking/optimization_problems.md
+              - Multi-objective optimization problems: user_guide/concepts/benchmarking/multiobjective_optimization_problems.md
+              - Topology optimization: user_guide/concepts/benchmarking/topology_optimization.md
+              - Uncertainty problems: user_guide/concepts/benchmarking/uncertainty_problems.md
+              - ODE problems: user_guide/concepts/benchmarking/ode_problems.md
+              - Datasets: user_guide/concepts/benchmarking/datasets.md
       - User experience:
           - Introduction: user_guide/user_experience/introduction.md
           - High-level functions: user_guide/user_experience/high_level_functions.md
@@ -222,8 +226,6 @@ nav:
               - All: algorithms/uncertainty_algos.md
               - Sensitivity analysis: algorithms/sensitivity_algos.md
               - Probability distributions: algorithms/distribution_algos.md
-      - Use Cases:
-          - Benchmark problems: problems/benchmark_problems.md
 
   - FAQ: faq.md
 
