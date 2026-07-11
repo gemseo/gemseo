@@ -71,7 +71,7 @@ test = [
     "covdefaults",
     "pandera",
     # Lower bound is necessary for testing the lowest bounds of dependencies.
-    "pytest >=8,<9.1.0",
+    "pytest >=8,<10",
     "pytest-cov",
     "pytest-xdist",
     "pytest-sugar",
