@@ -9,3 +9,7 @@
   users to provide instances of `Discipline` to be used as sub-scenarios of the formulation. These instances shall be
   provided via the `disc_as_sub_scenario` field of the `gemseo.formulations.bilevel_settings.BiLevel_Settings`.
 - `SimpleGrammar.schema` and `SimplerGrammar.schema` return a JSON-schema-shaped dict, matching `JSONGrammar` and `PydanticGrammar`.
+- The `BaseModelDiscipline` allows users to use Pydantic models to handle I/O instead of Python dictionaries. It also
+  determines automatically the I/O's from the model and defines the grammar from them. This means that different
+  disciplines that inherit from `BaseModelDiscipline` can share the same Pydantic model, each of them using only a
+  subset of the model's fields for their I/O's.
