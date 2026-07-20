@@ -42,6 +42,7 @@ from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.disciplines.auto_py import AutoPyDiscipline
 from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
 from gemseo.uncertainty.distributions.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -835,3 +836,13 @@ def test_ranked_based_sobol_from_samples(discipline, uncertain_space):
     assert_almost_equal(
         analysis.get_intervals()["y"][0]["x1"], array([[0.1903898], [0.4456537]])
     )
+
+
+def test_plot_second_order(sobol, snapshot_matplotlib):
+    """The plot_second_order method plots the second-order indices using a heat map."""
+    heatmap = sobol.plot_second_order("y")
+    heatmap.execute(save=False)
+    heatmap = sobol.plot_second_order(
+        "y", settings=Heatmap_Settings(colormap="viridis")
+    )
+    heatmap.execute(save=False)

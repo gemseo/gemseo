@@ -32,9 +32,11 @@ from typing import Final
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 from numpy import array
+from numpy import asarray
 from numpy import hstack
 from numpy import sign
 from numpy import vstack
+from numpy import zeros
 from numpy.random import default_rng
 from openturns import JansenSensitivityAlgorithm
 from openturns import MartinezSensitivityAlgorithm
@@ -50,6 +52,9 @@ from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
     OT_SOBOL_INDICES_Settings,
 )
+from gemseo.datasets.dataset import Dataset
+from gemseo.post.dataset.heatmap import Heatmap
+from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
 from gemseo.uncertainty.sensitivity._cv_sobol_algorithm import CVSobolAlgorithm
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
 from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
@@ -57,6 +62,7 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.utils.seeder import SEED
 from gemseo.utils.string_tools import filter_names
+from gemseo.utils.string_tools import get_name_and_component
 from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
@@ -939,8 +945,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
                 when `sort` is `True` and total-order Sobol' indices are available.
                 Otherwise, use the first-order Sobol' indices.
         """  # noqa: D415 D417
-        if not isinstance(output, tuple):
-            output = (output, 0)
+        output = get_name_and_component(output)
 
         fig, ax = plt.subplots()
 
@@ -1055,3 +1060,42 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
             directory_path=directory_path,
         )
         return fig
+
+    def plot_second_order(
+        self,
+        output: VariableType,
+        settings: Heatmap_Settings | None = None,
+    ) -> Heatmap:
+        """Plot the second-order Sobol' indices using a symmetric heat map.
+
+        Args:
+            output: The output of interest.
+                Either a name or a tuple of the form (name, component).
+                If name, its first component is considered.
+            settings: The settings of the heat map.
+                The `"symmetric"` option will be set to `True`.
+
+        Returns:
+            The heat map of the second-order Sobol' indices.
+        """
+        output_name, output_component = get_name_and_component(output)
+        indices = self.indices.second[output_name][output_component]
+        name_to_size = self.dataset.variable_name_to_n_components
+        components = [
+            (name, index) for name in indices for index in range(name_to_size[name])
+        ]
+        variables = [
+            repr_variable(name, index, name_to_size[name]) for name, index in components
+        ]
+        n = len(variables)
+        data = zeros((n, n))
+        for i, (name_i, component_i) in enumerate(components):
+            indices_i = indices[name_i]
+            for j, (name_j, component_j) in enumerate(components):
+                index = asarray(indices_i[name_j])[component_i, component_j]
+                data[i, j] = max(index, 0.0)
+
+        dataset = Dataset.from_array(data, variable_names=variables)
+        settings_kwargs = settings.model_dump() if settings is not None else {}
+        settings_kwargs["symmetric"] = True
+        return Heatmap(dataset, settings=Heatmap_Settings(**settings_kwargs))

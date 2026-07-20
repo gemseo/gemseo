@@ -136,6 +136,10 @@ modules:
   gemseo.post.dataset.plot_settings.PlotSettings: BaseDatasetPlotSettings
   gemseo.post.dataset.plot_settings: base_settings
   gemseo.post.dataset.dataset_plot: gemseo.post.dataset.base
+  gemseo.post.dataset.color_evolution.ColorEvolution: Heatmap
+  gemseo.post.dataset.color_evolution_settings.ColorEvolution_Settings: Heatmap_Settings
+  gemseo.post.dataset.color_evolution: heatmap
+  gemseo.post.dataset.color_evolution_settings: heatmap_settings
   gemseo.post.mlearning: machine_learning
   gemseo.post.radar_chart.RadarChart: ConstraintRadar
   gemseo.post.radar_chart_settings.RadarChart_Settings: ConstraintRadar_Settings
