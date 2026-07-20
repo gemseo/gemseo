@@ -74,7 +74,7 @@ nav:
           - Optimization and DOE framework: mdo/optimization.md
       - Tutorials (advanced):
           - Tutorial - Solve a mixed optimization problem: generated/examples/tutorials/advanced/plot_tutorial_mixed_optimization.md
-          - Tutorial - Use namespaces to run the same discipline in multiple contexts: generated/examples/tutorials/advanced/plot_tutorial_namespace.md
+          - Tutorial - Use namespaces to run the same discipline in multiple contexts, operating conditions, and perform multipoint optimization: generated/examples/tutorials/advanced/plot_tutorial_namespace.md
           - Tutorial - Solve a bi-level MDO problem: generated/examples/tutorials/advanced/plot_tutorial_mdo_advanced.md
           - Tutorial - Compute a Pareto front with a BiLevel formulation: generated/examples/tutorials/advanced/plot_tutorial_bilevel_multi_objective.md
           - Tutorial - From a monodisciplinary problem to an MDO problem: generated/examples/tutorials/advanced/plot_tutorial_make_monodisciplinary_optimization_problem_multidisciplinary.md

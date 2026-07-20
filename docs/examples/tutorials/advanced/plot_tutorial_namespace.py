@@ -13,12 +13,14 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-"""# Tutorial - Use namespaces to run the same discipline in multiple contexts
+"""# Tutorial - Use namespaces to run the same discipline in multiple contexts, operating conditions, and perform multipoint optimization
 
 ## Goal
 
 In this tutorial, you will learn to model and simulate an ensemble of similar objects
 using the same discipline definition — without duplicating any code.
+Among other things, this is a useful feature carrying out multipoint optimization
+problems.
 
 The motivating scenario is to design a launcher
 that must carry several satellites into different orbits.
@@ -99,6 +101,12 @@ except ValueError as err:
 # You leave `structure_mass` without a namespace.
 # This means all satellite instances share the same structural mass —
 # they all use the same satellite bus design.
+# You can also think about this as a multipoint optimization problem in which the same
+# satellite architecture is optimized for different payloads. An aggregation
+# function is then used as the objective.
+# Another typical use case is the minimization of the weighted sum of energy consumption
+# of a system for different operating conditions, for instance a minimization of the
+# aircraft fuel burn for multiple Mach numbers or angles of attack.
 n_satellites = 3
 satellites = []
 for i in range(n_satellites):
