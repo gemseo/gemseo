@@ -12,36 +12,38 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Evolution of the variables by means of a color scale, using matplotlib."""
+"""A heat map of a dataset, either rectangular or symmetric, using matplotlib."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from matplotlib.colors import SymLogNorm
+from matplotlib.colors import TwoSlopeNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from numpy import arange
+from numpy import isnan
 
-from gemseo.post.dataset.color_evolution_settings import ColorEvolution_Settings
+from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
+from gemseo.post.dataset.plots._heatmap_utils import compute_centered_bounds
 from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
-    from numpy.typing import ArrayLike
+
+    from gemseo.typing import RealArray
 
 
-class ColorEvolution(MatplotlibPlot[ColorEvolution_Settings]):
-    """Evolution of the variables by means of a color scale, using matplotlib."""
+class Heatmap(MatplotlibPlot[Heatmap_Settings]):
+    """A heat map of a dataset, either rectangular or symmetric, using matplotlib."""
 
     def _create_figures(
         self,
         fig: Figure | None,
         ax: Axes | None,
-        data: ArrayLike,
-        variable_names: Iterable[str],
+        data: RealArray,
+        variable_names: tuple[str, ...],
     ) -> list[Figure]:
         """
         Args:
@@ -54,22 +56,50 @@ class ColorEvolution(MatplotlibPlot[ColorEvolution_Settings]):
         if settings.use_log:
             maximum = abs(data).max()
             norm = SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0)
+        elif settings.symmetric and settings.center is not None:
+            bounds = compute_centered_bounds(data, settings.center)
+            if bounds is not None:
+                norm = TwoSlopeNorm(
+                    vcenter=settings.center, vmin=bounds[0], vmax=bounds[1]
+                )
 
-        img_ = ax.imshow(
+        img = ax.imshow(
             data,
             cmap=settings.colormap,
             norm=norm,
             alpha=settings.opacity,
-            **settings.options,
+            **settings.matplotlib_options,
         )
-        names = self._common_dataset.get_columns(variable_names)
-        ax.set_yticks(arange(len(names)))
-        ax.set_yticklabels(names)
+
+        if settings.symmetric:
+            ticks = arange(len(variable_names))
+            ax.set_xticks(ticks)
+            ax.set_xticklabels(variable_names)
+            ax.set_yticks(ticks)
+            ax.set_yticklabels(variable_names)
+        else:
+            ax.set_xticks(arange(data.shape[1]))
+            ax.set_xticklabels([str(value) for value in self._common_dataset.index])
+            ax.set_yticks(arange(len(variable_names)))
+            ax.set_yticklabels(variable_names)
+
         ax.set_xlabel(settings.xlabel)
         ax.set_ylabel(settings.ylabel)
         ax.set_title(settings.title)
+
+        if settings.annotate:
+            for i, row in enumerate(data):
+                for j, value in enumerate(row):
+                    ax.text(
+                        j,
+                        i,
+                        "NaN" if isnan(value) else format(value, settings.annotate_fmt),
+                        ha="center",
+                        va="center",
+                    )
+
         fig.colorbar(
-            img_,
+            img,
             ax=ax,
             format=LogFormatterSciNotation() if settings.use_log else None,
         )
