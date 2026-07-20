@@ -69,6 +69,7 @@ if TYPE_CHECKING:
 
     from gemseo.core._process_flow.execution_sequences import BaseCompositeExecSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 
@@ -190,7 +191,7 @@ class XDSMizer:
 
     def monitor(
         self,
-        directory_path: str | Path = ".",
+        directory_path: StrPath = ".",
         file_name: str = "xdsm",
         log_workflow_status: bool = False,
         save_pdf: bool = False,
@@ -232,7 +233,7 @@ class XDSMizer:
 
     def run(
         self,
-        directory_path: str | Path = ".",
+        directory_path: StrPath = ".",
         file_name: str = "xdsm",
         show_html: bool = False,
         save_html: bool = True,

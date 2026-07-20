@@ -20,7 +20,11 @@ from pathlib import Path
 from pickle import HIGHEST_PROTOCOL
 from pickle import Pickler
 from pickle import Unpickler
+from typing import TYPE_CHECKING
 from typing import Any
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrPath
 
 
 class _NumpyCompatUnpickler(Unpickler):
@@ -48,7 +52,7 @@ class _NumpyCompatUnpickler(Unpickler):
 
 def to_pickle(
     obj: Any,
-    file_path: str | Path,
+    file_path: StrPath,
     protocol: int = HIGHEST_PROTOCOL,
 ) -> None:
     """Save the pickled representation of an object on the disk.
@@ -63,7 +67,7 @@ def to_pickle(
         pickler.dump(obj)
 
 
-def from_pickle(file_path: str | Path) -> Any:
+def from_pickle(file_path: StrPath) -> Any:
     """Load an object from its pickled representation stored on the disk.
 
     Args:

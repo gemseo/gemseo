@@ -71,10 +71,10 @@ from gemseo.utils.pickle import from_pickle as from_pickle
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
-    from pathlib import Path
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.datasets.io_dataset import IODataset as IODataset
+    from gemseo.typing import StrPath
     from gemseo.uncertainty.distributions.base import BaseDistribution
     from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
     from gemseo.uncertainty.statistics.base import BaseStatistics
@@ -205,7 +205,7 @@ def create_statistics(
 
 def create_sensitivity_analysis(
     analysis: str,
-    samples: IODataset | str | Path = "",
+    samples: IODataset | StrPath = "",
 ) -> BaseSensitivityAnalysis:
     """Create the sensitivity analysis.
 
@@ -233,7 +233,7 @@ def create_sensitivity_analysis(
     return factory.create(name, samples=samples)
 
 
-def load_sensitivity_analysis(file_path: str | Path) -> BaseSensitivityAnalysis:
+def load_sensitivity_analysis(file_path: StrPath) -> BaseSensitivityAnalysis:
     """Load a sensitivity analysis from the disk.
 
     Args:

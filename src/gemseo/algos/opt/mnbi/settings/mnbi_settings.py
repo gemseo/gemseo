@@ -17,7 +17,6 @@
 from __future__ import annotations
 
 from collections.abc import Sequence  # noqa: TC003
-from pathlib import Path  # noqa: TC003
 from typing import TYPE_CHECKING
 
 from pydantic import Field
@@ -28,6 +27,7 @@ from pydantic import model_validator
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
+from gemseo.typing import StrPath
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 if TYPE_CHECKING:
@@ -78,7 +78,7 @@ the number of objectives of the problem.""",
         ),
     )
 
-    debug_file_path: str | Path = Field(
+    debug_file_path: StrPath = Field(
         default="debug_history.h5",
         description="""The path to the debug file if debug mode is active.""",
     )

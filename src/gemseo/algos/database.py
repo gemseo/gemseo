@@ -66,11 +66,11 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
-    from pathlib import Path
 
     from gemseo.datasets.optimization_metadata import OptimizationMetadata
     from gemseo.typing import NumberArray
     from gemseo.typing import RealArray
+    from gemseo.typing import StrPath
 
 DatabaseKeyType = ndarray | HashableNdarray
 """The type of a [Database][gemseo.algos.database.Database] key."""
@@ -783,7 +783,7 @@ class Database(Mapping):
 
     def to_hdf(
         self,
-        file_path: str | Path = "optimization_history.h5",
+        file_path: StrPath = "optimization_history.h5",
         append: bool = False,
         hdf_node_path: str = "",
     ) -> None:
@@ -806,7 +806,7 @@ class Database(Mapping):
     @classmethod
     def from_hdf(
         cls,
-        file_path: str | Path = "optimization_history.h5",
+        file_path: StrPath = "optimization_history.h5",
         name: str = "",
         hdf_node_path: str = "",
         log: bool = True,
@@ -843,7 +843,7 @@ class Database(Mapping):
 
     def update_from_hdf(
         self,
-        file_path: str | Path = "optimization_history.h5",
+        file_path: StrPath = "optimization_history.h5",
         hdf_node_path: str = "",
     ) -> None:
         """Update the current database from an HDF file.
@@ -966,7 +966,7 @@ class Database(Mapping):
     def to_ggobi(
         self,
         function_names: Iterable[str] = (),
-        file_path: str | Path = "opt_hist.xml",
+        file_path: StrPath = "opt_hist.xml",
         input_names: str | Iterable[str] = (),
     ) -> None:
         """Export the database to an XML file for ggobi tool.
@@ -987,7 +987,7 @@ class Database(Mapping):
             file_path=file_path,
         )
 
-    def update_from_opendace(self, database_file: str | Path) -> None:
+    def update_from_opendace(self, database_file: StrPath) -> None:
         """Update the current database from an opendace XML database.
 
         Args:

@@ -32,10 +32,10 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from pathlib import Path
 
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
 
 
 @contextmanager
@@ -110,7 +110,7 @@ class DisciplineJacobianChecker(BaseJacobianChecker[str]):
         rtol: float = 1e-8,
         inputs: Iterable[str] = (),
         outputs: Iterable[str] = (),
-        reference_jacobian_path: str | Path = "",
+        reference_jacobian_path: StrPath = "",
         save_reference_jacobian: bool = False,
         approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float | None = 1e-7,
@@ -119,7 +119,7 @@ class DisciplineJacobianChecker(BaseJacobianChecker[str]):
         wait_time_between_fork: float = 0.0,
         linearization_mode: DerivationMode = DerivationMode.AUTO,
         plot_result: bool = False,
-        file_path: str | Path = "jacobian_errors.pdf",
+        file_path: StrPath = "jacobian_errors.pdf",
         show: bool = False,
         fig_size_x: float = 10,
         fig_size_y: float = 10,

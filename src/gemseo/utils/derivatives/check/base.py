@@ -28,7 +28,8 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
+
+    from gemseo.typing import StrPath
 
 T = TypeVar("T", bound=int | str)
 
@@ -44,7 +45,7 @@ class BaseJacobianChecker(Generic[T], metaclass=ABCGoogleDocstringInheritanceMet
         rtol: float = 1e-8,
         inputs: Iterable[T] = (),
         outputs: Iterable[T] = (),
-        reference_jacobian_path: str | Path = "",
+        reference_jacobian_path: StrPath = "",
         save_reference_jacobian: bool = False,
         approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float | None = 1e-7,

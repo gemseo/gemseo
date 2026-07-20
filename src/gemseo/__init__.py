@@ -127,6 +127,7 @@ if TYPE_CHECKING:
     )
     from gemseo.typing import NumberArray
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
     from gemseo.utils.matplotlib_figure import FigSizeType
     from gemseo.utils.pydantic import BaseSettings
     from gemseo.utils.xdsm.xdsm import XDSM
@@ -143,7 +144,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 def generate_n2_plot(
     disciplines: Sequence[BaseDiscipline],
-    file_path: str | Path = "n2.pdf",
+    file_path: StrPath = "n2.pdf",
     show_data_names: bool = True,
     save: bool = True,
     show: bool = False,
@@ -186,7 +187,7 @@ def generate_n2_plot(
 
 def generate_coupling_graph(
     disciplines: Sequence[BaseDiscipline],
-    file_path: str | Path = "coupling_graph.pdf",
+    file_path: StrPath = "coupling_graph.pdf",
     full: bool = True,
     clean_up: bool = True,
     show_edge_labels: bool = True,
@@ -707,7 +708,7 @@ def get_mda_options_schema(
 def create_scenario(
     disciplines: Sequence[Discipline] | Discipline,
     objective_name: str,
-    design_space: DesignSpace | str | Path,
+    design_space: DesignSpace | StrPath,
     name: str = "",
     scenario_type: str = "MDO",
     maximize_objective: bool = False,
@@ -768,7 +769,7 @@ def configure_logger(
     level: str | int = _LOGGING_LEVEL,
     date_format: str = _LOGGING_DATE_FORMAT,
     message_format: str = _LOGGING_MESSAGE_FORMAT,
-    filename: str | Path = _LOGGING_FILE_PATH,
+    filename: StrPath = _LOGGING_FILE_PATH,
     filemode: str = _LOGGING_FILE_MODE,
 ) -> Logger:
     """Configure GEMSEO logging.
@@ -854,7 +855,7 @@ def create_discipline(
 
 # TODO: API: remove cls argument.
 def import_discipline(
-    file_path: str | Path, cls: type[Discipline] | None = None
+    file_path: StrPath, cls: type[Discipline] | None = None
 ) -> Discipline:
     """Import a discipline from a pickle file.
 
@@ -995,7 +996,7 @@ def create_mda(
 
 
 def execute_post(
-    to_post_proc: MDOScenario | OptimizationProblem | str | Path,
+    to_post_proc: MDOScenario | OptimizationProblem | StrPath,
     settings_model: BasePostSettings | None = None,
     **settings: Any,
 ) -> BasePost:
@@ -1106,7 +1107,7 @@ def check_jacobian(
     rtol: float = 1e-8,
     inputs: Iterable[str] = (),
     outputs: Iterable[str] = (),
-    reference_jacobian_path: str | Path = "",
+    reference_jacobian_path: StrPath = "",
     save_reference_jacobian: bool = False,
     approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
     step: float | None = 1e-7,
@@ -1115,7 +1116,7 @@ def check_jacobian(
     wait_time_between_fork: float = 0.0,
     linearization_mode: DerivationMode = DerivationMode.AUTO,
     plot_result: bool = False,
-    file_path: str | Path = "jacobian_errors.pdf",
+    file_path: StrPath = "jacobian_errors.pdf",
     show: bool = False,
     fig_size_x: float = 10,
     fig_size_y: float = 10,
@@ -1236,7 +1237,7 @@ def print_configuration() -> None:
 
 
 def read_design_space(
-    file_path: str | Path,
+    file_path: StrPath,
     header: Iterable[str] = (),
     delimiter: str = "",
 ) -> DesignSpace:
@@ -1267,7 +1268,7 @@ def read_design_space(
 
 def write_design_space(
     design_space: DesignSpace,
-    output_file: str | Path,
+    output_file: StrPath,
     fields: Sequence[str] = (),
     delimiter: str = " ",
     append: bool = False,
@@ -1344,7 +1345,7 @@ def create_cache(
 
 def create_dataset(
     name: str = "",
-    data: ndarray | str | Path = "",
+    data: ndarray | StrPath = "",
     variable_names: str | Iterable[str] = (),
     variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
     variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
@@ -1452,7 +1453,7 @@ def create_benchmark_dataset(
 
 
 def import_database(
-    file_path: str | Path,
+    file_path: StrPath,
     hdf_node_path: str = "",
 ) -> Database:
     """Load a database from an HDF file path.
@@ -1624,7 +1625,7 @@ def configure(
 def wrap_discipline_in_job_scheduler(
     discipline: Discipline,
     scheduler_name: str,
-    workdir_path: str | Path,
+    workdir_path: StrPath,
     **options: Any,
 ) -> JobSchedulerDiscipline:
     """Wrap the discipline within another one to delegate its execution to a job
@@ -1676,7 +1677,7 @@ def wrap_discipline_in_job_scheduler(
 
 
 def create_scenario_result(
-    scenario: MDOScenario | str | Path,
+    scenario: MDOScenario | StrPath,
     name: str = "",
     **options: Any,
 ) -> ScenarioResult | None:
@@ -1786,7 +1787,7 @@ def sample_disciplines(
 
 def generate_xdsm(
     process: EvaluationScenario | BaseDiscipline,
-    directory_path: str | Path = ".",
+    directory_path: StrPath = ".",
     file_name: str = "xdsm",
     show_html: bool = False,
     save_html: bool = True,

@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path  # noqa: TC003
-
 from pydantic import Field
 from pydantic import PositiveInt
 
@@ -25,6 +23,7 @@ from gemseo.algos.doe.base_doe_settings import BaseDOESettings
 from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
 from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.typing import StrPath
 
 
 class MultiStart_Settings(BaseOptimizerSettings):  # noqa: N801
@@ -54,7 +53,7 @@ where `n_samples` is deduced from `doe_algo_settings`.
 The DOE algorithm is used to generate the sub-optimizations starting points.""",
     )
 
-    multistart_file_path: str | Path = Field(
+    multistart_file_path: StrPath = Field(
         default="",
         description="""The database file path to save the local optima.
 

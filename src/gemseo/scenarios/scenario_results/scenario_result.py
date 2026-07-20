@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from gemseo.post.base_post_settings import BasePostSettings
     from gemseo.post.factory import PostFactory
     from gemseo.scenarios.mdo import MDOScenario
+    from gemseo.typing import StrPath
 
 
 class ScenarioResult:
@@ -52,7 +53,7 @@ class ScenarioResult:
     POST_FACTORY: ClassVar[PostFactory] = POST_FACTORY
     """The factory of [BasePost][gemseo.post.base_post.BasePost], if created."""
 
-    def __init__(self, scenario: MDOScenario | str | Path) -> None:
+    def __init__(self, scenario: MDOScenario | StrPath) -> None:
         """
         Args:
             scenario: The scenario to post-process or the path to its HDF5 file.

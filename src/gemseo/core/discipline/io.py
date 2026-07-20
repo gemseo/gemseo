@@ -29,12 +29,12 @@ from gemseo.core.namespaces import namespaces_separator
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
 
     from gemseo.core.discipline.data_processor import DataProcessor
     from gemseo.core.grammars.base import BaseGrammar
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
 
 _GRAMMAR_FACTORY = GrammarFactory()
 
@@ -101,9 +101,9 @@ class IO:
         discipline_name: str,
         grammar_type: GrammarType,
         auto_detect_grammar_files: bool = False,
-        grammar_directory: Path | str = "",
-        input_grammar_file: str | Path = "",
-        output_grammar_file: str | Path = "",
+        grammar_directory: StrPath = "",
+        input_grammar_file: StrPath = "",
+        output_grammar_file: StrPath = "",
     ):
         """
         Args:

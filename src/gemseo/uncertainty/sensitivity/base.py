@@ -81,6 +81,7 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.base import BaseDatasetPlot
     from gemseo.post.dataset.base import DatasetPlotPropertyType
     from gemseo.scenarios.backup_settings import BackupSettings
+    from gemseo.typing import StrPath
     from gemseo.utils.string_tools import VariableType
 
 OutputsType = str | tuple[str, int] | Sequence[str | tuple[str, int]]
@@ -160,7 +161,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
     _indices: SensitivityIndices
     """The sensitivity indices computed by the `compute_indices()` method."""
 
-    def __init__(self, samples: IODataset | str | Path = "") -> None:
+    def __init__(self, samples: IODataset | StrPath = "") -> None:
         """
         Args:
             samples: The samples for the estimation of the sensitivity indices,
@@ -403,8 +404,8 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
     ) -> BaseDatasetPlot | Figure:
@@ -457,8 +458,8 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
         properties: Mapping[str, DatasetPlotPropertyType] = READ_ONLY_EMPTY_DICT,
@@ -556,8 +557,8 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
         sort: bool = True,
@@ -727,8 +728,8 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
         sort: bool = True,
@@ -829,8 +830,8 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         use_bar_plot: bool = True,
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
     ) -> BarPlot | RadarChart:

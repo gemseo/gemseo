@@ -49,11 +49,11 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
-    from pathlib import Path
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.post.dataset.plots.base import BasePlot
     from gemseo.post.dataset.plots.factory import PlotFactory
+    from gemseo.typing import StrPath
 
 DatasetPlotPropertyType = str | int | float | Sequence[str | int | float]
 
@@ -147,8 +147,8 @@ class BaseDatasetPlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "png",
         file_name_suffix: str = "",

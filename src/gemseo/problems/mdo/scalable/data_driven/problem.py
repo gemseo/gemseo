@@ -90,6 +90,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset
     from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.scenarios.mdo import MDOScenario
+    from gemseo.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 
@@ -187,7 +188,7 @@ class ScalableProblem:
         show: bool = False,
         step: float = 0.01,
         varnames: Sequence[str] | None = None,
-        directory: Path | str = ".",
+        directory: StrPath = ".",
         png: bool = False,
     ):
         """Plot 1d interpolations.

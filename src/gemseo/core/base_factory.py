@@ -45,10 +45,10 @@ from gemseo.utils.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
 
     from gemseo.core.grammars.json import JSONGrammar
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
     from gemseo.utils.pydantic import BaseSettings
 
 LOGGER = logging.getLogger(__name__)
@@ -430,7 +430,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         self,
         name: str,
         write_schema: bool = False,
-        schema_path: Path | str = "",
+        schema_path: StrPath = "",
     ) -> JSONGrammar:
         """Return the options JSON grammar for a class.
 

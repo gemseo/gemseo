@@ -45,6 +45,7 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
+    from gemseo.typing import StrPath
     from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
     from gemseo.uncertainty.distributions.base_settings import (
         BaseGenericDistributionSettings,
@@ -63,8 +64,8 @@ class BaseUnivariateDistribution(
         self,
         show: bool = True,
         save: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_extension: str = "",
         variable_name: str = "",

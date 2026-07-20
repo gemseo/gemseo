@@ -18,14 +18,14 @@ from __future__ import annotations
 
 import json
 import webbrowser
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.coupling_structure import DependencyGraph
-
-from pathlib import Path
+    from gemseo.typing import StrPath
 
 from gemseo.utils.n2d3.n2_json import N2JSON
 
@@ -35,7 +35,7 @@ class N2HTML:
 
     def __init__(
         self,
-        file_path: str | Path = "n2.html",
+        file_path: StrPath = "n2.html",
         show_html: bool = False,
     ) -> None:
         """
@@ -74,7 +74,7 @@ class N2HTML:
 
     def from_json(
         self,
-        file_path: str | Path,
+        file_path: StrPath,
     ) -> None:
         """Create the HTML file from a JSON file.
 
@@ -123,7 +123,7 @@ class N2HTML:
 
     @staticmethod
     def __get_file_contents(
-        file_name: Path | str,
+        file_name: StrPath,
     ) -> str:
         """Read the content of a file located in the directory `n2d3`.
 

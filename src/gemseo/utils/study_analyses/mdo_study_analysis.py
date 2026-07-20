@@ -39,8 +39,8 @@ from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
-    from pathlib import Path
 
+    from gemseo.typing import StrPath
     from gemseo.utils.xdsm.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
     scenarios: dict[str, MDOScenario]
     """The sub-scenarios and the main scenario in the last position."""
 
-    def __init__(self, xls_study_path: str | Path) -> None:  # noqa: D107
+    def __init__(self, xls_study_path: StrPath) -> None:  # noqa: D107
         super().__init__(xls_study_path)
         self.scenarios = {}
         self._create_scenarios()
@@ -267,7 +267,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
     def generate_xdsm(
         self,
-        directory_path: str | Path = ".",
+        directory_path: StrPath = ".",
         save_pdf: bool = False,
         show_html: bool = False,
     ) -> XDSM:

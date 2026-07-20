@@ -28,9 +28,8 @@ from gemseo.core.base_factory import BaseFactory
 from gemseo.disciplines.wrappers.job_schedulers.discipline import JobSchedulerDiscipline
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from gemseo.core.discipline import Discipline
+    from gemseo.typing import StrPath
 
 
 class JobSchedulerDisciplineFactory(BaseFactory):
@@ -43,7 +42,7 @@ class JobSchedulerDisciplineFactory(BaseFactory):
         self,
         discipline: Discipline,
         scheduler_name: str,
-        workdir_path: str | Path,
+        workdir_path: StrPath,
         **options: dict[str, Any],
     ) -> JobSchedulerDiscipline:
         """Wrap the discipline within another one to delegate its execution to a job

@@ -58,6 +58,7 @@ if TYPE_CHECKING:
     from gemseo.mda.base_solver import BaseMDASolver
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 LOGGER = logging.getLogger(__name__)
@@ -386,7 +387,7 @@ class MDAChain(BaseMDA):
         save: bool = True,
         n_iterations: int | None = None,
         logscale: tuple[int, int] = (),
-        filename: Path | str = "",
+        filename: StrPath = "",
         fig_size: FigSizeType = (50.0, 10.0),
     ) -> None:
         if filename:

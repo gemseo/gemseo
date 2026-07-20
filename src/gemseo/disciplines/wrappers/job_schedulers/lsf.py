@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gemseo.core.discipline import Discipline
+    from gemseo.typing import StrPath
 
 
 class LSF(JobSchedulerDiscipline):
@@ -43,7 +44,7 @@ class LSF(JobSchedulerDiscipline):
         workdir_path: Path,
         scheduler_run_command: str = "bsub -K",
         job_out_filename: str = "batch.sh",
-        job_template_path: Path | str = "",
+        job_template_path: StrPath = "",
         use_template: bool = True,
         setup_cmd: str = "",
         user_email: str = "",

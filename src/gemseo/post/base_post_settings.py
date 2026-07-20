@@ -16,12 +16,11 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import PositiveFloat
 
+from gemseo.typing import StrPath
 from gemseo.utils.pydantic import BaseSettings
 
 _USE_STANDARDIZED_OBJECTIVE_DESCRIPTION = (
@@ -62,14 +61,14 @@ class BasePostSettings(BaseSettings):
         description="Whether to use the best iteration history "
         "rather than the iteration history.",
     )
-    file_path: Path | str = Field(
+    file_path: StrPath = Field(
         default="",
         description="The path of the file to save the figures. If the extension is "
         "missing, use `file_extension`. "
         "If empty, create a file path from `directory_path`, `file_name` and "
         "`file_extension`.",
     )
-    directory_path: Path | str = Field(
+    directory_path: StrPath = Field(
         default="",
         description="The path of the directory to save the figures. "
         "If empty, use the current working directory.",

@@ -71,9 +71,9 @@ from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
 
     from gemseo.algos.design_space import DesignSpace
+    from gemseo.typing import StrPath
 
 
 LOGGER = logging.getLogger(__name__)
@@ -639,7 +639,7 @@ class OptimizationProblem(EvaluationProblem):
 
     def to_hdf(  # noqa: D102
         self,
-        file_path: str | Path,
+        file_path: StrPath,
         append: bool = False,
         hdf_node_path: str = "",
     ) -> None:
@@ -685,7 +685,7 @@ class OptimizationProblem(EvaluationProblem):
     @classmethod
     def from_hdf(
         cls,
-        file_path: str | Path,
+        file_path: StrPath,
         x_tolerance: float = 0.0,
         hdf_node_path: str = "",
     ) -> OptimizationProblem:

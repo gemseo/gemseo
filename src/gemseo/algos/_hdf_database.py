@@ -41,8 +41,6 @@ from strenum import LowercaseStrEnum
 from gemseo.utils.hdf5 import get_hdf5_group
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from numpy.typing import ArrayLike
 
     from gemseo.algos.database import Database
@@ -50,6 +48,7 @@ if TYPE_CHECKING:
     from gemseo.algos.hashable_ndarray import HashableNdarray
     from gemseo.typing import StringArray
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
 
 ReturnedHdfMissingOutputType = tuple[
     Mapping[str, float | ndarray | list[int]], Mapping[str, int]
@@ -495,7 +494,7 @@ class HDFDatabase:
     def to_file(
         self,
         database: Database,
-        file_path: str | Path = "optimization_history.h5",
+        file_path: StrPath = "optimization_history.h5",
         append: bool = False,
         hdf_node_path: str = "",
     ) -> None:
@@ -570,7 +569,7 @@ class HDFDatabase:
     @staticmethod
     def update_from_file(
         database: Database,
-        file_path: str | Path = "optimization_history.h5",
+        file_path: StrPath = "optimization_history.h5",
         hdf_node_path: str = "",
     ) -> None:
         """Update the current database from an HDF file.

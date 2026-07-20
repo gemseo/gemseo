@@ -85,9 +85,9 @@ from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
-    from pathlib import Path
 
     from gemseo.typing import RealArray
+    from gemseo.typing import StrPath
 
 
 class EmpiricalStatistics(BaseStatistics):
@@ -256,7 +256,7 @@ class EmpiricalStatistics(BaseStatistics):
         self,
         save: bool = False,
         show: bool = True,
-        directory_path: str | Path = "",
+        directory_path: StrPath = "",
         file_format: str = "png",
         **options: Any,
     ) -> dict[str, Boxplot]:
@@ -291,7 +291,7 @@ class EmpiricalStatistics(BaseStatistics):
         self,
         save: bool = False,
         show: bool = True,
-        directory_path: str | Path = "",
+        directory_path: StrPath = "",
         file_format: str = "png",
         **options: Any,
     ) -> dict[str, Lines]:
@@ -345,7 +345,7 @@ class EmpiricalStatistics(BaseStatistics):
         self,
         save: bool = False,
         show: bool = True,
-        directory_path: str | Path = "",
+        directory_path: StrPath = "",
         file_format: str = "png",
         **options: Any,
     ) -> dict[str, Lines]:

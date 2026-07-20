@@ -32,11 +32,11 @@ from gemseo.utils.derivatives.derivatives_approx import compare_jacobian_matrice
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from pathlib import Path
 
     from numpy import ndarray
 
     from gemseo.core.functions.array_function import ArrayFunction
+    from gemseo.typing import StrPath
 
 
 class FunctionJacobianChecker(BaseJacobianChecker[int]):
@@ -60,7 +60,7 @@ class FunctionJacobianChecker(BaseJacobianChecker[int]):
         rtol: float = 1e-8,
         inputs: Sequence[int] = (),
         outputs: Sequence[int] = (),
-        reference_jacobian_path: str | Path = "",
+        reference_jacobian_path: StrPath = "",
         save_reference_jacobian: bool = False,
         approximation_mode: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: float | None = 1e-7,

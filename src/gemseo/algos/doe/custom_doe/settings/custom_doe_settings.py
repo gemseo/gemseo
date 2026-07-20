@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from collections.abc import Sequence  # noqa: TC003
-from pathlib import Path  # noqa: TC003
 from typing import TYPE_CHECKING
 
 from pydantic import Field
@@ -26,10 +25,12 @@ from pydantic import NonNegativeInt
 from pydantic import model_validator
 
 from gemseo.algos.doe.base_doe_settings import BaseDOESettings
+from gemseo.typing import StrPath
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
 
 SamplesType = (
     NDArrayPydantic
@@ -41,7 +42,7 @@ SamplesType = (
 class CustomDOE_Settings(BaseDOESettings):  # noqa: N801
     """The settings for the `CustomDOE`."""
 
-    doe_file: str | Path = Field(
+    doe_file: StrPath = Field(
         default="",
         description="""The path to the file containing the input samples.
 

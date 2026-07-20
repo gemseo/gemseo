@@ -39,6 +39,7 @@ from strenum import StrEnum
 from gemseo.core.discipline.data_processor import FloatDataProcessor
 from gemseo.disciplines.wrappers._base_disc_from_exe import _BaseDiscFromExe
 from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableRunner
+from gemseo.typing import StrPath
 from gemseo.utils.directory_creator import Naming
 
 if TYPE_CHECKING:
@@ -77,7 +78,7 @@ OutputParser = Callable[
 
 InputWriter = Callable[
     [
-        str | Path,
+        StrPath,
         Mapping[str, ndarray],
         Mapping[str, tuple[int, int, int]],
         MutableSequence[str],
@@ -161,12 +162,12 @@ class DiscFromExe(_BaseDiscFromExe):
 
     def __init__(
         self,
-        input_template: str | Path,
-        output_template: str | Path,
-        root_directory: str | Path,
+        input_template: StrPath,
+        output_template: StrPath,
+        root_directory: StrPath,
         command_line: str,
-        input_filename: str | Path,
-        output_filename: str | Path,
+        input_filename: StrPath,
+        output_filename: StrPath,
         naming: Naming = Naming.NUMBERED,
         name: str = "",
         parse_outfile_method: Parser | OutputParser = Parser.TEMPLATE,
@@ -348,7 +349,7 @@ def parse_template(
 
 
 def write_input_file(
-    input_file_path: str | Path,
+    input_file_path: StrPath,
     data: Mapping[str, ndarray],
     input_positions: Mapping[str, tuple[int, int, int]],
     input_lines: MutableSequence[str],

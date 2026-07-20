@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.dependency_graph import ExecutionSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.typing import StrPath
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 NodeType = tuple[list[str], list[str]]
@@ -339,7 +340,7 @@ class CouplingStructure:
 
     def __draw_n2_chart(
         self,
-        file_path: str | Path,
+        file_path: StrPath,
         show_data_names: bool,
         save: bool,
         show: bool,
@@ -416,7 +417,7 @@ class CouplingStructure:
 
     def plot_n2_chart(
         self,
-        file_path: str | Path = "n2.pdf",
+        file_path: StrPath = "n2.pdf",
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,

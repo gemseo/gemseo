@@ -18,8 +18,12 @@ from __future__ import annotations
 
 from ast import literal_eval
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gemseo.utils.name_generator import NameGenerator
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrPath
 
 Naming = NameGenerator.Naming
 """The naming conventions."""
@@ -38,7 +42,7 @@ class DirectoryCreator(NameGenerator):
     def __init__(
         self,
         naming: Naming = Naming.NUMBERED,
-        root_directory: str | Path = "",
+        root_directory: StrPath = "",
     ) -> None:
         """
         Args:

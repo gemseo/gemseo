@@ -76,10 +76,11 @@ from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
 
     from pandas._typing import Axes
     from pandas._typing import Dtype
+
+    from gemseo.typing import StrPath
 
 StrColumnType = str | Iterable[str]
 IndexType = str | int | Iterable[str | int]
@@ -827,7 +828,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     @classmethod
     def from_txt(
         cls,
-        file_path: Path | str,
+        file_path: StrPath,
         variable_names: Iterable[str] = (),
         variable_name_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
         variable_name_to_group_name: dict[str, str] = READ_ONLY_EMPTY_DICT,
@@ -897,7 +898,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     @classmethod
     def from_csv(
         cls,
-        file_path: Path | str,
+        file_path: StrPath,
         delimiter: str = ",",
         first_column_as_index: bool = True,
     ) -> Dataset:

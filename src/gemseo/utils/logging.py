@@ -29,7 +29,6 @@ from logging import LogRecord
 from logging import StreamHandler
 from logging import getLogger
 from logging import root
-from pathlib import Path
 from sys import stderr
 from sys import stdout
 from typing import TYPE_CHECKING
@@ -39,6 +38,7 @@ from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
 
+from gemseo.typing import StrPath
 from gemseo.utils.constants import _LOGGING_DATE_FORMAT
 from gemseo.utils.constants import _LOGGING_FILE_MODE
 from gemseo.utils.constants import _LOGGING_FILE_PATH
@@ -51,6 +51,7 @@ if TYPE_CHECKING:
 
     from _typeshed import SupportsWrite
     from typing_extensions import Self
+
 
 _StreamT = TypeVar("_StreamT", bound="SupportsWrite[str]")
 
@@ -80,7 +81,7 @@ so that logs from client code and third-party libraries are emitted too.""",
 
     enable: bool = Field(default=True, description="Whether to enable GEMSEO logging.")
 
-    file_path: str | Path = Field(
+    file_path: StrPath = Field(
         default=_LOGGING_FILE_PATH,
         description="The path to the log file, if outputs must be written in a file.",
     )
@@ -161,7 +162,7 @@ def _configure_logger(
     level: int | str,
     message_format: str,
     date_format: str,
-    file_path: str | Path,
+    file_path: StrPath,
     file_mode: str,
     stream: _StreamT | None = None,
 ) -> Logger:
