@@ -374,7 +374,7 @@ def __filter_versions(
 
 if os.environ.get("READTHEDOCS") == "True":
     versions = requests.get(
-        "https://readthedocs.org/api/v3/projects/gemseo/versions/",
+        "https://app.readthedocs.org/api/v3/projects/gemseo/versions/?active=True",
         headers={"Authorization": "token 53f714afc37ec42e882efa094e6e3827202f801d"},
     ).json()["results"]
     html_context["versions"] = __filter_versions(versions)
