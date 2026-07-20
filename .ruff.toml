@@ -46,6 +46,8 @@ ignore = [
     "RUF069",
     # Checks for noqa directives that are no longer applicable.
     "RUF100",
+    # Prefers `ruff:ignore` comments over `noqa` comments.
+    "RUF105",
     # Checks for long exception messages that are not defined in the exception class itself.
     "TRY003",
 ]
