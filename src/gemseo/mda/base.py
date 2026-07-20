@@ -49,13 +49,13 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
     from collections.abc import Sequence
-    from pathlib import Path
 
     from matplotlib.figure import Figure
     from numpy.typing import NDArray
 
     from gemseo.core.discipline.base_discipline import _CacheType
     from gemseo.mda.base_settings import BaseMDASettings
+    from gemseo.typing import StrPath
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
@@ -434,7 +434,7 @@ class BaseMDA(ProcessDiscipline):
         save: bool = True,
         n_iterations: int | None = None,
         logscale: tuple[float, float] = (),
-        filename: Path | str = "",
+        filename: StrPath = "",
         fig_size: FigSizeType = (),
     ) -> Figure:
         """Generate a plot of the residual history.

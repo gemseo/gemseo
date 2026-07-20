@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import TextIO
@@ -38,13 +37,14 @@ from gemseo.algos.doe.base_doe_library import BaseDOELibrary
 from gemseo.algos.doe.base_doe_library import DOEAlgorithmDescription
 from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.typing import RealArray
+from gemseo.typing import StrPath
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.algos.design_space import DesignSpace
 
-OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
+OptionType = int | float | bool | list[str] | StrPath | TextIO | RealArray | None
 
 LOGGER = logging.getLogger(__name__)
 
@@ -80,7 +80,7 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
 
     @staticmethod
     def read_file(
-        doe_file: str | Path | TextIO,
+        doe_file: StrPath | TextIO,
         delimiter: str = ",",
         comments: str | Sequence[str] | None = "#",
         skiprows: int = 0,

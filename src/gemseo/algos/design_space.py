@@ -116,6 +116,7 @@ if TYPE_CHECKING:
     from gemseo.typing import BooleanArray
     from gemseo.typing import IntegerArray
     from gemseo.typing import RealOrComplexArrayT
+    from gemseo.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 
@@ -1948,7 +1949,7 @@ class DesignSpace:
 
     def to_hdf(
         self,
-        file_path: str | Path,
+        file_path: StrPath,
         append: bool = False,
         hdf_node_path: str = "",
     ) -> None:
@@ -2003,7 +2004,7 @@ class DesignSpace:
                     val_ds[...] = real_val
 
     @classmethod
-    def from_hdf(cls, file_path: str | Path, hdf_node_path: str = "") -> DesignSpace:
+    def from_hdf(cls, file_path: StrPath, hdf_node_path: str = "") -> DesignSpace:
         """Create a design space from an HDF file.
 
         Args:
@@ -2088,7 +2089,7 @@ class DesignSpace:
     @classmethod
     def from_file(
         cls,
-        file_path: str | Path,
+        file_path: StrPath,
         hdf_node_path: str = "",
         header: Iterable[str] = (),
         delimiter: str = "",
@@ -2116,7 +2117,7 @@ class DesignSpace:
 
     def to_file(
         self,
-        file_path: str | Path,
+        file_path: StrPath,
         delimiter: str = " ",
         append: bool = False,
         fields: Sequence[str] = (),
@@ -2140,7 +2141,7 @@ class DesignSpace:
 
     def to_csv(
         self,
-        output_file: str | Path,
+        output_file: StrPath,
         fields: Sequence[str] = (),
         delimiter: str = " ",
     ) -> None:
@@ -2204,7 +2205,7 @@ class DesignSpace:
     @classmethod
     def from_csv(
         cls,
-        file_path: str | Path,
+        file_path: StrPath,
         header: Iterable[str] = (),
         delimiter: str = "",
     ) -> DesignSpace:

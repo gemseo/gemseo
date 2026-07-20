@@ -31,15 +31,15 @@ from gemseo.utils.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from pathlib import Path
 
+    from gemseo.typing import StrPath
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 DEFAULT_NAME = "gantt_chart"
 
 
 def create_gantt_chart(
-    file_path: str | Path = DEFAULT_NAME,
+    file_path: StrPath = DEFAULT_NAME,
     save: bool = True,
     show: bool = False,
     file_extension: str = "",

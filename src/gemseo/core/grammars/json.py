@@ -57,6 +57,7 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.json_schema import Properties
     from gemseo.core.grammars.json_schema import Schema
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
     from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -116,7 +117,7 @@ class JSONGrammar(BaseGrammar):
     def __init__(
         self,
         name: str,
-        file_path: str | Path = "",
+        file_path: StrPath = "",
         descriptions: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
     ) -> None:
         """
@@ -294,7 +295,7 @@ class JSONGrammar(BaseGrammar):
 
     # API not in the base class.
 
-    def update_from_file(self, path: str | Path, merge: bool = False) -> None:
+    def update_from_file(self, path: StrPath, merge: bool = False) -> None:
         """Update the grammar from a schema file.
 
         Args:
@@ -335,7 +336,7 @@ class JSONGrammar(BaseGrammar):
                     self._descriptions[property_name] = description
                     break
 
-    def to_file(self, path: Path | str = "") -> None:
+    def to_file(self, path: StrPath = "") -> None:
         """Write the grammar, schema to a json file.
 
         Args:

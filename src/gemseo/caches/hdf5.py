@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from gemseo.typing import JacobianData
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
     from gemseo.utils.string_tools import MultiLineString
 
 LOGGER = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ class HDF5Cache(BaseFullCache):
         self,
         tolerance: float = 0.0,
         name: str = "",
-        hdf_file_path: str | Path = "cache.hdf5",
+        hdf_file_path: StrPath = "cache.hdf5",
         hdf_node_path: str = "node",
         input_data_converter: BaseDataConverter | None = None,
         output_data_converter: BaseDataConverter | None = None,
@@ -206,7 +207,7 @@ class HDF5Cache(BaseFullCache):
 
     @staticmethod
     def update_file_format(
-        hdf_file_path: str | Path,
+        hdf_file_path: StrPath,
     ) -> None:
         """Update the format of a HDF5 file.
 

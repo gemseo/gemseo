@@ -85,6 +85,7 @@ if TYPE_CHECKING:
 
     from gemseo.datasets.dataset import Dataset
     from gemseo.typing import RealArray
+    from gemseo.typing import StrPath
     from gemseo.uncertainty.distributions.base import BaseDistribution
     from gemseo.uncertainty.distributions.base_fitter import MeasureType
     from gemseo.utils.matplotlib_figure import FigSizeType
@@ -258,7 +259,7 @@ class BaseParametricStatistics(
         title: str = "",
         save: bool = False,
         show: bool = True,
-        directory: str | Path = ".",
+        directory: StrPath = ".",
         index: int = 0,
         fig_size: FigSizeType = (6.4, 3.2),
         file_extension: str = "png",
@@ -594,7 +595,7 @@ class BaseParametricStatistics(
         self,
         save: bool = False,
         show: bool = True,
-        directory_path: str | Path = "",
+        directory_path: StrPath = "",
         file_format: str = "png",
     ) -> dict[str, Figure]:
         """Visualize the cumulative distribution and probability density functions.

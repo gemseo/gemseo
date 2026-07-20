@@ -43,8 +43,8 @@ from gemseo.utils.string_tools import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
 
+    from gemseo.typing import StrPath
     from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
     from gemseo.uncertainty.sensitivity.base import OutputsType
     from gemseo.utils.string_tools import VariableType
@@ -170,8 +170,8 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
         title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
     ) -> RadarChart:
@@ -234,8 +234,8 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
         title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
         sort: bool = True,

@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.datasets.dataset import Dataset
+    from gemseo.typing import StrPath
 
 T = TypeVar("T", bound=BaseDatasetPlotSettings)
 
@@ -94,8 +95,8 @@ class BasePlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def save(
         self,
-        file_path: str | Path,
-        directory_path: str | Path,
+        file_path: StrPath,
+        directory_path: StrPath,
         file_name: str,
         file_format: str,
         file_name_suffix: str,
@@ -131,7 +132,7 @@ class BasePlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         return self._save(file_path)
 
     @abstractmethod
-    def _save(self, file_path: str | Path) -> tuple[str, ...]:
+    def _save(self, file_path: StrPath) -> tuple[str, ...]:
         """Save the plot or sub-plots on the disk.
 
         Args:

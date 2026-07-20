@@ -29,9 +29,8 @@ from gemseo import generate_n2_plot
 from gemseo.utils.study_analyses.xls_study_parser import XLSStudyParser
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from gemseo.core.discipline import Discipline
+    from gemseo.typing import StrPath
     from gemseo.utils.matplotlib_figure import FigSizeType
 
 
@@ -98,7 +97,7 @@ class CouplingStudyAnalysis:
 
     def generate_n2(
         self,
-        file_path: str | Path = "n2.pdf",
+        file_path: StrPath = "n2.pdf",
         show_data_names: bool = True,
         save: bool = True,
         show: bool = False,
@@ -130,7 +129,7 @@ class CouplingStudyAnalysis:
         )
 
     def generate_coupling_graph(
-        self, file_path: str | Path = "coupling_graph.pdf", full: bool = True
+        self, file_path: StrPath = "coupling_graph.pdf", full: bool = True
     ) -> None:
         """Generate the coupling graph based on the disciplines.
 

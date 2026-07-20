@@ -41,7 +41,6 @@ from gemseo.utils.string_tools import convert_strings_to_iterable
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
-    from pathlib import Path
 
     from numpy import ndarray
 
@@ -56,6 +55,7 @@ if TYPE_CHECKING:
     from gemseo.post.factory import PostFactory
     from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
 
 
 class MDOScenario(EvaluationScenario):
@@ -258,7 +258,7 @@ class MDOScenario(EvaluationScenario):
 
     def set_backup_settings(
         self,
-        file_path: str | Path,
+        file_path: StrPath,
         at_each_iteration: bool = False,
         at_each_function_call: bool = True,
         erase: bool = False,

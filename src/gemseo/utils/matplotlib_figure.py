@@ -21,10 +21,9 @@ from typing import TYPE_CHECKING
 import matplotlib.pyplot as plt
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from matplotlib.figure import Figure
 
+    from gemseo.typing import StrPath
     from gemseo.utils.file_path_manager import FilePathManager
 
 FigSizeType = tuple[float, float]
@@ -34,7 +33,7 @@ FigSizeType = tuple[float, float]
 def save_show_figure(
     fig: Figure,
     show: bool,
-    file_path: str | Path,
+    file_path: StrPath,
     fig_size: FigSizeType = (),
     close: bool | None = None,
 ) -> None:
@@ -66,8 +65,8 @@ def save_show_figure_from_file_path_manager(
     fig: Figure,
     file_path_manager: FilePathManager | None,
     show: bool = False,
-    file_path: str | Path = "",
-    directory_path: str | Path = "",
+    file_path: StrPath = "",
+    directory_path: StrPath = "",
     file_name: str = "",
     file_format: str = "",
     fig_size: FigSizeType = (),

@@ -36,7 +36,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import MutableSequence
-    from pathlib import Path
 
     from pandas import DataFrame
     from typing_extensions import Self
@@ -45,6 +44,7 @@ if TYPE_CHECKING:
     from gemseo.formulations.base import BaseFormulation
     from gemseo.scenarios.mdo import MDOScenario
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 
@@ -373,7 +373,7 @@ class VariableRenamer:
         return renamer
 
     @classmethod
-    def from_spreadsheet(cls, file_path: str | Path) -> Self:
+    def from_spreadsheet(cls, file_path: StrPath) -> Self:
         """Create from a spreadsheet file.
 
         Structured as `discipline_name, variable_name, new_variable_name`.
@@ -387,7 +387,7 @@ class VariableRenamer:
         return cls.__from_dataframe(read_excel(file_path, header=None))
 
     @classmethod
-    def from_csv(cls, file_path: str | Path, sep: str = ",") -> Self:
+    def from_csv(cls, file_path: StrPath, sep: str = ",") -> Self:
         """Create from a CSV file.
 
         Structured as `discipline_name, variable_name, new_variable_name`.

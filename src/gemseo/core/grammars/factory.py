@@ -34,6 +34,7 @@ from gemseo.core.grammars.base import BaseGrammar
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
+    from gemseo.typing import StrPath
 
 
 class GrammarFactory(BaseFactory[BaseGrammar]):
@@ -50,7 +51,7 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
         name: str,
         search_file: bool = False,
         discipline_class: type[Discipline] | None = None,
-        directory_path: Path | str = "",
+        directory_path: StrPath = "",
         file_name_suffix: str = "",
         **options: Any,
     ) -> BaseGrammar:
@@ -104,7 +105,7 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
     def __search_file(
         discipline_class: type[Discipline],
         file_name_suffix: str,
-        directory_path: str | Path,
+        directory_path: StrPath,
     ) -> Path:
         """Use a naming convention to associate a grammar file to the discipline.
 

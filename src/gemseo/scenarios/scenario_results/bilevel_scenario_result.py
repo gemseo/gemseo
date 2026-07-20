@@ -23,9 +23,8 @@ from gemseo.algos.optimization_result import OptimizationResult
 from gemseo.scenarios.scenario_results.scenario_result import ScenarioResult
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from gemseo.scenarios.mdo import MDOScenario
+    from gemseo.typing import StrPath
 
 
 class BiLevelScenarioResult(ScenarioResult):
@@ -40,7 +39,7 @@ class BiLevelScenarioResult(ScenarioResult):
     __n_sub_problems: int
     """The number of sub-optimization problems."""
 
-    def __init__(self, scenario: MDOScenario | str | Path) -> None:  # noqa: D107
+    def __init__(self, scenario: MDOScenario | StrPath) -> None:  # noqa: D107
         super().__init__(scenario)
         formulation = scenario.formulation
         scenario_adapters = formulation.scenario_adapters

@@ -42,14 +42,13 @@ from gemseo.utils.string_tools import MultiLineString
 from gemseo.utils.string_tools import pretty_str
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from gemseo.caches.base import BaseCache
     from gemseo.caches.cache_entry import CacheEntry
     from gemseo.core.grammars.base import BaseGrammar
     from gemseo.core.grammars.properties import GrammarProperties
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 
@@ -128,7 +127,7 @@ class BaseDiscipline(BaseMonitoredProcess):
     GrammarType: ClassVar[type[_GrammarType]] = _GrammarType
     """The types of grammar."""
 
-    GRAMMAR_DIRECTORY: ClassVar[str | Path] = ""
+    GRAMMAR_DIRECTORY: ClassVar[StrPath] = ""
     """The directory in which to search for the grammar files if not the class one."""
 
     default_grammar_type: ClassVar[_GrammarType] = GrammarType.SIMPLE

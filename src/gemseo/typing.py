@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from collections.abc import MutableMapping
+from os import PathLike
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import TypeVar
@@ -60,6 +61,9 @@ RealOrComplexArrayT = TypeVar("RealOrComplexArrayT", RealArray, ComplexArray)
 
 StringArray = NDArray[str_]
 """A NumPy array of strings."""
+
+StrPath = str | PathLike[str]
+"""A string or a path."""
 
 SparseOrDenseRealArray = RealArray | SparseArrayType
 """A dense NumPy array or a sparse SciPy array."""

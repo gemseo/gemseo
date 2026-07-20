@@ -41,6 +41,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.optimization_result import OptimizationResult
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
 
 MDF_HIST_PATH = Path(__file__).parent / "mdf_history.h5"
 ROSENBROCK_2_PATH = Path(__file__).parent / "rosenbrock_2_opt_pb.h5"
@@ -50,7 +51,7 @@ ROSENBROCK_2_LB_UB_PATH = Path(__file__).parent / "rosenbrock_2_lb_ub_opt_pb.h5"
 
 
 def build_history(
-    problem_path: Path | str,
+    problem_path: StrPath,
 ) -> tuple[ndarray, OptimizationResult, OptimizationProblem]:
     """Get the history of a Rosenbrock problem from an hdf file path.
 

@@ -19,12 +19,16 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from re import findall
+from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import NamedTuple
 
 from strenum import LowercaseStrEnum
 
 from gemseo.utils.string_tools import MultiLineString
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrPath
 
 
 class FileDefinition(NamedTuple):
@@ -59,7 +63,7 @@ class FilePathManager:
         self,
         file_type: FileType,
         default_name: str = "",
-        default_directory: Path | str = "",
+        default_directory: StrPath = "",
         default_extension: str = "",
     ) -> None:
         """
@@ -111,8 +115,8 @@ class FilePathManager:
 
     def create_file_path(
         self,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_extension: str = "",
     ) -> Path:

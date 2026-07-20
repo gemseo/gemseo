@@ -18,8 +18,12 @@ from __future__ import annotations
 
 import webbrowser
 from pathlib import Path
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
+
+if TYPE_CHECKING:
+    from gemseo.typing import StrPath
 
 
 class XDSM:
@@ -48,7 +52,7 @@ class XDSM:
     </script>
     """
 
-    def __init__(self, json_schema: dict[str, Any], html_file_path: Path | str) -> None:
+    def __init__(self, json_schema: dict[str, Any], html_file_path: StrPath) -> None:
         """
         Args:
             json_schema: The JSON schema of the XDSM.
@@ -62,7 +66,7 @@ class XDSM:
             self.__html_file_url = ""
 
     @property
-    def html_file_path(self) -> Path | str:
+    def html_file_path(self) -> StrPath:
         """The path to the HTML file if any."""
         return self.__html_file_path
 

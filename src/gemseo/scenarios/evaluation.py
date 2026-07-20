@@ -67,6 +67,7 @@ if TYPE_CHECKING:
     from gemseo.formulations.factory import MDOFormulationFactory
     from gemseo.typing import RealArray
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
     from gemseo.utils.xdsm.xdsm import XDSM
 
 LOGGER = logging.getLogger(__name__)
@@ -458,7 +459,7 @@ class EvaluationScenario(BaseMonitoredProcess):
             self.formulation.problem, settings=self._algorithm_settings
         )
 
-    def to_ggobi(self, file_path: str | Path) -> None:
+    def to_ggobi(self, file_path: StrPath) -> None:
         """Export the database to an XML file for ggobi tool.
 
         Args:
@@ -466,7 +467,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         """
         self.formulation.problem.database.to_ggobi(file_path=file_path)
 
-    def to_hdf(self, file_path: str | Path, append: bool = False) -> None:
+    def to_hdf(self, file_path: StrPath, append: bool = False) -> None:
         """Export the evaluations and results to an HDF file.
 
         Args:
@@ -477,7 +478,7 @@ class EvaluationScenario(BaseMonitoredProcess):
 
     def set_backup_settings(
         self,
-        file_path: str | Path,
+        file_path: StrPath,
         at_each_iteration: bool = False,
         at_each_function_call: bool = True,
         erase: bool = False,
@@ -548,7 +549,7 @@ class EvaluationScenario(BaseMonitoredProcess):
     def xdsmize(
         self,
         monitor: bool = False,
-        directory_path: str | Path = ".",
+        directory_path: StrPath = ".",
         log_workflow_status: bool = False,
         file_name: str = "xdsm",
         show_html: bool = False,

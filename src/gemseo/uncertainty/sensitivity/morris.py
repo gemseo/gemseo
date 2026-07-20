@@ -46,7 +46,6 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from collections.abc import Collection
     from collections.abc import Iterable
-    from pathlib import Path
 
     from matplotlib.figure import Figure
 
@@ -57,6 +56,7 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.typing import RealArray
+    from gemseo.typing import StrPath
     from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
     from gemseo.utils.string_tools import VariableType
 
@@ -309,8 +309,8 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
         offset: float = 1.0,

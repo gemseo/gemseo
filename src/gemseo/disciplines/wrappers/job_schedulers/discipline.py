@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from gemseo.core.grammars.base import BaseGrammar
     from gemseo.typing import JacobianData
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
 
 LOGGER = getLogger(__name__)
 
@@ -94,10 +95,10 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
     def __init__(
         self,
         discipline: Discipline,
-        workdir_path: str | Path,
+        workdir_path: StrPath,
         scheduler_run_command: str = "sbatch --wait",
         job_out_filename: str = "batch.srun",
-        job_template_path: Path | str = "",
+        job_template_path: StrPath = "",
         use_template: bool = True,
         setup_cmd: str = "",
         **options: Any,
@@ -212,7 +213,7 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
     def _create_run_command(
         self,
         current_workdir: Path,
-        dest_job_file_path: Path | str,
+        dest_job_file_path: StrPath,
     ) -> str:
         """Create the scheduler submission command.
 
@@ -228,7 +229,7 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
     def _run_command(
         self,
         current_workdir: Path,
-        dest_job_file_path: Path | str,
+        dest_job_file_path: StrPath,
     ) -> CompletedProcess:
         """Run the scheduler submission command.
 

@@ -54,6 +54,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.discipline.discipline_data import DisciplineData
     from gemseo.typing import JacobianData
+    from gemseo.typing import StrPath
     from gemseo.utils.derivatives.approximators.base import BaseGradientApproximator
 
 from matplotlib import pyplot as plt
@@ -378,11 +379,11 @@ class DisciplineJacApprox:
         atol: float = 1e-8,
         rtol: float = 1e-8,
         plot_result: bool = False,
-        file_path: str | Path = "jacobian_errors.pdf",
+        file_path: StrPath = "jacobian_errors.pdf",
         show: bool = False,
         fig_size_x: float = 10.0,
         fig_size_y: float = 10.0,
-        reference_jacobian_path: str | Path = "",
+        reference_jacobian_path: StrPath = "",
         save_reference_jacobian: bool = False,
         indices: Mapping[
             str, int | Sequence[int] | Ellipsis | slice
@@ -660,7 +661,7 @@ class DisciplineJacApprox:
         self,
         computed_jac: JacobianData,
         approx_jac: JacobianData,
-        file_path: str | Path = "jacobian_errors.pdf",
+        file_path: StrPath = "jacobian_errors.pdf",
         show: bool = False,
         fig_size_x: float = 10.0,
         fig_size_y: float = 10.0,

@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class _BaseExecutableRunner(Serializable):
     _data_paths: Iterable[Path]
     """The directories and files to copy into the execution directory."""
 
-    _working_directory: str | Path
+    _working_directory: StrPath
     """The directory within to execute the command line."""
 
     __directory_creator: DirectoryCreator
@@ -61,10 +62,10 @@ class _BaseExecutableRunner(Serializable):
     def __init__(
         self,
         command_line: str,
-        root_directory: str | Path = "",
+        root_directory: StrPath = "",
         naming: Naming = Naming.UUID,
-        data_paths: Iterable[str | Path] = (),
-        working_directory: str | Path = "",
+        data_paths: Iterable[StrPath] = (),
+        working_directory: StrPath = "",
         **subprocess_run_options: Any,
     ) -> None:
         """

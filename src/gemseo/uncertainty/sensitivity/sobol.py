@@ -62,7 +62,6 @@ from gemseo.utils.string_tools import repr_variable
 if TYPE_CHECKING:
     from collections.abc import Collection
     from collections.abc import Iterable
-    from pathlib import Path
 
     from matplotlib.figure import Figure
     from openturns import SobolIndicesAlgorithmImplementation
@@ -74,6 +73,7 @@ if TYPE_CHECKING:
     from gemseo.formulations.base_settings import BaseFormulationSettings
     from gemseo.scenarios.backup_settings import BackupSettings
     from gemseo.typing import RealArray
+    from gemseo.typing import StrPath
     from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
     from gemseo.uncertainty.sensitivity.base import SecondOrderIndicesType
     from gemseo.utils.string_tools import VariableType
@@ -261,7 +261,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
 
     _DEFAULT_MAIN_METHOD: ClassVar[SobolAnalysisMethod] = SobolAnalysisMethod.FIRST
 
-    def __init__(self, samples: IODataset | str | Path = "") -> None:  # noqa: D107
+    def __init__(self, samples: IODataset | StrPath = "") -> None:  # noqa: D107
         super().__init__(samples)
         self.__use_control_variates = False
         self.__output_name_to_sobol_algos = {}
@@ -912,8 +912,8 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         title: str = "",
         save: bool = True,
         show: bool = False,
-        file_path: str | Path = "",
-        directory_path: str | Path = "",
+        file_path: StrPath = "",
+        directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
         sort: bool = True,

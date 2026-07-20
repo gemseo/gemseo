@@ -20,14 +20,14 @@ import dataclasses
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from gemseo.typing import StrPath
 
 
 @dataclasses.dataclass
 class BackupSettings:
     """The settings of the backup file to store the evaluations."""
 
-    file_path: str | Path
+    file_path: StrPath
     """The backup file path."""
 
     at_each_iteration: bool = False

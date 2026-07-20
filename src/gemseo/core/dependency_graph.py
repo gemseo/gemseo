@@ -47,8 +47,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
-    from pathlib import Path
 
+    from gemseo.typing import StrPath
     from gemseo.utils.discipline import DisciplineVariableProperties
 
 LOGGER = logging.getLogger(__name__)
@@ -289,7 +289,7 @@ class DependencyGraph:
     def __render_graph(
         self,
         graph: DiGraph,
-        file_path: str | Path,
+        file_path: StrPath,
         is_full: bool,
         clean_up: bool,
         show_edge_labels: bool = True,
@@ -478,7 +478,7 @@ class DependencyGraph:
 
     def render_full_graph(
         self,
-        file_path: str | Path,
+        file_path: StrPath,
         clean_up: bool = True,
         show_edge_labels: bool = True,
     ) -> GraphView | None:
@@ -500,7 +500,7 @@ class DependencyGraph:
 
     def render_condensed_graph(
         self,
-        file_path: str | Path,
+        file_path: StrPath,
         clean_up: bool = True,
         show_edge_labels: bool = True,
     ) -> GraphView | None:

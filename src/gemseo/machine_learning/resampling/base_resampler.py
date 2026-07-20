@@ -30,13 +30,12 @@ from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
 from gemseo.utils.seeder import SEED
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from numpy import ndarray
 
     from gemseo.machine_learning.core.models.ml_model import BaseMLModel
     from gemseo.machine_learning.resampling.splits import Splits
     from gemseo.typing import IntegerArray
+    from gemseo.typing import StrPath
 
 
 class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -212,7 +211,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def plot(
         self,
-        file_path: str | Path = "",
+        file_path: StrPath = "",
         show: bool = True,
         colors: tuple[str, str] = ("b", "r"),
     ) -> Scatter:

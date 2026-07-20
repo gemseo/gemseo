@@ -48,6 +48,7 @@ if TYPE_CHECKING:
 
     from gemseo.algos.database import Database
     from gemseo.datasets.optimization_metadata import OptimizationMetadata
+    from gemseo.typing import StrPath
 
 BasePostOptionType = int | float | str | bool | Sequence[str] | FigSizeType
 
@@ -219,7 +220,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         )
         file_extension = file_path.suffix[1:]
         for figure_name, figure in self.__figures.items():
-            fig_file_path: str | Path
+            fig_file_path: StrPath
             if settings.save:
                 if len(self.__figures) > 1:
                     fig_file_path = self.__file_path_manager.add_suffix(

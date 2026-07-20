@@ -51,6 +51,7 @@ if TYPE_CHECKING:
 
     from gemseo.typing import IntegerArray
     from gemseo.typing import StrKeyMapping
+    from gemseo.typing import StrPath
     from gemseo.utils.compatibility.scipy import SparseArrayType
 
 
@@ -389,7 +390,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     @classmethod
     def update_file_format(
         cls,
-        hdf_file_path: str | Path,
+        hdf_file_path: StrPath,
     ) -> None:
         """Update the format of a HDF5 file.
 
