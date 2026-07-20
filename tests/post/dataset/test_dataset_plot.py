@@ -163,6 +163,18 @@ def test_save_plotly(lines, tmp_wd) -> None:
     assert Path("lines.html").exists()
 
 
+@pytest.mark.parametrize(
+    ("extension", "cls"), [("pdf", MatplotlibFigure), ("html", PlotlyFigure)]
+)
+def test_save_from_file_path_extension(lines, extension, cls, tmp_wd) -> None:
+    """Check that the right engine is selected from the file_path extension."""
+    file_path = f"foo.{extension}"
+    lines.execute(file_path=file_path)
+    assert lines.output_files == [file_path]
+    assert Path(file_path).exists()
+    assert all(isinstance(fig, cls) for fig in lines.figures)
+
+
 def test_save_plotly_as_image(lines, tmp_wd) -> None:
     """Check that a plotly-based plot can be saved as an image."""
     lines.DEFAULT_PLOT_ENGINE = lines.PlotEngine.PLOTLY
