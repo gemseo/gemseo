@@ -30,9 +30,11 @@ from numpy import int_
 from numpy import ndarray
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
+from openturns import Bernoulli
 from openturns import Beta
 from openturns import Dirac
 from openturns import Exponential
+from openturns import FiniteDiscreteDistribution
 from openturns import LogNormal
 from openturns import Normal
 from openturns import RandomGenerator
@@ -44,6 +46,9 @@ from openturns import WeibullMin
 from gemseo.uncertainty.distributions import base_univariate
 from gemseo.uncertainty.distributions._log_normal_utils import compute_mu_l_and_sigma_l
 from gemseo.uncertainty.distributions.factory import DISTRIBUTION_FACTORY
+from gemseo.uncertainty.distributions.openturns.bernoulli_settings import (
+    OTBernoulliDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.openturns.beta_settings import (
     OTBetaDistribution_Settings,
 )
@@ -56,6 +61,9 @@ from gemseo.uncertainty.distributions.openturns.distribution_settings import (
 )
 from gemseo.uncertainty.distributions.openturns.exponential_settings import (
     OTExponentialDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.openturns.finite_discrete_settings import (
+    OTFiniteDiscreteDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
 from gemseo.uncertainty.distributions.openturns.joint_settings import (
@@ -123,7 +131,7 @@ def test_str() -> None:
     distribution = OTDistribution(
         OTDistribution_Settings(interfaced_distribution="Normal", parameters=(0, 2))
     )
-    assert str(distribution) == "Normal(0.0, 2.0)"
+    assert str(distribution) == "Normal(0, 2)"
     distribution = OTDistribution(
         OTDistribution_Settings(
             interfaced_distribution="Normal",
@@ -404,6 +412,31 @@ def test_compute_cdf_int32():
             ),
             (0.2, 0.3, 0.1),
             "WeibullMax(location=0.1, scale=0.2, shape=0.3)",
+        ),
+        (
+            FiniteDiscreteDistribution,
+            OTFiniteDiscreteDistribution_Settings(value_to_weight={0: 1, 1: 2}),
+            ([[0], [1]], [1, 2]),
+            "FiniteDiscreteDistribution(value_to_weight={0.0: 1.0, 1.0: 2.0})",
+        ),
+        (
+            FiniteDiscreteDistribution,
+            OTFiniteDiscreteDistribution_Settings(
+                value_to_weight={(0, 0): 1, (1, 1): 2}
+            ),
+            ([[0, 0], [1, 1]], [1, 2]),
+            (
+                "FiniteDiscreteDistribution("
+                "value_to_weight={(0.0, 0.0): 1.0, (1.0, 1.0): 2.0}"
+                ")"
+            ),
+        ),
+        (Bernoulli, OTBernoulliDistribution_Settings(), (), "Bernoulli(p=0.5)"),
+        (
+            Bernoulli,
+            OTBernoulliDistribution_Settings(p=0.2),
+            (0.2,),
+            "Bernoulli(p=0.2)",
         ),
     ],
 )

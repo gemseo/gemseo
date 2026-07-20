@@ -54,7 +54,7 @@ class OTDistribution(
     Warning:
         The probability distribution parameters must be provided
         according to the signature of the OpenTURNS classes.
-        [Access the OpenTURNS documentation](http://openturns.github.io/openturns/latest/user_manual/probabilistic_modelling.html).
+        [Access the OpenTURNS documentation](http://openturns.github.io/openturns/latest/user_manual/probabilistic_modeling.html).
     """
 
     settings_class = OTDistribution_Settings
@@ -62,8 +62,7 @@ class OTDistribution(
     JOINT_DISTRIBUTION_CLASS: ClassVar[type[OTJointDistribution]] = OTJointDistribution
 
     _WEBSITE: ClassVar[str] = (
-        "http://openturns.github.io/openturns/latest/user_manual/"
-        "probabilistic_modelling.html"
+        "http://openturns.github.io/openturns/latest/user_manual/probabilistic_modeling.html"
     )
 
     def _create_distribution(self, settings: OTDistribution_Settings) -> None:

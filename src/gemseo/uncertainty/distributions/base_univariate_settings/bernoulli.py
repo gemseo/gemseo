@@ -12,32 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the OpenTURNS-based probability distributions."""
+"""Base settings for defining a Bernoulli distribution."""
 
 from __future__ import annotations
 
-from typing import Any
-
 from pydantic import Field
+from pydantic import PositiveFloat
 
-from gemseo.uncertainty.distributions.base_settings import (
-    BaseGenericDistributionSettings,
-)
-from gemseo.uncertainty.distributions.openturns.base_settings import (
-    BaseOTMarginalDistributionSettings,
-)
+from gemseo.utils.pydantic import BaseSettings
 
 
-class OTDistribution_Settings(  # noqa: N801
-    BaseGenericDistributionSettings, BaseOTMarginalDistributionSettings
-):
-    """The settings of an OpenTURNS-based distribution."""
+class BaseBernoulliDistributionSettings(BaseSettings):  # noqa: N801
+    """The base settings of a Bernoulli distribution."""
 
-    interfaced_distribution: str = Field(
-        default="Uniform", description="The name of the probability distribution."
-    )
-
-    parameters: tuple[Any, ...] = Field(
-        default_factory=tuple,
-        description="The parameters of the probability distribution.",
+    p: PositiveFloat = Field(
+        default=0.5, description="The probability of the binary event occurring."
     )
