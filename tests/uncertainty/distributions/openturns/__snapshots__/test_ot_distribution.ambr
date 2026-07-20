@@ -3,7 +3,7 @@
   'Dummy cannot be imported from openturns.'
 # ---
 # name: test_bad_distribution_parameters
-  'The arguments of Normal(0.0, 1.0, 2.0) are wrong; more details on http://openturns.github.io/openturns/latest/user_manual/probabilistic_modelling.html.'
+  'The arguments of Normal(0, 1, 2) are wrong; more details on http://openturns.github.io/openturns/latest/user_manual/probabilistic_modeling.html.'
 # ---
 # name: test_settings_truncation_error
   '''

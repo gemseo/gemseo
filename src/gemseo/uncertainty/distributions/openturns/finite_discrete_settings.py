@@ -12,32 +12,36 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Settings for the OpenTURNS-based probability distributions."""
+"""Settings for the OpenTURNS-based finite discrete distributions."""
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 from pydantic import Field
+from pydantic import PositiveFloat
+from pydantic import model_validator
 
-from gemseo.uncertainty.distributions.base_settings import (
-    BaseGenericDistributionSettings,
-)
 from gemseo.uncertainty.distributions.openturns.base_settings import (
     BaseOTMarginalDistributionSettings,
 )
 
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
-class OTDistribution_Settings(  # noqa: N801
-    BaseGenericDistributionSettings, BaseOTMarginalDistributionSettings
-):
-    """The settings of an OpenTURNS-based distribution."""
 
-    interfaced_distribution: str = Field(
-        default="Uniform", description="The name of the probability distribution."
+class OTFiniteDiscreteDistribution_Settings(BaseOTMarginalDistributionSettings):  # noqa: N801
+    """The settings of an OpenTURNS-based finite discrete distribution."""
+
+    value_to_weight: dict[tuple[float, ...] | float, PositiveFloat] = Field(
+        description="The map from the possible values to the weights.",
     )
 
-    parameters: tuple[Any, ...] = Field(
-        default_factory=tuple,
-        description="The parameters of the probability distribution.",
-    )
+    @model_validator(mode="after")
+    def __validate(self) -> Self:
+        """Validate the settings of the OpenTURNS-based finite discrete distribution."""
+        self.__dict__["value_to_weight"] = {
+            k if isinstance(k, tuple) else (k,): v
+            for k, v in self.value_to_weight.items()
+        }
+        return self

@@ -28,7 +28,9 @@ from numpy import concatenate
 from numpy import corrcoef
 from numpy import inf
 from numpy import ndarray
+from numpy import unique
 from numpy.random import default_rng
+from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 from openturns import CorrelationMatrix
@@ -36,10 +38,16 @@ from openturns import FrankCopula
 from openturns import NormalCopula
 
 from gemseo.algos.design_space import DesignSpace
+from gemseo.algos.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
 from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.datasets.io_dataset import IODataset
+from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.scenarios.mdo import EvaluationScenario
 from gemseo.uncertainty.distributions.openturns.distribution_settings import (
     OTDistribution_Settings,
+)
+from gemseo.uncertainty.distributions.openturns.finite_discrete_settings import (
+    OTFiniteDiscreteDistribution_Settings,
 )
 from gemseo.uncertainty.distributions.openturns.normal_settings import (
     OTNormalDistribution_Settings,
@@ -100,6 +108,22 @@ def uncertain_space_with_dependency() -> ParameterSpace:
     correlation = CorrelationMatrix(2)
     correlation[0, 1] = 0.8
     space.add_copula(NormalCopula(correlation), "x", "y")
+    return space
+
+
+@pytest.fixture
+def mixed_int_uncertain_space() -> ParameterSpace:
+    """A mixed-integer uncertain space.
+
+    Two independent variables:
+    - a discrete one following a finite discrete distribution,
+    - a continuous one following a continuous uniform distribution.
+    """
+    space = ParameterSpace()
+    space.add_random_variable(
+        "x", OTFiniteDiscreteDistribution_Settings(value_to_weight={0: 1, 1: 2})
+    )
+    space.add_random_variable("y", OTUniformDistribution_Settings())
     return space
 
 
@@ -740,7 +764,7 @@ def test_sp_random_vector_interfaced_distribution(settings, upper_bound) -> None
     ),
     [
         (OTDistribution_Settings, "Uniform", (), "Uniform()"),
-        (OTDistribution_Settings, "Uniform", (2, 4), "Uniform(2.0, 4.0)"),
+        (OTDistribution_Settings, "Uniform", (2, 4), "Uniform(2, 4)"),
         (SPDistribution_Settings, "uniform", {}, "uniform()"),
         (
             SPDistribution_Settings,
@@ -1063,3 +1087,35 @@ def test_copula_error_already_copula(snapshot):
     space.add_copula(NormalCopula(2), "x")
     with assert_exception(ValueError, snapshot):
         space.add_copula(NormalCopula(2), "x")
+
+
+def test_discrete_distribution_samples(mixed_int_uncertain_space):
+    """Verify that ParameterSpace supports discrete distributions."""
+    samples = mixed_int_uncertain_space.compute_samples(1000)
+    assert (unique(samples[:, 0]) == array([0, 1])).all()
+    assert_almost_equal(samples.mean(0), array([0.67, 0.51]), decimal=2)
+
+
+def test_discrete_distribution_scenario(mixed_int_uncertain_space):
+    """Verify that EvaluationScenario supports discrete distributions."""
+    discipline = AnalyticDiscipline({"z": "x+y"})
+    scenario = EvaluationScenario([discipline], mixed_int_uncertain_space)
+    scenario.add_observable("z")
+    scenario.execute(OT_MONTE_CARLO_Settings(n_samples=10))
+    data = scenario.to_dataset().to_numpy()
+    assert_almost_equal(
+        data,
+        array([
+            [1.0, 0.10, 1.10],
+            [1.0, 0.23, 1.23],
+            [0.0, 0.13, 0.13],
+            [1.0, 0.66, 1.66],
+            [0.0, 0.04, 0.04],
+            [1.0, 0.75, 1.75],
+            [1.0, 0.18, 1.18],
+            [0.0, 0.13, 0.13],
+            [1.0, 0.79, 1.79],
+            [1.0, 0.77, 1.77],
+        ]),
+        decimal=2,
+    )

@@ -34,6 +34,9 @@ from numpy.testing import assert_equal
 
 from gemseo.uncertainty.distributions._log_normal_utils import compute_mu_l_and_sigma_l
 from gemseo.uncertainty.distributions.factory import DISTRIBUTION_FACTORY
+from gemseo.uncertainty.distributions.scipy.bernoulli_settings import (
+    SPBernoulliDistribution_Settings,
+)
 from gemseo.uncertainty.distributions.scipy.beta_settings import (
     SPBetaDistribution_Settings,
 )
@@ -268,6 +271,18 @@ MU_L_1, SIGMA_L_1 = compute_mu_l_and_sigma_l(1.2, 1.3, 0.4)
             ),
             {"loc": 0.1, "scale": 0.2, "c": 0.3},
             "weibull_max(location=0.1, scale=0.2, shape=0.3)",
+        ),
+        (
+            "bernoulli",
+            SPBernoulliDistribution_Settings(),
+            {"p": 0.5},
+            "bernoulli(p=0.5)",
+        ),
+        (
+            "bernoulli",
+            SPBernoulliDistribution_Settings(p=0.2),
+            {"p": 0.2},
+            "bernoulli(p=0.2)",
         ),
     ],
 )
