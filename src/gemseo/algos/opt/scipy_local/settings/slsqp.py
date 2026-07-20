@@ -24,11 +24,11 @@ from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
     BaseGradientBasedAlgorithmSettings,
 )
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
-    BaseScipyLocalSettings,
+    BaseDispScipyLocalSettings,
 )
 
 
-class SLSQP_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
+class SLSQP_Settings(BaseDispScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
     """Settings for the SciPy SLSQP algorithm."""
 
     iprint: int = Field(

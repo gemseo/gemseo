@@ -25,12 +25,12 @@ from pydantic import Field
 from pydantic import model_validator
 
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
-    BaseScipyLocalSettings,
+    BaseDispScipyLocalSettings,
 )
 from gemseo.utils.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
 
-class NELDER_MEAD_Settings(BaseScipyLocalSettings):  # noqa: N801
+class NELDER_MEAD_Settings(BaseDispScipyLocalSettings):  # noqa: N801
     """Settings for the SciPy Nelder-Mead algorithm."""
 
     return_all: bool = Field(

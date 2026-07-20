@@ -28,10 +28,13 @@ from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
     BaseScipyLocalSettings,
 )
+from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_15
 
 
-class L_BFGS_B_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
-    """Settings for the SciPy L-BFGS-B algorithm."""
+class BaseLBFGSBCommonSettings(  # noqa: N801
+    BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings
+):
+    """Common settings for the SciPy L-BFGS-B algorithm."""
 
     maxcor: PositiveInt = Field(
         default=20,
@@ -47,16 +50,33 @@ class L_BFGS_B_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettin
         ),
     )
 
-    iprint: int = Field(
-        default=-1,
-        description="""The flag to control the frequency of output.
-
-Default is no output.""",
-    )
-
     maxls: PositiveInt = Field(
         default=20,
         description="""The maximum number of line search steps per iteration.""",
     )
 
     _redundant_settings: ClassVar[list[str]] = ["eps", "maxfun", "maxiter"]
+
+
+if SCIPY_GREATER_THAN_1_15:
+    # SciPy 1.15 deprecated the disp and iprint options for L-BFGS-B.
+
+    class L_BFGS_B_Settings(BaseLBFGSBCommonSettings):  # noqa: N801
+        """Settings for the SciPy L-BFGS-B algorithm."""
+
+else:  # pragma: no cover
+
+    class L_BFGS_B_Settings(BaseLBFGSBCommonSettings):  # noqa: N801
+        """Settings for the SciPy L-BFGS-B algorithm."""
+
+        disp: bool = Field(
+            default=False,
+            description="""Whether to print convergence messages.""",
+        )
+
+        iprint: int = Field(
+            default=-1,
+            description="""The flag to control the frequency of output.
+
+Default is no output.""",
+        )
