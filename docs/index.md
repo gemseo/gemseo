@@ -257,7 +257,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
 - ### __Ordinary differential equation__
 
-    [:octicons-book-24: User guide][introduction-to-ordinary-differential-equations]
+    [:octicons-book-24: User guide][concept-ode]
     [:octicons-play-24: Examples][ordinary-differential-equations]
     [:octicons-gear-24: Algorithms][available-ordinary-differential-equations-solvers]
 
