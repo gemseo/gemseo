@@ -44,6 +44,7 @@ from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.functions.linear_function import LinearFunction
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_14
+from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_15
 from gemseo.utils.compatibility.scipy import SCIPY_GREATER_THAN_1_16
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.testing.helpers import assert_exception
@@ -129,13 +130,15 @@ class TestScipy(TestCase):
     def test_lbfgsb_options(self) -> None:
         """"""
         algo_name = "L_BFGS_B"
+        # disp is deprecated for L-BFGS-B since SciPy 1.15, and removed from GEMSEO.
+        kwargs = {} if SCIPY_GREATER_THAN_1_15 else {"disp": True}
         OptLibraryTestBase.generate_one_test_unconstrained(
             self.OPT_LIB_NAME,
             algo_name=algo_name,
             max_iter=100,
-            disp=True,
             maxcor=12,
             gtol=1e-8,
+            **kwargs,
         )
         self.assertRaises(
             ValidationError,

@@ -23,11 +23,11 @@ from pydantic import Field
 from pydantic import PositiveFloat  # noqa:TC002
 
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
-    BaseScipyLocalSettings,
+    BaseDispScipyLocalSettings,
 )
 
 
-class COBYLA_Settings(BaseScipyLocalSettings):  # noqa: N801
+class COBYLA_Settings(BaseDispScipyLocalSettings):  # noqa: N801
     """Settings for the SciPy COBYLA algorithm."""
 
     f_target: float = Field(

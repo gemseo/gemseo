@@ -25,11 +25,11 @@ from gemseo.algos.opt.base_gradient_based_algorithm_settings import (
     BaseGradientBasedAlgorithmSettings,
 )
 from gemseo.algos.opt.scipy_local.settings.base_scipy_local_settings import (
-    BaseScipyLocalSettings,
+    BaseDispScipyLocalSettings,
 )
 
 
-class TNC_Settings(BaseScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
+class TNC_Settings(BaseDispScipyLocalSettings, BaseGradientBasedAlgorithmSettings):  # noqa: N801
     """Settings for the SciPy TNC algorithm."""
 
     offset: float | None = Field(

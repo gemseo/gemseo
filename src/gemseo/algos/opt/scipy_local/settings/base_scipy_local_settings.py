@@ -35,6 +35,10 @@ class BaseScipyLocalSettings(BaseOptimizerSettings):
         "xtol_abs": 1e-9,
     }
 
+
+class BaseDispScipyLocalSettings(BaseScipyLocalSettings):
+    """The SciPy local optimization library settings with the `disp` option."""
+
     disp: bool = Field(
         default=False,
         description="""Whether to print convergence messages.""",
