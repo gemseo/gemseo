@@ -30,8 +30,6 @@ from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 from openturns import CovarianceMatrix
 from openturns import GeneralizedExponential
-from openturns import KrigingAlgorithm
-from openturns import KrigingResult
 from openturns import MaternModel
 from openturns import NLopt
 from openturns import ResourceMap
@@ -52,6 +50,8 @@ from gemseo.machine_learning.regression.models.ot_gpr_settings import (
 )
 from gemseo.machine_learning.regression.models.ot_gpr_settings import Trend
 from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.utils.compatibility.openturns import GPR_ALGO_CLASS
+from gemseo.utils.compatibility.openturns import GPR_CONDITIONAL_COVARIANCE_CLASS
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -208,20 +208,20 @@ def test_kriging_predict_std(transformer, dataset, x1, x2):
     """Check that the standard deviation is correctly predicted for a validation point.
 
     The standard deviation should be the square root of the variance computed by the
-    method KrigingResult.getConditionalCovariance of OpenTURNS.
+    method getConditionalCovariance of OpenTURNS.
     """
     kriging = OTGaussianProcessRegressor(
         dataset, OTGaussianProcessRegressor_Settings(transformer=transformer)
     )
-    original_method = KrigingResult.getConditionalCovariance
+    original_method = GPR_CONDITIONAL_COVARIANCE_CLASS.getConditionalCovariance
     v1 = 4.0 + x1 + x2
     v2 = 9.0 + x1 + x2
-    KrigingResult.getConditionalCovariance = Mock(
+    GPR_CONDITIONAL_COVARIANCE_CLASS.getConditionalCovariance = Mock(
         return_value=CovarianceMatrix(2, [v1, 0.5, 0.5, v2])
     )
     kriging.learn()
     assert_allclose(kriging.predict_std(array([x1, x2])), array([v1, v2]) ** 0.5)
-    KrigingResult.getConditionalCovariance = original_method
+    GPR_CONDITIONAL_COVARIANCE_CLASS.getConditionalCovariance = original_method
 
 
 @pytest.mark.parametrize(
@@ -304,7 +304,7 @@ def test_default_optimizer(dataset):
         dataset,
         OTGaussianProcessRegressor_Settings(multi_start_algo_settings=None),
     )
-    with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
+    with mock.patch.object(GPR_ALGO_CLASS, "setOptimizationAlgorithm") as method:
         model.learn()
 
     assert method.call_args.args[0].__class__.__name__ == "TNC"
@@ -319,7 +319,7 @@ def test_custom_optimizer(dataset):
             optimizer=optimizer, multi_start_algo_settings=None
         ),
     )
-    with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
+    with mock.patch.object(GPR_ALGO_CLASS, "setOptimizationAlgorithm") as method:
         model.learn()
 
     assert method.call_args.args[0] == optimizer
@@ -355,7 +355,7 @@ def test_custom_optimization_space(dataset, optimization_space_type):
             optimization_space=optimization_space, multi_start_algo_settings=None
         ),
     )
-    with mock.patch.object(KrigingAlgorithm, "setOptimizationBounds") as method:
+    with mock.patch.object(GPR_ALGO_CLASS, "setOptimizationBounds") as method:
         model.learn()
 
     interval = method.call_args.args[0]
@@ -392,7 +392,7 @@ def test_multi_start_optimization(dataset):
             multi_start_algo_settings=LHS_Settings(n_samples=9, strength=2),
         ),
     )
-    with mock.patch.object(KrigingAlgorithm, "setOptimizationAlgorithm") as method:
+    with mock.patch.object(GPR_ALGO_CLASS, "setOptimizationAlgorithm") as method:
         model.learn()
 
     optimizer = method.call_args.args[0]

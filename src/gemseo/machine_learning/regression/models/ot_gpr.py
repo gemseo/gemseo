@@ -31,7 +31,6 @@ from openturns import CovarianceModelImplementation
 from openturns import ExponentialModel
 from openturns import GaussianProcess
 from openturns import Interval
-from openturns import KrigingAlgorithm
 from openturns import LinearBasisFactory
 from openturns import Log
 from openturns import MaternModel
@@ -59,6 +58,9 @@ from gemseo.machine_learning.regression.models.ot_gpr_settings import (
     OTGaussianProcessRegressor_Settings,
 )
 from gemseo.machine_learning.regression.models.ot_gpr_settings import Trend
+from gemseo.utils.compatibility.openturns import GPR_ALGO_CLASS
+from gemseo.utils.compatibility.openturns import LINEAR_ALGEBRA_RESOURCE_KEY
+from gemseo.utils.compatibility.openturns import build_gpr_result
 from gemseo.utils.compatibility.openturns import create_trend_basis
 from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
 
@@ -225,12 +227,12 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             )
         else:
             linear_algebra_method = "LAPACK"
-        ResourceMap.SetAsString("KrigingAlgorithm-LinearAlgebra", linear_algebra_method)
+        ResourceMap.SetAsString(LINEAR_ALGEBRA_RESOURCE_KEY, linear_algebra_method)
 
     def _fit(self, input_data: RealArray, output_data: RealArray) -> None:
         log_flags = Log.Flags()
         Log.Show(Log.NONE)
-        algo = KrigingAlgorithm(
+        algo = GPR_ALGO_CLASS(
             input_data,
             output_data,
             self.__covariance_model,
@@ -264,7 +266,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         algo.setOptimizationAlgorithm(optimizer)
         algo.setOptimizationBounds(self.__optimization_space)
         algo.run()
-        self.algo = algo.getResult()
+        self.algo = build_gpr_result(algo)
 
     def _predict(self, input_data: RealArray) -> RealArray:
         return atleast_2d(self.algo.getConditionalMean(input_data))
