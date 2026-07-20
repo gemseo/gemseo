@@ -122,6 +122,10 @@ nav:
               - Samplers (DOE): user_guide/concepts/algorithms/samplers.md
               - Linear solvers: user_guide/concepts/algorithms/linear_solvers.md
               - ODE solvers: user_guide/concepts/algorithms/ode_solvers.md
+          - ODE:
+              - Overview: user_guide/concepts/ode/index.md
+              - Discipline: user_guide/concepts/ode/discipline.md
+              - Coupling: user_guide/concepts/ode/coupling.md
           - Formulations:
               - Introduction: user_guide/concepts/formulations/introduction.md
               - MDF: user_guide/concepts/formulations/mdf.md
@@ -165,10 +169,6 @@ nav:
           - Package structure: user_guide/user_experience/package_structure.md
   - User guide (old):
       - Advanced:
-          - Ordinary differential equations:
-              - Introduction: ode/introduction.md
-              - Discipline: ode/ode_discipline.md
-              - Problem: ode/ode_problem.md
           - Scalable models: scalable_models/original_paper.md
           - Topology optimization: topology_optimization/topology_optimization.md
 
