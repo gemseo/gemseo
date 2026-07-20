@@ -170,7 +170,6 @@ nav:
               - Discipline: ode/ode_discipline.md
               - Problem: ode/ode_problem.md
           - Scalable models: scalable_models/original_paper.md
-          - Topology optimization: topology_optimization/topology_optimization.md
 
   - How-to:
       - Disciplines: generated/examples/howtos/disciplines
