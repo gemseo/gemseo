@@ -300,16 +300,8 @@ def test_seed(algo_name) -> None:
     problem.reset(
         database=False, design_space=False, function_calls=False, preprocessing=False
     )
-    if algo_name == "PYDOE_LHS":
-        settings = library.ALGORITHM_INFOS[algo_name].settings_class(
-            n_samples=2, random_state=2
-        )
-        library.execute(problem, settings=settings)
-    else:
-        settings = library.ALGORITHM_INFOS[algo_name].settings_class(
-            n_samples=2, seed=2
-        )
-        library.execute(problem, settings=settings)
+    settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2, seed=2)
+    library.execute(problem, settings=settings)
 
     assert library.seed == 3
     # There is no new evaluation in the database:

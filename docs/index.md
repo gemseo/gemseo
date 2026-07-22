@@ -146,7 +146,7 @@ Its GNU LGPL v3.0 open-source license makes it commercially usable ([see licence
 
     Based on
     [OpenTURNS](https://openturns.github.io/www/) and
-    [pyDOE](https://pythonhosted.org/pyDOE/).
+    [PyDOE](https://pydoe.github.io/pydoe/).
 
 - ### __MDO formulations__ { #overview-mdo-formulations }
 
