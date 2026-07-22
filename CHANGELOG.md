@@ -19,6 +19,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 There is also a page containing the history of the breaking changes in GEMSEO:
 <https://gemseo.readthedocs.io/en/stable/software/upgrading.html>.
 
+## Version 6.3.3 (2026-07-22)
+
+### Fixed
+
+- Update the version of the `pillow` package which had vulnerabilities.
+
 ## Version 6.3.2 (2026-06-03)
 
 ### Fixed
