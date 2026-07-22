@@ -16,6 +16,11 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from numpy.random import Generator
+
 SEED: int = 0
 """The default seed for random number generators."""
 
@@ -33,11 +38,11 @@ class Seeder:
         """  # noqa: D205, D212
         self.default_seed = default_seed
 
-    def get_seed(self, seed: int | None = None) -> int:
+    def get_seed(self, seed: int | Generator | None = None) -> int | Generator:
         """Return a seed.
 
         Args:
-            seed: The seed to be returned.
+            seed: The seed to be returned, or the NumPy random number generator.
                 If `None`,
                 return `initial_seed + i` on the i-th call to this method,
                 where `initial_seed` is the seed passed at instantiation.

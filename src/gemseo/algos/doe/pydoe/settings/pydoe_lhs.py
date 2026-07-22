@@ -16,7 +16,9 @@
 
 from __future__ import annotations
 
+from numpy.random import Generator
 from pydantic import Field
+from pydantic import NonNegativeInt
 from pydantic import PositiveInt  # noqa: TC002
 from strenum import StrEnum
 
@@ -54,9 +56,9 @@ If `None`, randomize the points within the intervals.""",
 
     n_samples: PositiveInt = Field(default=1, description="The number of samples.")
 
-    random_state: PositiveInt | None = Field(
+    seed: NonNegativeInt | Generator | None = Field(
         default=None,
-        description="""The seed used for reproducibility reasons.
+        description="""Seed or NumPy random `Generator` which controls random draws.
 
 If `None`,
 use [BaseDOELibrary.seed][gemseo.algos.doe.base_doe_library.BaseDOELibrary.seed].""",

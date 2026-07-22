@@ -27,11 +27,11 @@ from typing import ClassVar
 from typing import Final
 
 from numpy.random import RandomState
-from pyDOE3.doe_box_behnken import bbdesign
-from pyDOE3.doe_composite import ccdesign
-from pyDOE3.doe_factorial import ff2n
-from pyDOE3.doe_lhs import lhs
-from pyDOE3.doe_plackett_burman import pbdesign
+from pydoe import bbdesign
+from pydoe import ccdesign
+from pydoe import ff2n
+from pydoe import lhs
+from pydoe import pbdesign
 
 from gemseo.algos._unsuitability_reason import _UnsuitabilityReason
 from gemseo.algos.doe.base_doe_library import BaseDOELibrary
@@ -45,7 +45,6 @@ from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settin
 from gemseo.algos.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.algos.doe.pydoe.settings.pydoe_pbdesign import PYDOE_PBDESIGN_Settings
 from gemseo.typing import RealArray
-from gemseo.utils.compatibility.pydoe import PYDOE3_GREATER_THAN_1_4
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -85,14 +84,14 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
     }
     """The algorithm names bound to the corresponding pyDOE function."""
 
-    __DOC: Final[str] = "https://pythonhosted.org/pyDOE/"
+    __DOC: Final[str] = "https://pydoe.github.io/pydoe/reference/"
 
     ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
         "PYDOE_BBDESIGN": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_BBDESIGN",
             description="Box-Behnken design",
             internal_algorithm_name="bbdesign",
-            website=f"{__DOC}rsm.html#box-behnken",
+            website=f"{__DOC}response_surface/#box_behnken",
             settings_class=PYDOE_BBDESIGN_Settings,
             minimum_dimension=3,
         ),
@@ -100,7 +99,7 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
             algorithm_name="PYDOE_CCDESIGN",
             description="Central Composite",
             internal_algorithm_name="ccdesign",
-            website=f"{__DOC}rsm.html#central-composite",
+            website=f"{__DOC}response_surface/#central_composite",
             settings_class=PYDOE_CCDESIGN_Settings,
             minimum_dimension=2,
         ),
@@ -108,28 +107,28 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
             algorithm_name="PYDOE_FF2N",
             description="2-Level Full-Factorial",
             internal_algorithm_name="ff2n",
-            website=f"{__DOC}factorial.html#level-full-factorial",
+            website=f"{__DOC}factorial/#2-level-full-factorial-ff2n",
             settings_class=PYDOE_FF2N_Settings,
         ),
         "PYDOE_FULLFACT": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_FULLFACT",
             description="Full-Factorial",
             internal_algorithm_name="fullfact",
-            website=f"{__DOC}factorial.html#general-full-factorial",
+            website=f"{__DOC}factorial/#general-full-factorial-fullfact",
             settings_class=PYDOE_FULLFACT_Settings,
         ),
         "PYDOE_LHS": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_LHS",
             description="Latin Hypercube Sampling",
             internal_algorithm_name="lhs",
-            website=f"{__DOC}randomized.html#latin-hypercube",
+            website=f"{__DOC}randomized/#latin-hypercube",
             settings_class=PYDOE_LHS_Settings,
         ),
         "PYDOE_PBDESIGN": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_PBDESIGN",
             description="Plackett-Burman design",
             internal_algorithm_name="pbdesign",
-            website=f"{__DOC}factorial.html#plackett-burman",
+            website=f"{__DOC}factorial/#plackett-burman",
             settings_class=PYDOE_PBDESIGN_Settings,
         ),
     }
@@ -145,15 +144,8 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
         filtered_settings = self._filter_settings()
         doe_algorithm = self.__NAMES_TO_FUNCTIONS[self._algo_name]
         if self._algo_name == "PYDOE_LHS":
-            filtered_settings.pop("random_state", None)
-            seed = self._seeder.get_seed(self._settings.random_state)
-            # pyDOE3 1.5 replaced random_state with seed and deprecated the former.
-            if PYDOE3_GREATER_THAN_1_4:
-                filtered_settings["seed"] = seed
-            else:
-                filtered_settings["random_state"] = seed
-            filtered_settings["samples"] = filtered_settings["n_samples"]
-            del filtered_settings["n_samples"]
+            filtered_settings["seed"] = self._seeder.get_seed(self._settings.seed)
+            filtered_settings["samples"] = filtered_settings.pop("n_samples")
             return doe_algorithm(design_space.dimension, **filtered_settings)
 
         data = doe_algorithm(design_space.dimension, **filtered_settings)

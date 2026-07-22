@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from numpy import array
-from pyDOE3.doe_factorial import fullfact
+from pydoe import fullfact
 
 from gemseo.algos.doe.base_full_factorial_doe import BaseFullFactorialDOE
 

@@ -731,7 +731,7 @@ all = [
     { name = "openturns" },
     { name = "pillow" },
     { name = "plotly" },
-    { name = "pydoe3" },
+    { name = "pydoe" },
     { name = "scikit-learn", version = "1.7.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scikit-learn", version = "1.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "spgl1" },
@@ -816,7 +816,7 @@ requires-dist = [
     { name = "prettytable", specifier = ">=2.3.0,<=3.17.0" },
     { name = "pydantic", specifier = ">=2.7,<=2.13.4" },
     { name = "pydantic-settings", specifier = ">=2.1.0,<=2.14.2" },
-    { name = "pydoe3", marker = "extra == 'all'", specifier = ">=1.0.1,<=1.6.2" },
+    { name = "pydoe", marker = "extra == 'all'", specifier = ">=1.0.0,<=1.3.0" },
     { name = "pyxdsm", specifier = ">=2.2.1,<=2.3.2" },
     { name = "requests", specifier = ">2,<3" },
     { name = "scikit-learn", marker = "extra == 'all'", specifier = ">=1.2,<=1.9.0" },
@@ -2697,8 +2697,8 @@ wheels = [
 ]
 
 [[package]]
-name = "pydoe3"
-version = "1.6.2"
+name = "pydoe"
+version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -2706,9 +2706,9 @@ dependencies = [
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/4f/7ce86c4eee42019efcc49ca8a54f7896cc41c719be24bfbd8a3facde6a35/pydoe3-1.6.2.tar.gz", hash = "sha256:ff7377c30e0a2ea8af3f074723488779f557457c8b74029965896c30b8a1a541", size = 1014559, upload-time = "2026-01-12T07:33:43.216Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/04/30/f858c4862b3e0ec2ba1a938349ee33a0e250e4cc806d4064a49ab393af20/pydoe-1.3.0.tar.gz", hash = "sha256:8aa3ade0a566ad2556e642ab88921b1b58fee5cad9bf22dcd6d5cf41c9f46b26", size = 1765259, upload-time = "2026-06-10T14:35:22.391Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8b/6e/3b16b75e1e011f95109be5dcec3d1f1d5a8585e6c42b6c5bbb17852d66b2/pydoe3-1.6.2-py2.py3-none-any.whl", hash = "sha256:21b5c3ef10a350bed01f59df54ae262fd1eda9983efac294b679988f311f3445", size = 66753, upload-time = "2026-01-12T07:33:41.387Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/63/8d15d1b0f69ca198a98c635fe70a8ce0cca631b6e5c3658ae817db961bc6/pydoe-1.3.0-py3-none-any.whl", hash = "sha256:b8517dd35637ca733ba6e4d8f75a59b8e23bc92fde945b99cdb532ed1b04be11", size = 123265, upload-time = "2026-06-10T14:35:20.623Z" },
 ]
 
 [[package]]

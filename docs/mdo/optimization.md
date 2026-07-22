@@ -161,7 +161,7 @@ execute_post(
 ## DOE algorithms
 
 GEMSEO is interfaced with two packages that provide DOE algorithms:
-[pyDOE](https://pythonhosted.org/pyDOE/), and
+[PyDOE](https://pydoe.github.io/pydoe/), and
 [OpenTURNS](https://openturns.github.io/www/).
 To list the available DOE algorithms in the current GEMSEO configuration, use
 [get_available_doe_algorithms()][gemseo.get_available_doe_algorithms].
