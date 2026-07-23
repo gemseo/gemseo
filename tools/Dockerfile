@@ -16,4 +16,4 @@ RUN  dnf -y update \
   && dnf clean all \
   && rm -rf /var/cache/dnf
 
-RUN pip install 'tox<5' tox-uv --no-cache-dir --break-system-packages
+RUN pip install uv --no-cache-dir --break-system-packages

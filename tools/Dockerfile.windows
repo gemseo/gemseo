@@ -243,13 +243,13 @@ RUN $url = ('https://gitlab.com/api/v4/projects/4207231/packages/generic/graphvi
 		\
     setx /M PATH $(${Env:PATH} + \";C:\Graphviz\bin\")
 
-# Have versioned python executables discoverable by tox.
+# Have versioned python executables discoverable by uv.
 RUN Copy-Item -Path "c:\Python3.9\python.exe"  -Destination "c:\Python3.9\python3.9.exe" ;\
     Copy-Item -Path "c:\Python3.10\python.exe" -Destination "c:\Python3.10\python3.10.exe" ;\
     Copy-Item -Path "c:\Python3.11\python.exe" -Destination "c:\Python3.11\python3.11.exe" ;\
     Copy-Item -Path "c:\Python3.12\python.exe" -Destination "c:\Python3.12\python3.12.exe" ;
 
-RUN python3.12 -m pip install 'tox<5' tox-uv codecov --no-cache-dir --break-system-packages
+RUN python3.12 -m pip install uv codecov --no-cache-dir --break-system-packages
 
 # Standard C++ library needed for some python extensions.
 RUN [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; \
