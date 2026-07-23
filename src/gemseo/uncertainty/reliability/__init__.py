@@ -15,9 +15,3 @@
 """Reliability analysis."""
 
 from __future__ import annotations
-
-from gemseo.uncertainty.reliability.event import Event as Event
-from gemseo.uncertainty.reliability.event_variable import EventVariable
-
-V = EventVariable
-"""A short alias for [EventVariable][gemseo.uncertainty.reliability.event_variable.EventVariable]."""  # noqa: E501

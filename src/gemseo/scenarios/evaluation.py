@@ -314,12 +314,14 @@ class EvaluationScenario(BaseMonitoredProcess):
         Returns:
             The dataset.
         """
-        return self.formulation.problem.to_dataset(
+        dataset = self.formulation.problem.to_dataset(
             name=name,
             categorize=categorize,
             export_gradients=export_gradients,
             input_values=self._get_input_values(),
         )
+        dataset.misc["execution_result"] = self._execution_result
+        return dataset
 
     def _get_input_values(self) -> Iterable[RealArray]:
         """Return the input values for exporting the database into a dataset.

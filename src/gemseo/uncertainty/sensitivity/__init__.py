@@ -12,25 +12,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Capabilities to run a sensitivity analysis.
-
-This package contains:
-
-- an abstract class
-  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis]]
-  to define the concept of sensitivity analysis,
-- a factory
-  [SensitivityAnalysisFactory][gemseo.uncertainty.sensitivity.factory.SensitivityAnalysisFactory]
-  to create instances of
-  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis]],
-- concrete classes implementing this abstract class:
-  [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]
-  (based on OpenTURNS),
-  [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis],
-  [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
-  (based on OpenTURNS)
-  and [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]
-  (based on OpenTURNS).
-"""
+"""Sensitivity analysis."""
 
 from __future__ import annotations

@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_evaluate_empty_event_raises
+  'The event has no intersections of elementary events.'
+# ---

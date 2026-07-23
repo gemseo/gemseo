@@ -22,11 +22,11 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
+from gemseo.uncertainty.sensitivity.base import BaseGenericSensitivityAnalysis
 
 
 class SensitivityAnalysisFactory(BaseFactory):
     """A factory of sensitivity analyses."""
 
-    _CLASS = BaseSensitivityAnalysis
+    _CLASS = BaseGenericSensitivityAnalysis
     _PACKAGE_NAMES = ("gemseo.uncertainty.sensitivity",)

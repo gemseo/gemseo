@@ -105,6 +105,7 @@ from gemseo.uncertainty.distributions.scipy.distribution_fitter import (
     SPDistributionFitter as _SPDistributionFitter,
 )
 from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysisMethod
+from gemseo.uncertainty.sensitivity.form import FORMAnalysisMethod
 from gemseo.uncertainty.sensitivity.hsic import HSICAnalysis as _HSICAnalysis
 from gemseo.uncertainty.sensitivity.hsic import HSICAnalysisMethod
 from gemseo.uncertainty.sensitivity.morris import MorrisAnalysisMethod
@@ -242,6 +243,7 @@ __all__ = [
     "EvaluationFunction",
     "EvaluationFunctionName",
     "EvaluationMethod",
+    "FORMAnalysisMethod",
     "Face",
     "FileType",
     "FunctionType",

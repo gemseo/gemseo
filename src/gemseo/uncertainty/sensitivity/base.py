@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Base class for the computation and analysis of sensitivity indices."""
+"""Base class for sensitivity analysis."""
 
 from __future__ import annotations
 
@@ -60,6 +60,7 @@ from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
 from gemseo.utils.discipline import get_all_outputs
 from gemseo.utils.file_path_manager import FilePathManager
 from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.utils.pydantic import BaseSettings
 from gemseo.utils.pydantic import create_model
 from gemseo.utils.string_tools import convert_strings_to_iterable
 from gemseo.utils.string_tools import filter_names
@@ -91,54 +92,33 @@ SecondOrderIndicesType = dict[str, list[dict[str, dict[str, RealArray]] | None]]
 T = TypeVar("T", bound=StrEnum)
 
 
-class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseGenericSensitivityAnalysis(
+    Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta
+):
     """Base class for sensitivity analysis.
 
-    A sensitivity analysis aims to qualify or quantify
-    how the model's uncertain input variables impact its output variables
-    from input-output samples relying on a specific design of experiments (DOE).
+    The aim of a sensitivity analysis is to qualify or quantify
+    how the uncertain inputs of a model impact its outputs,
+    from samples of this model, also called samples.
 
-    A
-    [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis]
-    can be created from such samples
-    (passed as an [IODataset][gemseo.datasets.io_dataset.IODataset])
-    or use its
-    [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples]
-    method to generate them,
-    using a [Discipline][gemseo.core.discipline.discipline.Discipline]
-    representing the model,
-    a [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
-    describing the uncertain input variables
-    and a set of options.
-    In the second case,
-    the samples returned by
-    [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples]
-    can be saved on the disk for future use.
+    In this class,
+    the model is a multidisciplinary input-output mapping based on an MDO formulation.
     """
 
     dataset: IODataset | None
-    """The dataset containing the discipline evaluations.
-
-    The samples must be
-    either passed at instantiation
-    or generated with
-    [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples].
-    """
+    """The samples of the model."""
 
     _INTERACTION_METHODS: ClassVar[tuple[str, ...]] = ()
     """The names of the sensitivity methods considering interaction effects."""
-
-    DEFAULT_DRIVER: ClassVar[str] = ""
-    """The default DOE algorithm to sample the disciplines."""
 
     _DEFAULT_MAIN_METHOD: ClassVar[StrEnum]
     """The name of the default main sensitivity analysis method."""
 
     _input_names: list[str]
-    """The names of the inputs in parameter space order."""
+    """The names of the inputs in uncertain space order."""
 
     _output_names: list[str]
-    """The disciplines' outputs to be considered for the analysis."""
+    """The names of the outputs."""
 
     _file_path_manager: FilePathManager
     """The file path manager for the figures."""
@@ -150,8 +130,8 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
     class SensitivityIndices:
         """The sensitivity indices.
 
-        Given a sensitivity method, an input variable and an output variable,
-        the sensitivity index is a NumPy array that can be accessed through
+        Given a sensitivity method, an input and an output,
+        a sensitivity index is a NumPy array that can be accessed through
         `indices.method_name[output_name][output_component][input_name]`.
 
         For constant output components,
@@ -168,7 +148,8 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
                 either as an [IODataset][gemseo.datasets.io_dataset.IODataset]
                 or as a pickle file path generated
                 from the [to_pickle()][gemseo.utils.pickle.to_pickle] function.
-                If empty, use
+                If empty,
+                use
                 [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples].
         """  # noqa: D202, D205, D212
         if isinstance(samples, IODataset):
@@ -192,97 +173,58 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
             self._output_names = samples.output_names
         self._indices = self.SensitivityIndices()
 
+    @abstractmethod
     def compute_samples(
         self,
         disciplines: Collection[Discipline],
         parameter_space: ParameterSpace,
-        n_samples: int,
-        output_names: str | Iterable[str] = (),
-        algo_settings: BaseDOESettings | None = None,
-        backup_settings: BackupSettings | None = None,
+        algo_settings: BaseSettings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,
     ) -> IODataset:
-        """Compute the samples for the estimation of the sensitivity indices.
+        """Sample the model over the uncertain space.
+
+        This step is a prerequisite for calculating the sensitivity indices
+        if the samples were not passed during instantiation.
 
         Args:
-            disciplines: The discipline or disciplines to use for the analysis.
-            parameter_space: A parameter space.
-            n_samples: A number of samples.
-                If `0`, the number of samples is computed by the algorithm.
-            output_names: The disciplines' outputs to be considered for the analysis.
-                If empty, use all the outputs.
-            algo_settings: The settings of the DOE algorithm.
-                If `None`,
-                use the default settings of the default DOE algorithm
-                (see
-                [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.DEFAULT_DRIVER]).
-            backup_settings: The settings of the backup file to store the evaluations
-                if any.
+            disciplines: The disciplines that make up the model.
+            parameter_space: The uncertain space.
+            algo_settings: The settings of the algorithm to generate the samples.
+                If `None`, use default settings.
             formulation_settings: The settings of the MDO formulation.
                 If `None`,
                 use the default settings of the MDF formulation.
 
         Returns:
             The samples for the estimation of the sensitivity indices.
-        """  # noqa: D205, D212, D415
-        disciplines = list(disciplines)
-        if algo_settings is None:
-            algo_settings = DOE_LIBRARY_FACTORY.create_settings(self.DEFAULT_DRIVER)
-        if n_samples > 0:
-            algo_settings.n_samples = n_samples
-        self._output_names = list(output_names or get_all_outputs(disciplines))
-        self._input_names = parameter_space.variable_names
-        algo_settings.use_one_line_progress_bar = True
-        formulation_settings = create_model(
-            MDF_Settings, settings_model=formulation_settings
-        )
-        scenario = EvaluationScenario(
-            disciplines,
-            parameter_space,
-            f"{self.__class__.__name__}SamplingPhase",
-            formulation_settings=formulation_settings,
-        )
-        for output_name in self._output_names:
-            scenario.add_observable(output_name)
-        if backup_settings is not None and backup_settings.file_path:
-            scenario.set_backup_settings(
-                backup_settings.file_path,
-                at_each_iteration=backup_settings.at_each_iteration,
-                at_each_function_call=backup_settings.at_each_function_call,
-                erase=backup_settings.erase,
-                load=backup_settings.load,
-            )
-        scenario.execute(algo_settings)
-        self.dataset = scenario.to_dataset()
-        return self.dataset
+        """
 
     @property
     def default_output_names(self) -> list[str]:
-        """The default outputs of interest."""
+        """The names of all of the outputs defined in the samples."""
         return self._output_names
 
     @property
     def input_names(self) -> list[str]:
-        """The names of the inputs."""
+        """The names of all of the inputs defined in the samples."""
         return self._input_names
 
     @abstractmethod
     def compute_indices(
         self, output_names: str | Iterable[str] = ()
     ) -> SensitivityIndices:
-        """Compute the sensitivity indices.
+        """Compute the sensitivity indices of certain outputs.
 
         Args:
             output_names: The name(s) of the output(s)
                 for which to compute the sensitivity indices.
-                If empty,
-                use the names of the outputs set at instantiation.
+                If empty, consider all of the outputs defined in the samples.
 
         Returns:
             The sensitivity indices.
 
-            Given a sensitivity method, an input variable and an output variable,
-            the sensitivity index is a NumPy array that can be accessed through
+            Given a sensitivity method, an input and an output,
+            a sensitivity index is a NumPy array that can be accessed through
             `indices.method_name[output_name][output_component][input_name]`.
 
             For constant output components,
@@ -290,15 +232,15 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         """
 
     @property
-    def indices(self) -> BaseSensitivityAnalysis.SensitivityIndices:
+    def indices(self) -> BaseGenericSensitivityAnalysis.SensitivityIndices:
         """The sensitivity indices.
 
-        Given a sensitivity method, an input variable and an output variable,
-        the sensitivity index is a NumPy array that can be accessed through
-        `indices.method_name[output_name][output_component][input_name]`.
+        Given a sensitivity method, an input and an output,
+        a sensitivity index is a NumPy array that can be accessed through
+        `analysis.indices.method_name[output_name][output_component][input_name]`.
 
         For constant output components,
-        `indices.method_name[output_name][output_component]` is `None`.
+        `analysis.indices.method_name[output_name][output_component]` is `None`.
         """
         return self._indices
 
@@ -306,12 +248,12 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
     def main_indices(self) -> FirstOrderIndicesType:
         """The main sensitivity indices.
 
-        Given an input variable and an output variable,
-        the sensitivity index is a NumPy array that can be accessed through
-        `indices.method_name[output_name][output_component][input_name]`.
+        Given an input and an output,
+        a main sensitivity index is a NumPy array that can be accessed through
+        `analysis.main_indices.method_name[output_name][output_component][input_name]`.
 
         For constant output components,
-        `indices.method_name[output_name][output_component]` is `None`.
+        `analysis.main_indices.method_name[output_name][output_component]` is `None`.
         """
         return getattr(self.indices, self._get_index_field_name(self.main_method))
 
@@ -328,6 +270,17 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         """
         return str(method).lower().replace("-", "_")
 
+    def _get_output_n_components(self, name: str) -> int:
+        """Return the number of components of an output.
+
+        Args:
+            name: The name of an output.
+
+        Returns:
+            The number of components of the output.
+        """
+        return self.dataset.variable_name_to_n_components[name]
+
     def _get_input_sample_array(self) -> RealArray:
         """Return the input samples as a 2D NumPy array.
 
@@ -339,7 +292,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
     def _iter_output_components(
         self, output_names: Iterable[str]
     ) -> Iterable[tuple[str, int, RealArray | None]]:
-        """Iterate over the components of the outputs of interest.
+        """Iterate over the components of the outputs.
 
         Args:
             output_names: The names of the outputs to iterate over.
@@ -376,7 +329,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         )
 
     def sort_input_variables(self, output: VariableType) -> list[str]:
-        """Return the input variables sorted in descending order.
+        """Return the inputs sorted in descending order.
 
         Args:
             output: Either a tuple as `(output_name, output_component)`
@@ -414,14 +367,14 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         Args:
             output: The output
                 for which to display sensitivity indices,
-                either a name or a tuple of the form (name, component).
+                either a name or a tuple of the form `(name, component)`.
                 If name, its first component is considered.
-            input_names: The input variables
+            input_names: The inputs
                 for which to display the sensitivity indices.
-                If empty, display all the input variables.
+                If empty, all the inputs are considered.
             title: The title of the plot, if any.
-            save: If `True`, save the figure.
-            show: If `True`, show the figure.
+            save: Whether to save the figure.
+            show: Whether to show the figure.
             file_path: A file path.
                 Either a complete file path, a directory name or a file name.
                 If empty, use a default file name and a default directory.
@@ -472,20 +425,20 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         Args:
             output: The output
                 for which to display sensitivity indices,
-                either a name or a tuple of the form (name, component)
-                where (name, component) is used to sort the inputs.
+                either a name or a tuple of the form `(name, component)`
+                where `(name, component)` is used to sort the inputs.
                 If it is a name, its first component is considered.
             mesh: The mesh on which the p-length output
                 is represented. Either a p-length array for a 1D functional output
-                or a (p, 2) array for a 2D one. If `None`,
-                assume a 1D functional output.
-            input_names: The input variables
+                or a (p, 2) array for a 2D one.
+                If `None`, a 1D functional output is assumed.
+            input_names: The names of the inputs
                 for which to display the sensitivity indices.
-                If empty, display all the input variables.
+                If empty, all the inputs are considered.
             standardize: Whether to scale the indices to $[0,1]$.
             title: The title of the plot, if any.
-            save: If `True`, save the figure.
-            show: If `True`, show the figure.
+            save: Whether to save the figure.
+            show: Whether to show the figure.
             file_path: The path of the file to save the figures.
                 If empty,
                 create a file path
@@ -575,18 +528,18 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
                 for which to display sensitivity indices,
                 either a name,
                 a list of names,
-                a (name, component) tuple,
+                a `(name, component)` tuple,
                 a list of such tuples or
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
-                If empty, use the default outputs.
-            input_names: The input variables
+                If empty, all the outputs are considered.
+            input_names: The names of the inputs
                 for which to display the sensitivity indices.
-                If empty, display all the input variables.
+                If empty, all the inputs are considered.
             standardize: Whether to scale the indices to $[0,1]$.
             title: The title of the plot, if any.
-            save: If `True`, save the figure.
-            show: If `True`, show the figure.
+            save: Whether to save the figure.
+            show: Whether to show the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use `file_extension`.
                 If empty,
@@ -598,10 +551,10 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
                 If empty, use a default one generated by the post-processing.
             file_format: A file extension, e.g. 'png', 'pdf', 'svg', ...
                 If None, use a default file extension.
-            sort: Whether to sort the input variables
+            sort: Whether to sort the inputs
                 by decreasing order of the sensitivity indices
-                associated with the sorting output variable.
-            sorting_output: The sorting output variable
+                associated with the sorting output.
+            sorting_output: The sorting output
                 If empty, use the first one.
             bar_plot_settings: The settings of the bar plot.
                 If `None`,
@@ -651,9 +604,9 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         r"""Create the dataset to plot.
 
         Args:
-            input_names: The names of the input variables
+            input_names: The names of the inputs
                 for which to display the sensitivity indices.
-                If empty, display all the input variables.
+                If empty, all the inputs are considered.
             outputs: The outputs
                 for which to display sensitivity indices,
                 either a name,
@@ -663,10 +616,10 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
             standardize: Whether to scale the indices to $[0,1]$.
-            sort: Whether to sort the input variables
+            sort: Whether to sort the inputs
                 by decreasing order of the sensitivity indices
-                associated with the sorting output variable.
-            sorting_output: The sorting output variable
+                associated with the sorting output.
+            sorting_output: The sorting output
                 If empty, use the first one.
 
         Returns:
@@ -701,9 +654,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
         )
 
         dataset.index = [
-            repr_variable(
-                name, component, size=self.dataset.variable_name_to_n_components[name]
-            )
+            repr_variable(name, component, size=self._get_output_n_components(name))
             for name, component in outputs
         ]
         if sort:
@@ -712,7 +663,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
                 by = repr_variable(
                     name,
                     component,
-                    size=self.dataset.variable_name_to_n_components[name],
+                    size=self._get_output_n_components(name),
                 )
             else:
                 by = dataset.index[0]
@@ -753,14 +704,14 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
                 a list of such tuples or
                 a list mixing such tuples and names.
                 When a name is specified, all its components are considered.
-                If empty, use the default outputs.
-            input_names: The input variables
+                If empty, all the outputs are considered.
+            input_names: The names of the inputs
                 for which to display the sensitivity indices.
-                If empty, display all the input variables.
+                If empty, all the inputs are considered.
             standardize: Whether to scale the indices to $[0,1]$.
             title: The title of the plot, if any.
-            save: If `True`, save the figure.
-            show: If `True`, show the figure.
+            save: Whether to save the figure.
+            show: Whether to show the figure.
             file_path: The path of the file to save the figures.
                 If the extension is missing, use `file_extension`.
                 If empty,
@@ -772,10 +723,10 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
                 If empty, use a default one generated by the post-processing.
             file_format: A file extension, e.g. 'png', 'pdf', 'svg', ...
                 If empty, use a default file extension.
-            sort: Whether to sort the input variables
+            sort: Whether to sort the inputs
                 by decreasing order of the sensitivity indices
-                associated with the sorting output variable.
-            sorting_output: The sorting output variable
+                associated with the sorting output.
+            sorting_output: The sorting output
                 If empty, use the first one.
             radar_chart_settings: The settings of the radar chart.
                 If `None`, use the default settings of the radar chart.
@@ -823,7 +774,8 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
 
     def plot_comparison(
         self,
-        indices: BaseSensitivityAnalysis | Iterable[BaseSensitivityAnalysis],
+        indices: BaseGenericSensitivityAnalysis
+        | Iterable[BaseGenericSensitivityAnalysis],
         output: VariableType,
         input_names: Iterable[str] = (),
         title: str = "",
@@ -845,14 +797,13 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
                 for which to display sensitivity indices,
                 either a name or a tuple of the form (name, component).
                 If name, its first component is considered.
-            input_names: The input variables
+            input_names: The inputs
                 for which to display the sensitivity indices.
-                If empty, display all the input variables.
+                If empty, all the inputs are considered.
             title: The title of the plot, if any.
-            use_bar_plot: The type of graph.
-                If `True`, use a bar plot. Otherwise, use a radar chart.
-            save: If `True`, save the figure.
-            show: If `True`, show the figure.
+            use_bar_plot: Whether to use a bar plot. Otherwise, use a radar chart.
+            save: Whether to save the figure.
+            show: Whether to show the figure.
             file_path: The path of the file to save the figures.
                 If empty,
                 create a file path
@@ -868,7 +819,7 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
             A graph comparing sensitivity indices.
         """
         output = get_name_and_component(output)
-        if isinstance(indices, BaseSensitivityAnalysis):
+        if isinstance(indices, BaseGenericSensitivityAnalysis):
             indices = [indices]
         methods = [self, *indices]
         dataset = Dataset()
@@ -990,3 +941,68 @@ class BaseSensitivityAnalysis(Generic[T], metaclass=ABCGoogleDocstringInheritanc
             return tuple(default_output_names) or self.default_output_names
 
         return convert_strings_to_iterable(output_names)
+
+
+class BaseSensitivityAnalysis(BaseGenericSensitivityAnalysis[T]):
+    """Base class for sensitivity analysis where outputs are disciplinary outputs."""
+
+    DEFAULT_DRIVER: ClassVar[str] = ""
+    """The default DOE algorithm to sample the disciplines."""
+
+    def compute_samples(
+        self,
+        disciplines: Collection[Discipline],
+        parameter_space: ParameterSpace,
+        n_samples: int,
+        output_names: str | Iterable[str] = (),
+        algo_settings: BaseDOESettings | None = None,
+        backup_settings: BackupSettings | None = None,
+        formulation_settings: BaseFormulationSettings | None = None,
+    ) -> IODataset:
+        """
+        Args:
+            n_samples: The maximum total number of samples.
+                If `0`, the number of samples is computed by the algorithm.
+            output_names: The disciplines' outputs to be considered for the analysis.
+                If empty, use all the outputs.
+            algo_settings: The settings of the DOE algorithm.
+                If `None`,
+                use the default settings of the default DOE algorithm
+                (see
+                [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.DEFAULT_DRIVER]).
+            backup_settings: The settings of the backup file to store the samples
+                if any.
+            formulation_settings: The settings of the MDO formulation.
+                If `None`,
+                use the default settings of the MDF formulation.
+        """  # noqa: D205, D212
+        disciplines = list(disciplines)
+        if algo_settings is None:
+            algo_settings = DOE_LIBRARY_FACTORY.create_settings(self.DEFAULT_DRIVER)
+        if n_samples > 0:
+            algo_settings.n_samples = n_samples
+        self._output_names = list(output_names or get_all_outputs(disciplines))
+        self._input_names = parameter_space.variable_names
+        algo_settings.use_one_line_progress_bar = True
+        formulation_settings = create_model(
+            MDF_Settings, settings_model=formulation_settings
+        )
+        scenario = EvaluationScenario(
+            disciplines,
+            parameter_space,
+            f"{self.__class__.__name__}SamplingPhase",
+            formulation_settings=formulation_settings,
+        )
+        for output_name in self._output_names:
+            scenario.add_observable(output_name)
+        if backup_settings is not None and backup_settings.file_path:
+            scenario.set_backup_settings(
+                backup_settings.file_path,
+                at_each_iteration=backup_settings.at_each_iteration,
+                at_each_function_call=backup_settings.at_each_function_call,
+                erase=backup_settings.erase,
+                load=backup_settings.load,
+            )
+        scenario.execute(algo_settings)
+        self.dataset = scenario.to_dataset()
+        return self.dataset

@@ -354,7 +354,7 @@ def test_confidence_level_default(discipline, uncertain_space) -> None:
     analysis = SobolAnalysis()
     analysis.compute_samples([discipline], uncertain_space, 100)
     analysis.compute_indices()
-    algos = analysis._SobolAnalysis__output_name_to_sobol_algos
+    algos = analysis._output_name_to_sobol_algos
     assert algos["y"][0].getConfidenceLevel() == 0.95
 
 
@@ -363,7 +363,7 @@ def test_confidence_level_custom(discipline, uncertain_space) -> None:
     analysis = SobolAnalysis()
     analysis.compute_samples([discipline], uncertain_space, 100)
     analysis.compute_indices(confidence_level=0.90)
-    algos = analysis._SobolAnalysis__output_name_to_sobol_algos
+    algos = analysis._output_name_to_sobol_algos
     assert algos["y"][0].getConfidenceLevel() == 0.90
 
 
@@ -683,6 +683,17 @@ def test_constant_output(discipline_with_constant_output_and_space, kwargs):
     assert indices.total["varying"][0]["x2"] is not None
     if not kwargs:
         assert indices.second["varying"][0] is not None
+
+    # Regression test: get_intervals() used to raise an AttributeError for a
+    # zero-variance output, as it called methods on the `None` algorithm that
+    # compute_indices() appends for such an output.
+    for first_order in [True, False]:
+        intervals = analysis.get_intervals(first_order=first_order)
+        for input_name in ("x1", "x2"):
+            assert_almost_equal(
+                intervals["constant"][0][input_name], array([[0.0], [0.0]])
+            )
+            assert intervals["varying"][0][input_name].shape == (2, 1)
 
 
 def test_rank_based_sobol_warning(discipline, uncertain_space, caplog):

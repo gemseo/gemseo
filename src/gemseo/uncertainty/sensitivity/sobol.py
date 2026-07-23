@@ -27,10 +27,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Final
 
-import matplotlib.pyplot as plt
-from matplotlib.transforms import Affine2D
 from numpy import array
 from numpy import asarray
 from numpy import hstack
@@ -38,15 +35,9 @@ from numpy import sign
 from numpy import vstack
 from numpy import zeros
 from numpy.random import default_rng
-from openturns import JansenSensitivityAlgorithm
-from openturns import MartinezSensitivityAlgorithm
-from openturns import MauntzKucherenkoSensitivityAlgorithm
 from openturns import RankSobolSensitivityAlgorithm
-from openturns import SaltelliSensitivityAlgorithm
 from openturns import Sample
 from pandas import Series
-from strenum import PascalCaseStrEnum
-from strenum import StrEnum
 
 from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
@@ -57,11 +48,13 @@ from gemseo.post.dataset.heatmap import Heatmap
 from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
 from gemseo.uncertainty.sensitivity._cv_sobol_algorithm import CVSobolAlgorithm
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
+from gemseo.uncertainty.sensitivity._sobol_indices_estimator import SobolAnalysisMethod
+from gemseo.uncertainty.sensitivity._sobol_indices_estimator import (
+    SobolIndicesEstimatorMixin,
+)
 from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
 from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
 from gemseo.utils.seeder import SEED
-from gemseo.utils.string_tools import filter_names
 from gemseo.utils.string_tools import get_name_and_component
 from gemseo.utils.string_tools import repr_variable
 
@@ -69,7 +62,6 @@ if TYPE_CHECKING:
     from collections.abc import Collection
     from collections.abc import Iterable
 
-    from matplotlib.figure import Figure
     from openturns import SobolIndicesAlgorithmImplementation
 
     from gemseo.algos.doe.base_doe_settings import BaseDOESettings
@@ -87,17 +79,9 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class SobolAnalysisMethod(StrEnum):
-    """A Sobol' analysis method."""
-
-    FIRST = "first"
-    """The first-order Sobol' index."""
-
-    TOTAL = "total"
-    """The total-order Sobol' index."""
-
-
-class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
+class SobolAnalysis(
+    SobolIndicesEstimatorMixin, BaseSensitivityAnalysis[SobolAnalysisMethod]
+):
     r"""Sensitivity analysis based on the Sobol' indices.
 
     Sobol' indices are variance-based sensitivity measures
@@ -129,71 +113,6 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         for the total sensitivity index.
         Computer physics communications, 181(2):259--270, 2010.
     """
-
-    @dataclass(frozen=True)
-    class SensitivityIndices:  # noqa: D106
-        first: FirstOrderIndicesType = field(default_factory=dict)
-        """The first-order Sobol' indices."""
-
-        second: SecondOrderIndicesType = field(default_factory=dict)
-        """The second-order Sobol' indices."""
-
-        total: FirstOrderIndicesType = field(default_factory=dict)
-        """The total-order Sobol' indices."""
-
-    _indices: SensitivityIndices
-
-    class Algorithm(PascalCaseStrEnum):
-        """The algorithms to estimate the Sobol' indices."""
-
-        JANSEN = "Jansen"
-        """The Jansen method.
-
-        Source: Jansen, M.J.W. Analysis of variance designs for model output,
-        Computer Physics Communication, 1999, 117, 35-43.
-        """
-
-        MARTINEZ = "Martinez"
-        """The Martinez method.
-
-        Source: Martinez, J-M., Analyse de sensibilite globale par decomposition
-        de la variance,
-        Presentation in the meeting of GdR Ondes and GdR MASCOT-NUM,
-        January, 13th, 2011, Institut Henri Poincare, Paris, France
-        """
-
-        MAUNTZ_KUCHERENKO = "MauntzKucherenko"
-        """The Mauntz-Kucherenko method.
-
-        Source: Sobol, I.M., Tarantola, S., Gatelli, D., Kucherenko, S.S. and Mauntz, W.
-        Estimating the approximation errors when fixing unessential factors
-        in global sensitivity analysis,
-        Reliability Engineering and System Safety, 2007, 92, 957-960.
-        """
-
-        RANK = "Rank"
-        """The rank-based method.
-
-        Source: Gamboa, F., Gremaud, P., Klein, T. & Lagnoux, A.
-        Global sensitivity analysis: A novel generation of mighty estimators
-        based on rank statistics Bernoulli 28(4): 2345-2374, 2022.
-        """
-
-        SALTELLI = "Saltelli"
-        """The Saltelli method.
-
-        Source: Saltelli, A. Making best use of model evaluations to
-        compute sensitivity indices. Computer Physics Communication, 2002, 145, 580-297
-        """
-
-    __ALGO_NAME_TO_CLASS: Final[dict[Algorithm, type]] = {
-        Algorithm.SALTELLI: SaltelliSensitivityAlgorithm,
-        Algorithm.JANSEN: JansenSensitivityAlgorithm,
-        Algorithm.MAUNTZ_KUCHERENKO: MauntzKucherenkoSensitivityAlgorithm,
-        Algorithm.MARTINEZ: MartinezSensitivityAlgorithm,
-        Algorithm.RANK: RankSobolSensitivityAlgorithm,
-    }
-    """The mapping from the sensitivity algorithms to the OT classes."""
 
     @dataclass
     class ControlVariate:
@@ -230,32 +149,8 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         If empty, `SobolAnalysis` will compute it.
         """
 
-    _INTERACTION_METHODS: ClassVar[tuple[str]] = ("second",)
-
-    __GET_FIRST_ORDER_INDICES: Final[str] = "getFirstOrderIndices"
-    __GET_SECOND_ORDER_INDICES: Final[str] = "getSecondOrderIndices"
-    __GET_TOTAL_ORDER_INDICES: Final[str] = "getTotalOrderIndices"
-
-    __SETTINGS_TO_INTERVAL_GETTERS: Final[dict[tuple[bool, bool], str]] = {
-        (True, True): "first_indices_interval",
-        (True, False): "total_indices_interval",
-        (False, True): "getFirstOrderIndicesInterval",
-        (False, False): "getTotalOrderIndicesInterval",
-    }
-    """A mapping from settings to the name of the interval getter.
-
-    The settings are the following boolean parameters:
-
-    - Whether control variates are used or not.
-    - Whether the order of the computed Sobol' index is
-      the first-order or the total-order.
-    """
-
     __output_standard_deviations: dict[str, RealArray]
     """The map between output names and standard deviations."""
-
-    __output_name_to_sobol_algos: dict[str, list[SobolIndicesAlgorithmImplementation]]
-    """The map from an output name to a Sobol' algorithms."""
 
     __output_variances: dict[str, RealArray]
     """The map between output names and variances."""
@@ -270,7 +165,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
     def __init__(self, samples: IODataset | StrPath = "") -> None:  # noqa: D107
         super().__init__(samples)
         self.__use_control_variates = False
-        self.__output_name_to_sobol_algos = {}
+        self._output_name_to_sobol_algos = {}
         dataset = self.dataset
         if dataset is None or dataset.empty:
             self.__output_standard_deviations = {}
@@ -460,12 +355,12 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
     def __compute_indices_classically(
         self,
         output_names: Iterable[str],
-        algo: Algorithm,
+        algo: SobolAnalysis.Algorithm,
         confidence_level: float,
         use_asymptotic_distributions: bool,
         n_replicates: int,
         seed: int | None = None,
-    ) -> SensitivityIndices:
+    ) -> SobolAnalysis.SensitivityIndices:
         """Compute the sensitivity indices with OpenTURNS capabilities.
 
         Args:
@@ -484,7 +379,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         Returns:
             The sensitivity indices.
         """
-        algo_class = self.__ALGO_NAME_TO_CLASS[algo]
+        algo_class = self._ALGO_NAME_TO_CLASS[algo]
         use_rank_algorithm = issubclass(algo_class, RankSobolSensitivityAlgorithm)
         # Bootstrap-based estimation (rank algorithm or non-asymptotic intervals)
         # consumes the random generator, so reseed it for reproducible results.
@@ -496,22 +391,23 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
                 group_names=dataset.INPUT_GROUP, variable_names=self._input_names
             ).to_numpy()
         )
+        sample_size = dataset.misc.get("sample_size", len(input_data))
         with seed_ot_random_generator(seed if do_seed else None) as seeded:
             for output_name, _, data in self._iter_output_components(output_names):
-                algos = self.__output_name_to_sobol_algos.setdefault(output_name, [])
+                algos = self._output_name_to_sobol_algos.setdefault(output_name, [])
                 if data is None:
                     algos.append(None)
                     continue
 
-                ot_algo = algo_class()
-                ot_algo.setDesign(
+                ot_algo = self._build_sobol_algo(
+                    algo_class,
                     input_data,
                     Sample(data),
-                    dataset.misc.get("sample_size", len(input_data)),
+                    sample_size,
+                    n_replicates,
+                    use_asymptotic_distributions,
+                    confidence_level,
                 )
-                ot_algo.setBootstrapSize(n_replicates)
-                ot_algo.setUseAsymptoticDistribution(use_asymptotic_distributions)
-                ot_algo.setConfidenceLevel(confidence_level)
                 algos.append(ot_algo)
                 # Prime bootstrap-based intervals inside the seeded scope so that
                 # later get_intervals() calls do not depend on global RNG state.
@@ -522,13 +418,13 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
 
         if use_rank_algorithm:
             self._indices = self.SensitivityIndices(
-                first=self.__get_indices(self.__GET_FIRST_ORDER_INDICES),
+                first=self._get_sobol_indices(self._GET_FIRST_ORDER_INDICES),
             )
         else:
             self._indices = self.SensitivityIndices(
-                first=self.__get_indices(self.__GET_FIRST_ORDER_INDICES),
-                second=self.__get_indices(self.__GET_SECOND_ORDER_INDICES),
-                total=self.__get_indices(self.__GET_TOTAL_ORDER_INDICES),
+                first=self._get_sobol_indices(self._GET_FIRST_ORDER_INDICES),
+                second=self._get_sobol_indices(self._GET_SECOND_ORDER_INDICES),
+                total=self._get_sobol_indices(self._GET_TOTAL_ORDER_INDICES),
             )
 
         return self._indices
@@ -540,7 +436,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
         confidence_level: float,
         n_replicates: int,
         seed: int | None,
-    ) -> SensitivityIndices:
+    ) -> SobolAnalysis.SensitivityIndices:
         """Compute the sensitivity indices using control variates.
 
         Args:
@@ -590,7 +486,7 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
                 vstack(list(cv_dataset_list[output_name]))
                 for cv_dataset_list in cvs_dataset_list
             ]
-            algos = self.__output_name_to_sobol_algos[output_name] = []
+            algos = self._output_name_to_sobol_algos[output_name] = []
             for i, sub_output_data in enumerate(output_data.T):
                 if sub_output_data.var() == 0.0:
                     algos.append(None)
@@ -624,21 +520,21 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
                 self.output_variances[output_name][i] = algo.variance
 
         self._indices = self.SensitivityIndices(
-            first=self.__get_indices("compute_first_indices"),
-            total=self.__get_indices("compute_total_indices"),
+            first=self._get_sobol_indices("compute_first_indices"),
+            total=self._get_sobol_indices("compute_total_indices"),
         )
         return self._indices
 
     def compute_indices(
         self,
         output_names: str | Iterable[str] = (),
-        algo: Algorithm | None = None,
+        algo: SobolAnalysis.Algorithm | None = None,
         confidence_level: float = 0.95,
         control_variates: ControlVariate | Iterable[ControlVariate] = (),
         use_asymptotic_distributions: bool = True,
         n_replicates: int = 100,
         seed: int | None = SEED,
-    ) -> SensitivityIndices:
+    ) -> SobolAnalysis.SensitivityIndices:
         """
         Args:
             algo: The name of the algorithm
@@ -679,27 +575,10 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
                 if `Algorithm.RANK` is used with pick-and-freeze (PF) samples
                 or if another algorithm is used with non-PF samples.
         """  # noqa:D205,D212,D415
-        use_rank_based_algo = algo == self.Algorithm.RANK
         use_pick_and_freeze = self.dataset.misc.get("use_pick_and_freeze", False)
-        if algo is None:
-            algo = (
-                self.Algorithm.SALTELLI if use_pick_and_freeze else self.Algorithm.RANK
-            )
-        elif use_rank_based_algo and use_pick_and_freeze:
-            msg = (
-                "The rank-based Sobol' estimation algorithm "
-                "expects Monte Carlo samples."
-            )
-            raise ValueError(msg)
-        elif not use_rank_based_algo and not use_pick_and_freeze:
-            msg = (
-                "Sobol' estimation algorithms (except rank-based) "
-                "expect pick-and-freeze samples."
-            )
-            raise ValueError(msg)
-
+        algo = self._select_sobol_algorithm(algo, use_pick_and_freeze)
         output_names = self._get_output_names(output_names)
-        self.__output_name_to_sobol_algos = {}
+        self._output_name_to_sobol_algos = {}
         self.__use_control_variates = bool(control_variates)
         if control_variates:
             if algo != self.Algorithm.SALTELLI:
@@ -728,55 +607,6 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
             n_replicates,
             seed,
         )
-
-    def __get_indices(
-        self, method_name: str
-    ) -> FirstOrderIndicesType | SecondOrderIndicesType:
-        """Get the first-, second- or total-order indices.
-
-        Args:
-            method_name: The name of the sensitivity method to compute the indices.
-
-        Returns:
-            The first-, second- or total-order indices.
-        """
-        dataset = self.dataset
-        if method_name == self.__GET_SECOND_ORDER_INDICES and not dataset.misc.get(
-            "eval_second_order", False
-        ):
-            return {}
-
-        name_to_size = dataset.variable_name_to_n_components
-        indices = {
-            output_name: [
-                None
-                if algorithm is None
-                else split_array_to_dict_of_arrays(
-                    array(getattr(algorithm, method_name)()),
-                    name_to_size,
-                    self._input_names,
-                )
-                for algorithm in algorithms
-            ]
-            for output_name, algorithms in self.__output_name_to_sobol_algos.items()
-        }
-        if method_name == self.__GET_SECOND_ORDER_INDICES:
-            return {
-                output_name: [
-                    None
-                    if output_component_indices is None
-                    else {
-                        k: split_array_to_dict_of_arrays(
-                            v.T, name_to_size, self._input_names
-                        )
-                        for k, v in output_component_indices.items()
-                    }
-                    for output_component_indices in output_indices
-                ]
-                for output_name, output_indices in indices.items()
-            }
-
-        return indices
 
     def __unscale_index(
         self,
@@ -844,222 +674,72 @@ class SobolAnalysis(BaseSensitivityAnalysis[SobolAnalysisMethod]):
             for output_name, output_sensitivity_indices in indices.items()
         }
 
-    def get_intervals(
+    def _get_interval_bounds(
         self,
-        first_order: bool = True,
-        output_names: str | Iterable[str] = (),
-    ) -> FirstOrderIndicesType:
-        """Get the confidence intervals for the Sobol' indices.
-
-        Warning:
-            You must first call
-            [compute_indices()][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis.compute_indices].
+        sobol_algorithm: SobolIndicesAlgorithmImplementation | CVSobolAlgorithm | None,
+        first_order: bool,
+    ) -> tuple[RealArray, RealArray]:
+        """Return the lower and upper bounds of a Sobol' index confidence interval.
 
         Args:
-            first_order: If `True`, compute the intervals for the first-order indices.
-                Otherwise, for the total-order indices.
-            output_names: The name(s) of the output(s)
-                for which to get the confidence intervals.
-                If empty, use all the outputs for which the indices were computed.
+            sobol_algorithm: The OpenTURNS or control-variate Sobol' indices
+                algorithm.
+                If `None`, i.e. the output has zero variance and no algorithm was
+                built for it, return degenerate (zero) bounds.
+            first_order: Whether the confidence interval is for a first-order index;
+                otherwise, for a total-order index.
 
         Returns:
-            The confidence intervals for the Sobol' indices.
-
-            With the following structure:
-
-            ```python
-                {
-                    "output_name": [
-                        {
-                            "input_name": data_array,
-                        }
-                    ]
-                }
-            ```
+            The lower and upper bounds of the confidence interval.
         """
-        use_cv = self.__use_control_variates
-        name_to_size = self.dataset.variable_name_to_n_components
-        intervals = {}
-        for output_name in self._get_output_names(
-            output_names, self.__output_name_to_sobol_algos
-        ):
-            sobol_algos = self.__output_name_to_sobol_algos[output_name]
-            intervals[output_name] = []
-            for sobol_algorithm in sobol_algos:
-                interval = getattr(
-                    sobol_algorithm,
-                    self.__SETTINGS_TO_INTERVAL_GETTERS[use_cv, first_order],
-                )
-                if not use_cv:
-                    interval = array([
-                        interval().getLowerBound(),
-                        interval().getUpperBound(),
-                    ])
-                name_to_lower_bounds = split_array_to_dict_of_arrays(
-                    interval[0], name_to_size, self._input_names
-                )
-                name_to_upper_bounds = split_array_to_dict_of_arrays(
-                    interval[1], name_to_size, self._input_names
-                )
-                intervals[output_name].append({
-                    input_name: array([
-                        name_to_lower_bounds[input_name],
-                        name_to_upper_bounds[input_name],
-                    ])
-                    for input_name in self._input_names
-                })
+        if not self.__use_control_variates:
+            return super()._get_interval_bounds(sobol_algorithm, first_order)
 
-        return intervals
+        if sobol_algorithm is None:
+            name_to_size = self.dataset.variable_name_to_n_components
+            n_inputs = sum(name_to_size[name] for name in self._input_names)
+            zero_bounds = zeros(n_inputs)
+            return zero_bounds, zero_bounds
 
-    def plot(
-        self,
-        output: VariableType,
-        input_names: Iterable[str] = (),
-        title: str = "",
-        save: bool = True,
-        show: bool = False,
-        file_path: StrPath = "",
-        directory_path: StrPath = "",
-        file_name: str = "",
-        file_format: str = "",
-        sort: bool = True,
-        sort_by_total: bool = True,
-    ) -> Figure:
-        r"""Plot the first- and total-order Sobol' indices.
+        interval = (
+            sobol_algorithm.first_indices_interval
+            if first_order
+            else sobol_algorithm.total_indices_interval
+        )
+        return interval[0], interval[1]
 
-        For the $i$-th input variable,
-        plot its first-order Sobol' index $S_i^{1}$
-        and its total-order Sobol' index $S_i^{T}$ with dots
-        and their confidence intervals with vertical lines.
-
-        The subtitle displays the standard deviation (StD) and the variance (Var)
-        of the output of interest.
+    def _get_plot_title(self, output_name: str, output_component: int) -> str:
+        """Return the default plot title for an output component.
 
         Args:
-            directory_path: The path to the directory where to save the plots.
-            file_name: The name of the file.
-            title: The title of the plot.
-                If empty, use a default one.
-            sort: Whether to sort the input variables by decreasing order.
-            sort_by_total: Whether to sort according to the total-order Sobol' indices
-                when `sort` is `True` and total-order Sobol' indices are available.
-                Otherwise, use the first-order Sobol' indices.
-        """  # noqa: D415 D417
-        output = get_name_and_component(output)
+            output_name: The name of the output.
+            output_component: The component of the output.
 
-        fig, ax = plt.subplots()
-
-        indices = (
-            self.indices.total
-            if sort_by_total and self.indices.total
-            else self.indices.first
-        )
-        output_name, output_component = output
-        indices = indices[output_name][output_component]
-        if sort:
-            names = [
-                name
-                for name, _ in sorted(
-                    indices.items(), key=lambda item: item[1].sum(), reverse=True
-                )
-            ]
-        else:
-            names = indices.keys()
-
-        names = filter_names(names, input_names)
-
-        first_order_indices = self.indices.first[output_name][output_component]
-        name_to_size = {name: value.size for name, value in first_order_indices.items()}
-        values_first_order = [
-            first_order_indices[name][index]
-            for name in names
-            for index in range(name_to_size[name])
-        ]
-
-        if self.indices.total:
-            total_order_indices = self.indices.total[output_name][output_component]
-            values_total_order = [
-                total_order_indices[name][index]
-                for name in names
-                for index in range(name_to_size[name])
-            ]
-
-        x_labels = []
-        for name in names:
-            if name_to_size[name] == 1:
-                x_labels.append(name)
-            else:
-                size = name_to_size[name]
-                x_labels.extend([
-                    repr_variable(name, index, size) for index in range(size)
-                ])
-
+        Returns:
+            The default plot title.
+        """
         pretty_output_name = repr_variable(
             output_name,
             output_component,
             len(self.indices.first[output_name]),
         )
-        if not title:
-            title = f"Sobol' indices for the output {pretty_output_name}"
+        return f"Sobol' indices for the output {pretty_output_name}"
+
+    def _get_plot_subtitle(self, output_name: str, output_component: int) -> str:
+        """Return the plot subtitle for an output component.
+
+        The subtitle displays the standard deviation (StD) and the variance (Var)
+        of the output of interest.
+
+        Args:
+            output_name: The name of the output.
+            output_component: The component of the output.
+
+        Returns:
+            The plot subtitle.
+        """
         variance = self.output_variances[output_name][output_component]
-        ax.set_title(f"{title}\nVar={variance:.1e}    StD={variance**0.5:.1e}")
-        ax.set_axisbelow(True)
-        ax.grid()
-
-        errorbar_options = {"marker": "o", "linestyle": "", "markersize": 7}
-
-        all_intervals = self.get_intervals(output_names=output_name)
-        intervals = all_intervals[output_name][output_component]
-        yerr = array([
-            [
-                first_order_indices[name][index] - intervals[name][0, index],
-                intervals[name][1, index] - first_order_indices[name][index],
-            ]
-            for name in names
-            for index in range(name_to_size[name])
-        ]).T
-        transform = Affine2D().translate(+0.01, 0.0) + ax.transData
-        ax.errorbar(
-            x_labels,
-            values_first_order,
-            yerr=yerr,
-            label="First order",
-            transform=transform,
-            **errorbar_options,
-        )
-
-        if self.indices.total:
-            all_intervals = self.get_intervals(False, output_names=output_name)
-            intervals = all_intervals[output_name][output_component]
-            yerr = array([
-                [
-                    total_order_indices[name][index] - intervals[name][0, index],
-                    intervals[name][1, index] - total_order_indices[name][index],
-                ]
-                for name in names
-                for index in range(name_to_size[name])
-            ]).T
-            transform = Affine2D().translate(-0.01, 0.0) + ax.transData
-            ax.errorbar(
-                x_labels,
-                values_total_order,
-                yerr,
-                label="Total order",
-                transform=transform,
-                **errorbar_options,
-            )
-
-        ax.legend(loc="lower left")
-        save_show_figure_from_file_path_manager(
-            fig,
-            self._file_path_manager if save else None,
-            show=show,
-            file_path=file_path,
-            file_name=file_name,
-            file_format=file_format,
-            directory_path=directory_path,
-        )
-        return fig
+        return f"Var={variance:.1e}    StD={variance**0.5:.1e}"
 
     def plot_second_order(
         self,
