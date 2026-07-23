@@ -23,8 +23,10 @@ from numpy import array
 from numpy import atleast_1d
 from openturns import CompositeRandomVector
 from openturns import Greater
+from openturns import GreaterOrEqual
 from openturns import IntersectionEvent
 from openturns import Less
+from openturns import LessOrEqual
 from openturns import PythonFunction
 from openturns import RandomGenerator
 from openturns import RandomVector
@@ -84,7 +86,12 @@ class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
                 )
                 ot_function = PythonFunction(dimension, 1, func, gradient=jac)
                 output_vector = CompositeRandomVector(ot_function, input_vector)
-                comparator = Greater() if elementary_event.greater else Less()
+                if elementary_event.greater:
+                    comparator = (
+                        Greater() if elementary_event.strict else GreaterOrEqual()
+                    )
+                else:
+                    comparator = Less() if elementary_event.strict else LessOrEqual()
                 ot_elementary_event = ThresholdEvent(
                     output_vector, comparator, elementary_event.threshold
                 )

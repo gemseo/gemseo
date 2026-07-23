@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.scenarios.evaluation import EvaluationScenario
-from gemseo.uncertainty.reliability import EventVariable
+from gemseo.uncertainty.reliability.event_variable import EventVariable
 from gemseo.uncertainty.reliability.factory import ReliabilityAlgorithmFactory
 from gemseo.uncertainty.reliability.problem import ReliabilityProblem
 

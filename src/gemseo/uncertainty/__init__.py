@@ -47,6 +47,7 @@ See Also:
     [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]
     [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
     [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]
+    [FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis]
 
 The sub-package [gemseo.uncertainty.statistics][gemseo.uncertainty.statistics]
 offers an abstract level
@@ -76,7 +77,7 @@ if TYPE_CHECKING:
     from gemseo.datasets.io_dataset import IODataset as IODataset
     from gemseo.typing import StrPath
     from gemseo.uncertainty.distributions.base import BaseDistribution
-    from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
+    from gemseo.uncertainty.sensitivity.base import BaseGenericSensitivityAnalysis
     from gemseo.uncertainty.statistics.base import BaseStatistics
 
 
@@ -206,7 +207,7 @@ def create_statistics(
 def create_sensitivity_analysis(
     analysis: str,
     samples: IODataset | StrPath = "",
-) -> BaseSensitivityAnalysis:
+) -> BaseGenericSensitivityAnalysis:
     """Create the sensitivity analysis.
 
     Args:
@@ -233,7 +234,7 @@ def create_sensitivity_analysis(
     return factory.create(name, samples=samples)
 
 
-def load_sensitivity_analysis(file_path: StrPath) -> BaseSensitivityAnalysis:
+def load_sensitivity_analysis(file_path: StrPath) -> BaseGenericSensitivityAnalysis:
     """Load a sensitivity analysis from the disk.
 
     Args:

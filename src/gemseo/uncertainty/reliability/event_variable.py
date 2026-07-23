@@ -61,12 +61,16 @@ class EventVariable:
             self.__name = function_or_name.name
             self.__function = function_or_name
 
-    def __create_event(self, threshold: float, greater: bool) -> Event:
+    def __create_event(
+        self, threshold: float, greater: bool, strict: bool = True
+    ) -> Event:
         """Create an event from a threshold and a comparison direction.
 
         Args:
             threshold: The threshold of the elementary event.
             greater: Whether the variable of interest is greater than the threshold.
+            strict: Whether the comparison to the threshold is strict
+                (`>`/`<` vs `>=`/`<=`).
 
         Returns:
             The event definined by a single elementary event.
@@ -76,6 +80,7 @@ class EventVariable:
                 name=self.__name,
                 threshold=threshold,
                 greater=greater,
+                strict=strict,
                 function=self.__function,
             )
         )
@@ -84,13 +89,13 @@ class EventVariable:
         return self.__create_event(threshold, greater=False)
 
     def __le__(self, threshold: float) -> Event:
-        return self.__create_event(threshold, greater=False)
+        return self.__create_event(threshold, greater=False, strict=False)
 
     def __gt__(self, threshold: float) -> Event:
         return self.__create_event(threshold, greater=True)
 
     def __ge__(self, threshold: float) -> Event:
-        return self.__create_event(threshold, greater=True)
+        return self.__create_event(threshold, greater=True, strict=False)
 
     def isin(self, interval: Sequence[float]) -> Event:
         """Create an event for membership in a continuous interval.
@@ -102,9 +107,9 @@ class EventVariable:
         Returns:
             The event defined as a <= variable <= b.
         """
-        return self.__create_event(interval[0], greater=True) & self.__create_event(
-            interval[1], greater=False
-        )
+        return self.__create_event(
+            interval[0], greater=True, strict=False
+        ) & self.__create_event(interval[1], greater=False, strict=False)
 
     @classmethod
     def __from_functions_or_names(

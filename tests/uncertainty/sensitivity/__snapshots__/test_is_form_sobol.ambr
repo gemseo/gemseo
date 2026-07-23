@@ -1,0 +1,16 @@
+# serializer version: 1
+# name: test_inconsistent_algorithm
+  "The rank-based Sobol' estimation algorithm expects Monte Carlo samples."
+# ---
+# name: test_inconsistent_algorithm_with_iid_samples
+  "Sobol' estimation algorithms (except rank-based) expect pick-and-freeze samples."
+# ---
+# name: test_small_budget_accepted_by_rank_not_pick_and_freeze
+  'n_samples (62) is too small to draw a sample for each of the 1 event(s) after their 61 FORM evaluations; increase n_samples.'
+# ---
+# name: test_too_small_n_samples
+  'n_samples (1) is too small to draw a sample for each of the 1 event(s) after their 61 FORM evaluations; increase n_samples.'
+# ---
+# name: test_vector_valued_event_output_raises
+  "The event output 'y' has 2 components; ISFORMSobolAnalysis only supports event outputs with a single component."
+# ---

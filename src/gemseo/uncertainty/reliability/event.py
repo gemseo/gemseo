@@ -22,8 +22,10 @@ from typing import ClassVar
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+    from collections.abc import Mapping
 
     from gemseo.core.functions.array_function import ArrayFunction
+    from gemseo.typing import RealArray
 
 
 @dataclass
@@ -39,6 +41,9 @@ class _ElementaryEvent:
     greater: bool = True
     """Whether the variable of interest is greater than the threshold."""
 
+    strict: bool = True
+    """Whether the comparison to the threshold is strict (`>`/`<` vs `>=`/`<=`)."""
+
     function: ArrayFunction | None = None
     """The function evaluating the variable of interest, if known."""
 
@@ -47,6 +52,8 @@ class _ElementaryEvent:
 
     def __str__(self) -> str:
         operator = ">" if self.greater else "<"
+        if not self.strict:
+            operator += "="
         return f"{self.name} {operator} {self.threshold}"
 
 
@@ -120,3 +127,47 @@ class Event:
         return len(self.__intersections) > 1 or (
             len(self.__intersections) == 1 and len(self.__intersections[0]) > 1
         )
+
+    def evaluate(self, name_to_value: Mapping[str, RealArray]) -> RealArray:
+        """Simulate the event from data.
+
+        Args:
+            name_to_value: The map from a variable name to a variable value.
+
+        Returns:
+            The value of the event.
+
+        Raises:
+            ValueError: If the event has no intersections of elementary events.
+        """
+        if not self.__intersections:
+            msg = "The event has no intersections of elementary events."
+            raise ValueError(msg)
+
+        union_indicator = None
+        for intersection_event in self.__intersections:
+            intersection_indicator = None
+            for elementary_event in intersection_event:
+                values = name_to_value[elementary_event.name]
+                threshold = elementary_event.threshold
+                if elementary_event.greater:
+                    if elementary_event.strict:
+                        elementary_indicator = values > threshold
+                    else:
+                        elementary_indicator = values >= threshold
+                elif elementary_event.strict:
+                    elementary_indicator = values < threshold
+                else:
+                    elementary_indicator = values <= threshold
+
+                if intersection_indicator is None:
+                    intersection_indicator = elementary_indicator
+                else:
+                    intersection_indicator &= elementary_indicator
+
+            if union_indicator is None:
+                union_indicator = intersection_indicator
+            else:
+                union_indicator |= intersection_indicator
+
+        return union_indicator.astype(float)
