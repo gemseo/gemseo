@@ -103,17 +103,17 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
     we can compare their absolute values
     $|df_1|,\ldots,|df_d|$ and sort $X_1,\ldots,X_d$ accordingly.
 
-    The Morris method repeats this OAT technique at $r$ points of the input space
+    The Morris method repeats this OAT technique at $R$ points of the input space
     and computes statistics from the elementary effects,
     such as the means of the absolute finite differences $\mu^*$:
 
-    $$\mu_i^* = \frac{1}{r}\sum_{j=1}^r|df_i^{(j)}|$$
+    $$\mu_i^* = \frac{1}{R}\sum_{j=1}^R|df_i^{(j)}|$$
 
     and standard deviations $\sigma$:
 
-    $$\sigma_i = \sqrt{\frac{1}{r}\sum_{j=1}^r\left(|df_i^{(j)}|-\mu_i\right)^2}$$
+    $$\sigma_i = \sqrt{\frac{1}{R}\sum_{j=1}^R\left(|df_i^{(j)}|-\mu_i\right)^2}$$
 
-    where $\mu_i = \frac{1}{r}\sum_{j=1}^r df_i^{(j)}$.
+    where $\mu_i = \frac{1}{R}\sum_{j=1}^R df_i^{(j)}$.
 
     The larger the value of $\mu_i^*$, the more significant $X_i$ is.
     The larger the value of $\sigma_i$, the greater the nonlinearity or interaction.
@@ -151,11 +151,11 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
     ) -> IODataset:
         r"""
         Args:
-            n_replicates: The number of times $r$ the OAT method is repeated.
+            n_replicates: The number of times $R$ the OAT method is repeated.
                 When `n_samples` is not equal to `0`,
-                $r$ is the greatest integer such that $r(d+1)\leq$ `n_samples`,
+                $R$ is the greatest integer such that $R(1+d)\leq$ `n_samples`,
                 where $d$ is the input dimension,
-                and the number of samples actually carried out is $r(d+1)$.
+                and the number of samples actually carried out is $R(1+d)$.
             step: The relative finite difference step $\delta_r$ of the OAT method.
                 In the $i$-th direction,
                 the absolute step is
@@ -343,14 +343,16 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         ax.scatter(x_val, y_val)
         ax.set_xlabel(r"$\mu^*$")
         ax.set_ylabel(r"$\sigma$")
-        default_title = (
-            f"Sampling: {self.__inner_doe_algo_name}(size={self.n_replicates}) - "
-            f"Relative step: {self.dataset.misc.get('step', 'Undefined')} - Output: "
-            f"{repr_variable(output_name, output_component, size=len(sigma))}"
-        )
+        step = self.dataset.misc.get("step")
+        if not title:
+            title = repr_variable(output_name, output_component, size=len(sigma))
+            title += f" - R={self.n_replicates} "
+            if step is not None:
+                title += rf"- $\delta_r$={round(step * 100)}% "
+            title += f"- {self.__inner_doe_algo_name}"
         ax.set_xlim(left=lower_mu)
         ax.set_ylim(bottom=lower_sigma)
-        ax.set_title(title or default_title)
+        ax.set_title(title)
         ax.set_axisbelow(True)
         ax.grid()
         x_offset = offset * (x_val.max() - x_val.min()) / 100.0
