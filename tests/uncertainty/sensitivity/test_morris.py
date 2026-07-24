@@ -88,6 +88,16 @@ def morris(discipline, parameter_space):
     return analysis
 
 
+@pytest.fixture(scope="module")
+def morris_missing_step(discipline, parameter_space):
+    """Morris analysis for the Ishigami function, with missing step."""
+    analysis = MorrisAnalysis()
+    analysis.compute_samples([discipline], parameter_space, n_samples=0)
+    analysis.compute_indices()
+    del analysis.dataset.misc["step"]
+    return analysis
+
+
 def test_n_replicates(morris):
     """Test the n_replicates property."""
     # Reading n_replicates from the dataset.
@@ -174,20 +184,31 @@ def test_morris_relative_sigma(morris, output, variable) -> None:
 
 
 @pytest.mark.parametrize(
-    ("output_name", "kwargs"),
+    "kwargs",
     [
-        ("y1", {}),
-        ("y2", {}),
-        ("y1", {"input_names": ["x1", "x3"]}),
-        ("y1", {"offset": 5}),
-        ("y1", {"lower_mu": 1}),
-        ("y1", {"lower_sigma": 0.1}),
+        {},
+        {
+            "input_names": ["x1", "x3"],
+            "offset": 5,
+            "lower_mu": 0.02,
+            "lower_sigma": 1e-15,
+            "title": "Foo Bar",
+        },
     ],
 )
-def test_plot(morris, output_name, kwargs, snapshot_matplotlib) -> None:
+def test_plot(morris, kwargs, snapshot_matplotlib) -> None:
     """Check the main visualization method."""
-    fig = morris.plot(output_name, save=False, **kwargs)
+    fig = morris.plot("y1", save=False, **kwargs)
     assert isinstance(fig, Figure)
+
+
+def test_plot_missing_step(morris_missing_step, snapshot_matplotlib) -> None:
+    """The plot() method does not display the step in the title when it is missing.
+
+    This test is for compatibility reasons
+    (at one time, the step was not saved in the dataset).
+    """
+    morris_missing_step.plot("y1", save=False)
 
 
 @pytest.mark.parametrize(
