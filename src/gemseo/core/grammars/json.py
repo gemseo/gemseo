@@ -337,7 +337,7 @@ class JSONGrammar(BaseGrammar):
                     break
 
     def to_file(self, path: StrPath = "") -> None:
-        """Write the grammar, schema to a json file.
+        """Write the grammar schema to a JSON file.
 
         Args:
             path: The file path.
