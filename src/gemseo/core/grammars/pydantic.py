@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
+from copy import copy
 from enum import Enum
 from inspect import isclass
 from sys import modules
@@ -63,7 +63,10 @@ LOGGER = logging.getLogger(__name__)
 # by external tools (e.g., JSON serialization/deserialization)
 # and may not match the exact Enum values expected by Pydantic.
 # These fields are handled in _copy_model.
-_CONFIG_DICT: ConfigDict = {"strict": True}
+# The core schema construction is deferred because the grammar rebuilds the
+# model lazily via __rebuild_model before any validation or schema read,
+# so building it eagerly at class-creation time would be wasted work.
+_CONFIG_DICT: ConfigDict = {"strict": True, "defer_build": True}
 
 
 class PydanticGrammar(BaseGrammar):
@@ -87,8 +90,9 @@ class PydanticGrammar(BaseGrammar):
     __model_needs_rebuild: bool
     """Whether to rebuild the model before validation when it had runtime changes.
 
-    This is necessary because the Pydantic schema is built at model creation but it does
-    not reflect any of the changes done after.
+    This is necessary because the Pydantic schema is built lazily by
+    `__rebuild_model` and does not reflect any of the changes done after it was
+    last built.
     """
 
     __schema: Schema | None
@@ -121,6 +125,7 @@ class PydanticGrammar(BaseGrammar):
         if model is not None:
             self._check_names_format(model.__pydantic_fields__)
             self.__model = _create_model(model)
+            self.__model_needs_rebuild = True
         # Set the defaults and required names.
         for name, field in self.__model.__pydantic_fields__.items():
             if description := field.description:
@@ -146,7 +151,9 @@ class PydanticGrammar(BaseGrammar):
 
     def _copy(self, grammar: Self) -> None:  # noqa:D102
         grammar.__model = _create_model(self.__model, internal=True)
-        grammar.__model_needs_rebuild = self.__model_needs_rebuild
+        # The copied model is a freshly created, unbuilt class (defer_build),
+        # so it always needs a rebuild regardless of this grammar's state.
+        grammar.__model_needs_rebuild = True
         # Invalidate rather than deepcopy: rebuild is deterministic from the model
         # and avoids paying the copy cost when the schema is never read.
         grammar.__schema = None
@@ -182,7 +189,7 @@ class PydanticGrammar(BaseGrammar):
         for field_name, field_info in grammar.__model.__pydantic_fields__.items():
             if field_name in excluded_names:
                 continue
-            field_info = deepcopy(field_info)
+            field_info = _copy_field_info(field_info)
             if merge and field_name in own_fields:
                 # Pydantic typing for the argument annotation does not handle Union,
                 # we cast it.
@@ -302,7 +309,9 @@ class PydanticGrammar(BaseGrammar):
 
     def _clear(self) -> None:  # noqa:D102
         self.__model = _create_model(BaseModel, internal=True)
-        self.__model_needs_rebuild = False
+        # With defer_build, a freshly created model has no core schema yet;
+        # __rebuild_model builds it lazily on first use.
+        self.__model_needs_rebuild = True
         self.__schema = None
         # TODO: This is no longer needed since pydantic 2.10, remove at some point.
         # This is another workaround for pickling a created model.
@@ -346,6 +355,9 @@ class PydanticGrammar(BaseGrammar):
 
     def _get_name_to_type(self) -> SimpleGrammarTypes:
         """
+        Returns:
+            The mapping from the element names to their Python types.
+
         Notes:
             For the elements for which types definitions cannot be expressed as a unique
             Python type, the type is set to `None`.
@@ -438,6 +450,26 @@ class PydanticGrammar(BaseGrammar):
             self.__rebuild_model()
 
 
+def _copy_field_info(field_info: FieldInfo) -> FieldInfo:
+    """Copy a field info so that the grammar can mutate it safely.
+
+    The copy is shallow except for the metadata items,
+    which are copied one by one because the grammar may mutate them in place
+    (e.g. the `Strict` marker for enum fields).
+    The default value and the annotation are shared with the original field info,
+    since the grammar never mutates them in place.
+
+    Args:
+        field_info: The field info to copy.
+
+    Returns:
+        The copied field info.
+    """
+    field_info_copy = copy(field_info)
+    field_info_copy.metadata = [copy(item) for item in field_info.metadata]
+    return field_info_copy
+
+
 def _patch_model(model: ModelType) -> None:
     """Patch the model for internal API change since pydantic 2.10.
 
@@ -494,7 +526,7 @@ def _create_model(model: ModelType, internal: bool = False) -> ModelType:
         for field_name, field_info in model.__pydantic_fields__.items():
             annotation = field_info.annotation
             if isclass(annotation) and issubclass(annotation, Enum):
-                field_info_copy = deepcopy(field_info)
+                field_info_copy = _copy_field_info(field_info)
                 metadata = field_info_copy.metadata
 
                 for item in metadata:
@@ -541,6 +573,6 @@ def _create_model(model: ModelType, internal: bool = False) -> ModelType:
         fields = derived_model.__pydantic_fields__
         for field_name, field_info in fields.items():
             if field_name not in field_definitions:
-                fields[field_name] = deepcopy(field_info)
+                fields[field_name] = _copy_field_info(field_info)
 
     return derived_model
