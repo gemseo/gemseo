@@ -717,7 +717,6 @@ dependencies = [
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "strenum" },
-    { name = "syrupy" },
     { name = "tqdm" },
     { name = "typing-extensions" },
     { name = "xdsmjs" },
@@ -753,6 +752,7 @@ dev = [
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
     { name = "ruff" },
+    { name = "syrupy" },
     { name = "syrupy-matplotlib" },
 ]
 dist = [
@@ -786,6 +786,7 @@ test = [
     { name = "pytest-cov" },
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
+    { name = "syrupy" },
     { name = "syrupy-matplotlib" },
 ]
 typing = [
@@ -825,7 +826,6 @@ requires-dist = [
     { name = "spgl1", marker = "extra == 'all'", specifier = ">=0.0.3,<=1.0.0" },
     { name = "strenum", specifier = ">=0.4.9,<=0.4.15" },
     { name = "sympy", marker = "extra == 'all'", specifier = ">=1.5,<=1.14.0" },
-    { name = "syrupy", specifier = ">=5.1.0,<=5.5.3" },
     { name = "tqdm", specifier = ">=4.50,<=4.67.3" },
     { name = "typing-extensions", specifier = ">=4,<5" },
     { name = "xdsmjs", specifier = ">=1.0.0,<=2.0.0" },
@@ -847,6 +847,7 @@ dev = [
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
     { name = "ruff" },
+    { name = "syrupy" },
     { name = "syrupy-matplotlib" },
 ]
 dist = [{ name = "check-wheel-contents" }]
@@ -878,6 +879,7 @@ test = [
     { name = "pytest-cov" },
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
+    { name = "syrupy" },
     { name = "syrupy-matplotlib" },
 ]
 typing = [
@@ -3409,7 +3411,7 @@ wheels = [
 
 [[package]]
 name = "syrupy-matplotlib"
-version = "0.1.1"
+version = "0.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jinja2" },
@@ -3418,9 +3420,9 @@ dependencies = [
     { name = "pytest" },
     { name = "syrupy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9a/de/54dd02d5a8b8871401e53a678cf622d56863a7262d4c3c962aacee148c9c/syrupy_matplotlib-0.1.1.tar.gz", hash = "sha256:cce031c9cd19b350992962431c5cebaa1dbd05192494dbd413da7b0af3355e93", size = 134576, upload-time = "2026-05-10T16:58:48.538Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/a1/67f95b7798b1848bdd7a536af4733eeffc966ec582e6b24feaaa40e96744/syrupy_matplotlib-0.3.0.tar.gz", hash = "sha256:15576b66c0a108aa18c2b2564d4c264618689acdb287e708907212b7e85a4111", size = 191960, upload-time = "2026-07-28T16:01:52.741Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/a0/3d6ffb607c1beb4e94135d425060c8a3e445d8f2d2d346d3a4775af53698/syrupy_matplotlib-0.1.1-py3-none-any.whl", hash = "sha256:3d1f5885107ac49b94263c052f4efcfb7d77398d66b52032143157f66d04b31c", size = 36591, upload-time = "2026-05-10T16:58:47.317Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/55/71d298f639119e411f36a3f2eefb20d4b40b97d68522721f4c97e63e7d52/syrupy_matplotlib-0.3.0-py3-none-any.whl", hash = "sha256:faff7f10e6cc998150db827bd4e402def8d0b89e5b4eb725a8163afa80e54b92", size = 60932, upload-time = "2026-07-28T16:01:51.457Z" },
 ]
 
 [[package]]
@@ -3521,35 +3523,20 @@ wheels = [
 
 [[package]]
 name = "types-pytz"
-version = "2026.2.0.20260518"
+version = "2026.3.1.20260727"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9f/d9/9fa4019d2235bd374293e1fd4153879b28b6ae1d2bae98addd352c9713f2/types_pytz-2026.2.0.20260518.tar.gz", hash = "sha256:e5d254329e9c4e91f0781b22c43a4bb2d10bb044d97b24c4b05d45567b0eae16", size = 10871, upload-time = "2026-05-18T06:02:45.789Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/cf/eae96172a036b942e0ad0ec49512108b4ef4b97cd6c2aed5677540a597e7/types_pytz-2026.3.1.20260727.tar.gz", hash = "sha256:4364075b6867dd15b210bb8c1d29727d609917129b45600defe1d4b3eda5ecb9", size = 10914, upload-time = "2026-07-27T05:36:32.389Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/89/41e80670779a223d8bc8bc83019a619988cfa5c432cedac5cec23884fbc4/types_pytz-2026.2.0.20260518-py3-none-any.whl", hash = "sha256:3a12eaa38f476bd650902a9c9bb442f03f3c7dee2be5c5848bce61bd708d205a", size = 10125, upload-time = "2026-05-18T06:02:44.968Z" },
-]
-
-[[package]]
-name = "types-requests"
-version = "2.33.0.20260712"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "urllib3" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/db/51/703318f7b7be8bee126ec13bf615050f932d0179b8784420f3a0199cc769/types_requests-2.33.0.20260712.tar.gz", hash = "sha256:2141b67ab534a5c5cd2dac5034f2a35f42e699c5bf185eee608c5246a069d7fb", size = 25084, upload-time = "2026-07-12T05:14:20.455Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/e7/010c87f559e216d83f9dc51e939633fd0d0ead3377340181ab0e223cd3b5/types_requests-2.33.0.20260712-py3-none-any.whl", hash = "sha256:de027e28c171d3da529689cbfa023b0b4eab188c8dfa22fd834eebd2cee6e7bb", size = 21392, upload-time = "2026-07-12T05:14:19.616Z" },
+    { url = "https://files.pythonhosted.org/packages/9c/24/a654176875944981c75516857cd8750600eeb9ff7fc07a2b82573619a57c/types_pytz-2026.3.1.20260727-py3-none-any.whl", hash = "sha256:42ac44e83645bfceb46597342c8fb8ec028a1407e2feae9c5c539986eab6b57a", size = 10132, upload-time = "2026-07-27T05:36:31.52Z" },
 ]
 
 [[package]]
 name = "types-tqdm"
-version = "4.69.0.20260724"
+version = "4.69.0.20260728"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "types-requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f3/ab/b0ffe829cf8b259cb45f720823ba7218b1f1c2d7dec5677e39e2b945e99f/types_tqdm-4.69.0.20260724.tar.gz", hash = "sha256:6b34e41c24ecdaf479ab998dd2062e7288db098018450fd175eee599305c055e", size = 18583, upload-time = "2026-07-24T05:00:23.842Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ab/88/d963f182c5af762924de78415f1058fbb027a99e472e0ce785d03c5e666d/types_tqdm-4.69.0.20260728.tar.gz", hash = "sha256:30f662513ff4f9ae61564eda4538154a4beb274da865d688d8f3cbd6a856318e", size = 18781, upload-time = "2026-07-28T04:51:16.361Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/71/16/b52f76ee5b5a1a6b44d855769c3cbba8ed977b015e2639d2258dba0133c8/types_tqdm-4.69.0.20260724-py3-none-any.whl", hash = "sha256:635f82705a2d9cc824113f05d24c38ff91347c114b36ffebe537e6c5eff4673f", size = 24911, upload-time = "2026-07-24T05:00:22.847Z" },
+    { url = "https://files.pythonhosted.org/packages/71/a3/5cfbaa582c4ccd02cab18f67e93888284b00366239130dd5efc4511ef869/types_tqdm-4.69.0.20260728-py3-none-any.whl", hash = "sha256:27f874532ab604c2ca34334c6743a106bba35c08489d0fcfb770173323423e5a", size = 24974, upload-time = "2026-07-28T04:51:15.354Z" },
 ]
 
 [[package]]
