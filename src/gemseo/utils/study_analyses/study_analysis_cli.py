@@ -59,7 +59,7 @@ def parse_args() -> argparse.Namespace:
         "--out-dir",
         help="The path of the directory to save the files.",
         type=str,
-        default=Path().cwd(),
+        default=Path.cwd(),
     )
     parser.add_argument(
         "-x",

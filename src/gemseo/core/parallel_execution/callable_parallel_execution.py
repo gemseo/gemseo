@@ -26,8 +26,13 @@ from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
+from multiprocessing import current_process
 from multiprocessing import get_context
 from multiprocessing import get_start_method
+from os import getpid
+from pathlib import Path
+from threading import current_thread
+from threading import get_native_id
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -134,6 +139,49 @@ def _init_worker(task_callables: _TaskCallables[Any, Any]) -> None:
     """Stash the task callables into a worker module global."""
     global _WORKER_TASK_CALLABLES
     _WORKER_TASK_CALLABLES = task_callables
+
+
+def _init_process_worker(
+    task_callables: _TaskCallables[Any, Any],
+    parent_id: int,
+    parent_path: Path,
+) -> None:
+    """Initialize a process-pool worker.
+
+    Stash the task callables into a worker module global via ``_init_worker`` and
+    tag the worker process with its parent metadata. The metadata is read in the
+    worker by the directory manager and the workflow observers, via
+    [current_process][multiprocessing.current_process], to resolve the working
+    directory of the worker and to rebuild the parent-child execution tree.
+
+    Args:
+        task_callables: The task callables to stash in the worker.
+        parent_id: The process id of the parent process.
+        parent_path: The working directory of the parent at submission time.
+    """
+    _init_worker(task_callables)
+    worker = current_process()
+    worker.parent_id = parent_id  # type: ignore[attr-defined]
+    worker.parent_path = parent_path  # type: ignore[attr-defined]
+
+
+def _init_thread_worker(parent_id: int, parent_path: Path) -> None:
+    """Initialize a thread-pool worker.
+
+    Tag the worker thread with its parent metadata. The metadata is read in the
+    worker by the directory manager and the workflow observers, via
+    [current_thread][threading.current_thread], to resolve the working directory
+    of the worker and to rebuild the parent-child execution tree. The thread-pool
+    path does not stash the task callables in a worker global (it dispatches
+    through ``task_callables`` directly), so this initializer only sets metadata.
+
+    Args:
+        parent_id: The native id of the parent thread.
+        parent_path: The working directory of the parent at submission time.
+    """
+    worker = current_thread()
+    worker.parent_id = parent_id  # type: ignore[attr-defined]
+    worker.parent_path = parent_path  # type: ignore[attr-defined]
 
 
 def _run_task(task_index: int, input_: Any) -> Any:
@@ -325,13 +373,22 @@ class CallableParallelExecution(
         # Never spawn more workers than tasks: extra workers cost a process
         # creation and a pickling of ``task_callables`` (via ``initargs``) for no work.
         max_workers = min(n_tasks, self.n_processes)
+        # Capture the parent metadata in the parent context; the pool initializer
+        # sets it on each worker, where it is read by the directory manager and
+        # the workflow observers (via current_thread()/current_process()) to
+        # resolve per-worker working directories and rebuild the execution tree.
+        parent_path = Path.cwd()
         if self.use_threading:
-            return ThreadPoolExecutor(max_workers=max_workers)
+            return ThreadPoolExecutor(
+                max_workers=max_workers,
+                initializer=_init_thread_worker,
+                initargs=(get_native_id(), parent_path),
+            )
         return ProcessPoolExecutor(
             max_workers=max_workers,
             mp_context=get_context(method=self.MULTI_PROCESSING_START_METHOD),
-            initializer=_init_worker,
-            initargs=(task_callables,),
+            initializer=_init_process_worker,
+            initargs=(task_callables, getpid(), parent_path),
         )
 
     def __check_multiprocessing_start_method(self) -> None:

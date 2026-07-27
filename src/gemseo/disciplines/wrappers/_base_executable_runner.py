@@ -25,8 +25,10 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.core.serializable import Serializable
+from gemseo.utils._directory_manager.manager import _get_cwd
 from gemseo.utils.directory_creator import DirectoryCreator
 from gemseo.utils.directory_creator import Naming
+from gemseo.utils.global_configuration import _configuration
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -40,8 +42,23 @@ LOGGER = logging.getLogger(__name__)
 class _BaseExecutableRunner(Serializable):
     """Handle executing a command line in a subprocess.
 
-    This class also handles the creation of the directory where the command line is
-    executed, as well as the copy of the files required for the execution.
+    The creation of directories where the data of the command line are stored can
+    be automatically handled.
+    If the :attr:`gemseo.configuration._directory_manager.enable` is True,
+    then no particular setting should be provided.
+    (See :ref:`_directory_manager` for more info)
+    Otherwise,
+    the method used to automatically create the data directory is defined
+    with the ``directory_naming_method`` argument.
+    This class also handles the copy of the files required for the execution.
+
+    The working directory is the directory where the command line is executed,
+    it can be different from the directory where the data are stored.
+    The working directory can be specified with the ``working_directory``
+    argument.
+    Otherwise,
+    the working directory is the same directory as the directory where the
+    data are stored.
     """
 
     command_line: str
@@ -50,11 +67,19 @@ class _BaseExecutableRunner(Serializable):
     _data_paths: Iterable[Path]
     """The directories and files to copy into the execution directory."""
 
-    _working_directory: StrPath
-    """The directory within to execute the command line."""
+    __execution_directory: Path | None
+    """The directory from which the command line is executed."""
+
+    __data_directory: Path | None
+    """The data directory, None until created."""
 
     __directory_creator: DirectoryCreator
-    """The object generating directories with unique names."""
+    """The object generating directories with unique names.
+
+    It is not used when the directory manager is enabled; the choice is made
+    at execution time since the enable setting can change after construction
+    (e.g. it is disabled in the worker processes until the pickled state of
+    the parent is applied)."""
 
     __subprocess_run_options: StrKeyMapping
     """The options of the `subprocess.run` method."""
@@ -62,34 +87,40 @@ class _BaseExecutableRunner(Serializable):
     def __init__(
         self,
         command_line: str,
-        root_directory: StrPath = "",
+        root_data_directory: StrPath = "",
         naming: Naming = Naming.UUID,
         data_paths: Iterable[StrPath] = (),
-        working_directory: StrPath = "",
+        execution_directory: StrPath = "",
         **subprocess_run_options: Any,
     ) -> None:
         """
         Args:
             command_line: The command line to run the executable.
                 E.g. `python my_script.py -i input.txt -o output.txt`
-            root_directory: The path to the root directory,
+            root_data_directory: The path to the root directory for storing the data,
                 wherein unique directories will be created at each execution.
                 If empty, use the current working directory.
+                When the directory manager is enabled, this argument is ignored.
             naming: The naming convention to create the execution directories.
+                When the directory manager is enabled, this argument is ignored.
             data_paths: The directories and files to copy into the execution
                 directory.
-            working_directory: The directory within to execute the command line.
-                If empty, execute the command line into the unique generated directory.
+            execution_directory: The directory within to execute the command line.
+                If empty, execute the command line in the same directory as the
+                one used where the data are stored.
             **subprocess_run_options: The options of the `subprocess.run` method.
         """  # noqa:D205 D212 D415
-        self.__directory_creator = DirectoryCreator(
-            naming,
-            root_directory=root_directory,
-        )
         self.command_line = command_line
         self._data_paths = list(map(Path, data_paths))
-        self._working_directory = working_directory
+        self.__execution_directory = (
+            Path(execution_directory) if execution_directory else None
+        )
+        self.__data_directory = None
         self.__set_subprocess_run_options(subprocess_run_options)
+        self.__directory_creator = DirectoryCreator(
+            naming,
+            root_directory=root_data_directory,
+        )
 
     def __set_subprocess_run_options(
         self,
@@ -117,53 +148,73 @@ class _BaseExecutableRunner(Serializable):
         self.__subprocess_run_options.update(subprocess_run_options)
 
     def __copy_data_paths(self) -> None:
-        """Copy the directories and files into the working directory."""
-        working_directory = self.working_directory
-        if working_directory:
-            for path in self._data_paths:
-                dst = working_directory / path.name
-                if path.is_file():
-                    copy2(path, dst)
-                elif path.is_dir():
-                    copytree(path, dst)
+        """Copy the directories and files into the directory of the command line."""
+        destination_directory = self.execution_directory
+        if destination_directory is None:
+            return
+        for path in self._data_paths:
+            dst = destination_directory / path.name
+            if path.is_file():
+                copy2(path, dst)
+            elif path.is_dir():
+                copytree(path, dst)
 
-                else:
-                    msg = (
-                        f"Can't copy {path} into {working_directory} "
-                        "since it is neither a file nor a directory."
-                    )
-                    LOGGER.warning(msg)
+            else:
+                msg = (
+                    f"Can't copy {path} into {destination_directory} "
+                    "since it is neither a file nor a directory."
+                )
+                LOGGER.warning(msg)
 
     @property
-    def working_directory(self) -> Path | None:
-        """The working directory within the command line is executed."""
-        if self._working_directory:
-            return Path(self._working_directory)
+    def execution_directory(self) -> Path | None:
+        """The directory where the command line is executed.
 
-        return self.__directory_creator.last_directory
+        None when no directory was given and the data directory is not yet
+        created: the command line is then executed in the current directory.
+        """
+        if self.__execution_directory is None:
+            return self.__data_directory
+        return self.__execution_directory
+
+    @property
+    def data_directory(self) -> Path | None:
+        """The data directory, None until created."""
+        return self.__data_directory
+
+    def create_data_directory(self) -> Path:
+        """Create the data directory and set its related attribute.
+
+        Returns:
+            The data directory.
+        """
+        if _configuration.directory_manager.enable:
+            data_directory = _get_cwd()
+        else:
+            data_directory = self.__directory_creator.create()
+        self.__data_directory = data_directory
+        return data_directory
 
     def execute(self) -> None:
         """Execute the command line."""
-        working_directory = self.working_directory
-
         self.__copy_data_paths()
-
         self._pre_processing()
+        execution_directory = self.execution_directory
 
         completed = subprocess.run(
             self.command_line.split(),
-            cwd=working_directory,
+            cwd=execution_directory,
             **self.__subprocess_run_options,
         )
 
         if completed.returncode != 0:
             LOGGER.error(
-                "Failed to execute the command %s,"
-                "from %s, "
-                "in the working directory %s.",
+                "Failed to execute the command %s, "
+                "from the execution directory %s, "
+                "with the data directory %s.",
                 self.command_line,
-                working_directory,
-                self.__directory_creator.last_directory,
+                execution_directory,
+                self.__data_directory,
             )
 
         completed.check_returncode()
@@ -181,8 +232,3 @@ class _BaseExecutableRunner(Serializable):
 
         These steps are executed after the command line.
         """
-
-    @property
-    def directory_creator(self) -> DirectoryCreator:
-        """The directory creator."""
-        return self.__directory_creator

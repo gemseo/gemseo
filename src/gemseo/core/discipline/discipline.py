@@ -25,7 +25,6 @@ from numpy import zeros
 from scipy.sparse import csr_array
 from strenum import StrEnum
 
-from gemseo.core._discipline_class_injector import ClassInjector
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
@@ -56,7 +55,7 @@ def _default_dict_factory() -> dict:
     return defaultdict(None)
 
 
-class Discipline(BaseDiscipline, metaclass=ClassInjector):
+class Discipline(BaseDiscipline):
     """The base class for disciplines.
 
     The [execute()][gemseo.core.discipline.discipline.Discipline.execute]

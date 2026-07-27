@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.data_converters.base import BaseDataConverter
@@ -30,3 +31,7 @@ class DataConverterFactory(BaseFactory[BaseDataConverter["BaseGrammar"]]):
 
     _CLASS = BaseDataConverter
     _PACKAGE_NAMES = ("gemseo.core.data_converters",)
+
+
+DATA_CONVERTER_FACTORY: Final[DataConverterFactory] = DataConverterFactory()
+"""The factory for `DataConverter` objects."""

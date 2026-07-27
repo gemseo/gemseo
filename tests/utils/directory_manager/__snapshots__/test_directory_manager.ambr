@@ -1,4 +1,25 @@
 # serializer version: 1
+# name: test_cannot_disable_once_enabled
+  '''
+  1 validation error for Settings
+    Value error, The directory manager cannot be disabled once it is enabled. [type=value_error, input_value=Settings(enable=False, cl...failed_executions=False), input_type=Settings]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
 # name: test_discipline_exception
   'Crash!'
+# ---
+# name: test_failing_scenario_with_solution_policy
+  'Crash!'
+# ---
+# name: test_scenario_with_non_ascii_name
+  "The name '优化场景' cannot be used to create a directory; please use a name with at least one letter or digit."
+# ---
+# name: test_unknown_directory_manager_setting
+  '''
+  1 validation error for Settings
+  enabel
+    Extra inputs are not permitted [type=extra_forbidden, input_value=True, input_type=bool]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
 # ---

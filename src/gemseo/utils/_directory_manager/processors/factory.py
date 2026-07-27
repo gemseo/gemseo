@@ -12,12 +12,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Factory for instantiating directory manager processors."""
+
 from __future__ import annotations
 
-from gemseo.core.discipline.discipline import Discipline
+from typing import ClassVar
+from typing import Final
+
+from gemseo.utils._directory_manager.processors.base import BaseDMProcessor
+from gemseo.utils._workflow_observers.base_processor_factory import BaseProcessorFactory
 
 
-class NewBaseDiscipline(Discipline):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.hi_there = None
+class DMProcessorFactory(BaseProcessorFactory[BaseDMProcessor]):
+    """Factory to create a directory manager processor."""
+
+    _CLASS: ClassVar[type[BaseDMProcessor]] = BaseDMProcessor
+    _PACKAGE_NAMES: ClassVar[tuple[str, ...]] = ("gemseo.utils._directory_manager",)
+
+
+DM_PROCESSOR_FACTORY: Final[DMProcessorFactory] = DMProcessorFactory()
+"""The factory for `BaseDMProcessor` objects."""

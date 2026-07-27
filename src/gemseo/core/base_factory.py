@@ -194,7 +194,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
         module_names += self.__import_modules_from_env_var()
 
-        name_to_class = self.__get_sub_classes(self._CLASS)
+        name_to_class = self.__get_sub_classes(self._CLASS, module_names)
 
         if not isabstract(self._CLASS):
             name_to_class[self._CLASS.__name__] = self._CLASS
@@ -267,14 +267,20 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         LOGGER.debug("Failed to import module: %s", name)
         self.__failed_imports[name] = str(error)
 
-    def __get_sub_classes(self, cls: type[T]) -> dict[str, type[T]]:
-        """Find all the subclasses of a class.
+    def __get_sub_classes(
+        self, cls: type[T], module_names: Iterable[str]
+    ) -> dict[str, type[T]]:
+        """Find all the subclasses of a class belonging to the given modules.
 
         The class names are unique,
         the last imported is kept when more than one class have the same name.
+        Classes defined outside ``module_names`` (e.g. in ``__main__`` from
+        a runpy-executed gallery example) are skipped so they cannot shadow
+        the legitimate ones.
 
         Args:
             cls: A class.
+            module_names: The fully qualified module names to keep.
 
         Returns:
             A mapping from the names to the unique subclasses.
@@ -282,8 +288,9 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         all_sub_classes: dict[str, type[T]] = {}
         sub_class: type[T]
         for sub_class in cls.__subclasses__():
-            all_sub_classes[sub_class.__name__] = sub_class
-            all_sub_classes.update(self.__get_sub_classes(sub_class))
+            if self.__is_class_in_modules(module_names, sub_class):
+                all_sub_classes[sub_class.__name__] = sub_class
+            all_sub_classes.update(self.__get_sub_classes(sub_class, module_names))
         return all_sub_classes
 
     @staticmethod

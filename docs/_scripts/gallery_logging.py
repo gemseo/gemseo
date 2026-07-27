@@ -15,9 +15,11 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import warnings
 from logging import root
+from pathlib import Path
 
 from gemseo import _configure_logger
 from gemseo.utils.constants import _LOGGING_DATE_FORMAT
@@ -26,6 +28,14 @@ from gemseo.utils.constants import _LOGGING_FILE_PATH
 from gemseo.utils.constants import _LOGGING_LEVEL
 from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
 from gemseo.utils.logging import _is_gemseo_logger
+
+_INITIAL_CWD = Path.cwd()
+"""The working directory captured at module import.
+
+Some examples (e.g. the directory manager one) leave the process in a
+temporary directory that is then deleted, which breaks following examples.
+Restoring this path before every example keeps the build deterministic.
+"""
 
 # Suppress deprecation warnings as early as possible: mkdocs-gallery parses
 # every example with ast.Str (deprecated) inside split_code_and_text_blocks,
@@ -47,6 +57,11 @@ class _WrapStdOut:
 
 
 def reset_logging(gallery_conf, fname):
+    # Restore the working directory before every example so a previous
+    # example that chdir'ed into a now-deleted temporary directory cannot
+    # corrupt the next one.
+    os.chdir(_INITIAL_CWD)
+
     # Route every GEMSEO logger through _WrapStdOut so log records reach the
     # current sys.stdout (mkdocs-gallery's _LoggingTee during example
     # execution). The tee captures them for the gallery "Out:" block and

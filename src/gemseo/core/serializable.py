@@ -80,6 +80,7 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
     ) -> None:
         # Initialize all Synchronized attributes first.
         self._init_shared_memory_attrs_before()
+
         for attribute_name, attribute_value in state.items():
             if attribute_name not in self.__dict__:
                 self.__dict__[attribute_name] = attribute_value
@@ -91,7 +92,14 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
                 # Set the value of Synchronized attributes instead of deserializing the
                 # entire object.
                 self.__dict__[attribute_name].value = attribute_value
+
         self._init_shared_memory_attrs_after()
+
+        # The process observers are injected by decorating methods.
+        # This cannot be pickled, thus a new injection is done.
+        from gemseo.utils._workflow_observers.injector import inject_observer
+
+        inject_observer(self.__class__)
 
     def _init_shared_memory_attrs_before(self) -> None:
         """Initialize the shared memory attributes before deserialization.

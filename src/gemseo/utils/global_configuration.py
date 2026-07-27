@@ -31,6 +31,9 @@ from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.execution_statistics import ExecutionStatistics
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
+from gemseo.utils._directory_manager.settings import (
+    Settings as DirectoryManagerSettings,
+)
 from gemseo.utils.constants import _CHECK_DESVARS_BOUNDS
 from gemseo.utils.constants import _ENABLE_DISCIPLINE_CACHE
 from gemseo.utils.constants import _ENABLE_DISCIPLINE_STATISTICS
@@ -117,10 +120,6 @@ iteration, execution time and objective value.""",
     """,
     )
 
-    logging: LoggingConfiguration = Field(
-        default=LoggingConfiguration(), description="The logging configuration."
-    )
-
     validate_input_data: bool = Field(
         default=_VALIDATE_INPUT_DATA,
         description="""Whether to validate the input data of a discipline
@@ -189,6 +188,16 @@ after execution.""",
     def __validate_validate_output_data(cls, v: bool) -> bool:
         Discipline.validate_output_data = v
         return v
+
+    logging: LoggingConfiguration = Field(
+        default=LoggingConfiguration(),
+        description=LoggingConfiguration.__doc__,
+    )
+
+    directory_manager: DirectoryManagerSettings = Field(
+        default=DirectoryManagerSettings(),
+        description=DirectoryManagerSettings.__doc__,
+    )
 
     @model_validator(mode="after")
     def __validate_fast(self) -> Self:

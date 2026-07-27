@@ -28,6 +28,9 @@ theme:
         icon: material/lightbulb
         name: Switch to light mode
 
+hooks:
+  - docs/_scripts/cwd_guard.py
+
 plugins:
   autorefs: { }
   bibtex:
@@ -169,6 +172,8 @@ nav:
           - Package structure: user_guide/user_experience/package_structure.md
   - User guide (old):
       - Advanced:
+          - Scenario:
+              - The directory manager: scenario/directory_manager.md
           - Scalable models: scalable_models/original_paper.md
 
   - How-to:
@@ -206,6 +211,9 @@ nav:
           - Architecture of MDO formulations: mdo/mdo_formulation_architecture.md
           - MDA classes organization: mdo/mda_architecture.md
           - Scalable models: scalable_models/class_diagram.md
+          - Workflow observers: reference/workflow_observers/workflow_observers.md
+          - Workflow observer patterns: reference/workflow_observers/architecture_patterns.md
+          - Directory manager: reference/directory_manager/directory_manager.md
       - Comprehensive list of tools and their settings:
           - Disciplines: algorithms/discipline_algos.md
           - DOE (design of experiments): algorithms/doe_algos.md

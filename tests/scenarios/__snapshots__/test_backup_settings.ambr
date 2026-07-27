@@ -1,0 +1,17 @@
+# serializer version: 1
+# name: test_unknown_setting[BackupSettings]
+  '''
+  1 validation error for BackupSettings
+  at_each_iterations
+    Extra inputs are not permitted [type=extra_forbidden, input_value=True, input_type=bool]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_unknown_setting[BaseBackupSettings]
+  '''
+  1 validation error for BaseBackupSettings
+  at_each_iterations
+    Extra inputs are not permitted [type=extra_forbidden, input_value=True, input_type=bool]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---

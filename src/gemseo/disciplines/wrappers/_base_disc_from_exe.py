@@ -21,6 +21,7 @@ from shutil import rmtree
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import Discipline
+from gemseo.utils.global_configuration import _configuration
 
 if TYPE_CHECKING:
     from gemseo.disciplines.wrappers._base_executable_runner import (
@@ -71,10 +72,14 @@ class _BaseDiscFromExe(Discipline):
         """
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        self._executable_runner.directory_creator.create()
+        self._executable_runner.create_data_directory()
         self._create_inputs(input_data)
         self._executable_runner.execute()
         output_data = self._parse_outputs()
-        if self.__clean_after_execution:
-            rmtree(self._executable_runner.directory_creator.last_directory)
+        self.__clean_data_directory()
         return output_data
+
+    def __clean_data_directory(self) -> None:
+        """Clean the data directory."""
+        if not _configuration.directory_manager.enable and self.__clean_after_execution:
+            rmtree(self._executable_runner.data_directory)

@@ -1302,7 +1302,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
         input_space,
         ["out1", "out2"],
         algo_name="PYDOE_FULLFACT",
-        backup_settings=BackupSettings("database.hdf5"),
+        backup_settings=BackupSettings(file_path="database.hdf5"),
         n_samples=2,
     )
     assert len(Database.from_hdf("database.hdf5")) == 2
@@ -1313,7 +1313,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             input_space,
             ["out1", "out2"],
             algo_name="PYDOE_FULLFACT",
-            backup_settings=BackupSettings("database.hdf5"),
+            backup_settings=BackupSettings(file_path="database.hdf5"),
             n_samples=2,
         )
 
@@ -1331,7 +1331,7 @@ def test_sample_disciplines_backup_file(disciplines, input_space, tmp_wd):
             ["out1", "out2"],
             algo_name="PYDOE_FULLFACT",
             backup_settings=BackupSettings(
-                "database.hdf5",
+                file_path="database.hdf5",
                 at_each_iteration=True,
                 at_each_function_call=False,
                 erase=True,

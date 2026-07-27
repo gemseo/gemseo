@@ -74,6 +74,7 @@ from gemseo.algos.stop_criteria import TerminationCriterion
 from gemseo.algos.stop_criteria import XtolReached
 from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
 from gemseo.typing import StrKeyMapping
+from gemseo.utils._workflow_observers.injector import WorkflowObserverMeta
 from gemseo.utils.constants import _ENABLE_PROGRESS_BAR
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.logging import OneLineLogging
@@ -111,7 +112,7 @@ class DriverDescription(AlgorithmDescription):
     """The Pydantic model for the driver library settings."""
 
 
-class BaseDriverLibrary(BaseAlgorithmLibrary[T]):
+class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta):
     """Base class for libraries of drivers."""
 
     ApproximationMode = ApproximationMode

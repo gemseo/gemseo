@@ -1,0 +1,39 @@
+# This is the path structure for a BiLevel Sobieski Scenario where the DirectoryManager's clean-up policy is set to `KEEP_LAST_ONLY`.
+# The system level scenario uses the LHS algorithm with an n_samples set to 5.
+# Both the MDA1 and MDA2 are MDAChains with an inner MDAJacobi. The mda_max_iter is set to two for both of them.
+# The 3 sub scenarios use SLSQP as the optimization algorithm with a max_iter set to 5.
+# The overall execution chain of the scenario is System Scenario -> MDA1 -> Subscenarios (structure, aero, propulsion) -> MDA2
+# The line below is the start of the system scenario
+MDOScenario
+# Next, the last iteration of the scenario.
+MDOScenario\DOE_sample_5
+MDOScenario\DOE_sample_5\MDAJacobi#0
+MDOScenario\DOE_sample_5\MDAJacobi#0\MDAJacobi_iteration_0
+MDOScenario\DOE_sample_5\MDAJacobi#0\MDAJacobi_iteration_0\SobieskiAerodynamics_execution
+MDOScenario\DOE_sample_5\MDAJacobi#0\MDAJacobi_iteration_0\SobieskiPropulsion_execution
+MDOScenario\DOE_sample_5\MDAJacobi#0\MDAJacobi_iteration_0\SobieskiStructure_execution
+MDOScenario\DOE_sample_5\MDAJacobi#0\MDAJacobi_iteration_1
+MDOScenario\DOE_sample_5\MDAJacobi#0\MDAJacobi_iteration_1\SobieskiAerodynamics_execution
+MDOScenario\DOE_sample_5\MDAJacobi#0\MDAJacobi_iteration_1\SobieskiPropulsion_execution
+MDOScenario\DOE_sample_5\MDAJacobi#0\MDAJacobi_iteration_1\SobieskiStructure_execution
+MDOScenario\DOE_sample_5\AerodynamicsScenario
+MDOScenario\DOE_sample_5\AerodynamicsScenario\Optimizer_iteration_2
+MDOScenario\DOE_sample_5\AerodynamicsScenario\Optimizer_iteration_2\SobieskiAerodynamics_execution
+MDOScenario\DOE_sample_5\PropulsionScenario
+MDOScenario\DOE_sample_5\PropulsionScenario\Optimizer_iteration_5
+MDOScenario\DOE_sample_5\PropulsionScenario\Optimizer_iteration_5\SobieskiPropulsion_execution
+MDOScenario\DOE_sample_5\SobieskiMission_execution
+MDOScenario\DOE_sample_5\StructureScenario
+MDOScenario\DOE_sample_5\StructureScenario\Optimizer_iteration_1
+MDOScenario\DOE_sample_5\StructureScenario\Optimizer_iteration_1\SobieskiStructure_execution
+MDOScenario\DOE_sample_5\StructureScenario\Optimizer_iteration_1\SobieskiStructure_linearization
+MDOScenario\DOE_sample_5\StructureScenario\Optimizer_iteration_1\SobieskiStructure_linearization\SobieskiStructure_execution
+MDOScenario\DOE_sample_5\MDAJacobi#1
+MDOScenario\DOE_sample_5\MDAJacobi#1\MDAJacobi_iteration_0
+MDOScenario\DOE_sample_5\MDAJacobi#1\MDAJacobi_iteration_0\SobieskiAerodynamics_execution
+MDOScenario\DOE_sample_5\MDAJacobi#1\MDAJacobi_iteration_0\SobieskiPropulsion_execution
+MDOScenario\DOE_sample_5\MDAJacobi#1\MDAJacobi_iteration_0\SobieskiStructure_execution
+MDOScenario\DOE_sample_5\MDAJacobi#1\MDAJacobi_iteration_1
+MDOScenario\DOE_sample_5\MDAJacobi#1\MDAJacobi_iteration_1\SobieskiAerodynamics_execution
+MDOScenario\DOE_sample_5\MDAJacobi#1\MDAJacobi_iteration_1\SobieskiPropulsion_execution
+MDOScenario\DOE_sample_5\MDAJacobi#1\MDAJacobi_iteration_1\SobieskiStructure_execution

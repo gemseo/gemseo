@@ -1,0 +1,56 @@
+@startuml
+set namespaceSeparator none
+
+class "WorkflowObserverInterface" as gemseo.utils._workflow_observers.interface.WorkflowObserverInterface {
+  {abstract}start
+  {abstract}end
+}
+together {
+  class "BaseWorkflowObserver" as gemseo.utils._workflow_observers.base_observer.BaseWorkflowObserver {
+    _object
+    _processor
+    _status
+  }
+  class "BaseWorkflowObserverDispatcher" as gemseo.utils._workflow_observers.base_dispatcher.BaseWorkflowObserverDispatcher {
+      _spec
+      _method_name_to_observer_class
+  }
+}
+class "DisciplineExecutionWorkflowObserver" as gemseo.utils._workflow_observers.discipline.DisciplineExecutionWorkflowObserver {
+}
+class "DisciplineLinearizationWorkflowObserver" as gemseo.utils._workflow_observers.discipline.DisciplineLinearizationWorkflowObserver {
+}
+class "DisciplineWorkflowObserver" as gemseo.utils._workflow_observers.discipline.DisciplineWorkflowObserver {
+}
+class "MDAExecutionWorkflowObserver" as gemseo.utils._workflow_observers.mda.MDAExecutionWorkflowObserver {
+}
+class "MDAIterationWorkflowObserver" as gemseo.utils._workflow_observers.mda.MDAIterationWorkflowObserver {
+}
+class "MDAWorkflowObserver" as gemseo.utils._workflow_observers.mda.MDAWorkflowObserver {
+}
+class "OptimizerWorkflowObserver" as gemseo.utils._workflow_observers.optimizer.OptimizerWorkflowObserver {
+    _spec
+    iteration
+}
+class "DOEWorkflowObserver" as gemseo.utils._workflow_observers.doe.DOEWorkflowObserver {
+    _spec
+}
+class "ScenarioWorkflowObserver" as gemseo.utils._workflow_observers.scenario.ScenarioWorkflowObserver {
+    _spec
+}
+gemseo.utils._workflow_observers.interface.WorkflowObserverInterface <|-- gemseo.utils._workflow_observers.base_observer.BaseWorkflowObserver
+gemseo.utils._workflow_observers.interface.WorkflowObserverInterface <|-- gemseo.utils._workflow_observers.base_dispatcher.BaseWorkflowObserverDispatcher
+gemseo.utils._workflow_observers.base_observer.BaseWorkflowObserver <|-- gemseo.utils._workflow_observers.discipline.DisciplineExecutionWorkflowObserver
+gemseo.utils._workflow_observers.base_observer.BaseWorkflowObserver <|-- gemseo.utils._workflow_observers.discipline.DisciplineLinearizationWorkflowObserver
+gemseo.utils._workflow_observers.base_observer.BaseWorkflowObserver <|-- gemseo.utils._workflow_observers.optimizer.OptimizerWorkflowObserver
+gemseo.utils._workflow_observers.base_observer.BaseWorkflowObserver <|-- gemseo.utils._workflow_observers.doe.DOEWorkflowObserver
+gemseo.utils._workflow_observers.base_observer.BaseWorkflowObserver <|-- gemseo.utils._workflow_observers.scenario.ScenarioWorkflowObserver
+gemseo.utils._workflow_observers.base_observer.BaseWorkflowObserver <|-- gemseo.utils._workflow_observers.mda.MDAExecutionWorkflowObserver
+gemseo.utils._workflow_observers.base_observer.BaseWorkflowObserver <|-- gemseo.utils._workflow_observers.mda.MDAIterationWorkflowObserver
+gemseo.utils._workflow_observers.base_dispatcher.BaseWorkflowObserverDispatcher <|-- gemseo.utils._workflow_observers.discipline.DisciplineWorkflowObserver
+gemseo.utils._workflow_observers.base_dispatcher.BaseWorkflowObserverDispatcher <|-- gemseo.utils._workflow_observers.mda.MDAWorkflowObserver
+gemseo.utils._workflow_observers.discipline.DisciplineWorkflowObserver *-- gemseo.utils._workflow_observers.discipline.DisciplineExecutionWorkflowObserver
+gemseo.utils._workflow_observers.discipline.DisciplineWorkflowObserver *-- gemseo.utils._workflow_observers.discipline.DisciplineLinearizationWorkflowObserver
+gemseo.utils._workflow_observers.mda.MDAWorkflowObserver *-- gemseo.utils._workflow_observers.mda.MDAExecutionWorkflowObserver
+gemseo.utils._workflow_observers.mda.MDAWorkflowObserver *-- gemseo.utils._workflow_observers.mda.MDAIterationWorkflowObserver
+@enduml

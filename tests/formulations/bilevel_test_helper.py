@@ -130,10 +130,12 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
         with specific options.
     """
 
-    def func(**settings: Any):
+    def func(short_names: bool = False, **settings: Any):
         """Create a Sobieski BiLevel scenario.
 
         Args:
+            short_names: Whether to shorten the names of the disciplines, sub
+                scenarios and system scenario.
              **settings: The settings of the system scenario.
 
         Returns:
@@ -144,6 +146,12 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
         struct = SobieskiStructure()
         mission = SobieskiMission()
         sub_disciplines = [struct, propulsion, aerodynamics, mission]
+        if short_names:
+            for discipline in sub_disciplines:
+                name = discipline.name
+                name = name.replace("Sobieski", "")
+                name = name[:3] + "D"
+                discipline.name = name
 
         ds = SobieskiProblem().design_space
 
@@ -161,13 +169,19 @@ def create_sobieski_bilevel_bcd_scenario() -> Callable[..., MDOScenario]:
             scenario.formulation.problem.objective *= 0.001
             return scenario
 
-        sc_prop = create_block("x_3", "PropulsionScenario")
+        sc_prop = create_block(
+            "x_3", "PropulsionScenario" if not short_names else "PropS"
+        )
         sc_prop.add_constraint("g_3", constraint_type=sc_prop.ConstraintType.INEQ)
 
-        sc_aero = create_block("x_2", "AerodynamicsScenario")
+        sc_aero = create_block(
+            "x_2", "AerodynamicsScenario" if not short_names else "AeroS"
+        )
         sc_aero.add_constraint("g_2", constraint_type=sc_aero.ConstraintType.INEQ)
 
-        sc_str = create_block("x_1", "StructureScenario")
+        sc_str = create_block(
+            "x_1", "StructureScenario" if not short_names else "StructS"
+        )
         sc_str.add_constraint("g_1", constraint_type=sc_str.ConstraintType.INEQ)
 
         # Gather the sub-scenarios and mission for objective computation

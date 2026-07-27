@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_end_raises_when_not_started
+  'Cannot finish an observer that has not been started.'
+# ---
+# name: test_start_raises_when_already_started
+  'Cannot start an already started observer.'
+# ---

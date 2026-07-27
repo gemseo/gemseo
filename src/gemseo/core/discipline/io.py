@@ -23,7 +23,7 @@ from typing import Literal
 from typing import overload
 
 from gemseo.core.discipline.discipline_data import DisciplineData
-from gemseo.core.grammars.factory import GrammarFactory
+from gemseo.core.grammars.factory import GRAMMAR_FACTORY
 from gemseo.core.grammars.factory import GrammarType
 from gemseo.core.namespaces import namespaces_separator
 
@@ -35,8 +35,6 @@ if TYPE_CHECKING:
     from gemseo.typing import MutableStrKeyMapping
     from gemseo.typing import StrKeyMapping
     from gemseo.typing import StrPath
-
-_GRAMMAR_FACTORY = GrammarFactory()
 
 _DATA_DEPRECATION_MSG = (
     "`IO.data` is deprecated; use `IO.input_data` / `IO.output_data` instead."
@@ -115,7 +113,7 @@ class IO:
             input_grammar_file: The path to the file of the input grammar.
             output_grammar_file: The path to the file of the output grammar.
         """  # noqa: D205, D212
-        self.input_grammar = _GRAMMAR_FACTORY.create(
+        self.input_grammar = GRAMMAR_FACTORY.create(
             grammar_type,
             name=f"{discipline_name}_discipline_input",
             file_path=input_grammar_file,
@@ -124,7 +122,7 @@ class IO:
             directory_path=grammar_directory,
             file_name_suffix="input",
         )
-        self.output_grammar = _GRAMMAR_FACTORY.create(
+        self.output_grammar = GRAMMAR_FACTORY.create(
             grammar_type,
             name=f"{discipline_name}_discipline_output",
             file_path=output_grammar_file,

@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.core.data_converters.factory import DataConverterFactory
+from gemseo.core.data_converters.factory import DATA_CONVERTER_FACTORY
 from gemseo.core.grammars.errors import InvalidDataError
 from gemseo.core.grammars.properties import GrammarProperties
 from gemseo.core.grammars.required_names import RequiredNames
@@ -730,5 +730,5 @@ class BaseGrammar(
             cls: The class or the class name of the data
         """
         if isinstance(cls, str):
-            cls = DataConverterFactory().get_class(cls)
+            cls = DATA_CONVERTER_FACTORY.get_class(cls)
         self._data_converter = cls(grammar=self)

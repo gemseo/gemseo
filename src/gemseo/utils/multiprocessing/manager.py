@@ -30,7 +30,7 @@ __manager = None
 
 
 def get_multi_processing_manager() -> SyncManager:
-    """Create a unique global multi-processing manager.
+    """Create a unique global multiprocessing manager.
 
     Returns:
         The manager.

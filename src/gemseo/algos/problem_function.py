@@ -30,6 +30,7 @@ from gemseo.algos.stop_criteria import DesvarIsNan
 from gemseo.algos.stop_criteria import FunctionIsNan
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.serializable import Serializable
+from gemseo.utils._workflow_observers.injector import WorkflowObserverMeta
 from gemseo.utils.constants import _ENABLE_FUNCTION_STATISTICS
 from gemseo.utils.derivatives.approximators.factory import GradientApproximatorFactory
 
@@ -46,7 +47,7 @@ if TYPE_CHECKING:
     from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 
 
-class ProblemFunction(ArrayFunction, Serializable):
+class ProblemFunction(ArrayFunction, Serializable, metaclass=WorkflowObserverMeta):
     """A function to be attached to a problem."""
 
     enable_statistics: ClassVar[bool] = _ENABLE_FUNCTION_STATISTICS

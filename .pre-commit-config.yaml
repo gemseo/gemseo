@@ -64,7 +64,7 @@ repos:
     hooks:
       - id: insert-license
         name: insert LGPL license
-        exclude: ^docs
+        exclude: ^docs|_filename_sanitizer\.py
         files: \.py$
         args:
           - --license-filepath

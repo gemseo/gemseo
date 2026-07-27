@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_create_raises_for_unknown_observer
+  'No directory manager found for the observer object.'
+# ---

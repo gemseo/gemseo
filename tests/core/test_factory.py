@@ -237,3 +237,30 @@ def test_positional_arguments() -> None:
     """Check that BaseFactory supports the positional arguments."""
     cache = CacheFactory().create("SimpleCache", tolerance=0.1)
     assert cache.tolerance == 0.1
+
+
+def test_get_sub_classes_filters_external_modules(reset_factory) -> None:
+    """Subclasses defined outside ``_PACKAGE_NAMES`` must not shadow real ones.
+
+    Reproduces the gallery scenario where a runpy-executed example defines
+    ``class Sellar2(Discipline)`` in ``__main__``. Without filtering by module
+    in ``__get_sub_classes``, that class would override the real
+    ``gemseo.problems.mdo.sellar.sellar_2.Sellar2`` in the factory and then
+    be rejected by ``__is_class_in_modules``, leaving the name unavailable.
+    """
+    test_module = __name__
+
+    class _Base:
+        pass
+
+    class _TestFactory(BaseFactory[_Base]):
+        _CLASS = _Base
+        _PACKAGE_NAMES = (test_module,)
+
+    in_module = type("Conflict", (_Base,), {"__module__": test_module})
+    type("Conflict", (_Base,), {"__module__": "external.module"})
+
+    factory = _TestFactory()
+
+    assert "Conflict" in factory.class_names
+    assert factory.get_class("Conflict") is in_module

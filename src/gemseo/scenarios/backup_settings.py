@@ -16,37 +16,56 @@
 
 from __future__ import annotations
 
-import dataclasses
-from typing import TYPE_CHECKING
+from pathlib import Path
 
-if TYPE_CHECKING:
-    from gemseo.typing import StrPath
+from pydantic import BaseModel
+from pydantic import Field
+
+from gemseo.utils.pydantic import update_field
 
 
-@dataclasses.dataclass
-class BackupSettings:
-    """The settings of the backup file to store the evaluations."""
+class BaseBackupSettings(BaseModel, extra="forbid", validate_default=True):
+    """The base settings of the backup file to store the evaluations."""
 
-    file_path: StrPath
-    """The backup file path."""
+    file_path: Path = Field(
+        default="backup.h5",
+        description="""The backup file path. In the context of the DirectoryManager,
+        only a file name is necessary as the path is handled by the
+        DirectoryManager.""",
+    )
 
-    at_each_iteration: bool = False
-    """Whether the backup file is updated at every iteration of the optimization."""
+    at_each_iteration: bool = Field(
+        default=False,
+        description="Whether the backup file is updated at every"
+        " iteration of the optimization.",
+    )
 
-    at_each_function_call: bool = True
-    """Whether the backup file is updated at every function call."""
+    at_each_function_call: bool = Field(
+        default=True,
+        description="Whether the backup is updated at every function call.",
+    )
 
-    erase: bool = False
-    """Whether the backup file is erased before the run."""
+    plot: bool = Field(
+        default=False,
+        description="""Whether to plot the optimization history view at each iteration.
 
-    load: bool = False
-    """Whether the backup file is loaded before run.
+      The plots will be generated only after the first two iterations.
+      """,
+    )
 
-    A backup file can be useful after a crash.
-    """
 
-    plot: bool = False
-    """Whether to plot the optimization history view at each iteration.
+class BackupSettings(BaseBackupSettings):
+    """The full settings of the backup file to store the evaluations."""
 
-    The plots will be generated only after the first two iterations.
-    """
+    erase: bool = Field(
+        default=False, description="Whether the backup file is erased before the run."
+    )
+
+    load: bool = Field(
+        default=False,
+        description="Whether the backup file is loaded before run,"
+        " useful after a crash.",
+    )
+
+
+update_field(BackupSettings, "file_path", description="The backup file path.")
