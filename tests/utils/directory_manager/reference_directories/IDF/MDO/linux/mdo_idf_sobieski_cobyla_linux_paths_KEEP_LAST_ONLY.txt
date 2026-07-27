@@ -1,0 +1,12 @@
+# This is the path structure for an IDF Sobieski Scenario.
+# The Scenario uses the NLOPT_COBYLA algorithm with a max_iter set to 5.
+# The line below is the start of the scenario
+MDOScenario
+MDOScenario/Optimizer_iteration_5
+MDOScenario/Optimizer_iteration_5/SobieskiPropulsion_execution#0
+MDOScenario/Optimizer_iteration_5/SobieskiPropulsion_execution#1
+MDOScenario/Optimizer_iteration_5/SobieskiAerodynamics_execution#0
+MDOScenario/Optimizer_iteration_5/SobieskiAerodynamics_execution#1
+MDOScenario/Optimizer_iteration_5/SobieskiStructure_execution#0
+MDOScenario/Optimizer_iteration_5/SobieskiStructure_execution#1
+MDOScenario/Optimizer_iteration_5/SobieskiMission_execution

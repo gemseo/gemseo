@@ -25,22 +25,22 @@ from gemseo.utils.testing.helpers import assert_exception
 
 
 @pytest.mark.parametrize("root_directory", [".", Path()])
-@pytest.mark.parametrize("identifiers", [Naming.UUID, Naming.NUMBERED])
-def test_create_directory(tmp_wd, root_directory, identifiers) -> None:
+@pytest.mark.parametrize("naming", [Naming.UUID, Naming.NUMBERED])
+def test_create_directory(tmp_wd, root_directory, naming) -> None:
     base_exec_runner = _BaseExecutableRunner(
-        root_directory=root_directory,
+        root_data_directory=root_directory,
         command_line="echo hello world",
-        identifiers=identifiers,
+        naming=naming,
     )
-    path = base_exec_runner.directory_creator.create()
+    path = base_exec_runner.create_data_directory()
     assert path.exists()
-    assert path == base_exec_runner.directory_creator.last_directory
+    assert path == base_exec_runner.data_directory
 
 
 @pytest.mark.parametrize("command", ["echo hello world", "ls"])
 def test_executable_command(tmp_wd, command) -> None:
     base_exec_runner = _BaseExecutableRunner(
-        root_directory=".",
+        root_data_directory=".",
         command_line=command,
     )
     assert command == base_exec_runner.command_line
@@ -50,7 +50,9 @@ def test_change_working_directory(tmp_wd) -> None:
     """Test to use a different execution directory."""
     Path("toto").mkdir()
     _BaseExecutableRunner(
-        "python -c open('toto.txt','w')", ".", working_directory="toto"
+        "python -c open('toto.txt','w')",
+        ".",
+        execution_directory="toto",
     ).execute()
     assert not Path("toto.txt").exists()
     assert Path("toto/toto.txt").exists()
@@ -80,7 +82,7 @@ def test_directories_and_files(tmp_wd, caplog) -> None:
         Path("not_existing_file.txt"),
     ]
 
-    wd = exec_runner.directory_creator.create()
+    wd = exec_runner.create_data_directory()
     exec_runner.execute()
 
     # Test the warning message if the file/directory does not exist.
@@ -99,6 +101,39 @@ def test_directories_and_files(tmp_wd, caplog) -> None:
     assert Path("directory_tata/tata.txt").exists()
     assert (wd / "toto.txt").exists()
     assert (wd / "directory_tata/tata.txt").exists()
+
+
+def test_data_paths_copied_into_execution_directory(tmp_wd) -> None:
+    """The data paths land in the directory where the command line runs."""
+    Path("workdir").mkdir()
+    Path("template.txt").write_text("template")
+    exec_runner = _BaseExecutableRunner(
+        "python --version",
+        ".",
+        data_paths=["template.txt"],
+        execution_directory="workdir",
+    )
+    exec_runner.create_data_directory()
+    exec_runner.execute()
+
+    assert Path("workdir/template.txt").exists()
+
+
+def test_execute_without_data_directory(tmp_wd) -> None:
+    """Without a created data directory, no copy happens and cwd is unchanged."""
+    Path("template.txt").write_text("template")
+    exec_runner = _BaseExecutableRunner(
+        "python --version",
+        ".",
+        data_paths=["template.txt"],
+    )
+    assert exec_runner.data_directory is None
+    assert exec_runner.execution_directory is None
+
+    exec_runner.execute()
+
+    # The data path is not duplicated into the current directory.
+    assert sorted(path.name for path in Path.cwd().iterdir()) == ["template.txt"]
 
 
 def test_run_options(tmp_wd) -> None:

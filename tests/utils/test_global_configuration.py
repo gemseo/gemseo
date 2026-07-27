@@ -17,6 +17,7 @@ from __future__ import annotations
 from logging import INFO
 from logging import NullHandler
 from logging import getLogger
+from pathlib import Path
 
 from gemseo.utils.global_configuration import GlobalConfiguration
 
@@ -32,6 +33,7 @@ def test_default():
         "enable_parallel_execution",
         "enable_progress_bar",
         "logging",
+        "directory_manager",
         "fast",
         "validate_input_data",
         "validate_output_data",
@@ -45,6 +47,9 @@ def test_default():
     assert settings.enable_parallel_execution
     assert settings.enable_progress_bar
     assert not settings.fast
+    assert settings.validate_input_data
+    assert settings.validate_output_data
+
     logging = settings.logging
     assert logging.date_format == "%H:%M:%S"
     assert logging.enable
@@ -52,8 +57,15 @@ def test_default():
     assert logging.file_mode == "a"
     assert logging.level == INFO
     assert logging.message_format == "%(levelname)8s - %(asctime)s: %(message)s"
-    assert settings.validate_input_data
-    assert settings.validate_output_data
+
+    dm = settings.directory_manager
+    assert not dm.enable
+    assert dm.execution_root_path == Path()
+    assert dm.clean_up_policy == "KEEP_ALL"
+    assert dm.mda_clean_up_policy == "KEEP_ALL"
+    assert not dm.save_history_backup
+    assert not dm.save_mda_residuals
+    assert not dm.keep_failed_executions
 
 
 def test_fast():

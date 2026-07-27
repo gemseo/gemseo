@@ -25,12 +25,21 @@ from __future__ import annotations
 from pathlib import Path
 
 from mkdocs_gallery.gen_gallery import DEFAULT_GALLERY_CONF
+from mkdocs_gallery.sorting import _SortKey
 
 file_dir_path = Path(__file__).parent
 example_dir_name = "examples"
 
 # TODO: find a way to put this into _docs
 examples_dir = file_dir_path / example_dir_name
+
+_LEAKY_EXAMPLES = frozenset({"plot_howto_directory_manager.py"})
+"""Examples that leak global state and must run after every other example."""
+
+
+def _has_leaky_example(subdir: Path) -> bool:
+    return any((subdir / name).is_file() for name in _LEAKY_EXAMPLES)
+
 
 examples_subdirs = []
 for category_name in ["bulk", "howtos", "tutorials"]:
@@ -40,6 +49,10 @@ for category_name in ["bulk", "howtos", "tutorials"]:
         for subdir in directory_path.iterdir()
         if subdir.is_dir() and (subdir / "README.md").is_file()
     ]
+
+# Push subsections containing leaky examples to the end so they do not pollute
+# later subsections via global state.
+examples_subdirs.sort(key=_has_leaky_example)
 
 
 def _patch_gallery():
@@ -138,11 +151,18 @@ def insert_generated_in_path(path: Path) -> Path:
     return Path(*parts)
 
 
+class _LeakyLastSortKey(_SortKey):
+    """Sort examples by file name, pushing leaky examples to the end."""
+
+    def __call__(self, file: Path) -> tuple[bool, str]:
+        return file.name in _LEAKY_EXAMPLES, file.name
+
+
 conf = {
     "examples_dirs": examples_subdirs,
     "gallery_dirs": [insert_generated_in_path(subdir) for subdir in examples_subdirs],
     # As a precaution, keep the already defined reset modules.
     "reset_modules": DEFAULT_GALLERY_CONF["reset_modules"]
     + ("gallery_logging.reset_logging",),
-    "within_subsection_order": "FileNameSortKey",
+    "within_subsection_order": _LeakyLastSortKey,
 }

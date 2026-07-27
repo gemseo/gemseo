@@ -143,19 +143,19 @@ class MyExecutableDiscipline(_BaseDiscFromExe):
 
     def _create_inputs(self, input_data: StrKeyMapping) -> None:
         # Here, you define how the discipline must create the input JSON file.
-        # You create the `inputs.json` file within the last created directory.
+        # You create the `inputs.json` file within the execution directory.
         # Warning: ndarray is not serializable. You must first convert data.
         input = {key: float(value[0]) for key, value in input_data.items()}
-        with (
-            self._executable_runner.directory_creator.last_directory / "inputs.json"
-        ).open("w") as f:
+        with (self._executable_runner.execution_directory / "inputs.json").open(
+            "w"
+        ) as f:
             json.dump(input, f)
 
     def _parse_outputs(self) -> StrKeyMapping:
         # Here, you define how to read the output file to fill the discipline outputs.
         data = {}
         with Path(
-            self._executable_runner.directory_creator.last_directory / "outputs.txt"
+            self._executable_runner.execution_directory / "outputs.txt"
         ).open() as f:
             for line in f:
                 if len(line) == 0:

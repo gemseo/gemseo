@@ -24,5 +24,5 @@ from __future__ import annotations
 import platform
 from typing import Final
 
-PLATFORM_IS_WINDOWS: Final[bool] = platform.platform().startswith("Windows")
-PLATFORM_IS_LINUX: Final[bool] = platform.platform().startswith("Linux ")
+PLATFORM_IS_WINDOWS: Final[bool] = platform.system() == "Windows"
+PLATFORM_IS_LINUX: Final[bool] = platform.system() == "Linux"

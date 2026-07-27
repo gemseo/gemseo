@@ -49,9 +49,17 @@ class BaseMultiton(GoogleDocstringInheritanceMeta):
         return self.__key_to_class_instance.setdefault(self, type.__call__(self))
 
     @classmethod
-    def clear_cache(cls) -> None:
-        """Clear the cache."""
-        cls.__key_to_class_instance.clear()
+    def clear_cache(cls, class_: type | None = None) -> None:
+        """Clear the cache.
+
+        Args:
+            class_: The class whose cached instance shall be removed.
+                If None, clear the whole cache.
+        """
+        if class_ is None:
+            cls.__key_to_class_instance.clear()
+        else:
+            cls.__key_to_class_instance.pop(class_, None)
 
 
 class BaseABCMultiton(ABCMeta, BaseMultiton):

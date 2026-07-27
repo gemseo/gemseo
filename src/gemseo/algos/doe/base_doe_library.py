@@ -243,7 +243,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
                 preprocessor(index)
 
             try:
-                result = self._evaluate_functions(input_value)
+                result = self._evaluate_functions(input_value, sample_index=index)
             except ValueError:  # noqa: PERF203
                 LOGGER.exception(
                     "The evaluation of the functions at point %s raised a"
@@ -320,12 +320,13 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             for sample in self.samples:
                 database.store(sample, {})
 
-        # The list of inputs of the tasks is the list of samples
+        # The list of inputs of the tasks is the list of samples with their
+        # indices, so that the workers know the sample they evaluate.
         # A callback function stores the samples on the fly
         # during the parallel execution.
         self._problem.evaluation_counter.enabled = True
         parallel.execute(
-            self.samples,
+            list(enumerate(self.samples)),
             exec_callbacks=callbacks,
             preprocessors=self._settings.preprocessors,
         )
@@ -335,14 +336,14 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             # with the serial exec, so we clean the DB
             database.remove_empty_entries()
 
-    def _worker(self, input_value: RealArray) -> EvaluationType:
+    def _worker(self, indexed_input_value: tuple[int, RealArray]) -> EvaluationType:
         """Evaluate the functions at a given input point.
 
         To be used by
         [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution].
 
         Args:
-            input_value: The input point.
+            indexed_input_value: The index of the sample and the input point.
 
         Returns:
             The output value and the Jacobian value.
@@ -351,13 +352,23 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             self._progress_bar = None
             self._problem.database.clear_listeners()
 
-        return self._evaluate_functions(input_value)
+        sample_index, input_value = indexed_input_value
+        return self._evaluate_functions(input_value, sample_index=sample_index)
 
-    def _evaluate_functions(self, input_value: RealArray) -> EvaluationType:
+    def _evaluate_functions(
+        self,
+        input_value: RealArray,
+        sample_index: int = -1,
+    ) -> EvaluationType:
         """Evaluate the functions at a given input point.
 
         Args:
             input_value: The input point.
+            sample_index: The index of the input point in the samples.
+                A negative value means that the index is unknown or does not
+                apply (e.g. all the samples are evaluated at once).
+                It is read by the workflow observers to name the directory of
+                the sample independently of the evaluation order.
 
         Returns:
             The output value and the Jacobian value.

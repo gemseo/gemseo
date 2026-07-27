@@ -212,7 +212,7 @@ class DiscFromExe(_BaseDiscFromExe):
             root_directory: The base path of the execution directories.
         """  # noqa:D205 D212 D415
         self._executable_runner = _BaseExecutableRunner(
-            root_directory=root_directory,
+            root_data_directory=root_directory,
             command_line=command_line,
             naming=naming,
         )
@@ -275,7 +275,7 @@ class DiscFromExe(_BaseDiscFromExe):
 
     def _create_inputs(self, input_data: StrKeyMapping) -> None:
         self.write_input_file(
-            self._executable_runner.working_directory / self.input_filename,
+            self._executable_runner.data_directory / self.input_filename,
             input_data,
             self._in_pos,
             self._in_lines,
@@ -284,7 +284,7 @@ class DiscFromExe(_BaseDiscFromExe):
     def _parse_outputs(self) -> StrKeyMapping:
         """Parse the output file."""
         with (
-            self._executable_runner.working_directory / self.output_filename
+            self._executable_runner.data_directory / self.output_filename
         ).open() as outfile:
             out_lines = outfile.readlines()
 

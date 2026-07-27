@@ -33,7 +33,6 @@ import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from itertools import combinations
-from multiprocessing import Manager
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -79,6 +78,7 @@ from gemseo.algos.optimization_problem import OptimizationProblem
 from gemseo.core.functions.array_function import ArrayFunction
 from gemseo.core.functions.array_function import NotImplementedCallable
 from gemseo.utils.multiprocessing.execution import execute
+from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -782,7 +782,9 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         self.__n_obj = problem.objective.dim
 
         self.__skippable_domains = (
-            Manager().list() if self._settings.n_processes > 1 else []
+            get_multi_processing_manager().list()
+            if self._settings.n_processes > 1
+            else []
         )
         if self._settings.debug:
             self._debug_results.clear()

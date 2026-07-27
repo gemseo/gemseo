@@ -50,17 +50,15 @@ from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
 from gemseo.scenarios.mdo import MDOScenario
 from gemseo.utils.discipline import get_sub_disciplines
 from gemseo.utils.name_generator import NameGenerator
-from gemseo.utils.testing.bilevel_test_helper import create_aerostructure_scenario
-from gemseo.utils.testing.bilevel_test_helper import create_dummy_bilevel_scenario
-from gemseo.utils.testing.bilevel_test_helper import (
-    create_sobieski_bilevel_bcd_scenario,
-)
-from gemseo.utils.testing.bilevel_test_helper import create_sobieski_bilevel_scenario
-from gemseo.utils.testing.bilevel_test_helper import create_sobieski_sub_scenarios
 from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
 from gemseo.utils.testing.helpers import assert_exception
 
 from ..mda.mda_gauss_seidel import SobieskiMDAGaussSeidel
+from .bilevel_test_helper import create_aerostructure_scenario
+from .bilevel_test_helper import create_dummy_bilevel_scenario
+from .bilevel_test_helper import create_sobieski_bilevel_bcd_scenario
+from .bilevel_test_helper import create_sobieski_bilevel_scenario
+from .bilevel_test_helper import create_sobieski_sub_scenarios
 
 if TYPE_CHECKING:
     from collections.abc import Callable

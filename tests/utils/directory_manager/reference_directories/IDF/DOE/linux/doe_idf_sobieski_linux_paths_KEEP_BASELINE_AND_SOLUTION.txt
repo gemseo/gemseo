@@ -1,0 +1,20 @@
+# This is the path structure for an IDF Sobieski Scenario.
+# The system level scenario uses the LHS algorithm with an n_samples set to 5.
+# The line below is the start of the system scenario
+MDOScenario
+MDOScenario/DOE_sample_1
+MDOScenario/DOE_sample_1/SobieskiMission_execution
+MDOScenario/DOE_sample_1/SobieskiStructure_execution#0
+MDOScenario/DOE_sample_1/SobieskiStructure_execution#1
+MDOScenario/DOE_sample_1/SobieskiAerodynamics_execution#0
+MDOScenario/DOE_sample_1/SobieskiAerodynamics_execution#1
+MDOScenario/DOE_sample_1/SobieskiPropulsion_execution#0
+MDOScenario/DOE_sample_1/SobieskiPropulsion_execution#1
+MDOScenario/DOE_sample_5
+MDOScenario/DOE_sample_5/SobieskiMission_execution
+MDOScenario/DOE_sample_5/SobieskiStructure_execution#0
+MDOScenario/DOE_sample_5/SobieskiStructure_execution#1
+MDOScenario/DOE_sample_5/SobieskiAerodynamics_execution#0
+MDOScenario/DOE_sample_5/SobieskiAerodynamics_execution#1
+MDOScenario/DOE_sample_5/SobieskiPropulsion_execution#0
+MDOScenario/DOE_sample_5/SobieskiPropulsion_execution#1

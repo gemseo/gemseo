@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.core.data_converters.factory import DataConverterFactory
+from gemseo.core.data_converters.factory import DATA_CONVERTER_FACTORY
 from gemseo.core.data_converters.json import JSONGrammarDataConverter
 from gemseo.core.data_converters.pydantic import PydanticGrammarDataConverter
 from gemseo.core.data_converters.simple import SimpleGrammarDataConverter
@@ -33,6 +33,6 @@ from gemseo.core.grammars.simple import SimpleGrammar
 )
 def test_data_converter_factory(cls) -> None:
     assert isinstance(
-        DataConverterFactory().create(cls.__name__, SimpleGrammar("dummy")),
+        DATA_CONVERTER_FACTORY.create(cls.__name__, SimpleGrammar("dummy")),
         cls,
     )

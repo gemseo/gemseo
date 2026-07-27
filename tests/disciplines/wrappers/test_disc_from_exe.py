@@ -314,15 +314,15 @@ def test_working_directory(tmp_wd, clean_after_execution: bool) -> None:
         clean_after_execution=clean_after_execution,
     )
 
-    assert disc._executable_runner.working_directory is None
     disc.execute({
         "input 1": array([1.0]),
         "input 2": array([3.0]),
         "input 3": array([2.0]),
     })
-    assert disc._executable_runner.working_directory == tmp_wd / "1"
+
+    assert disc._executable_runner.execution_directory == tmp_wd / "1"
 
     if clean_after_execution:
-        assert not disc._executable_runner.working_directory.is_dir()
+        assert not disc._executable_runner.execution_directory.is_dir()
     else:
-        assert disc._executable_runner.working_directory.is_dir()
+        assert disc._executable_runner.execution_directory.is_dir()

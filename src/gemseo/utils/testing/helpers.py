@@ -43,6 +43,10 @@ _PYDANTIC_VERSION_IN_URL: Final[Pattern[str]] = re.compile(
     r"(errors\.pydantic\.dev/)\d+(?:\.\d+)*(/v/)"
 )
 
+# Match the hex memory address in default `object.__repr__` output,
+# e.g. ``<Foo object at 0x7f0a8f3789d0>``, so snapshots stay stable across runs.
+_MEMORY_ADDRESS: Final[Pattern[str]] = re.compile(r"0x[0-9a-fA-F]+")
+
 
 @contextlib.contextmanager
 def concretize_classes(*classes: type) -> None:
@@ -100,6 +104,7 @@ def assert_exception(
     elif sys.version_info < (3, 14) and isinstance(exc_info.value, ZeroDivisionError):
         # Python 3.14 dropped the "float " prefix from ZeroDivisionError messages.
         message = message.removeprefix("float ")
+    message = _MEMORY_ADDRESS.sub("0xMEM", message)
 
     assert message == snapshot
 

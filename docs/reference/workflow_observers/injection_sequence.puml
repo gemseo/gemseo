@@ -1,0 +1,15 @@
+@startuml
+participant "Main\nprocess" as Main
+participant "An observable class" as Class
+participant "WorkflowObserverMeta\nmetaclass" as Meta
+participant "_WorkflowObserverInjector" as Injector
+Main --> Class: instantiate a class
+Class --> Meta: override constructor
+Meta --> Injector: accept?
+alt no
+    Injector --> Main: usual object
+else yes
+    Injector --> Injector: inject (decorate methods)
+    Injector --> Main: observed object
+end
+@enduml
