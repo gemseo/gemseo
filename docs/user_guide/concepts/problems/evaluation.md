@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "An evaluation problem computes output values from input values by evaluating a collection of observable functions over a design space."
 tags: ['user_guide']
 search:

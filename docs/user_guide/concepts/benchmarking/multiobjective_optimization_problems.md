@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Multi-objective optimization problems bundled with GEMSEO for benchmarking and illustrating Pareto front algorithms."
 tags: ['user_guide']
 search:

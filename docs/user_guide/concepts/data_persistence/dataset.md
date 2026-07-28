@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "A dataset is a generic multi-indexed table grouping variables by category, which consolidates data from caches, databases or files for post-processing, visualization and machine learning."
 tags: ['user_guide']
 search:

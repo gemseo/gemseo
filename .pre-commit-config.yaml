@@ -88,4 +88,4 @@ repos:
           # then the license is after the metadat,
           # offsetting the license header shall be done manually.
           - --detect-license-in-X-top-lines
-          - "10"
+          - "20"

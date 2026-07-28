@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "A database stores the evaluations of the functions attached to an evaluation problem, both as an iteration history and as a lookup to avoid redundant computations."
 tags: ['user_guide']
 search:

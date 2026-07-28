@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "A design space is a collection of bounded variables, each characterized by a name, a size, a type, bounds, and a current value."
 tags: ['user_guide']
 search:

@@ -1,0 +1,157 @@
+/* -------------------------------------------------------------------
+   Multi-column footer (logo / link columns / social), numpy.org style.
+   Shares the SAME background as Material's `.md-footer-meta` (copyright)
+   bar so the two regions read as a single footer block.
+   `--md-footer-bg-color--dark` is used by `.md-footer-meta` in both the
+   default (light) and slate (dark) schemes, so no per-scheme overrides.
+   Selectors are scoped under `.md-footer-columns` to out-specificity
+   Material's `.md-typeset ul` / `.md-typeset a` base rules.
+   ------------------------------------------------------------------- */
+
+.md-footer-columns {
+  background-color: var(--md-footer-bg-color--dark);
+  color: var(--md-footer-fg-color);
+}
+
+.md-footer-columns__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 1.6rem 0.8rem;
+  text-align: center;
+}
+
+/* Brand / logo */
+.md-footer-columns__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.md-footer-columns__brand img {
+  display: block;
+  width: auto;
+  max-width: 10rem;
+  height: auto;
+}
+
+/* Copyright + tagline, stacked under the logo in the brand column */
+.md-footer-columns__brand .md-copyright {
+  width: auto;
+  max-width: 18rem;
+  margin: 0;
+  text-align: center;
+}
+
+/* Link columns */
+.md-footer-columns__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  width: 100%;
+}
+
+.md-footer-columns .md-footer-columns__group {
+  flex: 1 1 auto;
+  min-width: 9rem;
+}
+
+.md-footer-columns .md-footer-columns__title {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05rem;
+  text-transform: uppercase;
+  color: var(--md-footer-fg-color--light);
+}
+
+.md-footer-columns .md-footer-columns__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.md-footer-columns .md-footer-columns__list li {
+  margin: 0.4rem 0;
+}
+
+.md-footer-columns .md-footer-columns__list a {
+  color: var(--md-footer-fg-color--light);
+  text-decoration: none;
+  transition: color 125ms, opacity 125ms;
+}
+
+.md-footer-columns .md-footer-columns__list a:is(:focus, :hover) {
+  color: var(--md-footer-fg-color);
+  text-decoration: underline;
+}
+
+/* Social shortcuts */
+.md-footer-columns__social {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.md-footer-columns .md-footer-columns__social .md-social {
+  padding: 0;
+  margin: 0;
+}
+
+/* Bigger social logos */
+.md-footer-columns .md-footer-columns__social .md-social__link {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.md-footer-columns .md-footer-columns__social .md-social__link svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+
+/* Responsive, aligned with Material's own breakpoints (45em / 76.25em) */
+@media screen and (min-width: 45em) {
+  .md-footer-columns__inner {
+    text-align: left;
+  }
+  .md-footer-columns__nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 1.6rem 2.4rem;
+  }
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-footer-columns__inner {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2.4rem;
+    padding: 1.2rem 1.2rem;
+    text-align: left;
+  }
+  .md-footer-columns__brand {
+    flex: 0 0 auto;
+    padding-top: 0.2rem;
+  }
+  .md-footer-columns__nav {
+    flex: 1 1 auto;
+    gap: 2.4rem;
+  }
+  .md-footer-columns__brand {
+    align-items: flex-start;
+  }
+  .md-footer-columns__brand .md-copyright {
+    text-align: left;
+  }
+  .md-footer-columns__social {
+    flex: 0 0 auto;
+    align-items: flex-end;
+  }
+}

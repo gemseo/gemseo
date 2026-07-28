@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "MDO benchmark problems bundled with GEMSEO: Sellar, Sobieski SSBJ, aerostructure and propane combustion."
 tags: ['user_guide']
 search:

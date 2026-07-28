@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Overview of mathematical problems in GEMSEO, from function evaluation to optimization, linear systems, and ODEs."
 tags: ['user_guide']
 search:

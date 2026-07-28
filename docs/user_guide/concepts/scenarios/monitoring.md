@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "GEMSEO provides several monitoring modes to track the execution status of a scenario's disciplines in real time."
 tags: ['user_guide']
 search:

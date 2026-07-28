@@ -1,4 +1,6 @@
 ---
+complexity: intermediate
+reading_time: true
 description: "Namespaces in GEMSEO: adding prefixes to variable names to control couplings between disciplines."
 tags: ['user_guide']
 search:

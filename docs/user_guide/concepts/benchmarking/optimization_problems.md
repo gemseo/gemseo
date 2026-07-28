@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Single-objective optimization problems bundled with GEMSEO for benchmarking and illustrating optimization algorithms."
 tags: ['user_guide']
 search:

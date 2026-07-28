@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "GEMSEO's machine learning capabilities,
 covering clustering, classification, and regression models,
 along with quality assessment, data transformation techniques, and model selection and calibration methods."

@@ -1,0 +1,21 @@
+# Footer link columns for the GEMSEO documentation.
+# columns: list of columns (the layout adapts to the number of columns).
+#   title (optional): heading shown above the column. Omit for a flat list.
+#   links: each item has `title` + EXACTLY ONE of:
+#     href    external absolute URL (opens in a new tab)
+#     page    site-relative page path (resolved via the mkdocs `url` filter)
+#     mailto  email address (rendered as a mailto: link)
+columns:
+  - links:
+      - {title: Installation, page: software/installation/}
+      - {title: GEMSEO in 10 minutes, page: generated/examples/tutorials/basic/plot_gemseo_in_10_minutes/}
+      - {title: FAQ, page: faq/}
+  - links:
+      - {title: Discussion forum, href: https://gemseo.discourse.group/}
+      - {title: Licenses, page  : software/licenses/}
+      - {title: How to contribute, href: https://gemseo.org/contribute/contributing/}
+  - links:
+      - {title: Website, href: https://gemseo.org/}
+      - {title: Plugins, href: https://gemseo.org/plugins/available/}
+      - {title: Citing GEMSEO, href: https://gemseo.org/about/citing/}
+      - {title: Contact us, mailto: contact@gemseo.org}

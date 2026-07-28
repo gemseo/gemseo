@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "2D density-based topology optimization disciplines bundled with GEMSEO for benchmarking structural optimization algorithms."
 tags: ['user_guide']
 search:

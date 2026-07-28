@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Discipline couplings in GEMSEO: concepts, dependency graph, MDA solving, and gradient computation."
 tags: ['user_guide']
 search:

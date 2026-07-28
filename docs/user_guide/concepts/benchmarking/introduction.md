@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Overview of the reference problems and datasets bundled with GEMSEO for benchmarking and illustrating algorithms, formulations and post-processors."
 tags: ['user_guide']
 search:

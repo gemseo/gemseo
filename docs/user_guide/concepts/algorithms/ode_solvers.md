@@ -1,4 +1,5 @@
 ---
+reading_time: true
 status: draft
 description: "GEMSEO integrates ordinary differential equations with a choice of explicit, implicit and backwards-differentiation solvers, and can stop the integration early using event functions."
 tags: ['user_guide']

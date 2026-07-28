@@ -1,4 +1,6 @@
 ---
+reading_time: true
+complexity: beginner
 description: "A discipline is one of the basic building block of GEMSEO. This component wraps any computation solver and exposes input/output variables, Jacobians and a cache."
 tags: ['user_guide']
 search:

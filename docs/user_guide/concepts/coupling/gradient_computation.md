@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Gradient computation in coupled GEMSEO workflows: coupled adjoint theory, direct vs adjoint methods, differentiation modes, and Jacobian validation."
 tags: ['user_guide']
 search:

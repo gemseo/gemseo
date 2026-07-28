@@ -1,0 +1,40 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+# International License. To view a copy of this license, visit
+# http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+# Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+# Learning path: manage uncertainties.
+id: uq
+code: UQ
+title: Manage uncertainties
+blurb: Quantify and propagate uncertainties through your models.
+
+prerequisites:
+  - title: Connect a model
+    path: user_guide/concepts/discipline/discipline/
+  - title: Probability distributions
+    path: algorithms/distribution_algos/
+
+resources:
+  - type: explanation
+    title: Uncertainty quantification overview
+    desc: What UQ buys you and how it fits in.
+    path: user_guide/concepts/uncertainty/introduction/
+  - type: tutorial
+    title: Run an uncertainty propagation
+    desc: Propagate input variability to outputs.
+    path: generated/examples/howtos/uncertainty/
+  - type: howto
+    title: Define probability distributions
+    desc: Attach distributions to uncertain inputs.
+    path: user_guide/concepts/uncertainty/uncertainty_characterization/
+  - type: howto
+    title: Sensitivity analysis (Sobol)
+    desc: Rank inputs by their influence.
+    path: user_guide/concepts/uncertainty/sensitivity_analysis/
+  - type: reference
+    title: UQ API
+    desc: Reference for the uncertainty tools and their settings.
+    path: algorithms/uncertainty_algos/

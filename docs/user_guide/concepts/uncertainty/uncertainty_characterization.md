@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Uncertainty characterization represents each uncertain model input as a probability distribution."
 tags: ['user_guide']
 search:
