@@ -19,6 +19,7 @@ from __future__ import annotations
 import contextlib
 import math
 import time
+from concurrent.futures import Executor
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeoutError
@@ -26,12 +27,14 @@ from ctypes import c_long
 from ctypes import py_object
 from ctypes import pythonapi
 from logging import getLogger
+from multiprocessing import get_context
 from typing import TYPE_CHECKING
 
 import psutil
 
 from gemseo.core.execution_status import ExecutionStatus
 from gemseo.disciplines.wrappers._base_wrapper_discipline import BaseWrapperDiscipline
+from gemseo.utils.multiprocessing import start_method
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -40,6 +43,27 @@ if TYPE_CHECKING:
     from gemseo.typing import StrKeyMapping
 
 LOGGER = getLogger(__name__)
+
+
+def _do_nothing() -> None:
+    """Do nothing.
+
+    This is the task submitted to warm up a worker of an executor.
+    """
+
+
+def _start_worker(executor: Executor) -> None:
+    """Start the worker of an executor before submitting the real task.
+
+    Starting a worker process can be slow: with the ``spawn`` start method, the
+    worker starts a new interpreter and imports GEMSEO in order to unpickle the
+    task. Waiting for the worker to be up beforehand keeps this cost out of the
+    timeout, which shall only bound the execution of the discipline.
+
+    Args:
+        executor: The executor whose worker is to be started.
+    """
+    executor.submit(_do_nothing).result()
 
 
 class RetryDiscipline(BaseWrapperDiscipline):
@@ -204,18 +228,27 @@ class RetryDiscipline(BaseWrapperDiscipline):
         Raises:
             FutureTimeoutError: If the execution runs longer than the specified timeout.
         """
-        executor_class = (
-            ProcessPoolExecutor if self.timeout_with_process else ThreadPoolExecutor
-        )
-        executor = executor_class(max_workers=1)
+        if self.timeout_with_process:
+            # Use the start method of GEMSEO instead of the default one of the
+            # interpreter: since Python 3.14, the default on Linux is forkserver,
+            # for which the worker starts a new interpreter and imports GEMSEO
+            # before running the discipline.
+            executor: ProcessPoolExecutor | ThreadPoolExecutor = ProcessPoolExecutor(
+                max_workers=1,
+                mp_context=get_context(start_method.MULTI_PROCESSING_START_METHOD),
+            )
+        else:
+            executor = ThreadPoolExecutor(max_workers=1)
+
         timed_out = False
         try:
+            _start_worker(executor)
             run_discipline = executor.submit(self._discipline.execute, input_data)
             try:
                 return run_discipline.result(timeout=self.timeout)
             except FutureTimeoutError:
                 timed_out = True
-                if self.timeout_with_process:
+                if isinstance(executor, ProcessPoolExecutor):
                     self._terminate_process(executor)
                 else:
                     self._terminate_thread(executor)

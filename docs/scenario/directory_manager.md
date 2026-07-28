@@ -29,7 +29,7 @@ GEMSEO provides a directory manager that allows users to, among other things:
 - Automatically handle the creation of a directory tree associated with any MDO process;
 - The automatic cleanup of the temporary files that are created in this hierarchy, according to a user selected policy.
 
-The directory manager can be enabled via the GEMSEO [configuration's][global-configuration] attribute
+The directory manager can be enabled via the GEMSEO [configuration's][concept-global-configuration] attribute
 `configuration.directory_manager.enable`.
 
 Once enabled, the directory manager cannot be disabled for the rest of the process: setting
@@ -47,7 +47,7 @@ A custom root path can be set via `gemseo.configuration.directory_manager.execut
 upfront, otherwise an error is raised. This custom root path is created as soon as it has been set.
 
 For example, the schematic below shows the directory tree for the first execution of a scenario solving the
-[Sellar's problem][sellars-problem].
+[Sellar's problem][concept-sellars-problem].
 In it, we suppose that the `Sellar2` discipline produces a text file named `y_1.txt` whenever it is executed. The first
 directory corresponds to the top-level scenario (`MDOScenario`), if a user sets a custom name for the class, that name
 will be used to name the directory as well. To ensure that a custom name can be a valid file name,

@@ -62,8 +62,8 @@ if TYPE_CHECKING:
 #
 # ### 1. Activate the directory manager
 #
-# Use the gemseo [configuration][global-configuration] to enable the directory manager.
-# Call this as early as possible — it sets global state used by all subsequent objects.
+# Use the gemseo [configuration][concept-global-configuration] to enable the directory manager.
+# Call this as early as possible, it sets global state used by all subsequent objects.
 # If your script includes an `if __name__ == "__main__":` statement, the configuration
 # must be set outside of it so that it is taken into account all the time.
 configuration.directory_manager.enable = True

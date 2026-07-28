@@ -28,7 +28,6 @@ from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
 from multiprocessing import current_process
 from multiprocessing import get_context
-from multiprocessing import get_start_method
 from os import getpid
 from pathlib import Path
 from threading import current_thread
@@ -40,10 +39,10 @@ from typing import Generic
 from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
-from strenum import StrEnum
 
 from gemseo.utils.constants import N_CPUS
-from gemseo.utils.platform import PLATFORM_IS_LINUX
+from gemseo.utils.multiprocessing import start_method
+from gemseo.utils.multiprocessing.start_method import MultiProcessingStartMethod
 from gemseo.utils.platform import PLATFORM_IS_WINDOWS
 
 if TYPE_CHECKING:
@@ -198,15 +197,12 @@ class CallableParallelExecution(
     The inputs must be independent objects.
     """
 
-    class MultiProcessingStartMethod(StrEnum):
-        """The multiprocessing start method."""
-
-        FORK = "fork"
-        SPAWN = "spawn"
-        FORKSERVER = "forkserver"
+    MultiProcessingStartMethod = MultiProcessingStartMethod
+    """An alias of
+    [MultiProcessingStartMethod][gemseo.utils.multiprocessing.start_method.MultiProcessingStartMethod]."""
 
     MULTI_PROCESSING_START_METHOD: ClassVar[MultiProcessingStartMethod] = (
-        MultiProcessingStartMethod.FORK if PLATFORM_IS_LINUX else get_start_method()
+        start_method.MULTI_PROCESSING_START_METHOD
     )
     """The start method used for multiprocessing."""
 

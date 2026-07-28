@@ -6,4 +6,6 @@
 - `BaseGrammar.add_namespace` now reports the actual existing namespace when re-adding a namespace to an already namespaced element; the previous `str.strip`-based extraction returned a corrupted prefix when the namespace and the base name shared characters.
 - `JSONGrammar._get_name_to_type` (used by `to_simple_grammar`) no longer crashes on an empty grammar nor on properties without a single top-level scalar `"type"` (e.g. `anyOf`/`oneOf` or `["integer", "null"]`); such properties degrade to the catch-all `None` type.
 - `RequiredNames.discard` now raises `KeyError` when asked to drop a name that is not in the bound grammar, matching the validation already done by `add`.
+- `RetryDiscipline` now uses the multiprocessing start method of GEMSEO (`gemseo.utils.multiprocessing.start_method.MULTI_PROCESSING_START_METHOD`) instead of the default one of the interpreter, which is `forkserver` on Linux since Python 3.14.
+- `RetryDiscipline` no longer counts the start-up of the worker against the `timeout`; the worker is now up and running before the discipline is submitted to it. This start-up is significant with the `spawn` start method.
 - `BaseFactory.update` now rediscovers the available classes from scratch: classes whose source is no longer reachable (e.g. a directory removed from the `GEMSEO_PATH` environment variable) no longer linger in the factory.
