@@ -124,6 +124,7 @@ nav:
               - Introduction: user_guide/concepts/scenarios/introduction.md
               - Types: user_guide/concepts/scenarios/types.md
               - Monitoring: user_guide/concepts/scenarios/monitoring.md
+              - The directory manager: user_guide/concepts/scenarios/directory_manager.md
           - Post-processors: user_guide/concepts/post_processor.md
           - Algorithms:
               - Introduction: user_guide/concepts/algorithms/introduction.md
@@ -178,8 +179,6 @@ nav:
           - Package structure: user_guide/user_experience/package_structure.md
   - User guide (old):
       - Advanced:
-          - Scenario:
-              - The directory manager: scenario/directory_manager.md
           - Scalable models: scalable_models/original_paper.md
 
   - How-to:

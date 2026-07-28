@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "A scenario combines disciplines, a design space, and an MDO formulation to build and execute a disciplinary problem."
 tags: ['user_guide']
 search:
@@ -66,6 +67,7 @@ logging, live XDSM diagram updates, the observer design pattern, and Gantt chart
 !!! explanations
     - [Scenario types][concept-scenario-types]
     - [Monitoring a scenario][monitoring-a-scenario]
+    - [The directory manager][the-directory-manager]
 
 !!! tutorial
     - [Tutorial - Execute your first Multi-Disciplinary Optimization][tutorial-execute-your-first-multi-disciplinary-optimization]

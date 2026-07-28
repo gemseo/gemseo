@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "GEMSEO provides two scenario types: EvaluationScenario for sampling disciplinary outputs and MDOScenario for solving MDO problems."
 tags: ['user_guide']
 search:
