@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Visualization methods for discipline couplings in GEMSEO: coupling graphs and N2 charts, with full and condensed views."
 tags: ['user_guide']
 search:

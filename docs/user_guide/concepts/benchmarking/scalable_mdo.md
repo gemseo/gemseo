@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Scalable MDO problems bundled with GEMSEO: linear, quadratic parametric and data-driven approaches for studying algorithmic scalability."
 tags: ['user_guide']
 search:

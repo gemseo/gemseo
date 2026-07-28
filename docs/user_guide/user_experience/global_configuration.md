@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: ""
 tags: ['user_guide']
 search:

@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "Data persistence in GEMSEO covers the cache, the database and the dataset, three complementary tools to record, save and reuse the data produced by a process."
 tags: ['user_guide']
 search:

@@ -123,6 +123,7 @@ scenario.post_process(TopologyView_Settings(n_x=n_x, n_y=n_y, show=True, save=Fa
 #
 # You've learnt to use GEMSEO to create a topology optimization problem.
 # Such problem relies on the same GEMSEO basis:
+#
 # - create your disciplines,
 # - create your [DesignSpace][gemseo.algos.design_space.DesignSpace],
 # - create your [MDOScenario][gemseo.scenarios.mdo.MDOScenario].

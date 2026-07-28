@@ -1,3 +1,7 @@
+---
+reading_time: true
+---
+
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 

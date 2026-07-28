@@ -1,0 +1,40 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+# International License. To view a copy of this license, visit
+# http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+# Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
+# Learning path: optimize a problem.
+id: optimize
+code: OPT
+title: Optimize a problem
+blurb: Set up and solve an optimization problem with GEMSEO.
+
+prerequisites:
+  - title: Design space basics
+    path: user_guide/concepts/design_space/
+  - title: Connect a model
+    path: user_guide/concepts/discipline/discipline/
+
+resources:
+  - type: explanation
+    title: Optimization in GEMSEO
+    desc: Problems, algorithms and drivers.
+    path: user_guide/concepts/problems/optimization/
+  - type: tutorial
+    title: Solve an analytic problem
+    desc: A complete worked optimization example.
+    path: generated/examples/tutorials/basic/plot_tutorial_mdo/
+  - type: howto
+    title: Configure an algorithm
+    desc: Select and tune an optimization driver.
+    path: user_guide/concepts/algorithms/optimizers/
+  - type: howto
+    title: Add constraints & observables
+    desc: Track quantities and constrain the design.
+    path: generated/examples/howtos/optimizers/plot_howto_optimization_problem/
+  - type: reference
+    title: Optimization algorithms API
+    desc: All available algorithms and their settings.
+    path: algorithms/opt_algos/

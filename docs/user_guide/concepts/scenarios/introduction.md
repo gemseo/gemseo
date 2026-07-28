@@ -1,4 +1,5 @@
 ---
+reading_time: true
 description: "A scenario combines disciplines, a design space, and an MDO formulation to build and execute a disciplinary problem."
 tags: ['user_guide']
 search:

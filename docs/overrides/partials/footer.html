@@ -1,0 +1,111 @@
+{#-
+  Override of mkdocs-material's default `partials/footer.html`.
+  Adds a numpy.org-style multi-column footer region (logo / link columns /
+  social shortcuts) above the existing copyright bar.
+
+  - The `navigation.footer` prev/next block below is copied verbatim from
+    Material's default footer so nothing breaks if that feature is enabled later.
+  - Social links now live ONLY in the new top-right region (still via
+    `partials/social.html`, config unchanged) — removed from `md-footer-meta`
+    to avoid showing them twice.
+-#}
+<footer class="md-footer">
+  {% if "navigation.footer" in features %}
+    {% if page.previous_page or page.next_page %}
+      {% if page.meta and page.meta.hide %}
+        {% set hidden = "hidden" if "footer" in page.meta.hide %}
+      {% endif %}
+      <nav class="md-footer__inner md-grid" aria-label="{{ lang.t('footer') }}" {{ hidden }}>
+        {% if page.previous_page %}
+          {% set direction = lang.t("footer.previous") %}
+          <a href="{{ page.previous_page.url | url }}" class="md-footer__link md-footer__link--prev" aria-label="{{ direction }}: {{ page.previous_page.title | e }}">
+            <div class="md-footer__button md-icon">
+              {% set icon = config.theme.icon.previous or "material/arrow-left" %}
+              {% include ".icons/" ~ icon ~ ".svg" %}
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                {{ direction }}
+              </span>
+              <div class="md-ellipsis">
+                {{ page.previous_page.title }}
+              </div>
+            </div>
+          </a>
+        {% endif %}
+        {% if page.next_page %}
+          {% set direction = lang.t("footer.next") %}
+          <a href="{{ page.next_page.url | url }}" class="md-footer__link md-footer__link--next" aria-label="{{ direction }}: {{ page.next_page.title | e }}">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                {{ direction }}
+              </span>
+              <div class="md-ellipsis">
+                {{ page.next_page.title }}
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              {% set icon = config.theme.icon.next or "material/arrow-right" %}
+              {% include ".icons/" ~ icon ~ ".svg" %}
+            </div>
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% endif %}
+
+  {#- Multi-column footer region. Columns/links are defined in the standalone
+      `footer.yml` under `docs/` (loaded into config.extra.footer by the
+      `docs/hooks/load_footer.py` hook). Edit that file to add/remove/reorder
+      columns and links — no template change needed. -#}
+  {% set footer_columns = config.extra.footer.columns if config.extra.footer else [] %}
+
+  <div class="md-footer-columns md-typeset">
+    <div class="md-footer-columns__inner md-grid">
+
+      <div class="md-footer-columns__brand">
+        <a
+          href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}"
+          title="{{ config.site_name | e }}"
+          aria-label="{{ config.site_name | e }}"
+        >
+          <img
+            src="{{ 'assets/images/gemseo/gemseo_logo_transparent.png' | url }}"
+            alt="{{ config.site_name | e }}"
+          >
+        </a>
+        {% include "partials/copyright.html" %}
+      </div>
+
+      <nav class="md-footer-columns__nav" aria-label="Footer">
+        {% for column in footer_columns %}
+          <div class="md-footer-columns__group">
+            {% if column.title %}
+              <span class="md-footer-columns__title">{{ column.title }}</span>
+            {% endif %}
+            <ul class="md-footer-columns__list">
+              {% for link in column.links %}
+                <li>
+                  {% if link.href %}
+                    <a href="{{ link.href }}" target="_blank" rel="noopener">{{ link.title }}</a>
+                  {% elif link.mailto %}
+                    <a href="mailto:{{ link.mailto }}">{{ link.title }}</a>
+                  {% else %}
+                    <a href="{{ link.page | url }}">{{ link.title }}</a>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </nav>
+
+      <div class="md-footer-columns__social">
+        {% if config.extra.social %}
+          {% include "partials/social.html" %}
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</footer>
