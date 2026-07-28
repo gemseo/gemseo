@@ -40,4 +40,5 @@ The `TEMPLATES_DIR_PATH` class attribute of `JobSchedulerDiscipline` was renamed
 `BaseCache.__iter__` now yields input data mappings (the keys) instead of `CacheEntry` objects.
 `BaseDiscipline._set_data_from_cache` now takes an explicit `input_data` argument before `cache_entry`.
 The `BaseCeche.last_entry` was renamed to `last_item`.
+The multiprocessing start method used by GEMSEO is now defined by the constant `MULTI_PROCESSING_START_METHOD` of the new module `gemseo.utils.multiprocessing.start_method`, which also defines the enumeration `MultiProcessingStartMethod`. The class attribute `CallableParallelExecution.MULTI_PROCESSING_START_METHOD` and the nested enumeration `CallableParallelExecution.MultiProcessingStartMethod` are aliases of them; reading or setting the class attribute reads or sets the constant.
 `SimpleGrammar.__init__` now accepts a `defaults` argument. When `required_names` is not given, elements present in `defaults` are no longer marked as required, matching the behavior of `JSONGrammar` and `PydanticGrammar`.

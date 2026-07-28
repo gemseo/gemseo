@@ -46,9 +46,6 @@ from gemseo.core.execution_status import ExecutionStatus as _ExecutionStatus
 from gemseo.core.functions.array_function import ArrayFunction as _ArrayFunction
 from gemseo.core.functions.array_function import ConstraintType
 from gemseo.core.grammars.factory import GrammarType
-from gemseo.core.parallel_execution.callable_parallel_execution import (
-    CallableParallelExecution as _CallableParallelExecution,
-)
 from gemseo.datasets import DatasetClassName
 from gemseo.disciplines.constraint_aggregation import (
     ConstraintAggregation as _ConstraintAggregation,
@@ -118,6 +115,9 @@ from gemseo.utils.base_name_generator import BaseNameGenerator as _BaseNameGener
 from gemseo.utils.derivatives.approximation_modes import ApproximationMode
 from gemseo.utils.derivatives.approximation_modes import HybridApproximationMode
 from gemseo.utils.file_path_manager import FilePathManager as _FilePathManager
+from gemseo.utils.multiprocessing.start_method import (
+    MultiProcessingStartMethod as _MultiProcessingStartMethod,
+)
 
 Approximation = _RobustnessQuantifier.Approximation
 """The approximation method to quantify the robustness of an optimum."""
@@ -189,7 +189,7 @@ LinearizationMode = _Discipline.LinearizationMode
 MatrixFormat = _LinearDiscipline.MatrixFormat
 """The format of the Jacobian matrix of a linear discipline."""
 
-MultiProcessingStartMethod = _CallableParallelExecution.MultiProcessingStartMethod
+MultiProcessingStartMethod = _MultiProcessingStartMethod
 """The start method for multiprocessing in parallel execution."""
 
 Naming = _BaseNameGenerator.Naming

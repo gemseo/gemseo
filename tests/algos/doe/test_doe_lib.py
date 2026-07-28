@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import logging
 import pickle
-from multiprocessing import get_start_method
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -55,7 +54,9 @@ from gemseo.uncertainty.distributions.scipy.normal_settings import (
     SPNormalDistribution_Settings,
 )
 from gemseo.utils.discipline import DummyDiscipline
+from gemseo.utils.multiprocessing import start_method
 from gemseo.utils.multiprocessing.manager import get_multi_processing_manager
+from gemseo.utils.multiprocessing.start_method import MultiProcessingStartMethod
 from gemseo.utils.testing.helpers import assert_exception
 
 if TYPE_CHECKING:
@@ -168,11 +169,14 @@ def test_evaluate_samples_multiproc_with_observables(
 
     # In multiprocessing mode,
     # the disciplinary calls are only made on the worker processes
-    # Under Linux with fork, the counters are updated from the subprocesses counters,
-    # Under Windows, the discipline counters on the main process are not updated.
+    # With fork, the counters are updated from the subprocesses counters,
+    # otherwise the discipline counters on the main process are not updated.
     # Without leveraging the cache mechanism,
     # the discipline shall be called 8 times.
-    if get_start_method() == "fork":
+    # The start method is the one actually used by GEMSEO,
+    # not the interpreter default,
+    # which is forkserver since Python 3.14 on Linux.
+    if start_method.MULTI_PROCESSING_START_METHOD == MultiProcessingStartMethod.FORK:
         assert disc.execution_statistics.n_executions == 8
     else:
         assert disc.execution_statistics.n_executions == 0
