@@ -1,3 +1,13 @@
+---
+reading_time: true
+complexity: advanced
+status: new
+description: "The directory manager handles a directory tree associated with any MDO process."
+tags: ['user_guide']
+search:
+  boost: 2
+---
+
 <!--
  Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
 
@@ -160,3 +170,8 @@ By default, the MDA residual history is not enabled. It can be set via
 
 Keep in mind that writing files to the disk at each iteration can be quite slow, setting this backup has a strong
 impact on performance, specially for scenarios with disciplines that are cheap to execute.
+
+## Going further
+
+!!! how-to
+    - [Using the DirectoryManager][]
