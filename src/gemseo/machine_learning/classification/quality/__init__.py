@@ -15,3 +15,25 @@
 """Quality assessment for classifiers."""
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from typing import Final
+
+from gemseo.util.package_import import install_lazy_reexport
+
+if TYPE_CHECKING:
+    # static visibility for mypy / IDEs
+    from gemseo.machine_learning.classification.quality.f1_measure import (
+        F1Measure,  # noqa: F401
+    )
+    from gemseo.machine_learning.classification.quality.factory import (
+        CLASSIFIER_QUALITY_FACTORY,  # noqa: F401
+    )
+
+# Class name -> defining submodule (lazy-loaded on attribute access).
+_NAME_TO_LOCATION: Final[dict[str, str]] = {
+    "CLASSIFIER_QUALITY_FACTORY": "factory",
+    "F1Measure": "f1_measure",
+}
+
+install_lazy_reexport(globals(), _NAME_TO_LOCATION)

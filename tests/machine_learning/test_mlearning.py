@@ -30,9 +30,8 @@ from numpy import atleast_2d
 from numpy import hstack
 
 from gemseo import create_dataset
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.machine_learning import create_classification_model
 from gemseo.machine_learning import create_clustering_model
 from gemseo.machine_learning import create_mlearning_model
@@ -45,16 +44,17 @@ from gemseo.machine_learning import get_mlearning_models
 from gemseo.machine_learning import get_mlearning_options
 from gemseo.machine_learning import get_regression_models
 from gemseo.machine_learning import get_regression_options
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.datasets.dataset import Dataset
+    from gemseo.dataset.dataset import Dataset
 
 LEARNING_SIZE = 9
 AVAILABLE_REGRESSION_MODELS = [

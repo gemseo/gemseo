@@ -87,47 +87,47 @@ from gemseo import read_design_space
 from gemseo import sample_disciplines
 from gemseo import wrap_discipline_in_job_scheduler
 from gemseo import write_design_space
-from gemseo.algos.base_driver_library import BaseDriverLibrary
-from gemseo.algos.database import Database
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.algos.problem_function import ProblemFunction
+from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 from gemseo.core.discipline import Discipline
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.json import JSONGrammar
-from gemseo.datasets import DatasetClassName
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.mdf_settings import MDF_Settings
-from gemseo.machine_learning.regression.models.rbf import RBFRegressor
-from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
-from gemseo.mda.base import BaseMDA
-from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
-from gemseo.post import OptHistoryView_Settings
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.core.function.preprocessed_function import PreprocessedFunction
+from gemseo.core.grammar.error import InvalidDataError
+from gemseo.core.grammar.json import JSONGrammar
+from gemseo.core.problem.database import Database
+from gemseo.dataset import DatasetClassName
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.formulation.mdf_settings import MDF_Settings
+from gemseo.machine_learning.regression.model.rbf import RBFRegressor
+from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_Settings
+from gemseo.mda.core.base import BaseMDA
+from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
+from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.post._graph_view import GraphView
 from gemseo.post.opt_history_view import OptHistoryView
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.optimization.rosenbrock import Rosenbrock
-from gemseo.scenarios.backup_settings import BackupSettings
-from gemseo.scenarios.evaluation import EvaluationScenario
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.scenario.backup_settings import BackupSettings
+from gemseo.scenario.evaluation import EvaluationScenario
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
-from gemseo.utils.constants import _LOGGING_DATE_FORMAT
-from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
-from gemseo.utils.constants import N_CPUS
-from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.logging import MultiLineStreamHandler
-from gemseo.utils.pickle import to_pickle
-from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.xdsm.xdsm import XDSM
-from gemseo.utils.xdsm.xdsmizer import XDSMizer
+from gemseo.util.constant import _LOGGING_DATE_FORMAT
+from gemseo.util.constant import _LOGGING_MESSAGE_FORMAT
+from gemseo.util.constant import N_CPUS
+from gemseo.util.derivative.approximation_mode import ApproximationMode
+from gemseo.util.logging import MultiLineStreamHandler
+from gemseo.util.pickle import to_pickle
+from gemseo.util.testing.helper import assert_exception
+from gemseo.util.xdsm.xdsm import XDSM
+from gemseo.util.xdsm.xdsmizer import XDSMizer
 
 
 class Observer:
@@ -837,7 +837,7 @@ def test_print_configuration(capfd) -> None:
       The counters are enabled.
       The input data are checked before running the discipline.
       The output data are checked after running the discipline.
-   ProblemFunction
+   PreprocessedFunction
       The counters are enabled.
    BaseDriverLibrary
       The progress bar is enabled."""
@@ -983,7 +983,7 @@ def test_configure(
             validate_output_data=validate_output_data,
             enable_parallel_execution=enable_parallel_execution,
         )
-    assert ProblemFunction.enable_statistics == enable_function_statistics
+    assert PreprocessedFunction.enable_statistics == enable_function_statistics
     assert ExecutionStatistics.is_enabled == enable_discipline_statistics
     assert Discipline.validate_input_data == validate_input_data
     assert Discipline.validate_output_data == validate_output_data
@@ -1012,7 +1012,7 @@ def test_configure_default() -> None:
         match=re.escape("configure() is deprecated; use gemseo.configuration instead."),
     ):
         configure()
-    assert ProblemFunction.enable_statistics is False
+    assert PreprocessedFunction.enable_statistics is False
     assert ExecutionStatistics.is_enabled is False
     assert ExecutionStatus.is_enabled is False
     assert Discipline.validate_input_data is True
@@ -1031,9 +1031,9 @@ def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:
         workdir_path=tmpdir,
         scheduler_run_command="python",
         job_template_path=Path(__file__).parent
-        / "disciplines"
-        / "wrappers"
-        / "job_schedulers"
+        / "discipline"
+        / "wrapper"
+        / "job_scheduler"
         / "mock_job_scheduler.py",
         job_out_filename="run_disc.py",
     )

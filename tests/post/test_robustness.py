@@ -20,8 +20,8 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.post import Robustness_Settings
 from gemseo.post.robustness import Robustness
+from gemseo.post.robustness_settings import Robustness_Settings
 
 
 @pytest.mark.parametrize(

@@ -22,8 +22,8 @@
 """# Diagonal design of experiments.
 
 Here is an illustration of the diagonal design of experiments (DOE)
-implemented by the [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE] class
-and used by the [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel].
+implemented by the [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE] class
+and used by the [ScalableDiagonalModel][gemseo.problem.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel].
 The idea is to sample the discipline by varying its inputs proportionally
 on one of the diagonals of its input space.
 """
@@ -33,15 +33,13 @@ from __future__ import annotations
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
-    DiagonalDOE_Settings,
-)
-from gemseo.post.dataset.pair_plot import PairPlot
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.post.dataset import PairPlot
 
 # %%
 # ## Create the discipline
 #
-# First, we create an [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline]
+# First, we create an [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline]
 # implementing the function: $f(x)=2x-3\sin(2\pi y)$
 # and set its cache policy to `"MemoryFullCache"`.
 
@@ -52,7 +50,7 @@ discipline = create_discipline(
 # %%
 # ## Create the design space
 #
-# Then, we create a [DesignSpace][gemseo.algos.design_space.DesignSpace]
+# Then, we create a [DesignSpace][gemseo.space.design.DesignSpace]
 # where $x$ and $y$ vary between 0 and 1.
 design_space = create_design_space()
 design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
@@ -61,8 +59,8 @@ design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
 # %%
 # ## Sample with the default mode
 #
-# Lastly, we create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
-# and execute it with the [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE] algorithm
+# Lastly, we create an [MDOScenario][gemseo.scenario.mdo.MDOScenario]
+# and execute it with the [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE] algorithm
 # to get 10 evaluations of $f$.
 # Note that we use the default configuration:
 # all the disciplinary inputs vary proportionally

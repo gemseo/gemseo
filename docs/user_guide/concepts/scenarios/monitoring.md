@@ -29,9 +29,9 @@ illustrated below on the [Sobieski][concept-sobieskis-super-sonic-business-jet-s
 ## Basic monitoring using logs { #concept-monitoring-logs }
 
 The simplest way to monitor discipline status changes is to log them to the console or to a file using GEMSEO's logger.
-The [configuration.logging][gemseo.utils.logging.LoggingConfiguration] attribute controls GEMSEO logging.
+The [configuration.logging][gemseo.util.logging.LoggingConfiguration] attribute controls GEMSEO logging.
 
-The [xdsmize()][gemseo.scenarios.mdo.MDOScenario.xdsmize] method of the [MDOScenario][gemseo.scenarios.mdo.MDOScenario] supports this mode via `monitor=True`.
+The [xdsmize()][gemseo.scenario.mdo.MDOScenario.xdsmize] method of the [MDOScenario][gemseo.scenario.mdo.MDOScenario] supports this mode via `monitor=True`.
 Pass `log_workflow_status=True` to print the workflow status at each status change.
 
 This generates outputs such as the following,
@@ -55,7 +55,7 @@ Optimization: |          | 0/5   0% [elapsed: 00:00 left: ?, ? iters/sec]
 
 An [XDSM diagram][concept-xdsm-diagrams] showing the status of each [Discipline][gemseo.core.discipline.discipline.Discipline]
 can be updated at each status change.
-To trigger this mode, use [xdsmize()][gemseo.scenarios.mdo.MDOScenario.xdsmize] with `monitor=True`
+To trigger this mode, use [xdsmize()][gemseo.scenario.mdo.MDOScenario.xdsmize] with `monitor=True`
 and specify the output directory via the `directory_path` argument.
 
 The following images show the typical outputs of the process statuses:
@@ -113,10 +113,10 @@ A [Gantt chart](https://en.wikipedia.org/wiki/Gantt_chart) can be generated to v
 All discipline execution and linearization times are recorded and plotted.
 
 To activate execution time recording,
-enable time stamps via the `is_time_stamps_enabled` attribute of [ExecutionStatistics][gemseo.core.execution_statistics.ExecutionStatistics]
+enable time stamps via the `is_time_stamps_enabled` attribute of [ExecutionStatistics][gemseo.core.discipline.execution_statistics.ExecutionStatistics]
 before executing the scenario.
 After execution,
-the Gantt chart can be created via [create_gantt_chart()][gemseo.post.core.gantt_chart.create_gantt_chart].
+the Gantt chart can be created via [create_gantt_chart()][gemseo.post.gantt_chart.create_gantt_chart].
 
 The following plot shows an example for the Sobieski MDF scenario.
 Disciplines are sorted by name, each with a dedicated row.

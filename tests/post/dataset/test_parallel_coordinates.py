@@ -25,12 +25,12 @@ import pytest
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.post.dataset.parallel_coordinates_settings import (
     ParallelCoordinates_Settings,
 )
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")

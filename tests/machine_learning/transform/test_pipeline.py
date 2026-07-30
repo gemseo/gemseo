@@ -29,13 +29,15 @@ from numpy import array
 from numpy import diag
 from numpy import eye
 
-from gemseo.machine_learning.transformers.pipeline import Pipeline
-from gemseo.machine_learning.transformers.scaler.scaler import Scaler
+from gemseo.machine_learning.transformer.pipeline import Pipeline
+from gemseo.machine_learning.transformer.scaler.scaler import Scaler
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.machine_learning.transformers.base_transformer import BaseTransformer
+    from gemseo.machine_learning.transformer.core.base_transformer import (
+        BaseTransformer,
+    )
 
 
 @pytest.fixture

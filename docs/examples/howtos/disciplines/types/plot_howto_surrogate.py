@@ -23,8 +23,8 @@ you want to create a surrogate model and use it as a discipline.
 ## Solution
 
 Instantiate
-the [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] class
-from regression model settings and an [IODataset][gemseo.datasets.io_dataset.IODataset].
+the [SurrogateDiscipline][gemseo.discipline.surrogate.SurrogateDiscipline] class
+from regression model settings and an [IODataset][gemseo.dataset.io_dataset.IODataset].
 
 ## Step-by-step guide
 """
@@ -34,20 +34,18 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo import sample_disciplines
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
-from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
-from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
-    WingWeightUncertainSpace,
-)
+from gemseo.discipline import SurrogateDiscipline
+from gemseo.doe import OT_OPT_LHS_Settings
+from gemseo.machine_learning import RBFRegressor_Settings
+from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
+from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
 
 # %%
 # ### 1. Define the reference model.
 #
 # In this how-to guide,
 # you consider the wing weight problem
-# defined in [this page][gemseo.problems.uncertainty.wing_weight].
+# defined in [this page][gemseo.problem.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
 input_space = WingWeightUncertainSpace()
@@ -120,5 +118,5 @@ discipline.linearize({"Nz": array([4.25]), "Sw": array([175])})
 # ## Summary
 #
 # A surrogate model can be created as a discipline
-# from an [IODataset][gemseo.datasets.io_dataset.IODataset] and regressor settings
-# using [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline].
+# from an [IODataset][gemseo.dataset.io_dataset.IODataset] and regressor settings
+# using [SurrogateDiscipline][gemseo.discipline.surrogate.SurrogateDiscipline].

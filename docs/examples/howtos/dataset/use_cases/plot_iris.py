@@ -53,15 +53,15 @@ from __future__ import annotations
 from numpy.random import default_rng
 
 from gemseo import create_benchmark_dataset
-from gemseo.post.dataset.andrews_curves import AndrewsCurves
+from gemseo.post.dataset import AndrewsCurves
+from gemseo.post.dataset import PairPlot
+from gemseo.post.dataset import ParallelCoordinates
+from gemseo.post.dataset import RadViz
 from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
-from gemseo.post.dataset.pair_plot import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
-from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
 from gemseo.post.dataset.parallel_coordinates_settings import (
     ParallelCoordinates_Settings,
 )
-from gemseo.post.dataset.radviz import RadViz
 from gemseo.post.dataset.radviz_settings import RadViz_Settings
 
 rng = default_rng(1)

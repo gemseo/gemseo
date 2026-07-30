@@ -38,8 +38,8 @@ import matplotlib.pyplot as plt
 from numpy import linspace
 
 from gemseo import compute_doe
-from gemseo.algos.doe.openturns.settings.ot_lhs import OT_LHS_Settings
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
+from gemseo.doe import OT_LHS_Settings
+from gemseo.doe import OT_OPT_LHS_Settings
 
 # %%
 # ### 1. Generate a standard LHS

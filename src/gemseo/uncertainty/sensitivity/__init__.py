@@ -12,6 +12,53 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Sensitivity analysis."""
+"""Capabilities to run a sensitivity analysis.
+
+This package contains:
+
+- an abstract class
+  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis]]
+  to define the concept of sensitivity analysis,
+- a factory
+  [SensitivityAnalysisFactory][gemseo.uncertainty.sensitivity.factory.SensitivityAnalysisFactory]
+  to create instances of
+  [BaseSensitivityAnalysis][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis]],
+- concrete classes implementing this abstract class:
+  [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]
+  (based on OpenTURNS),
+  [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis],
+  [SobolAnalysis][gemseo.uncertainty.sensitivity.sobol.SobolAnalysis]
+  (based on OpenTURNS)
+  and [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]
+  (based on OpenTURNS).
+"""
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from typing import Final
+
+from gemseo.util.package_import import install_lazy_reexport
+
+if TYPE_CHECKING:
+    # static visibility for mypy / IDEs
+    from gemseo.uncertainty.sensitivity.correlation import (
+        CorrelationAnalysis,  # noqa: F401
+    )
+    from gemseo.uncertainty.sensitivity.factory import (
+        SENSITIVITY_ANALYSIS_FACTORY,  # noqa: F401
+    )
+    from gemseo.uncertainty.sensitivity.hsic import HSICAnalysis  # noqa: F401
+    from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis  # noqa: F401
+    from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis  # noqa: F401
+
+# Class name -> defining submodule (lazy-loaded on attribute access).
+_NAME_TO_LOCATION: Final[dict[str, str]] = {
+    "CorrelationAnalysis": "correlation",
+    "HSICAnalysis": "hsic",
+    "MorrisAnalysis": "morris",
+    "SENSITIVITY_ANALYSIS_FACTORY": "factory",
+    "SobolAnalysis": "sobol",
+}
+
+install_lazy_reexport(globals(), _NAME_TO_LOCATION)

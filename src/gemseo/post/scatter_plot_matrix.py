@@ -28,7 +28,7 @@ from numpy import any as np_any
 from pandas.core.frame import DataFrame
 from pandas.plotting import scatter_matrix
 
-from gemseo.post.base_post import BasePost
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.scatter_plot_matrix_settings import ScatterPlotMatrix_Settings
 
 

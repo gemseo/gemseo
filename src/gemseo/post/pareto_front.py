@@ -26,16 +26,16 @@ from typing import ClassVar
 
 from numpy import full
 
-from gemseo.algos.pareto.utils import generate_pareto_plots
-from gemseo.post.base_post import BasePost
+from gemseo.optimization.pareto.util import generate_pareto_plots
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.pareto_front_settings import ParetoFront_Settings
 
 if TYPE_CHECKING:
     from collections.abc import MutableSequence
     from collections.abc import Sequence
 
-    from gemseo.typing import BoolArray
-    from gemseo.typing import NumberArray
+    from gemseo.util.typing import BoolArray
+    from gemseo.util.typing import NumberArray
 
 
 class ParetoFront(BasePost[ParetoFront_Settings]):

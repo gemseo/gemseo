@@ -40,10 +40,10 @@ and preventing the discipline from running with inconsistent data.
 
 The different grammar types are:
 
-- [SimplerGrammar][gemseo.core.grammars.simpler.SimplerGrammar]: defines variable names only, with no value validation.
-- [SimpleGrammar][gemseo.core.grammars.simple.SimpleGrammar]: defines variable names and their type (pure Python types only).
-- [JSONGrammar][gemseo.core.grammars.json.JSONGrammar]: validates variable values against a JSON Schema.
-- [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar]: validates variable values against a Pydantic model,
+- [SimplerGrammar][gemseo.core.grammar.simpler.SimplerGrammar]: defines variable names only, with no value validation.
+- [SimpleGrammar][gemseo.core.grammar.simple.SimpleGrammar]: defines variable names and their type (pure Python types only).
+- [JSONGrammar][gemseo.core.grammar.json.JSONGrammar]: validates variable values against a JSON Schema.
+- [PydanticGrammar][gemseo.core.grammar.pydantic.PydanticGrammar]: validates variable values against a Pydantic model,
   enabling fine-grained validation rules and natural definition.
 
 !!! how-to
@@ -62,7 +62,7 @@ Analytic derivatives are stored in the
 dictionary as dense NumPy arrays or SciPy sparse arrays.
 When the Jacobian is too large or too expensive to assemble as a matrix,
 it can instead be stored as a
-[JacobianOperator][gemseo.core.derivatives.jacobian_operator.JacobianOperator],
+[JacobianOperator][gemseo.core.derivative.jacobian_operator.JacobianOperator],
 a matrix-free representation defined only by the products of the Jacobian
 and of its transpose with a vector.
 

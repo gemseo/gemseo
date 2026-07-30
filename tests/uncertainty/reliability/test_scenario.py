@@ -17,9 +17,9 @@ from __future__ import annotations
 import pytest
 from openturns import MultiFORMResult
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
 from gemseo.uncertainty.reliability.openturns.system_form_settings import (

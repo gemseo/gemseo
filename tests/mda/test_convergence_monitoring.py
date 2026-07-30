@@ -20,14 +20,14 @@ import pytest
 from numpy import concatenate
 from numpy.linalg import norm
 
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.discipline import Discipline
-from gemseo.mda.base import BaseMDA
+from gemseo.mda.core.base import BaseMDA
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
-from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
+from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
 
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
+    from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
 
 
 @pytest.fixture(scope="module")
@@ -55,7 +55,7 @@ def disciplines() -> Sequence[LinearDiscipline]:
         outputs_size=10,
     )
 
-    # Scale the disciplines to illustrate the different stopping criteria
+    # Scale the disciplines to illustrate the different termination criteria
     disciplines[1].mat /= 100.0
     disciplines[2].mat *= 100.0
 

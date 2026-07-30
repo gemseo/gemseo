@@ -40,7 +40,7 @@ which produces a series of plots:
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import OptHistoryView_Settings
+from gemseo.post import OptHistoryView_Settings
 
 # %%
 # ### 1. Prerequisites

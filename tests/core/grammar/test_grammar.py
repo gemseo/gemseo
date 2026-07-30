@@ -1,0 +1,802 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
+import pickle
+from copy import deepcopy
+from itertools import chain
+from itertools import combinations
+from typing import TYPE_CHECKING
+from typing import Any
+
+import pytest
+from numpy import zeros
+from pydantic import BaseModel
+
+from gemseo.core.data_converter.base import BaseDataConverter
+from gemseo.core.grammar.error import InvalidDataError
+from gemseo.core.grammar.factory import GRAMMAR_FACTORY
+from gemseo.core.grammar.json import JSONGrammar
+from gemseo.core.grammar.properties import GrammarProperties
+from gemseo.core.grammar.pydantic import PydanticGrammar
+from gemseo.core.grammar.simple import SimpleGrammar
+from gemseo.core.grammar.simpler import SimplerGrammar
+from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.testing.helper import assert_exception
+from gemseo.util.testing.helper import do_not_raise
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+    from collections.abc import Mapping
+
+    from gemseo.core.grammar.base import BaseGrammar
+
+
+@pytest.fixture(params=GRAMMAR_FACTORY.class_names)
+def grammar_class(request) -> type[BaseGrammar]:
+    """Iterate over the grammar classes."""
+    return GRAMMAR_FACTORY.get_class(request.param)
+
+
+@pytest.fixture
+def grammar(grammar_class) -> BaseGrammar:
+    """Iterate over empty grammar instances of all types."""
+    return grammar_class("g")
+
+
+def test_serialize(grammar) -> None:
+    """Check that a grammar can be properly serialized."""
+    grammar.update_from_types({"x": int, "y": bool})
+    grammar.add_namespace("x", "n")
+    grammar.required_names.remove("y")
+
+    pickled_grammar = pickle.loads(pickle.dumps(grammar))
+
+    assert pickled_grammar.name == grammar.name
+    assert pickled_grammar.required_names == grammar.required_names
+    assert pickled_grammar.to_namespaced == grammar.to_namespaced
+    assert pickled_grammar.from_namespaced == grammar.from_namespaced
+
+    pickled_grammar.validate({"n:x": 1, "y": False})
+
+    if grammar.__class__ != SimplerGrammar:
+        for data in [{"y": False}, {"n:x": 1.5}, {"n:x": 1, "y": 3}]:
+            with pytest.raises(InvalidDataError):
+                pickled_grammar.validate(data)
+
+
+def test_init_error(grammar_class, snapshot):
+    """Verify __init__ error."""
+    with assert_exception(ValueError, snapshot):
+        grammar_class("")
+
+
+def test_init(grammar):
+    """Verify __init__."""
+    assert grammar.name == "g"
+    assert not grammar
+    assert not grammar.defaults
+    assert not grammar.descriptions
+    assert not grammar.required_names
+
+
+def test_delitem_error(grammar, snapshot) -> None:
+    """Verify that removing a non-existing item raises an error."""
+    with assert_exception(KeyError, snapshot):
+        del grammar["foo"]
+
+
+def test_delitem(grammar) -> None:
+    """Verify __delitem__."""
+    grammar.update_from_names(["name"])
+    grammar.defaults["name"] = 0
+    grammar.descriptions["name"] = "A description."
+    del grammar["name"]
+    assert "name" not in grammar
+    assert "name" not in grammar.required_names
+    assert "name" not in grammar.defaults
+    assert "name" not in grammar.descriptions
+
+
+def test_getitem_error(grammar, snapshot):
+    """Verify __getitem__ error."""
+    with assert_exception(KeyError, snapshot):
+        grammar["foo"]
+
+
+parametrized_names_to_types = pytest.mark.parametrize(
+    "name_to_type",
+    [
+        {},
+        {"name": str},
+    ],
+)
+
+
+@parametrized_names_to_types
+def test_len(grammar, name_to_type) -> None:
+    """Verify __len__."""
+    grammar.update_from_types(name_to_type)
+    assert len(grammar) == len(name_to_type)
+
+
+@parametrized_names_to_types
+def test_iter(grammar, name_to_type) -> None:
+    """Verify __iter__."""
+    grammar.update_from_types(name_to_type)
+    assert list(iter(grammar)) == list(name_to_type)
+
+
+@parametrized_names_to_types
+def test_names(grammar, name_to_type) -> None:
+    """Verify names getter."""
+    grammar.update_from_types(name_to_type)
+    assert grammar.names == name_to_type.keys()
+
+
+@parametrized_names_to_types
+def test_names_without_namespace(grammar, name_to_type) -> None:
+    """Verify names_without_namespace."""
+    grammar.update_from_types(name_to_type)
+    assert tuple(grammar.names_without_namespace) == tuple(name_to_type.keys())
+
+    if name_to_type:
+        grammar.add_namespace("name", "n")
+        assert tuple(grammar.names_without_namespace) == tuple(name_to_type.keys())
+
+
+def create_defaults(name_to_type: Mapping[str, type]) -> dict[str, Any]:
+    """Return default data from names to types.
+
+    Args:
+        name_to_type: The mapping from names to types.
+
+    Returns:
+        The default data.
+    """
+    defaults = {}
+    for name, type_ in name_to_type.items():
+        defaults[name] = type_(0)
+    return defaults
+
+
+@parametrized_names_to_types
+def test_clear(grammar, name_to_type) -> None:
+    """Verify clear."""
+    grammar.update_from_types(name_to_type)
+    grammar.defaults.update(create_defaults(name_to_type))
+    grammar.descriptions.update(dict.fromkeys(name_to_type, "A description."))
+    grammar.clear()
+    assert not grammar
+    assert not grammar.required_names
+    assert not grammar.defaults
+    assert not grammar.descriptions
+
+
+NAMES = [
+    set(),
+    {"name1"},
+    {"name1", "name2"},
+]
+
+
+@pytest.mark.parametrize("names", NAMES)
+@pytest.mark.parametrize("required_names", [None, *NAMES])
+def test_restrict_to(grammar, names, required_names) -> None:
+    """Verify restrict_to."""
+    name_to_type = {"name1": int, "name2": int}
+    grammar.update_from_names(name_to_type)
+    defaults = create_defaults(name_to_type)
+    grammar.defaults.update(defaults)
+    grammar.descriptions.update(dict.fromkeys(name_to_type, "A description"))
+    g_required_names_before = set(grammar.required_names)
+
+    grammar.restrict_to(names)
+
+    assert set(grammar) == set(names)
+    assert set(grammar.required_names) == g_required_names_before & set(names)
+
+    for name in names:
+        assert grammar.defaults[name] == defaults[name]
+        assert grammar.descriptions[name] == "A description"
+
+    assert len(grammar.defaults) == len(names)
+    assert len(grammar.descriptions) == len(names)
+
+
+def test_restrict_to_error(grammar, snapshot) -> None:
+    """Verify that raises the expected error."""
+    with assert_exception(KeyError, snapshot):
+        grammar.restrict_to(["foo"])
+
+
+def test_data_converter(grammar) -> None:
+    """Verify the data_converter property getter."""
+    assert grammar.data_converter is not None
+    assert isinstance(grammar.data_converter, BaseDataConverter)
+
+
+def test_convert_to_simple_grammar(grammar) -> None:
+    """Verify conversion to simple grammar."""
+    name_to_type = {"name1": int, "name2": int}
+    grammar.update_from_types(name_to_type)
+    simple_grammar = grammar.to_simple_grammar()
+    assert set(grammar) == set(simple_grammar)
+    assert grammar.required_names == simple_grammar.required_names
+    assert grammar.defaults == simple_grammar.defaults
+    assert grammar.descriptions == simple_grammar.descriptions
+    assert isinstance(simple_grammar, SimpleGrammar)
+    assert simple_grammar.items() == name_to_type.items()
+
+
+def test_required_names(grammar) -> None:
+    """Verify required_names."""
+    name_to_type = {"name1": int, "name2": int}
+    grammar.update_from_types(name_to_type)
+    assert grammar.required_names == set(name_to_type.keys())
+
+
+def test_rename(grammar) -> None:
+    """Verify rename."""
+    grammar.update_from_names(["name"])
+    grammar.defaults["name"] = 0
+    grammar.descriptions["name"] = "A description."
+
+    grammar.rename_element("name", "new_name")
+
+    assert grammar.required_names == {"new_name"}
+    assert list(grammar) == ["new_name"]
+    assert grammar.defaults.keys() == {"new_name"}
+    assert grammar.defaults["new_name"] == 0
+    assert grammar.descriptions["new_name"] == "A description."
+
+    # Cover the case when renaming an element that is not required.
+    grammar.required_names.remove("new_name")
+    grammar.rename_element("new_name", "new_new_name")
+
+
+def test_rename_with_none_default(grammar) -> None:
+    """Verify that renaming keeps a default whose value is None."""
+    grammar.update_from_types({"name": None})
+    grammar.defaults["name"] = None
+
+    grammar.rename_element("name", "new_name")
+
+    assert grammar.defaults.keys() == {"new_name"}
+    assert grammar.defaults["new_name"] is None
+
+
+def test_rename_error(grammar, snapshot) -> None:
+    """Verify rename error."""
+    with assert_exception(KeyError, snapshot):
+        grammar.rename_element("foo", "bar")
+
+
+def test_copy(grammar) -> None:
+    """Verify copy."""
+    grammar.update_from_names(["name1", "name2"])
+    grammar.defaults["name1"] = 0
+    grammar.descriptions["name1"] = "A description."
+    grammar.add_namespace("name2", "ns")
+    grammar_copy = grammar.copy()
+    assert grammar_copy.keys() == grammar.keys()
+    assert grammar_copy.defaults == grammar.defaults
+    assert grammar_copy.descriptions == grammar.descriptions
+    assert grammar_copy.required_names == grammar.required_names
+    assert grammar_copy.from_namespaced == grammar.from_namespaced
+    assert grammar_copy.to_namespaced == grammar.to_namespaced
+
+    # Verify that the copy is deep.
+    grammar_copy.add_namespace("name1", "ns")
+    assert "ns:name1" in grammar_copy
+    assert "ns:name1" not in grammar
+
+    grammar_copy.clear()
+    assert grammar.keys()
+    assert grammar.defaults
+    assert grammar.descriptions
+    assert grammar.required_names
+    assert grammar.from_namespaced
+    assert grammar.to_namespaced
+
+
+def test_validate_empty_grammar(grammar) -> None:
+    """Verify that an empty grammar can validate everything."""
+    grammar.validate({"name": 0})
+
+
+def test_schema(grammar, snapshot) -> None:
+    """Verify that every grammar exposes a JSON-schema-shaped dict."""
+    grammar.update_from_types({"x": int, "y": str})
+    assert grammar.schema == snapshot
+
+
+def test_schema_reflects_updates(grammar) -> None:
+    """Verify that `schema` reflects subsequent element additions."""
+    grammar.update_from_types({"x": int})
+    before = grammar.schema
+    assert "y" not in before["properties"]
+    grammar.update_from_types({"y": str})
+    after = grammar.schema
+    assert "y" in after["properties"]
+
+
+def test_schema_reflects_defaults_assignment(grammar) -> None:
+    """Verify that assigning to `defaults` invalidates the cached schema."""
+    grammar.update_from_types({"x": int})
+    grammar.schema  # prime the cache.
+    grammar.defaults = {"x": 1}
+    assert grammar.schema["properties"]["x"].get("default") == 1
+
+
+def test_schema_reflects_defaults_item_set(grammar) -> None:
+    """Verify that mutating `defaults` per-item invalidates the cached schema."""
+    grammar.update_from_types({"x": int})
+    grammar.schema  # prime the cache.
+    grammar.defaults["x"] = 2
+    assert grammar.schema["properties"]["x"].get("default") == 2
+
+
+def test_schema_reflects_defaults_item_del(grammar) -> None:
+    """Verify that deleting from `defaults` invalidates the cached schema."""
+    grammar.update_from_types({"x": int})
+    grammar.defaults["x"] = 3
+    grammar.schema  # prime the cache.
+    del grammar.defaults["x"]
+    assert "default" not in grammar.schema["properties"]["x"]
+
+
+def test_schema_reflects_descriptions(grammar) -> None:
+    """Verify that element descriptions surface in the schema."""
+    grammar.update_from_types({"x": int})
+    grammar.descriptions = {"x": "The x element."}
+    assert grammar.schema["properties"]["x"].get("description") == "The x element."
+
+
+def test_repr(grammar) -> None:
+    """Verify __repr__."""
+    name_to_type = {"name1": int, "name2": str}
+    grammar.update_from_types(name_to_type)
+    grammar.required_names.remove("name2")
+    grammar.defaults["name2"] = "foo"
+    grammar.descriptions["name2"] = "A description."
+
+    is_json_grammar = grammar.__class__ is JSONGrammar
+    if is_json_grammar:
+        type_repr = {
+            "name1": "integer",
+            "name2": "string",
+        }
+    else:
+        type_repr = {
+            "name1": "<class 'int'>",
+            "name2": "<class 'str'>",
+        }
+
+    assert (
+        repr(grammar)
+        == f"""
+Grammar name: g
+   Required elements:
+      name1:
+         Type: {type_repr["name1"]}
+   Optional elements:
+      name2:
+         Description: A description.
+         Type: {type_repr["name2"]}
+         Default: foo
+""".strip()
+    )
+
+    if not is_json_grammar:
+        type_repr = {
+            "name1": "&lt;class &#x27;int&#x27;&gt;",
+            "name2": "&lt;class &#x27;str&#x27;&gt;",
+        }
+
+    assert grammar._repr_html_() == REPR_HTML_WRAPPER.format(
+        "Grammar name: g<br/>"
+        "<ul>"
+        "<li>Required elements:"
+        "<ul>"
+        "<li>name1:"
+        "<ul>"
+        f"<li>Type: {type_repr['name1']}</li>"
+        "</ul>"
+        "</li>"
+        "</ul>"
+        "</li>"
+        "<li>Optional elements:"
+        "<ul>"
+        "<li>name2:"
+        "<ul>"
+        "<li>Description: A description.</li>"
+        f"<li>Type: {type_repr['name2']}</li>"
+        "<li>Default: foo</li>"
+        "</ul>"
+        "</li>"
+        "</ul>"
+        "</li>"
+        "</ul>"
+    )
+
+
+ARRAY = zeros((1,))
+MERGE_TO_VALID_DATA = {
+    # Without merged update.
+    False: {
+        "required_name1": 0,
+        "required_name2": ARRAY,
+        "optional_name2": ARRAY,
+        "new_name": ARRAY,
+    },
+    # With merged update.
+    True: {
+        "required_name1": 0,
+        "required_name2": 0,
+        "optional_name2": 0,
+        "new_name": ARRAY,
+    },
+}
+INVALID_DATA = {
+    "optional_name1": 0.0,
+}
+
+
+def assert_updated(
+    grammar: BaseGrammar,
+    merge: bool,
+    excluded_names: set[str] = frozenset(()),
+) -> None:
+    """Assert an updated grammar.
+
+    We check that the elements suffixed with 2 have been updated and that
+    a new element is added, while taking into account the fact that they are not
+    updated when they belong to the excluded names.
+
+    Args:
+        grammar: The grammar to verify.
+        merge: Whether the update was done with merge.
+        excluded_names: The names excludes from update.
+    """
+    assert set(grammar) == {
+        "required_name1",
+        "required_name2",
+        "optional_name1",
+        "optional_name2",
+        "new_name",
+    } - (excluded_names & {"new_name"})
+
+    # Currently, changing a required element does not change the bound default.
+    assert grammar.defaults == {"optional_name1": 0, "optional_name2": 0}
+
+    assert set(grammar.required_names) == {
+        "required_name1",
+        "required_name2",
+        "optional_name2",
+        "new_name",
+    } - (excluded_names & {"new_name", "optional_name2"})
+
+    data = {}
+    for name, value in MERGE_TO_VALID_DATA[True].items():
+        if name in excluded_names:
+            data[name] = value
+        else:
+            data[name] = MERGE_TO_VALID_DATA[False][name]
+
+    grammar.validate(data)
+
+    if merge:
+        # The elements that have been merged shall also validate the types existing
+        # before the merge (if they were not excluded).
+        data = {}
+        for name, value in MERGE_TO_VALID_DATA[False].items():
+            if name in excluded_names:
+                data[name] = MERGE_TO_VALID_DATA[True][name]
+            else:
+                data[name] = value
+
+        grammar.validate(data)
+
+    with pytest.raises(InvalidDataError):
+        grammar.validate({})
+
+    if not isinstance(grammar, SimplerGrammar):
+        for name, value in INVALID_DATA.items():
+            with pytest.raises(InvalidDataError):
+                grammar.validate({name: value})
+
+
+class _PreparedModel(BaseModel):
+    """Pydantic model used by prepare_grammar for PydanticGrammar."""
+
+    required_name1: int
+    optional_name1: int = 0
+    required_name2: int
+    optional_name2: int = 0
+
+
+def prepare_grammar(grammar: BaseGrammar) -> None:
+    """Prepare a grammar for testing the update methods.
+
+    The grammar will contain required and optional names, 2 of each.
+
+    Args:
+        grammar: The grammar to prepare.
+    """
+    if isinstance(grammar, PydanticGrammar):
+        grammar.update_from_model(_PreparedModel)
+        return
+
+    grammar.update_from_types({
+        "required_name1": int,
+        "optional_name1": int,
+        "required_name2": int,
+        "optional_name2": int,
+    })
+    grammar.required_names.discard("optional_name1")
+    grammar.required_names.discard("optional_name2")
+    grammar.defaults["optional_name1"] = 0
+    grammar.defaults["optional_name2"] = 0
+
+
+parametrized_merge = pytest.mark.parametrize("merge", [True, False])
+
+
+def check_update_raise(grammar: BaseGrammar, merge: bool):
+    """Return a context manager to do nothing or raises.
+
+    Simple{r}Grammar shall do not support merge and shall raise.
+
+    Args:
+        grammar: The grammar.
+        merge: Whether the update is done with merge.
+    """
+    if merge and isinstance(grammar, SimpleGrammar):
+        return pytest.raises(ValueError)
+    return do_not_raise()
+
+
+UPDATE_DATA = {
+    "required_name2": ARRAY,
+    "optional_name2": ARRAY,
+    "new_name": ARRAY,
+}
+
+
+def iter_powerset(iterable) -> Iterator[tuple[Any, ...]]:
+    """Compute iter_powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3).
+
+    See https://docs.python.org/3/library/itertools.html#itertools-recipes.
+
+    Args:
+        iterable: An iterable.
+
+    Returns:
+        The iter_powerset.
+    """
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
+
+@parametrized_merge
+@pytest.mark.parametrize("excluded_names", iter_powerset(UPDATE_DATA))
+def test_update(grammar, merge, excluded_names) -> None:
+    """Verify update."""
+    prepare_grammar(grammar)
+
+    # Update from empty.
+    names_before = grammar.names
+    grammar.update({}, merge=merge, excluded_names=excluded_names)
+    assert grammar.names == names_before
+
+    # Update from non-empty.
+    other_grammar = grammar.__class__("g")
+    other_grammar.update_from_names(UPDATE_DATA.keys())
+    with check_update_raise(grammar, merge):
+        grammar.update(other_grammar, merge=merge, excluded_names=excluded_names)
+        assert_updated(grammar, merge=merge, excluded_names=set(excluded_names))
+
+
+def test_update_with_namespace(grammar, snapshot) -> None:
+    """A conflicting namespace update raises unless nesting is allowed."""
+    grammar.update_from_names(["x"])
+    other_grammar = deepcopy(grammar)
+    grammar.add_namespace("x", "n")
+    other_grammar.add_namespace("x", "other_n")
+
+    # Default (leaf) path: nesting "x" under two namespaces raises.
+    with assert_exception(ValueError, snapshot):
+        grammar.update(other_grammar)
+
+    # Process path: nesting is allowed.
+    grammar.update(other_grammar, allow_namespace_nesting=True)
+    assert grammar.to_namespaced == {"x": ["n:x", "other_n:x"]}
+    assert grammar.from_namespaced == {"n:x": "x", "other_n:x": "x"}
+
+
+@parametrized_merge
+def test_update_from_names(grammar, merge) -> None:
+    """Verify update_from_names."""
+    prepare_grammar(grammar)
+
+    # Update from empty.
+    names_before = grammar.names
+    grammar.update_from_names((), merge=merge)
+    assert grammar.names == names_before
+
+    # Update from non-empty.
+    with check_update_raise(grammar, merge):
+        grammar.update_from_names(UPDATE_DATA.keys(), merge=merge)
+        assert_updated(grammar, merge=merge)
+
+
+@parametrized_merge
+def test_update_from_types(grammar, merge) -> None:
+    """Verify update_from_types."""
+    prepare_grammar(grammar)
+
+    # Update from empty.
+    names_before = grammar.names
+    grammar.update_from_types({}, merge=merge)
+    assert grammar.names == names_before
+
+    update_types = {name: type(value) for name, value in UPDATE_DATA.items()}
+
+    # Update from non-empty.
+    with check_update_raise(grammar, merge):
+        grammar.update_from_types(update_types, merge=merge)
+        assert_updated(grammar, merge=merge)
+
+
+@parametrized_merge
+def test_update_from_data(grammar, merge) -> None:
+    """Verify update_from_data."""
+    prepare_grammar(grammar)
+
+    # Update from empty.
+    names_before = grammar.names
+    grammar.update_from_data({}, merge=merge)
+    assert grammar.names == names_before
+
+    # Update from non-empty.
+    with check_update_raise(grammar, merge):
+        grammar.update_from_data(UPDATE_DATA, merge=merge)
+        assert_updated(grammar, merge=merge)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        0,
+        0.0,
+        # TODO: waiting fix support in pydantic
+        # 0.0j,
+        "0",
+        False,
+        zeros((1,), dtype=int),
+        zeros((1,), dtype=float),
+        zeros((1,), dtype=complex),
+    ],
+)
+def test_validate(grammar, data) -> None:
+    """Verify validate."""
+    data = {"name": data}
+    grammar.update_from_data(data)
+    grammar.validate(data)
+
+
+@pytest.mark.parametrize("raises", [True, False])
+def test_validate_error_missing_required(grammar, raises, caplog, snapshot):
+    grammar.update_from_names(["name"])
+
+    if raises:
+        with assert_exception(InvalidDataError, snapshot):
+            grammar.validate({})
+    else:
+        grammar.validate({}, raise_exception=False)
+
+    assert caplog.records[0].levelname == "ERROR"
+
+
+def test_add_namespace(grammar, snapshot) -> None:
+    """Check add_namespace."""
+    grammar.update_from_types({"x": int, "y": bool})
+    grammar.add_namespace("x", "n")
+
+    assert grammar.to_namespaced == {"x": "n:x"}
+    assert grammar.from_namespaced == {"n:x": "x"}
+    assert "x" not in grammar
+    assert "x" not in grammar.required_names
+    assert "n:x" in grammar
+    assert "n:x" in grammar.required_names
+
+    with assert_exception(KeyError, snapshot):
+        grammar.add_namespace("dummy", "n")
+
+    with assert_exception(KeyError, snapshot):
+        grammar.add_namespace("x", "n")
+
+    with assert_exception(ValueError, snapshot):
+        grammar.add_namespace("n:x", "")
+
+    # The reported namespace must be correct even when it shares characters
+    # with the variable name (regression: a char-set strip returned '').
+    grammar.update_from_types({"abc": int})
+    grammar.add_namespace("abc", "cab")
+    with assert_exception(ValueError, snapshot):
+        grammar.add_namespace("cab:abc", "x")
+
+
+def test_add_namespace_already_namespaced_reports_prefix(grammar, snapshot) -> None:
+    """Verify the error reports the existing namespace when chars overlap.
+
+    The legacy implementation used `str.strip` which strips any character in
+    the argument from both ends, so a namespace whose characters appear in the
+    base name was reported wrong.
+    """
+    grammar.update_from_types({"foo": int})
+    grammar.add_namespace("foo", "fo")
+    with assert_exception(ValueError, snapshot):
+        grammar.add_namespace("fo:foo", "")
+
+
+def test_has_names(grammar):
+    """Check has_names."""
+    assert not grammar.has_names(("name",))
+    grammar.update_from_types({"name": str})
+    assert not grammar.has_names(("dummy",))
+    assert not grammar.has_names(("dummy", "name"))
+    assert grammar.has_names(("name",))
+    assert grammar.has_names(())
+
+
+def test_defaults_setter(grammar):
+    """Check the defaults' setter."""
+    grammar.update_from_types({"x": float})
+    grammar.defaults = {"x": 1.0}
+
+    assert isinstance(grammar.defaults, GrammarProperties)
+    assert grammar.defaults == {"x": 1.0}
+
+
+def test_descriptions_setter(grammar):
+    """Check the descriptions' setter."""
+    grammar.update_from_types({"x": float})
+    grammar.descriptions = {"x": "foo"}
+
+    assert isinstance(grammar.descriptions, GrammarProperties)
+    assert grammar.descriptions == {"x": "foo"}
+
+
+def test_rename_element_rejects_namespace_separator(grammar, snapshot):
+    """Verify that `rename_element` rejects a new name containing the separator."""
+    grammar.update_from_types({"x": int})
+    with assert_exception(ValueError, snapshot):
+        grammar.rename_element("x", "x:y")
+
+
+def test_name_including_colon(grammar):
+    """Check that grammars accept colons through low-level update paths.
+
+    The colon is the namespaces separator and is reserved for namespace management,
+    but `update_from_*` are also internal propagation paths for already-namespaced
+    names, so they remain permissive. Only `rename_element`, JSON schemas and
+    Pydantic models reject the separator.
+    """
+    grammar.update_from_names(["x:y", "z"])
+    grammar.add_namespace("z", "x")
+    assert tuple(grammar.names) == ("x:y", "x:z")
+    assert tuple(grammar.names_without_namespace) == ("x:y", "z")

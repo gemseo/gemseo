@@ -17,11 +17,11 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Draw a variable versus another from a [Dataset][gemseo.datasets.dataset.Dataset].
+"""Draw a variable versus another from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 A [YvsX][gemseo.post.dataset.yvsx.YvsX] plot represents samples
 of a couple $(x,y)$ as a set of points
-whose values are stored in a [Dataset][gemseo.datasets.dataset.Dataset].
+whose values are stored in a [Dataset][gemseo.dataset.dataset.Dataset].
 The user can select the style of line or markers, as well as the color.
 """
 
@@ -33,7 +33,7 @@ from gemseo.post.dataset.base import BaseDatasetPlot
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 class YvsX(BaseDatasetPlot[YvsX_Settings]):

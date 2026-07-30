@@ -17,12 +17,12 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Draw surfaces from a [Dataset][gemseo.datasets.dataset.Dataset].
+"""Draw surfaces from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 A [Surfaces][gemseo.post.dataset.surfaces.Surfaces] plot represents samples
 of a functional variable $z(x,y)$ discretized over a 2D mesh.
 Both evaluations of $z$ and mesh are stored
-in a [Dataset][gemseo.datasets.dataset.Dataset],
+in a [Dataset][gemseo.dataset.dataset.Dataset],
 $z$ as a parameter and the mesh as a metadata.
 """
 

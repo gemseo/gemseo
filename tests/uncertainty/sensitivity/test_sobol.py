@@ -34,23 +34,21 @@ from numpy.testing import assert_almost_equal
 from numpy.typing import NDArray
 
 from gemseo import sample_disciplines
-from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
-    OT_SOBOL_INDICES_Settings,
-)
-from gemseo.algos.doe.scipy.settings.mc import MC_Settings
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline.auto_py import AutoPyDiscipline
+from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
+from gemseo.doe.scipy.settings.mc import MC_Settings
+from gemseo.formulation.mdf_settings import MDF_Settings
 from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
-from gemseo.uncertainty.sensitivity.base import SecondOrderIndicesType
+from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
+from gemseo.uncertainty.sensitivity.core.base import SecondOrderIndicesType
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysisMethod
-from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.util.comparison import compare_dict_of_arrays
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline

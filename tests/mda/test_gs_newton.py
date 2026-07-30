@@ -19,12 +19,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from gemseo.mda import MDAGaussSeidel_Settings
+from gemseo.mda import MDAGaussSeidelNewtonRaphson_Settings
+from gemseo.mda import MDANewtonRaphson_Settings
 from gemseo.mda.gauss_seidel_newton_raphson import MDAGaussSeidelNewtonRaphson
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.settings.mda import MDAGaussSeidel_Settings
-from gemseo.settings.mda import MDAGaussSeidelNewtonRaphson_Settings
-from gemseo.settings.mda import MDANewtonRaphson_Settings
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 
 if TYPE_CHECKING:
     from gemseo.core.discipline.discipline import Discipline

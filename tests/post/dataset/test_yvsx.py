@@ -25,7 +25,7 @@ import pytest
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 

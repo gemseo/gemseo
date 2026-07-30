@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a pair plot from a [Dataset][gemseo.datasets.dataset.Dataset].
+r"""Draw a pair plot from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 The [PairPlot][gemseo.post.dataset.pair_plot.PairPlot] class
 implements the pair plot, a.k.a. scatter plot matrix,

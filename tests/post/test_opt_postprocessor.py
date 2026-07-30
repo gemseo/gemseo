@@ -24,17 +24,17 @@ from unittest.mock import patch
 import matplotlib.pyplot as plt
 import pytest
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
-from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.datasets.optimization_dataset import OptimizationDataset
-from gemseo.datasets.optimization_metadata import OptimizationMetadata
-from gemseo.post.base_post import BasePost
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.problems.optimization.rosenbrock import Rosenbrock
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.dataset.optimization_dataset import OptimizationDataset
+from gemseo.dataset.optimization_metadata import OptimizationMetadata
+from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.post.core.base_post import BasePost
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.space.design import DesignSpace
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -82,9 +82,9 @@ def test_show_close(problem, save, show) -> None:
     """Check the use of show and close."""
     post = NewBasePost(problem)
     with (
-        patch("gemseo.utils.matplotlib_figure.plt.show") as show_,
-        patch("gemseo.utils.matplotlib_figure.plt.close") as close_,
-        patch("gemseo.post.base_post.save_show_figure") as save_show_figure,
+        patch("gemseo.util.matplotlib_figure.plt.show") as show_,
+        patch("gemseo.util.matplotlib_figure.plt.close") as close_,
+        patch("gemseo.post.core.base_post.save_show_figure") as save_show_figure,
     ):
         post.execute(NewBasePost_Settings(save=save, show=show))
 

@@ -1,0 +1,282 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Damien Guenot
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Abstract factory to create libraries of algorithms."""
+
+from __future__ import annotations
+
+from abc import ABCMeta
+from abc import abstractmethod
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
+
+from gemseo.core.base_factory import BaseFactory
+from gemseo.util.string import pretty_str
+
+if TYPE_CHECKING:
+    from gemseo.core.algorithm.base_algorithm_library import BaseAlgorithmLibrary
+    from gemseo.core.problem.base import BaseProblem
+    from gemseo.ode.result import ODEResult
+    from gemseo.optimization.result import OptimizationResult
+    from gemseo.util.pydantic import BaseSettings
+
+
+class _AlgorithmFactoryMeta(ABCMeta):
+    """A metaclass to add an internal factory class derived from [BaseFactory][gemseo.core.base_factory.BaseFactory]."""  # noqa: E501
+
+    _CLASS: ClassVar[type]
+    """The base class that the factory can build."""
+
+    _PACKAGE_NAMES: ClassVar[list[str]]
+    """The fully qualified names of the modules to search."""
+
+    _Factory: type[BaseFactory[BaseAlgorithmLibrary]]
+    """The internal factory class."""
+
+    def __init__(
+        cls,
+        name: str,
+        bases: tuple[type, ...],
+        namespace: dict[str, Any],
+    ) -> None:  # noqa: D107
+        super().__init__(name, bases, namespace)
+        # Do not create the internal factory for BaseAlgorithmFactory which is abstract.
+        if name != "BaseAlgorithmFactory":
+            cls._Factory = type(
+                "_Factory",
+                (BaseFactory,),
+                {"_CLASS": cls._CLASS, "_PACKAGE_NAMES": cls._PACKAGE_NAMES},
+            )
+            # Set the correct fully qualified name for pickling.
+            cls._Factory.__module__ = cls.__module__
+            cls._Factory.__qualname__ = (
+                f"{cls.__qualname__}.{cls._Factory.__qualname__}"
+            )
+
+
+class BaseAlgorithmFactory(metaclass=_AlgorithmFactoryMeta):
+    """A base class for creating factories of algorithm libraries.
+
+    See
+    [BaseAlgorithmLibrary][gemseo.core.algorithm.base_algorithm_library.BaseAlgorithmLibrary].
+
+    This factory can create objects from a base class
+    or any of its subclasses that can be imported from the given module sources.
+    The base class and the module sources shall be defined as class attributes of the
+    factory class,
+    for instance:
+
+    ```python
+
+       class AFactory(BaseAlgorithmFactory):
+           _CLASS = ABaseClass
+           _PACKAGE_NAMES = (
+               "first.module.fully.qualified.name",
+               "second.module.fully.qualified.name",
+           )
+    ```
+
+    A factory instance can use a cache for the objects it creates, this cache is only
+    used by one factory instance and is not shared with another instance.
+    The cache is activated by passing `use_cache = True` to the constructor.
+    When the cache is activated, a factory will return an object already created when
+    possible and will create a new object otherwise.
+    """
+
+    __lib_cache: dict[str, dict[str, BaseAlgorithmLibrary]]
+    """The library cache."""
+
+    __use_cache: bool
+    """Whether to cache the created objects."""
+
+    def __init__(self, use_cache: bool = False) -> None:
+        """
+        Args:
+            use_cache: Whether to cache the created objects.
+        """  # noqa:D205 D212 D415
+        self.__lib_cache = {}
+        self.__use_cache = use_cache
+        self._factory = self._Factory()
+        self.__algo_name_to_lib_name = {}
+        for lib_name in self.libraries:
+            cls = self._factory.get_class(lib_name)
+            self.__lib_cache[lib_name] = {}
+            for algo_name in cls.ALGORITHM_INFOS:
+                self.__algo_name_to_lib_name[algo_name] = lib_name
+
+    @property
+    @abstractmethod
+    def _CLASS(self) -> type:  # noqa:N802
+        """The base class that the factory can build."""
+
+    @property
+    @abstractmethod
+    def _PACKAGE_NAMES(self) -> list[str]:  # noqa:N802
+        """The fully qualified names of the modules to search."""
+
+    def is_available(self, name: str) -> bool:
+        """Check the availability of a library name or algorithm name.
+
+        Args:
+            name: The name of an algorithm or that of a library of algorithms.
+
+        Returns:
+            Whether the library or algorithm is available.
+        """
+        return self._factory.is_available(self.__algo_name_to_lib_name.get(name, name))
+
+    @property
+    def algorithms(self) -> list[str]:
+        """The names of the available algorithms."""
+        return list(self.__algo_name_to_lib_name.keys())
+
+    @property
+    def algo_name_to_library(self) -> dict[str, str]:
+        """The mapping from the algorithm names to the library names."""
+        return self.__algo_name_to_lib_name
+
+    @property
+    def libraries(self) -> list[str]:
+        """The names of the available libraries."""
+        return self._factory.class_names
+
+    def create(self, name: str) -> BaseAlgorithmLibrary:
+        """Create an algorithm library from an algorithm name.
+
+        Args:
+            name: The name of an algorithm.
+
+        Returns:
+             The algorithm library.
+
+        Raises:
+            ImportError: If the algorithm is not available.
+        """
+        library_name = self.__get_library_name(name)
+        library_cache = self.__lib_cache[library_name]
+        if self.__use_cache:
+            algo = library_cache.get(name)
+            if algo is None:
+                algo = self._factory.create(library_name, name)
+                library_cache[name] = algo
+
+            return algo
+
+        return self._factory.create(library_name, name)
+
+    def __get_library_name(self, name: str) -> str:
+        """Get the library name from the algorithm name.
+
+        Args:
+            name: The name of the algorithm.
+
+        Returns:
+            The library name.
+
+        Raises:
+            ValueError: If the algorithm is not available.
+        """
+        lib_name = self.__algo_name_to_lib_name.get(name)
+        if lib_name is None:
+            msg = (
+                f"No algorithm named {name} is available; "
+                f"available algorithms are {pretty_str(self.algorithms, use_and=True)}."
+            )
+            raise ValueError(msg)
+
+        return lib_name
+
+    def execute(
+        self, problem: BaseProblem, settings: BaseSettings
+    ) -> OptimizationResult | ODEResult:
+        """Execute a problem with an algorithm.
+
+        Args:
+            problem: The problem to execute.
+            settings: The algorithm settings.
+
+        Returns:
+            The result.
+        """
+        lib = self.create(settings.target_class_name)
+        return lib.execute(problem, settings=settings)
+
+    def clear_lib_cache(self) -> None:
+        """Clear the library cache."""
+        for value in self.__lib_cache.values():
+            value.clear()
+
+    def get_library_name(self, name: str) -> str:
+        """Return the name of the library related to the name of a class.
+
+        Args:
+            name: The name of the class.
+
+        Returns:
+            The name of the library.
+        """
+        return self._factory.get_library_name(name)
+
+    def get_class(self, name: str) -> type:
+        """Return a class from its name.
+
+        Args:
+            name: The name of the class.
+
+        Returns:
+            The class.
+
+        Raises:
+            ImportError: If the class is not available.
+        """
+        return self._factory.get_class(name)
+
+    def _repr_html(self) -> str:
+        return self._factory._repr_html_()
+
+    def __repr__(self) -> str:
+        return repr(self._factory)
+
+    def get_settings_class(self, name: str) -> type[BaseSettings]:
+        """Return an algorithm settings class.
+
+        Args:
+            name: The name of the algorithm.
+
+        Returns:
+            The algorithm settings class.
+        """
+        library_name = self.__get_library_name(name)
+        library_class = self.get_class(library_name)
+        return library_class.ALGORITHM_INFOS[name].settings_class
+
+    def create_settings(self, name: str, **options: Any) -> BaseSettings:
+        """Create settings for an algorithm.
+
+        Args:
+            name: The name of the algorithm.
+            **options: The algorithm options.
+
+        Returns:
+            The algorithm settings.
+        """
+        settings_class = self.get_settings_class(name)
+        return settings_class(**options)

@@ -32,22 +32,22 @@ from numpy import vstack
 from openturns import Sample
 from strenum import StrEnum
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
-from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
-from gemseo.utils.compatibility.openturns import PEARSON_METHOD_NAME
-from gemseo.utils.string_tools import filter_names
-from gemseo.utils.string_tools import get_name_and_component
-from gemseo.utils.string_tools import repr_variable
+from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
+from gemseo.util.compatibility.openturns import PEARSON_METHOD_NAME
+from gemseo.util.string import filter_names
+from gemseo.util.string import get_name_and_component
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.typing import StrPath
-    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
-    from gemseo.uncertainty.sensitivity.base import OutputsType
-    from gemseo.utils.string_tools import VariableType
+    from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
+    from gemseo.uncertainty.sensitivity.core.base import OutputsType
+    from gemseo.util.string import VariableType
+    from gemseo.util.typing import StrPath
 
 from openturns import CorrelationAnalysis as OTCorrelationAnalysis
 

@@ -25,20 +25,20 @@ import pytest
 from numpy import pi
 from numpy.random import default_rng
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.datasets.dataset import Dataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.dataset.dataset import Dataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.space.parameter import ParameterSpace
 from gemseo.uncertainty import create_distribution
 from gemseo.uncertainty import create_sensitivity_analysis
 from gemseo.uncertainty import create_statistics
 from gemseo.uncertainty import get_available_distributions
 from gemseo.uncertainty import get_available_sensitivity_analyses
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
-from gemseo.uncertainty.statistics.ot_parametric import OTParametricStatistics
-from gemseo.uncertainty.statistics.sp_parametric import SPParametricStatistics
+from gemseo.uncertainty.statistic.empirical import EmpiricalStatistics
+from gemseo.uncertainty.statistic.ot_parametric import OTParametricStatistics
+from gemseo.uncertainty.statistic.sp_parametric import SPParametricStatistics
 
 if TYPE_CHECKING:
     from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis

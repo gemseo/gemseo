@@ -18,16 +18,16 @@
 ## Problem
 
 You have an
-[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
+[EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics]
 or a
-[OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics] /
-[SPParametricStatistics][gemseo.uncertainty.statistics.sp_parametric.SPParametricStatistics]
+[OTParametricStatistics][gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics] /
+[SPParametricStatistics][gemseo.uncertainty.statistic.sp_parametric.SPParametricStatistics]
 object and want to know what statistics you can compute from it.
 
 ## Solution
 
 Both classes inherit from
-[BaseStatistics][gemseo.uncertainty.statistics.base.BaseStatistics]
+[BaseStatistics][gemseo.uncertainty.statistic.core.base.BaseStatistics]
 and share the same `compute_*` interface.
 Any method documented here works identically regardless of which class you use.
 
@@ -37,24 +37,22 @@ Any method documented here works identically regardless of which class you use.
 from __future__ import annotations
 
 from gemseo import sample_disciplines
-from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
-    WingWeightUncertainSpace,
-)
-from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
+from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
+from gemseo.uncertainty.statistic import EmpiricalStatistics
 
 # %%
 # ### 1. Create a statistics object
 #
 # The examples below use
-# [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics],
+# [EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics],
 # but the same methods are available on
-# [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics]
+# [OTParametricStatistics][gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics]
 # and
-# [SPParametricStatistics][gemseo.uncertainty.statistics.sp_parametric.SPParametricStatistics].
+# [SPParametricStatistics][gemseo.uncertainty.statistic.sp_parametric.SPParametricStatistics].
 #
 # Sample the
-# [WingWeightDiscipline][gemseo.problems.uncertainty.wing_weight.discipline.WingWeightDiscipline]
+# [WingWeightDiscipline][gemseo.problem.uncertainty.wing_weight.discipline.WingWeightDiscipline]
 # and restrict the analysis to the wing weight output `Ww`:
 discipline = WingWeightDiscipline()
 dataset = sample_disciplines(
@@ -143,31 +141,31 @@ default_output = discipline.execute()
 #
 # - All methods return a dict mapping variable names to statistic values;
 # - location/spread:
-#   [compute_minimum()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_minimum],
-#   [compute_maximum()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_maximum],
-#   [compute_range()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_range],
-#   [compute_mean()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_mean],
-#   [compute_moment(n)][gemseo.uncertainty.statistics.base.BaseStatistics.compute_moment],
-#   [compute_standard_deviation()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_standard_deviation],
-#   [compute_variance()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_variance];
+#   [compute_minimum()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_minimum],
+#   [compute_maximum()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_maximum],
+#   [compute_range()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_range],
+#   [compute_mean()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_mean],
+#   [compute_moment(n)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_moment],
+#   [compute_standard_deviation()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_standard_deviation],
+#   [compute_variance()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_variance];
 # - quantile-based:
-#   [compute_quantile(p)][gemseo.uncertainty.statistics.base.BaseStatistics.compute_quantile],
-#   [compute_quartile(n)][gemseo.uncertainty.statistics.base.BaseStatistics.compute_quartile],
-#   [compute_percentile(n)][gemseo.uncertainty.statistics.base.BaseStatistics.compute_percentile],
-#   [compute_median()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_median];
+#   [compute_quantile(p)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_quantile],
+#   [compute_quartile(n)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_quartile],
+#   [compute_percentile(n)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_percentile],
+#   [compute_median()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_median];
 # - tolerance:
-#   [compute_tolerance_interval(cov)][gemseo.uncertainty.statistics.base.BaseStatistics.compute_tolerance_interval],
-#   [compute_b_value()][gemseo.uncertainty.statistics.base.BaseStatistics.compute_b_value];
+#   [compute_tolerance_interval(cov)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_tolerance_interval],
+#   [compute_b_value()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_b_value];
 # - probability:
-#   [compute_probability(values)][gemseo.uncertainty.statistics.base.BaseStatistics.compute_probability],
-#   [compute_joint_probability(values)][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics.compute_joint_probability]
-#   ([EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics] only).
+#   [compute_probability(values)][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_probability],
+#   [compute_joint_probability(values)][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics.compute_joint_probability]
+#   ([EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics] only).
 #
 # ## One step further
 #
 # - [Compute empirical statistics from a dataset][]
 #   shows how to build an
-#   [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
+#   [EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics]
 #   object and plot the empirical distribution.
 # - [Compute parametric statistics from a dataset][]
 #   shows how to fit distributions to data,

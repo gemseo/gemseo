@@ -18,9 +18,9 @@
 ## Goal
 
 This tutorial introduces the
-[ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem]
+[ODEProblem][gemseo.ode.problem.ODEProblem]
 and the
-[ODESolverLibraryFactory][gemseo.algos.ode.factory.ODESolverLibraryFactory],
+[ODESolverLibraryFactory][gemseo.ode.factory.ODESolverLibraryFactory],
 the GEMSEO components for defining and solving a first-order ordinary
 differential equation (ODE) of the form
 
@@ -33,10 +33,10 @@ Solving it requires initial conditions $s(t_0) = s_0$.
 You will learn how to:
 
 - **define** an ODE problem with
-  [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem],
+  [ODEProblem][gemseo.ode.problem.ODEProblem],
 - **provide** an optional explicit Jacobian for improved performance,
 - **solve** the problem with
-  [ODESolverLibraryFactory][gemseo.algos.ode.factory.ODESolverLibraryFactory],
+  [ODESolverLibraryFactory][gemseo.ode.factory.ODESolverLibraryFactory],
 - **inspect** the results.
 
 As a running example, this tutorial uses the Van der Pol equation,
@@ -65,12 +65,12 @@ import matplotlib.pyplot as plt
 from numpy import array
 from numpy import zeros
 
-from gemseo.algos.ode.factory import ODESolverLibraryFactory
-from gemseo.algos.ode.ode_problem import ODEProblem
-from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
+from gemseo.ode import RK45_Settings
+from gemseo.ode.factory import ODESolverLibraryFactory
+from gemseo.ode.problem import ODEProblem
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 # %%
 # ## Step 1 — Define the RHS function
@@ -96,7 +96,7 @@ def evaluate_f(time: float, state: RealArray):
 # %%
 # ## Step 2 — Create the ODEProblem
 #
-# An [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem] groups the RHS function,
+# An [ODEProblem][gemseo.ode.problem.ODEProblem] groups the RHS function,
 # the initial state and the time interval into a single object:
 initial_state = array([2, -2 / 3])
 initial_time = 0.0
@@ -143,7 +143,7 @@ ode_problem_with_jacobian = ODEProblem(
 # %%
 # ## Step 4 — Solve the ODE problem
 #
-# Use [ODESolverLibraryFactory][gemseo.algos.ode.factory.ODESolverLibraryFactory]
+# Use [ODESolverLibraryFactory][gemseo.ode.factory.ODESolverLibraryFactory]
 # to solve the problem.
 # Here you use the Runge-Kutta RK45 method:
 ODESolverLibraryFactory().execute(ode_problem, RK45_Settings())
@@ -153,16 +153,16 @@ ODESolverLibraryFactory().execute(ode_problem_with_jacobian, RK45_Settings())
 # ## Step 5 — Inspect the results
 #
 # The solution is accessible via the `result` attribute of the
-# [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem].
+# [ODEProblem][gemseo.ode.problem.ODEProblem].
 # Use
-# [ODEResult.algorithm_has_converged][gemseo.algos.ode.ode_result.ODEResult.algorithm_has_converged]
+# [ODEResult.algorithm_has_converged][gemseo.ode.result.ODEResult.algorithm_has_converged]
 # and
-# [ODEResult.algorithm_termination_message][gemseo.algos.ode.ode_result.ODEResult.algorithm_termination_message]
+# [ODEResult.algorithm_termination_message][gemseo.ode.result.ODEResult.algorithm_termination_message]
 # to check convergence,
 # and
-# [ODEResult.times][gemseo.algos.ode.ode_result.ODEResult.times]
+# [ODEResult.times][gemseo.ode.result.ODEResult.times]
 # and
-# [ODEResult.state_trajectories][gemseo.algos.ode.ode_result.ODEResult.state_trajectories]
+# [ODEResult.state_trajectories][gemseo.ode.result.ODEResult.state_trajectories]
 # to access the solution:
 plt.plot(ode_problem.result.times, ode_problem.result.state_trajectories[0], label="x")
 plt.plot(ode_problem.result.times, ode_problem.result.state_trajectories[1], label="y")
@@ -173,20 +173,21 @@ plt.show()
 # %%
 # ## Key takeaways
 #
-# - [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem] groups the RHS function,
+# - [ODEProblem][gemseo.ode.problem.ODEProblem] groups the RHS function,
 #   initial state and time interval into a single object.
 # - By default, the Jacobian is approximated by finite differences.
 #   Passing an explicit `jac_function_wrt_state` can improve performance.
-# - [ODESolverLibraryFactory][gemseo.algos.ode.factory.ODESolverLibraryFactory]
+# - [ODESolverLibraryFactory][gemseo.ode.factory.ODESolverLibraryFactory]
 #   solves the problem; other algorithms can be selected beyond the default RK45.
 # - The solution is available via `ode_problem.result.times` and
 #   `ode_problem.result.state_trajectories`.
 #
 # !!! note
 #
-#     The [VanDerPol][gemseo.problems.ode.van_der_pol.VanDerPol] class provides
+#     The [VanDerPol][gemseo.problem.ode.van_der_pol.VanDerPol] class provides
 #     a ready-to-use implementation of the Van der Pol problem.
-#     It can be imported from [gemseo.problems.ode][gemseo.problems.ode]
+#     It can be imported from
+#     [gemseo.problem.ode.van_der_pol][gemseo.problem.ode.van_der_pol]
 #     and used directly without defining the RHS function manually.
 #
 # ## How-to guides

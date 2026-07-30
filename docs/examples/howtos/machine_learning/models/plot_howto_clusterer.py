@@ -29,7 +29,7 @@ You want to group data according to their similarities using clustering.
 ## Solution
 
 Use a clustering model (a.k.a. clusterer) from the sub-package
-[gemseo.machine_learning.clustering.models][gemseo.machine_learning.clustering.models].
+[gemseo.machine_learning.clustering.model][gemseo.machine_learning.clustering.model].
 
 ## Step-by-step guide
 """
@@ -39,12 +39,12 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo import create_benchmark_dataset
-from gemseo.machine_learning.clustering.models.kmeans import KMeans
-from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Settings
+from gemseo.machine_learning import KMeans_Settings
+from gemseo.machine_learning.clustering.model import KMeans
 from gemseo.machine_learning.clustering.quality.silhouette_measure import (
     SilhouetteMeasure,
 )
-from gemseo.post.dataset.pair_plot import PairPlot
+from gemseo.post.dataset import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 
 # %%
@@ -107,5 +107,5 @@ pair_plot.execute(save=False, show=True)
 #
 # Clustering models can group data according to their similarities.
 # They can be found in the
-# [gemseo.machine_learning.clustering.models][gemseo.machine_learning.clustering.models] package.
+# [gemseo.machine_learning.clustering.model][gemseo.machine_learning.clustering.model] package.
 # Their main parameter is `n_clusters`.

@@ -16,21 +16,21 @@ search:
 
 # ODE discipline { #concept-ode-discipline }
 
-An [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] is the subclass of [Discipline][gemseo.core.discipline.discipline.Discipline] wrapping an [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem].
+An [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] is the subclass of [Discipline][gemseo.core.discipline.discipline.Discipline] wrapping an [ODEProblem][gemseo.ode.problem.ODEProblem].
 
 The function $f(t, y)$ defining the right-hand side of the ODE and the termination functions are encoded by
 instances of [Discipline][gemseo.core.discipline.discipline.Discipline] with suitable inputs and outputs, allowing to couple different instances of
-[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] in an [MDA][concept-solving-multi-disciplinary-analysis].
+[ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] in an [MDA][concept-solving-multi-disciplinary-analysis].
 
 ## Inputs and outputs
 
-An instance of [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] takes as inputs:
+An instance of [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] takes as inputs:
 
 * the initial value of the *time* variable,
 * the initial value of the *state* variables,
 * the value of eventual *design variables*.
 
-Without further specifications, the outputs of [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] are the values of the state variables at the end
+Without further specifications, the outputs of [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] are the values of the state variables at the end
 of the time interval (or, if *termination events* are present, at the realization of the first event).
 By default, the name of the output variable corresponding to the final value of the state variable `"y"` is `"y_final"`.
 
@@ -39,6 +39,6 @@ instants listed in `times`; the trajectory output for state `"y"` is named `"y"`
 
 ## Initialization
 
-The instantiation of an [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] requires at least two parameters: `discipline`, representing the
+The instantiation of an [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] requires at least two parameters: `discipline`, representing the
 function $f(t, y)$, and `times`, representing the time interval of integration of the ODE.
-Further parameters can be specified at the time of the instantiation of the [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline].
+Further parameters can be specified at the time of the instantiation of the [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline].

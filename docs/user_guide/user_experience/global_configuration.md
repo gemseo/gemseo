@@ -36,10 +36,10 @@ or set `logging.configure_root_logger = True` to let GEMSEO configure the root l
 - `enable_function_statistics`, default: `False` - Whether to record the statistics attached to the functions, in charge of counting their number of evaluations.
 - `enable_parallel_execution`, default: `True` - Whether to let GEMSEO use parallelism (multi-processing or multi-threading) by default.
 - `enable_progress_bar`, default: `True` - Whether to enable the progress bar attached to the drivers, in charge to log the execution of the process: iteration, execution time and objective value.
-- `logging`, default: enabled - The logging configuration of type [LoggingConfiguration][gemseo.utils.logging.LoggingConfiguration]; use `logging.enable = False` to disable logging.
+- `logging`, default: enabled - The logging configuration of type [LoggingConfiguration][gemseo.util.logging.LoggingConfiguration]; use `logging.enable = False` to disable logging.
 - `validate_input_data`, default: `True` - Whether to validate the input data of a discipline before execution.
 - `validate_output_data`, default: `True` - Whether to validate the output data of a discipline after execution.
-- `directory_manager`, default: disabled - The directory manager [configuration][gemseo.utils._directory_manager.settings.Settings]; use `settings.enable = True` to enable the directory manager. Once enabled, it cannot be disabled for the rest of the process.
+- `directory_manager`, default: disabled - The directory manager [configuration][gemseo.util._directory_manager.settings.Settings]; use `settings.enable = True` to enable the directory manager. Once enabled, it cannot be disabled for the rest of the process.
 
 ## Changing configuration { #concept-changing-configuration }
 

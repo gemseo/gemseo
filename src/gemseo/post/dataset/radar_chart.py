@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a radar chart from a [Dataset][gemseo.datasets.dataset.Dataset]."""
+r"""Draw a radar chart from a [Dataset][gemseo.dataset.dataset.Dataset]."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ from gemseo.post.dataset.base import BaseDatasetPlot
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 class RadarChart(BaseDatasetPlot[RadarChart_Settings]):

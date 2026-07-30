@@ -18,10 +18,10 @@ import pytest
 from numpy import array
 from sklearn.ensemble import GradientBoostingRegressor as SKLGradientBoosting
 
-from gemseo.machine_learning.regression.models.gradient_boosting import (
+from gemseo.machine_learning.regression.model.gradient_boosting import (
     GradientBoostingRegressor,
 )
-from gemseo.machine_learning.regression.models.gradient_boosting_settings import (
+from gemseo.machine_learning.regression.model.gradient_boosting_settings import (
     GradientBoostingRegressor_Settings,
 )
 

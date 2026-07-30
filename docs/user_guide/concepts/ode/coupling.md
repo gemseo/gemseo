@@ -16,21 +16,21 @@ search:
 
 # Coupling ODE disciplines { #concept-ode-coupling }
 
-Like other disciplines, [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] instances can be coupled to other disciplines
+Like other disciplines, [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] instances can be coupled to other disciplines
 in an [MDA][concept-solving-multi-disciplinary-analysis] to model the dynamics of coupled physical systems.
 
 ## Coupled instances of ODEDiscipline
 
 A first approach consists in modeling each entity of the system as a separate
-[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] with the parameter `return_trajectories` set to `True`.
-The coupling between the disciplines is done by passing the trajectories computed by each [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] as
-inputs of the other [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] in the form of *design variables*.
+[ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] with the parameter `return_trajectories` set to `True`.
+The coupling between the disciplines is done by passing the trajectories computed by each [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] as
+inputs of the other [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] in the form of *design variables*.
 
 ![Coupling of the time integrations across times](figs/coupling.png)
 
 ## Coupled dynamic inside an ODEDiscipline
 
-A different approach consists in defining a single [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] for the entire system,
+A different approach consists in defining a single [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] for the entire system,
 whose state is the collection of all the variables representing each component of the coupled system,
 and whose dynamic is the result of an [MDA][concept-solving-multi-disciplinary-analysis] over all the disciplines describing
 the dynamics of the components of the system.

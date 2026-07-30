@@ -30,10 +30,10 @@ from numpy import vstack
 from numpy.linalg import eigvals
 from numpy.random import default_rng
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.clustering.models.kmeans import KMeans
-from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Settings
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.clustering.model.kmeans import KMeans
+from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Settings
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations
 LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])

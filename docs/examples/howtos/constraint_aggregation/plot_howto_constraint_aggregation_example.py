@@ -35,10 +35,10 @@ before executing the scenario.
 from __future__ import annotations
 
 from gemseo import create_scenario
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.constraint_aggregation import ConstraintAggregation
-from gemseo.settings.opt import NLOPT_MMA_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.discipline import ConstraintAggregation
+from gemseo.optimization import NLOPT_MMA_Settings
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Build your scenario
@@ -122,7 +122,7 @@ scenario.execute(
 #
 # Other aggregation methods are available besides `"lower_bound_KS"`,
 # all stored into the
-# [EvaluationFunction][gemseo.disciplines.constraint_aggregation.ConstraintAggregation.EvaluationFunction]
+# [EvaluationFunction][gemseo.discipline.constraint_aggregation.ConstraintAggregation.EvaluationFunction]
 # class.
 # The `rho` parameter controls the tightness of the approximation:
 # a higher value gives a closer approximation but may cause numerical issues.

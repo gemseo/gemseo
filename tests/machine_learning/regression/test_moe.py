@@ -29,36 +29,36 @@ from numpy import meshgrid
 from numpy import newaxis
 from numpy import ones_like
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.classification.models.knn_settings import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.classification.model.knn_settings import (
     KNNClassifier_Settings,
 )
-from gemseo.machine_learning.classification.models.random_forest import (
+from gemseo.machine_learning.classification.model.random_forest import (
     RandomForestClassifier,
 )
-from gemseo.machine_learning.classification.models.random_forest_settings import (
+from gemseo.machine_learning.classification.model.random_forest_settings import (
     RandomForestClassifier_Settings,
 )
-from gemseo.machine_learning.classification.models.svm_settings import (
+from gemseo.machine_learning.classification.model.svm_settings import (
     SVMClassifier_Settings,
 )
-from gemseo.machine_learning.clustering.models.gaussian_mixture_settings import (
+from gemseo.machine_learning.clustering.model.gaussian_mixture_settings import (
     GaussianMixture_Settings,
 )
-from gemseo.machine_learning.clustering.models.kmeans import KMeans
-from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Settings
-from gemseo.machine_learning.regression.models.linreg import LinearRegressor
-from gemseo.machine_learning.regression.models.linreg_settings import (
+from gemseo.machine_learning.clustering.model.kmeans import KMeans
+from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Settings
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
+from gemseo.machine_learning.regression.model.linreg_settings import (
     LinearRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.moe import MOERegressor
-from gemseo.machine_learning.regression.models.moe_settings import MOERegressor_Settings
-from gemseo.machine_learning.regression.models.polyreg_settings import (
+from gemseo.machine_learning.regression.model.moe import MOERegressor
+from gemseo.machine_learning.regression.model.moe_settings import MOERegressor_Settings
+from gemseo.machine_learning.regression.model.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.machine_learning.transformers.scaler.scaler import Scaler
-from gemseo.utils.repr_html import REPR_HTML_WRAPPER
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
+from gemseo.machine_learning.transformer.scaler.scaler import Scaler
+from gemseo.util.repr_html import REPR_HTML_WRAPPER
 
 ROOT_LEARNING_SIZE = 6
 LEARNING_SIZE = ROOT_LEARNING_SIZE**2

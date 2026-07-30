@@ -28,7 +28,7 @@ from numpy import allclose
 from numpy import array
 from numpy import inf
 
-from gemseo.mda.base import BaseMDA
+from gemseo.mda.core.base import BaseMDA
 from gemseo.mda.gauss_seidel_newton_raphson_settings import (
     MDAGaussSeidelNewtonRaphson_Settings,
 )
@@ -36,10 +36,10 @@ from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.sequential import MDASequential
-from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.utils import get_y_opt
+from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.util import get_y_opt
 
 from .utils import generate_parallel_doe
 

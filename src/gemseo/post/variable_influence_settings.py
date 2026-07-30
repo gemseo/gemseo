@@ -18,8 +18,8 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
 
 
 class VariableInfluence_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801

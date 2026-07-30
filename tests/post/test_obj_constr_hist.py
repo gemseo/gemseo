@@ -20,8 +20,8 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.post import ObjConstrHist_Settings
 from gemseo.post.obj_constr_hist import ObjConstrHist
+from gemseo.post.obj_constr_hist_settings import ObjConstrHist_Settings
 
 
 @pytest.mark.parametrize(

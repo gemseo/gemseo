@@ -19,8 +19,8 @@ from numpy import array
 from numpy import linspace
 from numpy import newaxis
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
+from gemseo.dataset.dataset import Dataset
+from gemseo.dataset.io_dataset import IODataset
 
 
 @pytest.fixture(scope="module")

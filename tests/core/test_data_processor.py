@@ -33,10 +33,10 @@ from gemseo.core.discipline.data_processor import ComplexDataProcessor
 from gemseo.core.discipline.data_processor import DataProcessor
 from gemseo.core.discipline.data_processor import FloatDataProcessor
 from gemseo.core.discipline.data_processor import NameMapping
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
+from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 class LocalDisc(Discipline):

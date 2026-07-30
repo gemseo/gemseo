@@ -30,12 +30,12 @@ from numpy import vstack
 from numpy.linalg import eigvals
 from numpy.random import default_rng
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.machine_learning.clustering.models.gaussian_mixture import GaussianMixture
-from gemseo.machine_learning.clustering.models.gaussian_mixture_settings import (
+from gemseo.dataset.dataset import Dataset
+from gemseo.machine_learning.clustering.model.gaussian_mixture import GaussianMixture
+from gemseo.machine_learning.clustering.model.gaussian_mixture_settings import (
     GaussianMixture_Settings,
 )
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations
 LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])

@@ -31,10 +31,7 @@ from scipy.optimize import rosen
 
 from gemseo import create_design_space
 from gemseo import create_scenario
-from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
-from gemseo.core.functions.discipline_adapter_generator import (
-    DisciplineAdapterGenerator,
-)
+from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
@@ -45,15 +42,16 @@ from gemseo.core.parallel_execution.discipline_execution import DiscParallelExec
 from gemseo.core.parallel_execution.discipline_linearization import (
     DiscParallelLinearization,
 )
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sellar.utils import WITH_2D_ARRAY
-from gemseo.problems.mdo.sellar.utils import get_initial_data
-from gemseo.problems.mdo.sellar.variables import X_SHARED
-from gemseo.problems.mdo.sellar.variables import Y_1
-from gemseo.utils.platform import PLATFORM_IS_WINDOWS
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.doe.scipy.settings.lhs import LHS_Settings
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sellar.util import WITH_2D_ARRAY
+from gemseo.problem.mdo.sellar.util import get_initial_data
+from gemseo.problem.mdo.sellar.variable import X_SHARED
+from gemseo.problem.mdo.sellar.variable import Y_1
+from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.testing.helper import assert_exception
 
 
 class CallableWorker:

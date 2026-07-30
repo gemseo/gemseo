@@ -28,7 +28,7 @@ from numpy import arange
 from numpy import ones
 from sklearn.preprocessing import PowerTransformer
 
-from gemseo.machine_learning.transformers.power.power import Power
+from gemseo.machine_learning.transformer.power.power import Power
 
 if TYPE_CHECKING:
     from numpy import ndarray

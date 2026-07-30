@@ -24,11 +24,11 @@ as the ranking and visualization criterion.
 ## Solution
 
 The
-[main_method][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.main_method]
+[main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
 attribute sets the active index type.
 Its default value is the class attribute `_DEFAULT_MAIN_METHOD`.
 It can be reassigned at any point — before or after
-[compute_indices()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_indices] —
+[compute_indices()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_indices] —
 without re-running the analysis.
 
 ## Step-by-step guide
@@ -36,9 +36,9 @@ without re-running the analysis.
 
 from __future__ import annotations
 
-from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.problem.uncertainty.ishigami import IshigamiDiscipline
+from gemseo.problem.uncertainty.ishigami import IshigamiSpace
+from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 
 discipline = IshigamiDiscipline()
 uncertain_space = IshigamiSpace()
@@ -47,7 +47,7 @@ uncertain_space = IshigamiSpace()
 # ### 1. Check the default main method
 #
 # After construction,
-# [main_method][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.main_method]
+# [main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
 # is initialized to the class default:
 analysis = CorrelationAnalysis()
 analysis.main_method
@@ -67,7 +67,7 @@ analysis.sort_input_variables("y")
 # ### 3. Change the main method
 #
 # Assign
-# [main_method][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.main_method]
+# [main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
 # directly — no need to recompute indices:
 analysis.main_method = "SRC"
 
@@ -78,6 +78,6 @@ analysis.sort_input_variables("y")
 # %%
 # ## Summary
 #
-# [main_method][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.main_method]
+# [main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
 # controls which index type is used for ranking and visualization;
 #

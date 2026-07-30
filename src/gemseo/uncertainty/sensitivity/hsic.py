@@ -41,9 +41,9 @@ from openturns import SquaredExponential
 from strenum import StrEnum
 
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
-from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from gemseo.utils.seeder import SEED
+from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
+from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -54,8 +54,8 @@ if TYPE_CHECKING:
     from openturns import HSICEstimatorImplementation
     from openturns import HSICStatImplementation
 
-    from gemseo.typing import IntegerArray
-    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
+    from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
+    from gemseo.util.typing import IntegerArray
 
 
 class HSICAnalysisMethod(StrEnum):

@@ -35,8 +35,8 @@ from __future__ import annotations
 from numpy import hstack
 from numpy import linspace
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.post.dataset.boxplot import Boxplot
+from gemseo.dataset import IODataset
+from gemseo.post.dataset import Boxplot
 from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 
 # %%

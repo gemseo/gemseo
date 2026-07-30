@@ -1,0 +1,67 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Isabelle Santos
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Base class for libraries of ODE solvers."""
+
+from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING
+from typing import ClassVar
+
+from gemseo.core.algorithm.base_algorithm_library import AlgorithmDescription
+from gemseo.core.algorithm.base_algorithm_library import BaseAlgorithmLibrary
+from gemseo.ode.core.base_ode_solver_settings import BaseODESolverSettings
+
+if TYPE_CHECKING:
+    from gemseo.ode.problem import ODEProblem
+    from gemseo.ode.result import ODEResult
+
+LOGGER = logging.getLogger(__name__)
+
+
+class ODESolverDescription(AlgorithmDescription):
+    """Description for the ODE solver."""
+
+    settings_class: type[BaseODESolverSettings] = BaseODESolverSettings
+    """The settings validation model."""
+
+
+class BaseODESolverLibrary(BaseAlgorithmLibrary[BaseODESolverSettings]):
+    """Base class for libraries of ODE solvers."""
+
+    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BaseODESolverSettings]] = (
+        BaseODESolverSettings
+    )
+
+    def _pre_run(
+        self,
+        problem: ODEProblem,
+    ) -> None:
+        problem.result.solver_options = self._settings.model_dump()
+        problem.result.solver_name = self._algo_name
+
+    def _post_run(
+        self,
+        problem: ODEProblem,
+        result: ODEResult,
+    ) -> None:  # noqa: D107
+        if not problem.result.algorithm_has_converged:
+            LOGGER.warning(
+                "The ODE solver %s did not converge.", problem.result.solver_name
+            )

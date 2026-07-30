@@ -17,18 +17,23 @@ search:
 
 # Settings { #settings-user-guide }
 
-Many features of GEMSEO can be configured through settings
-available in one of the modules of the [gemseo.settings][gemseo.settings] package,
-e.g. [`doe`][gemseo.settings.doe], [`formulations`][gemseo.settings.formulations], etc.
+Many features of GEMSEO can be configured through settings,
+each settings class being importable from its domain package,
+e.g. [`gemseo.optimization`][gemseo.optimization], [`gemseo.doe`][gemseo.doe],
+[`gemseo.mda`][gemseo.mda], [`gemseo.post`][gemseo.post],
+[`gemseo.formulation`][gemseo.formulation], [`gemseo.linear`][gemseo.linear],
+[`gemseo.ode`][gemseo.ode], [`gemseo.machine_learning`][gemseo.machine_learning],
+[`gemseo.uncertainty.distribution`][gemseo.uncertainty.distribution]
+and [`gemseo.uncertainty.reliability`][gemseo.uncertainty.reliability].
 These settings are defined as [Pydantic models](https://pydantic.dev/docs/validation/latest/concepts/models/)
-deriving from [BaseSettings][gemseo.utils.pydantic.BaseSettings],
+deriving from [BaseSettings][gemseo.util.pydantic.BaseSettings],
 whose class names end with the suffix `"_Settings"`,
 e.g. `"SLSQP_Settings"` for the SciPy-based SLSQP optimization algorithm.
 This provides easy to use (code completion) and validated configuration throughout GEMSEO,
 catching configuration errors early and providing clear error messages.
 
 ```python title="Example of creating settings"
-from gemseo.settings.opt import SLSQP_Settings
+from gemseo.optimization import SLSQP_Settings
 
 settings = SLSQP_Settings(max_iter=100)
 ```

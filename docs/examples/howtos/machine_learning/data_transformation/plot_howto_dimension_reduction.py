@@ -47,14 +47,14 @@ from numpy import linspace
 from numpy import pi
 
 from gemseo import sample_disciplines
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
-from gemseo.algos.doe.scipy.settings.mc import MC_Settings
-from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.machine_learning.regression.models.rbf import RBFRegressor
-from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
-from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
+from gemseo.discipline import AutoPyDiscipline
+from gemseo.doe import MC_Settings
+from gemseo.doe import OT_OPT_LHS_Settings
+from gemseo.machine_learning import RBFRegressor_Settings
+from gemseo.machine_learning.regression.model import RBFRegressor
+from gemseo.machine_learning.regression.quality import R2Measure
+from gemseo.machine_learning.transformer.dimension_reduction.pca import PCA
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Define the reference model

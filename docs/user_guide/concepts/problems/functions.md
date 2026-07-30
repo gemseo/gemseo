@@ -22,19 +22,19 @@ i.e. any function of the form
 $f: \mathbb{C}^n \rightarrow \mathbb{C}^m, x \mapsto y = f(x)$.
 
 In GEMSEO, this concept is implemented by the
-[ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] object.
+[ArrayFunction][gemseo.core.function.array_function.ArrayFunction] object.
 The mapping from $x$ to $y$ is a user-defined callable (e.g. a Python function)
 provided at instantiation via the `func` argument
 and stored in the `func` attribute.
 However,
 it is recommended to evaluate the array function using the
-[evaluate()][gemseo.core.functions.array_function.ArrayFunction.evaluate] method,
+[evaluate()][gemseo.core.function.array_function.ArrayFunction.evaluate] method,
 which can perform post-processing,
 such as calculating execution statistics
-(if the function is a [ProblemFunction][gemseo.algos.problem_function.ProblemFunction])
+(if the function is a [PreprocessedFunction][gemseo.core.function.preprocessed_function.PreprocessedFunction])
 or extracting the real part when dealing with an imaginary number.
 
-The [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] can also
+The [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] can also
 be given a callable to compute its Jacobian via the `jac` argument,
 which is then stored in `jac` attribute.
 

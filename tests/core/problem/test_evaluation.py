@@ -1,0 +1,80 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
+import re
+from math import prod
+
+from numpy import array
+from numpy.testing import assert_equal
+
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.core.problem.database import Database
+from gemseo.core.problem.evaluation import EvaluationProblem
+from gemseo.doe.custom_doe.custom_doe import CustomDOE
+from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
+from gemseo.space.design import DesignSpace
+
+
+def test_default(caplog):
+    """Check that a DOELibrary can handle an EvaluationProblem."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", size=2)
+
+    evaluation_problem = EvaluationProblem(design_space)
+    evaluation_problem.add_observable(ArrayFunction(sum, name="sum"))
+    evaluation_problem.add_observable(ArrayFunction(prod, name="prod"))
+
+    custom_doe = CustomDOE()
+    custom_doe.execute(
+        evaluation_problem,
+        settings=CustomDOE_Settings(samples=array([[2.0, 3.0], [4.0, 5.0]])),
+    )
+
+    get_function_history = evaluation_problem.database.get_function_history
+    assert_equal(get_function_history("sum"), array([5.0, 9.0]))
+    assert_equal(get_function_history("prod"), array([6.0, 20.0]))
+    result = "\n".join([line[2] for line in caplog.record_tuples])
+    expected_result = r"""^Evaluation problem:
+   Evaluate the functions: prod, sum
+   over the design space:
+      \+------\+-------------\+-------\+-------------\+-------\+
+      \| Name \| Lower bound \| Value \| Upper bound \| Type  \|
+      \+------\+-------------\+-------\+-------------\+-------\+
+      \| x\[0\] \|     -inf    \|  None \|     inf     \| float \|
+      \| x\[1\] \|     -inf    \|  None \|     inf     \| float \|
+      \+------\+-------------\+-------\+-------------\+-------\+
+Running the algorithm CustomDOE:
+    50%\|█████     \| 1\/2 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
+   100%\|██████████\| 2\/2 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]$"""
+    assert re.match(expected_result, result)
+
+
+def test_set_database():
+    """Test the setter `database`."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", size=1)
+
+    evaluation_problem = EvaluationProblem(design_space)
+    evaluation_problem.add_observable(ArrayFunction(sum, name="sum"))
+    evaluation_problem.add_observable(ArrayFunction(prod, name="prod"))
+
+    database = Database(name="test_database", input_space=design_space)
+    database.store(array([0.0]), array([1.0, 1.0]))
+
+    assert evaluation_problem.database.n_iterations == 0
+    evaluation_problem.database = database
+    assert evaluation_problem.database.n_iterations == 1
+    assert evaluation_problem.database.name == "test_database"

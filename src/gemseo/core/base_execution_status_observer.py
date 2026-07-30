@@ -19,10 +19,10 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING
 
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
-    from gemseo.core.execution_status import ExecutionStatus
+    from gemseo.core.discipline.execution_status import ExecutionStatus
 
 
 class BaseExecutionStatusObserver(metaclass=ABCGoogleDocstringInheritanceMeta):

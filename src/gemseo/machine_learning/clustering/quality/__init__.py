@@ -15,3 +15,25 @@
 """Quality assessment for clusterers."""
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from typing import Final
+
+from gemseo.util.package_import import install_lazy_reexport
+
+if TYPE_CHECKING:
+    # static visibility for mypy / IDEs
+    from gemseo.machine_learning.clustering.quality.factory import (
+        CLUSTERER_QUALITY_FACTORY,  # noqa: F401
+    )
+    from gemseo.machine_learning.clustering.quality.silhouette_measure import (
+        SilhouetteMeasure,  # noqa: F401
+    )
+
+# Class name -> defining submodule (lazy-loaded on attribute access).
+_NAME_TO_LOCATION: Final[dict[str, str]] = {
+    "CLUSTERER_QUALITY_FACTORY": "factory",
+    "SilhouetteMeasure": "silhouette_measure",
+}
+
+install_lazy_reexport(globals(), _NAME_TO_LOCATION)

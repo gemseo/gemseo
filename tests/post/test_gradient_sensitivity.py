@@ -29,18 +29,16 @@ from numpy import empty
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
-    DiagonalDOE_Settings,
-)
-from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post import GradientSensitivity_Settings
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.gradient_sensitivity import GradientSensitivity
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.util.testing.helper import assert_exception
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 SOBIESKI_MISSING_GRADIENTS = Path(__file__).parent / "sobieski_missing_gradients.h5"

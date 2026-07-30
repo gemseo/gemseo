@@ -24,8 +24,8 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import hstack
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
 
 if TYPE_CHECKING:
     from numpy import ndarray

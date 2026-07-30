@@ -32,16 +32,16 @@ from numpy import sqrt
 from numpy import zeros
 from scipy.special import comb
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
-from gemseo.machine_learning.regression.models.polyreg_settings import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning.regression.model.polyreg import PolynomialRegressor
+from gemseo.machine_learning.regression.model.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
+from gemseo.util.testing.helper import assert_exception
 
 LEARNING_SIZE = 50
 DEGREE = 5

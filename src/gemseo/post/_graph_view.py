@@ -25,10 +25,10 @@ from typing import Final
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from graphviz import Digraph
 
-from gemseo.utils.file_path_manager import FilePathManager
+from gemseo.util.file_path_manager import FilePathManager
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrPath
+    from gemseo.util.typing import StrPath
 
 
 class GraphView(Digraph, metaclass=GoogleDocstringInheritanceMeta):

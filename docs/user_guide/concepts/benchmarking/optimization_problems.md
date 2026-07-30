@@ -17,8 +17,8 @@ search:
 
 # Optimization problems { #concept-optimization-problems }
 
-The [gemseo.problems.optimization][gemseo.problems.optimization] package provides single-objective
-[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] instances
+The [gemseo.problem.optimization][gemseo.problem.optimization] package provides single-objective
+[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] instances
 for benchmarking and illustrating optimization algorithms.
 All problems include analytical Jacobians.
 
@@ -34,11 +34,11 @@ The default domain is $[-2, 2]^n$ with $n = 2$.
 
 ??? abstract "API"
 
-    - [Rosenbrock][gemseo.problems.optimization.rosenbrock.Rosenbrock]
+    - [Rosenbrock][gemseo.problem.optimization.rosenbrock.Rosenbrock]
 
 ## Multi-fidelity Rosenbrock { #concept-rosen-mf }
 
-[RosenMF][gemseo.problems.optimization.rosen_mf.RosenMF] is a
+[RosenMF][gemseo.problem.optimization.rosen_mf.RosenMF] is a
 [Discipline][gemseo.core.discipline.discipline.Discipline]
 that wraps the Rosenbrock function with a fidelity level:
 
@@ -51,7 +51,7 @@ strategies that combine cheap low-fidelity evaluations with expensive high-fidel
 
 ??? abstract "API"
 
-    - [RosenMF][gemseo.problems.optimization.rosen_mf.RosenMF]
+    - [RosenMF][gemseo.problem.optimization.rosen_mf.RosenMF]
 
 ## Rastrigin { #concept-rastrigin }
 
@@ -65,7 +65,7 @@ The problem is defined on $[-0.1, 0.1]^2$ by default.
 
 ??? abstract "API"
 
-    - [Rastrigin][gemseo.problems.optimization.rastrigin.Rastrigin]
+    - [Rastrigin][gemseo.problem.optimization.rastrigin.Rastrigin]
 
 ## Power2 { #concept-power2 }
 
@@ -81,7 +81,7 @@ The analytical optimum is $x^* = (0.5^{1/3},\, 0.5^{1/3},\, 0.9^{1/3})$.
 
 ??? abstract "API"
 
-    - [Power2][gemseo.problems.optimization.power_2.Power2]
+    - [Power2][gemseo.problem.optimization.power_2.Power2]
 
 ## Hock-Schittkowski 71 { #concept-hs71 }
 
@@ -97,4 +97,4 @@ The analytical optimum is known and can be retrieved via `get_solution()`.
 
 ??? abstract "API"
 
-    - [HockSchittkowski71][gemseo.problems.optimization.hock_schittkowski_71.HockSchittkowski71]
+    - [HockSchittkowski71][gemseo.problem.optimization.hock_schittkowski_71.HockSchittkowski71]

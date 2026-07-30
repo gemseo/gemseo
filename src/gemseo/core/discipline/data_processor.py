@@ -27,13 +27,13 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import complex128
 
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from gemseo.typing import MutableStrKeyMapping
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import MutableStrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 class DataProcessor(metaclass=ABCGoogleDocstringInheritanceMeta):

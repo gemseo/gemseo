@@ -40,10 +40,10 @@ from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
-from gemseo.utils.constants import N_CPUS
-from gemseo.utils.multiprocessing import start_method
-from gemseo.utils.multiprocessing.start_method import MultiProcessingStartMethod
-from gemseo.utils.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.constant import N_CPUS
+from gemseo.util.multiprocessing import start_method
+from gemseo.util.multiprocessing.start_method import MultiProcessingStartMethod
+from gemseo.util.platform import PLATFORM_IS_WINDOWS
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -199,7 +199,7 @@ class CallableParallelExecution(
 
     MultiProcessingStartMethod = MultiProcessingStartMethod
     """An alias of
-    [MultiProcessingStartMethod][gemseo.utils.multiprocessing.start_method.MultiProcessingStartMethod]."""
+    [MultiProcessingStartMethod][gemseo.util.multiprocessing.start_method.MultiProcessingStartMethod]."""
 
     MULTI_PROCESSING_START_METHOD: ClassVar[MultiProcessingStartMethod] = (
         start_method.MULTI_PROCESSING_START_METHOD

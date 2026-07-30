@@ -17,7 +17,7 @@ search:
 
 # Linear problem { #concept-linear-problem }
 
-A [LinearProblem][gemseo.algos.linear_solvers.linear_problem.LinearProblem]
+A [LinearProblem][gemseo.linear.problem.LinearProblem]
 represents a system of linear equations of the form $Ax = b$,
 where $A$ is a matrix or a linear operator referred to as the *left-hand side* (LHS),
 $b$ is a vector referred to as the *right-hand side*,
@@ -39,12 +39,12 @@ and `is_converged` indicates whether the solver reached the specified tolerance.
 The relative residual $\|Ax - b\|_2 / \|b\|_2$
 or the absolute residual $\|Ax - b\|_2$
 can be computed via
-[compute_residuals()][gemseo.algos.linear_solvers.linear_problem.LinearProblem.compute_residuals].
+[compute_residuals()][gemseo.linear.problem.LinearProblem.compute_residuals].
 Passing `store=True`
-to [compute_residuals()][gemseo.algos.linear_solvers.linear_problem.LinearProblem.compute_residuals]
+to [compute_residuals()][gemseo.linear.problem.LinearProblem.compute_residuals]
 appends each value to residuals_history,
 which can then be plotted
-with [plot_residuals()][gemseo.algos.linear_solvers.linear_problem.LinearProblem.plot_residuals]
+with [plot_residuals()][gemseo.linear.problem.LinearProblem.plot_residuals]
 to inspect the convergence of iterative solvers.
 
 !!! note

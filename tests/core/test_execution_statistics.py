@@ -24,10 +24,10 @@ from time import sleep
 
 import pytest
 
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.utils import timer  # noqa: E402
-from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.mocks import SleepingCounter
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.util import timer  # noqa: E402
+from gemseo.util.testing.helper import assert_exception
+from gemseo.util.testing.mock import SleepingCounter
 
 SLEEP_TIME = 0.1
 

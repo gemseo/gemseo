@@ -32,8 +32,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
 from gemseo.core.dependency_graph import DependencyGraph
-from gemseo.utils.discipline import check_disciplines_consistency
-from gemseo.utils.n2d3.n2_html import N2HTML
+from gemseo.util.discipline import check_disciplines_consistency
+from gemseo.util.n2d3.n2_html import N2HTML
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -44,8 +44,8 @@ if TYPE_CHECKING:
 
     from gemseo.core.dependency_graph import ExecutionSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
-    from gemseo.typing import StrPath
-    from gemseo.utils.matplotlib_figure import FigSizeType
+    from gemseo.util.matplotlib_figure import FigSizeType
+    from gemseo.util.typing import StrPath
 
 NodeType = tuple[list[str], list[str]]
 EdgesType = dict[int, dict[int, list[str]]]

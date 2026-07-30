@@ -24,7 +24,7 @@ from gemseo.uncertainty.reliability.event import _ElementaryEvent
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.core.functions.array_function import ArrayFunction
+    from gemseo.core.function.array_function import ArrayFunction
 
 
 class EventVariable:
@@ -34,7 +34,7 @@ class EventVariable:
     [Event][gemseo.uncertainty.reliability.event.Event] associated to `f < 3`.
 
     An event variable wraps either an
-    [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction],
+    [ArrayFunction][gemseo.core.function.array_function.ArrayFunction],
     from which both the name and the function are taken,
     or a name string,
     in which case the function is left unset

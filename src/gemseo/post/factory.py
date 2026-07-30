@@ -26,11 +26,11 @@ from typing import Any
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.post.base_post import BasePost
+from gemseo.post.core.base_post import BasePost
 
 if TYPE_CHECKING:
-    from gemseo.algos.optimization_problem import OptimizationProblem
-    from gemseo.post.base_post_settings import BasePostSettings
+    from gemseo.optimization.problem import OptimizationProblem
+    from gemseo.post.core.base_post_settings import BasePostSettings
 
 
 class PostFactory(BaseFactory[BasePost[Any]]):

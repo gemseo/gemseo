@@ -1,0 +1,330 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
+import pickle
+from pathlib import Path
+from string import Template
+
+import pytest
+
+from gemseo import create_discipline
+from gemseo import wrap_discipline_in_job_scheduler
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline.chain.chain import DisciplineChain
+from gemseo.discipline.wrapper import job_scheduler
+from gemseo.discipline.wrapper.job_scheduler.discipline import JobSchedulerDiscipline
+from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problem.topology_optimization.volume_fraction_disc import VolumeFraction
+from gemseo.util.comparison import compare_dict_of_arrays
+from gemseo.util.testing.helper import assert_exception
+
+
+@pytest.fixture
+def discipline(tmp_wd):
+    """Create a JobSchedulerDiscipline based on JobSchedulerDiscipline
+    using the SLURM template.
+
+    Returns:
+        The wrapped discipline.
+    """
+    template_path = Path(job_scheduler.__file__).parent / "templates" / "SLURM"
+    return JobSchedulerDiscipline(
+        discipline=create_discipline("SobieskiMission"),
+        workdir_path=tmp_wd,
+        scheduler_run_command="sbatch",
+        job_template_path=template_path,
+        user_email="toto@irt.com",
+        ntasks=1,
+        ntasks_per_node=1,
+        cpus_per_task=1,
+        nodes_number=1,
+        mem_per_cpu="2G",
+        wall_time="1:0:0",
+    )
+
+
+@pytest.fixture
+def discipline_mocked_js(tmp_wd) -> JobSchedulerDiscipline:
+    """Creates a JobSchedulerDiscipline based on JobSchedulerDiscipline
+    using the mock template.
+
+    Returns:
+        The wrapped discipline
+    """
+    return JobSchedulerDiscipline(
+        create_discipline("SobieskiMission"),
+        job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
+        workdir_path=tmp_wd,
+        job_out_filename="run_disc.py",
+        scheduler_run_command="python",
+    )
+
+
+def test_write_inputs_to_disk(discipline, tmp_wd) -> None:
+    """Test the outputs written by the discipline."""
+    path_to_discipline, path_to_input_data = discipline._write_inputs_to_disk(
+        tmp_wd, (), ()
+    )
+    assert path_to_discipline.exists()
+    assert path_to_discipline.parent == tmp_wd
+    assert path_to_input_data.exists()
+    assert path_to_input_data.parent == tmp_wd
+
+
+def test_generate_job_template(tmp_wd, discipline) -> None:
+    """Test the job scheduler template creation."""
+    current_workdir = tmp_wd
+    path_to_discipline, path_to_input_data = discipline._write_inputs_to_disk(
+        current_workdir, (), ()
+    )
+    path_to_outputs = current_workdir / "outputs.pckl"
+    log_file_path = current_workdir / "logging.log"
+    dest_job_file_path = discipline._generate_job_file_from_template(
+        current_workdir,
+        path_to_discipline,
+        path_to_input_data,
+        path_to_outputs,
+        log_file_path,
+        "",
+    )
+    assert dest_job_file_path.exists()
+    lines = dest_job_file_path.read_text()
+    for line in lines:
+        if "#SBATCH" in line:
+            # Windows may use $ at the end of some variables,
+            # thus we include =.
+            assert "=$" not in line
+    assert len(lines) > 40
+
+
+def test_generate_job_template_fail(discipline, tmp_wd, snapshot) -> None:
+    """Test that missing template values raises a proper exception."""
+    discipline.job_file_template = Template("$missing")
+    with assert_exception(KeyError, snapshot):
+        discipline._generate_job_file_from_template(tmp_wd, None, None, None, None, "")
+
+
+@pytest.mark.skip_under_windows
+def test_run_fail(discipline: JobSchedulerDiscipline, tmp_wd, snapshot) -> None:
+    """Test the run failure is correctly handled."""
+    discipline._scheduler_run_command = "IDONTEXIST"
+    with assert_exception(FileNotFoundError, snapshot):
+        discipline._run_command(tmp_wd, tmp_wd / "output.pckl")
+
+
+def test_handle_outputs_errors(
+    discipline: JobSchedulerDiscipline,
+    tmp_wd,
+    snapshot,
+) -> None:
+    """Test that errors in outputs are correctly handled."""
+    with assert_exception(FileNotFoundError, snapshot):
+        discipline._handle_outputs(tmp_wd, Path("IDONTEXIST"))
+
+    exception = (ValueError("An error."), "stack trace.")
+    outputs_path = tmp_wd / "outputs.pickl"
+    Path(outputs_path).write_bytes(pickle.dumps(exception))
+
+    with assert_exception(ValueError, snapshot):
+        discipline._handle_outputs(tmp_wd, outputs_path)
+
+
+def add_namespace_sobieski_mission(discipline):
+    """Add a namespace to the discipline grammars."""
+    discipline.input_grammar.add_namespace("y_14", "ns")
+    discipline.output_grammar.add_namespace("y_4", "ns")
+
+
+def test_execution(discipline_mocked_js) -> None:
+    """Test the execution of the wrapped discipline.
+
+    Test with and without the use of namespaces.
+    """
+    orig_disc = discipline_mocked_js._discipline
+    ref_data = orig_disc.io.input_grammar.defaults
+    ref_data["x_shared"] += 1.0
+
+    add_namespace_sobieski_mission(discipline_mocked_js)
+
+    out = discipline_mocked_js.execute(ref_data)
+
+    assert "ns:y_4" in out
+
+    mission_local = create_discipline("SobieskiMission")
+    add_namespace_sobieski_mission(mission_local)
+    out_ref = mission_local.execute(ref_data)
+    assert compare_dict_of_arrays(out, out_ref)
+
+
+@pytest.mark.parametrize("compute_all_jacobians", [False, True])
+@pytest.mark.parametrize("execute", [False, True])
+def test_linearize(discipline_mocked_js, compute_all_jacobians, execute) -> None:
+    """Test the linearization of the wrapped discipline."""
+    orig_disc = discipline_mocked_js._discipline
+    ref_data = orig_disc.io.input_grammar.defaults
+    ref_data["x_shared"] += 1.0
+    if not compute_all_jacobians:
+        discipline_mocked_js.add_differentiated_inputs(["x_shared"])
+        discipline_mocked_js.add_differentiated_outputs(["y_4"])
+    out = discipline_mocked_js.linearize(
+        ref_data, compute_all_jacobians=compute_all_jacobians, execute=execute
+    )
+    assert "y_4" in out
+    mission_local = create_discipline("SobieskiMission")
+    if not compute_all_jacobians:
+        mission_local.add_differentiated_inputs(["x_shared"])
+        mission_local.add_differentiated_outputs(["y_4"])
+    out_ref = mission_local.linearize(
+        ref_data, compute_all_jacobians=compute_all_jacobians, execute=execute
+    )
+    assert compare_dict_of_arrays(out, out_ref)
+    assert compare_dict_of_arrays(
+        discipline_mocked_js.io.get_merged_data(as_dict=False),
+        mission_local.io.get_merged_data(as_dict=False),
+    )
+
+
+@pytest.fixture
+def discipline_diff_mocked_js(tmp_wd) -> JobSchedulerDiscipline:
+    """Creates a JobSchedulerDiscipline based on JobSchedulerDiscipline
+    using the mock template.
+
+    Returns:
+        The wrapped discipline
+    """
+    return JobSchedulerDiscipline(
+        VolumeFraction(),
+        job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
+        workdir_path=tmp_wd,
+        job_out_filename="run_disc.py",
+        scheduler_run_command="python",
+    )
+
+
+def test_linearize_at_exec(discipline_diff_mocked_js) -> None:
+    """Test the linearization of the wrapped discipline during execute."""
+    orig_disc = discipline_diff_mocked_js._discipline
+    ref_data = orig_disc.io.input_grammar.defaults
+    discipline_diff_mocked_js.add_differentiated_inputs(["rho"])
+    discipline_diff_mocked_js.add_differentiated_outputs(["volume fraction"])
+    discipline_diff_mocked_js.execute(ref_data)
+    out = discipline_diff_mocked_js.jac
+    assert "volume fraction" in out
+    disc_local = VolumeFraction()
+    disc_local.add_differentiated_inputs(["rho"])
+    disc_local.add_differentiated_outputs(["volume fraction"])
+    disc_local.execute(ref_data)
+    out_ref = disc_local.jac
+    assert compare_dict_of_arrays(out, out_ref)
+    assert compare_dict_of_arrays(
+        discipline_diff_mocked_js.io.get_merged_data(as_dict=False),
+        disc_local.io.get_merged_data(as_dict=False),
+    )
+
+
+def test_api_fail(tmp_wd, snapshot) -> None:
+    """Test the api method that wraps the JS error messages."""
+    with assert_exception(FileNotFoundError, snapshot):
+        wrap_discipline_in_job_scheduler(
+            create_discipline("SobieskiMission"),
+            "SLURM",
+            job_template_path="IDONTEXIST",
+            workdir_path=tmp_wd,
+            job_out_filename="run_disc.py",
+            scheduler_run_command="python",
+        )
+
+
+def test_run_or_compute_jacobian(discipline_diff_mocked_js):
+    """Verify the use_template= False option."""
+    discipline_diff_mocked_js._use_template = False
+    with pytest.raises(
+        FileNotFoundError,
+        match="The serialized outputs file of the discipline does not exist",
+    ):
+        discipline_diff_mocked_js.execute()
+
+
+@pytest.fixture
+def cfd_mocked_js(tmp_wd) -> JobSchedulerDiscipline:
+    """Creates a LinearDiscipline that linearizes at _run
+    based on JobSchedulerDiscipline using the mock template.
+
+    Returns:
+        The wrapped discipline
+    """
+    cfd = LinearDiscipline(
+        "CFD", input_names=["xa", "bc"], output_names=["cd"], compute_jac_at_run=True
+    )
+    return JobSchedulerDiscipline(
+        cfd,
+        job_template_path=Path(__file__).parent / "mock_job_scheduler.py",
+        workdir_path=tmp_wd,
+        job_out_filename="run_disc.py",
+        scheduler_run_command="python",
+    )
+
+
+def test_jac_avec_compute_jacobian(cfd_mocked_js):
+    """Verify the jacobian computation at run within a chain."""
+    disc1 = LinearDiscipline(
+        "BC", input_names=["z"], output_names=["bc"], compute_jac_at_run=True
+    )
+
+    chain = DisciplineChain([disc1, cfd_mocked_js])
+    chain.add_differentiated_inputs(["xa"])
+    chain.add_differentiated_outputs(["cd"])
+    chain.execute()
+    chain.linearize()
+    assert "xa" in chain.jac["cd"]
+
+
+@pytest.mark.parametrize("discipline", ["discipline_mocked_js", "cfd_mocked_js"])
+def test_namespaces_jac(request, discipline):
+    """Verify the jacobian computation with namespaces."""
+    discipline = request.getfixturevalue(discipline)
+    discipline.name = "wrapped" + discipline.name
+    inputs = list(discipline.input_grammar.names)
+    inp = inputs[0]
+    out = next(iter(discipline.output_grammar.names))
+    discipline.add_namespace_to_input(inp, "ns_in")
+    discipline.add_namespace_to_output(out, "ns_out")
+
+    discipline.add_differentiated_outputs(["ns_out:" + out])
+    discipline.add_differentiated_inputs(["ns_in:" + inp, inputs[1]])
+
+    discipline.execute()
+    discipline.linearize()
+    assert "ns_in:" + inp in discipline.jac["ns_out:" + out]
+
+
+def test_differentied_io(tmp_wd):
+    """Test the differentiated inputs/outputs."""
+    discipline = AnalyticDiscipline({"z": "2*x + y"})
+    discipline.add_differentiated_inputs(["x"])
+    discipline.add_differentiated_outputs(["z"])
+
+    wrapper = JobSchedulerDiscipline(
+        discipline=discipline,
+        workdir_path=tmp_wd,
+        job_template_path=Path(job_scheduler.__file__).parent / "templates" / "SLURM",
+    )
+    assert wrapper._differentiated_input_names == ["x"]
+    assert wrapper._differentiated_output_names == ["z"]

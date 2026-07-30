@@ -32,23 +32,23 @@ from __future__ import annotations
 from logging import WARNING
 
 from gemseo import create_discipline
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings.formulations import BiLevel_Settings
-from gemseo.settings.linear_solvers import LGMRES_Settings
-from gemseo.settings.mda import MDAGaussSeidel_Settings
-from gemseo.settings.opt import NLOPT_COBYLA_Settings
-from gemseo.settings.opt import SLSQP_Settings
-from gemseo.settings.post import OptHistoryView_Settings
+from gemseo.formulation import BiLevel_Settings
+from gemseo.linear import LGMRES_Settings
+from gemseo.mda import MDAGaussSeidel_Settings
+from gemseo.optimization import NLOPT_COBYLA_Settings
+from gemseo.optimization import SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
+from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.scenario import MDOScenario
 
 # %%
 # ## Step 1 - Instantiate the  disciplines and the design space
 #
 # First, you instantiate the four disciplines of the use case:
-# [SobieskiPropulsion][gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion],
-# [SobieskiAerodynamics][gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics],
-# [SobieskiMission][gemseo.problems.mdo.sobieski.disciplines.SobieskiMission]
-# and [SobieskiStructure][gemseo.problems.mdo.sobieski.disciplines.SobieskiStructure].
+# [SobieskiPropulsion][gemseo.problem.mdo.sobieski.discipline.SobieskiPropulsion],
+# [SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics],
+# [SobieskiMission][gemseo.problem.mdo.sobieski.discipline.SobieskiMission]
+# and [SobieskiStructure][gemseo.problem.mdo.sobieski.discipline.SobieskiStructure].
 propulsion, aerodynamics, mission, structure = create_discipline([
     "SobieskiPropulsion",
     "SobieskiAerodynamics",
@@ -119,14 +119,14 @@ sc_str.set_algorithm(slsqp_settings)
 # The `disciplines` argument of the
 # [create_scenario()][gemseo.create_scenario] function gathers both
 # [disciplines][gemseo.core.discipline.discipline.Discipline] and
-# [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
+# [MDOScenario][gemseo.scenario.mdo.MDOScenario].
 # The [BiLevel formulation][concept-the-bi-level-formulation] will automatically transform the scenarios into disciplines.
 #
 # !!! note
-#     An [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+#     An [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 #     can be transformed into a
 #     [Discipline][gemseo.core.discipline.discipline.Discipline] thanks to the
-#     [ScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter].
+#     [ScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter].
 
 system_scenario = MDOScenario(
     (sc_prop, sc_aero, sc_str, mission),
@@ -203,7 +203,7 @@ system_scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 # Different optimization sub-scenarios were wrapped into disciplines
 # through a scenario adapter.
 # Theses sub-scenarios can be retrieved from
-# [system_scenario.formulation.scenario_adapters][gemseo.formulations.bilevel.BiLevel.scenario_adapters] property.
+# [system_scenario.formulation.scenario_adapters][gemseo.formulation.bilevel.BiLevel.scenario_adapters] property.
 # Then the results of sub-scenarios can be obtained and any post-processings can be applied.
 for sub_scenario in system_scenario.formulation.scenario_adapters:
     print(sub_scenario)
@@ -223,10 +223,10 @@ len(structure_databases)
 #     `system_scenario.optimization_result.optimum_index` index.
 #
 # More structured results can be retrieved from the
-# [get_result()][gemseo.scenarios.mdo.MDOScenario.get_result] method,
+# [get_result()][gemseo.scenario.mdo.MDOScenario.get_result] method,
 # which gives an easier access to the system and sub-level results.
 # In the BiLevel case, this method will return a
-# [BiLevelScenarioResult][gemseo.scenarios.scenario_results.bilevel_scenario_result.BiLevelScenarioResult].
+# [BiLevelScenarioResult][gemseo.scenario.scenario_result.bilevel_scenario_result.BiLevelScenarioResult].
 #
 # !!! note
 #     The value contained in `system_scenario.optimization_result` can be retrieved by this mean as well.

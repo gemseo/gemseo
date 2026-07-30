@@ -34,33 +34,33 @@ import pytest
 from numpy import arange
 from numpy import array
 
-from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.surrogate import SurrogateDiscipline
-from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
-from gemseo.machine_learning.regression.models.linreg_settings import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline.surrogate import SurrogateDiscipline
+from gemseo.doe.scipy.settings.lhs import LHS_Settings
+from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+from gemseo.machine_learning.regression.model.linreg_settings import (
     LinearRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.pce_settings import PCERegressor_Settings
-from gemseo.machine_learning.regression.models.polyreg_settings import (
+from gemseo.machine_learning.regression.model.pce_settings import PCERegressor_Settings
+from gemseo.machine_learning.regression.model.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.rbf_settings import RBF
-from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
-from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
-from gemseo.machine_learning.transformers.scaler.scaler import Scaler
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.machine_learning.regression.model.rbf_settings import RBF
+from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_Settings
+from gemseo.machine_learning.transformer.dimension_reduction.pca import PCA
+from gemseo.machine_learning.transformer.scaler.scaler import Scaler
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.util.testing.helper import assert_exception
+from gemseo.util.testing.helper import concretize_classes
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
-from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
+    from gemseo.dataset.dataset import Dataset
+from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
 LEARNING_SIZE = 10
 

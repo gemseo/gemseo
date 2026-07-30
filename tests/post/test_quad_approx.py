@@ -20,11 +20,11 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.post import QuadApprox_Settings
+from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.post.quad_approx import QuadApprox
-from gemseo.problems.optimization.power_2 import Power2
+from gemseo.post.quad_approx_settings import QuadApprox_Settings
+from gemseo.problem.optimization.power_2 import Power2
 
 
 @pytest.mark.parametrize(

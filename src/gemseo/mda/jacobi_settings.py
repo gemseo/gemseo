@@ -19,8 +19,8 @@ from __future__ import annotations
 from typing import Any
 from typing import ClassVar
 
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
+from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
+from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
 
 
 class MDAJacobi_Settings(BaseMDAParallelSolverSettings):  # noqa: N801

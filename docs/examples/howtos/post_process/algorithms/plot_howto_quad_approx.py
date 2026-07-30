@@ -38,7 +38,7 @@ Use [QuadApprox][gemseo.post.quad_approx.QuadApprox], which produces two plots:
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import QuadApprox_Settings
+from gemseo.post import QuadApprox_Settings
 
 # %%
 # ### 1. Prerequisites

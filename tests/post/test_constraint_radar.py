@@ -24,10 +24,10 @@ import matplotlib
 import pytest
 from packaging import version
 
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post import ConstraintRadar_Settings
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.constraint_radar import ConstraintRadar
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.post.constraint_radar_settings import ConstraintRadar_Settings
+from gemseo.util.testing.helper import assert_exception
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 

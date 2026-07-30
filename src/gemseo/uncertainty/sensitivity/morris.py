@@ -34,14 +34,14 @@ from numpy import hstack
 from numpy import where
 from strenum import StrEnum
 
-from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
-from gemseo.algos.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
-from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
-from gemseo.utils.string_tools import filter_names
-from gemseo.utils.string_tools import get_name_and_component
-from gemseo.utils.string_tools import repr_variable
+from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
+from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
+from gemseo.util.data_conversion import split_array_to_dict_of_arrays
+from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
+from gemseo.util.string import filter_names
+from gemseo.util.string import get_name_and_component
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -49,16 +49,16 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-    from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import Discipline
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.formulations.base_settings import BaseFormulationSettings
-    from gemseo.scenarios.backup_settings import BackupSettings
-    from gemseo.typing import RealArray
-    from gemseo.typing import StrPath
-    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
-    from gemseo.utils.string_tools import VariableType
+    from gemseo.dataset.io_dataset import IODataset
+    from gemseo.doe.core.base_doe_settings import BaseDOESettings
+    from gemseo.formulation.core.base_settings import BaseFormulationSettings
+    from gemseo.scenario.backup_settings import BackupSettings
+    from gemseo.space.parameter import ParameterSpace
+    from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
+    from gemseo.util.string import VariableType
+    from gemseo.util.typing import RealArray
+    from gemseo.util.typing import StrPath
 
 
 class MorrisAnalysisMethod(StrEnum):

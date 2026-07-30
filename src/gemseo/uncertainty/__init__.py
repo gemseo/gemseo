@@ -18,22 +18,22 @@ The package [gemseo.uncertainty][gemseo.uncertainty] provides several functional
 to quantify and manage uncertainties.
 Most of them can be used from the high-level functions provided by this module.
 
-The sub-package  [gemseo.uncertainty.distributions][gemseo.uncertainty.distributions]
+The sub-package  [gemseo.uncertainty.distribution][gemseo.uncertainty.distribution]
 offers an abstract level
 for probability distributions, as well as interfaces to the OpenTURNS and SciPy ones.
 It is also possible to fit a probability distribution from data
 or select the most likely one from a list of candidates.
 These distributions can be used to define random variables
-in a [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
+in a [ParameterSpace][gemseo.space.parameter.ParameterSpace]
 before propagating these uncertainties through
 a system of [Discipline][gemseo.core.discipline.discipline.Discipline],
 by means of an
-[EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario].
+[EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario].
 
 See Also:
-    [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
-    [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
-    [OTDistributionFitter][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter]
+    [OTDistribution][gemseo.uncertainty.distribution.openturns.distribution.OTDistribution]
+    [SPDistribution][gemseo.uncertainty.distribution.scipy.distribution.SPDistribution]
+    [OTDistributionFitter][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter]
 
 The sub-package [gemseo.uncertainty.sensitivity][gemseo.uncertainty.sensitivity]
 offers an abstract level
@@ -49,17 +49,17 @@ See Also:
     [HSICAnalysis][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis]
     [FORMAnalysis][gemseo.uncertainty.sensitivity.form.FORMAnalysis]
 
-The sub-package [gemseo.uncertainty.statistics][gemseo.uncertainty.statistics]
+The sub-package [gemseo.uncertainty.statistic][gemseo.uncertainty.statistic]
 offers an abstract level
 for statistics, as well as parametric and empirical versions.
-Empirical statistics are estimated from a [Dataset][gemseo.datasets.dataset.Dataset]
+Empirical statistics are estimated from a [Dataset][gemseo.dataset.dataset.Dataset]
 while parametric statistics are analytical properties of a
-[BaseDistribution][gemseo.uncertainty.distributions.base.BaseDistribution]
-fitted from a [Dataset][gemseo.datasets.dataset.Dataset].
+[BaseDistribution][gemseo.uncertainty.distribution.core.base.BaseDistribution]
+fitted from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 See Also:
-    [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
-    [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics]
+    [EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics]
+    [OTParametricStatistics][gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics]
 """
 
 from __future__ import annotations
@@ -67,18 +67,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.utils.pickle import from_pickle as from_pickle
+from gemseo.util.pickle import from_pickle as from_pickle
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.datasets.dataset import Dataset
-    from gemseo.datasets.io_dataset import IODataset as IODataset
-    from gemseo.typing import StrPath
-    from gemseo.uncertainty.distributions.base import BaseDistribution
-    from gemseo.uncertainty.sensitivity.base import BaseGenericSensitivityAnalysis
-    from gemseo.uncertainty.statistics.base import BaseStatistics
+    from gemseo.dataset.dataset import Dataset
+    from gemseo.dataset.io_dataset import IODataset as IODataset
+    from gemseo.uncertainty.distribution.core.base import BaseDistribution
+    from gemseo.uncertainty.sensitivity.core.base import BaseGenericSensitivityAnalysis
+    from gemseo.uncertainty.sensitivity.core.base import (
+        BaseSensitivityAnalysis as BaseSensitivityAnalysis,
+    )
+    from gemseo.uncertainty.statistic.core.base import BaseStatistics
+    from gemseo.util.typing import StrPath
 
 
 def get_available_distributions(base_class_name: str = "BaseDistribution") -> list[str]:
@@ -91,10 +94,9 @@ def get_available_distributions(base_class_name: str = "BaseDistribution") -> li
     Returns:
         The names of the available probability distributions.
     """
-    from gemseo.uncertainty.distributions.factory import DistributionFactory
+    from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY
 
-    factory = DistributionFactory()
-    class_names = factory.class_names
+    class_names = DISTRIBUTION_FACTORY.class_names
     if base_class_name == "BaseDistribution":
         return class_names
 
@@ -102,7 +104,7 @@ def get_available_distributions(base_class_name: str = "BaseDistribution") -> li
         class_name
         for class_name in class_names
         if base_class_name
-        in [cls.__name__ for cls in factory.get_class(class_name).mro()]
+        in [cls.__name__ for cls in DISTRIBUTION_FACTORY.get_class(class_name).mro()]
     ]
 
 
@@ -118,17 +120,16 @@ def create_distribution(
             e.g. 'OTUniformDistribution' or 'SPDistribution'.
         **options: The distribution options.
     """
-    from gemseo.uncertainty.distributions.factory import DistributionFactory
+    from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY
 
-    factory = DistributionFactory()
-    return factory.create(distribution_name, **options)
+    return DISTRIBUTION_FACTORY.create(distribution_name, **options)
 
 
 def get_available_sensitivity_analyses() -> list[str]:
     """Get the available sensitivity analyses."""
-    from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
+    from gemseo.uncertainty.sensitivity.factory import SENSITIVITY_ANALYSIS_FACTORY
 
-    return SensitivityAnalysisFactory().class_names
+    return SENSITIVITY_ANALYSIS_FACTORY.class_names
 
 
 def create_statistics(
@@ -158,9 +159,9 @@ def create_statistics(
             measuring how a distribution fits the data.
             If empty,
             use
-            [OTDistributionFitter.default_fitting_criterion][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.default_fitting_criterion]
+            [OTDistributionFitter.default_fitting_criterion][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter.default_fitting_criterion]
             or
-            [SPDistributionFitter.default_fitting_criterion][gemseo.uncertainty.distributions.scipy.distribution_fitter.SPDistributionFitter.default_fitting_criterion]
+            [SPDistributionFitter.default_fitting_criterion][gemseo.uncertainty.distribution.scipy.distribution_fitter.SPDistributionFitter.default_fitting_criterion]
             according to the type of `tested_distributions`.
         selection_criterion: The name of a selection criterion
             to select a distribution from `tested_distributions`.
@@ -180,9 +181,9 @@ def create_statistics(
     """
     import openturns as ot
 
-    from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
-    from gemseo.uncertainty.statistics.ot_parametric import OTParametricStatistics
-    from gemseo.uncertainty.statistics.sp_parametric import SPParametricStatistics
+    from gemseo.uncertainty.statistic.empirical import EmpiricalStatistics
+    from gemseo.uncertainty.statistic.ot_parametric import OTParametricStatistics
+    from gemseo.uncertainty.statistic.sp_parametric import SPParametricStatistics
 
     if tested_distributions:
         cls = (
@@ -213,18 +214,18 @@ def create_sensitivity_analysis(
     Args:
         analysis: The name of a sensitivity analysis class.
         samples: The samples for the estimation of the sensitivity indices,
-            either as an [IODataset][gemseo.datasets.io_dataset.IODataset]
+            either as an [IODataset][gemseo.dataset.io_dataset.IODataset]
             or as a pickle file path generated
-            from the [to_pickle()][gemseo.utils.pickle.to_pickle] function.
+            from the [to_pickle()][gemseo.util.pickle.to_pickle] function.
             If empty, use
-            [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples].
+            [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples].
 
     Returns:
         The sensitivity analysis.
     """
-    from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
+    from gemseo.uncertainty.sensitivity.factory import SENSITIVITY_ANALYSIS_FACTORY
 
-    factory = SensitivityAnalysisFactory()
+    factory = SENSITIVITY_ANALYSIS_FACTORY
 
     name = analysis
     if "Analysis" not in name:

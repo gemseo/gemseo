@@ -25,7 +25,7 @@ from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 
-from gemseo.utils.pydantic import BaseSettings
+from gemseo.util.pydantic import BaseSettings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

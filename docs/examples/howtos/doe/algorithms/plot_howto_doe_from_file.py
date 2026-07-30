@@ -22,7 +22,7 @@ You need to evaluate a scenario at input sample points defined in a file
 
 ## Solution
 
-Use [CustomDOE][gemseo.algos.doe.custom_doe.custom_doe.CustomDOE]
+Use [CustomDOE][gemseo.doe.custom_doe.custom_doe.CustomDOE]
 and pass the path to the file via the `doe_file` setting.
 
 ## Step-by-step guide
@@ -32,10 +32,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.scenarios.evaluation import EvaluationScenario
-from gemseo.settings import CustomDOE_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.doe import CustomDOE_Settings
+from gemseo.scenario import EvaluationScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Build the discipline and design space
@@ -72,7 +72,7 @@ scenario.execute(CustomDOE_Settings(doe_file="doe.txt"))
 #
 # ### 3. Inspect the results
 #
-# Export the database to a [Dataset][gemseo.datasets.dataset.Dataset]
+# Export the database to a [Dataset][gemseo.dataset.dataset.Dataset]
 # and verify that the output equals the product of $a$ and $b$:
 dataset = scenario.to_dataset(name="custom_sampling")
 dataset

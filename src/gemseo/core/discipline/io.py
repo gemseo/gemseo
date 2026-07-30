@@ -23,18 +23,18 @@ from typing import Literal
 from typing import overload
 
 from gemseo.core.discipline.discipline_data import DisciplineData
-from gemseo.core.grammars.factory import GRAMMAR_FACTORY
-from gemseo.core.grammars.factory import GrammarType
-from gemseo.core.namespaces import namespaces_separator
+from gemseo.core.discipline.namespace import namespaces_separator
+from gemseo.core.grammar.factory import GRAMMAR_FACTORY
+from gemseo.core.grammar.factory import GrammarType
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.core.discipline.data_processor import DataProcessor
-    from gemseo.core.grammars.base import BaseGrammar
-    from gemseo.typing import MutableStrKeyMapping
-    from gemseo.typing import StrKeyMapping
-    from gemseo.typing import StrPath
+    from gemseo.core.grammar.base import BaseGrammar
+    from gemseo.util.typing import MutableStrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
 
 _DATA_DEPRECATION_MSG = (
     "`IO.data` is deprecated; use `IO.input_data` / `IO.output_data` instead."

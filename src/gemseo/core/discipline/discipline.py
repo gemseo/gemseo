@@ -26,13 +26,13 @@ from scipy.sparse import csr_array
 from strenum import StrEnum
 
 from gemseo.core.discipline.base_discipline import BaseDiscipline
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from gemseo.utils.derivatives.approximation_modes import ApproximationMode
-from gemseo.utils.derivatives.approximation_modes import HybridApproximationMode
-from gemseo.utils.derivatives.derivatives_approx import DisciplineJacApprox
-from gemseo.utils.derivatives.error_estimators import EPSILON
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.derivative.approximation_mode import ApproximationMode
+from gemseo.util.derivative.approximation_mode import HybridApproximationMode
+from gemseo.util.derivative.derivatives_approx import DisciplineJacApprox
+from gemseo.util.derivative.error_estimator import EPSILON
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -40,10 +40,10 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.caches.cache_entry import CacheEntry
+    from gemseo.core.cache.cache_entry import CacheEntry
     from gemseo.core.discipline.discipline_data import DisciplineData
-    from gemseo.typing import JacobianData
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import JacobianData
+    from gemseo.util.typing import StrKeyMapping
 
 
 def _default_dict_factory() -> dict:
@@ -329,9 +329,9 @@ class Discipline(BaseDiscipline):
         Args:
             jac_approx_type: The approximation method,
                 either an
-                [ApproximationMode][gemseo.utils.derivatives.approximation_modes.ApproximationMode]
+                [ApproximationMode][gemseo.util.derivative.approximation_mode.ApproximationMode]
                 or a
-                [HybridApproximationMode][gemseo.utils.derivatives.approximation_modes.HybridApproximationMode].
+                [HybridApproximationMode][gemseo.util.derivative.approximation_mode.HybridApproximationMode].
             jax_approx_step: The differentiation step.
             jac_approx_n_processes: The maximum simultaneous number of threads,
                 if `jac_approx_use_threading` is True, or processes otherwise,
@@ -624,8 +624,8 @@ class Discipline(BaseDiscipline):
 
         Note:
             Filtering of non-numeric inputs is only supported when the discipline uses
-            a [JSONGrammar][gemseo.core.grammars.json.JSONGrammar] or a
-            [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar].
+            a [JSONGrammar][gemseo.core.grammar.json.JSONGrammar] or a
+            [PydanticGrammar][gemseo.core.grammar.pydantic.PydanticGrammar].
 
         Args:
             input_names: The input variables
@@ -664,8 +664,8 @@ class Discipline(BaseDiscipline):
 
         Note:
             Filtering of non-numeric outputs is only supported when the discipline uses
-            a [JSONGrammar][gemseo.core.grammars.json.JSONGrammar] or a
-            [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar].
+            a [JSONGrammar][gemseo.core.grammar.json.JSONGrammar] or a
+            [PydanticGrammar][gemseo.core.grammar.pydantic.PydanticGrammar].
 
         Args:
             output_names: The outputs to be differentiated.

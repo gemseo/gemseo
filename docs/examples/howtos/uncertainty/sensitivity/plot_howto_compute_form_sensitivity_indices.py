@@ -41,15 +41,15 @@ into sensitivity indices with respect to the events:
 Three types of importance factors are available
 (`classical`, `elliptical` and `physical`),
 the `classical` ones being the default
-[main_method][gemseo.uncertainty.sensitivity.base.BaseGenericSensitivityAnalysis.main_method].
+[main_method][gemseo.uncertainty.sensitivity.core.base.BaseGenericSensitivityAnalysis.main_method].
 
 ## Step-by-step guide
 """
 
 from __future__ import annotations
 
-from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
+from gemseo.problem.uncertainty.wing_weight.discipline import WingWeightDiscipline
+from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
     WingWeightUncertainSpace,
 )
 from gemseo.uncertainty.sensitivity.form import FORMAnalysis

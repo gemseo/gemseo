@@ -37,9 +37,9 @@ from numpy import interp
 from numpy import max as np_max
 from numpy import sign
 
-from gemseo.post.base_post import BasePost
+from gemseo.post._engine.colormap import RG_SEISMIC
 from gemseo.post.constraints_history_settings import ConstraintsHistory_Settings
-from gemseo.post.core.colormaps import RG_SEISMIC
+from gemseo.post.core.base_post import BasePost
 
 if TYPE_CHECKING:
     from matplotlib.colors import ListedColormap

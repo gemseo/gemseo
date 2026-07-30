@@ -36,8 +36,8 @@ from numpy import linspace
 from numpy import pi
 from numpy import sin
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.lines import Lines
+from gemseo.dataset import Dataset
+from gemseo.post.dataset import Lines
 from gemseo.post.dataset.lines_settings import Lines_Settings
 
 # %%

@@ -117,12 +117,12 @@ When the processing related to a directory is finished, the current working dire
 It is possible to set a cleanup policy to automatically erase certain directories created during the execution of the
 scenario. It can be one of the following:
 
-- [CleanUpPolicy.KEEP_ALL][gemseo.utils._directory_manager.settings.CleanUpPolicy.KEEP_ALL]: keep all directories;
-- [CleanUpPolicy.KEEP_LAST_ONLY][gemseo.utils._directory_manager.settings.CleanUpPolicy.KEEP_LAST_ONLY]: keep only the
+- [CleanUpPolicy.KEEP_ALL][gemseo.util._directory_manager.settings.CleanUpPolicy.KEEP_ALL]: keep all directories;
+- [CleanUpPolicy.KEEP_LAST_ONLY][gemseo.util._directory_manager.settings.CleanUpPolicy.KEEP_LAST_ONLY]: keep only the
   directories from the last iteration;
-- [CleanUpPolicy.KEEP_SOLUTION_ONLY][gemseo.utils._directory_manager.settings.CleanUpPolicy.KEEP_SOLUTION_ONLY]: keep
+- [CleanUpPolicy.KEEP_SOLUTION_ONLY][gemseo.util._directory_manager.settings.CleanUpPolicy.KEEP_SOLUTION_ONLY]: keep
   only the solution directory;
-- [CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION][gemseo.utils._directory_manager.settings.CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION]:
+- [CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION][gemseo.util._directory_manager.settings.CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION]:
   keep the baseline and the solution directories
 
 By default, all directories are kept. The cleanup policy can be set via
@@ -133,8 +133,8 @@ By default, all directories are kept. The cleanup policy can be set via
 It is possible to set a cleanup policy to automatically erase certain directories created during the execution of MDAs.
 It can be one of the following:
 
-- [MDACleanUpPolicy.KEEP_ALL][gemseo.utils._directory_manager.settings.MDACleanUpPolicy.KEEP_ALL]: keep all directories;
-- [MDACleanUpPolicy.KEEP_LAST_ONLY][gemseo.utils._directory_manager.settings.MDACleanUpPolicy.KEEP_LAST_ONLY]: keep the
+- [MDACleanUpPolicy.KEEP_ALL][gemseo.util._directory_manager.settings.MDACleanUpPolicy.KEEP_ALL]: keep all directories;
+- [MDACleanUpPolicy.KEEP_LAST_ONLY][gemseo.util._directory_manager.settings.MDACleanUpPolicy.KEEP_LAST_ONLY]: keep the
   directories from the last iteration
 
 By default, all directories are kept. The MDA cleanup policy can be set via
@@ -144,11 +144,11 @@ By default, all directories are kept. The MDA cleanup policy can be set via
 
 The directory manager also allows users to set a scenario history backup for all scenario classes. This is not intended
 as a replacement of
-[EvaluationScenario.set_backup_settings][gemseo.scenarios.evaluation.EvaluationScenario.set_backup_settings],
+[EvaluationScenario.set_backup_settings][gemseo.scenario.evaluation.EvaluationScenario.set_backup_settings],
 it is simply a convenient way of setting a backup for all scenarios inside their own execution directory created by the
 manager.
 
-For example, [BiLevel][gemseo.formulations.bilevel.BiLevel] formulations include at least two scenarios,
+For example, [BiLevel][gemseo.formulation.bilevel.BiLevel] formulations include at least two scenarios,
 the system-level scenario and the disciplinary scenarios. If the
 `gemseo.configuration.directory_manager.save_history_backup`
 setting is set to ``True``, each disciplinary scenario execution will create an independent backup file. The

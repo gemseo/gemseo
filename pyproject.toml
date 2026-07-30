@@ -120,8 +120,8 @@ Source = "https://gitlab.com/gemseo/dev/gemseo"
 Issues = "https://gitlab.com/gemseo/dev/gemseo/-/issues"
 
 [project.scripts]
-gemseo-study = "gemseo.utils.study_analyses.study_analysis_cli:main"
-gemseo-deserialize-run = "gemseo.utils.deserialize_and_run:main"
+gemseo-study = "gemseo.util.study_analysis.study_analysis_cli:main"
+gemseo-deserialize-run = "gemseo.util.deserialize_and_run:main"
 
 [build-system]
 requires = [

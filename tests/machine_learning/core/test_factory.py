@@ -24,9 +24,9 @@ from __future__ import annotations
 import pytest
 from numpy import arange
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.core.models.factory import ML_MODEL_FACTORY
-from gemseo.machine_learning.regression.models.linreg import LinearRegressor
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.core.model.factory import ML_MODEL_FACTORY
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
 
 LEARNING_SIZE = 9
 

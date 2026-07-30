@@ -35,7 +35,7 @@ or non-standard data types into a GEMSEO-compliant workflow.
 ## Solution
 
 GEMSEO leverages a
-[BaseDataConverter][gemseo.core.data_converters.base.BaseDataConverter]
+[BaseDataConverter][gemseo.core.data_converter.base.BaseDataConverter]
 to manage the transformation of variable values into 1D NumPy arrays and vice versa.
 Beyond just flattening and reshaping data,
 this utility also provides the framework
@@ -56,14 +56,14 @@ from numpy import exp
 from numpy import ones
 
 from gemseo import set_data_converters
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
 from gemseo.core.discipline import Discipline
-from gemseo.formulations.mdf_settings import MDF_Settings
-from gemseo.scenarios.mdo import MDOScenario
+from gemseo.formulation import MDF_Settings
+from gemseo.optimization import NLOPT_COBYLA_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 # %%
@@ -220,10 +220,10 @@ set_data_converters({}, {}, {})
 # ## Summary
 #
 # The [set_data_converters][gemseo.set_data_converters] function can be used to set
-# [BaseDataConverter][gemseo.core.data_converters.base.BaseDataConverter]
+# [BaseDataConverter][gemseo.core.data_converter.base.BaseDataConverter]
 # so it enables seamless I/O exchange between disciplines
 # without altering their underlying grammar.
 #
-# A [BaseDataConverter][gemseo.core.data_converters.base.BaseDataConverter]
+# A [BaseDataConverter][gemseo.core.data_converter.base.BaseDataConverter]
 # acts as a transparent translation layer,
 # mapping complex values to 1D NumPy arrays and vice versa.

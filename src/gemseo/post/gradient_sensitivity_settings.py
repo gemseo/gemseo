@@ -22,9 +22,9 @@ from pydantic import Field
 from pydantic import NegativeInt
 from pydantic import PositiveInt
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
-from gemseo.typing import StrKeyMapping
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
+from gemseo.util.typing import StrKeyMapping
 
 
 class GradientSensitivity_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
@@ -48,9 +48,9 @@ class GradientSensitivity_Settings(UseStandardizedObjectiveMixin, BasePostSettin
         "Activating this option may add considerable computation time depending "
         "on the cost of the gradient evaluation. "
         "This option will not compute the gradients if the "
-        "[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] "
-        "instance was imported from an HDF5 "
+        "[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]"
+        " instance was imported from an HDF5 "
         "file. This option requires an "
-        "[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] "
-        "with a gradient-based algorithm.",
+        "[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]"
+        " with a gradient-based algorithm.",
     )

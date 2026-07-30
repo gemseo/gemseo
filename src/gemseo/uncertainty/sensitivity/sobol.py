@@ -39,11 +39,9 @@ from openturns import RankSobolSensitivityAlgorithm
 from openturns import Sample
 from pandas import Series
 
-from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
-from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
-    OT_SOBOL_INDICES_Settings,
-)
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
+from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
 from gemseo.post.dataset.heatmap import Heatmap
 from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
 from gemseo.uncertainty.sensitivity._cv_sobol_algorithm import CVSobolAlgorithm
@@ -52,11 +50,11 @@ from gemseo.uncertainty.sensitivity._sobol_indices_estimator import SobolAnalysi
 from gemseo.uncertainty.sensitivity._sobol_indices_estimator import (
     SobolIndicesEstimatorMixin,
 )
-from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.seeder import SEED
-from gemseo.utils.string_tools import get_name_and_component
-from gemseo.utils.string_tools import repr_variable
+from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
+from gemseo.util.data_conversion import split_array_to_dict_of_arrays
+from gemseo.util.seeder import SEED
+from gemseo.util.string import get_name_and_component
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -64,17 +62,17 @@ if TYPE_CHECKING:
 
     from openturns import SobolIndicesAlgorithmImplementation
 
-    from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-    from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import Discipline
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.formulations.base_settings import BaseFormulationSettings
-    from gemseo.scenarios.backup_settings import BackupSettings
-    from gemseo.typing import RealArray
-    from gemseo.typing import StrPath
-    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
-    from gemseo.uncertainty.sensitivity.base import SecondOrderIndicesType
-    from gemseo.utils.string_tools import VariableType
+    from gemseo.dataset.io_dataset import IODataset
+    from gemseo.doe.core.base_doe_settings import BaseDOESettings
+    from gemseo.formulation.core.base_settings import BaseFormulationSettings
+    from gemseo.scenario.backup_settings import BackupSettings
+    from gemseo.space.parameter import ParameterSpace
+    from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
+    from gemseo.uncertainty.sensitivity.core.base import SecondOrderIndicesType
+    from gemseo.util.string import VariableType
+    from gemseo.util.typing import RealArray
+    from gemseo.util.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 

@@ -18,7 +18,7 @@ r"""# Function chaos expansion.
 
 Given a training dataset
 whose input samples are generated from OpenTURNS probability distributions,
-the [FCERegressor][gemseo.machine_learning.regression.models.fce.FCERegressor] can use any linear model fitting algorithm,
+the [FCERegressor][gemseo.machine_learning.regression.model.fce.FCERegressor] can use any linear model fitting algorithm,
 including sparse techniques,
 to fit a functional chaos expansion (FCE) model of the form
 
@@ -29,7 +29,7 @@ and $\mathbb{E}[\Psi_i(X)\Psi_j(X)]=\delta_{ij}$
 with $\delta$ the Kronecker delta and $X$ a random vector.
 
 A particular version of FCE is the polynomial chaos expansion (PCE)
-for which the class [PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor] interfaces
+for which the class [PCERegressor][gemseo.machine_learning.regression.model.pce.PCERegressor] interfaces
 the OpenTURNS algorithm `openturns.FunctionalChaosAlgorithm`
 (see the [OpenTURNS documentation](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.FunctionalChaosAlgorithm.html?highlight=functionalchaosalgorithm#openturns.FunctionalChaosAlgorithm)).
 
@@ -38,7 +38,7 @@ in the hope of improving the quality of the surrogate model
 for the same evaluation budget.
 
 In this example,
-you will compare different types of [FCERegressor][gemseo.machine_learning.regression.models.fce.FCERegressor]
+you will compare different types of [FCERegressor][gemseo.machine_learning.regression.model.fce.FCERegressor]
 to approximate the Ishigami function
 
 $$f(X) = \sin(X_1) + 7\sin(X_2)^2 + 0.1X_3^4\sin(X_1)$$
@@ -52,9 +52,11 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo import sample_disciplines
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
-from gemseo.algos.doe.scipy.settings.mc import MC_Settings
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset import Dataset
+from gemseo.doe import MC_Settings
+from gemseo.doe import OT_OPT_LHS_Settings
+from gemseo.machine_learning import FCERegressor_Settings
+from gemseo.machine_learning import PCERegressor_Settings
 from gemseo.machine_learning.linear_model_fitting.elastic_net_cv_settings import (
     ElasticNetCV_Settings,
 )
@@ -77,18 +79,16 @@ from gemseo.machine_learning.linear_model_fitting.ridge_cv_settings import (
     RidgeCV_Settings,
 )
 from gemseo.machine_learning.linear_model_fitting.spgl1_settings import SPGL1_Settings
-from gemseo.machine_learning.regression.models.fce import FCERegressor
-from gemseo.machine_learning.regression.models.fce_settings import FCERegressor_Settings
-from gemseo.machine_learning.regression.models.fce_settings import (
+from gemseo.machine_learning.regression.model import FCERegressor
+from gemseo.machine_learning.regression.model import PCERegressor
+from gemseo.machine_learning.regression.model.fce_settings import (
     OrthonormalFunctionBasis,
 )
-from gemseo.machine_learning.regression.models.pce import PCERegressor
-from gemseo.machine_learning.regression.models.pce_settings import PCERegressor_Settings
-from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.post.dataset.bars import BarPlot
-from gemseo.post.dataset.bars_settings import BarPlot_Settings
-from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.machine_learning.regression.quality import R2Measure
+from gemseo.post.dataset import BarPlot
+from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
+from gemseo.problem.uncertainty.ishigami import IshigamiDiscipline
+from gemseo.problem.uncertainty.ishigami import IshigamiSpace
 
 # %%
 # First,
@@ -184,7 +184,7 @@ for linear_model_fitter_settings in [
     r2_validation_ge.append(r2.compute_test_measure(validation_dataset).round(2)[0])
 
 # %%
-# You also create a [PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor]
+# You also create a [PCERegressor][gemseo.machine_learning.regression.model.pce.PCERegressor]
 # using the LARS algorithm implemented in OpenTURNS:
 pce = PCERegressor(training_dataset, PCERegressor_Settings(degree=7, use_lars=True))
 pce.learn()

@@ -25,12 +25,12 @@ import pytest
 from numpy import arange
 from numpy import array
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.classification.models.knn import KNNClassifier
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.classification.model.knn import KNNClassifier
 from gemseo.machine_learning.classification.quality.f1_measure import F1Measure
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.util.testing.helper import concretize_classes
 
-from ..core.test_ml_model import DummyMLModel
+from ..core.test_base_ml_model import DummyMLModel
 
 
 @pytest.fixture

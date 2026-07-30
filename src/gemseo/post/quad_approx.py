@@ -34,15 +34,15 @@ from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import SymmetricalLogLocator
 from numpy import arange
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import PARULA
-from gemseo.post.core.hessians import SR1Approx
+from gemseo.post._engine.colormap import PARULA
+from gemseo.post._engine.hessian import SR1Approx
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.quad_approx_settings import QuadApprox_Settings
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
-    from gemseo.typing import NumberArray
+    from gemseo.util.typing import NumberArray
 
 
 class QuadApprox(BasePost[QuadApprox_Settings]):

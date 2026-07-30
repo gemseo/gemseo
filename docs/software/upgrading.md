@@ -1384,29 +1384,29 @@ The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to
 ### API changes that impact user scripts code
 
 - In post-processing, `fig_size` is the unique name to identify the size of a figure and the occurrences of `figsize`, `figsize_x` and `figsize_y` have been replaced by `fig_size`, `fig_size_x` and `fig_size_y`.
-- The argument `parallel_exec` in [IDF][gemseo.formulations.idf.IDF] has been renamed to `n_processes`.
-- The argument `quantile` of [VariableInfluence][gemseo.post.variable_influence.VariableInfluence] has been renamed to `level`.
-- [BasicHistory][gemseo.post.basic_history.BasicHistory]: `data_list` has been renamed to `variable_names`.
-- `MDAChain.sub_mda_list` has been renamed to [MDAChain][gemseo.mda.chain.MDAChain}.
+- The argument `parallel_exec` in `IDF` has been renamed to `n_processes`.
+- The argument `quantile` of `VariableInfluence` has been renamed to `level`.
+- `BasicHistory`: `data_list` has been renamed to `variable_names`.
+- `MDAChain.sub_mda_list` has been renamed to `MDAChain`.
 - `gemseo.post.radar_chart.RadarChart`: `constraints_list` has been renamed to `constraint_names`.
-- [ScatterPlotMatrix][gemseo.post.scatter_plot_matrix.ScatterPlotMatrix]: `variables_list` has been renamed to `variable_names`.
+- `ScatterPlotMatrix`: `variables_list` has been renamed to `variable_names`.
 - All MDA algos now count their iterations starting from `0`.
 - The `MDA.residual_history` is now a list of normed residuals.
 - The argument `figsize` in `MDA.plot_residual_history` was renamed to `fig_size` to be consistent with `OptPostProcessor` algos.
-- [ConstraintsHistory][gemseo.post.constraints_history.ConstraintsHistory]: `constraints_list` has been renamed to `constraint_names`.
-- The [MDAChain][gemseo.mda.chain.MDAChain] now takes `inner_mda_name` as argument instead of `sub_mda_class`.
-- The [MDF][gemseo.formulations.mdf.MDF] formulation now takes `main_mda_name` as argument instead of `main_mda_class` and `inner_mda_name` instead of - `sub_mda_class`.
-- The [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation now takes `main_mda_name` as argument instead of `mda_name`. It is now possible to explicitly define an `inner_mda_name` as well.
-- In [DesignSpace][gemseo.algos.design_space.DesignSpace]:
-    - `get_current_x` has been renamed to [get_current_value][gemseo.algos.design_space.DesignSpace.get_current_value].
-    - `has_current_x` has been renamed to [has_current_value][gemseo.algos.design_space.DesignSpace.has_current_value].
-    - `set_current_x` has been renamed to [set_current_value][gemseo.algos.design_space.DesignSpace.set_current_value].
+- `ConstraintsHistory`: `constraints_list` has been renamed to `constraint_names`.
+- The `MDAChain` now takes `inner_mda_name` as argument instead of `sub_mda_class`.
+- The `MDF` formulation now takes `main_mda_name` as argument instead of `main_mda_class` and `inner_mda_name` instead of - `sub_mda_class`.
+- The `BiLevel` formulation now takes `main_mda_name` as argument instead of `mda_name`. It is now possible to explicitly define an `inner_mda_name` as well.
+- In `DesignSpace`:
+    - `get_current_x` has been renamed to `get_current_value`.
+    - `has_current_x` has been renamed to `has_current_value`.
+    - `set_current_x` has been renamed to `set_current_value`.
     - Remove `get_current_x_normalized` and `get_current_x_dict`.
 - The short names of some machine learning algorithms have been replaced by conventional acronyms.
 - `MatlabDiscipline.__init__`: `input_data_list` and `output_data_list` has been renamed to `input_names` and `output_names`.
 - `save_matlab_file`: `dict_to_save` has been renamed to `data`.
 - The classes of the regression algorithms are renamed as `{Prefix}Regressor`.
-- The class `ConcatenationDiscipline` has been renamed to [Concatenater][gemseo.disciplines.concatenater.Concatenater].
+- The class `ConcatenationDiscipline` has been renamed to `Concatenater`.
 - In Caches:
     - `input_names` has been renamed to `AbstractCache.input_names`.
     - `get_all_data()` has been replaced by `[cache_entry for cache_entry in cache]`.

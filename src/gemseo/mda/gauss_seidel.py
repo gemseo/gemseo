@@ -23,9 +23,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.mda.base import BaseProcessFlow
-from gemseo.mda.base import _BaseMDAProcessFlow
-from gemseo.mda.base_solver import BaseMDASolver
+from gemseo.mda.core.base import BaseProcessFlow
+from gemseo.mda.core.base import _BaseMDAProcessFlow
+from gemseo.mda.core.base_solver import BaseMDASolver
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 
 if TYPE_CHECKING:
@@ -173,7 +173,7 @@ class MDAGaussSeidel(BaseMDASolver):
         self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
 
-        if self._check_stopping_criteria():
+        if self._check_termination_criteria():
             return False
 
         updated_couplings = self._sequence_transformer.compute_transformed_iterate(

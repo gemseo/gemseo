@@ -24,7 +24,7 @@ forcing costly recomputation from scratch.
 ## Solution
 
 Use
-[EvaluationScenario.set_backup_settings][gemseo.scenarios.evaluation.EvaluationScenario.set_backup_settings]
+[EvaluationScenario.set_backup_settings][gemseo.scenario.evaluation.EvaluationScenario.set_backup_settings]
 to write each function evaluation to an HDF5 file as the execution progresses.
 On restart,
 pass `load=True` to pre-load the backup into the database before the algorithm starts,
@@ -39,10 +39,10 @@ from pathlib import Path
 
 from numpy import array
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.scenarios.mdo import MDOScenario
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.optimization import SLSQP_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 BACKUP_FILE = Path("backup.hdf5")
 
@@ -64,11 +64,11 @@ scenario.add_objective("obj")
 # %%
 # !!! note
 #     This example also works with
-#     [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario].
+#     [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario].
 #
 # ### 2. Configure the history backup
 #
-# [set_backup_settings][gemseo.scenarios.mdo.MDOScenario.set_backup_settings]
+# [set_backup_settings][gemseo.scenario.mdo.MDOScenario.set_backup_settings]
 # registers a listener that appends each evaluation to an HDF5 file.
 # Its key parameters are:
 #
@@ -78,7 +78,7 @@ scenario.add_objective("obj")
 # - `erase`: delete the existing backup before the run.
 # - `load`: pre-load the backup into the database before the run.
 # - `plot`: save an optimization history view at each iteration (default: `False`,
-#   [MDOScenario][gemseo.scenarios.mdo.MDOScenario] only).
+#   [MDOScenario][gemseo.scenario.mdo.MDOScenario] only).
 #
 # !!! warning
 #     Passing both `erase=True` and `load=True` raises a `ValueError`
@@ -106,14 +106,14 @@ print(f"Evaluations stored: {len(scenario.formulation.problem.database)}")
 #
 # Simulate a restart by resetting the starting point to the original value.
 # In this case,
-# this is necessary because the [DesignSpace][gemseo.algos.design_space.DesignSpace]
+# this is necessary because the [DesignSpace][gemseo.space.design.DesignSpace]
 # retains the last visited point after the first run.
 # This is not the case if you are relaunching your script for example.
 design_space.set_current_value(array([4.0, 4.0]))
 
 # %%
 # Create the same scenario again and call
-# [set_backup_settings][gemseo.scenarios.mdo.MDOScenario.set_backup_settings]
+# [set_backup_settings][gemseo.scenario.mdo.MDOScenario.set_backup_settings]
 # with `load=True`.
 # Before the algorithm starts, the backup is read and all previous evaluations
 # are injected into the database.
@@ -137,7 +137,7 @@ scenario_2.execute(SLSQP_Settings(max_iter=20))
 # !!! note
 #     The algorithm is not aware that the database was pre-loaded.
 #     It still proposes new candidates, but the
-#     [Database][gemseo.algos.database.Database]
+#     [Database][gemseo.core.problem.database.Database]
 #     returns cached values instantly when a point is already known,
 #     so no discipline evaluation takes place for those points.
 #
@@ -147,7 +147,7 @@ BACKUP_FILE.unlink()
 # %%
 # ## Summary
 #
-# [set_backup_settings][gemseo.scenarios.evaluation.EvaluationScenario.set_backup_settings]
+# [set_backup_settings][gemseo.scenario.evaluation.EvaluationScenario.set_backup_settings]
 # writes every function evaluation to an HDF5 file during the run.
 # On restart,
 # `load=True` pre-loads the backup so the algorithm reuses known evaluations

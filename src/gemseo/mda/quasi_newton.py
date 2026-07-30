@@ -31,7 +31,7 @@ from typing import Literal
 from numpy import array
 from scipy.optimize import root
 
-from gemseo.mda.base_parallel_solver import BaseMDAParallelSolver
+from gemseo.mda.core.base_parallel_solver import BaseMDAParallelSolver
 from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
 from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod
 
@@ -184,7 +184,7 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
                 iterate: The current iterate.
                 residual: The associated residual.
             """
-            self._check_stopping_criteria()
+            self._check_termination_criteria()
 
         return callback
 
@@ -234,7 +234,7 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
         )
 
         if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
-            self._check_stopping_criteria()
+            self._check_termination_criteria()
 
         self._update_local_data_from_array(y_opt.x)
 

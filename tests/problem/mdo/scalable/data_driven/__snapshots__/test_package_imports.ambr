@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_unknown_attribute
+  "module 'gemseo.problem.mdo.scalable.data_driven' has no attribute 'NotAClass'"
+# ---

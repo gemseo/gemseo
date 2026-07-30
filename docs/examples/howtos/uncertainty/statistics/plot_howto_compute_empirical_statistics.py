@@ -24,9 +24,9 @@ without assuming any parametric form for the output distribution.
 
 ## Solution
 
-[EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
+[EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics]
 estimates statistics directly from a
-[Dataset][gemseo.datasets.dataset.Dataset]
+[Dataset][gemseo.dataset.dataset.Dataset]
 using sample estimators, with no distributional assumption.
 It also provides graphical tools (boxplot, CDF, PDF).
 
@@ -36,17 +36,15 @@ It also provides graphical tools (boxplot, CDF, PDF).
 from __future__ import annotations
 
 from gemseo import sample_disciplines
-from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
-    WingWeightUncertainSpace,
-)
-from gemseo.uncertainty.statistics.empirical import EmpiricalStatistics
+from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
+from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
+from gemseo.uncertainty.statistic import EmpiricalStatistics
 
 # %%
 # ### 1. Create a dataset
 #
 # Sample the
-# [WingWeightDiscipline][gemseo.problems.uncertainty.wing_weight.discipline.WingWeightDiscipline]
+# [WingWeightDiscipline][gemseo.problem.uncertainty.wing_weight.discipline.WingWeightDiscipline]
 # discipline over its uncertain space using Monte Carlo sampling:
 discipline = WingWeightDiscipline()
 parameter_space = WingWeightUncertainSpace()
@@ -63,7 +61,7 @@ dataset = sample_disciplines(
 # ### 2. Create an EmpiricalStatistics object
 #
 # Pass the dataset to
-# [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics].
+# [EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics].
 # By default, all variables in the dataset are included:
 analysis = EmpiricalStatistics(dataset, name="WingWeightDiscipline")
 analysis
@@ -94,14 +92,14 @@ analysis.plot_pdf()
 # %%
 # ## Summary
 #
-# - [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]
+# - [EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics]
 #   estimates statistics from a
-#   [Dataset][gemseo.datasets.dataset.Dataset] with no distributional assumption;
+#   [Dataset][gemseo.dataset.dataset.Dataset] with no distributional assumption;
 # - pass `variable_names` to restrict the analysis to specific variables;
 # - visualization:
-#   [plot_boxplot()][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics.plot_boxplot],
-#   [plot_cdf()][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics.plot_cdf],
-#   [plot_pdf()][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics.plot_pdf].
+#   [plot_boxplot()][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics.plot_boxplot],
+#   [plot_cdf()][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics.plot_cdf],
+#   [plot_pdf()][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics.plot_pdf].
 #
 # ## One step further
 #

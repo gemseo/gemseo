@@ -21,14 +21,14 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Polynomial regression.
 
-A [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] is a polynomial regression model
-based on a [LinearRegressor][gemseo.machine_learning.regression.models.linreg.LinearRegressor].
+A [PolynomialRegressor][gemseo.machine_learning.regression.model.polyreg.PolynomialRegressor] is a polynomial regression model
+based on a [LinearRegressor][gemseo.machine_learning.regression.model.linreg.LinearRegressor].
 This design choice was made
 because a polynomial regression model is a generalized linear model
 whose basis functions are monomials.
 Thus,
-a [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] benefits
-from the same settings as [LinearRegressor][gemseo.machine_learning.regression.models.linreg.LinearRegressor]:
+a [PolynomialRegressor][gemseo.machine_learning.regression.model.polyreg.PolynomialRegressor] benefits
+from the same settings as [LinearRegressor][gemseo.machine_learning.regression.model.linreg.LinearRegressor]:
 offset can be set to zero and regularization techniques can be used.
 
 !!! info "See also"
@@ -54,7 +54,7 @@ from gemseo.machine_learning import create_regression_model
 #
 # In this example,
 # you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
-# by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
+# by the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
 #       Alexander I. J. Forrester, Andras Sobester, and Andy J. Keane.
@@ -121,8 +121,8 @@ plt.show()
 # %%
 # ## Settings { #poly-settings }
 #
-# The [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] has many options
-# defined in the [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg_settings.PolynomialRegressor_Settings] Pydantic model.
+# The [PolynomialRegressor][gemseo.machine_learning.regression.model.polyreg.PolynomialRegressor] has many options
+# defined in the [PolynomialRegressor][gemseo.machine_learning.regression.model.polyreg_settings.PolynomialRegressor_Settings] Pydantic model.
 # Most of them are presented
 # in [the example about the linear regression model][polynomial-regression].
 #

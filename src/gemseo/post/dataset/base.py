@@ -17,13 +17,13 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""An abstract class to plot data from a [Dataset][gemseo.datasets.dataset.Dataset].
+"""An abstract class to plot data from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 The [gemseo.post.dataset.base][gemseo.post.dataset.base] module
 implements the abstract
 [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot] class
 whose purpose is to build a graphical representation of a
-[Dataset][gemseo.datasets.dataset.Dataset]
+[Dataset][gemseo.dataset.dataset.Dataset]
 and to display it on screen or save it to a file.
 
 This abstract class has to be overloaded by concrete ones implementing at least method
@@ -43,18 +43,18 @@ from typing import TypeVar
 from strenum import StrEnum
 
 from gemseo.post.dataset.base_settings import BaseDatasetPlotSettings
-from gemseo.post.dataset.plots.factory_factory import PlotFactoryFactory
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
-from gemseo.utils.string_tools import repr_variable
+from gemseo.post.dataset.plot.factory_factory import PlotFactoryFactory
+from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from gemseo.datasets.dataset import Dataset
-    from gemseo.post.dataset.plots.base import BasePlot
-    from gemseo.post.dataset.plots.factory import PlotFactory
-    from gemseo.typing import StrPath
+    from gemseo.dataset.dataset import Dataset
+    from gemseo.post.dataset.plot.base import BasePlot
+    from gemseo.post.dataset.plot.factory import PlotFactory
+    from gemseo.util.typing import StrPath
 
 DatasetPlotPropertyType = str | int | float | Sequence[str | int | float]
 

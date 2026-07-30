@@ -39,12 +39,12 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
-    from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline.discipline import Discipline
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.formulations.base_settings import BaseFormulationSettings
+    from gemseo.dataset.io_dataset import IODataset
+    from gemseo.formulation.core.base_settings import BaseFormulationSettings
+    from gemseo.space.parameter import ParameterSpace
     from gemseo.uncertainty.reliability.event import Event
-    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
+    from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
 
 
 class FORMAnalysisMethod(LowercaseStrEnum):

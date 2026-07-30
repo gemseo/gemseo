@@ -21,7 +21,7 @@ from pydantic import Field
 from pydantic import NonNegativeInt  # noqa: TC002
 from pydantic import field_validator
 
-from gemseo.datasets.dataset import Dataset  # noqa: TC001
+from gemseo.dataset.dataset import Dataset  # noqa: TC001
 from gemseo.post.dataset.base_cartesian_settings import BaseCartesianDatasetPlotSettings
 
 

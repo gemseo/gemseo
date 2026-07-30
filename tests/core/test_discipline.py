@@ -46,45 +46,45 @@ from numpy.testing import assert_allclose
 
 from gemseo import configuration
 from gemseo import create_discipline
-from gemseo.caches.hdf5 import HDF5Cache
-from gemseo.caches.memory_full import MemoryFullCache
-from gemseo.caches.simple import SimpleCache
-from gemseo.core.chains.chain import DisciplineChain
+from gemseo.core.cache.hdf5 import HDF5Cache
+from gemseo.core.cache.memory_full import MemoryFullCache
+from gemseo.core.cache.simple import SimpleCache
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.data_processor import ComplexDataProcessor
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.factory import GRAMMAR_FACTORY
-from gemseo.core.grammars.json import JSONGrammar
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.mda.base import BaseMDA
-from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.variables import X_1
-from gemseo.problems.mdo.sellar.variables import X_SHARED
-from gemseo.problems.mdo.sellar.variables import Y_2
-from gemseo.problems.mdo.sobieski._disciplines_sg import SobieskiStructureSG
-from gemseo.problems.mdo.sobieski.core.problem import SobieskiProblem
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.compatibility.scipy import sparse_classes
-from gemseo.utils.discipline import DummyDiscipline
-from gemseo.utils.pickle import from_pickle
-from gemseo.utils.pickle import to_pickle
-from gemseo.utils.platform import PLATFORM_IS_WINDOWS
-from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.core.grammar.error import InvalidDataError
+from gemseo.core.grammar.factory import GRAMMAR_FACTORY
+from gemseo.core.grammar.json import JSONGrammar
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline.auto_py import AutoPyDiscipline
+from gemseo.discipline.chain.chain import DisciplineChain
+from gemseo.mda.core.base import BaseMDA
+from gemseo.problem.mdo.sellar import WITH_2D_ARRAY
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.variable import X_1
+from gemseo.problem.mdo.sellar.variable import X_SHARED
+from gemseo.problem.mdo.sellar.variable import Y_2
+from gemseo.problem.mdo.sobieski._disciplines_sg import SobieskiStructureSG
+from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
+from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
+from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util.discipline import DummyDiscipline
+from gemseo.util.pickle import from_pickle
+from gemseo.util.pickle import to_pickle
+from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.typing import StrKeyMapping
-from gemseo.utils.derivatives.check.discipline import DisciplineJacobianChecker
+    from gemseo.util.typing import StrKeyMapping
+from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
 Status = ExecutionStatus.Status
 

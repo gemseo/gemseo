@@ -24,14 +24,14 @@
 ## Problem
 
 The execution of your optimization problem has been stored in a
-[Database][gemseo.algos.database.Database],
-and you want to retrieve a [Dataset][gemseo.datasets.dataset.Dataset] from it.
+[Database][gemseo.core.problem.database.Database],
+and you want to retrieve a [Dataset][gemseo.dataset.dataset.Dataset] from it.
 
 ## Solution
 
-The [to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset]
+The [to_dataset()][gemseo.optimization.problem.OptimizationProblem.to_dataset]
 method can be used to create a
-[Dataset][gemseo.datasets.dataset.Dataset]
+[Dataset][gemseo.dataset.dataset.Dataset]
 from the database attached to your optimization problem.
 
 ## Step-by-step guide
@@ -40,13 +40,13 @@ from the database attached to your optimization problem.
 from __future__ import annotations
 
 from gemseo import execute_algo
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.optimization import SLSQP_Settings
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
 
 # %%
 # ### 1. Create and execute an optimization problem
 #
-# Solve the [Rosenbrock][gemseo.problems.optimization.rosenbrock.Rosenbrock] optimization problem
+# Solve the [Rosenbrock][gemseo.problem.optimization.rosenbrock.Rosenbrock] optimization problem
 # with the SLSQP algorithm and 10 iterations:
 optimization_problem = Rosenbrock()
 execute_algo(optimization_problem, settings_model=SLSQP_Settings(max_iter=10))
@@ -55,15 +55,15 @@ execute_algo(optimization_problem, settings_model=SLSQP_Settings(max_iter=10))
 # ### 2. Convert to dataset
 #
 # Then,
-# the [Database][gemseo.algos.database.Database] attached to this [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-# can be converted to an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
-# using the method [to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset]:
+# the [Database][gemseo.core.problem.database.Database] attached to this [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
+# can be converted to an [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
+# using the method [to_dataset()][gemseo.optimization.problem.OptimizationProblem.to_dataset]:
 dataset = optimization_problem.to_dataset()
 dataset
 
 # %%
 # The design variables and output variables are in separate groups.
-# You can also use an [IODataset][gemseo.datasets.io_dataset.IODataset] instead of an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]:
+# You can also use an [IODataset][gemseo.dataset.io_dataset.IODataset] instead of an [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]:
 dataset = optimization_problem.to_dataset(opt_naming=False)
 dataset
 
@@ -80,7 +80,7 @@ dataset
 #
 # ## Summary
 #
-# A [Dataset][gemseo.datasets.dataset.Dataset] can be generated from a
-# [Database][gemseo.algos.database.Database] attached to an
-# [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-# by using the [to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset] method.
+# A [Dataset][gemseo.dataset.dataset.Dataset] can be generated from a
+# [Database][gemseo.core.problem.database.Database] attached to an
+# [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
+# by using the [to_dataset()][gemseo.optimization.problem.OptimizationProblem.to_dataset] method.

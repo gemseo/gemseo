@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""# Rosenbrock dataset.
 
-This [Dataset][gemseo.datasets.dataset.Dataset] contains 100 evaluations
+This [Dataset][gemseo.dataset.dataset.Dataset] contains 100 evaluations
 of the well-known Rosenbrock function:
 
 $$f(x,y)=(1-x)^2+100(y-x^2)^2$$
@@ -29,7 +29,7 @@ $$f(x,y)=(1-x)^2+100(y-x^2)^2$$
 This function is known for its global minimum at point (1,1),
 its banana valley and the difficulty to reach its minimum.
 
-This [Dataset][gemseo.datasets.dataset.Dataset] is based on a full-factorial
+This [Dataset][gemseo.dataset.dataset.Dataset] is based on a full-factorial
 design of experiments.
 
 [More information about the Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function)
@@ -38,9 +38,9 @@ design of experiments.
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.post.dataset.yvsx import YvsX
+from gemseo.post.dataset import YvsX
+from gemseo.post.dataset import ZvsXY
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
-from gemseo.post.dataset.zvsxy import ZvsXY
 from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 
 # %%

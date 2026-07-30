@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline import AnalyticDiscipline
 
 # %%
 # ### 1. Create and execute a discipline
@@ -55,7 +55,7 @@ discipline.cache.to_dataset()
 
 # %%
 # ... or iterate over the cache to retrieve every
-# [CacheEntry][gemseo.caches.cache_entry.CacheEntry].
+# [CacheEntry][gemseo.core.cache.cache_entry.CacheEntry].
 for inputs, entry in discipline.cache.items():
     print(inputs, entry)
 
@@ -63,7 +63,7 @@ for inputs, entry in discipline.cache.items():
 #
 # If you only want the last data (inputs, outputs and Jacobian),
 # you can use the
-# [last_item][gemseo.caches.base.BaseCache.last_item] property:
+# [last_item][gemseo.core.cache.base.BaseCache.last_item] property:
 last_item = discipline.cache.last_item
 print(f"Last inputs: {last_item.inputs}")
 print(f"Last outputs: {last_item.outputs}")
@@ -78,10 +78,10 @@ discipline.cache
 # ## Summary
 #
 # - A cache stores one or many named tuples,
-# called [CacheEntry][gemseo.caches.cache_entry.CacheEntry];
+# called [CacheEntry][gemseo.core.cache.cache_entry.CacheEntry];
 # - Data can be retrieved from a cache as a dataset with the
-# [to_dataset()][gemseo.caches.base.BaseCache.to_dataset] method;
+# [to_dataset()][gemseo.core.cache.base.BaseCache.to_dataset] method;
 # - The last cached data is gotten with the
-# [last_item][gemseo.caches.base.BaseCache.last_item] property;
+# [last_item][gemseo.core.cache.base.BaseCache.last_item] property;
 # - The cache can be cleared with the
-# [clear()][gemseo.caches.base.BaseCache.clear] method;
+# [clear()][gemseo.core.cache.base.BaseCache.clear] method;

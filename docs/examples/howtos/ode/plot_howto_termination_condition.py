@@ -18,7 +18,7 @@
 ## Problem
 
 By default, an
-[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+[ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
 solves the ODE over the entire time interval.
 You want the integration to stop early
 when a specific condition is met - for example,
@@ -28,7 +28,7 @@ when a state variable crosses a given threshold.
 
 Pass a list of termination condition disciplines to the
 `termination_event_disciplines` argument of
-[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline].
+[ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline].
 Each discipline must have the same inputs as the RHS discipline
 and return a single real-valued output.
 The integration stops when that output crosses zero.
@@ -47,7 +47,7 @@ from numpy import sin
 
 from gemseo import create_discipline
 from gemseo.core.discipline.discipline import Discipline
-from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
+from gemseo.discipline import ODEDiscipline
 
 # %%
 # ### 1. Build the RHS discipline
@@ -148,6 +148,6 @@ plt.show()
 #
 # Pass one or more termination condition disciplines to
 # `termination_event_disciplines` when creating an
-# [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline].
+# [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline].
 # Each discipline must share the same inputs as the RHS discipline
 # and return a single real value; the integration stops when it crosses zero.

@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a variable versus two others from a [Dataset][gemseo.datasets.dataset.Dataset].
+r"""Draw a variable versus two others from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 A [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY]ZvsXY` plot represents the variable $z$
 with respect to $x$ and $y$ as a surface plot, based on a set of points
@@ -29,14 +29,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.datasets.dataset import Dataset  # noqa: TC001
+from gemseo.dataset.dataset import Dataset  # noqa: TC001
 from gemseo.post.dataset.base import BaseDatasetPlot
 from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 class ZvsXY(BaseDatasetPlot[ZvsXY_Settings]):

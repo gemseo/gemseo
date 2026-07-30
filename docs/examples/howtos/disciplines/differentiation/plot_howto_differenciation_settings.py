@@ -39,7 +39,7 @@ method.
 
 from __future__ import annotations
 
-from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.discipline import AutoPyDiscipline
 
 
 # %%

@@ -32,8 +32,8 @@ from pydantic import BaseModel
 from pydantic import Field
 
 from gemseo.core.discipline import Discipline
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.pydantic import PydanticGrammar
+from gemseo.core.grammar.error import InvalidDataError
+from gemseo.core.grammar.pydantic import PydanticGrammar
 
 
 # %%
@@ -176,7 +176,7 @@ class GradientDiscipline(Discipline):
 #
 # - a NumPy array, for a dense Jacobian (as in this example),
 # - a SciPy sparse array or matrix, for a sparse Jacobian,
-# - a [JacobianOperator][gemseo.core.derivatives.jacobian_operator.JacobianOperator],
+# - a [JacobianOperator][gemseo.core.derivative.jacobian_operator.JacobianOperator],
 #   for a matrix-free Jacobian defined only by its products with a vector,
 #   see [Use a matrix-free Jacobian][].
 #
@@ -205,7 +205,7 @@ discipline.input_grammar
 # %%
 # Here, the $x$ and $z$ inputs are required, and are of type "arrays".
 # By default, a discipline uses
-# [JSONGrammars][gemseo.core.grammars.json.JSONGrammar].
+# [JSONGrammars][gemseo.core.grammar.json.JSONGrammar].
 # What your seeing here is the JSON schema of your input grammar.
 #
 # !!! note
@@ -214,7 +214,7 @@ discipline.input_grammar
 #
 # Make your discipline more restrictive, by saying that $x$ is now an integer.
 # One way to do so is to update the grammar with the
-# [update_from_data][gemseo.core.grammars.base.BaseGrammar.update_from_data]
+# [update_from_data][gemseo.core.grammar.base.BaseGrammar.update_from_data]
 # method.
 # By giving to $x$ an array of integer,
 # the grammar will automatically understand that x is now an integer.

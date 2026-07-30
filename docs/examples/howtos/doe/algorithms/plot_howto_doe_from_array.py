@@ -22,7 +22,7 @@ These points may be known from an external tool or a previous study, for example
 
 ## Solution
 
-Use [CustomDOE][gemseo.algos.doe.custom_doe.custom_doe.CustomDOE]
+Use [CustomDOE][gemseo.doe.custom_doe.custom_doe.CustomDOE]
 and pass your samples via the `samples` setting.
 
 ## Step-by-step guide
@@ -32,10 +32,10 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.scenarios.evaluation import EvaluationScenario
-from gemseo.settings import CustomDOE_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.doe import CustomDOE_Settings
+from gemseo.scenario import EvaluationScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Build the discipline and design space
@@ -69,7 +69,7 @@ samples = [
 #     In that case,
 #     the order of the elements must follow the design space variable order.
 #     Use the
-#     [variable_names][gemseo.algos.design_space.DesignSpace.variable_names]
+#     [variable_names][gemseo.space.design.DesignSpace.variable_names]
 #     method to see that order.
 #
 # ### 3. Execute the scenario with the custom samples
@@ -81,7 +81,7 @@ scenario.execute(CustomDOE_Settings(samples=samples))
 # %%
 # ### 4. Inspect the results
 #
-# Export the database to a [Dataset][gemseo.datasets.dataset.Dataset]
+# Export the database to a [Dataset][gemseo.dataset.dataset.Dataset]
 # and verify that the output equals the product of $a$ and $b$:
 dataset = scenario.to_dataset(name="custom_sampling")
 dataset

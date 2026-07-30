@@ -37,9 +37,9 @@ from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.dataset.io_dataset import IODataset
     from gemseo.machine_learning.core.quality.base_ml_model_quality import MeasureType
-    from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
+    from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
 
 
 class RMSEMeasure(MSEMeasure):

@@ -22,13 +22,13 @@ from numpy import array
 from gemseo.core.discipline.data_processor import DataProcessor
 from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.discipline.io import IO
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.factory import GrammarType
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.core.grammar.error import InvalidDataError
+from gemseo.core.grammar.factory import GrammarType
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
-    from gemseo.typing import MutableStrKeyMapping
+    from gemseo.util.typing import MutableStrKeyMapping
 
 
 @pytest.mark.parametrize("grammar_type", GrammarType)

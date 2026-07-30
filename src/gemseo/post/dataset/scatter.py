@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a scatter plot from a [Dataset][gemseo.datasets.dataset.Dataset].
+r"""Draw a scatter plot from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 A [Scatter][gemseo.post.dataset.scatter.Scatter] plot represents a set of points
 $\{x_i,y_i\}_{1\leq i \leq n}$ as markers on a classical plot
@@ -32,7 +32,7 @@ from gemseo.post.dataset.base import BaseDatasetPlot
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 class Scatter(BaseDatasetPlot[Scatter_Settings]):

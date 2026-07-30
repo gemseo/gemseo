@@ -31,21 +31,21 @@ from numpy import array
 from numpy import zeros
 from numpy.testing import assert_allclose
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
-from gemseo.machine_learning.regression.models.gpr import GaussianProcessRegressor
-from gemseo.machine_learning.regression.models.linreg import LinearRegressor
-from gemseo.machine_learning.regression.models.linreg_settings import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+from gemseo.machine_learning.regression.model.gpr import GaussianProcessRegressor
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
+from gemseo.machine_learning.regression.model.linreg_settings import (
     LinearRegressor_Settings,
 )
-from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.utils.pickle import from_pickle
-from gemseo.utils.pickle import to_pickle
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.pickle import from_pickle
+from gemseo.util.pickle import to_pickle
+from gemseo.util.testing.helper import assert_exception
 
 INPUT_VALUE = array([0.4, 1.8])
 

@@ -30,12 +30,12 @@ import matplotlib.pyplot as plt
 from numpy import zeros
 from numpy.random import default_rng
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.robustness_quantifier import RobustnessQuantifier
+from gemseo.post._engine.robustness_quantifier import RobustnessQuantifier
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.robustness_settings import Robustness_Settings
-from gemseo.utils.compatibility.matplotlib import boxplot
-from gemseo.utils.seeder import SEED
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.compatibility.matplotlib import boxplot
+from gemseo.util.seeder import SEED
+from gemseo.util.string import repr_variable
 
 LOGGER = logging.getLogger(__name__)
 

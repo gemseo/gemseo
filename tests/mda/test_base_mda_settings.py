@@ -14,10 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (
-    BaseLinearSolverSettings,
-)
-from gemseo.mda.base_settings import BaseMDASettings
+from gemseo.linear.core.base_linear_solver_settings import BaseLinearSolverSettings
+from gemseo.mda.core.base_settings import BaseMDASettings
 
 
 def test_base_mda_settings():

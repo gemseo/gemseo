@@ -21,7 +21,7 @@ from numpy import array
 from numpy import hstack
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 @pytest.fixture(scope="module", params=[False, True])

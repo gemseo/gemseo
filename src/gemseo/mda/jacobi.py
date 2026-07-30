@@ -22,8 +22,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.mda.base import _BaseMDAProcessFlow
-from gemseo.mda.base_parallel_solver import BaseMDAParallelSolver
+from gemseo.mda.core.base import _BaseMDAProcessFlow
+from gemseo.mda.core.base_parallel_solver import BaseMDAParallelSolver
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 
 if TYPE_CHECKING:
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.coupling_structure import DependencyGraph
     from gemseo.core.discipline import Discipline
-    from gemseo.mda.base import BaseProcessFlow
+    from gemseo.mda.core.base import BaseProcessFlow
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):
@@ -148,7 +148,7 @@ class MDAJacobi(BaseMDAParallelSolver):
         self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
 
-        if self._check_stopping_criteria():
+        if self._check_termination_criteria():
             return False
 
         updated_couplings = self._sequence_transformer.compute_transformed_iterate(

@@ -39,7 +39,7 @@ def _reset_gemseo() -> None:
     # later does not chdir into a stale (deleted) execution_root_path left
     # behind by a gallery example.
     try:
-        from gemseo.utils.global_configuration import _configuration
+        from gemseo.util.global_configuration import _configuration
 
         _configuration.__init__()
     except Exception:  # noqa: BLE001

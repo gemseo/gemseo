@@ -29,7 +29,7 @@ from numpy import array
 from numpy import zeros
 from numpy.testing import assert_almost_equal
 
-from gemseo.machine_learning.transformers.scaler.standard_scaler import StandardScaler
+from gemseo.machine_learning.transformer.scaler.standard_scaler import StandardScaler
 
 if TYPE_CHECKING:
     from numpy import ndarray

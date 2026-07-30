@@ -26,15 +26,15 @@ from matplotlib import pyplot as plt
 from scipy.interpolate import Rbf
 
 from gemseo import sample_disciplines
-from gemseo.algos.doe.scipy.settings.mc import MC_Settings
+from gemseo.doe.scipy.settings.mc import MC_Settings
 from gemseo.post.dataset.pair_plot import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
-from gemseo.problems.dataset.iris import create_iris_dataset
-from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
+from gemseo.problem.dataset.iris import create_iris_dataset
+from gemseo.problem.uncertainty.wing_weight.discipline import WingWeightDiscipline
+from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
     WingWeightUncertainSpace,
 )
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.mark.parametrize(

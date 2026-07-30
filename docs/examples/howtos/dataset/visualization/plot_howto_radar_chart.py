@@ -32,8 +32,8 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.radar_chart import RadarChart
+from gemseo.dataset import Dataset
+from gemseo.post.dataset import RadarChart
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 
 # %%

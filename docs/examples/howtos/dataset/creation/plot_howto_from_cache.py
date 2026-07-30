@@ -25,13 +25,13 @@
 ## Problem
 
 The executions of your discipline have been stored in a cache,
-and you want to retrieve a [Dataset][gemseo.datasets.dataset.Dataset] from it.
+and you want to retrieve a [Dataset][gemseo.dataset.dataset.Dataset] from it.
 
 ## Solution
 
-The [to_dataset()][gemseo.caches.base.BaseCache.to_dataset]
+The [to_dataset()][gemseo.core.cache.base.BaseCache.to_dataset]
 method can be used to create a
-[Dataset][gemseo.datasets.dataset.Dataset] from your cache.
+[Dataset][gemseo.dataset.dataset.Dataset] from your cache.
 
 ## Step-by-step guide
 """
@@ -40,12 +40,12 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.caches.memory_full import MemoryFullCache
+from gemseo.core.cache.memory_full import MemoryFullCache
 
 # %%
 # ### 1. Create a cache
 #
-# Consider an [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache] storing two parameters:
+# Consider an [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache] storing two parameters:
 #
 # - x with dimension 1 which is a cache input,
 # - y with dimension 2 which is a cache output.
@@ -57,20 +57,20 @@ cache[{"x": array([4.0])}] = ({"y": array([5.0, 6.0])}, None)
 # %%
 # ### 2. Convert to dataset
 #
-# This cache can be converted to an [IODataset][gemseo.datasets.io_dataset.IODataset]
-# using its method [to_dataset()][gemseo.caches.memory_full.MemoryFullCache.to_dataset]:
+# This cache can be converted to an [IODataset][gemseo.dataset.io_dataset.IODataset]
+# using its method [to_dataset()][gemseo.core.cache.memory_full.MemoryFullCache.to_dataset]:
 dataset = cache.to_dataset("toy_cache")
 dataset
 
 # %%
 # The input variables belong to the input group
 # and the output variables to the output group.
-# You can avoid this categorization and simply build a [Dataset][gemseo.datasets.dataset.Dataset]:
+# You can avoid this categorization and simply build a [Dataset][gemseo.dataset.dataset.Dataset]:
 dataset = cache.to_dataset("toy_cache", categorize=False)
 dataset
 
 # %%
 # ## Summary
 #
-# A [Dataset][gemseo.datasets.dataset.Dataset] can be generated from a cache
-# by using the [to_dataset()][gemseo.caches.base.BaseCache.to_dataset] method.
+# A [Dataset][gemseo.dataset.dataset.Dataset] can be generated from a cache
+# by using the [to_dataset()][gemseo.core.cache.base.BaseCache.to_dataset] method.

@@ -34,7 +34,7 @@ a single optimal solution is meaningless — the goal is to compute the **Pareto
 to gather enough trade-off information to make an informed choice
 among all non-dominated solutions.
 
-Use the [MNBI][gemseo.algos.opt.mnbi.mnbi.MNBI]
+Use the [MNBI][gemseo.optimization.mnbi.mnbi.MNBI]
 (modified Normal Boundary Intersection) algorithm.
 It distributes $n$ sub-optimization problems uniformly along the boundary line
 between the individual optima (anchor points) of each objective,
@@ -42,10 +42,10 @@ producing a well-spread Pareto front.
 
 !!! tip
     GEMSEO provides ready-to-use benchmark multi-objective problems:
-    [BinhKorn][gemseo.problems.multiobjective_optimization.binh_korn.BinhKorn],
-    [FonsecaFleming][gemseo.problems.multiobjective_optimization.fonseca_fleming.FonsecaFleming],
-    [Poloni][gemseo.problems.multiobjective_optimization.poloni.Poloni],
-    and [Viennet][gemseo.problems.multiobjective_optimization.viennet.Viennet].
+    [BinhKorn][gemseo.problem.multiobjective_optimization.binh_korn.BinhKorn],
+    [FonsecaFleming][gemseo.problem.multiobjective_optimization.fonseca_fleming.FonsecaFleming],
+    [Poloni][gemseo.problem.multiobjective_optimization.poloni.Poloni],
+    and [Viennet][gemseo.problem.multiobjective_optimization.viennet.Viennet].
 
 ## Step-by-step guide
 """
@@ -56,16 +56,16 @@ from numpy import array
 
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.optimization import MNBI_Settings
+from gemseo.optimization import NLOPT_SLSQP_Settings
 from gemseo.post import ParetoFront_Settings
-from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
-from gemseo.settings.opt import MNBI_Settings
+from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
 # ### 1. Define the optimization problem
 #
 # You use the
-# [BinhKorn][gemseo.problems.multiobjective_optimization.binh_korn.BinhKorn]
+# [BinhKorn][gemseo.problem.multiobjective_optimization.binh_korn.BinhKorn]
 # benchmark problem:
 #
 # $$
@@ -118,8 +118,8 @@ execute_post(problem, ParetoFront_Settings(save=False, show=True))
 # %%
 # ## Summary
 #
-# You used the [MNBI][gemseo.algos.opt.mnbi.mnbi.MNBI] algorithm to compute
+# You used the [MNBI][gemseo.optimization.mnbi.mnbi.MNBI] algorithm to compute
 # a well-spread Pareto front for the constrained
-# [BinhKorn][gemseo.problems.multiobjective_optimization.binh_korn.BinhKorn] problem.
+# [BinhKorn][gemseo.problem.multiobjective_optimization.binh_korn.BinhKorn] problem.
 # The number of Pareto-optimal points is controlled by `n_sub_optim`.
 # The front can be locally refined by providing `custom_anchor_points`.

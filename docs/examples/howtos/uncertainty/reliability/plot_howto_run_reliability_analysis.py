@@ -41,8 +41,8 @@ The workflow is:
 
 from __future__ import annotations
 
-from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
+from gemseo.problem.uncertainty.wing_weight.discipline import WingWeightDiscipline
+from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
     WingWeightUncertainSpace,
 )
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
@@ -88,7 +88,7 @@ scenario.add_event(Ww > 400, "too_heavy")
 #
 # [OT_FORM_Settings][gemseo.uncertainty.reliability.openturns.form_settings.OT_FORM_Settings]
 # selects the first-order reliability method (FORM) from OpenTURNS.
-# [execute()][gemseo.scenarios.evaluation.EvaluationScenario.execute]
+# [execute()][gemseo.scenario.evaluation.EvaluationScenario.execute]
 # returns a mapping from event names to
 # [ReliabilityResult][gemseo.uncertainty.reliability.result.ReliabilityResult] objects:
 results = scenario.execute(OT_FORM_Settings())
@@ -116,7 +116,7 @@ event_result.raw_result
 #   creates symbolic variables bound to disciplinary outputs;
 # - [add_event()][gemseo.uncertainty.reliability.scenario.ReliabilityScenario.add_event]
 #   registers an event built from comparison operators (`>`, `<`, `>=`, `<=`);
-# - [execute()][gemseo.scenarios.evaluation.EvaluationScenario.execute]
+# - [execute()][gemseo.scenario.evaluation.EvaluationScenario.execute]
 #   runs the algorithm and returns a `dict[str, ReliabilityResult]`;
 # - [ReliabilityResult.probability][gemseo.uncertainty.reliability.result.ReliabilityResult.probability]
 #   holds the estimated failure probability;

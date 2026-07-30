@@ -27,7 +27,7 @@ Dataset consisting of solutions to Burgers' equation.
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.post.dataset.curves import Curves
+from gemseo.post.dataset import Curves
 from gemseo.post.dataset.curves_settings import Curves_Settings
 
 # %%

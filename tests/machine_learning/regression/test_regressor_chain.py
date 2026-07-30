@@ -18,17 +18,17 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
-from gemseo.machine_learning.regression.models.linreg import LinearRegressor
-from gemseo.machine_learning.regression.models.linreg_settings import (
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
+from gemseo.machine_learning.regression.model.linreg_settings import (
     LinearRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
-from gemseo.machine_learning.regression.models.polyreg_settings import (
+from gemseo.machine_learning.regression.model.polyreg import PolynomialRegressor
+from gemseo.machine_learning.regression.model.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.regressor_chain import RegressorChain
+from gemseo.machine_learning.regression.model.regressor_chain import RegressorChain
 from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")

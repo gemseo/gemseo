@@ -42,7 +42,7 @@ by computing the time derivative of the state variable $y$ at time $t$.
 The function $y(\cdot)$ is computed on the time interval $[t_0, t_f]$
 using an algorithm called an ODE solver.
 
-An [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem] is specified by
+An [ODEProblem][gemseo.ode.problem.ODEProblem] is specified by
 the RHS function $f$ as `rhs_function`,
 the initial state $y_0$ as `initial_state`,
 and the time interval $[t_0, t_f]$ as `time_interval`.
@@ -59,7 +59,7 @@ is needed when propagating sensitivities through the integration.
 
 Sometimes,
 we do not want to find the solution $y$ for the entire interval $[t_0, t_f]$,
-but only until a stopping criterion is met.
+but only until a termination criterion is met.
 Given a list of termination functions $g_1, \ldots, g_m$
 taking as arguments the time $t$ and the state $y$,
 the ODE solver stops as soon as one of these functions equals 0.
@@ -76,11 +76,11 @@ $$
 \end{cases}
 $$
 
-An ODE solver is typically used to solve an [ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem].
+An ODE solver is typically used to solve an [ODEProblem][gemseo.ode.problem.ODEProblem].
 Please refer to the [ODE solvers section][concept-ode-solvers] for more information.
 
 Once solved,
-the `result` attribute holds an [ODEResult][gemseo.algos.ode.ode_result.ODEResult]
+the `result` attribute holds an [ODEResult][gemseo.ode.result.ODEResult]
 describing the state trajectories at the evaluation times,
 the final state and termination time,
 the index of the termination event (if any),

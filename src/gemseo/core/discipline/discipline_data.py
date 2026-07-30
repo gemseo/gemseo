@@ -23,10 +23,10 @@ from pathlib import PurePath
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.utils.portable_path import to_os_specific
+from gemseo.util.portable_path import to_os_specific
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 class DisciplineData(dict[str, Any]):  # noqa: FURB189

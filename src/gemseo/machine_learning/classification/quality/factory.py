@@ -16,7 +16,9 @@
 
 from __future__ import annotations
 
-from gemseo.machine_learning.classification.quality.base_classifier_quality import (
+from typing import Final
+
+from gemseo.machine_learning.classification.core.base_classifier_quality import (
     BaseClassifierQuality,
 )
 from gemseo.machine_learning.core.quality.factory import MLModelQualityFactory
@@ -27,3 +29,7 @@ class ClassifierQualityFactory(MLModelQualityFactory):
 
     _CLASS = BaseClassifierQuality
     _PACKAGE_NAMES = ("gemseo.machine_learning.classification.quality",)
+
+
+CLASSIFIER_QUALITY_FACTORY: Final[ClassifierQualityFactory] = ClassifierQualityFactory()
+"""The factory for `BaseClassifierQuality` objects."""

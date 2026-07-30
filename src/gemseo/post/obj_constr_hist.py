@@ -31,14 +31,14 @@ from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import SymmetricalLogLocator
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import RG_SEISMIC
+from gemseo.post._engine.colormap import RG_SEISMIC
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.obj_constr_hist_settings import ObjConstrHist_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.typing import NumberArray
+    from gemseo.util.typing import NumberArray
 
 
 class ObjConstrHist(BasePost[ObjConstrHist_Settings]):

@@ -24,7 +24,7 @@ at a specific point.
 ## Solution
 
 Instantiate
-the [TaylorDiscipline][gemseo.disciplines.taylor.TaylorDiscipline] class
+the [TaylorDiscipline][gemseo.discipline.taylor.TaylorDiscipline] class
 from the given discipline.
 
 ## Step-by-step guide
@@ -34,8 +34,8 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.taylor import TaylorDiscipline
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.discipline import TaylorDiscipline
 
 # %%
 # Consider the discipline $f(x)=(\sin(x_1)+\cos(x_2),\cos(x_1)+\sin(x_2))$.
@@ -77,14 +77,14 @@ taylor_at_specific.execute()
 # %%
 # ## Summary
 #
-# The [TaylorDiscipline][gemseo.disciplines.taylor.TaylorDiscipline] can be used
+# The [TaylorDiscipline][gemseo.discipline.taylor.TaylorDiscipline] can be used
 # to compute the first-order Taylor polynomial of a reference discipline.
 #
 # !!! note
 #
 #     When the reference discipline is almost linear over the input range of interest
 #     and provides the analytical derivatives,
-#     a [TaylorDiscipline][gemseo.disciplines.taylor.TaylorDiscipline] can be a very relevant surrogate model.
+#     a [TaylorDiscipline][gemseo.discipline.taylor.TaylorDiscipline] can be a very relevant surrogate model.
 #     Indeed,
 #     it can be built with only 1 evaluation
 #     whereas a simple linear model would need $1+d$ evaluations

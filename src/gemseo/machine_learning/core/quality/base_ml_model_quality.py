@@ -29,14 +29,14 @@ from typing import ClassVar
 from numpy import array
 from strenum import StrEnum
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.typing import RealArray
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
-from gemseo.utils.seeder import SEED
-from gemseo.utils.seeder import Seeder
+from gemseo.dataset.dataset import Dataset
+from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
+from gemseo.util.seeder import SEED
+from gemseo.util.seeder import Seeder
+from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
-    from gemseo.machine_learning.core.models.ml_model import BaseMLModel
+    from gemseo.machine_learning.core.model.base_ml_model import BaseMLModel
 
 MeasureType = float | RealArray | dict[str, RealArray]
 OptionType = Sequence[int] | bool | int | Dataset | None

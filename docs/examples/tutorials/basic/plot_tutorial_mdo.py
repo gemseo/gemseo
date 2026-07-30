@@ -21,26 +21,26 @@ In this tutorial, you will create your first scenario
 to make a multi-disciplary optimization.
 You will focus on the Sobieski test case.
 
-In GEMSEO, the [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+In GEMSEO, the [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 is a central component dedicated to optimization problems.
-Unlike the [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario],
+Unlike the [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario],
 it is specifically designed to define objective functions (to be minimized or maximized)
 as well as constraints.
 Here, you will create and exploit the
-[MDOScenario][gemseo.scenarios.mdo.MDOScenario].
+[MDOScenario][gemseo.scenario.mdo.MDOScenario].
 """
 
 from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import generate_n2_plot
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings.formulations import MDF_Settings
-from gemseo.settings.linear_solvers import LGMRES_Settings
-from gemseo.settings.mda import MDAGaussSeidel_Settings
-from gemseo.settings.opt import SLSQP_Settings
-from gemseo.settings.post import OptHistoryView_Settings
+from gemseo.formulation import MDF_Settings
+from gemseo.linear import LGMRES_Settings
+from gemseo.mda import MDAGaussSeidel_Settings
+from gemseo.optimization import SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
+from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.scenario import MDOScenario
 
 # %%
 # ## Step 1 — The disciplines
@@ -84,24 +84,24 @@ design_space
 
 # %%
 # Then,
-# you build the [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+# you build the [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # which links the disciplines together according to the chosen formulation.
 # Here,
 # you use the
-# [MDF][gemseo.formulations.mdf.MDF] formulation.
+# [MDF][gemseo.formulation.mdf.MDF] formulation.
 #
 # !!! tip
-#     The [MDF][gemseo.formulations.mdf.MDF] formulation is often recommanded
+#     The [MDF][gemseo.formulation.mdf.MDF] formulation is often recommanded
 #     when you start your MDO process.
 #     More complex formulations can be tried in a second phase,
-#     if the [MDF][gemseo.formulations.mdf.MDF] formulation
+#     if the [MDF][gemseo.formulation.mdf.MDF] formulation
 #     does not help to solve the problem.
 #
 # !!! note
 #     The list of the available formulations, and their description, is available in
 #     [MDO formulations][concept-mdo-formulations].
 #
-# The [MDF][gemseo.formulations.mdf.MDF] formulation will create MDAs in the workflow,
+# The [MDF][gemseo.formulation.mdf.MDF] formulation will create MDAs in the workflow,
 # if needed.
 # You can parametrize the MDAs thanks to the settings.
 scenario = MDOScenario(
@@ -118,15 +118,15 @@ scenario = MDOScenario(
 )
 
 # %%
-# Once your [MDOScenario][gemseo.scenarios.mdo.MDOScenario] has been created,
+# Once your [MDOScenario][gemseo.scenario.mdo.MDOScenario] has been created,
 # you must define the objective functions with the
-# [add_objective()][gemseo.scenarios.mdo.MDOScenario.add_objective] method.
+# [add_objective()][gemseo.scenario.mdo.MDOScenario.add_objective] method.
 scenario.add_objective("y_4", minimize=False)
 
 # %%
 # !!! note
-#     You could have chosen the [IDF][gemseo.formulations.idf.IDF] formulation instead,
-#     by using the [IDF_Settings][gemseo.formulations.idf_settings.IDF_Settings].
+#     You could have chosen the [IDF][gemseo.formulation.idf.IDF] formulation instead,
+#     by using the [IDF_Settings][gemseo.formulation.idf_settings.IDF_Settings].
 #     This would have automatically generated another workflow,
 #     allowing the use of multi-processing IDF features.
 #
@@ -135,7 +135,7 @@ scenario.add_objective("y_4", minimize=False)
 # if you intend to use the Sobieski constraints,
 # e.g. $g_1 \leq 0$, $g_2 \leq 0$, and $g_3 \leq 0$,
 # you must use the
-# [add_constraint()][gemseo.scenarios.mdo.MDOScenario.add_constraint] method.
+# [add_constraint()][gemseo.scenario.mdo.MDOScenario.add_constraint] method.
 for c_name in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(c_name, constraint_type="ineq")
 
@@ -163,7 +163,7 @@ scenario.execute(
 
 # %%
 # !!! note
-#     There are different ways to solve an [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
+#     There are different ways to solve an [MDOScenario][gemseo.scenario.mdo.MDOScenario].
 #     You can either chose an optimization algorithm, like `SLSQP`,
 #     or you can chose a Design of Experiment algorithm.
 #     In that case,
@@ -183,12 +183,12 @@ scenario.execute(
 #
 # The optimum results can be found in the execution log. It is also possible to
 # access them with
-# [MDOScenario.optimization_result][gemseo.scenarios.mdo.MDOScenario.optimization_result].
+# [MDOScenario.optimization_result][gemseo.scenario.mdo.MDOScenario.optimization_result].
 scenario.optimization_result
 
 # %%
 # The scenario can also be post-processed with the
-# [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process]] method.
+# [post_process()][gemseo.scenario.mdo.MDOScenario.post_process]] method.
 scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 
 # %%
@@ -196,7 +196,7 @@ scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 #
 # You've learnt to combine different important concepts of GEMSEO
 # to create your first optimisation workflow.
-# The [MDOScenario][gemseo.scenarios.mdo.MDOScenario] uses a
+# The [MDOScenario][gemseo.scenario.mdo.MDOScenario] uses a
 # [MDO formulation][concept-mdo-formulations] which is in charge of building the process
 # with the [Disciplines][gemseo.core.discipline.discipline.Discipline],
 # where the way how couplings are solved depends on the selected strategy.

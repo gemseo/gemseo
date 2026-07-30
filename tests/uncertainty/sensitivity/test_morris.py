@@ -30,18 +30,18 @@ from numpy import pi
 from numpy.testing import assert_almost_equal
 
 from gemseo import create_discipline
-from gemseo.algos.doe.scipy.settings.mc import MC_Settings
-from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.scipy.settings.mc import MC_Settings
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.uncertainty.distributions.scipy.uniform_settings import (
+from gemseo.uncertainty.distribution.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
 from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 FUNCTION = {
     "name": "my_function",

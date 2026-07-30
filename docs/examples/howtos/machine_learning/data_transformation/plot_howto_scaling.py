@@ -36,23 +36,21 @@ Define a scaling data transformation policy in the regressor settings.
 from __future__ import annotations
 
 from gemseo import sample_disciplines
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
-from gemseo.algos.doe.scipy.settings.mc import MC_Settings
-from gemseo.machine_learning.regression.models.gpr import GaussianProcessRegressor
-from gemseo.machine_learning.regression.models.gpr_settings import (
+from gemseo.doe import MC_Settings
+from gemseo.doe import OT_OPT_LHS_Settings
+from gemseo.machine_learning.regression.model import GaussianProcessRegressor
+from gemseo.machine_learning.regression.model.gpr_settings import (
     GaussianProcessRegressor_Settings,
 )
-from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
-    WingWeightUncertainSpace,
-)
+from gemseo.machine_learning.regression.quality import R2Measure
+from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
+from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
 
 # %%
 # ### 1. Define the reference model
 #
 # You consider the wing weight problem
-# defined in [this page][gemseo.problems.uncertainty.wing_weight].
+# defined in [this page][gemseo.problem.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
 input_space = WingWeightUncertainSpace()
@@ -103,7 +101,7 @@ r2.compute_test_measure(test_dataset)
 # using the default data transformation strategy,
 # namely scaling both input and output variables between 0 and 1
 # using the minimum and maximum values from the training dataset
-# (see [MinMaxScaler][gemseo.machine_learning.transformers.scaler.min_max_scaler.MinMaxScaler]).
+# (see [MinMaxScaler][gemseo.machine_learning.transformer.scaler.min_max_scaler.MinMaxScaler]).
 # Use the `DEFAULT_TRANSFORMER` attribute of the regressor for that purpose.
 regressor = GaussianProcessRegressor(
     training_dataset,
@@ -137,7 +135,7 @@ r2.compute_test_measure(test_dataset)
 #
 # You can also scale the data
 # by subtracting the mean and dividing by the standard deviation
-# (see [StandardScaler][gemseo.machine_learning.transformers.scaler.standard_scaler.StandardScaler]).
+# (see [StandardScaler][gemseo.machine_learning.transformer.scaler.standard_scaler.StandardScaler]).
 regressor = GaussianProcessRegressor(
     training_dataset,
     settings=GaussianProcessRegressor_Settings(

@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw parallel coordinates from a [Dataset][gemseo.datasets.dataset.Dataset].
+r"""Draw parallel coordinates from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 The [ParallelCoordinates][gemseo.post.dataset.parallel_coordinates.ParallelCoordinates]
 class implements the parallel coordinates plot, a.k.a. cowebplot,
@@ -54,10 +54,10 @@ from gemseo.post.dataset.base import BaseDatasetPlot
 from gemseo.post.dataset.parallel_coordinates_settings import (
     ParallelCoordinates_Settings,
 )
-from gemseo.utils.string_tools import pretty_str
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
+    from gemseo.dataset.dataset import Dataset
 
 
 class ParallelCoordinates(BaseDatasetPlot[ParallelCoordinates_Settings]):

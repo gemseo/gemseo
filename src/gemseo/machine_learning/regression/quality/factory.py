@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import Final
 
 from gemseo.machine_learning.core.quality.factory import MLModelQualityFactory
-from gemseo.machine_learning.regression.quality.base_regressor_quality import (
+from gemseo.machine_learning.regression.core.base_regressor_quality import (
     BaseRegressorQuality,
 )
 

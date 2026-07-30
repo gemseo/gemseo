@@ -28,11 +28,11 @@ from matplotlib import pyplot as plt
 
 from gemseo.post.dataset.radviz import RadViz
 from gemseo.post.dataset.radviz_settings import RadViz_Settings
-from gemseo.problems.dataset.iris import create_iris_dataset
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.problem.dataset.iris import create_iris_dataset
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
+    from gemseo.dataset.dataset import Dataset
 
 
 @pytest.fixture

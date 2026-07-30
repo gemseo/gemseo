@@ -28,8 +28,8 @@ just functions returning an array from an array.
 
 ## Solution
 
-Use [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-together with [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]
+Use [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
+together with [ArrayFunction][gemseo.core.function.array_function.ArrayFunction]
 to define the problem, then call [execute_algo()][gemseo.execute_algo]
 to solve it.
 
@@ -44,16 +44,16 @@ from numpy import sin
 
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization import L_BFGS_B_Settings
+from gemseo.optimization import OptimizationProblem
 from gemseo.post import OptHistoryView_Settings
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Define the objective function
 #
-# You wrap functions returning a NumPy array from a NumPy array into [ArrayFunctions][gemseo.core.functions.array_function.ArrayFunction], and compose these array functions with arithmetic operators.
+# You wrap functions returning a NumPy array from a NumPy array into [ArrayFunctions][gemseo.core.function.array_function.ArrayFunction], and compose these array functions with arithmetic operators.
 # Here you build the objective function $f(x) = \sin(x) - \exp(x)$ with its analytic Jacobian:
 
 f = ArrayFunction(sin, name="f", jac=cos, expr="sin(x)")
@@ -66,14 +66,14 @@ objective = f - g
 #     e.g. `str(f) == "f = sin(x)"` and `str(objective) == "[f+g] = sin(x)+exp(x)"`.
 #
 # !!! info "See also"
-#     [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]
+#     [ArrayFunction][gemseo.core.function.array_function.ArrayFunction]
 #     supports addition, subtraction, and multiplication of functions.
 #     The unary minus operator is also available.
 
 # %%
 # ### 2. Define the design space
 #
-# The [DesignSpace][gemseo.algos.design_space.DesignSpace]
+# The [DesignSpace][gemseo.space.design.DesignSpace]
 # sets the variable bounds and the initial point:
 
 design_space = DesignSpace()
@@ -82,7 +82,7 @@ design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=-0.5)
 # %%
 # ### 3. Assemble the optimization problem
 #
-# [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 # holds the objective, constraints (none here), and the design space:
 
 problem = OptimizationProblem(design_space)
@@ -93,7 +93,7 @@ problem.objective = objective
 #
 # [execute_algo()][gemseo.execute_algo] runs any GEMSEO-registered algorithm
 # on the problem and returns an
-# [OptimizationResult][gemseo.algos.optimization_result.OptimizationResult]:
+# [OptimizationResult][gemseo.optimization.result.OptimizationResult]:
 
 optimization_result = execute_algo(problem, settings_model=L_BFGS_B_Settings())
 optimization_result
@@ -119,10 +119,10 @@ execute_post(problem, OptHistoryView_Settings(save=False, show=True))
 #
 # ## Summary
 #
-# [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 # is the low-level way to define an optimization problem
 # without any discipline or formulation.
 # Pass it to [execute_algo()][gemseo.execute_algo] with any optimizer or DOE algorithm.
-# Use [problem.to_hdf()][gemseo.algos.optimization_problem.OptimizationProblem.to_hdf]
+# Use [problem.to_hdf()][gemseo.optimization.problem.OptimizationProblem.to_hdf]
 # to persist results and [execute_post()][gemseo.execute_post]
 # to visualize the optimization history.

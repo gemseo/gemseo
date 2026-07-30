@@ -29,7 +29,7 @@ You want to retry until success.
 
 ## Solution
 
-The [RetryDiscipline][gemseo.disciplines.wrappers.retry_discipline.RetryDiscipline]
+The [RetryDiscipline][gemseo.discipline.wrapper.retry_discipline.RetryDiscipline]
 facilitates the management of these repetitions.
 
 ## Step-by-step guide
@@ -42,10 +42,10 @@ from typing import TYPE_CHECKING
 
 from gemseo import LOGGER
 from gemseo.core.discipline import Discipline
-from gemseo.disciplines.wrappers.retry_discipline import RetryDiscipline
+from gemseo.discipline import RetryDiscipline
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 # %%
@@ -78,7 +78,7 @@ discipline = FictiveDiscipline()
 # ### 2. Multiple trials
 #
 # Wrap your discipline with
-# [RetryDiscipline][gemseo.disciplines.wrappers.retry_discipline.RetryDiscipline].
+# [RetryDiscipline][gemseo.discipline.wrapper.retry_discipline.RetryDiscipline].
 retry_discipline = RetryDiscipline(discipline, n_trials=4)
 retry_discipline.execute()
 
@@ -93,7 +93,7 @@ retry_discipline.n_executions
 # ## Summary
 #
 # Wrap your discipline with the
-# [RetryDiscipline][gemseo.disciplines.wrappers.retry_discipline.RetryDiscipline].
+# [RetryDiscipline][gemseo.discipline.wrapper.retry_discipline.RetryDiscipline].
 #
 # The execution of your discipline can be retried when:
 #

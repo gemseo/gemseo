@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from gemseo.formulations.bilevel import BiLevel
+from gemseo.formulation.bilevel import BiLevel
 
 
 class DummyBiLevel(BiLevel):

@@ -17,7 +17,7 @@ search:
 
 # The design space { #concept-design-space }
 
-A [DesignSpace][gemseo.algos.design_space.DesignSpace]
+A [DesignSpace][gemseo.space.design.DesignSpace]
 is a collection of variables,
 that can be either scalar or vector,
 defined by bounds.

@@ -24,7 +24,7 @@ When ODEs are coupled - meaning the dynamics of each state variable depend on
 the values of other state variables - two strategies are available:
 
 - **Strategy 1 - MDA between ODEDiscipline instances**:
-  create one [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+  create one [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
   per subsystem and couple them via a
   [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel].
   Each discipline integrates its own ODE in time;
@@ -32,9 +32,9 @@ the values of other state variables - two strategies are available:
 
 - **Strategy 2 - Single ODEDiscipline with coupled dynamics**:
   define all the coupled dynamics inside a single RHS discipline
-  (here an [DisciplineChain][gemseo.core.chains.chain.DisciplineChain])
+  (here an [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain])
   and wrap it in a single
-  [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline].
+  [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline].
   The coupling is resolved at each time step during the integration.
 
 Both strategies are presented and compared on the same problem.
@@ -86,15 +86,15 @@ from numpy import array
 from numpy import linspace
 from scipy.interpolate import interp1d
 
-from gemseo.algos.ode.scipy_ode.settings.rk45 import RK45_Settings
-from gemseo.core.chains.chain import DisciplineChain
 from gemseo.core.discipline import Discipline
-from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
-from gemseo.mda.gauss_seidel import MDAGaussSeidel
+from gemseo.discipline import AutoPyDiscipline
+from gemseo.discipline import ODEDiscipline
+from gemseo.discipline.chain.chain import DisciplineChain
+from gemseo.mda import MDAGaussSeidel
+from gemseo.ode import RK45_Settings
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 # %%
 # ## Step 1 - Define the problem parameters
@@ -187,7 +187,7 @@ class RHSMassDisciplineRight(Discipline):
 
 
 # %%
-# You create one [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+# You create one [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
 # per mass and couple them with a
 # [MDAGaussSeidel][gemseo.mda.gauss_seidel.MDAGaussSeidel].
 # ![image](../../../../../assets/images/ode/springs-disciplines.png)
@@ -226,7 +226,7 @@ plt.show()
 # ## Step 3 - Strategy 2: single ODEDiscipline with coupled dynamics
 #
 # You define the RHS of both masses as plain Python functions
-# and wrap them in an [DisciplineChain][gemseo.core.chains.chain.DisciplineChain].
+# and wrap them in an [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain].
 # The coupling is then resolved internally at each time step
 # during the integration.
 # ![image](../../../../../assets/images/ode/time_integration.png)
@@ -308,27 +308,27 @@ plt.show()
 # ## Key takeaways
 #
 # - When ODEs are coupled, two strategies are available in GEMSEO:
-#   couple multiple [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+#   couple multiple [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
 #   instances via an MDA,
 #   or define all coupled dynamics inside a single RHS discipline
-#   wrapped in one [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline].
+#   wrapped in one [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline].
 # - **Strategy 1** (MDA) integrates each subsystem independently and iterates
 #   on the coupling variables across disciplines.
 #   It is more modular but requires the full trajectory of coupling variables
 #   to be passed between disciplines.
 # - **Strategy 2** (single ODEDiscipline) resolves the coupling at each time step
 #   during the integration, using an
-#   [DisciplineChain][gemseo.core.chains.chain.DisciplineChain] as the RHS.
+#   [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain] as the RHS.
 #   It is more compact and avoids trajectory interpolation.
 # - Both strategies produce equivalent results for the same problem.
 #
 # !!! note
 #
-#     The [CoupledSpringsGenerator][gemseo.problems.ode.springs.coupled_springs_generator.CoupledSpringsGenerator]
+#     The [CoupledSpringsGenerator][gemseo.problem.ode.spring.coupled_springs_generator.CoupledSpringsGenerator]
 #     class provides a ready-to-use implementation of the coupled springs problem
 #     for any number of masses.
 #     It can generate both coupled
-#     [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+#     [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
 #     instances and a single discipline with coupled dynamics,
 #     via `create_coupled_ode_disciplines()` and
 #     `create_discipline_with_coupled_dynamics()` respectively.

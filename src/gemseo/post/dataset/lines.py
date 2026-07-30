@@ -27,7 +27,7 @@ from gemseo.post.dataset.base import BaseDatasetPlot
 from gemseo.post.dataset.lines_settings import Lines_Settings
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 class Lines(BaseDatasetPlot[Lines_Settings]):

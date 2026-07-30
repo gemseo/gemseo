@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Linear regression.
 
-A [LinearRegressor][gemseo.machine_learning.regression.models.linreg.LinearRegressor] is a linear regression model
+A [LinearRegressor][gemseo.machine_learning.regression.model.linreg.LinearRegressor] is a linear regression model
 based on [scikit-learn](https://scikit-learn.org).
 
 !!! info "See also"
@@ -48,7 +48,7 @@ from gemseo.machine_learning import create_regression_model
 #
 # In this example,
 # you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
-# by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
+# by the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
 #       Alexander I. J. Forrester, Andras Sobester, and Andy J. Keane.
@@ -114,8 +114,8 @@ plt.show()
 # %%
 # ## Settings { #linear-settings }
 #
-# The [LinearRegressor][gemseo.machine_learning.regression.models.linreg.LinearRegressor] has many options
-# defined in the [LinearRegressor_Settings][gemseo.machine_learning.regression.models.linreg_settings.LinearRegressor_Settings] Pydantic model.
+# The [LinearRegressor][gemseo.machine_learning.regression.model.linreg.LinearRegressor] has many options
+# defined in the [LinearRegressor_Settings][gemseo.machine_learning.regression.model.linreg_settings.LinearRegressor_Settings] Pydantic model.
 #
 # ### Intercept
 #

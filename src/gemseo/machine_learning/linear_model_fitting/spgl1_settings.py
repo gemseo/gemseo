@@ -30,7 +30,7 @@ from spgl1.spgl1 import _norm_l1_dual
 from spgl1.spgl1 import _norm_l1_primal
 from spgl1.spgl1 import _norm_l1_project
 
-from gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings import (  # noqa: E501
+from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings import (  # noqa: E501
     BaseLinearModelFitterSettings,
 )
 

@@ -34,12 +34,12 @@ from __future__ import annotations
 
 from matplotlib import pyplot as plt
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.formulation import DisciplinaryOpt_Settings
+from gemseo.optimization import NLOPT_COBYLA_Settings
 from gemseo.post import OptHistoryView_Settings
-from gemseo.scenarios.mdo import MDOScenario
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Build and execute the scenario

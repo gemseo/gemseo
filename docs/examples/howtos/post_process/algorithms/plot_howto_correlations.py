@@ -39,7 +39,7 @@ It produces scatter plots for all pairs whose coefficient exceeds a given thresh
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import Correlations_Settings
+from gemseo.post import Correlations_Settings
 
 # %%
 # ### 1. Prerequisites

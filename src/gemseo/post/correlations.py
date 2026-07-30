@@ -35,7 +35,7 @@ from matplotlib.gridspec import GridSpec
 from numpy import atleast_2d
 from numpy import hstack
 
-from gemseo.post.base_post import BasePost
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.correlations_settings import Correlations_Settings
 
 if TYPE_CHECKING:
@@ -43,8 +43,8 @@ if TYPE_CHECKING:
 
     from matplotlib.figure import Figure
 
-    from gemseo.typing import NumberArray
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 

@@ -18,13 +18,13 @@
 ## Problem
 
 You have data stored in a NumPy array and want to load it into a
-[Dataset][gemseo.datasets.dataset.Dataset]
+[Dataset][gemseo.dataset.dataset.Dataset]
 with meaningful variable names and group assignments.
 
 ## Solution
 
 Use the class method
-[Dataset.from_array()][gemseo.datasets.dataset.Dataset.from_array],
+[Dataset.from_array()][gemseo.dataset.dataset.Dataset.from_array],
 passing the array along with optional variable names, sizes and group names.
 
 ## Step-by-step guide
@@ -36,7 +36,7 @@ from __future__ import annotations
 from numpy import concatenate
 from numpy.random import default_rng
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset import Dataset
 
 # %%
 # ### 1. Generate the data
@@ -88,7 +88,7 @@ dataset
 #
 # Pass an additional dictionary mapping each variable name to its group.
 # Variables not listed fall back to
-# [Dataset.DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]:
+# [Dataset.DEFAULT_GROUP][gemseo.dataset.dataset.Dataset.DEFAULT_GROUP]:
 groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
 dataset = Dataset.from_array(data, ["x_1", "x_2", "y_1"], name_to_size, groups)
 dataset
@@ -96,7 +96,7 @@ dataset
 # %%
 # ## Summary
 #
-# [Dataset.from_array()][gemseo.datasets.dataset.Dataset.from_array]
+# [Dataset.from_array()][gemseo.dataset.dataset.Dataset.from_array]
 # accepts up to four arguments in increasing order of specificity:
 # the data array, variable names, a name-to-size mapping, and a name-to-group mapping.
 # All arguments beyond the array are optional;
@@ -106,8 +106,8 @@ dataset
 #
 # To read data directly from a file instead of a NumPy array, two class methods are available:
 #
-# - [Dataset.from_csv()][gemseo.datasets.dataset.Dataset.from_csv]
+# - [Dataset.from_csv()][gemseo.dataset.dataset.Dataset.from_csv]
 #   for CSV files structured with 3 header rows encoding the multi-index
 #   (group, variable, component), or
-# - [Dataset.from_txt()][gemseo.datasets.dataset.Dataset.from_txt]
+# - [Dataset.from_txt()][gemseo.dataset.dataset.Dataset.from_txt]
 #   for plain text files that contain no header rows.

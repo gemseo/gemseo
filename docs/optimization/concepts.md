@@ -27,12 +27,12 @@ the design space, the optimization problem and the driver.
 
 ## Design space
 
-See [the API documentation][gemseo.algos.design_space.DesignSpace] and [the examples][design-space-examples].
+See [the API documentation][gemseo.space.design.DesignSpace] and [the examples][design-space-examples].
 
 ## Optimization problem
 
-See [the API documentation][gemseo.algos.optimization_problem.OptimizationProblem].
+See [the API documentation][gemseo.optimization.problem.OptimizationProblem].
 
 ## Driver
 
-See [the API documentation][gemseo.algos.base_driver_library.BaseDriverLibrary] and the examples using problems and scenarios.
+See [the API documentation][gemseo.core.algorithm.base_driver_library.BaseDriverLibrary] and the examples using problems and scenarios.

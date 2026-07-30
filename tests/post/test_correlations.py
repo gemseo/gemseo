@@ -25,14 +25,14 @@ from pathlib import Path
 import pytest
 from matplotlib import pyplot
 
-from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
-from gemseo.algos.opt.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post import Correlations_Settings
+from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.post.correlations import Correlations
+from gemseo.post.correlations_settings import Correlations_Settings
 from gemseo.post.factory import POST_FACTORY
-from gemseo.problems.optimization.rosenbrock import Rosenbrock
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.util.testing.helper import assert_exception
 
 PARENT_PATH = Path(__file__).parent
 POWER_HDF5_PATH = PARENT_PATH / "power2_opt_pb.h5"

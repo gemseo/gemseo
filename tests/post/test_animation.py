@@ -19,12 +19,12 @@ from pathlib import Path
 import pytest
 
 from gemseo import create_scenario
-from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post import Animation_Settings
+from gemseo.optimization.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.animation import Animation
+from gemseo.post.animation_settings import Animation_Settings
 from gemseo.post.factory import POST_FACTORY
-from gemseo.problems.topology_optimization.topopt_initialize import (
+from gemseo.problem.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
 

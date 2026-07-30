@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 from gemseo.post.dataset.factory import DatasetPlotFactory
-from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
+from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
 
 
 def test_instantiate_factory() -> None:

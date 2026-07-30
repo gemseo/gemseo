@@ -39,13 +39,13 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import sqrt
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline import Discipline
-from gemseo.scenarios.evaluation import EvaluationScenario
-from gemseo.settings import CustomDOE_Settings
+from gemseo.doe import CustomDOE_Settings
+from gemseo.scenario import EvaluationScenario
+from gemseo.space import DesignSpace
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 # %%
 # ### 1. Implement the discipline
@@ -79,7 +79,7 @@ design_space = DesignSpace()
 design_space.add_variable("a", lower_bound=-1.0, upper_bound=10.0)
 
 # %%
-# For that, you can create a scenario and execute it with a [CustomDOE][gemseo.algos.doe.custom_doe.custom_doe.CustomDOE]
+# For that, you can create a scenario and execute it with a [CustomDOE][gemseo.doe.custom_doe.custom_doe.CustomDOE]
 # with the setting "samples":
 scenario = EvaluationScenario([discipline], design_space)
 scenario.add_observable("y")

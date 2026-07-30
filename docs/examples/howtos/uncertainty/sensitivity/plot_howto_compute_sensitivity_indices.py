@@ -24,22 +24,22 @@ to the variability of a discipline output.
 
 Every sensitivity analysis in GEMSEO follows the same two-step workflow:
 
-1. [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples]
+1. [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples]
    evaluates the discipline over a set of random inputs;
-2. [compute_indices()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_indices]
+2. [compute_indices()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_indices]
    derives the sensitivity indices from those samples.
 
 The result is stored in
-[indices][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.indices].
+[indices][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.indices].
 
 ## Step-by-step guide
 """
 
 from __future__ import annotations
 
-from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.problem.uncertainty.ishigami import IshigamiDiscipline
+from gemseo.problem.uncertainty.ishigami import IshigamiSpace
+from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 
 # %%
 # ### 1. Set up the test problem
@@ -68,7 +68,7 @@ analysis = CorrelationAnalysis()
 # %%
 # ### 3. Generate samples
 #
-# [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples]
+# [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples]
 # evaluates the discipline at random input points drawn from the uncertain space:
 samples = analysis.compute_samples([discipline], uncertain_space, n_samples=1000)
 samples
@@ -76,7 +76,7 @@ samples
 # %%
 # ### 4. Compute indices
 #
-# [compute_indices()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_indices]
+# [compute_indices()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_indices]
 # derives the sensitivity indices from the samples:
 analysis.compute_indices()
 
@@ -84,7 +84,7 @@ analysis.compute_indices()
 # ### 5. Inspect the indices
 #
 # The
-# [indices][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.indices]
+# [indices][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.indices]
 # attribute holds a nested mapping `{output_name: {index_name: {input_name: value}}}`:
 analysis.indices.pearson
 
@@ -92,10 +92,10 @@ analysis.indices.pearson
 # ## Summary
 #
 # - Call
-#   [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples]
+#   [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples]
 #   to evaluate the discipline over a specific design;
 # - Call
-#   [compute_indices()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_indices]
+#   [compute_indices()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_indices]
 #   to derive the indices from those samples;
 # - Access indices via
-#   [indices][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.indices].
+#   [indices][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.indices].

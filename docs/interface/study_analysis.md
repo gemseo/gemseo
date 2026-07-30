@@ -22,8 +22,8 @@ Contributors:
 
 # Study analyses
 
-The [CouplingStudyAnalysis][gemseo.utils.study_analyses.coupling_study_analysis.CouplingStudyAnalysis]
-and [MDOStudyAnalysis][gemseo.utils.study_analyses.mdo_study_analysis.MDOStudyAnalysis] are tools based on
+The [CouplingStudyAnalysis][gemseo.util.study_analysis.coupling_study_analysis.CouplingStudyAnalysis]
+and [MDOStudyAnalysis][gemseo.util.study_analysis.mdo_study_analysis.MDOStudyAnalysis] are tools based on
 an Excel file to specify and analyze a study, even before wrapping any
 software.
 
@@ -46,7 +46,7 @@ can also be executed locally by using the dedicated plugin.
 
 ## Coupling study analysis
 
-The [CouplingStudyAnalysis][gemseo.utils.study_analyses.coupling_study_analysis.CouplingStudyAnalysis] helps the user to check the couplings
+The [CouplingStudyAnalysis][gemseo.util.study_analysis.coupling_study_analysis.CouplingStudyAnalysis] helps the user to check the couplings
 between various disciplines.
 
 The user only has to fill an Excel file with one worksheet per
@@ -56,7 +56,7 @@ The result of the analysis is a `N2` (or `DSM`) diagram
 
 ## MDO study analysis
 
-The [MDOStudyAnalysis][gemseo.utils.study_analyses.mdo_study_analysis.MDOStudyAnalysis] helps the user to define the right MDO problem
+The [MDOStudyAnalysis][gemseo.util.study_analysis.mdo_study_analysis.MDOStudyAnalysis] helps the user to define the right MDO problem
 to be solved.
 
 The user only has to fill an Excel file with one worksheet per
@@ -71,7 +71,7 @@ The result of the analysis are a N2 (or DSM) and XDSM diagrams
 ## Examples
 
 The next figure illustrates how this tool can be used to create an
-[MDOStudyAnalysis][gemseo.utils.study_analyses.mdo_study_analysis.MDOStudyAnalysis]. This requires the creation of an Excel workbook
+[MDOStudyAnalysis][gemseo.util.study_analysis.mdo_study_analysis.MDOStudyAnalysis]. This requires the creation of an Excel workbook
 with one sheet per discipline. The name of the discipline is given by
 the name of the sheet. On each of these sheets, the inputs and outputs
 of the discipline must be given.

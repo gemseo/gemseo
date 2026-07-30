@@ -22,13 +22,13 @@ from numpy import setdiff1d
 from numpy import unique
 from numpy.random import default_rng
 
-from gemseo.machine_learning.resampling.base_resampler import BaseResampler
+from gemseo.machine_learning.resampling.core.base_resampler import BaseResampler
 from gemseo.machine_learning.resampling.split import Split
 from gemseo.machine_learning.resampling.splits import Splits
-from gemseo.utils.seeder import SEED
+from gemseo.util.seeder import SEED
 
 if TYPE_CHECKING:
-    from gemseo.typing import IntegerArray
+    from gemseo.util.typing import IntegerArray
 
 
 class Bootstrap(BaseResampler):

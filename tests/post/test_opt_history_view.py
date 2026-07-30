@@ -27,11 +27,11 @@ from numpy.testing import assert_equal
 
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.post import OptHistoryView_Settings
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.opt_history_view import OptHistoryView
+from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
+from gemseo.space.design import DesignSpace
 
 DIR_PATH = Path(__file__).parent
 POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"

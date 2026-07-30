@@ -29,7 +29,7 @@ from numpy import newaxis
 from numpy import sum as npsum
 from numpy.random import default_rng
 
-from gemseo.machine_learning.transformers.dimension_reduction.pls import PLS
+from gemseo.machine_learning.transformer.dimension_reduction.pls import PLS
 
 if TYPE_CHECKING:
     from numpy import ndarray

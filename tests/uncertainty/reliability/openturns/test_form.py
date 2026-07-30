@@ -19,15 +19,15 @@ from numpy.testing import assert_almost_equal
 from openturns import AnalyticalResult
 from openturns import FORMResult
 
-from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.function.array_function import ArrayFunction
 from gemseo.uncertainty.reliability.openturns.form import OT_FORM
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 from gemseo.uncertainty.reliability.openturns.optimizer import BaseOTOptimizer
 from gemseo.uncertainty.reliability.openturns.optimizer import NLoptAlgorithmName
 from gemseo.uncertainty.reliability.openturns.optimizer import OTNLopt
 from gemseo.uncertainty.reliability.problem import ReliabilityProblem
-from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.comparison import compare_dict_of_arrays
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.mark.parametrize("settings", [None, *BaseOTOptimizer.__subclasses__()])

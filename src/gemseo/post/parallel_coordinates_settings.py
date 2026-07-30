@@ -18,9 +18,9 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
-from gemseo.typing import StrKeyMapping
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
+from gemseo.util.typing import StrKeyMapping
 
 
 class ParallelCoordinates_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801

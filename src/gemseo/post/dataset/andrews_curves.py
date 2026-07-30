@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw Andrews curves from a [Dataset][gemseo.datasets.dataset.Dataset].
+r"""Draw Andrews curves from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 The [AndrewsCurves][gemseo.post.dataset.andrews_curves.AndrewsCurves] class
 implements the Andrew plot, a.k.a. Andrews curves,
@@ -55,7 +55,7 @@ from __future__ import annotations
 
 from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
 from gemseo.post.dataset.base import BaseDatasetPlot
-from gemseo.utils.string_tools import pretty_str
+from gemseo.util.string import pretty_str
 
 
 class AndrewsCurves(BaseDatasetPlot[AndrewsCurves_Settings]):

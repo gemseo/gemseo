@@ -35,28 +35,28 @@ from numpy.testing import assert_equal
 from openturns import FunctionalChaosRandomVector
 
 from gemseo import sample_disciplines
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.machine_learning.regression.models.linreg import LinearRegressor
-from gemseo.machine_learning.regression.models.pce import CleaningOptions
-from gemseo.machine_learning.regression.models.pce import PCERegressor
-from gemseo.machine_learning.regression.models.pce_settings import PCERegressor_Settings
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline.auto_py import AutoPyDiscipline
+from gemseo.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
+from gemseo.machine_learning.regression.model.pce import CleaningOptions
+from gemseo.machine_learning.regression.model.pce import PCERegressor
+from gemseo.machine_learning.regression.model.pce_settings import PCERegressor_Settings
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.uncertainty.distributions.scipy.normal_settings import (
+from gemseo.uncertainty.distribution.scipy.normal_settings import (
     SPNormalDistribution_Settings,
 )
-from gemseo.uncertainty.distributions.scipy.uniform_settings import (
+from gemseo.uncertainty.distribution.scipy.uniform_settings import (
     SPUniformDistribution_Settings,
 )
-from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.comparison import compare_dict_of_arrays
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")

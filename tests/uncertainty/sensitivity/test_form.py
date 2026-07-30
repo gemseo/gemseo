@@ -22,11 +22,11 @@ from __future__ import annotations
 import pytest
 from numpy.testing import assert_almost_equal
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.space.parameter import ParameterSpace
 from gemseo.uncertainty import create_sensitivity_analysis
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings

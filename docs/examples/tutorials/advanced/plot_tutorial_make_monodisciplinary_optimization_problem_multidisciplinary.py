@@ -19,7 +19,7 @@
 
 MDO benchmark problems are far less numerous than standard optimization problems.
 This tutorial shows how
-[OptAsMDOScenario][gemseo.problems.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
+[OptAsMDOScenario][gemseo.problem.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
 automatically transforms any monodisciplinary optimization problem into a
 multidisciplinary one, introducing strongly coupled disciplines and coupling variables
 without changing the optimal solution.
@@ -45,11 +45,11 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo import generate_coupling_graph
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.problems.mdo.opt_as_mdo_scenario import OptAsMDOScenario
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings.opt import NLOPT_SLSQP_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.optimization import NLOPT_SLSQP_Settings
+from gemseo.problem.mdo.opt_as_mdo_scenario import OptAsMDOScenario
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ## Step 1 — Define the discipline and design space
@@ -89,7 +89,7 @@ opt_scenario.optimization_result
 # %%
 # ## Step 3 — Build the MDO scenario with OptAsMDOScenario
 #
-# [OptAsMDOScenario][gemseo.problems.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
+# [OptAsMDOScenario][gemseo.problem.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
 # requires at least three scalar inputs and one output.
 # It splits the design variables across strongly coupled disciplines automatically.
 # The only choice to make here is the MDO formulation;
@@ -102,7 +102,7 @@ mdo_scenario.add_objective("f")
 # %%
 # ## Step 4 — Understand the variable renaming
 #
-# [OptAsMDOScenario][gemseo.problems.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
+# [OptAsMDOScenario][gemseo.problem.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
 # renames the original design variables according to a fixed
 # convention to reflect their role in the MDO problem:
 #
@@ -134,7 +134,7 @@ mdo_scenario.optimization_result
 # %%
 # ## Key takeaways
 #
-# - [OptAsMDOScenario][gemseo.problems.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
+# - [OptAsMDOScenario][gemseo.problem.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
 #   turns any monodisciplinary problem (≥3 scalar inputs,
 #   ≥1 output) into an MDO problem with strongly coupled disciplines, with no
 #   change to the optimal solution.

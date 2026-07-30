@@ -24,14 +24,14 @@ from __future__ import annotations
 import pytest
 from numpy import array
 
-from gemseo.datasets.io_dataset import IODataset
+from gemseo.dataset.io_dataset import IODataset
 from gemseo.machine_learning.core.quality.base_ml_model_quality import (
     BaseMLModelQuality,
 )
 from gemseo.machine_learning.core.quality.factory import MLModelQualityFactory
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.util.testing.helper import concretize_classes
 
-from ..core.test_ml_model import DummyMLModel
+from ..core.test_base_ml_model import DummyMLModel
 
 
 @pytest.fixture(scope="module")

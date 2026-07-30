@@ -23,10 +23,10 @@ import pytest
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.dataset.lines_settings import Lines_Settings
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")

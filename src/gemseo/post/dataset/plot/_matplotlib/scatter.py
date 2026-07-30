@@ -1,0 +1,72 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Scatter based on matplotlib."""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import TYPE_CHECKING
+
+from gemseo.post.dataset.plot._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.scatter_settings import Scatter_Settings
+from gemseo.post.dataset.trend import _TREND_FUNCTIONS
+from gemseo.post.dataset.trend import Trend
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from numpy.typing import ArrayLike
+
+
+class Scatter(MatplotlibPlot[Scatter_Settings]):
+    """Scatter based on matplotlib."""
+
+    def _create_figures(
+        self,
+        fig: Figure | None,
+        ax: Axes | None,
+        x_values: ArrayLike,
+        y_values: ArrayLike,
+    ) -> list[Figure]:
+        """
+        Args:
+            x_values: The values of the points on the x-axis.
+            y_values: The values of the points on the y-axis.
+        """  # noqa: D205, D212, D415
+        settings = self._settings
+        fig, ax = self._get_figure_and_axes(fig, ax)
+        scatter = ax.scatter(x_values, y_values, color=settings.color)
+        scatter.set_zorder(3)
+        trend_function_creator = settings.trend
+        if trend_function_creator != Trend.NONE:
+            if not isinstance(trend_function_creator, Callable):
+                trend_function_creator = _TREND_FUNCTIONS[trend_function_creator]
+
+            indices = x_values[:, 0].argsort()
+            x_values = x_values[indices]
+            y_values = y_values[indices]
+            trend_function = trend_function_creator(x_values[:, 0], y_values[:, 0])
+            ax.plot(
+                x_values,
+                trend_function(x_values),
+                color="gray",
+                linestyle="--",
+            )
+
+        ax.grid(visible=settings.grid)
+        ax.set_xlabel(settings.xlabel)
+        ax.set_ylabel(settings.ylabel)
+        ax.set_title(settings.title)
+        return [fig]

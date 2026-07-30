@@ -23,8 +23,8 @@ To do so, you will split the problem into a discrete optimization problem
 to enumerate all the combinations
 and a continuous one to solve the associated sub-problem.
 Thus, you will use the
-[MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
-to wrap an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+[MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
+to wrap an [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 and treat it as a discipline whose inputs are some or all of its design space variables
 and whose outputs are some or all of its functions
 (objective, constraints or observables).
@@ -40,13 +40,13 @@ from __future__ import annotations
 from numpy import ndarray  # noqa: TC002
 from numpy.linalg import norm
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.auto_py import AutoPyDiscipline
-from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings.doe import PYDOE_FULLFACT_Settings
-from gemseo.settings.opt import NLOPT_COBYLA_Settings
-from gemseo.settings.post import OptHistoryView_Settings
+from gemseo.discipline import AutoPyDiscipline
+from gemseo.doe import PYDOE_FULLFACT_Settings
+from gemseo.optimization import NLOPT_COBYLA_Settings
+from gemseo.post import OptHistoryView_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.scenario import MDOScenarioAdapter
+from gemseo.space import DesignSpace
 
 # %%
 # ## Step 0 - Optimization problem definitions
@@ -79,15 +79,15 @@ from gemseo.settings.post import OptHistoryView_Settings
 # ### Problem reformulation
 #
 # The problem can be split using the
-# [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter].
+# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter].
 # To do this you will divide the design space in two,
 # a continuous one and a discrete one.
 # The
-# [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
+# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
 # will wrap the continuous inner scenario as
 # a discipline to be executed taking the inputs from the discrete design space.
 # These inputs are generated
-# by the outer [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+# by the outer [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # using a full factorial method.
 # It is of course possible to use any other DOE algorithms.
 #
@@ -128,7 +128,7 @@ from gemseo.settings.post import OptHistoryView_Settings
 #
 # Since the expressions of your toy problem are very simple,
 # you can use an
-# [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
+# [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline]
 # to compute the objective and constraints.
 # Note that there are no strong couplings in your expressions,
 # which means you could also compute both the objective and constraints
@@ -167,7 +167,7 @@ constraint = AutoPyDiscipline(name="g(x,y)", py_func=const)
 # %%
 # ## Step 2 - Create the design space for the entire problem
 #
-# You can define a [DesignSpace][gemseo.algos.design_space.DesignSpace]
+# You can define a [DesignSpace][gemseo.space.design.DesignSpace]
 # for the whole problem
 # and then filter either the continuous variables or the discrete ones.
 design_space = DesignSpace()
@@ -183,14 +183,14 @@ design_space
 # and as such,
 # it only needs to include the continuous design variables.
 # You use the
-# [filter()][gemseo.algos.design_space.DesignSpace.filter] method
+# [filter()][gemseo.space.design.DesignSpace.filter] method
 # to keep `x`
 # and you set `copy` to `True` to keep the original `design_space` unchanged,
 # as you will use it later.
 design_space_inner_scenario = design_space.filter(keep_variables=["x"], copy=True)
 design_space_inner_scenario
 # %%
-# You then create your [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
+# You then create your [MDOScenario][gemseo.scenario.mdo.MDOScenario].
 # The default solver will be `NLOPT_COBYLA` with at most 100 iterations.
 inner_scenario = MDOScenario([objective, constraint], design_space_inner_scenario)
 inner_scenario.add_objective("f")
@@ -200,8 +200,8 @@ inner_scenario.set_algorithm(NLOPT_COBYLA_Settings(max_iter=100))
 # %%
 # ## Step 4 - Transforming into a discipline
 #
-# An [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
-# wraps an entire [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+# An [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
+# wraps an entire [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # as a [Discipline][gemseo.core.discipline.discipline.Discipline],
 # its inputs are all or part of the design space variables
 # and its outputs are all or part of the objective values, constraints or observables.
@@ -229,7 +229,7 @@ adapted_inner_scenario = MDOScenarioAdapter(
 #     set the argument `keep_opt_history` to `True`,
 #     this option will store the databases in memory
 #     and make them accessible via the
-#     [databases][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter.databases] attribute.
+#     [databases][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter.databases] attribute.
 #     Keep in mind that depending on the size of the database,
 #     storing it in memory may lead to a significant increase in memory usage.
 #     If you prefer to store the databases on disk instead,
@@ -249,14 +249,14 @@ adapted_inner_scenario = MDOScenarioAdapter(
 # it only needs to include the integer design variables.
 # Once again,
 # you use the
-# [filter()][gemseo.algos.design_space.DesignSpace.filter] method to keep `y`,
+# [filter()][gemseo.space.design.DesignSpace.filter] method to keep `y`,
 # the `copy` argument ensuring that
 # the original `design_space` remains unchanged
 # in case you need it for other purposes.
 design_space_outer_scenario = design_space.filter(keep_variables="y", copy=True)
 design_space_outer_scenario
 # %%
-# You then create your [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
+# You then create your [MDOScenario][gemseo.scenario.mdo.MDOScenario],
 # and you set the same objective function.
 #
 outer_scenario = MDOScenario((adapted_inner_scenario,), design_space_outer_scenario)
@@ -296,7 +296,7 @@ outer_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=9))
 #     Note that if you are running the outer scenario in parallel
 #     and requesting the databases of the continuous optimizations on the disk,
 #     you will need to instantiate the
-#     [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
+#     [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
 #     with the argument `naming="UUID"`,
 #     which is multiprocessing-safe.
 #     Running in parallel also means that the option `keep_opt_history` will not work
@@ -318,9 +318,9 @@ outer_scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 #
 # You've learnt to create a bilevel scenario to tackle your mixed optimization problem.
 # You used the
-# [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
+# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
 # to transform your continuous sub-problem into a discipline,
-# so as to give it to your discrete [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
+# so as to give it to your discrete [MDOScenario][gemseo.scenario.mdo.MDOScenario].
 #
 # You are aware that this technique can only help for small combinatorial problems
 # (few discrete variables).

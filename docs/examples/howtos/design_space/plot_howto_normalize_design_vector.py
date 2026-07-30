@@ -28,8 +28,8 @@ You want to use normalization on your design variables.
 
 The design space has two methods to normalize variables:
 
-- [normalize_vect()][gemseo.algos.design_space.DesignSpace.normalize_vect]
-- [unnormalize_vect()][gemseo.algos.design_space.DesignSpace.unnormalize_vect]
+- [normalize_vect()][gemseo.space.design.DesignSpace.normalize_vect]
+- [unnormalize_vect()][gemseo.space.design.DesignSpace.unnormalize_vect]
 
 ## Step-by-step guide
 """
@@ -79,8 +79,8 @@ unnormalized_x_vect
 # ## Summary
 #
 # Normalization (resp. un-normalization) can be done by the use of the
-# [normalize_vect()][gemseo.algos.design_space.DesignSpace.normalize_vect] method
-# (resp. [unnormalize_vect()][gemseo.algos.design_space.DesignSpace.unnormalize_vect]).
+# [normalize_vect()][gemseo.space.design.DesignSpace.normalize_vect] method
+# (resp. [unnormalize_vect()][gemseo.space.design.DesignSpace.unnormalize_vect]).
 #
 # A design vector can be retrieved in its normalized form with
 # `design_space.get_current_value(normalize=True)` when it has a current value.

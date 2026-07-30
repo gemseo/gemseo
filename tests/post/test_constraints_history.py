@@ -20,9 +20,9 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.post import ConstraintsHistory_Settings
 from gemseo.post.constraints_history import ConstraintsHistory
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.post.constraints_history_settings import ConstraintsHistory_Settings
+from gemseo.util.testing.helper import assert_exception
 
 
 def test_function_error(common_problem, snapshot) -> None:

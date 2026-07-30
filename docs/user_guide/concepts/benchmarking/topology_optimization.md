@@ -17,10 +17,7 @@ search:
 
 # Topology optimization { #concept-topology-optimization }
 
-!!!tutorial
-    - [Solve a 2D L-shape topology optimization problem][tutorial-solve-a-2d-l-shape-topology-optimization-problem]
-
-The [gemseo.problems.topology_optimization][gemseo.problems.topology_optimization] package implements
+The [gemseo.problem.topology_optimization][gemseo.problem.topology_optimization] package implements
 a 2D density-based structural topology optimization problem
 decomposed into four [Disciplines][gemseo.core.discipline.discipline.Discipline].
 The design variable is the element density field $\rho \in [0, 1]^{n_x \times n_y}$.
@@ -100,7 +97,7 @@ The minimum member size parameter controls the filter radius.
 
 ??? abstract "API"
 
-    - [DensityFilter][gemseo.problems.topology_optimization.density_filter_disc.DensityFilter]
+    - [DensityFilter][gemseo.problem.topology_optimization.density_filter_disc.DensityFilter]
 
 ## Material model interpolation { #concept-material-interpolation }
 
@@ -116,7 +113,7 @@ Empty and full elements can be pinned to void or solid independently of the opti
 
 ??? abstract "API"
 
-    - [MaterialModelInterpolation][gemseo.problems.topology_optimization.material_model_interpolation_disc.MaterialModelInterpolation]
+    - [MaterialModelInterpolation][gemseo.problem.topology_optimization.material_model_interpolation_disc.MaterialModelInterpolation]
 
 ## Finite element analysis { #concept-fea }
 
@@ -131,7 +128,7 @@ The load direction, load node, and fixed boundary conditions are configurable.
 
 ??? abstract "API"
 
-    - [FiniteElementAnalysis][gemseo.problems.topology_optimization.fea_disc.FiniteElementAnalysis]
+    - [FiniteElementAnalysis][gemseo.problem.topology_optimization.fea_disc.FiniteElementAnalysis]
 
 ## Volume fraction { #concept-volume-fraction }
 
@@ -143,7 +140,7 @@ It is used as a constraint to prevent the optimizer from filling the entire doma
 
 ??? abstract "API"
 
-    - [VolumeFraction][gemseo.problems.topology_optimization.volume_fraction_disc.VolumeFraction]
+    - [VolumeFraction][gemseo.problem.topology_optimization.volume_fraction_disc.VolumeFraction]
 
 ## Benchmark configurations { #concept-topology-optimization-benchmarks }
 
@@ -157,7 +154,7 @@ Three standard benchmark geometries are available:
 
 ??? abstract "API"
 
-    - [initialize_design_space_and_discipline_to][gemseo.problems.topology_optimization.topopt_initialize.initialize_design_space_and_discipline_to]:
+    - [initialize_design_space_and_discipline_to][gemseo.problem.topology_optimization.topopt_initialize.initialize_design_space_and_discipline_to]:
       returns a `(DesignSpace, list[Discipline])` tuple for a given benchmark configuration.
 
 [^1]: Bendsøe, M. P. (1989). Optimal shape design as a material distribution problem. Structural optimization, 1(4), 193-202.

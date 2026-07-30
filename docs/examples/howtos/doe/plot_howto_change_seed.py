@@ -34,10 +34,10 @@ and obtain the same samples across executions.
 
 from __future__ import annotations
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.scenarios.evaluation import EvaluationScenario
-from gemseo.settings import OT_OPT_LHS_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.doe import OT_OPT_LHS_Settings
+from gemseo.scenario import EvaluationScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Build the discipline, design space and scenario

@@ -24,7 +24,7 @@ This makes it possible to study how the cost or quality of an algorithm
 depends on problem size without changing the underlying problem structure.
 
 GEMSEO provides three scalable MDO approaches
-via the [gemseo.problems.mdo.scalable][gemseo.problems.mdo.scalable] package.
+via the [gemseo.problem.mdo.scalable][gemseo.problem.mdo.scalable] package.
 
 ## Linear scalable MDO { #concept-linear-scalable-mdo }
 
@@ -49,11 +49,11 @@ The analytic Jacobian $\partial y/\partial x = A$ is available for gradient-base
 
 ??? abstract "API"
 
-    - [LinearDiscipline][gemseo.problems.mdo.scalable.linear.linear_discipline.LinearDiscipline]:
+    - [LinearDiscipline][gemseo.problem.mdo.scalable.linear.linear_discipline.LinearDiscipline]:
       a single linear discipline.
-    - [create_disciplines_from_sizes][gemseo.problems.mdo.scalable.linear.disciplines_generator.create_disciplines_from_sizes]:
+    - [create_disciplines_from_sizes][gemseo.problem.mdo.scalable.linear.disciplines_generator.create_disciplines_from_sizes]:
       and
-      [create_disciplines_from_desc][gemseo.problems.mdo.scalable.linear.disciplines_generator.create_disciplines_from_desc]
+      [create_disciplines_from_desc][gemseo.problem.mdo.scalable.linear.disciplines_generator.create_disciplines_from_desc]
       generates a set of coupled linear disciplines from a coupling specification.
 
 ## Quadratic scalable MDO { #concept-quadratic-scalable-mdo }
@@ -77,11 +77,11 @@ the problem is well-suited for convergence studies.
 
 ??? abstract "API"
 
-    - [ScalableProblem][gemseo.problems.mdo.scalable.parametric.scalable_problem.ScalableProblem]:
+    - [ScalableProblem][gemseo.problem.mdo.scalable.parametric.scalable_problem.ScalableProblem]:
       assembles disciplines, design space and analytical solution.
-    - [ScalableDesignSpace][gemseo.problems.mdo.scalable.parametric.scalable_design_space.ScalableDesignSpace]
-    - [ScalableDiscipline][gemseo.problems.mdo.scalable.parametric.disciplines.scalable_discipline.ScalableDiscipline]
-    - [MainDiscipline][gemseo.problems.mdo.scalable.parametric.disciplines.main_discipline.MainDiscipline]
+    - [ScalableDesignSpace][gemseo.problem.mdo.scalable.parametric.scalable_design_space.ScalableDesignSpace]
+    - [ScalableDiscipline][gemseo.problem.mdo.scalable.parametric.discipline.scalable_discipline.ScalableDiscipline]
+    - [MainDiscipline][gemseo.problem.mdo.scalable.parametric.discipline.main_discipline.MainDiscipline]
 
 ## Data-driven scalable MDO { #concept-data-driven-scalable-mdo }
 
@@ -219,10 +219,10 @@ The methodology guarantees the following strong properties:
 
 ??? abstract "API"
 
-    - [ScalableProblem][gemseo.problems.mdo.scalable.data_driven.problem.ScalableProblem]:
+    - [ScalableProblem][gemseo.problem.mdo.scalable.data_driven.problem.ScalableProblem]:
       orchestrates the full workflow from dataset to MDO scenario.
-    - [DataDrivenScalableDiscipline][gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline]:
+    - [DataDrivenScalableDiscipline][gemseo.problem.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline]:
       a single scalable discipline built from a training dataset.
-    - [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel]:
+    - [ScalableModel][gemseo.problem.mdo.scalable.data_driven.model.ScalableModel]:
       base class for the underlying surrogate model;
       subclass it to plug in a custom interpolation method.

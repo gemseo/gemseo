@@ -33,14 +33,12 @@ from openturns import Point
 from openturns import Sample
 from scipy.stats import norm
 
-from gemseo.algos.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
-from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
-from gemseo.algos.doe.openturns._algos.ot_sobol_doe import OTSobolDOE
-from gemseo.algos.doe.openturns.settings.ot_sobol_indices import (
-    OT_SOBOL_INDICES_Settings,
-)
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.scenarios.evaluation import EvaluationScenario
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
+from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.openturns._algorithm.ot_sobol_doe import OTSobolDOE
+from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
+from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
@@ -49,19 +47,19 @@ from gemseo.uncertainty.sensitivity._sobol_indices_estimator import (
     SobolIndicesEstimatorMixin,
 )
 from gemseo.uncertainty.sensitivity.base_ro import BaseROSensitivityAnalysis
-from gemseo.utils.seeder import SEED
+from gemseo.util.seeder import SEED
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-    from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import Discipline
-    from gemseo.formulations.base_settings import BaseFormulationSettings
-    from gemseo.typing import RealArray
+    from gemseo.doe.core.base_doe_settings import BaseDOESettings
+    from gemseo.formulation.core.base_settings import BaseFormulationSettings
+    from gemseo.space.parameter import ParameterSpace
     from gemseo.uncertainty.reliability.event import Event
+    from gemseo.util.typing import RealArray
 
 
 class ISFORMSobolAnalysis(

@@ -32,21 +32,19 @@ method to the desired number of folds.
 from __future__ import annotations
 
 from gemseo import sample_disciplines
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
-from gemseo.machine_learning.regression.models.rbf import RBFRegressor
-from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
-from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
-    WingWeightUncertainSpace,
-)
+from gemseo.doe import OT_OPT_LHS_Settings
+from gemseo.machine_learning import RBFRegressor_Settings
+from gemseo.machine_learning.regression.model import RBFRegressor
+from gemseo.machine_learning.regression.quality import R2Measure
+from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
+from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
 
 # %%
 # ### 1. Define the reference model
 #
 # In this how-to guide,
 # you consider the wing weight problem
-# defined in [this page][gemseo.problems.uncertainty.wing_weight].
+# defined in [this page][gemseo.problem.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
 input_space = WingWeightUncertainSpace()

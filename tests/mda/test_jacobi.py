@@ -30,16 +30,16 @@ from numpy.testing import assert_equal
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo import create_scenario
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.dependency_graph import DependencyGraph
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.utils.discipline import DummyDiscipline
+from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.util.discipline import DummyDiscipline
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
 
@@ -48,7 +48,7 @@ from .test_gauss_seidel import SelfCoupledDisc
 from .utils import generate_parallel_doe
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 def allclose(a, b):

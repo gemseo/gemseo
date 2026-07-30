@@ -26,29 +26,29 @@ from typing import ClassVar
 
 from strenum import StrEnum
 
-from gemseo.caches.factory import CacheFactory
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core._process_flow.base_flow import BaseFlow
+from gemseo.core.cache.factory import CacheFactory
 from gemseo.core.discipline.discipline_data import DisciplineData
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.discipline.io import IO
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.core.grammars.factory import GrammarType as _GrammarType
-from gemseo.utils.constants import _ENABLE_DISCIPLINE_CACHE
-from gemseo.utils.constants import _VALIDATE_INPUT_DATA
-from gemseo.utils.constants import _VALIDATE_OUTPUT_DATA
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
-from gemseo.utils.string_tools import MultiLineString
-from gemseo.utils.string_tools import pretty_str
+from gemseo.core.grammar.factory import GrammarType as _GrammarType
+from gemseo.util.constant import _ENABLE_DISCIPLINE_CACHE
+from gemseo.util.constant import _VALIDATE_INPUT_DATA
+from gemseo.util.constant import _VALIDATE_OUTPUT_DATA
+from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.string import MultiLineString
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.caches.base import BaseCache
-    from gemseo.caches.cache_entry import CacheEntry
-    from gemseo.core.grammars.base import BaseGrammar
-    from gemseo.core.grammars.properties import GrammarProperties
-    from gemseo.typing import MutableStrKeyMapping
-    from gemseo.typing import StrKeyMapping
-    from gemseo.typing import StrPath
+    from gemseo.core.cache.base import BaseCache
+    from gemseo.core.cache.cache_entry import CacheEntry
+    from gemseo.core.grammar.base import BaseGrammar
+    from gemseo.core.grammar.properties import GrammarProperties
+    from gemseo.util.typing import MutableStrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 
@@ -120,7 +120,7 @@ class BaseDiscipline(BaseMonitoredProcess):
     [output_grammar][gemseo.core.discipline.base_discipline.BaseDiscipline.output_grammar]
     to check the output data.
     This validation depends
-    on the [GrammarType][gemseo.core.grammars.factory.GrammarType],
+    on the [GrammarType][gemseo.core.grammar.factory.GrammarType],
     e.g. name verification, data type verification, etc.
     """
 
@@ -285,22 +285,22 @@ class BaseDiscipline(BaseMonitoredProcess):
         according to the distance between the corresponding input data
         and the input data already cached for which output data are also cached.
 
-        The cache can be either a [SimpleCache][gemseo.caches.simple.SimpleCache]
+        The cache can be either a [SimpleCache][gemseo.core.cache.simple.SimpleCache]
         recording the last execution
         or a cache storing all executions,
-        e.g. [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache]
-        and [HDF5Cache][gemseo.caches.hdf5.HDF5Cache].
+        e.g. [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache]
+        and [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache].
         Caching data can be either in-memory,
-        e.g. [SimpleCache][gemseo.caches.simple.SimpleCache]
-        and [MemoryFullCache][gemseo.caches.memory_full.MemoryFullCache],
+        e.g. [SimpleCache][gemseo.core.cache.simple.SimpleCache]
+        and [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache],
         or on the disk,
-        e.g. [HDF5Cache][gemseo.caches.hdf5.HDF5Cache].
+        e.g. [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache].
 
         Args:
             cache_type: The type of cache.
             tolerance: The cache tolerance.
             **kwargs: The other arguments passed to
-                [CacheFactory.create][gemseo.caches.factory.CacheFactory.create].
+                [CacheFactory.create][gemseo.core.cache.factory.CacheFactory.create].
 
         Warning:
            If is_memory_shared is set to False,
@@ -473,7 +473,7 @@ class BaseDiscipline(BaseMonitoredProcess):
 
         The updated input name will be
         `namespace`
-        + :data:`~gemseo.core.namespaces.namespaces_separator`
+        + [namespaces_separator][gemseo.core.discipline.namespace.namespaces_separator]
         + `input_name`.
 
         Args:
@@ -517,7 +517,7 @@ class BaseDiscipline(BaseMonitoredProcess):
 
         The updated output name will be
         `namespace`
-        + :data:`~gemseo.core.namespaces.namespaces_separator`
+        + [namespaces_separator][gemseo.core.discipline.namespace.namespaces_separator]
         + `output_name`.
 
         Args:

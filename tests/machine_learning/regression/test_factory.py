@@ -26,15 +26,15 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
-from gemseo.machine_learning.regression.models.linreg import LinearRegressor
-from gemseo.scenarios.mdo import MDOScenario
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
+    from gemseo.dataset.dataset import Dataset
 
 LEARNING_SIZE = 9
 

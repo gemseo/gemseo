@@ -22,12 +22,12 @@ from logging import root
 from pathlib import Path
 
 from gemseo import _configure_logger
-from gemseo.utils.constants import _LOGGING_DATE_FORMAT
-from gemseo.utils.constants import _LOGGING_FILE_MODE
-from gemseo.utils.constants import _LOGGING_FILE_PATH
-from gemseo.utils.constants import _LOGGING_LEVEL
-from gemseo.utils.constants import _LOGGING_MESSAGE_FORMAT
-from gemseo.utils.logging import _is_gemseo_logger
+from gemseo.util.constant import _LOGGING_DATE_FORMAT
+from gemseo.util.constant import _LOGGING_FILE_MODE
+from gemseo.util.constant import _LOGGING_FILE_PATH
+from gemseo.util.constant import _LOGGING_LEVEL
+from gemseo.util.constant import _LOGGING_MESSAGE_FORMAT
+from gemseo.util.logging import _is_gemseo_logger
 
 _INITIAL_CWD = Path.cwd()
 """The working directory captured at module import.

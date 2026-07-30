@@ -24,13 +24,13 @@ from __future__ import annotations
 import pytest
 from numpy import arange
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.machine_learning.clustering.models.kmeans import KMeans
-from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Settings
+from gemseo.dataset.dataset import Dataset
+from gemseo.machine_learning.clustering.model.kmeans import KMeans
+from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Settings
 from gemseo.machine_learning.clustering.quality.silhouette_measure import (
     SilhouetteMeasure,
 )
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture

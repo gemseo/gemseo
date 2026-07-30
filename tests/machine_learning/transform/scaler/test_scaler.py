@@ -30,7 +30,7 @@ from numpy import diag
 from numpy import eye
 from numpy import ones
 
-from gemseo.machine_learning.transformers.scaler.scaler import Scaler
+from gemseo.machine_learning.transformer.scaler.scaler import Scaler
 
 if TYPE_CHECKING:
     from numpy import ndarray

@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from gemseo.uncertainty.reliability.base_settings import (
+from gemseo.uncertainty.reliability.core.base_settings import (
     BaseReliabilityAlgorithmSettings,
 )
 from gemseo.uncertainty.reliability.openturns.optimizer import BaseOTOptimizer

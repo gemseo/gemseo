@@ -1,0 +1,358 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Damien Guenot
+#        :author: Francois Gallard, refactoring
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Base class for libraries of optimizers."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import TypeVar
+
+import numpy
+from numpy import isinf
+
+from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
+from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
+from gemseo.core.algorithm.base_driver_library import DriverDescription
+from gemseo.optimization.core.base_gradient_based_algorithm_settings import (
+    BaseGradientBasedAlgorithmSettings,
+)
+from gemseo.optimization.core.base_optimizer_settings import BaseOptimizerSettings
+from gemseo.optimization.result import OptimizationResult
+from gemseo.optimization.termination_criteria import DesignToleranceTester
+from gemseo.optimization.termination_criteria import KKTConditionsTester
+from gemseo.optimization.termination_criteria import ObjectiveToleranceTester
+from gemseo.optimization.termination_criteria import kkt_residual_computation
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.optimization.problem import OptimizationProblem
+
+T = TypeVar("T", bound=BaseOptimizerSettings)
+
+
+@dataclass
+class OptimizationAlgorithmDescription(DriverDescription):
+    """The description of an optimization algorithm."""
+
+    handle_equality_constraints: bool = False
+    """Whether the optimization algorithm handles equality constraints."""
+
+    handle_inequality_constraints: bool = False
+    """Whether the optimization algorithm handles inequality constraints."""
+
+    handle_multiobjective: bool = False
+    """Whether the optimization algorithm handles multiple objectives."""
+
+    positive_constraints: bool = False
+    """Whether the optimization algorithm requires positive constraints."""
+
+    for_linear_problems: bool = False
+    """Whether the optimization algorithm is dedicated to linear problems."""
+
+    require_gradient: bool = False
+    """Whether the optimization algorithm requires the gradient."""
+
+    settings_class: type[BaseOptimizerSettings] = BaseOptimizerSettings
+    """The settings validation model."""
+
+
+class BaseOptimizationLibrary(BaseDriverLibrary[T]):
+    """Base class for libraries of optimizers.
+
+    Typically used as:
+
+    #. Instantiate an
+       [BaseOptimizationLibrary][gemseo.optimization.core.base_optimization_library.BaseOptimizationLibrary].
+    #. Select the algorithm with the attribute `_algo_name`.
+    #. Solve an
+       [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
+       with
+       [BaseOptimizationLibrary.execute()][gemseo.optimization.core.base_optimization_library.BaseOptimizationLibrary.execute].
+
+    Notes:
+        The missing current values
+        of the [DesignSpace][gemseo.space.design.DesignSpace]
+        attached to the
+        [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
+        are automatically initialized
+        with the method
+        [DesignSpace.initialize_missing_current_values()][gemseo.space.design.DesignSpace.initialize_missing_current_values].
+    """
+
+    _f_tol_tester: ObjectiveToleranceTester
+    """A tester for the termination criterion associated to the objective function."""
+
+    _x_tol_tester: DesignToleranceTester
+    """A tester for the termination criterion associated to the design variables."""
+
+    ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {}
+    """The description of the algorithms contained in the library."""
+
+    _RESULT_CLASS: ClassVar[type[OptimizationResult]] = OptimizationResult
+    """The class used to present the result of the optimization."""
+
+    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BaseOptimizerSettings]] = (
+        BaseOptimizerSettings
+    )
+
+    _ADDITIONAL_SETTINGS_CLASSES_TO_EXCLUDE: ClassVar[
+        tuple[type[BaseGradientBasedAlgorithmSettings]]
+    ] = (BaseGradientBasedAlgorithmSettings,)
+
+    def __init__(self, algo_name: str) -> None:  # noqa:D107
+        super().__init__(algo_name)
+        self._f_tol_tester = ObjectiveToleranceTester()
+        self._x_tol_tester = DesignToleranceTester()
+
+    def _check_constraints_handling(self, problem: OptimizationProblem) -> None:
+        """Check if problem and algorithm are consistent for constraints handling."""
+        algo_name = self._algo_name
+        if (
+            tuple(problem.constraints.get_equality_constraints())
+            and not self.ALGORITHM_INFOS[algo_name].handle_equality_constraints
+        ):
+            msg = (
+                "Requested optimization algorithm "
+                f"{algo_name} can not handle equality constraints."
+            )
+            raise ValueError(msg)
+        if (
+            tuple(problem.constraints.get_inequality_constraints())
+            and not self.ALGORITHM_INFOS[algo_name].handle_inequality_constraints
+        ):
+            msg = (
+                "Requested optimization algorithm "
+                f"{algo_name} can not handle inequality constraints."
+            )
+            raise ValueError(msg)
+
+    def _get_right_sign_constraints(self, problem: OptimizationProblem):
+        """Transform the problem constraints into their opposite sign counterpart.
+
+        This is done if the algorithm requires positive constraints.
+
+        Args:
+            problem: The problem to be solved.
+
+        Returns:
+            The constraints with the right sign.
+        """
+        if (
+            tuple(problem.constraints.get_inequality_constraints())
+            and self.ALGORITHM_INFOS[self._algo_name].positive_constraints
+        ):
+            return [-constraint for constraint in problem.constraints]
+        return problem.constraints
+
+    def _pre_run(self, problem: OptimizationProblem) -> None:
+        super()._pre_run(problem)
+
+        self._check_constraints_handling(problem)
+
+        self._f_tol_tester = ObjectiveToleranceTester(
+            absolute=self._settings.ftol_abs,
+            relative=self._settings.ftol_rel,
+            n_last_iterations=self._settings.stop_crit_n_x,
+        )
+
+        self._x_tol_tester = DesignToleranceTester(
+            absolute=self._settings.xtol_abs,
+            relative=self._settings.xtol_rel,
+            n_last_iterations=self._settings.stop_crit_n_x,
+        )
+
+        self._init_iter_observer(
+            problem,
+            self._settings.max_iter,
+            message="",
+            progress_bar_data_name=self._settings.progress_bar_data_name,
+        )
+
+        require_gradient = self.ALGORITHM_INFOS[self._algo_name].require_gradient
+        if require_gradient:
+            kkt_abs_tol = self._settings.kkt_tol_abs
+            kkt_rel_tol = self._settings.kkt_tol_rel
+            if not isinf(kkt_abs_tol) or not isinf(kkt_rel_tol):
+                problem.add_listener(
+                    _KKTChecker(
+                        problem,
+                        kkt_abs_tol,
+                        kkt_rel_tol,
+                        self._settings.ineq_tolerance,
+                    ),
+                    at_each_iteration=False,
+                    at_each_function_call=True,
+                )
+
+        problem.design_space.initialize_missing_current_values()
+        if problem.differentiation_method == self.DifferentiationMethod.COMPLEX_STEP:
+            problem.design_space.to_complex()
+
+        # First, evaluate all functions at x_0. Some algorithms don't do this
+        output_functions, jacobian_functions = problem.get_functions(
+            jacobian_names=() if require_gradient else None,
+            observable_names=None,
+        )
+
+        function_values, _ = problem.evaluate_functions(
+            design_vector_is_normalized=self._settings.normalize_design_space,
+            output_functions=output_functions or None,
+            jacobian_functions=jacobian_functions or None,
+        )
+
+        scaling_threshold = self._settings.scaling_threshold
+        if scaling_threshold is not None:
+            self._problem.objective = self.__scale(
+                self._problem.objective,
+                function_values[self._problem.objective.name],
+                scaling_threshold,
+            )
+            self._problem.constraints = [
+                self.__scale(
+                    constraint, function_values[constraint.name], scaling_threshold
+                )
+                for constraint in self._problem.constraints
+            ]
+
+    @classmethod
+    def _get_unsuitability_reason(
+        cls,
+        algorithm_description: OptimizationAlgorithmDescription,
+        problem: OptimizationProblem,
+    ) -> _UnsuitabilityReason:
+        reason = super()._get_unsuitability_reason(algorithm_description, problem)
+        if reason:
+            return reason
+
+        if (
+            tuple(problem.constraints.get_equality_constraints())
+            and not algorithm_description.handle_equality_constraints
+        ):
+            return _UnsuitabilityReason.EQUALITY_CONSTRAINTS
+
+        if (
+            tuple(problem.constraints.get_inequality_constraints())
+            and not algorithm_description.handle_inequality_constraints
+        ):
+            return _UnsuitabilityReason.INEQUALITY_CONSTRAINTS
+
+        if not problem.is_linear and algorithm_description.for_linear_problems:
+            return _UnsuitabilityReason.NON_LINEAR_PROBLEM
+
+        return reason
+
+    def _check_stopping_criteria(self) -> None:
+        super()._check_stopping_criteria()
+        self._f_tol_tester.check(self._problem, raise_exception=True)
+        self._x_tol_tester.check(self._problem, raise_exception=True)
+
+    @staticmethod
+    def __scale(
+        function: ArrayFunction,
+        function_value: ndarray,
+        scaling_threshold: float,
+    ) -> ArrayFunction:
+        """Scale a function based on its value on the current design values.
+
+        Args:
+            function: The function.
+            function_value: The function value of reference for scaling.
+            scaling_threshold: The threshold on the reference function value
+                that triggers scaling.
+
+        Returns:
+            The scaled function.
+        """
+        reference_values = numpy.absolute(function_value)
+        threshold_reached = reference_values > scaling_threshold
+        if not threshold_reached.any():
+            return function
+
+        scaled_function = function / numpy.where(
+            threshold_reached, reference_values, 1.0
+        )
+        # Use same function name for consistency with name used in database
+        scaled_function.name = function.name
+        return scaled_function
+
+
+class _KKTChecker:
+    """A functor to verify the KKT norm termination criterion."""
+
+    def __init__(
+        self,
+        problem: OptimizationProblem,
+        kkt_abs_tol: float,
+        kkt_rel_tol: float,
+        ineq_tolerance: float,
+    ) -> None:
+        """
+        Args:
+            problem: The optimization problem.
+            kkt_abs_tol: The absolute tolerance for the KKT conditions.
+            kkt_rel_tol: The relative tolerance for the KKT conditions.
+            ineq_tolerance: The absolute tolerance for the inequality constraints.
+        """  # noqa: D205, D212
+        self.__problem = problem
+        self.__kkt_tester = KKTConditionsTester(
+            absolute=0.0 if isinf(kkt_abs_tol) else kkt_abs_tol,
+            relative=0.0 if isinf(kkt_rel_tol) else kkt_rel_tol,
+            ineq_tolerance=ineq_tolerance,
+        )
+
+    def __call__(self, input_value: ndarray) -> None:
+        """Verify the KKT norm termination criterion.
+
+        Args:
+            input_value: The input value.
+
+        Raises:
+            KKTReached: If the absolute tolerance on the KKT residual is reached.
+        """
+        check_kkt = True
+        function_names = [
+            self.__problem.standardized_objective_name,
+            *self.__problem.constraints.get_names(),
+        ]
+        database = self.__problem.database
+        for function_name in function_names:
+            if (
+                database.get_function_value(
+                    database.get_gradient_name(function_name), input_value
+                )
+                is None
+            ) or (database.get_function_value(function_name, input_value) is None):
+                check_kkt = False
+                break
+
+        if check_kkt:
+            if not self.__kkt_tester.kkt_norm:
+                self.__kkt_tester.kkt_norm = kkt_residual_computation(
+                    self.__problem, input_value, self.__kkt_tester.ineq_tolerance
+                )
+
+            self.__kkt_tester.check(
+                self.__problem, raise_exception=True, input_vector=input_value
+            )

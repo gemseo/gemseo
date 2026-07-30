@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from sklearn.linear_model import LinearRegression as SKLearnLinearRegression
 
-from gemseo.machine_learning.linear_model_fitting.base_sklearn_linear_model_fitter import (  # noqa: E501
+from gemseo.machine_learning.linear_model_fitting.core.base_sklearn_linear_model_fitter import (  # noqa: E501
     BaseSKLearnLinearModelFitter,
 )
 from gemseo.machine_learning.linear_model_fitting.linear_regression_settings import (

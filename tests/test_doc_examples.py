@@ -20,7 +20,7 @@ from shutil import copytree
 
 import pytest
 
-from gemseo.utils.global_configuration import _configuration
+from gemseo.util.global_configuration import _configuration
 
 _DIRECTORY_MANAGER_EXAMPLE = "plot_howto_directory_manager.py"
 

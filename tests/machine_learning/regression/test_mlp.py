@@ -18,8 +18,8 @@ import pytest
 import sklearn.neural_network
 from numpy import array
 
-from gemseo.machine_learning.regression.models.mlp import MLPRegressor
-from gemseo.machine_learning.regression.models.mlp_settings import MLPRegressor_Settings
+from gemseo.machine_learning.regression.model.mlp import MLPRegressor
+from gemseo.machine_learning.regression.model.mlp_settings import MLPRegressor_Settings
 
 
 def test_init(dataset):

@@ -20,9 +20,9 @@ from numpy import newaxis
 from numpy import pi
 from numpy import sin
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.regression.models.gpr import GaussianProcessRegressor
-from gemseo.machine_learning.regression.models.gpr_settings import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.regression.model.gpr import GaussianProcessRegressor
+from gemseo.machine_learning.regression.model.gpr_settings import (
     GaussianProcessRegressor_Settings,
 )
 

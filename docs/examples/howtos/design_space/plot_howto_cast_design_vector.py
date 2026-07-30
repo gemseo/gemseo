@@ -35,7 +35,7 @@ You want to cast a design vector from one representation to another.
 
 ## Solution
 
-The [DesignSpace][gemseo.algos.design_space.DesignSpace] can cast design parameters
+The [DesignSpace][gemseo.space.design.DesignSpace] can cast design parameters
 into different types.
 
 ## Step-by-step guide
@@ -72,7 +72,7 @@ design_space.add_variable("x4", value=ones(1), lower_bound=-10, upper_bound=10)
 #
 # You can cast a design point from `array` to `dict`,
 # by means of the
-# [convert_array_to_dict()][gemseo.algos.design_space.DesignSpace.convert_array_to_dict] method:
+# [convert_array_to_dict()][gemseo.space.design.DesignSpace.convert_array_to_dict] method:
 array_point = array([1, 2, 3, 4])
 dict_point = design_space.convert_array_to_dict(array_point)
 dict_point
@@ -81,7 +81,7 @@ dict_point
 # ### 3. Cast a design point from dict to array
 #
 # You can cast a design point from `dict` to `array` by means of
-# the [convert_dict_to_array()][gemseo.algos.design_space.DesignSpace.convert_dict_to_array] method.
+# the [convert_dict_to_array()][gemseo.space.design.DesignSpace.convert_dict_to_array] method.
 #
 # !!! note
 #     An optional argument denoted `'variable_names'`,
@@ -95,7 +95,7 @@ new_array_point
 # ### 4. Cast the current value to complex
 #
 # You can cast the current value to complex by means of
-# the [to_complex()][gemseo.algos.design_space.DesignSpace.to_complex] method:
+# the [to_complex()][gemseo.space.design.DesignSpace.to_complex] method:
 design_space.set_current_value(array([3.0, 1.0, 1.0, 1.0]))
 design_space.to_complex()
 design_space.get_current_value()
@@ -105,7 +105,7 @@ design_space.get_current_value()
 #
 # For a given vector where some components should be integer,
 # it is possible to round them by means of
-# the [round_vect()][gemseo.algos.design_space.DesignSpace.round_vect] method:
+# the [round_vect()][gemseo.space.design.DesignSpace.round_vect] method:
 vector = array([1.3, 3.4, 3.6, -1.4])
 rounded_vector = design_space.round_vect(vector)
 rounded_vector
@@ -115,7 +115,7 @@ rounded_vector
 #
 # You can transform a design vector with:
 #
-# - [convert_array_to_dict()][gemseo.algos.design_space.DesignSpace.convert_array_to_dict] to cast an array into a dict;
-# - [convert_dict_to_array()][gemseo.algos.design_space.DesignSpace.convert_dict_to_array] to cast a dict into an array;
-# - [to_complex()][gemseo.algos.design_space.DesignSpace.to_complex] to cast into complex;
-# - [round_vect()][gemseo.algos.design_space.DesignSpace.round_vect] to take into account integers.
+# - [convert_array_to_dict()][gemseo.space.design.DesignSpace.convert_array_to_dict] to cast an array into a dict;
+# - [convert_dict_to_array()][gemseo.space.design.DesignSpace.convert_dict_to_array] to cast a dict into an array;
+# - [to_complex()][gemseo.space.design.DesignSpace.to_complex] to cast into complex;
+# - [round_vect()][gemseo.space.design.DesignSpace.round_vect] to take into account integers.

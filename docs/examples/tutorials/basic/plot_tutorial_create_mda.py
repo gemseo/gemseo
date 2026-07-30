@@ -45,7 +45,7 @@ from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo import generate_coupling_graph
 from gemseo import generate_n2_plot
-from gemseo.settings.mda import MDAGaussSeidel_Settings
+from gemseo.mda import MDAGaussSeidel_Settings
 
 # %%
 # ## Step 1 - Create Sobieski disciplines
@@ -56,7 +56,7 @@ from gemseo.settings.mda import MDAGaussSeidel_Settings
 #
 # !!! warning
 #     Any [Discipline][gemseo.core.discipline.discipline.Discipline] provided to
-#     a [BaseMDA][gemseo.mda.base.BaseMDA]
+#     a [BaseMDA][gemseo.mda.core.base.BaseMDA]
 #     with strong couplings **must** define its
 #     [default_input_data][gemseo.core.discipline.discipline.Discipline.default_input_data].
 #     Otherwise, the execution will fail.
@@ -136,7 +136,7 @@ gauss_seidel_mda = create_mda(
 #     even if the *Mission* is not highly coupled with the other 3 disciplines.
 #     It is sub-optimal, since the *Mission* discipline will be executed many times.
 #     You may want to create
-#     a [DisciplineChain][gemseo.core.chains.chain.DisciplineChain]
+#     a [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain]
 #     of the MDA (3 disciplines) and the *Mission* discipline, as explained in the
 #     [Chain disciplines][chain-disciplines] how-to.
 #     Or you can simply explore the
@@ -146,7 +146,7 @@ gauss_seidel_mda = create_mda(
 # ## Step 3 - Execution of the Gauss Seidel MDA
 #
 # In GEMSEO, an MDA is a
-# [ProcessDiscipline][gemseo.core.process_discipline.ProcessDiscipline].
+# [ProcessDiscipline][gemseo.core.discipline.process_discipline.ProcessDiscipline].
 # Thus, it can be used just like a discipline.
 output_data = gauss_seidel_mda.execute()
 output_data
@@ -167,13 +167,13 @@ output_data
 #       However, the MDA might never converge.
 #
 # The normed residual can be seen by
-# [normalized_residual_norm][gemseo.mda.base.BaseMDA.normalized_residual_norm]
+# [normalized_residual_norm][gemseo.mda.core.base.BaseMDA.normalized_residual_norm]
 # attribute.
 gauss_seidel_mda.normalized_residual_norm
 
 # %%
 # The evolution of its value can be visualized with the
-# [plot_residual_history()][gemseo.mda.base.BaseMDA.plot_residual_history] method.
+# [plot_residual_history()][gemseo.mda.core.base.BaseMDA.plot_residual_history] method.
 gauss_seidel_mda.plot_residual_history(logscale=[1e-8, 10.0], save=False, show=True)
 # %%
 # In this case, the MDA converged in 8 iterations:
@@ -181,7 +181,7 @@ gauss_seidel_mda.plot_residual_history(logscale=[1e-8, 10.0], save=False, show=T
 # The given solution is a feasible and converged point.
 #
 # The values can be accessed
-# by [residual_history][gemseo.mda.base.BaseMDA.residual_history].
+# by [residual_history][gemseo.mda.core.base.BaseMDA.residual_history].
 gauss_seidel_mda.residual_history
 
 # %%
@@ -210,7 +210,7 @@ name, output_data[name]
 # - execute the MDA just like you would execute a discipline;
 # - visualize the algorithm convergence thourgh the residuals.
 # You can plot the residual history with the
-# [plot_residual_history()][gemseo.mda.base.BaseMDA.plot_residual_history] method;
+# [plot_residual_history()][gemseo.mda.core.base.BaseMDA.plot_residual_history] method;
 # - access the specific MDA output.
 #
 # ## How-to guides

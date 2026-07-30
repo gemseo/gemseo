@@ -29,11 +29,11 @@ Multi-processing features are available when executing a DOE algorithm.
 from __future__ import annotations
 
 from gemseo import create_discipline
-from gemseo.formulations.mdf_settings import MDF_Settings
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.scenarios.evaluation import EvaluationScenario
-from gemseo.settings.doe import PYDOE_LHS_Settings
-from gemseo.utils.platform import PLATFORM_IS_WINDOWS
+from gemseo.doe import PYDOE_LHS_Settings
+from gemseo.formulation import MDF_Settings
+from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.scenario import EvaluationScenario
+from gemseo.util.platform import PLATFORM_IS_WINDOWS
 
 # %%
 # ### 1. Generate your DOE scenario
@@ -54,7 +54,7 @@ scenario.add_observable("y_4")
 # %%
 #
 # !!! note
-#     This how-to also works with [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
+#     This how-to also works with [MDOScenario][gemseo.scenario.mdo.MDOScenario],
 #     when using Design of Experiments.
 #
 # ### 2. Execute the scenario with multiprocessing

@@ -29,29 +29,29 @@ from numpy import array
 from numpy import inf
 from numpy import isclose
 
-from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
-from gemseo.algos.linear_solvers.scipy_linalg import TFQMR_Settings
-from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
 from gemseo.core.discipline import Discipline
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.simple import SimpleGrammar
+from gemseo.core.grammar.error import InvalidDataError
+from gemseo.core.grammar.simple import SimpleGrammar
+from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
+from gemseo.linear.scipy_linalg import LGMRES_Settings
+from gemseo.linear.scipy_linalg import TFQMR_Settings
 from gemseo.mda.chain import MDAChain
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.factory import MDA_FACTORY
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
+from gemseo.mda.jacobian_assembly import JacobianAssembly
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
-from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.utils import get_initial_data
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
-from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.util import get_initial_data
+from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
+from gemseo.util.derivative.check.mda import MDAJacobianChecker
+from gemseo.util.testing.helper import assert_exception
 
 from .test_mda import analytic_disciplines_from_desc
 from .utils import generate_parallel_doe

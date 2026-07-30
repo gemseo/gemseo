@@ -45,7 +45,7 @@ and their relative behaviors.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import SOM_Settings
+from gemseo.post import SOM_Settings
 
 # %%
 # ### 1. Prerequisites

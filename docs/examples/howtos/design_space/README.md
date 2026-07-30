@@ -9,7 +9,7 @@
 
 # Design space examples
 
-A [DesignSpace][gemseo.algos.design_space.DesignSpace] is a collection of scalar or vector variables defined from bounds.
+A [DesignSpace][gemseo.space.design.DesignSpace] is a collection of scalar or vector variables defined from bounds.
 
-Use [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace] to create a collection of scalar or vector *random* variables defined from probability distributions
+Use [ParameterSpace][gemseo.space.parameter.ParameterSpace] to create a collection of scalar or vector *random* variables defined from probability distributions
 (more information in [Define a parameter space with deterministic and uncertain variables][define-a-parameter-space-with-deterministic-and-uncertain-variables]).

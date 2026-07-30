@@ -27,8 +27,8 @@ from typing import Final
 from numpy import arange
 from numpy import newaxis
 
-from gemseo.post.base_post import BasePost
 from gemseo.post.basic_history_settings import BasicHistory_Settings
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.dataset.lines import Lines
 from gemseo.post.dataset.lines_settings import Lines_Settings
 

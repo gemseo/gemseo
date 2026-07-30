@@ -23,9 +23,9 @@ from pydantic import NonNegativeInt
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.typing import StrPath
+from gemseo.post.core.base_post import BasePost
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.util.typing import StrPath
 
 
 class Animation_Settings(BasePostSettings):  # noqa: D101, N801

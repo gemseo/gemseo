@@ -43,7 +43,7 @@ from typing import TYPE_CHECKING
 
 from sklearn.metrics import silhouette_score
 
-from gemseo.machine_learning.clustering.quality.base_predictive_clusterer_quality import (  # noqa: E501
+from gemseo.machine_learning.clustering.core.base_predictive_clusterer_quality import (  # noqa: E501
     BasePredictiveClustererQuality,
 )
 
@@ -52,8 +52,8 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.datasets.dataset import Dataset
-    from gemseo.machine_learning.clustering.models.base_predictive_clusterer import (
+    from gemseo.dataset.dataset import Dataset
+    from gemseo.machine_learning.clustering.core.base_predictive_clusterer import (
         BasePredictiveClusterer,
     )
     from gemseo.machine_learning.core.quality.base_ml_model_quality import MeasureType

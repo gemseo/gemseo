@@ -19,19 +19,19 @@ from __future__ import annotations
 import pytest
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.machine_learning.clustering.models.base_clusterer import BaseClusterer
-from gemseo.machine_learning.clustering.models.base_predictive_clusterer import (
-    BasePredictiveClusterer,
-)
-from gemseo.machine_learning.clustering.quality.base_clusterer_quality import (
+from gemseo.dataset.dataset import Dataset
+from gemseo.machine_learning.clustering.core.base_clusterer import BaseClusterer
+from gemseo.machine_learning.clustering.core.base_clusterer_quality import (
     BaseClustererQuality,
 )
-from gemseo.machine_learning.clustering.quality.base_predictive_clusterer_quality import (  # noqa: E501
+from gemseo.machine_learning.clustering.core.base_predictive_clusterer import (
+    BasePredictiveClusterer,
+)
+from gemseo.machine_learning.clustering.core.base_predictive_clusterer_quality import (  # noqa: E501
     BasePredictiveClustererQuality,
 )
 from gemseo.machine_learning.clustering.quality.factory import ClustererQualityFactory
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.util.testing.helper import concretize_classes
 
 
 @pytest.fixture

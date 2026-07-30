@@ -16,16 +16,14 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.diagonal_doe.diagonal_doe import DiagonalDOE
-from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
-    DiagonalDOE_Settings,
-)
-from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
-from gemseo.algos.doe.openturns.openturns import OT_LHS_Settings
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.problems.optimization.rosenbrock import Rosenbrock
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.doe.diagonal_doe.diagonal_doe import DiagonalDOE
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.openturns.openturns import OT_LHS_Settings
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.space.design import DesignSpace
 
 
 @pytest.fixture

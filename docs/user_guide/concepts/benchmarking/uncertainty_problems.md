@@ -17,7 +17,7 @@ search:
 
 # Uncertainty problems { #concept-uncertainty-problems }
 
-The [gemseo.problems.uncertainty][gemseo.problems.uncertainty] package
+The [gemseo.problem.uncertainty][gemseo.problem.uncertainty] package
 provides problems with closed-form statistics
 for benchmarking uncertainty quantification and global sensitivity analysis algorithms.
 Estimated quantities can be compared directly against analytical reference values.
@@ -55,12 +55,12 @@ The Ishigami problem is available in four forms:
 
 | Class | Base class | Use case |
 |-------|------------|----------|
-| [IshigamiDiscipline][gemseo.problems.uncertainty.ishigami.ishigami_discipline.IshigamiDiscipline] | [Discipline][gemseo.core.discipline.discipline.Discipline] | MDO integration, coupling |
-| [IshigamiFunction][gemseo.problems.uncertainty.ishigami.ishigami_function.IshigamiFunction] | [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] | Low-level function evaluation |
-| [IshigamiProblem][gemseo.problems.uncertainty.ishigami.ishigami_problem.IshigamiProblem] | [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] | Uncertainty-aware optimization |
-| [IshigamiSpace][gemseo.problems.uncertainty.ishigami.ishigami_space.IshigamiSpace] | [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace] | Probabilistic input space |
+| [IshigamiDiscipline][gemseo.problem.uncertainty.ishigami.ishigami_discipline.IshigamiDiscipline] | [Discipline][gemseo.core.discipline.discipline.Discipline] | MDO integration, coupling |
+| [IshigamiFunction][gemseo.problem.uncertainty.ishigami.ishigami_function.IshigamiFunction] | [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] | Low-level function evaluation |
+| [IshigamiProblem][gemseo.problem.uncertainty.ishigami.ishigami_problem.IshigamiProblem] | [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] | Uncertainty-aware optimization |
+| [IshigamiSpace][gemseo.problem.uncertainty.ishigami.ishigami_space.IshigamiSpace] | [ParameterSpace][gemseo.space.parameter.ParameterSpace] | Probabilistic input space |
 
-The [statistics][gemseo.problems.uncertainty.ishigami.statistics] module
+The [statistics][gemseo.problem.uncertainty.ishigami.statistics] module
 exports all analytical reference values as constants
 (`MEAN`, `VARIANCE`, `SOBOL_1`, `SOBOL_2`, `SOBOL_3`, `TOTAL_SOBOL_1`, etc.)
 for direct use in test assertions.

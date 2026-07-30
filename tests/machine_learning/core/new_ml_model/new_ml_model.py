@@ -14,8 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.machine_learning.core.models.ml_model import BaseMLModel
-from gemseo.machine_learning.core.models.ml_model_settings import BaseMLModelSettings
+from gemseo.machine_learning.core.model.base_ml_model import BaseMLModel
+from gemseo.machine_learning.core.model.base_ml_model_settings import (
+    BaseMLModelSettings,
+)
 
 
 class NewMLModel(BaseMLModel):

@@ -42,10 +42,10 @@ from pydantic import BaseModel
 from pydantic import Field
 
 from gemseo.core.discipline import Discipline
-from gemseo.utils.pydantic_ndarray import NDArrayPydantic
+from gemseo.util.pydantic_ndarray import NDArrayPydantic
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 # %%
 # ### 1. Create the Pydantic model
