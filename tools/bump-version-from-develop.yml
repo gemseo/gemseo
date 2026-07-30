@@ -1,6 +1,6 @@
 # How the packages of `develop` map to the ones of this branch, to rebase a branch
-# created before the subpackage reorganization: rewrite the `develop` names in its code
-# with the table below, then rebase (see REBASING.md).
+# created before the subpackage reorganization: rebase it, then rewrite the `develop`
+# names left in its code with the table below (see REBASING.md).
 #
 # This file is meant to be read and applied directly, by an agent or a script. Every
 # name on both sides is a COMPLETE dotted path, so no entry needs another one to be
@@ -21,8 +21,9 @@
 # Apply a single entry to a name: a value is already the final name, never feed it back
 # in. A name matching no entry is unchanged.
 #
-# Nothing else changed: no class attribute, no method and no signature was renamed
-# between `develop` and this branch, so a rebase only needs the names below.
+# No public class attribute, method or signature was renamed between `develop` and this
+# branch, so a rebase needs the names below and little else. Private internals did move
+# though: a branch touching them has to reconcile its design with the one of this branch.
 #
 # The `gemseo.settings` package was dissolved into the packages of the settings it
 # exposed; its modules are listed one by one and the package itself has no counterpart.
