@@ -208,17 +208,11 @@ class BaseGenericSensitivityAnalysis(
         Args:
             disciplines: The discipline or disciplines to use for the analysis.
             parameter_space: A parameter space.
-            n_samples: A number of samples.
-                If `0`, the number of samples is computed by the algorithm.
-            output_names: The disciplines' outputs to be considered for the analysis.
-                If empty, use all the outputs.
             algo_settings: The settings of the DOE algorithm.
                 If `None`,
                 use the default settings of the default DOE algorithm
                 (see
                 [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.DEFAULT_DRIVER]).
-            backup_settings: The settings of the backup file to store the evaluations
-                if any.
             formulation_settings: The settings of the MDO formulation.
                 If `None`,
                 use the default settings of the MDF formulation.
