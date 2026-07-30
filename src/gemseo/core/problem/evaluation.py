@@ -569,7 +569,7 @@ class EvaluationProblem(BaseProblem):
             input_value = self.design_space.get_current_value(normalize=normalized)
         elif self.check_bounds:
             if normalized:
-                non_normalized_variables = self.design_space.unnormalize_vect(
+                non_normalized_variables = self.design_space.denormalize_vect(
                     input_value, no_check=True
                 )
             else:
@@ -578,7 +578,7 @@ class EvaluationProblem(BaseProblem):
             self.design_space.check_membership(non_normalized_variables)
 
         if normalized and not normalization_expected:
-            return self.design_space.unnormalize_vect(input_value, no_check=True)
+            return self.design_space.denormalize_vect(input_value, no_check=True)
 
         if not normalized and normalization_expected:
             return self.design_space.normalize_vect(input_value)
@@ -640,7 +640,7 @@ class EvaluationProblem(BaseProblem):
 
         Args:
             is_function_input_normalized: Whether to consider the function input as
-                normalized and unnormalize it before the function evaluation.
+                normalized and denormalize it before the function evaluation.
             use_database: Whether to store the function evaluations in the database.
             round_ints: Whether to round the integer variables.
             eval_obs_jac: Whether to evaluate the Jacobian of the observables.
@@ -719,7 +719,7 @@ class EvaluationProblem(BaseProblem):
         Args:
             function: The scaled and derived function to be pre-processed.
             is_function_input_normalized: Whether to consider the function input as
-                normalized and unnormalize it before the function evaluation.
+                normalized and denormalize it before the function evaluation.
             use_database: Whether to store the function evaluations in the database.
             round_ints: Whether to round the integer variables.
             support_sparse_jacobian: Whether the driver supports sparse Jacobian.
@@ -743,9 +743,9 @@ class EvaluationProblem(BaseProblem):
             jac_seq = (function.jac, *args)
         elif is_function_input_normalized and round_ints:
             expects_normalized_inputs = True
-            func_seq = (ds.unnormalize_vect, ds.round_vect, function.func)
+            func_seq = (ds.denormalize_vect, ds.round_vect, function.func)
             jac_seq = (
-                ds.unnormalize_vect,
+                ds.denormalize_vect,
                 ds.round_vect,
                 function.jac,
                 *args,
@@ -757,8 +757,8 @@ class EvaluationProblem(BaseProblem):
             jac_seq = (ds.round_vect, function.jac, *args)
         elif is_function_input_normalized:
             expects_normalized_inputs = True
-            func_seq = (ds.unnormalize_vect, function.func)
-            jac_seq = (ds.unnormalize_vect, function.jac, *args, ds.normalize_grad)
+            func_seq = (ds.denormalize_vect, function.func)
+            jac_seq = (ds.denormalize_vect, function.jac, *args, ds.normalize_grad)
         else:
             expects_normalized_inputs = function.expects_normalized_inputs
             func_seq = (function.func,)

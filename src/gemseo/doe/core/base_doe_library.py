@@ -417,10 +417,10 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
 
     @classmethod
     def __check_unnormalization_capability(cls, design_space) -> None:
-        """Check if a point of the unit hypercube can be unnormalized.
+        """Check if a point of the unit hypercube can be denormalized.
 
         Args:
-            design_space: The design space to unnormalize the point.
+            design_space: The design space to denormalize the point.
 
         Raises:
             ValueError: When some components of the design space are unbounded.
@@ -428,7 +428,11 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         if not cls._USE_UNIT_HYPERCUBE or isinstance(design_space, ParameterSpace):
             return
 
-        components = set(where(hstack(list(design_space.normalize.values())) == 0)[0])
+        components = set(
+            where(hstack(list(design_space.name_to_normalization_mask.values())) == 0)[
+                0
+            ]
+        )
         if components:
             msg = (
                 f"The components {pretty_str(components, use_and=True)} "

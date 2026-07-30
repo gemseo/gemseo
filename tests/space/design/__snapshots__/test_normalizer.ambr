@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_denormalize_out_with_different_dtype
+  'Expected an out array of dtype complex128; got float64.'
+# ---
+# name: test_normalize_out_with_different_dtype
+  'Expected an out array of dtype complex128; got float64.'
+# ---
+# name: test_normalize_out_with_wrong_shape
+  'Expected an out array of shape (2,); got (3, 2).'
+# ---

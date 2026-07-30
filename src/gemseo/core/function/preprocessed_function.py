@@ -84,15 +84,15 @@ class PreprocessedFunction(ArrayFunction, Serializable):
     [evaluate()][gemseo.core.function.preprocessed_function.PreprocessedFunction.evaluate]."""
 
     _normalize_grad: Callable[[RealOrComplexArrayT], RealOrComplexArrayT]
-    """The function to normalize an unnormalized gradient."""
+    """The function to normalize an original gradient."""
 
-    _unnormalize_grad: Callable[[RealOrComplexArrayT], RealOrComplexArrayT]
-    """The function to unnormalize a normalized gradient."""
+    _denormalize_grad: Callable[[RealOrComplexArrayT], RealOrComplexArrayT]
+    """The function to denormalize a normalized gradient."""
 
-    _unnormalize_vect: Callable[
+    _denormalize_vect: Callable[
         [RealOrComplexArrayT, bool, bool, ndarray | None], RealOrComplexArrayT
     ]
-    """The function to unnormalize a normalized vector of the design space."""
+    """The function to denormalize a normalized vector of the design space."""
 
     __store_jacobian: bool
     """Whether to store the Jacobian matrices in the database."""
@@ -156,9 +156,9 @@ class PreprocessedFunction(ArrayFunction, Serializable):
         self.stop_if_nan = stop_if_nan
         self._database = database
         self._input_dimension = design_space.dimension
-        self._unnormalize_vect = design_space.unnormalize_vect
+        self._denormalize_vect = design_space.denormalize_vect
         self._normalize_grad = design_space.normalize_grad
-        self._unnormalize_grad = design_space.unnormalize_grad
+        self._denormalize_grad = design_space.denormalize_grad
         if differentiation_method is not None:
             gradient_approximator = GradientApproximatorFactory().create(
                 differentiation_method,
@@ -182,6 +182,27 @@ class PreprocessedFunction(ArrayFunction, Serializable):
             original_name=function.original_name,
             with_normalized_inputs=with_normalized_inputs,
         )
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore the function from a pickled state.
+
+        Remap the attributes renamed by the denormalization refactoring so that a
+        [PreprocessedFunction][gemseo.core.function.preprocessed_function.PreprocessedFunction]
+        pickled before the refactoring can be unpickled. The stored values are bound
+        methods of the design space, so they are rebound to the renamed design-space
+        methods to avoid triggering the deprecation warning of the former aliases.
+
+        Args:
+            state: The pickled state.
+        """
+        for old_name, new_name, method_name in (
+            ("_unnormalize_vect", "_denormalize_vect", "denormalize_vect"),
+            ("_unnormalize_grad", "_denormalize_grad", "denormalize_grad"),
+        ):
+            if old_name in state:
+                design_space = state.pop(old_name).__self__
+                state[new_name] = getattr(design_space, method_name)
+        super().__setstate__(state)
 
     @ArrayFunction.func.setter
     def func(self, f_pointer: WrappedFunctionType) -> None:  # noqa: D102
@@ -209,7 +230,7 @@ class PreprocessedFunction(ArrayFunction, Serializable):
             The output value.
         """
         # The lines below implement function compositions using a for-loop.
-        # For instance, unnormalize `input_value`, then evaluate the original
+        # For instance, denormalize `input_value`, then evaluate the original
         # `ArrayFunction`. The output value of a function becomes the input value of
         # the next function.
         for func in self._output_evaluation_sequence:
@@ -227,7 +248,7 @@ class PreprocessedFunction(ArrayFunction, Serializable):
             The Jacobian.
         """
         # The lines below implement function compositions using a for-loop.
-        # For instance, unnormalize `input_value`, then evaluate the original
+        # For instance, denormalize `input_value`, then evaluate the original
         # `ArrayFunction`. The output value of a function becomes the input value of
         # the next function.
         for func in self._jacobian_evaluation_sequence:
@@ -375,7 +396,7 @@ class PreprocessedFunction(ArrayFunction, Serializable):
         """
         self.check_function_output_includes_nan(input_value)
         xn_vect = input_value
-        xu_vect = self._unnormalize_vect(xn_vect)
+        xu_vect = self._denormalize_vect(xn_vect)
         hashed_xu, output_value = self.__get_output_value(self.name, xu_vect)
         if output_value is None:
             output_value = self._compute_output(xn_vect)
@@ -399,11 +420,11 @@ class PreprocessedFunction(ArrayFunction, Serializable):
         """
         self.check_function_output_includes_nan(input_value)
         xn_vect = input_value
-        xu_vect = self._unnormalize_vect(xn_vect)
+        xu_vect = self._denormalize_vect(xn_vect)
         hashed_xu, jac_u = self.__get_output_value(self._gradient_name, xu_vect)
         if jac_u is None:
             jac_n = self._compute_jacobian(xn_vect)
-            jac_u = self._unnormalize_grad(jac_n)
+            jac_u = self._denormalize_grad(jac_n)
             self.check_function_output_includes_nan(
                 jac_u.data,
                 self.stop_if_nan,

@@ -23,6 +23,7 @@ from numpy import array
 from numpy import array_equal
 from numpy import linspace
 from numpy import newaxis
+from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 
 from gemseo.dataset.io_dataset import IODataset
@@ -46,7 +47,7 @@ def test_default_properties(sample_indices) -> None:
     assert cross_validation.seed == SEED
     assert cross_validation.n_folds == 5
     assert cross_validation.randomize is False
-    assert array_equal(cross_validation.shuffled_sample_indices, sample_indices)
+    assert_array_equal(cross_validation.shuffled_sample_indices, sample_indices)
     assert_equal(
         cross_validation.splits,
         Splits(*[
@@ -79,7 +80,7 @@ def test_properties_with_randomize(sample_indices) -> None:
     assert not array_equal(cross_validation.shuffled_sample_indices, sample_indices)
     shuffled_sample_indices = cross_validation.shuffled_sample_indices.copy()
     shuffled_sample_indices.sort()
-    assert array_equal(shuffled_sample_indices, sample_indices)
+    assert_array_equal(shuffled_sample_indices, sample_indices)
     assert not array_equal(next(iter(cross_validation.splits)).test, array([1, 2]))
 
 
@@ -105,7 +106,7 @@ def test_properties_with_custom_seed(sample_indices) -> None:
         first_cross_validation.shuffled_sample_indices,
         second_cross_validation.shuffled_sample_indices,
     )
-    assert array_equal(
+    assert_array_equal(
         second_cross_validation.shuffled_sample_indices,
         third_cross_validation.shuffled_sample_indices,
     )

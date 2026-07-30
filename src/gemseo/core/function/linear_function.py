@@ -348,7 +348,9 @@ class LinearFunction(ArrayFunction):
             The scaled linear function.
         """
         # Get normalization factors and shift
-        norm_policies = input_space.convert_dict_to_array(input_space.normalize)
+        norm_policies = input_space.convert_dict_to_array(
+            input_space.name_to_normalization_mask
+        )
         norm_factors = where(
             norm_policies,
             input_space.get_upper_bounds() - input_space.get_lower_bounds(),

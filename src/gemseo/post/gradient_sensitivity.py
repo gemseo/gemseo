@@ -142,7 +142,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             + self._dataset.objective_names
             + self._dataset.observable_names
         )
-        scale_gradient = self._dataset.misc["input_space"].unnormalize_vect
+        scale_gradient = self._dataset.misc["input_space"].denormalize_vect
         function_name_to_gradient = {}
         for function_name in function_names:
             if compute_missing_gradients and gradient_values:
