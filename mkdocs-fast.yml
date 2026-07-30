@@ -28,9 +28,6 @@ theme:
         icon: material/lightbulb
         name: Switch to light mode
 
-hooks:
-  - docs/_scripts/cwd_guard.py
-
 plugins:
   autorefs: { }
   bibtex:
@@ -58,6 +55,7 @@ plugins:
   section-index: { }
 
 hooks:
+  - docs/_scripts/cwd_guard.py
   - docs/hooks/complexity.py
   - docs/hooks/reading_time.py
   - docs/hooks/load_footer.py
