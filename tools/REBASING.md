@@ -27,8 +27,57 @@ rebased; its header states how, in short:
 Both sides of every entry are complete dotted paths, so the entries are independent of
 one another and of their order. Apply a single entry per name: a value is already final.
 
-Beyond the names, nothing needs adapting: no class attribute, no method and no signature
-was renamed between `develop` and this branch.
+Beyond the names, no public class attribute, method or signature was renamed between
+`develop` and this branch. Private internals did move though, so a branch that touches
+them, a factory internal or a private helper, has to reconcile its design with the one of
+this branch and not merely its names.
+
+## Procedure
+
+Rebase first, rewrite afterwards. The merge base is the old `develop`, so rewriting the
+names of the branch before rebasing makes both sides differ from that base and
+manufactures conflicts instead of sparing them.
+
+1. Squash the branch, or be ready to resolve the same conflicts once per commit.
+2. `git rebase upstream/develop`. Rename detection carries the modified files to their new
+   paths (`src/gemseo/algos/base_algo_factory.py` becomes
+   `src/gemseo/core/algorithm/base_algorithm_factory.py`, `tests/algos/...` becomes
+   `tests/core/algorithm/...`) and merges the changes there, so the conflicts are mostly
+   import blocks. The files added by the branch are renamed by nothing: move them to the
+   directory they now belong to by hand.
+3. Resolve the conflicts. Mind that `--ours` is the side of this branch and `--theirs` the
+   side of the branch being rebased, which reads backwards. For every hunk, ask first
+   whether this branch already does the same thing by another route: what a branch did on
+   `develop` to circumvent a problem has often been done here too, differently, and is
+   then to be dropped rather than ported.
+4. Apply the table to the old names that are left, and regenerate what is generated: the
+   `src/gemseo/factory-files/` listings are regenerated with
+   `uv run gemseo-generate-factory-files src/gemseo`, not rewritten, since the classes
+   they list have changed as well.
+
+Dotted paths are not only in `import` statements. Rewrite them also in the entry points of
+`pyproject.toml`, in the mkdocs cross-references of the docstrings and of the documentation
+pages (`[Name][dotted.path]`), in the string literals of the tests (a `sys.modules` key, a
+module name given to `monkeypatch`) and in the test fixture packages under `tests/*/data/`.
+
+Conversely, leave the old names alone where they are recorded on purpose:
+`tests/test_deprecated_imports.py`, `docs/software/upgrading.md`, `changelog/fragments/`
+and `src/gemseo/_deprecation/bump-version.yml`.
+
+## Checking the result
+
+- Grep the old top-level names, `gemseo.algos`, `gemseo.caches`, `gemseo.disciplines`,
+  `gemseo.formulations`, `gemseo.problems`, `gemseo.settings` and `gemseo.utils`, over
+  `src`, `tests` and `docs`, excluding the files listed above. This catches what no import
+  error ever will: a docstring, a comment, a string literal.
+- Compare the rebased commit with the original one, `git range-diff <old-base>..<old-tip>
+  upstream/develop..<new-tip>`. Every line of it shall be either an entry of the table or a
+  decision taken while resolving a conflict. This is also how a file that merged cleanly
+  but still needs adapting is found: a test of the branch may keep testing an
+  implementation that the resolution has replaced with the one of this branch.
+- Do not expect a green test suite: a few hundred image comparison tests fail in a typical
+  development environment. Run the suite on `upstream/develop` too and compare the sets of
+  failing tests, not their number.
 
 ## Which table to use
 
