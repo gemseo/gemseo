@@ -39,6 +39,7 @@ from numpy import ones
 from numpy import sin
 from numpy import zeros
 from numpy.testing import assert_allclose
+from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 from pandas import MultiIndex
 from pandas.testing import assert_frame_equal
@@ -53,8 +54,6 @@ from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.linear_function import LinearFunction
 from gemseo.core.problem.database import Database
 from gemseo.core.problem.evaluation import EvaluationProblem
-from gemseo.core.problem.termination_criterion import DesvarIsNan
-from gemseo.core.problem.termination_criterion import FunctionIsNan
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.io_dataset import IODataset
 from gemseo.dataset.optimization_dataset import OptimizationDataset
@@ -68,6 +67,8 @@ from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.optimization.termination_criteria import DesvarIsNan
+from gemseo.optimization.termination_criteria import FunctionIsNan
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
 from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
@@ -158,9 +159,9 @@ def test_checks() -> None:
 
     with pytest.raises(ValueError):
         problem.design_space.set_current_value(np.zeros(n))
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         problem.design_space.set_upper_bound("x", np.ones(n))
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         problem.design_space.set_lower_bound("x", -np.ones(n))
 
     with pytest.raises(ValueError):
@@ -1105,7 +1106,7 @@ def test_gradient_with_random_variables() -> None:
 
     data = problem.database.get_gradient_history("func")
 
-    assert array_equal(data, array([0.0, 3.0, 6.0]))
+    assert_array_equal(data, array([0.0, 3.0, 6.0]))
 
 
 def test_is_mono_objective() -> None:

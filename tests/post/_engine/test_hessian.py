@@ -119,7 +119,7 @@ def test_scaling() -> None:
 
     h_exact = rosen_hess(result.x_opt)
 
-    v = design_space._norm_factor
+    v = design_space._normalizer._Normalizer__normalization_factor
     scale_fact = outer(v, v.T)
 
     h_exact_scaled = multiply(h_exact, scale_fact)

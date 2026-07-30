@@ -1,0 +1,22 @@
+# serializer version: 1
+# name: test_get_full_raises_naming_wrong_size_value
+  "'There is no current value for the design variables: x.'"
+# ---
+# name: test_get_names_raises_for_wrong_size_value
+  "'There is no current value for the design variables: x.'"
+# ---
+# name: test_refresh_status_drops_resized_value
+  "'There is no current value for the design variables: x.'"
+# ---
+# name: test_resize_invalidation_survives_another_mutation[False]
+  "'There is no current value for the design variables: x.'"
+# ---
+# name: test_resize_invalidation_survives_another_mutation[True]
+  "'There is no current value for the design variables: x.'"
+# ---
+# name: test_set_variable_unknown_name
+  "No variable named 'unknown'."
+# ---
+# name: test_to_complex_keeps_no_value
+  "'There is no current value for the design variables: y.'"
+# ---

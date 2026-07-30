@@ -43,7 +43,7 @@ class SetPtFromDatabase:
             design_space: The design space used for normalization.
             function: The function where the data from the database will be set.
             normalize: If `True`,
-                the values of the inputs are unnormalized before call.
+                the values of the inputs are denormalized before call.
             jac: If `True`, a Jacobian pointer is also generated.
             x_tolerance: The tolerance on the distance between inputs.
         """  # noqa: D205, D212, D415
@@ -74,7 +74,7 @@ class SetPtFromDatabase:
         Raises:
             ValueError: If the input value is not in the database.
         """
-        x_db = self.__design_space.unnormalize_vect(x_n) if self.__normalize else x_n
+        x_db = self.__design_space.denormalize_vect(x_n) if self.__normalize else x_n
         val = self.__database.get_function_value(fname, x_db, self.__x_tolerance)
         if val is None:
             msg = (

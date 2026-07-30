@@ -19,18 +19,22 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import pickle
+
 import pytest
 from numpy import allclose
 from numpy import arange
 from numpy import array
-from numpy import array_equal
 from numpy import concatenate
 from numpy import corrcoef
 from numpy import inf
+from numpy import int64
 from numpy import isnan
 from numpy import ndarray
 from numpy import unique
+from numpy import zeros
 from numpy.random import default_rng
+from numpy.testing import assert_allclose
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
@@ -42,6 +46,8 @@ from gemseo.dataset.io_dataset import IODataset
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
 from gemseo.scenario.mdo import EvaluationScenario
+from gemseo.space._variable import DataType
+from gemseo.space._variable import Variable
 from gemseo.space.design import DesignSpace
 from gemseo.space.parameter import ParameterSpace
 from gemseo.uncertainty.distribution.openturns.distribution_settings import (
@@ -328,7 +334,7 @@ def test_normalize_vect_with_copula(uncertain_space_with_dependency) -> None:
     assert not allclose(normalized, marginal_cdf)
 
     # The transform must be invertible.
-    assert allclose(space.unnormalize_vect(normalized, use_dist=True), point)
+    assert allclose(space.denormalize_vect(normalized, use_dist=True), point)
 
 
 def test_untransform_vect_with_copula_correlates_samples(
@@ -432,14 +438,14 @@ def test_unnormalize(parameter_space, one_dim) -> None:
     """Check that unnormalize works correctly with both 1D and 2D arrays."""
     values = [0.5] * 2 + [0.25] + [0.598706] * 3
     u_vector = array(values) if one_dim else array([values, values])
-    vector = parameter_space.unnormalize_vect(u_vector, use_dist=True)
+    vector = parameter_space.denormalize_vect(u_vector, use_dist=True)
     values = [0.5] * 6
     expectation = array(values) if one_dim else array([values, values])
     assert allclose(vector, expectation, 1e-3)
 
 
 def test_str_and_tabular_view() -> None:
-    """Check that str and unnormalize_vect work correctly."""
+    """Check that str and denormalize_vect work correctly."""
     space = ParameterSpace()
     space.add_variable("x")
     space.add_random_vector(
@@ -460,16 +466,27 @@ def test_str_and_tabular_view() -> None:
     assert space._RANGE in tabular_view
 
 
-def test_unnormalize_vect() -> None:
-    """Check that unnormalize_vect works correctly."""
+def test_denormalize_vect() -> None:
+    """Check that denormalize_vect works correctly."""
     space = ParameterSpace()
     space.add_random_variable(
         "x", SPTriangularDistribution_Settings(minimum=0.0, mode=0.5, maximum=2.0)
     )
     assert allclose(
-        space.unnormalize_vect(array([0.5]), use_dist=True), array([2.0 - 1.5**0.5])
+        space.denormalize_vect(array([0.5]), use_dist=True), array([2.0 - 1.5**0.5])
     )
-    assert space.unnormalize_vect(array([0.5]))[0] == 1.0
+    assert space.denormalize_vect(array([0.5]))[0] == 1.0
+
+
+def test_denormalize_vect_deprecated() -> None:
+    """Check that ParameterSpace.unnormalize_vect aliases denormalize_vect."""
+    space = ParameterSpace()
+    space.add_random_variable(
+        "x", SPTriangularDistribution_Settings(minimum=0.0, mode=0.5, maximum=2.0)
+    )
+    with pytest.warns(DeprecationWarning, match="denormalize_vect"):
+        result = space.unnormalize_vect(array([0.5]), use_dist=True)
+    assert allclose(result, space.denormalize_vect(array([0.5]), use_dist=True))
 
 
 def test_normalize_vect() -> None:
@@ -586,8 +603,8 @@ def test_gradient_normalization() -> None:
         "y", OTUniformDistribution_Settings(minimum=1.0, maximum=3)
     )
     x_vect = array([0.5, 1.5])
-    assert array_equal(
-        parameter_space.unnormalize_vect(x_vect, minus_lb=False),
+    assert_array_equal(
+        parameter_space.denormalize_vect(x_vect, minus_lb=False),
         parameter_space.normalize_grad(x_vect),
     )
 
@@ -597,7 +614,7 @@ def test_gradient_unnormalization() -> None:
     parameter_space.add_variable("x", lower_bound=-1.0, upper_bound=2.0)
     parameter_space.add_variable("y", lower_bound=1.0, upper_bound=3.0)
     x_vect = array([0.5, 1.5])
-    assert array_equal(
+    assert_array_equal(
         parameter_space.normalize_vect(x_vect, minus_lb=False, use_dist=True),
         parameter_space.unnormalize_grad(x_vect),
     )
@@ -617,6 +634,55 @@ def test_transform() -> None:
     transformed_vector = parameter_space.transform_vect(vector)
     assert transformed_vector == array([0.5])
     untransformed_vector = parameter_space.untransform_vect(transformed_vector)
+    assert vector == untransformed_vector
+
+
+@pytest.mark.parametrize("method_name", ["transform_vect", "untransform_vect"])
+def test_transform_vect_out(method_name) -> None:
+    """Check that the distribution-based transformations fill the out array.
+
+    These transformations bypass
+    [Normalizer][gemseo.space.design._normalizer.Normalizer],
+    so they must honor `out` on their own.
+    """
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", SPNormalDistribution_Settings())
+    parameter_space.add_variable("y", lower_bound=0.0, upper_bound=10.0, value=5.0)
+    method = getattr(parameter_space, method_name)
+    x_vect = array([0.3, 0.4])
+    expected = method(x_vect.copy())
+    out = zeros(2)
+    result = method(x_vect.copy(), out=out)
+    assert result is out
+    assert_allclose(out, expected)
+
+
+def test_transform_vect_out_with_wrong_dtype(snapshot) -> None:
+    """Check the error raised when the out array has not the dtype of the result."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", SPNormalDistribution_Settings())
+    with assert_exception(ValueError, snapshot):
+        parameter_space.transform_vect(array([0.3]), out=zeros(1, dtype=int64))
+
+
+def test_transform_vect_keyword_argument() -> None:
+    """Check that transform_vect and untransform_vect accept the x_vect keyword.
+
+    [ParameterSpace.transform_vect][gemseo.space.parameter.ParameterSpace.transform_vect]
+    and
+    [ParameterSpace.untransform_vect][gemseo.space.parameter.ParameterSpace.untransform_vect]
+    must keep the same first parameter name as their base class counterparts
+    [DesignSpace.transform_vect][gemseo.space.design.DesignSpace.transform_vect]
+    and
+    [DesignSpace.untransform_vect][gemseo.space.design.DesignSpace.untransform_vect],
+    i.e. ``x_vect``, to preserve the Liskov substitution principle.
+    """
+    parameter_space = ParameterSpace()
+    parameter_space.add_random_variable("x", SPNormalDistribution_Settings())
+    vector = array([0.0])
+    transformed_vector = parameter_space.transform_vect(x_vect=vector)
+    assert transformed_vector == array([0.5])
+    untransformed_vector = parameter_space.untransform_vect(x_vect=transformed_vector)
     assert vector == untransformed_vector
 
 
@@ -1096,9 +1162,61 @@ def test_discrete_distribution_samples(mixed_int_uncertain_space):
     compute_samples can generate samples
     and the samples of the discrete variables are 0 and 1 as expected.
     """
-    samples = mixed_int_uncertain_space.compute_samples(1000)
-    assert not isnan(samples).any()
+    samples = mixed_int_uncertain_space.compute_samples(10_000)
     assert (unique(samples[:, 0]) == array([0, 1])).all()
+    assert not isnan(samples).any()
+    assert_almost_equal(samples.mean(0), array([0.67, 0.51]), decimal=2)
+
+
+def test_unpickle_pre_refactor_parameter_space() -> None:
+    """Check that the uncertain state of a pre-refactor ParameterSpace is restored.
+
+    A ParameterSpace pickled with the flat DesignSpace layout replays through the
+    inherited ``DesignSpace.__setstate__``. The subclass-specific state (uncertain
+    variables, distributions, copulas, ...) is not part of the flat DesignSpace
+    layout and must not be silently dropped while the components are rebuilt.
+    """
+    space = ParameterSpace.__new__(ParameterSpace)
+    space.__dict__ = {
+        # Flat DesignSpace layout.
+        "dimension": 1,
+        "name": "old",
+        "normalize": {"u": array([True])},
+        "_variables": {
+            "u": Variable(
+                size=1, type=DataType.FLOAT, lower_bound=[0.0], upper_bound=[1.0]
+            ),
+        },
+        "_norm_factor": None,
+        "_DesignSpace__current_value": {"u": array([0.5])},
+        "_DesignSpace__has_current_value": True,
+        # Subclass-specific state that the legacy replay must preserve.
+        "uncertain_variables": ["u"],
+        "distributions": {"u": "MARGINAL"},
+        "distribution": "JOINT",
+        "_ParameterSpace__random_vector_name_to_settings": {"u": ("SETTINGS",)},
+        "_ParameterSpace__copulas": [(("u",), "COPULA")],
+        "_ParameterSpace__distribution_library_name": "OTDistribution",
+        "_ParameterSpace__supports_dependency": False,
+    }
+
+    blob = pickle.dumps(space)
+    restored = pickle.loads(blob)
+
+    # The DesignSpace part is replayed through the components.
+    assert restored.dimension == 1
+    assert restored.variable_names == ["u"]
+    assert restored.get_current_value() == pytest.approx(array([0.5]))
+    # The subclass state survives instead of being reset to the __init__ defaults.
+    assert restored.uncertain_variables == ["u"]
+    assert restored.distributions == {"u": "MARGINAL"}
+    assert restored.distribution == "JOINT"
+    assert restored._ParameterSpace__random_vector_name_to_settings == {
+        "u": ("SETTINGS",)
+    }
+    assert restored._ParameterSpace__copulas == [(("u",), "COPULA")]
+    assert restored._ParameterSpace__distribution_library_name == "OTDistribution"
+    assert restored._ParameterSpace__supports_dependency is False
 
 
 def test_discrete_distribution_scenario(mixed_int_uncertain_space):

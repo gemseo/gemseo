@@ -19,8 +19,8 @@ import logging
 import pytest
 from numpy import allclose
 from numpy import array
-from numpy import array_equal
 from numpy import atleast_2d
+from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
 from gemseo.core.function.array_function import ArrayFunction
@@ -67,7 +67,7 @@ def test_fullfact_values(doe_library_class, algo_name, expected) -> None:
     lib = doe_library_class(algo_name)
     settings = lib.ALGORITHM_INFOS[algo_name].settings_class(n_samples=n_samples)
     lib.execute(problem, settings=settings)
-    assert array_equal(
+    assert_array_equal(
         problem.to_dataset("data").get_view(variable_names="x").to_numpy(),
         expected,
     )

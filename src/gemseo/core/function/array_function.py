@@ -676,7 +676,7 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
             database: The database to read.
             design_space: The design space used for normalization.
             normalize: If `True`,
-                the values of the inputs are unnormalized before call.
+                the values of the inputs are denormalized before call.
             jac: If `True`, a Jacobian pointer is also generated.
             x_tolerance: The tolerance on the distance between inputs.
         """

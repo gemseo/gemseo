@@ -40,7 +40,16 @@ from gemseo.util.typing import IntegerArray
 from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+    from typing import Any
+
     from typing_extensions import Self
+
+_LOWER_BOUND: Final[str] = "lower_bound"
+"""The tag for the lower bound."""
+
+_UPPER_BOUND: Final[str] = "upper_bound"
+"""The tag for the upper bound."""
 
 ScalarBoundType = int | float
 BoundType = (
@@ -69,7 +78,7 @@ TYPE_MAP: Final[dict[str, type[int64 | float64]]] = {
 }
 
 
-class Variable(BaseModel, validate_assignment=True):
+class Variable(BaseModel, frozen=True):
     """A variable.
 
     A variable is defined by
@@ -77,8 +86,11 @@ class Variable(BaseModel, validate_assignment=True):
     a data type
     and the bounds of its components.
 
-    When `size > 1`, a bound could be defined with a scalar, in that case the bound
-     ill be converted to a numpy array of the expected `size`.
+    When `size > 1`,
+    a bound could be defined with a scalar,
+    in that case the bound will be converted to a NumPy array of the expected `size`.
+
+    A variable is immutable.
     """
 
     size: PositiveInt = 1
@@ -93,9 +105,6 @@ class Variable(BaseModel, validate_assignment=True):
     upper_bound: BoundType = inf
     """The upper bound of the variable."""
 
-    __LOWER_BOUND: Final[str] = "lower_bound"
-    __UPPER_BOUND: Final[str] = "upper_bound"
-
     @model_validator(mode="after")
     def __validate_variable(self) -> Self:
         """Validate the variable.
@@ -103,7 +112,7 @@ class Variable(BaseModel, validate_assignment=True):
         Returns:
             The instance.
         """
-        for name in (self.__LOWER_BOUND, self.__UPPER_BOUND):
+        for name in (_LOWER_BOUND, _UPPER_BOUND):
             self.__convert_bound(name)
             self.__check_bound(name)
 
@@ -125,14 +134,22 @@ class Variable(BaseModel, validate_assignment=True):
         bound = getattr(self, bound_name)
 
         if isinstance(bound, ndarray):
-            return
-
-        if isinstance(bound, Real):
+            # Copy so that freezing below does not affect the array owned by the
+            # caller.
+            bound = bound.copy()
+        elif isinstance(bound, Real):
             # inf cannot be cast to int and other components rely on this value.
             dtype = None if bound in (-inf, inf) else TYPE_MAP[self.type]
             bound = full(self.size, bound, dtype=dtype)
         else:
             bound = atleast_1d(bound)
+
+        # Freeze the validated bound array so that an accidental in-place mutation
+        # cannot bypass the version bump
+        # and leave the derived caches serving stale bounds.
+        # The accessors of Bounds hand out read-only views of this array,
+        # so that its writeable flag cannot be re-enabled from the outside.
+        bound.setflags(write=False)
 
         # Bypass assignment validation to avoid recursion when using setattr.
         self.__dict__[bound_name] = bound
@@ -189,6 +206,46 @@ class Variable(BaseModel, validate_assignment=True):
                     f"{', '.join([f'{bound[i]} (index {i})' for i in indices])}."
                 )
                 raise ValueError(msg)
+
+    def __copy__(self) -> Self:
+        # A variable is immutable and its bound arrays are read-only,
+        # so a copy can be shared with the original.
+        # This also keeps the bound arrays frozen,
+        # since NumPy does not preserve the writeable flag across a copy.
+        return self
+
+    def __deepcopy__(self, memo: dict[int, Any] | None = None) -> Self:
+        return self
+
+    def model_copy(
+        self, *, update: Mapping[str, Any] | None = None, deep: bool = False
+    ) -> Self:
+        """Return a copy of the variable, updated with new field values.
+
+        Args:
+            update: The new field values, if any.
+            deep: Whether to deep-copy the variable;
+                this has no effect since the bound arrays are copied by the validation.
+
+        Returns:
+            The variable itself without an update, otherwise a new variable.
+        """
+        # The base implementation writes the update into the __dict__ of the object
+        # returned by __copy__/__deepcopy__, which is this very instance;
+        # rebuild through validation instead, so that the original is left alone
+        # and the new bounds are converted, checked and frozen.
+        if not update:
+            return self
+
+        return self.model_validate({**self.__dict__, **update})
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        super().__setstate__(state)
+        # NumPy does not preserve the writeable flag across pickling,
+        # and pydantic restores the model without re-validating it,
+        # so refreeze the bound arrays here.
+        for name in (_LOWER_BOUND, _UPPER_BOUND):
+            self.__dict__[name].setflags(write=False)
 
     def __eq__(self, other: object) -> bool:
         return (

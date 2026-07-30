@@ -1,4 +1,20 @@
 # serializer version: 1
+# name: test_frozen[lower_bound]
+  '''
+  1 validation error for Variable
+  lower_bound
+    Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_frozen[upper_bound]
+  '''
+  1 validation error for Variable
+  upper_bound
+    Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
 # name: test_invalid_bound_size[lower]
   '''
   1 validation error for Variable
@@ -59,13 +75,6 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/float_type
   '''
 # ---
-# name: test_invalid_lower_bound_assignment
-  '''
-  1 validation error for Variable
-    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value=Variable(size=1, type=<Da...upper_bound=array([1.])), input_type=Variable]
-      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
-  '''
-# ---
 # name: test_invalid_type
   '''
   1 validation error for Variable
@@ -74,10 +83,24 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/enum
   '''
 # ---
-# name: test_invalid_upper_bound_assignment
+# name: test_model_copy_with_inconsistent_update
   '''
   1 validation error for Variable
-    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value=Variable(size=1, type=<Da...pper_bound=array([-1.])), input_type=Variable]
+    Value error, The lower bound should be of size 5. [type=value_error, input_value={'size': 5, 'type': <Data...bound': array([1., 1.])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_multidimensional_bound[lower]
+  '''
+  1 validation error for Variable
+    Value error, The lower bound has a dimension greater than 1. [type=value_error, input_value={'size': 2, 'lower_bound': array([[1., 2.]])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_multidimensional_bound[upper]
+  '''
+  1 validation error for Variable
+    Value error, The upper bound has a dimension greater than 1. [type=value_error, input_value={'size': 2, 'upper_bound': array([[1., 2.]])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---

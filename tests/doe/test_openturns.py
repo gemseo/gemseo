@@ -229,7 +229,7 @@ def variables_space():
     design_space.variable_sizes = {"x": 2}
     design_space.dimension = 2
     design_space.untransform_vect = lambda doe, no_check: doe
-    design_space.normalize = {"x": array([True, True])}
+    design_space.name_to_normalization_mask = {"x": array([True, True])}
     return design_space
 
 

@@ -78,6 +78,7 @@ the following methods:
 from __future__ import annotations
 
 import logging
+import warnings
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -106,6 +107,8 @@ from numpy import array
 from numpy import ndarray
 
 from gemseo.space.design import DesignSpace
+from gemseo.space.design._checking import check_out_array
+from gemseo.space.design._view import render_string
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.string import _format_value_in_pretty_table_16
@@ -284,9 +287,14 @@ class ParameterSpace(DesignSpace):
                 [SPDistribution][gemseo.uncertainty.distribution.scipy.distribution.SPDistribution]
                 or
                 when the lengths of the distribution parameter collections
-                are not consistent.
+                are not consistent
+                or
+                when the variable name already exists.
         """
-        self._check_variable_name(name)
+        if name in self._variables:
+            msg = f"The variable {name!r} already exists."
+            raise ValueError(msg)
+
         distribution_library_names = {s._LIBRARY_NAME for s in settings}
         if self.__distribution_library_name:
             distribution_library_names.add(self.__distribution_library_name)
@@ -449,7 +457,7 @@ class ParameterSpace(DesignSpace):
                 this is in particular the case when this method is called by
                 [normalize_vect()][gemseo.space.parameter.ParameterSpace.normalize_vect]
                 and
-                [unnormalize_vect()][gemseo.space.parameter.ParameterSpace.unnormalize_vect].
+                [denormalize_vect()][gemseo.space.parameter.ParameterSpace.denormalize_vect].
             inverse: Whether the inverse cumulative density function
                 is used as the evaluation function,
                 or the cumulative density function.
@@ -584,7 +592,7 @@ class ParameterSpace(DesignSpace):
 
     def __str__(self) -> str:
         title = "" if self.deterministic_variables else "Uncertain space"
-        return self._get_string_representation(False, simplify=True, title=title)
+        return render_string(self, use_html=False, simplify=True, title=title)
 
     def get_tabular_view(
         self,
@@ -639,6 +647,54 @@ class ParameterSpace(DesignSpace):
         table.title = self._PARAMETER_SPACE
         return str(table)
 
+    def denormalize_vect(
+        self,
+        x_vect: ndarray,
+        minus_lb: bool = True,
+        no_check: bool = False,
+        use_dist: bool = False,
+        out: ndarray | None = None,
+    ) -> ndarray:
+        """Denormalize a normalized vector of the parameter space.
+
+        If `use_dist` is True,
+        use the inverse cumulative probability distributions of the random variables
+        to unscale the components of the random variables.
+        Otherwise,
+        use the approach defined in
+        [DesignSpace.denormalize_vect()][gemseo.space.design.DesignSpace.denormalize_vect]
+        with `minus_lb` and `no_check`.
+
+        For the components of the deterministic variables,
+        use the approach defined in
+        [DesignSpace.denormalize_vect()][gemseo.space.design.DesignSpace.denormalize_vect]
+        with `minus_lb` and `no_check`.
+
+        Args:
+            x_vect: The values of the design variables.
+            minus_lb: Whether to remove the lower bounds at normalization.
+            no_check: Whether to check if the components are in $[0,1]$.
+            use_dist: Whether to denormalize the components of the random variables
+                with their inverse cumulative probability distributions.
+            out: The array to store the original vector.
+                Its dtype and shape must be those of the original vector.
+                If `None`, create a new array.
+
+        Returns:
+            The original vector.
+
+        Raises:
+            ValueError: When `out` cannot store the result.
+        """
+        if not use_dist:
+            return super().denormalize_vect(x_vect, no_check=no_check, out=out)
+
+        if x_vect.ndim not in {1, 2}:
+            msg = "x_vect must be either a 1D or a 2D NumPy array."
+            raise ValueError(msg)
+
+        return self.__store(self.__denormalize_vect(x_vect, no_check), out)
+
     def unnormalize_vect(
         self,
         x_vect: ndarray,
@@ -647,46 +703,40 @@ class ParameterSpace(DesignSpace):
         use_dist: bool = False,
         out: ndarray | None = None,
     ) -> ndarray:
-        """Unnormalize a normalized vector of the parameter space.
+        """Denormalize a normalized vector of the parameter space.
 
-        If `use_dist` is True,
-        use the inverse cumulative probability distributions of the random variables
-        to unscale the components of the random variables.
-        Otherwise,
-        use the approach defined in
-        [DesignSpace.unnormalize_vect()][gemseo.space.design.DesignSpace.unnormalize_vect]
-        with `minus_lb` and `no_check`.
-
-        For the components of the deterministic variables,
-        use the approach defined in
-        [DesignSpace.unnormalize_vect()][gemseo.space.design.DesignSpace.unnormalize_vect]
-        with `minus_lb` and `no_check`.
+        Deprecated:
+            Use
+            [denormalize_vect()][gemseo.space.parameter.ParameterSpace.denormalize_vect]
+            instead.
 
         Args:
             x_vect: The values of the design variables.
             minus_lb: Whether to remove the lower bounds at normalization.
             no_check: Whether to check if the components are in $[0,1]$.
-            use_dist: Whether to unnormalize the components of the random variables
+            use_dist: Whether to denormalize the components of the random variables
                 with their inverse cumulative probability distributions.
-            out: The array to store the unnormalized vector.
+            out: The array to store the original vector.
+                Its dtype and shape must be those of the original vector.
                 If `None`, create a new array.
 
         Returns:
-            The unnormalized vector.
+            The original vector.
         """
-        if not use_dist:
-            return super().unnormalize_vect(x_vect, no_check=no_check, out=out)
+        warnings.warn(
+            "ParameterSpace.unnormalize_vect is deprecated; "
+            "use ParameterSpace.denormalize_vect instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.denormalize_vect(
+            x_vect, minus_lb=minus_lb, no_check=no_check, use_dist=use_dist, out=out
+        )
 
-        if x_vect.ndim not in {1, 2}:
-            msg = "x_vect must be either a 1D or a 2D NumPy array."
-            raise ValueError(msg)
-
-        return self.__unnormalize_vect(x_vect, no_check)
-
-    def __unnormalize_vect(self, x_vect, no_check):
+    def __denormalize_vect(self, x_vect, no_check):
         data_names = self._variables.keys()
         data_sizes = self.variable_sizes
-        x_u_geom = super().unnormalize_vect(x_vect, no_check=no_check)
+        x_u_geom = super().denormalize_vect(x_vect, no_check=no_check)
         x_u = self.__transform(
             split_array_to_dict_of_arrays(x_vect, data_sizes, data_names), inverse=True
         )
@@ -699,18 +749,18 @@ class ParameterSpace(DesignSpace):
 
     def transform_vect(  # noqa:D102
         self,
-        vector: ndarray,
+        x_vect: ndarray,
         out: ndarray | None = None,
     ) -> ndarray:
-        return self.normalize_vect(vector, use_dist=True, out=out)
+        return self.normalize_vect(x_vect, use_dist=True, out=out)
 
     def untransform_vect(  # noqa:D102
         self,
-        vector: ndarray,
+        x_vect: ndarray,
         no_check: bool = False,
         out: ndarray | None = None,
     ) -> ndarray:
-        return self.unnormalize_vect(vector, use_dist=True, no_check=no_check, out=out)
+        return self.denormalize_vect(x_vect, use_dist=True, no_check=no_check, out=out)
 
     def normalize_vect(
         self,
@@ -740,10 +790,14 @@ class ParameterSpace(DesignSpace):
             use_dist: If `True`, normalize the components of the random variables
                 with their cumulative probability distributions.
             out: The array to store the normalized vector.
+                Its dtype and shape must be those of the normalized vector.
                 If `None`, create a new array.
 
         Returns:
             The normalized vector.
+
+        Raises:
+            ValueError: When `out` cannot store the result.
         """
         if not use_dist:
             return super().normalize_vect(x_vect, out=out)
@@ -752,7 +806,30 @@ class ParameterSpace(DesignSpace):
             msg = "x_vect must be either a 1D or a 2D NumPy array."
             raise ValueError(msg)
 
-        return self.__normalize_vect(x_vect)
+        return self.__store(self.__normalize_vect(x_vect), out)
+
+    @staticmethod
+    def __store(value: ndarray, out: ndarray | None) -> ndarray:
+        """Store a value in the array of the caller, if any.
+
+        Args:
+            value: The value.
+            out: The array to store the value.
+                Its dtype and shape must be those of the value.
+                If `None`, return the value as is.
+
+        Returns:
+            Either the array of the caller, filled with the value, or the value.
+
+        Raises:
+            ValueError: When `out` cannot store the value.
+        """
+        if out is None:
+            return value
+
+        check_out_array(out, value.dtype, value.shape)
+        out[...] = value
+        return out
 
     def __normalize_vect(self, x_vect):
         data_names = self._variables.keys()

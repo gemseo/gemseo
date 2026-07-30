@@ -1,0 +1,49 @@
+# serializer version: 1
+# name: test_read_only_bounds[full_lower_bound]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds[full_upper_bound]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds[get_lower_bound]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds[get_lower_bounds[as_dict]]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds[get_lower_bounds[names]]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds[get_lower_bounds]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds[get_upper_bound]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds[get_upper_bounds[as_dict]]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds[get_upper_bounds[names]]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds[get_upper_bounds]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bounds_cannot_be_unfrozen[full_lower_bound]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_read_only_bounds_cannot_be_unfrozen[full_upper_bound]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_read_only_bounds_cannot_be_unfrozen[get_lower_bound]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_read_only_bounds_cannot_be_unfrozen[get_lower_bounds]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_read_only_bounds_cannot_be_unfrozen[get_upper_bound]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_read_only_bounds_cannot_be_unfrozen[get_upper_bounds]
+  'cannot set WRITEABLE flag to True of this array'
+# ---

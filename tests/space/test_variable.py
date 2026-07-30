@@ -12,12 +12,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Tests for the Variable class."""
+
 from __future__ import annotations
 
 import pytest
 from numpy import array
 from numpy import atleast_1d
 from numpy import inf
+from numpy import int64
+from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
 from gemseo.space._variable import DataType
@@ -107,13 +111,57 @@ def variable() -> Variable:
     return Variable(size=1, type="float", lower_bound=0, upper_bound=1)
 
 
-def test_invalid_lower_bound_assignment(variable, snapshot) -> None:
-    """Check the handling of an invalid lower bound assignment."""
-    with assert_exception(ValueError, snapshot):
-        variable.lower_bound = 5
+@pytest.mark.parametrize("bound", ["lower_bound", "upper_bound"])
+def test_frozen(variable, bound, snapshot) -> None:
+    """Check that a variable is immutable (bounds cannot be reassigned)."""
+    with assert_exception(ValidationError, snapshot):
+        setattr(variable, bound, 0)
 
 
-def test_invalid_upper_bound_assignment(variable, snapshot) -> None:
-    """Check the handling of an invalid upper bound assignment."""
-    with assert_exception(ValueError, snapshot):
-        variable.upper_bound = -1
+@pytest.mark.parametrize("side", ["lower", "upper"])
+def test_multidimensional_bound(side, snapshot) -> None:
+    """Check a bound with more than one dimension."""
+    with assert_exception(ValidationError, snapshot):
+        Variable(size=2, **{f"{side}_bound": array([[1.0, 2.0]])})
+
+
+def test_model_copy_without_update(variable) -> None:
+    """Check that copying a variable without an update returns the variable itself."""
+    assert variable.model_copy() is variable
+    assert variable.model_copy(deep=True) is variable
+
+
+def test_model_copy_with_inconsistent_update(snapshot) -> None:
+    """Check that an update inconsistent with the bounds is rejected.
+
+    The base implementation of `model_copy` writes the update into `__dict__` without
+    validating it.
+    """
+    variable = Variable(size=2, lower_bound=0.0, upper_bound=1.0)
+    with assert_exception(ValidationError, snapshot):
+        variable.model_copy(update={"size": 5})
+
+
+def test_model_copy_leaves_original_alone() -> None:
+    """Check that an update returns a new variable and does not touch the original."""
+    variable = Variable(size=2, lower_bound=0.0, upper_bound=1.0)
+
+    new_variable = variable.model_copy(update={"lower_bound": array([-9.0, -9.0])})
+
+    assert new_variable is not variable
+    assert_array_equal(new_variable.lower_bound, array([-9.0, -9.0]))
+    assert not new_variable.lower_bound.flags.writeable
+    # The base implementation would have written the update into the original.
+    assert_array_equal(variable.lower_bound, array([0.0, 0.0]))
+    assert not variable.lower_bound.flags.writeable
+
+
+def test_model_copy_converts_the_update() -> None:
+    """Check that a scalar bound of an update is converted and typed as expected."""
+    variable = Variable(size=2, type="integer", lower_bound=0, upper_bound=10)
+
+    new_variable = variable.model_copy(update={"upper_bound": 3})
+
+    assert new_variable.type == DataType.INTEGER
+    assert new_variable.upper_bound.dtype == int64
+    assert_array_equal(new_variable.upper_bound, array([3, 3]))

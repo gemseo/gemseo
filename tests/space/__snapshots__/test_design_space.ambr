@@ -1,6 +1,6 @@
 # serializer version: 1
 # name: test_active_bounds
-  "Expected dict or array for x_vec argument; got <class 'str'>."
+  "Expected dict or array for x_vect argument; got <class 'str'>."
 # ---
 # name: test_active_bounds.1
   "'There is no current value for the design variables: x, y and z.'"
@@ -151,30 +151,33 @@
 # name: test_bounds_set_lower_bound_with_inconsistent_size
   '''
   1 validation error for Variable
-    Value error, The lower bound should be of size 1. [type=value_error, input_value=Variable(size=1, type=<Da...upper_bound=array([2.])), input_type=Variable]
+    Value error, The lower bound should be of size 1. [type=value_error, input_value={'size': 1, 'type': <Data...per_bound': array([2.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_lower_bound_with_nan
   '''
   1 validation error for Variable
-    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value=Variable(size=1, type=<Da...upper_bound=array([2.])), input_type=Variable]
+    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...per_bound': array([2.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_upper_bound_with_inconsistent_size
   '''
   1 validation error for Variable
-    Value error, The upper bound should be of size 1. [type=value_error, input_value=Variable(size=1, type=<Da...r_bound=array([1., 1.])), input_type=Variable]
+    Value error, The upper bound should be of size 1. [type=value_error, input_value={'size': 1, 'type': <Data...bound': array([1., 1.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_upper_bound_with_nan
   '''
   1 validation error for Variable
-    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value=Variable(size=1, type=<Da...pper_bound=array([nan])), input_type=Variable]
+    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...f]), 'upper_bound': nan}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
+# ---
+# name: test_check_empty_design_space
+  'The design space is empty.'
 # ---
 # name: test_check_membership[x_vect0-None-TypeError-The input vector should be an array or a dictionary; got a <class 'list'> instead.]
   "The input vector should be an array or a dictionary; got a <class 'list'> instead."
@@ -213,13 +216,13 @@
   'The component x_1[0] of the given array (-999.5) is lower than the lower bound (0.5) by 1.0e+03.'
 # ---
 # name: test_current_x.2
-  "Variable 'x_3' is not known."
+  "No variable named 'x_3'."
 # ---
 # name: test_current_x.3
-  "Variable 'x_3' is not known."
+  "No variable named 'x_3'."
 # ---
 # name: test_current_x.4
-  "Variable 'x_3' is not known."
+  "No variable named 'x_3'."
 # ---
 # name: test_current_x.5
   '''
@@ -227,6 +230,12 @@
     Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'type': <Data...1.0, 'upper_bound': 0.0}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
+# ---
+# name: test_denormalize_vect_out_with_wrong_dtype
+  'Expected an out array of dtype float64; got complex128.'
+# ---
+# name: test_denormalize_vect_out_with_wrong_shape
+  'Expected an out array of shape (2,); got (3, 2).'
 # ---
 # name: test_dict_to_array_key_error
   "'y'"
@@ -238,7 +247,7 @@
   "Dimensions 3 and 4 of variable 'x5' do not exist."
 # ---
 # name: test_filter_with_an_unknown_variable
-  "Variable 'unknown_x' is not known."
+  "No variable named 'unknown_x'."
 # ---
 # name: test_get_current_value_bad_names
   'There are no such variables named: bar and foo.'
@@ -393,11 +402,44 @@
 # name: test_get_current_value_partially_missing_as_array_not_normalized[True-variable_names2]
   "'There is no current value for the design variables: y.'"
 # ---
-# name: test_norm_policy
-  "Variable 'foo' is not known."
+# name: test_normalize_vect_out_with_wrong_dtype
+  'Expected an out array of dtype float64; got int64.'
+# ---
+# name: test_read_only_bound_getters_forbid_item_assignment[get_lower_bound]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bound_getters_forbid_item_assignment[get_lower_bounds[as_dict]]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bound_getters_forbid_item_assignment[get_lower_bounds[names]]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bound_getters_forbid_item_assignment[get_lower_bounds]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bound_getters_forbid_item_assignment[get_upper_bound]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bound_getters_forbid_item_assignment[get_upper_bounds[as_dict]]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bound_getters_forbid_item_assignment[get_upper_bounds[names]]
+  'assignment destination is read-only'
+# ---
+# name: test_read_only_bound_getters_forbid_item_assignment[get_upper_bounds]
+  'assignment destination is read-only'
+# ---
+# name: test_remove_unknown_variable
+  "No variable named 'unknown'."
 # ---
 # name: test_rename_unknown_variable
-  'The variable x is not in the design space.'
+  "No variable named 'x'."
+# ---
+# name: test_set_current_value_out_of_bounds_array_or_opt_result_leaves_no_partial_value[current_x0]
+  'The component x[0] of the given array (5.0) is greater than the upper bound (1.0) by 4.0e+00.'
+# ---
+# name: test_set_current_value_out_of_bounds_array_or_opt_result_leaves_no_partial_value[current_x1]
+  'The component x[0] of the given array (5.0) is greater than the upper bound (1.0) by 4.0e+00.'
 # ---
 # name: test_set_current_value_with_malformed_current_x
   "The current design value should be either an array, a dictionary of arrays or an optimization result; got <class 'float'> instead."
@@ -407,6 +449,18 @@
 # ---
 # name: test_set_current_value_with_malformed_opt_arg
   'Invalid x_opt, dimension mismatch: 33 != 1.'
+# ---
+# name: test_set_current_value_wrong_size_leaves_no_partial_value
+  'The variable x of size 2 cannot be set with an array of size 1.'
+# ---
+# name: test_set_current_value_wrong_size_leaves_no_partial_value.1
+  "'There is no current value for the design variables: x and y.'"
+# ---
+# name: test_set_current_variable_wrong_size_raises
+  'The variable x of size 2 cannot be set with an array of size 1.'
+# ---
+# name: test_to_complex_without_current_value
+  "'There is no current value for the design variables: y.'"
 # ---
 # name: test_to_scalar_variables
   "'There is no current value for the design variables: foo.'"

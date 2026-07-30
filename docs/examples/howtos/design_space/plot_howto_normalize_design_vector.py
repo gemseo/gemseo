@@ -29,7 +29,7 @@ You want to use normalization on your design variables.
 The design space has two methods to normalize variables:
 
 - [normalize_vect()][gemseo.space.design.DesignSpace.normalize_vect]
-- [unnormalize_vect()][gemseo.space.design.DesignSpace.unnormalize_vect]
+- [denormalize_vect()][gemseo.space.design.DesignSpace.denormalize_vect]
 
 ## Step-by-step guide
 """
@@ -62,9 +62,9 @@ normalized_x_vect
 #     When each variable has a current value, it can be retrieved as its normalized form with:
 #     `design_space.get_current_value(normalize=True)`.
 #
-# ### 3. Un-normalize the array
-unnormalized_x_vect = design_space.unnormalize_vect(normalized_x_vect)
-unnormalized_x_vect
+# ### 3. Denormalize the array
+denormalized_x_vect = design_space.denormalize_vect(normalized_x_vect)
+denormalized_x_vect
 
 # %%
 # !!! note
@@ -78,9 +78,9 @@ unnormalized_x_vect
 #
 # ## Summary
 #
-# Normalization (resp. un-normalization) can be done by the use of the
+# Normalization (resp. denormalization) can be done by the use of the
 # [normalize_vect()][gemseo.space.design.DesignSpace.normalize_vect] method
-# (resp. [unnormalize_vect()][gemseo.space.design.DesignSpace.unnormalize_vect]).
+# (resp. [denormalize_vect()][gemseo.space.design.DesignSpace.denormalize_vect]).
 #
 # A design vector can be retrieved in its normalized form with
 # `design_space.get_current_value(normalize=True)` when it has a current value.

@@ -31,6 +31,7 @@ from numpy import array
 from numpy import array_equal
 from numpy import ndarray
 from numpy.ma.testutils import assert_close
+from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 
 from gemseo.dataset.io_dataset import IODataset
@@ -120,11 +121,11 @@ def test_learn(io_dataset) -> None:
         io_dataset, LinearRegressor_Settings(input_names=["x_1", "x_2"])
     )
     model.learn()
-    assert array_equal(model.get_coefficients(False), reference)
+    assert_array_equal(model.get_coefficients(False), reference)
 
     model = LinearRegressor(io_dataset, LinearRegressor_Settings(output_names=["y_1"]))
     model.learn()
-    assert array_equal(model.get_coefficients(False), reference)
+    assert_array_equal(model.get_coefficients(False), reference)
 
     model = LinearRegressor(io_dataset)
     model.learn(samples=[1, 2])
@@ -132,7 +133,7 @@ def test_learn(io_dataset) -> None:
 
     model = LinearRegressor(io_dataset)
     model.learn(samples=list(range(10)))
-    assert array_equal(model.get_coefficients(False), reference)
+    assert_array_equal(model.get_coefficients(False), reference)
 
 
 def test_learn_subset_with_variable_transformer(io_dataset) -> None:
@@ -183,21 +184,21 @@ def test_format_dict(io_dataset) -> None:
         return input_data
 
     out_dict_1d = predict_dict(ml_model, DICT_1D)
-    assert array_equal(partially_transformed[0], INPUT_VALUE_1D)
+    assert_array_equal(partially_transformed[0], INPUT_VALUE_1D)
     out_dict_2d = predict_dict(ml_model, DICT_2D)
-    assert array_equal(partially_transformed[0], INPUT_VALUE_2D)
+    assert_array_equal(partially_transformed[0], INPUT_VALUE_2D)
     out_dict_2d_multisamples = predict_dict(ml_model, DICT_2D_MULTISAMPLES)
-    assert array_equal(partially_transformed[0], INPUT_VALUES)
+    assert_array_equal(partially_transformed[0], INPUT_VALUES)
 
     out_value_1d = predict_dict(ml_model, INPUT_VALUE_1D)
-    assert array_equal(partially_transformed[0], INPUT_VALUE_1D)
-    assert array_equal(partially_transformed[0], out_value_1d)
+    assert_array_equal(partially_transformed[0], INPUT_VALUE_1D)
+    assert_array_equal(partially_transformed[0], out_value_1d)
     out_value_2d = predict_dict(ml_model, INPUT_VALUE_2D)
-    assert array_equal(partially_transformed[0], INPUT_VALUE_2D)
-    assert array_equal(partially_transformed[0], out_value_2d)
+    assert_array_equal(partially_transformed[0], INPUT_VALUE_2D)
+    assert_array_equal(partially_transformed[0], out_value_2d)
     out_values = predict_dict(ml_model, INPUT_VALUES)
-    assert array_equal(partially_transformed[0], INPUT_VALUES)
-    assert array_equal(partially_transformed[0], out_values)
+    assert_array_equal(partially_transformed[0], INPUT_VALUES)
+    assert_array_equal(partially_transformed[0], out_values)
 
     assert isinstance(out_dict_1d, dict)
     assert isinstance(out_dict_2d, dict)
@@ -206,9 +207,9 @@ def test_format_dict(io_dataset) -> None:
     assert isinstance(out_value_2d, ndarray)
     assert isinstance(out_values, ndarray)
 
-    assert array_equal(out_dict_1d["y_1"], out_value_1d)
-    assert array_equal(out_dict_2d["y_1"], out_value_2d)
-    assert array_equal(out_dict_2d_multisamples["y_1"], out_values)
+    assert_array_equal(out_dict_1d["y_1"], out_value_1d)
+    assert_array_equal(out_dict_2d["y_1"], out_value_2d)
+    assert_array_equal(out_dict_2d_multisamples["y_1"], out_values)
 
 
 def test_format_sample(io_dataset) -> None:
@@ -225,17 +226,17 @@ def test_format_sample(io_dataset) -> None:
         return input_data
 
     out_value_1d = predict_sample(ml_model, INPUT_VALUE_1D)
-    assert array_equal(partially_transformed[0], INPUT_VALUE_1D[None])
+    assert_array_equal(partially_transformed[0], INPUT_VALUE_1D[None])
 
     out_value_2d = predict_sample(ml_model, INPUT_VALUE_2D)
-    assert array_equal(partially_transformed[0], INPUT_VALUE_2D)
+    assert_array_equal(partially_transformed[0], INPUT_VALUE_2D)
 
     out_values = predict_sample(ml_model, INPUT_VALUES)
-    assert array_equal(partially_transformed[0], INPUT_VALUES)
+    assert_array_equal(partially_transformed[0], INPUT_VALUES)
 
-    assert array_equal(out_value_1d, INPUT_VALUE_1D)
-    assert array_equal(out_value_2d, INPUT_VALUE_2D)
-    assert array_equal(out_values, INPUT_VALUES)
+    assert_array_equal(out_value_1d, INPUT_VALUE_1D)
+    assert_array_equal(out_value_2d, INPUT_VALUE_2D)
+    assert_array_equal(out_values, INPUT_VALUES)
 
 
 @pytest.fixture(scope="module")

@@ -11,15 +11,6 @@
 # name: test_copula_error_missing_variable
   "There is no variable name 'x'."
 # ---
-# name: test_transform_raising_errors
-  'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
-# ---
-# name: test_transform_raising_errors.1
-  'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
-# ---
-# name: test_transform_raising_errors.2
-  'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
-# ---
 # name: test_existing_variable
   "The variable 'a' already exists."
 # ---
@@ -31,4 +22,16 @@
 # ---
 # name: test_set_joint_distribution_with_sp_distributions
   'SPJointDistribution does not support dependent variables.'
+# ---
+# name: test_transform_raising_errors
+  'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
+# ---
+# name: test_transform_raising_errors.1
+  'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
+# ---
+# name: test_transform_raising_errors.2
+  'obj must be a dictionary whose keys are the variables names and values are arrays whose dimensions are the variables ones and components are in [0, 1].'
+# ---
+# name: test_transform_vect_out_with_wrong_dtype
+  'Expected an out array of dtype float64; got int64.'
 # ---

@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
-from numpy import array_equal
+from numpy.testing import assert_array_equal
 
 from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
@@ -91,7 +91,7 @@ def xy_array() -> ndarray:
 )
 def test_concatenate_dict_of_arrays_to_array(xy_dict, names, expected) -> None:
     """Check concatenate_dict_of_arrays_to_array."""
-    assert array_equal(concatenate_dict_of_arrays_to_array(xy_dict, names), expected)
+    assert_array_equal(concatenate_dict_of_arrays_to_array(xy_dict, names), expected)
 
 
 @pytest.mark.parametrize(
@@ -210,8 +210,8 @@ def test_deepcopy_dict_of_arrays(possibly_nested_xy_dict, names) -> None:
     assert len(dict_copy) == len(original_dict or names)
     for key in dict_copy:
         if isinstance(original_dict[key], dict):
-            assert array_equal(original_dict[key]["x_1"], dict_copy[key]["x_1"])
+            assert_array_equal(original_dict[key]["x_1"], dict_copy[key]["x_1"])
             assert id(original_dict[key]["x_1"]) != dict_copy[key]["x_1"]
         else:
-            assert array_equal(original_dict[key], dict_copy[key])
+            assert_array_equal(original_dict[key], dict_copy[key])
             assert id(original_dict[key]) != id(dict_copy[key])

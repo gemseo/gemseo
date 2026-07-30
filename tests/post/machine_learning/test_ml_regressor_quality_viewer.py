@@ -82,6 +82,7 @@ def test_predictions(
 ) -> None:
     """Check the method plot_predictions_vs_observations."""
     viewer.plot_predictions_vs_observations("y", save=False)
+    assert plt.gcf() == snapshot_matplotlib(tolerance=0.1)
 
 
 def test_predictions_with_scalar_output(
@@ -90,6 +91,7 @@ def test_predictions_with_scalar_output(
 ) -> None:
     """Check the method plot_predictions_vs_observations with a scalar output."""
     viewer.plot_predictions_vs_observations("z", save=False)
+    assert plt.gcf() == snapshot_matplotlib(tolerance=0.1)
 
 
 def test_predictions_scatter_no_filter(
@@ -198,6 +200,7 @@ def test_cross_validation_predictions_versus_observations(
         observations=MLRegressorQualityViewer.ReferenceDataset.CROSS_VALIDATION,
         save=False,
     )
+    assert plt.gcf() == snapshot_matplotlib(tolerance=0.1)
 
 
 def test_cross_validation_residuals_versus_observations(
@@ -209,6 +212,7 @@ def test_cross_validation_residuals_versus_observations(
         observations=MLRegressorQualityViewer.ReferenceDataset.CROSS_VALIDATION,
         save=False,
     )
+    assert plt.gcf() == snapshot_matplotlib(tolerance=0.1)
 
 
 def test_cross_validation_residuals_versus_inputs(viewer, snapshot_matplotlib) -> None:
@@ -218,6 +222,7 @@ def test_cross_validation_residuals_versus_inputs(viewer, snapshot_matplotlib) -
         observations=MLRegressorQualityViewer.ReferenceDataset.CROSS_VALIDATION,
         save=False,
     )
+    assert plt.gcf() == snapshot_matplotlib(tolerance=0.1)
 
 
 @pytest.mark.parametrize(

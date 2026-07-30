@@ -1,0 +1,49 @@
+# serializer version: 1
+# name: test_check_addable_value_2d_raises
+  "The value [[1.]] of variable 'x' has a dimension greater than 1 while a scalar or a 1D iterable object (array, list, tuple, ...) was expected."
+# ---
+# name: test_check_addable_value_nan
+  "The following value of variable 'x' is neither None nor a number: nan (index 0)."
+# ---
+# name: test_check_addable_value_non_integer_for_integer_variable
+  "The following value of variable 'y' is neither None nor integer while variable 'y' is of type integer: 1.5 (index 0)."
+# ---
+# name: test_check_addable_value_non_numeric
+  "The following value of variable 'x' is neither None nor complex and cannot be cast to float: a (index 0)."
+# ---
+# name: test_check_empty_variables
+  'The design space is empty.'
+# ---
+# name: test_check_membership_array_2d_recursion
+  'The components [0] of the given array ([-1.]) are lower than the lower bound ([0.]) by [1.].'
+# ---
+# name: test_check_membership_array_lower_violation
+  'The components [0] of the given array ([-1.]) are lower than the lower bound ([0.]) by [1.].'
+# ---
+# name: test_check_membership_array_upper_violation
+  'The components [1] of the given array ([15.]) are greater than the upper bound ([10.]) by [5.].'
+# ---
+# name: test_check_membership_dict_integer_violation
+  'The variable y is of type integer; got y[0] = 3.5.'
+# ---
+# name: test_check_membership_dict_lower_bound_violation
+  'The component x[0] of the given array (-1.0) is lower than the lower bound (0.0) by 1.0e+00.'
+# ---
+# name: test_check_membership_dict_upper_bound_violation
+  'The component x[1] of the given array (15.0) is greater than the upper bound (10.0) by 5.0e+00.'
+# ---
+# name: test_check_membership_dict_wrong_size
+  'The variable x of size 2 cannot be set with an array of size 3.'
+# ---
+# name: test_check_membership_wrong_shape
+  'Expected an array of shape (..., 3); got (2,).'
+# ---
+# name: test_check_membership_wrong_type
+  "The input vector should be an array or a dictionary; got a <class 'list'> instead."
+# ---
+# name: test_check_out_array_wrong_dtype
+  'Expected an out array of dtype complex128; got float64.'
+# ---
+# name: test_check_out_array_wrong_shape
+  'Expected an out array of shape (2,); got (3, 2).'
+# ---

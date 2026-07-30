@@ -38,6 +38,7 @@ from numpy import ndarray
 from numpy import str_
 from strenum import LowercaseStrEnum
 
+from gemseo.space.design._constants import _DESIGN_SPACE_GROUP
 from gemseo.util.hdf5 import get_hdf5_group
 
 if TYPE_CHECKING:
@@ -559,9 +560,7 @@ class HDFDatabase:
                     index_dataset += 1
 
             input_space = database.input_space
-            if input_space and (
-                not append or input_space.DESIGN_SPACE_GROUP not in h5file
-            ):
+            if input_space and (not append or _DESIGN_SPACE_GROUP not in h5file):
                 input_space.to_hdf(file_path, append=True, hdf_node_path=hdf_node_path)
 
         self.__pending_arrays.clear()

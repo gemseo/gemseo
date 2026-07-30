@@ -48,6 +48,7 @@ from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
+from gemseo.space.design._view import render_string
 from gemseo.space.util import get_value_and_bounds
 from gemseo.util.pydantic import create_model
 from gemseo.util.testing.helper import assert_exception
@@ -214,8 +215,8 @@ def test_clear_listeners(name):
 def test_max_design_space_dimension_to_log(max_dimension, caplog):
     """Check the cap on the dimension of a design space to log."""
     problem = Power2()
-    initial_space_string = problem.design_space._get_string_representation(
-        False, "   over the design space"
+    initial_space_string = render_string(
+        problem.design_space, use_html=False, title="   over the design space"
     ).replace("\n", "\n      ")
     CustomDOE().execute(
         problem,
@@ -240,8 +241,7 @@ def test_max_design_space_dimension_to_log(max_dimension, caplog):
         (
             "gemseo.core.algorithm.base_driver_library",
             logging.INFO,
-            problem.design_space
-            ._get_string_representation(False)
+            render_string(problem.design_space, use_html=False)
             .replace("Design space", "      Design space")
             .replace("\n", "\n         "),
         )

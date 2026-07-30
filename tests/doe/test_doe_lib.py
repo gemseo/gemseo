@@ -391,7 +391,7 @@ def test_uunormalized_components_with_parameter_space(mc) -> None:
     parameter_space.add_random_variable("x", SPNormalDistribution_Settings())  # noqa: F821
 
     # The parameter space is unbounded.
-    assert not parameter_space.normalize["x"]
+    assert not parameter_space.name_to_normalization_mask["x"]
 
     problem = OptimizationProblem(parameter_space)
     problem.objective = ArrayFunction(sum, name="f")

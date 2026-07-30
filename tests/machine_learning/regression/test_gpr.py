@@ -26,11 +26,11 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import allclose
 from numpy import array
-from numpy import array_equal
 from numpy import diag
 from numpy import hstack
 from numpy import ndarray
 from numpy.testing import assert_almost_equal
+from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
 
 from gemseo.dataset.io_dataset import IODataset
@@ -139,7 +139,7 @@ def test_predict_std_input_array(model) -> None:
     input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
     prediction_std = model.predict_std(input_value)
     input_value = concatenate_dict_of_arrays_to_array(input_value, model.input_names)
-    assert array_equal(model.predict_std(input_value), prediction_std)
+    assert_array_equal(model.predict_std(input_value), prediction_std)
 
 
 @pytest.mark.parametrize(
