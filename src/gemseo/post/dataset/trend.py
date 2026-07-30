@@ -24,7 +24,7 @@ from numpy import polyfit
 from scipy.interpolate import Rbf
 from strenum import StrEnum
 
-from gemseo.typing import RealArray
+from gemseo.util.typing import RealArray
 
 TrendFunctionCreator = Callable[
     [RealArray, RealArray], Callable[[RealArray], RealArray]

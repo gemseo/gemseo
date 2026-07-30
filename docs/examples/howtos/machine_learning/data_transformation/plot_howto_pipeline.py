@@ -28,8 +28,8 @@ by implementing a pipeline.
 
 ## Solution
 
-Create a [Pipeline][gemseo.machine_learning.transformers.pipeline.Pipeline]
-of [BaseTransformer][gemseo.machine_learning.transformers.base_transformer.BaseTransformer]s.
+Create a [Pipeline][gemseo.machine_learning.transformer.pipeline.Pipeline]
+of [BaseTransformer][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer]s.
 
 ## Step-by-step guide
 """
@@ -40,8 +40,8 @@ from numpy import allclose
 from numpy import linspace
 from numpy import newaxis
 
-from gemseo.machine_learning.transformers.pipeline import Pipeline
-from gemseo.machine_learning.transformers.scaler.scaler import Scaler
+from gemseo.machine_learning.transformer.pipeline import Pipeline
+from gemseo.machine_learning.transformer.scaler.scaler import Scaler
 
 # %%
 # ### 1. Generate data
@@ -95,6 +95,6 @@ assert allclose(transformed_jac_data, jac_shifted_then_scaled)
 # ## Summary
 #
 # Data transformations can be easily chained
-# using a [Pipeline][gemseo.machine_learning.transformers.pipeline.Pipeline]
-# of [BaseTransformer][gemseo.machine_learning.transformers.base_transformer.BaseTransformer]s.
+# using a [Pipeline][gemseo.machine_learning.transformer.pipeline.Pipeline]
+# of [BaseTransformer][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer]s.
 # If the transformers are differentiable, the pipeline is differentiable too.

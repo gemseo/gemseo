@@ -20,15 +20,15 @@ from typing import TYPE_CHECKING
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
 from gemseo.mda.factory import MDA_FACTORY
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 def generate_parallel_doe(

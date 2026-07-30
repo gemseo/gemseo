@@ -25,22 +25,22 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
-from gemseo.machine_learning.regression.models.polyreg_settings import (
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning.regression.model.polyreg import PolynomialRegressor
+from gemseo.machine_learning.regression.model.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
+from gemseo.util.testing.helper import concretize_classes
 
-from ..core.test_ml_model import DummyMLModel
+from ..core.test_base_ml_model import DummyMLModel
 
 if TYPE_CHECKING:
-    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.dataset.io_dataset import IODataset
 
 MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
 MODEL.set_cache(MODEL.CacheType.MEMORY_FULL)

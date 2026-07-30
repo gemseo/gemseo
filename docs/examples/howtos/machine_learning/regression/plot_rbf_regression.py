@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Radial basis function (RBF) regression.
 
-An [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor] is an RBF model
+An [RBFRegressor][gemseo.machine_learning.regression.model.rbf.RBFRegressor] is an RBF model
 based on [SciPy](https://scipy.org).
 
 !!! info "See also"
@@ -38,7 +38,7 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import sample_disciplines
 from gemseo.machine_learning import create_regression_model
-from gemseo.machine_learning.regression.models.rbf_settings import RBF
+from gemseo.machine_learning.regression.model.rbf_settings import RBF
 
 # %%
 # ## Problem
@@ -48,7 +48,7 @@ from gemseo.machine_learning.regression.models.rbf_settings import RBF
 #
 # In this example,
 # you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
-# by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
+# by the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
 #       Alexander I. J. Forrester, Andras Sobester, and Andy J. Keane.
@@ -113,8 +113,8 @@ plt.show()
 # %%
 # ## Settings { #rbf-settings }
 #
-# The [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor] has many options
-# defined in the [RBFRegressor_Settings][gemseo.machine_learning.regression.models.rbf_settings.RBFRegressor_Settings] Pydantic model.
+# The [RBFRegressor][gemseo.machine_learning.regression.model.rbf.RBFRegressor] has many options
+# defined in the [RBFRegressor_Settings][gemseo.machine_learning.regression.model.rbf_settings.RBFRegressor_Settings] Pydantic model.
 #
 # ### Function
 #
@@ -122,7 +122,7 @@ plt.show()
 # depending on a radius $r$ representing a distance between two points
 # and an adjustable constant $\epsilon$.
 # The RBF can be changed using the `function` option,
-# which can be either an [RBF][gemseo.machine_learning.regression.models.rbf_settings.RBF]:
+# which can be either an [RBF][gemseo.machine_learning.regression.model.rbf_settings.RBF]:
 model = create_regression_model("RBFRegressor", training_dataset, function=RBF.GAUSSIAN)
 model.learn()
 predicted_output_data_g = model.predict(input_data).ravel()
@@ -213,8 +213,8 @@ plt.show()
 #
 # TPS regression is a specific case of RBF regression
 # where the RBF is the thin plate radial basis function for $r^2\log(r)$.
-# The [TPSRegressor][gemseo.machine_learning.regression.models.thin_plate_spline.TPSRegressor] class
-# deriving from [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor]
+# The [TPSRegressor][gemseo.machine_learning.regression.model.thin_plate_spline.TPSRegressor] class
+# deriving from [RBFRegressor][gemseo.machine_learning.regression.model.rbf.RBFRegressor]
 # implements this case:
 model = create_regression_model("TPSRegressor", training_dataset)
 model.learn()
@@ -230,5 +230,5 @@ plt.legend()
 plt.show()
 
 # %%
-# The [TPSRegressor][gemseo.machine_learning.regression.models.thin_plate_spline.TPSRegressor]
-# can be customized with the [TPSRegressor_Settings][gemseo.machine_learning.regression.models.thin_plate_spline_settings.TPSRegressor_Settings].
+# The [TPSRegressor][gemseo.machine_learning.regression.model.thin_plate_spline.TPSRegressor]
+# can be customized with the [TPSRegressor_Settings][gemseo.machine_learning.regression.model.thin_plate_spline_settings.TPSRegressor_Settings].

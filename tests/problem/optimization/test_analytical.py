@@ -1,0 +1,90 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Damien Guenot
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
+import contextlib
+
+import numpy as np
+import pytest
+from numpy import zeros
+
+from gemseo.core.problem.termination_criterion import MaxIterReachedException
+from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.problem.optimization.hock_schittkowski_71 import HockSchittkowski71
+from gemseo.problem.optimization.power_2 import Power2
+from gemseo.problem.optimization.rastrigin import Rastrigin
+from gemseo.problem.optimization.rosen_mf import RosenMF
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
+from gemseo.util.derivative.check.function import FunctionJacobianChecker
+
+
+def run_and_test_problem(problem, algo_name="SLSQP") -> None:
+    """
+
+    :param problem: param algo_name:  (Default value = "SLSQP")
+    :param algo_name:  (Default value = "SLSQP")
+
+    """
+    settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, max_iter=800)
+    opt = OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=settings)
+    x_opt, f_opt = problem.get_solution()
+    assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
+    assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
+
+    x_0 = problem.design_space.get_current_value(normalize=True)
+    for func in problem.functions:
+        with contextlib.suppress(MaxIterReachedException):
+            checker = FunctionJacobianChecker(func)
+            assert checker.check(x_0, atol=1e-4, rtol=1e-4, step=1e-9)
+
+
+def test_rastrigin() -> None:
+    """"""
+    problem = Rastrigin()
+    run_and_test_problem(problem)
+
+
+def test_rosen() -> None:
+    """"""
+    problem = Rosenbrock()
+    run_and_test_problem(problem, "L_BFGS_B")
+    Rosenbrock(initial_guess=zeros(2))
+    problem = Rosenbrock(scalar_var=True)
+    assert "x1" in problem.design_space
+    assert "x" not in problem.design_space
+
+
+def test_power2() -> None:
+    """"""
+    problem = Power2()
+    run_and_test_problem(problem)
+
+
+def test_rosen_mf() -> None:
+    disc = RosenMF(3)
+    checker = DisciplineJacobianChecker(disc)
+    assert checker.check({"x": np.zeros(3)}, atol=1e-4, rtol=1e-4, step=1e-8)
+
+
+def test_hs071() -> None:
+    """"""
+    problem = HockSchittkowski71()
+    run_and_test_problem(problem)

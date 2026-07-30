@@ -30,17 +30,17 @@ from matplotlib import pyplot as plt
 from numpy import array
 from numpy import hstack
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import PARULA
+from gemseo.post._engine.colormap import PARULA
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.parallel_coordinates_settings import ParallelCoordinates_Settings
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from matplotlib.figure import Figure
 
-    from gemseo.typing import NumberArray
+    from gemseo.util.typing import NumberArray
 
 
 class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):

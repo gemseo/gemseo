@@ -52,7 +52,7 @@ from gemseo.core.discipline import Discipline
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 # %%
 # ### 1. The discipline

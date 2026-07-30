@@ -1,0 +1,134 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""The base class of a full-factorial DOE."""
+
+from __future__ import annotations
+
+import logging
+from abc import abstractmethod
+from typing import TYPE_CHECKING
+
+from gemseo.doe.core.base_doe import BaseDOE
+
+if TYPE_CHECKING:
+    from gemseo.doe.core.base_n_samples_based_doe_settings import (
+        BaseNSamplesBasedDOESettings,
+    )
+    from gemseo.util.typing import RealArray
+
+LOGGER = logging.getLogger(__name__)
+
+
+class BaseFullFactorialDOE(BaseDOE):
+    """The base class of a full-factorial DOE."""
+
+    def generate_samples(  # noqa: D102
+        self, dimension: int, settings: BaseNSamplesBasedDOESettings
+    ) -> RealArray:
+        return self._generate_fullfact(dimension, settings)
+
+    def _generate_fullfact(
+        self, dimension: int, settings: BaseNSamplesBasedDOESettings
+    ) -> RealArray:
+        """Generate a full-factorial DOE.
+
+        Generate a full-factorial DOE based on either the number of samples,
+        or the number of levels per input direction.
+        When the number of samples is prescribed,
+        the levels are deduced and are uniformly distributed among all the inputs.
+
+        Args:
+            dimension: The dimension of the input space.
+            settings: The settings of the full-factorial DOE algorithm.
+
+        Returns:
+            The full-factorial DOE.
+
+        Raises:
+            ValueError:
+                * If neither `n_samples` nor `levels` are provided.
+                * If both `n_samples` and `levels` are provided.
+        """
+        levels = settings.levels
+        n_samples = settings.n_samples
+
+        if not levels and n_samples == 0:
+            msg = (
+                "Either 'n_samples' or 'levels' is required as an input "
+                "parameter for the full-factorial DOE."
+            )
+            raise ValueError(msg)
+
+        if levels and n_samples > 0:
+            msg = (
+                "Only one input parameter among 'n_samples' and 'levels' "
+                "must be given for the full-factorial DOE."
+            )
+            raise ValueError(msg)
+
+        if n_samples > 0:
+            levels = self._compute_fullfact_levels(n_samples, dimension)
+
+        if isinstance(levels, int):
+            levels = [levels] * dimension
+
+        return self._generate_fullfact_from_levels(levels)
+
+    @abstractmethod
+    def _generate_fullfact_from_levels(self, levels) -> RealArray:
+        """Generate the full-factorial DOE from levels per input direction.
+
+        Args:
+            levels: The number of levels per input direction.
+
+        Returns:
+            The values of the DOE.
+        """
+
+    @staticmethod
+    def _compute_fullfact_levels(n_samples: int, dimension: int) -> list[int]:
+        """Compute the number of levels per input dimension for a full factorial design.
+
+        Args:
+            n_samples: The number of samples.
+            dimension: The dimension of the input space.
+
+        Returns:
+            The number of levels per input dimension.
+        """
+        n_samples_dir = int(n_samples ** (1.0 / dimension))
+
+        # Check for numerical precision issues,
+        # e.g. int(10000**(1/3)) = int(9.999999999...) = 9 instead of 10
+        # and correct if necessary.
+        n_samples_dir_plus_one = n_samples_dir + 1
+        if n_samples_dir_plus_one**dimension == n_samples:
+            n_samples_dir = n_samples_dir_plus_one
+
+        final_n_samples = n_samples_dir**dimension
+        if final_n_samples != n_samples:
+            LOGGER.warning(
+                (
+                    "A full-factorial DOE of %s samples in dimension %s does not exist;"
+                    " use %s samples instead, "
+                    "i.e. the largest %s-th integer power less than %s."
+                ),
+                n_samples,
+                dimension,
+                final_n_samples,
+                dimension,
+                n_samples,
+            )
+        return [n_samples_dir] * dimension

@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Random forest.
 
-A [RandomForestRegressor][gemseo.machine_learning.regression.models.random_forest.RandomForestRegressor] is a random forest model
+A [RandomForestRegressor][gemseo.machine_learning.regression.model.random_forest.RandomForestRegressor] is a random forest model
 based on [scikit-learn](https://scikit-learn.org).
 """
 
@@ -45,7 +45,7 @@ from gemseo.machine_learning import create_regression_model
 #
 # In this example,
 # you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
-# by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
+# by the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
 #       Alexander I. J. Forrester, Andras Sobester, and Andy J. Keane.

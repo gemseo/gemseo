@@ -17,14 +17,14 @@
 
 ## Problem
 
-You want to execute an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
-(or an [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario])
+You want to execute an [MDOScenario][gemseo.scenario.mdo.MDOScenario]
+(or an [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario])
 with a given algorithm.
 
 ## Solution
 
 Each algorithm, along with its specific options, is defined through a dedicated model.
-When a scenario is [executed][gemseo.scenarios.evaluation.EvaluationScenario.execute],
+When a scenario is [executed][gemseo.scenario.evaluation.EvaluationScenario.execute],
 this model is provided
 so that GEMSEO knows which algorithm to run and which options to apply.
 
@@ -32,7 +32,7 @@ In certain cases,
 it may also be necessary to specify default settings for the algorithm.
 Thus,
 the
-[set_algorithm()][gemseo.scenarios.evaluation.EvaluationScenario.set_algorithm] method
+[set_algorithm()][gemseo.scenario.evaluation.EvaluationScenario.set_algorithm] method
 is useful.
 
 ## Step-by-step guide
@@ -40,20 +40,20 @@ is useful.
 
 from __future__ import annotations
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings.opt import L_BFGS_B_Settings
-from gemseo.settings.opt import NLOPT_COBYLA_Settings
-from gemseo.settings.opt import SLSQP_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.optimization import L_BFGS_B_Settings
+from gemseo.optimization import NLOPT_COBYLA_Settings
+from gemseo.optimization import SLSQP_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Create your scenario
 #
 # Here, an `AnalyticDiscipline` is used, with the `DisciplinaryOpt` formulation.
-# An [MDOScenario][gemseo.scenarios.mdo.MDOScenario] is generated,
+# An [MDOScenario][gemseo.scenario.mdo.MDOScenario] is generated,
 # but it would also work with an
-# [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario].
+# [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario].
 discipline = AnalyticDiscipline({"y": "x1+x2"})
 design_space = DesignSpace()
 design_space.add_variable("x1", lower_bound=-5, upper_bound=5)
@@ -68,7 +68,7 @@ scenario.add_objective("y")
 # %%
 # !!! note
 #     When creating an
-#     [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario],
+#     [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario],
 #     you don't have any objective function.
 #
 # ### 2. Execute with a given algorithm
@@ -114,11 +114,11 @@ scenario.execute(L_BFGS_B_Settings(max_iter=5))
 #
 # You can choose the algorithm (and its associated options)
 # by passing a dedicated settings model
-# to the [execute()][gemseo.scenarios.mdo.MDOScenario.execute] method.
+# to the [execute()][gemseo.scenario.mdo.MDOScenario.execute] method.
 # Settings are provided directly at each
-# [execute()][gemseo.scenarios.evaluation.EvaluationScenario.execute] call.
+# [execute()][gemseo.scenario.evaluation.EvaluationScenario.execute] call.
 #
 # In some cases,
 # default settings model can be given beforehand to a specific scenario with the
-# [set_algorithm()][gemseo.scenarios.evaluation.EvaluationScenario.set_algorithm]
+# [set_algorithm()][gemseo.scenario.evaluation.EvaluationScenario.set_algorithm]
 # method.

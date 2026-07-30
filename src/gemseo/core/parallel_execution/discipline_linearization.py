@@ -20,12 +20,12 @@ from typing import TYPE_CHECKING
 from typing import NamedTuple
 
 from gemseo.core.discipline.discipline_data import DisciplineData
-from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.typing import StrKeyMapping
-from gemseo.utils.constants import N_CPUS
+from gemseo.util.constant import N_CPUS
+from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
     from gemseo.core.parallel_execution.callable_parallel_execution import CallbackType
-    from gemseo.typing import JacobianData
+    from gemseo.util.typing import JacobianData
 
 
 class _WorkerData(NamedTuple):

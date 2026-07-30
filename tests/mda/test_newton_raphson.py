@@ -30,26 +30,26 @@ from numpy import linalg
 from numpy.testing import assert_equal
 
 from gemseo import create_mda
-from gemseo.algos.linear_solvers.scipy_linalg import BICG_Settings
-from gemseo.algos.linear_solvers.scipy_linalg import BICGSTAB_Settings
-from gemseo.algos.linear_solvers.scipy_linalg import GMRES_Settings
-from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.linear.scipy_linalg import BICG_Settings
+from gemseo.linear.scipy_linalg import BICGSTAB_Settings
+from gemseo.linear.scipy_linalg import GMRES_Settings
+from gemseo.linear.scipy_linalg import LGMRES_Settings
 from gemseo.mda.chain import MDAChain
 from gemseo.mda.chain_settings import MDAChain_Settings
+from gemseo.mda.jacobian_assembly import JacobianAssembly
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sellar.utils import get_y_opt
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sellar.util import get_y_opt
+from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.util.derivative.check.mda import MDAJacobianChecker
+from gemseo.util.testing.helper import assert_exception
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
 
@@ -57,7 +57,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

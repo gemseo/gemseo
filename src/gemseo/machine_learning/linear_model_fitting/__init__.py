@@ -53,9 +53,9 @@ This package proposes different algorithms to fit such a linear model,
 i.e. finding the weights $w$ minimizing $\|Y-Xw\|$.
 These linear model fitting algorithms derive
 from the base class
-[BaseLinearModelFitter][gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter.BaseLinearModelFitter]
+[BaseLinearModelFitter][gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter.BaseLinearModelFitter]
 which is equipped with
-[BaseLinearModelFitterSettings][gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitterSettings]
+[BaseLinearModelFitterSettings][gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings.BaseLinearModelFitterSettings]
 and can be created from a
 [LinearModelFitterFactory][gemseo.machine_learning.linear_model_fitting.factory.LinearModelFitterFactory].
 

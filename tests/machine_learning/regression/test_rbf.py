@@ -28,16 +28,16 @@ from numpy import allclose
 from numpy import array
 from scipy.interpolate import Rbf
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.machine_learning.regression.models.rbf import RBFRegressor
-from gemseo.machine_learning.regression.models.rbf_settings import RBF
-from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
-from gemseo.scenarios.mdo import MDOScenario
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning.regression.model.rbf import RBFRegressor
+from gemseo.machine_learning.regression.model.rbf_settings import RBF
+from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_Settings
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
+    from gemseo.dataset.dataset import Dataset
 
 LEARNING_SIZE = 9
 

@@ -1,4 +1,0 @@
-# serializer version: 1
-# name: test_parent_raises_when_no_id_matches
-  'No parent observer found for <gemseo.utils._workflow_observers.tree.ObserverTree object at 0xMEM>'
-# ---

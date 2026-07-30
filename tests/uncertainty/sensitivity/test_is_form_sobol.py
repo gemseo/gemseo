@@ -28,12 +28,12 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_equal
 from scipy.stats import norm
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline.auto_py import AutoPyDiscipline
+from gemseo.space.parameter import ParameterSpace
 from gemseo.uncertainty import create_sensitivity_analysis
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
@@ -42,7 +42,7 @@ from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
 from gemseo.uncertainty.sensitivity.is_form_sobol import ISFORMSobolAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysisMethod
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 THRESHOLD = 3.0
 

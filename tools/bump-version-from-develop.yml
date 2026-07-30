@@ -1,0 +1,263 @@
+# How the packages of `develop` map to the ones of this branch, to rebase a branch
+# created before the subpackage reorganization: rewrite the `develop` names in its code
+# with the table below, then rebase (see REBASING.md).
+#
+# This file is meant to be read and applied directly, by an agent or a script. Every
+# name on both sides is a COMPLETE dotted path, so no entry needs another one to be
+# understood, and the order carries no meaning (they are sorted alphabetically).
+#
+# How to apply an entry:
+#
+# * `names:` — an entry `old.module.OldName: new.module.NewName` matches an import of
+#   `OldName` from `old.module`, or an access `old.module.OldName`: import `NewName`
+#   from `new.module` instead, and rename the identifier at its use sites. Such an entry
+#   wins over any `modules:` entry matching the module part of its key.
+# * `modules:` — for any other dotted name, i.e. the module of an `import` or of a
+#   `from ... import ...`, or a path written in a docstring, a documentation page or an
+#   entry point, take the LONGEST key that is the name itself or a prefix of it on a
+#   segment boundary (`gemseo.algos` is a prefix of `gemseo.algos.doe`, not of
+#   `gemseo.algosx`), and replace that prefix with the value of the entry.
+#
+# Apply a single entry to a name: a value is already the final name, never feed it back
+# in. A name matching no entry is unchanged.
+#
+# Nothing else changed: no class attribute, no method and no signature was renamed
+# between `develop` and this branch, so a rebase only needs the names below.
+#
+# The `gemseo.settings` package was dissolved into the packages of the settings it
+# exposed; its modules are listed one by one and the package itself has no counterpart.
+#
+# Every old name below exists on `develop` and every new name exists on this branch,
+# checked against both source trees; 207 modules and packages,
+# 17 module-level names.
+
+# Renamed and moved modules and packages.
+modules:
+  gemseo.algos: gemseo.core.algorithm
+  gemseo.algos._hdf_database: gemseo.core.problem._hdf_database
+  gemseo.algos._variable: gemseo.space._variable
+  gemseo.algos.aggregation: gemseo.optimization.aggregation
+  gemseo.algos.aggregation.core: gemseo.optimization.aggregation._functions
+  gemseo.algos.base_algo_factory: gemseo.core.algorithm.base_algorithm_factory
+  gemseo.algos.base_problem: gemseo.core.problem.base
+  gemseo.algos.constraint_tolerances: gemseo.optimization.constraint_tolerances
+  gemseo.algos.database: gemseo.core.problem.database
+  gemseo.algos.design_space: gemseo.space.design
+  gemseo.algos.design_space_factory: gemseo.space.factory
+  gemseo.algos.design_space_utils: gemseo.space.util
+  gemseo.algos.doe: gemseo.doe
+  gemseo.algos.doe.base_doe: gemseo.doe.core.base_doe
+  gemseo.algos.doe.base_doe_library: gemseo.doe.core.base_doe_library
+  gemseo.algos.doe.base_doe_settings: gemseo.doe.core.base_doe_settings
+  gemseo.algos.doe.base_full_factorial_doe: gemseo.doe.core.base_full_factorial_doe
+  gemseo.algos.doe.base_n_samples_based_doe_settings: gemseo.doe.core.base_n_samples_based_doe_settings
+  gemseo.algos.doe.openturns._algos: gemseo.doe.openturns._algorithm
+  gemseo.algos.driver_library: gemseo.core.algorithm.factory
+  gemseo.algos.evaluation_counter: gemseo.core.problem.counter
+  gemseo.algos.evaluation_problem: gemseo.core.problem.evaluation
+  gemseo.algos.hashable_ndarray: gemseo.util.hashable_ndarray
+  gemseo.algos.lagrange_multipliers: gemseo.optimization.lagrange_multipliers
+  gemseo.algos.linear_solvers: gemseo.linear
+  gemseo.algos.linear_solvers.base_linear_solver_library: gemseo.linear.core.base_linear_solver_library
+  gemseo.algos.linear_solvers.base_linear_solver_settings: gemseo.linear.core.base_linear_solver_settings
+  gemseo.algos.linear_solvers.linear_problem: gemseo.linear.problem
+  gemseo.algos.multiobjective_optimization_result: gemseo.optimization.multiobjective_result
+  gemseo.algos.ode: gemseo.ode
+  gemseo.algos.ode.base_ode_solver_library: gemseo.ode.core.base_ode_solver_library
+  gemseo.algos.ode.base_ode_solver_settings: gemseo.ode.core.base_ode_solver_settings
+  gemseo.algos.ode.ode_problem: gemseo.ode.problem
+  gemseo.algos.ode.ode_result: gemseo.ode.result
+  gemseo.algos.opt: gemseo.optimization
+  gemseo.algos.opt.base_gradient_based_algorithm_settings: gemseo.optimization.core.base_gradient_based_algorithm_settings
+  gemseo.algos.opt.base_milp_settings: gemseo.optimization.core.base_milp_settings
+  gemseo.algos.opt.base_optimization_library: gemseo.optimization.core.base_optimization_library
+  gemseo.algos.opt.base_optimizer_settings: gemseo.optimization.core.base_optimizer_settings
+  gemseo.algos.opt.core.linear_constraints: gemseo.optimization._util.linear_constraint
+  gemseo.algos.opt.core.trust_updater: gemseo.optimization._trust_region.trust_updater
+  gemseo.algos.opt.core.updater_factory: gemseo.optimization._trust_region.updater_factory
+  gemseo.algos.opt.mnbi._utils: gemseo.optimization.mnbi._util
+  gemseo.algos.optimization_history: gemseo.optimization.history
+  gemseo.algos.optimization_problem: gemseo.optimization.problem
+  gemseo.algos.optimization_result: gemseo.optimization.result
+  gemseo.algos.parameter_space: gemseo.space.parameter
+  gemseo.algos.parameter_space_factory: gemseo.space.factory
+  gemseo.algos.pareto: gemseo.optimization.pareto
+  gemseo.algos.pareto.utils: gemseo.optimization.pareto.util
+  gemseo.algos.post_optimal_analysis: gemseo.optimization.post_optimal_analysis
+  gemseo.algos.problem_function: gemseo.core.function.preprocessed_function
+  gemseo.algos.sequence_transformer: gemseo.mda.sequence_transformer
+  gemseo.algos.stop_criteria: gemseo.optimization.termination_criteria
+  gemseo.caches: gemseo.core.cache
+  gemseo.caches.utils: gemseo.core.cache.util
+  gemseo.core._process_flow.execution_sequences: gemseo.core._process_flow.execution_sequence
+  gemseo.core.chains: gemseo.discipline.chain
+  gemseo.core.data_converters: gemseo.core.data_converter
+  gemseo.core.derivatives: gemseo.core.derivative
+  gemseo.core.derivatives.derivation_modes: gemseo.core.derivative.derivation_mode
+  gemseo.core.derivatives.jacobian_assembly: gemseo.mda.jacobian_assembly
+  gemseo.core.execution_statistics: gemseo.core.discipline.execution_statistics
+  gemseo.core.execution_status: gemseo.core.discipline.execution_status
+  gemseo.core.functions: gemseo.core.function
+  gemseo.core.functions._operations: gemseo.core.function._operation
+  gemseo.core.functions.collections: gemseo.core.function.collection
+  gemseo.core.functions.collections.constraints: gemseo.optimization.core.constraints
+  gemseo.core.functions.taylor_polynomials: gemseo.core.function.taylor_polynomial
+  gemseo.core.grammars: gemseo.core.grammar
+  gemseo.core.grammars._utils: gemseo.core.grammar._util
+  gemseo.core.grammars.errors: gemseo.core.grammar.error
+  gemseo.core.namespaces: gemseo.core.discipline.namespace
+  gemseo.core.process_discipline: gemseo.core.discipline.process_discipline
+  gemseo.datasets: gemseo.dataset
+  gemseo.disciplines: gemseo.discipline
+  gemseo.disciplines.scenario_adapters: gemseo.scenario.adapter
+  gemseo.disciplines.wrappers: gemseo.discipline.wrapper
+  gemseo.disciplines.wrappers.job_schedulers: gemseo.discipline.wrapper.job_scheduler
+  gemseo.enums: gemseo.enum
+  gemseo.formulations: gemseo.formulation
+  gemseo.formulations.base: gemseo.formulation.core.base
+  gemseo.formulations.base_factory: gemseo.formulation.core.base_factory
+  gemseo.formulations.base_mdo: gemseo.formulation.core.base_mdo
+  gemseo.formulations.base_settings: gemseo.formulation.core.base_settings
+  gemseo.formulations.idf_chain: gemseo.formulation._idf_chain
+  gemseo.machine_learning.classification.models: gemseo.machine_learning.classification.model
+  gemseo.machine_learning.classification.models.base_classifier: gemseo.machine_learning.classification.core.base_classifier
+  gemseo.machine_learning.classification.models.base_classifier_settings: gemseo.machine_learning.classification.core.base_classifier_settings
+  gemseo.machine_learning.classification.quality.base_classifier_quality: gemseo.machine_learning.classification.core.base_classifier_quality
+  gemseo.machine_learning.clustering.models: gemseo.machine_learning.clustering.model
+  gemseo.machine_learning.clustering.models.base_clusterer: gemseo.machine_learning.clustering.core.base_clusterer
+  gemseo.machine_learning.clustering.models.base_clusterer_settings: gemseo.machine_learning.clustering.core.base_clusterer_settings
+  gemseo.machine_learning.clustering.models.base_predictive_clusterer: gemseo.machine_learning.clustering.core.base_predictive_clusterer
+  gemseo.machine_learning.clustering.quality.base_clusterer_quality: gemseo.machine_learning.clustering.core.base_clusterer_quality
+  gemseo.machine_learning.clustering.quality.base_predictive_clusterer_quality: gemseo.machine_learning.clustering.core.base_predictive_clusterer_quality
+  gemseo.machine_learning.core.calibration: gemseo.machine_learning.calibration
+  gemseo.machine_learning.core.models: gemseo.machine_learning.core.model
+  gemseo.machine_learning.core.models.ml_model: gemseo.machine_learning.core.model.base_ml_model
+  gemseo.machine_learning.core.models.ml_model_settings: gemseo.machine_learning.core.model.base_ml_model_settings
+  gemseo.machine_learning.core.models.supervised: gemseo.machine_learning.core.model.base_supervised
+  gemseo.machine_learning.core.models.supervised_settings: gemseo.machine_learning.core.model.base_supervised_settings
+  gemseo.machine_learning.core.models.unsupervised: gemseo.machine_learning.core.model.base_unsupervised
+  gemseo.machine_learning.core.models.unsupervised_settings: gemseo.machine_learning.core.model.base_unsupervised_settings
+  gemseo.machine_learning.core.selection: gemseo.machine_learning.selection
+  gemseo.machine_learning.data_formatters: gemseo.machine_learning.data_formatter
+  gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter: gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter
+  gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings: gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings
+  gemseo.machine_learning.linear_model_fitting.base_sklearn_linear_model_fitter: gemseo.machine_learning.linear_model_fitting.core.base_sklearn_linear_model_fitter
+  gemseo.machine_learning.regression.models: gemseo.machine_learning.regression.model
+  gemseo.machine_learning.regression.models.base_fce: gemseo.machine_learning.regression.core.base_fce
+  gemseo.machine_learning.regression.models.base_fce_settings: gemseo.machine_learning.regression.core.base_fce_settings
+  gemseo.machine_learning.regression.models.base_random_process_regressor: gemseo.machine_learning.regression.core.base_random_process_regressor
+  gemseo.machine_learning.regression.models.base_regressor: gemseo.machine_learning.regression.core.base_regressor
+  gemseo.machine_learning.regression.models.base_regressor_settings: gemseo.machine_learning.regression.core.base_regressor_settings
+  gemseo.machine_learning.regression.quality.base_regressor_quality: gemseo.machine_learning.regression.core.base_regressor_quality
+  gemseo.machine_learning.resampling.base_resampler: gemseo.machine_learning.resampling.core.base_resampler
+  gemseo.machine_learning.transformers: gemseo.machine_learning.transformer
+  gemseo.machine_learning.transformers.base_transformer: gemseo.machine_learning.transformer.core.base_transformer
+  gemseo.mda.base: gemseo.mda.core.base
+  gemseo.mda.base_parallel_solver: gemseo.mda.core.base_parallel_solver
+  gemseo.mda.base_parallel_solver_settings: gemseo.mda.core.base_parallel_solver_settings
+  gemseo.mda.base_root_settings: gemseo.mda.core.base_root_settings
+  gemseo.mda.base_settings: gemseo.mda.core.base_settings
+  gemseo.mda.base_solver: gemseo.mda.core.base_solver
+  gemseo.mda.base_solver_settings: gemseo.mda.core.base_solver_settings
+  gemseo.mda.composed_settings: gemseo.mda.core.composed_settings
+  gemseo.post.base_post: gemseo.post.core.base_post
+  gemseo.post.base_post_settings: gemseo.post.core.base_post_settings
+  gemseo.post.core.colormaps: gemseo.post._engine.colormap
+  gemseo.post.core.gantt_chart: gemseo.post.gantt_chart
+  gemseo.post.core.hessians: gemseo.post._engine.hessian
+  gemseo.post.core.robustness_quantifier: gemseo.post._engine.robustness_quantifier
+  gemseo.post.dataset.bars: gemseo.post.dataset.bar_plot
+  gemseo.post.dataset.bars_settings: gemseo.post.dataset.bar_plot_settings
+  gemseo.post.dataset.plots: gemseo.post.dataset.plot
+  gemseo.post.dataset.plots._matplotlib.bars: gemseo.post.dataset.plot._matplotlib.bar_plot
+  gemseo.post.dataset.plots._plotly.bars: gemseo.post.dataset.plot._plotly.bar_plot
+  gemseo.problems: gemseo.problem
+  gemseo.problems.mdo.scalable.parametric.core: gemseo.problem.mdo.scalable.parametric.standalone
+  gemseo.problems.mdo.scalable.parametric.core.disciplines: gemseo.problem.mdo.scalable.parametric.standalone.discipline
+  gemseo.problems.mdo.scalable.parametric.core.variable_names: gemseo.problem.mdo.scalable.parametric.standalone.variable_name
+  gemseo.problems.mdo.scalable.parametric.disciplines: gemseo.problem.mdo.scalable.parametric.discipline
+  gemseo.problems.mdo.sellar.utils: gemseo.problem.mdo.sellar.util
+  gemseo.problems.mdo.sellar.variables: gemseo.problem.mdo.sellar.variable
+  gemseo.problems.mdo.sobieski.core: gemseo.problem.mdo.sobieski.standalone
+  gemseo.problems.mdo.sobieski.core.utils: gemseo.problem.mdo.sobieski.standalone.util
+  gemseo.problems.mdo.sobieski.disciplines: gemseo.problem.mdo.sobieski.discipline
+  gemseo.problems.ode.springs: gemseo.problem.ode.spring
+  gemseo.problems.uncertainty.ishigami.functions: gemseo.problem.uncertainty.ishigami.function
+  gemseo.problems.uncertainty.utils: gemseo.problem.uncertainty.util
+  gemseo.scenarios: gemseo.scenario
+  gemseo.scenarios.scenario_results: gemseo.scenario.scenario_result
+  gemseo.settings.doe: gemseo.doe
+  gemseo.settings.formulations: gemseo.formulation
+  gemseo.settings.linear_solvers: gemseo.linear
+  gemseo.settings.machine_learning: gemseo.machine_learning
+  gemseo.settings.mda: gemseo.mda
+  gemseo.settings.ode: gemseo.ode
+  gemseo.settings.opt: gemseo.optimization
+  gemseo.settings.post: gemseo.post
+  gemseo.settings.probability_distributions: gemseo.uncertainty.distribution
+  gemseo.settings.reliability: gemseo.uncertainty.reliability
+  gemseo.typing: gemseo.util.typing
+  gemseo.uncertainty.distributions: gemseo.uncertainty.distribution
+  gemseo.uncertainty.distributions._log_normal_utils: gemseo.uncertainty.distribution._log_normal_util
+  gemseo.uncertainty.distributions.base: gemseo.uncertainty.distribution.core.base
+  gemseo.uncertainty.distributions.base_fitter: gemseo.uncertainty.distribution.core.base_fitter
+  gemseo.uncertainty.distributions.base_joint: gemseo.uncertainty.distribution.core.base_joint
+  gemseo.uncertainty.distributions.base_joint_settings: gemseo.uncertainty.distribution.core.base_joint_settings
+  gemseo.uncertainty.distributions.base_settings: gemseo.uncertainty.distribution.core.base_settings
+  gemseo.uncertainty.distributions.base_univariate: gemseo.uncertainty.distribution.core.base_univariate
+  gemseo.uncertainty.distributions.base_univariate_settings: gemseo.uncertainty.distribution.core.base_univariate_settings
+  gemseo.uncertainty.reliability.base: gemseo.uncertainty.reliability.core.base
+  gemseo.uncertainty.reliability.base_settings: gemseo.uncertainty.reliability.core.base_settings
+  gemseo.uncertainty.sensitivity.base: gemseo.uncertainty.sensitivity.core.base
+  gemseo.uncertainty.statistics: gemseo.uncertainty.statistic
+  gemseo.uncertainty.statistics.base: gemseo.uncertainty.statistic.core.base
+  gemseo.uncertainty.statistics.base_parametric: gemseo.uncertainty.statistic.core.base_parametric
+  gemseo.utils: gemseo.util
+  gemseo.utils._directory_manager.processors: gemseo.util._directory_manager.processor
+  gemseo.utils._workflow_observers: gemseo.util._workflow_observer
+  gemseo.utils.comparisons: gemseo.util.comparison
+  gemseo.utils.constants: gemseo.util.constant
+  gemseo.utils.derivatives: gemseo.util.derivative
+  gemseo.utils.derivatives.approximation_modes: gemseo.util.derivative.approximation_mode
+  gemseo.utils.derivatives.approximators: gemseo.util.derivative.approximator
+  gemseo.utils.derivatives.approximators.base: gemseo.util.derivative.approximator.base
+  gemseo.utils.derivatives.approximators.centered_differences: gemseo.util.derivative.approximator.centered_differences
+  gemseo.utils.derivatives.approximators.complex_step: gemseo.util.derivative.approximator.complex_step
+  gemseo.utils.derivatives.approximators.factory: gemseo.util.derivative.approximator.factory
+  gemseo.utils.derivatives.error_estimators: gemseo.util.derivative.error_estimator
+  gemseo.utils.locks: gemseo.util.lock
+  gemseo.utils.metaclasses: gemseo.util.metaclass
+  gemseo.utils.metrics: gemseo.util.metric
+  gemseo.utils.metrics.base_composite_metric: gemseo.util.metric.base_composite
+  gemseo.utils.metrics.base_metric: gemseo.util.metric.base
+  gemseo.utils.metrics.dataset_metric: gemseo.util.metric.dataset
+  gemseo.utils.metrics.element_wise_metric: gemseo.util.metric.element_wise
+  gemseo.utils.metrics.mean_metric: gemseo.util.metric.mean
+  gemseo.utils.metrics.metric_factory: gemseo.util.metric.factory
+  gemseo.utils.metrics.squared_error_metric: gemseo.util.metric.squared_error
+  gemseo.utils.show_utils: gemseo.util.xdsm.html
+  gemseo.utils.string_tools: gemseo.util.string
+  gemseo.utils.study_analyses: gemseo.util.study_analysis
+  gemseo.utils.testing.helpers: gemseo.util.testing.helper
+  gemseo.utils.testing.mocks: gemseo.util.testing.mock
+
+# Renamed classes, functions and variables, given with the module defining them: the
+# module of the old name is renamed too when it is also a key of `modules:`.
+names:
+  gemseo.algos.base_algo_factory.BaseAlgoFactory: gemseo.core.algorithm.base_algorithm_factory.BaseAlgorithmFactory
+  gemseo.algos.base_algo_factory._AlgoFactoryMeta: gemseo.core.algorithm.base_algorithm_factory._AlgorithmFactoryMeta
+  gemseo.algos.problem_function.ProblemFunction: gemseo.core.function.preprocessed_function.PreprocessedFunction
+  gemseo.algos.stop_criteria.DesvarIsNan: gemseo.core.problem.termination_criterion.DesvarIsNan
+  gemseo.algos.stop_criteria.FtolReached: gemseo.core.problem.termination_criterion.FtolReached
+  gemseo.algos.stop_criteria.FunctionIsNan: gemseo.core.problem.termination_criterion.FunctionIsNan
+  gemseo.algos.stop_criteria.MaxIterReachedException: gemseo.core.problem.termination_criterion.MaxIterReachedException
+  gemseo.algos.stop_criteria.MaxTimeReached: gemseo.core.problem.termination_criterion.MaxTimeReached
+  gemseo.algos.stop_criteria.TerminationCriterion: gemseo.core.problem.termination_criterion.TerminationCriterion
+  gemseo.algos.stop_criteria.XtolReached: gemseo.core.problem.termination_criterion.XtolReached
+  gemseo.datasets.DatasetFactory: gemseo.dataset.factory.DatasetFactory
+  gemseo.machine_learning.BaseClassifier: gemseo.machine_learning.classification.core.base_classifier.BaseClassifier
+  gemseo.machine_learning.Dataset: gemseo.dataset.dataset.Dataset
+  gemseo.uncertainty.BaseDistribution: gemseo.uncertainty.distribution.core.base.BaseDistribution
+  gemseo.uncertainty.BaseStatistics: gemseo.uncertainty.statistic.core.base.BaseStatistics
+  gemseo.uncertainty.Dataset: gemseo.dataset.dataset.Dataset
+  gemseo.uncertainty.IODataset: gemseo.dataset.io_dataset.IODataset

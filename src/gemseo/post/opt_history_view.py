@@ -44,13 +44,13 @@ from numpy import min as np_min
 from numpy import vstack
 from numpy.linalg import norm
 
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.datasets.optimization_dataset import OptimizationDataset
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import PARULA
-from gemseo.post.core.colormaps import RG_SEISMIC
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.dataset.optimization_dataset import OptimizationDataset
+from gemseo.post._engine.colormap import PARULA
+from gemseo.post._engine.colormap import RG_SEISMIC
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -61,8 +61,8 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from numpy import ndarray
 
-    from gemseo.typing import NumberArray
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 

@@ -20,16 +20,16 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.core.execution_status import ExecutionStatus
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.serializable import Serializable
-from gemseo.utils._workflow_observers.injector import WorkflowObserverMeta
+from gemseo.util._workflow_observer.injector import WorkflowObserverMeta
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
-    from gemseo.utils.string_tools import MultiLineString
+    from gemseo.util.string import MultiLineString
 
 
 class BaseMonitoredProcess(Serializable, metaclass=WorkflowObserverMeta):
@@ -40,8 +40,8 @@ class BaseMonitoredProcess(Serializable, metaclass=WorkflowObserverMeta):
     an execution status
     and execution statistics,
     e.g. [Discipline][gemseo.core.discipline.discipline.Discipline],
-    [ProcessDiscipline][gemseo.core.process_discipline.ProcessDIscipline]
-    and [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
+    [ProcessDiscipline][gemseo.core.discipline.process_discipline.ProcessDIscipline]
+    and [MDOScenario][gemseo.scenario.mdo.MDOScenario].
     """
 
     name: str

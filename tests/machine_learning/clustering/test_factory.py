@@ -27,13 +27,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.machine_learning.clustering.models.factory import CLUSTERER_FACTORY
-from gemseo.machine_learning.clustering.models.kmeans import KMeans
-from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Settings
-from gemseo.problems.dataset.iris import create_iris_dataset
+from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
+from gemseo.machine_learning.clustering.model.kmeans import KMeans
+from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Settings
+from gemseo.problem.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
-    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.dataset.io_dataset import IODataset
 
 N_CLUSTERS = 3
 

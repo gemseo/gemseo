@@ -17,13 +17,13 @@
 
 ## Problem
 
-You have an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
+You have an [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
 in memory and want to visualize the optimization history
 without going back to the original scenario or HDF5 file.
 
 ## Solution
 
-Pass the [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
+Pass the [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
 directly to [execute_post()][gemseo.execute_post],
 just as you would pass a scenario or an HDF5 file path.
 Functions are automatically mapped to their optimization role
@@ -35,19 +35,19 @@ Functions are automatically mapped to their optimization role
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.settings.post import OptHistoryView_Settings
+from gemseo.optimization import OptimizationProblem
+from gemseo.post import OptHistoryView_Settings
 
 # %%
 # ### 1. Build the dataset
 #
 # In this how-to, you assume that only an
-# [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
+# [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
 # is available — no live scenario, no HDF5 file.
 # As a workaround to create the prerequisite,
-# you load an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# you load an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 # from an HDF5 file stored in the documentation directory
-# and convert it to an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset].
+# and convert it to an [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset].
 problem = OptimizationProblem.from_hdf("power2_opt_pb.h5")
 dataset = problem.to_dataset()
 
@@ -68,6 +68,6 @@ execute_post(
 # ## Summary
 #
 # [execute_post()][gemseo.execute_post] accepts an
-# [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
+# [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
 # as its first argument.
 # Functions are automatically mapped to their optimization role.

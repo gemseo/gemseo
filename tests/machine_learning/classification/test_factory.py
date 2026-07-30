@@ -24,12 +24,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.machine_learning.classification.models.factory import CLASSIFIER_FACTORY
-from gemseo.machine_learning.classification.models.knn import KNNClassifier
-from gemseo.problems.dataset.iris import create_iris_dataset
+from gemseo.machine_learning.classification.model.factory import CLASSIFIER_FACTORY
+from gemseo.machine_learning.classification.model.knn import KNNClassifier
+from gemseo.problem.dataset.iris import create_iris_dataset
 
 if TYPE_CHECKING:
-    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.dataset.io_dataset import IODataset
 
 
 @pytest.fixture

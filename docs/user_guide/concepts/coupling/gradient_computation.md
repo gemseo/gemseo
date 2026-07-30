@@ -62,14 +62,14 @@ using the partial derivatives provided by all the disciplines.
 
 In GEMSEO, for weakly coupled problems,
 the generalized chain rule is used
-based on [DisciplineChain][gemseo.core.chains.chain.DisciplineChain],
+based on [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain],
 with two variants, either forward (from the inputs to the outputs)
 or reverse (from the outputs to the inputs),
 the switch being automatic by default depending on the total size of the inputs
 compared to the total size of the outputs.
 
 For strongly coupled problems,
-when the process is based on a MDA [BaseMDA][gemseo.mda.base.BaseMDA],
+when the process is based on a MDA [BaseMDA][gemseo.mda.core.base.BaseMDA],
 an implicit differenciation approach is used,
 with two variants, either direct or adjoint,
 depending on the number of design variables
@@ -250,8 +250,8 @@ using the direct or adjoint method
 
 It is also possible to get the overall Jacobian matrix or operator on the workflow level.
 In that case, the differentiation method is selected at the
-[EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario] level via
-[EvaluationScenario.set_differentiation_method()][gemseo.scenarios.evaluation.EvaluationScenario.set_differentiation_method]:
+[EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario] level via
+[EvaluationScenario.set_differentiation_method()][gemseo.scenario.evaluation.EvaluationScenario.set_differentiation_method]:
 
 - **Finite differences** (default):
   each output is numerically perturbed by a small step $h_j$ per design variable.

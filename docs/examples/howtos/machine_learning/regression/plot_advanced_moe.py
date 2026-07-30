@@ -24,26 +24,26 @@
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
+from gemseo.machine_learning import KMeans_Settings
+from gemseo.machine_learning import RBFRegressor_Settings
 from gemseo.machine_learning import create_regression_model
-from gemseo.machine_learning.classification.models.knn_settings import (
+from gemseo.machine_learning.classification.model.knn_settings import (
     KNNClassifier_Settings,
 )
-from gemseo.machine_learning.classification.models.random_forest_settings import (
+from gemseo.machine_learning.classification.model.random_forest_settings import (
     RandomForestClassifier_Settings,
 )
-from gemseo.machine_learning.classification.quality.f1_measure import F1Measure
-from gemseo.machine_learning.clustering.models.gaussian_mixture_settings import (
+from gemseo.machine_learning.classification.quality import F1Measure
+from gemseo.machine_learning.clustering.model.gaussian_mixture_settings import (
     GaussianMixture_Settings,
 )
-from gemseo.machine_learning.clustering.models.kmeans_settings import KMeans_Settings
 from gemseo.machine_learning.clustering.quality.silhouette_measure import (
     SilhouetteMeasure,
 )
-from gemseo.machine_learning.regression.models.linreg_settings import (
+from gemseo.machine_learning.regression.model.linreg_settings import (
     LinearRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
-from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
+from gemseo.machine_learning.regression.quality import MSEMeasure
 
 # %%
 # In this example,
@@ -54,7 +54,7 @@ dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 
 # %%
 # For that purpose,
-# you will use an [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor] in an advanced way:
+# you will use an [MOERegressor][gemseo.machine_learning.regression.model.moe.MOERegressor] in an advanced way:
 # you will not set the clustering, classification and regression models
 # but select them according to their performance
 # from several candidates that you will provide.
@@ -67,7 +67,7 @@ dataset = create_benchmark_dataset("RosenbrockDataset", opt_naming=False)
 # ## Initialization
 #
 # First,
-# you initialize an [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor] with soft classification
+# you initialize an [MOERegressor][gemseo.machine_learning.regression.model.moe.MOERegressor] with soft classification
 # by means of the high-level machine learning function [create_regression_model()][gemseo.machine_learning.create_regression_model].
 model = create_regression_model("MOERegressor", dataset, hard=False)
 
@@ -136,9 +136,9 @@ model.learn()
 # on the sub-machine learning models selected among the candidates
 # and on their selected settings.
 # You can see that
-# a [MKeans][gemseo.machine_learning.clustering.models.kmeans.KMeans] with four clusters has been selected for the clustering stage,
-# as well as a [RandomForestClassifier][gemseo.machine_learning.classification.models.random_forest.RandomForestClassifier] for the classification stage
-# and a [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor] for each cluster.
+# a [MKeans][gemseo.machine_learning.clustering.model.kmeans.KMeans] with four clusters has been selected for the clustering stage,
+# as well as a [RandomForestClassifier][gemseo.machine_learning.classification.model.random_forest.RandomForestClassifier] for the classification stage
+# and a [RBFRegressor][gemseo.machine_learning.regression.model.rbf.RBFRegressor] for each cluster.
 model
 
 # %%
@@ -148,15 +148,15 @@ model
 #     and depending on the complexity of the function to be approximated,
 #     you could obtain different regression models according to the clusters.
 #     For example,
-#     you could use a [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] with order 2
+#     you could use a [PolynomialRegressor][gemseo.machine_learning.regression.model.polyreg.PolynomialRegressor] with order 2
 #     on a sub-part of the input space
-#     and a [GaussianProcessRegressor][gemseo.machine_learning.regression.models.gpr.GaussianProcessRegressor]
+#     and a [GaussianProcessRegressor][gemseo.machine_learning.regression.model.gpr.GaussianProcessRegressor]
 #     on another sub-part of the input space.
 #
 # Once built,
-# this mixture of experts can be used as any [BaseRegressor][gemseo.machine_learning.regression.models.base_regressor.BaseRegressor].
+# this mixture of experts can be used as any [BaseRegressor][gemseo.machine_learning.regression.core.base_regressor.BaseRegressor].
 #
 # !!! info "See also"
 #
 #     [Another example][mixture-of-experts]
-#     proposes a standard use of [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor].
+#     proposes a standard use of [MOERegressor][gemseo.machine_learning.regression.model.moe.MOERegressor].

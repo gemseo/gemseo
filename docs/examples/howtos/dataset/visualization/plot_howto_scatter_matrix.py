@@ -33,7 +33,7 @@ and per-variable distribution estimates (histogram or KDE) on the diagonal.
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.post.dataset.pair_plot import PairPlot
+from gemseo.post.dataset import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 
 # %%

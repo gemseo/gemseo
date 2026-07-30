@@ -20,14 +20,14 @@ search:
 ## Introduction
 
 When a [Discipline][gemseo.core.discipline.discipline.Discipline] is costly to evaluate,
-it can be replaced by a [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] cheap to evaluate,
+it can be replaced by a [SurrogateDiscipline][gemseo.discipline.surrogate.SurrogateDiscipline] cheap to evaluate,
 e.g. linear model, Kriging, RBF regressor, ...
-This [SurrogateDiscipline][gemseo.disciplines.surrogate.SurrogateDiscipline] is built from a few evaluations
+This [SurrogateDiscipline][gemseo.discipline.surrogate.SurrogateDiscipline] is built from a few evaluations
 of this [Discipline][gemseo.core.discipline.discipline.Discipline].
 This learning phase commonly relies on a regression
 model calibrated by machine learning techniques. This is the reason why
 GEMSEO provides a machine learning package which includes the
-[BaseRegressor][gemseo.machine_learning.regression.models.base_regressor.BaseRegressor] class implementing the concept of
+[BaseRegressor][gemseo.machine_learning.regression.core.base_regressor.BaseRegressor] class implementing the concept of
 regression model.
 In addition, this machine learning package has a much broader set of features
 than regression: clustering, classification, dimension reduction, data scaling,
@@ -40,10 +40,10 @@ than regression: clustering, classification, dimension reduction, data scaling,
 ## Development
 
 This diagram shows the hierarchy of all machine learning models,
-and where they interact with [Dataset][gemseo.datasets.dataset.Dataset],
+and where they interact with [Dataset][gemseo.dataset.dataset.Dataset],
 [BaseMLModelQuality][gemseo.machine_learning.core.quality.base_ml_model_quality.BaseMLModelQuality],
-[BaseTransformer][gemseo.machine_learning.transformers.base_transformer.BaseTransformer]
-and [MLModelCalibration][gemseo.machine_learning.core.calibration.MLModelCalibration].
+[BaseTransformer][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer]
+and [MLModelCalibration][gemseo.machine_learning.calibration.MLModelCalibration].
 
 ```mermaid
 classDiagram

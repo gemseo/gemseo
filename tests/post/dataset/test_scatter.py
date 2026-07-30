@@ -26,7 +26,7 @@ from matplotlib import pyplot as plt
 from numpy import array
 from scipy.interpolate import Rbf
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
 

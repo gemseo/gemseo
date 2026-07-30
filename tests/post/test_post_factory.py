@@ -22,10 +22,10 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post import OptHistoryView_Settings
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.opt_history_view import OptHistoryView
+from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
 
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
 

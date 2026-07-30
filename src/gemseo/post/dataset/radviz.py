@@ -17,7 +17,7 @@
 #                           documentation
 #        :author: Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""Draw a RadViz from a [Dataset][gemseo.datasets.dataset.Dataset].
+r"""Draw a RadViz from a [Dataset][gemseo.dataset.dataset.Dataset].
 
 The [RadViz][gemseo.post.dataset.radviz.RadViz] class implements the RadViz plot,
 which is a way to visualize $n$ samples of a multi-dimensional vector
@@ -53,10 +53,10 @@ from typing import TYPE_CHECKING
 
 from gemseo.post.dataset.base import BaseDatasetPlot
 from gemseo.post.dataset.radviz_settings import RadViz_Settings
-from gemseo.utils.string_tools import pretty_str
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
+    from gemseo.dataset.dataset import Dataset
 
 
 class RadViz(BaseDatasetPlot[RadViz_Settings]):

@@ -26,14 +26,14 @@ from numpy import hstack
 from numpy import newaxis
 from numpy import stack
 
-from gemseo.utils.metaclasses import ABCGoogleDocstringInheritanceMeta
+from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Sequence
 
-    from gemseo.typing import RealArray
-    from gemseo.uncertainty.distributions.base_joint import BaseJointDistribution
+    from gemseo.uncertainty.distribution.core.base_joint import BaseJointDistribution
+    from gemseo.util.typing import RealArray
 
 
 class BaseBasis(metaclass=ABCGoogleDocstringInheritanceMeta):

@@ -26,12 +26,12 @@ from numpy import array
 
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.post import HessianHistory_Settings
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.hessian_history import HessianHistory
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.post.hessian_history_settings import HessianHistory_Settings
+from gemseo.space.design import DesignSpace
+from gemseo.util.testing.helper import assert_exception
 
 DIR_PATH = Path(__file__).parent
 POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"

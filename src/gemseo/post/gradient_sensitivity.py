@@ -31,10 +31,10 @@ from numpy import arange
 from numpy import atleast_2d
 from numpy import where
 
-from gemseo.algos.database import Database
-from gemseo.post.base_post import BasePost
+from gemseo.core.problem.database import Database
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -42,8 +42,8 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
     from numpy import ndarray
 
-    from gemseo.typing import NumberArray
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import RealArray
 
 LOGGER = logging.getLogger(__name__)
 
@@ -104,10 +104,10 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
             Activating this option may add considerable computation time
             depending on the cost of the gradient evaluation.
             This option will not compute the gradients if the
-            [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+            [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
             instance was imported from an HDF5 file.
             This option requires an
-            [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+            [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
             with a gradient-based algorithm.
 
         Returns:

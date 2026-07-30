@@ -65,26 +65,26 @@ The figure below illustrates how namespaces can modify the coupling structure.
 ## Nested namespaces in process disciplines
 
 A process discipline
-([DisciplineChain][gemseo.core.chains.chain.DisciplineChain],
-[BaseMDA][gemseo.mda.base.BaseMDA],
-[ParallelDisciplineChain][gemseo.core.chains.parallel_chain.ParallelDisciplineChain],
+([DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain],
+[BaseMDA][gemseo.mda.core.base.BaseMDA],
+[ParallelDisciplineChain][gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain],
 scenario adapters, etc.)
 aggregates the grammars of its sub-disciplines.
 When two sub-disciplines expose the same original name under different namespaces,
 the process grammar maps that single original name to *several* namespaced names.
-The [to_namespaced][gemseo.core.grammars.base.BaseGrammar.to_namespaced] value
+The [to_namespaced][gemseo.core.grammar.base.BaseGrammar.to_namespaced] value
 is then a list, e.g. `{"x": ["ns1:x", "ns2:x"]}`.
 This is called a *nested* namespace.
 
 Nesting is only allowed for process disciplines.
 On a leaf discipline, an original name always maps to a single namespaced name.
 Accordingly,
-[BaseGrammar.update][gemseo.core.grammars.base.BaseGrammar.update]
+[BaseGrammar.update][gemseo.core.grammar.base.BaseGrammar.update]
 raises a `ValueError` if an update would map a name to a second, different namespaced name,
 unless it is called with the keyword-only argument `allow_namespace_nesting=True`
 (which the process disciplines do when aggregating their sub-disciplines).
 The reverse map
-[from_namespaced][gemseo.core.grammars.base.BaseGrammar.from_namespaced]
+[from_namespaced][gemseo.core.grammar.base.BaseGrammar.from_namespaced]
 is always one-to-one (each namespaced name maps to a single original name)
 and is therefore never nested.
 

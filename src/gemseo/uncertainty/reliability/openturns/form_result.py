@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 from gemseo.uncertainty.reliability.result import ReliabilityResult
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 @dataclass(frozen=True)

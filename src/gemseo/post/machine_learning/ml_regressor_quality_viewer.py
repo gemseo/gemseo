@@ -22,16 +22,16 @@ from typing import Any
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from strenum import StrEnum
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
+from gemseo.dataset.dataset import Dataset
+from gemseo.dataset.io_dataset import IODataset
 from gemseo.machine_learning.resampling.cross_validation import CrossValidation
 from gemseo.post.dataset.pair_plot import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 from gemseo.post.dataset.scatter import Scatter
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
 from gemseo.post.dataset.trend import Trend
-from gemseo.utils.seeder import Seeder
-from gemseo.utils.string_tools import convert_strings_to_iterable
+from gemseo.util.seeder import Seeder
+from gemseo.util.string import convert_strings_to_iterable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -39,8 +39,8 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-    from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
-    from gemseo.typing import RealArray
+    from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+    from gemseo.util.typing import RealArray
 
 
 class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):

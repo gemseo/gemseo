@@ -34,7 +34,7 @@ showing the spread of function values relative to the optimum.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import Robustness_Settings
+from gemseo.post import Robustness_Settings
 
 # %%
 # ### 1. Prerequisites

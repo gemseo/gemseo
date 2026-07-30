@@ -22,13 +22,13 @@ from typing import ClassVar  # Noqa: TC003
 from pydantic import Field
 
 from gemseo.core.coupling_structure import CouplingStructure  # Noqa: TC001
-from gemseo.mda.base_parallel_solver_settings import (
+from gemseo.mda.core.base_parallel_solver_settings import (
     BaseMDAParallelSolverSettings,  # Noqa: TC001
 )
-from gemseo.mda.base_settings import BaseMDASettings  # noqa: TC001
-from gemseo.mda.composed_settings import ComposedMDASettings
+from gemseo.mda.core.base_settings import BaseMDASettings  # noqa: TC001
+from gemseo.mda.core.composed_settings import ComposedMDASettings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
-from gemseo.typing import StrKeyMapping  # noqa: TC001
+from gemseo.util.typing import StrKeyMapping  # noqa: TC001
 
 
 class MDAChain_Settings(BaseMDAParallelSolverSettings, ComposedMDASettings):  # noqa: N801
@@ -52,7 +52,7 @@ while in direct mode, linearizing the chain may be cheaper.""",
     initialize_defaults: bool = Field(
         default=False,
         description="""Whether to create a
-[InitializationDisciplineChain][gemseo.core.chains.initialization_chain.InitializationDisciplineChain]
+[InitializationDisciplineChain][gemseo.discipline.chain.initialization_chain.InitializationDisciplineChain]
 to compute the eventually missing
 [default_input_data][gemseo.mda.chain.MDAChain.default_input_data]
 at the first execution.""",

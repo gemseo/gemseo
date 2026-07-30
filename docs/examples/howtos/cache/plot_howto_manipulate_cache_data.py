@@ -23,8 +23,8 @@ You have a cache, and you want to modify data it contains.
 
 GEMSEO allows you to manipulate cache data.
 You can either modify the values
-in an existing [CacheEntry][gemseo.caches.cache_entry.CacheEntry],
-or you can add new [CacheEntry][gemseo.caches.cache_entry.CacheEntry].
+in an existing [CacheEntry][gemseo.core.cache.cache_entry.CacheEntry],
+or you can add new [CacheEntry][gemseo.core.cache.cache_entry.CacheEntry].
 
 !!! warning
     These methods must be used carefully.
@@ -43,7 +43,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline import AnalyticDiscipline
 
 # %%
 # ### 1. Create and execute a discipline

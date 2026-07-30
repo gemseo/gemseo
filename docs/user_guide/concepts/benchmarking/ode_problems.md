@@ -17,9 +17,9 @@ search:
 
 # ODE problems { #concept-ode-problems }
 
-The [gemseo.problems.ode][gemseo.problems.ode] package provides
-[ODEProblem][gemseo.algos.ode.ode_problem.ODEProblem] and
-[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] instances
+The [gemseo.problem.ode][gemseo.problem.ode] package provides
+[ODEProblem][gemseo.ode.problem.ODEProblem] and
+[ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] instances
 for benchmarking and illustrating ODE solvers.
 
 ## Van der Pol oscillator { #concept-van-der-pol }
@@ -38,7 +38,7 @@ No closed-form solution exists; numerical results can be compared across solvers
 
 ??? abstract "API"
 
-    - [VanDerPol][gemseo.problems.ode.van_der_pol.VanDerPol]
+    - [VanDerPol][gemseo.problem.ode.van_der_pol.VanDerPol]
 
 ## Orbital dynamics { #concept-orbital-dynamics }
 
@@ -56,7 +56,7 @@ The eccentricity of the orbit is configurable.
 
 ??? abstract "API"
 
-    - [OrbitalDynamics][gemseo.problems.ode.orbital_dynamics.OrbitalDynamics]
+    - [OrbitalDynamics][gemseo.problem.ode.orbital_dynamics.OrbitalDynamics]
 
 ## Harmonic oscillator { #concept-oscillator }
 
@@ -74,7 +74,7 @@ The angular frequency $\omega$ and output time grid are configurable.
 
 ??? abstract "API"
 
-    - [OscillatorDiscipline][gemseo.problems.ode.oscillator_discipline.OscillatorDiscipline]
+    - [OscillatorDiscipline][gemseo.problem.ode.oscillator_discipline.OscillatorDiscipline]
 
 ## Coupled springs { #concept-coupled-springs }
 
@@ -87,12 +87,12 @@ $$m_i\,\ddot{x}_i = k_i\,(x_{i-1} - x_i) - k_{i+1}\,(x_i - x_{i+1})$$
 where $k_i$ is the stiffness of spring $i$ and $x_0$, $x_{N+1}$ are the fixed boundary
 positions.
 The problem can be assembled either as a set of coupled
-[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline] instances
+[ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline] instances
 (one per mass) or as a single discipline with a coupled right-hand side.
 
 ??? abstract "API"
 
-    - [CoupledSpringsGenerator][gemseo.problems.ode.springs.coupled_springs_generator.CoupledSpringsGenerator]:
+    - [CoupledSpringsGenerator][gemseo.problem.ode.spring.coupled_springs_generator.CoupledSpringsGenerator]:
       factory for both coupling modes.
       Use `create_coupled_ode_disciplines()` for individual disciplines
       or `create_discipline_with_coupled_dynamics()` for a single discipline.

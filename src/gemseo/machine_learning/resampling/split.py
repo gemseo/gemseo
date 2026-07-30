@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 from numpy import array_equal
 
 if TYPE_CHECKING:
-    from gemseo.typing import IntegerArray
+    from gemseo.util.typing import IntegerArray
 
 
 @dataclass

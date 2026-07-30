@@ -24,9 +24,9 @@ and [MDO scenario][concept-optimization] for solving a multidisciplinary design 
 
 ## Evaluation { #concept-evaluation }
 
-An [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario]
+An [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]
 evaluates disciplinary outputs from disciplinary inputs
-declared on a [DesignSpace][gemseo.algos.design_space.DesignSpace].
+declared on a [DesignSpace][gemseo.space.design.DesignSpace].
 
 ```mermaid
 flowchart LR
@@ -40,7 +40,7 @@ flowchart LR
     R -.->|optional| PP["Post-processing"]
 ```
 
-It is built on an [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem]:
+It is built on an [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem]:
 it does with [disciplines][concept-discipline]
 what an [evaluation-problem][concept-evaluation-problem]
 does with [functions][concept-functions].
@@ -50,20 +50,20 @@ it performs a [multidisciplinary design analysis (MDA)][concept-solving-multi-di
 for each input value.
 
 The quantities of interest, called *observables*, are declared via
-[add_observable()][gemseo.scenarios.evaluation.EvaluationScenario.add_observable].
+[add_observable()][gemseo.scenario.evaluation.EvaluationScenario.add_observable].
 The scenario is executed via
-[execute()][gemseo.scenarios.evaluation.EvaluationScenario.execute],
+[execute()][gemseo.scenario.evaluation.EvaluationScenario.execute],
 which takes a DOE algorithm settings model as input.
 
 !!! note
 
-    An [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario] has no notion of objective function or constraints.
-    For optimization, use [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
+    An [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario] has no notion of objective function or constraints.
+    For optimization, use [MDOScenario][gemseo.scenario.mdo.MDOScenario].
 
 ## Optimization { #concept-optimization }
 
-An [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
-extends [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario]
+An [MDOScenario][gemseo.scenario.mdo.MDOScenario]
+extends [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]
 to solve an MDO problem.
 
 ```mermaid
@@ -85,25 +85,25 @@ In its most general form:
 
 $$\min_{x} f(x) \quad \text{s.t.} \quad g(x) \leq 0,\quad h(x) = 0,\quad m \leq x \leq M$$
 
-It is built on an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]:
+It is built on an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]:
 it does with [disciplines][concept-discipline]
-what an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+what an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 does with [functions][concept-functions].
 
 The quantities of interest are the objectives, the constraints and the observables.
 The *objectives* are declared via
-[add_objective()][gemseo.scenarios.mdo.MDOScenario.add_objective].
+[add_objective()][gemseo.scenario.mdo.MDOScenario.add_objective].
 By default the scenario minimizes the objective;
 passing `minimize=False` switches to maximization.
 Equality ($h(x) = a$) and inequality ($g(x) \leq a$ or $g(x) \geq a$) *constraints*
 are declared via
-[add_constraint()][gemseo.scenarios.mdo.MDOScenario.add_constraint].
+[add_constraint()][gemseo.scenario.mdo.MDOScenario.add_constraint].
 By default the scenario adds equality constraints of the form $h(x) = 0$.
 *Observables* are declared in the same way as for
-[EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario].
+[EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario].
 
 The scenario is executed via
-[execute()][gemseo.scenarios.mdo.MDOScenario.execute],
+[execute()][gemseo.scenario.mdo.MDOScenario.execute],
 which takes an optimizer (or DOE algorithm) settings model as input.
 
 ## Generic features { #concept-scenario-generic-features }
@@ -114,7 +114,7 @@ Both scenario types share the following features.
 
 The execution workflow of any scenario can be rendered as an
 eXtended Design Structure Matrix (XDSM) diagram[@Lambe2012] via the
-[xdsmize()][gemseo.scenarios.evaluation.EvaluationScenario.xdsmize] method.
+[xdsmize()][gemseo.scenario.evaluation.EvaluationScenario.xdsmize] method.
 
 XDSM diagrams represent disciplines as boxes,
 data flows as off-diagonal connections,
@@ -131,7 +131,7 @@ for an MDO problem solved using the MDF formulation with the Jacobi MDA method.
 
 ### Backup settings { #concept-scenario-backup-settings }
 
-[set_backup_settings()][gemseo.scenarios.evaluation.EvaluationScenario.set_backup_settings]
+[set_backup_settings()][gemseo.scenario.evaluation.EvaluationScenario.set_backup_settings]
 configures an HDF backup file updated at each function call and/or iteration,
 so that no evaluation is lost if the run is interrupted.
 The mechanism can resume from a previous backup or start fresh by overwriting it.
@@ -139,7 +139,7 @@ It can also save an [optimization history view][full-optimization-history-overvi
 
 ### Differentiation method { #concept-scenario-differentiation-method }
 
-[set_differentiation_method()][gemseo.scenarios.evaluation.EvaluationScenario.set_differentiation_method]
+[set_differentiation_method()][gemseo.scenario.evaluation.EvaluationScenario.set_differentiation_method]
 controls how Jacobians are approximated when disciplines do not provide analytical gradients.
 The default uses user-supplied gradients;
 alternatives include approximations, such as finite differences and the complex-step method.
@@ -149,12 +149,12 @@ alternatives include approximations, such as finite differences and the complex-
 Once the task has been completed,
 the evaluation history can then be exported to a
 [dataset][concept-dataset] via
-[to_dataset()][gemseo.scenarios.evaluation.EvaluationScenario.to_dataset],
+[to_dataset()][gemseo.scenario.evaluation.EvaluationScenario.to_dataset],
 or to an HDF file via
-[to_hdf()][gemseo.scenarios.evaluation.EvaluationScenario.to_hdf].
+[to_hdf()][gemseo.scenario.evaluation.EvaluationScenario.to_hdf].
 After execution,
 the optimization history can be post-processed via
-[post_process()][gemseo.scenarios.mdo.MDOScenario.post_process],
+[post_process()][gemseo.scenario.mdo.MDOScenario.post_process],
 using any [post-processor][concept-post-processor].
 
 ## Going further

@@ -18,14 +18,14 @@
 ## Problem
 
 After solving an
-[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem],
+[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem],
 you want to save the results to disk so they can be post-processed later
 without re-running the optimization.
 
 ## Solution
 
 Call `to_hdf()` on the
-[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 after solving it to export the results to an HDF5 file.
 
 ## Step-by-step guide
@@ -34,9 +34,9 @@ after solving it to export the results to an HDF5 file.
 from __future__ import annotations
 
 from gemseo import execute_algo
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization import OptimizationProblem
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Build and solve the optimization problem
@@ -65,7 +65,7 @@ optimization_problem.to_hdf("my_results.hdf")
 # ## Summary
 #
 # Call `to_hdf()` on a solved
-# [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 # to persist the results for later post-processing.
 #
 # ## One step further

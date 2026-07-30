@@ -30,16 +30,16 @@ import pytest
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.discipline import Discipline
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.post._graph_view import GraphView
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
+from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
 
 DATA_PATH = Path(__file__).absolute().parent / "data" / "dependency-graph"
 

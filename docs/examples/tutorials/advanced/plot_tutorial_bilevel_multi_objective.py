@@ -39,10 +39,10 @@ The idea is to treat the first objective $f_1$ as a system-level DOE parameter
 sub-level for each target value.
 Only sub-level solutions that match the target appear on the Pareto front.
 
-This tutorial uses the [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation
-to nest a lower-level [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+This tutorial uses the [BiLevel][gemseo.formulation.bilevel.BiLevel] formulation
+to nest a lower-level [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 (minimizing $f_2$ for a given `obj1_target`)
-inside a system-level [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+inside a system-level [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 solved by a DoE
 (sweeping `obj1_target`).
 
@@ -67,20 +67,20 @@ from logging import WARNING
 from numpy import array
 
 from gemseo import execute_post
-from gemseo.algos.design_space import DesignSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings.doe import PYDOE_FULLFACT_Settings
-from gemseo.settings.formulations import BiLevel_Settings
-from gemseo.settings.opt import NLOPT_SLSQP_Settings
-from gemseo.settings.post import OptHistoryView_Settings
-from gemseo.settings.post import ParetoFront_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.doe import PYDOE_FULLFACT_Settings
+from gemseo.formulation import BiLevel_Settings
+from gemseo.optimization import NLOPT_SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
+from gemseo.post import ParetoFront_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ## Step 1 - Define the disciplines
 #
 # You define two
-# [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline] objects
+# [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline] objects
 # from symbolic expressions.
 # The first discipline computes $f_1$, $f_2$, $g_1$, and $g_2$.
 expr_binh_korn = {
@@ -145,7 +145,7 @@ system_design_space.add_variable(
 # %%
 # ## Step 5 - Create the system-level DOE scenario
 #
-# The [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation
+# The [BiLevel][gemseo.formulation.bilevel.BiLevel] formulation
 # wraps the lower-level scenario inside the system-level DOE.
 # For each value of `obj1_target` sampled by the DOE,
 # GEMSEO runs the lower-level optimization and records the result.
@@ -173,7 +173,7 @@ system_scenario.add_objective("obj1")
 #
 # The constraint `cstr3` enforces that the sub-level solution actually achieves
 # `obj1_target`.
-# The [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation automatically
+# The [BiLevel][gemseo.formulation.bilevel.BiLevel] formulation automatically
 # propagates this system-level constraint to the lower-level scenario.
 # Adding `obj2` as an observable makes it available for post-processing.
 system_scenario.add_constraint("cstr3")
@@ -218,7 +218,7 @@ for database in sub_scenario_databases[:2]:
 # ## Key takeaways
 #
 # You learnt to compute a Pareto front with the
-# [BiLevel][gemseo.formulations.bilevel.BiLevel] formulation,
+# [BiLevel][gemseo.formulation.bilevel.BiLevel] formulation,
 # without a dedicated multi-objective algorithm.
 # The core idea is to fix $f_1$ as a DOE parameter at the system level
 # and minimize $f_2$ at the sub-level for each target value.

@@ -19,16 +19,16 @@
 
 After computing sensitivity indices,
 you want to export them to a
-[Dataset][gemseo.datasets.dataset.Dataset]
+[Dataset][gemseo.dataset.dataset.Dataset]
 for further numerical processing or comparison across analyses.
 
 ## Solution
 
-[to_dataset()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.to_dataset]
+[to_dataset()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.to_dataset]
 converts the
-[indices][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.indices]
+[indices][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.indices]
 mapping into a
-[Dataset][gemseo.datasets.dataset.Dataset]
+[Dataset][gemseo.dataset.dataset.Dataset]
 where inputs and columns are index types for the different outputs.
 
 ## Step-by-step guide
@@ -36,9 +36,9 @@ where inputs and columns are index types for the different outputs.
 
 from __future__ import annotations
 
-from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.problem.uncertainty.ishigami import IshigamiDiscipline
+from gemseo.problem.uncertainty.ishigami import IshigamiSpace
+from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 
 # %%
 # ### 1. Compute sensitivity indices
@@ -56,9 +56,9 @@ analysis.compute_indices()
 # %%
 # ### 2. Export to a dataset
 #
-# [to_dataset()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.to_dataset]
+# [to_dataset()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.to_dataset]
 # returns a
-# [Dataset][gemseo.datasets.dataset.Dataset]
+# [Dataset][gemseo.dataset.dataset.Dataset]
 # with all index types:
 dataset = analysis.to_dataset()
 dataset
@@ -66,9 +66,9 @@ dataset
 # %%
 # ## Summary
 #
-#   [to_dataset()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.to_dataset]
+#   [to_dataset()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.to_dataset]
 #   converts the indices dict to a
-#   [Dataset][gemseo.datasets.dataset.Dataset].
+#   [Dataset][gemseo.dataset.dataset.Dataset].
 #
 # !!! warning
 #     For

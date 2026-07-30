@@ -14,7 +14,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
+from gemseo.linear.scipy_linalg import LGMRES_Settings
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
 

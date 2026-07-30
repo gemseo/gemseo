@@ -24,13 +24,13 @@ You will go through configuration to post-processing steps.
 
 from __future__ import annotations
 
-from gemseo.problems.topology_optimization.topopt_initialize import (
+from gemseo.optimization import NLOPT_MMA_Settings
+from gemseo.post import BasicHistory_Settings
+from gemseo.post import TopologyView_Settings
+from gemseo.problem.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings.opt import NLOPT_MMA_Settings
-from gemseo.settings.post import BasicHistory_Settings
-from gemseo.settings.post import TopologyView_Settings
+from gemseo.scenario import MDOScenario
 
 # %%
 # ## Step 1 - Configure the topology optimization problem
@@ -67,7 +67,7 @@ min_member_size = 1.5
 # %%
 # ## Step 2 - Create both disciplines and design space
 #
-# Simultaneously instantiate the [DesignSpace][gemseo.algos.design_space.DesignSpace]
+# Simultaneously instantiate the [DesignSpace][gemseo.space.design.DesignSpace]
 # and the disciplines:
 design_space, disciplines = initialize_design_space_and_discipline_to(
     problem=problem_name,
@@ -82,7 +82,7 @@ design_space, disciplines = initialize_design_space_and_discipline_to(
 # %%
 # ## Step 3 - Create the topology optimization problem
 #
-# Generate an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]:
+# Generate an [MDOScenario][gemseo.scenario.mdo.MDOScenario]:
 scenario = MDOScenario(disciplines, design_space)
 
 # %%
@@ -125,8 +125,8 @@ scenario.post_process(TopologyView_Settings(n_x=n_x, n_y=n_y, show=True, save=Fa
 # Such problem relies on the same GEMSEO basis:
 #
 # - create your disciplines,
-# - create your [DesignSpace][gemseo.algos.design_space.DesignSpace],
-# - create your [MDOScenario][gemseo.scenarios.mdo.MDOScenario].
+# - create your [DesignSpace][gemseo.space.design.DesignSpace],
+# - create your [MDOScenario][gemseo.scenario.mdo.MDOScenario].
 #
 # Then, you can exploit any wrapped solver that can handle your optimization problem,
 # and post-process the results.

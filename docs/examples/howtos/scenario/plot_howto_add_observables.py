@@ -26,7 +26,7 @@ You want to tell your scenario to store these output values at each iteration.
 
 When creating your MDO scenario,
 you can add observables using the
-[add_observable()][gemseo.scenarios.mdo.MDOScenario.add_observable] method.
+[add_observable()][gemseo.scenario.mdo.MDOScenario.add_observable] method.
 
 ## Step-by-step guide
 """
@@ -38,9 +38,9 @@ from numpy import ones
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.formulation import MDF_Settings
+from gemseo.optimization import SLSQP_Settings
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Define your scenario
@@ -71,7 +71,7 @@ scenario.add_constraint("c_2", constraint_type="ineq")
 # In order to also store any extra variable, you can add it as an observable.
 # All you have to do is enter
 # the variable name as a string to the
-# [add_observable()][gemseo.scenarios.mdo.MDOScenario.add_observable].
+# [add_observable()][gemseo.scenario.mdo.MDOScenario.add_observable].
 # If more than one output name is provided (as a list of strings),
 # the observable function returns a concatenated array of the output values.
 scenario.add_observable("y_1")
@@ -94,6 +94,6 @@ scenario.to_dataset()
 # ## Summary
 #
 # Observables can be added to an MDO scenario with the
-# [add_observable()][gemseo.scenarios.mdo.MDOScenario.add_observable] method.
+# [add_observable()][gemseo.scenario.mdo.MDOScenario.add_observable] method.
 # The execution of your scenario will then store
 # the given observed variables into the scenario database.

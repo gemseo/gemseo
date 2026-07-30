@@ -25,18 +25,18 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING
 
 from gemseo.uncertainty.reliability.event_variable import EventVariable
-from gemseo.uncertainty.sensitivity.base import BaseGenericSensitivityAnalysis
-from gemseo.uncertainty.sensitivity.base import T
+from gemseo.uncertainty.sensitivity.core.base import BaseGenericSensitivityAnalysis
+from gemseo.uncertainty.sensitivity.core.base import T
 
 if TYPE_CHECKING:
     from collections.abc import Collection
     from collections.abc import Mapping
 
-    from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline import Discipline
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.formulations.base_settings import BaseFormulationSettings
-    from gemseo.uncertainty.reliability.base_settings import (
+    from gemseo.dataset.io_dataset import IODataset
+    from gemseo.formulation.core.base_settings import BaseFormulationSettings
+    from gemseo.space.parameter import ParameterSpace
+    from gemseo.uncertainty.reliability.core.base_settings import (
         BaseReliabilityAlgorithmSettings,
     )
     from gemseo.uncertainty.reliability.event import Event
@@ -54,7 +54,7 @@ class BaseROSensitivityAnalysis(BaseGenericSensitivityAnalysis[T]):
         In this class and its subclasses,
         the *outputs* handled by the inherited API
         (e.g. the keys of
-        [indices][gemseo.uncertainty.sensitivity.base.BaseGenericSensitivityAnalysis.indices],
+        [indices][gemseo.uncertainty.sensitivity.core.base.BaseGenericSensitivityAnalysis.indices],
         the `output`/`outputs` arguments of the plotting methods
         and the `output_names` argument of `compute_indices()`)
         are *events*, not disciplinary outputs.

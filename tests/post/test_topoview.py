@@ -17,9 +17,9 @@ from __future__ import annotations
 import pytest
 
 from gemseo import create_scenario
-from gemseo.algos.opt.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
-from gemseo.post import TopologyView_Settings
-from gemseo.problems.topology_optimization.topopt_initialize import (
+from gemseo.optimization.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings
+from gemseo.post.topology_view_settings import TopologyView_Settings
+from gemseo.problem.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
 

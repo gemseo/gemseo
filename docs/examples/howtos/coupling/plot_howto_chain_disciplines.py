@@ -27,7 +27,7 @@ You have several disciplines, and you want to execute them sequentially and forw
 ## Solution
 
 GEMSEO can chain the disciplines to execute them sequentially with the
-[DisciplineChain][gemseo.core.chains.chain.DisciplineChain] discipline.
+[DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain] discipline.
 
 ## Step-by-step guide
 """
@@ -36,8 +36,8 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.core.chains.chain import DisciplineChain
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.discipline.chain.chain import DisciplineChain
 
 # %%
 # ### 1. Create your disciplines
@@ -84,7 +84,7 @@ chain.execute({"x": array([5])})
 # ## Summary
 #
 # Multiple disciplines can be chained together thanks to the
-# [DisciplineChain][gemseo.core.chains.chain.DisciplineChain].
+# [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain].
 # You specify the order of execution.
 #
 # ## One step further

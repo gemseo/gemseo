@@ -27,8 +27,8 @@ import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.mda.base import _BaseMDAProcessFlow
-from gemseo.mda.base_parallel_solver import BaseMDAParallelSolver
+from gemseo.mda.core.base import _BaseMDAProcessFlow
+from gemseo.mda.core.base_parallel_solver import BaseMDAParallelSolver
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
     from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
     from gemseo.core.discipline import Discipline
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 LOGGER = logging.getLogger(__name__)
 
@@ -168,7 +168,7 @@ class MDANewtonRaphson(BaseMDAParallelSolver):
         self._execute_disciplines_and_update_local_data()
         self._compute_residuals(local_data_before_execution)
 
-        if self._check_stopping_criteria():
+        if self._check_termination_criteria():
             return False
 
         newton_step = self.__compute_newton_step(local_data_before_execution)

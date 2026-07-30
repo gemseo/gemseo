@@ -33,32 +33,32 @@ from numpy import sin
 from numpy.testing import assert_array_equal
 
 from gemseo import create_discipline
-from gemseo.algos.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
-from gemseo.algos.parameter_space import ParameterSpace
 from gemseo.core.discipline import Discipline
-from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.post.dataset.bars_settings import BarPlot_Settings
-from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.scenarios.backup_settings import BackupSettings
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.dataset.dataset import Dataset
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
+from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
+from gemseo.problem.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
+from gemseo.problem.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.scenario.backup_settings import BackupSettings
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
-from gemseo.uncertainty.sensitivity.base import BaseSensitivityAnalysis
+from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
 from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysisMethod
 from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.util.testing.helper import concretize_classes
 
 if TYPE_CHECKING:
-    from gemseo.disciplines.analytic import AnalyticDiscipline
-    from gemseo.typing import StrKeyMapping
-    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
+    from gemseo.discipline.analytic import AnalyticDiscipline
+    from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
+    from gemseo.util.typing import StrKeyMapping
 
 
 @pytest.fixture(scope="module")

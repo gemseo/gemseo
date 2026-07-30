@@ -19,12 +19,12 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import array
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
 from gemseo.uncertainty.reliability.problem import ReliabilityProblem
@@ -32,7 +32,7 @@ from gemseo.uncertainty.reliability.problem import ReliabilityProblem
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 @pytest.fixture(scope="module")

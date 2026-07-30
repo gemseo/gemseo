@@ -33,15 +33,15 @@ The best local optimum across all starting points is returned as the result.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.algos.opt.multi_start.settings.multi_start_settings import (
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.doe import PYDOE_FULLFACT_Settings
+from gemseo.optimization import SLSQP_Settings
+from gemseo.optimization.multi_start.settings.multi_start_settings import (
     MultiStart_Settings,
 )
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
 from gemseo.post import BasicHistory_Settings
-from gemseo.scenarios.mdo import MDOScenario
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Build the multimodal problem

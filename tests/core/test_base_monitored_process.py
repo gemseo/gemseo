@@ -22,11 +22,11 @@ from unittest.mock import patch
 import pytest
 
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.utils import timer  # noqa: E402
-from gemseo.utils.testing.helpers import concretize_classes
-from gemseo.utils.testing.mocks import SleepingCounter
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.util import timer  # noqa: E402
+from gemseo.util.testing.helper import concretize_classes
+from gemseo.util.testing.mock import SleepingCounter
 
 NAME: Final[str] = "name"
 
@@ -98,7 +98,7 @@ def test_call_monitored(process, enable_statistics, enable_status):
     statistics_recorder = MagicMock()
 
     with patch(
-        "gemseo.core.execution_status.ExecutionStatus.value",
+        "gemseo.core.discipline.execution_status.ExecutionStatus.value",
         new_callable=PropertyMock,
     ) as mock_value:
         process._call_monitored(

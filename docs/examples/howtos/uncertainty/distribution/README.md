@@ -13,4 +13,4 @@
 Define probability distributions backed by OpenTURNS or SciPy,
 fit them to observed data,
 and assemble uncertain variables into a
-[ParameterSpace][gemseo.algos.parameter_space.ParameterSpace].
+[ParameterSpace][gemseo.space.parameter.ParameterSpace].

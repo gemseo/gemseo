@@ -23,7 +23,7 @@ You want to create a discipline from a Python function.
 ## Solution
 
 Instantiate
-the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] class
+the [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline] class
 from a function computing the outputs, and possibly a function computing the Jacobian.
 
 ## Step-by-step guide
@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.disciplines.auto_py import AutoPyDiscipline
+from gemseo.discipline import AutoPyDiscipline
 
 # %%
 # ### 1. Create the Python function
@@ -105,7 +105,7 @@ discipline.execute({"x": array([1.0]), "y": array([-3.2])})
 # !!! warning
 #
 #     You may have noticed that
-#     the input data are passed to the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] as NumPy arrays
+#     the input data are passed to the [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline] as NumPy arrays
 #     even if the Python function `f` is expecting `float` numbers.
 #
 # ### 4. Use a Jacobian function
@@ -133,14 +133,14 @@ discipline.linearize(input_data={"x": array([1.0])}, compute_all_jacobians=True)
 # ### 5.  Use custom types
 #
 # By default,
-# the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] assumes that
+# the [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline] assumes that
 # the arguments and the returned variables of the Python function are
 # either `float` numbers or NumPy arrays with dimensions greater than 1.
 # This behavior can be changed in two different ways.
 #
 # #### NumPy arrays
 #
-# You can force [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
+# You can force [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline]
 # to consider all arguments and variables as NumPy arrays
 # by setting the option `use_arrays` to `True`,
 # as illustrated here:
@@ -185,6 +185,6 @@ discipline.execute({"string": "ab", "n": 5})
 # ## Summary
 #
 # A discipline can be created
-# from the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] class
+# from the [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline] class
 # using Python functions.
 #

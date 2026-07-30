@@ -24,11 +24,11 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import Protocol
 
-from gemseo.utils.singleton import SingleInstancePerAttributeId
+from gemseo.util.singleton import SingleInstancePerAttributeId
 
 if TYPE_CHECKING:
-    from gemseo.core._process_flow.execution_sequences.base import BaseExecutionSequence
-    from gemseo.core.execution_status import ExecutionStatus
+    from gemseo.core._process_flow.execution_sequence.base import BaseExecutionSequence
+    from gemseo.core.discipline.execution_status import ExecutionStatus
 
     class Observer(Protocol):
         """API of an observer."""

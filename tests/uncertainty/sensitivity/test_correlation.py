@@ -25,8 +25,8 @@ from pathlib import Path
 import pytest
 
 from gemseo import create_discipline
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis

@@ -21,7 +21,7 @@ from pydantic import NonNegativeFloat
 from pydantic import NonNegativeInt
 from pydantic import PositiveInt
 
-from gemseo.uncertainty.reliability.base_settings import (
+from gemseo.uncertainty.reliability.core.base_settings import (
     BaseReliabilityAlgorithmSettings,
 )
 

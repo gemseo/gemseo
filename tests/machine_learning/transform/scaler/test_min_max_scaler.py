@@ -29,7 +29,7 @@ from numpy import array
 from numpy import zeros
 from numpy.testing import assert_almost_equal
 
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
 
 if TYPE_CHECKING:
     from numpy import ndarray

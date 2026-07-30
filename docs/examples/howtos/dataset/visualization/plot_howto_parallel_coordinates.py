@@ -32,7 +32,7 @@ whose nodes are positioned along one axis per variable.
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates
+from gemseo.post.dataset import ParallelCoordinates
 from gemseo.post.dataset.parallel_coordinates_settings import (
     ParallelCoordinates_Settings,
 )

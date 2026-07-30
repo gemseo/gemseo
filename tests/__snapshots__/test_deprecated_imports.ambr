@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_dissolved_package_unknown_attribute
+  "module 'gemseo.settings' has no attribute 'does_not_exist'"
+# ---
+# name: test_unknown_attribute_of_live_package_raises
+  "module 'gemseo.post' has no attribute 'does_not_exist'"
+# ---

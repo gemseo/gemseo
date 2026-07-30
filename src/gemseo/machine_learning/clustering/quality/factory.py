@@ -16,7 +16,9 @@
 
 from __future__ import annotations
 
-from gemseo.machine_learning.clustering.quality.base_clusterer_quality import (
+from typing import Final
+
+from gemseo.machine_learning.clustering.core.base_clusterer_quality import (
     BaseClustererQuality,
 )
 from gemseo.machine_learning.core.quality.factory import MLModelQualityFactory
@@ -27,3 +29,7 @@ class ClustererQualityFactory(MLModelQualityFactory):
 
     _CLASS = BaseClustererQuality
     _PACKAGE_NAMES = ("gemseo.machine_learning.clustering.quality",)
+
+
+CLUSTERER_QUALITY_FACTORY: Final[ClustererQualityFactory] = ClustererQualityFactory()
+"""The factory for `BaseClustererQuality` objects."""

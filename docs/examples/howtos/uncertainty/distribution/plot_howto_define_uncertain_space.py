@@ -23,12 +23,12 @@ without any deterministic variable.
 
 ## Solution
 
-[ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
+[ParameterSpace][gemseo.space.parameter.ParameterSpace]
 used with only
-[add_random_variable()][gemseo.algos.parameter_space.ParameterSpace.add_random_variable]
+[add_random_variable()][gemseo.space.parameter.ParameterSpace.add_random_variable]
 calls acts as a pure uncertain space.
 Pass distribution settings objects (importable from
-[gemseo.settings.probability_distributions][gemseo.settings.probability_distributions])
+[gemseo.uncertainty.distribution][gemseo.uncertainty.distribution])
 to describe each variable.
 Then sample from it directly or pass it to
 [sample_disciplines()][gemseo.sample_disciplines]
@@ -39,21 +39,21 @@ to propagate uncertainty through a discipline.
 
 from __future__ import annotations
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.settings.probability_distributions import SPNormalDistribution_Settings
-from gemseo.settings.probability_distributions import SPUniformDistribution_Settings
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution import SPNormalDistribution_Settings
+from gemseo.uncertainty.distribution import SPUniformDistribution_Settings
 
 # %%
 # ### 1. Create an uncertain space
 #
-# A [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
+# A [ParameterSpace][gemseo.space.parameter.ParameterSpace]
 # requires no mandatory arguments:
 uncertain_space = ParameterSpace()
 
 # %%
 # ### 2. Add uncertain variables
 #
-# Use [add_random_variable()][gemseo.algos.parameter_space.ParameterSpace.add_random_variable]
+# Use [add_random_variable()][gemseo.space.parameter.ParameterSpace.add_random_variable]
 # with a distribution settings object.
 # Here `x` follows a standard normal distribution:
 uncertain_space.add_random_variable("x", SPNormalDistribution_Settings())
@@ -69,7 +69,7 @@ uncertain_space.add_random_variable(
 # ### 3. Add a vector with mixed distributions
 #
 # When components follow different distributions,
-# use [add_random_vector()][gemseo.algos.parameter_space.ParameterSpace.add_random_vector]
+# use [add_random_vector()][gemseo.space.parameter.ParameterSpace.add_random_vector]
 # with one settings object per component:
 uncertain_space.add_random_vector(
     "z",
@@ -111,17 +111,17 @@ uncertain_space.compute_samples(n_samples=5, as_dict=True)
 # %%
 # ## Summary
 #
-# - [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
-#   with only [add_random_variable()][gemseo.algos.parameter_space.ParameterSpace.add_random_variable]
+# - [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+#   with only [add_random_variable()][gemseo.space.parameter.ParameterSpace.add_random_variable]
 #   calls defines a pure uncertain space;
 # - distribution settings classes are importable from
-#   [gemseo.settings.probability_distributions][gemseo.settings.probability_distributions]
+#   [gemseo.uncertainty.distribution][gemseo.uncertainty.distribution]
 #   (names prefixed with `SP` use SciPy, `OT` use OpenTURNS —
 #   do not mix both prefixes in the same space);
-# - [get_range()][gemseo.algos.parameter_space.ParameterSpace.get_range]
-#   and [get_support()][gemseo.algos.parameter_space.ParameterSpace.get_support]
+# - [get_range()][gemseo.space.parameter.ParameterSpace.get_range]
+#   and [get_support()][gemseo.space.parameter.ParameterSpace.get_support]
 #   return the numerical range and mathematical support of each uncertain variable;
-# - [compute_samples()][gemseo.algos.parameter_space.ParameterSpace.compute_samples]
+# - [compute_samples()][gemseo.space.parameter.ParameterSpace.compute_samples]
 #   draws random samples from the joint distribution.
 #
 # ## One step further

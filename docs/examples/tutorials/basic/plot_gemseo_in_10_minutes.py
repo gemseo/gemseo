@@ -45,10 +45,10 @@ from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo import generate_n2_plot
-from gemseo.settings.mda import MDAChain_Settings
-from gemseo.settings.mda import MDAJacobi_Settings
-from gemseo.settings.opt import SLSQP_Settings
-from gemseo.settings.post import OptHistoryView_Settings
+from gemseo.mda import MDAChain_Settings
+from gemseo.mda import MDAJacobi_Settings
+from gemseo.optimization import SLSQP_Settings
+from gemseo.post import OptHistoryView_Settings
 
 # %%
 # These imports are needed to compute mathematical expressions and to
@@ -122,12 +122,12 @@ def f_sellar_2(y_1=1.0, x_shared_1=1.0, x_shared_2=3.0):
 
 # %%
 # These Python functions can be easily converted into GEMSEO
-# [Discipline][gemseo.core.discipline.discipline.Discipline] objects by using the [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
+# [Discipline][gemseo.core.discipline.discipline.Discipline] objects by using the [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline]
 # discipline. It enables the automatic wrapping of a Python function into a
 # GEMSEO
 # [Discipline][gemseo.core.discipline.discipline.Discipline] by only passing a reference to the function to be
 # wrapped. GEMSEO handles the wrapping and the grammar creation under the
-# hood. The [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline] discipline can be instantiated using the
+# hood. The [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline] discipline can be instantiated using the
 # [create_discipline()][gemseo.create_discipline] function from the GEMSEO API:
 
 disc_sellar_system = create_discipline("AutoPyDiscipline", py_func=f_sellar_system)
@@ -145,7 +145,7 @@ disc_sellar_2 = create_discipline("AutoPyDiscipline", py_func=f_sellar_2)
 
 # %%
 # You then create a list of disciplines, which will be used later to create an
-# [MDOScenario][gemseo.scenarios.mdo.MDOScenario]:
+# [MDOScenario][gemseo.scenario.mdo.MDOScenario]:
 disciplines = [disc_sellar_system, disc_sellar_1, disc_sellar_2]
 
 # %%
@@ -178,8 +178,8 @@ generate_n2_plot(disciplines, save=False, show=True)
 # %%
 # ## Definition of the design space
 #
-# In order to define [MDOScenario][gemseo.scenarios.mdo.MDOScenario],
-# a design space has to be defined by creating a [DesignSpace][gemseo.algos.design_space.DesignSpace]
+# In order to define [MDOScenario][gemseo.scenario.mdo.MDOScenario],
+# a design space has to be defined by creating a [DesignSpace][gemseo.space.design.DesignSpace]
 # object. The design space definition reads:
 
 design_space = create_design_space()
@@ -280,14 +280,14 @@ scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 #
 #     Such post-processors can be exported in PDF format,
 #     by setting `save` to `True` and potentially additional
-#     settings (see the [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] options).
+#     settings (see the [post_process()][gemseo.scenario.mdo.MDOScenario.post_process] options).
 
 # %%
 # ## Exporting the problem data.
 #
 # After the execution of the scenario, you may want to export your data to use it
-# elsewhere. The [to_dataset()][gemseo.scenarios.mdo.MDOScenario.to_dataset] will allow you to export your
-# results to a [Dataset][gemseo.datasets.dataset.Dataset], the basic GEMSEO class to store data.
+# elsewhere. The [to_dataset()][gemseo.scenario.mdo.MDOScenario.to_dataset] will allow you to export your
+# results to a [Dataset][gemseo.dataset.dataset.Dataset], the basic GEMSEO class to store data.
 dataset = scenario.to_dataset("a_name_for_my_dataset")
 
 # %%

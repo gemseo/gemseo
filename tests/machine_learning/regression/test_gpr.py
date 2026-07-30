@@ -33,20 +33,20 @@ from numpy import ndarray
 from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.machine_learning.regression.models.gpr import GaussianProcessRegressor
-from gemseo.machine_learning.regression.models.gpr_settings import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning.regression.model.gpr import GaussianProcessRegressor
+from gemseo.machine_learning.regression.model.gpr_settings import (
     GaussianProcessRegressor_Settings,
 )
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.utils.data_conversion import concatenate_dict_of_arrays_to_array
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
+from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
+    from gemseo.dataset.dataset import Dataset
 
 LEARNING_SIZE = 9
 

@@ -29,13 +29,13 @@ You want to bring it back within the bounds.
 ## Solution
 
 For that, it is possible to project the vector into the bounds by means of
-the [project_into_bounds()][gemseo.algos.design_space.DesignSpace.project_into_bounds].
+the [project_into_bounds()][gemseo.space.design.DesignSpace.project_into_bounds].
 
 ## Step-by-step guide
 
 You will create a design space,
 and see the impact of the
-[project_into_bounds()][gemseo.algos.design_space.DesignSpace.project_into_bounds]
+[project_into_bounds()][gemseo.space.design.DesignSpace.project_into_bounds]
 method.
 """
 
@@ -67,5 +67,5 @@ p_point
 # ## Summary
 #
 # Use the
-# [project_into_bounds()][gemseo.algos.design_space.DesignSpace.project_into_bounds]
+# [project_into_bounds()][gemseo.space.design.DesignSpace.project_into_bounds]
 # method to bring a design vector back into its boundaries.

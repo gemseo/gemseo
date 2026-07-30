@@ -21,9 +21,9 @@ from __future__ import annotations
 import pytest
 from numpy import array
 
-from gemseo.post import ParallelCoordinates_Settings
 from gemseo.post.parallel_coordinates import ParallelCoordinates
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.post.parallel_coordinates_settings import ParallelCoordinates_Settings
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.mark.parametrize(

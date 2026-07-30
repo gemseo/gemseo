@@ -37,7 +37,7 @@ using the [generate_coupling_graph()][gemseo.generate_coupling_graph] function.
 from __future__ import annotations
 
 from gemseo import generate_coupling_graph
-from gemseo.utils.discipline import DummyDiscipline
+from gemseo.util.discipline import DummyDiscipline
 
 # %%
 # ### 1. Create the disciplines

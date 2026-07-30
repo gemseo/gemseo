@@ -33,7 +33,7 @@ red if violated, white if active, and green if satisfied.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import ObjConstrHist_Settings
+from gemseo.post import ObjConstrHist_Settings
 
 # %%
 # ### 1. Prerequisites

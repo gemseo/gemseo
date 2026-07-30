@@ -23,11 +23,11 @@ from typing import cast
 from matplotlib import colors
 from matplotlib import pyplot as plt
 
-from gemseo.post.base_post import BasePost
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.topology_view_settings import TopologyView_Settings
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 class TopologyView(BasePost[TopologyView_Settings]):

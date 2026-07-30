@@ -22,9 +22,9 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post import SOM_Settings
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.factory import POST_FACTORY
+from gemseo.post.som_settings import SOM_Settings
 
 pytestmark = pytest.mark.skipif(
     not POST_FACTORY.is_available("SOM"),

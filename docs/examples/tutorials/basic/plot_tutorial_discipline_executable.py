@@ -34,11 +34,11 @@ from typing import TYPE_CHECKING
 
 from numpy import array
 
-from gemseo.disciplines.wrappers._base_disc_from_exe import _BaseDiscFromExe
-from gemseo.disciplines.wrappers._base_executable_runner import _BaseExecutableRunner
+from gemseo.discipline.wrapper._base_disc_from_exe import _BaseDiscFromExe
+from gemseo.discipline.wrapper._base_executable_runner import _BaseExecutableRunner
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 # %%
 # ## Step 1 — Create an executable

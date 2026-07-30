@@ -20,7 +20,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.scenarios.evaluation import EvaluationScenario
+from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.uncertainty.reliability.event_variable import EventVariable
 from gemseo.uncertainty.reliability.factory import ReliabilityAlgorithmFactory
 from gemseo.uncertainty.reliability.problem import ReliabilityProblem
@@ -28,10 +28,10 @@ from gemseo.uncertainty.reliability.problem import ReliabilityProblem
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.algos.parameter_space import ParameterSpace
     from gemseo.core.discipline.base_discipline import BaseDiscipline
-    from gemseo.core.functions.function_from_discipline import FunctionFromDiscipline
-    from gemseo.formulations.base_settings import BaseFormulationSettings
+    from gemseo.core.function.function_from_discipline import FunctionFromDiscipline
+    from gemseo.formulation.core.base_settings import BaseFormulationSettings
+    from gemseo.space.parameter import ParameterSpace
     from gemseo.uncertainty.reliability.event import Event
     from gemseo.uncertainty.reliability.result import ReliabilityResult
 

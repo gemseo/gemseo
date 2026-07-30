@@ -24,11 +24,11 @@ you want to create a differentiable discipline.
 ## Solution
 
 Instantiate
-the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline] class
+the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline] class
 from a dictionary of the form `{output_name: expressions, ...}`.
 
 !!! note
-    The [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline]
+    The [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline]
     requires additional dependencies.
     Make sure to install GEMSEO with the `[all]` option:
 
@@ -43,7 +43,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline import AnalyticDiscipline
 
 # %%
 # Consider the expressions $y_1 = 2x^2$ and $y_2 = 5+3x^2+z^3$.
@@ -90,6 +90,6 @@ discipline.linearize({"x": array([2.0]), "z": array([3.0])}, compute_all_jacobia
 #
 # A discipline can be created
 # from a dictionary of the form `{output_name: expressions, ...}`
-# using the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline] class.
+# using the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline] class.
 # It computes the derivatives automatically using symbolic computation.
 #

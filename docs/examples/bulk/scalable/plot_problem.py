@@ -22,25 +22,21 @@
 """# Scalable problem.
 
 We want to solve the Aerostructure MDO problem
-by means of the [MDF][gemseo.formulations.mdf.MDF] formulation
+by means of the [MDF][gemseo.formulation.mdf.MDF] formulation
 with a higher dimension for the sweep parameter.
-For that, we use the [ScalableProblem][gemseo.problems.mdo.scalable.data_driven.problem.ScalableProblem] class.
+For that, we use the [ScalableProblem][gemseo.problem.mdo.scalable.data_driven.problem.ScalableProblem] class.
 """
 
 from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
-    DiagonalDOE_Settings,
-)
-from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
-from gemseo.formulations.mdf_settings import MDF_Settings
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.formulation import MDF_Settings
+from gemseo.optimization import NLOPT_SLSQP_Settings
 from gemseo.post import OptHistoryView_Settings
-from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
-    AerostructureDesignSpace,
-)
-from gemseo.problems.mdo.scalable.data_driven.problem import ScalableProblem
+from gemseo.problem.mdo.aerostructure import AerostructureDesignSpace
+from gemseo.problem.mdo.scalable.data_driven import ScalableProblem
 
 # %%
 # ## Define the design problem
@@ -58,8 +54,8 @@ maximize_objective = True
 # %%
 # ## Create the disciplinary datasets
 #
-# Then, we create the disciplinary [BaseFullCache][gemseo.caches.base_full.BaseFullCache] datasets
-# based on a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
+# Then, we create the disciplinary [BaseFullCache][gemseo.core.cache.base_full.BaseFullCache] datasets
+# based on a [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
 disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
 datasets = []
 for discipline in disciplines:
@@ -80,7 +76,7 @@ for discipline in disciplines:
 # %%
 # ## Instantiate a scalable problem
 #
-# In a third stage, we instantiate a [ScalableProblem][gemseo.problems.mdo.scalable.data_driven.problem.ScalableProblem]
+# In a third stage, we instantiate a [ScalableProblem][gemseo.problem.mdo.scalable.data_driven.problem.ScalableProblem]
 # from these disciplinary datasets and from the definition of the MDO problem.
 # We also increase the dimension of the sweep parameter.
 problem = ScalableProblem(
@@ -96,9 +92,9 @@ problem = ScalableProblem(
 # %%
 # !!! note
 #
-#     We could also provide options to the [ScalableModel][gemseo.problems.mdo.scalable.data_driven.model.ScalableModel] objects
-#     by means of the constructor of [ScalableProblem][gemseo.problems.mdo.scalable.data_driven.problem.ScalableProblem],
-#     e.g. `fill_factor` in the frame of the [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel].
+#     We could also provide options to the [ScalableModel][gemseo.problem.mdo.scalable.data_driven.model.ScalableModel] objects
+#     by means of the constructor of [ScalableProblem][gemseo.problem.mdo.scalable.data_driven.problem.ScalableProblem],
+#     e.g. `fill_factor` in the frame of the [ScalableDiagonalModel][gemseo.problem.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel].
 #     In this example, we use the standard ones.
 
 # %%
@@ -110,7 +106,7 @@ problem.plot_n2_chart(save=False, show=True)
 # %%
 # ## Create an MDO scenario
 #
-# Lastly, we create an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] with the [MDF][gemseo.formulations.mdf.MDF] formulation
+# Lastly, we create an [MDOScenario][gemseo.scenario.mdo.MDOScenario] with the [MDF][gemseo.formulation.mdf.MDF] formulation
 # and start the optimization at equilibrium,
 # thus ensuring the feasibility of the first iterate.
 scenario = problem.create_scenario(MDF_Settings(), start_at_equilibrium=True)
@@ -119,9 +115,9 @@ scenario = problem.create_scenario(MDF_Settings(), start_at_equilibrium=True)
 # !!! note
 #
 #     We could also provide options for the scalable models to the constructor
-#     of [ScalableProblem][gemseo.problems.mdo.scalable.data_driven.problem.ScalableProblem],
+#     of [ScalableProblem][gemseo.problem.mdo.scalable.data_driven.problem.ScalableProblem],
 #     e.g. `fill_factor` in the frame of
-#     the [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel].
+#     the [ScalableDiagonalModel][gemseo.problem.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel].
 #     In this example, we use the standard ones.
 
 # %%

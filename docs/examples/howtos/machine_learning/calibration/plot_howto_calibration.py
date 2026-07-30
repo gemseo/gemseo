@@ -28,7 +28,7 @@ You want to calibrate its hyperparameters to improve its quality.
 ## Solution
 
 Use the
-[MLModelCalibration][gemseo.machine_learning.core.calibration.MLModelCalibration] algorithm.
+[MLModelCalibration][gemseo.machine_learning.calibration.MLModelCalibration] algorithm.
 
 ## Step-by-step guide
 """
@@ -37,14 +37,14 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.machine_learning.core.calibration import MLModelCalibration
-from gemseo.machine_learning.regression.models.polyreg_settings import (
+from gemseo.doe import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning.calibration import MLModelCalibration
+from gemseo.machine_learning.regression.model.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
-from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
-from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
+from gemseo.machine_learning.regression.quality import MSEMeasure
+from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Create the training dataset
@@ -105,7 +105,7 @@ plt.legend()
 # ## Summary
 #
 # An ML model can be calibrated using the
-# [MLModelCalibration][gemseo.machine_learning.core.calibration.MLModelCalibration] algorithm,
+# [MLModelCalibration][gemseo.machine_learning.calibration.MLModelCalibration] algorithm,
 # fed by an ML model name,
 # a training dataset,
 # a quality measure and a driver.

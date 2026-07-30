@@ -25,7 +25,7 @@ the problem.
 
 Use [execute_post()][gemseo.execute_post] to visualize the history directly
 from the HDF5 file, and [import_database()][gemseo.import_database] to access
-the raw data and convert it to a [Dataset][gemseo.datasets.dataset.Dataset].
+the raw data and convert it to a [Dataset][gemseo.dataset.dataset.Dataset].
 
 ## Step-by-step guide
 """
@@ -42,9 +42,9 @@ from gemseo.post import BasicHistory_Settings
 # Pass the HDF5 file path and a post-processing settings model to
 # [execute_post()][gemseo.execute_post].
 # The file can come from an
-# [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem],
-# an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
-# or an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]:
+# [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem],
+# an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
+# or an [MDOScenario][gemseo.scenario.mdo.MDOScenario]:
 execute_post("my_results.hdf5", BasicHistory_Settings(variable_names=["y_4"]))
 
 # %%
@@ -60,11 +60,11 @@ execute_post("my_results.hdf5", BasicHistory_Settings(variable_names=["y_4"]))
 # %%
 # ### 2. Access the raw data
 #
-# Load the HDF5 file as a [Database][gemseo.algos.database.Database]:
+# Load the HDF5 file as a [Database][gemseo.core.problem.database.Database]:
 database = import_database("my_results.hdf5")
 
 # %%
-# Then convert it to a [Dataset][gemseo.datasets.dataset.Dataset] for easier manipulation:
+# Then convert it to a [Dataset][gemseo.dataset.dataset.Dataset] for easier manipulation:
 dataset = database.to_dataset()
 
 # %%
@@ -72,7 +72,7 @@ dataset = database.to_dataset()
 #
 # Use [execute_post()][gemseo.execute_post] to visualize an HDF5 results file
 # without re-running the problem, and [import_database()][gemseo.import_database]
-# to access the raw data as a [Dataset][gemseo.datasets.dataset.Dataset].
+# to access the raw data as a [Dataset][gemseo.dataset.dataset.Dataset].
 #
 # ## One step further
 #

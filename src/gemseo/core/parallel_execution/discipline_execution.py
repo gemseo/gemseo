@@ -19,12 +19,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline.discipline_data import DisciplineData
-from gemseo.core.execution_statistics import ExecutionStatistics
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.typing import StrKeyMapping
-from gemseo.utils.constants import N_CPUS
+from gemseo.util.constant import N_CPUS
+from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
     from collections.abc import Callable

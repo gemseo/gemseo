@@ -20,10 +20,10 @@
 This tutorial introduces the dataset classes available in GEMSEO
 for storing and manipulating tabular data:
 
-- [Dataset][gemseo.datasets.dataset.Dataset] — the generic base class,
-- [IODataset][gemseo.datasets.io_dataset.IODataset] — a specialization for
+- [Dataset][gemseo.dataset.dataset.Dataset] — the generic base class,
+- [IODataset][gemseo.dataset.io_dataset.IODataset] — a specialization for
   input/output data (supervised machine learning, sensitivity analysis),
-- [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
+- [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
   — a specialization for optimization histories.
 
 You will learn how to:
@@ -35,10 +35,10 @@ You will learn how to:
 - **query** the dataset with `get_view()`,
 - **update** entries selectively,
 - **export** the dataset to a dictionary of NumPy arrays,
-- **use** the [IODataset][gemseo.datasets.io_dataset.IODataset] and [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset] subclasses
+- **use** the [IODataset][gemseo.dataset.io_dataset.IODataset] and [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset] subclasses
   and their domain-specific helpers.
 
-A [Dataset][gemseo.datasets.dataset.Dataset] is a special
+A [Dataset][gemseo.dataset.dataset.Dataset] is a special
 [pandas MultiIndex DataFrame](https://pandas.pydata.org/docs/user_guide/advanced.html).
 Its columns follow the three-level index `(GROUP, VARIABLE, COMPONENT)`,
 where a *feature* is a `(group_name, variable_name, component)` triplet
@@ -56,9 +56,9 @@ from __future__ import annotations
 from numpy import array
 from pandas import DataFrame
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.datasets.optimization_dataset import OptimizationDataset
+from gemseo.dataset import Dataset
+from gemseo.dataset import IODataset
+from gemseo.dataset import OptimizationDataset
 
 # %%
 # ## Step 1 — Create a dataset and add variables
@@ -70,16 +70,16 @@ dataset = Dataset(dataset_name="MyDataset")
 dataset.name
 
 # %%
-# A [Dataset][gemseo.datasets.dataset.Dataset] is a genuine `pandas.DataFrame`:
+# A [Dataset][gemseo.dataset.dataset.Dataset] is a genuine `pandas.DataFrame`:
 isinstance(dataset, DataFrame)
 
 # %%
-# Use [add_variable()][gemseo.datasets.dataset.Dataset.add_variable]
+# Use [add_variable()][gemseo.dataset.dataset.Dataset.add_variable]
 # to populate the dataset one variable at a time.
 # The data must be a 2-D NumPy array shaped as `(n_entries, n_components)`.
 # When no group is specified,
 # the variable is placed in the default group
-# (see [DEFAULT_GROUP][gemseo.datasets.dataset.Dataset.DEFAULT_GROUP]).
+# (see [DEFAULT_GROUP][gemseo.dataset.dataset.Dataset.DEFAULT_GROUP]).
 dataset.add_variable("a", array([[1, 2], [3, 4]]))
 dataset
 
@@ -102,7 +102,7 @@ dataset
 # %%
 # ## Step 2 — Add a whole group of variables at once
 #
-# [add_group()][gemseo.datasets.dataset.Dataset.add_group] lets you load
+# [add_group()][gemseo.dataset.dataset.Dataset.add_group] lets you load
 # a block of data together with the variable names and their dimensions.
 # The dimensions dictionary `{"p": 2, "q": 1}` states that
 # `"p"` occupies 2 columns and `"q"` occupies 1 column:
@@ -124,7 +124,7 @@ dataset
 # %%
 # Both `variable_names` and `variable_name_to_n_components` are optional.
 # When omitted, GEMSEO uses the
-# [DEFAULT_VARIABLE_NAME][gemseo.datasets.dataset.Dataset.DEFAULT_VARIABLE_NAME]
+# [DEFAULT_VARIABLE_NAME][gemseo.dataset.dataset.Dataset.DEFAULT_VARIABLE_NAME]
 # `"x"` with as many components as there are columns:
 dataset.add_group("G3", array([[1.2, 2.2], [3.2, 4.2]]))
 dataset
@@ -196,7 +196,7 @@ dataset.variable_names
 # %%
 # ## Step 5 — Transform data in place
 #
-# [transform_data()][gemseo.datasets.dataset.Dataset.transform_data]
+# [transform_data()][gemseo.dataset.dataset.Dataset.transform_data]
 # applies a function to the underlying NumPy array of a selection of data.
 # The selection follows the same `group_names / variable_names / components / indices`
 # filtering logic used throughout the API.
@@ -207,7 +207,7 @@ dataset.get_view(variable_names="bar")
 # %%
 # ## Step 6 — Query the dataset with get_view()
 #
-# [get_view()][gemseo.datasets.dataset.Dataset.get_view]
+# [get_view()][gemseo.dataset.dataset.Dataset.get_view]
 # returns a *view* (a sub-dataset) filtered by group, variable, component and/or row index.
 # Get all data for variables `"b"` and `"x"`:
 dataset.get_view(variable_names=["b", "x"])
@@ -223,7 +223,7 @@ dataset.get_view(variable_names=["b", "x"], components=[0])
 # %%
 # ## Step 7 — Update entries selectively
 #
-# [update_data()][gemseo.datasets.dataset.Dataset.update_data]
+# [update_data()][gemseo.dataset.dataset.Dataset.update_data]
 # replaces a slice of the dataset identified by
 # group, variable, component and/or row index.
 # Here you overwrite row index `1` of the `"inputs"` group:
@@ -243,7 +243,7 @@ dataset
 #
 # ## Step 8 — Export to a dictionary of NumPy arrays
 #
-# [to_dict_of_arrays()][gemseo.datasets.dataset.Dataset.to_dict_of_arrays]
+# [to_dict_of_arrays()][gemseo.dataset.dataset.Dataset.to_dict_of_arrays]
 # converts the dataset into nested or flat dictionaries of NumPy arrays,
 # which is convenient for interoperability with other libraries.
 #
@@ -259,10 +259,10 @@ dataset.to_dict_of_arrays(False)
 # %%
 # ## Step 9 — Use IODataset for input/output data
 #
-# [IODataset][gemseo.datasets.io_dataset.IODataset] is a subclass of
-# [Dataset][gemseo.datasets.dataset.Dataset] that pre-defines two group names:
-# [INPUT_GROUP][gemseo.datasets.io_dataset.IODataset.INPUT_GROUP]
-# and [OUTPUT_GROUP][gemseo.datasets.io_dataset.IODataset.OUTPUT_GROUP].
+# [IODataset][gemseo.dataset.io_dataset.IODataset] is a subclass of
+# [Dataset][gemseo.dataset.dataset.Dataset] that pre-defines two group names:
+# [INPUT_GROUP][gemseo.dataset.io_dataset.IODataset.INPUT_GROUP]
+# and [OUTPUT_GROUP][gemseo.dataset.io_dataset.IODataset.OUTPUT_GROUP].
 # It is the recommended structure for supervised machine learning
 # and sensitivity analysis workflows.
 #
@@ -276,8 +276,8 @@ io_dataset
 
 # %%
 # ... or whole groups at once with
-# [add_input_group()][gemseo.datasets.io_dataset.IODataset.add_input_group]
-# and [add_output_group()][gemseo.datasets.io_dataset.IODataset.add_output_group]:
+# [add_input_group()][gemseo.dataset.io_dataset.IODataset.add_input_group]
+# and [add_output_group()][gemseo.dataset.io_dataset.IODataset.add_output_group]:
 io_dataset = IODataset()
 io_dataset.add_input_group(
     [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], ["a", "b"], {"a": 2, "b": 1}
@@ -311,17 +311,17 @@ io_dataset.output_dataset
 # %%
 # ## Step 10 — Use OptimizationDataset for optimization histories
 #
-# [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
-# is a subclass of [Dataset][gemseo.datasets.dataset.Dataset]
+# [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
+# is a subclass of [Dataset][gemseo.dataset.dataset.Dataset]
 # that pre-defines group names for the typical quantities found in an
 # optimization history:
-# [DESIGN_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.DESIGN_GROUP],
-# [OBJECTIVE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
-# [OBSERVABLE_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP],
+# [DESIGN_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.DESIGN_GROUP],
+# [OBJECTIVE_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
+# [OBSERVABLE_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP],
 # as well as
-# [EQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP]
+# [EQUALITY_CONSTRAINT_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP]
 # and
-# [INEQUALITY_CONSTRAINT_GROUP][gemseo.datasets.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP].
+# [INEQUALITY_CONSTRAINT_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP].
 #
 # Use the dedicated helpers to add individual variables ...
 opt_dataset = OptimizationDataset()
@@ -335,11 +335,11 @@ opt_dataset
 
 # %%
 # ... or whole groups at once with
-# [add_design_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_design_group],
-# [add_objective_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_objective_group],
-# [add_equality_constraint_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_equality_constraint_group],
-# [add_inequality_constraint_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_inequality_constraint_group]
-# and [add_observable_group()][gemseo.datasets.optimization_dataset.OptimizationDataset.add_observable_group]:
+# [add_design_group()][gemseo.dataset.optimization_dataset.OptimizationDataset.add_design_group],
+# [add_objective_group()][gemseo.dataset.optimization_dataset.OptimizationDataset.add_objective_group],
+# [add_equality_constraint_group()][gemseo.dataset.optimization_dataset.OptimizationDataset.add_equality_constraint_group],
+# [add_inequality_constraint_group()][gemseo.dataset.optimization_dataset.OptimizationDataset.add_inequality_constraint_group]
+# and [add_observable_group()][gemseo.dataset.optimization_dataset.OptimizationDataset.add_observable_group]:
 opt_dataset = OptimizationDataset()
 opt_dataset.add_design_group(
     [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], ["x", "z"], {"x": 2, "z": 1}
@@ -352,7 +352,7 @@ opt_dataset
 
 # %%
 # !!! note
-#     [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
+#     [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
 #     instances are created automatically by GEMSEO;
 #     manual creation is shown here for illustration purposes only.
 #
@@ -393,7 +393,7 @@ opt_dataset.observable_dataset
 # %%
 # ## Key takeaways
 #
-# - A [Dataset][gemseo.datasets.dataset.Dataset] is a pandas MultiIndex DataFrame
+# - A [Dataset][gemseo.dataset.dataset.Dataset] is a pandas MultiIndex DataFrame
 #   whose columns follow the three-level index `(GROUP, VARIABLE, COMPONENT)`;
 #   build it with `add_variable()` or `add_group()` rather than the raw constructor.
 # - The pair `(group_name, variable_name)` is the *variable identifier*;
@@ -401,8 +401,8 @@ opt_dataset.observable_dataset
 # - `get_view()`, `update_data()` and `transform_data()` all accept the same
 #   `group_names / variable_names / components / indices` filtering arguments,
 #   giving you a consistent API for reading, writing and transforming data.
-# - [IODataset][gemseo.datasets.io_dataset.IODataset] and
-#   [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
+# - [IODataset][gemseo.dataset.io_dataset.IODataset] and
+#   [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
 #   are drop-in specializations of `Dataset` that pre-define domain-specific group names
 #   and expose convenience helpers (`add_input_variable()`, `add_design_group()`, ...)
 #   as well as filtered views (`input_dataset`, `objective_dataset`, ...).

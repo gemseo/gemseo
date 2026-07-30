@@ -34,18 +34,18 @@ from numpy import nanmax
 from numpy import nanmin
 from numpy import unique
 
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import PARULA
+from gemseo.post._engine.colormap import PARULA
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.som_settings import SOM_Settings
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     import minisom
     from matplotlib.axes import Axes
     from numpy import ndarray
 
-    from gemseo.typing import IntegerArray
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import IntegerArray
+    from gemseo.util.typing import RealArray
 
 
 class SOM(BasePost[SOM_Settings]):

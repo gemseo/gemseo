@@ -19,8 +19,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
-from gemseo.problems.mdo.sobieski.core.utils import SobieskiBase
-from gemseo.problems.mdo.sobieski.disciplines import create_disciplines
+from gemseo.problem.mdo.sobieski.discipline import create_disciplines
+from gemseo.problem.mdo.sobieski.standalone.util import SobieskiBase
 
 if TYPE_CHECKING:
     from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings

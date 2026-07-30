@@ -23,11 +23,11 @@ from matplotlib import pyplot as plt
 from numpy import array
 from numpy import nan
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.heatmap import Heatmap
 from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
-from gemseo.post.dataset.plots._heatmap_utils import compute_centered_bounds
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.post.dataset.plot._heatmap_utils import compute_centered_bounds
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")

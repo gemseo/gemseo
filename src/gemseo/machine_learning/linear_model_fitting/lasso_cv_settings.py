@@ -20,7 +20,7 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic import NonNegativeFloat
 
-from gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter_settings import (  # noqa: E501
+from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings import (  # noqa: E501
     BaseLinearModelFitterSettings,
 )
 from gemseo.machine_learning.linear_model_fitting.lasso_settings import (

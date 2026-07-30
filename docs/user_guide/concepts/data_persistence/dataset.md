@@ -17,7 +17,7 @@ search:
 
 # Dataset { #concept-dataset }
 
-A [Dataset][gemseo.datasets.dataset.Dataset]
+A [Dataset][gemseo.dataset.dataset.Dataset]
 is a generic data structure that organizes
 heterogeneous data into a single table.
 It is backed by a pandas
@@ -38,54 +38,54 @@ whose columns follow a three-level hierarchy
 
 Free-form metadata that is not specific to an entry
 can be stored in the
-[misc][gemseo.datasets.dataset.Dataset.misc] dictionary,
+[misc][gemseo.dataset.dataset.Dataset.misc] dictionary,
 for instance `dataset.misc["year"] = 2023`.
 
-A [Dataset][gemseo.datasets.dataset.Dataset]
+A [Dataset][gemseo.dataset.dataset.Dataset]
 is the central data exchange structure of GEMSEO:
 it is consumed by machine learning models,
 by the dataset-based
-[BasePost][gemseo.post.base_post.BasePost] subclasses
+[BasePost][gemseo.post.core.base_post.BasePost] subclasses
 and by the [dataset visualization gallery][example-dataset-visualization].
 
 ## How it works { #concept-dataset-how-it-works }
 
-A [Dataset][gemseo.datasets.dataset.Dataset]
+A [Dataset][gemseo.dataset.dataset.Dataset]
 is typically built incrementally
 with
-[add_variable()][gemseo.datasets.dataset.Dataset.add_variable]
+[add_variable()][gemseo.dataset.dataset.Dataset.add_variable]
 or
-[add_group()][gemseo.datasets.dataset.Dataset.add_group],
+[add_group()][gemseo.dataset.dataset.Dataset.add_group],
 or loaded from an external source with one of the dedicated factory methods:
 
-- [from_array()][gemseo.datasets.dataset.Dataset.from_array]
+- [from_array()][gemseo.dataset.dataset.Dataset.from_array]
   for a NumPy array,
-- [from_csv()][gemseo.datasets.dataset.Dataset.from_csv]
+- [from_csv()][gemseo.dataset.dataset.Dataset.from_csv]
   for a CSV file,
-- [from_txt()][gemseo.datasets.dataset.Dataset.from_txt]
+- [from_txt()][gemseo.dataset.dataset.Dataset.from_txt]
   for a simple text file,
-- [from_dataframe()][gemseo.datasets.dataset.Dataset.from_dataframe]
+- [from_dataframe()][gemseo.dataset.dataset.Dataset.from_dataframe]
   for a pandas
   [DataFrame][pandas.DataFrame]
   with tuple or MultiIndex columns.
 
 Slices and projections are obtained with
-[get_view()][gemseo.datasets.dataset.Dataset.get_view],
+[get_view()][gemseo.dataset.dataset.Dataset.get_view],
 which selects groups, variables, components or entries.
 Conversions to other structures are available,
 such as
-[to_dict_of_arrays()][gemseo.datasets.dataset.Dataset.to_dict_of_arrays]
+[to_dict_of_arrays()][gemseo.dataset.dataset.Dataset.to_dict_of_arrays]
 which returns nested or flat dictionaries of NumPy arrays.
 Introspection is supported through properties
-[group_names][gemseo.datasets.dataset.Dataset.group_names],
-[variable_names][gemseo.datasets.dataset.Dataset.variable_names]
+[group_names][gemseo.dataset.dataset.Dataset.group_names],
+[variable_names][gemseo.dataset.dataset.Dataset.variable_names]
 and
-[variable_identifiers][gemseo.datasets.dataset.Dataset.variable_identifiers],
+[variable_identifiers][gemseo.dataset.dataset.Dataset.variable_identifiers],
 and via the
-[summary][gemseo.datasets.dataset.Dataset.summary] string.
+[summary][gemseo.dataset.dataset.Dataset.summary] string.
 
 !!! warning
-    A [Dataset][gemseo.datasets.dataset.Dataset]
+    A [Dataset][gemseo.dataset.dataset.Dataset]
     behaves like any multi-index
     [DataFrame][pandas.DataFrame],
     but instantiating one directly with the constructor
@@ -99,51 +99,51 @@ and via the
 ## Specialized datasets { #concept-specialized-datasets }
 
 GEMSEO ships with two specialized
-[Dataset][gemseo.datasets.dataset.Dataset] subclasses
+[Dataset][gemseo.dataset.dataset.Dataset] subclasses
 that fix the group names
 to the conventions most commonly used in MDO:
 
-- [IODataset][gemseo.datasets.io_dataset.IODataset]
+- [IODataset][gemseo.dataset.io_dataset.IODataset]
   separates `"inputs"` from `"outputs"`
   and exposes the convenience builders
-  [add_input_variable()][gemseo.datasets.io_dataset.IODataset.add_input_variable]
+  [add_input_variable()][gemseo.dataset.io_dataset.IODataset.add_input_variable]
   and
-  [add_output_variable()][gemseo.datasets.io_dataset.IODataset.add_output_variable].
+  [add_output_variable()][gemseo.dataset.io_dataset.IODataset.add_output_variable].
   It is the standard structure for surrogate model training.
-- [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
+- [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
   uses the groups `"designs"`, `"objectives"`,
   `"inequality_constraints"`, `"equality_constraints"` and `"observables"`,
   and adds iteration-oriented accessors
-  ([n_iterations][gemseo.datasets.optimization_dataset.OptimizationDataset.n_iterations],
-  [iterations][gemseo.datasets.optimization_dataset.OptimizationDataset.iterations],
-  [design_variable_names][gemseo.datasets.optimization_dataset.OptimizationDataset.design_variable_names]).
+  ([n_iterations][gemseo.dataset.optimization_dataset.OptimizationDataset.n_iterations],
+  [iterations][gemseo.dataset.optimization_dataset.OptimizationDataset.iterations],
+  [design_variable_names][gemseo.dataset.optimization_dataset.OptimizationDataset.design_variable_names]).
   It is typically produced by
-  [OptimizationProblem.to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset].
+  [OptimizationProblem.to_dataset()][gemseo.optimization.problem.OptimizationProblem.to_dataset].
 
-Any [Dataset][gemseo.datasets.dataset.Dataset] subclass
+Any [Dataset][gemseo.dataset.dataset.Dataset] subclass
 is automatically discovered by the
-[DatasetFactory][gemseo.datasets.factory.DatasetFactory],
+[DatasetFactory][gemseo.dataset.factory.DatasetFactory],
 so user-defined specializations can be plugged in
 without changing the calling code.
 
 ## Creating a dataset { #concept-dataset-creation }
 
-A [Dataset][gemseo.datasets.dataset.Dataset] can be built
+A [Dataset][gemseo.dataset.dataset.Dataset] can be built
 from any of the standard data persistence containers of GEMSEO
 or from external files:
 
 - from a NumPy array, with
-  [Dataset.from_array()][gemseo.datasets.dataset.Dataset.from_array];
+  [Dataset.from_array()][gemseo.dataset.dataset.Dataset.from_array];
 - from a discipline [Cache][concept-cache], with
-  [BaseCache.to_dataset()][gemseo.caches.base.BaseCache.to_dataset];
+  [BaseCache.to_dataset()][gemseo.core.cache.base.BaseCache.to_dataset];
 - from a [Database][concept-database], with
-  [Database.to_dataset()][gemseo.algos.database.Database.to_dataset]
+  [Database.to_dataset()][gemseo.core.problem.database.Database.to_dataset]
   or the higher-level
-  [OptimizationProblem.to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset];
+  [OptimizationProblem.to_dataset()][gemseo.optimization.problem.OptimizationProblem.to_dataset];
 - from CSV or text files, with
-  [Dataset.from_csv()][gemseo.datasets.dataset.Dataset.from_csv]
+  [Dataset.from_csv()][gemseo.dataset.dataset.Dataset.from_csv]
   and
-  [Dataset.from_txt()][gemseo.datasets.dataset.Dataset.from_txt].
+  [Dataset.from_txt()][gemseo.dataset.dataset.Dataset.from_txt].
 
 !!! how-to
     - [How to create a dataset from a NumPy array][how-to-create-a-dataset-from-a-numpy-array]
@@ -152,7 +152,7 @@ or from external files:
 
 ## Visualization { #concept-dataset-visualization }
 
-A [Dataset][gemseo.datasets.dataset.Dataset]
+A [Dataset][gemseo.dataset.dataset.Dataset]
 can be visualized through the
 [BaseDatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot] hierarchy,
 which offers a wide variety of plot types,
@@ -164,7 +164,7 @@ including
 [AndrewsCurves][gemseo.post.dataset.andrews_curves.AndrewsCurves],
 [RadarChart][gemseo.post.dataset.radar_chart.RadarChart],
 [Boxplot][gemseo.post.dataset.boxplot.Boxplot],
-[BarPlot][gemseo.post.dataset.bars.BarPlot],
+[BarPlot][gemseo.post.dataset.bar_plot.BarPlot],
 [YvsX][gemseo.post.dataset.yvsx.YvsX]
 and
 [ZvsXY][gemseo.post.dataset.zvsxy.ZvsXY].

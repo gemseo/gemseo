@@ -25,7 +25,7 @@ import pytest
 from matplotlib import pyplot as plt
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.curves import Curves
 from gemseo.post.dataset.curves_settings import Curves_Settings
 

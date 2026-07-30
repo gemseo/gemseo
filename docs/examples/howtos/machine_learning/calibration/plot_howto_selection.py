@@ -23,7 +23,7 @@ you want to select the best one.
 ## Solution
 
 Use the
-[MLModelSelection][gemseo.machine_learning.core.selection.MLModelSelection] algorithm.
+[MLModelSelection][gemseo.machine_learning.selection.MLModelSelection] algorithm.
 
 ## Step-by-step guide
 """
@@ -35,18 +35,18 @@ from numpy import linspace
 from numpy import sort
 from numpy.random import default_rng
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.core.selection import MLModelSelection
-from gemseo.machine_learning.regression.models.linreg_settings import (
+from gemseo.dataset import IODataset
+from gemseo.doe import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning import RBFRegressor_Settings
+from gemseo.machine_learning.regression.model.linreg_settings import (
     LinearRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.polyreg_settings import (
+from gemseo.machine_learning.regression.model.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.rbf_settings import RBFRegressor_Settings
-from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
+from gemseo.machine_learning.regression.quality import MSEMeasure
+from gemseo.machine_learning.selection import MLModelSelection
+from gemseo.space import DesignSpace
 
 rng = default_rng(54321)
 
@@ -120,7 +120,7 @@ plt.legend()
 # ## Summary
 #
 # An ML model can be selected from a list of candidates using the
-# [MLModelSelection][gemseo.machine_learning.core.selection.MLModelSelection] algorithm.
+# [MLModelSelection][gemseo.machine_learning.selection.MLModelSelection] algorithm.
 #
 # ## One step further
 #

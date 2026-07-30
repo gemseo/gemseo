@@ -17,7 +17,7 @@
 
 ## Problem
 
-You have an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] to execute.
+You have an [MDOScenario][gemseo.scenario.mdo.MDOScenario] to execute.
 For some reason, you want to store the evaluations to:
 
 - Re-execute the scenario after a crash, without running points already evaluated,
@@ -29,12 +29,12 @@ For some reason, you want to store the evaluations to:
 The execution history can be stored in an HDF5 file:
 - during the execution
 by setting a backup file with the
-[set_backup_settings()][gemseo.scenarios.mdo.MDOScenario.set_backup_settings]
+[set_backup_settings()][gemseo.scenario.mdo.MDOScenario.set_backup_settings]
 method before the execution,
 - after the execution with the
-[to_hdf()][gemseo.scenarios.mdo.MDOScenario.to_hdf]
+[to_hdf()][gemseo.scenario.mdo.MDOScenario.to_hdf]
 or
-[to_ggobi()][gemseo.scenarios.mdo.MDOScenario.to_ggobi]
+[to_ggobi()][gemseo.scenario.mdo.MDOScenario.to_ggobi]
 methods when the execution is finished.
 
 ## Step-by-step guide
@@ -44,9 +44,9 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.optimization import OptimizationProblem
+from gemseo.optimization import SLSQP_Settings
+from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 
 # %%
 # ### 1. Create your scenario
@@ -108,8 +108,8 @@ scenario.to_hdf("mdf_history.h5")
 # %%
 # ## Summary
 #
-# You can save an [MDOScenario][gemseo.scenarios.mdo.MDOScenario] history
-# with [set_backup_settings()][gemseo.scenarios.mdo.MDOScenario.set_backup_settings]
-# [to_hdf()][gemseo.scenarios.mdo.MDOScenario.to_hdf],
+# You can save an [MDOScenario][gemseo.scenario.mdo.MDOScenario] history
+# with [set_backup_settings()][gemseo.scenario.mdo.MDOScenario.set_backup_settings]
+# [to_hdf()][gemseo.scenario.mdo.MDOScenario.to_hdf],
 # or
-# [to_ggobi()][gemseo.scenarios.mdo.MDOScenario.to_ggobi].
+# [to_ggobi()][gemseo.scenario.mdo.MDOScenario.to_ggobi].

@@ -27,19 +27,17 @@ import pytest
 from numpy import allclose
 from numpy import array
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.machine_learning.regression.models.random_forest import (
-    RandomForestRegressor,
-)
-from gemseo.machine_learning.regression.models.random_forest_settings import (
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning.regression.model.random_forest import RandomForestRegressor
+from gemseo.machine_learning.regression.model.random_forest_settings import (
     RandomForestRegressor_Settings,
 )
-from gemseo.scenarios.mdo import MDOScenario
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
 
 if TYPE_CHECKING:
-    from gemseo.datasets.dataset import Dataset
+    from gemseo.dataset.dataset import Dataset
 
 LEARNING_SIZE = 9
 

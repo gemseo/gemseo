@@ -24,9 +24,9 @@ without access to the original scenario or HDF5 file.
 ## Solution
 
 Load the CSV as an
-[OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset],
+[OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset],
 then manually attach the
-[OptimizationMetadata][gemseo.datasets.optimization_metadata.OptimizationMetadata]
+[OptimizationMetadata][gemseo.dataset.optimization_metadata.OptimizationMetadata]
 that GEMSEO needs to run post-processing
 (objective name, feasibility, optimum iteration, tolerances, etc.).
 Optionally attach the input space for post-processors that need it.
@@ -41,21 +41,21 @@ from pathlib import Path
 from numpy import abs as np_abs
 
 from gemseo import execute_post
-from gemseo.algos.constraint_tolerances import ConstraintTolerances
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.datasets.optimization_dataset import OptimizationDataset
-from gemseo.datasets.optimization_metadata import OptimizationMetadata
-from gemseo.settings.post import OptHistoryView_Settings
+from gemseo.dataset import OptimizationDataset
+from gemseo.dataset.optimization_metadata import OptimizationMetadata
+from gemseo.optimization import OptimizationProblem
+from gemseo.optimization.constraint_tolerances import ConstraintTolerances
+from gemseo.post import OptHistoryView_Settings
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Create the CSV file
 #
 # In this how-to, you assume that only a CSV file is available.
 # As a workaround to create the prerequisite,
-# you load an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# you load an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 # from an HDF5 file stored in the documentation directory,
-# convert it to an [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset],
+# convert it to an [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset],
 # and save it as a CSV file:
 problem = OptimizationProblem.from_hdf("power2_opt_pb.h5")
 problem.to_dataset().to_csv("results.csv")
@@ -68,7 +68,7 @@ print(Path("results.csv").read_text())
 # ### 2. Load the CSV file
 #
 # Load the CSV as an
-# [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]:
+# [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]:
 dataset = OptimizationDataset.from_csv("results.csv")
 
 # %%
@@ -109,7 +109,7 @@ feasible_iterations = dataset.index[
 # ### 4. Attach the metadata to the dataset
 #
 # Create the
-# [OptimizationMetadata][gemseo.datasets.optimization_metadata.OptimizationMetadata]
+# [OptimizationMetadata][gemseo.dataset.optimization_metadata.OptimizationMetadata]
 # and store it in the `misc` attribute of the dataset
 # under the key `"optimization_metadata"`:
 dataset.misc["optimization_metadata"] = OptimizationMetadata(
@@ -146,10 +146,10 @@ execute_post(
 # ## Summary
 #
 # To post-process an
-# [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset]
+# [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
 # loaded from a CSV file,
 # you must manually build and attach an
-# [OptimizationMetadata][gemseo.datasets.optimization_metadata.OptimizationMetadata]
+# [OptimizationMetadata][gemseo.dataset.optimization_metadata.OptimizationMetadata]
 # to `dataset.misc["optimization_metadata"]`,
 # and optionally attach the input space to `dataset.misc["input_space"]`.
 # Once done, pass the dataset to [execute_post()][gemseo.execute_post]
@@ -160,4 +160,4 @@ execute_post(
 #     The [GradientSensitivity][gemseo.post.gradient_sensitivity.GradientSensitivity]
 #     post-processor with `compute_missing_gradients=True`
 #     cannot be used with an
-#     [OptimizationDataset][gemseo.datasets.optimization_dataset.OptimizationDataset].
+#     [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset].

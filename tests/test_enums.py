@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Tests for the gemseo.enums package."""
+"""Tests for the gemseo.enum package."""
 
 from __future__ import annotations
 
@@ -20,33 +20,33 @@ from enum import Enum
 
 import pytest
 
-from gemseo import enums
+from gemseo import enum
 
 
-@pytest.mark.parametrize("name", enums.__all__)
+@pytest.mark.parametrize("name", enum.__all__)
 def test_all_exports_are_enums(name) -> None:
     """Every name advertised in ``__all__`` resolves to an enumeration."""
-    obj = getattr(enums, name)
+    obj = getattr(enum, name)
     assert isinstance(obj, type)
     assert issubclass(obj, Enum)
 
 
 def test_merged_enums_are_the_owner_class_enums() -> None:
     """The merged enumerations are re-exported from their owner class."""
-    from gemseo.algos.evaluation_problem import EvaluationProblem
     from gemseo.core.discipline.discipline import Discipline
-    from gemseo.core.functions.array_function import ArrayFunction
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.core.problem.evaluation import EvaluationProblem
 
-    assert enums.LinearizationMode is Discipline.LinearizationMode
-    assert enums.FunctionType is ArrayFunction.FunctionType
-    assert enums.DifferentiationMethod is EvaluationProblem.DifferentiationMethod
+    assert enum.LinearizationMode is Discipline.LinearizationMode
+    assert enum.FunctionType is ArrayFunction.FunctionType
+    assert enum.DifferentiationMethod is EvaluationProblem.DifferentiationMethod
 
 
 def test_sub_enum_values_match_merged_enum() -> None:
     """The sub-enum members share the values of the merged enumeration."""
-    assert enums.ApproximationMode.COMPLEX_STEP == enums.LinearizationMode.COMPLEX_STEP
+    assert enum.ApproximationMode.COMPLEX_STEP == enum.LinearizationMode.COMPLEX_STEP
     assert (
-        enums.HybridApproximationMode.HYBRID_COMPLEX_STEP
-        == enums.LinearizationMode.HYBRID_COMPLEX_STEP
+        enum.HybridApproximationMode.HYBRID_COMPLEX_STEP
+        == enum.LinearizationMode.HYBRID_COMPLEX_STEP
     )
-    assert enums.ConstraintType.EQ == enums.FunctionType.EQ
+    assert enum.ConstraintType.EQ == enum.FunctionType.EQ

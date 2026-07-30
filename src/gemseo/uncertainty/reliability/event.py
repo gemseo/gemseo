@@ -24,8 +24,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
 
-    from gemseo.core.functions.array_function import ArrayFunction
-    from gemseo.typing import RealArray
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.util.typing import RealArray
 
 
 @dataclass

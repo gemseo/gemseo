@@ -17,7 +17,7 @@ search:
 
 # MDO problems { #concept-mdo-problems }
 
-The [gemseo.problems.mdo][gemseo.problems.mdo] package provides coupled multidisciplinary problems
+The [gemseo.problem.mdo][gemseo.problem.mdo] package provides coupled multidisciplinary problems
 for benchmarking and illustrating
 [MDO formulations][concept-mdo-formulations],
 [MDA solvers][concept-solving-multi-disciplinary-analysis]
@@ -78,13 +78,13 @@ with $k=1$, $n=1$, $x_2=0$, $\alpha=3.16$, $\beta=24$, $\gamma=0.2$.
 
 ??? abstract "API"
 
-    - [Sellar1][gemseo.problems.mdo.sellar.sellar_1.Sellar1]:
+    - [Sellar1][gemseo.problem.mdo.sellar.sellar_1.Sellar1]:
       computes $y_1$ from $y_2$, $x_{\text{shared}}$, $x_1$, $\gamma$.
-    - [Sellar2][gemseo.problems.mdo.sellar.sellar_2.Sellar2]:
+    - [Sellar2][gemseo.problem.mdo.sellar.sellar_2.Sellar2]:
       computes $y_2$ from $y_1$, $x_{\text{shared}}$, $x_2$.
-    - [SellarSystem][gemseo.problems.mdo.sellar.sellar_system.SellarSystem]:
+    - [SellarSystem][gemseo.problem.mdo.sellar.sellar_system.SellarSystem]:
       computes the objective and constraints from $x_{\text{shared}}$, $x_1$, $x_2$, $y_1$, $y_2$, $\alpha$ and $\beta$.
-    - [SellarDesignSpace][gemseo.problems.mdo.sellar.sellar_design_space.SellarDesignSpace]
+    - [SellarDesignSpace][gemseo.problem.mdo.sellar.sellar_design_space.SellarDesignSpace]
       defines the design and coupling variables.
 
 !!! quote "Reference"
@@ -107,13 +107,13 @@ subject to constraints `"g_1"`, `"g_2"` and `"g_3"`.
 
 Four disciplines are involved:
 
-1. [SobieskiStructure][gemseo.problems.mdo.sobieski.disciplines.SobieskiStructure]
+1. [SobieskiStructure][gemseo.problem.mdo.sobieski.discipline.SobieskiStructure]
    computes the structural constraint `"g_1"` from `"x_shared"` and `"x_1"`.
-2. [SobieskiAerodynamics][gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics]
+2. [SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics]
    computes the aerodynamic constraint `"g_2"` from `"x_shared"` and `"x_2"`.
-3. [SobieskiPropulsion][gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion]
+3. [SobieskiPropulsion][gemseo.problem.mdo.sobieski.discipline.SobieskiPropulsion]
    computes the propulsion constraint `"g_3"` from `"x_shared"` and `"x_3"`.
-4. [SobieskiMission][gemseo.problems.mdo.sobieski.disciplines.SobieskiMission]
+4. [SobieskiMission][gemseo.problem.mdo.sobieski.discipline.SobieskiMission]
    computes the objective `"y_4"` from `"x_shared"`.
 
 Disciplines 1–3 are strongly coupled; discipline 4 is weakly coupled to them.
@@ -178,7 +178,7 @@ and an input of discipline $j$.
 
 ### Physical variable names { #concept-ssbj-physical-names }
 
-[SobieskiDesignSpace][gemseo.problems.mdo.sobieski.core.design_space.SobieskiDesignSpace]
+[SobieskiDesignSpace][gemseo.problem.mdo.sobieski.standalone.design_space.SobieskiDesignSpace]
 supports two naming conventions controlled by `use_original_names`:
 `True` (default) uses the indexed notation from the original paper
 (`x_shared`, `x_1`, `y_12`, …);
@@ -228,11 +228,11 @@ These constants can be overridden when instantiating the discipline objects.
 
 ??? abstract "API"
 
-    - [SobieskiStructure][gemseo.problems.mdo.sobieski.disciplines.SobieskiStructure]
-    - [SobieskiAerodynamics][gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics]
-    - [SobieskiPropulsion][gemseo.problems.mdo.sobieski.disciplines.SobieskiPropulsion]
-    - [SobieskiMission][gemseo.problems.mdo.sobieski.disciplines.SobieskiMission]
-    - [SobieskiDesignSpace][gemseo.problems.mdo.sobieski.core.design_space.SobieskiDesignSpace]
+    - [SobieskiStructure][gemseo.problem.mdo.sobieski.discipline.SobieskiStructure]
+    - [SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics]
+    - [SobieskiPropulsion][gemseo.problem.mdo.sobieski.discipline.SobieskiPropulsion]
+    - [SobieskiMission][gemseo.problem.mdo.sobieski.discipline.SobieskiMission]
+    - [SobieskiDesignSpace][gemseo.problem.mdo.sobieski.standalone.design_space.SobieskiDesignSpace]
 
 ### Reference results { #concept-ssbj-results }
 
@@ -296,10 +296,10 @@ $$\text{displ} = 2\,\text{sweep} + 3\,\text{thick_panels} - 2\,\text{forces}.$$
 
 ??? abstract "API"
 
-    - [Aerodynamics][gemseo.problems.mdo.aerostructure.aerostructure.Aerodynamics]
-    - [Structure][gemseo.problems.mdo.aerostructure.aerostructure.Structure]
-    - [Mission][gemseo.problems.mdo.aerostructure.aerostructure.Mission]
-    - [AerostructureDesignSpace][gemseo.problems.mdo.aerostructure.aerostructure_design_space.AerostructureDesignSpace]
+    - [Aerodynamics][gemseo.problem.mdo.aerostructure.aerostructure.Aerodynamics]
+    - [Structure][gemseo.problem.mdo.aerostructure.aerostructure.Structure]
+    - [Mission][gemseo.problem.mdo.aerostructure.aerostructure.Mission]
+    - [AerostructureDesignSpace][gemseo.problem.mdo.aerostructure.aerostructure_design_space.AerostructureDesignSpace]
 
 ## Propane combustion problem { #concept-propane-combustion-problem }
 
@@ -316,7 +316,7 @@ $$
 \end{aligned}
 $$
 
-where the system discipline ([PropaneReaction][gemseo.problems.mdo.propane.propane.PropaneReaction]) computes:
+where the system discipline ([PropaneReaction][gemseo.problem.mdo.propane.propane.PropaneReaction]) computes:
 
 $$
 \begin{aligned}
@@ -343,9 +343,9 @@ $$2x_2 + 2x_5 + x_6 + x_7 = 8, \qquad 2x_3 + x_9 = 4R, \qquad x_{11} = \sum_{j=1
 
 ??? abstract "API"
 
-    - [PropaneReaction][gemseo.problems.mdo.propane.propane.PropaneReaction]:
+    - [PropaneReaction][gemseo.problem.mdo.propane.propane.PropaneReaction]:
       system discipline computing objective and constraint terms.
-    - [get_design_space][gemseo.problems.mdo.propane.propane.get_design_space]:
+    - [get_design_space][gemseo.problem.mdo.propane.propane.get_design_space]:
       loads the design space from the bundled CSV file.
 
 The optimum is $(x_1, x_3, x_6, x_7) = (1.378887,\, 18.426810,\, 1.094798,\, 0.931214)$

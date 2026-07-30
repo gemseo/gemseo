@@ -23,9 +23,9 @@ from typing import ClassVar
 from pydantic import Field
 from pydantic import model_validator
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.post.base_post_settings import UseStandardizedObjectiveMixin
-from gemseo.typing import StrKeyMapping
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
+from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
     from typing_extensions import Self

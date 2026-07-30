@@ -36,8 +36,8 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_mda
-from gemseo.mda.chain_settings import MDAChain_Settings
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.mda import MDAChain_Settings
+from gemseo.mda import MDAGaussSeidel_Settings
 
 # %%
 # ### 1. Create your disciplines

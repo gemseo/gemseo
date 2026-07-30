@@ -25,21 +25,21 @@ so you can use that distribution in a subsequent analysis.
 
 GEMSEO provides two distribution fitters backed by different libraries:
 
-- [OTDistributionFitter][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter]
+- [OTDistributionFitter][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter]
   fits [OpenTURNS](https://openturns.github.io/openturns/latest/) distributions,
   identified by PascalCase names (e.g. `"Normal"`, `"Exponential"`),
   and offers both information-criterion (e.g. BIC) and significance-test criteria,
-- [SPDistributionFitter][gemseo.uncertainty.distributions.scipy.distribution_fitter.SPDistributionFitter]
+- [SPDistributionFitter][gemseo.uncertainty.distribution.scipy.distribution_fitter.SPDistributionFitter]
   fits [SciPy](https://scipy.org/) distributions,
   identified by lowercase names (e.g. `"norm"`, `"expon"`),
   and offers significance-test criteria only
   (e.g. `"KolmogorovSmirnov"`, `"AndersonDarling"`).
 
 Both share the same interface:
-[fit()][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.fit],
-[compute_measure()][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.compute_measure],
+[fit()][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter.fit],
+[compute_measure()][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter.compute_measure],
 and
-[select()][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.select].
+[select()][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter.select].
 
 ## Step-by-step guide
 """
@@ -48,10 +48,10 @@ from __future__ import annotations
 
 from numpy.random import default_rng
 
-from gemseo.uncertainty.distributions.openturns.distribution_fitter import (
+from gemseo.uncertainty.distribution.openturns.distribution_fitter import (
     OTDistributionFitter,
 )
-from gemseo.uncertainty.distributions.scipy.distribution_fitter import (
+from gemseo.uncertainty.distribution.scipy.distribution_fitter import (
     SPDistributionFitter,
 )
 
@@ -91,7 +91,7 @@ sp_fitter.available_distributions
 # #### With OpenTURNS
 #
 # Fit a normal distribution — returns an
-# [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]:
+# [OTDistribution][gemseo.uncertainty.distribution.openturns.distribution.OTDistribution]:
 ot_normal = ot_fitter.fit("Normal")
 ot_normal
 
@@ -108,7 +108,7 @@ ot_normal.plot()
 # #### With SciPy
 #
 # Fit a normal distribution — returns an
-# [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]:
+# [SPDistribution][gemseo.uncertainty.distribution.scipy.distribution.SPDistribution]:
 sp_normal = sp_fitter.fit("norm")
 sp_normal
 
@@ -157,7 +157,7 @@ acceptable, details
 #
 #     The significance level defaults to 0.05.
 #     Pass `level=` to
-#     [compute_measure()][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.compute_measure]
+#     [compute_measure()][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter.compute_measure]
 #     to change it.
 
 # %%
@@ -185,7 +185,7 @@ acceptable, details
 #
 # #### With OpenTURNS
 #
-# Let [select()][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.select]
+# Let [select()][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter.select]
 # automatically pick the best distribution from a list of candidates
 # (`"best"` picks the one that minimizes/maximizes the criterion,
 # `"first"` picks the first acceptable one):
@@ -209,13 +209,13 @@ sp_best
 # | Non-significance criteria  | BIC                     | —                                                            |
 # | Significance-test criteria | ChiSquared, Kolmogorov  | AndersonDarling, CramerVonMises, Filliben, KolmogorovSmirnov |
 #
-# - [OTDistributionFitter][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter]
+# - [OTDistributionFitter][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter]
 #   and
-#   [SPDistributionFitter][gemseo.uncertainty.distributions.scipy.distribution_fitter.SPDistributionFitter]
+#   [SPDistributionFitter][gemseo.uncertainty.distribution.scipy.distribution_fitter.SPDistributionFitter]
 #   share the same interface;
-# - [fit()][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.fit]
+# - [fit()][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter.fit]
 #   returns a fitted distribution object;
-# - [compute_measure()][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.compute_measure]
+# - [compute_measure()][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter.compute_measure]
 #   evaluates goodness-of-fit; significance tests return `(acceptable, details)`;
-# - [select()][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter.select]
+# - [select()][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter.select]
 #   returns the best distribution from a list of candidates.

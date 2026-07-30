@@ -16,9 +16,9 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 

@@ -30,13 +30,13 @@ from typing import Any
 
 import pytest
 
-from gemseo.caches.factory import CacheFactory
 from gemseo.core import base_factory
 from gemseo.core.base_factory import BaseFactory
-from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
-from gemseo.formulations.factory import MDOFormulationFactory
-from gemseo.utils.base_multiton import BaseABCMultiton
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.core.cache.factory import CacheFactory
+from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import MDOFormulationFactory
+from gemseo.util.base_multiton import BaseABCMultiton
+from gemseo.util.testing.helper import assert_exception
 
 # test data
 DATA = Path(__file__).parent / "data/factory"
@@ -169,7 +169,7 @@ def test_ext_plugin_syspath_is_first(reset_factory, tmp_path) -> None:
 
     # Create a module that shall fail to load the plugin.
     code = """
-from gemseo.formulations.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
 assert 'DummyBiLevel' in MDO_FORMULATION_FACTORY.class_names
 """
     module_path = tmp_path / "module.py"
@@ -245,7 +245,7 @@ def test_get_sub_classes_filters_external_modules(reset_factory) -> None:
     Reproduces the gallery scenario where a runpy-executed example defines
     ``class Sellar2(Discipline)`` in ``__main__``. Without filtering by module
     in ``__get_sub_classes``, that class would override the real
-    ``gemseo.problems.mdo.sellar.sellar_2.Sellar2`` in the factory and then
+    ``gemseo.problem.mdo.sellar.sellar_2.Sellar2`` in the factory and then
     be rejected by ``__is_class_in_modules``, leaving the name unavailable.
     """
     test_module = __name__

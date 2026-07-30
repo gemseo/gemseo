@@ -38,43 +38,43 @@ from numpy.testing import assert_almost_equal
 from scipy.linalg import solve
 
 from gemseo import create_discipline
-from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.derivatives.derivation_modes import DerivationMode
-from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
+from gemseo.core.derivative.derivation_mode import DerivationMode
 from gemseo.core.discipline import Discipline
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.core.grammars.errors import InvalidDataError
-from gemseo.core.grammars.pydantic import PydanticGrammar
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.mda.base import BaseMDA
-from gemseo.mda.base_settings import BaseMDASettings
-from gemseo.mda.base_solver import BaseMDASolver
-from gemseo.mda.base_solver_settings import BaseMDASolverSettings
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.core.grammar.error import InvalidDataError
+from gemseo.core.grammar.pydantic import PydanticGrammar
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.linear.scipy_linalg import LGMRES_Settings
+from gemseo.mda.core.base import BaseMDA
+from gemseo.mda.core.base_settings import BaseMDASettings
+from gemseo.mda.core.base_solver import BaseMDASolver
+from gemseo.mda.core.base_solver_settings import BaseMDASolverSettings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi import MDAJacobi
+from gemseo.mda.jacobian_assembly import JacobianAssembly
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
-from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
+from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.problems.mdo.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sellar.utils import get_initial_data
-from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
-from gemseo.utils.seeder import SEED
-from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sellar.util import get_initial_data
+from gemseo.util.comparison import compare_dict_of_arrays
+from gemseo.util.derivative.check.mda import MDAJacobianChecker
+from gemseo.util.seeder import SEED
+from gemseo.util.testing.helper import assert_exception
+from gemseo.util.testing.helper import concretize_classes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 DIRNAME = os.path.dirname(__file__)
 
@@ -257,40 +257,46 @@ def test_array_couplings(mda_class, grammar_type) -> None:
         a_disc.execute({"x": 2.0})
 
 
-def test_stopping_criteria(base_mda_solver, caplog) -> None:
-    """Test the stopping criteria."""
+def test_termination_criteria(base_mda_solver, caplog) -> None:
+    """Test the termination criteria."""
     caplog.clear()
 
     base_mda_solver.settings.tolerance = 1.0
 
     base_mda_solver._normalized_residual_norm = 0.5
-    assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    assert base_mda_solver._check_termination_criteria(update_iteration_metrics=False)
     base_mda_solver._normalized_residual_norm = 1.5
-    assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    assert not base_mda_solver._check_termination_criteria(
+        update_iteration_metrics=False
+    )
 
     base_mda_solver.settings.max_mda_iter = 1
 
     base_mda_solver._current_iter = 1
-    assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    assert base_mda_solver._check_termination_criteria(update_iteration_metrics=False)
     assert (
         caplog.records[0].message
         == "BaseMDASolver has reached its maximum number of iterations, but the "
         "normalized residual norm 1.5 is still above the tolerance 1.0."
     )
     base_mda_solver._current_iter = 0
-    assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    assert not base_mda_solver._check_termination_criteria(
+        update_iteration_metrics=False
+    )
 
     base_mda_solver.settings.max_consecutive_unsuccessful_iterations = 1
 
     base_mda_solver._BaseMDASolver__n_consecutive_unsuccessful_iterations = 1
-    assert base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    assert base_mda_solver._check_termination_criteria(update_iteration_metrics=False)
     assert (
         caplog.records[1].message
         == "BaseMDASolver has reached its maximum number of unsuccessful iterations, "
         "but the normalized residual norm 1.5 is still above the tolerance 1.0."
     )
     base_mda_solver._BaseMDASolver__n_consecutive_unsuccessful_iterations = 0
-    assert not base_mda_solver._check_stopping_criteria(update_iteration_metrics=False)
+    assert not base_mda_solver._check_termination_criteria(
+        update_iteration_metrics=False
+    )
 
 
 def test_coupling_structure(sellar_with_2d_array, sellar_disciplines) -> None:

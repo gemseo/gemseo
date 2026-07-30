@@ -27,7 +27,7 @@ from numpy import allclose
 from numpy import arange
 from sklearn.preprocessing import PowerTransformer
 
-from gemseo.machine_learning.transformers.power.boxcox import BoxCox
+from gemseo.machine_learning.transformer.power.boxcox import BoxCox
 
 if TYPE_CHECKING:
     from numpy import ndarray

@@ -1,0 +1,546 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
+from copy import deepcopy
+from math import cos
+from math import exp
+from math import isinf
+from math import log10
+from math import sin
+from typing import TYPE_CHECKING
+
+import pytest
+from numpy import array
+from numpy import inf
+from numpy import ndarray
+from numpy import sin as np_sin
+from numpy import zeros
+from numpy.linalg import norm
+from numpy.testing import assert_equal
+from scipy.optimize import rosen
+from scipy.optimize import rosen_der
+
+from gemseo.core.discipline import Discipline
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
+from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
+from gemseo.space.design import DesignSpace
+from gemseo.util.derivative.approximation_mode import ApproximationMode
+from gemseo.util.derivative.approximator.centered_differences import CenteredDifferences
+from gemseo.util.derivative.approximator.complex_step import ComplexStep
+from gemseo.util.derivative.approximator.factory import GradientApproximatorFactory
+from gemseo.util.derivative.approximator.forward_differences import ForwardDifferences
+from gemseo.util.derivative.check.function import FunctionJacobianChecker
+from gemseo.util.derivative.derivatives_approx import DisciplineJacApprox
+from gemseo.util.derivative.derivatives_approx import compare_jacobian_matrices
+from gemseo.util.derivative.error_estimator import compute_best_step
+from gemseo.util.testing.helper import assert_exception
+
+if TYPE_CHECKING:
+    from gemseo.util.typing import StrKeyMapping
+from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
+
+
+def test_init_first_order_fd() -> None:
+    """"""
+    ForwardDifferences(rosen)
+
+
+def test_init_centred_differences() -> None:
+    """"""
+    CenteredDifferences(rosen)
+
+
+def test_init_complex_step() -> None:
+    """"""
+    cplx = ComplexStep(rosen, 1e-30j)
+    assert cplx.step == 1e-30
+
+    grad = cplx.f_gradient(zeros(3))
+    assert norm(grad - rosen_der(zeros(3))) < 1e-3
+
+    with pytest.raises(ValueError):
+        cplx.f_gradient(zeros(3) + 1j)
+
+
+@pytest.fixture
+def x():
+    """"""
+    return [
+        [0.0, 0.0],
+        [1.0, 3.0, 5.0],
+        [-1.9, 3.7, 4.0, 7, -1.9, 3.7, 4.0, 7],
+        [-1.0, 5.0],
+    ]
+
+
+def run_tests(xs, fd_app) -> None:
+    """:param xs: param fd_app:
+    :param fd_app:
+
+    """
+    for x in xs:
+        xa = array(x)
+        appeox = fd_app.f_gradient(xa)
+        exact = rosen_der(xa)
+        err = norm(appeox - exact) / norm(exact)
+        assert err < 1e-4
+
+
+def test_approx_first_order_fd(x) -> None:
+    run_tests(x, ForwardDifferences(rosen, 1e-8))
+
+
+def test_approx_centred_differences(x) -> None:
+    run_tests(x, CenteredDifferences(rosen, 1e-8))
+
+
+def test_approx_complex_step(x) -> None:
+    run_tests(x, ComplexStep(rosen))
+
+
+def test_approx_complex_step_diff_steps_e60(x) -> None:
+    run_tests(x, ComplexStep(rosen, 1e-60))
+
+
+def test_approx_complex_step_diff_steps_e200(x) -> None:
+    run_tests(x, ComplexStep(rosen, 1e-200))
+
+
+def test_approx_complex_step_diff_steps_e30(x) -> None:
+    run_tests(x, ComplexStep(rosen, 1e-30))
+
+
+def test_abs_der() -> None:
+    discipline = AnalyticDiscipline({"y": "x", "z": "x"})
+    discipline.execute()
+    apprx = DisciplineJacApprox(discipline)
+    apprx.compute_approx_jac(["z"], ["x"])
+
+    discipline.linearize()
+    discipline.jac["z"]["x"] = array([[2.0]])
+
+    assert not apprx.check_jacobian(["z"], ["x"])
+
+    discipline.linearize()
+    discipline.jac["z"]["x"] = array([[2.0, 3.0]])
+
+    assert not apprx.check_jacobian(["z"], ["x"])
+
+
+def test_cache_is_none() -> None:
+    """Check that compute_approx_jac works when cache is None"""
+    discipline = AnalyticDiscipline({"y": "x", "z": "x"})
+    discipline.set_cache(discipline.CacheType.NONE)
+    discipline.execute()
+    apprx = DisciplineJacApprox(discipline)
+    apprx.compute_approx_jac(["z"], ["x"])
+
+    discipline.linearize()
+
+
+def test_complex_fail() -> None:
+    discipline = SobieskiMission("complex128")
+    checker = DisciplineJacobianChecker(discipline)
+    assert checker.check(approximation_mode=discipline.ApproximationMode.COMPLEX_STEP)
+
+    data = deepcopy(discipline.io.input_grammar.defaults)
+    data["x_shared"] += 0.1j
+    checker = DisciplineJacobianChecker(discipline)
+    with pytest.raises(ValueError):
+        checker.check(
+            data, approximation_mode=discipline.ApproximationMode.COMPLEX_STEP
+        )
+
+
+@pytest.mark.parametrize("parallel", [True, False])
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+@pytest.mark.integration
+def test_auto_step(parallel, method, sellar_with_2d_array, sellar_disciplines) -> None:
+    for discipline in sellar_disciplines:
+        checker = DisciplineJacobianChecker(discipline)
+        assert checker.check(atol=1e-2, rtol=1e-2, step=None, approximation_mode=method)
+
+
+def test_opt_step() -> None:
+    x = 0.1
+    step = 1e-6
+    funcs = [sin, cos, exp]
+    jacs = [cos, lambda x: -sin(x), exp]
+
+    for func, jac in zip(funcs, jacs, strict=False):
+        for mult in [1.0, 1e2, 1e-2]:
+            for x in [0.0, 1.0, 3.0]:
+                f_p = func(mult * (x + step))
+                f_x = func(mult * x)
+                f_m = func(mult * (x - step))
+                trunc_error, cancel_error, opt_step = compute_best_step(
+                    f_p, f_x, f_m, step
+                )
+                if trunc_error is None:
+                    continue
+
+                df_app = (func(mult * (x + opt_step)) - f_x) / opt_step
+                err = abs(df_app - mult * jac(mult * x))
+                full_error = trunc_error + cancel_error
+                rel_erro_on_err = abs(log10(abs(full_error)) - log10(abs(err))) < 5
+                assert rel_erro_on_err
+
+
+def _vector_function(x_vect):
+    """A vector function used to test the optimal step computation.
+
+    Args:
+        x_vect: The input vector.
+
+    Returns:
+        The two outputs of the function.
+    """
+    return array([x_vect @ x_vect, (x_vect - 1.0) @ (x_vect - 1.0)])
+
+
+@pytest.mark.parametrize("cls", [ForwardDifferences, CenteredDifferences])
+@pytest.mark.parametrize("parallel", [False, True])
+@pytest.mark.parametrize("step", [1e-6, array([1e-6])])
+def test_compute_optimal_step(cls, parallel, step) -> None:
+    """Check compute_optimal_step for the finite-difference approximators.
+
+    The step is given either as a float or as a 1D array.
+    """
+    x_vect = array([0.5, 1.0, 1.5])
+    n_dim = len(x_vect)
+    approximator = cls(_vector_function, step=step, parallel=parallel)
+    default_step = approximator.step
+
+    opt_steps, errors = approximator.compute_optimal_step(x_vect)
+
+    assert opt_steps.shape == (n_dim,)
+    assert errors.shape == (n_dim,)
+    assert (opt_steps > 0.0).all()
+
+    # The optimal steps are stored as the new default step.
+    assert_equal(approximator.step, opt_steps)
+    assert (opt_steps != default_step).any()
+
+    # The gradient computed with the optimal step is accurate.
+    jacobian = approximator.f_gradient(x_vect)
+    expected_jacobian = array([2.0 * x_vect, 2.0 * (x_vect - 1.0)])
+    assert norm(jacobian - expected_jacobian) / norm(expected_jacobian) < 1e-3
+
+
+@pytest.mark.parametrize(
+    ("indices", "expected_sequence", "expected_variable_indices"),
+    [
+        ({"y": None}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
+        ({"y": Ellipsis}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
+        ({"y": 1}, [0, 1, 3], {"x": [0, 1], "y": [1]}),
+        ({"y": [2, 4]}, [0, 1, 4, 6], {"x": [0, 1], "y": [2, 4]}),
+        ({"y": slice(0, 2)}, [0, 1, 2, 3], {"x": [0, 1], "y": [0, 1]}),
+        ({}, [0, 1, 2, 3, 4], {"x": [0, 1], "y": [0, 1, 2]}),
+    ],
+)
+def test_compute_io_indices(
+    indices, expected_sequence, expected_variable_indices
+) -> None:
+    """Check that input and output indices are correctly computed from indices."""
+    (
+        indices_sequence,
+        variable_indices,
+    ) = DisciplineJacApprox._compute_variable_indices(
+        indices, ["x", "y"], {"y": 3, "x": 2}
+    )
+    assert indices_sequence == expected_sequence
+    assert variable_indices == expected_variable_indices
+
+
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+def test_load_and_dump(tmp_wd, method) -> None:
+    """Check the loading and dumping of a reference Jacobian."""
+    discipline = AnalyticDiscipline({"y": "x", "z": "x"})
+    discipline.execute()
+    apprx = DisciplineJacApprox(discipline, approx_method=method)
+    apprx.compute_approx_jac(["z"], ["x"])
+    discipline.linearize()
+    discipline.jac["z"]["x"] = array([[2.0]])
+    file_name = "reference_jacobian.pkl"
+    assert not apprx.check_jacobian(
+        ["z"],
+        ["x"],
+        reference_jacobian_path=file_name,
+        save_reference_jacobian=True,
+    )
+
+    assert not apprx.check_jacobian(
+        ["z"],
+        ["x"],
+        reference_jacobian_path=file_name,
+    )
+
+
+class ToyDiscipline(Discipline):
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self, dtype: type) -> None:
+        """
+        Args:
+            dtype: The type of x1 and y1.
+        """
+        super().__init__()
+        self.io.input_grammar.update_from_types({"x1": dtype, "x2": ndarray})
+        self.io.output_grammar.update_from_types({"y1": dtype, "y2": ndarray})
+        self.io.input_grammar.defaults = {
+            "x1": dtype(1.0),
+            "x2": array([1.0, 1.0], dtype=dtype),
+        }
+        self.dtype = dtype
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x1 = input_data["x1"]
+        x2 = input_data["x2"]
+        self.io.output_data["y1"] = x1 + 2 * x2[0]
+        self.io.output_data["y2"] = array([
+            x1 + 2 * x2[0] + 3 * x2[1],
+            2 * x1 + 4 * x2[0] + 6 * x2[1],
+        ])
+
+    def _compute_jacobian(self, input_names=(), output_names=()) -> None:
+        self.jac = {
+            "y1": {
+                "x1": array([[1.0]], dtype=self.dtype),
+                "x2": array([[2.0, 0.0]], dtype=self.dtype),
+            },
+            "y2": {
+                "x1": array([[1.0], [2.0]], dtype=self.dtype),
+                "x2": array([[2.0, 3.0], [4.0, 6.0]], dtype=self.dtype),
+            },
+        }
+
+
+@pytest.mark.parametrize("inputs", [["x1"], ["x2"], ["x1", "x2"]])
+@pytest.mark.parametrize("outputs", [["y1"], ["y2"], ["y1", "y2"]])
+@pytest.mark.parametrize(
+    "indices",
+    [
+        None,
+        {"x1": 0},
+        {"y2": 1},
+        {"x1": 0, "y2": 1},
+        {"x2": [0, 1], "y2": [0, 1]},
+        {"x2": 1, "y2": [0, 1]},
+    ],
+)
+@pytest.mark.parametrize("dtype", [float, complex])
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+def test_indices(inputs, outputs, indices, dtype, method) -> None:
+    """Test the option to check the Jacobian by indices.
+
+    Args:
+        inputs: The input variables to be checked.
+        outputs: The output variables to be checked.
+        dtype: The data type of the variables for the test discipline.
+    """
+    discipline = ToyDiscipline(dtype)
+    discipline.linearize(compute_all_jacobians=True)
+    apprx = DisciplineJacApprox(discipline, approx_method=method)
+    assert apprx.check_jacobian(outputs, inputs, indices=indices)
+
+
+@pytest.mark.parametrize("dtype", [float, complex])
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+def test_wrong_step(dtype, method, snapshot) -> None:
+    """Test that an exception is raised if the step size length does not match inputs.
+
+    Args:
+        dtype: The data type of the variables for the test discipline.
+    """
+    discipline = ToyDiscipline(dtype)
+    discipline.linearize(compute_all_jacobians=True)
+    apprx = DisciplineJacApprox(discipline, step=[1e-7, 1e-7], approx_method=method)
+    with assert_exception(ValueError, snapshot):
+        apprx.compute_approx_jac(output_names=["y1", "y2"], input_names=["x1", "x2"])
+
+
+def test_factory() -> None:
+    factory = GradientApproximatorFactory()
+    assert factory.is_available("ComplexStep")
+    assert factory.is_available("CenteredDifferences")
+
+    def function(x):
+        return 2 * x
+
+    assert isinstance(
+        factory.create("ForwardDifferences", function), ForwardDifferences
+    )
+    assert isinstance(
+        factory.create("finite_differences", function), ForwardDifferences
+    )
+    assert isinstance(
+        factory.create("finite_differences", function, step=1e-3), ForwardDifferences
+    )
+    assert isinstance(factory.create("complex_step", function), ComplexStep)
+    assert isinstance(
+        factory.create("centered_differences", function), CenteredDifferences
+    )
+
+
+@pytest.mark.parametrize(
+    ("normalize", "lower_bound", "upper_bound"),
+    [
+        (False, -2, 2),
+        (True, -2, 2),
+        (False, -2, inf),
+        (True, -2, inf),
+        (False, -inf, 2),
+        (True, -inf, 2),
+    ],
+)
+@pytest.mark.parametrize(
+    "method",
+    [ApproximationMode.FINITE_DIFFERENCES, ApproximationMode.CENTERED_DIFFERENCES],
+)
+def test_derivatives_on_design_boundaries(
+    caplog, normalize, lower_bound, upper_bound, method
+) -> None:
+    """Check that finite differences on the design boundaries use a backward step."""
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x", lower_bound=lower_bound, upper_bound=upper_bound, value=2.0
+    )
+
+    problem = OptimizationProblem(design_space, differentiation_method=method)
+    problem.objective = ArrayFunction(lambda x: x**2, name="my_objective")
+
+    OPTIMIZATION_LIBRARY_FACTORY.execute(
+        problem, settings=SLSQP_Settings(max_iter=1, normalize_design_space=normalize)
+    )
+
+    grad = problem.database.get_gradient_history("my_objective")[0, 0]
+    if isinf(upper_bound) and (method != ApproximationMode.CENTERED_DIFFERENCES):
+        assert grad > 4.0
+    else:
+        assert grad < 4.0
+
+    assert grad == pytest.approx(4.0, abs=1e-6)
+
+    assert "All components of the normalized vector " not in caplog.text
+
+
+@pytest.mark.parametrize("output_size", [1, 10])
+def test_derivatives_with_sparse_jacobians(tmp_wd, output_size) -> None:
+    """Test check Jacobians with sparse Jacobians."""
+    discipline = LinearDiscipline(
+        "A", ["x"], ["y"], inputs_size=10, outputs_size=output_size, matrix_format="csr"
+    )
+    discipline.linearize(compute_all_jacobians=True)
+
+    assert DisciplineJacApprox(discipline).check_jacobian(
+        ["y"], ["x"], plot_result=True
+    )
+
+
+def f(x):
+    return array([sum(x)])
+
+
+@pytest.mark.parametrize("use_design_space", [False, True])
+@pytest.mark.parametrize("parallel", [False, True])
+@pytest.mark.parametrize("cls", [CenteredDifferences, ForwardDifferences, ComplexStep])
+def test_f_gradient(use_design_space, parallel, cls):
+    """Check the BaseGradientApproximator.f_gradient method."""
+    if use_design_space:
+        design_space = DesignSpace()
+        design_space.add_variable("x", size=2)
+    else:
+        design_space = None
+
+    cd = cls(f, design_space=design_space, parallel=parallel)
+    assert_equal(cd.f_gradient(array([0.0, 0.0])), array([[1.0, 1.0]]))
+
+
+@pytest.mark.parametrize("kwargs", [{}, {"name": "foo"}])
+def test_log_succeeded(caplog, kwargs):
+    """Check the message logged by compare_jacobian_matrices if successful."""
+    a = array([[1.0]])
+    assert compare_jacobian_matrices(a, a, **kwargs)
+    if kwargs:
+        assert caplog.record_tuples[0] == (
+            "gemseo.util.derivative.derivatives_approx",
+            20,
+            "Jacobian: foo succeeded.",
+        )
+    else:
+        assert not caplog.record_tuples
+
+
+@pytest.mark.parametrize("kwargs", [{}, {"name": "foo"}])
+def test_log_failed(caplog, kwargs):
+    """Check the message logged by compare_jacobian_matrices if unsuccessful."""
+    a = array([[1.0]])
+    assert not compare_jacobian_matrices(a, a + 1, **kwargs)
+    assert caplog.record_tuples == [
+        (
+            "gemseo.util.derivative.derivatives_approx",
+            40,
+            f"Jacobian{': foo' if kwargs else ''} is wrong by 33.33333333333333%.",
+        ),
+        (
+            "gemseo.util.derivative.derivatives_approx",
+            20,
+            "Approximate Jacobian =\n[[2.]]",
+        ),
+        (
+            "gemseo.util.derivative.derivatives_approx",
+            20,
+            "Provided analytical Jacobian =\n[[1.]]",
+        ),
+        ("gemseo.util.derivative.derivatives_approx", 20, "Difference =\n[[1.]]"),
+    ]
+
+
+def test_function_jacobian_checker_error_shape(snapshot):
+    """FunctionJacobianChecker raises an error if the Jacobian shape is wrong."""
+    function = ArrayFunction(np_sin, jac=lambda x: array([[cos(x[0]), cos(x[0])]]))
+    checker = FunctionJacobianChecker(function)
+    with assert_exception(ValueError, snapshot):
+        checker.check(array([1.0]))
+
+
+def test_function_jacobian_checker_error_step(snapshot):
+    """FunctionJacobianChecker raises an error if step=None."""
+    function = ArrayFunction(np_sin)
+    checker = FunctionJacobianChecker(function)
+    with assert_exception(NotImplementedError, snapshot):
+        checker.check(array([1.0]), step=None)

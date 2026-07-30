@@ -18,14 +18,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.algos.evaluation_problem import EvaluationProblem
+from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.uncertainty.reliability.event import Event
 from gemseo.uncertainty.reliability.event_variable import EventVariable
-from gemseo.utils.string_tools import MultiLineString
+from gemseo.util.string import MultiLineString
 
 if TYPE_CHECKING:
-    from gemseo.algos.parameter_space import ParameterSpace
-    from gemseo.core.functions.array_function import ArrayFunction
+    from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.space.parameter import ParameterSpace
 
 
 class ReliabilityProblem(EvaluationProblem):

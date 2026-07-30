@@ -18,8 +18,8 @@ import pytest
 from numpy import array
 from sklearn.svm import SVR
 
-from gemseo.machine_learning.regression.models.svm import SVMRegressor
-from gemseo.machine_learning.regression.models.svm_settings import SVMRegressor_Settings
+from gemseo.machine_learning.regression.model.svm import SVMRegressor
+from gemseo.machine_learning.regression.model.svm_settings import SVMRegressor_Settings
 
 
 def test_init(dataset):

@@ -1,0 +1,98 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""The DOE used by the Morris sensitivity analysis."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import TextIO
+
+from numpy import vstack
+
+from gemseo.doe.core.base_doe_library import BaseDOELibrary
+from gemseo.doe.core.base_doe_library import DOEAlgorithmDescription
+from gemseo.doe.factory import DOELibraryFactory
+from gemseo.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
+from gemseo.doe.oat_doe.settings.oat_doe_settings import OATDOE_Settings
+from gemseo.util.typing import RealArray
+
+if TYPE_CHECKING:
+    from gemseo.space.design import DesignSpace
+
+OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
+
+
+class MorrisDOE(BaseDOELibrary[MorrisDOE_Settings]):
+    """The DOE used by the Morris sensitivity analysis.
+
+    This DOE algorithm applies
+    the [OATDOE][gemseo.doe.oat_doe.oat_doe.OATDOE] algorithm at $r$ points.
+    The number of samples is equal to $r(1+d)$
+    where $d$ is the space dimension.
+    """
+
+    ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
+        "MorrisDOE": DOEAlgorithmDescription(
+            algorithm_name="MorrisDOE",
+            description="The DOE used by the Morris sensitivity analysis.",
+            internal_algorithm_name="MorrisDOE",
+            library_name="MorrisDOE",
+            settings_class=MorrisDOE_Settings,
+        )
+    }
+
+    def __init__(self, algo_name: str = "MorrisDOE") -> None:  # noqa:D107
+        super().__init__(algo_name)
+
+    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+        """
+        Raises:
+            ValueError: When the number of samples is less than
+                the dimension of the input space plus one.
+        """  # noqa: D205, D212, D415
+        n_samples = self._settings.n_samples
+        doe_algo_settings = self._settings.doe_algo_settings
+
+        factory = DOELibraryFactory()
+        doe_algo_name = doe_algo_settings.target_class_name
+        doe_algo = factory.create(doe_algo_name)
+        oat_algo = factory.create("OATDOE")
+        dimension = design_space.dimension
+        if n_samples > 0:
+            n_replicates = n_samples // (dimension + 1)
+            if n_replicates == 0:
+                msg = (
+                    f"The number of samples ({n_samples}) must be "
+                    "at least equal to the dimension of the input space plus one "
+                    f"({dimension}+1={dimension + 1})."
+                )
+                raise ValueError(msg)
+
+            doe_algo_settings.n_samples = n_replicates
+
+        initial_points = doe_algo.sample_unit_hypercube(
+            dimension, settings=doe_algo_settings
+        )
+        return vstack([
+            oat_algo.sample_unit_hypercube(
+                dimension,
+                settings=OATDOE_Settings(
+                    step=self._settings.step, initial_point=initial_point
+                ),
+            )
+            for initial_point in initial_points
+        ])

@@ -28,12 +28,12 @@ from numpy import linspace
 from numpy import ndarray
 from numpy import zeros
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.classification.models.svm import SVMClassifier
-from gemseo.machine_learning.classification.models.svm_settings import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.classification.model.svm import SVMClassifier
+from gemseo.machine_learning.classification.model.svm_settings import (
     SVMClassifier_Settings,
 )
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
 
 N_INPUTS = 2
 N_CLASSES = 4

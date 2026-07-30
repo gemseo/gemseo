@@ -38,8 +38,8 @@ import tempfile
 from pathlib import Path
 
 from gemseo import configuration
-from gemseo.utils._directory_manager.settings import CleanUpPolicy
-from gemseo.utils._directory_manager.settings import MDACleanUpPolicy
+from gemseo.util._directory_manager.settings import CleanUpPolicy
+from gemseo.util._directory_manager.settings import MDACleanUpPolicy
 
 # %%
 # !!! warning
@@ -63,13 +63,13 @@ configuration.directory_manager.enable = True
 #
 # Available policies:
 #
-# - [CleanUpPolicy.KEEP_ALL][gemseo.utils._directory_manager.settings.CleanUpPolicy.KEEP_ALL]: keep all directories
+# - [CleanUpPolicy.KEEP_ALL][gemseo.util._directory_manager.settings.CleanUpPolicy.KEEP_ALL]: keep all directories
 # (default);
-# - [CleanUpPolicy.KEEP_LAST_ONLY][gemseo.utils._directory_manager.settings.CleanUpPolicy.KEEP_LAST_ONLY]: keep only
+# - [CleanUpPolicy.KEEP_LAST_ONLY][gemseo.util._directory_manager.settings.CleanUpPolicy.KEEP_LAST_ONLY]: keep only
 # the last iteration directories;
-# - [CleanUpPolicy.KEEP_SOLUTION_ONLY][gemseo.utils._directory_manager.settings.CleanUpPolicy.KEEP_SOLUTION_ONLY]: keep
+# - [CleanUpPolicy.KEEP_SOLUTION_ONLY][gemseo.util._directory_manager.settings.CleanUpPolicy.KEEP_SOLUTION_ONLY]: keep
 # only the solution directory;
-# - [CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION][gemseo.utils._directory_manager.settings.CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION]:
+# - [CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION][gemseo.util._directory_manager.settings.CleanUpPolicy.KEEP_BASELINE_AND_SOLUTION]:
 # keep the baseline and solution
 #   directories.
 configuration.directory_manager.clean_up_policy = CleanUpPolicy.KEEP_ALL
@@ -79,9 +79,9 @@ configuration.directory_manager.clean_up_policy = CleanUpPolicy.KEEP_ALL
 #
 # Available policies:
 #
-# - [MDACleanUpPolicy.KEEP_ALL][gemseo.utils._directory_manager.settings.MDACleanUpPolicy.KEEP_ALL]: keep all
+# - [MDACleanUpPolicy.KEEP_ALL][gemseo.util._directory_manager.settings.MDACleanUpPolicy.KEEP_ALL]: keep all
 # directories (default);
-# - [MDACleanUpPolicy.KEEP_LAST_ONLY][gemseo.utils._directory_manager.settings.MDACleanUpPolicy.KEEP_LAST_ONLY]: keep
+# - [MDACleanUpPolicy.KEEP_LAST_ONLY][gemseo.util._directory_manager.settings.MDACleanUpPolicy.KEEP_LAST_ONLY]: keep
 # only the last iteration directories.
 configuration.directory_manager.mda_clean_up_policy = MDACleanUpPolicy.KEEP_ALL
 

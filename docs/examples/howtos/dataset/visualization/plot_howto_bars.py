@@ -22,7 +22,7 @@ as grouped bars.
 
 ## Solution
 
-Use [BarPlot][gemseo.post.dataset.bars.BarPlot],
+Use [BarPlot][gemseo.post.dataset.bar_plot.BarPlot],
 which renders one color per dataset row (series)
 with values grouped by variable name along the x-axis.
 
@@ -33,9 +33,9 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.bars import BarPlot
-from gemseo.post.dataset.bars_settings import BarPlot_Settings
+from gemseo.dataset import Dataset
+from gemseo.post.dataset import BarPlot
+from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
 
 # %%
 # ### 1. Build the dataset
@@ -59,7 +59,7 @@ plot.execute(save=False, show=True)
 # %%
 # ## Summary
 #
-# [BarPlot][gemseo.post.dataset.bars.BarPlot] displays each dataset row as a series
+# [BarPlot][gemseo.post.dataset.bar_plot.BarPlot] displays each dataset row as a series
 # of grouped bars, one per variable component.
 # The dataset index is used as series labels.
 #

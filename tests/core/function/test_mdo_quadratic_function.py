@@ -1,0 +1,94 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+"""Tests for the quadratic functions."""
+
+from __future__ import annotations
+
+import pytest
+from numpy import array
+from numpy.testing import assert_equal
+
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.core.function.quadratic_function import QuadraticFunction
+from gemseo.util.testing.helper import assert_exception
+
+
+@pytest.fixture(scope="module")
+def quadratic_function() -> QuadraticFunction:
+    """A quadratic function."""
+    return QuadraticFunction(
+        array([[1.0, 2.0], [3.0, 4.0]]),
+        "f",
+        input_names=("x", "y"),
+        linear_coeffs=array([5.0, 6.0]),
+        value_at_zero=7.0,
+    )
+
+
+@pytest.fixture(scope="module")
+def quadratic_without_linear_term() -> QuadraticFunction:
+    """A quadratic function without a linear term."""
+    return QuadraticFunction(
+        array([[1.0, 2.0], [3.0, 4.0]]), "f", input_names=("x", "y"), value_at_zero=7.0
+    )
+
+
+@pytest.mark.parametrize("coefficients", ["test", array([1, 2]), array([[1, 2]])])
+def test_init(coefficients, snapshot) -> None:
+    """Check the initialization of the quadratic function."""
+    with assert_exception(ValueError, snapshot):
+        QuadraticFunction(coefficients, "f")
+
+
+@pytest.mark.parametrize(
+    ("function", "value", "gradient"),
+    [
+        ("quadratic_function", 51.0, [17.0, 27.0]),
+        ("quadratic_without_linear_term", 34.0, [12.0, 21.0]),
+    ],
+)
+def test_values(function, value, gradient, request) -> None:
+    """Check the value of a quadratic function."""
+    x_vect = array([1.0, 2.0])
+    assert request.getfixturevalue(function).evaluate(x_vect) == value
+    assert_equal(request.getfixturevalue(function).jac(x_vect), gradient)
+
+
+@pytest.mark.parametrize(
+    ("function", "expr"),
+    [
+        (
+            "quadratic_function",
+            "[x]'[{} {}][x] + [{}]'[x] + {}\n[y] [{} {}][y]   [{}] [y]".format(
+                *(
+                    ArrayFunction.COEFF_FORMAT_ND.format(coefficient)
+                    for coefficient in (1, 2, 5, 7, 3, 4, 6)
+                )
+            ),
+        ),
+        (
+            "quadratic_without_linear_term",
+            "[x]'[{} {}][x] + {}\n[y] [{} {}][y]".format(
+                *(
+                    ArrayFunction.COEFF_FORMAT_ND.format(coefficient)
+                    for coefficient in (1, 2, 7, 3, 4)
+                )
+            ),
+        ),
+    ],
+)
+def test_expression(function, expr, request) -> None:
+    """Check the expression of a quadratic function."""
+    assert request.getfixturevalue(function).expr == expr

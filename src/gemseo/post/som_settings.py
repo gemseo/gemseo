@@ -21,8 +21,8 @@ from typing import ClassVar
 from pydantic import Field
 from pydantic import PositiveInt
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.typing import StrKeyMapping
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.util.typing import StrKeyMapping
 
 
 class SOM_Settings(BasePostSettings):  # noqa: D101, N801

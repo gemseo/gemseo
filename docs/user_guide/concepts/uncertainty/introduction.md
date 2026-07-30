@@ -54,7 +54,7 @@ GEMSEO provides a dedicated [uncertainty][gemseo.uncertainty] package for this p
 
 2. **[Uncertainty propagation][concept-uncertainty-propagation]** —
    the [joint input distribution](https://en.wikipedia.org/wiki/Joint_probability_distribution) is sampled,
-   the model is evaluated at each sample via an [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario],
+   the model is evaluated at each sample via an [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario],
    and statistics (e.g., mean, variance, quantiles) are computed on the resulting output dataset.
 
 3. **[Sensitivity analysis][concept-sensitivity-analysis]** —

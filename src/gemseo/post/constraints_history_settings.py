@@ -20,7 +20,7 @@ from collections.abc import Sequence
 
 from pydantic import Field
 
-from gemseo.post.base_post_settings import BasePostSettings
+from gemseo.post.core.base_post_settings import BasePostSettings
 
 
 class ConstraintsHistory_Settings(BasePostSettings):  # noqa: D101, N801

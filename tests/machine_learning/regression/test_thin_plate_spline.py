@@ -14,10 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-from gemseo.machine_learning.regression.models.rbf import RBFRegressor
-from gemseo.machine_learning.regression.models.rbf_settings import RBF
-from gemseo.machine_learning.regression.models.thin_plate_spline import TPSRegressor
-from gemseo.machine_learning.regression.models.thin_plate_spline_settings import (
+from gemseo.machine_learning.regression.model.rbf import RBFRegressor
+from gemseo.machine_learning.regression.model.rbf_settings import RBF
+from gemseo.machine_learning.regression.model.thin_plate_spline import TPSRegressor
+from gemseo.machine_learning.regression.model.thin_plate_spline_settings import (
     TPSRegressor_Settings,
 )
 

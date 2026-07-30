@@ -31,7 +31,7 @@ as just another discipline in its workflow.
 
 You have to transform your scenario into a [Discipline][gemseo.core.discipline.discipline.Discipline],
 using the
-[MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
+[MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
 class.
 
 ## Step-by-step guide
@@ -48,12 +48,12 @@ from __future__ import annotations
 from numpy import array
 from numpy import ones
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings.opt import NLOPT_COBYLA_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.doe import PYDOE_FULLFACT_Settings
+from gemseo.optimization import NLOPT_COBYLA_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.scenario import MDOScenarioAdapter
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Define your scenario
@@ -92,7 +92,7 @@ scenario_adapter.execute({"n": array([4])})
 
 # !!! note
 #     The execution an
-#     [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter]
+#     [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
 #     relies on the optimization of the inner scenario.
 #     This can been observed through log messages.
 #
@@ -112,10 +112,10 @@ upper_scenario.to_dataset()
 # %%
 # ## Summary
 #
-# You can transform an existing [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+# You can transform an existing [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # into a
 # [Discipline][gemseo.core.discipline.discipline.Discipline]
 # with the
-# [MDOScenarioAdapter][gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter].
+# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter].
 #
 # That way, you can simply create multi-level optimization processes.

@@ -23,7 +23,7 @@ depending on the [MDO formulation][concept-mdo-formulations].
 ## Solution
 
 GEMSEO can generate the XDSM of your scenario with the
-[xdsmize()][gemseo.scenarios.mdo.MDOScenario.xdsmize] method.
+[xdsmize()][gemseo.scenario.mdo.MDOScenario.xdsmize] method.
 
 ## Step-by-step guide
 """
@@ -32,7 +32,7 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 
 # %%
 # ### 1. Create your scenario
@@ -57,7 +57,7 @@ scenario = create_scenario(
 # %%
 # ### 2. Generate your XDSM
 #
-# An [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+# An [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # can generate its own XDSM.
 # Several other options can be provided such as pdf generation for instance
 scenario.xdsmize(show_html=True, save_html=False)
@@ -66,4 +66,4 @@ scenario.xdsmize(show_html=True, save_html=False)
 # ## Summary
 #
 # The XDSM of your scenario can be generated with the
-# [xdsmize()][gemseo.scenarios.mdo.MDOScenario.xdsmize] method.
+# [xdsmize()][gemseo.scenario.mdo.MDOScenario.xdsmize] method.

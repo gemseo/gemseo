@@ -20,8 +20,8 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.post import BasicHistory_Settings
 from gemseo.post.basic_history import BasicHistory
+from gemseo.post.basic_history_settings import BasicHistory_Settings
 
 
 @pytest.mark.parametrize(

@@ -29,12 +29,12 @@ from numpy import ndarray
 from numpy import zeros
 from numpy.random import default_rng
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.classification.models.knn import KNNClassifier
-from gemseo.machine_learning.classification.models.knn_settings import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.classification.model.knn import KNNClassifier
+from gemseo.machine_learning.classification.model.knn_settings import (
     KNNClassifier_Settings,
 )
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
 
 rng = default_rng(12345)
 

@@ -39,17 +39,17 @@ from openturns import RandomGenerator
 from openturns import Sample
 from openturns import SquaredExponential
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.sensitivity.hsic import HSICAnalysis
 from gemseo.uncertainty.sensitivity.hsic import HSICAnalysisMethod
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
-    from gemseo.typing import IntegerArray
+    from gemseo.util.typing import IntegerArray
 
 
 @pytest.fixture(params=HSICAnalysis.AnalysisType, scope="module")

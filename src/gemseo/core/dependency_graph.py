@@ -21,26 +21,18 @@
 from __future__ import annotations
 
 import logging
+from importlib.util import find_spec
+from typing import TYPE_CHECKING
 from typing import Final
 from typing import cast
-
-from gemseo.core.discipline.base_discipline import BaseDiscipline
-from gemseo.utils.discipline import get_discipline_variable_properties
-from gemseo.utils.string_tools import pretty_str
-
-try:
-    # graphviz is an optional dependency.
-    from gemseo.post._graph_view import GraphView
-except ImportError:
-    GRAPHVIZ_IS_MISSING = True
-else:
-    GRAPHVIZ_IS_MISSING = False
-
-from typing import TYPE_CHECKING
 
 from networkx import DiGraph
 from networkx import condensation
 from networkx import strongly_connected_components
+
+from gemseo.core.discipline.base_discipline import BaseDiscipline
+from gemseo.util.discipline import get_discipline_variable_properties
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -48,8 +40,14 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from collections.abc import Sequence
 
-    from gemseo.typing import StrPath
-    from gemseo.utils.discipline import DisciplineVariableProperties
+    from gemseo.post._graph_view import GraphView
+    from gemseo.util.discipline import DisciplineVariableProperties
+    from gemseo.util.typing import StrPath
+
+# graphviz is an optional dependency;
+# the gemseo.post._graph_view import happens lazily where GraphView is used
+# so that gemseo.core does not depend on gemseo.post at module level.
+GRAPHVIZ_IS_MISSING = find_spec("graphviz") is None
 
 LOGGER = logging.getLogger(__name__)
 
@@ -313,6 +311,8 @@ class DependencyGraph:
                 "GraphView cannot be imported because graphviz is not installed."
             )
             return None
+
+        from gemseo.post._graph_view import GraphView
 
         graph_view = GraphView()
         get_node_name_from_discipline = self.__get_node_name_from_discipline

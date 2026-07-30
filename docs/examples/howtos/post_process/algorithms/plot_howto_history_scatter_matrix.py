@@ -34,7 +34,7 @@ using a kernel-density estimator.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import ScatterPlotMatrix_Settings
+from gemseo.post import ScatterPlotMatrix_Settings
 
 # %%
 # ### 1. Prerequisites

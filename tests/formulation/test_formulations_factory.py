@@ -1,0 +1,77 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#        :author: Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.mdf import MDF
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.space.design import DesignSpace
+from gemseo.util.testing.helper import assert_exception
+from tests.formulation.not_mdo_formulations.formulation import NotMDOFormulationFactory
+
+
+@pytest.fixture
+def non_mdo_formulations(monkeypatch):
+    monkeypatch.setenv(
+        "GEMSEO_PATH", str(Path(__file__).parent / "not_mdo_formulations")
+    )
+
+
+def test_is_available(non_mdo_formulations) -> None:
+    """Check the method is_available."""
+    assert MDO_FORMULATION_FACTORY.is_available("MDF")
+    assert not MDO_FORMULATION_FACTORY.is_available("ANotMDOFormulation")
+
+
+def test_create_with_wrong_formulation_name(snapshot) -> None:
+    """Check that a BaseMDOFormulation cannot be instantiated with a wrong name."""
+    with assert_exception(ImportError, snapshot):
+        MDO_FORMULATION_FACTORY.create("foo", None, None, None)
+
+
+def test_create() -> None:
+    """Check the creation of a BaseMDOFormulation."""
+    design_space = DesignSpace()
+    design_space.add_variable("x_shared", 3)
+    problem = OptimizationProblem(design_space)
+    formulation = MDO_FORMULATION_FACTORY.create(
+        "MDF", problem, [Sellar1(), Sellar2(), SellarSystem()]
+    )
+    problem.objective = formulation.create_objective(["obj"])
+    assert isinstance(formulation, MDF)
+    assert "x_shared" in formulation.design_space
+    assert [d.name for d in formulation.disciplines] == [
+        "Sellar1",
+        "Sellar2",
+        "SellarSystem",
+    ]
+
+
+def test_not_mdo_formulation(non_mdo_formulations, reset_factory) -> None:
+    """Check the use of a BaseFormulation factory that is not a BaseMDOFormulation."""
+    factory = NotMDOFormulationFactory()
+    assert factory.is_available("ANotMDOFormulation")
+    assert not factory.is_available("MDF")

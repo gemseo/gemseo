@@ -19,11 +19,11 @@ import pytest
 from numpy import array
 from numpy import int32
 
-from gemseo.mda.base_solver import BaseMDASolver
-from gemseo.mda.base_solver_settings import BaseMDASolverSettings
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.mda.core.base_solver import BaseMDASolver
+from gemseo.mda.core.base_solver_settings import BaseMDASolverSettings
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.util.testing.helper import concretize_classes
 
 
 class _BaseMDASolver(BaseMDASolver):

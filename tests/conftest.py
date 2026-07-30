@@ -26,13 +26,13 @@ import pytest
 from numpy import array
 
 from gemseo import set_data_converters
-from gemseo.problems.mdo.sellar import WITH_2D_ARRAY
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sellar.variables import X_SHARED
-from gemseo.utils.discipline import DummyDiscipline
-from gemseo.utils.testing.pytest_conftest import *  # noqa: F401,F403
+from gemseo.problem.mdo.sellar import WITH_2D_ARRAY
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sellar.variable import X_SHARED
+from gemseo.util.discipline import DummyDiscipline
+from gemseo.util.testing.pytest_conftest import *  # noqa: F401,F403
 
 if TYPE_CHECKING:
     from collections.abc import Generator

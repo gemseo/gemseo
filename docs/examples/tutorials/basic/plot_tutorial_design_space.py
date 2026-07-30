@@ -28,7 +28,7 @@ As specified in the [user guide][concept-design-space],
 a design space defines the optimization variables:
 their names, types, dimensions, bounds, and current values (if any).
 You will first create an instance of a
-[DesignSpace][gemseo.algos.design_space.DesignSpace] with multiple variables,
+[DesignSpace][gemseo.space.design.DesignSpace] with multiple variables,
 then learn how to query information about these variables,
 and finally modify their values and bounds.
 """
@@ -38,7 +38,7 @@ from __future__ import annotations
 from numpy import array
 from numpy import ones
 
-from gemseo.algos.design_space import DesignSpace
+from gemseo.space import DesignSpace
 
 # %%
 # ## Step 1 - Create a design space
@@ -54,8 +54,8 @@ from gemseo.algos.design_space import DesignSpace
 # - *x7* is a two-dimensional bounded integer variable with lower bound equal to -1, upper bound equal to 1 and current values to (0,1).
 #
 # You can create this design space from scratch.
-# Use the [add_variable()][gemseo.algos.design_space.DesignSpace.add_variable] method
-# of the [DesignSpace][gemseo.algos.design_space.DesignSpace] class to add variables:
+# Use the [add_variable()][gemseo.space.design.DesignSpace.add_variable] method
+# of the [DesignSpace][gemseo.space.design.DesignSpace] class to add variables:
 
 design_space = DesignSpace()
 design_space.add_variable("x1", value=array([1.0]))
@@ -86,7 +86,7 @@ design_space
 #
 # !!! note
 #     You can get a list of the variable names with their indices
-#     by means of the [get_indexed_variable_names()][gemseo.algos.design_space.DesignSpace.get_indexed_variable_names] method:
+#     by means of the [get_indexed_variable_names()][gemseo.space.design.DesignSpace.get_indexed_variable_names] method:
 #
 #     ``` python
 #     indexed_variable_names = design_space.get_indexed_variable_names()
@@ -133,17 +133,17 @@ print(f"Every variable has a current value: {design_space.has_current_value}")
 
 # %%
 # !!! note
-#     The result returned by [has_current_value][gemseo.algos.design_space.DesignSpace.has_current_value]
+#     The result returned by [has_current_value][gemseo.space.design.DesignSpace.has_current_value]
 #     is `False` as long as at least one component of one variable is `None`.
 #
 # !!! warning
 #     The current value can only be retrieved when
-#     [has_current_value][gemseo.algos.design_space.DesignSpace.has_current_value]
+#     [has_current_value][gemseo.space.design.DesignSpace.has_current_value]
 #     returns `True`.
 #
 # ### Check the active bounds
 #
-# You can get the active bounds by means of the [get_active_bounds()][gemseo.algos.design_space.DesignSpace.get_active_bounds] method,
+# You can get the active bounds by means of the [get_active_bounds()][gemseo.space.design.DesignSpace.get_active_bounds] method,
 # either at current parameter values or at a given point.
 #
 # At the current design value:
@@ -202,7 +202,7 @@ design_space
 # In this tutorial, you've learned to:
 #
 # - create a design space from scratch by means of the [create_design_space()][gemseo.create_design_space] high-level function;
-# - add variables with the [add_variable()][gemseo.algos.design_space.DesignSpace.add_variable] method;
+# - add variables with the [add_variable()][gemseo.space.design.DesignSpace.add_variable] method;
 # - get information about a given design space by using different getters / attributes;
 # - modify the value and the boundaries of design variables.
 #

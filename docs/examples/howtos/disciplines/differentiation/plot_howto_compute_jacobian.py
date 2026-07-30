@@ -40,7 +40,7 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline import AnalyticDiscipline
 
 # %%
 # ### 1. Create a discipline
@@ -65,8 +65,8 @@ discipline.add_differentiated_outputs(["z"])
 #     Non-numeric variables (e.g. string arrays) are automatically filtered out
 #     when no explicit `input_names` or `output_names` are given.
 #     This filtering is only supported with
-#     [JSONGrammar][gemseo.core.grammars.json.JSONGrammar] and
-#     [PydanticGrammar][gemseo.core.grammars.pydantic.PydanticGrammar].
+#     [JSONGrammar][gemseo.core.grammar.json.JSONGrammar] and
+#     [PydanticGrammar][gemseo.core.grammar.pydantic.PydanticGrammar].
 
 # %%
 # ### 3. Compute the derivatives

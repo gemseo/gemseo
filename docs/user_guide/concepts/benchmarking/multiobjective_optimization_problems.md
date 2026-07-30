@@ -17,8 +17,8 @@ search:
 
 # Multi-objective optimization problems { #concept-multiobjective-optimization-problems }
 
-The [gemseo.problems.multiobjective_optimization][gemseo.problems.multiobjective_optimization] package provides
-[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] instances
+The [gemseo.problem.multiobjective_optimization][gemseo.problem.multiobjective_optimization] package provides
+[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] instances
 with multiple conflicting objectives for benchmarking and illustrating
 Pareto front approximation algorithms.
 All problems include analytical Jacobians.
@@ -35,7 +35,7 @@ $$(x-5)^2 + y^2 \leq 25, \quad (x-8)^2 + (y+3)^2 \geq 7.7.$$
 
 ??? abstract "API"
 
-    - [BinhKorn][gemseo.problems.multiobjective_optimization.binh_korn.BinhKorn]
+    - [BinhKorn][gemseo.problem.multiobjective_optimization.binh_korn.BinhKorn]
 
 ## Fonseca-Fleming { #concept-fonseca-fleming }
 
@@ -49,7 +49,7 @@ The two objectives are minimized simultaneously; the Pareto front is a 1D curve.
 
 ??? abstract "API"
 
-    - [FonsecaFleming][gemseo.problems.multiobjective_optimization.fonseca_fleming.FonsecaFleming]
+    - [FonsecaFleming][gemseo.problem.multiobjective_optimization.fonseca_fleming.FonsecaFleming]
 
 ## Poloni { #concept-poloni }
 
@@ -66,7 +66,7 @@ $B_2 = 1.5\sin(x) - \cos(x) + 2\sin(y) - 0.5\cos(y)$.
 
 ??? abstract "API"
 
-    - [Poloni][gemseo.problems.multiobjective_optimization.poloni.Poloni]
+    - [Poloni][gemseo.problem.multiobjective_optimization.poloni.Poloni]
 
 ## Viennet { #concept-viennet }
 
@@ -80,4 +80,4 @@ $$f_3(x, y) = \frac{1}{x^2 + y^2 + 1} - 1.1\,\exp\!\bigl(-(x^2 + y^2)\bigr)$$
 
 ??? abstract "API"
 
-    - [Viennet][gemseo.problems.multiobjective_optimization.viennet.Viennet]
+    - [Viennet][gemseo.problem.multiobjective_optimization.viennet.Viennet]

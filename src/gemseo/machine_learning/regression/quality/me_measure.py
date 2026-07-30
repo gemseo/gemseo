@@ -25,13 +25,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.machine_learning.regression.quality.base_regressor_quality import (
+from gemseo.machine_learning.regression.core.base_regressor_quality import (
     BaseRegressorQuality,
 )
 
 if TYPE_CHECKING:
-    from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
-    from gemseo.typing import NumberArray
+    from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+    from gemseo.util.typing import NumberArray
 
 
 class MEMeasure(BaseRegressorQuality):

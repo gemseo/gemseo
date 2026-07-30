@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from gemseo.core.discipline.base_discipline import CacheType
 
 if TYPE_CHECKING:
-    from gemseo.mda.base_solver import BaseMDASolver
+    from gemseo.mda.core.base_solver import BaseMDASolver
 
 
 def check_iteration_callbacks_execution(mda_solver: BaseMDASolver) -> None:

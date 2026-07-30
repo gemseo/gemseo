@@ -39,14 +39,14 @@ from typing import TYPE_CHECKING
 from numpy import array
 from numpy import newaxis
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.scipy.scipy_doe import SciPyDOE
-from gemseo.algos.evaluation_problem import EvaluationProblem
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.settings import MC_Settings
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.core.problem.evaluation import EvaluationProblem
+from gemseo.doe import MC_Settings
+from gemseo.doe.scipy.scipy_doe import SciPyDOE
+from gemseo.space import DesignSpace
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 # %%
 # ### 1. Define the design space
@@ -118,7 +118,7 @@ problem.to_dataset()
 # ## Summary
 #
 # To enable batch sampling for an
-# [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem],
+# [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem],
 # pass `vectorize=True` to the DOE settings.
 # GEMSEO will call the function once with all samples stacked into a 2D array
 # of shape `(n_samples, input_dimension)`.

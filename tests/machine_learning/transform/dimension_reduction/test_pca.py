@@ -31,9 +31,9 @@ from numpy import array
 from numpy import diag
 from numpy import tile
 
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
-from gemseo.utils.derivatives.check.function import FunctionJacobianChecker
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.machine_learning.transformer.dimension_reduction.pca import PCA
+from gemseo.util.derivative.check.function import FunctionJacobianChecker
 
 if TYPE_CHECKING:
     from numpy import ndarray

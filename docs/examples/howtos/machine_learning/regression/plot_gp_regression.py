@@ -21,7 +21,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Gaussian process (GP) regression.
 
-A [GaussianProcessRegressor][gemseo.machine_learning.regression.models.gpr.GaussianProcessRegressor] is a GP regression model
+A [GaussianProcessRegressor][gemseo.machine_learning.regression.model.gpr.GaussianProcessRegressor] is a GP regression model
 based on [scikit-learn](https://scikit-learn.org).
 
 !!! info "See also"
@@ -51,7 +51,7 @@ from gemseo.machine_learning import create_regression_model
 #
 # In this example,
 # you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
-# by the [AnalyticDiscipline][gemseo.disciplines.analytic.AnalyticDiscipline].
+# by the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline].
 #
 # !!! quote "References"
 #       Alexander I. J. Forrester, Andras Sobester, and Andy J. Keane.
@@ -133,8 +133,8 @@ plt.show()
 # %%
 # ## Settings { #gp-settings }
 #
-# The [GaussianProcessRegressor][gemseo.machine_learning.regression.models.gpr.GaussianProcessRegressor] has many options
-# defined in the [GaussianProcessRegressor_Settings][gemseo.machine_learning.regression.models.gpr_settings.GaussianProcessRegressor_Settings] Pydantic model.
+# The [GaussianProcessRegressor][gemseo.machine_learning.regression.model.gpr.GaussianProcessRegressor] has many options
+# defined in the [GaussianProcessRegressor_Settings][gemseo.machine_learning.regression.model.gpr_settings.GaussianProcessRegressor_Settings] Pydantic model.
 # Here are the main ones.
 #
 # ### Kernel

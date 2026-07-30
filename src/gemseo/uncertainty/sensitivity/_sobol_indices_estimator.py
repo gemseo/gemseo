@@ -40,10 +40,10 @@ from openturns import SaltelliSensitivityAlgorithm
 from strenum import LowercaseStrEnum
 from strenum import PascalCaseStrEnum
 
-from gemseo.utils.data_conversion import split_array_to_dict_of_arrays
-from gemseo.utils.matplotlib_figure import save_show_figure_from_file_path_manager
-from gemseo.utils.string_tools import filter_names
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.data_conversion import split_array_to_dict_of_arrays
+from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
+from gemseo.util.string import filter_names
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -53,11 +53,11 @@ if TYPE_CHECKING:
     from openturns import Sample
     from openturns import SobolIndicesAlgorithmImplementation
 
-    from gemseo.datasets.io_dataset import IODataset
-    from gemseo.typing import RealArray
-    from gemseo.uncertainty.sensitivity.base import FirstOrderIndicesType
-    from gemseo.uncertainty.sensitivity.base import SecondOrderIndicesType
-    from gemseo.utils.string_tools import VariableType
+    from gemseo.dataset.io_dataset import IODataset
+    from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
+    from gemseo.uncertainty.sensitivity.core.base import SecondOrderIndicesType
+    from gemseo.util.string import VariableType
+    from gemseo.util.typing import RealArray
 
 
 class SobolAnalysisMethod(LowercaseStrEnum):
@@ -81,7 +81,7 @@ class SobolIndicesEstimatorMixin:
     [ISFORMSobolAnalysis][gemseo.uncertainty.sensitivity.is_form_sobol.ISFORMSobolAnalysis].
 
     A class using this mixin must also be a
-    [BaseGenericSensitivityAnalysis][gemseo.uncertainty.sensitivity.base.BaseGenericSensitivityAnalysis],
+    [BaseGenericSensitivityAnalysis][gemseo.uncertainty.sensitivity.core.base.BaseGenericSensitivityAnalysis],
     providing the samples in its `dataset` attribute.
     """
 

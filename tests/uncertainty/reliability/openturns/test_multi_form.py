@@ -20,9 +20,9 @@ from numpy.testing import assert_almost_equal
 from openturns import AnalyticalResult
 from openturns import MultiFORMResult
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.reliability.openturns.multi_form import OT_MultiFORM
@@ -31,7 +31,7 @@ from gemseo.uncertainty.reliability.openturns.multi_form_settings import (
 )
 from gemseo.uncertainty.reliability.openturns.optimizer import BaseOTOptimizer
 from gemseo.uncertainty.reliability.problem import ReliabilityProblem
-from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.util.comparison import compare_dict_of_arrays
 
 
 def f(x):

@@ -256,14 +256,14 @@ class DisciplineWorkflowObserver(BaseWorkflowObserverDispatcher):
 **Extension Point**: Create observer class, register it
 
 ```python
-# 1. src/gemseo/utils/_workflow_observers/custom.py
+# 1. src/gemseo/util/_workflow_observer/custom.py
 class CustomWorkflowObserver(BaseWorkflowObserver):
     _spec = ObservationSpec(
         base_class="mypackage.MyClass",
         method_names_for_both={"execute"},
     )
 
-# 2. Register in src/gemseo/utils/_workflow_observers/injector.py
+# 2. Register in src/gemseo/util/_workflow_observer/injector.py
 _WorkflowObserverInjector.register(CustomWorkflowObserver)
 
 # 3. Create a matching processor (see directory_manager docs)

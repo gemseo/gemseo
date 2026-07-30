@@ -30,7 +30,7 @@ which renders a scatter or surface plot of `z` as a function of two input compon
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.post.dataset.zvsxy import ZvsXY
+from gemseo.post.dataset import ZvsXY
 from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 
 # %%

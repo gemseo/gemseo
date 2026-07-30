@@ -26,11 +26,11 @@ to study how uncertainty in the inputs propagates to the outputs.
 
 [sample_disciplines()][gemseo.sample_disciplines]
 runs a Design of Experiments (DOE) over a
-[ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
-and returns an [IODataset][gemseo.datasets.io_dataset.IODataset]
+[ParameterSpace][gemseo.space.parameter.ParameterSpace]
+and returns an [IODataset][gemseo.dataset.io_dataset.IODataset]
 that you can then visualize or pass to a statistics tool.
 Use
-[extract_uncertain_space()][gemseo.algos.parameter_space.ParameterSpace.extract_uncertain_space]
+[extract_uncertain_space()][gemseo.space.parameter.ParameterSpace.extract_uncertain_space]
 to restrict the DOE to the random variables only.
 
 ## Step-by-step guide
@@ -39,10 +39,10 @@ to restrict the DOE to the random variables only.
 from __future__ import annotations
 
 from gemseo import sample_disciplines
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.post.dataset.pair_plot import PairPlot
-from gemseo.settings.probability_distributions import SPNormalDistribution_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.post.dataset import PairPlot
+from gemseo.space import ParameterSpace
+from gemseo.uncertainty.distribution import SPNormalDistribution_Settings
 
 # %%
 # ### 1. Set up the discipline and parameter space
@@ -65,7 +65,7 @@ parameter_space
 #
 # Run a Latin Hypercube Sampling (LHS) DOE over the mixed parameter space
 # and collect inputs and outputs in an
-# [IODataset][gemseo.datasets.io_dataset.IODataset]:
+# [IODataset][gemseo.dataset.io_dataset.IODataset]:
 dataset = sample_disciplines(
     [discipline], parameter_space, "z", algo_name="PYDOE_LHS", n_samples=100
 )
@@ -93,11 +93,11 @@ dataset_uncertain.describe()
 # ## Summary
 #
 # - [sample_disciplines()][gemseo.sample_disciplines]
-#   runs a DOE over a [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
-#   and returns an [IODataset][gemseo.datasets.io_dataset.IODataset];
+#   runs a DOE over a [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+#   and returns an [IODataset][gemseo.dataset.io_dataset.IODataset];
 # - pass the full mixed space to sample both deterministic and uncertain variables together,
 #   or pass the uncertain subspace to fix deterministic variables at their nominal values;
-# - [extract_uncertain_space()][gemseo.algos.parameter_space.ParameterSpace.extract_uncertain_space]
+# - [extract_uncertain_space()][gemseo.space.parameter.ParameterSpace.extract_uncertain_space]
 #   restricts the space to its random variables;
 # - [PairPlot][gemseo.post.dataset.pair_plot.PairPlot]
 #   visualizes the joint distribution of inputs and outputs.

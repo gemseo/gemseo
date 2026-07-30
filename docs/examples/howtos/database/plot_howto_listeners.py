@@ -24,9 +24,9 @@ without modifying the discipline or the algorithm.
 ## Solution
 
 Use
-[EvaluationProblem.add_listener()][gemseo.algos.evaluation_problem.EvaluationProblem.add_listener]
+[EvaluationProblem.add_listener()][gemseo.core.problem.evaluation.EvaluationProblem.add_listener]
 to register a callback that is called automatically by the
-[Database][gemseo.algos.database.Database]
+[Database][gemseo.core.problem.database.Database]
 whenever new values are stored during the run.
 
 ## Step-by-step guide
@@ -35,17 +35,12 @@ whenever new values are stored during the run.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
 
 from gemseo import configuration
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.scenarios.mdo import MDOScenario
-
-if TYPE_CHECKING:
-    from gemseo.algos.optimization_problem import OptimizationProblem
-
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.optimization import SLSQP_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 # %%
 #
@@ -77,14 +72,14 @@ scenario.add_objective("obj")
 # A listener is any callable that accepts a single argument:
 # the design vector `x_vect` at which new outputs were just stored.
 # Inside the listener, use
-# [Database.get_function_value][gemseo.algos.database.Database.get_function_value]
+# [Database.get_function_value][gemseo.core.problem.database.Database.get_function_value]
 # to retrieve the corresponding output value.
 #
 # Here you track the objective at each iteration by capturing a reference to
-# the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# the [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 # in a closure; additionally, you log the design vector to demonstrate the live
 # tracking of the process:
-problem: OptimizationProblem = scenario.formulation.problem
+problem = scenario.formulation.problem
 obj_history = []
 
 
@@ -98,7 +93,7 @@ def track_objective(x_vect):
 # ### 3. Register the listener
 #
 # Pass the callback to
-# [add_listener()][gemseo.algos.evaluation_problem.EvaluationProblem.add_listener].
+# [add_listener()][gemseo.core.problem.evaluation.EvaluationProblem.add_listener].
 # The default `at_each_iteration=True` fires it once per complete design point
 # — the right choice for convergence tracking.
 problem.add_listener(track_objective)
@@ -120,16 +115,16 @@ for i, val in enumerate(obj_history, 1):
 # %%
 # ## Summary
 #
-# [EvaluationProblem.add_listener()][gemseo.algos.evaluation_problem.EvaluationProblem.add_listener]
-# attaches a callback to the [Database][gemseo.algos.database.Database].
+# [EvaluationProblem.add_listener()][gemseo.core.problem.evaluation.EvaluationProblem.add_listener]
+# attaches a callback to the [Database][gemseo.core.problem.database.Database].
 # The callback receives the design vector and can query the database for output values.
 #
 # ## One step further
 #
 # For fine-grained control, the lower-level
-# [Database.add_store_listener][gemseo.algos.database.Database.add_store_listener]
+# [Database.add_store_listener][gemseo.core.problem.database.Database.add_store_listener]
 # and
-# [Database.add_new_iter_listener][gemseo.algos.database.Database.add_new_iter_listener]
+# [Database.add_new_iter_listener][gemseo.core.problem.database.Database.add_new_iter_listener]
 # are available directly on the database.
-# Use [Database.clear_listeners][gemseo.algos.database.Database.clear_listeners]
+# Use [Database.clear_listeners][gemseo.core.problem.database.Database.clear_listeners]
 # to remove callbacks when they are no longer needed.

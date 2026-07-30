@@ -31,28 +31,28 @@ from gemseo.core import coupling_structure
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.base_discipline import BaseDiscipline
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.post._graph_view import GraphView
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sellar.variables import C_1
-from gemseo.problems.mdo.sellar.variables import C_2
-from gemseo.problems.mdo.sellar.variables import OBJ
-from gemseo.problems.mdo.sellar.variables import Y_1
-from gemseo.problems.mdo.sellar.variables import Y_2
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.utils.discipline import DummyDiscipline
-from gemseo.utils.testing.disciplines_creator import create_disciplines_from_desc
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sellar.variable import C_1
+from gemseo.problem.mdo.sellar.variable import C_2
+from gemseo.problem.mdo.sellar.variable import OBJ
+from gemseo.problem.mdo.sellar.variable import Y_1
+from gemseo.problem.mdo.sellar.variable import Y_2
+from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
+from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.util.discipline import DummyDiscipline
+from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
+from gemseo.util.testing.helper import assert_exception
 
 from .test_dependency_graph import DISC_DESCRIPTIONS
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 def test_couplings_sellar(snapshot) -> None:

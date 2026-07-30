@@ -26,11 +26,11 @@ rather than relying on direct sample estimators.
 
 GEMSEO provides two parametric statistics classes backed by different libraries:
 
-- [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics]
+- [OTParametricStatistics][gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics]
   fits [OpenTURNS](https://openturns.github.io/openturns/latest/) distributions,
   identified by PascalCase names (e.g. `"Normal"`, `"Exponential"`, `"Uniform"`),
   with criteria such as `"BIC"` and `"Kolmogorov"`.
-- [SPParametricStatistics][gemseo.uncertainty.statistics.sp_parametric.SPParametricStatistics]
+- [SPParametricStatistics][gemseo.uncertainty.statistic.sp_parametric.SPParametricStatistics]
   fits [SciPy](https://scipy.org/) distributions,
   identified by lowercase names (e.g. `"norm"`, `"expon"`, `"uniform"`),
   with significance-test criteria only (e.g. `"KolmogorovSmirnov"`, `"AndersonDarling"`).
@@ -47,8 +47,8 @@ from numpy import vstack
 from numpy.random import default_rng
 
 from gemseo import create_dataset
-from gemseo.uncertainty.statistics.ot_parametric import OTParametricStatistics
-from gemseo.uncertainty.statistics.sp_parametric import SPParametricStatistics
+from gemseo.uncertainty.statistic import OTParametricStatistics
+from gemseo.uncertainty.statistic import SPParametricStatistics
 
 # %%
 # ### 1. Create synthetic data
@@ -129,13 +129,13 @@ ot_analysis.plot()
 # | Significance-test criteria | ChiSquared, Kolmogorov  | AndersonDarling (default), CramerVonMises, Filliben, KolmogorovSmirnov |
 #
 # - Both classes fit candidate distributions to each variable in a
-#   [Dataset][gemseo.datasets.dataset.Dataset]
+#   [Dataset][gemseo.dataset.dataset.Dataset]
 #   and select the best one per variable;
-# - [get_fitting_matrix()][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics.get_fitting_matrix]
+# - [get_fitting_matrix()][gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics.get_fitting_matrix]
 #   shows goodness-of-fit measures and the selected distribution;
-# - [plot_criteria()][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics.plot_criteria]
+# - [plot_criteria()][gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics.plot_criteria]
 #   overlays the candidate PDFs on the data histogram;
-# - [plot()][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics.plot]
+# - [plot()][gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics.plot]
 #   renders the CDF and PDF of each fitted distribution.
 #
 # ## One step further

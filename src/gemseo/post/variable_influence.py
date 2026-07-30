@@ -34,18 +34,18 @@ from numpy import array
 from numpy import savetxt
 from numpy import stack
 
-from gemseo.algos.database import Database
-from gemseo.post.base_post import BasePost
+from gemseo.core.problem.database import Database
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.variable_influence_settings import VariableInfluence_Settings
-from gemseo.utils.string_tools import pretty_str
-from gemseo.utils.string_tools import repr_variable
+from gemseo.util.string import pretty_str
+from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from matplotlib.figure import Figure
 
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 LOGGER = logging.getLogger(__name__)

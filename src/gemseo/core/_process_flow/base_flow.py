@@ -19,13 +19,13 @@ from typing import TYPE_CHECKING
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
-from gemseo.core._process_flow.execution_sequences.execution_sequence import (
+from gemseo.core._process_flow.execution_sequence.execution_sequence import (
     ExecutionSequence,
 )
 
 if TYPE_CHECKING:
     from gemseo.core._base_monitored_process import BaseMonitoredProcess
-    from gemseo.core._process_flow.execution_sequences.base import BaseExecutionSequence
+    from gemseo.core._process_flow.execution_sequence.base import BaseExecutionSequence
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.discipline.discipline import Discipline
 

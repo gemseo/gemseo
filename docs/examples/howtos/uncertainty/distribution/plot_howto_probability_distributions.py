@@ -25,16 +25,16 @@ then query its statistical properties and generate samples from it.
 GEMSEO provides two distribution backends:
 
 - [OpenTURNS](https://openturns.github.io/openturns/latest/user_manual/probabilistic_modeling.html) (`OT`):
-  classes under [gemseo.uncertainty.distributions.openturns][gemseo.uncertainty.distributions.openturns];
-  named classes (e.g. [OTNormalDistribution][gemseo.uncertainty.distributions.openturns.normal.OTNormalDistribution])
+  classes under [gemseo.uncertainty.distribution.openturns][gemseo.uncertainty.distribution.openturns];
+  named classes (e.g. [OTNormalDistribution][gemseo.uncertainty.distribution.openturns.normal.OTNormalDistribution])
   cover common distributions,
-  while [OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
+  while [OTDistribution][gemseo.uncertainty.distribution.openturns.distribution.OTDistribution]
   gives access to any OpenTURNS distribution,
 - [SciPy](https://docs.scipy.org/doc/scipy/tutorial/stats/probability_distributions.html) (`SP`):
-  classes under [gemseo.uncertainty.distributions.scipy][gemseo.uncertainty.distributions.scipy];
-  named classes (e.g. [SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution])
+  classes under [gemseo.uncertainty.distribution.scipy][gemseo.uncertainty.distribution.scipy];
+  named classes (e.g. [SPNormalDistribution][gemseo.uncertainty.distribution.scipy.normal.SPNormalDistribution])
   cover common distributions,
-  while [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution]
+  while [SPDistribution][gemseo.uncertainty.distribution.scipy.distribution.SPDistribution]
   gives access to any SciPy distribution.
 
 Both backends expose the same interface (same methods, same properties).
@@ -44,20 +44,20 @@ Both backends expose the same interface (same methods, same properties).
 
 from __future__ import annotations
 
-from gemseo.uncertainty.distributions.openturns.distribution import OTDistribution
-from gemseo.uncertainty.distributions.openturns.distribution_settings import (
+from gemseo.uncertainty.distribution import OTDistribution
+from gemseo.uncertainty.distribution import OTNormalDistribution
+from gemseo.uncertainty.distribution import SPDistribution
+from gemseo.uncertainty.distribution import SPNormalDistribution
+from gemseo.uncertainty.distribution.openturns.distribution_settings import (
     OTDistribution_Settings,
 )
-from gemseo.uncertainty.distributions.openturns.normal import OTNormalDistribution
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
-from gemseo.uncertainty.distributions.scipy.distribution import SPDistribution
-from gemseo.uncertainty.distributions.scipy.distribution_settings import (
+from gemseo.uncertainty.distribution.scipy.distribution_settings import (
     SPDistribution_Settings,
 )
-from gemseo.uncertainty.distributions.scipy.normal import SPNormalDistribution
-from gemseo.uncertainty.distributions.scipy.normal_settings import (
+from gemseo.uncertainty.distribution.scipy.normal_settings import (
     SPNormalDistribution_Settings,
 )
 
@@ -177,9 +177,9 @@ ot_distribution_0_1.compute_samples(10)
 # | Named class               | `OTNormalDistribution` | `SPNormalDistribution` |
 #
 # - Named classes and their `<ClassName>_Settings` counterparts are importable from
-#   [gemseo.settings.probability_distributions][gemseo.settings.probability_distributions];
-# - [plot()][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution.plot]
+#   [gemseo.uncertainty.distribution][gemseo.uncertainty.distribution];
+# - [plot()][gemseo.uncertainty.distribution.openturns.distribution.OTDistribution.plot]
 #   renders the PDF and CDF;
 # - There are attributes for accessing analytical statistics.
-# - [compute_samples()][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution.compute_samples]
+# - [compute_samples()][gemseo.uncertainty.distribution.openturns.distribution.OTDistribution.compute_samples]
 #   generates random samples.

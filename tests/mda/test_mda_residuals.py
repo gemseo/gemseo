@@ -40,8 +40,8 @@ from numpy import array
 from gemseo import create_discipline
 from gemseo import create_mda
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.core.derivatives.jacobian_assembly import JacobianAssembly
-from gemseo.utils.derivatives.check.mda import MDAJacobianChecker
+from gemseo.mda.jacobian_assembly import JacobianAssembly
+from gemseo.util.derivative.check.mda import MDAJacobianChecker
 
 if TYPE_CHECKING:
     from numpy import ndarray

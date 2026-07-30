@@ -27,7 +27,7 @@ update formulas.
 
 A discipline usually stores a dense or sparse matrix in its `jac` dictionary.
 For a matrix-free Jacobian, it can instead store a
-[JacobianOperator][gemseo.core.derivatives.jacobian_operator.JacobianOperator],
+[JacobianOperator][gemseo.core.derivative.jacobian_operator.JacobianOperator],
 a SciPy [LinearOperator][scipy.sparse.linalg.LinearOperator] that, rather than
 holding the matrix, defines how it acts on a vector through two products:
 `_matvec` computing $J_f(x)\,w$ and `_rmatvec` computing $J_f(x)^{\top} w$.
@@ -44,12 +44,12 @@ from numpy import eye
 from numpy import ones
 from numpy import outer
 
-from gemseo.core.derivatives.jacobian_operator import JacobianOperator
+from gemseo.core.derivative.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import Discipline
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import RealArray
+    from gemseo.util.typing import StrKeyMapping
 
 # %%
 # ### 1. Create a matrix-free Jacobian operator
@@ -59,7 +59,7 @@ if TYPE_CHECKING:
 # Forming $J_f(x)$ as a matrix costs $O(n^2)$ memory,
 # while applying it to a vector only requires $O(n)$ operations.
 # We therefore implement it as a
-# [JacobianOperator][gemseo.core.derivatives.jacobian_operator.JacobianOperator]
+# [JacobianOperator][gemseo.core.derivative.jacobian_operator.JacobianOperator]
 # by subclassing it and implementing the `_matvec` and `_rmatvec` methods.
 #
 # !!! note
@@ -153,7 +153,7 @@ jacobian
 #     stored: [linearize()][gemseo.core.discipline.discipline.Discipline.linearize]
 #     discards the imaginary part of every Jacobian, hence it wraps our operator
 #     in a real-casting
-#     [JacobianOperator][gemseo.core.derivatives.jacobian_operator.JacobianOperator].
+#     [JacobianOperator][gemseo.core.derivative.jacobian_operator.JacobianOperator].
 #     The two behave identically for real inputs.
 #
 # The operator applies the Jacobian to a vector without ever forming it:
@@ -167,7 +167,7 @@ jacobian.T.dot(ones(n))
 # ## Summary
 #
 # Subclass
-# [JacobianOperator][gemseo.core.derivatives.jacobian_operator.JacobianOperator]
+# [JacobianOperator][gemseo.core.derivative.jacobian_operator.JacobianOperator]
 # and implement `_matvec` (the product $J_f(x)\,w$) and `_rmatvec` (the product
 # $J_f(x)^{\top} w$). Store an instance in the `jac` dictionary of the discipline in
 # `_compute_jacobian()`, and everything stays matrix-free.
@@ -177,7 +177,7 @@ jacobian.T.dot(ones(n))
 # ### Materialize the operator (for debugging)
 #
 # The
-# [get_matrix_representation()][gemseo.core.derivatives.jacobian_operator.JacobianOperator.get_matrix_representation]
+# [get_matrix_representation()][gemseo.core.derivative.jacobian_operator.JacobianOperator.get_matrix_representation]
 # method assembles the matrix by applying the operator to the identity.
 # This is convenient to inspect or check the Jacobian,
 # but defeats the purpose of the matrix-free setting:
@@ -191,7 +191,7 @@ eye(n) + outer(u, v)
 # %%
 # ### Linear algebra operations
 #
-# A [JacobianOperator][gemseo.core.derivatives.jacobian_operator.JacobianOperator]
+# A [JacobianOperator][gemseo.core.derivative.jacobian_operator.JacobianOperator]
 # can be combined with other Jacobian operators, NumPy arrays and SciPy sparse
 # arrays using `+`, `-` and `@` in either operand order. Each operation returns
 # a new operator whose evaluation remains lazy: no matrix is ever assembled.

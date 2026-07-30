@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
 

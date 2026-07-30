@@ -238,7 +238,7 @@ Three types of importance factors are available:
 | `elliptical` | Squares of the co-factors of the design point in the standard space                                         |
 | `physical`   | Squares of the partial derivatives of the Hasofer-Lind reliability index w.r.t. the inputs (physical space) |
 
-The default [main_method][gemseo.uncertainty.sensitivity.base.BaseGenericSensitivityAnalysis.main_method]
+The default [main_method][gemseo.uncertainty.sensitivity.core.base.BaseGenericSensitivityAnalysis.main_method]
 is `classical`.
 
 Events are defined with
@@ -294,18 +294,18 @@ per event).
 
 All sensitivity analyses follow the same workflow:
 
-1. **Compute samples** — [compute_samples()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_samples] draws input–output samples
-   from the [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace].
-   Alternatively, an existing [IODataset][gemseo.datasets.io_dataset.IODataset] can be reused directly.
-2. **Compute indices** — [compute_indices()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.compute_indices]
+1. **Compute samples** — [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples] draws input–output samples
+   from the [ParameterSpace][gemseo.space.parameter.ParameterSpace].
+   Alternatively, an existing [IODataset][gemseo.dataset.io_dataset.IODataset] can be reused directly.
+2. **Compute indices** — [compute_indices()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_indices]
    derives the sensitivity indices from the samples.
-3. **Visualize** — methods such as [plot_bar()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.plot_bar] and [plot_radar()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.plot_radar] display the indices.
-4. **Export** — [to_dataset()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.to_dataset]
+3. **Visualize** — methods such as [plot_bar()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_bar] and [plot_radar()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_radar] display the indices.
+4. **Export** — [to_dataset()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.to_dataset]
    exports the indices as a [Dataset][concept-dataset].
 
 Indices can be standardized so that different methods are compared on the same scale
-(e.g. using [plot_comparison()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.plot_comparison]),
-and inputs can be sorted by decreasing influence via [sort_input_variables()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.sort_input_variables].
+(e.g. using [plot_comparison()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_comparison]),
+and inputs can be sorted by decreasing influence via [sort_input_variables()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.sort_input_variables].
 
 !!! how-to
     - [Compute sensitivity indices][compute-sensitivity-indices]

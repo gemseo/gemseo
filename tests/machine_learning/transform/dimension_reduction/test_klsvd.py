@@ -30,7 +30,7 @@ from numpy import sin
 from numpy.random import default_rng
 from openturns import ResourceMap
 
-from gemseo.machine_learning.transformers.dimension_reduction.klsvd import KLSVD
+from gemseo.machine_learning.transformer.dimension_reduction.klsvd import KLSVD
 
 N_SAMPLES = 100
 

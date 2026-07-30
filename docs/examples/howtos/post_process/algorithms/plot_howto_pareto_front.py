@@ -33,7 +33,7 @@ globally Pareto-optimal points (across all objectives) are shown in green.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import ParetoFront_Settings
+from gemseo.post import ParetoFront_Settings
 
 # %%
 # ### 1. Prerequisites

@@ -21,23 +21,23 @@ from numpy.testing import assert_allclose
 from numpy.testing import assert_almost_equal
 
 from gemseo import sample_disciplines
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.machine_learning.linear_model_fitting.omp_settings import (
     OrthogonalMatchingPursuit_Settings,
 )
 from gemseo.machine_learning.linear_model_fitting.ridge_settings import Ridge_Settings
-from gemseo.machine_learning.regression.models.fce import FCERegressor
-from gemseo.machine_learning.regression.models.fce_settings import FCERegressor_Settings
-from gemseo.machine_learning.regression.models.fce_settings import (
+from gemseo.machine_learning.regression.model.fce import FCERegressor
+from gemseo.machine_learning.regression.model.fce_settings import FCERegressor_Settings
+from gemseo.machine_learning.regression.model.fce_settings import (
     OrthonormalFunctionBasis,
 )
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.problems.uncertainty.utils import UniformDistribution
-from gemseo.utils.comparisons import compare_dict_of_arrays
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.problem.uncertainty.ishigami.ishigami_space import IshigamiSpace
+from gemseo.problem.uncertainty.util import UniformDistribution
+from gemseo.util.comparison import compare_dict_of_arrays
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module", params=[False, True])

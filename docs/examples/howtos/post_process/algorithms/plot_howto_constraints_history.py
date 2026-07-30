@@ -33,7 +33,7 @@ red for violated, white for active, and green for satisfied regions.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import ConstraintsHistory_Settings
+from gemseo.post import ConstraintsHistory_Settings
 
 # %%
 # ### 1. Prerequisites

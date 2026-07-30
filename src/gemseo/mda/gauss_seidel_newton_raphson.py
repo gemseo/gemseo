@@ -33,7 +33,7 @@ from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.newton_raphson import MDANewtonRaphson
 from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 from gemseo.mda.sequential import MDASequential
-from gemseo.utils.pydantic import create_model
+from gemseo.util.pydantic import create_model
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

@@ -16,13 +16,13 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.uncertainty.distributions.openturns.normal_settings import (
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
 from gemseo.uncertainty.reliability.problem import ReliabilityProblem
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")

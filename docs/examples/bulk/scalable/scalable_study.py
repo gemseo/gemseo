@@ -21,33 +21,29 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Scalable study.
 
-We want to compare [IDF][gemseo.formulations.idf.IDF] and [MDF][gemseo.formulations.mdf.MDF] formulations
+We want to compare [IDF][gemseo.formulation.idf.IDF] and [MDF][gemseo.formulation.mdf.MDF] formulations
 with respect to the problem dimension for the aerostructure problem.
 For that,
-we use the [ScalabilityStudy][gemseo.problems.mdo.scalable.data_driven.study.process]
-and [PostScalabilityStudy][gemseo.problems.mdo.scalable.data_driven.study.post.PostScalabilityStudy] classes.
+we use the [ScalabilityStudy][gemseo.problem.mdo.scalable.data_driven.study.process]
+and [PostScalabilityStudy][gemseo.problem.mdo.scalable.data_driven.study.post.PostScalabilityStudy] classes.
 """
 
 from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
-    DiagonalDOE_Settings,
-)
-from gemseo.algos.opt.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
-from gemseo.formulations.idf_settings import IDF_Settings
-from gemseo.problems.mdo.aerostructure.aerostructure_design_space import (
-    AerostructureDesignSpace,
-)
-from gemseo.problems.mdo.scalable.data_driven import create_scalability_study
-from gemseo.problems.mdo.scalable.data_driven import plot_scalability_results
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.formulation import IDF_Settings
+from gemseo.optimization import NLOPT_SLSQP_Settings
+from gemseo.problem.mdo.aerostructure import AerostructureDesignSpace
+from gemseo.problem.mdo.scalable.data_driven import create_scalability_study
+from gemseo.problem.mdo.scalable.data_driven import plot_scalability_results
 
 # %%
 # ## Create the disciplinary datasets
 #
-# First of all, we create the disciplinary [Dataset][gemseo.datasets.dataset.Dataset] datasets
-# based on a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
+# First of all, we create the disciplinary [Dataset][gemseo.dataset.dataset.Dataset] datasets
+# based on a [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
 datasets = {}
 disciplines = create_discipline(["Aerodynamics", "Structure", "Mission"])
 for discipline in disciplines:
@@ -70,7 +66,7 @@ for discipline in disciplines:
 # %%
 # ## Define the design problem
 #
-# Then, we instantiate a [ScalabilityStudy][gemseo.problems.mdo.scalable.data_driven.study.process]
+# Then, we instantiate a [ScalabilityStudy][gemseo.problem.mdo.scalable.data_driven.study.process]
 # from the definition of the design problem, expressed in terms of
 # objective function (to maximize or minimize),
 # design variables (local and global)
@@ -106,9 +102,9 @@ study.add_discipline(datasets["Mission"])
 # Then, we define the different optimization strategies we want to compare:
 # In this case, the strategies are:
 #
-# - [MDF][gemseo.formulations.mdf.MDF] formulation with the `"NLOPT_SLSQP"` optimization algorithm
+# - [MDF][gemseo.formulation.mdf.MDF] formulation with the `"NLOPT_SLSQP"` optimization algorithm
 #   and no more than 100 iterations,
-# - [IDF][gemseo.formulations.idf.IDF] formulation with the `"NLOPT_SLSQP"` optimization algorithm
+# - [IDF][gemseo.formulation.idf.IDF] formulation with the `"NLOPT_SLSQP"` optimization algorithm
 #   and no more than 100 iterations,
 #
 # Note that in this case, we compare MDO formulations
@@ -129,7 +125,7 @@ study.add_optimization_strategy(
 # 2. All design parameters have a size equal to 20.
 #
 # To do that, we pass `design_size=[1, 20]`
-# to the [add_scaling_strategies()][gemseo.problems.mdo.scalable.data_driven.study.process.ScalabilityStudy.add_scaling_strategies] method.
+# to the [add_scaling_strategies()][gemseo.problem.mdo.scalable.data_driven.study.process.ScalabilityStudy.add_scaling_strategies] method.
 # `design_size` expects either:
 #
 # - a list of integer where the ith component is the size for the ith scaling strategy,
@@ -153,10 +149,10 @@ study.add_scaling_strategies(design_size=[1, 20])
 # ## Execute the scalable study
 #
 # Then, we execute the scalability study,
-# i.e. to build and execute a [ScalableProblem][gemseo.problems.mdo.scalable.parametric.scalable_problem.ScalableProblem]
+# i.e. to build and execute a [ScalableProblem][gemseo.problem.mdo.scalable.parametric.scalable_problem.ScalableProblem]
 # for each optimization strategy and each scaling strategy,
 # and repeat it 2 times in order to get statistics on the results
-# (because the [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel] relies on stochastic features.
+# (because the [ScalableDiagonalModel][gemseo.problem.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel] relies on stochastic features.
 study.execute(n_replicates=2)
 
 # %%
@@ -181,8 +177,8 @@ study.execute(n_replicates=2)
 # ## Look at optimization histories
 #
 # Here are the optimization histories obtained with the 1st replicate when
-# `design_size=10`, where the left side represents the [MDF][gemseo.formulations.mdf.MDF] formulation
-# while the right one represents the [IDF][gemseo.formulations.idf.IDF] formulation.
+# `design_size=10`, where the left side represents the [MDF][gemseo.formulation.mdf.MDF] formulation
+# while the right one represents the [IDF][gemseo.formulation.idf.IDF] formulation.
 #
 # ### Objective function
 #
@@ -226,7 +222,7 @@ study.execute(n_replicates=2)
 # but as one series of boxplots per optimization strategy w.r.t. scaling strategy,
 # where the boxplots represents the variability due to the 10 replicates.
 # In this case, it seems that
-# the [MDF][gemseo.formulations.mdf.MDF] formulation is more expensive than the [IDF][gemseo.formulations.idf.IDF] one
+# the [MDF][gemseo.formulation.mdf.MDF] formulation is more expensive than the [IDF][gemseo.formulation.idf.IDF] one
 # when the design space dimension increases
 # while they seems to be the same when each design parameter has a size equal to 1.
 post = plot_scalability_results("study")

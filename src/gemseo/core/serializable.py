@@ -30,10 +30,10 @@ from typing import ClassVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
-from gemseo.utils.portable_path import to_os_specific
+from gemseo.util.portable_path import to_os_specific
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 class Serializable(metaclass=GoogleDocstringInheritanceMeta):
@@ -97,7 +97,7 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
 
         # The process observers are injected by decorating methods.
         # This cannot be pickled, thus a new injection is done.
-        from gemseo.utils._workflow_observers.injector import inject_observer
+        from gemseo.util._workflow_observer.injector import inject_observer
 
         inject_observer(self.__class__)
 

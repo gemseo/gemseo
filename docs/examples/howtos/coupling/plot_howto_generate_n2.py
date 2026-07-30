@@ -37,7 +37,7 @@ You need to create this chart by using the
 from __future__ import annotations
 
 from gemseo import generate_n2_plot
-from gemseo.utils.discipline import DummyDiscipline
+from gemseo.util.discipline import DummyDiscipline
 
 # %%
 # ### 1. Create the disciplines

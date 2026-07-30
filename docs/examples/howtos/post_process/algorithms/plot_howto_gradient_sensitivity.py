@@ -34,12 +34,12 @@ By default, the gradients are evaluated at the optimum
 from __future__ import annotations
 
 from gemseo import create_discipline
-from gemseo.formulations.mdf_settings import MDF_Settings
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings.mda import MDAGaussSeidel_Settings
-from gemseo.settings.opt import SLSQP_Settings
-from gemseo.settings.post import GradientSensitivity_Settings
+from gemseo.formulation import MDF_Settings
+from gemseo.mda import MDAGaussSeidel_Settings
+from gemseo.optimization import SLSQP_Settings
+from gemseo.post import GradientSensitivity_Settings
+from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.scenario import MDOScenario
 
 # %%
 # ### 1. Build and execute the scenario

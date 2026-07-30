@@ -31,21 +31,21 @@ from sklearn.linear_model import ElasticNet
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import Ridge
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.machine_learning.regression.models.linreg import LinearRegressor
-from gemseo.machine_learning.regression.models.linreg_settings import (
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
+from gemseo.machine_learning.regression.model.linreg_settings import (
     LinearRegressor_Settings,
 )
-from gemseo.machine_learning.transformers.dimension_reduction.pca import PCA
-from gemseo.machine_learning.transformers.dimension_reduction.pls import PLS
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.machine_learning.transformer.dimension_reduction.pca import PCA
+from gemseo.machine_learning.transformer.dimension_reduction.pls import PLS
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
-    from gemseo.datasets.io_dataset import IODataset
+    from gemseo.dataset.io_dataset import IODataset
 
 LEARNING_SIZE = 9
 

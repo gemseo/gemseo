@@ -28,7 +28,7 @@ from gemseo.post.dataset.base import BaseDatasetPlot
 from gemseo.post.dataset.heatmap_settings import Heatmap_Settings
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 class Heatmap(BaseDatasetPlot[Heatmap_Settings]):

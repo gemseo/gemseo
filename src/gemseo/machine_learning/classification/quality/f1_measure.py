@@ -39,14 +39,14 @@ from typing import TYPE_CHECKING
 
 from sklearn.metrics import f1_score
 
-from gemseo.machine_learning.classification.quality.base_classifier_quality import (
+from gemseo.machine_learning.classification.core.base_classifier_quality import (
     BaseClassifierQuality,
 )
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.machine_learning.classification.models.base_classifier import (
+    from gemseo.machine_learning.classification.core.base_classifier import (
         BaseClassifier,
     )
     from gemseo.machine_learning.core.quality.base_ml_model_quality import MeasureType

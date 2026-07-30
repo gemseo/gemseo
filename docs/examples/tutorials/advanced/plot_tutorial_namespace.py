@@ -42,10 +42,10 @@ from __future__ import annotations
 from numpy import array
 
 from gemseo import generate_n2_plot
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.disciplines.linear_combination import LinearCombination
-from gemseo.mda.chain import MDAChain
-from gemseo.utils.discipline import check_disciplines_consistency
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.discipline import LinearCombination
+from gemseo.mda import MDAChain
+from gemseo.util.discipline import check_disciplines_consistency
 
 # %%
 # ## Step 1 - Create the satellite mass discipline
@@ -146,7 +146,7 @@ for disc in satellites:
 # You need one more discipline that sums all satellite masses
 # into a single `total_mass` output.
 # The built-in
-# [LinearCombination][gemseo.disciplines.linear_combination.LinearCombination]
+# [LinearCombination][gemseo.discipline.linear_combination.LinearCombination]
 # discipline is ideal for this.
 satellite_mass_variable_names = ["sat1:mass", "sat2:mass", "sat3:mass"]
 

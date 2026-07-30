@@ -23,22 +23,22 @@ from typing import NamedTuple
 
 import pytest
 
-from gemseo.core._process_flow.execution_sequences.execution_sequence import (
+from gemseo.core._process_flow.execution_sequence.execution_sequence import (
     ExecutionSequence,
 )
-from gemseo.core._process_flow.execution_sequences.loop import LoopExecSequence
-from gemseo.core._process_flow.execution_sequences.parallel import ParallelExecSequence
-from gemseo.core._process_flow.execution_sequences.sequential import (
+from gemseo.core._process_flow.execution_sequence.loop import LoopExecSequence
+from gemseo.core._process_flow.execution_sequence.parallel import ParallelExecSequence
+from gemseo.core._process_flow.execution_sequence.sequential import (
     SequentialExecSequence,
 )
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.disciplines.scenario_adapters.mdo_scenario_adapter import MDOScenarioAdapter
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiAerodynamics
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiMission
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiPropulsion
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.mdo import MDOScenario
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
+from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
+from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.scenario.mdo import MDOScenario
 
 
 class Disciplines(NamedTuple):

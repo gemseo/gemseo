@@ -40,9 +40,9 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.post.dataset.bars import BarPlot
-from gemseo.post.dataset.bars_settings import BarPlot_Settings
+from gemseo.dataset import Dataset
+from gemseo.post.dataset import BarPlot
+from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
 
 # %%
 # ### 1. Build the dataset

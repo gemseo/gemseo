@@ -37,8 +37,8 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_mda
-from gemseo.algos.sequence_transformer.acceleration import AccelerationMethod
-from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
+from gemseo.mda import MDAGaussSeidel_Settings
+from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
 
 # %%
 # ### 1. Create your disciplines

@@ -31,7 +31,7 @@ which plots any problem function against the iteration index.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import BasicHistory_Settings
+from gemseo.post import BasicHistory_Settings
 
 # %%
 # ### 1. Prerequisites

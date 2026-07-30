@@ -29,7 +29,7 @@ You want to model the relationship between properties and a label using classifi
 ## Solution
 
 Use a classification model (a.k.a. classifier) from the sub-package
-[gemseo.machine_learning.classification.models][gemseo.machine_learning.classification.models].
+[gemseo.machine_learning.classification.model][gemseo.machine_learning.classification.model].
 
 ## Step-by-step guide
 """
@@ -38,12 +38,12 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.machine_learning.classification.models.knn import KNNClassifier
-from gemseo.machine_learning.classification.models.knn_settings import (
+from gemseo.machine_learning.classification.model import KNNClassifier
+from gemseo.machine_learning.classification.model.knn_settings import (
     KNNClassifier_Settings,
 )
-from gemseo.machine_learning.classification.quality.f1_measure import F1Measure
-from gemseo.problems.dataset.iris import create_iris_dataset
+from gemseo.machine_learning.classification.quality import F1Measure
+from gemseo.problem.dataset.iris import create_iris_dataset
 
 # %%
 # ### 1. Create the training dataset
@@ -80,4 +80,4 @@ predictions = model.predict(input_value)
 #
 # Classification models can group data according to their similarities.
 # They can be found in the
-# [gemseo.machine_learning.classification.models][gemseo.machine_learning.classification.models] package.
+# [gemseo.machine_learning.classification.model][gemseo.machine_learning.classification.model] package.

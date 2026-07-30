@@ -1,0 +1,288 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - API and implementation and/or documentation
+#       :author: Damien Guenot - 26 avr. 2016
+#       :author: Francois Gallard, refactoring
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Base class for algorithm libraries to handle a problem."""
+
+from __future__ import annotations
+
+import logging
+from abc import abstractmethod
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
+from typing import Generic
+from typing import TypeVar
+
+from docstring_inheritance import GoogleDocstringInheritanceMeta
+
+from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
+from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
+from gemseo.util.pydantic import BaseSettings
+from gemseo.util.pydantic import create_model
+from gemseo.util.string import pretty_str
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+
+    from gemseo.core.problem.base import BaseProblem
+
+LOGGER = logging.getLogger(__name__)
+T = TypeVar("T", bound=BaseSettings)
+
+
+@dataclass
+class AlgorithmDescription(metaclass=GoogleDocstringInheritanceMeta):
+    """The description of an algorithm."""
+
+    algorithm_name: str
+    """The name of the algorithm in GEMSEO."""
+
+    internal_algorithm_name: str
+    """The name of the algorithm in the wrapped library."""
+
+    library_name: str = ""
+    """The name of the wrapped library."""
+
+    description: str = ""
+    """A description of the algorithm."""
+
+    website: str = ""
+    """The website of the wrapped library or algorithm."""
+
+    # TODO: The field below is a workaround to be able to access algo-specific settings
+    #  in modules for which one library class handles many different algorithms. In the
+    #  future we should have one algorithm per module and use the settings_class class
+    #  variable to validate the settings in _validate_settings.
+    settings_class: type[BaseSettings] = BaseSettings
+    """The Pydantic model for the settings."""
+
+
+class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
+    """Base class for algorithm libraries to handle a problem.
+
+    See [BaseProblem][gemseo.core.problem.base.BaseProblem].
+
+    An algorithm library solves a numerical problem (optim, doe, linear problem) using a
+    particular algorithm from a particular family of numerical methods.
+
+    Provide the available methods in the library for the proposed problem to be solved.
+
+    To integrate an optimization package, inherit from this class and put your module in
+    gemseo.doe or gemseo.algo.opt, or gemseo.linear packages.
+    """
+
+    _algo_name: str
+    """The name of the algorithm."""
+
+    _problem: BaseProblem | None
+    """The problem to be solved."""
+
+    ALGORITHM_INFOS: ClassVar[dict[str, AlgorithmDescription]] = {}
+    """The description of the algorithms contained in the library."""
+
+    _settings: T | None
+    """The Pydantic model for the settings of the formulation."""
+
+    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[T]]
+    """The settings class whose fields should be excluded from settings."""
+
+    _ADDITIONAL_SETTINGS_CLASSES_TO_EXCLUDE: ClassVar[
+        tuple[type[BaseSettings], ...]
+    ] = ()
+    """Additional settings classes whose fields should be excluded from settings.
+
+    A subclass dedicated to a family of algorithms can set this to exclude fields
+    contributed by settings mixins specific to that family
+    (e.g. gradient-based optimizers)."""
+
+    def __init__(self, algo_name: str) -> None:
+        """
+        Args:
+            algo_name: The algorithm name.
+
+        Raises:
+            KeyError: When the algorithm is not in the library.
+        """  # noqa: D205, D212
+        if algo_name not in self.ALGORITHM_INFOS:
+            msg = (
+                f"The algorithm {algo_name} is unknown in {self.__class__.__name__}; "
+                f"available ones are: {pretty_str(self.ALGORITHM_INFOS.keys())}."
+            )
+            raise KeyError(msg)
+
+        self._algo_name = algo_name
+        self._reset()
+
+    def _reset(self) -> None:
+        """Clear the state attributes."""
+        self._problem = None
+        self._settings = None
+
+    @property
+    def algo_name(self) -> str:
+        """The name of the algorithm."""
+        return self._algo_name
+
+    def _filter_settings(self) -> dict[str, Any]:
+        """Generate a partial dictionary representation of the settings.
+
+        This dictionary does not include the fields from `_SETTINGS_CLASS_TO_EXCLUDE`
+        and `_ADDITIONAL_SETTINGS_CLASSES_TO_EXCLUDE`.
+
+        Returns:
+            A partial dictionary representation of the settings.
+        """
+        fields_to_exclude = self._SETTINGS_CLASS_TO_EXCLUDE.model_fields.keys()
+        for settings_class in self._ADDITIONAL_SETTINGS_CLASSES_TO_EXCLUDE:
+            fields_to_exclude = fields_to_exclude | settings_class.model_fields.keys()
+        return self._settings.model_dump(exclude=fields_to_exclude)
+
+    def _pre_run(
+        self,
+        problem: BaseProblem,
+    ) -> None:
+        """Save the solver settings and name in the problem attributes.
+
+        Args:
+            problem: The problem to be solved.
+        """
+
+    def _post_run(
+        self,
+        problem: BaseProblem,
+        result: ndarray,
+    ) -> None:
+        """Save the LinearProblem to the disk when required.
+
+        If the save_when_fail option is True, save the LinearProblem to the disk when
+        the system failed and print the file name in the warnings.
+
+        Args:
+            problem: The problem to be solved.
+            result: The result of the run, i.e. the solution.
+        """
+
+    def execute(
+        self,
+        problem: BaseProblem,
+        settings: BaseSettings | None = None,
+    ) -> Any:
+        """Solve a problem with an algorithm from this library.
+
+        Args:
+            problem: The problem to be solved.
+            settings: The algorithm settings.
+                If `None`, use the default settings.
+
+        Returns:
+            The solution found by the algorithm.
+        """
+        self._problem = problem
+        problem.check()
+        settings_class = self.ALGORITHM_INFOS[self.algo_name].settings_class
+        self._settings = create_model(settings_class, settings_model=settings)
+        self._pre_run(problem)
+        self._run(problem)
+        result = self._get_result(problem)
+        self._post_run(problem, result)
+        self._reset()
+        return result
+
+    @abstractmethod
+    def _run(self, problem: BaseProblem) -> None:
+        """Solve the problem.
+
+        Args:
+            problem: The problem.
+        """
+
+    def _get_result(self, problem: BaseProblem) -> Any:
+        """Return the result of the resolution of the problem.
+
+        Args:
+            problem: The problem.
+        """
+
+    def _check_algorithm(self, problem: BaseProblem) -> None:
+        """Check that algorithm is available and adapted to the problem.
+
+        Set the optimization library and the algorithm name according
+        to the requirements of the optimization library.
+
+        Args:
+            problem: The problem to be solved.
+        """
+        algo_name = self._algo_name
+        unsuitability_reason = self._get_unsuitability_reason(
+            self.ALGORITHM_INFOS[algo_name], problem
+        )
+        if unsuitability_reason:
+            msg = (
+                f"The algorithm {algo_name} is not adapted to the problem "
+                f"because {unsuitability_reason}."
+            )
+            raise ValueError(msg)
+
+    @classmethod
+    def _get_unsuitability_reason(
+        cls, algorithm_description: AlgorithmDescription, problem: BaseProblem
+    ) -> _UnsuitabilityReason:
+        """Get the reason why an algorithm is not adapted to a problem.
+
+        Args:
+            algorithm_description: The description of the algorithm.
+            problem: The problem to be solved.
+
+        Returns:
+            The reason why the algorithm is not adapted to the problem.
+        """
+        return _UnsuitabilityReason.NO_REASON
+
+    @classmethod
+    def is_algorithm_suited(
+        cls, algorithm_description: AlgorithmDescription, problem: BaseProblem
+    ) -> bool:
+        """Check if an algorithm is suited to a problem according to its description.
+
+        Args:
+            algorithm_description: The description of the algorithm.
+            problem: The problem to be solved.
+
+        Returns:
+            Whether the algorithm is suited to the problem.
+        """
+        return not cls._get_unsuitability_reason(algorithm_description, problem)
+
+    @classmethod
+    def filter_adapted_algorithms(cls, problem: BaseProblem) -> list[str]:
+        """Filter the algorithms capable of solving the problem.
+
+        Args:
+            problem: The problem to be solved.
+
+        Returns:
+            The names of the algorithms adapted to this problem.
+        """
+        adapted_algorithms = []
+        for algo_name, algo_description in cls.ALGORITHM_INFOS.items():
+            if cls.is_algorithm_suited(algo_description, problem):
+                adapted_algorithms.append(algo_name)
+
+        return adapted_algorithms

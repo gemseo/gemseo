@@ -24,20 +24,20 @@ Contributors:
 
 In this section we describe GEMSEO's optimization and DOE framework.
 
-The standard way to use GEMSEO is through an [MDOScenario][gemseo.scenarios.mdo.MDOScenario], which
-automatically creates an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] from an [MDO formulation][concept-mdo-formulations] and a set of
+The standard way to use GEMSEO is through an [MDOScenario][gemseo.scenario.mdo.MDOScenario], which
+automatically creates an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] from an [MDO formulation][concept-mdo-formulations] and a set of
 [Discipline][gemseo.core.discipline.discipline.Discipline].
 
-However, one may be interested in directly creating an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] using the class [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem],
+However, one may be interested in directly creating an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] using the class [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem],
 which can be solved using an optimization algorithm or sampled with a DOE algorithm.
 
 !!! warning
       [MDO formulation][concept-mdo-formulations] and optimization problem developers should also understand this part of GEMSEO.
 
-## Setting up an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+## Setting up an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 
-The [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] class is composed of at least a
-[DesignSpace][gemseo.algos.design_space.DesignSpace] created from [create_design_space()][gemseo.create_design_space] which describes the design variables:
+The [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] class is composed of at least a
+[DesignSpace][gemseo.space.design.DesignSpace] created from [create_design_space()][gemseo.create_design_space] which describes the design variables:
 
 ``` python
 from gemseo import create_design_space
@@ -49,11 +49,11 @@ design_space.add_variable(
 )
 ```
 
-and an objective function, of type [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction]. The [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] is callable and requires at least
+and an objective function, of type [ArrayFunction][gemseo.core.function.array_function.ArrayFunction]. The [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] is callable and requires at least
 a function pointer to be instantiated. It supports expressions and the +, -, \ * operators:
 
 ``` python
-from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.function.array_function import ArrayFunction
 from numpy import cos
 from numpy import exp
 from numpy import sin
@@ -63,25 +63,25 @@ f_2 = ArrayFunction(exp, name="f_2", jac=exp, expr="exp(x)")
 f_1_sub_f_2 = f_1 - f_2
 ```
 
-From this [DesignSpace][gemseo.algos.design_space.DesignSpace],
-an [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] is built:
+From this [DesignSpace][gemseo.space.design.DesignSpace],
+an [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] is built:
 
 ``` python
-from gemseo.algos.optimization_problem import OptimizationProblem
+from gemseo.optimization import OptimizationProblem
 
 problem = OptimizationProblem(design_space)
 ```
 
-To set the objective [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction],
-the attribute [objective][gemseo.algos.optimization_problem.OptimizationProblem.objective] of the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+To set the objective [ArrayFunction][gemseo.core.function.array_function.ArrayFunction],
+the attribute [objective][gemseo.optimization.problem.OptimizationProblem.objective] of the [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 must be set with the objective function pointer:
 
 ``` python
 problem.objective = f_1_sub_f_2
 ```
 
-Similarly the [constraints][gemseo.algos.optimization_problem.OptimizationProblem.constraints] attribute must be set with a list of inequality or equality constraints.
-The [f_type][gemseo.core.functions.array_function.ArrayFunction.f_type] attribute of [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] shall be set to `"eq"` or `"ineq"` to declare the type of constraint to equality or inequality.
+Similarly the [constraints][gemseo.optimization.problem.OptimizationProblem.constraints] attribute must be set with a list of inequality or equality constraints.
+The [f_type][gemseo.core.function.array_function.ArrayFunction.f_type] attribute of [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] shall be set to `"eq"` or `"ineq"` to declare the type of constraint to equality or inequality.
 
 !!! warning
       **All inequality constraints must be negative by convention**, whatever the optimization algorithm used to solve the problem.
@@ -89,15 +89,15 @@ The [f_type][gemseo.core.functions.array_function.ArrayFunction.f_type] attribut
 ## Solving the problem by optimization
 
 Once the optimization problem created, it can be solved using one of the available
-optimization algorithms from the [OptimizationLibraryFactory][gemseo.algos.opt.factory.OptimizationLibraryFactory],
-by means of the method [BaseOptimizationLibrary.execute()][gemseo.algos.opt.base_optimization_library.BaseOptimizationLibrary.execute]
-whose mandatory arguments are the [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+optimization algorithms from the [OptimizationLibraryFactory][gemseo.optimization.factory.OptimizationLibraryFactory],
+by means of the method [BaseOptimizationLibrary.execute()][gemseo.optimization.core.base_optimization_library.BaseOptimizationLibrary.execute]
+whose mandatory arguments are the [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 and the optimization algorithm name. For example, in the case of the [L-BFGS-B algorithm](https://en.wikipedia.org/wiki/Limited-memory_BFGS)
 with normalized design space, we have:
 
 ``` python
-from gemseo.algos.opt.factory import OptimizationLibraryFactory
-from gemseo.settings import L_BFGS_B_Settings
+from gemseo.optimization.factory import OptimizationLibraryFactory
+from gemseo.optimization import L_BFGS_B_Settings
 
 opt = OptimizationLibraryFactory().execute(
     problem, L_BFGS_B(normalize_design_space=True)
@@ -107,7 +107,7 @@ print(f"Optimum = {opt.f_opt}")
 
 Note that the [L-BFGS-B algorithm](https://en.wikipedia.org/wiki/Limited-memory_BFGS) is implemented in the external
 library [SciPy](https://scipy.org/)
-and interfaced with GEMSEO through the class [ScipyOpt][gemseo.algos.opt.scipy_local.scipy_local.ScipyOpt].
+and interfaced with GEMSEO through the class [ScipyOpt][gemseo.optimization.scipy_local.scipy_local.ScipyOpt].
 
 The list of available algorithms depend on the local setup of GEMSEO, and the installed
 optimization libraries. It can be obtained using :
@@ -119,7 +119,7 @@ print(f"Available algorithms: {algo_list}")
 
 The optimization history can be saved to the disk for further analysis,
 without having to re-execute the optimization.
-For that, we use the method [to_hdf()][gemseo.algos.optimization_problem.OptimizationProblem.to_hdf]:
+For that, we use the method [to_hdf()][gemseo.optimization.problem.OptimizationProblem.to_hdf]:
 
 ``` python
 problem.to_hdf("simple_opt.hdf5")
@@ -131,7 +131,7 @@ DOE algorithms can also be used to sample the design space and observe the
 value of the objective and constraints
 
 ``` python
-from gemseo.algos.doe.factory import DOELibraryFactory
+from gemseo.doe.factory import DOELibraryFactory
 
 # And solve it with GEMSEO interface
 opt = DOELibraryFactory().execute(
@@ -146,7 +146,7 @@ see [this page][how-to-post-process].
 
 ``` python
 from gemseo import execute_post
-from gemseo.settings import OptHistoryView_Settings
+from gemseo.post import OptHistoryView_Settings
 
 execute_post(problem, OptHistoryView_Settings(save=True, file_path="simple_opt"))
 

@@ -34,8 +34,8 @@ if TYPE_CHECKING:
 
     from openturns.typ import Indices
 
-    from gemseo.typing import RealArray
-    from gemseo.uncertainty.distributions.openturns.joint import OTJointDistribution
+    from gemseo.uncertainty.distribution.openturns.joint import OTJointDistribution
+    from gemseo.util.typing import RealArray
 
 
 class BaseOTBasis(BaseBasis):

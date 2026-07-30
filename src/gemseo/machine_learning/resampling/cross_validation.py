@@ -25,16 +25,16 @@ from numpy import setdiff1d
 from numpy import vstack
 from numpy.random import default_rng
 
-from gemseo.machine_learning.resampling.base_resampler import BaseResampler
+from gemseo.machine_learning.resampling.core.base_resampler import BaseResampler
 from gemseo.machine_learning.resampling.split import Split
 from gemseo.machine_learning.resampling.splits import Splits
-from gemseo.utils.seeder import SEED
+from gemseo.util.seeder import SEED
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-    from gemseo.machine_learning.core.models.ml_model import BaseMLModel
-    from gemseo.typing import IntegerArray
+    from gemseo.machine_learning.core.model.base_ml_model import BaseMLModel
+    from gemseo.util.typing import IntegerArray
 
 
 class CrossValidation(BaseResampler):

@@ -27,7 +27,7 @@ from numpy import allclose
 from numpy import arange
 from sklearn.preprocessing import PowerTransformer
 
-from gemseo.machine_learning.transformers.power.yeo_johnson import YeoJohnson
+from gemseo.machine_learning.transformer.power.yeo_johnson import YeoJohnson
 
 if TYPE_CHECKING:
     from numpy import ndarray

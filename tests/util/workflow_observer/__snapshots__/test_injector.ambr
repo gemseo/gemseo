@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_decorate_with_finish_propagates_exception_and_calls_end
+  'boom'
+# ---
+# name: test_inject_raises_when_no_observer_matches
+  "Cannot find an observer to inject into the class <class 'tests.util.workflow_observer.test_injector.test_inject_raises_when_no_observer_matches.<locals>._UnobservedClass'>."
+# ---

@@ -20,12 +20,12 @@ from typing import ClassVar
 
 from pydantic import Field
 
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (
+from gemseo.linear.core.base_linear_solver_settings import (
     BaseLinearSolverSettings,  # noqa: TC001
 )
-from gemseo.algos.linear_solvers.scipy_linalg import LGMRES_Settings
-from gemseo.mda.base_parallel_solver_settings import BaseMDAParallelSolverSettings
-from gemseo.typing import StrKeyMapping  # noqa: TC001
+from gemseo.linear.scipy_linalg import LGMRES_Settings
+from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
+from gemseo.util.typing import StrKeyMapping  # noqa: TC001
 
 
 class MDANewtonRaphson_Settings(BaseMDAParallelSolverSettings):  # noqa: N801

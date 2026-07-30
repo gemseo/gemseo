@@ -32,14 +32,14 @@ from typing import TYPE_CHECKING
 
 from sklearn.metrics import mean_squared_error
 
-from gemseo.machine_learning.regression.quality.base_regressor_quality import (
+from gemseo.machine_learning.regression.core.base_regressor_quality import (
     BaseRegressorQuality,
 )
 
 if TYPE_CHECKING:
     from gemseo.machine_learning.core.quality.base_ml_model_quality import MeasureType
-    from gemseo.machine_learning.regression.models.base_regressor import BaseRegressor
-    from gemseo.typing import RealArray
+    from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+    from gemseo.util.typing import RealArray
 
 
 class MSEMeasure(BaseRegressorQuality):

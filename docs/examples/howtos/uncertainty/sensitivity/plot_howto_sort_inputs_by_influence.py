@@ -23,10 +23,10 @@ with respect to a given output.
 
 ## Solution
 
-[sort_input_variables()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.sort_input_variables]
+[sort_input_variables()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.sort_input_variables]
 returns the input variable names ordered by decreasing absolute sensitivity index.
 The ranking criterion is the current
-[main_method][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.main_method]
+[main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
 (see [Change the main sensitivity method][]).
 
 ## Step-by-step guide
@@ -34,9 +34,9 @@ The ranking criterion is the current
 
 from __future__ import annotations
 
-from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
+from gemseo.problem.uncertainty.ishigami import IshigamiDiscipline
+from gemseo.problem.uncertainty.ishigami import IshigamiSpace
+from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 
 # %%
 # ### 1. Compute sensitivity indices
@@ -55,23 +55,23 @@ analysis.compute_indices()
 # ### 2. Sort inputs by influence
 #
 # Pass the output variable name to
-# [sort_input_variables()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.sort_input_variables]:
+# [sort_input_variables()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.sort_input_variables]:
 analysis.sort_input_variables("y")
 
 # %%
 # The ranking uses the default main method (`"Spearman"` for
 # [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]).
 # To rank by a different index type, change
-# [main_method][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.main_method]
+# [main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
 # first (see [Change the main sensitivity method][]).
 
 # %%
 # ## Summary
 #
-# - [sort_input_variables(output)][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.sort_input_variables]
+# - [sort_input_variables(output)][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.sort_input_variables]
 #   returns inputs ranked by decreasing absolute index value;
 # - ranking criterion is the current
-#   [main_method][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.main_method];
+#   [main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method];
 # - change
-#   [main_method][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.main_method]
+#   [main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
 #   to rank by a different index type: see [Change the main sensitivity method][].

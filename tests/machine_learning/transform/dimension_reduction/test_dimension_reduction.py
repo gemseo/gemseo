@@ -20,10 +20,10 @@
 
 from __future__ import annotations
 
-from gemseo.machine_learning.transformers.dimension_reduction.base_dimension_reduction import (  # noqa: E501
+from gemseo.machine_learning.transformer.dimension_reduction.base_dimension_reduction import (  # noqa: E501
     BaseDimensionReduction,
 )
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.util.testing.helper import concretize_classes
 
 
 def test_constructor() -> None:

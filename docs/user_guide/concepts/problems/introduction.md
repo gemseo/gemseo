@@ -25,6 +25,6 @@ as well as zero, one or more ways to find them (or not!).
 In GEMSEO,
 a *problem* is a mathematical problem that can be solved using an *algorithm*,
 e.g. an optimization problem solved by an optimizer.
-The associated base class is [BaseProblem][gemseo.algos.base_problem.BaseProblem].
+The associated base class is [BaseProblem][gemseo.core.problem.base.BaseProblem].
 
 The following pages will show the different types of problems available in GEMSEO.

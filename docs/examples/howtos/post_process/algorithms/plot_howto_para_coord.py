@@ -35,7 +35,7 @@ highlighting correlations between design variables and objective.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import ParallelCoordinates_Settings
+from gemseo.post import ParallelCoordinates_Settings
 
 # %%
 # ### 1. Prerequisites

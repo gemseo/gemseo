@@ -23,7 +23,7 @@ You want to create a discipline without explicitly declaring its inputs and outp
 ## Solution
 
 Subclass
-[BaseModelDiscipline][gemseo.disciplines.base_model_discipline.BaseModelDiscipline]
+[BaseModelDiscipline][gemseo.discipline.base_model_discipline.BaseModelDiscipline]
 and implement its `_run_from_model` method.
 GEMSEO infers the input and output grammars automatically by observing which
 model fields are **read** and which are **written** during a dry-run of your
@@ -63,7 +63,7 @@ class QuadraticModel(BaseModel):
 #
 # The only requirement is to implement ``_run_from_model``.
 # Read input values from *model* and write the results back into it.
-from gemseo.disciplines.base_model_discipline import BaseModelDiscipline  # noqa: E402
+from gemseo.discipline.base_model_discipline import BaseModelDiscipline  # noqa: E402
 
 
 class QuadraticDiscipline(BaseModelDiscipline):
@@ -137,7 +137,7 @@ print("y =", output["y"])  # 2 * 3**2 + 1 = 19
 # %%
 # ## Summary
 #
-# [BaseModelDiscipline][gemseo.disciplines.base_model_discipline.BaseModelDiscipline]
+# [BaseModelDiscipline][gemseo.discipline.base_model_discipline.BaseModelDiscipline]
 # removes the need to declare grammars by hand: subclass it, define the Pydantic
 # model that describes the data, implement `_run_from_model` and GEMSEO does the rest.
 #

@@ -30,17 +30,17 @@ from typing import ClassVar
 
 from numpy import array
 
-from gemseo.core._process_flow.execution_sequences.sequential import (
+from gemseo.core._process_flow.execution_sequence.sequential import (
     SequentialExecSequence,
 )
-from gemseo.core.chains.chain import DisciplineChain
-from gemseo.core.chains.initialization_chain import InitializationDisciplineChain
-from gemseo.core.chains.parallel_chain import ParallelDisciplineChain
-from gemseo.mda.base import BaseMDA
-from gemseo.mda.base import _BaseMDAProcessFlow
+from gemseo.discipline.chain.chain import DisciplineChain
+from gemseo.discipline.chain.initialization_chain import InitializationDisciplineChain
+from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
 from gemseo.mda.chain_settings import MDAChain_Settings
+from gemseo.mda.core.base import BaseMDA
+from gemseo.mda.core.base import _BaseMDAProcessFlow
 from gemseo.mda.factory import MDA_FACTORY
-from gemseo.utils.constants import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -53,13 +53,13 @@ if TYPE_CHECKING:
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.core.discipline.discipline_data import DisciplineData
-    from gemseo.mda.base import BaseProcessFlow
-    from gemseo.mda.base_settings import BaseMDASettings
-    from gemseo.mda.base_solver import BaseMDASolver
-    from gemseo.typing import RealArray
-    from gemseo.typing import StrKeyMapping
-    from gemseo.typing import StrPath
-    from gemseo.utils.matplotlib_figure import FigSizeType
+    from gemseo.mda.core.base import BaseProcessFlow
+    from gemseo.mda.core.base_settings import BaseMDASettings
+    from gemseo.mda.core.base_solver import BaseMDASolver
+    from gemseo.util.matplotlib_figure import FigSizeType
+    from gemseo.util.typing import RealArray
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 
@@ -176,15 +176,16 @@ class MDAChain(BaseMDA):
         """Create a process from disciplines.
 
         This method creates a process that will be appended
-        to the main inner [DisciplineChain][gemseo.core.chains.chain.DisciplineChain]
+        to the main inner
+        [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain]
         of the [MDAChain][gemseo.mda.chain.MDAChain].
         Depending on the number and type of disciplines,
         as well as the options provided by the user,
         the process may be a sole discipline,
-        a [BaseMDA][gemseo.mda.base.BaseMDA],
-        an [DisciplineChain][gemseo.core.chains.chain.DisciplineChain],
+        a [BaseMDA][gemseo.mda.core.base.BaseMDA],
+        an [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain],
         or an
-        [ParallelDisciplineChain][gemseo.core.chains.parallel_chain.ParallelDisciplineChain].
+        [ParallelDisciplineChain][gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain].
 
         Args:
             parallel_tasks: The parallel tasks to be processed.
@@ -220,8 +221,8 @@ class MDAChain(BaseMDA):
         This method computes the parallel disciplines,
         if any.
         If there is any coupled disciplines in a parallel task,
-        a [BaseMDA][gemseo.mda.base.BaseMDA] is created,
-        based on the [BaseMDA][gemseo.mda.base.BaseMDA] options provided.
+        a [BaseMDA][gemseo.mda.core.base.BaseMDA] is created,
+        based on the [BaseMDA][gemseo.mda.core.base.BaseMDA] options provided.
 
         Args:
             parallel_tasks: The parallel tasks.

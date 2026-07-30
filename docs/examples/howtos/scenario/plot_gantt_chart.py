@@ -22,14 +22,14 @@
 """# Execution statistics as a Gantt chart.
 
 When
-the global attribute [ExecutionStatistics.is_time_stamps_enabled][gemseo.core.execution_statistics.ExecutionStatistics.is_time_stamps_enabled] is `True`
+the global attribute [ExecutionStatistics.is_time_stamps_enabled][gemseo.core.discipline.execution_statistics.ExecutionStatistics.is_time_stamps_enabled] is `True`
 (default: `False`),
-the global attribute [ExecutionStatistics.time_stamps][gemseo.core.execution_statistics.ExecutionStatistics.time_stamps] is
+the global attribute [ExecutionStatistics.time_stamps][gemseo.core.discipline.execution_statistics.ExecutionStatistics.time_stamps] is
 a dictionary of the form `{name: (initial_time, final_time, is_linearization)}`
 to store
 the initial and final times of each execution and linearization of each discipline.
 
-The [create_gantt_chart()][gemseo.post.core.gantt_chart.create_gantt_chart] function can display this dictionary
+The [create_gantt_chart()][gemseo.post.gantt_chart.create_gantt_chart] function can display this dictionary
 in the form of a [Gantt chart](https://en.wikipedia.org/wiki/Gantt_chart).
 
 In this example,
@@ -42,10 +42,10 @@ from __future__ import annotations
 from gemseo import configure
 from gemseo import create_discipline
 from gemseo import create_scenario
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.core.execution_statistics import ExecutionStatistics
-from gemseo.post.core.gantt_chart import create_gantt_chart
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.core.discipline.execution_statistics import ExecutionStatistics
+from gemseo.optimization import SLSQP_Settings
+from gemseo.post.gantt_chart import create_gantt_chart
+from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 
 # %%
 # ## Enable the recording of statistics
@@ -100,8 +100,8 @@ ExecutionStatistics.is_time_stamps_enabled = True
 # !!! warning
 #
 #     This mechanism is *global*
-#     and shall be modified from the [ExecutionStatistics][gemseo.core.execution_statistics.ExecutionStatistics] class
-#     (not from an [ExecutionStatistics][gemseo.core.execution_statistics.ExecutionStatistics] instance).
+#     and shall be modified from the [ExecutionStatistics][gemseo.core.discipline.execution_statistics.ExecutionStatistics] class
+#     (not from an [ExecutionStatistics][gemseo.core.discipline.execution_statistics.ExecutionStatistics] instance).
 #
 # The scenario can now be executed
 # using the SLSQP optimization algorithm and a maximum of 10 iterations:
@@ -111,13 +111,13 @@ scenario.execute(SLSQP_Settings(max_iter=10))
 # ## Plot the Gantt chart
 #
 # Lastly,
-# you plot the Gantt chart from the global [ExecutionStatistics.time_stamps][gemseo.core.execution_statistics.ExecutionStatistics.time_stamps]:
+# you plot the Gantt chart from the global [ExecutionStatistics.time_stamps][gemseo.core.discipline.execution_statistics.ExecutionStatistics.time_stamps]:
 create_gantt_chart(save=False, show=True)
 # %%
 # This graph shows the evolution over time:
 #
 # - the execution and linearizations of the different user disciplines,
-#   *e.g.* [SobieskiAerodynamics][gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics],
+#   *e.g.* [SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics],
 # - the execution and linearizations of the different process disciplines,
 #   *e.g.* [MDAJacobi][gemseo.mda.jacobi.MDAJacobi],
 # - the execution of the scenario.
@@ -131,8 +131,8 @@ ExecutionStatistics.is_time_stamps_enabled = False
 # %%
 # !!! note
 #
-#     As this reset [ExecutionStatistics.time_stamps][gemseo.core.execution_statistics.ExecutionStatistics.time_stamps] to `None`,
-#     the [create_gantt_chart()][gemseo.post.core.gantt_chart.create_gantt_chart] function can no longer be used.
-#     Set [ExecutionStatistics.is_time_stamps_enabled][gemseo.core.execution_statistics.ExecutionStatistics.is_time_stamps_enabled] to `True`
+#     As this reset [ExecutionStatistics.time_stamps][gemseo.core.discipline.execution_statistics.ExecutionStatistics.time_stamps] to `None`,
+#     the [create_gantt_chart()][gemseo.post.gantt_chart.create_gantt_chart] function can no longer be used.
+#     Set [ExecutionStatistics.is_time_stamps_enabled][gemseo.core.discipline.execution_statistics.ExecutionStatistics.is_time_stamps_enabled] to `True`
 #     and execute or linearize some disciplines
 #     so that you can use it again.

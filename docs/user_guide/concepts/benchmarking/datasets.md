@@ -18,8 +18,8 @@ search:
 # Datasets { #concept-benchmarking-datasets }
 
 GEMSEO provides a set of academic datasets
-via the [gemseo.problems.dataset][gemseo.problems.dataset] package.
-These datasets are ready-to-use [Dataset][gemseo.datasets.dataset.Dataset] instances
+via the [gemseo.problem.dataset][gemseo.problem.dataset] package.
+These datasets are ready-to-use [Dataset][gemseo.dataset.dataset.Dataset] instances
 intended to illustrate and benchmark surrogate modelling, machine learning, and data
 analysis capabilities.
 
@@ -37,8 +37,8 @@ with fluid viscosity $\nu = 0.1$.
 
 ??? abstract "API"
 
-    - [create_burgers_dataset][gemseo.problems.dataset.burgers.create_burgers_dataset]:
-      returns an [IODataset][gemseo.datasets.io_dataset.IODataset]
+    - [create_burgers_dataset][gemseo.problem.dataset.burgers.create_burgers_dataset]:
+      returns an [IODataset][gemseo.dataset.io_dataset.IODataset]
       with inputs (time) and outputs (spatial field $u$).
 
 ## Iris { #concept-iris-dataset }
@@ -50,9 +50,9 @@ Each observation has four features: sepal length, sepal width, petal length and 
 
 ??? abstract "API"
 
-    - [create_iris_dataset][gemseo.problems.dataset.iris.create_iris_dataset]:
-      returns a [Dataset][gemseo.datasets.dataset.Dataset].
-      Set `as_io=True` to get an [IODataset][gemseo.datasets.io_dataset.IODataset]
+    - [create_iris_dataset][gemseo.problem.dataset.iris.create_iris_dataset]:
+      returns a [Dataset][gemseo.dataset.dataset.Dataset].
+      Set `as_io=True` to get an [IODataset][gemseo.dataset.io_dataset.IODataset]
       with features as inputs and species as output.
 
 ## Rosenbrock { #concept-rosenbrock-dataset }
@@ -68,6 +68,6 @@ on a function with a curved, narrow valley.
 
 ??? abstract "API"
 
-    - [create_rosenbrock_dataset][gemseo.problems.dataset.rosenbrock.create_rosenbrock_dataset]:
-      returns a [Dataset][gemseo.datasets.dataset.Dataset].
+    - [create_rosenbrock_dataset][gemseo.problem.dataset.rosenbrock.create_rosenbrock_dataset]:
+      returns a [Dataset][gemseo.dataset.dataset.Dataset].
       Set `categorize=True` (default) to split into design and function groups.

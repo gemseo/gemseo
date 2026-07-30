@@ -21,8 +21,8 @@ from typing import ClassVar
 
 from pydantic import Field
 
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.typing import StrKeyMapping
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.util.typing import StrKeyMapping
 
 
 class ParetoFront_Settings(BasePostSettings):  # noqa: D101, N801

@@ -37,21 +37,21 @@ from packaging import version
 from scipy.optimize import rosen
 
 from gemseo import execute_algo
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
-from gemseo.algos.doe.scipy.settings.lhs import LHS_Settings
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.regression.models.ot_gpr import OTGaussianProcessRegressor
-from gemseo.machine_learning.regression.models.ot_gpr_settings import CovarianceModel
-from gemseo.machine_learning.regression.models.ot_gpr_settings import (
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
+from gemseo.doe.scipy.settings.lhs import LHS_Settings
+from gemseo.machine_learning.regression.model.ot_gpr import OTGaussianProcessRegressor
+from gemseo.machine_learning.regression.model.ot_gpr_settings import CovarianceModel
+from gemseo.machine_learning.regression.model.ot_gpr_settings import (
     OTGaussianProcessRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.ot_gpr_settings import Trend
-from gemseo.problems.optimization.rosenbrock import Rosenbrock
-from gemseo.utils.compatibility.openturns import GPR_ALGO_CLASS
-from gemseo.utils.compatibility.openturns import GPR_CONDITIONAL_COVARIANCE_CLASS
+from gemseo.machine_learning.regression.model.ot_gpr_settings import Trend
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.space.design import DesignSpace
+from gemseo.util.compatibility.openturns import GPR_ALGO_CLASS
+from gemseo.util.compatibility.openturns import GPR_CONDITIONAL_COVARIANCE_CLASS
 
 if TYPE_CHECKING:
     from numpy import ndarray

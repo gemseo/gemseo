@@ -21,7 +21,7 @@ from numpy import array
 from numpy.testing import assert_equal
 
 from gemseo.machine_learning.resampling.bootstrap import Bootstrap
-from gemseo.utils.seeder import SEED
+from gemseo.util.seeder import SEED
 
 
 @pytest.fixture(scope="module")

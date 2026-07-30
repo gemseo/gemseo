@@ -18,13 +18,13 @@
 ## Problem
 
 You have solved an
-[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 directly (without a scenario) and want to visualize the history.
 
 ## Solution
 
 Pass the
-[OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 directly to [execute_post()][gemseo.execute_post],
 just as you would pass a scenario or an HDF5 file path.
 
@@ -35,11 +35,11 @@ from __future__ import annotations
 
 from gemseo import execute_algo
 from gemseo import execute_post
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization import NLOPT_COBYLA_Settings
+from gemseo.optimization import OptimizationProblem
 from gemseo.post import BasicHistory_Settings
-from gemseo.settings import NLOPT_COBYLA_Settings
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Build and solve the optimization problem
@@ -79,5 +79,5 @@ execute_post(
 # ## Summary
 #
 # [execute_post()][gemseo.execute_post] accepts an
-# [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+# [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
 # as its first argument, alongside a scenario or an HDF5 file path.

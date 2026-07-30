@@ -19,10 +19,10 @@ from typing import TYPE_CHECKING
 import pytest
 
 from gemseo.core.base_execution_status_observer import BaseExecutionStatusObserver
-from gemseo.core.execution_status import ExecutionStatus
-from gemseo.utils.pickle import from_pickle
-from gemseo.utils.pickle import to_pickle
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.util.pickle import from_pickle
+from gemseo.util.pickle import to_pickle
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

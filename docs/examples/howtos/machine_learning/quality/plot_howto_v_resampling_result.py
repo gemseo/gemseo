@@ -42,12 +42,12 @@ from numpy import linspace
 from numpy import newaxis
 from numpy import sin
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
-from gemseo.machine_learning.regression.models.polyreg_settings import (
+from gemseo.dataset import IODataset
+from gemseo.machine_learning.regression.model import PolynomialRegressor
+from gemseo.machine_learning.regression.model.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
-from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
+from gemseo.machine_learning.regression.quality import R2Measure
 
 # %%
 # ### 1. Define the reference model

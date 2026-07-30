@@ -22,19 +22,19 @@ we are trying to calculate the induced output uncertainties.
 This is the purpose of uncertainty propagation.
 
 GEMSEO addresses this via sampling the multidisciplinary system:
-the [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
+the [ParameterSpace][gemseo.space.parameter.ParameterSpace]
 generates samples from the joint input distribution,
-an [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario]
+an [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]
 evaluates the model at each sample,
-and statistics are computed on the resulting output [IODataset][gemseo.datasets.io_dataset.IODataset].
+and statistics are computed on the resulting output [IODataset][gemseo.dataset.io_dataset.IODataset].
 
 ## Sampling { #concept-sampling-uncertain-inputs }
 
-Input samples are drawn from the joint probability distribution defined in the [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
+Input samples are drawn from the joint probability distribution defined in the [ParameterSpace][gemseo.space.parameter.ParameterSpace]
 using a design of experiment (DOE) algorithm — typically crude MC or a space-filling variant
 such as [Latin hypercube sampling](https://en.wikipedia.org/wiki/Latin_hypercube_sampling) (LHS).
 In practice,
-we create an [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario]
+we create an [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]
 and execute it using a DOE algorithm, e.g. MC.
 Behind the scenes,
 the latter samples the inputs
@@ -75,13 +75,13 @@ and the probability of exceeding a threshold $y_0$, i.e., $\mathbb{P}[Y > y_0]$.
 
 Two modes are available:
 
-- [EmpiricalStatistics][gemseo.uncertainty.statistics.empirical.EmpiricalStatistics]:
+- [EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics]:
   compute these quantities of interest directly from the samples,
   without assuming any parametric form for the output distribution.
   Empirical statistics require no modelling assumptions
   but their accuracy depends entirely on the sample size and space-fillingness.
-- [OTParametricStatistics][gemseo.uncertainty.statistics.ot_parametric.OTParametricStatistics]
-  and [SPParametricStatistics][gemseo.uncertainty.statistics.sp_parametric.SPParametricStatistics]:
+- [OTParametricStatistics][gemseo.uncertainty.statistic.ot_parametric.OTParametricStatistics]
+  and [SPParametricStatistics][gemseo.uncertainty.statistic.sp_parametric.SPParametricStatistics]:
   fit a probability distribution to the output samples
   and derive the statistics analytically from the fitted distribution.
   The best distribution is selected from a set of candidates

@@ -34,7 +34,7 @@ where $x_{i,0}$ is the initial value and $x_{i_*}$ is the optimal value.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.settings.post import VariableInfluence_Settings
+from gemseo.post import VariableInfluence_Settings
 
 # %%
 # ### 1. Prerequisites

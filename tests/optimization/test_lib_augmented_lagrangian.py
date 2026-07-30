@@ -1,0 +1,327 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
+import logging
+from unittest.mock import Mock
+
+import pytest
+from numpy import array
+from numpy import zeros
+
+from gemseo import execute_algo
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.optimization.augmented_lagrangian.settings.order_0 import (
+    Augmented_Lagrangian_Order_0_Settings,
+)
+from gemseo.optimization.augmented_lagrangian.settings.order_1 import (
+    Augmented_Lagrangian_Order_1_Settings,
+)
+from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.lagrange_multipliers import LagrangeMultipliers
+from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
+from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.optimization.termination_criteria import KKT_RESIDUAL_NORM
+from gemseo.problem.optimization.power_2 import Power2
+from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.util.pydantic import create_model
+
+
+@pytest.mark.parametrize("problem", [Power2(), Rosenbrock(l_b=0, u_b=1.0)])
+def test_kkt_norm_correctly_stored(problem) -> None:
+    """Test that kkt norm is stored at each iteration requiring gradient."""
+    problem.preprocess_functions()
+    options = {
+        "normalize_design_space": True,
+        "kkt_tol_abs": 1e-5,
+        "kkt_tol_rel": 1e-5,
+        "max_iter": 100,
+        "sub_algorithm_settings": L_BFGS_B_Settings(),
+    }
+    problem.reset()
+    OPTIMIZATION_LIBRARY_FACTORY.execute(
+        problem, settings=Augmented_Lagrangian_Order_1_Settings(**options)
+    )
+    kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
+    obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
+    obj_hist = problem.database.get_function_history(problem.objective.name)
+    assert len(kkt_hist) == obj_grad_hist.shape[0]
+    assert len(obj_hist) >= len(kkt_hist)
+    assert pytest.approx(problem.get_solution()[0], abs=1e-2) == problem.solution.x_opt
+    assert pytest.approx(problem.get_solution()[1], abs=1e-2) == problem.solution.f_opt
+
+
+parametrized_reformulate = pytest.mark.parametrize(
+    "reformulate_constraints_with_slack_var", [True, False]
+)
+parametrized_settings_model = pytest.mark.parametrize(
+    "settings_model",
+    [
+        Augmented_Lagrangian_Order_0_Settings(
+            max_iter=50,
+            sub_algorithm_settings=SLSQP_Settings(max_iter=50),
+        ),
+        Augmented_Lagrangian_Order_1_Settings(
+            max_iter=50,
+            sub_algorithm_settings=SLSQP_Settings(max_iter=50),
+            kkt_tol_abs=1e-4,
+        ),
+    ],
+)
+
+
+@parametrized_settings_model
+@parametrized_reformulate
+def test_2d_ineq(
+    analytical_test_2d_ineq, settings_model, reformulate_constraints_with_slack_var
+) -> None:
+    """Test for lagrange multiplier inequality almost optimum."""
+    problem = analytical_test_2d_ineq.formulation.problem
+    if reformulate_constraints_with_slack_var:
+        problem = problem.get_reformulated_problem_with_slack_variables()
+    execute_algo(problem, settings_model=settings_model)
+    lagrange = LagrangeMultipliers(problem)
+    epsilon = 1e-3
+    if reformulate_constraints_with_slack_var:
+        coef1 = array([0.0, 1.0, 0.0])
+        coef2 = 10
+        lag_kind = "equality"
+    else:
+        coef1 = array([0.0, 1.0])
+        coef2 = 1.1
+        lag_kind = "inequality"
+
+    lag = lagrange.compute(
+        problem.solution.x_opt - epsilon * coef1,
+        ineq_tolerance=2.5 * epsilon,
+    )
+
+    assert pytest.approx(lag[lag_kind][1], coef2 * epsilon) == array([1.0])
+
+
+@parametrized_settings_model
+def test_2d_eq(analytical_test_2d_eq, settings_model) -> None:
+    """Test for lagrange multiplier inequality almost optimum."""
+    analytical_test_2d_eq.execute(settings_model)
+    problem = analytical_test_2d_eq.formulation.problem
+    lagrange = LagrangeMultipliers(problem)
+    epsilon = 1e-3
+    lag = lagrange.compute(
+        problem.solution.x_opt - epsilon * array([0.0, 1.0]),
+        ineq_tolerance=2.5 * epsilon,
+    )
+    assert pytest.approx(lag["equality"][1], 10 * epsilon) == array([-1.0])
+
+
+@parametrized_settings_model
+def test_2d_multiple_eq(analytical_test_2d__multiple_eq, settings_model) -> None:
+    """Test for lagrange multiplier inequality almost optimum."""
+    analytical_test_2d__multiple_eq.execute(settings_model)
+    problem = analytical_test_2d__multiple_eq.formulation.problem
+    lagrange = LagrangeMultipliers(problem)
+    epsilon = 1e-3
+    lag = lagrange.compute(
+        problem.solution.x_opt - epsilon * array([0.0, 1.0, 0.0]),
+        ineq_tolerance=2.5 * epsilon,
+    )
+    assert pytest.approx(lag["equality"][1][1], 10 * epsilon) == array([-8.0])
+
+
+@pytest.mark.parametrize(
+    "subsolver_constraints",
+    [
+        (),
+        ["g"],
+        ["h"],
+        ["g", "h"],
+    ],
+)
+@parametrized_reformulate
+@parametrized_settings_model
+def test_2d_mixed(
+    analytical_test_2d_mixed_rank_deficient,
+    settings_model,
+    reformulate_constraints_with_slack_var,
+    subsolver_constraints,
+) -> None:
+    """Test for lagrange multiplier inequality almost optimum."""
+    settings_model.sub_problem_constraints = subsolver_constraints
+    settings_model.ftol_rel = 1e-3
+    problem = analytical_test_2d_mixed_rank_deficient.formulation.problem
+    if reformulate_constraints_with_slack_var:
+        problem = problem.get_reformulated_problem_with_slack_variables()
+    execute_algo(problem, settings_model=settings_model)
+    lagrange = LagrangeMultipliers(problem)
+    epsilon = 1e-3
+    if reformulate_constraints_with_slack_var:
+        lag_approx = lagrange.compute(
+            problem.solution.x_opt - epsilon * array([0.0, 1.0, 0.0, 0.0]),
+            ineq_tolerance=2.5 * epsilon,
+        )
+    else:
+        lag_approx = lagrange.compute(
+            problem.solution.x_opt + epsilon * array([0.0, 1.0, 0.0]),
+            ineq_tolerance=2.5 * epsilon,
+        )
+    if not reformulate_constraints_with_slack_var:
+        assert lag_approx["inequality"][1] > 0
+    else:
+        assert lag_approx["equality"][1][0] > 0
+
+
+def test_n_obj_func_calls(enable_function_statistics):
+    """Test that n_obj_func_calls property returns correct number of function calls."""
+    problem = Power2()
+    problem.preprocess_functions()
+
+    options = {
+        "normalize_design_space": True,
+        "kkt_tol_abs": 1e-5,
+        "kkt_tol_rel": 1e-5,
+        "max_iter": 100,
+        "sub_algorithm_settings": L_BFGS_B_Settings(),
+    }
+
+    optimizer = OPTIMIZATION_LIBRARY_FACTORY.create("Augmented_Lagrangian_Order_1")
+    problem.reset()
+    optimizer.execute(
+        problem, settings=Augmented_Lagrangian_Order_1_Settings(**options)
+    )
+    n_calls = optimizer.n_obj_func_calls  # Accessing as property, not as a method
+    assert n_calls > 0
+
+
+@pytest.fixture
+def rosenbrock_opt_problem():
+    # Create the Rosenbrock optimization problem
+    problem = Rosenbrock(l_b=0, u_b=1.0)
+    problem.preprocess_functions()
+
+    # Define the equality constraint function (works with multiple variables)
+    def eq_constraint(x):
+        return array([x[0] - 1.0])  # A constraint on x[0] to make it equal to 1.0
+
+    # Define the Jacobian for the equality constraint (partial derivatives)
+    def eq_constraint_jac(x):
+        jacobian = zeros((1, x.size))  # Create a Jacobian of the correct size
+        jacobian[0, 0] = 1.0  # Derivative of (x[0] - 1.0) w.r.t. x[0] is 1
+        return jacobian
+
+    # Create the ArrayFunction with the Jacobian
+    eq_constraint_func = ArrayFunction(
+        eq_constraint, jac=eq_constraint_jac, name="c_eq"
+    )
+
+    # Add the equality constraint to the problem
+    problem.add_constraint(
+        eq_constraint_func,
+        value=0.0,
+        constraint_type=ArrayFunction.ConstraintType.EQ,
+    )
+
+    return problem
+
+
+@pytest.fixture
+def optimizer():
+    # Create an optimizer instance
+    return OPTIMIZATION_LIBRARY_FACTORY.create("Augmented_Lagrangian_Order_1")
+
+
+def test_solve_sub_problem_adds_constraints_with_rosenbrock(
+    rosenbrock_opt_problem, optimizer
+):
+    """Test that sub_problem.constraints.append is executed when constraints match."""
+    x_init = rosenbrock_opt_problem.design_space.get_current_value()
+    options = {
+        "normalize_design_space": True,
+        "sub_algorithm_settings": SLSQP_Settings(),
+        "initial_rho": 1.0,
+        "max_iter": 10,
+    }
+    settings = Augmented_Lagrangian_Order_1_Settings(**options)
+    optimizer.execute(rosenbrock_opt_problem, settings=settings)
+    optimizer._problem = rosenbrock_opt_problem
+    optimizer._settings = create_model(
+        optimizer.ALGORITHM_INFOS[optimizer.algo_name].settings_class,
+        sub_problem_constraints=["c_eq"],
+        **options,
+    )
+
+    _ = optimizer._BaseAugmentedLagrangian__solve_sub_problem(
+        lambda0={"c_eq": 0.0},
+        mu0={},
+        x_init=x_init,
+    )
+
+    assert len(optimizer._sub_problems[-1].constraints) > 0
+    assert "c_eq" in [c.name for c in optimizer._sub_problems[-1].constraints]
+
+
+def test_solve_sub_problem_triggers_update_options_callback(
+    rosenbrock_opt_problem, optimizer
+):
+    """Test that sub-problem options are updated during sub-problem solving."""
+
+    def mock_update_options_callback(sub_problems, sub_algorithm_settings):
+        sub_algorithm_settings.normalize_design_space = True
+        sub_algorithm_settings.max_iter = 50
+
+    alm_options = {
+        "normalize_design_space": True,
+        "max_iter": 100,
+        "ftol_abs": 1e-8,
+        "ftol_rel": 1e-8,
+        "xtol_abs": 1e-8,
+        "xtol_rel": 1e-8,
+        "sub_algorithm_settings": SLSQP_Settings(),
+        "update_options_callback": mock_update_options_callback,
+        "sub_problem_constraints": ["c_eq"],
+        "initial_rho": 1.0,
+    }
+
+    optimizer.execute(
+        rosenbrock_opt_problem,
+        settings=Augmented_Lagrangian_Order_1_Settings(**alm_options),
+    )
+
+    optimizer._problem = rosenbrock_opt_problem
+    optimizer._settings = create_model(
+        optimizer.ALGORITHM_INFOS[optimizer.algo_name].settings_class,
+        **alm_options,
+    )
+
+    _ = optimizer._BaseAugmentedLagrangian__solve_sub_problem(
+        lambda0={"c_eq": 0.0},
+        mu0={},
+        x_init=rosenbrock_opt_problem.design_space.get_current_value(),
+    )
+
+    assert optimizer._settings.sub_algorithm_settings.normalize_design_space is True
+    assert optimizer._settings.sub_algorithm_settings.max_iter == 50
+
+
+def test_preconditioner_logging_direct(optimizer, caplog):
+    """Test that LOGGER.info is called when 'precond' is in sub_algorithm_settings."""
+
+    # Define sub_algorithm_settings with "precond" present
+
+    sub_algorithm_settings = Mock()
+    sub_algorithm_settings.model_fields_set = ("precond",)
+
+    with caplog.at_level(logging.INFO, logger="gemseo"):
+        optimizer._check_for_preconditioner(sub_algorithm_settings)
+
+    assert "Preconditioner Detected" in caplog.text

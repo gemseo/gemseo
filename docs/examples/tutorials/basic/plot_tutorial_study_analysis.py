@@ -28,14 +28,14 @@ before writing solver code.
 
 GEMSEO provides two complementary paths to do this:
 
-1. [DummyDiscipline][gemseo.utils.discipline.DummyDiscipline] —
+1. [DummyDiscipline][gemseo.util.discipline.DummyDiscipline] —
    define disciplines that do nothing, from input and output names.
 2. Excel-based study analysis —
    describe disciplines and scenarios in a spreadsheet,
    then generate diagrams with
-   [CouplingStudyAnalysis][gemseo.utils.study_analyses.coupling_study_analysis.CouplingStudyAnalysis]
+   [CouplingStudyAnalysis][gemseo.util.study_analysis.coupling_study_analysis.CouplingStudyAnalysis]
    or
-   [MDOStudyAnalysis][gemseo.utils.study_analyses.mdo_study_analysis.MDOStudyAnalysis].
+   [MDOStudyAnalysis][gemseo.util.study_analysis.mdo_study_analysis.MDOStudyAnalysis].
 
 !!! tip "Web interface for non-programmers"
     If you prefer not to write Python or Excel files,
@@ -48,16 +48,16 @@ GEMSEO provides two complementary paths to do this:
 from __future__ import annotations
 
 from gemseo import generate_n2_plot
-from gemseo.algos.design_space import DesignSpace
-from gemseo.scenarios.evaluation import EvaluationScenario
-from gemseo.utils.discipline import DummyDiscipline
-from gemseo.utils.study_analyses.coupling_study_analysis import CouplingStudyAnalysis
-from gemseo.utils.study_analyses.mdo_study_analysis import MDOStudyAnalysis
+from gemseo.scenario import EvaluationScenario
+from gemseo.space import DesignSpace
+from gemseo.util.discipline import DummyDiscipline
+from gemseo.util.study_analysis.coupling_study_analysis import CouplingStudyAnalysis
+from gemseo.util.study_analysis.mdo_study_analysis import MDOStudyAnalysis
 
 # %%
 # ## Step 1 — Define disciplines with DummyDiscipline
 #
-# A [DummyDiscipline][gemseo.utils.discipline.DummyDiscipline]
+# A [DummyDiscipline][gemseo.util.discipline.DummyDiscipline]
 # is a placeholder discipline that declares input and output variable names
 # but performs no computation.
 # It is ideal for sketching MDO architectures early in a project,
@@ -109,8 +109,8 @@ generate_n2_plot([d1, d2], save=False, show=True)
 # all in a single diagram.
 #
 # To generate an XDSM you first need a scenario:
-# create a minimal [DesignSpace][gemseo.algos.design_space.DesignSpace]
-# and an [EvaluationScenario][gemseo.scenarios.evaluation.EvaluationScenario].
+# create a minimal [DesignSpace][gemseo.space.design.DesignSpace]
+# and an [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario].
 
 design_space = DesignSpace()
 design_space.add_variable("x")
@@ -147,7 +147,7 @@ scenario.xdsmize(show_html=True, save_html=False)
 # letting domain experts contribute without writing any code.
 #
 # Pass the path to the Excel file to
-# [CouplingStudyAnalysis][gemseo.utils.study_analyses.coupling_study_analysis.CouplingStudyAnalysis]:
+# [CouplingStudyAnalysis][gemseo.util.study_analysis.coupling_study_analysis.CouplingStudyAnalysis]:
 
 coupling_study = CouplingStudyAnalysis("coupling_study.xlsx")
 coupling_study.generate_n2(save=False, show=True)
@@ -164,7 +164,7 @@ coupling_study.generate_n2(save=False, show=True)
 # | x                | f                  | g           | Discipline1, Discipline2 | MDF         |         |                |
 #
 # Pass this file to
-# [MDOStudyAnalysis][gemseo.utils.study_analyses.mdo_study_analysis.MDOStudyAnalysis]:
+# [MDOStudyAnalysis][gemseo.util.study_analysis.mdo_study_analysis.MDOStudyAnalysis]:
 mdo_study = MDOStudyAnalysis("mdo_study.xlsx")
 mdo_study.generate_n2(save=False, show=True)
 mdo_study.generate_xdsm(".")
@@ -194,7 +194,7 @@ mdo_study.generate_xdsm(".")
 #
 # ## Key takeaways
 #
-# - A [DummyDiscipline][gemseo.utils.discipline.DummyDiscipline]
+# - A [DummyDiscipline][gemseo.util.discipline.DummyDiscipline]
 #   lets you sketch a multidiscipinary architecture
 #   by declaring only input and output names, with no solver code required.
 # - The **N2 chart** reveals coupling variables and feedback loops
@@ -203,8 +203,8 @@ mdo_study.generate_xdsm(".")
 #   optimizer loop, MDA loop, and execution order —
 #   for a chosen formulation such as MDF.
 # - Excel-based study analyses
-#   ([CouplingStudyAnalysis][gemseo.utils.study_analyses.coupling_study_analysis.CouplingStudyAnalysis],
-#   [MDOStudyAnalysis][gemseo.utils.study_analyses.mdo_study_analysis.MDOStudyAnalysis])
+#   ([CouplingStudyAnalysis][gemseo.util.study_analysis.coupling_study_analysis.CouplingStudyAnalysis],
+#   [MDOStudyAnalysis][gemseo.util.study_analysis.mdo_study_analysis.MDOStudyAnalysis])
 #   let domain experts contribute to architecture design
 #   without writing Python.
 # - The `gemseo-study` command-line tool provides a scriptable interface

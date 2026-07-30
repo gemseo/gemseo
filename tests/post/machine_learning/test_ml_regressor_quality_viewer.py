@@ -24,9 +24,9 @@ from numpy import hstack
 from numpy import linspace
 from numpy import newaxis
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.regression.models.linreg import LinearRegressor
+from gemseo.dataset.dataset import Dataset
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
 from gemseo.post.machine_learning.ml_regressor_quality_viewer import (
     MLRegressorQualityViewer,
 )

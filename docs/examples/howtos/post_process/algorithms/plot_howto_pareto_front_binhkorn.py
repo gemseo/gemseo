@@ -33,16 +33,16 @@ and `objectives_labels` to assign readable labels to the objectives.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
-from gemseo.algos.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
+from gemseo.doe import OT_OPT_LHS_Settings
+from gemseo.doe.factory import DOE_LIBRARY_FACTORY
 from gemseo.post import ParetoFront_Settings
-from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
+from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
 # ### 1. Build and sample the optimization problem
 #
 # You use the Binh and Korn problem
-# (see [BinhKorn][gemseo.problems.multiobjective_optimization.binh_korn.BinhKorn])
+# (see [BinhKorn][gemseo.problem.multiobjective_optimization.binh_korn.BinhKorn])
 # and sample it with an optimized LHS:
 problem = BinhKorn()
 DOE_LIBRARY_FACTORY.execute(problem, OT_OPT_LHS_Settings(n_samples=100))

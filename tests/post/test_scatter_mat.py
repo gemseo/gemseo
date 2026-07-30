@@ -28,14 +28,14 @@ from numpy import power
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
-from gemseo.algos.opt.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.post import ScatterPlotMatrix_Settings
+from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
-from gemseo.problems.optimization.power_2 import Power2
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.post.scatter_plot_matrix_settings import ScatterPlotMatrix_Settings
+from gemseo.problem.optimization.power_2 import Power2
+from gemseo.util.testing.helper import assert_exception
 
 CURRENT_DIR = Path(__file__).parent
 POWER2 = Path(__file__).parent / "power2_opt_pb.h5"

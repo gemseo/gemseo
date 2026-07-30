@@ -32,7 +32,7 @@ You want to rename these variables so that GEMSEO can connect the disciplines.
 
 ## Solution
 
-The [gemseo.utils.discipline][gemseo.utils.discipline] module includes capabilities
+The [gemseo.util.discipline][gemseo.util.discipline] module includes capabilities
 enabling these models to be connected automatically using a set of translations.
 
 !!! warning
@@ -45,10 +45,10 @@ from __future__ import annotations
 
 from numpy import array
 
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.utils.discipline import VariableRenamer
-from gemseo.utils.discipline import VariableTranslation
-from gemseo.utils.discipline import rename_discipline_variables
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.util.discipline import VariableRenamer
+from gemseo.util.discipline import VariableTranslation
+from gemseo.util.discipline import rename_discipline_variables
 
 # %%
 # ### 1. Create the disciplines
@@ -75,7 +75,7 @@ disciplines.append(AnalyticDiscipline({"b": "5*j"}, name="B"))
 #
 # First,
 # you need to introduce the notion of
-# [VariableTranslation][gemseo.utils.discipline.VariableTranslation]
+# [VariableTranslation][gemseo.util.discipline.VariableTranslation]
 # to translate a discipline variable name according to a global taxonomy:
 variable_translation = VariableTranslation(
     discipline_name="A", variable_name="a", new_variable_name="x"
@@ -86,10 +86,10 @@ variable_translation
 #
 # ### 3. Create translators
 #
-# A [VariableRenamer][gemseo.utils.discipline.VariableRenamer] can be created
+# A [VariableRenamer][gemseo.util.discipline.VariableRenamer] can be created
 # from translations
 # that can include both
-# [VariableTranslation][gemseo.utils.discipline.VariableTranslation] instances
+# [VariableTranslation][gemseo.util.discipline.VariableTranslation] instances
 # and tuples of the form `(discipline_name, variable_name, new_variable_name)`:
 renamer = VariableRenamer()
 renamer.add_translation(variable_translation)
@@ -104,21 +104,21 @@ renamer
 #
 # !!! tips
 #     There are several ways
-#     to create a [VariableRenamer][gemseo.utils.discipline.VariableRenamer]:
+#     to create a [VariableRenamer][gemseo.util.discipline.VariableRenamer]:
 #
-#       - [add_translations_by_variable()][gemseo.utils.discipline.VariableRenamer.add_translations_by_variable]
-#       - [add_translations_by_discipline()][gemseo.utils.discipline.VariableRenamer.add_translations_by_discipline]
-#       - [from_dictionary()][gemseo.utils.discipline.VariableRenamer.from_dictionary]
-#       - [from_translations()][gemseo.utils.discipline.VariableRenamer.from_translations]
-#       - [from_csv()][gemseo.utils.discipline.VariableRenamer.from_csv]
-#       - [from_spreadsheet()][gemseo.utils.discipline.VariableRenamer.from_spreadsheet]
+#       - [add_translations_by_variable()][gemseo.util.discipline.VariableRenamer.add_translations_by_variable]
+#       - [add_translations_by_discipline()][gemseo.util.discipline.VariableRenamer.add_translations_by_discipline]
+#       - [from_dictionary()][gemseo.util.discipline.VariableRenamer.from_dictionary]
+#       - [from_translations()][gemseo.util.discipline.VariableRenamer.from_translations]
+#       - [from_csv()][gemseo.util.discipline.VariableRenamer.from_csv]
+#       - [from_spreadsheet()][gemseo.util.discipline.VariableRenamer.from_spreadsheet]
 #
 # You can assess the translators with the property
 renamer.translators
 
 # %%
 # !!! note
-#     You may avoid creating a [VariableRenamer][gemseo.utils.discipline.VariableRenamer]
+#     You may avoid creating a [VariableRenamer][gemseo.util.discipline.VariableRenamer]
 #     if you are able to create a nested dictionary from scratch:
 #     `{"discipline_name": {old_variable_name: new_variable_name}}`.
 #
@@ -128,7 +128,7 @@ renamer.translators
 # %%
 # ### 4. Rename discipline variables from translators
 #
-# [rename_discipline_variables()][gemseo.utils.discipline.rename_discipline_variables]
+# [rename_discipline_variables()][gemseo.util.discipline.rename_discipline_variables]
 # is a function to rename some discipline variables from a translator
 rename_discipline_variables(disciplines, renamer.translators)
 
@@ -151,17 +151,17 @@ disc_b.execute({"j": array([3.0])})
 #
 # Variables can be renamed by using:
 #
-# - a [VariableRenamer][gemseo.utils.discipline.VariableRenamer] — a collection of translations, creatable from:
+# - a [VariableRenamer][gemseo.util.discipline.VariableRenamer] — a collection of translations, creatable from:
 #
-#     - Individual VariableTranslation objects or tuples ([from_translations()][gemseo.utils.discipline.VariableRenamer.from_translations])
-#     - A nested dict like {"A": {"a": "x"}} ([from_dictionary()][gemseo.utils.discipline.VariableRenamer.from_dictionary])
-#     - A CSV file ([from_csv()][gemseo.utils.discipline.VariableRenamer.from_csv])
-#     - A spreadsheet ([from_spreadsheet()][gemseo.utils.discipline.VariableRenamer.from_spreadsheet])
+#     - Individual VariableTranslation objects or tuples ([from_translations()][gemseo.util.discipline.VariableRenamer.from_translations])
+#     - A nested dict like {"A": {"a": "x"}} ([from_dictionary()][gemseo.util.discipline.VariableRenamer.from_dictionary])
+#     - A CSV file ([from_csv()][gemseo.util.discipline.VariableRenamer.from_csv])
+#     - A spreadsheet ([from_spreadsheet()][gemseo.util.discipline.VariableRenamer.from_spreadsheet])
 #
-# - [rename_discipline_variables()][gemseo.utils.discipline.rename_discipline_variables] which applies the renamer's translations to a list of disciplines in-place.
+# - [rename_discipline_variables()][gemseo.util.discipline.rename_discipline_variables] which applies the renamer's translations to a list of disciplines in-place.
 #   This changes the grammar of the discipline.
 #
 # Adding translations after creation supports three patterns:
-# one-by-one ([add_translation()][gemseo.utils.discipline.VariableRenamer.add_translation]),
-# by discipline ([add_translations_by_discipline()][gemseo.utils.discipline.VariableRenamer.add_translations_by_discipline]),
-# or by variable across multiple disciplines ([add_translations_by_variable()][gemseo.utils.discipline.VariableRenamer.add_translations_by_variable]).
+# one-by-one ([add_translation()][gemseo.util.discipline.VariableRenamer.add_translation]),
+# by discipline ([add_translations_by_discipline()][gemseo.util.discipline.VariableRenamer.add_translations_by_discipline]),
+# or by variable across multiple disciplines ([add_translations_by_variable()][gemseo.util.discipline.VariableRenamer.add_translations_by_variable]).

@@ -31,22 +31,20 @@ This tutorial is illustrated using:
 from __future__ import annotations
 
 from gemseo import sample_disciplines
-from gemseo.machine_learning.regression.models.rbf import RBFRegressor
-from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.problems.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problems.uncertainty.wing_weight.uncertain_space import (
-    WingWeightUncertainSpace,
-)
-from gemseo.settings.doe import OT_MONTE_CARLO_Settings
-from gemseo.settings.doe import OT_OPT_LHS_Settings
-from gemseo.settings.machine_learning import RBFRegressor_Settings
+from gemseo.doe import OT_MONTE_CARLO_Settings
+from gemseo.doe import OT_OPT_LHS_Settings
+from gemseo.machine_learning import RBFRegressor_Settings
+from gemseo.machine_learning.regression.model import RBFRegressor
+from gemseo.machine_learning.regression.quality import R2Measure
+from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
+from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
 
 # %%
 # ## Step 1 — Define the reference model
 #
 # In this tutorial,
 # you consider the wing weight problem
-# defined in [this page][gemseo.problems.uncertainty.wing_weight].
+# defined in [this page][gemseo.problem.uncertainty.wing_weight].
 # This model computes the weight of an aircraft wing from ten inputs,
 # such as the wing area and the paint weight.
 # You begin by instantiating the discipline and the input space,

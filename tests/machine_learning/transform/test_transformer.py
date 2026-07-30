@@ -27,8 +27,8 @@ import pytest
 from numpy import arange
 from numpy import array
 
-from gemseo.machine_learning.transformers.base_transformer import BaseTransformer
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.machine_learning.transformer.core.base_transformer import BaseTransformer
+from gemseo.util.testing.helper import concretize_classes
 
 if TYPE_CHECKING:
     from numpy import ndarray

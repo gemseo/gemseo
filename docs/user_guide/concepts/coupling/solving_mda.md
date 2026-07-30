@@ -1,7 +1,5 @@
 ---
-complexity: advanced
-reading_time: true
-description: "How GEMSEO solves multi-disciplinary analyses: fixed-point and root-finding solvers, composed MDAs (MDAChain, MDASequential), stopping criteria, acceleration methods, and parallelization."
+description: "How GEMSEO solves multi-disciplinary analyses: fixed-point and root-finding solvers, composed MDAs (MDAChain, MDASequential), termination criteria, acceleration methods, and parallelization."
 tags: ['user_guide']
 search:
   boost: 2
@@ -40,7 +38,7 @@ the MDA computes $y^{\star}$ such that $R(x, y^{\star}) = 0$.
 There are two main categories of MDA objects in GEMSEO:
 
 - The ones implementing a non-linear solver
-(inheriting from [BaseMDASolver][gemseo.mda.base_solver.BaseMDASolver]),
+(inheriting from [BaseMDASolver][gemseo.mda.core.base_solver.BaseMDASolver]),
 - The composed MDA,
 which creates and/or uses inner MDA solvers (more information below).
 
@@ -148,13 +146,13 @@ It is a simple way to quantify the MDA convergence.
 !!! note
     The tolerance is monitored on a relative decrease on the residual norm.
     Several scaling strategies for the residual are available in GEMSEO.
-    More information [here][gemseo.mda.base.BaseMDA.ResidualScaling]
+    More information [here][gemseo.mda.core.base.BaseMDA.ResidualScaling]
 
 ### Acceleration/relaxation methods { #concept-mda-acceleration-relaxation }
 
 Acceleration and relaxation methods are available for all the MDAs in GEMSEO.
 The acceleration methods available can be found
-[here][gemseo.algos.sequence_transformer.acceleration].
+[here][gemseo.mda.sequence_transformer.acceleration].
 
 !!! how-to
     - [MDA acceleration techniques][accelerate-mda-convergence]
@@ -187,7 +185,7 @@ the code is run on.
 
 In an [MDAChain][gemseo.mda.chain.MDAChain],
 there may be an opportunity to parallelize
-the execution of [BaseMDA][gemseo.mda.base.BaseMDA]
+the execution of [BaseMDA][gemseo.mda.core.base.BaseMDA]
 that can be executed independently.
 
 ![Coupling graph with 2 MDAs in parallel](figs/MDA_in_parallel.png)
@@ -199,11 +197,11 @@ provided that enough resources are available on the computing node
 (in our case, at least two CPUs).
 By default,
 the parallel execution of the independent
-[BaseMDA][gemseo.mda.base.BaseMDA] are deactivated,
-meaning that the execution of the two independent [BaseMDA][gemseo.mda.base.BaseMDA]
+[BaseMDA][gemseo.mda.core.base.BaseMDA] are deactivated,
+meaning that the execution of the two independent [BaseMDA][gemseo.mda.core.base.BaseMDA]
 will remain sequential.
 Yet,
-a parallel execution of the two [BaseMDA][gemseo.mda.base.BaseMDA] can be activated
+a parallel execution of the two [BaseMDA][gemseo.mda.core.base.BaseMDA] can be activated
 using the `mdachain_parallelize_task` boolean option.
 
 If activated,

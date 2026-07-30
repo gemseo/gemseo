@@ -21,34 +21,34 @@ from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import ValidationError
 
-import gemseo.settings.doe as doe
-import gemseo.settings.formulations as formulations
-import gemseo.settings.linear_solvers as linear_solvers
-import gemseo.settings.machine_learning as mlearning
-import gemseo.settings.mda as mda
-import gemseo.settings.ode as ode
-import gemseo.settings.opt as opt
-import gemseo.settings.post as post
-import gemseo.settings.probability_distributions as probability_distributions
-import gemseo.settings.reliability as reliability
-from gemseo.algos.doe.base_doe_settings import BaseDOESettings
-from gemseo.algos.linear_solvers.base_linear_solver_settings import (
-    BaseLinearSolverSettings,
-)
-from gemseo.algos.ode.base_ode_solver_settings import BaseODESolverSettings
-from gemseo.algos.opt.base_optimizer_settings import BaseOptimizerSettings
+import gemseo.doe as doe
+import gemseo.formulation as formulations
+import gemseo.linear as linear_solvers
+import gemseo.machine_learning as mlearning
+import gemseo.mda as mda
+import gemseo.ode as ode
+import gemseo.optimization as opt
+import gemseo.post as post
+import gemseo.uncertainty.distribution as probability_distributions
+import gemseo.uncertainty.reliability as reliability
 from gemseo.core.base_factory import BaseFactory
-from gemseo.formulations.base_settings import BaseFormulationSettings
-from gemseo.machine_learning.core.models.ml_model_settings import BaseMLModelSettings
-from gemseo.mda.base_settings import BaseMDASettings
-from gemseo.post.base_post_settings import BasePostSettings
-from gemseo.uncertainty.distributions.base_settings import (
+from gemseo.doe.core.base_doe_settings import BaseDOESettings
+from gemseo.formulation.core.base_settings import BaseFormulationSettings
+from gemseo.linear.core.base_linear_solver_settings import BaseLinearSolverSettings
+from gemseo.machine_learning.core.model.base_ml_model_settings import (
+    BaseMLModelSettings,
+)
+from gemseo.mda.core.base_settings import BaseMDASettings
+from gemseo.ode.core.base_ode_solver_settings import BaseODESolverSettings
+from gemseo.optimization.core.base_optimizer_settings import BaseOptimizerSettings
+from gemseo.post.core.base_post_settings import BasePostSettings
+from gemseo.uncertainty.distribution.core.base_settings import (
     BaseGenericDistributionSettings,
 )
-from gemseo.uncertainty.reliability.base_settings import (
+from gemseo.uncertainty.reliability.core.base_settings import (
     BaseReliabilityAlgorithmSettings,
 )
-from gemseo.utils.pydantic import BaseSettings
+from gemseo.util.pydantic import BaseSettings
 
 
 def get_setting_classes(
@@ -91,40 +91,38 @@ class SettingsWithInvalidDefault(BaseSettings):
 
 @pytest.mark.parametrize(
     "module_and_cls",
-    get_setting_classes(BaseDOESettings, "gemseo.algos.doe", doe),
+    get_setting_classes(BaseDOESettings, "gemseo.doe", doe),
 )
 def test_doe_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 @pytest.mark.parametrize(
     "module_and_cls",
-    get_setting_classes(BaseOptimizerSettings, "gemseo.algos.opt", opt),
+    get_setting_classes(BaseOptimizerSettings, "gemseo.optimization", opt),
 )
 def test_opt_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 @pytest.mark.parametrize(
     "module_and_cls",
-    get_setting_classes(BaseODESolverSettings, "gemseo.algos.ode", ode),
+    get_setting_classes(BaseODESolverSettings, "gemseo.ode", ode),
 )
 def test_ode_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 @pytest.mark.parametrize(
     "module_and_cls",
-    get_setting_classes(
-        BaseLinearSolverSettings, "gemseo.algos.linear_solvers", linear_solvers
-    ),
+    get_setting_classes(BaseLinearSolverSettings, "gemseo.linear", linear_solvers),
 )
 def test_linear_solver_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 @pytest.mark.parametrize(
@@ -133,7 +131,7 @@ def test_linear_solver_settings(module_and_cls):
 )
 def test_post_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 @pytest.mark.parametrize(
@@ -142,16 +140,16 @@ def test_post_settings(module_and_cls):
 )
 def test_machine_learning_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 @pytest.mark.parametrize(
     "module_and_cls",
-    get_setting_classes(BaseFormulationSettings, "gemseo.formulations", formulations),
+    get_setting_classes(BaseFormulationSettings, "gemseo.formulation", formulations),
 )
 def test_formulation_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 def test_settings_inf_serialization():
@@ -207,20 +205,20 @@ def test_settings_inf_serialization():
 )
 def test_mda_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 @pytest.mark.parametrize(
     "module_and_cls",
     get_setting_classes(
         BaseGenericDistributionSettings,
-        "gemseo.uncertainty.distributions",
+        "gemseo.uncertainty.distribution",
         probability_distributions,
     ),
 )
 def test_probability_distribution_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 @pytest.mark.parametrize(
@@ -233,7 +231,7 @@ def test_probability_distribution_settings(module_and_cls):
 )
 def test_reliability_algorithm_settings(module_and_cls):
     module, cls = module_and_cls
-    assert cls in module.__dict__.values()
+    assert getattr(module, cls.__name__) is cls
 
 
 def test_default_validation():

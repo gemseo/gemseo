@@ -55,7 +55,7 @@ see [this page][concept-coupled-gradient-computation].
 
 !!! warning
       Any [Discipline][gemseo.core.discipline.discipline.Discipline]
-      that will be placed inside an [MDF][gemseo.formulations.mdf.MDF] formulation
+      that will be placed inside an [MDF][gemseo.formulation.mdf.MDF] formulation
       with strong couplings **must** define its default inputs.
       Otherwise, the execution will fail.
 

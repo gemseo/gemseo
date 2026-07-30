@@ -25,7 +25,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.mda.base import BaseMDA
+from gemseo.mda.core.base import BaseMDA
 from gemseo.mda.sequential_settings import MDASequential_Settings
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 class MDASequential(BaseMDA):

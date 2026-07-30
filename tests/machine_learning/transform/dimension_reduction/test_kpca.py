@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 import pytest
 from numpy import linspace
 
-from gemseo.machine_learning.transformers.dimension_reduction.kpca import KPCA
+from gemseo.machine_learning.transformer.dimension_reduction.kpca import KPCA
 
 if TYPE_CHECKING:
     from numpy import ndarray

@@ -29,15 +29,15 @@ from matplotlib.figure import Figure as MatplotlibFigure
 from numpy import array
 from plotly.graph_objects import Figure as PlotlyFigure
 
-from gemseo.datasets.dataset import Dataset
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.lines import Lines
-from gemseo.post.dataset.plots._matplotlib import plot
-from gemseo.post.dataset.plots._matplotlib.plot import MatplotlibPlot
+from gemseo.post.dataset.plot._matplotlib import plot
+from gemseo.post.dataset.plot._matplotlib.plot import MatplotlibPlot
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.yvsx import YvsX
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
-from gemseo.utils.testing.helpers import assert_exception
-from gemseo.utils.testing.helpers import concretize_classes
+from gemseo.util.testing.helper import assert_exception
+from gemseo.util.testing.helper import concretize_classes
 
 
 @pytest.fixture

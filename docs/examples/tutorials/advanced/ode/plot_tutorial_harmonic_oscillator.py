@@ -18,7 +18,7 @@
 ## Goal
 
 This tutorial introduces the
-[ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline],
+[ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline],
 the GEMSEO component for solving first-order ordinary differential equations (ODEs).
 
 A first-order ODE is a differential equation of the form
@@ -32,7 +32,7 @@ Solving it requires initial conditions $s(t_0) = s_0$.
 You will learn how to:
 
 - **define** the RHS of an ODE as a GEMSEO discipline,
-- **create** an [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+- **create** an [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
   from the RHS discipline,
 - **execute** it with default and custom inputs,
 - **compare** the numerical solution with the analytical one.
@@ -68,7 +68,7 @@ from numpy import sin
 
 from gemseo import create_discipline
 from gemseo.core.discipline.discipline import Discipline
-from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
+from gemseo.discipline import ODEDiscipline
 
 # %%
 # ## Step 1 — Define the RHS discipline
@@ -79,7 +79,7 @@ from gemseo.disciplines.ode.ode_discipline import ODEDiscipline
 # Its outputs must be the time derivatives of the state variables,
 # named with the `_dot` suffix by convention.
 #
-# You use an [AutoPyDiscipline][gemseo.disciplines.auto_py.AutoPyDiscipline]
+# You use an [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline]
 # built from a plain Python function:
 _time = array([0.0])
 initial_position_1 = array([1.0])
@@ -107,7 +107,7 @@ rhs_discipline = create_discipline(
 # %%
 # ## Step 2 — Create the ODEDiscipline
 #
-# The [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+# The [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
 # wraps the RHS discipline into a complete initial-value problem.
 #
 # - `rhs_discipline`: the discipline representing the right-hand side $f(t, s(t))$.
@@ -127,7 +127,7 @@ ode_discipline = ODEDiscipline(
 # ## Step 3 — Execute with default inputs
 #
 # The default inputs of the
-# [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+# [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
 # are inherited from the RHS discipline.
 # Calling `execute()` without arguments solves the ODE
 # with $\omega = 2$, $x_0 = 1$ and $v_0 = 0$:
@@ -183,11 +183,11 @@ plt.show()
 # %%
 # ## Key takeaways
 #
-# - An [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+# - An [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
 #   solves a first-order ODE initial-value problem defined by a RHS discipline.
 #   The RHS discipline must output the time derivatives of the state variables.
 # - Use `state_names` to tell the
-#   [ODEDiscipline][gemseo.disciplines.ode.ode_discipline.ODEDiscipline]
+#   [ODEDiscipline][gemseo.discipline.ode.ode_discipline.ODEDiscipline]
 #   which inputs are state variables;
 #   all other non-time inputs are treated as design variables.
 # - Different initial conditions and design variable values can be passed
@@ -197,10 +197,10 @@ plt.show()
 #
 # !!! note
 #
-#     The [OscillatorDiscipline][gemseo.problems.ode.oscillator_discipline.OscillatorDiscipline]
+#     The [OscillatorDiscipline][gemseo.problem.ode.oscillator_discipline.OscillatorDiscipline]
 #     class provides a ready-to-use implementation of the harmonic oscillator.
 #     It can be imported from
-#     [gemseo.problems.ode][gemseo.problems.ode]
+#     [gemseo.problem.ode.oscillator_discipline][gemseo.problem.ode.oscillator_discipline]
 #     and used directly without defining the RHS function manually.
 #
 # ## How-to guides

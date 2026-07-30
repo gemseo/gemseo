@@ -30,10 +30,10 @@ from pydantic_core import PydanticUndefined
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.mda.base import BaseMDA
+from gemseo.mda.core.base import BaseMDA
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 MDAOptionType = (
     float | int | bool | str | Iterable[CouplingStructure] | Sequence[BaseMDA] | None

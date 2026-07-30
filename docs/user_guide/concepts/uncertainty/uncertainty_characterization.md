@@ -36,7 +36,7 @@ using joint distributions.
 
 ## Univariate distributions
 
-GEMSEO has a [BaseUnivariateDistribution][gemseo.uncertainty.distributions.base_univariate.BaseUnivariateDistribution] class
+GEMSEO has a [BaseUnivariateDistribution][gemseo.uncertainty.distribution.core.base_univariate.BaseUnivariateDistribution] class
 to wrap univariate distributions from external libraries.
 The interface offers many services:
 querying the probability density function (PDF) and cumulative distribution function (CDF),
@@ -47,26 +47,26 @@ computing statistical moments (mean, standard deviation).
 The available backends are
 [OpenTURNS](https://openturns.github.io/www/) and [SciPy](https://docs.scipy.org/doc/scipy)
 with the associated classes
-[OTDistribution][gemseo.uncertainty.distributions.openturns.distribution.OTDistribution]
-and [SPDistribution][gemseo.uncertainty.distributions.scipy.distribution.SPDistribution].
+[OTDistribution][gemseo.uncertainty.distribution.openturns.distribution.OTDistribution]
+and [SPDistribution][gemseo.uncertainty.distribution.scipy.distribution.SPDistribution].
 Any distribution available in these external libraries can be created from these classes.
 Subclasses also exist for classical distributions,
 such as
-[OTUniformDistribution][gemseo.uncertainty.distributions.openturns.uniform.OTUniformDistribution],
-[OTNormalDistribution][gemseo.uncertainty.distributions.openturns.normal.OTNormalDistribution]
+[OTUniformDistribution][gemseo.uncertainty.distribution.openturns.uniform.OTUniformDistribution],
+[OTNormalDistribution][gemseo.uncertainty.distribution.openturns.normal.OTNormalDistribution]
 and
-[OTTriangularDistribution][gemseo.uncertainty.distributions.openturns.triangular.OTTriangularDistribution]
+[OTTriangularDistribution][gemseo.uncertainty.distribution.openturns.triangular.OTTriangularDistribution]
 for OpenTURNS,
 and
-[SPUniformDistribution][gemseo.uncertainty.distributions.scipy.uniform.SPUniformDistribution],
-[SPNormalDistribution][gemseo.uncertainty.distributions.scipy.normal.SPNormalDistribution]
+[SPUniformDistribution][gemseo.uncertainty.distribution.scipy.uniform.SPUniformDistribution],
+[SPNormalDistribution][gemseo.uncertainty.distribution.scipy.normal.SPNormalDistribution]
 and
-[SPTriangularDistribution][gemseo.uncertainty.distributions.scipy.triangular.SPTriangularDistribution]
+[SPTriangularDistribution][gemseo.uncertainty.distribution.scipy.triangular.SPTriangularDistribution]
 for SciPy.
 
 These distributions are defined from settings,
-e.g. [OTUniformDistribution_Settings][gemseo.uncertainty.distributions.openturns.uniform_settings.OTUniformDistribution_Settings]
-in the case of the [OTUniformDistribution][gemseo.uncertainty.distributions.openturns.uniform.OTUniformDistribution].
+e.g. [OTUniformDistribution_Settings][gemseo.uncertainty.distribution.openturns.uniform_settings.OTUniformDistribution_Settings]
+in the case of the [OTUniformDistribution][gemseo.uncertainty.distribution.openturns.uniform.OTUniformDistribution].
 
 ## Choosing a distribution { #concept-choosing-a-distribution }
 
@@ -99,7 +99,7 @@ the parameters of a distribution can be estimated by a statistical technique,
 such as the [maximum likelihood method](https://en.wikipedia.org/wiki/Method_of_moments_(statistics))
 or the [method of moments](https://en.wikipedia.org/wiki/Method_of_moments_(statistics)).
 
-[OTDistributionFitter][gemseo.uncertainty.distributions.openturns.distribution_fitter.OTDistributionFitter]
+[OTDistributionFitter][gemseo.uncertainty.distribution.openturns.distribution_fitter.OTDistributionFitter]
 automatically selects the best-fitting distribution from a set of candidates
 using this kind of technique.
 It tests each candidate using one of these goodness-of-fit criteria:
@@ -109,7 +109,7 @@ or the [Chi-squared statistical hypothesis test](https://en.wikipedia.org/wiki/C
 and returns the distribution that best matches the data.
 
 In the case of SciPy,
-[SPDistributionFitter][gemseo.uncertainty.distributions.scipy.distribution_fitter.SPDistributionFitter]
+[SPDistributionFitter][gemseo.uncertainty.distribution.scipy.distribution_fitter.SPDistributionFitter]
 uses one of these statistical hypothesis tests as goodness-of-fit criterion:
 [Anderson-Darling](https://en.wikipedia.org/wiki/Anderson%E2%80%93Darling_test),
 [Cramer-von-Mises](https://en.wikipedia.org/wiki/Cram%C3%A9r%E2%80%93von_Mises_criterion),
@@ -129,8 +129,8 @@ i.e. when the occurrence of a component does not affect the probability of occur
 the joint distribution is simply the product of the marginal distributions.
 
 Joint distributions are defined using
-[OTJointDistribution][gemseo.uncertainty.distributions.openturns.joint.OTJointDistribution]
-or [SPJointDistribution][gemseo.uncertainty.distributions.scipy.joint.SPJointDistribution]
+[OTJointDistribution][gemseo.uncertainty.distribution.openturns.joint.OTJointDistribution]
+or [SPJointDistribution][gemseo.uncertainty.distribution.scipy.joint.SPJointDistribution]
 depending on the backend.
 
 When the components are (stochastically) dependent,
@@ -156,13 +156,13 @@ when the number of samples tends to infinity.
 
 ## Parameter space { #concept-parameter-space }
 
-The [ParameterSpace][gemseo.algos.parameter_space.ParameterSpace]
+The [ParameterSpace][gemseo.space.parameter.ParameterSpace]
 extends the [DesignSpace][concept-design-space]
 to declare uncertain variables alongside deterministic ones.
 Each uncertain variable is added with its marginal distribution
-using either the [add_random_variable()][gemseo.algos.parameter_space.ParameterSpace.add_random_variable] or the [add_random_vector()][gemseo.algos.parameter_space.ParameterSpace.add_random_vector] method,
-and the dependency structure is defined using the [add_copula()][gemseo.algos.parameter_space.ParameterSpace.add_copula] method.
-The [distribution][gemseo.algos.parameter_space.ParameterSpace.distribution] attribute then exposes the corresponding joint distribution
+using either the [add_random_variable()][gemseo.space.parameter.ParameterSpace.add_random_variable] or the [add_random_vector()][gemseo.space.parameter.ParameterSpace.add_random_vector] method,
+and the dependency structure is defined using the [add_copula()][gemseo.space.parameter.ParameterSpace.add_copula] method.
+The [distribution][gemseo.space.parameter.ParameterSpace.distribution] attribute then exposes the corresponding joint distribution
 used to generate samples for propagation and sensitivity analysis.
 
 ## Going further

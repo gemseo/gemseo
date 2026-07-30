@@ -30,7 +30,7 @@ You want to remap this output into the variables that matter for your study.
 
 ## Solution
 
-The [RemappingDiscipline][gemseo.disciplines.remapping.RemappingDiscipline] can be used
+The [RemappingDiscipline][gemseo.discipline.remapping.RemappingDiscipline] can be used
 to split a variable into multiple variables.
 
 ## Step-by-step guide
@@ -43,10 +43,10 @@ from typing import TYPE_CHECKING
 from numpy import array
 
 from gemseo.core.discipline import Discipline
-from gemseo.disciplines.remapping import RemappingDiscipline
+from gemseo.discipline import RemappingDiscipline
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 # %%
 # ### 1. Create the discipline
@@ -95,7 +95,7 @@ clearer_fruit_counting = RemappingDiscipline(
 clearer_fruit_counting
 # %%
 # !!! note
-#     [RemappingDiscipline][gemseo.disciplines.remapping.RemappingDiscipline]
+#     [RemappingDiscipline][gemseo.discipline.remapping.RemappingDiscipline]
 #     requires an instance of the original discipline,
 #     the input names mapping to the original input names
 #     and the outputs names mapping to the original output names.
@@ -125,7 +125,7 @@ clearer_fruit_counting.get_input_data(), clearer_fruit_counting.get_output_data(
 # ## Summary
 #
 # Input and output variables can be redefined by using the
-# [RemappingDiscipline][gemseo.disciplines.remapping.RemappingDiscipline].
+# [RemappingDiscipline][gemseo.discipline.remapping.RemappingDiscipline].
 #
 # An input or output name mapping looks like
 # `{"new_x": "x", "new_y": ("y", components)}`
@@ -139,5 +139,5 @@ clearer_fruit_counting.get_input_data(), clearer_fruit_counting.get_output_data(
 # (from the `i`-th to the `j`-th components of `y`).
 #
 # Unlike the variable renaming (See [Renaming variables][renaming-variables]),
-# the [RemappingDiscipline][gemseo.disciplines.remapping.RemappingDiscipline]
+# the [RemappingDiscipline][gemseo.discipline.remapping.RemappingDiscipline]
 # does not change the grammar of the initial discipline.

@@ -37,12 +37,12 @@ from numpy import array
 
 from gemseo import check_jacobian
 from gemseo.core.discipline import Discipline
-from gemseo.enums import ApproximationMode
+from gemseo.enum import ApproximationMode
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 
 # %%

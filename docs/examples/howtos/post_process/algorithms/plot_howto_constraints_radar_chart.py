@@ -34,7 +34,7 @@ It scales better with the number of constraints than a standard constraint histo
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.post.constraint_radar_settings import ConstraintRadar_Settings
+from gemseo.post import ConstraintRadar_Settings
 
 # %%
 # ### 1. Prerequisites

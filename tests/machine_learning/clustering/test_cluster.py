@@ -27,13 +27,13 @@ from numpy import arange
 from numpy import array
 from numpy.testing import assert_allclose
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.machine_learning.clustering.models.base_clusterer import BaseClusterer
-from gemseo.machine_learning.clustering.models.factory import CLUSTERER_FACTORY
-from gemseo.problems.dataset.iris import create_iris_dataset
-from gemseo.utils.pickle import from_pickle
-from gemseo.utils.pickle import to_pickle
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.dataset.dataset import Dataset
+from gemseo.machine_learning.clustering.core.base_clusterer import BaseClusterer
+from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
+from gemseo.problem.dataset.iris import create_iris_dataset
+from gemseo.util.pickle import from_pickle
+from gemseo.util.pickle import to_pickle
+from gemseo.util.testing.helper import assert_exception
 
 INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
 

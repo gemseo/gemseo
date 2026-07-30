@@ -29,14 +29,14 @@ from numpy import ndarray
 from numpy import zeros
 from numpy.random import default_rng
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.classification.models.random_forest import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.classification.model.random_forest import (
     RandomForestClassifier,
 )
-from gemseo.machine_learning.classification.models.random_forest_settings import (
+from gemseo.machine_learning.classification.model.random_forest_settings import (
     RandomForestClassifier_Settings,
 )
-from gemseo.machine_learning.transformers.scaler.min_max_scaler import MinMaxScaler
+from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
 
 RNG = default_rng(12345)
 

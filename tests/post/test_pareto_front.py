@@ -20,13 +20,13 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.algos.doe.factory import DOE_LIBRARY_FACTORY
-from gemseo.algos.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.post import ParetoFront_Settings
+from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.post.factory import POST_FACTORY
-from gemseo.problems.multiobjective_optimization.binh_korn import BinhKorn
-from gemseo.problems.optimization.power_2 import Power2
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.post.pareto_front_settings import ParetoFront_Settings
+from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
+from gemseo.problem.optimization.power_2 import Power2
+from gemseo.util.testing.helper import assert_exception
 
 pytestmark = pytest.mark.skipif(
     not POST_FACTORY.is_available("ScatterPlotMatrix"),

@@ -19,13 +19,13 @@ from __future__ import annotations
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.uncertainty.reliability.base import BaseReliabilityAlgorithm
+from gemseo.uncertainty.reliability.core.base import BaseReliabilityAlgorithm
 
 
 class ReliabilityAlgorithmFactory(BaseFactory):
     """The factory of reliability analysis algorithms."""
 
-    # TODO: subclass BaseAlgoFactory once the MR 2434 has been merged.
+    # TODO: subclass BaseAlgorithmFactory once the MR 2434 has been merged.
 
     _CLASS = BaseReliabilityAlgorithm
     _PACKAGE_NAMES = ("gemseo.uncertainty.reliability",)

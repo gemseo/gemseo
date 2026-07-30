@@ -25,9 +25,9 @@ from typing import ClassVar
 from numpy import vstack
 from numpy import zeros
 
-from gemseo.datasets.dataset import Dataset
-from gemseo.post.base_post import BasePost
+from gemseo.dataset.dataset import Dataset
 from gemseo.post.constraint_radar_settings import ConstraintRadar_Settings
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 

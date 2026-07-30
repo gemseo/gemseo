@@ -22,16 +22,16 @@ from typing import TYPE_CHECKING
 from numpy import vstack
 from spgl1 import spgl1
 
-from gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter import (
+from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter import (
     BaseLinearModelFitter,
 )
-from gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter import (
+from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter import (
     _WrappedFittingFunction,
 )
 from gemseo.machine_learning.linear_model_fitting.spgl1_settings import SPGL1_Settings
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 class _SGPL1FittingFunction(_WrappedFittingFunction):

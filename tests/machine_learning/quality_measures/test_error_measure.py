@@ -26,21 +26,21 @@ from numpy import array
 from numpy import linspace
 from numpy import newaxis
 
-from gemseo.datasets.io_dataset import IODataset
-from gemseo.machine_learning.regression.models.linreg import LinearRegressor
-from gemseo.machine_learning.regression.models.linreg_settings import (
+from gemseo.dataset.io_dataset import IODataset
+from gemseo.machine_learning.regression.model.linreg import LinearRegressor
+from gemseo.machine_learning.regression.model.linreg_settings import (
     LinearRegressor_Settings,
 )
-from gemseo.machine_learning.regression.models.polyreg import PolynomialRegressor
-from gemseo.machine_learning.regression.models.polyreg_settings import (
+from gemseo.machine_learning.regression.model.polyreg import PolynomialRegressor
+from gemseo.machine_learning.regression.model.polyreg_settings import (
     PolynomialRegressor_Settings,
 )
 from gemseo.machine_learning.regression.quality.factory import RegressorQualityFactory
 from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
 from gemseo.machine_learning.regression.quality.rmse_measure import RMSEMeasure
-from gemseo.problems.dataset.rosenbrock import create_rosenbrock_dataset
-from gemseo.utils.comparisons import compare_dict_of_arrays
+from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
+from gemseo.util.comparison import compare_dict_of_arrays
 
 
 @pytest.mark.parametrize(

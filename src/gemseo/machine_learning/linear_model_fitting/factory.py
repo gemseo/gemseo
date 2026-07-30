@@ -18,7 +18,7 @@
 from __future__ import annotations
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.machine_learning.linear_model_fitting.base_linear_model_fitter import (
+from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter import (
     BaseLinearModelFitter,
 )
 

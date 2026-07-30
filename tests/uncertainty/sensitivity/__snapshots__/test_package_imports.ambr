@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_unknown_attribute
+  "module 'gemseo.uncertainty.sensitivity' has no attribute 'NotAClass'"
+# ---

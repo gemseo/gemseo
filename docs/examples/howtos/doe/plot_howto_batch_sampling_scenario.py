@@ -35,13 +35,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.algos.design_space import DesignSpace
 from gemseo.core.discipline.discipline import Discipline
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings import MC_Settings
+from gemseo.doe import MC_Settings
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 if TYPE_CHECKING:
-    from gemseo.typing import StrKeyMapping
+    from gemseo.util.typing import StrKeyMapping
 
 # %%
 # ### 1. Implement vectorizable disciplines

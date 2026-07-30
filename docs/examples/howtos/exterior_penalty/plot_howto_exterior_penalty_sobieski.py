@@ -31,10 +31,10 @@ into an unconstrained one by folding the constraints into the objective function
 from __future__ import annotations
 
 from gemseo import create_discipline
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.settings import BasicHistory_Settings
-from gemseo.settings import L_BFGS_B_Settings
+from gemseo.optimization import L_BFGS_B_Settings
+from gemseo.post import BasicHistory_Settings
+from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
+from gemseo.scenario import MDOScenario
 
 # %%
 # ### 1. Build the disciplines, design space and scenario

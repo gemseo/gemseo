@@ -17,10 +17,10 @@ from __future__ import annotations
 from numpy import array
 from numpy.testing import assert_array_equal
 
-from gemseo.core.functions.array_function import ArrayFunction
+from gemseo.core.function.array_function import ArrayFunction
 from gemseo.uncertainty.reliability.event import Event
 from gemseo.uncertainty.reliability.event_variable import EventVariable as V
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 
 def make_event_comparable(

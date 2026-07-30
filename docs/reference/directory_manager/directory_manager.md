@@ -85,7 +85,7 @@ re-exported as `DirectoryManagerSettings` and reachable at `_configuration.direc
 - `KEEP_SOLUTION_ONLY`: Keep only the optimal-solution directory (`CleanUpPolicy` only)
 - `KEEP_BASELINE_AND_SOLUTION`: Keep the baseline and solution (`CleanUpPolicy` only)
 
-### BaseProcessor (`_workflow_observers/base_processor.py`)
+### BaseProcessor (`_workflow_observer/base_processor.py`)
 
 Abstract base for processors handling specific work:
 
@@ -93,7 +93,7 @@ Abstract base for processors handling specific work:
 - Abstract `observer_class` property—set as a class attribute by each concrete
   processor—naming the observer type it handles; the factory uses it for matching
 
-### BaseDMProcessor (`processors/base.py`)
+### BaseDMProcessor (`processor/base.py`)
 
 Base processor for directory management:
 

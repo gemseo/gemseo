@@ -22,11 +22,11 @@
 """# Scalable diagonal discipline.
 
 Let us consider the
-[SobieskiAerodynamics][gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics] discipline.
-We want to build its [DataDrivenScalableDiscipline][gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline] counterpart,
-using a [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
+[SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics] discipline.
+We want to build its [DataDrivenScalableDiscipline][gemseo.problem.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline] counterpart,
+using a [ScalableDiagonalModel][gemseo.problem.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
 
-For that, we can use a 20-length [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE]
+For that, we can use a 20-length [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE]
 and test different sizes of variables or different settings
 for the scalable diagonal discipline.
 """
@@ -36,22 +36,20 @@ from __future__ import annotations
 from gemseo import create_discipline
 from gemseo import create_scalable
 from gemseo import create_scenario
-from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
-    DiagonalDOE_Settings,
-)
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 
 # %%
 # ## Training dataset
 #
-# The first step is to build a [BaseFullCache][gemseo.caches.base_full.BaseFullCache] dataset
-# from a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
+# The first step is to build a [BaseFullCache][gemseo.core.cache.base_full.BaseFullCache] dataset
+# from a [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE].
 
 # %%
 # ### Instantiate the discipline
 #
 # For that, we instantiate the
-# [SobieskiAerodynamics][gemseo.problems.mdo.sobieski.disciplines.SobieskiAerodynamics] discipline
+# [SobieskiAerodynamics][gemseo.problem.mdo.sobieski.discipline.SobieskiAerodynamics] discipline
 # and set it up to cache all evaluations.
 discipline = create_discipline("SobieskiAerodynamics")
 
@@ -66,10 +64,10 @@ input_space.filter(input_names)
 # %%
 # ### Build the DOE scenario
 #
-# Lastly, we sample the discipline by means of an [MDOScenario][gemseo.scenarios.mdo.MDOScenario]
+# Lastly, we sample the discipline by means of an [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # relying on both discipline and input space.
 # In order to build a diagonal scalable discipline,
-# a [DiagonalDOE][gemseo.algos.doe.diagonal_doe.diagonal_doe.DiagonalDOE] must be used.
+# a [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE] must be used.
 scenario = create_scenario(
     [discipline],
     "y_2",
@@ -86,16 +84,16 @@ scenario.execute(DiagonalDOE_Settings(n_samples=20))
 #
 # ### Build the scalable discipline
 #
-# The second step is to build a [DataDrivenScalableDiscipline][gemseo.problems.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline],
-# using a [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel] and the database
-# converted to a [Dataset][gemseo.datasets.dataset.Dataset].
+# The second step is to build a [DataDrivenScalableDiscipline][gemseo.problem.mdo.scalable.data_driven.discipline.DataDrivenScalableDiscipline],
+# using a [ScalableDiagonalModel][gemseo.problem.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel] and the database
+# converted to a [Dataset][gemseo.dataset.dataset.Dataset].
 dataset = scenario.to_dataset(opt_naming=False)
 scalable = create_scalable("ScalableDiagonalModel", dataset)
 
 # %%
 # ### Visualize the input-output dependencies
 #
-# We can easily access the underlying [ScalableDiagonalModel][gemseo.problems.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
+# We can easily access the underlying [ScalableDiagonalModel][gemseo.problem.mdo.scalable.data_driven.diagonal.ScalableDiagonalModel]
 # and plot the corresponding input-output dependency matrix
 # where the level of gray and the number (in [0,100]) represent
 # the degree of dependency between inputs and outputs.

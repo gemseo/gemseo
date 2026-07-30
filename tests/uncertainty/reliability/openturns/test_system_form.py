@@ -19,9 +19,9 @@ from typing import TYPE_CHECKING
 import pytest
 from openturns import MultiFORMResult
 
-from gemseo.algos.parameter_space import ParameterSpace
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.uncertainty.distributions.openturns.uniform_settings import (
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.space.parameter import ParameterSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
 from gemseo.uncertainty.reliability.openturns.optimizer import BaseOTOptimizer
@@ -31,10 +31,10 @@ from gemseo.uncertainty.reliability.openturns.system_form_settings import (
     OT_SystemFORM_Settings,
 )
 from gemseo.uncertainty.reliability.problem import ReliabilityProblem
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
-    from gemseo.typing import RealArray
+    from gemseo.util.typing import RealArray
 
 
 def f_1(u: RealArray) -> RealArray:

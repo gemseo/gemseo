@@ -39,13 +39,13 @@ GEMSEO offers three complementary tools for data persistence:
 - the [Cache][concept-cache] stores the evaluations of a
   [Discipline][gemseo.core.discipline.discipline.Discipline]
   or of any process discipline that composes other disciplines, such as
-  a [DisciplineChain][gemseo.core.chains.chain.DisciplineChain]
+  a [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain]
   or an [MDAChain][gemseo.mda.chain.MDAChain]
   (inputs, outputs and Jacobian),
 - the [Database][concept-database] stores the evaluations of the
-  [ArrayFunction][gemseo.core.functions.array_function.ArrayFunction] instances
+  [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] instances
   attached to an
-  [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]
+  [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]
   (objective, constraints, observables and their gradients),
 - the [Dataset][concept-dataset] is a generic structure
   consolidating data into a multi-indexed table for post-processing,
@@ -54,9 +54,9 @@ GEMSEO offers three complementary tools for data persistence:
 Caches and databases capture data *during* the execution of a process,
 while datasets are typically built *from* them
 to feed downstream analyses.
-Any [Cache][gemseo.caches.base.BaseCache] or
-[Database][gemseo.algos.database.Database]
-can be exported to a [Dataset][gemseo.datasets.dataset.Dataset];
+Any [Cache][gemseo.core.cache.base.BaseCache] or
+[Database][gemseo.core.problem.database.Database]
+can be exported to a [Dataset][gemseo.dataset.dataset.Dataset];
 a dataset can also be created from a NumPy array, a CSV file or a pandas DataFrame.
 
 ## Cache, database and dataset at a glance { #concept-data-persistence-comparison }
@@ -64,12 +64,12 @@ a dataset can also be created from a NumPy array, a CSV file or a pandas DataFra
 | Aspect | [Cache][concept-cache] | [Database][concept-database] | [Dataset][concept-dataset] |
 |---|---|---|---|
 | Typical use | Skip redundant simulations, checkpoint a long sequential run | Optimization history, avoid double evaluating objective and constraints | Post-processing, visualization, surrogate model training |
-| Scope | Any [Discipline][gemseo.core.discipline.discipline.Discipline], including process disciplines (chains, MDAs, ...) | An [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem] or [EvaluationProblem][gemseo.algos.evaluation_problem.EvaluationProblem] | Standalone container |
+| Scope | Any [Discipline][gemseo.core.discipline.discipline.Discipline], including process disciplines (chains, MDAs, ...) | An [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] or [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem] | Standalone container |
 | What is stored | Inputs, outputs and Jacobian of [execute()][gemseo.core.discipline.discipline.Discipline.execute] calls | Inputs, output values and gradients of the problem functions (objective, constraints, observables) | Any tabular data organised by group, variable and component |
 | Input lookup | XXH64 hash of the flattened inputs, with optional tolerance | NumPy-array equality on the design vector | - |
-| Persistence on disk | HDF5 ([HDF5Cache][gemseo.caches.hdf5.HDF5Cache]) | HDF5 ([Database.to_hdf()][gemseo.algos.database.Database.to_hdf] / [from_hdf()][gemseo.algos.database.Database.from_hdf]) | CSV, text, pandas [DataFrame][pandas.DataFrame] |
+| Persistence on disk | HDF5 ([HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache]) | HDF5 ([Database.to_hdf()][gemseo.core.problem.database.Database.to_hdf] / [from_hdf()][gemseo.core.problem.database.Database.from_hdf]) | CSV, text, pandas [DataFrame][pandas.DataFrame] |
 | Built from | Discipline executions | Solver / DOE iterations | A cache, a database, a NumPy array, a CSV file, a [DataFrame][pandas.DataFrame] |
-| Convert to a [Dataset][concept-dataset] | [BaseCache.to_dataset()][gemseo.caches.base.BaseCache.to_dataset] | [Database.to_dataset()][gemseo.algos.database.Database.to_dataset] or [OptimizationProblem.to_dataset()][gemseo.algos.optimization_problem.OptimizationProblem.to_dataset] | — |
+| Convert to a [Dataset][concept-dataset] | [BaseCache.to_dataset()][gemseo.core.cache.base.BaseCache.to_dataset] | [Database.to_dataset()][gemseo.core.problem.database.Database.to_dataset] or [OptimizationProblem.to_dataset()][gemseo.optimization.problem.OptimizationProblem.to_dataset] | — |
 
 ## When to use which? { #concept-data-persistence-decision }
 
@@ -80,15 +80,15 @@ a dataset can also be created from a NumPy array, a CSV file or a pandas DataFra
   inspect it, post-process it or save it to disk* → use a
   [Database][concept-database]
   (one is already attached to any
-  [OptimizationProblem][gemseo.algos.optimization_problem.OptimizationProblem]).
+  [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]).
 - *I want to plot, analyse or feed simulation or optimization data
   to a machine learning model* → build a
   [Dataset][concept-dataset]
   from the cache or the database.
 - *I want to share or archive the data produced by a run* → persist to
-  HDF5 via an [HDF5Cache][gemseo.caches.hdf5.HDF5Cache], a
-  [Database.to_hdf()][gemseo.algos.database.Database.to_hdf]
+  HDF5 via an [HDF5Cache][gemseo.core.cache.hdf5.HDF5Cache], a
+  [Database.to_hdf()][gemseo.core.problem.database.Database.to_hdf]
   export, or a
-  [Dataset][gemseo.datasets.dataset.Dataset]
+  [Dataset][gemseo.dataset.dataset.Dataset]
   written through its underlying pandas
   [DataFrame][pandas.DataFrame].

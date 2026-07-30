@@ -33,7 +33,7 @@ similar curves, making clusters visible.
 from __future__ import annotations
 
 from gemseo import create_benchmark_dataset
-from gemseo.post.dataset.andrews_curves import AndrewsCurves
+from gemseo.post.dataset import AndrewsCurves
 from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
 
 # %%

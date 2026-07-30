@@ -22,14 +22,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.core.chains.initialization_chain import InitializationDisciplineChain
-from gemseo.core.chains.initialization_chain import (
+from gemseo.discipline.chain.initialization_chain import InitializationDisciplineChain
+from gemseo.discipline.chain.initialization_chain import (
     order_disciplines_from_default_inputs,
 )
-from gemseo.problems.mdo.scalable.linear.disciplines_generator import (
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
 )
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline

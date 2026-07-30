@@ -15,7 +15,7 @@
 # Contributors:
 #    INITIAL AUTHORS - API and implementation and/or documentation
 #        :author: Simone Coniglio
-"""Make an animated GIF from a [BasePost][gemseo.post.base_post.BasePost]."""
+"""Make an animated GIF from a [BasePost][gemseo.post.core.base_post.BasePost]."""
 
 from __future__ import annotations
 
@@ -26,13 +26,13 @@ from typing import Final
 
 from PIL import Image
 
-from gemseo.algos.database import Database
+from gemseo.core.problem.database import Database
 from gemseo.post.animation_settings import Animation_Settings
-from gemseo.post.base_post import BasePost
+from gemseo.post.core.base_post import BasePost
 
 
 class Animation(BasePost[Animation_Settings]):
-    """Animated GIF maker from a [BasePost][gemseo.post.base_post.BasePost]."""
+    """Animated GIF maker from a [BasePost][gemseo.post.core.base_post.BasePost]."""
 
     __FRAME: Final[str] = "frame"
     """The prefix for frame images."""

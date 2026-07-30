@@ -22,7 +22,7 @@ After executing a scenario, you need to visualize the optimization history.
 ## Solution
 
 Use either the scenario method
-[post_process()][gemseo.scenarios.mdo.MDOScenario.post_process]
+[post_process()][gemseo.scenario.mdo.MDOScenario.post_process]
 or the function [execute_post()][gemseo.execute_post],
 both accepting a post-processing settings model.
 
@@ -32,12 +32,12 @@ both accepting a post-processing settings model.
 from __future__ import annotations
 
 from gemseo import execute_post
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings import NLOPT_COBYLA_Settings
-from gemseo.disciplines.analytic import AnalyticDiscipline
-from gemseo.formulations.disciplinary_opt_settings import DisciplinaryOpt_Settings
+from gemseo.discipline import AnalyticDiscipline
+from gemseo.formulation import DisciplinaryOpt_Settings
+from gemseo.optimization import NLOPT_COBYLA_Settings
 from gemseo.post import BasicHistory_Settings
-from gemseo.scenarios.mdo import MDOScenario
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 # %%
 # ### 1. Build and execute the scenario
@@ -56,7 +56,7 @@ scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 # %%
 # ### 2. Post-process the scenario
 #
-# Use the scenario method [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process]:
+# Use the scenario method [post_process()][gemseo.scenario.mdo.MDOScenario.post_process]:
 scenario.post_process(BasicHistory_Settings(variable_names=["y"], save=False))
 
 # %%
@@ -74,6 +74,6 @@ execute_post(
 # ## Summary
 #
 # After executing a scenario, visualize the history by calling
-# [post_process()][gemseo.scenarios.mdo.MDOScenario.post_process] on the scenario
+# [post_process()][gemseo.scenario.mdo.MDOScenario.post_process] on the scenario
 # or [execute_post()][gemseo.execute_post] with the scenario as the first argument.
 # Both methods accept the same post-processing settings models.

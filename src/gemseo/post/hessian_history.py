@@ -36,10 +36,10 @@ from numpy import max as np_max
 from numpy import min as np_min
 from numpy import ones_like
 
-from gemseo.algos.database import Database
-from gemseo.post.base_post import BasePost
-from gemseo.post.core.colormaps import PARULA
-from gemseo.post.core.hessians import SR1Approx
+from gemseo.core.problem.database import Database
+from gemseo.post._engine.colormap import PARULA
+from gemseo.post._engine.hessian import SR1Approx
+from gemseo.post.core.base_post import BasePost
 from gemseo.post.hessian_history_settings import HessianHistory_Settings
 
 

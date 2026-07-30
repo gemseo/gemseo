@@ -35,16 +35,16 @@ describing $d$ properties of interest $p=(p_1,\ldots,p_d)$,
 which can sometimes be organized into groups
 such as inputs, outputs, or categories.
 They are given to an ML model at instantiation
-in the form of a [Dataset][gemseo.datasets.dataset.Dataset].
+in the form of a [Dataset][gemseo.dataset.dataset.Dataset].
 
 The ML model is fitted to the data
-using the [learn()][gemseo.machine_learning.core.models.ml_model.BaseMLModel.learn] method;
+using the [learn()][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.learn] method;
 it is then said to be *trained*.
 Its quality can be assessed using specific mesures.
 
 ??? abstract "API"
 
-    - [BaseMLModel][gemseo.machine_learning.core.models.ml_model.BaseMLModel]
+    - [BaseMLModel][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel]
       is the base class for ML models.
     - [BaseMLModelQuality][gemseo.machine_learning.core.quality.base_ml_model_quality.BaseMLModelQuality]
       is the base class for quality measures.
@@ -64,7 +64,7 @@ A clustering model is also called a *clusterer*.
 Once trained,
 each training sample is assigned a category in $\{1,\ldots,m\}$
 and most clusterers $\hat{f}$ can
-[predict()][gemseo.machine_learning.clustering.models.base_predictive_clusterer.BasePredictiveClusterer.predict]
+[predict()][gemseo.machine_learning.clustering.core.base_predictive_clusterer.BasePredictiveClusterer.predict]
 the category $c$ corresponding to new property values $x$,
 i.e. $c \leftarrow \hat{f}(x)$.
 
@@ -72,8 +72,8 @@ he available clusterers are:
 
 | Description      | Based on     | Class                                                                                                                                                                                                    |
 |------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| k-means          | scikit-learn | [KMeans][gemseo.machine_learning.clustering.models.kmeans.KMeans] ([settings][gemseo.machine_learning.clustering.models.kmeans_settings.KMeans_Settings])                                                |
-| Gaussian mixture | scikit-learn | [GaussianMixture][gemseo.machine_learning.clustering.models.gaussian_mixture.GaussianMixture] ([settings][gemseo.machine_learning.clustering.models.gaussian_mixture_settings.GaussianMixture_Settings]) |
+| k-means          | scikit-learn | [KMeans][gemseo.machine_learning.clustering.model.kmeans.KMeans] ([settings][gemseo.machine_learning.clustering.model.kmeans_settings.KMeans_Settings])                                                |
+| Gaussian mixture | scikit-learn | [GaussianMixture][gemseo.machine_learning.clustering.model.gaussian_mixture.GaussianMixture] ([settings][gemseo.machine_learning.clustering.model.gaussian_mixture_settings.GaussianMixture_Settings]) |
 
 !!! how-to
 
@@ -81,9 +81,9 @@ he available clusterers are:
 
 ??? abstract "API"
 
-    - [BaseMLUnsupervisedModel][gemseo.machine_learning.core.models.unsupervised.BaseMLUnsupervisedModel]
+    - [BaseMLUnsupervisedModel][gemseo.machine_learning.core.model.base_unsupervised.BaseMLUnsupervisedModel]
       is the base class for unsupervised ML models.
-    - [BaseClusterer][gemseo.machine_learning.clustering.models.base_clusterer.BaseClusterer]
+    - [BaseClusterer][gemseo.machine_learning.clustering.core.base_clusterer.BaseClusterer]
       is the base class for clustering models.
 
 ### Classification
@@ -98,10 +98,10 @@ This is referred to as *classification*,
 a branch of *supervised learning*.
 In GEMSEO,
 a classification model is also called a *classifier*
-and the data must be passed to it in the form of an [IODataset][gemseo.datasets.io_dataset.IODataset].
+and the data must be passed to it in the form of an [IODataset][gemseo.dataset.io_dataset.IODataset].
 Once trained,
 a classifier $\hat{f}$ can
-[predict()][gemseo.machine_learning.classification.models.base_classifier.BaseClassifier.predict]
+[predict()][gemseo.machine_learning.classification.core.base_classifier.BaseClassifier.predict]
 the category $c$ corresponding to new property values $x$,
 i.e. $c \leftarrow \hat{f}(x)$.
 
@@ -109,9 +109,9 @@ The available classifiers are:
 
 | Description                  | Based on     | Class                                                                                                                                                                                                                        |
 |------------------------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| k-nearest neighbors (k-NN)   | scikit-learn | [KNNClassifier][gemseo.machine_learning.classification.models.knn.KNNClassifier] ([settings][gemseo.machine_learning.classification.models.knn_settings.KNNClassifier_Settings])                                             |
-| Random forest                | scikit-learn | [PolynomialRegressor][gemseo.machine_learning.classification.models.random_forest.RandomForestClassifier] ([settings][gemseo.machine_learning.classification.models.random_forest_settings.RandomForestClassifier_Settings]) |
-| Support vector machine (SVM) | scikit-learn | [PolynomialRegressor][gemseo.machine_learning.classification.models.svm.SVMClassifier] ([settings][gemseo.machine_learning.classification.models.svm_settings.SVMClassifier_Settings])                                       |
+| k-nearest neighbors (k-NN)   | scikit-learn | [KNNClassifier][gemseo.machine_learning.classification.model.knn.KNNClassifier] ([settings][gemseo.machine_learning.classification.model.knn_settings.KNNClassifier_Settings])                                             |
+| Random forest                | scikit-learn | [PolynomialRegressor][gemseo.machine_learning.classification.model.random_forest.RandomForestClassifier] ([settings][gemseo.machine_learning.classification.model.random_forest_settings.RandomForestClassifier_Settings]) |
+| Support vector machine (SVM) | scikit-learn | [PolynomialRegressor][gemseo.machine_learning.classification.model.svm.SVMClassifier] ([settings][gemseo.machine_learning.classification.model.svm_settings.SVMClassifier_Settings])                                       |
 
 !!! how-to
 
@@ -119,9 +119,9 @@ The available classifiers are:
 
 ??? abstract "API"
 
-    - [BaseMLSupervisedModel][gemseo.machine_learning.core.models.supervised.BaseMLSupervisedModel]
+    - [BaseMLSupervisedModel][gemseo.machine_learning.core.model.base_supervised.BaseMLSupervisedModel]
       is the base class for supervised ML model.
-    - [BaseClassifier][gemseo.machine_learning.classification.models.base_classifier.BaseClassifier]
+    - [BaseClassifier][gemseo.machine_learning.classification.core.base_classifier.BaseClassifier]
       is the base class for classification models.
 
 ### Regression
@@ -136,44 +136,44 @@ another branch of supervised learning can be considered,
 namely *regression*.
 In GEMSEO,
 a regression model is also called a *regressor*
-and the data must be passed to it in the form of an [IODataset][gemseo.datasets.io_dataset.IODataset].
+and the data must be passed to it in the form of an [IODataset][gemseo.dataset.io_dataset.IODataset].
 Once trained,
 a regressor $\hat{f}$ can
-[predict()][gemseo.machine_learning.regression.models.base_regressor.BaseRegressor.predict]
+[predict()][gemseo.machine_learning.regression.core.base_regressor.BaseRegressor.predict]
 the outputs $y$ corresponding to new inputs values $x$,
 i.e. $y \leftarrow \hat{f}(x)$.
 Most of the regressors can also
-[predict_jacobian()][gemseo.machine_learning.regression.models.base_regressor.BaseRegressor.predict_jacobian],
+[predict_jacobian()][gemseo.machine_learning.regression.core.base_regressor.BaseRegressor.predict_jacobian],
 i.e. $y' \leftarrow \nabla\hat{f}(x)=(\frac{\partial \hat{f}(x)}{\partial x_1},\ldots,\frac{\partial \hat{f}(x)}{\partial x_d})$.
 
 The available regressors are:
 
 | Description                      | Based on                   | Class                                                                                                                                                                                                                                    |
 |----------------------------------|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Linear                           | scikit-learn               | [LinearRegressor][gemseo.machine_learning.regression.models.linreg.LinearRegressor] ([settings][gemseo.machine_learning.regression.models.linreg_settings.LinearRegressor_Settings])                                                     |
-| Polynomial                       | scikit-learn               | [PolynomialRegressor][gemseo.machine_learning.regression.models.polyreg.PolynomialRegressor] ([settings][gemseo.machine_learning.regression.models.polyreg_settings.PolynomialRegressor_Settings])                                       |
-| Radial basis function (RBF)      | SciPy                      | [RBFRegressor][gemseo.machine_learning.regression.models.rbf.RBFRegressor] ([settings][gemseo.machine_learning.regression.models.rbf_settings.RBFRegressor_Settings])                                                                    |
-| Thin plate spline (TPS)          | SciPy                      | [TPSRegressor][gemseo.machine_learning.regression.models.thin_plate_spline.TPSRegressor] ([settings][gemseo.machine_learning.regression.models.thin_plate_spline_settings.TPSRegressor_Settings])                                        |
-| Gaussian process (GP)            | scikit-learn               | [GaussianProcessRegressor][gemseo.machine_learning.regression.models.gpr.GaussianProcessRegressor] ([settings][gemseo.machine_learning.regression.models.gpr_settings.GaussianProcessRegressor_Settings])                                |
-| Gaussian process (GP)            | OpenTURNS                  | [OTGaussianProcessRegressor][gemseo.machine_learning.regression.models.ot_gpr.OTGaussianProcessRegressor] ([settings][gemseo.machine_learning.regression.models.ot_gpr_settings.OTGaussianProcessRegressor_Settings])                    |
-| Functional chaos expansion (FCE) | OpenTURNS and scikit-learn | [FCERegressor][gemseo.machine_learning.regression.models.fce.FCERegressor] ([settings][gemseo.machine_learning.regression.models.fce_settings.FCERegressor_Settings])                                                                    |
-| Polynomial chaos expansion (PCE) | OpenTURNS                  | [PCERegressor][gemseo.machine_learning.regression.models.pce.PCERegressor] ([settings][gemseo.machine_learning.regression.models.pce_settings.PCERegressor_Settings])                                                                    |
-| Multi-layer perceptron (MLP)     | scikit-learn               | [MLPRegressor][gemseo.machine_learning.regression.models.mlp.MLPRegressor] ([settings][gemseo.machine_learning.regression.models.mlp_settings.MLPRegressor_Settings])                                                                    |
-| Support vector machine (SVM)     | scikit-learn               | [SVMRegressor][gemseo.machine_learning.regression.models.svm.SVMRegressor] ([settings][gemseo.machine_learning.regression.models.svm_settings.SVMRegressor_Settings])                                                                    |
-| Gradient boosting                | scikit-learn               | [GradientBoostingRegressor][gemseo.machine_learning.regression.models.gradient_boosting.GradientBoostingRegressor] ([settings][gemseo.machine_learning.regression.models.gradient_boosting_settings.GradientBoostingRegressor_Settings]) |
-| Random forest                    | scikit-learn               | [RandomForestRegressor][gemseo.machine_learning.regression.models.random_forest.RandomForestRegressor] ([settings][gemseo.machine_learning.regression.models.random_forest_settings.RandomForestRegressor_Settings])                     |
+| Linear                           | scikit-learn               | [LinearRegressor][gemseo.machine_learning.regression.model.linreg.LinearRegressor] ([settings][gemseo.machine_learning.regression.model.linreg_settings.LinearRegressor_Settings])                                                     |
+| Polynomial                       | scikit-learn               | [PolynomialRegressor][gemseo.machine_learning.regression.model.polyreg.PolynomialRegressor] ([settings][gemseo.machine_learning.regression.model.polyreg_settings.PolynomialRegressor_Settings])                                       |
+| Radial basis function (RBF)      | SciPy                      | [RBFRegressor][gemseo.machine_learning.regression.model.rbf.RBFRegressor] ([settings][gemseo.machine_learning.regression.model.rbf_settings.RBFRegressor_Settings])                                                                    |
+| Thin plate spline (TPS)          | SciPy                      | [TPSRegressor][gemseo.machine_learning.regression.model.thin_plate_spline.TPSRegressor] ([settings][gemseo.machine_learning.regression.model.thin_plate_spline_settings.TPSRegressor_Settings])                                        |
+| Gaussian process (GP)            | scikit-learn               | [GaussianProcessRegressor][gemseo.machine_learning.regression.model.gpr.GaussianProcessRegressor] ([settings][gemseo.machine_learning.regression.model.gpr_settings.GaussianProcessRegressor_Settings])                                |
+| Gaussian process (GP)            | OpenTURNS                  | [OTGaussianProcessRegressor][gemseo.machine_learning.regression.model.ot_gpr.OTGaussianProcessRegressor] ([settings][gemseo.machine_learning.regression.model.ot_gpr_settings.OTGaussianProcessRegressor_Settings])                    |
+| Functional chaos expansion (FCE) | OpenTURNS and scikit-learn | [FCERegressor][gemseo.machine_learning.regression.model.fce.FCERegressor] ([settings][gemseo.machine_learning.regression.model.fce_settings.FCERegressor_Settings])                                                                    |
+| Polynomial chaos expansion (PCE) | OpenTURNS                  | [PCERegressor][gemseo.machine_learning.regression.model.pce.PCERegressor] ([settings][gemseo.machine_learning.regression.model.pce_settings.PCERegressor_Settings])                                                                    |
+| Multi-layer perceptron (MLP)     | scikit-learn               | [MLPRegressor][gemseo.machine_learning.regression.model.mlp.MLPRegressor] ([settings][gemseo.machine_learning.regression.model.mlp_settings.MLPRegressor_Settings])                                                                    |
+| Support vector machine (SVM)     | scikit-learn               | [SVMRegressor][gemseo.machine_learning.regression.model.svm.SVMRegressor] ([settings][gemseo.machine_learning.regression.model.svm_settings.SVMRegressor_Settings])                                                                    |
+| Gradient boosting                | scikit-learn               | [GradientBoostingRegressor][gemseo.machine_learning.regression.model.gradient_boosting.GradientBoostingRegressor] ([settings][gemseo.machine_learning.regression.model.gradient_boosting_settings.GradientBoostingRegressor_Settings]) |
+| Random forest                    | scikit-learn               | [RandomForestRegressor][gemseo.machine_learning.regression.model.random_forest.RandomForestRegressor] ([settings][gemseo.machine_learning.regression.model.random_forest_settings.RandomForestRegressor_Settings])                     |
 
 In addition,
 regressors can be chained using the
-[RegressorChain][gemseo.machine_learning.regression.models.regressor_chain.RegressorChain] regressor
-([settings][gemseo.machine_learning.regression.models.regressor_chain_settings.RegressorChain_Settings]).
+[RegressorChain][gemseo.machine_learning.regression.model.regressor_chain.RegressorChain] regressor
+([settings][gemseo.machine_learning.regression.model.regressor_chain_settings.RegressorChain_Settings]).
 The idea is that the first regressor models the output
 and each subsequent regressor models the error of the previous one.
 
 Lastly,
 GEMSEO implements the mixture-of-experts (MOE) algorithm
-through the [MOERegressor][gemseo.machine_learning.regression.models.moe.MOERegressor] class
-([settings][gemseo.machine_learning.regression.models.moe_settings.MOERegressor_Settings]).
+through the [MOERegressor][gemseo.machine_learning.regression.model.moe.MOERegressor] class
+([settings][gemseo.machine_learning.regression.model.moe_settings.MOERegressor_Settings]).
 The idea is to
 split the training dataset into clusters,
 then identify the relationship between the input variables and the clusters
@@ -186,7 +186,7 @@ or predict the output value according to the different local regressors and aver
 
 ??? abstract "API"
 
-    [BaseRegressor][gemseo.machine_learning.regression.models.base_regressor.BaseRegressor]
+    [BaseRegressor][gemseo.machine_learning.regression.core.base_regressor.BaseRegressor]
     is the base class for regression models.
 
 ## Quality assessment
@@ -257,13 +257,13 @@ The available quality measures are:
 
     - [BaseMLModelQuality][gemseo.machine_learning.core.quality.base_ml_model_quality]
       is the base class for quality measures dedicated to regressors.
-    - [BaseClustererQuality][gemseo.machine_learning.clustering.quality.base_clusterer_quality.BaseClustererQuality]
+    - [BaseClustererQuality][gemseo.machine_learning.clustering.core.base_clusterer_quality.BaseClustererQuality]
       is the base class for quality measures dedicated to clusterers.
-    - [BasePredictiveClustererQuality][gemseo.machine_learning.clustering.quality.base_predictive_clusterer_quality.BasePredictiveClustererQuality]
+    - [BasePredictiveClustererQuality][gemseo.machine_learning.clustering.core.base_predictive_clusterer_quality.BasePredictiveClustererQuality]
       is the base class for quality measures dedicated to predictive clusterers.
-    - [BaseClassifierQuality][gemseo.machine_learning.classification.quality.base_classifier_quality.BaseClassifierQuality]
+    - [BaseClassifierQuality][gemseo.machine_learning.classification.core.base_classifier_quality.BaseClassifierQuality]
       is the base class for quality measures dedicated to classifiers.
-    - [BaseRegressorQuality][gemseo.machine_learning.regression.quality.base_regressor_quality.BaseRegressorQuality]
+    - [BaseRegressorQuality][gemseo.machine_learning.regression.core.base_regressor_quality.BaseRegressorQuality]
       is the base class for quality measures dedicated to regressors.
 
     ```mermaid
@@ -300,8 +300,8 @@ The available data scalers are
 
 | Description                                         | Class                                                                                 |
 |-----------------------------------------------------|---------------------------------------------------------------------------------------|
-| Scaling data into $[0,1]$ using minimum and maximum | [MinMaxScaler][gemseo.machine_learning.transformers.scaler.min_max_scaler.MinMaxScaler]      |
-| Making data zero-mean and unit-variance             | [StandardScaler][gemseo.machine_learning.transformers.scaler.standard_scaler.StandardScaler] |
+| Scaling data into $[0,1]$ using minimum and maximum | [MinMaxScaler][gemseo.machine_learning.transformer.scaler.min_max_scaler.MinMaxScaler]      |
+| Making data zero-mean and unit-variance             | [StandardScaler][gemseo.machine_learning.transformer.scaler.standard_scaler.StandardScaler] |
 
 !!! how-to
 
@@ -322,10 +322,10 @@ The available data dimension techniques are
 
 | Description                        | Based on     | Class                                                                  |
 |------------------------------------|--------------|------------------------------------------------------------------------|
-| Principal component analysis (PCA) | scikit-learn | [PCA][gemseo.machine_learning.transformers.dimension_reduction.pca.PCA]       |
-| Kernel PCA (kPCA)                  | scikit-learn | [KPCA][gemseo.machine_learning.transformers.dimension_reduction.kpca.KPCA]    |
-| Partial least squares (PLS)        | scikit-learn | [PLS][gemseo.machine_learning.transformers.dimension_reduction.pls.PLS]       |
-| Karhunen-Loève SVD (KLSVD)         | OpenTURNS    | [KLSVD][gemseo.machine_learning.transformers.dimension_reduction.klsvd.KLSVD] |
+| Principal component analysis (PCA) | scikit-learn | [PCA][gemseo.machine_learning.transformer.dimension_reduction.pca.PCA]       |
+| Kernel PCA (kPCA)                  | scikit-learn | [KPCA][gemseo.machine_learning.transformer.dimension_reduction.kpca.KPCA]    |
+| Partial least squares (PLS)        | scikit-learn | [PLS][gemseo.machine_learning.transformer.dimension_reduction.pls.PLS]       |
+| Karhunen-Loève SVD (KLSVD)         | OpenTURNS    | [KLSVD][gemseo.machine_learning.transformer.dimension_reduction.klsvd.KLSVD] |
 
 !!! how-to
 
@@ -337,12 +337,12 @@ There are also power transformers for making the data more normally distributed:
 
 | Description                      | Based on       | Class                                                                        |
 |----------------------------------|----------------|------------------------------------------------------------------------------|
-| Box-Cox power transformation     | scikit-learn   | [BoxCox][gemseo.machine_learning.transformers.power.boxcox.BoxCox]                  |
-| Yeo-Johnson power transformation | scikit-learn   | [YeoJohnson][gemseo.machine_learning.transformers.power.yeo_johnson.YeoJohnson] |
+| Box-Cox power transformation     | scikit-learn   | [BoxCox][gemseo.machine_learning.transformer.power.boxcox.BoxCox]                  |
+| Yeo-Johnson power transformation | scikit-learn   | [YeoJohnson][gemseo.machine_learning.transformer.power.yeo_johnson.YeoJohnson] |
 
 ### Chaining
 
-Data transformations can be chained using a [Pipeline][gemseo.machine_learning.transformers.pipeline.Pipeline].
+Data transformations can be chained using a [Pipeline][gemseo.machine_learning.transformer.pipeline.Pipeline].
 
 !!! how-to
 
@@ -350,13 +350,13 @@ Data transformations can be chained using a [Pipeline][gemseo.machine_learning.t
 
 ??? abstract "API"
 
-    - [BaseTransformer][gemseo.machine_learning.transformers.base_transformer.BaseTransformer]
+    - [BaseTransformer][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer]
       is the base class for data transformers.
-    - [Scaler][gemseo.machine_learning.transformers.scaler.scaler.Scaler]
+    - [Scaler][gemseo.machine_learning.transformer.scaler.scaler.Scaler]
       is the base class for data scalers.
-    - [BaseDimensionReduction][gemseo.machine_learning.transformers.dimension_reduction.base_dimension_reduction.BaseDimensionReduction]
+    - [BaseDimensionReduction][gemseo.machine_learning.transformer.dimension_reduction.base_dimension_reduction.BaseDimensionReduction]
       is the base class for data dimension reduction technique.
-    - [Power][gemseo.machine_learning.transformers.power.power.Power]
+    - [Power][gemseo.machine_learning.transformer.power.power.Power]
       is the base class for power transformers.
 
 ## Selection and fine-tuning
@@ -365,12 +365,12 @@ A ML model often depends on hyperparameters
 to be carefully tuned in order to maximize the generalization quality of the model.
 For example,
 a polynomial regressor depends on the polynomial degree.
-The [MLModelCalibration][gemseo.machine_learning.core.calibration.MLModelCalibration] class addresses this calibration problem,
+The [MLModelCalibration][gemseo.machine_learning.calibration.MLModelCalibration] class addresses this calibration problem,
 either using a grid search on the hyperparameters values or an optimization from a calibration space.
 In addition,
 several ML models can be trained at the same time
 to keep only the best,
-using the [MLModelSelection][gemseo.machine_learning.core.selection.MLModelSelection] class.
+using the [MLModelSelection][gemseo.machine_learning.selection.MLModelSelection] class.
 
 !!! how-to
 

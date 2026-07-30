@@ -1,0 +1,206 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                         documentation
+#        :author: Matthias De Lozzo
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""A scalable discipline."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from typing import NamedTuple
+
+from numpy import eye
+from numpy import zeros
+
+from gemseo.problem.mdo.scalable.parametric.standalone.discipline.base_discipline import (  # noqa: E501
+    BaseDiscipline,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    SHARED_DESIGN_VARIABLE_NAME,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    get_coupling_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    get_u_local_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    get_x_local_name,
+)
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from gemseo.util.typing import RealArray
+
+
+class Coefficients(NamedTuple):
+    r"""The coefficients of a scalable discipline.
+
+    The output of a scalable discipline indexed by $i$ is computed as
+    $y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^NC_{i,j}y_j$.
+    """
+
+    a_i: RealArray
+    r"""The coefficient vector $a_i$."""
+
+    D_i0: RealArray
+    r"""The coefficient matrix $D_{i,0}$ to multiply $x_0$."""
+
+    D_ii: RealArray
+    r"""The coefficient matrix $D_{i,i}$ to multiply $x_i$."""
+
+    C_ij: Mapping[str, RealArray]
+    r"""The coefficient matrix $C_{i,j}$ to multiply $y_j$."""
+
+
+class ScalableDiscipline(BaseDiscipline):
+    r"""A scalable discipline.
+
+    It computes the output
+    $y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^N C_{i,j}y_j$.
+    """
+
+    index: int
+    """The index of the scalable discipline."""
+
+    coefficients: Coefficients
+    """The coefficient matrices defining the scalable discipline."""
+
+    __x_i_name: str
+    r"""The name of the local design variable $x_i$."""
+
+    __u_i_name: str
+    r"""The name of the local uncertain variable $u_i$."""
+
+    __y_i_name: str
+    r"""The name of the coupling variable $y_i$."""
+
+    __output_size: int
+    r"""The size of the coupling variable $y_i$."""
+
+    def __init__(
+        self,
+        index: int,
+        a_i: RealArray,
+        D_i0: RealArray,  # noqa: N803
+        D_ii: RealArray,  # noqa: N803
+        C_ij: Mapping[str, RealArray],  # noqa: N803
+        **default_input_values: RealArray,
+    ) -> None:
+        r"""
+        Args:
+            index: The index $i$ of the scalable discipline.
+            a_i: The offset vector $a_i$.
+            D_i0: The coefficient matrix $D_{i,0}$
+                to multiply the shared design variable $x_0$.
+            D_ii: The coefficient matrix $D_{i,i}$
+                to multiply the local design variable $x_i$.
+            C_ij: The coefficient matrices
+                $\left(C_{i,j}\right)_{j=1\atop j\neq i}^N$
+                where $C_{i,j}$ is used
+                to multiply the coupling variable $y_j$.
+            **default_input_values: The default values of the input variables.
+        """  # noqa: D205 D212
+        self.name = f"{self.__class__.__name__}[{index}]"
+        self.index = index
+        self.input_name_to_default_value = default_input_values
+        self.coefficients = Coefficients(a_i, D_i0, D_ii, C_ij)
+        self.__x_i_name = get_x_local_name(index)
+        self.__u_i_name = get_u_local_name(index)
+        self.__y_i_name = get_coupling_name(index)
+        self.__output_size = a_i.size
+        self.input_names = sorted(self.input_name_to_default_value.keys())
+        self.output_names = [self.__y_i_name]
+        self.name_to_size = {
+            input_name: default_value.size
+            for input_name, default_value in default_input_values.items()
+        }
+        self.name_to_size.update({self.output_names[0]: len(D_ii)})
+
+    def __call__(
+        self,
+        x_0: RealArray | None = None,
+        x_i: RealArray | None = None,
+        u_i: RealArray | None = None,
+        compute_jacobian: bool = False,
+        **y_j: RealArray,
+    ) -> dict[str, RealArray | dict[str, RealArray]]:
+        r"""Compute the coupling variable $y_i$ or its derivatives.
+
+        Args:
+            x_0: The value of the shared design variable $x_0$.
+                If `None`, use the default one.
+            x_i: The value of the local design variable $x_i$.
+                If `None`, use the default one.
+            u_i: The constant vector $u_i$ added to the output.
+                If `None`, use the default one.
+            compute_jacobian: Whether to compute
+                the value of the coupling variable $y_i$
+                or that of its derivatives.
+            **y_j: The values of the coupling variables
+                $(y_j)_{1\leq j\neq i\leq N}$.
+                If missing, use the default ones.
+
+        Returns:
+            Either the value of math:`y_i` or that of its derivatives.
+        """
+        if x_0 is None:
+            x_0 = self.input_name_to_default_value[SHARED_DESIGN_VARIABLE_NAME]
+
+        if x_i is None:
+            x_i = self.input_name_to_default_value[self.__x_i_name]
+
+        if u_i is None:
+            u_i = self.input_name_to_default_value.get(self.__u_i_name, 0.0)
+
+        y_j_ = {
+            name: self.input_name_to_default_value[name]
+            for name in self.coefficients.C_ij
+        }
+        y_j_.update(y_j)
+
+        if compute_jacobian:
+            jacobian = {}
+            for output_name in self.output_names:
+                jacobian[output_name] = {
+                    input_name: zeros((
+                        self.name_to_size[output_name],
+                        self.name_to_size[input_name],
+                    ))
+                    for input_name in self.input_names
+                }
+            coupling_size = self.name_to_size[self.__y_i_name]
+            jac = jacobian[self.__y_i_name]
+            jac[SHARED_DESIGN_VARIABLE_NAME] = -self.coefficients.D_i0
+            jac[self.__x_i_name] = -self.coefficients.D_ii
+            jac[self.__u_i_name] = eye(coupling_size)
+            for y_j_name, C_ij in self.coefficients.C_ij.items():  # noqa: N806
+                jac[y_j_name] = C_ij
+
+            return jacobian
+
+        y_i = (
+            self.coefficients.a_i.ravel()
+            - self.coefficients.D_i0 @ x_0
+            - self.coefficients.D_ii @ x_i
+        )
+        for y_j_name, C_ij in self.coefficients.C_ij.items():  # noqa: N806
+            y_i += C_ij @ y_j_[y_j_name]
+
+        return {self.output_names[0]: y_i + u_i}

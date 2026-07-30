@@ -23,12 +23,12 @@ import unittest
 
 from gemseo import configuration
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
-from gemseo.core._process_flow.execution_sequences.sequential import (
+from gemseo.core._process_flow.execution_sequence.sequential import (
     SequentialExecSequence,
 )
-from gemseo.core.execution_status import ExecutionStatus
+from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.monitoring import Monitoring
-from gemseo.utils.discipline import DummyDiscipline
+from gemseo.util.discipline import DummyDiscipline
 
 
 class ProcessWorkflow(BaseProcessFlow):

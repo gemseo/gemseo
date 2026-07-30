@@ -26,21 +26,21 @@ import jinja2
 from pydantic_core import PydanticUndefined
 
 from gemseo import _get_schema
-from gemseo.algos.doe.factory import DOELibraryFactory
-from gemseo.algos.linear_solvers.factory import LinearSolverLibraryFactory
-from gemseo.algos.ode.factory import ODESolverLibraryFactory
-from gemseo.algos.opt.factory import OPTIMIZATION_LIBRARY_FACTORY
-from gemseo.disciplines.factory import DisciplineFactory
-from gemseo.formulations.factory import MDOFormulationFactory
-from gemseo.machine_learning.classification.models.factory import CLASSIFIER_FACTORY
-from gemseo.machine_learning.clustering.models.factory import CLUSTERER_FACTORY
+from gemseo.discipline.factory import DisciplineFactory
+from gemseo.doe.factory import DOELibraryFactory
+from gemseo.formulation.factory import MDOFormulationFactory
+from gemseo.linear.factory import LinearSolverLibraryFactory
+from gemseo.machine_learning.classification.model.factory import CLASSIFIER_FACTORY
+from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
 from gemseo.machine_learning.core.quality.factory import MLModelQualityFactory
-from gemseo.machine_learning.regression.models.factory import REGRESSOR_FACTORY
+from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
 from gemseo.mda.factory import MDAFactory
+from gemseo.ode.factory import ODESolverLibraryFactory
+from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
 from gemseo.post.factory import POST_FACTORY
-from gemseo.uncertainty.distributions.factory import DistributionFactory
+from gemseo.uncertainty.distribution.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
-from gemseo.utils.source_parsing import get_options_doc
+from gemseo.util.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -48,8 +48,8 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
     from pydantic.fields import FieldInfo
 
-    from gemseo.algos.base_algo_factory import BaseAlgoFactory
-    from gemseo.algos.base_driver_library import BaseDriverLibrary
+    from gemseo.core.algorithm.base_algorithm_factory import BaseAlgorithmFactory
+    from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
     from gemseo.core.base_factory import BaseFactory
 
 
@@ -470,7 +470,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
     def __default_options_schema_getter(
         self,
-        algo_factory: BaseAlgoFactory,
+        algo_factory: BaseAlgorithmFactory,
     ) -> Callable[[str], dict[dict[str, str]]]:
         """Return the default algorithm description getter from a driver factory."""
 
@@ -491,7 +491,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
     @staticmethod
     def __default_description_getter(
-        algo_factory: BaseAlgoFactory,
+        algo_factory: BaseAlgorithmFactory,
     ) -> Callable[[str], str]:
         """Return the default algorithm description getter from a driver factory."""
 
@@ -510,7 +510,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
     @staticmethod
     def __default_website_getter(
-        algo_factory: BaseAlgoFactory,
+        algo_factory: BaseAlgorithmFactory,
     ) -> Callable[[str], str]:
         """Return the default algorithm website getter from a driver factory."""
 
@@ -529,7 +529,7 @@ class DriverOptionsDoc(AlgoOptionsDoc):
 
     @staticmethod
     def __default_class_getter(
-        algo_factory: BaseAlgoFactory,
+        algo_factory: BaseAlgorithmFactory,
     ) -> Callable[[str], BaseDriverLibrary]:
         """Return the default algorithm class getter from a driver factory."""
 

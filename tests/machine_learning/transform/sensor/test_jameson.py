@@ -24,7 +24,7 @@ import pytest
 from numpy import allclose
 from numpy import arange
 
-from gemseo.machine_learning.transformers.sensor.jameson import JamesonSensor
+from gemseo.machine_learning.transformer.sensor.jameson import JamesonSensor
 
 if TYPE_CHECKING:
     from numpy import ndarray

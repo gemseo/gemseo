@@ -26,12 +26,12 @@ from numpy import linalg
 from gemseo.mda.quasi_newton import MDAQuasiNewton
 from gemseo.mda.quasi_newton import QuasiNewtonMethod
 from gemseo.mda.quasi_newton_settings import MDAQuasiNewton_Settings
-from gemseo.problems.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problems.mdo.sellar.sellar_2 import Sellar2
-from gemseo.problems.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problems.mdo.sellar.utils import get_y_opt
-from gemseo.problems.mdo.sellar.variables import X_SHARED
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
+from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
+from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
+from gemseo.problem.mdo.sellar.util import get_y_opt
+from gemseo.problem.mdo.sellar.variable import X_SHARED
+from gemseo.util.testing.helper import assert_exception
 from tests.mda import check_iteration_callbacks_clearing
 from tests.mda import check_iteration_callbacks_execution
 

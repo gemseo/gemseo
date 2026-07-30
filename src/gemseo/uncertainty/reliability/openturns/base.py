@@ -33,17 +33,17 @@ from openturns import RandomVector
 from openturns import ThresholdEvent
 from openturns import UnionEvent
 
-from gemseo.uncertainty.reliability.base import BaseReliabilityAlgorithm
+from gemseo.uncertainty.reliability.core.base import BaseReliabilityAlgorithm
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from openturns import PersistentObject
 
-    from gemseo.core.functions.array_function import OutputType
-    from gemseo.typing import NumberArray
-    from gemseo.typing import RealArray
+    from gemseo.core.function.array_function import OutputType
     from gemseo.uncertainty.reliability.problem import ReliabilityProblem
+    from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import RealArray
 
 
 class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
@@ -76,7 +76,7 @@ class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
             ot_intersection_event = []
             ot_intersection_events.append(ot_intersection_event)
             for elementary_event in intersection_event:
-                # Use the ProblemFunction related to event.function
+                # Use the PreprocessedFunction related to event.function
                 function = observables[elementary_event.function.name]
                 func = _FunctionForOpenTURNS(function.evaluate, False)
                 jac = (

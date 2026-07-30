@@ -38,7 +38,7 @@ from __future__ import annotations
 
 from gemseo import create_discipline
 from gemseo import create_mda
-from gemseo.mda.jacobi_settings import MDAJacobi_Settings
+from gemseo.mda import MDAJacobi_Settings
 
 # %%
 # ### 1. Create your disciplines

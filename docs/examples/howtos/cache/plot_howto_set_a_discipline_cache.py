@@ -29,7 +29,7 @@ The cache of a discipline can be set with the
 
 from __future__ import annotations
 
-from gemseo.disciplines.analytic import AnalyticDiscipline
+from gemseo.discipline import AnalyticDiscipline
 
 # %%
 # ### 1. Create a discipline

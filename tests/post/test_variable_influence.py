@@ -24,20 +24,18 @@ import pytest
 from numpy import array
 from numpy import eye
 
-from gemseo.algos.design_space import DesignSpace
-from gemseo.algos.doe.diagonal_doe.diagonal_doe import DiagonalDOE
-from gemseo.algos.doe.diagonal_doe.settings.diagonal_doe_settings import (
-    DiagonalDOE_Settings,
-)
-from gemseo.algos.optimization_problem import OptimizationProblem
-from gemseo.core.functions.array_function import ArrayFunction
-from gemseo.post import VariableInfluence_Settings
+from gemseo.core.function.array_function import ArrayFunction
+from gemseo.doe.diagonal_doe.diagonal_doe import DiagonalDOE
+from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
+from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.factory import POST_FACTORY
 from gemseo.post.variable_influence import VariableInfluence
-from gemseo.problems.mdo.sobieski.core.design_space import SobieskiDesignSpace
-from gemseo.problems.mdo.sobieski.disciplines import SobieskiStructure
-from gemseo.scenarios.mdo import MDOScenario
-from gemseo.utils.testing.helpers import assert_exception
+from gemseo.post.variable_influence_settings import VariableInfluence_Settings
+from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
+from gemseo.util.testing.helper import assert_exception
 
 POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
 SSBJ_HDF5_PATH = Path(__file__).parent / "mdf_backup.h5"

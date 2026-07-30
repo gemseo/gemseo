@@ -22,7 +22,7 @@ and want to see whether they agree on which inputs are most influential.
 
 ## Solution
 
-[BaseSensitivityAnalysis.plot_comparison()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.plot_comparison]
+[BaseSensitivityAnalysis.plot_comparison()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_comparison]
 overlays the main indices of two analyses in a single figure,
 either as a bar chart or as a radar plot.
 
@@ -31,10 +31,10 @@ either as a bar chart or as a radar plot.
 
 from __future__ import annotations
 
-from gemseo.problems.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
-from gemseo.problems.uncertainty.ishigami.ishigami_space import IshigamiSpace
-from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis
-from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
+from gemseo.problem.uncertainty.ishigami import IshigamiDiscipline
+from gemseo.problem.uncertainty.ishigami import IshigamiSpace
+from gemseo.uncertainty.sensitivity import CorrelationAnalysis
+from gemseo.uncertainty.sensitivity import MorrisAnalysis
 
 # %%
 # ### 1. Set up the test problem
@@ -70,7 +70,7 @@ morris.compute_indices()
 # ### 3. Compare with a bar chart
 #
 # Pass the second analysis to
-# [plot_comparison()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.plot_comparison],
+# [plot_comparison()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_comparison],
 # to compare the methods by normalizing the indices between 0 and 1:
 morris.plot_comparison(correlation, "y", save=False, show=True)
 
@@ -82,6 +82,6 @@ morris.plot_comparison(correlation, "y", use_bar_plot=False, save=False, show=Tr
 # ## Summary
 #
 # - Run two analyses with matching disciplines and uncertain space;
-# - [plot_comparison()][gemseo.uncertainty.sensitivity.base.BaseSensitivityAnalysis.plot_comparison]
+# - [plot_comparison()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_comparison]
 #   overlays their main indices normalized between 0 and 1.
 # - Pass `use_bar_plot=True` for bars, `False` for radar.

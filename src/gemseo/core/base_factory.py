@@ -38,18 +38,18 @@ from typing import TypeVar
 from prettytable import PrettyTable
 from typing_extensions import NamedTuple
 
-from gemseo.utils.base_multiton import BaseABCMultiton
-from gemseo.utils.repr_html import REPR_HTML_WRAPPER
-from gemseo.utils.source_parsing import get_callable_argument_defaults
-from gemseo.utils.source_parsing import get_options_doc
+from gemseo.util.base_multiton import BaseABCMultiton
+from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.source_parsing import get_callable_argument_defaults
+from gemseo.util.source_parsing import get_options_doc
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.core.grammars.json import JSONGrammar
-    from gemseo.typing import StrKeyMapping
-    from gemseo.typing import StrPath
-    from gemseo.utils.pydantic import BaseSettings
+    from gemseo.core.grammar.json import JSONGrammar
+    from gemseo.util.pydantic import BaseSettings
+    from gemseo.util.typing import StrKeyMapping
+    from gemseo.util.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
 
     There are 3 sources of modules that can be searched:
 
-    - fully qualified module names (such as gemseo.problems, ...),
+    - fully qualified module names (such as gemseo.problem, ...),
     - the environment variable "GEMSEO_PATH" may contain the list of directories,
     - GEMSEO plugins, i.e. packages which have declared a setuptools entry point.
 
@@ -465,7 +465,7 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         }
 
         # Import locally to avoid a cyclic import.
-        from gemseo.core.grammars.json import JSONGrammar
+        from gemseo.core.grammar.json import JSONGrammar
 
         grammar = JSONGrammar(name)
         grammar.update_from_data(default_option_values)
