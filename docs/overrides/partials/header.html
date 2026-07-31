@@ -1,0 +1,109 @@
+{#-
+  Header override for GEMSEO: merges the navbar (tabs) into the single header row and
+  drops the "GEMSEO" site-title text, since the logo bar now carries the branding.
+  Kept in sync with the gemseo.org header (gitlab.com/gemseo/dev/gemseo-org), with three
+  documentation-specific differences:
+
+  - the header class is hard-coded instead of derived from the theme features, because
+    `navigation.tabs.sticky` would add `md-header--lifted`, whose rules size the page for
+    the two-row header this override collapses into one (`.md-sidebar` at `top: 4.8rem`
+    and a `6rem` scroll margin for `:target`);
+  - the trailing slot for the mike version selector, in place of the `config.repo_url`
+    source block, which the documentation does not show;
+  - `title` on the search toggle, so hovering the icon explains what it does.
+
+  The tab list also looks different, but that lives in assets/css/header.css: it is
+  absolutely centered and width-capped here instead of laid out on gemseo.org's baseline
+  grid. The `partials/tabs.html` include below is unchanged.
+
+  Based on material/templates/partials/header.html from mkdocs-material.
+
+  Copyright (c) 2016-2025 Martin Donath <martin.donath@squidfunk.com>
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.
+-#}
+{% set class = "md-header md-header--shadow" %}
+{#-
+  The suffix shown next to the logo. Set `extra.logo_suffix` to override it; otherwise it
+  is derived from the site name, so a plugin only has to drop this file in place.
+-#}
+{%- set suffix = config.extra.logo_suffix | d("") -%}
+{%- if not suffix and config.site_name != "GEMSEO" -%}
+  {%- set suffix = config.site_name.lower().replace("gemseo-", "") -%}
+{%- endif -%}
+<header class="{{ class }}" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="{{ lang.t('header') }}">
+    <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="{{ config.site_name | e }}" class="md-header__button md-logo" aria-label="{{ config.site_name | e }}" data-md-component="logo">
+      <div class="gemseo-bar">
+        <img src="{{ config.theme.logo | url }}" alt="{{ config.site_name.lower() }}">
+        {%- if suffix %}
+        <span class="rule"></span>
+        <span class="suffix">{{ suffix }}</span>
+        {%- endif %}
+      </div>
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      {% set icon = config.theme.icon.menu or "material/menu" %}
+      {% include ".icons/" ~ icon ~ ".svg" %}
+    </label>
+    {% if "navigation.tabs" in features %}
+      <div class="md-header__tabs">
+        {% include "partials/tabs.html" %}
+      </div>
+    {% endif %}
+    {#-
+      The controls are wrapped so that they form a single cell at the end of the
+      header row (see .md-header__controls in assets/css/header.css).
+    -#}
+    <div class="md-header__controls">
+      {% if config.theme.palette %}
+        {% if not config.theme.palette is mapping %}
+          {% include "partials/palette.html" %}
+        {% endif %}
+      {% endif %}
+      {% if not config.theme.palette is mapping %}
+        {% include "partials/javascripts/palette.html" %}
+      {% endif %}
+      {% if config.extra.alternate %}
+        {% include "partials/alternate.html" %}
+      {% endif %}
+      {% if "material/search" in config.plugins %}
+        {% set search = config.plugins["material/search"] | attr("config") %}
+        {% if search.enabled %}
+          <label class="md-header__button md-icon" for="__search" title="{{ lang.t('search.placeholder') }}">
+            {% set icon = config.theme.icon.search or "material/magnify" %}
+            {% include ".icons/" ~ icon ~ ".svg" %}
+          </label>
+          {% include "partials/search.html" %}
+        {% endif %}
+      {% endif %}
+      {#-
+        Anchor for the mike version selector: mkdocs-material's JS appends it to the
+        first `.md-header__topic` it finds (a mandatory `querySelector` lookup), which
+        normally lives in the `.md-header__title` block this override drops. Keep an
+        empty topic as the last header item so the selector lands at the far right.
+      -#}
+      {% if config.extra.version %}
+        <div class="md-header__title md-header__title--version">
+          <div class="md-header__topic"></div>
+        </div>
+      {% endif %}
+    </div>
+  </nav>
+</header>

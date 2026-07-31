@@ -41,6 +41,128 @@
   font-style: italic;
 }
 
+/*
+ * Header logo bar: wordmark image + vertical rule + suffix (see
+ * docs/overrides/partials/header.html), the suffix naming the distribution the
+ * site documents — "gemseo" here, the plugin name on a plugin documentation.
+ *
+ * Everything in the header sits on one line: the wordmark cap band, the suffix
+ * caps, the tab labels and the icons all center on the header row (see header.css).
+ */
+.gemseo-bar {
+  /*
+   * The one variable to change. In rem, not px: mkdocs-material scales the root
+   * font size to 137.5% at 100em and 150% at 125em, so px sizes would stay put
+   * while the rem-sized header tabs grow by 10-20%.
+   *
+   * --logo-img-h sizes the wordmark image; --logo-h, the base the rule, suffix and
+   * gap scale from, is a fixed fraction of it (0.6111 x 1.8rem = 1.1rem = 22px at
+   * the default 125% root), so shrinking the image scales the whole lockup with the
+   * proportions it was tuned on — see the fluid override in header.css, which is
+   * what narrow viewports rely on.
+   */
+  --logo-img-h: 1.8rem;
+  --logo-h: calc(var(--logo-img-h) * 0.6111);
+  /*
+   * Where the wordmark's cap band sits inside the 864x242 viewBox: the flat capitals
+   * of "EMSEO" run from y=88.9 to y=212.8, so their band centers at 150.85 / 242 =
+   * 0.6233 of the image height rather than at 0.5 — the display "G" (41.2 to 214.5)
+   * and the three dots (up at y=25) occupy the top of the box. Nudge the image up by
+   * the difference so the letters, not the image box, center on the header row. The
+   * offset only moves the painting: the layout box stays put, so the bar keeps the
+   * height of the image.
+   */
+  --logo-cap-center: 0.6233;
+  --accent: #6d28d9; /* Violet-700, complementary to the GEMSEO green. */
+  display: flex;
+  align-items: center;
+  height: var(--logo-img-h);
+  gap: calc(var(--logo-h) * 0.59);
+  /*
+   * The header row does not wrap, so a lockup wider than the space left by the
+   * hamburger, the icons and the version selector would push them out of the viewport
+   * (and mkdocs-material sets `html { overflow-x: hidden }`, so they would be clipped
+   * rather than merely off-screen). The fluid sizing in header.css keeps that from
+   * happening for the widths we know about; `min-width: 0` here and on the anchor is
+   * the backstop for the ones we do not — a suffix is a distribution name, so a
+   * plugin can make the lockup arbitrarily wide. Flex items default to `min-width:
+   * auto`, i.e. never smaller than their content, which is what turns "too wide" into
+   * "overflowing" instead of "shrunk". Both parts then yield together, in proportion to
+   * their widths as flex-shrink does it: the suffix ellipsizes and the wordmark scales
+   * down (see the two rules below).
+   */
+  min-width: 0;
+}
+
+/*
+ * The theme's logo anchor is a flex item of the header row, but its own content is
+ * laid out in an inline formatting context: the bar would sit on the anchor's strut
+ * baseline, which reserves the strut's descender below it and lifts the lockup a
+ * couple of pixels above the row center. Make the anchor a flex container so the bar
+ * is centered in it, whatever the font.
+ */
+.md-header .md-logo {
+  display: flex;
+  align-items: center;
+  min-width: 0; /* See .gemseo-bar above: let the lockup shrink instead of overflowing. */
+}
+
+/* Violet-700 is too dark on the black header of the slate scheme. */
+[data-md-color-scheme="slate"] .gemseo-bar {
+  --accent: #a78bfa; /* Violet-400. */
+}
+
+/* Specificity is needed to beat `.md-header__button.md-logo img` from the theme. */
+.md-header .md-logo .gemseo-bar img {
+  height: var(--logo-img-h);
+  display: block;
+  /*
+   * Lets the wordmark yield when the lockup no longer fits at its floor size — below
+   * 360px, or higher up with a suffix much longer than "gemseo": the box narrows and
+   * `contain` scales the painting down inside it, keeping the aspect ratio instead of
+   * squashing the letters. It also letterboxes vertically, which shifts the cap band the
+   * `top` nudge below assumes fills the box — acceptable at the bottom of the range, and
+   * it never triggers while the fluid rule in header.css is still off its floor.
+   */
+  flex: 0 1 auto;
+  min-width: 0;
+  object-fit: contain;
+  object-position: left center;
+  position: relative;
+  top: calc(var(--logo-img-h) * (0.5 - var(--logo-cap-center)));
+}
+
+.gemseo-bar .rule {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 0.15rem;
+  height: calc(var(--logo-h) * 0.711); /* Roboto cap height, i.e. the suffix caps. */
+  background: var(--accent);
+}
+
+.gemseo-bar .suffix {
+  /*
+   * The theme font (Roboto), like the tab labels — so the suffix and the tabs land on
+   * the center line with the same sub-pixel font-metric bias. Material loads 300, 400
+   * and 700 only, so a 500 weight would silently resolve to 400.
+   */
+  font-family: var(--md-text-font-family);
+  font-weight: 700;
+  font-size: var(--logo-h);
+  line-height: 1; /* Roboto's cap band then centers on the flex center line. */
+  white-space: nowrap;
+  color: var(--accent);
+  /*
+   * First item to yield when the lockup runs out of room (see .gemseo-bar): a clipped
+   * word still reads as branding, whereas an overflowing row hides the search button
+   * and the version selector. Ellipsis rather than a hard cut, so the truncation looks
+   * deliberate.
+   */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Custom admonitions */
 :root {
   --md-admonition-icon--tutorial: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="m48 195.8 209.2 86.1c9.8 4 20.2 6.1 30.8 6.1s21-2.1 30.8-6.1l242.4-99.8c9-3.7 14.8-12.4 14.8-22.1s-5.8-18.4-14.8-22.1L318.8 38.1c-9.8-4-20.2-6.1-30.8-6.1s-21 2.1-30.8 6.1L14.8 137.9C5.8 141.6 0 150.3 0 160v296c0 13.3 10.7 24 24 24s24-10.7 24-24zm48 71.7V384c0 53 86 96 192 96s192-43 192-96V267.4l-142.9 58.9c-15.6 6.4-32.2 9.7-49.1 9.7s-33.5-3.3-49.1-9.7L96 267.4z"/></svg>');
