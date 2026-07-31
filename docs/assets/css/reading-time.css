@@ -9,35 +9,33 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 /*
 Reading-time badge rendered under the first heading of every opted-in page by
-the docs/hooks/reading_time.py mkdocs hook. Colours hook into the
-mkdocs-material theme variables so light and dark schemes are both covered.
+the docs/hooks/reading_time.py mkdocs hook.
 */
 
 .reading-time {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 12px 0 24px;                 /* ~12px under title, ~24px before text */
-  padding: 5px 11px;
-  border-radius: 20px;
-  font-family: Roboto, sans-serif;     /* theme default; explicit per spec */
-  font-size: 12.5px;
-  font-weight: 500;
-  line-height: 1;
-  background-color: rgba(0, 148, 133, 0.1);  /* GEMSEO teal, tinted */
-  color: #00766a;                             /* dark teal text */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 12px 0 24px; /* ~12px under title, ~24px before text */
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-family: Roboto, sans-serif; /* theme default; explicit per spec */
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1;
+    background-color: rgba(0, 148, 133, 0.1); /* GEMSEO teal, tinted */
+    color: #00766a; /* dark teal text */
 }
 
 .reading-time .twemoji,
 .reading-time svg {
-  width: 14px;
-  height: 14px;
-  fill: currentColor;
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
 }
 
-/* Dark scheme: derive from the Material primary colour so contrast holds
-   instead of hardcoding the light-mode teal. */
+/* Dark scheme: the light-mode teal is too dark on the slate background. */
 [data-md-color-scheme="slate"] .reading-time {
-  background-color: color-mix(in srgb, var(--md-primary-fg-color) 18%, transparent);
-  color: var(--md-primary-fg-color);
+    background-color: rgba(77, 182, 172, 0.16);
+    color: #4db6ac;
 }

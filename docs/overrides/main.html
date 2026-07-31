@@ -1,8 +1,7 @@
 {#-
   This file defines the page's title that is shown in a browser's title bar or a page's tab.
-  Without this change, the rendering would be "Page title - GEMSEO<sup>®</sup>" instead of "Page title - GEMSEO®"
-  because mkdocs-material uses the site_name defined in the mkdocs.yml file which includes HTML tags
-  in order to display the ® symbol as superscript in the page's header.
+  mkdocs-material builds it from `site_name`, which is the bare "GEMSEO" so that the header
+  and footer templates can use it as attribute text as is; the ® symbol is appended here instead.
 -#}
 
 {% extends "base.html" %}
@@ -18,10 +17,10 @@
 {% endblock %}
 
 {% block extrahead %}
-   {{ super() }}
-   <meta name="google-site-verification" content="in-BSPYwVmH_-ZIHgucF9HvUAM3A27mOBcHHdubhHDc" />
-   <meta name="msvalidate.01" content="F08588BEB8EDBDB910F09BD0E854B1BC" />
- {% endblock %}
+  {{ super() }}
+  <meta name="google-site-verification" content="in-BSPYwVmH_-ZIHgucF9HvUAM3A27mOBcHHdubhHDc" />
+  <meta name="msvalidate.01" content="F08588BEB8EDBDB910F09BD0E854B1BC" />
+{% endblock %}
 
 {#-
   Announcement banner, shown only on the documentation home page. mkdocs-material
@@ -30,3 +29,9 @@
   correct across the versioned (mike) deployments.
 -#}
 {% block announce %}{% if page.is_homepage %}<a href="{{ base_url }}/software/upgrading/">GEMSEO v7 is nearly here!</a> Learn how to upgrade your workflow{% endif %}{% endblock %}
+
+{#-
+  The navbar (tabs) is now rendered inside partials/header.html as part of the single
+  header row, so suppress the default second-row include from base.html.
+-#}
+{% block tabs %}{% endblock %}
