@@ -87,6 +87,12 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.distribution.openturns.exponential_settings import (
         OTExponentialDistribution_Settings,  # noqa: F401
     )
+    from gemseo.uncertainty.distribution.openturns.finite_discrete import (
+        OTFiniteDiscreteDistribution,  # noqa: F401
+    )
+    from gemseo.uncertainty.distribution.openturns.finite_discrete_settings import (
+        OTFiniteDiscreteDistribution_Settings,  # noqa: F401
+    )
     from gemseo.uncertainty.distribution.openturns.joint import (
         OTJointDistribution,  # noqa: F401
     )
@@ -187,6 +193,8 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "OTDistribution_Settings": "openturns.distribution_settings",
     "OTExponentialDistribution": "openturns.exponential",
     "OTExponentialDistribution_Settings": "openturns.exponential_settings",
+    "OTFiniteDiscreteDistribution": "openturns.finite_discrete",
+    "OTFiniteDiscreteDistribution_Settings": "openturns.finite_discrete_settings",
     "OTJointDistribution": "openturns.joint",
     "OTLogNormalDistribution": "openturns.log_normal",
     "OTLogNormalDistribution_Settings": "openturns.log_normal_settings",
