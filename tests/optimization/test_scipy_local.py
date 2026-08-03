@@ -43,9 +43,7 @@ from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.tnc import TNC_Settings
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
-from gemseo.util.compatibility.scipy import SCIPY_GREATER_THAN_1_14
-from gemseo.util.compatibility.scipy import SCIPY_GREATER_THAN_1_15
-from gemseo.util.compatibility.scipy import SCIPY_GREATER_THAN_1_16
+from gemseo.util._compatibility.scipy import SCIPY_GREATER_THAN_1_16
 from gemseo.util.pydantic import create_model
 from gemseo.util.testing.helper import assert_exception
 from gemseo.util.testing.opt_lib_test_base import OptLibraryTestBase
@@ -131,7 +129,7 @@ class TestScipy(TestCase):
         """"""
         algo_name = "L_BFGS_B"
         # disp is deprecated for L-BFGS-B since SciPy 1.15, and removed from GEMSEO.
-        kwargs = {} if SCIPY_GREATER_THAN_1_15 else {"disp": True}
+        kwargs = {}
         OptLibraryTestBase.generate_one_test_unconstrained(
             self.OPT_LIB_NAME,
             algo_name=algo_name,
@@ -327,9 +325,6 @@ def test_stop_crit_n_x(algorithm_name) -> None:
     assert library._settings.stop_crit_n_x == 5
 
 
-@pytest.mark.skipif(
-    not SCIPY_GREATER_THAN_1_14, reason="Algo COBYQA is only available in scipy>=1.14."
-)
 def test_cobyqa() -> None:
     """Test the COBYQA algorithm on the Rosenbrock problem."""
     problem = Rosenbrock()
@@ -341,9 +336,6 @@ def test_cobyqa() -> None:
     assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
 
 
-@pytest.mark.skipif(
-    not SCIPY_GREATER_THAN_1_14, reason="Algo COBYQA is only available in scipy>=1.14."
-)
 def test_initial_tr_radius_cobyqa() -> None:
     """Check that option initial_tr_radius is supported."""
     reference = ScipyOpt("COBYQA").execute(

@@ -33,7 +33,7 @@ from numpy import number
 from numpy import str_
 from numpy.typing import NDArray
 
-from gemseo.util.compatibility.scipy import SparseArrayType
+from gemseo.util._compatibility.scipy import SparseArrayType
 
 if TYPE_CHECKING:
     from gemseo.core.derivative.jacobian_operator import JacobianOperator

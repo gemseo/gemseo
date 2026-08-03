@@ -27,10 +27,10 @@ from numpy import zeros
 from gemseo.space.design._checking import check_out_array
 from gemseo.space.design._constants import BOUND_ATOL
 from gemseo.space.design._registry_derived_data import RegistryDerivedData
+from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util._numpy import FLOAT64_DTYPE
 from gemseo.util._numpy import INT64_DTYPE
 from gemseo.util._numpy import convert_array_type
-from gemseo.util.compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from numpy import dtype

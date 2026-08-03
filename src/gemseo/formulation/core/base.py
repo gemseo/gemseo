@@ -39,12 +39,14 @@ from gemseo.core.function.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.function.taylor_polynomial import compute_linear_approximation
 from gemseo.formulation.core.base_settings import BaseFormulationSettings
 from gemseo.scenario.scenario_result.scenario_result import ScenarioResult
+from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 from gemseo.util.discipline import check_disciplines_consistency
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 from gemseo.util.pydantic import create_model
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from numpy import ndarray
@@ -283,11 +285,14 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     def _get_dv_indices(
         self,
         names: Iterable[str],
+        variable_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
     ) -> dict[str, tuple[int, int, int]]:
         """Return the indices associated with specific variables.
 
         Args:
             names: The names of the variables.
+            variable_sizes: The sizes of the variables.
+                If empty, use the formulation's `variable_sizes` attribute.
 
         Returns:
             For each variable,
@@ -296,7 +301,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             and last dimension is its size.
         """
         start = end = 0
-        sizes = self.variable_sizes
+        sizes = variable_sizes or self.variable_sizes
         name_to_indices = {}
         for name in names:
             size = sizes[name]
@@ -479,7 +484,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
         variable_sizes = {var: design_space.get_size(var) for var in design_space}
         total_size = sum(variable_sizes[var] for var in masking_data_names)
-        indices = self._get_dv_indices(all_data_names)
+        indices = self._get_dv_indices(all_data_names, variable_sizes)
         x_mask = empty(total_size, dtype="int")
         i_masked_min = i_masked_max = 0
         try:

@@ -28,7 +28,7 @@ from numpy import asarray
 from numpy import ndarray
 from numpy import str_
 
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.data_conversion import flatten_nested_dict
 from gemseo.util.typing import SparseOrDenseRealArray
 

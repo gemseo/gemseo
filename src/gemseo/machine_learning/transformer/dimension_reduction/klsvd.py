@@ -41,8 +41,6 @@ from openturns import Sample
 from gemseo.machine_learning.transformer.dimension_reduction.base_dimension_reduction import (  # noqa: E501
     BaseDimensionReduction,
 )
-from gemseo.util.compatibility.openturns import OT_1_23
-from gemseo.util.compatibility.openturns import OT_VERSION
 
 if TYPE_CHECKING:
     import openturns
@@ -56,13 +54,8 @@ if TYPE_CHECKING:
 class KLSVD(BaseDimensionReduction):
     """The Karhunen-Loève SVD algorithm based on OpenTURNS."""
 
-    if OT_VERSION >= OT_1_23:  # pragma: no cover
-        __HALKO2010 = "Halko2010"
-        __HALKO2011 = "Halko2011"
-    else:  # pragma: no cover
-        __HALKO2010 = "halko2010"
-        __HALKO2011 = "halko2011"
-
+    __HALKO2010 = "Halko2010"
+    __HALKO2011 = "Halko2011"
     __RANDOM_SVD_MAXIMUM_RANK = "KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank"
     __RANDOM_SVD_VARIANT = "KarhunenLoeveSVDAlgorithm-RandomSVDVariant"
     __USE_RANDOM_SVD = "KarhunenLoeveSVDAlgorithm-UseRandomSVD"

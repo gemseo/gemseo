@@ -20,9 +20,6 @@ from importlib.metadata import version
 from typing import TYPE_CHECKING
 from typing import Final
 
-from openturns import AggregatedFunction
-from openturns import Basis
-from openturns import BasisFactory
 from packaging.version import parse as parse_version
 
 if TYPE_CHECKING:
@@ -35,41 +32,7 @@ if TYPE_CHECKING:
 
 OT_VERSION: Final[Version] = parse_version(version("openturns"))
 
-OT_1_23: Final[Version] = parse_version("1.23")
 OT_1_27: Final[Version] = parse_version("1.27")
-
-if parse_version("1.21") > OT_VERSION:  # pragma: no cover
-
-    def create_trend_basis(  # noqa: D103
-        basis_factory: type[BasisFactory],
-        input_dimension: int,
-        output_dimension: int,
-    ) -> Basis:
-        return basis_factory(input_dimension).build()
-
-else:
-
-    def create_trend_basis(  # noqa: D103
-        basis_factory: type[BasisFactory],
-        input_dimension: int,
-        output_dimension: int,
-    ) -> Basis:
-        basis = basis_factory(input_dimension).build()
-        return Basis([
-            AggregatedFunction([basis.build(k)] * output_dimension)
-            for k in range(basis.getSize())
-        ])
-
-
-if OT_VERSION >= OT_1_23:
-    from openturns import JointDistribution
-
-    PEARSON_METHOD_NAME = "computeLinearCorrelation"
-else:
-    from openturns import ComposedDistribution as JointDistribution  # noqa: F401
-
-    PEARSON_METHOD_NAME = "computePearsonCorrelation"
-
 
 if OT_VERSION >= OT_1_27:
     from openturns import GaussianProcessConditionalCovariance

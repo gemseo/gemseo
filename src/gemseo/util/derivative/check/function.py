@@ -23,7 +23,7 @@ from numpy import atleast_2d
 from numpy import load as np_load
 from numpy import save as np_save
 
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import N_CPUS
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.derivative.approximator.factory import GradientApproximatorFactory

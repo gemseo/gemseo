@@ -46,7 +46,6 @@ from gemseo.optimization.scipy_local.settings.nelder_mead import NELDER_MEAD_Set
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.tnc import TNC_Settings
 from gemseo.space.util import get_value_and_bounds
-from gemseo.util.compatibility.scipy import SCIPY_GREATER_THAN_1_14
 from gemseo.util.constant import C_LONG_MAX
 
 if TYPE_CHECKING:
@@ -125,10 +124,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             website=f"{__DOC}optimize.minimize-cobyla.html",
             settings_class=COBYLA_Settings,
         ),
-    }
-
-    if SCIPY_GREATER_THAN_1_14:
-        ALGORITHM_INFOS["COBYQA"] = SciPyAlgorithmDescription(
+        "COBYQA": SciPyAlgorithmDescription(
             algorithm_name="COBYQA",
             description=(
                 "Derivative-free trust-region SQP method "
@@ -140,7 +136,8 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             positive_constraints=True,
             website=f"{__DOC}optimize.minimize-cobyqa.html",
             settings_class=COBYQA_Settings,
-        )
+        ),
+    }
 
     def _run(self, problem: OptimizationProblem) -> tuple[str, Any]:
         # Get the normalized bounds:

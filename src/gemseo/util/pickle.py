@@ -23,6 +23,8 @@ from pickle import Unpickler
 from typing import TYPE_CHECKING
 from typing import Any
 
+from gemseo.util._compatibility.numpy import NUMPY_GREATER_THAN_2
+
 if TYPE_CHECKING:
     from gemseo.util.typing import StrPath
 
@@ -30,9 +32,11 @@ if TYPE_CHECKING:
 class _NumpyCompatUnpickler(Unpickler):
     """An [Unpickler][pickle.Unpickler] mapping `numpy.core` to `numpy._core`.
 
-    NumPy renamed its private `numpy.core` package to `numpy._core`. Loading a
-    pickle that references the former emits a deprecation warning and will break once
-    the backward-compatibility shim is removed from NumPy.
+    NumPy renamed its private `numpy.core` package to `numpy._core` in NumPy 2.
+    Loading a pickle that references the former emits a deprecation warning and will
+    break once the backward-compatibility shim is removed from NumPy.
+    The mapping is only done with NumPy 2 and greater
+    since `numpy._core` does not exist before.
     """
 
     def find_class(self, module: str, name: str) -> Any:
@@ -45,7 +49,9 @@ class _NumpyCompatUnpickler(Unpickler):
         Returns:
             The class.
         """
-        if module == "numpy.core" or module.startswith("numpy.core."):
+        if NUMPY_GREATER_THAN_2 and (
+            module == "numpy.core" or module.startswith("numpy.core.")
+        ):
             module = module.replace("numpy.core", "numpy._core", 1)
         return super().find_class(module, name)
 

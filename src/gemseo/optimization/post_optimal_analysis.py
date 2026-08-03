@@ -31,8 +31,8 @@ from numpy.linalg import norm
 from scipy.sparse import vstack as spvstack
 
 from gemseo.optimization.lagrange_multipliers import LagrangeMultipliers
-from gemseo.util.compatibility.scipy import array_classes
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import array_classes
+from gemseo.util._compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

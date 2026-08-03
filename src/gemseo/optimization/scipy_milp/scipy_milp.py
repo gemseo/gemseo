@@ -42,8 +42,8 @@ from gemseo.optimization.result import OptimizationResult
 from gemseo.optimization.scipy_milp.settings.scipy_milp_settings import MILP_Settings
 from gemseo.space.design import DesignSpace
 from gemseo.space.util import get_value_and_bounds
-from gemseo.util.compatibility.scipy import get_row
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import get_row
+from gemseo.util._compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

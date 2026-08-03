@@ -40,7 +40,7 @@ from gemseo.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.doe.scipy.settings.mc import MC_Settings
 from gemseo.doe.scipy.settings.poisson_disk import PoissonDisk_Settings
 from gemseo.doe.scipy.settings.sobol import Sobol_Settings
-from gemseo.util.compatibility.scipy import SCIPY_VERSION  # noqa: F401
+from gemseo.util._compatibility.scipy import SCIPY_VERSION  # noqa: F401
 from gemseo.util.seeder import SEED
 from gemseo.util.typing import RealArray
 

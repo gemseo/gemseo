@@ -25,7 +25,7 @@
   1 validation error for Model
   name1
     Input should be a valid integer [type=int_type, input_value=0.1, input_type=float]
-      For further information visit https://errors.pydantic.dev/2.13/v/int_type
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
   '''
 # ---
 # name: test_validate_error[data1-True]
@@ -34,7 +34,7 @@
   1 validation error for Model
   name2
     Input should be an instance of ndarray [type=is_instance_of, input_value=True, input_type=bool]
-      For further information visit https://errors.pydantic.dev/2.13/v/is_instance_of
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
   '''
 # ---
 # name: test_validate_error[data2-True]
@@ -43,6 +43,6 @@
   1 validation error for Model
   name2
     Value error, The expected dtype is <class 'int'>: the actual dtype is <class 'numpy.float64'> [type=value_error, input_value=array([0.]), input_type=ndarray]
-      For further information visit https://errors.pydantic.dev/2.13/v/value_error
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---

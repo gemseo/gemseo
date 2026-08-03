@@ -38,7 +38,7 @@ from strenum import StrEnum
 from gemseo.core.cache.base import BaseCache
 from gemseo.core.cache.util import hash_data
 from gemseo.core.cache.util import to_real
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.multiprocessing.manager import get_multi_processing_manager
 from gemseo.util.singleton import SingleInstancePerFileAttribute
 
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 
     from h5py import File
 
-    from gemseo.util.compatibility.scipy import SparseArrayType
+    from gemseo.util._compatibility.scipy import SparseArrayType
     from gemseo.util.typing import IntegerArray
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath

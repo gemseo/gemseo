@@ -32,7 +32,7 @@ from scipy.sparse import hstack as sparse_hstack
 
 from gemseo.core.derivative.jacobian_operator import JacobianOperator
 from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import N_CPUS
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays

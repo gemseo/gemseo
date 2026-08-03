@@ -22,7 +22,7 @@ from matplotlib import pyplot as plt
 
 from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 from gemseo.post.dataset.plot._matplotlib.plot import MatplotlibPlot
-from gemseo.util.compatibility.matplotlib import boxplot as boxplot_
+from gemseo.util._compatibility.matplotlib import boxplot as boxplot_
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

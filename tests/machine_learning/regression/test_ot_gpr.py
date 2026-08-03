@@ -50,8 +50,8 @@ from gemseo.machine_learning.regression.model.ot_gpr_settings import (
 from gemseo.machine_learning.regression.model.ot_gpr_settings import Trend
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
-from gemseo.util.compatibility.openturns import GPR_ALGO_CLASS
-from gemseo.util.compatibility.openturns import GPR_CONDITIONAL_COVARIANCE_CLASS
+from gemseo.util._compatibility.openturns import GPR_ALGO_CLASS
+from gemseo.util._compatibility.openturns import GPR_CONDITIONAL_COVARIANCE_CLASS
 
 if TYPE_CHECKING:
     from numpy import ndarray

@@ -51,7 +51,7 @@ from gemseo.core.derivative.jacobian_operator import JacobianOperator
 from gemseo.linear.factory import LinearSolverLibraryFactory
 from gemseo.linear.problem import LinearProblem
 from gemseo.linear.scipy_linalg import LGMRES_Settings
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 from gemseo.util.matplotlib_figure import save_show_figure
 

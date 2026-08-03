@@ -36,7 +36,6 @@ from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
-from gemseo.util.compatibility.openturns import PEARSON_METHOD_NAME
 from gemseo.util.string import filter_names
 from gemseo.util.string import get_name_and_component
 from gemseo.util.string import repr_variable
@@ -114,7 +113,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
     __METHODS_TO_OT_METHOD_NAMES: Final[dict[CorrelationAnalysisMethod, str]] = {
         CorrelationAnalysisMethod.KENDALL: "computeKendallTau",
         CorrelationAnalysisMethod.PCC: "computePCC",
-        CorrelationAnalysisMethod.PEARSON: PEARSON_METHOD_NAME,
+        CorrelationAnalysisMethod.PEARSON: "computeLinearCorrelation",
         CorrelationAnalysisMethod.PRCC: "computePRCC",
         CorrelationAnalysisMethod.SPEARMAN: "computeSpearmanCorrelation",
         CorrelationAnalysisMethod.SRC: "computeSRC",

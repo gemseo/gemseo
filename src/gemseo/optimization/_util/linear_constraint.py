@@ -29,7 +29,7 @@ from numpy import zeros
 from scipy.sparse import vstack as sparse_vstack
 
 from gemseo.core.function.linear_function import LinearFunction
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

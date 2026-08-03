@@ -46,7 +46,7 @@ from gemseo.problem.mdo.sellar.variable import Y_2
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.util.compatibility.scipy import SparseArrayType
+    from gemseo.util._compatibility.scipy import SparseArrayType
     from gemseo.util.typing import StrKeyMapping
 
 
