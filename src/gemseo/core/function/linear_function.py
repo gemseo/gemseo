@@ -27,9 +27,9 @@ from numpy import ndarray
 from numpy import where
 
 from gemseo.core.function.array_function import ArrayFunction
-from gemseo.util.compatibility.scipy import array_classes
-from gemseo.util.compatibility.scipy import get_row
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import array_classes
+from gemseo.util._compatibility.scipy import get_row
+from gemseo.util._compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

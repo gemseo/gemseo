@@ -47,8 +47,8 @@ from gemseo.optimization.scipy_linprog.settings.highs_interior_point import (
     INTERIOR_POINT_Settings,
 )
 from gemseo.space.util import get_value_and_bounds
-from gemseo.util.compatibility.scipy import get_row
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import get_row
+from gemseo.util._compatibility.scipy import sparse_classes
 
 if TYPE_CHECKING:
     from collections.abc import Mapping

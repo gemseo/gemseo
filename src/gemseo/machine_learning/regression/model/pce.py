@@ -103,6 +103,7 @@ from openturns import FunctionalChaosSobolIndices
 from openturns import GaussProductExperiment
 from openturns import HyperbolicAnisotropicEnumerateFunction
 from openturns import IntegrationStrategy
+from openturns import JointDistribution
 from openturns import LeastSquaresMetaModelSelectionFactory
 from openturns import LeastSquaresStrategy
 from openturns import OrthogonalBasis
@@ -115,7 +116,6 @@ from gemseo.machine_learning.regression.core.base_fce import BaseFCERegressor
 from gemseo.machine_learning.regression.model.pce_settings import CleaningOptions
 from gemseo.machine_learning.regression.model.pce_settings import PCERegressor_Settings
 from gemseo.uncertainty.distribution.openturns.joint import OTJointDistribution
-from gemseo.util.compatibility.openturns import JointDistribution
 from gemseo.util.pydantic import create_model
 from gemseo.util.string import pretty_str
 

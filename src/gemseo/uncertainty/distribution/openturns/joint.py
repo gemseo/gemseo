@@ -27,12 +27,12 @@ from typing import ClassVar
 from openturns import BlockIndependentCopula
 from openturns import DistributionImplementation
 from openturns import IndependentCopula
+from openturns import JointDistribution
 from openturns import MarginalDistribution
 
 from gemseo.uncertainty.distribution.openturns.joint_settings import (
     OTJointDistribution_Settings,
 )
-from gemseo.util.compatibility.openturns import JointDistribution
 from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:

@@ -28,7 +28,6 @@ from gemseo.optimization.core.base_gradient_based_algorithm_settings import (
 from gemseo.optimization.scipy_local.settings.base_scipy_local_settings import (
     BaseScipyLocalSettings,
 )
-from gemseo.util.compatibility.scipy import SCIPY_GREATER_THAN_1_15
 
 
 class BaseLBFGSBCommonSettings(  # noqa: N801
@@ -58,25 +57,5 @@ class BaseLBFGSBCommonSettings(  # noqa: N801
     _redundant_settings: ClassVar[list[str]] = ["eps", "maxfun", "maxiter"]
 
 
-if SCIPY_GREATER_THAN_1_15:
-    # SciPy 1.15 deprecated the disp and iprint options for L-BFGS-B.
-
-    class L_BFGS_B_Settings(BaseLBFGSBCommonSettings):  # noqa: N801
-        """Settings for the SciPy L-BFGS-B algorithm."""
-
-else:  # pragma: no cover
-
-    class L_BFGS_B_Settings(BaseLBFGSBCommonSettings):  # noqa: N801
-        """Settings for the SciPy L-BFGS-B algorithm."""
-
-        disp: bool = Field(
-            default=False,
-            description="""Whether to print convergence messages.""",
-        )
-
-        iprint: int = Field(
-            default=-1,
-            description="""The flag to control the frequency of output.
-
-Default is no output.""",
-        )
+class L_BFGS_B_Settings(BaseLBFGSBCommonSettings):  # noqa: N801
+    """Settings for the SciPy L-BFGS-B algorithm."""

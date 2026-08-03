@@ -27,7 +27,7 @@ from numpy import eye
 from numpy import promote_types
 from scipy.sparse.linalg import LinearOperator
 
-from gemseo.util.compatibility.scipy import array_classes
+from gemseo.util._compatibility.scipy import array_classes
 
 if TYPE_CHECKING:
     from typing import TypeAlias

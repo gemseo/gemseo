@@ -188,7 +188,7 @@ def test_x_mask(patch_mdo_formulation) -> None:
         f.mask_x_swap_order(dvs, x)
 
 
-def test_remove_sub_scenario_dv_from_ds() -> None:
+def test_remove_sub_scenario_dv_from_ds(patch_mdo_formulation) -> None:
     ds2 = DesignSpace()
     ds2.add_variable("y_14")
     ds2.add_variable("x")

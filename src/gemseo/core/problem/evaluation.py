@@ -43,7 +43,7 @@ from gemseo.core.problem.database import Database
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.io_dataset import IODataset
 from gemseo.space.design import DesignSpace
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import _CHECK_DESVARS_BOUNDS
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.string import MultiLineString

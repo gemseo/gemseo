@@ -25,7 +25,11 @@ coverage *args:
 [group('qa')]
 test-min-deps *args:
     # UV_PROJECT_ENVIRONMENT=.venv-min-deps uv run --no-dev --group test --extra all --resolution lowest-direct --python 3.10 pytest {{args}}
-    uv run --python 3.10 --isolated --no-dev --group test --extra all --resolution lowest-direct pytest {{args}}
+    # numpy and scipy are direct dependencies but also transitive ones,
+    # for which uv uses the highest versions;
+    # bounding them here makes uv use their lowest versions,
+    # these bounds shall mirror the ones of pyproject.toml.
+    uv run --python 3.10 --isolated --no-dev --group test --extra all --resolution lowest-direct --with "numpy>=1.24,<2" --with "scipy>=1.15,<1.16" pytest {{args}}
 
 # Run code formatting and checking
 [group('qa')]

@@ -26,6 +26,8 @@ from numpy import array
 from numpy import atleast_2d
 from numpy import diag
 from openturns import AbsoluteExponential
+from openturns import AggregatedFunction
+from openturns import Basis
 from openturns import ConstantBasisFactory
 from openturns import CovarianceModelImplementation
 from openturns import ExponentialModel
@@ -58,10 +60,9 @@ from gemseo.machine_learning.regression.model.ot_gpr_settings import (
 )
 from gemseo.machine_learning.regression.model.ot_gpr_settings import Trend
 from gemseo.space.design import DesignSpace
-from gemseo.util.compatibility.openturns import GPR_ALGO_CLASS
-from gemseo.util.compatibility.openturns import LINEAR_ALGEBRA_RESOURCE_KEY
-from gemseo.util.compatibility.openturns import build_gpr_result
-from gemseo.util.compatibility.openturns import create_trend_basis
+from gemseo.util._compatibility.openturns import GPR_ALGO_CLASS
+from gemseo.util._compatibility.openturns import LINEAR_ALGEBRA_RESOURCE_KEY
+from gemseo.util._compatibility.openturns import build_gpr_result
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
@@ -232,15 +233,13 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     def _fit(self, input_data: RealArray, output_data: RealArray) -> None:
         log_flags = Log.Flags()
         Log.Show(Log.NONE)
+        basis = self.__TREND_TO_FACTORY[self.__trend](input_data.shape[1]).build()
+        multioutput_basis = Basis([
+            AggregatedFunction([basis.build(k)] * output_data.shape[1])
+            for k in range(basis.getSize())
+        ])
         algo = GPR_ALGO_CLASS(
-            input_data,
-            output_data,
-            self.__covariance_model,
-            create_trend_basis(
-                self.__TREND_TO_FACTORY[self.__trend],
-                input_data.shape[1],
-                output_data.shape[1],
-            ),
+            input_data, output_data, self.__covariance_model, multioutput_basis
         )
         Log.Show(log_flags)
         if self._settings.multi_start_algo_settings is None:

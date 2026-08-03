@@ -33,7 +33,7 @@ from numpy.random import default_rng
 from gemseo.post._engine.robustness_quantifier import RobustnessQuantifier
 from gemseo.post.core.base_post import BasePost
 from gemseo.post.robustness_settings import Robustness_Settings
-from gemseo.util.compatibility.matplotlib import boxplot
+from gemseo.util._compatibility.matplotlib import boxplot
 from gemseo.util.seeder import SEED
 from gemseo.util.string import repr_variable
 

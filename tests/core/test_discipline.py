@@ -72,7 +72,7 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
 from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle

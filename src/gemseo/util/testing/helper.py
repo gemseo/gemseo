@@ -25,7 +25,6 @@ from typing import Any
 from typing import Final
 
 import pytest
-from pydantic import ValidationError
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -92,9 +91,7 @@ def assert_exception(
         yield exc_info
 
     message = str(exc_info.value)
-    if isinstance(exc_info.value, ValidationError):
-        message = _PYDANTIC_VERSION_IN_URL.sub(r"\1X.Y\2", message)
-    elif isinstance(exc_info.value, FileNotFoundError):
+    if isinstance(exc_info.value, FileNotFoundError):
         # Normalize FileNotFoundError messages across platforms.
         message = re.sub(
             r"\[(?:WinError|Errno) \d+\].*",
@@ -104,6 +101,9 @@ def assert_exception(
     elif sys.version_info < (3, 14) and isinstance(exc_info.value, ZeroDivisionError):
         # Python 3.14 dropped the "float " prefix from ZeroDivisionError messages.
         message = message.removeprefix("float ")
+    # The pydantic version in the documentation URLs is normalized for any exception
+    # since a validation error message can be nested in another exception message.
+    message = _PYDANTIC_VERSION_IN_URL.sub(r"\1X.Y\2", message)
     message = _MEMORY_ADDRESS.sub("0xMEM", message)
 
     assert message == snapshot

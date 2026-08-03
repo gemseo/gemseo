@@ -18,10 +18,10 @@ from __future__ import annotations
 
 from typing import Final
 
+from openturns import JointDistribution
 from openturns import Uniform
 
 from gemseo.doe.core.base_doe import BaseDOE
-from gemseo.util.compatibility.openturns import JointDistribution
 
 
 class BaseOTDOE(BaseDOE):

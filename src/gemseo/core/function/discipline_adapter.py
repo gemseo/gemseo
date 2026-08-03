@@ -33,8 +33,8 @@ from scipy.sparse import dok_array
 
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.function.array_function import ArrayFunction
-from gemseo.util.compatibility.scipy import get_row
-from gemseo.util.compatibility.scipy import sparse_classes
+from gemseo.util._compatibility.scipy import get_row
+from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 
 if TYPE_CHECKING:

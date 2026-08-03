@@ -29,6 +29,7 @@ from ast import literal_eval
 from collections import defaultdict
 from collections.abc import Callable
 from collections.abc import Mapping
+from contextlib import nullcontext
 from copy import deepcopy
 from itertools import chain
 from itertools import islice
@@ -56,6 +57,7 @@ from gemseo.core.problem._hdf_database import HDFDatabase
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.optimization_dataset import OptimizationDataset
 from gemseo.space.design import DesignSpace
+from gemseo.util._compatibility.numpy import NUMPY_GREATER_THAN_2
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 from gemseo.util.ggobi_export import save_data_arrays_to_xml
 from gemseo.util.hashable_ndarray import HashableNdarray
@@ -1025,7 +1027,10 @@ class Database(Mapping):
         return f"{cls.GRAD_TAG}{name}"
 
     def __str__(self) -> str:
-        with printoptions(legacy="1.25"):
+        # The legacy printing option restores the representation of the NumPy scalars
+        # used before NumPy 2, it neither exists nor is needed before NumPy 2.
+        context = printoptions(legacy="1.25") if NUMPY_GREATER_THAN_2 else nullcontext()
+        with context:
             return str(self.__data)
 
     def __get_index(self, iteration: int) -> int:
