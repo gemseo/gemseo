@@ -1,0 +1,123 @@
+@startuml Architecture Overview
+!theme plain
+top to bottom direction
+
+skinparam componentStyle uml2
+skinparam backgroundColor #FEFEFE
+
+package "User Code" #FFFFCC {
+    [User Application Code] as UAC
+}
+
+package "GEMSEO Core" #CCFFCC {
+    [Discipline] as DISC
+    [MDA Solver] as MDA
+    [Optimizer] as OPT
+    [DOE Algorithm] as DOE
+    [Scenario] as SCEN
+}
+
+package "Workflow Observer System" #CCCCFF {
+    [WorkflowObserverMeta\n(Metaclass)] as WOM
+    [_WorkflowObserverInjector\n(Registration & Injection)] as WOI
+
+    package "Injection" {
+        [ObservationSpec\n(Config)] as OS
+        [Module-level decorators\n(injector.py)] as DECS
+
+        OS -[hidden]down- DECS
+    }
+
+    package "Observer Types" {
+        [BaseWorkflowObserver\n(Core)] as BWO
+        [DisciplineWorkflowObserver] as DWO
+        [MDAWorkflowObserver] as MWO
+        [OptimizerWorkflowObserver] as OWO
+        [DOEWorkflowObserver] as DEWO
+        [ScenarioWorkflowObserver] as SWO
+
+        BWO -[hidden]down- DWO
+        DWO -[hidden]down- MWO
+        MWO -[hidden]down- OWO
+        OWO -[hidden]down- DEWO
+        DEWO -[hidden]down- SWO
+    }
+
+    [ObserverTree\n(Parent-Child Tracking)] as OT
+
+    WOM -down-> WOI : check accept
+    WOI -down-> OS : matches against
+    DECS -down-> BWO : wraps methods
+    BWO -down-> OT : registers/unregisters
+}
+
+package "Directory Manager System" #FFCCCC {
+    [DMProcessorFactory\n(Processor Discovery)] as DMF
+
+    package "Processors" {
+        [BaseDMProcessor\n(Core)] as BDM
+        [DisciplineExecution\nDMProcessor] as DEDM_disc
+        [DisciplineLinearization\nDMProcessor] as DLDM
+        [MDAExecution\nDMProcessor] as MEDM
+        [MDAIteration\nDMProcessor] as MIDM
+        [OptimizerDMProcessor] as ODM
+        [DOEDMProcessor] as DEDM
+        [ScenarioDMProcessor] as SDM
+
+        BDM -[hidden]down- DEDM_disc
+        DEDM_disc -[hidden]down- DLDM
+        DLDM -[hidden]down- MEDM
+        MEDM -[hidden]down- MIDM
+        MIDM -[hidden]down- ODM
+        ODM -[hidden]down- DEDM
+        DEDM -[hidden]down- SDM
+    }
+
+    [DirectoryManager\n(Multiton Singleton)] as DM
+
+    DMF -down-> BDM : returns matched
+    BDM -down-> DM : delegates to
+}
+
+package "Configuration" #FFFFCC {
+    [Settings\n(Pydantic)] as SET
+    [CleanUpPolicy] as CP
+    [MDACleanUpPolicy] as MCP
+}
+
+' Relationships
+
+UAC -down-> SCEN : execute()
+UAC -down-> DISC : execute()
+UAC -down-> MDA : execute()
+UAC -down-> OPT : execute()
+UAC -down-> DOE : execute()
+
+SCEN -down-> WOM : uses metaclass
+DISC -down-> WOM : uses metaclass
+MDA -down-> WOM : uses metaclass
+OPT -down-> WOM : uses metaclass
+DOE -down-> WOM : uses metaclass
+
+DMF <-left- BWO : creates processor
+
+DM -down-> SET : reads configuration
+SET -down-> CP : uses
+
+DEDM_disc <-left- DWO
+MEDM <-left- MWO
+ODM <-left- OWO
+DEDM <-left- DEWO
+SDM <-left- SWO
+
+legend right
+  | Component | Purpose |
+  | <#FFFFCC> User & Config | Entry point and settings |
+  | <#CCCCFF> Observer System | Lifecycle tracking and injection |
+  | <#CCFFCC> Core Objects | GEMSEO executables |
+  | <#FFCCCC> Directory Manager | Directory creation and cleanup |
+  | --> | Direct dependency |
+  | -.-> | Indirect/optional |
+endlegend
+
+@enduml

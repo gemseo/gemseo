@@ -1,0 +1,97 @@
+@startuml Execution Flow with Directory Management
+autonumber
+
+participant "User\nCode" as User
+participant "Scenario\n(Observable)" as Scenario
+participant "Scenario\nWorkflowObserver" as ScenarioObs
+participant "Discipline\n(Observable)" as Discipline
+participant "DisciplineExecution\nWorkflowObserver" as DiscObs
+participant "Directory\nManager" as DirMgr
+participant "Observer\nTree" as Tree
+
+User ->> Scenario: scenario.execute()
+activate Scenario
+
+Scenario ->> ScenarioObs: start(CallSpec for execute)
+activate ScenarioObs
+
+ScenarioObs ->> Tree: Register as root observer
+Tree -->> ScenarioObs: OK (I'm root)
+
+ScenarioObs ->> DirMgr: start_directory(observer, "{scenario}")
+activate DirMgr
+
+DirMgr ->> DirMgr: Create dir\nChange cwd\nStore path
+
+DirMgr -->> ScenarioObs: OK
+
+note over Scenario: Now in {scenario}/\nNested observations have\nScenarioObserver as parent
+
+loop For each discipline in formulation
+    Scenario ->> Discipline: discipline.execute()
+    activate Discipline
+
+    Discipline ->> DiscObs: start(CallSpec for execute)
+    activate DiscObs
+
+    DiscObs ->> Tree: Register with parent=ScenarioObserver
+    Tree -->> DiscObs: OK (parent is scenario)
+
+    DiscObs ->> DirMgr: start_directory(observer, "{discipline}_execution")
+    activate DirMgr
+
+    DirMgr ->> DirMgr: Create dir\nChange cwd\nStore path
+
+    DirMgr -->> DiscObs: OK
+
+    note over Discipline: Now in {scenario}/\n{discipline}_execution/
+
+    Discipline ->> Discipline: _run()
+
+    Discipline ->> DiscObs: end(CallSpec, returned_data)
+    deactivate Discipline
+
+    DiscObs ->> DirMgr: end_directory(observer)
+    activate DirMgr
+
+    DirMgr ->> DirMgr: Return to parent dir\n(cleanup applies to MDA/scenario only)
+
+    DirMgr -->> DiscObs: OK
+
+    DiscObs ->> Tree: Unregister observer
+    Tree -->> DiscObs: OK
+
+    DiscObs -->> Scenario: done
+    deactivate DiscObs
+end
+
+Scenario ->> ScenarioObs: end(CallSpec, returned_data)
+deactivate Scenario
+
+ScenarioObs ->> DirMgr: end_directory(observer)
+
+DirMgr ->> DirMgr: Write OptHistoryView plots\nApply cleanup policy\nReturn to original dir
+
+DirMgr -->> ScenarioObs: OK
+
+ScenarioObs ->> Tree: Unregister observer
+Tree -->> ScenarioObs: OK
+
+ScenarioObs -->> User: done
+deactivate ScenarioObs
+
+User ->> User: Results in {scenario}/
+
+note over User
+  Final directory structure:
+  execution_root/
+  ├── {scenario}/
+  │   ├── discipline_1_execution/
+  │   │   └── ...
+  │   ├── discipline_2_execution/
+  │   │   └── ...
+  │   ├── opt_history.pdf  (if save_history_backup)
+  │   └── ...
+end note
+
+@enduml
