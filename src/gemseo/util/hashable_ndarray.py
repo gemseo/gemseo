@@ -21,8 +21,8 @@ from typing import Any
 
 from numpy import array as np_array
 from numpy import array_equal
-from numpy import uint8
-from xxhash import xxh3_64_hexdigest
+
+from gemseo.util._numpy import hash_array
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -36,28 +36,33 @@ class HashableNdarray:
     and therefore cannot reliably implement the __hash__() method.
 
     The HashableNdarray class allows a way around this limitation. It implements the
-    required methods for HashableNdarray objects in terms of a array ndarray object.
-    This can be either a copied instance (which is safer) or the original object (which
+    required methods for HashableNdarray objects in terms of an ndarray object. This
+    can be either a copied instance (which is safer) or the original object (which
     requires the user to be careful enough not to modify it).
+
+    The hash is computed on the flat C-contiguous equivalent of the array; any array
+    can thus be wrapped, whatever its contiguity and number of dimensions, and an array
+    and its C-contiguous copy have the same hash. The array passed by the user is left
+    untouched; it is wrapped as is, or as a copy when `copy` is used.
     """
 
     __array: NDArray[Any]
-    """The wrapped_array array, either the original one or a copy."""
+    """The wrapped array, either the original one or a copy."""
 
     __copy: bool
-    """Whether the wrapped_array array is a copy of the original one."""
+    """Whether the wrapped array is a copy of the original one."""
 
     __hash: int
-    """The hash of the wrapped_array array."""
+    """The hash of the wrapped array."""
 
     def __init__(self, array: NDArray[Any], copy: bool = False) -> None:
         """
         Args:
-            array: The array that must be array.
+            array: The array to wrap.
             copy: Whether the array is copied.
         """  # noqa: D205, D212, D415
         self.__copy = copy
-        self.__hash = int(xxh3_64_hexdigest(array.view(uint8)), 16)  # type: ignore[arg-type]
+        self.__hash = int(hash_array(array), 16)
         self.__array = np_array(array) if copy else array
 
     def __eq__(self, other: object) -> bool:
@@ -73,12 +78,12 @@ class HashableNdarray:
 
     @property
     def wrapped_array(self) -> NDArray[Any]:
-        """The wrapped_array array."""
+        """The wrapped array."""
         return self.__array
 
     @property
     def is_copy(self) -> bool:
-        """Whether the wrapped_array array as a copy of the original one."""
+        """Whether the wrapped array is a copy of the original one."""
         return self.__copy
 
     def copy_wrapped_array(self) -> None:

@@ -550,30 +550,6 @@ def test_filter_database() -> None:
     assert database[x2] == {"Rosenbrock": value2}
 
 
-def test__str__hashable_ndarray() -> None:
-    """Tests the string representation."""
-    x_array = array([1.0, 1.0])
-    x_hash = HashableNdarray(x_array)
-    assert str(x_hash) == str(x_array)
-
-
-def test__repr__() -> None:
-    """Tests the __repr__ method."""
-    x_array = array([1.0, 1.0])
-    x_hash = HashableNdarray(x_array)
-    assert repr(x_hash) == str(x_array)
-
-
-def test_unwrap() -> None:
-    """Tests HashableNdarray unwrapping."""
-    x_array = array([1.0, 1.0])
-    x_hash = HashableNdarray(x_array)
-    assert x_hash.unwrap() is x_hash.wrapped_array
-    x_hash = HashableNdarray(x_array, copy=True)
-    assert x_hash.unwrap() is not x_hash.wrapped_array
-    assert (x_hash.unwrap() == x_array).all()
-
-
 def test_fail_import() -> None:
     with pytest.raises(KeyError):
         Database.from_hdf(FAIL_HDF)

@@ -20,16 +20,12 @@ from typing import TYPE_CHECKING
 from typing import cast
 
 from numpy import array
-from numpy import ascontiguousarray
 from numpy import complex128
 from numpy import float64
-from numpy import int32
-from numpy import int64
 from numpy import ndarray
-from numpy import uint8
 from xxhash import xxh3_64_hexdigest
 
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util._numpy import hash_array
 
 if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
@@ -55,20 +51,10 @@ def hash_data(
         if value is None:
             continue
 
-        # xxh3_64 does not support int or float as input.
-        if isinstance(value, ndarray):
-            if value.dtype == int32 and PLATFORM_IS_WINDOWS:
-                value = value.astype(int64)
-
-            # xxh3_64 only supports C-contiguous arrays.
-            if not value.flags["C_CONTIGUOUS"]:
-                value = ascontiguousarray(value)
-        else:
+        if not isinstance(value, ndarray):
             value = array([value])
 
-        value = value.view(uint8)
-
-        hashed_value = xxh3_64_hexdigest(value)
+        hashed_value = hash_array(value)
         hashed_name = xxh3_64_hexdigest(bytes(name, "utf-8"))
         names_with_hashed_values.append((hashed_name, hashed_value))
 
