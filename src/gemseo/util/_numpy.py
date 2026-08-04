@@ -20,6 +20,8 @@ from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import dtype
+from numpy import uint8
+from xxhash import xxh3_64_hexdigest
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -32,8 +34,17 @@ COMPLEX128_DTYPE: Final = dtype("complex128")
 FLOAT64_DTYPE: Final = dtype("float64")
 """The NumPy double-precision floating-point number type."""
 
+INT32_DTYPE: Final = dtype("int32")
+"""The NumPy signed integer type with 32 bits."""
+
 INT64_DTYPE: Final = dtype("int64")
 """The NumPy signed integer type with 64 bits."""
+
+UINT32_DTYPE: Final = dtype("uint32")
+"""The NumPy unsigned integer type with 32 bits."""
+
+UINT64_DTYPE: Final = dtype("uint64")
+"""The NumPy unsigned integer type with 64 bits."""
 
 
 def convert_array_type(a: ndarray, dtype_: dtype, copy: bool = True) -> ndarray:
@@ -85,3 +96,34 @@ def get_common_dtype(arrays: Iterable[ndarray]) -> dtype:
         return INT64_DTYPE
 
     return FLOAT64_DTYPE
+
+
+def hash_array(array: ndarray) -> str:
+    """Hash an array with the xxh3_64 algorithm.
+
+    The array is hashed as its flat C-contiguous equivalent,
+    whatever its contiguity and number of dimensions.
+    The digest is computed on the raw bytes only,
+    so it encodes neither the shape nor the data type;
+    a caller that needs a true identity
+    must compare the arrays after a digest match.
+
+    A 32-bit integer array is hashed as its 64-bit equivalent
+    so that the hash does not depend on the platform:
+    the platform-dependent data types `numpy.int_` and `numpy.uint`
+    resolve to 32 bits on Windows with NumPy < 2 and to 64 bits elsewhere.
+
+    Args:
+        array: The array to hash.
+
+    Returns:
+        The hexadecimal digest of the array.
+    """
+    if array.dtype == INT32_DTYPE:
+        array = array.astype(INT64_DTYPE)
+    elif array.dtype == UINT32_DTYPE:
+        array = array.astype(UINT64_DTYPE)
+
+    # xxh3_64 requires C-contiguous data and view() requires at least one dimension;
+    # ravel() returns a flat C-contiguous array and copies only when required.
+    return xxh3_64_hexdigest(array.ravel().view(uint8))

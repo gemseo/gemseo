@@ -47,6 +47,10 @@ from gemseo.dataset.io_dataset import IODataset
 from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
 from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.problem.mdo.sellar.sellar_design_space import SellarDesignSpace
+from gemseo.util._numpy import INT32_DTYPE
+from gemseo.util._numpy import INT64_DTYPE
+from gemseo.util._numpy import UINT32_DTYPE
+from gemseo.util._numpy import UINT64_DTYPE
 from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.testing.helper import assert_exception
 
@@ -252,26 +256,40 @@ def test_hash_data_dict() -> None:
     hash_data({"i": 10 * arange(3)})
     # Discontiguous array
     hash_data({"i": arange(10)[::3]})
+    # Zero-dimensional array
+    assert isinstance(hash_data({"i": array(1.0)}), int)
 
 
 @pytest.mark.parametrize(
-    ("input_c", "input_f"),
+    ("dtype_32", "dtype_64"), [(INT32_DTYPE, INT64_DTYPE), (UINT32_DTYPE, UINT64_DTYPE)]
+)
+def test_hash_data_32_bit_integers(dtype_32, dtype_64) -> None:
+    """Check that a 32-bit integer array is hashed as its 64-bit equivalent."""
+    assert hash_data({"i": array([1, 2], dtype=dtype_32)}) == hash_data({
+        "i": array([1, 2], dtype=dtype_64)
+    })
+
+
+@pytest.mark.parametrize(
+    ("array_c", "array_non_c"),
     [
         (array([[1, 2], [3, 4]], order="C"), array([[1, 2], [3, 4]], order="F")),
         (
             array([[1.0, 2.0], [3.0, 4.0]], order="C"),
             array([[1.0, 2.0], [3.0, 4.0]], order="F"),
         ),
+        (array([0, 3, 6, 9]), arange(10)[::3]),
+        (array([0.0, 3.0, 6.0, 9.0]), arange(10.0)[::3]),
     ],
 )
-def test_hash_discontiguous_array(input_c, input_f) -> None:
+def test_hash_discontiguous_array(array_c, array_non_c) -> None:
     """Test that the hashes are the same for discontiguous arrays.
 
     Args:
-        input_c: A C-contiguous array.
-        input_f: A Fortran ordered array.
+        array_c: A C-contiguous array.
+        array_non_c: An array that is not C-contiguous.
     """
-    assert hash_data({"i": input_c}) == hash_data({"i": input_f})
+    assert hash_data({"i": array_c}) == hash_data({"i": array_non_c})
 
 
 def func(x):
