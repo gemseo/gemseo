@@ -76,6 +76,7 @@ test = [
     "pytest-sugar >=1",
     "syrupy-matplotlib >=0.3.0",
     "syrupy >=4.7",
+    "diff-cover>=10.4,<11",
 ]
 doc = [
     "black",
