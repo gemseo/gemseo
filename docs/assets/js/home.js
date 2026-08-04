@@ -125,7 +125,6 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
     onActivate(row, function () {
       if (state.selRole === role.id) return;
       state.selRole = role.id;
-      state.resumed = false;
       try {
         localStorage.setItem(LS_ROLE, role.id);
       } catch (e) {}
@@ -141,10 +140,7 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
     list.forEach(function (pr) {
       var attrs = linkAttrs(pr.path);
       attrs.class = "gh-chip";
-      var chip = el("a", attrs, [
-        document.createTextNode(pr.title + " "),
-        el("span", { text: "→" }),
-      ]);
+      var chip = el("a", attrs, [document.createTextNode(pr.title)]);
       chips.appendChild(chip);
     });
     return el("div", { class: "gh-prereq" }, [
@@ -167,7 +163,7 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
       el("span", { class: "gh-res__desc", text: resource.desc }),
       label ? el("span", { class: "gh-res__time", text: label }) : null,
     ]);
-    return el("a", attrs, [body, el("span", { class: "gh-res__arrow", text: "→" })]);
+    return el("a", attrs, [body]);
   }
 
   function renderGroups(role) {
@@ -203,7 +199,7 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
       group.items.forEach(function (resource) {
         items.appendChild(renderResource(resource));
       });
-      grid.appendChild(el("div", {}, [head, items]));
+      grid.appendChild(el("div", { class: "gh-group" }, [head, items]));
     });
     return grid;
   }
@@ -220,12 +216,8 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
     root.textContent = "";
 
     // Section header.
-    var meta = el("span", { class: "gh-lp__meta" });
-    if (state.resumed) {
-      meta.appendChild(el("span", { class: "gh-resume", text: "↩ Resumed: " + selected.title }));
-    }
     root.appendChild(
-      el("div", { class: "gh-lp__head" }, [el("h2", { text: "What do you want to do?" }), meta])
+      el("div", { class: "gh-lp__head" }, [el("h2", { text: "What do you want to do?" })])
     );
 
     // Master column.
@@ -303,27 +295,6 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
       });
     });
 
-    // Segmented pip/uv/conda control inside the Install panel: activating one
-    // swaps the displayed command and the text its copy button copies.
-    var installPanel = card.querySelector('.gh-panel[data-panel="install"]');
-    if (installPanel) {
-      var text = installPanel.querySelector(".gh-cmd__text");
-      var cmdCopy = installPanel.querySelector(".gh-cmd__copy");
-      var tabs = installPanel.querySelectorAll(".gh-tab");
-      tabs.forEach(function (tab) {
-        tab.addEventListener("click", function () {
-          tabs.forEach(function (other) {
-            var active = other === tab;
-            other.classList.toggle("gh-tab--active", active);
-            other.setAttribute("aria-selected", active ? "true" : "false");
-          });
-          var cmd = tab.getAttribute("data-cmd") || "";
-          if (text) text.textContent = cmd;
-          if (cmdCopy) cmdCopy.setAttribute("data-copy", cmd);
-        });
-      });
-    }
-
     // Copy buttons: every button carries its own `data-copy` payload (install
     // command, verify command, first-run snippet). One handler serves all.
     card.querySelectorAll(".gh-cmd__copy").forEach(function (button) {
@@ -345,28 +316,24 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
   }
 
   function initialRole(goals) {
-    var out = { selRole: goals[0].id, resumed: false };
     try {
       var last = localStorage.getItem(LS_ROLE);
       if (last && goals.some(function (g) { return g.id === last; })) {
-        out.selRole = last;
-        out.resumed = true;
+        return last;
       }
     } catch (e) {}
-    return out;
+    return goals[0].id;
   }
 
   function mount(root, data) {
     wireQuickStart();
 
     if (!data.goals || !data.goals.length) return;
-    var initial = initialRole(data.goals);
     var state = {
       root: root,
       data: data,
-      selRole: initial.selRole,
+      selRole: initialRole(data.goals),
       sidebarOpen: true,
-      resumed: initial.resumed,
     };
     render(state);
   }

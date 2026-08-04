@@ -25,24 +25,8 @@
   text-align: justify;
 }
 
-/* Version selector */
-.md-version__item--divider {
-  pointer-events: none;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  opacity: 0.6;
-  border-top: 1px solid currentColor;
-  margin-top: 0.3rem;
-}
-.md-version__link--legacy {
-  opacity: 0.75;
-  font-style: italic;
-}
-
 /*
- * Header logo bar: wordmark image + vertical rule + suffix (see
+ * Header logo bar: wordmark image + slash + suffix (see
  * docs/overrides/partials/header.html), the suffix naming the distribution the
  * site documents — "gemseo" here, the plugin name on a plugin documentation.
  *
@@ -55,7 +39,7 @@
    * font size to 137.5% at 100em and 150% at 125em, so px sizes would stay put
    * while the rem-sized header tabs grow by 10-20%.
    *
-   * --logo-img-h sizes the wordmark image; --logo-h, the base the rule, suffix and
+   * --logo-img-h sizes the wordmark image; --logo-h, the base the slash, suffix and
    * gap scale from, is a fixed fraction of it (0.6111 x 1.8rem = 1.1rem = 22px at
    * the default 125% root), so shrinking the image scales the whole lockup with the
    * proportions it was tuned on — see the fluid override in header.css, which is
@@ -132,12 +116,19 @@
   top: calc(var(--logo-img-h) * (0.5 - var(--logo-cap-center)));
 }
 
-.gemseo-bar .rule {
-  display: inline-block;
+/*
+ * A glyph, not a box: its width is the advance of "/" at --logo-h (.3711em in Roboto
+ * 700), so it scales with the lockup and counts as .2268 per unit of --logo-img-h in the
+ * width model of the fluid override in header.css — changing the character, the font or
+ * the weight changes that divisor.
+ */
+.gemseo-bar .slash {
   flex: 0 0 auto;
-  width: 0.15rem;
-  height: calc(var(--logo-h) * 0.711); /* Roboto cap height, i.e. the suffix caps. */
-  background: var(--accent);
+  font-family: var(--md-text-font-family);
+  font-weight: 700;
+  font-size: var(--logo-h);
+  line-height: 1;
+  color: var(--accent);
 }
 
 .gemseo-bar .suffix {

@@ -56,7 +56,7 @@
   }
 
   /*
-   * The logo bar is 237px at its full size, against the 24px icon material shows here
+   * The logo bar is 242px at its full size, against the 24px icon material shows here
    * by default, and the row also carries the hamburger, the palette toggle, the
    * magnifier and the mike selector — 346px of them together. On a 390px phone the row
    * therefore measured 607px, and since .md-header__inner does not wrap and material
@@ -108,34 +108,41 @@
 
   /*
    * Size the lockup from the space the row has left. With the trims above, everything
-   * around the lockup — the three icons, the selector and the padding of the logo cell
-   * itself — measures 11.6rem, and the lockup's own width is
-   * `3.57 * imgH + 4.95 * (imgH * 0.6111) + 3px` = `6.6 * imgH + 3px` — 3.57 being the
-   * 864x242 aspect ratio of the wordmark and 4.95 the advance width of "gemseo" in
-   * Roboto 700 plus the two gaps, both per unit of font size (see .gemseo-bar in
-   * style.css). Hence `(100vw - 11.8rem) / 6.6`, the .2rem on top leaving ~4px of
-   * slack, which tracks the viewport instead of stepping at hand-picked widths.
+   * around the lockup measures 13.3rem: .2rem of inner padding, 2rem for the hamburger
+   * (1.8rem plus its .2rem of margin), .8rem for the margin and padding of the logo cell
+   * itself, and 10.3rem of controls — 2rem per icon for the palette toggle and the
+   * magnifier, 6.3rem for the version selector with a title such as "1.7.0 (stable)",
+   * its .6rem of margin included.
+   *
+   * The lockup's own width is `6.72 * imgH`, with no additive term: every part of it
+   * scales with --logo-img-h. Per unit of it, and with --logo-h = `0.6111 * imgH` (see
+   * .gemseo-bar in style.css): 3.57 for the wordmark, the 864x242 aspect ratio of the
+   * SVG; .2268 for the slash, whose glyph advances .3711em in Roboto 700, i.e.
+   * `0.3711 * 0.6111`; 2.1972 for the suffix, "gemseo" advancing 3.5957em in the same
+   * font; and .7211 for the two gaps, `2 * 0.59 * 0.6111`. Hence
+   * `(100vw - 13.5rem) / 6.72`, the .2rem on top of the 13.3rem leaving ~4px of slack,
+   * which tracks the viewport instead of stepping at hand-picked widths.
    *
    * Mixing rem and vw is safe here: this query stops at 76.23em, below which the root
    * font size stays at material's 125%, so 1rem is 20px throughout the range.
    *
-   * The 1.8rem ceiling is the desktop size, reached at ~470px, so nothing changes on
-   * the viewports that already fit. The .95rem floor stops the fluid height at 360px,
-   * where the lockup still gets its full width: a 67x19px mark, in the region of the
+   * The 1.8rem ceiling is the desktop size, reached at ~512px, so nothing changes on
+   * the viewports that already fit. The .95rem floor stops the fluid height at ~398px,
+   * where the lockup still gets its full width: a 68x19px mark, in the region of the
    * 1.2rem logo material itself shows below this breakpoint, with the suffix intact.
    * Below that the floor caps the image height only — the widths keep yielding to
    * flex-shrink, so both parts of the lockup degrade together (see .gemseo-bar in
-   * style.css): at 320px the suffix ellipsizes (28px shown of 44) and the image box
-   * narrows to 43px, which `object-fit: contain` letterboxes down to a ~43x12px
-   * painting. Smaller than the floor alone implies, and the price of the property that
-   * matters — every control stays reachable, nothing overflows at 320px.
+   * style.css): at 320px the suffix ellipsizes (14px shown of 42) and the image box
+   * narrows to 22px, which `object-fit: contain` letterboxes down to a ~22x6px painting.
+   * Smaller than the floor alone implies, and the price of the property that matters —
+   * every control stays reachable, nothing overflows at 320px.
    *
    * The divisor assumes a suffix about as wide as "gemseo"; a longer plugin name gets
    * the same graceful degradation (checked with "calibration": nothing overflows, the
-   * suffix ellipsizes below ~470px), and can override --logo-img-h here.
+   * suffix ellipsizes below ~534px), and can override --logo-img-h here.
    */
   .gemseo-bar {
-    --logo-img-h: clamp(0.95rem, calc((100vw - 11.8rem) / 6.6), 1.8rem);
+    --logo-img-h: clamp(0.95rem, calc((100vw - 13.5rem) / 6.72), 1.8rem);
   }
 }
 
@@ -155,10 +162,11 @@
 }
 
 /*
- * Center the tab items on the page grid (like the banner text), not within the
- * flex strip. The left (logo) and right (search/version) clusters have unequal
- * widths, so the flex strip is off-center; absolutely position the list at the
- * center of .md-header__inner (the same md-grid the banner uses).
+ * Center the tab items on the page grid, not within the flex strip. The left (logo) and
+ * right (search/version) clusters have unequal widths, so the flex strip is off-center;
+ * absolutely position the list at the center of .md-header__inner, which carries
+ * material's .md-grid (see docs/overrides/partials/header.html) as the content column and
+ * the footer do, so the tabs share their center line.
  */
 .md-header__inner {
   position: relative;
@@ -251,8 +259,62 @@
   max-width: none;
 }
 
-/* Keep the (wide, legacy-augmented) dropdown inside the viewport at the far right. */
+/*
+ * Anchor the dropdown to the selector. Material positions `.md-version__list` at
+ * `top: .15rem` of the nearest positioned ancestor, which it expects to be
+ * `.md-header__title`; with the topic static (above) and the title unpositioned, that
+ * ancestor is `.md-header__inner` (`position: relative`, see the tab list below), so the
+ * list opened over the header row itself, covering the icons. Positioning `.md-version`
+ * makes it the containing block; nothing clips it, since material's overflow lives on
+ * `.md-ellipsis`, not on the children of `.md-header__topic`.
+ */
+.md-header__title--version .md-version {
+  position: relative;
+}
+
 .md-header__title--version .md-version__list {
+  top: 100%;
   left: auto;
-  right: 0.8rem;
+  right: 0;
+  /* Material's `.2rem .8rem` indents the list from the header title; here it would only
+     pull the (wide, legacy-augmented) list away from the button it belongs to. */
+  margin: 0.2rem 0;
+  min-width: 100%;
+}
+
+/*
+ * A select box opens on click, not on hover: undo material's `:hover`/`:focus-within`
+ * opening — including the `hoverfix` animation it adds on coarse pointers — and let
+ * assets/js/version-selector.js drive the state through `.md-version--open`.
+ */
+.md-version:hover .md-version__list,
+.md-version:focus-within .md-version__list {
+  max-height: 0;
+  opacity: 0;
+  animation: none;
+  transition:
+    max-height 0ms 0.25s,
+    opacity 0.25s;
+}
+
+/*
+ * The `:hover`/`:focus-within` variants are needed, not redundant: material's
+ * `.md-version:focus-within .md-version__list` matches three classes, one more than a
+ * bare `.md-version--open .md-version__list`, and the button holds the focus once
+ * clicked. `12rem` rather than material's `10rem` because the list carries the legacy
+ * Sphinx versions too (see assets/js/legacy-versions.js); past that it scrolls.
+ */
+.md-version--open .md-version__list,
+.md-version--open:hover .md-version__list,
+.md-version--open:focus-within .md-version__list {
+  max-height: 12rem;
+  opacity: 1;
+  transition:
+    max-height 0ms,
+    opacity 0.25s;
+}
+
+/* Point the chevron at the open list. */
+.md-version--open .md-version__current::after {
+  transform: rotate(180deg);
 }

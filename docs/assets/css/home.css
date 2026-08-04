@@ -129,28 +129,41 @@ on the outer edges: [space] Documentation | middle | Quick start [space].
   margin: 0 auto 16px;
 }
 
-.gh-intro__name {
-  margin: 0;
-  font-size: var(--gh-fs-sm);
-  line-height: 1.4;
-  color: var(--gh-fg-2);
-  text-align: center;
-}
-
-.gh-intro__lead {
-  margin: 16px auto 0;
-  font-size: var(--gh-fs-md);
+/* The only prose of the page, hence the body token: --gh-fs-sm is for secondary text, and
+   would render this paragraph below the body size of every other page. Justified through
+   `.md-content` in style.css, like the rest of the site. */
+.gh-intro__text {
+  margin: 16px 0 0;
+  font-size: var(--gh-fs-base);
   line-height: 1.55;
   color: var(--gh-fg-2);
-  max-width: 52ch;
-  text-align: center;
 }
 
-.gh-intro__note {
-  margin: 18px 0 0;
-  font-size: var(--gh-fs-xs);
-  color: var(--gh-fg-3);
-  text-align: center;
+.gh-intro__btn {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  margin: 16px auto 0;
+  padding: 8px 14px;
+  font-size: var(--gh-fs-sm);
+  font-weight: 600;
+  color: var(--gh-accent);
+  background: transparent;
+  border: 1px solid var(--gh-accent-border);
+  border-radius: 6px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+/* `.gemseo-home` prefix outranks the global `.gemseo-home a:hover` underline. */
+.gemseo-home .gh-intro__btn:hover {
+  color: var(--gh-accent-strong);
+  background: var(--gh-accent-soft);
+  border-color: var(--gh-accent);
+  text-decoration: none;
 }
 
 /* Quick start card */
@@ -223,41 +236,10 @@ on the outer edges: [space] Documentation | middle | Quick start [space].
   border-top: 1px solid var(--gh-border);
 }
 
-.gh-tabs {
-  display: inline-flex;
-  padding: 3px;
-  gap: 3px;
-  background: var(--gh-surface-3);
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-.gh-tab {
-  appearance: none;
-  font: inherit;
-  font-size: var(--gh-fs-xs);
-  font-family: var(--gh-mono);
-  color: var(--gh-fg-2);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  padding: 4px 14px;
-  cursor: pointer;
-  transition: color 0.12s, background 0.12s;
-}
-
-.gh-tab:hover {
-  color: var(--gh-fg);
-}
-
-.gh-tab--active {
-  color: #ffffff;
-  background: var(--gh-accent);
-  border-color: var(--gh-accent);
-}
-
-.gh-tab--active:hover {
-  color: #ffffff;
+.gh-cmds {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .gh-cmd {
@@ -269,7 +251,13 @@ on the outer edges: [space] Documentation | middle | Quick start [space].
   border-radius: 9px;
   padding: 10px 12px;
   font-family: var(--gh-mono);
-  font-size: var(--gh-fs-sm);
+  font-size: var(--gh-fs-xs);
+}
+
+.gh-cmd__label {
+  color: var(--gh-fg-3);
+  min-width: 3.5em;
+  user-select: none;
 }
 
 .gh-cmd__prompt {
@@ -388,21 +376,31 @@ on the outer edges: [space] Documentation | middle | Quick start [space].
   z-index: 1;
 }
 
+/* The block is a Pygments-highlighted fence (div.highlight > pre > code); the card
+   look lives on the .gh-code host and the inner layers are flattened onto it. */
+
 .gh-code {
-  margin: 0;
   background: var(--gh-surface-2);
   border: 1px solid var(--gh-border);
   border-radius: 9px;
+  overflow: hidden;
+}
+
+.md-typeset .gh-code .highlight,
+.md-typeset .gh-code .highlight pre {
+  margin: 0;
+  background: transparent;
+}
+
+.md-typeset .gh-code .highlight pre > code {
+  display: block;
+  background: transparent;
   padding: 12px;
   overflow: auto;
   font-family: var(--gh-mono);
-  font-size: var(--gh-fs-sm);
+  font-size: var(--gh-fs-xs);
   line-height: 1.5;
   color: var(--gh-fg);
-}
-
-.gh-code code {
-  font-family: inherit;
   white-space: pre;
 }
 
@@ -479,28 +477,9 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
   font-weight: 600;
 }
 
-.gh-lp__meta {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
 .gh-lp__hint {
   font-size: var(--gh-fs-xs);
   color: var(--gh-fg-3);
-}
-
-.gh-resume {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: var(--gh-fs-xs);
-  color: var(--gh-accent);
-  background: var(--gh-accent-soft);
-  border: 1px solid var(--gh-accent-border);
-  border-radius: 999px;
-  padding: 5px 12px;
 }
 
 .gh-grid {
@@ -745,7 +724,6 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
 .gh-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   font-size: var(--gh-fs-xs);
   color: #00796b;
   background: #f3faf7;
@@ -761,15 +739,11 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
   border-color: var(--gh-accent-border);
 }
 
-.gh-chip:hover {
+/* `.gemseo-home` prefix outranks the global `.gemseo-home a:hover` underline. */
+.gemseo-home .gh-chip:hover {
   border-color: var(--gh-accent-border);
   color: var(--gh-accent);
   text-decoration: none;
-}
-
-.gh-chip span {
-  color: var(--gh-fg-3);
-  font-size: var(--gh-fs-2xs);
 }
 
 /* Diátaxis groups */
@@ -777,7 +751,14 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
 .gh-groups {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  gap: 14px;
+}
+
+.gh-group {
+  border: 1px solid var(--gh-border);
+  border-radius: 12px;
+  background: var(--gh-surface);
+  padding: 14px;
 }
 
 .gh-group__head {
@@ -824,7 +805,8 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
   transition: background 0.12s, border-color 0.12s;
 }
 
-.gh-res:hover {
+/* `.gemseo-home` prefix outranks the global `.gemseo-home a:hover` underline. */
+.gemseo-home .gh-res:hover {
   background: var(--gh-surface-2);
   border-color: var(--gh-border);
   text-decoration: none;
@@ -875,13 +857,6 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
   font-size: var(--gh-fs-2xs);
   color: var(--gh-fg-3);
   margin-top: 5px;
-}
-
-.gh-res__arrow {
-  color: var(--gh-fg-3);
-  font-size: var(--gh-fs-xs);
-  flex: none;
-  margin-top: 1px;
 }
 
 /* Empty state */
