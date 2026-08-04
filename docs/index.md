@@ -24,9 +24,8 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
 <section class="gh-intro">
   <div>
     <img class="gh-logo" src="assets/images/gemseo/gemseo_logo_transparent.svg" alt="GEMSEO" />
-    <p class="gh-intro__name">Generic Engine for Multidisciplinary Scenarios, Exploration and Optimization</p>
-    <p class="gh-intro__lead">An open-source Python library for multidisciplinary studies.</p>
-    <p class="gh-intro__note">Looking for plugins, blog posts, and contributing advice? Those live on <a href="https://gemseo.org" target="_blank" rel="noopener">gemseo.org</a></p>
+    <p class="gh-intro__text">GEMSEO is an open-source Python library designed for use in multidisciplinary studies. It stands for Generic Engine for Multidisciplinary Scenarios, Exploration and Optimization. This documentation contains tutorials, explanations, how-to guides, and references. Looking for plugins, blog posts and advice on contributing? You will find those on <a href="https://gemseo.org" target="_blank" rel="noopener">gemseo.org</a>.</p>
+    <a class="gh-intro__btn" href="changelog/">Changelog</a>
   </div>
   <div class="gh-card">
     <div class="gh-card__head">
@@ -38,49 +37,54 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
     </div>
     <div class="gh-panels">
       <div class="gh-panel gh-panel--active" data-panel="install" role="tabpanel">
-        <div class="gh-tabs" role="tablist" aria-label="Package manager">
-          <button type="button" class="gh-tab gh-tab--active" role="tab" aria-selected="true" data-tab="uv" data-cmd="uv pip install gemseo[all]">uv</button>
-          <button type="button" class="gh-tab" role="tab" aria-selected="false" data-tab="pip" data-cmd="pip install gemseo[all]">pip</button>
-          <button type="button" class="gh-tab" role="tab" aria-selected="false" data-tab="conda" data-cmd="conda install -c conda-forge gemseo">conda</button>
-        </div>
-        <div class="gh-cmd">
-          <span class="gh-cmd__prompt">$</span>
-          <span class="gh-cmd__text">uv pip install gemseo[all]</span>
-          <button type="button" class="gh-cmd__copy" data-copy="uv pip install gemseo[all]">Copy</button>
+        <div class="gh-cmds">
+          <div class="gh-cmd">
+            <span class="gh-cmd__label">uv</span>
+            <span class="gh-cmd__prompt">$</span>
+            <span class="gh-cmd__text">uv pip install gemseo[all]</span>
+            <button type="button" class="gh-cmd__copy" aria-label="Copy the uv install command" data-copy="uv pip install gemseo[all]">Copy</button>
+          </div>
+          <div class="gh-cmd">
+            <span class="gh-cmd__label">pip</span>
+            <span class="gh-cmd__prompt">$</span>
+            <span class="gh-cmd__text">pip install gemseo[all]</span>
+            <button type="button" class="gh-cmd__copy" aria-label="Copy the pip install command" data-copy="pip install gemseo[all]">Copy</button>
+          </div>
+          <div class="gh-cmd">
+            <span class="gh-cmd__label">conda</span>
+            <span class="gh-cmd__prompt">$</span>
+            <span class="gh-cmd__text">conda install -c conda-forge gemseo</span>
+            <button type="button" class="gh-cmd__copy" aria-label="Copy the conda install command" data-copy="conda install -c conda-forge gemseo">Copy</button>
+          </div>
         </div>
       </div>
       <div class="gh-panel" data-panel="firstrun" role="tabpanel" hidden>
         <div class="gh-code__wrap">
-          <button type="button" class="gh-cmd__copy gh-code__copy" data-copy="from gemseo.space.design import DesignSpace&#10;from gemseo.discipline.analytic import AnalyticDiscipline&#10;from gemseo.scenario.mdo import MDOScenario&#10;from gemseo.settings.opt import SLSQP_Settings&#10;&#10;discipline = AnalyticDiscipline(&#10;    expressions={&quot;y&quot;: &quot;(x - 2) ** 2 + 1&quot;},&#10;)&#10;&#10;design_space = DesignSpace()&#10;design_space.add_variable(&#10;    &quot;x&quot;,&#10;    lower_bound=-5.0,&#10;    upper_bound=5.0,&#10;    value=0.0,&#10;)&#10;&#10;scenario = MDOScenario(&#10;    [discipline],&#10;    design_space,&#10;)&#10;scenario.add_objective(&quot;y&quot;)&#10;scenario.execute(SLSQP_Settings(max_iter=10))&#10;">Copy</button>
-          <pre class="gh-code"><code>from gemseo.scenario.mdo import MDOScenario
-from gemseo.settings.opt import SLSQP_Settings
-from gemseo.space.design import DesignSpace
+          <button type="button" class="gh-cmd__copy gh-code__copy" data-copy="from gemseo.discipline.analytic import AnalyticDiscipline&#10;from gemseo.optimization import SLSQP_Settings&#10;from gemseo.scenario.mdo import MDOScenario&#10;from gemseo.space.design import DesignSpace&#10;&#10;discipline = AnalyticDiscipline({&quot;y&quot;: &quot;(x-2)**2+1&quot;})&#10;&#10;space = DesignSpace()&#10;space.add_variable(&quot;x&quot;, lower_bound=-5.0, upper_bound=5.0)&#10;&#10;scenario = MDOScenario([discipline], space)&#10;scenario.add_objective(&quot;y&quot;)&#10;scenario.execute(SLSQP_Settings(max_iter=10))&#10;">Copy</button>
+          <div class="gh-code">
+<!-- rumdl-disable MD040 MD046 -->
+```python
 from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.optimization import SLSQP_Settings
+from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
 
-discipline = AnalyticDiscipline(
-    expressions={"y": "(x - 2) ** 2 + 1"},
-)
+discipline = AnalyticDiscipline({"y": "(x-2)**2+1"})
 
-design_space = DesignSpace()
-design_space.add_variable(
-    "x",
-    lower_bound=-5.0,
-    upper_bound=5.0,
-    value=0.0,
-)
+space = DesignSpace()
+space.add_variable("x", lower_bound=-5.0, upper_bound=5.0)
 
-scenario = MDOScenario(
-    [discipline],
-    design_space,
-)
+scenario = MDOScenario([discipline], space)
 scenario.add_objective("y")
 scenario.execute(SLSQP_Settings(max_iter=10))
-</code></pre>
+
+```
+          </div>
         </div>
       </div>
     </div>
     <div class="gh-card__foot">
-      <a href="software/installation/">Installation &amp; setup</a>
+      <a href="software/installation/">Installation</a>
       <a href="generated/examples/tutorials/basic/plot_gemseo_in_10_minutes/">GEMSEO in 10 minutes</a>
     </div>
   </div>

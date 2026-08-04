@@ -13,16 +13,27 @@ theme:
   logo: assets/images/gemseo/gemseo_logo_transparent.svg
   name: material
   palette:
-    - scheme: default
+    - media: "(prefers-color-scheme)"
+      # Only for the first paint: base.html renders the body tag from the first palette
+      # entry and defaults a missing primary to indigo, while bundle.js, which copies the
+      # colors of the matching light or dark entry onto this one, runs at the end of the
+      # body. Without this the header flashes indigo before turning white or black.
       primary: white
       toggle:
-        icon: material/lightbulb-outline
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      toggle:
+        icon: material/brightness-7
         name: Switch to dark mode
-    - scheme: slate
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       primary: black
       toggle:
-        icon: material/lightbulb
-        name: Switch to light mode
+        icon: material/brightness-4
+        name: Switch to system preference
 
 plugins:
   autorefs: { }
@@ -257,7 +268,6 @@ extra_css:
   - assets/css/fontello.css
   - assets/css/xdsmjs.css
   - assets/css/home.css
-  - assets/css/announcement.css
   - assets/css/reading-time.css
   - assets/css/complexity.css
   - assets/css/footer.css
@@ -266,6 +276,7 @@ extra_javascript:
   - assets/js/mathjax.js
   - assets/js/xdsmjs.js
   - assets/js/legacy-versions.js
+  - assets/js/version-selector.js
   - assets/js/home.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
