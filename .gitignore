@@ -33,6 +33,7 @@ tags
 
 coverage.xml
 .coverage*
+/diff-cover.html
 !.coveragerc
 asv-gemseo
 .env

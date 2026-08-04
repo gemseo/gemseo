@@ -21,6 +21,17 @@ test *args:
 coverage *args:
     just test --cov --cov-report=xml --cov-report=html --no-cov-on-fail {{args}}
 
+# Run `diff-cover` to check coverage of modified lines, e.g. `just diff-cover upstream/develop`
+[group('qa')]
+diff-cover compare-branch *args:
+    uv run --python {{python}} diff-cover coverage.xml --compare-branch {{compare-branch}} --branch-coverage --fail-under=100 --format=html:diff-cover.html {{args}}
+
+# Run coverage and then `diff-cover`, e.g. `just coverage-diff upstream/develop`
+[group('qa')]
+coverage-diff compare-branch *args:
+    just coverage {{args}}
+    just diff-cover {{compare-branch}}
+
 # Test with minimum dependency versions
 [group('qa')]
 test-min-deps *args:
