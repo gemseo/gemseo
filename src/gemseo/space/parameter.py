@@ -485,7 +485,12 @@ class ParameterSpace(DesignSpace):
         if random_vector.ndim == 1:
             transformed = transform(random_vector)
         else:
-            transformed = array(list(map(transform, random_vector)))
+            # The transform applies to a single realization,
+            # hence the leading dimensions are flattened before mapping it.
+            shape = random_vector.shape
+            transformed = array(
+                list(map(transform, random_vector.reshape(-1, shape[-1])))
+            ).reshape(shape)
 
         return split_array_to_dict_of_arrays(
             transformed, self.variable_sizes, uncertain_names
@@ -687,13 +692,11 @@ class ParameterSpace(DesignSpace):
             ValueError: When `out` cannot store the result.
         """
         if not use_dist:
-            return super().denormalize_vect(x_vect, no_check=no_check, out=out)
+            return super().denormalize_vect(
+                x_vect, no_check=no_check, minus_lb=minus_lb, out=out
+            )
 
-        if x_vect.ndim not in {1, 2}:
-            msg = "x_vect must be either a 1D or a 2D NumPy array."
-            raise ValueError(msg)
-
-        return self.__store(self.__denormalize_vect(x_vect, no_check), out)
+        return self.__store(self.__denormalize_vect(x_vect, minus_lb, no_check), out)
 
     def unnormalize_vect(
         self,
@@ -733,10 +736,14 @@ class ParameterSpace(DesignSpace):
             x_vect, minus_lb=minus_lb, no_check=no_check, use_dist=use_dist, out=out
         )
 
-    def __denormalize_vect(self, x_vect, no_check):
+    def __denormalize_vect(
+        self, x_vect: ndarray, minus_lb: bool, no_check: bool
+    ) -> ndarray:
         data_names = self._variables.keys()
         data_sizes = self.variable_sizes
-        x_u_geom = super().denormalize_vect(x_vect, no_check=no_check)
+        x_u_geom = super().denormalize_vect(
+            x_vect, minus_lb=minus_lb, no_check=no_check
+        )
         x_u = self.__transform(
             split_array_to_dict_of_arrays(x_vect, data_sizes, data_names), inverse=True
         )
@@ -800,13 +807,9 @@ class ParameterSpace(DesignSpace):
             ValueError: When `out` cannot store the result.
         """
         if not use_dist:
-            return super().normalize_vect(x_vect, out=out)
+            return super().normalize_vect(x_vect, minus_lb=minus_lb, out=out)
 
-        if x_vect.ndim not in {1, 2}:
-            msg = "x_vect must be either a 1D or a 2D NumPy array."
-            raise ValueError(msg)
-
-        return self.__store(self.__normalize_vect(x_vect), out)
+        return self.__store(self.__normalize_vect(x_vect, minus_lb), out)
 
     @staticmethod
     def __store(value: ndarray, out: ndarray | None) -> ndarray:
@@ -831,11 +834,11 @@ class ParameterSpace(DesignSpace):
         out[...] = value
         return out
 
-    def __normalize_vect(self, x_vect):
+    def __normalize_vect(self, x_vect: ndarray, minus_lb: bool) -> ndarray:
         data_names = self._variables.keys()
         data_sizes = self.variable_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
-        x_n_geom = super().normalize_vect(x_vect)
+        x_n_geom = super().normalize_vect(x_vect, minus_lb=minus_lb)
         x_n = self.__transform(dict_sample)
         x_n_geom = split_array_to_dict_of_arrays(x_n_geom, data_sizes, data_names)
         missing_names = [name for name in data_names if name not in x_n]
