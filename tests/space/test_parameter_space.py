@@ -27,6 +27,7 @@ from numpy import arange
 from numpy import array
 from numpy import concatenate
 from numpy import corrcoef
+from numpy import empty_like
 from numpy import inf
 from numpy import int64
 from numpy import isnan
@@ -340,7 +341,7 @@ def test_normalize_vect_with_copula(uncertain_space_with_dependency) -> None:
 def test_untransform_vect_with_copula_correlates_samples(
     uncertain_space_with_dependency,
 ) -> None:
-    """Check that unnormalizing unit samples yields copula-correlated samples."""
+    """Check that denormalizing unit samples yields copula-correlated samples."""
     space = uncertain_space_with_dependency
 
     rng = default_rng(0)
@@ -434,14 +435,57 @@ def test_normalize(parameter_space, one_dim) -> None:
 
 
 @pytest.mark.parametrize("one_dim", [True, False])
-def test_unnormalize(parameter_space, one_dim) -> None:
-    """Check that unnormalize works correctly with both 1D and 2D arrays."""
+def test_denormalize(parameter_space, one_dim) -> None:
+    """Check that denormalize works correctly with both 1D and 2D arrays."""
     values = [0.5] * 2 + [0.25] + [0.598706] * 3
     u_vector = array(values) if one_dim else array([values, values])
     vector = parameter_space.denormalize_vect(u_vector, use_dist=True)
     values = [0.5] * 6
     expectation = array(values) if one_dim else array([values, values])
     assert allclose(vector, expectation, 1e-3)
+
+
+@pytest.mark.parametrize("use_out", [False, True])
+def test_normalize_and_denormalize_with_nd_array(parameter_space, use_out) -> None:
+    """Check that (de)normalization supports arrays with more than two dimensions."""
+    values = [0.5] * 6
+    normalized_values = [0.5] * 2 + [0.25] + [0.598706] * 3
+    vector = array([[values] * 2] * 3)
+    expectation = array([[normalized_values] * 2] * 3)
+
+    out = empty_like(vector) if use_out else None
+    u_vector = parameter_space.normalize_vect(vector, use_dist=True, out=out)
+    assert u_vector.shape == vector.shape
+    assert allclose(u_vector, expectation, 1e-3)
+    if use_out:
+        assert u_vector is out
+
+    out = empty_like(vector) if use_out else None
+    original_vector = parameter_space.denormalize_vect(u_vector, use_dist=True, out=out)
+    assert original_vector.shape == vector.shape
+    assert allclose(original_vector, vector, 1e-3)
+    if use_out:
+        assert original_vector is out
+
+
+def test_normalize_with_nd_array_and_copula(uncertain_space_with_dependency) -> None:
+    """Check that the Rosenblatt transform applies row-wise to an N-D array."""
+    space = uncertain_space_with_dependency
+    vector = array([
+        [[0.3, 0.6], [-0.2, 0.1]],
+        [[1.2, 0.9], [0.0, 0.5]],
+    ])
+
+    u_vector = space.normalize_vect(vector, use_dist=True)
+
+    assert u_vector.shape == vector.shape
+    for i in range(vector.shape[0]):
+        for j in range(vector.shape[1]):
+            assert allclose(
+                u_vector[i, j], space.normalize_vect(vector[i, j], use_dist=True)
+            )
+
+    assert allclose(space.denormalize_vect(u_vector, use_dist=True), vector)
 
 
 def test_str_and_tabular_view() -> None:
@@ -596,27 +640,80 @@ def test_init_from_dataset_group(io_dataset) -> None:
     assert "out_1" in parameter_space
 
 
-def test_gradient_normalization() -> None:
+@pytest.mark.parametrize(("minus_lb", "expected"), [(False, 1.0), (True, 3.0)])
+@pytest.mark.parametrize("use_dist", [False, True])
+def test_denormalization_deterministic_variables(minus_lb, expected, use_dist) -> None:
+    """Check that `minus_lb` is taken into account for a deterministic variable."""
     parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", lower_bound=-1.0, upper_bound=2.0)
+    parameter_space.add_variable("d", lower_bound=2.0, upper_bound=4.0)
+    assert_array_equal(
+        parameter_space.denormalize_vect(
+            array([0.5]), minus_lb=minus_lb, use_dist=use_dist
+        ),
+        array([expected]),
+    )
+
+
+@pytest.mark.parametrize(("minus_lb", "expected"), [(False, 0.5), (True, -0.5)])
+@pytest.mark.parametrize("use_dist", [False, True])
+def test_normalization_deterministic_variables(minus_lb, expected, use_dist) -> None:
+    """Check that `minus_lb` is taken into account for a deterministic variable."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_variable("d", lower_bound=2.0, upper_bound=4.0)
+    assert_array_equal(
+        parameter_space.normalize_vect(
+            array([1.0]), minus_lb=minus_lb, use_dist=use_dist
+        ),
+        array([expected]),
+    )
+
+
+@pytest.fixture
+def bounded_mixed_space() -> ParameterSpace:
+    """A parameter space with a bounded deterministic and an uncertain variable."""
+    parameter_space = ParameterSpace()
+    parameter_space.add_variable("d", lower_bound=2.0, upper_bound=4.0)
     parameter_space.add_random_variable(
-        "y", OTUniformDistribution_Settings(minimum=1.0, maximum=3)
+        "u", OTUniformDistribution_Settings(minimum=1.0, maximum=3.0)
     )
-    x_vect = array([0.5, 1.5])
+    return parameter_space
+
+
+@pytest.mark.parametrize(("minus_lb", "expected"), [(False, 1.0), (True, 3.0)])
+def test_denormalization_mixed_variables(
+    bounded_mixed_space, minus_lb, expected
+) -> None:
+    """Check that minus_lb only applies to the deterministic variables."""
     assert_array_equal(
-        parameter_space.denormalize_vect(x_vect, minus_lb=False),
-        parameter_space.normalize_grad(x_vect),
+        bounded_mixed_space.denormalize_vect(
+            array([0.5, 0.5]), minus_lb=minus_lb, use_dist=True
+        ),
+        array([expected, 2.0]),
     )
 
 
-def test_gradient_unnormalization() -> None:
-    parameter_space = ParameterSpace()
-    parameter_space.add_variable("x", lower_bound=-1.0, upper_bound=2.0)
-    parameter_space.add_variable("y", lower_bound=1.0, upper_bound=3.0)
-    x_vect = array([0.5, 1.5])
+@pytest.mark.parametrize(("minus_lb", "expected"), [(False, 0.5), (True, -0.5)])
+def test_normalization_mixed_variables(bounded_mixed_space, minus_lb, expected) -> None:
+    """Check that minus_lb only applies to the deterministic variables."""
     assert_array_equal(
-        parameter_space.normalize_vect(x_vect, minus_lb=False, use_dist=True),
-        parameter_space.unnormalize_grad(x_vect),
+        bounded_mixed_space.normalize_vect(
+            array([1.0, 2.0]), minus_lb=minus_lb, use_dist=True
+        ),
+        array([expected, 0.5]),
+    )
+
+
+def test_gradient_normalization(bounded_mixed_space) -> None:
+    """Check that the gradient is scaled by the ranges, without bound offset."""
+    assert_array_equal(
+        bounded_mixed_space.normalize_grad(array([0.5, 1.5])), array([1.0, 3.0])
+    )
+
+
+def test_gradient_denormalization(bounded_mixed_space) -> None:
+    """Check that the gradient is scaled by the ranges, without bound offset."""
+    assert_array_equal(
+        bounded_mixed_space.denormalize_grad(array([1.0, 3.0])), array([0.5, 1.5])
     )
 
 

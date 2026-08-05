@@ -838,7 +838,7 @@ def test_normalize_vect_with_integer(design_space) -> None:
     ],
 )
 def test_denormalize_vect_with_integer(design_space, vect, get_item) -> None:
-    """Check that an integer vector is correctly unnormalized."""
+    """Check that an integer vector is correctly denormalized."""
     design_space.filter("x8")
     assert get_item(design_space.denormalize_vect(vect)) == 0
 
@@ -1304,8 +1304,8 @@ def test_gradient_normalization(design_space) -> None:
     )
 
 
-def test_gradient_unnormalization(design_space) -> None:
-    """Check that the unnormalization of the gradient performs well."""
+def test_gradient_denormalization(design_space) -> None:
+    """Check that the denormalization of the gradient performs well."""
     design_space.filter(["x18", "x19"])
     x_vect = array([0.5, 1.5])
     assert_array_equal(
@@ -1436,7 +1436,7 @@ def test_normalize_vect(
     ],
 )
 def test_denormalize_vect(input_vec, ref, out) -> None:
-    """Test that the unnormalization is correctly computed whether the input values are
+    """Test that the denormalization is correctly computed whether the input values are
     floats or integers."""
     out = zeros(4) if out else None
 
@@ -1465,8 +1465,32 @@ def test_denormalize_vect(input_vec, ref, out) -> None:
     assert x_vect == pytest.approx(x_vect_before)
 
 
+@pytest.mark.parametrize("use_out", [False, True])
+def test_normalize_and_denormalize_vect_with_nd_array(
+    design_space_for_normalize_vect, use_out
+) -> None:
+    """Check the (de)normalization of an array with more than two dimensions."""
+    design_space = design_space_for_normalize_vect
+    values = [-10.0, -20.0, 5.0, 5.0]
+    normalized_values = [-10.0, -20.0, 0.5, 5.0]
+    x_vect = array([[values] * 3] * 2)
+    normalized_x_vect = array([[normalized_values] * 3] * 2)
+
+    out = zeros(x_vect.shape) if use_out else None
+    result = design_space.normalize_vect(x_vect, out=out)
+    assert result.shape == x_vect.shape
+    assert result == pytest.approx(normalized_x_vect)
+    assert (result is out) is use_out
+
+    out = zeros(x_vect.shape) if use_out else None
+    result = design_space.denormalize_vect(normalized_x_vect, out=out)
+    assert result.shape == x_vect.shape
+    assert result == pytest.approx(x_vect)
+    assert (result is out) is use_out
+
+
 def test_denormalize_vect_logging(caplog) -> None:
-    """Check the warning logged when unnormalizing a vector."""
+    """Check the warning logged when denormalizing a vector."""
     design_space = DesignSpace()
     design_space.add_variable("x")  # unbounded variable
     design_space.add_variable(
@@ -1664,7 +1688,7 @@ def test_cast_to_var_type(design_space: DesignSpace) -> None:
 
 @pytest.mark.parametrize("normalize", [True, False])
 def test_normalization_casting(design_space: DesignSpace, normalize: bool) -> None:
-    """Test that integer variable keep their type after unnormalization."""
+    """Test that integer variable keep their type after denormalization."""
     design_space.filter(["x14"])
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x, name="f")
