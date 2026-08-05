@@ -28,11 +28,11 @@ from strenum import StrEnum
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
+from gemseo.util.constant import EPSILON
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.derivative.approximation_mode import HybridApproximationMode
 from gemseo.util.derivative.derivatives_approx import DisciplineJacApprox
-from gemseo.util.derivative.error_estimator import EPSILON
 
 if TYPE_CHECKING:
     from collections.abc import Iterable

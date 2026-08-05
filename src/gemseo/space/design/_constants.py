@@ -18,10 +18,9 @@ from __future__ import annotations
 
 from typing import Final
 
-from numpy import finfo
-from numpy import float64
+from gemseo.util.constant import EPSILON
 
-BOUND_ATOL: Final[float] = 100.0 * finfo(float64).eps
+BOUND_ATOL: Final[float] = 100.0 * EPSILON
 """The absolute tolerance for a deviation from a bound."""
 
 _DESIGN_SPACE_GROUP: Final[str] = "design_space"

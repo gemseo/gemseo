@@ -45,7 +45,6 @@ from typing import Final
 
 from numpy import average
 from numpy import exp
-from numpy import finfo
 from numpy import log
 from numpy import newaxis
 from numpy import sqrt
@@ -57,6 +56,7 @@ from gemseo.machine_learning.core.model.base_supervised import (
 )
 from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
 from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_Settings
+from gemseo.util.constant import EPSILON
 
 if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
@@ -99,8 +99,6 @@ class RBFRegressor(BaseRegressor):
         the terms may be cancelled out, as $f'(r)$ often has a term
         in $r$.
         """
-
-        TOL = finfo(float).eps
 
         @classmethod
         def der_multiquadric(
@@ -179,7 +177,7 @@ class RBFRegressor(BaseRegressor):
                 The derivative of the function.
             """
             return (
-                (norm_input_data > cls.TOL) * input_data / (norm_input_data + cls.TOL)
+                (norm_input_data > EPSILON) * input_data / (norm_input_data + EPSILON)
             )
 
         @classmethod
@@ -240,9 +238,9 @@ class RBFRegressor(BaseRegressor):
                 The derivative of the function.
             """
             return (
-                (norm_input_data > cls.TOL)
+                (norm_input_data > EPSILON)
                 * input_data
-                * (1 + 2 * log(norm_input_data + cls.TOL))
+                * (1 + 2 * log(norm_input_data + EPSILON))
             )
 
     def _fit(self, input_data: RealArray, output_data: RealArray) -> None:

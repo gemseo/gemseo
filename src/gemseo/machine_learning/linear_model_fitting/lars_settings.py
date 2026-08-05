@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from typing import Literal
 
-from numpy import finfo
 from numpy import ndarray
 from numpy.random import RandomState
 from pydantic import Field
@@ -29,6 +28,7 @@ from pydantic import PositiveInt
 from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings import (  # noqa: E501
     BaseLinearModelFitterSettings,
 )
+from gemseo.util.constant import EPSILON
 
 
 class LARS_Settings(BaseLinearModelFitterSettings):  # noqa: N801
@@ -41,7 +41,7 @@ else, it may be overwritten""",
     )
 
     eps: NonNegativeFloat = Field(
-        default=finfo(float).eps,
+        default=EPSILON,
         description="""The machine-precision regularization
 in the computation of the Cholesky diagonal factors.
 Increase this for very ill-conditioned systems.
