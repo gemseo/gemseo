@@ -29,6 +29,8 @@ mkdocs-material slate scheme (`[data-md-color-scheme="slate"]`).
   --gh-accent-border: #a9dcd5;
   --gh-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --gh-shadow: 0 6px 22px rgba(0, 0, 0, 0.05);
+  /* Shared width of the home bands (intro + learning path), so both align. */
+  --gh-band-w: 1120px;
   /*
   Type scale (rem, relative to Material's root => 1rem = 20px). `--gh-fs-base`
   matches Material's body text (0.8rem) so the home page reads at the same size
@@ -95,30 +97,31 @@ starts high instead of leaving a hollow gap under the header.
   height: 0;
 }
 
+/* Both bands share one centred width so their edges line up. */
+.gh-intro,
+.gh-lp {
+  max-width: var(--gh-band-w);
+  margin-inline: auto;
+}
+
 /* ---------- Intro band ---------- */
 
 /*
-Two halves split at the window middle. Each block is sized to its content and hugs
-the centre line (left block right-aligned, right block left-aligned), leaving space
-on the outer edges: [space] Documentation | middle | Quick start [space].
+Two halves filling the shared band, in a 452 / 580 split (the left half lands on
+54ch at the band width). Proportional `fr` tracks rather than a fixed right column,
+so the split holds between the 720px breakpoint and the band width instead of
+starving the left half.
 */
 .gh-intro {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 452fr) minmax(0, 580fr);
   gap: 88px;
   align-items: center;
   padding: 16px 0 40px;
 }
 
-.gh-intro > :first-child {
-  justify-self: end;
-  max-width: 54ch;
-}
-
 .gh-intro > .gh-card {
-  justify-self: start;
   width: 100%;
-  max-width: 580px;
 }
 
 .gh-logo {
@@ -453,6 +456,13 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
 `.gh-*` element inside it without touching the intro.
 */
 .gh-lp {
+  /*
+  Opt out of the site-wide justification of `.md-content` (style.css): none of the
+  text in the widget is prose, and the narrow columns -- the goal list, a group card
+  -- would stretch two or three words across their width. The intro paragraph above
+  stays justified.
+  */
+  text-align: left;
   --gh-fs-h2: 1.05rem; /* 21px */
   --gh-fs-md: 0.85rem; /* 17px */
   --gh-fs-base: 0.72rem; /* 14.4px */
@@ -633,7 +643,13 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
 
 /* Detail column */
 
+/*
+A query container, so the group grid inside can size its columns on the width of
+this panel rather than on the viewport: the panel gains 206px when the goal list
+collapses, and a viewport breakpoint cannot tell the two states apart.
+*/
 .gh-detail {
+  container: gh-detail / inline-size;
   padding: 22px 26px;
   min-width: 0;
   animation: gh-panel-in 0.2s ease;
@@ -748,10 +764,24 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
 
 /* Diátaxis groups */
 
+/* Two columns at most: the four groups read better as a 2x2 block than 3 + 1. */
 .gh-groups {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+/*
+Below two 250px cards plus the gap, the columns get too narrow for the titles to
+wrap cleanly, so the 2x2 block gives way to a single column. 250px is the floor a
+`repeat(auto-fit, minmax(250px, 1fr))` grid would enforce on its own; the fixed
+two-column track needs it spelled out. Measured on `.gh-detail`, whose content box
+excludes its padding.
+*/
+@container gh-detail (width < 514px) {
+  .gh-groups {
+    grid-template-columns: 1fr;
+  }
 }
 
 .gh-group {
@@ -890,10 +920,8 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  .gh-intro > :first-child,
-  .gh-intro > .gh-card {
-    justify-self: stretch;
-    max-width: none;
+  .gh-groups {
+    grid-template-columns: 1fr;
   }
   .gh-logo {
     width: 240px;

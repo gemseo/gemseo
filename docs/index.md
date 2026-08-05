@@ -60,14 +60,14 @@ Commons, PO Box 1866, Mountain View, CA 94042, USA.
       </div>
       <div class="gh-panel" data-panel="firstrun" role="tabpanel" hidden>
         <div class="gh-code__wrap">
-          <button type="button" class="gh-cmd__copy gh-code__copy" data-copy="from gemseo.discipline.analytic import AnalyticDiscipline&#10;from gemseo.optimization import SLSQP_Settings&#10;from gemseo.scenario.mdo import MDOScenario&#10;from gemseo.space.design import DesignSpace&#10;&#10;discipline = AnalyticDiscipline({&quot;y&quot;: &quot;(x-2)**2+1&quot;})&#10;&#10;space = DesignSpace()&#10;space.add_variable(&quot;x&quot;, lower_bound=-5.0, upper_bound=5.0)&#10;&#10;scenario = MDOScenario([discipline], space)&#10;scenario.add_objective(&quot;y&quot;)&#10;scenario.execute(SLSQP_Settings(max_iter=10))&#10;">Copy</button>
+          <button type="button" class="gh-cmd__copy gh-code__copy" data-copy="from gemseo.discipline import AnalyticDiscipline&#10;from gemseo.optimization import SLSQP_Settings&#10;from gemseo.scenario import MDOScenario&#10;from gemseo.space import DesignSpace&#10;&#10;discipline = AnalyticDiscipline({&quot;y&quot;: &quot;(x-2)**2+1&quot;})&#10;&#10;space = DesignSpace()&#10;space.add_variable(&quot;x&quot;, lower_bound=-5.0, upper_bound=5.0)&#10;&#10;scenario = MDOScenario([discipline], space)&#10;scenario.add_objective(&quot;y&quot;)&#10;scenario.execute(SLSQP_Settings(max_iter=10))&#10;">Copy</button>
           <div class="gh-code">
 <!-- rumdl-disable MD040 MD046 -->
 ```python
-from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline import AnalyticDiscipline
 from gemseo.optimization import SLSQP_Settings
-from gemseo.scenario.mdo import MDOScenario
-from gemseo.space.design import DesignSpace
+from gemseo.scenario import MDOScenario
+from gemseo.space import DesignSpace
 
 discipline = AnalyticDiscipline({"y": "(x-2)**2+1"})
 
