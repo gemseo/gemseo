@@ -75,7 +75,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from numpy import finfo
 from numpy import newaxis
 from numpy.linalg import norm
 from sklearn.cluster import KMeans as SKLKmeans
@@ -84,6 +83,7 @@ from gemseo.machine_learning.clustering.core.base_predictive_clusterer import (
     BasePredictiveClusterer,
 )
 from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Settings
+from gemseo.util.constant import EPSILON
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -96,8 +96,6 @@ class KMeans(BasePredictiveClusterer):
 
     SHORT_NAME: ClassVar[str] = "KMeans"
     LIBRARY: ClassVar[str] = "scikit-learn"
-
-    EPS = finfo(float).eps
 
     settings_class: ClassVar[type[KMeans_Settings]] = KMeans_Settings
 
@@ -127,6 +125,6 @@ class KMeans(BasePredictiveClusterer):
         data: RealArray,
     ) -> RealArray:
         inverse_distances = 1 / (
-            norm(data[:, newaxis] - self.algo.cluster_centers_, axis=2) + self.EPS
+            norm(data[:, newaxis] - self.algo.cluster_centers_, axis=2) + EPSILON
         )
         return inverse_distances / inverse_distances.sum(axis=1)[:, newaxis]

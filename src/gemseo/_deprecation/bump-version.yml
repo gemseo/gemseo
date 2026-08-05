@@ -459,8 +459,10 @@ attributes:
 
   gemseo.datasets.DatasetFactory: gemseo.dataset.factory.DatasetFactory
 
-  gemseo.utils.directory_creator.DirectoryNamingMethod: Naming
+  gemseo.utils.constants.C_LONG_MAX: INFINITE_INT
+  gemseo.utils.derivatives.error_estimators.EPSILON: gemseo.util.constant.EPSILON
   gemseo.utils.derivatives.finite_differences.FirstOrderFD: ForwardDifferences
+  gemseo.utils.directory_creator.DirectoryNamingMethod: Naming
 
   gemseo.utils.xdsm.XDSM: gemseo.util.xdsm.xdsm.XDSM
 

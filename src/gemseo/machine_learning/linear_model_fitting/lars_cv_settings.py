@@ -19,7 +19,6 @@ from __future__ import annotations
 
 from typing import Literal
 
-from numpy import finfo
 from numpy import ndarray
 from pydantic import Field
 from pydantic import NonNegativeFloat
@@ -28,6 +27,7 @@ from pydantic import PositiveInt
 from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings import (  # noqa: E501
     BaseLinearModelFitterSettings,
 )
+from gemseo.util.constant import EPSILON
 
 
 class LARSCV_Settings(BaseLinearModelFitterSettings):  # noqa: N801
@@ -50,7 +50,7 @@ If `None`, use the efficient Leave-One-Out cross-validation.""",
     )
 
     eps: NonNegativeFloat = Field(
-        default=finfo(float).eps,
+        default=EPSILON,
         description="""The machine-precision regularization
 in the computation of the Cholesky diagonal factors.
 Increase this for very ill-conditioned systems.

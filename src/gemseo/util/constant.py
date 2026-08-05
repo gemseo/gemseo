@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from multiprocessing import cpu_count
 from types import MappingProxyType
 from typing import Any
@@ -34,8 +35,11 @@ READ_ONLY_EMPTY_DICT: Final[MappingProxyType[Any, Any]] = MappingProxyType({})
 SETTINGS: Final[str] = "settings"
 """The name of the argument to pass a Pydantic model."""
 
-C_LONG_MAX: Final[int] = iinfo(int32).max
-"""The largest 32-bit integer."""
+INFINITE_INT: Final[int] = iinfo(int32).max
+"""An integer standing for infinity, i.e. the largest 32-bit integer."""
+
+EPSILON: Final[float] = sys.float_info.epsilon
+"""The machine epsilon."""
 
 # Default settings for GlobalConfiguration
 _CHECK_DESVARS_BOUNDS: Final[bool] = True

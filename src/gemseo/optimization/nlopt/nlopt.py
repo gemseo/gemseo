@@ -84,7 +84,7 @@ from gemseo.optimization.nlopt.settings.nlopt_newuoa_settings import (
 )
 from gemseo.optimization.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.space.util import get_value_and_bounds
-from gemseo.util.constant import C_LONG_MAX
+from gemseo.util.constant import INFINITE_INT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -335,7 +335,7 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
         nlopt_problem.set_xtol_abs(0.0)
         nlopt_problem.set_xtol_rel(0.0)
 
-        nlopt_problem.set_maxtime(C_LONG_MAX)
+        nlopt_problem.set_maxtime(INFINITE_INT)
 
         # Only set an initial step size for derivative-free optimization algorithms.
         if not self.ALGORITHM_INFOS[self.algo_name].require_gradient:

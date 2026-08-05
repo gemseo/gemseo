@@ -46,7 +46,7 @@ from gemseo.optimization.scipy_local.settings.nelder_mead import NELDER_MEAD_Set
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.tnc import TNC_Settings
 from gemseo.space.util import get_value_and_bounds
-from gemseo.util.constant import C_LONG_MAX
+from gemseo.util.constant import INFINITE_INT
 
 if TYPE_CHECKING:
     from gemseo.optimization.problem import OptimizationProblem
@@ -164,7 +164,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
         # Deactivate termination criteria which are handled by GEMSEO
         tolerance = 0.0
         if self._algo_name != "TNC":
-            filtered_settings["maxiter"] = C_LONG_MAX
+            filtered_settings["maxiter"] = INFINITE_INT
 
         kwargs = {}
         if self.ALGORITHM_INFOS[self._algo_name].require_gradient:

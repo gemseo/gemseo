@@ -173,6 +173,26 @@ def test_dropped_reexport_warning_gives_the_new_location():
     )
 
 
+def test_renamed_module_level_constant():
+    """A constant renamed in a module that moved is reachable from the old path."""
+    from gemseo.util.constant import INFINITE_INT
+
+    with pytest.warns(DeprecationWarning, match="'gemseo.util.constant.INFINITE_INT'"):
+        from gemseo.utils.constants import C_LONG_MAX
+
+    assert C_LONG_MAX == INFINITE_INT
+
+
+def test_moved_module_level_constant():
+    """A constant moved to another module is reachable from the old path."""
+    from gemseo.util.constant import EPSILON
+
+    with pytest.warns(DeprecationWarning, match="'gemseo.util.constant.EPSILON'"):
+        from gemseo.utils.derivatives.error_estimators import EPSILON as OLD_EPSILON
+
+    assert OLD_EPSILON == EPSILON
+
+
 def test_star_import_from_deprecated_module():
     """A star import from an old path binds the names of the new one."""
     from gemseo.util import string

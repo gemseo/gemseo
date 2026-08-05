@@ -29,8 +29,8 @@ from numpy import atleast_1d
 from numpy import full
 from numpy import zeros
 
+from gemseo.util.constant import EPSILON
 from gemseo.util.derivative.approximator.base import BaseGradientApproximator
-from gemseo.util.derivative.error_estimator import EPSILON
 from gemseo.util.derivative.error_estimator import compute_best_step
 
 if TYPE_CHECKING:

@@ -155,7 +155,8 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
                 then the cached output data shall be returned
                 rather than re-evaluating the discipline.
                 This tolerance could be useful to optimize CPU time.
-                It could be something like `2 * numpy.finfo(float).eps`.
+                It could be something like twice
+                [EPSILON][gemseo.util.constant.EPSILON].
             name: A name for the cache. If empty, use the class name.
         """  # noqa: D205, D212, D415
         self._tolerance = tolerance
