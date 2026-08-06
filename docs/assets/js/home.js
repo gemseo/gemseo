@@ -12,6 +12,11 @@ Documentation home orientation panel. Renders a master/detail learning-path
 widget from the JSON produced at build time by docs/_scripts/learning_paths.py.
 Runs only on the home page (guarded by the presence of #gemseo-lp) and is
 compatible with the mkdocs-material instant-navigation observable `document$`.
+
+The data is normally read from the #gemseo-lp-data element that
+docs/hooks/home_data.py embeds in the built page, which costs no request at all.
+Fetching the three build assets one by one is kept as a fallback, for the case
+where that hook could not inline them.
 */
 
 (function () {
@@ -25,6 +30,8 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
   // by page url. Pages that do not opt in (no valid `complexity` frontmatter)
   // are absent from it.
   var LEVELS_FILE = "assets/complexities.json";
+  // The element holding the three above merged by docs/hooks/home_data.py.
+  var DATA_ELEMENT_ID = "gemseo-lp-data";
   var LS_ROLE = "gemseo.lastRole";
 
   var TYPES = {
@@ -44,6 +51,16 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
   // slashes) so both sides of the lookup match.
   function timeKey(path) {
     return String(path).replace(/^\/+/, "").replace(/\/+$/, "");
+  }
+
+  // Re-key a `page url -> value` map by the normalised path so lookups match
+  // regardless of trailing slashes (page urls keep them, resource paths may not).
+  function normKeys(map) {
+    var normalised = {};
+    Object.keys(map || {}).forEach(function (key) {
+      normalised[timeKey(key)] = map[key];
+    });
+    return normalised;
   }
 
   // Reading-time label for a resource, or null when none should be shown.
@@ -338,6 +355,28 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
     render(state);
   }
 
+  // Render from the data embedded in the page by docs/hooks/home_data.py, when
+  // present. Returns true when the panel has been rendered, false when the
+  // caller should fall back to fetching the three build assets.
+  function readInline(root) {
+    var node = document.getElementById(DATA_ELEMENT_ID);
+    if (!node) return false;
+
+    var payload;
+    try {
+      payload = JSON.parse(node.textContent);
+    } catch (e) {
+      return false;
+    }
+    if (!payload || !payload.goals) return false;
+
+    times = normKeys(payload.times);
+    levels = normKeys(payload.levels);
+    cache = { goals: payload.goals };
+    mount(root, cache);
+    return true;
+  }
+
   function boot() {
     var root = document.getElementById("gemseo-lp");
     if (!root) {
@@ -351,6 +390,9 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
       mount(root, cache);
       return;
     }
+    if (readInline(root)) {
+      return;
+    }
     // Reading times are best-effort: if the file is missing, times stay empty
     // and the listing simply shows no "min read" labels.
     fetch(new URL(TIMES_FILE, document.baseURI).href)
@@ -361,13 +403,7 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
         return {};
       })
       .then(function (data) {
-        // Re-key by the normalised path so lookups match regardless of
-        // trailing slashes (page urls keep them, resource paths may not).
-        var norm = {};
-        Object.keys(data || {}).forEach(function (key) {
-          norm[timeKey(key)] = data[key];
-        });
-        times = norm;
+        times = normKeys(data);
         // Complexity levels are best-effort too: a missing file leaves levels
         // empty and no complexity tag is shown.
         return fetch(new URL(LEVELS_FILE, document.baseURI).href);
@@ -379,11 +415,7 @@ compatible with the mkdocs-material instant-navigation observable `document$`.
         return {};
       })
       .then(function (data) {
-        var norm = {};
-        Object.keys(data || {}).forEach(function (key) {
-          norm[timeKey(key)] = data[key];
-        });
-        levels = norm;
+        levels = normKeys(data);
         return fetch(new URL(DATA_FILE, document.baseURI).href);
       })
       .then(function (response) {
