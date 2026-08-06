@@ -66,6 +66,9 @@ hooks:
   - docs/hooks/complexity.py
   - docs/hooks/reading_time.py
   - docs/hooks/load_footer.py
+  # Must come after complexity.py and reading_time.py: it consumes the assets
+  # they write when the build ends.
+  - docs/hooks/home_data.py
 
 not_in_nav: |
   index.md
@@ -273,12 +276,18 @@ extra_css:
   - assets/css/footer.css
 
 extra_javascript:
-  - assets/js/mathjax.js
-  - assets/js/xdsmjs.js
+  # The home page panel is rendered by home.js, so it comes first: behind
+  # xdsmjs.js it waited for 70 kB of a library the home page never uses.
+  - assets/js/home.js
   - assets/js/legacy-versions.js
   - assets/js/version-selector.js
-  - assets/js/home.js
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  # MathJax itself is not listed here; mathjax.js fetches it on the pages that
+  # do have formulas.
+  - assets/js/mathjax.js
+  # Only a few example pages draw an XDSM; they bootstrap it from an inline
+  # `DOMContentLoaded` listener, which deferring this library still precedes.
+  - path: assets/js/xdsmjs.js
+    defer: true
 
 watch:
   - src/gemseo

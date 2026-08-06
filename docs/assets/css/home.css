@@ -471,6 +471,21 @@ scale down one notch (~0.9x). Redefining the tokens on `.gh-lp` cascades to ever
   --gh-fs-2xs: 0.5rem; /* 10px */
 }
 
+/*
+The widget is built by home.js, so the mount point is empty when the page is
+first painted and the footer jumps down once the markup lands. Reserving a height
+while it is still empty absorbs that jump; the reservation disappears as soon as
+the first child is appended, so no goal ever gets trailing dead space.
+
+The value is the *smallest* height measured across the goals (540px above the
+720px breakpoint, 1198px below it, where the two columns stack): the panel can
+then only ever grow, never shrink, and a shrink would shift the layout just the
+same as a growth.
+*/
+#gemseo-lp:empty {
+  min-height: 540px;
+}
+
 .gh-lp__head {
   display: flex;
   align-items: baseline;
@@ -937,5 +952,8 @@ excludes its padding.
   .gh-card__foot {
     flex-wrap: wrap;
     gap: 8px;
+  }
+  #gemseo-lp:empty {
+    min-height: 1198px;
   }
 }
