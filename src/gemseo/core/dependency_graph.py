@@ -471,7 +471,7 @@ class DependencyGraph:
         else:
             kwargs = {}
 
-        label = pretty_str(coupling_names) if show_edge_labels else None
+        label = pretty_str(coupling_names, use_and=False) if show_edge_labels else None
         graph_view.edge(tail_name, head_name, label, **kwargs)
         if hide_head:
             graph_view.hide_node(head_name)

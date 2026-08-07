@@ -300,14 +300,16 @@ class ParetoFront:
         if df.columns.nlevels == 1:
             fields += list(df.columns)
         else:
-            fields += [f"{col[0]} ({pretty_str(col[1:])})" for col in df.columns]
+            fields += [
+                f"{col[0]} ({pretty_str(col[1:], use_and=False)})" for col in df.columns
+            ]
 
         table = PrettyTable(fields)
         table.custom_format = _format_value_in_pretty_table_6
         for _, row in df.iterrows():
             name = row.name
             if isinstance(name, tuple):
-                content = [f"{name[0]} ({pretty_str(name[1:])})"]
+                content = [f"{name[0]} ({pretty_str(name[1:], use_and=False)})"]
             else:
                 content = [name]
             content += row.to_list()

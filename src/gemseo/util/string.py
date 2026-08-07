@@ -112,7 +112,7 @@ def pretty_repr(
     delimiter: str = DEFAULT_DELIMITER,
     key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
     sort: bool = True,
-    use_and: bool = False,
+    use_and: bool = True,
 ) -> str:
     """Return an unambiguous string representation of an object based on `repr()`.
 
@@ -135,7 +135,7 @@ def pretty_str(
     delimiter: str = DEFAULT_DELIMITER,
     key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
     sort: bool = True,
-    use_and: bool = False,
+    use_and: bool = True,
 ) -> str:
     """Return a readable string representation of an object based on `str()`.
 

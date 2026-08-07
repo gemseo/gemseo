@@ -85,7 +85,7 @@ def order_disciplines_from_default_inputs(
             if raise_error:
                 msg = (
                     "Cannot compute the inputs "
-                    f"{pretty_str(missing_inputs, sort=False)}, "
+                    f"{pretty_str(missing_inputs, sort=False)} "
                     "for the following disciplines "
                     f"{pretty_str(disc_names, sort=False)}."
                 )

@@ -192,7 +192,10 @@ class EvaluationProblem(BaseProblem):
         mls = MultiLineString()
         mls.add("Evaluation problem:")
         mls.indent()
-        mls.add("Evaluate the functions: {}", pretty_str(self.function_names))
+        mls.add(
+            "Evaluate the functions: {}",
+            pretty_str(self.function_names, use_and=False),
+        )
         return mls
 
     @property

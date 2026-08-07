@@ -89,6 +89,18 @@ def test_error(disciplinary_function, snapshot) -> None:
         disciplinary_function.func(INPUT_VECTOR)
 
 
+def test_error_several_inputs(snapshot) -> None:
+    """Check the error message when several input sizes cannot be guessed."""
+
+    def my_func(x: float, y: float) -> float:
+        z = x + y
+        return z  # noqa: RET504
+
+    function = DisciplineAdapter(["x", "y"], ["z"], {}, AutoPyDiscipline(my_func))
+    with assert_exception(ValueError, snapshot):
+        function.func(INPUT_VECTOR)
+
+
 def test_discipline_local_data(disciplinary_function) -> None:
     """Check that input sizes can be guessed from the discipline's local data."""
     disciplinary_function._DisciplineAdapter__discipline.io.input_data.update({

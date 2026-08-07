@@ -445,7 +445,7 @@ class Value(RegistryDerivedData):
                 missing = {name for name in self._variables if self.__is_missing(name)}
                 msg = (
                     "There is no current value for the design variables: "
-                    f"{pretty_str(missing, use_and=True)}."
+                    f"{pretty_str(missing)}."
                 )
                 if not normalize:
                     raise KeyError(msg)
@@ -473,10 +473,7 @@ class Value(RegistryDerivedData):
 
         unknown = set(names) - set(self._variables)
         if unknown:
-            msg = (
-                "There are no such variables named: "
-                f"{pretty_str(unknown, use_and=True)}."
-            )
+            msg = f"There are no such variables named: {pretty_str(unknown)}."
             raise ValueError(msg)
 
         if not normalize:
@@ -484,7 +481,7 @@ class Value(RegistryDerivedData):
             if missing:
                 msg = (
                     "There is no current value for the design variables: "
-                    f"{pretty_str(missing, use_and=True)}."
+                    f"{pretty_str(missing)}."
                 )
                 raise KeyError(msg)
 

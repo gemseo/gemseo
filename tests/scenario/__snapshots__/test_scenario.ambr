@@ -24,7 +24,7 @@
   "The function name 'g_2' is already used by another function. Duplicated function names produce unpredictable behavior."
 # ---
 # name: test_get_result
-  'The class foo is not available; the available ones are: BiLevelScenarioResult, ScenarioResult.'
+  'The class foo is not available; the available ones are: BiLevelScenarioResult and ScenarioResult.'
 # ---
 # name: test_no_objective
   'Missing objective function in optimization problem.'

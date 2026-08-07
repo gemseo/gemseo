@@ -126,8 +126,7 @@ def test_progress_bar(enable_progress_bar, enable_logging, caplog) -> None:
 @pytest.mark.parametrize(
     ("kwargs", "expected"), [({}, "    50%|"), ({"message": "foo"}, "foo  50%|")]
 )
-@pytest.mark.parametrize("parallelize", [False, True])
-def test_new_iteration_callback_xvect(caplog, kwargs, expected, parallelize) -> None:
+def test_new_iteration_callback_xvect(caplog, kwargs, expected) -> None:
     """Test the new iteration callback."""
     power_2 = Power2()
     test_driver = ScipyOpt("SLSQP")
@@ -153,6 +152,15 @@ def test_new_iteration_callback_xvect(caplog, kwargs, expected, parallelize) -> 
         preprocess_design_vector=False,
     )
     assert expected in caplog.text
+
+    # The driver library is not used through its execute method,
+    # which is in charge of closing the progress bar
+    # and of breaking the reference cycle
+    # test_driver -> power_2 -> pre_compute_at_new_point -> test_driver.
+    for function in test_driver._problem.functions:
+        function.pre_compute_at_new_point = None
+
+    test_driver._progress_bar.close()
 
 
 @pytest.fixture

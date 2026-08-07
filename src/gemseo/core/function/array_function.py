@@ -423,23 +423,18 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
     @property
     def default_repr(self) -> str:
         """The default string representation of the function."""
+        input_names = pretty_str(self.input_names, sort=False, use_and=False)
         if self.is_constraint():
             if self.expr:
                 left = self.expr
             else:
                 name = "#".join(self.output_names) or self.name
-                if self.input_names:
-                    left = f"{name}({pretty_str(self.input_names, sort=False)})"
-                else:
-                    left = f"{name}"
+                left = f"{name}({input_names})" if self.input_names else f"{name}"
 
             sign = "=" if self.f_type == self.ConstraintType.EQ else "<="
             return f"{left} {sign} 0.0"
 
-        if self.input_names:
-            strings = [f"{self.name}({pretty_str(self.input_names, sort=False)})"]
-        else:
-            strings = [self.name]
+        strings = [f"{self.name}({input_names})"] if self.input_names else [self.name]
 
         if not self.expr or strings[-1] == self.expr:
             return "".join(strings)
@@ -526,7 +521,8 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
         if self.expr:
             expr = f"-({self.expr})"
         elif self.input_names:
-            expr = f"{name}({pretty_str(self.input_names, sort=False)})"
+            input_names = pretty_str(self.input_names, sort=False, use_and=False)
+            expr = f"{name}({input_names})"
         else:
             expr = name
 
@@ -594,7 +590,8 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
             second_operand = -value
 
         function = self + value
-        name = f"{self.name}({pretty_str(self.input_names, sort=False)})"
+        input_names = pretty_str(self.input_names, sort=False, use_and=False)
+        name = f"{self.name}({input_names})"
         function.name = _OperationFunctionMaker.get_string_representation(
             self.name, operator, second_operand, True
         )

@@ -190,7 +190,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
             missing_variables = couplings.difference(variable_names)
             msg = (
                 "IDF formulation: "
-                f"the variables {pretty_repr(missing_variables, use_and=True)} "
+                f"the variables {pretty_repr(missing_variables)} "
                 f"must be added to the design space."
             )
             raise ValueError(msg)

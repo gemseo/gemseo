@@ -2,3 +2,6 @@
 # name: test_error
   'The size of the input x cannot be guessed from the discipline my_func, nor from its default inputs or from its local data.'
 # ---
+# name: test_error_several_inputs
+  'The sizes of the inputs x and y cannot be guessed from the discipline my_func, nor from its default inputs or from its local data.'
+# ---

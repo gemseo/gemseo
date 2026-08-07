@@ -210,7 +210,7 @@ class BaseUnivariateDistribution(
         parameters = self._settings.standard_parameters or self._settings.parameters
         return (
             f"{self._settings.interfaced_distribution}"
-            f"({pretty_str(parameters, sort=False)})"
+            f"({pretty_str(parameters, sort=False, use_and=False)})"
         )
 
     @property

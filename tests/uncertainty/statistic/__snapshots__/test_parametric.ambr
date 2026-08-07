@@ -1,6 +1,6 @@
 # serializer version: 1
 # name: test_plot_criteria
-  "The variable 'dummy' is missing from the dataset; available ones are: x_1, x_2, x_3."
+  "The variable 'dummy' is missing from the dataset; available ones are: x_1, x_2 and x_3."
 # ---
 # name: test_plot_html
   dict({

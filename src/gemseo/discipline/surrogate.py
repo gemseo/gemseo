@@ -135,8 +135,8 @@ class SurrogateDiscipline(Discipline):
         mls.add("Dataset name: {}", self.regressor.learning_set.name)
         mls.add("Dataset size: {}", len(self.regressor.learning_set))
         mls.add("Surrogate model: {}", self.regressor.__class__.__name__)
-        mls.add("Inputs: {}", pretty_str(self.regressor.input_names))
-        mls.add("Outputs: {}", pretty_str(self.regressor.output_names))
+        mls.add("Inputs: {}", pretty_str(self.regressor.input_names, use_and=False))
+        mls.add("Outputs: {}", pretty_str(self.regressor.output_names, use_and=False))
         mls.add("Linearization mode: {}", self.linearization_mode)
         return mls
 

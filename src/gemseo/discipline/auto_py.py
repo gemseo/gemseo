@@ -240,9 +240,7 @@ class AutoPyDiscipline(Discipline):
                     f"{self.__LOG_PREFIX} missing type hints for the arguments %s."
                     f"{self.__LOG_SUFFIX}"
                 )
-                LOGGER.warning(
-                    msg, self.name, pretty_repr(missing_args_types, use_and=True)
-                )
+                LOGGER.warning(msg, self.name, pretty_repr(missing_args_types))
                 raise_if_inconsistency = False
             else:
                 name_to_input_type = {

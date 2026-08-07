@@ -75,7 +75,7 @@ class OTJointDistribution(BaseJointDistribution):
 
         return (
             f"{self.__class__.__name__}"
-            f"({pretty_repr(self.marginals, sort=False)}; "
+            f"({pretty_repr(self.marginals, sort=False, use_and=False)}; "
             f"{self.distribution.getCopula()})"
         )
 

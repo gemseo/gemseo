@@ -16,8 +16,6 @@
 
 from __future__ import annotations
 
-import re
-
 from gemseo.uncertainty.statistic.tolerance_interval.factory import (
     TOLERANCE_INTERVAL_FACTORY,
 )
@@ -41,14 +39,6 @@ def test_create() -> None:
 def test_create_fail(snapshot) -> None:
     """Check the creation of a BaseToleranceInterval from the
     ToleranceIntervalFactory."""
-    re.escape(
-        "The class WrongName is not available; "
-        "the available ones are: ExponentialToleranceInterval, "
-        "LogNormalToleranceInterval, NormalToleranceInterval, "
-        "UniformToleranceInterval, WeibullMinToleranceInterval, "
-        "WeibullToleranceInterval."
-    )
-
     with assert_exception(ImportError, snapshot):
         TOLERANCE_INTERVAL_FACTORY.create("WrongName", 100000, 0, 1)
 

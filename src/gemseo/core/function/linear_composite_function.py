@@ -54,7 +54,7 @@ class LinearCompositeFunction(ArrayFunction):
         if len(input_names) == 1:
             x = function.input_names[0]
         else:
-            x = f"({pretty_str(function.input_names)})'"
+            x = f"({pretty_str(function.input_names, use_and=False)})'"
 
         super().__init__(
             self._restricted_function,

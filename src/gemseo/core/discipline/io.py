@@ -26,6 +26,7 @@ from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.discipline.namespace import namespaces_separator
 from gemseo.core.grammar.factory import GRAMMAR_FACTORY
 from gemseo.core.grammar.factory import GrammarType
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -438,7 +439,7 @@ class IO:
         if alien_names := names.difference(grammar_names):
             msg = (
                 f"The following {prefix}_names are not in the {prefix} grammar: "
-                f"{','.join(alien_names)}."
+                f"{pretty_str(alien_names)}."
             )
             raise ValueError(msg)
 

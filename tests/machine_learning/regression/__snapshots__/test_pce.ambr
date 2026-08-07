@@ -63,7 +63,7 @@
   'The quadrature rule requires either data or discipline.'
 # ---
 # name: test_ot_distribution
-  'The probability distributions of the random variables x1, x2 are not instances of OTJointDistribution.'
+  'The probability distributions of the random variables x1 and x2 are not instances of OTJointDistribution.'
 # ---
 # name: test_transformer[inputs]
   'PCERegressor does not support input transformers.'

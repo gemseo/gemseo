@@ -53,6 +53,7 @@ from gemseo._deprecation.aliases import ATTRIBUTE_RENAMES
 from gemseo._deprecation.aliases import DISSOLVED_PACKAGES
 from gemseo._deprecation.aliases import LIVE_ALIASED_MODULES
 from gemseo._deprecation.aliases import MODULE_RENAMES
+from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -262,7 +263,7 @@ class _DissolvedPackageLoader(Loader):
         warnings.warn(
             f"The module {self._old_name!r} is deprecated; "
             f"import its contents from the new locations instead: "
-            f"{', '.join(self._new_names)}.",
+            f"{pretty_repr(self._new_names, sort=False)}.",
             DeprecationWarning,
             stacklevel=2,
         )

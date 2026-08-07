@@ -287,7 +287,7 @@ PACKAGE_DEPENDENCY_ALLOWLIST: dict[str, frozenset[str]] = {
         "scenario",
         "util",
     }),
-    "_deprecation": frozenset({"_deprecation"}),
+    "_deprecation": frozenset({"_deprecation", "util"}),
     "core": frozenset({"core", "dataset", "space", "util"}),
     "dataset": frozenset({"core", "dataset", "util"}),
     "discipline": frozenset({

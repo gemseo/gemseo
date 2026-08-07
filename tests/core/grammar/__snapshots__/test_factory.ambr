@@ -9,5 +9,5 @@
   'The grammar file DummyDiscipline_input.json is missing.'
 # ---
 # name: test_create_unknown
-  'The class UnknownGrammar is not available; the available ones are: JSONGrammar, PydanticGrammar, SimpleGrammar, SimplerGrammar.'
+  'The class UnknownGrammar is not available; the available ones are: JSONGrammar, PydanticGrammar, SimpleGrammar and SimplerGrammar.'
 # ---

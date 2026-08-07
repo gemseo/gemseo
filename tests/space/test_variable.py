@@ -21,6 +21,7 @@ from numpy import array
 from numpy import atleast_1d
 from numpy import inf
 from numpy import int64
+from numpy import nan
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
@@ -116,6 +117,22 @@ def test_frozen(variable, bound, snapshot) -> None:
     """Check that a variable is immutable (bounds cannot be reassigned)."""
     with assert_exception(ValidationError, snapshot):
         setattr(variable, bound, 0)
+
+
+@pytest.mark.parametrize("side", ["lower", "upper"])
+@pytest.mark.parametrize("bound", [array([nan]), array([nan, nan])])
+def test_bound_with_nan_components(side, bound, snapshot) -> None:
+    """Check a bound with one or several nan components."""
+    with assert_exception(ValidationError, snapshot):
+        Variable(size=bound.size, **{f"{side}_bound": bound})
+
+
+@pytest.mark.parametrize("side", ["lower", "upper"])
+@pytest.mark.parametrize("bound", [array([1.5]), array([1.5, 2.5])])
+def test_bound_with_non_integer_components(side, bound, snapshot) -> None:
+    """Check a bound with one or several non-integer components."""
+    with assert_exception(ValidationError, snapshot):
+        Variable(size=bound.size, type="integer", **{f"{side}_bound": bound})
 
 
 @pytest.mark.parametrize("side", ["lower", "upper"])

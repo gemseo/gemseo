@@ -198,7 +198,7 @@ class BaseAlgorithmFactory(metaclass=_AlgorithmFactoryMeta):
         if lib_name is None:
             msg = (
                 f"No algorithm named {name} is available; "
-                f"available algorithms are {pretty_str(self.algorithms, use_and=True)}."
+                f"available algorithms are {pretty_str(self.algorithms)}."
             )
             raise ValueError(msg)
 

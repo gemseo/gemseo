@@ -36,6 +36,7 @@ from gemseo.core.function.array_function import ArrayFunction
 from gemseo.util._compatibility.scipy import get_row
 from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
@@ -386,8 +387,11 @@ class DisciplineAdapter(ArrayFunction):
         )
 
         if missing_names:
+            plural = len(missing_names) > 1
             msg = (
-                f"The size of the input {','.join(missing_names)} cannot be guessed "
+                f"The size{'s' if plural else ''} of the "
+                f"input{'s' if plural else ''} {pretty_str(missing_names)} "
+                f"cannot be guessed "
                 f"from the discipline {self.__discipline.name}, "
                 f"nor from its default inputs or from its local data."
             )

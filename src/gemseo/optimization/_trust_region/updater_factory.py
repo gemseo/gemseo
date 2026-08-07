@@ -72,7 +72,7 @@ class UpdaterFactory:
         if name not in self.__update_name_to_updater:
             msg = (
                 f"{name!r} is not an updater; available: "
-                f"{pretty_repr(self.__update_name_to_updater.keys(), use_and=True)}."
+                f"{pretty_repr(self.__update_name_to_updater.keys())}."
             )
             raise ValueError(msg)
 

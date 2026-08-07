@@ -243,7 +243,9 @@ class BaseMLModel(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
         """The string representation of the model."""
         mls = MultiLineString()
         mls.add(
-            "{}({})", self.__class__.__name__, pretty_str(self._settings.model_dump())
+            "{}({})",
+            self.__class__.__name__,
+            pretty_str(self._settings.model_dump(), use_and=False),
         )
         mls.indent()
         if self.LIBRARY:

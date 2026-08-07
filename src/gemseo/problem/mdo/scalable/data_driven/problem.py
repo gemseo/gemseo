@@ -77,6 +77,7 @@ from gemseo.space.design import DesignSpace
 from gemseo.util.discipline import get_all_inputs
 from gemseo.util.seeder import SEED
 from gemseo.util.string import MultiLineString
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -145,18 +146,25 @@ class ScalableProblem:
         self.scenario = None
 
     def __str__(self) -> str:
-        disciplines = ", ".join(self.disciplines)
+        disciplines = pretty_str(self.disciplines, sort=False, use_and=False)
         design_variables = None
         if self.design_variables is not None:
-            design_variables = ", ".join(self.design_variables)
+            design_variables = pretty_str(
+                self.design_variables, sort=False, use_and=False
+            )
         ineq_constraints = None
         if self.ineq_constraints is not None:
-            ineq_constraints = ", ".join(self.ineq_constraints)
+            ineq_constraints = pretty_str(
+                self.ineq_constraints, sort=False, use_and=False
+            )
         eq_constraints = None
         if self.eq_constraints is not None:
-            eq_constraints = ", ".join(self.eq_constraints)
-        sizes = [name + f" ({size})" for name, size in self.scaled_sizes.items()]
-        sizes = ", ".join(sizes)
+            eq_constraints = pretty_str(self.eq_constraints, sort=False, use_and=False)
+        sizes = pretty_str(
+            [f"{name} ({size})" for name, size in self.scaled_sizes.items()],
+            sort=False,
+            use_and=False,
+        )
         optimize = "maximize" if self.maximize_objective else "minimize"
         msg = MultiLineString()
         msg.add("MDO problem")

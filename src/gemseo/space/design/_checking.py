@@ -31,6 +31,7 @@ from numpy import ndarray
 from numpy import vectorize
 
 from gemseo.space._variable import DataType
+from gemseo.space._variable import format_components
 from gemseo.space.design._constants import BOUND_ATOL
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
@@ -143,7 +144,7 @@ def check_addable_value(
             f"The following value{'s' if plural else ''} of variable '{name}' "
             f"{'are' if plural else 'is'} "
             "neither None nor complex and cannot be cast to float: "
-            f"{', '.join([f'{value[i]} (index {i})' for i in indices])}."
+            f"{format_components(value, indices)}."
         )
         raise ValueError(msg)
 
@@ -155,7 +156,7 @@ def check_addable_value(
             f"The following value{'s' if plural else ''} of variable '{name}' "
             f"{'are' if plural else 'is'} neither None nor "
             f"{'numbers' if plural else 'a number'}: "
-            f"{', '.join([f'{value[i]} (index {i})' for i in indices])}."
+            f"{format_components(value, indices)}."
         )
         raise ValueError(msg)
 
@@ -168,7 +169,7 @@ def check_addable_value(
                 f"The following value{'s' if plural else ''} of variable '{name}' "
                 f"{'are' if plural else 'is'} neither None nor integer "
                 f"while variable '{name}' is of type integer: "
-                f"{', '.join([f'{value[i]} (index {i})' for i in indices])}."
+                f"{format_components(value, indices)}."
             )
             raise ValueError(msg)
 

@@ -11,6 +11,15 @@
 # name: test_check_addable_value_non_numeric
   "The following value of variable 'x' is neither None nor complex and cannot be cast to float: a (index 0)."
 # ---
+# name: test_check_addable_value_several_nan
+  "The following values of variable 'x' are neither None nor numbers: nan (index 0) and nan (index 1)."
+# ---
+# name: test_check_addable_value_several_non_integer_for_integer_variable
+  "The following values of variable 'z' are neither None nor integer while variable 'z' is of type integer: 1.5 (index 0) and 2.5 (index 1)."
+# ---
+# name: test_check_addable_value_several_non_numeric
+  "The following values of variable 'x' are neither None nor complex and cannot be cast to float: a (index 0) and b (index 1)."
+# ---
 # name: test_check_empty_variables
   'The design space is empty.'
 # ---
