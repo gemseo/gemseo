@@ -193,11 +193,11 @@ class BaseDiscipline(BaseMonitoredProcess):
         mls.indent()
         mls.add(
             "Inputs: {}",
-            pretty_str(self.io.input_grammar.keys()),
+            pretty_str(self.io.input_grammar.keys(), use_and=False),
         )
         mls.add(
             "Outputs: {}",
-            pretty_str(self.io.output_grammar.keys()),
+            pretty_str(self.io.output_grammar.keys(), use_and=False),
         )
         return mls
 

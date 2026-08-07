@@ -183,7 +183,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         mls.indent()
         mls.add("n_samples: {}", self.n_samples)
         mls.add("n_variables: {}", self.n_variables)
-        mls.add("variables: {}", pretty_str(self.names))
+        mls.add("variables: {}", pretty_str(self.names, use_and=False))
         return mls
 
     def __repr__(self) -> str:
@@ -526,7 +526,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             separator = ""
 
         values = options if show_name else options.values()
-        value = pretty_str(values)
+        value = pretty_str(values, use_and=False)
 
         if value and not separator:
             separator = "; "

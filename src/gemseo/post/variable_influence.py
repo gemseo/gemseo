@@ -180,7 +180,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         LOGGER.info(
             "   %s; %s",
             func,
-            pretty_str([x_names[i] for i in influential_variables]),
+            pretty_str([x_names[i] for i in influential_variables], use_and=False),
         )
         if save:
             input_space = self._dataset.misc["input_space"]

@@ -435,7 +435,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         )
         if components:
             msg = (
-                f"The components {pretty_str(components, use_and=True)} "
+                f"The components {pretty_str(components)} "
                 "of the design space are unbounded."
             )
             raise ValueError(msg)

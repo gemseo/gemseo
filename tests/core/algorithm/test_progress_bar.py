@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from time import sleep
 from typing import Any
 from typing import ClassVar
 
@@ -29,6 +28,7 @@ import pytest
 from numpy import array
 from numpy import atleast_2d
 from numpy import zeros
+from tqdm import std as tqdm_std
 from tqdm import tqdm
 
 from gemseo.core.algorithm._progress_bar.custom import CustomTqdmProgressBar
@@ -44,6 +44,40 @@ from gemseo.optimization.core.base_optimizer_settings import BaseOptimizerSettin
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
+
+TICK = 0.1
+"""The duration in seconds of a call to the function to be evaluated."""
+
+
+class Clock:
+    """A clock advanced explicitly, to be used as the time source of tqdm.
+
+    Unlike wall-clock time, this makes the elapsed and remaining times logged by the
+    progress bar exactly predictable.
+    """
+
+    n_ticks: int
+    """The number of ticks since the clock was reset."""
+
+    def __init__(self) -> None:  # noqa: D107
+        self.n_ticks = 0
+
+    def tick(self) -> None:
+        """Advance the clock by the duration of a function call."""
+        self.n_ticks += 1
+
+    def __call__(self) -> float:
+        """Return the current time.
+
+        Returns:
+            The current time in seconds.
+        """
+        # Multiply instead of accumulating, to avoid the drift of the floating-point
+        # additions; the expected times are computed with the very same expression.
+        return TICK * self.n_ticks
+
+
+CLOCK = Clock()
 
 
 @pytest.fixture
@@ -103,26 +137,37 @@ class NewProgressBarData(ProgressBarData):
 
 
 def test_progress_bar(
-    caplog, offsets, constraints_before_obj, objective_and_problem_for_tests
+    caplog,
+    monkeypatch,
+    offsets,
+    constraints_before_obj,
+    objective_and_problem_for_tests,
 ) -> None:
+    CLOCK.n_ticks = 0
+    monkeypatch.setattr(tqdm_std, "time", CLOCK)
     with caplog.at_level(logging.INFO):
         lib = ProgressOpt(offsets, constraints_before_obj, "TestDriver")
         f, problem = objective_and_problem_for_tests
         lib.execute(problem, settings=TestDriver_Settings(max_iter=10))
         for k in range(len(offsets) + 1):
             assert f"{k * 10}%" in caplog.text
+        # An iteration evaluates the objective, plus the constraint when there is one.
+        n_calls_per_iteration = 2 if constraints_before_obj else 1
         count = zeros(len(offsets))
         for record in caplog.records:
             for k in range(len(offsets)):
-                if f"{(k + 1) * 10}%" in record.message:
+                # Match the iteration counter rather than the percentage,
+                # so that the progress bar of another test cannot be counted.
+                if f"| {k + 1}/{len(offsets)} [" in record.message:
                     count[k] += 1
                     assert str(int(f.evaluate(5.0 + offsets[k] * 10))) in record.message
-                    if not constraints_before_obj and k >= 1:
-                        assert tqdm.format_interval(0.1 * (k + 1)) in record.message
-                        assert (
-                            tqdm.format_interval(0.1 * (len(offsets) - (k + 1)))
-                            in record.message
-                        )
+                    elapsed = tqdm.format_interval(
+                        TICK * (n_calls_per_iteration * (k + 1))
+                    )
+                    remaining = tqdm.format_interval(
+                        TICK * (n_calls_per_iteration * (len(offsets) - (k + 1)))
+                    )
+                    assert f"[{elapsed}<{remaining}," in record.message
         assert max(count) == 1
 
 
@@ -172,7 +217,7 @@ def test_parallel_doe(caplog, offsets, objective_and_problem_for_tests) -> None:
 
 
 def dummy_sleep_function(x):
-    sleep(0.1)
+    CLOCK.tick()
     return -x
 
 

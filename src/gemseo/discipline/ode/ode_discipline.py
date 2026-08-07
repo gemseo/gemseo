@@ -183,7 +183,7 @@ class ODEDiscipline(Discipline):
             wrong_state_names = set(state_names) - set(rhs_discipline.io.input_grammar)
             if wrong_state_names:
                 msg = (
-                    f"{pretty_repr(wrong_state_names, use_and=True)} are not input"
+                    f"{pretty_repr(wrong_state_names)} are not input"
                     f" variables of the RHS discipline."
                 )
                 raise ValueError(msg)
@@ -201,7 +201,7 @@ class ODEDiscipline(Discipline):
                 )
                 if wrong_output_names:
                     msg = (
-                        f"{pretty_repr(wrong_output_names, use_and=True)} are not "
+                        f"{pretty_repr(wrong_output_names)} are not "
                         f"output variables of the RHS discipline."
                     )
                     raise ValueError(msg)

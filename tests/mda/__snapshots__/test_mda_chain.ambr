@@ -6,5 +6,5 @@
   '''
 # ---
 # name: test_initialize_defaults.1
-  'Cannot compute the inputs a, x, y, z, for the following disciplines A, B.'
+  'Cannot compute the inputs a, x, y and z for the following disciplines A and B.'
 # ---

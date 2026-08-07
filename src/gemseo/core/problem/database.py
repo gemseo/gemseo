@@ -763,9 +763,9 @@ class Database(Mapping):
                     else "are not output names"
                 )
                 msg = (
-                    f"{pretty_repr(not_function_names, use_and=True)} {suffix}; "
+                    f"{pretty_repr(not_function_names)} {suffix}; "
                     f"available ones are "
-                    f"{pretty_repr(all_function_names, use_and=True)}."
+                    f"{pretty_repr(all_function_names)}."
                 )
                 raise ValueError(msg)
 

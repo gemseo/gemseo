@@ -33,6 +33,7 @@ from scipy.sparse import vstack as spvstack
 from gemseo.optimization.lagrange_multipliers import LagrangeMultipliers
 from gemseo.util._compatibility.scipy import array_classes
 from gemseo.util._compatibility.scipy import sparse_classes
+from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -240,10 +241,10 @@ class PostOptimalAnalysis:
         # Check the outputs
         nondifferentiable_outputs = set(output_names) - set(self.output_names)
         if nondifferentiable_outputs:
-            nondifferentiable_outputs = ", ".join(nondifferentiable_outputs)
             msg = (
-                f"Only the post-optimal Jacobian of {self.output_names[0]} can be "
-                f"computed, not the one(s) of {nondifferentiable_outputs}."
+                f"Only the post-optimal Jacobian of {self.output_names[0]!r} can be "
+                f"computed, not the one(s) of "
+                f"{pretty_repr(nondifferentiable_outputs)}."
             )
             raise ValueError(msg)
 

@@ -36,10 +36,12 @@ from pydantic import model_validator
 from strenum import StrEnum
 
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
+from gemseo.util.string import pretty_str
 from gemseo.util.typing import IntegerArray
 from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from collections.abc import Mapping
     from typing import Any
 
@@ -60,6 +62,23 @@ BoundType = (
     | ScalarBoundType
 )
 BoundArray = IntegerArray | RealArray
+
+
+def format_components(array: ndarray, indices: Iterable[int]) -> str:
+    """Return a readable representation of some components of an array.
+
+    Args:
+        array: The array.
+        indices: The indices of the components,
+            sorted in ascending order in the representation.
+
+    Returns:
+        The components with their indices,
+        e.g. `"nan (index 0) and inf (index 2)"`.
+    """
+    return pretty_str(
+        [f"{array[index]} (index {index})" for index in sorted(indices)], sort=False
+    )
 
 
 class DataType(StrEnum):
@@ -190,7 +209,7 @@ class Variable(BaseModel, frozen=True):
             msg = (
                 f"The following {bound_prefix} bound component"
                 f"{'s are not numbers' if plural else ' is not a number'}: "
-                f"{', '.join([f'{bound[i]} (index {i})' for i in indices])}."
+                f"{format_components(bound, indices)}."
             )
             raise ValueError(msg)
 
@@ -203,7 +222,7 @@ class Variable(BaseModel, frozen=True):
                     f"The following {bound_prefix} bound component"
                     f"{'s are' if plural else ' is'} neither integer nor infinite "
                     "while the variable is of type integer: "
-                    f"{', '.join([f'{bound[i]} (index {i})' for i in indices])}."
+                    f"{format_components(bound, indices)}."
                 )
                 raise ValueError(msg)
 

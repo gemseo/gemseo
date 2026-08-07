@@ -75,7 +75,7 @@ class RadViz(BaseDatasetPlot[RadViz_Settings]):
             msg = (
                 f"The classifier ({classifier}) is not stored in the dataset; "
                 "available variables are "
-                f"{pretty_str(self.dataset.variable_names, use_and=True)}."
+                f"{pretty_str(self.dataset.variable_names)}."
             )
             raise ValueError(msg)
 

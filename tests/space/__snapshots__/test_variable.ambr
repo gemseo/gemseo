@@ -1,4 +1,60 @@
 # serializer version: 1
+# name: test_bound_with_nan_components[bound0-lower]
+  '''
+  1 validation error for Variable
+    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound': array([nan])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_nan_components[bound0-upper]
+  '''
+  1 validation error for Variable
+    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'upper_bound': array([nan])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_nan_components[bound1-lower]
+  '''
+  1 validation error for Variable
+    Value error, The following lower bound components are not numbers: nan (index 0) and nan (index 1). [type=value_error, input_value={'size': 2, 'lower_bound': array([nan, nan])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_nan_components[bound1-upper]
+  '''
+  1 validation error for Variable
+    Value error, The following upper bound components are not numbers: nan (index 0) and nan (index 1). [type=value_error, input_value={'size': 2, 'upper_bound': array([nan, nan])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_non_integer_components[bound0-lower]
+  '''
+  1 validation error for Variable
+    Value error, The following lower bound component is neither integer nor infinite while the variable is of type integer: 1.5 (index 0). [type=value_error, input_value={'size': 1, 'type': 'inte...er_bound': array([1.5])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_non_integer_components[bound0-upper]
+  '''
+  1 validation error for Variable
+    Value error, The following upper bound component is neither integer nor infinite while the variable is of type integer: 1.5 (index 0). [type=value_error, input_value={'size': 1, 'type': 'inte...er_bound': array([1.5])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_non_integer_components[bound1-lower]
+  '''
+  1 validation error for Variable
+    Value error, The following lower bound components are neither integer nor infinite while the variable is of type integer: 1.5 (index 0) and 2.5 (index 1). [type=value_error, input_value={'size': 2, 'type': 'inte...und': array([1.5, 2.5])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_non_integer_components[bound1-upper]
+  '''
+  1 validation error for Variable
+    Value error, The following upper bound components are neither integer nor infinite while the variable is of type integer: 1.5 (index 0) and 2.5 (index 1). [type=value_error, input_value={'size': 2, 'type': 'inte...und': array([1.5, 2.5])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
 # name: test_frozen[lower_bound]
   '''
   1 validation error for Variable

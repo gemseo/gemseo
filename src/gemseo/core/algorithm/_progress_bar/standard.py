@@ -65,6 +65,9 @@ class ProgressBar(BaseProgressBar):
             total=max_iter,
             desc=description,
             ascii=False,
+            # Do not log the last status when the progress bar is closed,
+            # including when it is garbage collected without having been closed.
+            leave=False,
         )
         self._tqdm_progress_bar.n = problem.evaluation_counter.current
         if problem._is_optimization:
@@ -82,5 +85,4 @@ class ProgressBar(BaseProgressBar):
         self._tqdm_progress_bar.set_postfix(refresh=True, **progress_bar_data)
 
     def close(self) -> None:
-        self._tqdm_progress_bar.leave = False
         self._tqdm_progress_bar.close()

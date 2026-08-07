@@ -393,35 +393,40 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
             LOGGER.info(progress_bar_title, self._algo_name)
 
         result = None
-        with (
-            OneLineLogging(TQDM_LOGGER)
-            if self._settings.use_one_line_progress_bar
-            else nullcontext()
-        ):
-            get_result = self._get_result
-            try:
-                # pre_run can trigger termination criteria, e.g., max_iter or max_time.
-                self._pre_run(problem)
-                args = self._run(problem) or (None, None)
-            except TerminationCriterion as termination_criterion:
-                args = (termination_criterion,)
-                get_result = self._get_early_stopping_result
-                # Disable the counter
-                # because the iteration has been finalized
-                # just before raising the TerminationCriterion
-                # (see the _finalize_previous_iteration_using_database method).
-                problem.evaluation_counter.enabled = False
+        try:
+            with (
+                OneLineLogging(TQDM_LOGGER)
+                if self._settings.use_one_line_progress_bar
+                else nullcontext()
+            ):
+                get_result = self._get_result
+                try:
+                    # pre_run can trigger termination criteria,
+                    # e.g., max_iter or max_time.
+                    self._pre_run(problem)
+                    args = self._run(problem) or (None, None)
+                except TerminationCriterion as termination_criterion:
+                    args = (termination_criterion,)
+                    get_result = self._get_early_stopping_result
+                    # Disable the counter
+                    # because the iteration has been finalized
+                    # just before raising the TerminationCriterion
+                    # (see the _finalize_previous_iteration_using_database method).
+                    problem.evaluation_counter.enabled = False
 
-            if solve_optimization_problem:
-                problem: OptimizationProblem
-                result = get_result(problem, *args)
+                if solve_optimization_problem:
+                    problem: OptimizationProblem
+                    result = get_result(problem, *args)
 
-        if self._problem.evaluation_counter.enabled and not parallelize:
-            self._finalize_previous_iteration()
+            if self._problem.evaluation_counter.enabled and not parallelize:
+                self._finalize_previous_iteration()
 
-        problem.evaluation_counter.enabled = False
-        if self._progress_bar is not None:
-            self._progress_bar.close()
+            problem.evaluation_counter.enabled = False
+        finally:
+            # Close the progress bar even when the algorithm raises,
+            # otherwise it would log its last status when garbage collected.
+            if self._progress_bar is not None:
+                self._progress_bar.close()
 
         problem.database.clear_listeners(
             new_iter_listeners=(

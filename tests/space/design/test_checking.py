@@ -76,10 +76,24 @@ def test_check_addable_value_non_numeric(variables: Variables, snapshot) -> None
         check_addable_value(variables, array(["a", 1.0], dtype=object), "x")
 
 
+def test_check_addable_value_several_non_numeric(
+    variables: Variables, snapshot
+) -> None:
+    """Check that several non-numeric components raise."""
+    with assert_exception(ValueError, snapshot):
+        check_addable_value(variables, array(["a", "b"], dtype=object), "x")
+
+
 def test_check_addable_value_nan(variables: Variables, snapshot) -> None:
     """Check that a nan component raises."""
     with assert_exception(ValueError, snapshot):
         check_addable_value(variables, array([nan, 1.0]), "x")
+
+
+def test_check_addable_value_several_nan(variables: Variables, snapshot) -> None:
+    """Check that several nan components raise."""
+    with assert_exception(ValueError, snapshot):
+        check_addable_value(variables, array([nan, nan]), "x")
 
 
 def test_check_addable_value_non_integer_for_integer_variable(
@@ -88,6 +102,18 @@ def test_check_addable_value_non_integer_for_integer_variable(
     """Check that a non-integer component raises for an integer variable."""
     with assert_exception(ValueError, snapshot):
         check_addable_value(variables, array([1.5]), "y")
+
+
+def test_check_addable_value_several_non_integer_for_integer_variable(
+    snapshot,
+) -> None:
+    """Check that several non-integer components raise for an integer variable."""
+    variables = Variables()
+    variables["z"] = Variable(
+        size=2, type=DataType.INTEGER, lower_bound=0, upper_bound=5
+    )
+    with assert_exception(ValueError, snapshot):
+        check_addable_value(variables, array([1.5, 2.5]), "z")
 
 
 def test_check_addable_value_infinite_for_integer_variable(

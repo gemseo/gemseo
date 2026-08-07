@@ -3,7 +3,7 @@
   'The function counters are disabled.'
 # ---
 # name: test_init_from_dict_repr
-  'Cannot initialize ArrayFunction attribute: foo, allowed ones are: dim, expr, f_type, input_names, name, output_names, special_repr.'
+  'Cannot initialize ArrayFunction attribute: foo, allowed ones are: dim, expr, f_type, input_names, name, output_names and special_repr.'
 # ---
 # name: test_operation_error[add-+]
   "Unsupported + operator for ArrayFunction and <class 'str'>."

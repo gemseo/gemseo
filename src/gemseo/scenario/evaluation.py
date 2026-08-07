@@ -543,7 +543,8 @@ class EvaluationScenario(BaseMonitoredProcess):
         mls.add(self.name)
         mls.indent()
         mls.add(
-            "Disciplines: {}", pretty_str(self.formulation.disciplines, delimiter=" ")
+            "Disciplines: {}",
+            pretty_str(self.formulation.disciplines, delimiter=" ", use_and=False),
         )
         mls.add("MDO formulation: {}", self.formulation.__class__.__name__)
         return mls

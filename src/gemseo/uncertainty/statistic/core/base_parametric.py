@@ -425,7 +425,7 @@ class BaseParametricStatistics(
         LOGGER.info(
             "Fit different distributions (%s) per variable "
             "and compute the goodness-of-fit criterion.",
-            ", ".join(distributions),
+            pretty_str(distributions, sort=False),
         )
         results = {}
         for name in self.names:

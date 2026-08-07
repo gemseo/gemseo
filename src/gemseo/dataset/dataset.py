@@ -1121,7 +1121,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 string.add(
                     "{}: {}",
                     group_name,
-                    pretty_str(variable_names_and_sizes, use_and=True),
+                    pretty_str(variable_names_and_sizes, use_and=False),
                 )
         total = sum(self.group_name_to_n_components.values())
         string.dedent()

@@ -89,6 +89,7 @@ from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
 from gemseo.util.string import pretty_repr
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -302,7 +303,7 @@ class ParameterSpace(DesignSpace):
             msg = (
                 "A parameter space cannot mix probability distributions "
                 "based on different libraries; "
-                f"got {pretty_repr(distribution_library_names, use_and=True)}."
+                f"got {pretty_repr(distribution_library_names)}."
             )
             raise ValueError(msg)
 
@@ -516,10 +517,10 @@ class ParameterSpace(DesignSpace):
             if variable not in self.uncertain_variables:
                 LOGGER.debug(
                     "%s is not defined in the probability space; "
-                    "available variables are [%s]; "
+                    "available variables are %s; "
                     "use uniform distribution for %s.",
                     variable,
-                    ", ".join(self.uncertain_variables),
+                    pretty_str(self.uncertain_variables, sort=False),
                     variable,
                 )
             else:

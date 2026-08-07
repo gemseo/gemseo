@@ -227,8 +227,10 @@ class XLSStudyParser:
             discipline.io.input_grammar.update_from_names(input_names)
             discipline.io.output_grammar.update_from_names(output_names)
             string.indent()
-            string.add("{}: {}", self.__INPUTS, pretty_str(input_names))
-            string.add("{}: {}", self.__OUTPUTS, pretty_str(output_names))
+            string.add("{}: {}", self.__INPUTS, pretty_str(input_names, use_and=False))
+            string.add(
+                "{}: {}", self.__OUTPUTS, pretty_str(output_names, use_and=False)
+            )
             string.dedent()
             self.disciplines[sheet_name] = discipline
 
@@ -418,10 +420,10 @@ class XLSStudyParser:
         # to prevent problems with special characters in scn_name, e.g. "Scenario{1}".
         string.add("{}", scenario_name)
         string.indent()
-        string.add("Objectives: {}", pretty_str(objectives))
-        string.add("Disciplines: {}", pretty_str(disciplines))
-        string.add("Constraints: {}", pretty_str(constraints))
-        string.add("Design variables: {}", pretty_str(design_variables))
+        string.add("Objectives: {}", pretty_str(objectives, use_and=False))
+        string.add("Disciplines: {}", pretty_str(disciplines, use_and=False))
+        string.add("Constraints: {}", pretty_str(constraints, use_and=False))
+        string.add("Design variables: {}", pretty_str(design_variables, use_and=False))
         string.add("Formulation: {}", formulation_name)
         LOGGER.info("%s", string)
 

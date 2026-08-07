@@ -63,6 +63,7 @@ from numpy import polyfit
 
 from gemseo.problem.mdo.scalable.data_driven.study.result import ScalabilityResult
 from gemseo.util.string import MultiLineString
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -208,7 +209,7 @@ class PostScalabilityStudy:
             TypeError: When the description is not a string.
         """
         if not self.descriptions.get(keyword):
-            keywords = ", ".join(list(self.descriptions.keys()))
+            keywords = pretty_str(self.descriptions.keys())
             msg = f"The keyword {keyword} is not in the list: {keywords}"
             raise ValueError(msg)
         if not isinstance(description, str):

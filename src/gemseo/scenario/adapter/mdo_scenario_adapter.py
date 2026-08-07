@@ -282,7 +282,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
             if missing_inputs:
                 msg = (
                     "Cannot compute inputs from scenarios: "
-                    f"{pretty_repr(missing_inputs, use_and=True)}."
+                    f"{pretty_repr(missing_inputs)}."
                 )
                 raise ValueError(msg) from None
 
@@ -318,7 +318,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
             if missing_outputs:
                 msg = (
                     "Cannot compute outputs from scenarios: "
-                    f"{pretty_repr(missing_outputs, use_and=True)}."
+                    f"{pretty_repr(missing_outputs)}."
                 )
                 raise ValueError(msg) from None
 
@@ -548,7 +548,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
             ):
                 msg = (
                     "The following are not inputs of the adapter: "
-                    f"{pretty_repr(names, use_and=True)}."
+                    f"{pretty_repr(names)}."
                 )
                 raise ValueError(msg)
         else:
@@ -562,7 +562,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
             if names := (set(output_names).difference(self._output_names)):
                 msg = (
                     "The following are not outputs of the adapter: "
-                    f"{pretty_repr(names, use_and=True)}."
+                    f"{pretty_repr(names)}."
                 )
                 raise ValueError(msg)
         else:
@@ -570,7 +570,7 @@ class MDOScenarioAdapter(ProcessDiscipline):
 
         if names := (set(output_names).difference(objective_names)):
             msg = (
-                f"The post-optimal Jacobians of {pretty_repr(names, use_and=True)} "
+                f"The post-optimal Jacobians of {pretty_repr(names)} "
                 f"cannot be computed."
             )
             raise ValueError(msg)

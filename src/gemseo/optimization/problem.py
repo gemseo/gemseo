@@ -622,7 +622,7 @@ class OptimizationProblem(EvaluationProblem):
             mls.add(" " * len(optimize_verb) + line)
 
         # variables representation
-        mls.add("with respect to {}", pretty_str(self.design_space))
+        mls.add("with respect to {}", pretty_str(self.design_space, use_and=False))
         if self.__constraints:
             for type_, functions in [
                 ("equality", tuple(self.constraints.get_equality_constraints())),

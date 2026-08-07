@@ -82,7 +82,7 @@ class ParallelCoordinates(BaseDatasetPlot[ParallelCoordinates_Settings]):
         if classifier not in self.dataset.variable_names:
             msg = (
                 "Classifier must be one of these names: "
-                f"{pretty_str(self.dataset.variable_names, use_and=True)}."
+                f"{pretty_str(self.dataset.variable_names)}."
             )
             raise ValueError(msg)
         label, varname = self._get_label(classifier)

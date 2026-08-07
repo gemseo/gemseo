@@ -70,19 +70,29 @@ class A:
 
 
 @pytest.mark.parametrize(
-    ("obj", "delimiter", "key_value_separator", "sort", "expected"),
+    ("obj", "delimiter", "key_value_separator", "sort", "use_and", "expected"),
     [
-        (A(), None, None, None, "foo"),
-        ({"b": 1, "a": "a"}, None, None, None, "a='a', b=1"),
-        ({"b": 1, "a": "a"}, None, None, False, "b=1, a='a'"),
-        ({"b": 1, "a": "a"}, "!", None, None, "a='a'!b=1"),
-        ({"b": 1, "a": "a"}, None, ":", None, "a:'a', b:1"),
-        ([1, "a", 2], None, None, None, "'a', 1, 2"),
-        ([1, "a", 2], None, None, False, "1, 'a', 2"),
-        ([1, "a", 2], "!", None, None, "'a'!1!2"),
+        (A(), None, None, None, False, "foo"),
+        ({"b": 1, "a": "a"}, None, None, None, False, "a='a', b=1"),
+        ({"b": 1, "a": "a"}, None, None, False, False, "b=1, a='a'"),
+        ({"b": 1, "a": "a"}, "!", None, None, False, "a='a'!b=1"),
+        ({"b": 1, "a": "a"}, None, ":", None, False, "a:'a', b:1"),
+        ([1, "a", 2], None, None, None, False, "'a', 1, 2"),
+        ([1, "a", 2], None, None, False, False, "1, 'a', 2"),
+        ([1, "a", 2], "!", None, None, False, "'a'!1!2"),
+        # use_and is True by default.
+        (A(), None, None, None, None, "foo"),
+        ([1], None, None, None, None, "1"),
+        ({"b": 1, "a": "a"}, None, None, None, None, "a='a' and b=1"),
+        ([1, "a", 2], None, None, None, None, "'a', 1 and 2"),
+        ([1, "a", 2], None, None, False, None, "1, 'a' and 2"),
+        # The last delimiter is replaced by " and ", whatever the delimiter.
+        ([1, "a", 2], "!", None, None, None, "'a'!1 and 2"),
     ],
 )
-def test_pretty_repr(obj, delimiter, expected, sort, key_value_separator) -> None:
+def test_pretty_repr(
+    obj, delimiter, expected, sort, key_value_separator, use_and
+) -> None:
     """Check the function pretty_repr."""
     kwargs = {}
     if delimiter is not None:
@@ -91,23 +101,35 @@ def test_pretty_repr(obj, delimiter, expected, sort, key_value_separator) -> Non
         kwargs["key_value_separator"] = key_value_separator
     if sort is not None:
         kwargs["sort"] = sort
+    if use_and is not None:
+        kwargs["use_and"] = use_and
     assert pretty_repr(obj, **kwargs) == expected
 
 
 @pytest.mark.parametrize(
-    ("obj", "delimiter", "key_value_separator", "sort", "expected"),
+    ("obj", "delimiter", "key_value_separator", "sort", "use_and", "expected"),
     [
-        (A(), None, None, None, "bar"),
-        ({"b": 1, "a": "a"}, None, None, None, "a=a, b=1"),
-        ({"b": 1, "a": "a"}, None, None, False, "b=1, a=a"),
-        ({"b": 1, "a": "a"}, "!", None, None, "a=a!b=1"),
-        ({"b": 1, "a": "a"}, None, ":", None, "a:a, b:1"),
-        ([1, "a", 2], None, None, None, "1, 2, a"),
-        ([1, "a", 2], None, None, False, "1, a, 2"),
-        ([1, "a", 2], "!", None, None, "1!2!a"),
+        (A(), None, None, None, False, "bar"),
+        ({"b": 1, "a": "a"}, None, None, None, False, "a=a, b=1"),
+        ({"b": 1, "a": "a"}, None, None, False, False, "b=1, a=a"),
+        ({"b": 1, "a": "a"}, "!", None, None, False, "a=a!b=1"),
+        ({"b": 1, "a": "a"}, None, ":", None, False, "a:a, b:1"),
+        ([1, "a", 2], None, None, None, False, "1, 2, a"),
+        ([1, "a", 2], None, None, False, False, "1, a, 2"),
+        ([1, "a", 2], "!", None, None, False, "1!2!a"),
+        # use_and is True by default.
+        (A(), None, None, None, None, "bar"),
+        ([1], None, None, None, None, "1"),
+        ({"b": 1, "a": "a"}, None, None, None, None, "a=a and b=1"),
+        ([1, "a", 2], None, None, None, None, "1, 2 and a"),
+        ([1, "a", 2], None, None, False, None, "1, a and 2"),
+        # The last delimiter is replaced by " and ", whatever the delimiter.
+        ([1, "a", 2], "!", None, None, None, "1!2 and a"),
     ],
 )
-def test_pretty_str(obj, delimiter, key_value_separator, sort, expected) -> None:
+def test_pretty_str(
+    obj, delimiter, key_value_separator, sort, use_and, expected
+) -> None:
     """Check the function pretty_str."""
     kwargs = {}
     if delimiter is not None:
@@ -116,15 +138,9 @@ def test_pretty_str(obj, delimiter, key_value_separator, sort, expected) -> None
         kwargs["key_value_separator"] = key_value_separator
     if sort is not None:
         kwargs["sort"] = sort
+    if use_and is not None:
+        kwargs["use_and"] = use_and
     assert pretty_str(obj, **kwargs) == expected
-
-
-def test_use_and() -> None:
-    """Check the option use_and of pretty_repr and pretty_str."""
-    assert pretty_str(["b", "c", "a"]) == "a, b, c"
-    assert pretty_str(["a", "c", "b"], use_and=True) == "a, b and c"
-    assert pretty_repr(["b", "c", "a"]) == "'a', 'b', 'c'"
-    assert pretty_repr(["a", "c", "b"], use_and=True) == "'a', 'b' and 'c'"
 
 
 def test_replace() -> None:

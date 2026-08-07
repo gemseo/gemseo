@@ -42,6 +42,7 @@ from gemseo.util.base_multiton import BaseABCMultiton
 from gemseo.util.repr_html import REPR_HTML_WRAPPER
 from gemseo.util.source_parsing import get_callable_argument_defaults
 from gemseo.util.source_parsing import get_options_doc
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -350,8 +351,10 @@ class BaseFactory(Generic[T], metaclass=BaseABCMultiton):
         """
         class_info = self._name_to_class_info.get(name)
         if class_info is None:
-            names = ", ".join(self.class_names)
-            msg = f"The class {name} is not available; the available ones are: {names}."
+            msg = (
+                f"The class {name} is not available; "
+                f"the available ones are: {pretty_str(self.class_names)}."
+            )
             raise ImportError(msg)
         return class_info.class_
 

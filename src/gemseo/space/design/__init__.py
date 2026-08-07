@@ -294,7 +294,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
             plural = len(nonexistent_dimensions) > 1
             msg = (
                 f"Dimension{'s' if plural else ''}"
-                f" {pretty_str(nonexistent_dimensions, use_and=True)}"
+                f" {pretty_str(nonexistent_dimensions)}"
                 f" of variable '{name}' {'do' if plural else 'does'} not exist."
             )
             raise ValueError(msg)
@@ -917,8 +917,8 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
                 got = [name for name in value if name in self._variables]
                 msg = (
                     f"Expected current_x variables:"
-                    f" {pretty_str(self, use_and=True)}; "
-                    f"got {pretty_str(got, use_and=True)}."
+                    f" {pretty_str(self)}; "
+                    f"got {pretty_str(got)}."
                 )
                 raise ValueError(msg)
 

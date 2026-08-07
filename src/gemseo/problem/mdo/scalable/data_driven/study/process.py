@@ -67,6 +67,7 @@ from gemseo.problem.mdo.scalable.data_driven.problem import ScalableProblem
 from gemseo.problem.mdo.scalable.data_driven.study.result import ScalabilityResult
 from gemseo.util.logging import LoggingContext
 from gemseo.util.string import MultiLineString
+from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -251,14 +252,22 @@ class ScalabilityStudy:
         self.datasets.append(data)
         for output_name in data.get_variable_names(data.OUTPUT_GROUP):
             self.set_fill_factor(data.name, output_name, self._default_fill_factor)
-        inputs = ", ".join([
-            f"{name}({data.variable_name_to_n_components[name]})"
-            for name in data.get_variable_names(data.INPUT_GROUP)
-        ])
-        outputs = ", ".join([
-            f"{name}({data.variable_name_to_n_components[name]})"
-            for name in data.get_variable_names(data.OUTPUT_GROUP)
-        ])
+        inputs = pretty_str(
+            [
+                f"{name}({data.variable_name_to_n_components[name]})"
+                for name in data.get_variable_names(data.INPUT_GROUP)
+            ],
+            sort=False,
+            use_and=False,
+        )
+        outputs = pretty_str(
+            [
+                f"{name}({data.variable_name_to_n_components[name]})"
+                for name in data.get_variable_names(data.OUTPUT_GROUP)
+            ],
+            sort=False,
+            use_and=False,
+        )
         msg = MultiLineString()
         msg.add("Add scalable discipline # {}", len(self.datasets))
         msg.indent()
@@ -440,14 +449,20 @@ class ScalabilityStudy:
         self.formulations.append(formulation_name)
         self.formulations_options.append(formulation_settings)
         self.top_level_diff.append(top_level_diff)
-        algo_settings = ", ".join([
-            f"{name}({value})" for name, value in algo_settings.model_dump().items()
-        ])
+        algo_settings = pretty_str(
+            [f"{name}({value})" for name, value in algo_settings.model_dump().items()],
+            sort=False,
+            use_and=False,
+        )
         if formulation_settings is not None:
-            formulation_settings = ", ".join([
-                f"{name}({value})"
-                for name, value in formulation_settings.model_dump().items()
-            ])
+            formulation_settings = pretty_str(
+                [
+                    f"{name}({value})"
+                    for name, value in formulation_settings.model_dump().items()
+                ],
+                sort=False,
+                use_and=False,
+            )
         msg = MultiLineString()
         msg.add("Add optimization strategy # {}", len(self.formulations))
         msg.indent()
@@ -526,9 +541,11 @@ class ScalabilityStudy:
         msg.add("Number of strategies: {}", n_scaling)
         for idx in range(n_scaling):
             if variables[idx] is not None:
-                var_str = ", ".join([
-                    f"{name}({size})" for name, size in variables[idx].items()
-                ])
+                var_str = pretty_str(
+                    [f"{name}({size})" for name, size in variables[idx].items()],
+                    sort=False,
+                    use_and=False,
+                )
             else:
                 var_str = None
             msg.add("Strategy # {}", idx + 1)
