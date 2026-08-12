@@ -22,9 +22,11 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
+from typing import cast
 
 from numpy import array as np_array
 from numpy import concatenate
+from numpy import generic
 from numpy import ndarray
 
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
@@ -135,12 +137,11 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         Returns:
             The NumPy array.
         """
-        if self.value_to_array_converters and (
-            converter := self.value_to_array_converters.get(name)
-        ):
+        converters = self.value_to_array_converters
+        if converters and (converter := converters.get(name)):
             return converter(value)
         if isinstance(value, ndarray):
-            return value
+            return cast("NumberArray", value)
         return np_array([value])
 
     def convert_array_to_value(self, name: str, array: NumberArray) -> ValueType:
@@ -153,12 +154,17 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         Returns:
             The data value.
         """
-        if self.array_to_value_converters and (
-            converter := self.array_to_value_converters.get(name)
-        ):
+        converters = self.array_to_value_converters
+        if converters and (converter := converters.get(name)):
             return converter(array)
         if self._has_type(name, self._NON_ARRAY_TYPES):
-            return array[0]
+            item = array[0]
+            # A NumPy scalar is converted to a Python scalar because most of the NumPy
+            # scalar types, such as int64, do not derive from the Python type they
+            # mirror, which makes the grammar validation fail downstream.
+            # The item is not a NumPy scalar when the array dtype is object,
+            # in that case it is already a Python object.
+            return item.item() if isinstance(item, generic) else item
         return array
 
     @classmethod
@@ -175,12 +181,13 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         Returns:
             The size.
         """
-        if cls.value_size_getters and (getter := cls.value_size_getters.get(name)):
+        getters = cls.value_size_getters
+        if getters and (getter := getters.get(name)):
             return getter(value)
         if isinstance(value, cls._NON_ARRAY_TYPES):
             return 1
 
-        return value.size
+        return cast("NumberArray", value).size
 
     def compute_name_to_slice(
         self,

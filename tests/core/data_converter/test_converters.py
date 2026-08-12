@@ -129,13 +129,18 @@ ARRAY_TO_VALUE_DATA = [
     ("a_int", array([0]), 0),
     ("a_complex", array([1j]), 1j),
     ("a_ndarray", array([0.0]), array([0.0])),
+    # The item of an object array is not a NumPy scalar.
+    ("a_str", array(["0"], dtype=object), "0"),
 ]
 
 
 @pytest.mark.parametrize(("name", "value", "expected"), ARRAY_TO_VALUE_DATA)
 def test_convert_array_to_value(converter, name, value, expected) -> None:
     """Verify convert_array_to_value."""
-    assert converter.convert_array_to_value(name, value) == expected
+    value_ = converter.convert_array_to_value(name, value)
+    assert value_ == expected
+    # NumPy scalars shall have been converted to Python scalars.
+    assert type(value_) is type(expected)
 
 
 @pytest.mark.parametrize(
