@@ -31,7 +31,7 @@ dependencies = [
     "networkx >=2.5,<=3.6.1",
     "numpy >=1.24,<=2.4.6",
     "packaging >=15,<=26.3",
-    "pandas >=2.2,<=2.3.3",
+    "pandas >=2.2,<=3.0.5",
     "prettytable >=2.3.0,<=3.18.0",
     "pyxdsm >=2.2.1,<=2.3.2",
     "pydantic >=2.12,<=2.13.4",
