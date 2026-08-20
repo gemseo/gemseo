@@ -371,7 +371,6 @@ The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to
     - `gemseo.mlearning.core.quality.quality_measure.BaseMLAlgoQuality`
     - `gemseo.mlearning.classification.quality` for quality measures related to classifiers
     - `gemseo.mlearning.clustering.quality` for quality measures related to clusterers
-
     - `gemseo.mlearning.regression.quality` for quality measures related to regressors [#1174](https://gitlab.com/gemseo/dev/gemseo/-/issues/1174)
 
 ### Algorithms { #upgrading-algorithms-6.0.0 }
