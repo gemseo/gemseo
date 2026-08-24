@@ -27,6 +27,7 @@ from typing import ClassVar
 import matplotlib
 import matplotlib as mpl
 from matplotlib import pyplot as plt
+from matplotlib import rcParams
 from numpy import array
 from numpy import hstack
 
@@ -153,7 +154,7 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
             ax.plot(x_values, y_values, c=array(PARULA(color_criteria[i])))
 
         for x_value in x_values:
-            ax.axvline(x_value, linewidth=1, color="black")
+            ax.axvline(x_value, linewidth=1, color=rcParams["axes.edgecolor"])
 
         ax.set_xticks(x_values)
         ax.set_xticklabels(x_names, rotation=90)
