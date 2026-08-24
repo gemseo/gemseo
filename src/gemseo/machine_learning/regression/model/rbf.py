@@ -17,297 +17,118 @@
 #                         documentation
 #        :author: Francois Gallard, Matthias De Lozzo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-r"""The RBF network for regression.
-
-The radial basis function surrogate discipline expresses the model output
-as a weighted sum of kernel functions centered on the learning input data:
-
-$$
-    y = w_1K(\|x-x_1\|;\epsilon) + w_2K(\|x-x_2\|;\epsilon) + \ldots
-        + w_nK(\|x-x_n\|;\epsilon)
-$$
-
-and the coefficients $(w_1, w_2, \ldots, w_n)$ are estimated
-by least squares minimization.
-
-## Dependence
-
-The RBF model relies on the Rbf class of the
-[scipy library](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.Rbf.html).
-"""
+"""The RBF network for regression."""
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
 
-from numpy import average
-from numpy import exp
-from numpy import log
-from numpy import newaxis
-from numpy import sqrt
-from numpy.linalg import norm
-from scipy.interpolate import Rbf
+from numpy import prod
+from scipy.interpolate import RBFInterpolator
 
-from gemseo.machine_learning.core.model.base_supervised import (
-    SavedObjectType as _SavedObjectType,
-)
 from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+from gemseo.machine_learning.regression.model._rbf_derivatives import RBFDerivatives
+from gemseo.machine_learning.regression.model.rbf_settings import (
+    BaseRBFRegressorSettings,
+)
 from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_Settings
-from gemseo.util.constant import EPSILON
 
 if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
 
-SavedObjectType = _SavedObjectType | float | Callable
+_SCALE_INVARIANT_KERNELS: Final[frozenset[str]] = frozenset((
+    "linear",
+    "thin_plate_spline",
+    "cubic",
+    "quintic",
+))
+"""The kernels for which the shape parameter has no effect."""
 
 
 class RBFRegressor(BaseRegressor):
-    r"""Regression based on radial basis functions (RBFs).
+    r"""Radial basis function (RBF) regression.
 
-    This model relies on the SciPy class [Rbf][scipy.interpolate.Rbf].
+    The output of an RBF regressor is
+    a weighted sum of kernel functions centered on the learning input data
+    completed by a low-degree polynomial:
+
+    $$
+        y = w_1 K(\epsilon\|x-x_1\|) + w_2 K(\epsilon\|x-x_2\|) + \ldots
+            + w_n K(\epsilon\|x-x_n\|) + P(x)
+    $$
+
+    where the coefficients $(w_1, w_2, \ldots, w_n)$ and the polynomial $P$
+    are estimated by solving a linear system.
+    By default, the model interpolates the learning points exactly;
+    increasing the setting `smoothing` relaxes this interpolation
+    in favor of a smoother model.
+
+    This class relies on the
+    [RBFInterpolator](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RBFInterpolator.html)
+    SciPy class.
     """
-
-    der_function: Callable[[RealArray], RealArray]
-    """The derivative of the radial basis function."""
-
-    y_average: RealArray
-    """The mean of the learning output data."""
 
     SHORT_NAME: ClassVar[str] = "RBF"
     LIBRARY: ClassVar[str] = "SciPy"
 
-    EUCLIDEAN: Final[str] = "euclidean"
-
-    settings_class: ClassVar[type[RBFRegressor_Settings]] = RBFRegressor_Settings
-
-    def _post_init(self):
-        super()._post_init()
-        self.y_average = 0.0
-        self.der_function = self._settings.der_function
-
-    class RBFDerivatives:
-        r"""Derivatives of radial basis functions.
-
-        For an RBF of the form $f(r)$, $r$ scalar,
-        the derivative functions are defined by $d(f(r))/dx$,
-        with $r=|x|/\epsilon$. The functions are thus defined
-        by $df/dx = \epsilon^{-1} x/|x| f'(|x|/\epsilon)$.
-        This convention is chosen to avoid division by $|x|$ when
-        the terms may be cancelled out, as $f'(r)$ often has a term
-        in $r$.
-        """
-
-        @classmethod
-        def der_multiquadric(
-            cls,
-            input_data: RealArray,
-            norm_input_data: float,
-            eps: float,
-        ) -> RealArray:
-            r"""Compute derivative of $f(r) = \sqrt{r^2 + 1}$ w.r.t. $x$.
-
-            Args:
-                input_data: The 1D input data.
-                norm_input_data: The norm of the input variable.
-                eps: The correlation length.
-
-            Returns:
-                The derivative of the function.
-            """
-            return input_data / eps**2 / sqrt((norm_input_data / eps) ** 2 + 1)
-
-        @classmethod
-        def der_inverse_multiquadric(
-            cls,
-            input_data: RealArray,
-            norm_input_data: float,
-            eps: float,
-        ) -> RealArray:
-            r"""Compute derivative of $f(r)=1/\sqrt{r^2 + 1}$ w.r.t. $x$.
-
-            Args:
-                input_data: The 1D input data.
-                norm_input_data: The norm of the input variable.
-                eps: The correlation length.
-
-            Returns:
-                The derivative of the function.
-            """
-            return -input_data / eps**2 / ((norm_input_data / eps) ** 2 + 1) ** 1.5
-
-        @classmethod
-        def der_gaussian(
-            cls,
-            input_data: RealArray,
-            norm_input_data: float,
-            eps: float,
-        ) -> RealArray:
-            r"""Compute derivative of $f(r)=\exp(-r^2)$ w.r.t. $x$.
-
-            Args:
-                input_data: The 1D input data.
-                norm_input_data: The norm of the input variable.
-                eps: The correlation length.
-
-            Returns:
-                The derivative of the function.
-            """
-            return -2 * input_data / eps**2 * exp(-((norm_input_data / eps) ** 2))
-
-        @classmethod
-        def der_linear(
-            cls,
-            input_data: RealArray,
-            norm_input_data: float,
-            eps: float,
-        ) -> RealArray:
-            """Compute derivative of $f(r)=r$ w.r.t. $x$.
-
-            If $x=0$, return 0 (determined up to a tolerance).
-
-            Args:
-                input_data: The 1D input data.
-                norm_input_data: The norm of the input variable.
-                eps: The correlation length.
-
-            Returns:
-                The derivative of the function.
-            """
-            return (
-                (norm_input_data > EPSILON) * input_data / (norm_input_data + EPSILON)
-            )
-
-        @classmethod
-        def der_cubic(
-            cls,
-            input_data: RealArray,
-            norm_input_data: float,
-            eps: float,
-        ) -> RealArray:
-            """Compute derivative w.r.t. $x$ of the function $f(r) = r^3$.
-
-            Args:
-                input_data: The 1D input data.
-                norm_input_data: The norm of the input variable.
-                eps: The correlation length.
-
-            Returns:
-                The derivative of the function.
-            """
-            return 3 * norm_input_data * input_data
-
-        @classmethod
-        def der_quintic(
-            cls,
-            input_data: RealArray,
-            norm_input_data: float,
-            eps: float,
-        ) -> RealArray:
-            """Compute derivative w.r.t. $x$ of the function $f(r) = r^5$.
-
-            Args:
-                input_data: The 1D input data.
-                norm_input_data: The norm of the input variable.
-                eps: The correlation length.
-
-            Returns:
-                The derivative of the function.
-            """
-            return 5 * norm_input_data**3 * input_data
-
-        @classmethod
-        def der_thin_plate(
-            cls,
-            input_data: RealArray,
-            norm_input_data: float,
-            eps: float,
-        ) -> RealArray:
-            r"""Compute derivative of $f(r) = r^2\log(r)$ w.r.t. $x$.
-
-            If $x=0$, return 0 (determined up to a tolerance).
-
-            Args:
-                input_data: The 1D input data.
-                norm_input_data: The norm of the input variable.
-                eps: The correlation length.
-
-            Returns:
-                The derivative of the function.
-            """
-            return (
-                (norm_input_data > EPSILON)
-                * input_data
-                * (1 + 2 * log(norm_input_data + EPSILON))
-            )
+    settings_class: ClassVar[type[BaseRBFRegressorSettings]] = RBFRegressor_Settings
 
     def _fit(self, input_data: RealArray, output_data: RealArray) -> None:
-        self.y_average = average(output_data, axis=0)
-        output_data -= self.y_average
-        args = [*list(input_data.T), output_data]
-        self.algo = Rbf(
-            *args,
-            mode="N-D",
-            function=self._settings.function,
-            epsilon=self._settings.epsilon,
-            smooth=self._settings.smooth,
-            norm=self._settings.norm,
+        epsilon = self._settings.epsilon_
+        if epsilon is None and self._settings.kernel_ not in _SCALE_INVARIANT_KERNELS:
+            extents = input_data.max(0) - input_data.min(0)
+            extents = extents[extents.nonzero()]
+            size = extents.size
+            if size:
+                epsilon = 1.0 / (prod(extents) / len(input_data)) ** (1.0 / size)
+            else:
+                # The data for all the input dimensions are constant.
+                epsilon = 1.0
+
+        self.algo = RBFInterpolator(
+            input_data,
+            output_data,
+            neighbors=self._settings.neighbors,
+            smoothing=self._settings.smoothing,
+            kernel=self._settings.kernel_,
+            epsilon=epsilon,
+            degree=self._settings.degree,
         )
+        # A local interpolant, i.e. when the setting 'neighbors' is set,
+        # is discontinuous where the set of nearest learning points changes,
+        # hence has no Jacobian.
+        if self._settings.neighbors is None:
+            self.__derivatives = RBFDerivatives(self.algo)
 
     def _predict(
         self,
         input_data: RealArray,
     ) -> RealArray:
-        return self.algo(*input_data.T).reshape((len(input_data), -1)) + self.y_average
+        return self.algo(input_data)
 
     def _predict_jacobian(
         self,
         input_data: RealArray,
     ) -> RealArray:
-        self._check_available_jacobian()
-        der_func = self.der_function or getattr(
-            self.RBFDerivatives, f"der_{self.function}"
-        )
-        #             predict_samples                        learn_samples
-        # Dimensions : ( n_samples , n_outputs , n_inputs , n_learn_samples )
-        # input_data : ( n_samples ,           , n_inputs ,                 )
-        # ref_points : (           ,           , n_inputs , n_learn_samples )
-        # nodes      : (           , n_outputs ,          , n_learn_samples )
-        # jacobians  : ( n_samples , n_outputs , n_inputs ,                 )
-        ref_points = self.algo.xi[newaxis, newaxis]
-        nodes = self.algo.nodes.T[newaxis, :, newaxis]
-        input_data = input_data[:, newaxis, :, newaxis]
-        diffs = input_data - ref_points
-        dists = norm(diffs, axis=2)[:, :, newaxis]
-        return (nodes * der_func(diffs, dists, eps=self.algo.epsilon)).sum(-1)
-
-    def _check_available_jacobian(self) -> None:
-        """Check if the Jacobian is available for the given setup.
-
-        Raises:
-            NotImplementedError: Either if the Jacobian computation is not implemented
-                or if the derivative of the radial basis function is missing.
         """
-        if self.algo.norm != self.EUCLIDEAN:
-            msg = "Jacobian is only implemented for Euclidean norm."
-            raise NotImplementedError(msg)
-
-        if callable(self.function) and self.der_function is None:
+        Raises:
+            NotImplementedError: When the model is a local interpolant,
+                i.e. the setting `neighbors` is not `None`.
+        """  # noqa: D205, D212
+        if self._settings.neighbors is not None:
             msg = (
-                "No der_function is provided."
-                "Add der_function in RBFRegressor constructor."
+                "The Jacobian is not implemented "
+                "when the setting 'neighbors' is set, "
+                "because the model is then a local interpolant, "
+                "discontinuous where the set of nearest learning points changes."
             )
             raise NotImplementedError(msg)
 
-    @property
-    def function(self) -> str:
-        """The name of the kernel function.
+        return self.__derivatives.compute_jacobian(input_data)
 
-        The name is possibly different from self.parameters['function'], as it is mapped
-        (SciPy).
-        E.g. 'inverse' -> 'inverse_multiquadric',
-         'InverSE MULtiQuadRIC' -> 'inverse_multiquadric'
-        """
-        return self.algo.function
+    @property
+    def kernel(self) -> str:
+        """The name of the kernel function."""
+        return self.algo.kernel

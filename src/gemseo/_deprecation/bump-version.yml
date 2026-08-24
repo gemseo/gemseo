@@ -214,6 +214,8 @@ modules:
   gemseo.mlearning.core.algos: model
   gemseo.mlearning.clustering.algos: model
   gemseo.mlearning.classification.algos: model
+  gemseo.mlearning.regression.algos.thin_plate_spline: tps
+  gemseo.mlearning.regression.algos.thin_plate_spline_settings: tps_settings
   gemseo.mlearning.regression.algos: model
   gemseo.mlearning.data_formatters: data_formatter
   gemseo.mlearning.transformers: transformer
@@ -419,7 +421,7 @@ attributes:
   gemseo.mlearning.core.selection.MLAlgoSelection: MLModelSelection
   gemseo.mlearning.regression.algos.base_fce_settings.BaseFCERegressor_Settings: BaseFCERegressorSettings
   gemseo.mlearning.regression.algos.moe_settings.MOE_Settings: MOERegressor_Settings
-  gemseo.mlearning.regression.algos.rbf_settings.Function: RBF
+  gemseo.mlearning.regression.algos.rbf_settings.Function: gemseo.machine_learning.regression.model.rbf_settings.RBF
   gemseo.mlearning.linear_model_fitting.base_linear_model_fitter_settings.BaseLinearModelFitter_Settings: BaseLinearModelFitterSettings
   gemseo.mlearning.BaseMLSupervisedAlgo: BaseMLSupervisedModel
   gemseo.mlearning.BaseMLAlgo: gemseo.machine_learning.core.model.base_ml_model.BaseMLModel
@@ -528,6 +530,42 @@ classes:
   #      regress_algo: settings
   RegressorChain:
     add_algo: add_regressor
+  RBF:
+    THIN_PLATE: THIN_PLATE_SPLINE
+  RBFRegressor:
+    function: kernel
+    y_average: null
+    der_function: null
+    EUCLIDEAN: null
+    RBFDerivatives: null
+  TPSRegressor:
+    function: kernel
+    y_average: null
+    der_function: null
+    EUCLIDEAN: null
+    RBFDerivatives: null
+  RBFRegressor_Settings:
+    function: kernel
+    smooth: smoothing
+    der_function: null
+    norm: null
+    __init__:
+      function: kernel
+      smooth: smoothing
+      der_function: null
+      norm: null
+  TPSRegressor_Settings:
+    function: null
+    epsilon: null
+    smooth: smoothing
+    der_function: null
+    norm: null
+    __init__:
+      function: null
+      epsilon: null
+      smooth: smoothing
+      der_function: null
+      norm: null
   BaseFCERegressor:
     __init__:
       settings_model: settings

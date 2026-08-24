@@ -97,9 +97,7 @@ if TYPE_CHECKING:
         RegressorChain,  # noqa: F401
     )
     from gemseo.machine_learning.regression.model.svm import SVMRegressor  # noqa: F401
-    from gemseo.machine_learning.regression.model.thin_plate_spline import (
-        TPSRegressor,  # noqa: F401
-    )
+    from gemseo.machine_learning.regression.model.tps import TPSRegressor  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _NAME_TO_LOCATION: Final[dict[str, str]] = {
@@ -117,7 +115,7 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "RegressorChain": "regressor_chain",
     "REGRESSOR_FACTORY": "factory",
     "SVMRegressor": "svm",
-    "TPSRegressor": "thin_plate_spline",
+    "TPSRegressor": "tps",
 }
 
 install_lazy_reexport(globals(), _NAME_TO_LOCATION)

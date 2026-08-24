@@ -24,11 +24,12 @@ from __future__ import annotations
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
-from scipy.interpolate import Rbf
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
+
+from .utils import custom_trend
 
 
 @pytest.fixture(scope="module")
@@ -84,7 +85,7 @@ def test_plot(kwargs, properties, dataset, fig_and_ax, snapshot_matplotlib) -> N
         "quadratic",
         "cubic",
         "rbf",
-        Rbf,
+        custom_trend,
     ],
 )
 def test_trend(trend, quadratic_dataset, snapshot_matplotlib) -> None:

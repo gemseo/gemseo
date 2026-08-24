@@ -21,7 +21,7 @@ from typing import Final
 
 from numpy import poly1d
 from numpy import polyfit
-from scipy.interpolate import Rbf
+from scipy.interpolate import RBFInterpolator
 from strenum import StrEnum
 
 from gemseo.util.typing import RealArray
@@ -70,7 +70,8 @@ def _create_radial_basis_function(
     Returns:
         The radial basis function.
     """
-    return Rbf(x, y)  # type: ignore[no-any-return]
+    interpolator = RBFInterpolator(x.reshape(-1, 1), y)
+    return lambda x_new: interpolator(x_new.reshape(-1, 1))
 
 
 class Trend(StrEnum):

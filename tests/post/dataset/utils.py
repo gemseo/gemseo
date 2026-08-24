@@ -12,26 +12,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Matthias
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Thin plate spline (TPS) regression."""
+"""Utilities shared by the tests of the dataset plots."""
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING
 
-from gemseo.machine_learning.regression.model.rbf import RBFRegressor
-from gemseo.machine_learning.regression.model.thin_plate_spline_settings import (
-    TPSRegressor_Settings,
-)
+from scipy.interpolate import RBFInterpolator
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from gemseo.util.typing import RealArray
 
 
-class TPSRegressor(RBFRegressor):
-    """Thin plate spline (TPS) regression."""
+def custom_trend(x: RealArray, y: RealArray) -> Callable[[RealArray], RealArray]:
+    """Create a custom RBF trend function.
 
-    SHORT_NAME: ClassVar[str] = "TPS"
+    Args:
+        x: The input samples.
+        y: The output samples.
 
-    settings_class: ClassVar[type[TPSRegressor_Settings]] = TPSRegressor_Settings
+    Returns:
+        The trend function.
+    """
+    interpolator = RBFInterpolator(x.reshape(-1, 1), y)
+    return lambda x_new: interpolator(x_new.reshape(-1, 1))

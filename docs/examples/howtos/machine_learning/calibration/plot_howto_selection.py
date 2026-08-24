@@ -93,12 +93,12 @@ selector.add_candidate(
 # %%
 # Possibly add a calibration algorithm for tuning an hyperparameter.
 rbf_space = DesignSpace()
-rbf_space.add_variable("epsilon", 1, "float", 0.01, 0.1, 0.05)
+rbf_space.add_variable("epsilon", 1, "float", 1.0, 100.0, 10.0)
 selector.add_candidate(
     RBFRegressor_Settings(),
     calibration_space=rbf_space,
     calibration_settings=PYDOE_FULLFACT_Settings(n_samples=16),
-    smooth=[0, 0.01, 0.1, 1, 10, 100],
+    smoothing=[0, 0.01, 0.1, 1, 10, 100],
 )
 
 # %%

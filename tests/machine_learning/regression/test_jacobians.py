@@ -55,10 +55,13 @@ from gemseo.space.parameter import ParameterSpace
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
+from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.testing.helper import assert_exception
 from gemseo.util.testing.helper import concretize_classes
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.dataset.dataset import Dataset
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
@@ -66,16 +69,21 @@ LEARNING_SIZE = 10
 
 
 def create_dataset(
-    dataset_name, expressions, design_space_variables, objective_name
+    dataset_name: str,
+    expressions: Mapping[str, str],
+    design_space_variables: Mapping[str, Mapping[str, str]],
+    objective_name: str,
+    n_samples: int = LEARNING_SIZE,
 ) -> IODataset:
     """Return a dataset from a sampled function.
 
     Args:
-        dataset_name (str): The name of the dataset.
-        expressions (dict[str,str]): The expressions to be sampled.
-        design_space_variables (dict[str,dict[str,str]]): A map from design space
+        dataset_name: The name of the dataset.
+        expressions: The expressions to be sampled.
+        design_space_variables: A map from design space
             variables names to bounds to be passed to DesignSpace.add_variable.
-        objective_name (str): The name of the objective variable.
+        objective_name: The name of the objective variable.
+        n_samples: The number of learning samples.
     """
     discipline = AnalyticDiscipline(expressions)
     parameter_space = ParameterSpace()
@@ -91,7 +99,7 @@ def create_dataset(
         )
     scenario = MDOScenario([discipline], parameter_space)
     scenario.add_objective(objective_name)
-    scenario.execute(LHS_Settings(n_samples=LEARNING_SIZE))
+    scenario.execute(LHS_Settings(n_samples=n_samples))
     return scenario.to_dataset(opt_naming=False)
 
 
@@ -206,26 +214,42 @@ def test_polyreg(dataset, transformer, fit_intercept, degree) -> None:
     assert DisciplineJacobianChecker(discipline).check(atol=1e-5, rtol=1e-5)
 
 
-def _r3(r):
-    return r**3
-
-
-def _der_r3(x, norx, eps):
-    return 3.0 * x * norx
-
-
 @pytest.mark.parametrize("transformer", TRANSFORMERS)
-@pytest.mark.parametrize("function", [*list(RBF), _r3])
-def test_rbf(dataset, transformer, function) -> None:
-    """Test polynomial regression Jacobians."""
-    der_function = _der_r3 if function is _r3 else None
-
+@pytest.mark.parametrize("kernel", RBF)
+def test_rbf(dataset, transformer, kernel) -> None:
+    """Test RBF regression Jacobians."""
     discipline = SurrogateDiscipline.from_settings(
-        RBFRegressor_Settings(function=function, der_function=der_function),
+        RBFRegressor_Settings(kernel=kernel),
         dataset,
         transformer=transformer,
     )
     assert DisciplineJacobianChecker(discipline).check(atol=1e-4, rtol=1e-4)
+
+
+@pytest.mark.parametrize("transformer", TRANSFORMERS)
+def test_rbf_high_degree(transformer) -> None:
+    """Test the RBF Jacobians when the polynomial degree exceeds the kernel minimum.
+
+    The per-kernel minimum degrees do not exceed 2,
+    so a higher degree is required to exercise the monomials
+    whose exponents are greater than 2.
+    """
+    # The polynomial of degree 3 has 10 monomials in dimension 2,
+    # hence the learning size greater than the default one.
+    dataset = create_dataset(*DATASETS_DESCRIPTIONS[3], n_samples=30)
+    discipline = SurrogateDiscipline.from_settings(
+        RBFRegressor_Settings(degree=3),
+        dataset,
+        transformer=transformer,
+    )
+    # The cubic polynomial makes the derivatives too steep
+    # for the default forward finite differences.
+    assert DisciplineJacobianChecker(discipline).check(
+        atol=1e-4,
+        rtol=1e-4,
+        approximation_mode=ApproximationMode.CENTERED_DIFFERENCES,
+        step=1e-6,
+    )
 
 
 def test_pce(dataset) -> None:

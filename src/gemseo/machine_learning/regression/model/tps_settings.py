@@ -16,18 +16,24 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
-from pydantic import Field
+from typing import TYPE_CHECKING
 
 from gemseo.machine_learning.regression.model.rbf_settings import RBF
-from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_Settings
+from gemseo.machine_learning.regression.model.rbf_settings import (
+    BaseRBFRegressorSettings,
+)
+
+if TYPE_CHECKING:
+    from pydantic import PositiveFloat
 
 
-class TPSRegressor_Settings(RBFRegressor_Settings):  # noqa: N801
+class TPSRegressor_Settings(BaseRBFRegressorSettings):  # noqa: N801
     """The settings of the thin plate spline (TPS) regressor."""
 
-    function: Literal[RBF.THIN_PLATE] = Field(
-        default=RBF.THIN_PLATE,
-        description=r"The thin plate radial basis function for $r^2\log(r)$.",
-    )
+    @property
+    def kernel_(self) -> RBF:  # ruff: ignore[undocumented-public-method]
+        return RBF.THIN_PLATE_SPLINE
+
+    @property
+    def epsilon_(self) -> PositiveFloat | None:  # ruff: ignore[undocumented-public-method]
+        return 1.0
