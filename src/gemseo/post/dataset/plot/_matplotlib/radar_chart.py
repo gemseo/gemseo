@@ -19,6 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
 from numpy import linspace
 from numpy import rad2deg
 
@@ -48,7 +49,15 @@ class RadarChart(MatplotlibPlot[RadarChart_Settings]):
             ax = fig.add_axes([0.1, 0.1, 0.8, 0.8], projection="polar")
 
         if settings.grid:
-            ax.grid(visible=True, color="k", linewidth=0.3, linestyle=":")
+            # The polar grid is the frame of reference of the chart rather than a
+            # background grid, hence the color of the axes and full opacity.
+            ax.grid(
+                visible=True,
+                color=rcParams["axes.edgecolor"],
+                alpha=1.0,
+                linewidth=0.3,
+                linestyle=":",
+            )
         else:
             ax.grid(visible=False)
 
@@ -80,7 +89,7 @@ class RadarChart(MatplotlibPlot[RadarChart_Settings]):
                 abs(settings.rmin),
                 transform=ax.transData._b,
                 fill=False,
-                edgecolor="black",
+                edgecolor=rcParams["axes.edgecolor"],
                 linewidth=1,
                 zorder=10,
             )

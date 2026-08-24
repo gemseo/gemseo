@@ -273,6 +273,7 @@ extra_css:
   - assets/css/home.css
   - assets/css/reading-time.css
   - assets/css/complexity.css
+  - assets/css/gallery.css
   - assets/css/footer.css
 
 extra_javascript:

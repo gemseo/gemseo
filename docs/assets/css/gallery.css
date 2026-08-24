@@ -1,0 +1,95 @@
+/*
+Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+
+This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
+International License. To view a copy of this license, visit
+http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative
+Commons, PO Box 1866, Mountain View, CA 94042, USA.
+*/
+
+/*
+Dark-scheme fixes for the example gallery.
+
+mkdocs-gallery registers its own light-only stylesheets (sg_gallery*.css) from
+its on_config hook, i.e. after the ones listed in extra_css, so load order
+cannot be relied upon. Every rule below is therefore keyed on the slate scheme,
+which also raises its specificity above the bare class selectors of the plugin.
+Nothing here applies to the light scheme.
+*/
+
+[data-md-color-scheme="slate"] {
+  --glr-out-bg: #2a2a1e;                 /* dark counterpart of #fafae2 */
+  --glr-err-bg: #3a2323;                 /* dark counterpart of #ffe4e4 */
+}
+
+/* Script output blocks. */
+[data-md-color-scheme="slate"] .md-typeset .mkd-glr-script-out-disp code {
+  background-color: var(--glr-out-bg);
+  color: var(--md-code-fg-color);
+}
+
+/* Traceback blocks. */
+[data-md-color-scheme="slate"] .md-typeset .mkd-glr-script-err-disp code {
+  background-color: var(--glr-err-bg);
+  color: var(--md-code-fg-color);
+}
+
+/*
+Outputs rendered as HTML, e.g. the _repr_html_ of the GEMSEO objects, whose
+text color is hard-coded to black by sg_gallery-rendered-html.css.
+*/
+[data-md-color-scheme="slate"] .md-typeset .rendered_html,
+[data-md-color-scheme="slate"] .md-typeset .rendered_html table {
+  color: var(--md-typeset-color);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .rendered_html thead {
+  border-bottom-color: var(--md-default-fg-color--light);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .rendered_html tbody tr:nth-child(odd) {
+  background: var(--md-default-fg-color--lightest);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .rendered_html hr {
+  color: var(--md-default-fg-color--lighter);
+  background-color: var(--md-default-fg-color--lighter);
+}
+
+[data-md-color-scheme="slate"] .md-typeset .rendered_html pre,
+[data-md-color-scheme="slate"] .md-typeset .rendered_html code,
+[data-md-color-scheme="slate"] .md-typeset .rendered_html pre code {
+  background-color: var(--md-code-bg-color);
+  color: var(--md-code-fg-color);
+}
+
+/* Pandas dataframe reprs, whose text color is hard-coded to black. */
+[data-md-color-scheme="slate"] .md-typeset table.dataframe {
+  color: var(--md-typeset-color);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table.dataframe thead {
+  border-bottom-color: var(--md-default-fg-color--light);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table.dataframe tbody tr:nth-child(odd) {
+  background: var(--md-default-fg-color--lightest);
+}
+
+/* Thumbnail cards of the gallery index pages. */
+[data-md-color-scheme="slate"] .md-typeset .mkd-glr-thumbcontainer {
+  background: var(--md-code-bg-color);
+  border-color: var(--md-default-fg-color--lightest);
+}
+
+/* The halo must be lighter than the page, unlike the bluish one of the plugin. */
+[data-md-color-scheme="slate"] .md-typeset .mkd-glr-thumbcontainer:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+/*
+The download links at the bottom of the example pages need nothing: the plugin
+emits them as mkdocs-material buttons, so the .mkd-glr-download rules of
+sg_gallery.css never match.
+*/

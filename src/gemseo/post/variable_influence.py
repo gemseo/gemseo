@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from matplotlib import pyplot
+from matplotlib import rcParams
 from numpy import absolute
 from numpy import argsort
 from numpy import array
@@ -269,7 +270,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
                     hatch="///",
                     label="Non-influential domain",
                 )
-                ax.axhline(color="black")
+                ax.axhline(color=rcParams["axes.edgecolor"])
                 ax.bar(
                     abscissas,
                     sensitivity,

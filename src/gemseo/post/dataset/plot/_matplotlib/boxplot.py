@@ -122,12 +122,8 @@ class Boxplot(MatplotlibPlot[Boxplot_Settings]):
             **settings.options,
         )
         if settings.grid:
-            ax.xaxis.grid(
-                visible=True, linestyle="-", which="major", color="lightgrey", alpha=0.5
-            )
-            ax.yaxis.grid(
-                visible=True, linestyle="-", which="major", color="lightgrey", alpha=0.5
-            )
+            ax.xaxis.grid(visible=True, linestyle="-", which="major", alpha=0.5)
+            ax.yaxis.grid(visible=True, linestyle="-", which="major", alpha=0.5)
 
         plt.setp(boxplot["boxes"], color=color)
         plt.setp(boxplot["whiskers"], color=color)

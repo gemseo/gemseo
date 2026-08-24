@@ -28,6 +28,7 @@ from typing import ClassVar
 from typing import Final
 
 from matplotlib import pyplot as plt
+from matplotlib import rcParams
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
@@ -57,6 +58,7 @@ if TYPE_CHECKING:
     from collections.abc import MutableSequence
     from collections.abc import Sequence
 
+    from matplotlib.axes import Axes
     from matplotlib.colors import ListedColormap
     from matplotlib.figure import Figure
     from numpy import ndarray
@@ -81,6 +83,32 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""
 
+    __OPTIMUM_MARKER: Final[str] = "*"
+    """The marker of the optimal iteration, drawn on the x-axis."""
+
+    __NAN_MARKER: Final[str] = "x"
+    """The marker of the iterations whose values are `NaN`, drawn on the x-axis."""
+
+    __OPTIMUM_MENTION: Final[str] = r"optimum: $\bigstar$"
+    """The mention of the mark of the optimum, in the label of the x-axis.
+
+    The glyph is the one of `__OPTIMUM_MARKER`,
+    so that the mention need not name a color.
+    """
+
+    __NAN_MENTION: Final[str] = r"NaN: $\times$"
+    """The mention of the mark of the NaN iterations, in the label of the x-axis.
+
+    The glyph is the one of `__NAN_MARKER`.
+    Only the figures drawing those marks mention them.
+    """
+
+    __MARK_SIZE: Final[int] = 10
+    """The size of the markers of the iterations."""
+
+    __MARK_LINE_OPACITY: Final[float] = 0.4
+    """The opacity of the vertical lines marking the iterations."""
+
     __TICK_LABEL_SIZE: Final[int] = 9
     """The font size of the tick labels."""
 
@@ -96,6 +124,55 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     __CMAP: Final[ListedColormap] = PARULA
     __INEQ_CSTR_CMAP: Final[ListedColormap] = RG_SEISMIC
     __EQ_CSTR_CMAP: Final[str] = "seismic"
+
+    def __get_x_axis_label(self, has_nan: bool = False) -> str:
+        """Return the label of the x-axis, mentioning the marks of the figure.
+
+        Args:
+            has_nan: Whether the figure marks iterations whose values are `NaN`.
+
+        Returns:
+            The label of the x-axis.
+        """
+        mentions = [self.__OPTIMUM_MENTION]
+        if has_nan:
+            mentions.append(self.__NAN_MENTION)
+        return f"{self.x_label} ({', '.join(mentions)})"
+
+    def __mark_iterations(
+        self, ax: Axes, iterations: Iterable[float], marker: str
+    ) -> None:
+        """Mark iterations with a marker on the x-axis and a dashed vertical line.
+
+        The marks are told apart by their marker, not by their color: in these
+        figures, red is the color of a violated constraint, and the color of the axes is
+        the only one readable on every background a figure saved with a transparent one
+        is read on.
+
+        Args:
+            ax: The axes of the figure.
+            iterations: The abscissas of the iterations to mark.
+            marker: The marker drawn on the x-axis.
+        """
+        color = rcParams["axes.edgecolor"]
+        for iteration in iterations:
+            ax.axvline(
+                x=iteration,
+                color=color,
+                linestyle="--",
+                alpha=self.__MARK_LINE_OPACITY,
+            )
+            ax.plot(
+                iteration,
+                0.0,
+                marker=marker,
+                markersize=self.__MARK_SIZE,
+                color=color,
+                clip_on=False,
+                # Data coordinates on the x-axis and axes ones on the y-axis, so that
+                # the marker sits on the x-axis whatever the scale of the y-axis.
+                transform=ax.get_xaxis_transform(),
+            )
 
     def _plot(self, settings: OptHistoryView_Settings) -> None:
         variable_names = settings.variable_names
@@ -249,11 +326,10 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             vmax=1.0,
             aspect="auto",
         )
-        ax1.axvline(x=argmin(x_xstar), color="r", label="Optimum")
-        ax1.legend()
+        self.__mark_iterations(ax1, (argmin(x_xstar),), self.__OPTIMUM_MARKER)
         ax1.set_yticks(arange(x_history.shape[1]))
         ax1.set_yticklabels(self._get_design_variable_names(variable_names, True))
-        ax1.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
+        ax1.set_xlabel(self.__get_x_axis_label(), fontsize=self.__AXIS_LABEL_SIZE)
         # ax1.invert_yaxis()
 
         ax1.set_title("Evolution of the optimization variables")
@@ -308,31 +384,26 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             )
             obj_history -= obj_history[0]
 
-        # Remove nans
-        n_iterations = len(obj_history)
-        x_absc = arange(n_iterations)
+        # Remove the NaN values. `idx_nan` is a mask, hence always non-empty: only
+        # `any` tells whether the history holds NaN values.
+        x_absc = arange(len(obj_history))
         idx_nan = isnan(obj_history)
-        assert idx_nan is not None
-
-        if idx_nan.size > 0:
-            obj_history = obj_history[~idx_nan]
-            x_absc_nan = x_absc[idx_nan]
-            x_absc_not_nan = x_absc[~idx_nan]
+        has_nan = bool(idx_nan.any())
+        x_absc_nan = x_absc[idx_nan]
+        x_absc_not_nan = x_absc[~idx_nan]
+        obj_history = obj_history[~idx_nan]
 
         fmin = np_min(obj_history)
         fmax = np_max(obj_history)
 
         fig = plt.figure(figsize=fig_size)
         # objective function
-        plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
+        plt.xlabel(self.__get_x_axis_label(has_nan), fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("Objective value", fontsize=self.__AXIS_LABEL_SIZE)
         plt.plot(x_absc_not_nan, obj_history)
-        plt.axvline(x=argmin(x_xstar), color="r", label="Optimum")
-        plt.legend()
-
-        if idx_nan.size > 0:
-            for x_i in x_absc_nan:
-                plt.axvline(x_i, color="purple")
+        self.__mark_iterations(plt.gca(), (argmin(x_xstar),), self.__OPTIMUM_MARKER)
+        if has_nan:
+            self.__mark_iterations(plt.gca(), x_absc_nan, self.__NAN_MARKER)
 
         if obj_min is not None and obj_min < fmin:
             fmin = obj_min
@@ -369,7 +440,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             n_iter: The number of iterations.
         """
         fig = plt.figure(figsize=fig_size)
-        plt.xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
+        plt.xlabel(self.__get_x_axis_label(), fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
         normalize = self._dataset.misc["input_space"].normalize_vect
         opt_design = self._dataset.design_dataset.loc[
@@ -382,10 +453,10 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
 
         # Draw a vertical line at the optimum
         n_iterations = len(x_history)
-        plt.axvline(x=float(argmin(x_xstar)), color="r", label="Optimum")
-        plt.legend()
+        self.__mark_iterations(
+            plt.gca(), (float(argmin(x_xstar)),), self.__OPTIMUM_MARKER
+        )
         plt.semilogy(arange(n_iterations), x_xstar)
-        plt.legend()
         # ======================================================================
         # try:
         #     plt.semilogy(np.arange(len(x_xstar)), x_xstar)
@@ -531,8 +602,8 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             constraint_type = "inequality"
 
         idx_nan = isnan(cstr_matrix)
-        hasnan = idx_nan.any()
-        if hasnan > 0:
+        has_nan = bool(idx_nan.any())
+        if has_nan:
             cstr_matrix[idx_nan] = 0.0
 
         # generation of the image
@@ -544,17 +615,19 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             aspect="auto",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0),
         )
-        ax1.axvline(x=argmin(x_xstar), color="r", label="Optimum")
-        if hasnan > 0:
-            x_absc_nan = idx_nan.any(axis=0).nonzero()[0]
-            for x_i in x_absc_nan:
-                plt.axvline(x_i, color="purple")
+        self.__mark_iterations(ax1, (argmin(x_xstar),), self.__OPTIMUM_MARKER)
+        if has_nan:
+            self.__mark_iterations(
+                ax1, idx_nan.any(axis=0).nonzero()[0], self.__NAN_MARKER
+            )
 
         ax1.tick_params(labelsize=self.__TICK_LABEL_SIZE)
         ax1.set_yticks(list(range(n_cstr)))
         ax1.set_yticklabels(cstr_labels)
 
-        ax1.set_xlabel(self.x_label, fontsize=self.__AXIS_LABEL_SIZE)
+        ax1.set_xlabel(
+            self.__get_x_axis_label(has_nan), fontsize=self.__AXIS_LABEL_SIZE
+        )
         ax1.set_title(f"Evolution of the {constraint_type} constraints")
         n_iterations = len(self._dataset)
         ax1.set_xticks(range(n_iterations))

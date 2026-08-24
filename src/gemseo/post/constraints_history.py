@@ -23,8 +23,12 @@ from __future__ import annotations
 from math import ceil
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Final
 
+from matplotlib import colormaps
 from matplotlib import pyplot
+from matplotlib import rcParams
+from matplotlib.colors import ListedColormap
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import MaxNLocator
 from numpy import abs as np_abs
@@ -34,6 +38,7 @@ from numpy import atleast_3d
 from numpy import diff
 from numpy import flip
 from numpy import interp
+from numpy import linspace
 from numpy import max as np_max
 from numpy import sign
 
@@ -42,7 +47,36 @@ from gemseo.post.constraints_history_settings import ConstraintsHistory_Settings
 from gemseo.post.core.base_post import BasePost
 
 if TYPE_CHECKING:
-    from matplotlib.colors import ListedColormap
+    from matplotlib.colors import Colormap
+
+
+_BAND_OPACITY: Final[float] = 0.6
+"""The opacity of the background color bands."""
+
+
+def _fade(colormap: Colormap) -> ListedColormap:
+    """Fade a colormap to white.
+
+    The bands are drawn opaque rather than with an ``alpha``, so that their colors
+    do not depend on what is behind them, e.g. the background of a web page seen
+    through a figure saved with a transparent background.
+
+    Args:
+        colormap: The colormap to fade.
+
+    Returns:
+        The colormap blended with white, as if drawn with an opacity of
+        [_BAND_OPACITY][gemseo.post.constraints_history._BAND_OPACITY].
+    """
+    colors = colormap(linspace(0.0, 1.0, colormap.N))
+    return ListedColormap(_BAND_OPACITY * colors + 1.0 - _BAND_OPACITY)
+
+
+_EQUALITY_COLORMAP: Final[ListedColormap] = _fade(colormaps["seismic"])
+"""The colormap of the background color bands of the equality constraints."""
+
+_INEQUALITY_COLORMAP: Final[ListedColormap] = _fade(RG_SEISMIC)
+"""The colormap of the background color bands of the inequality constraints."""
 
 
 class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
@@ -51,19 +85,23 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
     A blue line represents the values of a constraint w.r.t. the iterations.
 
     A background color indicates whether the constraint is satisfied (green), active
-    (white) or violated (red).
+    (white) or violated (red). This band is opaque, so that its colors do not depend
+    on what is behind the figure.
 
-    A horizontal black line indicates the value for which an inequality constraint is
-    active or an equality constraint is satisfied, namely $0$. A horizontal black
+    A horizontal line indicates the value for which an inequality constraint is
+    active or an equality constraint is satisfied, namely $0$. A horizontal
     dashed line indicates the value below which an inequality constraint is satisfied
     *with a tolerance level*, namely $\varepsilon$.
 
-    For an equality constraint, the horizontal dashed black lines indicate the values
+    For an equality constraint, the horizontal dashed lines indicate the values
     between which the constraint is satisfied *with a tolerance level*, namely
     $-\varepsilon$ and $\varepsilon$.
 
-    A vertical black line indicates the last iteration (or pseudo-iteration) where the
+    A vertical line indicates the last iteration (or pseudo-iteration) where the
     constraint is (or should be) active.
+
+    These lines are drawn in the color of the axes, namely the matplotlib rcParam
+    ``axes.edgecolor``.
     """
 
     settings_class: ClassVar[type[ConstraintsHistory_Settings]] = (
@@ -128,15 +166,14 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
         for constraint_history, constraint_name, ax in zip(
             constraint_histories.T, constraint_names, axs.ravel(), strict=False
         ):
-            cmap: str | ListedColormap
             f_name = constraint_name.split("[")[0]
             is_eq_constraint = f_name in eq_constraint_names
             if is_eq_constraint:
-                cmap = "seismic"
+                cmap = _EQUALITY_COLORMAP
                 constraint_type = "equality"
                 tolerance = self._optimization_metadata.tolerances.equality
             else:
-                cmap = RG_SEISMIC
+                cmap = _INEQUALITY_COLORMAP
                 constraint_type = "inequality"
                 tolerance = self._optimization_metadata.tolerances.inequality
 
@@ -146,10 +183,11 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
             ax.set_xticks(range(n_iterations))
             ax.set_xticklabels(range(1, n_iterations + 1))
             ax.get_xaxis().set_major_locator(MaxNLocator(integer=True))
-            ax.axhline(tolerance, color="k", linestyle="--")
-            ax.axhline(0.0, color="k")
+            axis_color = rcParams["axes.edgecolor"]
+            ax.axhline(tolerance, color=axis_color, linestyle="--")
+            ax.axhline(0.0, color=axis_color)
             if is_eq_constraint:
-                ax.axhline(-tolerance, color="k", linestyle="--")
+                ax.axhline(-tolerance, color=axis_color, linestyle="--")
 
             # Add line and points
             ax.plot(iterations, constraint_history, linestyle=line_style)
@@ -166,7 +204,6 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
                 aspect="auto",
                 norm=SymLogNorm(vmin=-maximum, vmax=maximum, linthresh=1.0),
                 extent=[-0.5, n_iterations - 0.5, -maximum - margin, maximum + margin],
-                alpha=0.6,
             )
 
             # Plot a vertical line at the last iteration (or pseudo-iteration)
@@ -184,7 +221,9 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
                     constraint_values = flip(constraint_values)
                     iteration_values = flip(iteration_values)
 
-                ax.axvline(interp(0.0, constraint_values, iteration_values), color="k")
+                ax.axvline(
+                    interp(0.0, constraint_values, iteration_values), color=axis_color
+                )
 
         fig.tight_layout()
         self._add_figure(fig)

@@ -65,8 +65,10 @@ def _patch_gallery():
 
     sys.path.append(str(file_dir_path / "_scripts"))
     import gallery_logging
+    import gallery_style
 
     _reset_dict["gallery_logging.reset_logging"] = gallery_logging.reset_logging
+    _reset_dict["gallery_style.reset_style"] = gallery_style.reset_style
 
 
 def _patch_py_source_parser_for_py314():
@@ -162,7 +164,9 @@ conf = {
     "examples_dirs": examples_subdirs,
     "gallery_dirs": [insert_generated_in_path(subdir) for subdir in examples_subdirs],
     # As a precaution, keep the already defined reset modules.
+    # `gallery_style.reset_style` must come after the built-in "matplotlib" one,
+    # which resets the rcParams to their defaults.
     "reset_modules": DEFAULT_GALLERY_CONF["reset_modules"]
-    + ("gallery_logging.reset_logging",),
+    + ("gallery_logging.reset_logging", "gallery_style.reset_style"),
     "within_subsection_order": _LeakyLastSortKey,
 }
