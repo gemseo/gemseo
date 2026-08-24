@@ -50,6 +50,7 @@ from gemseo.problem.mdo.sellar.util import WITH_2D_ARRAY
 from gemseo.problem.mdo.sellar.util import get_initial_data
 from gemseo.problem.mdo.sellar.variable import X_SHARED
 from gemseo.problem.mdo.sellar.variable import Y_1
+from gemseo.util.multiprocessing import start_method
 from gemseo.util.platform import PLATFORM_IS_WINDOWS
 from gemseo.util.testing.helper import assert_exception
 
@@ -303,12 +304,10 @@ def test_re_raise_exceptions(exceptions, raises_exception, snapshot) -> None:
 
 @pytest.fixture
 def reset_default_multiproc_method():
-    """Reset the global multiprocessing method to the FORK method."""
+    """Restore the default multiprocessing start method."""
     yield
     CallableParallelExecution.MULTI_PROCESSING_START_METHOD = (
-        (CallableParallelExecution.MultiProcessingStartMethod.FORK)
-        if not PLATFORM_IS_WINDOWS
-        else CallableParallelExecution.MultiProcessingStartMethod.SPAWN
+        start_method.MULTI_PROCESSING_START_METHOD
     )
 
 
@@ -321,48 +320,42 @@ def reset_default_multiproc_method():
     ],
 )
 @pytest.mark.parametrize(
-    "mp_method",
+    "mp_start_method",
     [
-        (CallableParallelExecution.MultiProcessingStartMethod.FORK),
-        (CallableParallelExecution.MultiProcessingStartMethod.SPAWN),
-        ("threading"),
+        CallableParallelExecution.MultiProcessingStartMethod.SPAWN,
+        "threading",
+        *(
+            ()
+            if PLATFORM_IS_WINDOWS
+            else (CallableParallelExecution.MultiProcessingStartMethod.FORK,)
+        ),
     ],
 )
 def test_multiprocessing_context(
     parallel_class,
     n_calls_attr,
-    mp_method,
+    mp_start_method,
     add_diff,
     expected_n_calls,
     reset_default_multiproc_method,
     enable_discipline_statistics,
-    snapshot,
 ) -> None:
     """Test the multiprocessing where the method for the context is changed.
 
     The test is applied on both parallel execution and linearization, with and without
     the definition of differentiated I/O.
     """
-    # Just for the test purpose, we consider multithreading as a mp_method
+    # Just for the test purpose, we consider multithreading as a mp_start_method
     # and set the boolean `use_threading` from this.
-    use_threading = mp_method == "threading"
+    use_threading = mp_start_method == "threading"
     if not use_threading:
-        CallableParallelExecution.MULTI_PROCESSING_START_METHOD = mp_method
+        CallableParallelExecution.MULTI_PROCESSING_START_METHOD = mp_start_method
 
     sellar = Sellar1()
     if add_diff:
         sellar.add_differentiated_inputs()
         sellar.add_differentiated_outputs()
     workers = [sellar, deepcopy(sellar)] if use_threading else [sellar]
-
-    if (
-        PLATFORM_IS_WINDOWS
-        and mp_method == CallableParallelExecution.MultiProcessingStartMethod.FORK
-    ):
-        # The start-method guard now raises at construction time on Windows.
-        with assert_exception(ValueError, snapshot):
-            parallel_class(workers, use_threading=use_threading)
-        return
 
     parallel_execution = parallel_class(workers, use_threading=use_threading)
 
