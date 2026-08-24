@@ -102,8 +102,6 @@ class LinearDiscipline(Discipline):
             msg = "output_names must not be empty."
             raise ValueError(msg)
         super().__init__(name)
-        self.input_names = input_names
-        self.output_names = output_names
 
         self.io.input_grammar.update_from_names(input_names)
         self.io.output_grammar.update_from_names(output_names)
@@ -132,8 +130,8 @@ class LinearDiscipline(Discipline):
                 / self.size_in
             )
 
-        self.__sizes_d = dict.fromkeys(self.input_names, self.inputs_size)
-        self.__sizes_d.update(dict.fromkeys(self.output_names, self.outputs_size))
+        self.__sizes_d = dict.fromkeys(input_names, self.inputs_size)
+        self.__sizes_d.update(dict.fromkeys(output_names, self.outputs_size))
 
         self.io.input_grammar.defaults = {
             k: 0.5 * ones(inputs_size) for k in input_names
@@ -144,12 +142,15 @@ class LinearDiscipline(Discipline):
         output_data = self.mat.dot(input_data)
         if self._compute_jac_at_run:
             self.jac = split_array_to_dict_of_arrays(
-                self.mat, self.__sizes_d, self.output_names, self.input_names
+                self.mat,
+                self.__sizes_d,
+                self.output_grammar.names,
+                self.input_grammar.names,
             )
             self._has_jacobian = True
 
         return split_array_to_dict_of_arrays(
-            output_data, self.__sizes_d, self.output_names
+            output_data, self.__sizes_d, self.output_grammar.names
         )
 
     def _compute_jacobian(
@@ -158,7 +159,10 @@ class LinearDiscipline(Discipline):
         output_names: Iterable[str] = (),
     ) -> None:
         full_jac = split_array_to_dict_of_arrays(
-            self.mat, self.__sizes_d, self.output_names, self.input_names
+            self.mat,
+            self.__sizes_d,
+            self.output_grammar.names,
+            self.input_grammar.names,
         )
 
         self.jac = {
