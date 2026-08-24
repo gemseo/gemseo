@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import pytest
 from matplotlib import pyplot as plt
-from scipy.interpolate import Rbf
 
 from gemseo import sample_disciplines
 from gemseo.doe.scipy.settings.mc import MC_Settings
@@ -35,6 +34,8 @@ from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
     WingWeightUncertainSpace,
 )
 from gemseo.util.testing.helper import assert_exception
+
+from .utils import custom_trend
 
 
 @pytest.mark.parametrize(
@@ -82,7 +83,7 @@ def test_fig_ax_error(dataset, use_fig, use_ax, snapshot) -> None:
 
 @pytest.mark.parametrize(
     "trend",
-    ["linear", "quadratic", "cubic", "rbf", Rbf],
+    ["linear", "quadratic", "cubic", "rbf", custom_trend],
 )
 def test_trend(trend, quadratic_dataset, snapshot_matplotlib) -> None:
     """Check the use of a trend."""

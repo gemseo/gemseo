@@ -96,7 +96,7 @@ if TYPE_CHECKING:
     from gemseo.machine_learning.regression.model.svm_settings import (
         SVMRegressor_Settings,  # noqa: F401
     )
-    from gemseo.machine_learning.regression.model.thin_plate_spline_settings import (
+    from gemseo.machine_learning.regression.model.tps_settings import (
         TPSRegressor_Settings,  # noqa: F401
     )
 
@@ -422,9 +422,7 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
         "classification.model.svm_settings:SVMClassifier_Settings"
     ),
     "SVMRegressor_Settings": "regression.model.svm_settings:SVMRegressor_Settings",
-    "TPSRegressor_Settings": (
-        "regression.model.thin_plate_spline_settings:TPSRegressor_Settings"
-    ),
+    "TPSRegressor_Settings": "regression.model.tps_settings:TPSRegressor_Settings",
 }
 
 _EXTRA_ALL: Final[tuple[str, ...]] = (

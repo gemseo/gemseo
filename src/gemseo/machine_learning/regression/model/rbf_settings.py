@@ -16,106 +16,124 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Annotated
+from abc import ABC
+from abc import abstractmethod
+from enum import auto
 
 from pydantic import Field
-from pydantic import WithJsonSchema
-from strenum import StrEnum
+from pydantic import NonNegativeFloat
+from pydantic import PositiveFloat
+from pydantic import PositiveInt
+from strenum import LowercaseStrEnum
 
 from gemseo.machine_learning.regression.core.base_regressor_settings import (
     BaseRegressorSettings,
 )
-from gemseo.util.pydantic_ndarray import NDArrayPydantic
 
 
-class RBF(StrEnum):
-    """The radial basis functions."""
+class RBF(LowercaseStrEnum):
+    r"""The radial basis functions.
 
-    MULTIQUADRIC = "multiquadric"
-    INVERSE_MULTIQUADRIC = "inverse_multiquadric"
-    GAUSSIAN = "gaussian"
-    LINEAR = "linear"
-    CUBIC = "cubic"
-    QUINTIC = "quintic"
-    THIN_PLATE = "thin_plate"
+    These functions take the scaled radius $\epsilon r$ as input,
+    where $r$ is a distance between two points
+    and $\epsilon$ is the shape parameter defined by the setting `epsilon`.
+    """
+
+    CUBIC = auto()
+    r"""The cubic RBF $(\epsilon r)^3$."""
+
+    GAUSSIAN = auto()
+    r"""The Gaussian RBF $\exp(-(\epsilon r)^2)$."""
+
+    INVERSE_MULTIQUADRIC = auto()
+    r"""The inverse multiquadric RBF $1/\sqrt{1 + (\epsilon r)^2}$."""
+
+    INVERSE_QUADRATIC = auto()
+    r"""The inverse quadratic RBF $1/(1 + (\epsilon r)^2)$."""
+
+    LINEAR = auto()
+    r"""The linear RBF $-\epsilon r$."""
+
+    MULTIQUADRIC = auto()
+    r"""The multiquadric RBF $-\sqrt{1 + (\epsilon r)^2}$."""
+
+    QUINTIC = auto()
+    r"""The quintic RBF $-(\epsilon r)^5$."""
+
+    THIN_PLATE_SPLINE = auto()
+    r"""The thin plate spline RBF $(\epsilon r)^2\log(\epsilon r)$."""
 
 
-class RBFRegressor_Settings(BaseRegressorSettings):  # noqa: N801
-    """The settings of the RBF network for regression."""
+class BaseRBFRegressorSettings(BaseRegressorSettings, ABC):
+    """The base class for the settings of the RBF regressors."""
 
-    function: RBF | Annotated[Callable[[float, float], float], WithJsonSchema({})] = (
-        Field(
-            default=RBF.MULTIQUADRIC,
-            description=r"""The radial basis function.
+    @property
+    @abstractmethod
+    def kernel_(self) -> RBF:
+        """The radial basis function."""
 
-This function takes a radius $r$ as input,
-representing a distance between two points.
-If it is a string,
-then it must be one of the following:
+    @property
+    @abstractmethod
+    def epsilon_(self) -> PositiveFloat | None:
+        r"""The shape parameter scaling the radius, as $\epsilon r$."""
 
-- `"multiquadric"` for $\sqrt{(r/\epsilon)^2 + 1}$,
-- `"inverse"` for $1/\sqrt{(r/\epsilon)^2 + 1}$,
-- `"gaussian"` for $\exp(-(r/\epsilon)^2)$,
-- `"linear"` for $r$,
-- `"cubic"` for $r^3$,
-- `"quintic"` for $r^5$,
-- `"thin_plate"` for $r^2\log(r)$.
-
-If it is a callable,
-then it must take the two arguments `self` and `r` as inputs,
-e.g. `lambda self, r: sqrt((r/self.epsilon)**2 + 1)`
-for the multiquadric function.
-The epsilon parameter will be available as `self.epsilon`.
-Other keyword arguments passed in will be available as well.""",
-        )
-    )
-
-    der_function: (
-        Annotated[Callable[[NDArrayPydantic], NDArrayPydantic], WithJsonSchema({})]
-        | None
-    ) = Field(
-        default=None,
-        description=r"""The derivative of the radial basis function.
-
-Only to be provided if `function` is a callable
-and if the use of the model with its derivative is required.
-If `None` and if `function` is a callable,
-an error will be raised.
-If `None` and if `function` is a string,
-the class will look for its internal implementation
-and will raise an error if it is missing.
-The `der_function` shall take three arguments
-(`input_data`, `norm_input_data`, `eps`).
-For an RBF of the form function($r$),
-der_function($x$, $|x|$, $\epsilon$) shall
-return $\epsilon^{-1} x/|x| f'(|x|/\epsilon)$.""",
-    )
-
-    epsilon: float | None = Field(
-        default=None,
-        description="""An adjustable constant for Gaussian or multiquadric functions.
-
-If `None`, use the average distance between input data.""",
-    )
-
-    smooth: float = Field(
+    smoothing: NonNegativeFloat = Field(
         default=0.0,
-        description="""The degree of smoothness.
+        description="""The smoothing parameter.
 
 `0` involves an interpolation of the learning points.""",
     )
 
-    norm: (
-        str
-        | Annotated[
-            Callable[[NDArrayPydantic, NDArrayPydantic], float], WithJsonSchema({})
-        ]
-    ) = Field(
-        default="euclidean",
-        description="""The distance metric.
+    degree: int | None = Field(
+        default=None,
+        ge=-1,
+        description="""The degree of the added polynomial.
 
-Either a distance function name
-[known by SciPy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.cdist.html)
-or a function that computes the distance between two points.""",
+If `None`,
+use the minimum degree required by the kernel, at least `0`.
+If `-1`,
+no polynomial is added.""",
+    )
+
+    neighbors: PositiveInt | None = Field(
+        default=None,
+        description="""The number of nearest learning points used for prediction.
+
+If `None`, use all the learning points.
+Otherwise, the model is a local interpolant,
+whose coefficients are recomputed for each set of nearest learning points;
+it is thus discontinuous where this set changes
+and its Jacobian is not implemented.""",
+    )
+
+
+class RBFRegressor_Settings(BaseRBFRegressorSettings):  # noqa: N801
+    """The settings of the RBF network for regression."""
+
+    @property
+    def kernel_(self) -> RBF:  # ruff: ignore[undocumented-public-method]
+        return self.kernel
+
+    @property
+    def epsilon_(self) -> PositiveFloat | None:  # ruff: ignore[undocumented-public-method]
+        return self.epsilon
+
+    kernel: RBF = Field(
+        default=RBF.MULTIQUADRIC, description="The radial basis function."
+    )
+
+    epsilon: PositiveFloat | None = Field(
+        default=None,
+        description=r"""The shape parameter scaling the radius, as $\epsilon r$.
+
+The greater $\epsilon$, the narrower the radial basis function.
+If `None`,
+use $\left(\frac{1}{n}\prod_{i\in\mathcal{D}}\Delta_i\right)^{-1/d}$
+for the kernels `"multiquadric"`, `"inverse_multiquadric"`,
+`"inverse_quadratic"` and `"gaussian"`,
+where $\mathcal{D}$ is the set of the $d$ input dimensions
+whose range $\Delta_i$ is not zero
+and $n$ is the number of learning points;
+use `1.0` for the other kernels, which are scale-invariant,
+and when the data of all the input dimensions are constant.""",
     )

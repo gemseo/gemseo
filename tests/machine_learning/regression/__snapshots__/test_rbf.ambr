@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_jacobian_not_implemented
+  "The Jacobian is not implemented when the setting 'neighbors' is set, because the model is then a local interpolant, discontinuous where the set of nearest learning points changes."
+# ---

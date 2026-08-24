@@ -103,27 +103,27 @@ def test_add_candidate(dataset) -> None:
 
     # Add RBF candidate with calibration
     space = DesignSpace()
-    space.add_variable("smooth", 1, "float", 0.0, 10.0, 0.0)
+    space.add_variable("smoothing", 1, "float", 0.0, 10.0, 0.0)
     selector.add_candidate(
         RBFRegressor_Settings(), space, PYDOE_FULLFACT_Settings(n_samples=1)
     )
     model, quality = selector.candidates[-1]
     assert isinstance(model, RBFRegressor)
-    assert quality == pytest.approx(0.12, abs=1e-2)
-    assert model._settings.smooth == 5.0
+    assert quality == pytest.approx(0.14, abs=1e-2)
+    assert model._settings.smoothing == 5.0
 
     # Add RBF candidate with calibration and options
     selector.add_candidate(
         RBFRegressor_Settings(),
         space,
         PYDOE_FULLFACT_Settings(n_samples=1),
-        epsilon=[0.1, 0.2],
+        epsilon=[5.0, 10.0],
     )
     model, quality = selector.candidates[-1]
     assert isinstance(model, RBFRegressor)
     assert quality == pytest.approx(0.01, abs=1e-2)
-    assert model._settings.smooth == 5.0
-    assert model._settings.epsilon == 0.1
+    assert model._settings.smoothing == 5.0
+    assert model._settings.epsilon == 10.0
 
 
 @pytest.mark.parametrize("measure_evaluation_method_name", ["KFOLDS", "LEARN"])
@@ -135,7 +135,7 @@ def test_select(dataset, measure_evaluation_method_name) -> None:
     )
     selector.add_candidate(PolynomialRegressor_Settings(), degree=[1, 2])
     selector.add_candidate(LinearRegressor_Settings())
-    selector.add_candidate(RBFRegressor_Settings(), smooth=[0, 0.1, 1, 10])
+    selector.add_candidate(RBFRegressor_Settings(), smoothing=[0, 0.1, 1, 10])
     model = selector.select(True)
     assert isinstance(model, tuple)
     assert len(model) == 2

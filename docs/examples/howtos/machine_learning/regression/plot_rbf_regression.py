@@ -37,8 +37,8 @@ from numpy import array
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import sample_disciplines
+from gemseo.enum import RBF
 from gemseo.machine_learning import create_regression_model
-from gemseo.machine_learning.regression.model.rbf_settings import RBF
 
 # %%
 # ## Problem
@@ -116,35 +116,20 @@ plt.show()
 # The [RBFRegressor][gemseo.machine_learning.regression.model.rbf.RBFRegressor] has many options
 # defined in the [RBFRegressor_Settings][gemseo.machine_learning.regression.model.rbf_settings.RBFRegressor_Settings] Pydantic model.
 #
-# ### Function
+# ### Kernel
 #
-# The default RBF is the multiquadratic function $\sqrt{(r/\epsilon)^2 + 1}$
+# The default RBF is the multiquadric function $-\sqrt{(\epsilon r)^2 + 1}$
 # depending on a radius $r$ representing a distance between two points
-# and an adjustable constant $\epsilon$.
-# The RBF can be changed using the `function` option,
-# which can be either an [RBF][gemseo.machine_learning.regression.model.rbf_settings.RBF]:
-model = create_regression_model("RBFRegressor", training_dataset, function=RBF.GAUSSIAN)
+# and a shape parameter $\epsilon$.
+# The RBF can be changed using the `kernel` option
+# (type: [RBF][gemseo.machine_learning.regression.model.rbf_settings.RBF]);
+# for example, select a Gaussian one:
+model = create_regression_model("RBFRegressor", training_dataset, kernel=RBF.GAUSSIAN)
 model.learn()
 predicted_output_data_g = model.predict(input_data).ravel()
-
-
 # %%
-# or a Python function:
-def rbf(self, r: float) -> float:
-    """Evaluate a cubic RBF.
-
-    An RBF must take 2 arguments, namely `(self, r)`.
-
-    Args:
-        r: The radius.
-
-    Returns:
-        The RBF value.
-    """
-    return r**3
-
-
-model = create_regression_model("RBFRegressor", training_dataset, function=rbf)
+# or a cubic one:
+model = create_regression_model("RBFRegressor", training_dataset, kernel=RBF.CUBIC)
 model.learn()
 predicted_output_data_c = model.predict(input_data).ravel()
 # %%
@@ -160,12 +145,16 @@ plt.show()
 # %%
 # ### Epsilon
 #
-# Some RBFs depend on an `epsilon` parameter
-# whose default value is the average distance between input data.
-# This is the case of `"multiquadric"`, `"gaussian"` and `"inverse"` RBFs.
+# Some RBFs depend on an `epsilon` parameter,
+# namely the shape parameter scaling the radius as $\epsilon r$:
+# the greater `epsilon`, the narrower the RBF.
+# This is the case of the `"multiquadric"`, `"inverse_multiquadric"`,
+# `"inverse_quadratic"` and `"gaussian"` RBFs,
+# for which the default value is the reciprocal
+# of the average distance between input data.
 # For example,
-# you can train a first multiquadric RBF model with an `epsilon` set to 0.5
-model = create_regression_model("RBFRegressor", training_dataset, epsilon=0.5)
+# you can train a first multiquadric RBF model with an `epsilon` set to 2.0
+model = create_regression_model("RBFRegressor", training_dataset, epsilon=2.0)
 model.learn()
 predicted_output_data_1 = model.predict(input_data).ravel()
 # %%
@@ -174,36 +163,56 @@ model = create_regression_model("RBFRegressor", training_dataset, epsilon=1.0)
 model.learn()
 predicted_output_data_2 = model.predict(input_data).ravel()
 # %%
-# and a last one with an `epsilon` set to 2.0:
-model = create_regression_model("RBFRegressor", training_dataset, epsilon=2.0)
+# and a last one with an `epsilon` set to 0.5:
+model = create_regression_model("RBFRegressor", training_dataset, epsilon=0.5)
 model.learn()
 predicted_output_data_3 = model.predict(input_data).ravel()
 # %%
 # and you see that this parameter represents the regularity of the regression model:
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
-plt.plot(input_data.ravel(), predicted_output_data_1, label="Regression - Epsilon(0.5)")
+plt.plot(input_data.ravel(), predicted_output_data_1, label="Regression - Epsilon(2)")
 plt.plot(input_data.ravel(), predicted_output_data_2, label="Regression - Epsilon(1)")
-plt.plot(input_data.ravel(), predicted_output_data_3, label="Regression - Epsilon(2)")
+plt.plot(input_data.ravel(), predicted_output_data_3, label="Regression - Epsilon(0.5)")
 plt.grid()
 plt.legend()
 plt.show()
 
 # %%
-# ### Smooth
+# ### Smoothing
 #
 # By default,
 # an RBF model interpolates the training points.
-# This is parametrized by the `smooth` option which is set to 0.
+# This is parametrized by the `smoothing` option which is set to 0.
 # You can increase the smoothness of the model by increasing this value:
-model = create_regression_model("RBFRegressor", training_dataset, smooth=0.1)
+model = create_regression_model("RBFRegressor", training_dataset, smoothing=0.1)
 model.learn()
 predicted_output_data_ = model.predict(input_data).ravel()
 # %%
 # and you see that the model is not interpolating:
 plt.plot(input_data.ravel(), reference_output_data, label="Reference")
 plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
-plt.plot(input_data.ravel(), predicted_output_data_, label="Regression - Smooth")
+plt.plot(input_data.ravel(), predicted_output_data_, label="Regression - Smoothing")
+plt.grid()
+plt.legend()
+plt.show()
+
+# %%
+# ### Degree
+#
+# The model adds a low-degree polynomial to the weighted sum of RBFs,
+# whose degree is by default the minimum degree required by the kernel.
+# You can change it with the `degree` option,
+# or remove the polynomial by setting `degree` to `-1`:
+model = create_regression_model("RBFRegressor", training_dataset, degree=-1)
+model.learn()
+predicted_output_data_ = model.predict(input_data).ravel()
+# %%
+# and you see that both models interpolate the learning points
+# but differ in between:
+plt.plot(input_data.ravel(), reference_output_data, label="Reference")
+plt.plot(input_data.ravel(), predicted_output_data, label="Regression - Basics")
+plt.plot(input_data.ravel(), predicted_output_data_, label="Regression - Degree(-1)")
 plt.grid()
 plt.legend()
 plt.show()
@@ -212,8 +221,9 @@ plt.show()
 # ## Thin plate spline (TPS)
 #
 # TPS regression is a specific case of RBF regression
-# where the RBF is the thin plate radial basis function for $r^2\log(r)$.
-# The [TPSRegressor][gemseo.machine_learning.regression.model.thin_plate_spline.TPSRegressor] class
+# where the RBF is the thin plate spline radial basis function
+# $(\epsilon r)^2\log(\epsilon r)$.
+# The [TPSRegressor][gemseo.machine_learning.regression.model.tps.TPSRegressor] class
 # deriving from [RBFRegressor][gemseo.machine_learning.regression.model.rbf.RBFRegressor]
 # implements this case:
 model = create_regression_model("TPSRegressor", training_dataset)
@@ -230,5 +240,5 @@ plt.legend()
 plt.show()
 
 # %%
-# The [TPSRegressor][gemseo.machine_learning.regression.model.thin_plate_spline.TPSRegressor]
-# can be customized with the [TPSRegressor_Settings][gemseo.machine_learning.regression.model.thin_plate_spline_settings.TPSRegressor_Settings].
+# The [TPSRegressor][gemseo.machine_learning.regression.model.tps.TPSRegressor]
+# can be customized with the [TPSRegressor_Settings][gemseo.machine_learning.regression.model.tps_settings.TPSRegressor_Settings].

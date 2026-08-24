@@ -141,6 +141,7 @@ runtime-evaluated-base-classes = [
     "gemseo.machine_learning.regression.model.gpr_settings.GaussianProcessRegressor_Settings",
     "gemseo.machine_learning.regression.model.ot_gpr_settings.OTGaussianProcessRegressor_Settings",
     "gemseo.machine_learning.regression.model.pce_settings.PCERegressor_Settings",
+    "gemseo.machine_learning.regression.model.rbf_settings.BaseRBFRegressorSettings",
     "gemseo.machine_learning.regression.model.rbf_settings.RBFRegressor_Settings",
     "gemseo.machine_learning.core.model.base_ml_model_settings.BaseMLModelSettings",
     "gemseo.post.dataset.base_settings.BaseDatasetPlotSettings",
