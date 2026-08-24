@@ -701,7 +701,12 @@ classes:
 
   # key_to_value naming convention (changelog 1797)
   AnalyticDiscipline:
+    input_names: list(input_grammar)  # TODO: support casting
+    output_names: list(output_grammar)  # TODO: support casting
     output_names_to_symbols: output_name_to_symbols
+  AutoPyDiscipline:
+    input_names: list(input_grammar)  # TODO: support casting
+    output_names: list(output_grammar)  # TODO: support casting
   ArrayBasedFunctionDiscipline:
     __init__:
       input_names_to_sizes: input_name_to_size

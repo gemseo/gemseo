@@ -62,9 +62,6 @@ class AnalyticDiscipline(Discipline):
     E.g. `{"out": ["in_1", "in_2"]}`.
     """
 
-    input_names: list[str]
-    """The names of the inputs."""
-
     _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union([
         "_sympy_funcs",
         "_sympy_jac_funcs",
@@ -82,20 +79,24 @@ class AnalyticDiscipline(Discipline):
         super().__init__(name=name)
         self.expressions = expressions
         self.output_name_to_symbols = {}
-        self.input_names = []
         self._sympy_exprs = {}
         self._sympy_funcs = {}
         self._sympy_jac_exprs = {}
         self._sympy_jac_funcs = {}
-        self._init_expressions()
-        self.io.input_grammar.update_from_names(self.input_names)
+        input_names = self._init_expressions()
+        self.io.input_grammar.update_from_names(input_names)
         self.io.output_grammar.update_from_names(self.expressions.keys())
-        self.io.input_grammar.defaults = {name: zeros(1) for name in self.input_names}
+        self.io.input_grammar.defaults = {
+            name: zeros(1) for name in self.input_grammar.names
+        }
 
-    def _init_expressions(self) -> None:
+    def _init_expressions(self) -> list[str]:
         """Parse the expressions of the functions and their derivatives.
 
         Get SymPy expressions from string expressions.
+
+        Returns:
+            The input names parsed from the expressions of the functions.
 
         Raises:
             TypeError: When the expression is neither a SymPy expression nor a string.
@@ -124,12 +125,13 @@ class AnalyticDiscipline(Discipline):
                 for input_symbol_name, input_symbol in real_input_symbols.items()
             }
 
-        self.input_names = sorted(
+        input_names = sorted(
             input_symbol.name for input_symbol in set(all_real_input_symbols)
         )
 
         self.__real_symbols = {symbol.name: symbol for symbol in all_real_input_symbols}
         self._lambdify_expressions()
+        return input_names
 
     @staticmethod
     def __create_real_input_symbols(expression: Expr) -> dict[str, Symbol]:
