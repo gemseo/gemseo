@@ -130,8 +130,197 @@ def _patch_py_source_parser_for_py314():
     py_source_parser._get_docstring_and_rest = _get_docstring_and_rest
 
 
+def _patch_intro_extraction():
+    # mkdocs-gallery uses the docstring's second paragraph as the intro of an
+    # example, but the GEMSEO docstring convention makes it a "## Problem"
+    # heading. Use the first paragraph left with prose once its heading lines
+    # are removed, and truncate at 200 displayed characters rather than 95,
+    # since the intro is now shown next to the title instead of in a tooltip.
+    #
+    # `mkdocs_gallery.sorting` imports `extract_intro_and_title` by value too
+    # but is deliberately left alone: it only uses it in `ExampleTitleSortKey`,
+    # while the `within_subsection_order` below is `_LeakyLastSortKey`.
+    import re
+
+    from mkdocs_gallery import gen_single
+    from mkdocs_gallery.errors import ExtensionError
+
+    max_intro_length = 200
+    heading_line = re.compile(r"^\s*#{1,6}\s")
+    # A [label] whose ][ref] or ](url) part has been cut off.
+    dangling_link = re.compile(r"\[[^\]]*\]\s*[\[(][^\])]*$")
+    # A [label][ref] or [label](url) link, including one cut off by a
+    # truncation, whose target is not part of what the reader sees.
+    link = re.compile(r"\[([^\]]+)\](\[[^\]]*\]?|\([^)]*\)?)")
+
+    def _remove_headings(paragraph):
+        # Remove the heading lines instead of the paragraphs starting with a
+        # heading: a heading with no blank line below it keeps the prose that
+        # follows it in its own paragraph.
+        return "\n".join(
+            line for line in paragraph.splitlines() if not heading_line.match(line)
+        ).strip()
+
+    def _displayed_length(text):
+        return len(link.sub(r"\1", text))
+
+    def _truncate(intro):
+        if _displayed_length(intro) <= max_intro_length:
+            return intro
+
+        # The limit applies to the text as displayed: the reference target of a
+        # cross-reference is often longer than its label, and counting it would
+        # cut the prose of a link-heavy intro down to a fraction of the others.
+        limit = max_intro_length
+        while (
+            limit < len(intro) and _displayed_length(intro[:limit]) < max_intro_length
+        ):
+            limit += 1
+
+        truncated = intro[:limit].rsplit(" ", 1)[0]
+        while True:
+            # Cutting inside a $...$ formula, a `code` span or a [label][ref]
+            # link leaves a delimiter that the Markdown renderer cannot pair,
+            # and an unresolved cross-reference fails a strict build, hence the
+            # back off to the start of whatever the cut left open. Parentheses
+            # are not tracked, as prose uses them on their own.
+            cuts = [
+                truncated.rfind(delimiter)
+                for delimiter in ("$", "`")
+                if truncated.count(delimiter) % 2
+            ]
+            opening_bracket = truncated.rfind("[")
+            if opening_bracket > truncated.rfind("]") or dangling_link.search(
+                truncated
+            ):
+                cuts.append(opening_bracket)
+
+            if not cuts:
+                return truncated + "..."
+
+            truncated = truncated[: min(cuts)].rstrip()
+
+    def extract_intro_and_title(docstring, script):
+        paragraphs = gen_single.extract_paragraphs(docstring)
+        if len(paragraphs) == 0:
+            msg = (
+                "Example docstring should have a header for the example title. "
+                f"Please check the example file:\n {script.script_file}\n"
+            )
+            raise ExtensionError(msg)
+
+        title_paragraph = paragraphs[0]
+        match = gen_single.FIRST_NON_MARKER_WITHOUT_HASH.search(title_paragraph)
+        if match is None:
+            msg = f"Could not find a title in first paragraph:\n{title_paragraph}"
+            raise ExtensionError(msg)
+
+        title = match.group(2).strip()
+        # Fall back to no intro at all instead of to the title, which upstream
+        # can afford because the intro only reaches a tooltip; here it would be
+        # rendered as "Title — Title".
+        intro_paragraph = next(filter(None, map(_remove_headings, paragraphs)), "")
+        intro = gen_single._sanitize_md(intro_paragraph.replace("\n", " "))
+        return title, _truncate(intro)
+
+    gen_single.extract_intro_and_title = extract_intro_and_title
+
+
+def _patch_thumbnail_div():
+    # Render the gallery index pages as lists of entries made of the linked
+    # title of the example followed by its intro, with a small thumbnail on
+    # the left when the example produced a figure; the entries relying on the
+    # default thumbnail (the GEMSEO monogram) get no image at all.
+    # Styled by docs/assets/css/gallery.css.
+    import hashlib
+    import tempfile
+    from html import escape
+    from pathlib import Path
+
+    from mkdocs_gallery import backreferences
+    from mkdocs_gallery import gen_single
+    from mkdocs_gallery import glr_path_static
+    from mkdocs_gallery.errors import ExtensionError
+    from mkdocs_gallery.utils import rescale_image
+
+    default_thumb_hashes = {}
+
+    def _get_default_thumb_hash(gallery_conf):
+        # The default thumbnail file is rescaled to thumbnail_size like any
+        # figure, so hashing the same rescaling of the default thumbnail
+        # identifies the figure-less examples byte-wise, even for thumbnails
+        # cached by a previous build. This assumes that the default thumbnail
+        # is a raster, since mkdocs-gallery copies an `.svg` or a `.gif` file
+        # instead of rescaling it, and that "thumbnails" is not in
+        # `compress_images`, since optipng would then rewrite the bytes of the
+        # thumbnails but not the ones hashed here.
+        default_thumb_file = gallery_conf.get("default_thumb_file")
+        if default_thumb_file is None:
+            default_thumb_file = Path(glr_path_static()) / "no_image.png"
+
+        thumbnail_size = gallery_conf["thumbnail_size"]
+        key = (str(default_thumb_file), tuple(thumbnail_size))
+        if key not in default_thumb_hashes:
+            with tempfile.TemporaryDirectory() as directory:
+                thumb_path = Path(directory) / "default_thumb.png"
+                rescale_image(Path(default_thumb_file), thumb_path, *thumbnail_size)
+                digest = hashlib.md5(thumb_path.read_bytes()).hexdigest()
+
+            default_thumb_hashes[key] = digest
+
+        return default_thumb_hashes[key]
+
+    def _thumbnail_div(script_results, is_backref=False, check=True):
+        if check and not script_results.thumb.exists():
+            msg = (
+                "Could not find internal mkdocs-gallery thumbnail file:\n"
+                f"{script_results.thumb}"
+            )
+            raise ExtensionError(msg)
+
+        example_html = script_results.script.md_file_rel_root_gallery.with_suffix(
+            ""
+        ).as_posix()
+        thumb_hash = hashlib.md5(script_results.thumb.read_bytes()).hexdigest()
+        if thumb_hash == _get_default_thumb_hash(script_results.script.gallery_conf):
+            thumb_link = ""
+        else:
+            thumbnail = script_results.thumb_rel_root_gallery.as_posix()
+            # The image has no accessible name and the link duplicates the one
+            # on the title below, so hide it from the assistive technologies
+            # instead of letting them read its URL out.
+            thumb_link = (
+                f'<a href="{example_html}" aria-hidden="true" tabindex="-1">'
+                f'<img src="{thumbnail}" alt="" /></a>'
+            )
+
+        title = escape(script_results.script.title)
+        intro = script_results.intro
+        intro_span = (
+            f'<span class="gallery-item-intro"> — {intro}</span>' if intro else ""
+        )
+        # `markdown="span"` lets md_in_html render the Markdown of the intro:
+        # its maths, which pymdownx.arithmatex must wrap in an .arithmatex
+        # element for MathJax to be loaded at all, but also its emphasis, its
+        # inline code and its cross-references. The lines must not be indented,
+        # as four spaces would turn them into a code block.
+        return f"""
+<div class="gallery-item" markdown="1">
+<div class="gallery-item-thumb">{thumb_link}</div>
+<p class="gallery-item-text" markdown="span">
+<a class="reference internal" href="{example_html}">{title}</a>{intro_span}
+</p>
+</div>
+"""
+
+    backreferences._thumbnail_div = _thumbnail_div
+    gen_single._thumbnail_div = _thumbnail_div
+
+
 _patch_gallery()
 _patch_py_source_parser_for_py314()
+_patch_intro_extraction()
+_patch_thumbnail_div()
 
 examples_dir_relative = [
     str(subdir.relative_to(file_dir_path)) for subdir in examples_subdirs
