@@ -24,6 +24,7 @@ import pickle
 import subprocess
 import sys
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -259,6 +260,28 @@ def test_user_warning_filters_are_not_overridden():
     )
     assert result.returncode != 0, result.stdout
     assert "DeprecationWarning" in result.stderr
+
+
+def test_class_deprecation_is_visible_under_the_default_filters():
+    """The deprecation of a class is shown although it is raised by library code.
+
+    The default filters silence a `DeprecationWarning` that is not raised from
+    `__main__`; `install` registers a filter so that this one is shown.
+    """
+    pickle_path = Path(__file__).parent / "space" / "design_space_6_3_3.pkl"
+    # Load through the gemseo helper, as a user does: the warning is then raised
+    # from library code, which the default filters silence.
+    helper = (
+        f"from gemseo.util.pickle import from_pickle\nfrom_pickle(r'{pickle_path}')\n"
+    )
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-c", helper],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "The class 'gemseo.space._variable.Variable' is deprecated" in result.stderr
 
 
 def test_renamed_submodule_is_not_an_attribute_rename():

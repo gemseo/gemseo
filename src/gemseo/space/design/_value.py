@@ -20,20 +20,17 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from numpy import array
-from numpy import inf
 from numpy import logical_or
 from numpy import ndarray
 
 from gemseo.optimization.result import OptimizationResult
-from gemseo.space._variable import TYPE_MAP
-from gemseo.space._variable import DataType
+from gemseo.space.design import _checking
 from gemseo.space.design._codec import concatenate_values
 from gemseo.space.design._codec import split_full_value
 from gemseo.space.design._constants import BOUND_ATOL
 from gemseo.space.design._registry_derived_data import RegistryDerivedData
 from gemseo.util._numpy import COMPLEX128_DTYPE
 from gemseo.util._numpy import FLOAT64_DTYPE
-from gemseo.util._numpy import INT64_DTYPE
 from gemseo.util._numpy import get_common_dtype as _compute_common_dtype
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 from gemseo.util.string import pretty_str
@@ -273,10 +270,7 @@ class Value(RegistryDerivedData):
         self.__name_to_value_view = ReadOnlyMapping(self.__name_to_value)
         for name, val in self.__name_to_value.items():
             if val is not None:
-                var_type = str(self._variables[name].type)
-                if var_type == DataType.INTEGER:
-                    val = val.astype(TYPE_MAP[var_type])
-                self.__name_to_value[name] = val
+                self.__name_to_value[name] = self._variables[name].cast(val)
 
         self.__update_metadata()
 
@@ -287,11 +281,22 @@ class Value(RegistryDerivedData):
             name: The name of the variable.
             value: The current value of the variable,
                 or `None` when the variable has no value.
+
+        Raises:
+            ValueError: If a component of the value falls outside the domain
+                of the kind of the variable.
         """
         # Validate via __getitem__ so an unknown name raises before mutating.
-        self._variables[name]
+        variable = self._variables[name]
         self.__reconcile_before_write()
-        self.__name_to_value[name] = value
+        if value is not None:
+            # Reject before casting: casting to the NumPy type of the variable,
+            # e.g. an integer variable, would otherwise silently truncate an
+            # out-of-domain value instead of rejecting it.
+            _checking.check_domain(self._variables, name, value)
+        # A variable with no value keeps its None marker; a genuine value is cast
+        # so that the caller does not keep a hand on the stored array.
+        self.__name_to_value[name] = None if value is None else variable.cast(value)
         self.__update_metadata()
 
     def pop(self, name: str) -> None:
@@ -341,30 +346,7 @@ class Value(RegistryDerivedData):
             if self.__name_to_value.get(name) is not None:
                 continue
 
-            current_value = []
-            for lower_bound, upper_bound in zip(
-                variable.lower_bound, variable.upper_bound, strict=False
-            ):
-                if lower_bound == -inf:
-                    component = 0 if upper_bound == inf else upper_bound
-                else:
-                    component = (
-                        lower_bound
-                        if upper_bound == inf
-                        else (lower_bound + upper_bound) / 2
-                    )
-
-                current_value.append(component)
-
-            if variable.type == DataType.FLOAT:
-                variable_type = DataType.FLOAT
-            else:
-                variable_type = DataType.INTEGER
-
-            self.set_variable(
-                name,
-                array(current_value, dtype=TYPE_MAP[variable_type]),
-            )
+            self.set_variable(name, variable.compute_default_value())
 
     def check_value(self, name: str) -> None:
         """Verify that the current value of a variable is within the bounds.
@@ -526,13 +508,11 @@ class Value(RegistryDerivedData):
             name,
             to_normalize,
         ) in self._variables.name_to_normalization_mask.items():
-            if (
-                not to_normalize.any()
-                and self._variables[name].type == DataType.INTEGER
-            ):
-                self.__name_to_normalized_value[name] = self.__name_to_normalized_value[
-                    name
-                ].astype(INT64_DTYPE, copy=False)
+            if not to_normalize.any():
+                # A value left unnormalized keeps the NumPy type of its variable.
+                self.__name_to_normalized_value[name] = self._variables[name].cast(
+                    self.__name_to_normalized_value[name]
+                )
 
     @staticmethod
     def __format_values(

@@ -25,8 +25,8 @@ from numpy import int64
 from numpy import zeros
 from numpy.testing import assert_array_equal
 
-from gemseo.space._variable import DataType
-from gemseo.space._variable import Variable
+from gemseo.space._variable import ContinuousVariable
+from gemseo.space._variable import IntegerVariable
 from gemseo.space.design._bounds import Bounds
 from gemseo.space.design._integer_rounder import IntegerRounder
 from gemseo.space.design._normalizer import Normalizer
@@ -38,9 +38,7 @@ from gemseo.util.testing.helper import assert_exception
 def normalizer() -> Normalizer:
     """A normalizer over a single float variable with bounds [0, 2]."""
     variables = Variables()
-    variables["x"] = Variable(
-        size=2, type=DataType.FLOAT, lower_bound=0.0, upper_bound=2.0
-    )
+    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=2.0)
     return Normalizer(
         variables,
         Bounds(variables),
@@ -52,9 +50,7 @@ def normalizer() -> Normalizer:
 def integer_normalizer() -> Normalizer:
     """A normalizer over a single normalized integer variable with bounds [0, 10]."""
     variables = Variables()
-    variables["n"] = Variable(
-        size=2, type=DataType.INTEGER, lower_bound=0, upper_bound=10
-    )
+    variables["n"] = IntegerVariable(size=2, lower_bound=0, upper_bound=10)
     variables.enable_integer_variables_normalization = True
     return Normalizer(
         variables,

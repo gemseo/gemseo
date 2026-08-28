@@ -19,14 +19,10 @@ from __future__ import annotations
 from collections.abc import MutableMapping
 from typing import TYPE_CHECKING
 
-from numpy import concatenate
-from numpy import full
-from numpy import inf
-from numpy import logical_and
 from numpy import zeros
 
-from gemseo.space._variable import DataType
-from gemseo.space._variable import Variable
+from gemseo.space._variable import BaseVariable
+from gemseo.space._variable._integer import IntegerVariable
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 
@@ -46,9 +42,9 @@ class UnknownVariableError(KeyError):
 
 
 class Variables(
-    MutableMapping[str, Variable], metaclass=ABCGoogleDocstringInheritanceMeta
+    MutableMapping[str, BaseVariable], metaclass=ABCGoogleDocstringInheritanceMeta
 ):
-    """A registry of [Variable][gemseo.space._variable.Variable] objects.
+    """A registry of [BaseVariable][gemseo.space._variable.BaseVariable] objects.
 
     This registry is ordered and versioned.
 
@@ -72,7 +68,7 @@ class Variables(
 
     The registry is itself a
     [MutableMapping][collections.abc.MutableMapping] from a variable name to a
-    [Variable][gemseo.space._variable.Variable]:
+    [BaseVariable][gemseo.space._variable.BaseVariable]:
     read it with `registry[name]`, `.keys()`, `.values()`, `.items()`, `.get()`,
     iteration, membership and length;
     insert or replace a variable with `registry[name] = variable`
@@ -86,7 +82,7 @@ class Variables(
     remain explicit methods.
     """
 
-    __name_to_variable: dict[str, Variable]
+    __name_to_variable: dict[str, BaseVariable]
     """The map from a variable name to a variable."""
 
     __name_to_indices: dict[str, range]
@@ -147,11 +143,12 @@ class Variables(
             return
 
         self.__enable_integer_variables_normalization = value
+        # The policy of a variable whose kind ignores the flag is unchanged,
+        # so recomputing it for every variable is behavior-preserving.
         for name, variable in self.__name_to_variable.items():
-            if variable.type == DataType.INTEGER:
-                self.__name_to_normalization_mask[name] = (
-                    self.__compute_normalization_mask(variable)
-                )
+            self.__name_to_normalization_mask[name] = self.__compute_normalization_mask(
+                variable
+            )
 
         self.bump_version()
 
@@ -159,7 +156,7 @@ class Variables(
         """Increment the version number."""
         self.__version += 1
 
-    def __setitem__(self, name: str, variable: Variable) -> None:
+    def __setitem__(self, name: str, variable: BaseVariable) -> None:
         # Insert a new variable (appended) or replace an existing one (in place),
         # possibly changing its size; the index ranges and size are rebuilt.
         self.__name_to_variable[name] = variable
@@ -228,11 +225,14 @@ class Variables(
         """
         variable = self[name]
         idx = list(components)
-        new_variable = Variable(
-            size=len(components),
-            type=variable.type,
-            lower_bound=variable.lower_bound[idx],
-            upper_bound=variable.upper_bound[idx],
+        # Rebuild the entry from its source so that the kind of the variable
+        # and any field of that kind are preserved.
+        new_variable = variable.model_copy(
+            update={
+                "size": len(components),
+                "lower_bound": variable.lower_bound[idx],
+                "upper_bound": variable.upper_bound[idx],
+            }
         )
         self.__name_to_variable[name] = new_variable
         self.__name_to_normalization_mask[name] = self.__compute_normalization_mask(
@@ -241,7 +241,7 @@ class Variables(
         self.__reindex()
         self.bump_version()
 
-    def __getitem__(self, name: str) -> Variable:
+    def __getitem__(self, name: str) -> BaseVariable:
         try:
             return self.__name_to_variable[name]
         except KeyError:
@@ -255,30 +255,27 @@ class Variables(
             Whether the components of the full vector are integer
             (one result per component).
         """
-        if not self.__name_to_variable:
-            return zeros(0, dtype=bool)
+        mask = zeros(self.__size, dtype=bool)
+        for name, variable in self.__name_to_variable.items():
+            if isinstance(variable, IntegerVariable):
+                mask[self.__name_to_indices[name]] = True
 
-        return concatenate(
-            tuple(
-                full(variable.size, variable.type == DataType.INTEGER, dtype=bool)
-                for variable in self.__name_to_variable.values()
-            )
-        )
+        return mask
 
     @property
     def has_integer_variable(self) -> bool:
         """Whether the set has at least one integer variable."""
         return any(
-            variable.type == DataType.INTEGER
+            isinstance(variable, IntegerVariable)
             for variable in self.__name_to_variable.values()
         )
 
-    def __compute_normalization_mask(self, variable: Variable) -> BooleanArray:
+    def __compute_normalization_mask(self, variable: BaseVariable) -> BooleanArray:
         """Compute the normalization policy mask of a variable.
 
-        Unbounded variables (one or both bounds infinite) are not normalized.
-        Integer variables are not normalized
-        unless `enable_integer_variables_normalization` is `True`.
+        The policy belongs to the kind of the variable;
+        this method only forwards the integer-normalization setting of the set to
+        [BaseVariable.compute_normalization_mask][gemseo.space._variable._base.BaseVariable.compute_normalization_mask].
 
         Args:
             variable: The variable.
@@ -286,14 +283,9 @@ class Variables(
         Returns:
             The per-component normalization mask.
         """
-        if (
-            variable.type == DataType.FLOAT
-            or self.__enable_integer_variables_normalization
-        ):
-            return logical_and(
-                variable.lower_bound != -inf, variable.upper_bound != inf
-            )
-        return full(variable.size, False)
+        return variable.compute_normalization_mask(
+            self.__enable_integer_variables_normalization
+        )
 
     def __iter__(self) -> Iterator[str]:
         return iter(self.__name_to_variable)

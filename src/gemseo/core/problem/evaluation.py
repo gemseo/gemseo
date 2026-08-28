@@ -31,7 +31,6 @@ from typing import ClassVar
 from typing import Literal
 from typing import overload
 
-from numpy import any as np_any
 from strenum import StrEnum
 
 from gemseo.core.function.collection.observables import Observables
@@ -42,7 +41,6 @@ from gemseo.core.problem.counter import EvaluationCounter
 from gemseo.core.problem.database import Database
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.io_dataset import IODataset
-from gemseo.space.design import DesignSpace
 from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import _CHECK_DESVARS_BOUNDS
 from gemseo.util.derivative.approximation_mode import ApproximationMode
@@ -55,6 +53,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.core.function.array_function import ArrayFunction
+    from gemseo.space.design import DesignSpace
     from gemseo.util.typing import StrPath
 
 
@@ -659,10 +658,7 @@ class EvaluationProblem(BaseProblem):
 
         if round_ints:
             # Keep the rounding option only if there is an integer design variable
-            round_ints = any(
-                np_any(variable_type == DesignSpace.DesignVariableType.INTEGER)
-                for variable_type in self.design_space.variable_types.values()
-            )
+            round_ints = self.design_space.has_integer_variables
 
         for functions in self._sequence_of_functions:
             if functions == self.__new_iter_observables:

@@ -22,8 +22,7 @@ import pytest
 from numpy import array
 from numpy.testing import assert_array_equal
 
-from gemseo.space._variable import DataType
-from gemseo.space._variable import Variable
+from gemseo.space._variable import ContinuousVariable
 from gemseo.space.design._bounds import Bounds
 from gemseo.space.design._variables import Variables
 from gemseo.util.testing.helper import assert_exception
@@ -33,9 +32,7 @@ from gemseo.util.testing.helper import assert_exception
 def variables() -> Variables:
     """A variables with a single float variable of size 2, bounds [0, 10]."""
     variables = Variables()
-    variables["x"] = Variable(
-        size=2, type=DataType.FLOAT, lower_bound=0.0, upper_bound=10.0
-    )
+    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=10.0)
     return variables
 
 

@@ -22,8 +22,7 @@ from numpy import complex128
 from numpy import float64
 from numpy.testing import assert_array_equal
 
-from gemseo.space._variable import DataType
-from gemseo.space._variable import Variable
+from gemseo.space._variable import ContinuousVariable
 from gemseo.space.design._codec import concatenate_values
 from gemseo.space.design._codec import split_full_value
 from gemseo.space.design._variables import Variables
@@ -33,8 +32,8 @@ from gemseo.space.design._variables import Variables
 def variables() -> Variables:
     """A variables with a float variable of size 2 and one of size 3."""
     variables = Variables()
-    variables["x"] = Variable(size=2, type=DataType.FLOAT)
-    variables["y"] = Variable(size=3, type=DataType.FLOAT)
+    variables["x"] = ContinuousVariable(size=2)
+    variables["y"] = ContinuousVariable(size=3)
     return variables
 
 

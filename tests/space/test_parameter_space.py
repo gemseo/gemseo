@@ -47,8 +47,7 @@ from gemseo.dataset.io_dataset import IODataset
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
 from gemseo.scenario.mdo import EvaluationScenario
-from gemseo.space._variable import DataType
-from gemseo.space._variable import Variable
+from gemseo.space._variable import ContinuousVariable
 from gemseo.space.design import DesignSpace
 from gemseo.space.parameter import ParameterSpace
 from gemseo.uncertainty.distribution.openturns.distribution_settings import (
@@ -1097,6 +1096,23 @@ def test_add_variable_from():
     assert_equal(ps.get_current_value(["z"]), array([0.5, 1.0]))
 
 
+def test_add_variables_from_does_not_share_the_current_value_array():
+    """Check that add_variables_from does not make two spaces share one array."""
+    ds2 = ParameterSpace()
+    ds2.add_random_vector(
+        "z",
+        SPNormalDistribution_Settings(mu=0.5, sigma=2.0),
+        SPNormalDistribution_Settings(mu=1.0, sigma=2.0),
+    )
+
+    ps = ParameterSpace()
+    ps.add_variables_from(ds2, "z")
+
+    ds2._current_value["z"][0] = 99.0
+
+    assert ps.get_current_value(["z"])[0] == 0.5
+
+
 def test_add_random_variable_from_settings():
     """Check adding random variable from distribution settings."""
     parameter_space = ParameterSpace()
@@ -1280,9 +1296,7 @@ def test_unpickle_pre_refactor_parameter_space() -> None:
         "name": "old",
         "normalize": {"u": array([True])},
         "_variables": {
-            "u": Variable(
-                size=1, type=DataType.FLOAT, lower_bound=[0.0], upper_bound=[1.0]
-            ),
+            "u": ContinuousVariable(size=1, lower_bound=[0.0], upper_bound=[1.0]),
         },
         "_norm_factor": None,
         "_DesignSpace__current_value": {"u": array([0.5])},

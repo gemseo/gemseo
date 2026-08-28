@@ -24,8 +24,8 @@ from numpy import array
 from numpy import dtype
 from numpy import zeros
 
-from gemseo.space._variable import DataType
-from gemseo.space._variable import Variable
+from gemseo.space._variable import ContinuousVariable
+from gemseo.space._variable import IntegerVariable
 from gemseo.space.design._bounds import Bounds
 from gemseo.space.design._checking import check
 from gemseo.space.design._checking import check_addable_value
@@ -39,12 +39,8 @@ from gemseo.util.testing.helper import assert_exception
 def variables() -> Variables:
     """A variables with a float variable and an integer variable."""
     variables = Variables()
-    variables["x"] = Variable(
-        size=2, type=DataType.FLOAT, lower_bound=0.0, upper_bound=10.0
-    )
-    variables["y"] = Variable(
-        size=1, type=DataType.INTEGER, lower_bound=0, upper_bound=5
-    )
+    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=10.0)
+    variables["y"] = IntegerVariable(size=1, lower_bound=0, upper_bound=5)
     return variables
 
 
@@ -109,9 +105,7 @@ def test_check_addable_value_several_non_integer_for_integer_variable(
 ) -> None:
     """Check that several non-integer components raise for an integer variable."""
     variables = Variables()
-    variables["z"] = Variable(
-        size=2, type=DataType.INTEGER, lower_bound=0, upper_bound=5
-    )
+    variables["z"] = IntegerVariable(size=2, lower_bound=0, upper_bound=5)
     with assert_exception(ValueError, snapshot):
         check_addable_value(variables, array([1.5, 2.5]), "z")
 

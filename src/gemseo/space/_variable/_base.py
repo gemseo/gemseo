@@ -12,23 +12,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Variable."""
+"""Base variable."""
 
 from __future__ import annotations
 
+from abc import ABC
+from abc import abstractmethod
+from itertools import starmap
 from numbers import Real
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 
+from numpy import array
 from numpy import atleast_1d
 from numpy import float64
 from numpy import full
 from numpy import inf
 from numpy import int64
-from numpy import isfinite
 from numpy import isnan
-from numpy import logical_and
-from numpy import mod
 from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import PositiveInt
@@ -47,6 +49,9 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
+    from gemseo.util.typing import BooleanArray
+
+
 _LOWER_BOUND: Final[str] = "lower_bound"
 """The tag for the lower bound."""
 
@@ -62,6 +67,10 @@ BoundType = (
     | ScalarBoundType
 )
 BoundArray = IntegerArray | RealArray
+
+# The `type` field of a variable shadows the builtin inside the class body,
+# so the NumPy type of the components is aliased here.
+ComponentDType = type[int64 | float64]
 
 
 def format_components(array: ndarray, indices: Iterable[int]) -> str:
@@ -88,17 +97,8 @@ class DataType(StrEnum):
     INTEGER = "integer"
 
 
-# The mapping from a variable data type to a numpy type,
-# this is defined at the module level because pydantic does not allow class attributes
-# that are dictionary.
-TYPE_MAP: Final[dict[str, type[int64 | float64]]] = {
-    DataType.INTEGER: int64,
-    DataType.FLOAT: float64,
-}
-
-
-class Variable(BaseModel, frozen=True):
-    """A variable.
+class BaseVariable(BaseModel, ABC, frozen=True):
+    """The base class of a variable.
 
     A variable is defined by
     a size,
@@ -110,7 +110,17 @@ class Variable(BaseModel, frozen=True):
     in that case the bound will be converted to a NumPy array of the expected `size`.
 
     A variable is immutable.
+
+    This class is abstract:
+    a concrete subclass pins [type][gemseo.space._variable._base.BaseVariable.type]
+    to one [DataType][gemseo.space._variable._base.DataType] member
+    and implements the kind-specific hooks.
+    Build a variable with
+    [VariableFactory][gemseo.space._variable._factory.VariableFactory].
     """
+
+    component_type: ClassVar[ComponentDType]
+    """The NumPy type of the components of the variable."""
 
     size: PositiveInt = 1
     """The size of the variable."""
@@ -158,7 +168,7 @@ class Variable(BaseModel, frozen=True):
             bound = bound.copy()
         elif isinstance(bound, Real):
             # inf cannot be cast to int and other components rely on this value.
-            dtype = None if bound in (-inf, inf) else TYPE_MAP[self.type]
+            dtype = None if bound in (-inf, inf) else self.component_type
             bound = full(self.size, bound, dtype=dtype)
         else:
             bound = atleast_1d(bound)
@@ -187,8 +197,8 @@ class Variable(BaseModel, frozen=True):
                 If the bound is not one-dimensional,
                 of if the bound does not have the right size,
                 or if some bound components are not numbers,
-                or if the variable is of integer type
-                and has some finite non-integer components.
+                or if some finite bound components are outside
+                the domain of the kind of variable.
         """
         bound = getattr(self, bound_name)
 
@@ -213,18 +223,102 @@ class Variable(BaseModel, frozen=True):
             )
             raise ValueError(msg)
 
-        if self.type == DataType.INTEGER:
-            # Check whether the components of the bound are integers (or infinite).
-            indices = logical_and(isfinite(bound), mod(bound, 1)).nonzero()[0]
-            if len(indices):
-                plural = len(indices) > 1
-                msg = (
-                    f"The following {bound_prefix} bound component"
-                    f"{'s are' if plural else ' is'} neither integer nor infinite "
-                    "while the variable is of type integer: "
-                    f"{format_components(bound, indices)}."
+        self.check_finite_bound_components(bound, bound_prefix)
+
+    def cast(self, value: ndarray) -> ndarray:
+        """Cast a value of the variable to the NumPy type of the variable.
+
+        Args:
+            value: The value of the variable.
+
+        Returns:
+            The cast value of the variable.
+        """
+        return value.astype(self.component_type)
+
+    @staticmethod
+    def compute_default_component(lower_bound_i: float, upper_bound_i: float) -> float:
+        """Compute the default value of a component from its bounds.
+
+        Use the center of the bounds when both are finite,
+        otherwise the finite bound,
+        otherwise zero.
+
+        Args:
+            lower_bound_i: The lower bound of the component.
+            upper_bound_i: The upper bound of the component.
+
+        Returns:
+            The default value of the component.
+        """
+        if lower_bound_i == -inf:
+            return 0.0 if upper_bound_i == inf else upper_bound_i
+
+        if upper_bound_i == inf:
+            return lower_bound_i
+
+        return (lower_bound_i + upper_bound_i) / 2
+
+    def compute_default_value(self) -> ndarray:
+        """Compute the default value of the variable from its bounds.
+
+        Returns:
+            The default value of the variable, one component per component of the
+            variable.
+        """
+        return array(
+            list(
+                starmap(
+                    self.compute_default_component,
+                    zip(self.lower_bound, self.upper_bound, strict=True),
                 )
-                raise ValueError(msg)
+            ),
+            dtype=self.component_type,
+        )
+
+    @abstractmethod
+    def compute_normalization_mask(
+        self, enable_integer_normalization: bool
+    ) -> BooleanArray:
+        """Compute the per-component normalization policy of the variable.
+
+        Args:
+            enable_integer_normalization: Whether to normalize the integer variables.
+
+        Returns:
+            Whether the components of the variable are normalized
+            (one result per component).
+        """
+
+    def check_finite_bound_components(
+        self, bound: BoundArray, bound_prefix: str
+    ) -> None:
+        """Check that the finite components of a bound are in the domain.
+
+        Any finite component is a valid bound unless a subclass restricts the domain.
+
+        Args:
+            bound: The bound.
+            bound_prefix: The prefix naming the bound in a message,
+                either `"lower"` or `"upper"`.
+
+        Raises:
+            ValueError: If some finite components of the bound are outside
+                the domain of the kind of variable.
+        """
+
+    def find_components_outside_domain(self, value: ndarray) -> set[int]:
+        """Return the indices of the components outside the domain of the variable.
+
+        Any component is in the domain unless a subclass restricts it.
+
+        Args:
+            value: The value of the variable.
+
+        Returns:
+            The indices of the components outside the domain of the variable.
+        """
+        return set()
 
     def __copy__(self) -> Self:
         # A variable is immutable and its bound arrays are read-only,
@@ -267,10 +361,33 @@ class Variable(BaseModel, frozen=True):
             self.__dict__[name].setflags(write=False)
 
     def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self.size == other.size
-            and self.type == other.type
-            and (self.lower_bound == other.lower_bound).all()
-            and (self.upper_bound == other.upper_bound).all()
-        )
+        if not isinstance(other, BaseVariable):
+            return False
+
+        # Compare the fields of the kind of the variable
+        # so that a field added by a subclass takes part in the comparison.
+        # The declaration order is preserved so that size is compared before the bounds,
+        # whose comparison would raise on arrays of different sizes.
+        names = dict.fromkeys((*type(self).model_fields, *type(other).model_fields))
+        for name in names:
+            if not (hasattr(self, name) and hasattr(other, name)):
+                # A field declared by only one of the two kinds.
+                return False
+
+            self_value = getattr(self, name)
+            other_value = getattr(other, name)
+            if (
+                isinstance(self_value, ndarray)
+                and isinstance(other_value, ndarray)
+                and self_value.shape != other_value.shape
+            ):
+                return False
+
+            comparison = self_value == other_value
+            if isinstance(comparison, ndarray):
+                if not comparison.all():
+                    return False
+            elif not comparison:
+                return False
+
+        return True

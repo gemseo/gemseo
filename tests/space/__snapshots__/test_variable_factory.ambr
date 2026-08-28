@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_create_for_unknown_variable_type
+  "There is no variable class of type 'complex'; the available types are: float and integer."
+# ---
+# name: test_duplicate_data_type
+  'The variable classes ContinuousVariable and OtherContinuousVariable both pin the data type float.'
+# ---

@@ -1,93 +1,151 @@
 # serializer version: 1
-# name: test_bound_with_nan_components[bound0-lower]
+# name: test_bound_with_nan_components[bound0-lower-ContinuousVariable]
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
     Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound': array([nan])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_bound_with_nan_components[bound0-upper]
+# name: test_bound_with_nan_components[bound0-lower-IntegerVariable]
   '''
-  1 validation error for Variable
+  1 validation error for IntegerVariable
+    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound': array([nan])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_nan_components[bound0-upper-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
     Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'upper_bound': array([nan])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_bound_with_nan_components[bound1-lower]
+# name: test_bound_with_nan_components[bound0-upper-IntegerVariable]
   '''
-  1 validation error for Variable
+  1 validation error for IntegerVariable
+    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'upper_bound': array([nan])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_nan_components[bound1-lower-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
     Value error, The following lower bound components are not numbers: nan (index 0) and nan (index 1). [type=value_error, input_value={'size': 2, 'lower_bound': array([nan, nan])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_bound_with_nan_components[bound1-upper]
+# name: test_bound_with_nan_components[bound1-lower-IntegerVariable]
   '''
-  1 validation error for Variable
+  1 validation error for IntegerVariable
+    Value error, The following lower bound components are not numbers: nan (index 0) and nan (index 1). [type=value_error, input_value={'size': 2, 'lower_bound': array([nan, nan])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_nan_components[bound1-upper-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
+    Value error, The following upper bound components are not numbers: nan (index 0) and nan (index 1). [type=value_error, input_value={'size': 2, 'upper_bound': array([nan, nan])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_bound_with_nan_components[bound1-upper-IntegerVariable]
+  '''
+  1 validation error for IntegerVariable
     Value error, The following upper bound components are not numbers: nan (index 0) and nan (index 1). [type=value_error, input_value={'size': 2, 'upper_bound': array([nan, nan])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bound_with_non_integer_components[bound0-lower]
   '''
-  1 validation error for Variable
-    Value error, The following lower bound component is neither integer nor infinite while the variable is of type integer: 1.5 (index 0). [type=value_error, input_value={'size': 1, 'type': 'inte...er_bound': array([1.5])}, input_type=dict]
+  1 validation error for IntegerVariable
+    Value error, The following lower bound component is neither integer nor infinite while the variable is of type integer: 1.5 (index 0). [type=value_error, input_value={'size': 1, 'lower_bound': array([1.5])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bound_with_non_integer_components[bound0-upper]
   '''
-  1 validation error for Variable
-    Value error, The following upper bound component is neither integer nor infinite while the variable is of type integer: 1.5 (index 0). [type=value_error, input_value={'size': 1, 'type': 'inte...er_bound': array([1.5])}, input_type=dict]
+  1 validation error for IntegerVariable
+    Value error, The following upper bound component is neither integer nor infinite while the variable is of type integer: 1.5 (index 0). [type=value_error, input_value={'size': 1, 'upper_bound': array([1.5])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bound_with_non_integer_components[bound1-lower]
   '''
-  1 validation error for Variable
-    Value error, The following lower bound components are neither integer nor infinite while the variable is of type integer: 1.5 (index 0) and 2.5 (index 1). [type=value_error, input_value={'size': 2, 'type': 'inte...und': array([1.5, 2.5])}, input_type=dict]
+  1 validation error for IntegerVariable
+    Value error, The following lower bound components are neither integer nor infinite while the variable is of type integer: 1.5 (index 0) and 2.5 (index 1). [type=value_error, input_value={'size': 2, 'lower_bound': array([1.5, 2.5])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bound_with_non_integer_components[bound1-upper]
   '''
-  1 validation error for Variable
-    Value error, The following upper bound components are neither integer nor infinite while the variable is of type integer: 1.5 (index 0) and 2.5 (index 1). [type=value_error, input_value={'size': 2, 'type': 'inte...und': array([1.5, 2.5])}, input_type=dict]
+  1 validation error for IntegerVariable
+    Value error, The following upper bound components are neither integer nor infinite while the variable is of type integer: 1.5 (index 0) and 2.5 (index 1). [type=value_error, input_value={'size': 2, 'upper_bound': array([1.5, 2.5])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_frozen[lower_bound]
+# name: test_frozen[ContinuousVariable-lower_bound]
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
   lower_bound
     Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
   '''
 # ---
-# name: test_frozen[upper_bound]
+# name: test_frozen[ContinuousVariable-upper_bound]
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
   upper_bound
     Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
   '''
 # ---
-# name: test_invalid_bound_size[lower]
+# name: test_frozen[IntegerVariable-lower_bound]
   '''
-  1 validation error for Variable
+  1 validation error for IntegerVariable
+  lower_bound
+    Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_frozen[IntegerVariable-upper_bound]
+  '''
+  1 validation error for IntegerVariable
+  upper_bound
+    Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_invalid_bound_size[lower-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
     Value error, The lower bound should be of size 1. [type=value_error, input_value={'lower_bound': [0, 0]}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_invalid_bound_size[upper]
+# name: test_invalid_bound_size[lower-IntegerVariable]
   '''
-  1 validation error for Variable
+  1 validation error for IntegerVariable
+    Value error, The lower bound should be of size 1. [type=value_error, input_value={'lower_bound': [0, 0]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_invalid_bound_size[upper-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
     Value error, The upper bound should be of size 1. [type=value_error, input_value={'upper_bound': [0, 0]}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_invalid_bound_value_scalar[lower]
+# name: test_invalid_bound_size[upper-IntegerVariable]
   '''
-  6 validation errors for Variable
+  1 validation error for IntegerVariable
+    Value error, The upper bound should be of size 1. [type=value_error, input_value={'upper_bound': [0, 0]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_invalid_bound_value_scalar[lower-ContinuousVariable]
+  '''
+  6 validation errors for ContinuousVariable
   lower_bound.chain[is-instance[ndarray],function-plain[validate()]]
     Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
@@ -108,9 +166,32 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/float_type
   '''
 # ---
-# name: test_invalid_bound_value_scalar[upper]
+# name: test_invalid_bound_value_scalar[lower-IntegerVariable]
   '''
-  6 validation errors for Variable
+  6 validation errors for IntegerVariable
+  lower_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  lower_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  lower_bound.list[union[int,float]]
+    Input should be a valid list [type=list_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/list_type
+  lower_bound.tuple[union[int,float]]
+    Input should be a valid tuple [type=tuple_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
+  lower_bound.int
+    Input should be a valid integer [type=int_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  lower_bound.float
+    Input should be a valid number [type=float_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  '''
+# ---
+# name: test_invalid_bound_value_scalar[upper-ContinuousVariable]
+  '''
+  6 validation errors for ContinuousVariable
   upper_bound.chain[is-instance[ndarray],function-plain[validate()]]
     Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
       For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
@@ -131,62 +212,162 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/float_type
   '''
 # ---
-# name: test_invalid_type
+# name: test_invalid_bound_value_scalar[upper-IntegerVariable]
   '''
-  1 validation error for Variable
-  type
-    Input should be 'float' or 'integer' [type=enum, input_value='complex', input_type=str]
-      For further information visit https://errors.pydantic.dev/X.Y/v/enum
+  6 validation errors for IntegerVariable
+  upper_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  upper_bound.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  upper_bound.list[union[int,float]]
+    Input should be a valid list [type=list_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/list_type
+  upper_bound.tuple[union[int,float]]
+    Input should be a valid tuple [type=tuple_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/tuple_type
+  upper_bound.int
+    Input should be a valid integer [type=int_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  upper_bound.float
+    Input should be a valid number [type=float_type, input_value=1j, input_type=complex]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
   '''
 # ---
-# name: test_model_copy_with_inconsistent_update
+# name: test_invalid_type[ContinuousVariable]
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
+  type
+    Input should be <DataType.FLOAT: 'float'> [type=literal_error, input_value='complex', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_invalid_type[IntegerVariable]
+  '''
+  1 validation error for IntegerVariable
+  type
+    Input should be <DataType.INTEGER: 'integer'> [type=literal_error, input_value='complex', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_model_copy_with_another_type[ContinuousVariable-integer]
+  '''
+  1 validation error for ContinuousVariable
+  type
+    Input should be <DataType.FLOAT: 'float'> [type=literal_error, input_value=<DataType.INTEGER: 'integer'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_model_copy_with_another_type[IntegerVariable-float]
+  '''
+  1 validation error for IntegerVariable
+  type
+    Input should be <DataType.INTEGER: 'integer'> [type=literal_error, input_value=<DataType.FLOAT: 'float'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_model_copy_with_inconsistent_update[ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
     Value error, The lower bound should be of size 5. [type=value_error, input_value={'size': 5, 'type': <Data...bound': array([1., 1.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_multidimensional_bound[lower]
+# name: test_model_copy_with_inconsistent_update[IntegerVariable]
   '''
-  1 validation error for Variable
+  1 validation error for IntegerVariable
+    Value error, The lower bound should be of size 5. [type=value_error, input_value={'size': 5, 'type': <Data...r_bound': array([1, 1])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_multidimensional_bound[lower-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
     Value error, The lower bound has a dimension greater than 1. [type=value_error, input_value={'size': 2, 'lower_bound': array([[1., 2.]])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_multidimensional_bound[upper]
+# name: test_multidimensional_bound[lower-IntegerVariable]
   '''
-  1 validation error for Variable
+  1 validation error for IntegerVariable
+    Value error, The lower bound has a dimension greater than 1. [type=value_error, input_value={'size': 2, 'lower_bound': array([[1., 2.]])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_multidimensional_bound[upper-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
     Value error, The upper bound has a dimension greater than 1. [type=value_error, input_value={'size': 2, 'upper_bound': array([[1., 2.]])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_non_positive_size[-1]
+# name: test_multidimensional_bound[upper-IntegerVariable]
   '''
-  1 validation error for Variable
+  1 validation error for IntegerVariable
+    Value error, The upper bound has a dimension greater than 1. [type=value_error, input_value={'size': 2, 'upper_bound': array([[1., 2.]])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_non_positive_size[-1-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
   size
     Input should be greater than 0 [type=greater_than, input_value=-1, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
   '''
 # ---
-# name: test_non_positive_size[0]
+# name: test_non_positive_size[-1-IntegerVariable]
   '''
-  1 validation error for Variable
+  1 validation error for IntegerVariable
+  size
+    Input should be greater than 0 [type=greater_than, input_value=-1, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  '''
+# ---
+# name: test_non_positive_size[0-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
   size
     Input should be greater than 0 [type=greater_than, input_value=0, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
   '''
 # ---
-# name: test_wrong_boundaries[1-float-0--1.0]
+# name: test_non_positive_size[0-IntegerVariable]
   '''
-  1 validation error for Variable
-    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'type': <Data... 0, 'upper_bound': -1.0}, input_type=dict]
+  1 validation error for IntegerVariable
+  size
+    Input should be greater than 0 [type=greater_than, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
+  '''
+# ---
+# name: test_type_of_another_kind[ContinuousVariable-integer]
+  '''
+  1 validation error for ContinuousVariable
+  type
+    Input should be <DataType.FLOAT: 'float'> [type=literal_error, input_value=<DataType.INTEGER: 'integer'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_type_of_another_kind[IntegerVariable-float]
+  '''
+  1 validation error for IntegerVariable
+  type
+    Input should be <DataType.INTEGER: 'integer'> [type=literal_error, input_value=<DataType.FLOAT: 'float'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+  '''
+# ---
+# name: test_wrong_boundaries[ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'lower_bound': 0, 'upper_bound': -1}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_wrong_boundaries[1-integer-0--1]
+# name: test_wrong_boundaries[IntegerVariable]
   '''
-  1 validation error for Variable
-    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'type': 'inte...': 0, 'upper_bound': -1}, input_type=dict]
+  1 validation error for IntegerVariable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'lower_bound': 0, 'upper_bound': -1}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---

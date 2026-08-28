@@ -21,16 +21,11 @@ from numbers import Complex
 from typing import TYPE_CHECKING
 from typing import Any
 
-from numpy import array
-from numpy import atleast_1d
 from numpy import equal
-from numpy import isinf
 from numpy import isnan
-from numpy import mod
 from numpy import ndarray
 from numpy import vectorize
 
-from gemseo.space._variable import DataType
 from gemseo.space._variable import format_components
 from gemseo.space.design._constants import BOUND_ATOL
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
@@ -43,35 +38,6 @@ if TYPE_CHECKING:
 
     from gemseo.space.design._bounds import Bounds
     from gemseo.space.design._variables import Variables
-
-
-def _get_integer_mask(value: ndarray | complex) -> ndarray:
-    """Return whether the components of an array are integer.
-
-    `None` and infinite values will be interpreted as integers
-
-    Args:
-        value: Either the array
-            or a number that the method will cast into a 1D array.
-
-    Returns:
-        Whether the components of the array are integer.
-    """
-    return array([isinf(x) or x is None or not mod(x, 1) for x in atleast_1d(value)])
-
-
-def _find_non_integer_indices(value: ndarray) -> set[int]:
-    """Return the indices of the components that are not integer.
-
-    `None` and infinite components are treated as integer.
-
-    Args:
-        value: The 1D array to inspect.
-
-    Returns:
-        The indices of the non-integer components.
-    """
-    return set(range(len(value))) - set(_get_integer_mask(value).nonzero()[0])
 
 
 def _is_numeric(value: Any) -> bool:
@@ -117,8 +83,8 @@ def check_addable_value(
         ValueError: Either if the array is not one-dimensional,
             if the value is not numerizable,
             if the value is nan
-            or if there is a component value which is not an integer
-            while the variable type is integer.
+            or if a component falls outside the domain
+            of the kind of the variable.
     """
     all_indices = set(range(len(value)))
     # OK if the variable value is one-dimensional
@@ -160,18 +126,18 @@ def check_addable_value(
         )
         raise ValueError(msg)
 
-    # Check if some components of an integer variable are not integer.
-    if variables[name].type == DataType.INTEGER:
-        indices = _find_non_integer_indices(value)
-        if indices:
-            plural = len(indices) > 1
-            msg = (
-                f"The following value{'s' if plural else ''} of variable '{name}' "
-                f"{'are' if plural else 'is'} neither None nor integer "
-                f"while variable '{name}' is of type integer: "
-                f"{format_components(value, indices)}."
-            )
-            raise ValueError(msg)
+    # Check if some components are outside the domain of the kind of the variable.
+    variable = variables[name]
+    indices = variable.find_components_outside_domain(value)
+    if indices:
+        plural = len(indices) > 1
+        msg = (
+            f"The following value{'s' if plural else ''} of variable '{name}' "
+            f"{'are' if plural else 'is'} neither None nor {variable.type} "
+            f"while variable '{name}' is of type {variable.type}: "
+            f"{format_components(value, indices)}."
+        )
+        raise ValueError(msg)
 
     return True
 
@@ -209,7 +175,7 @@ def check_membership(
     value: Mapping[str, ndarray | None] | ndarray,
     names: Sequence[str] = (),
 ) -> None:
-    """Check whether a value satisfies the bounds and integer constraints.
+    """Check whether a value satisfies the bounds and the domains of the kinds.
 
     Args:
         variables: The variables.
@@ -223,7 +189,7 @@ def check_membership(
     Raises:
         ValueError: If the dimension of the values is wrong,
             the values fall outside the bounds,
-            or an integer-typed variable has a non-integer component.
+            or a component falls outside the domain of the kind of the variable.
         TypeError: If `value` is neither an array nor a mapping.
     """
     if isinstance(value, Mapping):
@@ -313,6 +279,59 @@ def _check_membership_array(bounds: Bounds, full_value: ndarray) -> None:
         raise ValueError(msg)
 
 
+def _check_index_in_domain(
+    variable: Any,
+    name: str,
+    index: int,
+    value_i: Any,
+    out_of_domain_indices: set[int],
+) -> None:
+    """Check that a component of a value lies within the domain of a variable kind.
+
+    Args:
+        variable: The variable.
+        name: The name of the variable.
+        index: The index of the component.
+        value_i: The value of the component.
+        out_of_domain_indices: The indices of the components outside the domain
+            of the kind of the variable.
+
+    Raises:
+        ValueError: If the component falls outside the domain of the kind
+            of the variable.
+    """
+    if index in out_of_domain_indices:
+        msg = (
+            f"The variable {name} is of type {variable.type}; "
+            f"got {name}[{index}] = {value_i}."
+        )
+        raise ValueError(msg)
+
+
+def check_domain(variables: Variables, name: str, value: ndarray) -> None:
+    """Check that a value lies within the domain of the kind of a variable.
+
+    A value whose size does not match the variable is left unchecked here,
+    the size mismatch being handled elsewhere.
+
+    Args:
+        variables: The variables.
+        name: The name of the variable.
+        value: The value of the variable.
+
+    Raises:
+        ValueError: If a component falls outside the domain of the kind
+            of the variable.
+    """
+    variable = variables[name]
+    if value.size != variable.size:
+        return
+
+    out_of_domain_indices = variable.find_components_outside_domain(value.real)
+    for i in sorted(out_of_domain_indices):
+        _check_index_in_domain(variable, name, i, value[i].real, out_of_domain_indices)
+
+
 def _check_membership_dict(
     variables: Variables,
     name_to_value: Mapping[str, ndarray | None],
@@ -329,7 +348,7 @@ def _check_membership_dict(
     Raises:
         ValueError: If the dimension of an array is wrong,
             the values are outside the bounds,
-            or an integer-typed variable has a non-integer component.
+            or a component falls outside the domain of the kind of the variable.
     """
     names = names or variables
     for name in names:
@@ -345,11 +364,7 @@ def _check_membership_dict(
             )
             raise ValueError(msg)
 
-        non_integer_indices = (
-            _find_non_integer_indices(value.real)
-            if variable.type == DataType.INTEGER
-            else set()
-        )
+        out_of_domain_indices = variable.find_components_outside_domain(value.real)
         for i in range(variable.size):
             value_i = value[i].real
             lower_bound = variable.lower_bound[i]
@@ -370,9 +385,4 @@ def _check_membership_dict(
                 )
                 raise ValueError(msg)
 
-            if i in non_integer_indices:
-                msg = (
-                    f"The variable {name} is of type integer; "
-                    f"got {name}[{i}] = {value_i}."
-                )
-                raise ValueError(msg)
+            _check_index_in_domain(variable, name, i, value_i, out_of_domain_indices)

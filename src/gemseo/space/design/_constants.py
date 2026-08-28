@@ -18,6 +18,8 @@ from __future__ import annotations
 
 from typing import Final
 
+from gemseo.space._variable._base import _LOWER_BOUND
+from gemseo.space._variable._base import _UPPER_BOUND
 from gemseo.util.constant import EPSILON
 
 BOUND_ATOL: Final[float] = 100.0 * EPSILON
@@ -43,12 +45,6 @@ _VALUE_GROUP: Final[str] = "value"
 
 _SIZE_GROUP: Final[str] = "size"
 """The name of the HDF dataset storing a variable size."""
-
-_LOWER_BOUND: Final[str] = "lower_bound"
-"""The tag for the lower bound."""
-
-_UPPER_BOUND: Final[str] = "upper_bound"
-"""The tag for the upper bound."""
 
 _TABLE_NAMES: Final[list[str]] = [
     "name",

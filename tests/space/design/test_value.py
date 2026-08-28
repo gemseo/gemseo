@@ -18,10 +18,14 @@ from __future__ import annotations
 
 import pytest
 from numpy import array
+from numpy import complex128
+from numpy import float32
+from numpy import float64
+from numpy import int64
 from numpy.testing import assert_equal
 
-from gemseo.space._variable import DataType
-from gemseo.space._variable import Variable
+from gemseo.space._variable import ContinuousVariable
+from gemseo.space._variable import IntegerVariable
 from gemseo.space.design._bounds import Bounds
 from gemseo.space.design._integer_rounder import IntegerRounder
 from gemseo.space.design._normalizer import Normalizer
@@ -41,9 +45,23 @@ def _build_value(*names: str) -> tuple[Variables, Value]:
     """
     variables = Variables()
     for name in names:
-        variables[name] = Variable(
-            size=1, type=DataType.FLOAT, lower_bound=0.0, upper_bound=1.0
-        )
+        variables[name] = ContinuousVariable(size=1, lower_bound=0.0, upper_bound=1.0)
+    bounds = Bounds(variables)
+    normalizer = Normalizer(variables, bounds, IntegerRounder(variables))
+    return variables, Value(variables, bounds, normalizer)
+
+
+def _build_integer_value(name: str) -> tuple[Variables, Value]:
+    """Build a Value over a single integer variable with bounds [-10, 10].
+
+    Args:
+        name: The name of the variable.
+
+    Returns:
+        The variables and the value.
+    """
+    variables = Variables()
+    variables[name] = IntegerVariable(size=1, lower_bound=-10, upper_bound=10)
     bounds = Bounds(variables)
     normalizer = Normalizer(variables, bounds, IntegerRounder(variables))
     return variables, Value(variables, bounds, normalizer)
@@ -57,9 +75,7 @@ def _resize(variables: Variables, name: str, size: int) -> None:
         name: The name of the variable to resize.
         size: The new size of the variable.
     """
-    variables[name] = Variable(
-        size=size, type=DataType.FLOAT, lower_bound=0.0, upper_bound=1.0
-    )
+    variables[name] = ContinuousVariable(size=size, lower_bound=0.0, upper_bound=1.0)
 
 
 @pytest.fixture
@@ -72,6 +88,27 @@ def test_set_variable_unknown_name(value, snapshot) -> None:
     """Check that setting the value of an unknown variable raises."""
     with assert_exception(KeyError, snapshot):
         value.set_variable("unknown", array([0.5]))
+
+
+def test_set_variable_rejects_non_integer_value(snapshot) -> None:
+    """Check that set_variable rejects a non-integer value for an integer variable."""
+    _, value = _build_integer_value("i")
+
+    with assert_exception(ValueError, snapshot):
+        value.set_variable("i", array([2.7]))
+
+    assert value.name_to_value == {}
+
+
+@pytest.mark.parametrize("given_value", [array([3]), array([3.0])])
+def test_set_variable_accepts_a_valid_integer_value(given_value) -> None:
+    """Check that set_variable accepts a valid integer value and casts it to int64."""
+    _, value = _build_integer_value("i")
+
+    value.set_variable("i", given_value)
+
+    assert value.name_to_value["i"].dtype == int64
+    assert_equal(value.name_to_value["i"], array([3]))
 
 
 def test_refresh_status_drops_resized_value(snapshot) -> None:
@@ -111,6 +148,58 @@ def test_resize_invalidation_survives_another_mutation(
         value.get(["x"])
 
 
+@pytest.mark.parametrize("dtype", [int64, float32, float64])
+def test_set_casts_to_the_component_type(dtype) -> None:
+    """Check that set casts the value of a float variable to float64."""
+    _, value = _build_value("x")
+
+    value.set({"x": array([1.0], dtype=dtype)})
+
+    assert value.name_to_value["x"].dtype == float64
+
+
+def test_set_does_not_alias_the_given_value() -> None:
+    """Check that set stores a copy of the value of the caller."""
+    _, value = _build_value("x")
+    given_value = array([0.5])
+
+    value.set({"x": given_value})
+    given_value[0] = 0.25
+
+    assert value.name_to_value["x"][0] == 0.5
+
+
+def test_set_keeps_a_complex_value() -> None:
+    """Check that set leaves a complex value untouched, for the complex step."""
+    _, value = _build_value("x")
+
+    value.set({"x": array([0.5 + 1j])})
+
+    assert value.name_to_value["x"].dtype == complex128
+
+
+def test_set_does_not_alias_the_given_complex_value() -> None:
+    """Check that set stores a copy of a complex value of the caller."""
+    _, value = _build_value("x")
+    given_value = array([0.5 + 1j])
+
+    value.set({"x": given_value})
+    given_value[0] = 0.25
+
+    assert value.name_to_value["x"][0] == 0.5 + 1j
+
+
+def test_set_variable_does_not_alias_the_given_value() -> None:
+    """Check that set_variable stores a copy of the value of the caller."""
+    _, value = _build_value("x")
+    given_value = array([0.5])
+
+    value.set_variable("x", given_value)
+    given_value[0] = 0.25
+
+    assert value.name_to_value["x"][0] == 0.5
+
+
 def test_set_keeps_wrong_size_value() -> None:
     """Check that a wrong-size value passed to set is left in place.
 
@@ -123,6 +212,21 @@ def test_set_keeps_wrong_size_value() -> None:
     value.set({"x": array([0.5]), "y": array([0.5])})
 
     assert not value.has_value
+    assert_equal(value.name_to_value["x"], array([0.5]))
+
+
+def test_set_variable_keeps_wrong_size_value() -> None:
+    """Check that set_variable leaves a wrong-size value to the membership check.
+
+    The domain of the kind of the variable cannot be checked component-wise
+    against a value of another size; rejecting it is up to the membership check,
+    with a size message.
+    """
+    variables, value = _build_value("x")
+    _resize(variables, "x", 3)
+
+    value.set_variable("x", array([0.5]))
+
     assert_equal(value.name_to_value["x"], array([0.5]))
 
 
@@ -173,9 +277,7 @@ def test_initialize_missing_after_resize() -> None:
 def test_check_value_ignores_resized_value() -> None:
     """Check that a value invalidated by a resize is not checked against bounds."""
     variables = Variables()
-    variables["x"] = Variable(
-        size=2, type=DataType.FLOAT, lower_bound=0.0, upper_bound=1.0
-    )
+    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
     bounds = Bounds(variables)
     value = Value(
         variables, bounds, Normalizer(variables, bounds, IntegerRounder(variables))
@@ -184,9 +286,7 @@ def test_check_value_ignores_resized_value() -> None:
 
     # The new size does not broadcast against the stored one and the new bounds
     # exclude the stored value.
-    variables["x"] = Variable(
-        size=3, type=DataType.FLOAT, lower_bound=2.0, upper_bound=3.0
-    )
+    variables["x"] = ContinuousVariable(size=3, lower_bound=2.0, upper_bound=3.0)
 
     value.check_value("x")
     assert value.name_to_value == {"x": None}
