@@ -716,6 +716,13 @@ collapses, and a viewport breakpoint cannot tell the two states apart.
   margin-top: 3px;
 }
 
+/* Who the learning path is written for. */
+.gh-detail__audience {
+  font-size: var(--gh-fs-xs);
+  color: var(--gh-fg-3);
+  margin-top: 4px;
+}
+
 /* Prerequisites */
 
 .gh-prereq {
@@ -784,6 +791,12 @@ collapses, and a viewport breakpoint cannot tell the two states apart.
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+  /*
+  Let each card stop at its own content instead of stretching to its row mate:
+  a card holding a capped list is much taller than a card holding two rows, and
+  an equal-height row would leave its neighbour with a card mostly empty.
+  */
+  align-items: start;
 }
 
 /*
@@ -837,6 +850,56 @@ excludes its padding.
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+/*
+A group card grows with its list, and a single long list is enough to push the
+whole home page down: the `optimize` goal ships eight explanations, half again
+what fits. Past SCROLL_ROWS items (home.js) any group's list becomes its own
+scroll region, capped just inside the row that follows so the half-visible row is
+itself the hint that the list continues. Same shape as the quick-start
+`.gh-panel` above, which scrolls inside a constant-height host. `auto` and not
+`scroll`: a capped list that ends up fitting shows no scrollbar track at all.
+
+The value is five rows (5 x 57px plus four 2px gaps) minus a hair. A row is
+taller when its description wraps, which happens in the narrow two-column track,
+so the cap lands mid-row rather than on a boundary.
+*/
+.gh-group__items--capped {
+  max-height: 290px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gh-border) transparent;
+}
+
+/*
+Only for the lists that measurably overflow, as marked by `markOverflow()` in
+home.js: the gutter keeps the scrollbar off the rows and the fade over the cut
+row says the list continues. The fade is anchored to the container, so it stays
+painted once the list is scrolled to its end; the count in the head is what
+gives the total.
+*/
+.gh-group__items--overflowing {
+  padding-right: 4px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
+}
+
+.gh-group__items--overflowing:focus-visible {
+  outline: 2px solid var(--gh-accent-border);
+  outline-offset: 2px;
+  border-radius: 9px;
+}
+
+.gh-group__count {
+  margin-left: auto;
+  font-family: var(--gh-mono);
+  font-size: 0.45rem; /* 9px -- same micro tag as `.gh-res__level` */
+  letter-spacing: 0.04em;
+  color: var(--gh-fg-3);
+  border: 1px solid var(--gh-border);
+  border-radius: 5px;
+  padding: 1px 5px;
 }
 
 .gh-res {

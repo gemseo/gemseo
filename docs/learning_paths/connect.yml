@@ -9,37 +9,56 @@
 # Schema: type in {explanation, tutorial, howto, reference}.
 # `path` is relative to the documentation base URL (version-portable), or an
 # absolute http(s) URL for external resources.
+# `title` is optional: it defaults to the first heading of the referenced page,
+# minus its `Tutorial - ` or `Available: ` prefix, and NOT to the label that page
+# carries in the mkdocs `nav` (the two differ on a few pages). Set it only to
+# override that heading; it is mandatory for an external http(s) `path`.
+# `audience` says who the path is written for; it is rendered under the blurb.
+# Reading order within a type follows the order of this file: the home page
+# groups the resources by type and keeps their relative order.
 id: connect
 code: DISC
 title: Connect a model
+audience: Simulation engineer owning one model, who must make it callable, inspectable and differentiable by GEMSEO.
 blurb: Wrap your simulation code, solvers or functions as GEMSEO disciplines.
-
-prerequisites:
-  - title: Installation
-    path: software/installation/
 
 resources:
   - type: explanation
-    title: What is a discipline?
-    desc: The core building block of any GEMSEO study.
-    path: user_guide/concepts/discipline/discipline/
-  - type: tutorial
-    title: Create your first discipline
-    desc: Wrap a simple analytic model step by step.
-    path: generated/examples/tutorials/basic/plot_tutorial_first_discipline/
-  - type: howto
-    title: Wrap a Python function
-    desc: Turn an existing function into a discipline.
-    path: generated/examples/howtos/disciplines/
-  - type: howto
-    title: Interface an external executable
-    desc: Drive a black-box solver from disk I/O.
-    path: generated/examples/tutorials/basic/plot_tutorial_discipline_executable/
+    desc: The problem a GEMSEO discipline solves, and some of the available wrappers.
+    path: user_guide/needs/interoperability_simulation_models/
   - type: explanation
-    title: Grammars & data flow
-    desc: How inputs/outputs are typed and validated.
+    desc: Inputs, outputs, grammars, cache and Jacobian of the core building block.
+    path: user_guide/concepts/discipline/discipline/
+  - type: explanation
+    desc: How the data flowing through a discipline is typed, checked and stored.
     path: user_guide/needs/data_validation_persistence/
+  - type: tutorial
+    desc: Wrap an analytic model step by step, up to its derivatives.
+    path: generated/examples/tutorials/basic/plot_tutorial_first_discipline/
+  - type: tutorial
+    desc: Drive a black-box solver through its input and output files.
+    path: generated/examples/tutorials/basic/plot_tutorial_discipline_executable/
+  - type: howto
+    desc: Turn a function computing the outputs into an AutoPyDiscipline.
+    path: generated/examples/howtos/disciplines/types/plot_howto_auto_py/
+  - type: howto
+    desc: Build a discipline whose Jacobian is derived symbolically for you.
+    path: generated/examples/howtos/disciplines/types/plot_howto_analytic/
+  - type: howto
+    desc: Let GEMSEO infer the grammars from the model fields you read and write.
+    path: generated/examples/howtos/disciplines/types/plot_howto_model_discipline/
+  - type: howto
+    desc: Add type constraints, value ranges and custom validators to your data.
+    path: generated/examples/howtos/disciplines/grammars/plot_howto_pydantic_grammar/
+  - type: howto
+    desc: Differentiate some outputs with respect to some inputs with linearize().
+    path: generated/examples/howtos/disciplines/differentiation/plot_howto_compute_jacobian/
+  - type: howto
+    desc: Compare your derivatives against a numerical approximation.
+    path: generated/examples/howtos/disciplines/differentiation/plot_howto_check_jacobian/
+  - type: howto
+    desc: Choose and tune the approximation method when no analytic Jacobian exists.
+    path: generated/examples/howtos/disciplines/differentiation/plot_howto_differenciation_settings/
   - type: reference
-    title: Discipline API
-    desc: Full reference for the disciplines and their settings.
+    desc: The comprehensive list of the disciplines shipped with GEMSEO.
     path: algorithms/discipline_algos/

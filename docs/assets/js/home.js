@@ -41,6 +41,12 @@ where that hook could not inline them.
     reference: { kicker: "Look up", label: "Reference", dot: "oklch(0.66 0.12 65)" },
   };
   var TYPE_ORDER = ["explanation", "tutorial", "howto", "reference"];
+  // Above this many resources, any group's list -- explanation, tutorial, how-to
+  // or reference alike -- becomes a bounded scroll region
+  // (`.gh-group__items--capped` in home.css) so that one long list, such as the
+  // eight explanations of the `optimize` goal, does not push the whole home page
+  // down.
+  var SCROLL_ROWS = 5;
   var LEVEL_NAME = { beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced" };
 
   var cache = null; // parsed JSON, reused across instant-navigation loads
@@ -212,7 +218,14 @@ where that hook could not inline them.
         el("span", { class: "gh-group__kicker", text: meta.kicker }),
         el("span", { class: "gh-group__label", text: "· " + meta.label }),
       ]);
-      var items = el("div", { class: "gh-group__items" });
+      var itemProps = { class: "gh-group__items" };
+      if (group.items.length > SCROLL_ROWS) {
+        itemProps.class += " gh-group__items--capped";
+        // Read back by `markOverflow()` once the list is in the document.
+        itemProps["data-count"] = String(group.items.length);
+        itemProps["data-label"] = meta.label;
+      }
+      var items = el("div", itemProps);
       group.items.forEach(function (resource) {
         items.appendChild(renderResource(resource));
       });
@@ -220,6 +233,66 @@ where that hook could not inline them.
     });
     return grid;
   }
+
+  /*
+  A capped list only *usually* overflows: whether the row past the cap is really
+  cut depends on the column width, since a wrapped description makes the rows
+  taller. So the decorations -- the fade, the scrollbar gutter, the total count
+  and the keyboard tab stop -- are driven by a measurement rather than by the
+  item count, and a capped list that ends up fitting gets none of them.
+  `overflow-y: auto` already hides the scrollbar on its own in that case.
+
+  Must run with the list in the document: `scrollHeight` and `clientHeight` are
+  both 0 on a detached node.
+  */
+  function markOverflow(root) {
+    var lists = root.querySelectorAll(".gh-group__items--capped");
+    Array.prototype.forEach.call(lists, function (list) {
+      var over = list.scrollHeight > list.clientHeight + 1; // 1px of rounding slack
+      list.classList.toggle("gh-group__items--overflowing", over);
+      if (over) {
+        // Without a tab stop the rows past the cut cannot be reached by keyboard
+        // alone, and without a label a screen reader announces a bare group.
+        list.setAttribute("tabindex", "0");
+        list.setAttribute("role", "group");
+        list.setAttribute(
+          "aria-label",
+          list.getAttribute("data-label") +
+            ": " +
+            list.getAttribute("data-count") +
+            " pages, scrollable list"
+        );
+      } else {
+        list.removeAttribute("tabindex");
+        list.removeAttribute("role");
+        list.removeAttribute("aria-label");
+      }
+      // The count is what the cut row cannot give: how many rows there are in all.
+      var head = list.parentNode.querySelector(".gh-group__head");
+      var badge = head.querySelector(".gh-group__count");
+      if (over && !badge) {
+        head.appendChild(
+          el("span", { class: "gh-group__count", text: list.getAttribute("data-count") })
+        );
+      } else if (!over && badge) {
+        head.removeChild(badge);
+      }
+    });
+  }
+
+  /*
+  Re-measure when the detail pane is resized. `render()` already re-runs on a goal
+  switch and on the goal-list collapse, so this only covers a viewport resize or a
+  zoom. Absent on old browsers, in which case the measurement simply stays the one
+  taken at render time.
+  */
+  var overflowObserver =
+    typeof ResizeObserver === "function"
+      ? new ResizeObserver(function () {
+          var root = document.getElementById("gemseo-lp");
+          if (root) markOverflow(root);
+        })
+      : null;
 
   function render(state) {
     var root = state.root;
@@ -269,6 +342,9 @@ where that hook could not inline them.
       el("div", { style: "min-width:0" }, [
         el("div", { class: "gh-detail__title", text: selected.title }),
         el("div", { class: "gh-detail__blurb", text: selected.blurb }),
+        selected.audience
+          ? el("div", { class: "gh-detail__audience", text: "For: " + selected.audience })
+          : null,
       ])
     );
 
@@ -280,6 +356,14 @@ where that hook could not inline them.
     root.appendChild(
       el("div", { class: "gh-grid" + (state.sidebarOpen ? "" : " gh-grid--collapsed") }, [master, detail])
     );
+
+    markOverflow(root);
+    if (overflowObserver) {
+      // `render()` rebuilds the DOM, so the previous target is gone: drop it
+      // rather than stacking one observation per render.
+      overflowObserver.disconnect();
+      overflowObserver.observe(detail);
+    }
   }
 
   // ---------- boot ----------

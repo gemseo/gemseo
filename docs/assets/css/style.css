@@ -205,3 +205,18 @@
   -webkit-mask-image: var(--md-admonition-icon--explanations);
   mask-image: var(--md-admonition-icon--explanations);
 }
+
+/*
+Material lifts a card on hover (shadow, plus a transparent border). Cards used as
+signposts are not clickable surfaces, so the lift promises an interaction that
+does not exist and pulls the eye away from the links inside. Opt out with
+`grid cards no-hover`.
+*/
+.md-typeset .grid.cards.no-hover > ul > li {
+  transition: none;
+}
+.md-typeset .grid.cards.no-hover > ul > li:focus-within,
+.md-typeset .grid.cards.no-hover > ul > li:hover {
+  border-color: var(--md-default-fg-color--lightest);
+  box-shadow: none;
+}

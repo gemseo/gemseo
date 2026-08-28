@@ -77,5 +77,5 @@ without requiring knowledge of MDA or MDO formulations.
 From there, the natural next steps are:
 
 - Adding **coupling** when disciplines have circular dependencies (see [Coupling simulation models](coupling_simulation_models.md)).
-- Adding a **DOE** to explore the design space (see [Exploring design space](exploring_design_space.md)).
+- Adding a **DOE** to explore the design space (see [Design exploration](exploring_design_space.md)).
 - Adding an **optimizer** to find the best design (see [Optimizing a design](optimizing_a_design.md)).
