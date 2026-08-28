@@ -6,35 +6,86 @@
 # Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 # Learning path: optimize a problem.
+# Schema: type in {explanation, tutorial, howto, reference}.
+# `path` is relative to the documentation base URL (version-portable), or an
+# absolute http(s) URL for external resources.
+# `title` is optional: it defaults to the first heading of the referenced page,
+# minus its `Tutorial - ` or `Available: ` prefix, and NOT to the label that page
+# carries in the mkdocs `nav` (the two differ on a few pages). Set it only to
+# override that heading; it is mandatory for an external http(s) `path`.
+# `audience` says who the path is written for; it is rendered under the blurb.
+# Reading order within a type follows the order of this file: the home page
+# groups the resources by type and keeps their relative order.
+# The path covers both drivers of a design space: an optimizer and a DOE.
+# The concept pages user_guide/concepts/algorithms/{optimizers,samplers} are
+# deliberately absent: they are still empty stubs.
 id: optimize
 code: OPT
 title: Optimize a problem
+audience: Optimization or DOE practitioner solving a single-discipline or weakly coupled design problem.
 blurb: Set up and solve an optimization problem with GEMSEO.
 
 prerequisites:
-  - title: Design space basics
-    path: user_guide/concepts/design_space/
-  - title: Connect a model
-    path: user_guide/concepts/discipline/discipline/
+  - path: user_guide/concepts/discipline/discipline/
 
 resources:
   - type: explanation
-    title: Optimization in GEMSEO
-    desc: Problems, algorithms and drivers.
+    desc: The benefits of working with a design of experiments, and the available algorithms.
+    path: user_guide/use_cases/exploring_design_space/
+  - type: explanation
+    desc: What you define to turn a design question into an optimization problem.
+    path: user_guide/use_cases/optimizing_a_design/
+  - type: explanation
+    desc: Why every algorithm is picked by name and configured by a settings model.
+    path: user_guide/needs/interoperability_algorithms/
+  - type: explanation
+    desc: Bounds, variable types, current value and normalization.
+    path: user_guide/concepts/design_space/
+  - type: explanation
+    desc: Observables over a design space, when there is nothing to minimize.
+    path: user_guide/concepts/problems/evaluation/
+  - type: explanation
+    desc: Objective, constraints, tolerances and the optimum.
     path: user_guide/concepts/problems/optimization/
+  - type: explanation
+    desc: The settings model of an algorithm, and how to serialize it.
+    path: user_guide/user_experience/settings/
+  - type: explanation
+    desc: Where every evaluation is stored, and how to get it back out.
+    path: user_guide/concepts/data_persistence/database/
   - type: tutorial
-    title: Solve an analytic problem
-    desc: A complete worked optimization example.
+    desc: Declare variables, their bounds, their type and their current value.
+    path: generated/examples/tutorials/basic/plot_tutorial_design_space/
+  - type: tutorial
+    desc: Sample a design space instead of minimizing over it.
+    path: generated/examples/tutorials/basic/plot_tutorial_evaluations/
+  - type: tutorial
+    desc: Objective, constraints and execution, end to end.
     path: generated/examples/tutorials/basic/plot_tutorial_mdo/
+  - type: tutorial
+    desc: Handle integer and continuous design variables together.
+    path: generated/examples/tutorials/advanced/plot_tutorial_mixed_optimization/
   - type: howto
-    title: Configure an algorithm
-    desc: Select and tune an optimization driver.
-    path: user_guide/concepts/algorithms/optimizers/
+    desc: Set the algorithm, its iteration budget and its tolerances.
+    path: generated/examples/howtos/formulations/plot_howto_execute_scenario/
   - type: howto
-    title: Add constraints & observables
-    desc: Track quantities and constrain the design.
-    path: generated/examples/howtos/optimizers/plot_howto_optimization_problem/
+    desc: Track quantities that are neither the objective nor a constraint.
+    path: generated/examples/howtos/scenario/plot_howto_add_observables/
+  - type: howto
+    desc: Restart a local algorithm from several points of the design space.
+    path: generated/examples/howtos/optimizers/plot_howto_multistart/
+  - type: howto
+    desc: Persist the history and restart without re-evaluating known points.
+    path: generated/examples/howtos/database/plot_howto_backup_history/
+  - type: howto
+    desc: Design variables, objective and feasibility over the iterations.
+    path: generated/examples/howtos/post_process/algorithms/plot_howto_opt_hist_view/
+  - type: howto
+    desc: See which constraint was violated, active or satisfied, and when.
+    path: generated/examples/howtos/post_process/algorithms/plot_howto_constraints_history/
   - type: reference
-    title: Optimization algorithms API
-    desc: All available algorithms and their settings.
+    desc: Every optimizer, filterable by constraint, variable type and gradients.
     path: algorithms/opt_algos/
+  - type: reference
+    desc: Every sampling algorithm shipped with GEMSEO.
+    path: algorithms/doe_algos/

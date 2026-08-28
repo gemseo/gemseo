@@ -11,7 +11,7 @@ reading_time: true
  Commons, PO Box 1866, Mountain View, CA 94042, USA.
 -->
 
-# Exploring design space { #usecases-exploring-design-space }
+# Design exploration { #usecases-design-exploration }
 
 ## What it means { #usecases-what-it-means }
 

@@ -12,9 +12,4 @@
 # Each id must match the `id` field of a <goal>.yml file in this folder.
 order:
   - connect
-  - workflow
   - optimize
-  - uq
-  - surrogate
-  - analyze
-  - contribute

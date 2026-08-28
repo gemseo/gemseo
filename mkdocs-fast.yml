@@ -77,6 +77,7 @@ not_in_nav: |
 nav:
   - Getting started:
       - Installation: software/installation.md
+      - Documentation structure: documentation_structure.md
       - Tutorials:
           - GEMSEO in 10 minutes: generated/examples/tutorials/basic/plot_gemseo_in_10_minutes.md
           - Tutorial - Your first discipline: generated/examples/tutorials/basic/plot_tutorial_first_discipline.md
@@ -115,7 +116,7 @@ nav:
       - Use cases:
           - Chaining simulation models (discipline): user_guide/use_cases/chaining_simulation_models.md
           - Coupling simulation models (MDA): user_guide/use_cases/coupling_simulation_models.md
-          - Exploring design space (DOE): user_guide/use_cases/exploring_design_space.md
+          - Design exploration (DOE): user_guide/use_cases/exploring_design_space.md
           - Optimizing a design: user_guide/use_cases/optimizing_a_design.md
           - MDO (formulations): user_guide/use_cases/mdo_formulations.md
           - Uncertainty quantification: user_guide/use_cases/uncertainty_quantification.md
