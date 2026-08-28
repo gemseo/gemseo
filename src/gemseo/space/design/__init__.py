@@ -58,7 +58,7 @@ from numpy import ndarray
 from gemseo.optimization.result import OptimizationResult
 from gemseo.space._variable import TYPE_MAP
 from gemseo.space._variable import DataType
-from gemseo.space._variable import Variable
+from gemseo.space._variable._factory import VARIABLE_FACTORY
 from gemseo.space.design import _checking
 from gemseo.space.design import _io as _design_space_io
 from gemseo.space.design import _view
@@ -339,9 +339,9 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
             msg = f"The variable {name!r} already exists."
             raise ValueError(msg)
 
-        variable = Variable(
+        variable = VARIABLE_FACTORY.create(
+            type_,
             size=size,
-            type=type_,
             lower_bound=lower_bound,
             upper_bound=upper_bound,
         )
@@ -358,10 +358,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
                     array_value = full(size, value)
                 self._current.set_variable(
                     name,
-                    array_value.astype(
-                        self.VARIABLE_TYPES_TO_DTYPES[self.get_type(name)],
-                        copy=False,
-                    ),
+                    array_value.astype(variable.component_type, copy=False),
                 )
                 self._current.check_value(name)
             except ValueError:
@@ -396,6 +393,15 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
             Whether the design space has at least one integer variable.
         """
         return self._variables.has_integer_variable
+
+    def get_integer_mask(self) -> BooleanArray:
+        """Return whether the components of the design vector are integer.
+
+        Returns:
+            Whether the components of the design vector are integer
+            (one result per component).
+        """
+        return self._variables.get_integer_mask()
 
     def check(self) -> None:
         """Check the state of the design space.
@@ -903,8 +909,8 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         Raises:
             ValueError: If the value has a wrong dimension,
                 if a mapping does not cover all the variables,
-                or if it violates the bounds or integer-type constraints
-                of a variable.
+                or if it violates the bounds of a variable
+                or the domain of the kind of a variable.
             TypeError: If the value is neither a mapping of NumPy arrays,
                 a NumPy array nor an
                 [OptimizationResult][gemseo.optimization.result.OptimizationResult].
@@ -953,7 +959,9 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
                 or `None` to mark the variable as having no value.
 
         Raises:
-            ValueError: If the value does not match the size of the variable.
+            ValueError: If the value does not match the size of the variable
+                or if a component of the value falls outside the domain
+                of the kind of the variable.
         """
         if current_value is not None:
             size = self.get_size(name)

@@ -401,6 +401,11 @@ def install() -> None:
             message=r"The attribute '.*' of the module 'gemseo\..*' is deprecated",
             category=DeprecationWarning,
         )
+        warnings.filterwarnings(
+            "once",
+            message=r"The class 'gemseo\..*' is deprecated",
+            category=DeprecationWarning,
+        )
     sys.meta_path.insert(0, _DeprecatedModuleFinder())
     for module_name in LIVE_ALIASED_MODULES:
         # The finder only sees the modules imported from now on; the ones already

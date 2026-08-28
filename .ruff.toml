@@ -152,6 +152,7 @@ runtime-evaluated-base-classes = [
     "gemseo.uncertainty.reliability.openturns.base_sampling_settings.BaseOTSamplingSettings",
     "gemseo.uncertainty.reliability.openturns.form_settings.OT_FORM_Settings",
     "gemseo.util.pydantic.BaseModel",
+    "gemseo.space._variable._base.BaseVariable",
 ]
 
 [lint.isort]

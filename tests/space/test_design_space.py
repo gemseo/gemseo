@@ -48,9 +48,11 @@ from gemseo.core.function.array_function import ArrayFunction
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.result import OptimizationResult
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
-from gemseo.space._variable import DataType
+from gemseo.space._variable import ContinuousVariable
+from gemseo.space._variable import IntegerVariable
 from gemseo.space._variable import Variable
 from gemseo.space.design import DesignSpace
+from gemseo.util.pickle import from_pickle
 from gemseo.util.repr_html import REPR_HTML_WRAPPER
 from gemseo.util.testing.helper import assert_exception
 
@@ -117,7 +119,7 @@ def test_add_variable_with_wrong_size(design_space, size, snapshot) -> None:
 
 def test_add_variable_with_unkown_type(design_space, snapshot) -> None:
     """Check that adding a variable with unknown type raises an error."""
-    with assert_exception(ValidationError, snapshot):
+    with assert_exception(ValueError, snapshot):
         design_space.add_variable(name="varname", type_="a")
 
 
@@ -2268,8 +2270,8 @@ def test_eq_after_resize(read_status_first) -> None:
         space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
         space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
         # Replace x with a bigger variable, invalidating its current value.
-        space._variables["x"] = Variable(
-            size=3, type=DataType.FLOAT, lower_bound=0.0, upper_bound=1.0
+        space._variables["x"] = ContinuousVariable(
+            size=3, lower_bound=0.0, upper_bound=1.0
         )
         return space
 
@@ -2337,13 +2339,10 @@ def test_unpickle_pre_refactor_design_space() -> None:
         "name": "old",
         "normalize": {"x": array([True, True]), "y": array([False])},
         "_variables": {
-            "x": Variable(
-                size=2,
-                type=DataType.FLOAT,
-                lower_bound=[0.0, 0.0],
-                upper_bound=[1.0, 2.0],
+            "x": ContinuousVariable(
+                size=2, lower_bound=[0.0, 0.0], upper_bound=[1.0, 2.0]
             ),
-            "y": Variable(size=1, type=DataType.FLOAT),
+            "y": ContinuousVariable(size=1),
         },
         "_norm_factor": None,
         "_DesignSpace__norm_data_is_computed": False,
@@ -2363,6 +2362,84 @@ def test_unpickle_pre_refactor_design_space() -> None:
     assert restored.normalize_vect(array([0.5, 1.0, 7.0])) == pytest.approx(
         array([0.5, 0.5, 7.0])
     )
+
+
+def test_unpickle_design_space_of_the_last_release() -> None:
+    """Check that a design space pickled by the last release can be loaded.
+
+    The pickle refers to the variable class of that release by name, so loading it
+    exercises both the module alias of `gemseo.algos._variable` and the legacy
+    `Variable` class. It was generated with gemseo 6.3.3 by adding a float variable of
+    size 2 with a current value, a float variable of size 1 with no current value and
+    an integer variable with a current value.
+    """
+    with pytest.warns(
+        DeprecationWarning,
+        match="The class 'gemseo.space._variable.Variable' is deprecated",
+    ):
+        space = from_pickle(CURRENT_DIR / "design_space_6_3_3.pkl")
+
+    assert space.name == "legacy"
+    assert space.dimension == 4
+    assert space.variable_names == ["x", "y", "i"]
+
+    # Every variable has been restored as the class pinning its data type,
+    # with the bounds frozen by the validation of the new classes.
+    assert type(space._variables["x"]) is ContinuousVariable
+    assert type(space._variables["y"]) is ContinuousVariable
+    assert type(space._variables["i"]) is IntegerVariable
+    for variable in space._variables.values():
+        assert not variable.lower_bound.flags.writeable
+        assert not variable.upper_bound.flags.writeable
+
+    assert_array_equal(space.get_lower_bounds(), array([0.0, 0.0, -2.0, -4.0]))
+    assert_array_equal(space.get_upper_bounds(), array([1.0, 1.0, 3.0, 6.0]))
+    assert_array_equal(space.get_integer_mask(), array([False, False, False, True]))
+
+    # The variable that had no current value keeps its None marker.
+    assert space._current_value["y"] is None
+    assert_array_equal(space.get_current_value(["x"]), array([0.5, 0.25]))
+    assert space._current_value["i"].dtype == int64
+
+    # The collaborators rebuilt from the flat layout are functional.
+    space.set_current_variable("y", array([1.0]))
+    assert_array_equal(space.get_current_value(), array([0.5, 0.25, 1.0, 2.0]))
+    assert space.normalize_vect(array([0.5, 0.25, 1.0, 2.0])) == pytest.approx(
+        array([0.5, 0.25, 0.6, 2.0])
+    )
+
+
+def test_unpickle_pre_refactor_design_space_with_legacy_variables() -> None:
+    """Check that the flat layout is restored when it holds legacy variables.
+
+    Same as `test_unpickle_pre_refactor_design_space` but with the variable class of
+    the releases predating the hierarchy, as a pickle of such a release contains.
+    """
+    space = DesignSpace.__new__(DesignSpace)
+    space.__dict__ = {
+        "name": "old",
+        "_variables": {
+            "x": Variable(
+                size=2, lower_bound=array([0.0, 0.0]), upper_bound=[1.0, 2.0]
+            ),
+            "i": Variable(type="integer", lower_bound=-4, upper_bound=6),
+        },
+        "_DesignSpace__current_value": {"x": array([0.5, 1.0])},
+        "_DesignSpace__normalize_integer_variables": False,
+    }
+
+    with pytest.warns(
+        DeprecationWarning,
+        match="The class 'gemseo.space._variable.Variable' is deprecated",
+    ):
+        restored = pickle.loads(pickle.dumps(space))
+
+    assert type(restored._variables["x"]) is ContinuousVariable
+    assert type(restored._variables["i"]) is IntegerVariable
+    assert restored.dimension == 3
+    assert_array_equal(restored.get_current_value(["x"]), array([0.5, 1.0]))
+    assert restored._current_value["i"] is None
+    assert_array_equal(restored.get_upper_bounds(), array([1.0, 2.0, 6.0]))
 
 
 def test_pickle_round_trip() -> None:
@@ -2524,7 +2601,7 @@ def test_copy_of_variable_is_shared() -> None:
     so there is nothing to copy;
     sharing it also keeps the bound arrays frozen.
     """
-    variable = Variable(size=2, lower_bound=0.0, upper_bound=10.0)
+    variable = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=10.0)
 
     assert copy(variable) is variable
     assert deepcopy(variable) is variable
@@ -2591,6 +2668,51 @@ def test_has_current_value_tracks_mutations() -> None:
     assert space.has_current_value
     space.set_current_value({"x": array([3.0])})
     assert space.has_current_value
+
+
+def test_set_current_variable_rejects_non_integer_value(snapshot) -> None:
+    """Check that set_current_variable rejects a non-integer value on an integer."""
+    space = DesignSpace()
+    space.add_variable("i", type_=INTEGER, lower_bound=-10, upper_bound=10, value=0)
+
+    with assert_exception(ValueError, snapshot):
+        space.set_current_variable("i", array([2.7]))
+
+    assert_equal(space.get_current_value(as_dict=True)["i"], array([0]))
+
+
+def test_set_current_variable_rejects_negative_non_integer_value(snapshot) -> None:
+    """Check that a negative non-integer value is rejected, not truncated to zero."""
+    space = DesignSpace()
+    space.add_variable("i", type_=INTEGER, lower_bound=-10, upper_bound=10, value=0)
+
+    with assert_exception(ValueError, snapshot):
+        space.set_current_variable("i", array([-2.7]))
+
+    assert_equal(space.get_current_value(as_dict=True)["i"], array([0]))
+
+
+def test_set_current_variable_does_not_alias_the_given_value() -> None:
+    """Check that set_current_variable stores a copy of the value of the caller."""
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    given_value = array([0.5])
+
+    space.set_current_variable("x", given_value)
+    given_value[0] = 99.0
+
+    assert space.get_current_value(["x"])[0] == 0.5
+
+
+def test_add_variable_does_not_alias_the_given_value() -> None:
+    """Check that add_variable stores a copy of the value of the caller."""
+    space = DesignSpace()
+    given_value = array([0.5], dtype=float64)
+
+    space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=given_value)
+    given_value[0] = 99.0
+
+    assert space.get_current_value(["x"])[0] == 0.5
 
 
 def test_normalize_vect_dtype_follows_current_value() -> None:

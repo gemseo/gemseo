@@ -21,8 +21,9 @@ from collections.abc import MutableMapping
 import pytest
 from numpy.testing import assert_array_equal
 
+from gemseo.space._variable import ContinuousVariable
 from gemseo.space._variable import DataType
-from gemseo.space._variable import Variable
+from gemseo.space._variable import IntegerVariable
 from gemseo.space.design._variables import Variables
 
 
@@ -30,12 +31,8 @@ from gemseo.space.design._variables import Variables
 def variables() -> Variables:
     """A variables with a float and an integer variable."""
     variables = Variables()
-    variables["x"] = Variable(
-        size=2, type=DataType.FLOAT, lower_bound=0.0, upper_bound=1.0
-    )
-    variables["n"] = Variable(
-        size=1, type=DataType.INTEGER, lower_bound=0, upper_bound=10
-    )
+    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
+    variables["n"] = IntegerVariable(size=1, lower_bound=0, upper_bound=10)
     return variables
 
 
@@ -62,11 +59,9 @@ def test_enable_integer_variables_normalization(variables) -> None:
 def test_has_integer(names, expected) -> None:
     """Check the detection of integer variables."""
     variables = Variables()
-    types = {"x": DataType.FLOAT, "n": DataType.INTEGER}
+    classes = {"x": ContinuousVariable, "n": IntegerVariable}
     for name in names:
-        variables[name] = Variable(
-            size=1, type=types[name], lower_bound=0, upper_bound=1
-        )
+        variables[name] = classes[name](size=1, lower_bound=0, upper_bound=1)
     assert variables.has_integer_variable is expected
 
 
@@ -98,9 +93,7 @@ def test_getitem_unknown_variable(variables) -> None:
 def test_setitem_insert(variables) -> None:
     """Check that setting a new name appends it and allocates its indices."""
     version = variables.version
-    variables["z"] = Variable(
-        size=3, type=DataType.FLOAT, lower_bound=0.0, upper_bound=1.0
-    )
+    variables["z"] = ContinuousVariable(size=3, lower_bound=0.0, upper_bound=1.0)
     assert list(variables) == ["x", "n", "z"]
     assert variables.size == 6
     assert variables.name_to_indices["z"] == range(3, 6)
@@ -109,9 +102,7 @@ def test_setitem_insert(variables) -> None:
 
 def test_setitem_replace_same_size(variables) -> None:
     """Check that replacing keeps position, size and index ranges."""
-    variables["x"] = Variable(
-        size=2, type=DataType.FLOAT, lower_bound=-1.0, upper_bound=2.0
-    )
+    variables["x"] = ContinuousVariable(size=2, lower_bound=-1.0, upper_bound=2.0)
     assert list(variables) == ["x", "n"]
     assert variables.size == 3
     assert variables.name_to_indices["x"] == range(2)
@@ -121,9 +112,7 @@ def test_setitem_replace_same_size(variables) -> None:
 
 def test_setitem_replace_resize(variables) -> None:
     """Check that replacing with a different size rebuilds indices and size."""
-    variables["x"] = Variable(
-        size=4, type=DataType.FLOAT, lower_bound=0.0, upper_bound=1.0
-    )
+    variables["x"] = ContinuousVariable(size=4, lower_bound=0.0, upper_bound=1.0)
     assert variables.size == 5
     assert variables.name_to_indices["x"] == range(4)
     assert variables.name_to_indices["n"] == range(4, 5)
@@ -144,3 +133,31 @@ def test_delitem_unknown_variable(variables) -> None:
     """Check that deleting an unknown variable raises."""
     with pytest.raises(KeyError):
         del variables["missing"]
+
+
+def test_filter_components(variables) -> None:
+    """Check that filtering the components preserves the kind of the variable."""
+    version = variables.version
+    variables["x"] = ContinuousVariable(
+        size=3, lower_bound=[0.0, 1.0, 2.0], upper_bound=[3.0, 4.0, 5.0]
+    )
+    variables.filter_components("x", [0, 2])
+    variable = variables["x"]
+    assert isinstance(variable, ContinuousVariable)
+    assert variable.size == 2
+    assert_array_equal(variable.lower_bound, [0.0, 2.0])
+    assert_array_equal(variable.upper_bound, [3.0, 5.0])
+    assert variables.name_to_indices["n"] == range(2, 3)
+    assert variables.version > version
+
+
+def test_filter_components_custom_variable(variables) -> None:
+    """Check that filtering the components works for a variable class of one's own."""
+
+    class MyVariable(ContinuousVariable):
+        """A variable class that the factory cannot discover."""
+
+    variables["x"] = MyVariable(size=2, lower_bound=0.0, upper_bound=1.0)
+    variables.filter_components("x", [1])
+    assert isinstance(variables["x"], MyVariable)
+    assert variables["x"].size == 1

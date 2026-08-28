@@ -27,7 +27,6 @@ from numpy import float64
 from numpy import genfromtxt
 from pandas import DataFrame
 
-from gemseo.space._variable import DataType
 from gemseo.space.design._constants import _DESIGN_SPACE_GROUP
 from gemseo.space.design._constants import _LB_GROUP
 from gemseo.space.design._constants import _NAMES_GROUP
@@ -36,6 +35,7 @@ from gemseo.space.design._constants import _TABLE_NAMES
 from gemseo.space.design._constants import _UB_GROUP
 from gemseo.space.design._constants import _VALUE_GROUP
 from gemseo.space.design._constants import _VAR_TYPE_GROUP
+from gemseo.util._numpy import INT64_DTYPE
 from gemseo.util.hdf5 import get_hdf5_group
 
 if TYPE_CHECKING:
@@ -93,8 +93,6 @@ def to_hdf(
         hdf_node_path: The path of the HDF node in which the design space
             should be exported. If empty, the root node is used.
     """
-    cls = type(design_space)
-    int_dtype = cls.VARIABLE_TYPES_TO_DTYPES[cls.DesignVariableType.INTEGER]
     mode = "a" if append else "w"
 
     with h5py.File(file_path, mode) as h5file:
@@ -109,7 +107,7 @@ def to_hdf(
 
         for name, variable in design_space._variables.items():
             var_grp = design_vars_grp.require_group(name)
-            size_ds = var_grp.require_dataset(_SIZE_GROUP, (), dtype=int_dtype)
+            size_ds = var_grp.require_dataset(_SIZE_GROUP, (), dtype=INT64_DTYPE)
             size_ds[...] = variable.size
 
             lb = array(variable.lower_bound, copy=False)
@@ -188,12 +186,8 @@ def _to_dataframe(design_space: DesignSpace) -> DataFrame:
             variable_types.append(variable.type)
             lower_bounds.append(variable.lower_bound[i])
             upper_bounds.append(variable.upper_bound[i])
-            if curr is None:
-                value = None
-            else:
-                value = curr[i]
-                if variable.type == DataType.FLOAT:
-                    value = value.real
+            # Strip the imaginary part of a complex-step perturbation.
+            value = None if curr is None else curr[i].real
             variable_values.append(value)
     data = {
         "name": variable_names,

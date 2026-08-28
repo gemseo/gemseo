@@ -22,7 +22,6 @@ from typing import Final
 
 from prettytable import PrettyTable
 
-from gemseo.space._variable import DataType
 from gemseo.space.design._constants import _TABLE_NAMES
 from gemseo.util.repr_html import REPR_HTML_WRAPPER
 from gemseo.util.string import _format_value_in_pretty_table_16
@@ -71,12 +70,8 @@ def get_pretty_table(
         if with_index and variable.size > 1:
             name_template += "[{index}]"
         for i in range(variable.size):
-            if value is None:
-                value_i = None
-            else:
-                value_i = value[i]
-                if variable.type == DataType.FLOAT:
-                    value_i = value_i.real
+            # Strip the imaginary part of a complex-step perturbation.
+            value_i = None if value is None else value[i].real
 
             data = {
                 "name": name_template.format(name=name, index=i),

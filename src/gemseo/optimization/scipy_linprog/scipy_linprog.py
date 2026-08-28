@@ -26,7 +26,6 @@ from typing import Any
 from typing import ClassVar
 from typing import Final
 
-from numpy import concatenate
 from numpy import isfinite
 from scipy.optimize import linprog
 
@@ -143,14 +142,7 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
             bounds=bounds,
             method=self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name,
             options=filtered_settings,
-            integrality=concatenate([
-                [
-                    problem.design_space.variable_types[variable_name]
-                    == problem.design_space.DesignVariableType.INTEGER
-                ]
-                * problem.design_space.variable_sizes[variable_name]
-                for variable_name in problem.design_space.variable_names
-            ]),
+            integrality=problem.design_space.get_integer_mask(),
         )
 
         # N.B. SciPy tolerance on bounds is higher than the DesignSpace one

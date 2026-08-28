@@ -10,7 +10,7 @@
 # ---
 # name: test_add_variable_with_2d_object[lower_bound]
   '''
-  8 validation errors for Variable
+  8 validation errors for ContinuousVariable
   lower_bound.chain[is-instance[ndarray],function-plain[validate()]]
     Input should be an instance of ndarray [type=is_instance_of, input_value=[[1.0]], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
@@ -39,7 +39,7 @@
 # ---
 # name: test_add_variable_with_2d_object[upper_bound]
   '''
-  8 validation errors for Variable
+  8 validation errors for ContinuousVariable
   upper_bound.chain[is-instance[ndarray],function-plain[validate()]]
     Input should be an instance of ndarray [type=is_instance_of, input_value=[[1.0]], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
@@ -71,29 +71,29 @@
 # ---
 # name: test_add_variable_with_inconsistent_bound_size[lower_bound]
   '''
-  1 validation error for Variable
-    Value error, The lower bound should be of size 3. [type=value_error, input_value={'size': 3, 'type': <Data....0], 'upper_bound': inf}, input_type=dict]
+  1 validation error for ContinuousVariable
+    Value error, The lower bound should be of size 3. [type=value_error, input_value={'size': 3, 'lower_bound'....0], 'upper_bound': inf}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_add_variable_with_inconsistent_bound_size[upper_bound]
   '''
-  1 validation error for Variable
-    Value error, The upper bound should be of size 3. [type=value_error, input_value={'size': 3, 'type': <Data...pper_bound': [0.0, 0.0]}, input_type=dict]
+  1 validation error for ContinuousVariable
+    Value error, The upper bound should be of size 3. [type=value_error, input_value={'size': 3, 'lower_bound'...pper_bound': [0.0, 0.0]}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_add_variable_with_nan_value[lower_bound-The following lower bound component is not a number: nan (index 0).]
   '''
-  1 validation error for Variable
-    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...nan, 'upper_bound': inf}, input_type=dict]
+  1 validation error for ContinuousVariable
+    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound'...nan, 'upper_bound': inf}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_add_variable_with_nan_value[upper_bound-The following upper bound component is not a number: nan (index 0).]
   '''
-  1 validation error for Variable
-    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...inf, 'upper_bound': nan}, input_type=dict]
+  1 validation error for ContinuousVariable
+    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound'...inf, 'upper_bound': nan}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -101,20 +101,15 @@
   "The following value of variable 'varname' is neither None nor a number: nan (index 0)."
 # ---
 # name: test_add_variable_with_unkown_type
-  '''
-  1 validation error for Variable
-  type
-    Input should be 'float' or 'integer' [type=enum, input_value='a', input_type=str]
-      For further information visit https://errors.pydantic.dev/X.Y/v/enum
-  '''
+  "There is no variable class of type 'a'; the available types are: float and integer."
 # ---
 # name: test_add_variable_with_unnumerizable_value
   "The following value of variable 'varname' is neither None nor complex and cannot be cast to float: <built-in function len> (index 0)."
 # ---
 # name: test_add_variable_with_upper_bounds_lower_than_lower_ones
   '''
-  1 validation error for Variable
-    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 3, 'type': <Data...per_bound': [1, 0.0, 1]}, input_type=dict]
+  1 validation error for ContinuousVariable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 3, 'lower_bound'...per_bound': [1, 0.0, 1]}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -126,7 +121,7 @@
 # ---
 # name: test_add_variable_with_wrong_size[-1]
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
   size
     Input should be greater than 0 [type=greater_than, input_value=-1, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
@@ -134,7 +129,7 @@
 # ---
 # name: test_add_variable_with_wrong_size[0.4]
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
   size
     Input should be a valid integer, got a number with a fractional part [type=int_from_float, input_value=0.4, input_type=float]
       For further information visit https://errors.pydantic.dev/X.Y/v/int_from_float
@@ -142,7 +137,7 @@
 # ---
 # name: test_add_variable_with_wrong_size[0]
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
   size
     Input should be greater than 0 [type=greater_than, input_value=0, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
@@ -150,28 +145,28 @@
 # ---
 # name: test_bounds_set_lower_bound_with_inconsistent_size
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
     Value error, The lower bound should be of size 1. [type=value_error, input_value={'size': 1, 'type': <Data...per_bound': array([2.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_lower_bound_with_nan
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
     Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...per_bound': array([2.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_upper_bound_with_inconsistent_size
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
     Value error, The upper bound should be of size 1. [type=value_error, input_value={'size': 1, 'type': <Data...bound': array([1., 1.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_upper_bound_with_nan
   '''
-  1 validation error for Variable
+  1 validation error for ContinuousVariable
     Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...f]), 'upper_bound': nan}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
@@ -226,8 +221,8 @@
 # ---
 # name: test_current_x.5
   '''
-  1 validation error for Variable
-    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'type': <Data...1.0, 'upper_bound': 0.0}, input_type=dict]
+  1 validation error for ContinuousVariable
+    Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'lower_bound'...1.0, 'upper_bound': 0.0}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -455,6 +450,12 @@
 # ---
 # name: test_set_current_value_wrong_size_leaves_no_partial_value.1
   "'There is no current value for the design variables: x and y.'"
+# ---
+# name: test_set_current_variable_rejects_negative_non_integer_value
+  'The variable i is of type integer; got i[0] = -2.7.'
+# ---
+# name: test_set_current_variable_rejects_non_integer_value
+  'The variable i is of type integer; got i[0] = 2.7.'
 # ---
 # name: test_set_current_variable_wrong_size_raises
   'The variable x of size 2 cannot be set with an array of size 1.'

@@ -25,7 +25,6 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from numpy import concatenate
 from numpy import inf
 from numpy import ones_like
 from scipy.optimize import Bounds
@@ -40,7 +39,6 @@ from gemseo.optimization.core.base_optimization_library import (
 )
 from gemseo.optimization.result import OptimizationResult
 from gemseo.optimization.scipy_milp.settings.scipy_milp_settings import MILP_Settings
-from gemseo.space.design import DesignSpace
 from gemseo.space.util import get_value_and_bounds
 from gemseo.util._compatibility.scipy import get_row
 from gemseo.util._compatibility.scipy import sparse_classes
@@ -148,14 +146,7 @@ class ScipyMILP(BaseOptimizationLibrary[MILP_Settings]):
             bounds=bounds,
             constraints=lq_constraints,
             options=filtered_settings,
-            integrality=concatenate([
-                [
-                    self._problem.design_space.get_type(variable_name)
-                    == DesignSpace.DesignVariableType.INTEGER
-                ]
-                * self._problem.design_space.get_size(variable_name)
-                for variable_name in self._problem.design_space
-            ]),
+            integrality=problem.design_space.get_integer_mask(),
         )
 
         # Gather the optimization results
