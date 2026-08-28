@@ -24,7 +24,7 @@ r"""# Remapping the variables
 ## Problem
 
 In the context of a multidisciplinary study,
-a discipline may output a vector $x=(x_1,\ldots,x_10)$
+a discipline may output a vector $x=(x_1,\ldots,x_{10})$
 when a scalar output $a=x_1$ and a vector $b=(x_3,\ldots,x_6)$ are relevant.
 You want to remap this output into the variables that matter for your study.
 
