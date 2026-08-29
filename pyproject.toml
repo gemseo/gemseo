@@ -37,7 +37,7 @@ dependencies = [
     "pydantic >=2.12,<=2.13.4",
     "pydantic-settings >=2.9.0,<=2.15.0",
     "requests >2,<3",
-    "scipy >=1.15,<=1.17.1",
+    "scipy >=1.15,<=1.18.1",
     "strenum >=0.4.9,<=0.4.15",
     "tqdm >=4.50,<=4.67.3",
     "typing-extensions >=4,<5",
