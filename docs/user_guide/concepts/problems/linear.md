@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "A linear problem represents a system of linear equations Ax = b to be solved for x given a matrix or operator A and a right-hand side vector b."
 tags: ['user_guide']
 search:

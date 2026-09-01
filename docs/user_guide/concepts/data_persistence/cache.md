@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "A cache stores the input, output and Jacobian values produced by the executions of a discipline, to skip redundant computations and to keep the data for later use."
 tags: ['user_guide']
 search:

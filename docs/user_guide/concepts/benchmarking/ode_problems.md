@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: intermediate
 description: "ODE problems bundled with GEMSEO for benchmarking and illustrating ODE solvers and sensitivity analysis."
 tags: ['user_guide']
 search:

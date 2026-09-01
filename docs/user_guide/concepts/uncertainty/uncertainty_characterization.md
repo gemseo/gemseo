@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: advanced
 description: "Uncertainty characterization represents each uncertain model input as a probability distribution."
 tags: ['user_guide']
 search:

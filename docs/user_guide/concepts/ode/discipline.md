@@ -1,4 +1,6 @@
 ---
+reading_time: true
+complexity: intermediate
 description: "An ODEDiscipline wraps an ODEProblem as a Discipline, allowing ODE dynamics to be coupled with the rest of an MDO process."
 tags: ['user_guide']
 search:

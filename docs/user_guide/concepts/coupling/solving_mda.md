@@ -1,4 +1,6 @@
 ---
+reading_time: true
+complexity: intermediate
 description: "How GEMSEO solves multi-disciplinary analyses: fixed-point and root-finding solvers, composed MDAs (MDAChain, MDASequential), termination criteria, acceleration methods, and parallelization."
 tags: ['user_guide']
 search:

@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "An optimization problem extends an evaluation problem with an objective function to minimize or maximize and optional constraints."
 tags: ['user_guide']
 search:

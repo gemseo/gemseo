@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: intermediate
 ---
 
 <!--

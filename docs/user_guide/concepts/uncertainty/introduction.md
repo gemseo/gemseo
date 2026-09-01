@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "Uncertainty quantification studies how uncertainty in model inputs propagates to and is explained by model outputs."
 tags: ['user_guide']
 search:

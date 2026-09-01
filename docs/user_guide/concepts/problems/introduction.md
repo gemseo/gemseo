@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "Overview of mathematical problems in GEMSEO, from function evaluation to optimization, linear systems, and ODEs."
 tags: ['user_guide']
 search:

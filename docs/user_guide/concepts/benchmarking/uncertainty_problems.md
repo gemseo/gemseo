@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: advanced
 description: "Uncertainty quantification problems with known analytical statistics bundled with GEMSEO for benchmarking sensitivity analysis and UQ algorithms."
 tags: ['user_guide']
 search:

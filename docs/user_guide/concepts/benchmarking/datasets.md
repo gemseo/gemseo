@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "Academic datasets bundled with GEMSEO for illustrating surrogate, machine learning and data analysis capabilities."
 tags: ['user_guide']
 search:

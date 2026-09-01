@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: advanced
 description: "Sensitivity analysis quantifies the relative contribution of each uncertain input to the variability of the model outputs."
 tags: ['user_guide']
 search:
