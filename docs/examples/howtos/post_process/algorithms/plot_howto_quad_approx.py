@@ -50,7 +50,7 @@ from gemseo.post import QuadApprox_Settings
 #
 # !!! note
 #     The `execute_post` function also handles previously executed instances of `MDOScenario`
-#     or `OptimzationProblem`.
+#     or `OptimizationProblem`.
 #
 # ### 2. Run the quadratic approximation post-processing
 #

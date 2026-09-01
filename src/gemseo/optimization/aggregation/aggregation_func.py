@@ -240,11 +240,6 @@ def aggregate_iks(
 ) -> ArrayFunction:
     """Constraints aggregation method for inequality constraints.
 
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
-
     Args:
         constr_fct: The initial constraint function.
         indices: The indices to generate a subset of the outputs to aggregate.
@@ -293,16 +288,6 @@ def aggregate_lower_bound_ks(
 ) -> ArrayFunction:
     """Aggregate constraints for inequality constraints.
 
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
-
-        Gerhard Kreisselmeier and Reinhold Steinhauser.
-        Application of vector performance optimization
-        to a robust control loop design for a fighter aircraft.
-        International Journal of Control, 37(2):251--284, 1983.
-
     Args:
         constr_fct: The initial constraint function.
         indices: The indices to generate a subset of the outputs to aggregate.
@@ -350,16 +335,6 @@ def aggregate_upper_bound_ks(
     output_suffix: str = "",
 ) -> ArrayFunction:
     """Aggregate constraints for inequality constraints.
-
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
-
-        Gerhard Kreisselmeier and Reinhold Steinhauser.
-        Application of vector performance optimization
-        to a robust control loop design for a fighter aircraft.
-        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         constr_fct: The initial constraint function.

@@ -34,9 +34,8 @@ if TYPE_CHECKING:
 class Aitken(SequenceTransformer):
     """The vector Δ²-Aitken acceleration method.
 
-    The method is introduced in: Isabelle Ramiere, Thomas Helfer, "Iterative residual-
-    based vector methods to accelerate fixed point iterations", Computers and
-    Mathematics with Applications, (2015) eq. (45).
+    The method corresponds to the equation (46) of Ramière and Helfer (2015),
+    where it is attributed to Irons and Tuck.
     """
 
     _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 1

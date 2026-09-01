@@ -34,9 +34,7 @@ if TYPE_CHECKING:
 class Secant(SequenceTransformer):
     """The secant acceleration method.
 
-    The method is introduced in: Isabelle Ramiere, Thomas Helfer, "Iterative residual-
-    based vector methods to accelerate fixed point iterations", Computers and
-    Mathematics with Applications, (2015) eq. (45).
+    The method corresponds to the equation (45) of Ramière and Helfer (2015).
     """
 
     _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 2

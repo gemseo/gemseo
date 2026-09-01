@@ -47,12 +47,8 @@ from gemseo.machine_learning import create_regression_model
 # and assess how well it approximates the underlying function.
 #
 # In this example,
-# you represent the function $f(x)=(6x-2)^2\sin(12x-4)$
+# you represent the function $f(x)=(6x-2)^2\sin(12x-4)$ [@forrester2008]
 # by the [AnalyticDiscipline][gemseo.discipline.analytic.AnalyticDiscipline].
-#
-# !!! quote "References"
-#       Alexander I. J. Forrester, Andras Sobester, and Andy J. Keane.
-#       Engineering design via surrogate modelling: a practical guide. Wiley, 2008.
 discipline = create_discipline(
     "AnalyticDiscipline",
     {"y": "(6*x-2)**2*sin(12*x-4)"},

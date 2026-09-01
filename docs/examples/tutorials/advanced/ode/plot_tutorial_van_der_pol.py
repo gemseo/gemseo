@@ -39,7 +39,7 @@ You will learn how to:
   [ODESolverLibraryFactory][gemseo.ode.factory.ODESolverLibraryFactory],
 - **inspect** the results.
 
-As a running example, this tutorial uses the Van der Pol equation,
+As a running example, this tutorial uses the Van der Pol equation [@hartman2002],
 describing the position over time of an oscillator with non-linear damping:
 
 $$\\frac{d^2 x(t)}{dt^2} - \\mu (1 - x^2(t)) \\frac{dx(t)}{dt} + x(t) = 0$$
@@ -49,12 +49,6 @@ and the state vector $s = \\begin{pmatrix}x\\\\y\\end{pmatrix}$:
 
 $$\\frac{ds(t)}{dt} = f(t, s(t))
 = \\begin{pmatrix} y(t) \\\\ \\mu (1 - x^2(t)) y(t) - x(t) \\end{pmatrix}$$
-
-!!! quote "References"
-    Philip Hartman (2002) [1964].
-    Ordinary differential equations.
-    Classics in Applied Mathematics, vol. 38.
-    Society for Industrial and Applied Mathematics.
 """
 
 from __future__ import annotations

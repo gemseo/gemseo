@@ -17,7 +17,18 @@
 #                           documentation
 #        :author: Sebastien Bocquet, Alexandre Scotto Di Perrotolo
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""The sub-package for acceleration methods."""
+"""The sub-package for acceleration methods.
+
+Most of these methods are introduced in the reference below,
+which the docstring of a method refers to by its equation number.
+
+!!! quote "References"
+
+    Isabelle Ramière and Thomas Helfer.
+    Iterative residual-based vector methods
+    to accelerate fixed point iterations.
+    Computers & Mathematics with Applications, 70(9):2210-2226, 2015.
+"""
 
 from __future__ import annotations
 

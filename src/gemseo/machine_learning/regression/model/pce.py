@@ -19,15 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""Polynomial chaos expansion model.
 
-.. _FunctionalChaosAlgorithm: https://openturns.github.io/
-openturns/latest/user_manual/response_surface/response_surface.html
-.. _CleaningStrategy: https://openturns.github.io/
-openturns/latest/user_manual/response_surface/_generated/openturns.CleaningStrategy.html
-.. _LARS: https://openturns.github.io/
-openturns/latest/theory/meta_modeling/polynomial_sparse_least_squares.html
-.. _hyperbolic and anisotropic enumerate function: https://openturns.github.io/
-openturns/latest/user_manual/_generated/openturns.HyperbolicAnisotropicEnumerateFunction.html
-
 The polynomial chaos expansion (PCE) model expresses an output variable
 as a weighted sum of polynomial functions which are orthonormal
 in the stochastic input space spanned by the random input variables:
@@ -70,14 +61,19 @@ in such a way that $\max_i \text{degree}(\phi_i)=\sum_{j=1}^d\tau_j(i)=P$.
 The coefficients $(w_1, w_2, ..., w_K)$ and the intercept $w_0$
 are estimated either by least-squares regression or a quadrature rule.
 In the case of least-squares regression,
-a sparse strategy can be considered with the `LARS`_ algorithm
+a sparse strategy can be considered with the
+[LARS](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.LARS.html)
+algorithm
 and in both cases,
-the `CleaningStrategy`_ can also remove the non-significant coefficients.
+the
+[CleaningStrategy](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.CleaningStrategy.html)
+can also remove the non-significant coefficients.
 
 ## Dependence
 
-The PCE model relies on the OpenTURNS class `FunctionalChaosAlgorithm`_.
-"""  # noqa: E501
+The PCE model relies on the OpenTURNS class
+[FunctionalChaosAlgorithm](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.FunctionalChaosAlgorithm.html).
+"""
 
 from __future__ import annotations
 
@@ -133,7 +129,8 @@ LOGGER = logging.getLogger(__name__)
 class PCERegressor(BaseFCERegressor):
     """Polynomial chaos expansion model.
 
-    See Also: API documentation of the OpenTURNS class `FunctionalChaosAlgorithm`_.
+    See Also: API documentation of the OpenTURNS class
+        [FunctionalChaosAlgorithm](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.FunctionalChaosAlgorithm.html).
     """
 
     SHORT_NAME: ClassVar[str] = "PCE"

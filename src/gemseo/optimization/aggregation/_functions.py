@@ -51,16 +51,6 @@ def compute_lower_bound_ks_agg(
     The lower bound Kreisselmeier-Steinhauser function tends to the maximum operator
     when the aggregation parameter tends to infinity.
 
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
-
-        Gerhard Kreisselmeier and Reinhold Steinhauser.
-        Application of vector performance optimization
-        to a robust control loop design for a fighter aircraft.
-        International Journal of Control, 37(2):251--284, 1983.
-
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
@@ -86,16 +76,6 @@ def compute_upper_bound_ks_agg(
 
     The upper bound Kreisselmeier-Steinhauser function tends to the maximum operator
     when the aggregation parameter tends to infinity.
-
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
-
-        Gerhard Kreisselmeier and Reinhold Steinhauser.
-        Application of vector performance optimization
-        to a robust control loop design for a fighter aircraft.
-        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         orig_val: The original constraint values.
@@ -124,16 +104,6 @@ def compute_total_ks_agg_jac(
     scale: float | ndarray = 1.0,
 ) -> ndarray:
     """Compute the Jacobian of KS function with respect to constraint function inputs.
-
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
-
-        Gerhard Kreisselmeier and Reinhold Steinhauser.
-        Application of vector performance optimization
-        to a robust control loop design for a fighter aircraft.
-        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         orig_val: The original constraint values.
@@ -166,16 +136,6 @@ def compute_partial_ks_agg_jac(
     scale: float | ndarray = 1.0,
 ) -> ndarray:
     """Compute the Jacobian of KS function with respect to constraint functions.
-
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
-
-        Gerhard Kreisselmeier and Reinhold Steinhauser.
-        Application of vector performance optimization
-        to a robust control loop design for a fighter aircraft.
-        International Journal of Control, 37(2):251--284, 1983.
 
     Args:
         orig_val: The original constraint values.
@@ -211,11 +171,6 @@ def compute_iks_agg(
     The induces exponential function (IKS) tends to the maximum operator
     when the aggregation parameter tends to infinity.
 
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
-
     Args:
         orig_val: The original constraint values.
         indices: The indices to generate a subset of the outputs to aggregate.
@@ -246,11 +201,6 @@ def compute_total_iks_agg_jac(
     scale: float | ndarray = 1.0,
 ) -> ndarray:
     """Compute the Jacobian of IKS function with respect to constraints inputs.
-
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
 
     Args:
         orig_val: The original constraint values.
@@ -299,11 +249,6 @@ def compute_partial_iks_agg_jac(
     scale: float | ndarray = 1.0,
 ) -> ndarray:
     """Compute the Jacobian of IKS function with respect to constraints functions.
-
-    !!! quote "References"
-
-        Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
-        Computer Methods in Applied Mechanics and Engineering, 289:332--354, 2015.
 
     Args:
         orig_val: The original constraint values.

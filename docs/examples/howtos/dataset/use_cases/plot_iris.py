@@ -26,9 +26,7 @@
 This is one of the best known dataset
 to be found in the machine learning literature.
 
-It was introduced by the statistician Ronald Fisher
-in his 1936 paper "The use of multiple measurements in taxonomic problems",
-Annals of Eugenics. 7 (2): 179-188.
+It was introduced by the statistician Ronald Fisher [@fisher1936use].
 
 It contains 150 instances of iris plants:
 

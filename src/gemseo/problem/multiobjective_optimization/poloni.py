@@ -26,7 +26,7 @@ r"""Poloni's bi-objective optimization problem.
     Hybridization of a multi-objective genetic algorithm,
     a neural network and a classical optimizer
     for a complex design problem in fluid dynamics.
-    Computer Methods in Applied Mechanics and Engineering, 186(2):403--420, 2000.
+    Computer Methods in Applied Mechanics and Engineering, 186(2):403-420, 2000.
 
 $$
     \begin{aligned}

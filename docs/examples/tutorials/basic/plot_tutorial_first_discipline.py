@@ -91,6 +91,7 @@ discipline.execute({"x": array([5.0]), "z": array([1])})
 # `_run()`
 # method that you defined earlier,
 # enabling other features that you may discover in this tutorial.
+#
 # !!! note
 #     Discipline inputs and outputs shall be
 #     [numpy](http://www.numpy.org/) arrays of real numbers or integers.

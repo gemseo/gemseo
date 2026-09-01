@@ -70,14 +70,6 @@ and
 $(X_1,\ldots,X_d)$
 are independent and identically distributed.
 
-!!! quote "References"
-
-    Andrea Saltelli, Paola Annoni, Ivano Azzini,
-    Francesca Campolongo, Marco Ratto, and Stefano Tarantola.
-    Variance based sensitivity analysis of model output design
-    and estimator for the total sensitivity index.
-    Computer physics communications, 181(2):259--270, 2010.
-
 Given $M$ surrogate models $f_1,\ldots,f_M$ of $f$,
 the elements of the optimal control parameter $\boldsymbol{\alpha}^*$
 are given by

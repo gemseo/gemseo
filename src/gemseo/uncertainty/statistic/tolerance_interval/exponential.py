@@ -29,10 +29,7 @@ from gemseo.uncertainty.statistic.tolerance_interval.base import BaseToleranceIn
 class ExponentialToleranceInterval(BaseToleranceInterval):
     """Computation of tolerance intervals from a data-fitted exponential distribution.
 
-    The formulae come from the R library *tolerance* [1]_.
-
-    .. [1] Derek S. Young, *tolerance: An R Package for Estimating Tolerance Intervals*,
-       Journal of Statistical Software, 36(5), 2010
+    The formulae come from the R library *tolerance*.
     """
 
     def __init__(

@@ -102,41 +102,54 @@ class SobolIndicesEstimatorMixin:
         JANSEN = auto()
         """The Jansen method.
 
-        Source: Jansen, M.J.W. Analysis of variance designs for model output,
-        Computer Physics Communication, 1999, 117, 35-43.
+        !!! quote "References"
+
+            Michiel J. W. Jansen.
+            Analysis of variance designs for model output.
+            Computer Physics Communications, 117(1-2):35-43, 1999.
         """
 
         MARTINEZ = auto()
         """The Martinez method.
 
-        Source: Martinez, J-M., Analyse de sensibilite globale par decomposition
-        de la variance,
-        Presentation in the meeting of GdR Ondes and GdR MASCOT-NUM,
-        January, 13th, 2011, Institut Henri Poincare, Paris, France
+        !!! quote "References"
+
+            Jean-Marc Martinez.
+            Analyse de sensibilité globale par décomposition de la variance.
+            Presentation at the meeting of GdR Ondes and GdR MASCOT-NUM,
+            Institut Henri Poincaré, Paris, France, January 2011.
         """
 
         MAUNTZ_KUCHERENKO = auto()
         """The Mauntz-Kucherenko method.
 
-        Source: Sobol, I.M., Tarantola, S., Gatelli, D., Kucherenko, S.S. and Mauntz, W.
-        Estimating the approximation errors when fixing unessential factors
-        in global sensitivity analysis,
-        Reliability Engineering and System Safety, 2007, 92, 957-960.
+        !!! quote "References"
+
+            I. M. Sobol, S. Tarantola, D. Gatelli, S. S. Kucherenko and W. Mauntz.
+            Estimating the approximation error when fixing unessential factors
+            in global sensitivity analysis.
+            Reliability Engineering & System Safety, 92(7):957-960, 2007.
         """
 
         RANK = auto()
         """The rank-based method.
 
-        Source: Gamboa, F., Gremaud, P., Klein, T. & Lagnoux, A.
-        Global sensitivity analysis: A novel generation of mighty estimators
-        based on rank statistics Bernoulli 28(4): 2345-2374, 2022.
+        !!! quote "References"
+
+            Fabrice Gamboa, Pierre Gremaud, Thierry Klein and Agnès Lagnoux.
+            Global sensitivity analysis:
+            a novel generation of mighty estimators based on rank statistics.
+            Bernoulli, 28(4):2345-2374, 2022.
         """
 
         SALTELLI = auto()
         """The Saltelli method.
 
-        Source: Saltelli, A. Making best use of model evaluations to
-        compute sensitivity indices. Computer Physics Communication, 2002, 145, 580-297
+        !!! quote "References"
+
+            Andrea Saltelli.
+            Making best use of model evaluations to compute sensitivity indices.
+            Computer Physics Communications, 145(2):280-297, 2002.
         """
 
     _ALGO_NAME_TO_CLASS: Final[dict[Algorithm, type]] = {

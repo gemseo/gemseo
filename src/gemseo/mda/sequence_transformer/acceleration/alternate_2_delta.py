@@ -37,9 +37,7 @@ if TYPE_CHECKING:
 class Alternate2Delta(SequenceTransformer):
     """The alternate 2-δ acceleration method.
 
-    The method is introduced in: Isabelle Ramiere, Thomas Helfer, "Iterative residual-
-    based vector methods to accelerate fixed point iterations", Computers and
-    Mathematics with Applications, (2015) eq. (50).
+    The method corresponds to the equation (50) of Ramière and Helfer (2015).
 
     The least squares problem that must be solved to perform the transformation may be
     degenerated when the vectors $x_{n+1} - x_n$ and $x_n - x_{n-1}$ are

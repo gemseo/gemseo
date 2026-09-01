@@ -37,9 +37,12 @@ if TYPE_CHECKING:
 class MinimumPolynomial(SequenceTransformer):
     """The minimum polynomial extrapolation method.
 
-    The method is introduced in: Cabay, S.; Jackson, L.W, "A polynomial extrapolation
-    method for finding limits and antilimits of vector sequences", SIAM Journal on
-    Numerical Analysis, (1976).
+    !!! quote "References"
+
+        S. Cabay and L. W. Jackson.
+        A polynomial extrapolation method
+        for finding limits and antilimits of vector sequences.
+        SIAM Journal on Numerical Analysis, 13(5):734-752, 1976.
     """
 
     _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 2

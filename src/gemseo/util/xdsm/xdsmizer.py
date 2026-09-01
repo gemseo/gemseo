@@ -26,10 +26,12 @@ to produce an interactive web XDSM
 and by the pyxdsm python library
 to produce TIKZ and PDF versions of the XDSM.
 
-For more information, see:
-A. B. Lambe and J. R. R. A. Martins, “Extensions to the Design Structure Matrix for
-the Description of Multidisciplinary Design, Analysis, and Optimization Processes”,
-Structural and Multidisciplinary Optimization, vol. 46, no. 2, p. 273-284, 2012.
+!!! quote "References"
+
+    Andrew B. Lambe and Joaquim R. R. A. Martins.
+    Extensions to the design structure matrix for the description
+    of multidisciplinary design, analysis, and optimization processes.
+    Structural and Multidisciplinary Optimization, 46(2):273-284, 2012.
 """
 
 from __future__ import annotations

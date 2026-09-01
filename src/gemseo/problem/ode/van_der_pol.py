@@ -19,10 +19,6 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 r"""The Van der Pol (VDP) problem describing an oscillator with non-linear damping.
 
-Van der Pol, B. & Van Der Mark, J.
-Frequency Demultiplication.
-Nature 120, 363-364 (1927).
-
 The Van der Pol problem is written as follows:
 
 $$\frac{d^2 x(t)}{dt^2} - \mu (1-x(t)^2) \frac{dx(t)}{dt} + x = 0
@@ -53,8 +49,17 @@ $$
 $$
 
 There is no exact solution to the Van der Pol oscillator problem in terms of
-known tabulated functions (see Panayotounakos *et al.*, On the Lack of Analytic
-Solutions of the Van Der Pol Oscillator. ZAMM 83, nᵒ 9 (1 septembre 2003)).
+known tabulated functions, as shown by Panayotounakos *et al.*
+
+!!! quote "References"
+
+    Balthasar Van der Pol and Jan Van der Mark.
+    Frequency demultiplication.
+    Nature, 120(3019):363-364, 1927.
+
+    D. E. Panayotounakos, N. D. Panayotounakou and A. F. Vakakis.
+    On the lack of analytic solutions of the Van der Pol oscillator.
+    ZAMM - Journal of Applied Mathematics and Mechanics, 83(9):611-615, 2003.
 """
 
 from __future__ import annotations
