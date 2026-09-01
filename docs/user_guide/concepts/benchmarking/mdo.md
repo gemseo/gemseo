@@ -28,7 +28,7 @@ with analytical coupling equations and Jacobians.
 
 ## Sellar's problem { #concept-sellars-problem }
 
-Sellar *et al.* (1996) proposed a small MDO problem that has become the
+Sellar *et al.* [@Sellar1996] proposed a small MDO problem that has become the
 canonical benchmark for comparing MDO formulations.
 In its original scalar form it reads:
 
@@ -87,17 +87,11 @@ with $k=1$, $n=1$, $x_2=0$, $\alpha=3.16$, $\beta=24$, $\gamma=0.2$.
     - [SellarDesignSpace][gemseo.problem.mdo.sellar.sellar_design_space.SellarDesignSpace]
       defines the design and coupling variables.
 
-!!! quote "Reference"
-
-    Sellar RS, Batill SM, and Renaud JE.
-    Response surface based, concurrent subspace optimization for multidisciplinary
-    system design. AIAA paper, 714:1996, 1996.
-
 ## Sobieski's Supersonic Business Jet (SSBJ) { #concept-sobieskis-super-sonic-business-jet-ssbj }
 
 The Sobieski SSBJ problem is a classical aircraft design benchmark
 originating from a 1996 AIAA student competition and first published alongside
-the BLISS formulation [@Sobieszczanski-Sobieski1995] [@niu] [@anderson] [@Raymer].
+the BLISS formulation [@SobieskiBLISS98] [@Sobieszczanski-Sobieski1995] [@niu] [@anderson] [@Raymer].
 The goal is to maximize the range `"y_4"` of a supersonic business jet (SSBJ)
 with respect to shared design variables `"x_shared"`
 and local design variables `"x_1"`, `"x_2"`, `"x_3"`,
@@ -253,12 +247,6 @@ using a gradient-based optimizer are:
 | $AR$                 | 5.5        | 2.5         |
 | $\Lambda\,(\deg)$    | 55         | 70          |
 | $S_W\,(\text{ft}^2)$ | 1000       | 1500        |
-
-!!! quote "Reference"
-
-    Sobieszczanski-Sobieski, J., Agte, J., & Sandusky, Jr, R. (1998, August).
-    Bi-level integrated system synthesis (BLISS).
-    In 7th AIAA/USAF/NASA/ISSMO Symposium on Multidisciplinary Analysis and Optimization (p. 4916).
 
 ## Aerostructure problem { #concept-aerostructure-problem }
 

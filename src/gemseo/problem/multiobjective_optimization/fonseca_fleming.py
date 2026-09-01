@@ -24,7 +24,7 @@ r"""Fonseca-Fleming bi-objective optimization problem.
 
     Carlos M Fonseca and Peter J Fleming.
     An overview of evolutionary algorithms in multiobjective optimization.
-    Evolutionary computation, 3(1):1--16, 1995.
+    Evolutionary computation, 3(1):1-16, 1995.
 
 $$
    \begin{aligned}

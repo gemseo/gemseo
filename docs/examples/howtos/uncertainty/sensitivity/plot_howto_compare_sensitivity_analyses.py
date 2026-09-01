@@ -39,16 +39,11 @@ from gemseo.uncertainty.sensitivity import MorrisAnalysis
 # %%
 # ### 1. Set up the test problem
 #
-# The Ishigami function is a standard benchmark for sensitivity analysis:
+# The Ishigami function is a standard benchmark for sensitivity analysis [@ishigami1990]:
 #
 # $$f(x_1,x_2,x_3)=\sin(x_1)+7\sin(x_2)^2+0.1x_3^4\sin(x_1)$$
 #
 # with $X_1, X_2, X_3 \sim \mathcal{U}(-\pi, \pi)$ independently.
-#
-# !!!quote "Reference"
-#     T. Ishigami and T. Homma,
-#     *An importance quantification technique in uncertainty analysis for computer models*,
-#     First International Symposium on Uncertainty Modeling and Analysis, 1990.
 discipline = IshigamiDiscipline()
 uncertain_space = IshigamiSpace()
 

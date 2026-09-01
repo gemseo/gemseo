@@ -44,12 +44,13 @@ class Rastrigin(OptimizationProblem):
     It uses the Rastrigin objective function
     with the [DesignSpace][gemseo.space.design.DesignSpace] $[-0.1,0.1]^2$
 
-    From http://en.wikipedia.org/wiki/Rastrigin_function:
+    From the
+    [Rastrigin function](https://en.wikipedia.org/wiki/Rastrigin_function):
     the Rastrigin function is a non-convex function used as a
     performance test problem for optimization algorithms.
     It is a typical example of non-linear multimodal function.
-    It was first proposed by [Rastrigin] as a 2-dimensional
-    function and has been generalized by [MuhlenbeinEtAl].
+    It was first proposed by Rastrigin as a 2-dimensional
+    function and has been generalized by Mühlenbein *et al.*
     Finding the minimum of this function is a fairly difficult
     problem due to its large search space and its large
     number of local minima.
@@ -58,12 +59,15 @@ class Rastrigin(OptimizationProblem):
 
     $$f(x) = 10n + \sum_{i=1}^n [x_i^2 - 10\cos(2\pi x_i)]$$
 
-    [Rastrigin] Rastrigin, L. A. "Systems of extremal control."
-    Mir, Moscow (1974).
+    !!! quote "References"
 
-    [MuhlenbeinEtAl] H. Mühlenbein, D. Schomisch and J. Born.
-    "The Parallel Genetic Algorithm as Function Optimizer ".
-    Parallel Computing, 17, pages 619-632, 1991.
+        Leonard A. Rastrigin.
+        Systems of extremal control.
+        Mir, Moscow, 1974.
+
+        Heinz Mühlenbein, Dirk Schomisch and Joachim Born.
+        The parallel genetic algorithm as function optimizer.
+        Parallel Computing, 17(6-7):619-632, 1991.
     """
 
     def __init__(self) -> None:  # noqa: D107

@@ -21,23 +21,12 @@ MDO benchmark problems are far less numerous than standard optimization problems
 This tutorial shows how
 [OptAsMDOScenario][gemseo.problem.mdo.opt_as_mdo_scenario.OptAsMDOScenario]
 automatically transforms any monodisciplinary optimization problem into a
-multidisciplinary one, introducing strongly coupled disciplines and coupling variables
+multidisciplinary one [@delozzo2025make] [@AzizAlaoui2025],
+introducing strongly coupled disciplines and coupling variables
 without changing the optimal solution.
 You will learn what design variable renaming means,
 how to read the resulting coupling graph,
 and how the MDO solution compares to the original.
-
-!!! quote "References"
-
-    - Matthias De Lozzo, Olivier Roustant and Amine Aziz-Alaoui,
-      Make an optimization problem multidisciplinary.
-      Preprint.
-      URL: <https://arxiv.org/abs/2512.19217>.
-    - Amine Aziz-Alaoui.
-      Contributions to multidisciplinary design optimization under uncertainty,
-      with applications to aircraft design.
-      Theses, Université de Toulouse, February 2025.
-      URL: <https://theses.hal.science/tel-05059696>.
 """
 
 from __future__ import annotations

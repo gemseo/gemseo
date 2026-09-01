@@ -109,7 +109,7 @@ class SobolAnalysis(
         and Stefano Tarantola.
         Variance based sensitivity analysis of model output design and estimator
         for the total sensitivity index.
-        Computer physics communications, 181(2):259--270, 2010.
+        Computer physics communications, 181(2):259-270, 2010.
     """
 
     @dataclass

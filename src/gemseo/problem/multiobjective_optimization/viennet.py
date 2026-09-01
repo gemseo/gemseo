@@ -25,7 +25,7 @@ r"""Viennet multi-objective problem.
     R Viennet, Christian Fonteix, and Ivan Marc.
     Multicriteria optimization
     using a genetic algorithm for determining a pareto set.
-    International Journal of Systems Science, 27(2):255--260, 1996.
+    International Journal of Systems Science, 27(2):255-260, 1996.
 
 $$
    \begin{aligned}

@@ -12,6 +12,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Capabilities to compute one-sided and two-sided tolerance intervals."""
+"""Capabilities to compute one-sided and two-sided tolerance intervals.
+
+The formulae come from the R library *tolerance*.
+
+!!! quote "References"
+
+    Derek S. Young.
+    *tolerance*: an R package for estimating tolerance intervals.
+    Journal of Statistical Software, 36(5), 2010.
+"""
 
 from __future__ import annotations

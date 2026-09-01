@@ -49,10 +49,11 @@ class ComplexStep(BaseGradientApproximator):
 
     $$\frac{df(x)}{dx} \approx \text{Im}\left( \frac{f(x+j*\delta x)}{\delta x} \right)$$
 
-    See
-    Martins, Joaquim RRA, Peter Sturdza, and Juan J. Alonso.
-    "The complex-step derivative approximation."
-    ACM Transactions on Mathematical Software (TOMS) 29.3 (2003): 245-262.
+    !!! quote "References"
+
+        Joaquim R. R. A. Martins, Peter Sturdza and Juan J. Alonso.
+        The complex-step derivative approximation.
+        ACM Transactions on Mathematical Software, 29(3):245-262, 2003.
     """  # noqa: E501
 
     _APPROXIMATION_MODE = ApproximationMode.COMPLEX_STEP

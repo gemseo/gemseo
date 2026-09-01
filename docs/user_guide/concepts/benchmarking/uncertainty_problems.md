@@ -24,7 +24,8 @@ Estimated quantities can be compared directly against analytical reference value
 
 ## Ishigami { #concept-ishigami }
 
-The Ishigami function is a standard benchmark for global sensitivity analysis:
+The Ishigami function is a standard benchmark
+for global sensitivity analysis [@ishigami1990]:
 
 $$f(x_1, x_2, x_3) = \sin(x_1)\,(1 + 0.1\,x_3^4) + 7\,\sin^2(x_2)$$
 

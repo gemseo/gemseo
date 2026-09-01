@@ -33,7 +33,7 @@ the [directed graph](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics))
 of couplings is built using the [NetworkX](https://networkx.org/) library.
 From this directed graph,
 standard network operations can be performed such as condensation
-(using Tarjan's algorithm[^1] with Nuutila's modifications[^2])
+(using Tarjan's algorithm [@tarjan1972depth] with Nuutila's modifications [@nuutila1994finding])
 or traversal algorithms to efficiently compute gradient propagation.
 
 ## Coupling graph visualization { #concept-coupling-graph-visualization }
@@ -117,7 +117,3 @@ a dynamic and interactive version can also be viewed in a browser:
 
 The figure below shows some features of this interactive visualization.
 ![Dynamic N2 diagram](figs/n2.gif)
-
-[^1]: Depth-first search and linear graph algorithms, R. Tarjan SIAM Journal of Computing 1(2):146-160, (1972).
-
-[^2]: On finding the strongly connected components in a directed graph. E. Nuutila and E. Soisalon-Soinen Information Processing Letters 49(1): 9-14, (1994).

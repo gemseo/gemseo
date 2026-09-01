@@ -17,10 +17,14 @@ r"""Hock & Schittkowski problem 71.
 
 This module implements the Hock & Schittkowski non-linear programming problem 71.
 
-See: Willi Hock and Klaus Schittkowski. (1981) Test Examples for
-Nonlinear Programming Codes. Lecture Notes in Economics and Mathematical
-Systems Vol. 187, Springer-Verlag.
-Based on MATLAB code by Peter Carbonetto.
+The implementation is based on MATLAB code by Peter Carbonetto.
+
+!!! quote "References"
+
+    Willi Hock and Klaus Schittkowski.
+    Test examples for nonlinear programming codes.
+    Lecture Notes in Economics and Mathematical Systems, volume 187.
+    Springer, 1981.
 """
 
 from __future__ import annotations

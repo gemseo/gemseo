@@ -44,7 +44,7 @@ from gemseo.post import ConstraintsHistory_Settings
 #
 # !!! note
 #     The `execute_post` function also handles previously executed instances of `MDOScenario`
-#     or `OptimzationProblem`.
+#     or `OptimizationProblem`.
 
 # %%
 # ### 2. Run the constraints history post-processing

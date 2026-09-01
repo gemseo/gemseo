@@ -12,6 +12,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Aggregation algorithms."""
+"""Aggregation algorithms.
+
+!!! quote "References"
+
+    Graeme J Kennedy and Jason E Hicken. Improved constraint-aggregation methods.
+    Computer Methods in Applied Mechanics and Engineering, 289:332-354, 2015.
+
+    Gerhard Kreisselmeier and Reinhold Steinhauser.
+    Application of vector performance optimization
+    to a robust control loop design for a fighter aircraft.
+    International Journal of Control, 37(2):251-284, 1983.
+"""
 
 from __future__ import annotations

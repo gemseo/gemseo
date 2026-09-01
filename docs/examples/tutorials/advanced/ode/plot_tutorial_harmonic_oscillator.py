@@ -37,7 +37,7 @@ You will learn how to:
 - **execute** it with default and custom inputs,
 - **compare** the numerical solution with the analytical one.
 
-As a running example, this tutorial uses the harmonic oscillator:
+As a running example, this tutorial uses the harmonic oscillator [@hartman2002]:
 
 $$\\frac{d^2 x(t)}{dt^2} + \\omega^2 x(t) = 0$$
 
@@ -49,11 +49,6 @@ $$\\frac{ds(t)}{dt} = \\begin{pmatrix} y(t) \\\\ -\\omega^2 x(t) \\end{pmatrix}$
 The analytical solution with initial position $x_0$ and velocity $v_0$ is:
 
 $$x(t) = x_0 \\cos(\\omega t) + \\frac{v_0}{\\omega} \\sin(\\omega t)$$
-
-!!!quote "References"
-         Philip Hartman.
-         Ordinary differential equations.
-         SIAM, 2002.
 """
 
 from __future__ import annotations

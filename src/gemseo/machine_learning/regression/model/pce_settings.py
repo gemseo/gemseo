@@ -12,12 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-r"""Settings of the polynomial chaos expansion model.
-
-.. _CleaningStrategy: https://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.CleaningStrategy.html
-.. _FixedStrategy: http://openturns.github.io/openturns/latest/user_manual/response_surface/_generated/openturns.FixedStrategy.html
-.. _LARS: https://openturns.github.io/openturns/latest/theory/meta_modeling/polynomial_sparse_least_squares.html#polynomial-sparse-least-squares
-"""  # noqa: E501
+r"""Settings of the polynomial chaos expansion model."""
 
 from __future__ import annotations
 
@@ -40,7 +35,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class CleaningOptions:
-    """The options of the `CleaningStrategy`_."""
+    """The options of the [CleaningStrategy](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.CleaningStrategy.html)."""
 
     max_considered_terms: int = 100
     """The maximum number of coefficients of the polynomial basis to be considered."""
@@ -75,23 +70,28 @@ estimate the coefficients by least-squares regression.""",
 
     use_lars: bool = Field(
         default=False,
-        description="""Whether to use the `LARS`_ algorithm.
+        description="""Whether to use the
+[LARS](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.LARS.html)
+algorithm.
 
 This argument is ignored when `use_quadrature` is `True`.""",
     )
 
     use_cleaning: bool = Field(
         default=False,
-        description="""Whether to use the `CleaningStrategy`_ algorithm.
+        description="""Whether to use the
+[CleaningStrategy](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.CleaningStrategy.html)
+algorithm.
 
 Otherwise,
-use a fixed truncation strategy (`FixedStrategy`_).""",
+use a fixed truncation strategy ([FixedStrategy](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.FixedStrategy.html)).""",
     )
 
     hyperbolic_parameter: PositiveFloat = Field(
         default=1.0,
-        description="""The $q$-quasi norm parameter of the `hyperbolic and
-anisotropic enumerate function`_, defined over the interval$]0,1]$.""",
+        description="""The $q$-quasi norm parameter of the
+[hyperbolic and anisotropic enumerate function](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.HyperbolicAnisotropicEnumerateFunction.html),
+defined over the interval$]0,1]$.""",
     )
 
     n_quadrature_points: NonNegativeInt = Field(
@@ -108,7 +108,7 @@ and $P$ is the polynomial degree of the PCE.""",
 
     cleaning_options: CleaningOptions | None = Field(
         default=None,
-        description="""The options of the `CleaningStrategy`_.
+        description="""The options of the [CleaningStrategy](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.CleaningStrategy.html).
 
         If `None`, use the default cleaning options.
         """,

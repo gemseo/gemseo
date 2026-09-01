@@ -95,7 +95,7 @@ $$
 
     Nathan P. Tedford and Joaquim R.R.A. Martins.
     Benchmarking multidisciplinary design optimization algorithms.
-    Optimization and Engineering, 11(1):159--183, February 2010
+    Optimization and Engineering, 11(1):159-183, February 2010
 """
 
 from __future__ import annotations

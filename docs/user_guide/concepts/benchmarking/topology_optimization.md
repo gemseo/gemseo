@@ -33,8 +33,9 @@ when only part of the operating conditions is known
 and one wants to find good design candidates achieving stiffer structures
 within a given mass budget.
 The formulation adopted here
-is the Solid Isotropic Material with Penalization (SIMP)[^1] approach;
-the examples reproduce the MATLAB and Python implementations described in[^2] and[^3].
+is the Solid Isotropic Material with Penalization (SIMP) [@bendsoe1989optimal] approach;
+the examples reproduce the MATLAB and Python implementations
+described in [@sigmund2001a99line] and [@andreassen2011efficient].
 
 Given a 2D design space with loads and boundary conditions
 — for instance the Messerschmitt-Bölkow-Blohm (MBB) beam below —
@@ -156,9 +157,3 @@ Three standard benchmark geometries are available:
 
     - [initialize_design_space_and_discipline_to][gemseo.problem.topology_optimization.topopt_initialize.initialize_design_space_and_discipline_to]:
       returns a `(DesignSpace, list[Discipline])` tuple for a given benchmark configuration.
-
-[^1]: Bendsøe, M. P. (1989). Optimal shape design as a material distribution problem. Structural optimization, 1(4), 193-202.
-
-[^2]: Sigmund, O. (2001). A 99 line topology optimization code written in Matlab. Structural and multidisciplinary optimization, 21(2), 120-127.
-
-[^3]: Andreassen, E., Clausen, A., Schevenels, M., Lazarov, B. S., & Sigmund, O. (2011). Efficient topology optimization in MATLAB using 88 lines of code. Structural and Multidisciplinary Optimization, 43(1), 1-16.

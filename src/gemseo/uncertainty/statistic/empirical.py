@@ -199,19 +199,20 @@ class EmpiricalStatistics(BaseStatistics):
           for a upper one-sided tolerance interval,
         - $(n-1)\beta^n-n\beta^{n-1}+1>=1-\alpha$
 
-        See [1] and [2]
+        See the references below
         for more information about empirical tolerance intervals.
 
-        .. [1] Krishnamoorthy K. & Matthews T.,
-           Statistical Tolerance Regions:
-           Theory, Applications, and Computation,
-           Wiley Series in Probability and
-        Statistics,
-           John Wiley & Sons, 2009.
+        !!! quote "References"
 
-        .. [2] Meeker W. Q., Hahn G. J., et Escobar L. A.
-           Statistical intervals: a guide for practitioners and researchers,
-           John Wiley & Sons, 2017.
+            Kalimuthu Krishnamoorthy and Thomas Mathew.
+            Statistical tolerance regions:
+            theory, applications, and computation.
+            Wiley Series in Probability and Statistics.
+            John Wiley & Sons, 2009.
+
+            William Q. Meeker, Gerald J. Hahn and Luis A. Escobar.
+            Statistical intervals: a guide for practitioners and researchers.
+            John Wiley & Sons, 2017.
 
         Raises:
             ValueError: When there are not enough samples.
@@ -220,17 +221,15 @@ class EmpiricalStatistics(BaseStatistics):
         if side == BaseToleranceInterval.ToleranceIntervalSide.LOWER:
             value = (
                 1 - (1 - coverage) ** n_samples
-            )  # Krishnamoorthy & Matthews, p. 216 eq. 8.6.3
+            )  # Krishnamoorthy & Mathew, p. 216 eq. 8.6.3
         elif side == BaseToleranceInterval.ToleranceIntervalSide.UPPER:
-            value = (
-                1 - coverage**n_samples
-            )  # Krishnamoorthy & Matthews, p. 216 eq. 8.6.3
+            value = 1 - coverage**n_samples  # Krishnamoorthy & Mathew, p. 216 eq. 8.6.3
         elif side == BaseToleranceInterval.ToleranceIntervalSide.BOTH:
             value = (
                 (n_samples - 1) * coverage**n_samples
                 - n_samples * (coverage ** (n_samples - 1))
                 + 1
-            )  # Krishnamoorthy & Matthews, p. 215 eq. 8.6.2
+            )  # Krishnamoorthy & Mathew, p. 215 eq. 8.6.2
 
         else:
             msg = "The argument side is not of ToleranceIntervalSide type."

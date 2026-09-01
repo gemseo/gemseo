@@ -73,6 +73,7 @@ These random vectors $U_1,\ldots,U_N$ are independent
 and the covariance matrix of $U_i$ is denoted $\Sigma_i$.
 
 !!! quote "References"
+
     Nathan P. Tedford and Joaquim R.R.A. Martins.
     [Benchmarking multidisciplinary design optimization algorithms.](http://dx.doi.org/10.1007/s11081-009-9082-6)
     Optimization and Engineering, 11(1):159-183, February 2010.

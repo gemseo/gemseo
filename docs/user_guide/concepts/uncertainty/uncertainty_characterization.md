@@ -140,7 +140,7 @@ which separate the marginal distributions from the dependence structure.
 Finally,
 the dependency structure can be visualized from the data
 using a [pair plot][pair-plot] with the option `use_ranks` set to `True`.
-This version of the pair plot is called a *copulogram*[^1].
+This version of the pair plot is called a *copulogram* [@fekhari2024uncertainty].
 As in a classic pair plot,
 the lower part shows the joint distribution
 by projecting the raw data onto planes defined by two components
@@ -151,8 +151,6 @@ but shows the dependency structure between the components
 by replacing raw data by their component-wise normalized ranks.
 This empirical distribution tends to the the copula
 when the number of samples tends to infinity.
-
-[^1]: Elias Fekhari. Uncertainty quantification in multi-physics model for wind turbine asset management. Signal and Image processing. Université Côte d'Azur, 2024. English. [⟨NNT : 2024COAZ4006⟩](https://www.theses.fr/2024COAZ4006). [⟨tel-04617148⟩](https://theses.hal.science/tel-04617148v1).
 
 ## Parameter space { #concept-parameter-space }
 

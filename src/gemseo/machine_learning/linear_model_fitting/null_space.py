@@ -85,13 +85,15 @@ class NullSpace(BaseLinearModelFitter[_NullSpaceFittingFunction, NullSpace_Setti
     such that $\text{rank}\left(\begin{matrix}X\\\tilde{X}\end{matrix}\right)$
     equals the number of features $d$.
 
-    This method was applied by Ghisu *et al* (2021)
+    This method was applied by Ghisu *et al.* (2021)
     to fit a polynomial chaos expansion from input, output and Jacobian data.
 
-    Tiziano Ghisu, Diego I. Lopez, Pranay Seshadri and Shahrokh Shahpar,
-    *Gradient-enhanced Least-square Polynomial Chaos Expansions
-    for Uncertainty Quantification and Robust Optimization*,
-    AIAA 2021-3073. AIAA AVIATION 2021 FORUM. August 2021.
+    !!! quote "References"
+
+        Tiziano Ghisu, Diego I. Lopez, Pranay Seshadri and Shahrokh Shahpar.
+        Gradient-enhanced least-square polynomial chaos expansions
+        for uncertainty quantification and robust optimization.
+        AIAA AVIATION 2021 Forum, AIAA 2021-3073, 2021.
     """
 
     settings_class = NullSpace_Settings

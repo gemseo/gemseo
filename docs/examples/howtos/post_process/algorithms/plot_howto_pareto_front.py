@@ -44,7 +44,7 @@ from gemseo.post import ParetoFront_Settings
 #
 # !!! note
 #     The `execute_post` function also handles previously executed instances of `MDOScenario`
-#     or `OptimzationProblem`.
+#     or `OptimizationProblem`.
 
 # %%
 # ### 2. Run the Pareto front post-processing

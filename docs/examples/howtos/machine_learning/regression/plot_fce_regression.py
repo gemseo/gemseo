@@ -130,12 +130,7 @@ validation_dataset = sample_disciplines(
 # except ordinary least squares regression for which there is no parameter to tune.
 # You also add the [SPGL1 algorithm](https://friedlander.io/spgl1)
 # to solve a basis pursuit denoise (BPN) problem,
-# as well as a null space algorithm.
-#
-# !!! quote "References"
-#       Tiziano Ghisu, Diego I. Lopez, Pranay Seshadri and Shahrokh Shahpar.
-#       [Gradient-enhanced Least-square Polynomial Chaos Expansions for Uncertainty Quantification and Robust Optimization](https://arc.aiaa.org/doi/abs/10.2514/6.2021-3073).
-#       AIAA AVIATION FORUM, 2021.
+# as well as a null space algorithm [@ghisu2021].
 r2_learning = []
 r2_validation = []
 r2_learning_ge = []

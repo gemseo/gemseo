@@ -17,15 +17,7 @@
 #    INITIAL AUTHORS - initial API and implementation and/or initial documentation
 #        :author: Vincent DROUET
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""Modified Normal Boundary Intersection (mNBI) algorithm.
-
-!!! quote "References"
-
-    Pradyumn Kumar Shukla.
-    On the normal boundary intersection method for generation of efficient front.
-    In Computational Science--ICCS 2007: 7th International Conference,
-    Beijing, China, May 27-30, 2007, Proceedings, Part I 7, 310--317. Springer, 2007.
-"""
+"""Modified Normal Boundary Intersection (mNBI) algorithm."""
 
 from __future__ import annotations
 

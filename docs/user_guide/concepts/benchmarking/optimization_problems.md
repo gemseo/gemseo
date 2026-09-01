@@ -85,7 +85,7 @@ The analytical optimum is $x^* = (0.5^{1/3},\, 0.5^{1/3},\, 0.9^{1/3})$.
 
 ## Hock-Schittkowski 71 { #concept-hs71 }
 
-Problem 71 from Hock & Schittkowski (1981) is a nonlinear programming benchmark:
+Problem 71 from Hock & Schittkowski [@hock1981test] is a nonlinear programming benchmark:
 
 $$\min_{x \in [1,5]^4} \; x_1\,x_4\,(x_1 + x_2 + x_3) + x_3$$
 
