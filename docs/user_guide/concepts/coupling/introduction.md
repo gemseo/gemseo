@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "Discipline couplings in GEMSEO: concepts, dependency graph, MDA solving, and gradient computation."
 tags: ['user_guide']
 search:

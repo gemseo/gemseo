@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: intermediate
 description: "Array functions map input arrays to output arrays and support arithmetic operators with automatic differentiation."
 tags: ['user_guide']
 search:

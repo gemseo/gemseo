@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: beginner
 description: "MDO benchmark problems bundled with GEMSEO: Sellar, Sobieski SSBJ, aerostructure and propane combustion."
 tags: ['user_guide']
 search:

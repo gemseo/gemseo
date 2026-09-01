@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: advanced
 description: "Uncertainty propagation evaluates how uncertain inputs affect model outputs by sampling their joint distribution and computing output statistics."
 tags: ['user_guide']
 search:

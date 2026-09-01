@@ -1,4 +1,6 @@
 ---
+reading_time: true
+complexity: intermediate
 description: "GEMSEO can integrate ordinary differential equations and wrap them as disciplines that couple with the rest of an MDO process."
 tags: ['user_guide']
 search:

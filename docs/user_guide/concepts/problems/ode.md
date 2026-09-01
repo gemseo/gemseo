@@ -1,5 +1,6 @@
 ---
 reading_time: true
+complexity: intermediate
 description: "An ODE problem defines an initial value problem where a numerical solver integrates the state trajectory over a time interval."
 tags: ['user_guide']
 search:

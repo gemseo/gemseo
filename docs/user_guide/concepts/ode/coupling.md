@@ -1,4 +1,6 @@
 ---
+reading_time: true
+complexity: advanced
 description: "ODEDisciplines can be coupled with each other, either as separate instances exchanging trajectories, or as a single discipline whose dynamic results from an MDA."
 tags: ['user_guide']
 search:
