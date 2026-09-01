@@ -94,7 +94,7 @@ DIRNAME = Path(__file__).parent
 FAIL_HDF = DIRNAME / "fail2.hdf5"
 
 
-@pytest.fixture(autouse=True)  # noqa: RUF076
+@pytest.fixture(autouse=True)
 def _enable_function_statistics(
     enable_function_statistics,
 ) -> Generator[None, None, None]:
