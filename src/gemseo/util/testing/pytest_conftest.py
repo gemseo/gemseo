@@ -88,7 +88,7 @@ def pytest_sessionfinish(session) -> None:
             file_.unlink()
 
 
-@pytest.fixture(autouse=True)  # noqa: RUF076
+@pytest.fixture(autouse=True)
 def skip_under_windows(request) -> None:
     """Fixture that add a marker to skip under windows.
 
