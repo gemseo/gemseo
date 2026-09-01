@@ -17,6 +17,12 @@
     { label: "5.2.0", url: "https://gemseo.readthedocs.io/en/5.2.0/index.html" },
     { label: "5.1.1", url: "https://gemseo.readthedocs.io/en/5.1.1/index.html" },
     { label: "5.0.1", url: "https://gemseo.readthedocs.io/en/5.0.1/index.html" },
+    { label: "4.3.0.post0", url: "https://gemseo.readthedocs.io/en/4.3.0.post0/index.html" },
+    { label: "4.1.0", url: "https://gemseo.readthedocs.io/en/4.1.0/index.html" },
+    { label: "4.0.1", url: "https://gemseo.readthedocs.io/en/4.0.1/index.html" },
+    { label: "3.2.2", url: "https://gemseo.readthedocs.io/en/3.2.2/index.html" },
+    { label: "3.1.0", url: "https://gemseo.readthedocs.io/en/3.1.0/index.html" },
+    { label: "3.0.3", url: "https://gemseo.readthedocs.io/en/3.0.3/index.html" },
   ];
 
   /* The links carry no marker of their own, so the guard against a second pass lives on
