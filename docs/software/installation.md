@@ -152,17 +152,18 @@ instead [Developer information](https://gemseo.gitlab.io/dev/gemseo-org/develop/
 
 ### Test with unit tests
 
-Run the tests with:
+Get the sources corresponding to the installed version of GEMSEO
+from [gitlab](https://gitlab.com/gemseo/dev/gemseo).
+Then, from the directory of this archive that contains the `tests` directory, run the tests with
 
 ``` console
-pip install gemseo[all,test]
+uv run --extra all pytest
 ```
 
-Look at the output of the above command to determine the installed version of GEMSEO. Get the tests corresponding to the
-same version of GEMSEO from [gitlab](https://gitlab.com/gemseo/dev/gemseo). Then from the directory of this archive that
-contains the `tests` directory, run
+See [uv](https://docs.astral.sh/uv/) for more information. With pip 25.1 or newer, use instead
 
 ``` console
+pip install --group test ".[all]"
 pytest
 ```
 

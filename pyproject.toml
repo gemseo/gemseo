@@ -133,3 +133,12 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
+
+[tool.uv]
+# The project version is derived from the git state by setuptools-scm,
+# add that state to the default cache key so that uv rebuilds the project
+# when the commit or the tags change.
+cache-keys = [
+    { file = "pyproject.toml" },
+    { git = { commit = true, tags = true } },
+]
