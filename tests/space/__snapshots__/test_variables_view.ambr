@@ -1,0 +1,22 @@
+# serializer version: 1
+# name: test_variables_view_gives_immutable_bounds[lower_bound]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_immutable_bounds[upper_bound]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_immutable_bounds_after_copy[lower_bound-copy_with_pickle]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_immutable_bounds_after_copy[lower_bound-deepcopy]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_immutable_bounds_after_copy[upper_bound-copy_with_pickle]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_immutable_bounds_after_copy[upper_bound-deepcopy]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_unknown_name
+  "No variable named 'y'."
+# ---

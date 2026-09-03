@@ -69,6 +69,7 @@ from gemseo.space.design._integer_rounder import IntegerRounder
 from gemseo.space.design._normalizer import Normalizer
 from gemseo.space.design._value import Value
 from gemseo.space.design._variables import Variables
+from gemseo.space.variables_view import VariablesView
 from gemseo.util.string import convert_strings_to_iterable
 from gemseo.util.string import pretty_str
 from gemseo.util.string import repr_variable
@@ -108,6 +109,9 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
     _variables: Variables
     """The versioned variables."""
 
+    _variables_view: VariablesView
+    """The read-only view over the versioned variables."""
+
     _bounds: Bounds
     """The bounds of the variables."""
 
@@ -134,6 +138,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         """  # noqa: D205, D212
         self.name = name
         self._variables = Variables()
+        self._variables_view = VariablesView(self._variables)
         self._bounds = Bounds(self._variables)
         self._integer_rounder = IntegerRounder(self._variables)
         self._normalizer = Normalizer(
@@ -192,6 +197,11 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         or to `None` when the variable has no value.
         """
         return self._current.name_to_value
+
+    @property
+    def variables(self) -> VariablesView:
+        """The registry of the variables of the space (read-only)."""
+        return self._variables_view
 
     @property
     def dimension(self) -> int:
@@ -392,7 +402,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Whether the design space has at least one integer variable.
         """
-        return self._variables.has_integer_variable
+        return self._variables.has_integer_variables
 
     def get_integer_mask(self) -> BooleanArray:
         """Return whether the components of the design vector are integer.
