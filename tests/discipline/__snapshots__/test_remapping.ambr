@@ -1,7 +1,7 @@
 # serializer version: 1
 # name: test_component_mapping_wo_default_values[False]
-  'The input variables of the original discipline mapped component-wise must have default values; the following ones have no default value: x, y.'
+  "The input variables of the original discipline mapped component-wise must have default values; the following ones have no default value: 'x' and 'y'."
 # ---
 # name: test_component_mapping_wo_default_values[True]
-  'The input variables of the original discipline mapped component-wise must have default values; the following ones have no default value: y.'
+  "The input variables of the original discipline mapped component-wise must have default values; the following ones have no default value: 'y'."
 # ---

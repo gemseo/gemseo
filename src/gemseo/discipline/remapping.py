@@ -21,14 +21,18 @@ from __future__ import annotations
 from collections.abc import Iterable
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING
+from typing import Final
 from typing import NoReturn
 
 from numpy import empty
 
 from gemseo.core.discipline import Discipline
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
+    from numpy import ndarray
+
     from gemseo.core.grammar.base import BaseGrammar
     from gemseo.util.typing import StrKeyMapping
 
@@ -36,7 +40,7 @@ Indices = tuple[str, int | Iterable[int]]
 NameMapping = dict[str, str | Indices]
 FormattedNameMapping = dict[str, tuple[str, slice | Iterable[int]]]
 
-_FULL_SLICE = slice(None)
+_FULL_SLICE: Final[slice] = slice(None)
 """The indices of a variable mapped as a whole."""
 
 
@@ -56,6 +60,19 @@ class RemappingDiscipline(Discipline):
     """
 
     default_grammar_type = Discipline.GrammarType.SIMPLER
+
+    _input_mapping: FormattedNameMapping
+    """The input names of this discipline to those of the original discipline."""
+
+    _output_mapping: FormattedNameMapping
+    """The output names of this discipline to those of the original discipline."""
+
+    _empty_original_input_data: dict[str, ndarray]
+    """The empty arrays to fill component-wise with the input data of this discipline.
+
+    These templates are required for the input variables of the original discipline
+    that are mapped component-wise only.
+    """
 
     def __init__(
         self,
@@ -94,13 +111,13 @@ class RemappingDiscipline(Discipline):
             for name, indices in self._input_mapping.values()
             if indices != _FULL_SLICE
         }
-        names_wo_default = sorted(component_mapped_names - original_defaults.keys())
+        names_wo_default = component_mapped_names - original_defaults.keys()
         if names_wo_default:
             msg = (
                 "The input variables of the original discipline "
                 "mapped component-wise must have default values; "
                 f"the following ones have no default value: "
-                f"{', '.join(names_wo_default)}."
+                f"{pretty_repr(names_wo_default)}."
             )
             raise ValueError(msg)
 
@@ -116,9 +133,9 @@ class RemappingDiscipline(Discipline):
         self.io.input_grammar.defaults = self.__convert_from_origin(
             original_defaults,
             {
-                new_name: mapping
-                for new_name, mapping in self._input_mapping.items()
-                if mapping[0] in original_defaults
+                new_name: (name, indices)
+                for new_name, (name, indices) in self._input_mapping.items()
+                if name in original_defaults
             },
         )
         self.add_differentiated_inputs(
