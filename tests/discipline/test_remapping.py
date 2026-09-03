@@ -384,6 +384,29 @@ def test_non_array_values():
     assert discipline.io.output_data["z"] == 4.0
 
 
+def test_execution_does_not_mutate_previous_input_data():
+    """Check that an execution does not modify the input data of the previous one."""
+    original_discipline = NewDiscipline()
+    discipline = RemappingDiscipline(original_discipline, input_mapping, output_mapping)
+    discipline.execute({"new_in_2": array([10.0])})
+    first_in_2 = original_discipline.io.input_data["in_2"]
+    discipline.execute({"new_in_2": array([20.0])})
+    assert_equal(first_in_2, array([10.0, 3.0]))
+
+
+def test_unmapped_components_keep_their_default_values():
+    """Check that the components that are not remapped keep their default values."""
+    original_discipline = NewDiscipline()
+    discipline = RemappingDiscipline(
+        original_discipline,
+        input_mapping={"new_in_2": ("in_2", 0)},
+        output_mapping={"new_out_2": "out_2"},
+    )
+    discipline.execute({"new_in_2": array([10.0])})
+    assert_equal(original_discipline.io.input_data["in_2"], array([10.0, 3.0]))
+    assert_equal(discipline.io.output_data["new_out_2"], array([9.0, 2.0]))
+
+
 def test_unmapped_input_keeps_its_default_value():
     """Check that an input missing from the mapping keeps its default value."""
     original_discipline = AnalyticDiscipline({"z": "a + b"})

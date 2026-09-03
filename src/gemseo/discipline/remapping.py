@@ -24,8 +24,6 @@ from typing import TYPE_CHECKING
 from typing import Final
 from typing import NoReturn
 
-from numpy import empty
-
 from gemseo.core.discipline import Discipline
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 from gemseo.util.string import pretty_repr
@@ -67,11 +65,13 @@ class RemappingDiscipline(Discipline):
     _output_mapping: FormattedNameMapping
     """The output names of this discipline to those of the original discipline."""
 
-    _empty_original_input_data: dict[str, ndarray]
-    """The empty arrays to fill component-wise with the input data of this discipline.
+    _default_original_input_data: dict[str, ndarray]
+    """The default values to fill component-wise with the input data of this discipline.
 
     These templates are required for the input variables of the original discipline
-    that are mapped component-wise only.
+    that are mapped component-wise only;
+    they are copied at each execution
+    and the components that are not mapped keep their default values.
     """
 
     def __init__(
@@ -104,7 +104,9 @@ class RemappingDiscipline(Discipline):
             output_mapping, original_output_grammar
         )
         # Only the original input variables mapped component-wise
-        # require a default value, used as a template to be filled component-wise.
+        # require a default value,
+        # used as a template of which the mapped components are overwritten
+        # while the other ones keep their default values.
         original_defaults = original_input_grammar.defaults
         component_mapped_names = {
             name
@@ -121,11 +123,8 @@ class RemappingDiscipline(Discipline):
             )
             raise ValueError(msg)
 
-        self._empty_original_input_data = {
-            name: empty(
-                original_defaults[name].shape, dtype=original_defaults[name].dtype
-            )
-            for name in component_mapped_names
+        self._default_original_input_data = {
+            name: original_defaults[name] for name in component_mapped_names
         }
         super().__init__(name=self._discipline.name)
         self.io.input_grammar.update_from_names(input_mapping.keys())
@@ -264,7 +263,10 @@ class RemappingDiscipline(Discipline):
             The original input data
             mapping the original input names to the corresponding values.
         """
-        original_input_data = self._empty_original_input_data.copy()
+        original_input_data = {
+            name: value.copy()
+            for name, value in self._default_original_input_data.items()
+        }
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
             if args == _FULL_SLICE:
