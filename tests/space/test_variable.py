@@ -212,7 +212,7 @@ def test_model_copy_with_another_type(cls, type_, snapshot) -> None:
         variable.model_copy(update={"type": type_})
 
 
-def test_model_copy_leaves_original_alone() -> None:
+def test_model_copy_leaves_original_alone(snapshot) -> None:
     """Check that an update returns a new variable and does not touch the original."""
     variable = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
 
@@ -221,6 +221,11 @@ def test_model_copy_leaves_original_alone() -> None:
     assert new_variable is not variable
     assert_array_equal(new_variable.lower_bound, array([-9.0, -9.0]))
     assert not new_variable.lower_bound.flags.writeable
+    # A variable stores read-only views of its bounds,
+    # so the writeable flag cannot be re-enabled.
+    with assert_exception(ValueError, snapshot):
+        new_variable.lower_bound.setflags(write=True)
+
     # The base implementation would have written the update into the original.
     assert_array_equal(variable.lower_bound, array([0.0, 0.0]))
     assert not variable.lower_bound.flags.writeable
@@ -238,7 +243,7 @@ def test_model_copy_converts_the_update() -> None:
     assert_array_equal(new_variable.upper_bound, array([3, 3]))
 
 
-def test_copy_and_pickle_keep_the_kind(variable) -> None:
+def test_copy_and_pickle_keep_the_kind(variable, snapshot) -> None:
     """Check that copying and unpickling preserve the kind and the frozen bounds."""
     assert copy(variable) is variable
     assert deepcopy(variable) is variable
@@ -249,6 +254,13 @@ def test_copy_and_pickle_keep_the_kind(variable) -> None:
     assert restored == variable
     assert not restored.lower_bound.flags.writeable
     assert not restored.upper_bound.flags.writeable
+    # Pickling preserves neither the writeable flag nor the base of an array,
+    # so the restored bounds must have been refrozen and re-viewed.
+    with assert_exception(ValueError, snapshot):
+        restored.lower_bound.setflags(write=True)
+
+    with assert_exception(ValueError, snapshot):
+        restored.upper_bound.setflags(write=True)
 
 
 @pytest.mark.parametrize(

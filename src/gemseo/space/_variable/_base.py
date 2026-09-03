@@ -173,15 +173,17 @@ class BaseVariable(BaseModel, ABC, frozen=True):
         else:
             bound = atleast_1d(bound)
 
-        # Freeze the validated bound array so that an accidental in-place mutation
-        # cannot bypass the version bump
-        # and leave the derived caches serving stale bounds.
-        # The accessors of Bounds hand out read-only views of this array,
-        # so that its writeable flag cannot be re-enabled from the outside.
+        # Freeze the converted bound array and store a read-only view of it:
+        # an in-place mutation then raises
+        # instead of bypassing the version bump
+        # and leaving the derived caches serving stale bounds.
+        # Freezing the array alone would not be enough,
+        # since a caller can re-enable the writeable flag of an array owning its data;
+        # a view does not own its data, so NumPy refuses to re-enable its flag.
         bound.setflags(write=False)
 
         # Bypass assignment validation to avoid recursion when using setattr.
-        self.__dict__[bound_name] = bound
+        self.__dict__[bound_name] = bound.view()
 
     def __check_bound(
         self,
@@ -354,11 +356,13 @@ class BaseVariable(BaseModel, ABC, frozen=True):
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         super().__setstate__(state)
-        # NumPy does not preserve the writeable flag across pickling,
+        # NumPy preserves neither the writeable flag nor the base across pickling,
         # and pydantic restores the model without re-validating it,
-        # so refreeze the bound arrays here.
+        # so refreeze the bound arrays here and store read-only views of them again.
         for name in (_LOWER_BOUND, _UPPER_BOUND):
-            self.__dict__[name].setflags(write=False)
+            bound = self.__dict__[name]
+            bound.setflags(write=False)
+            self.__dict__[name] = bound.view()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, BaseVariable):

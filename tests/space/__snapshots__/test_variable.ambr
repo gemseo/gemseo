@@ -83,6 +83,18 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
+# name: test_copy_and_pickle_keep_the_kind[ContinuousVariable]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_copy_and_pickle_keep_the_kind[ContinuousVariable].1
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_copy_and_pickle_keep_the_kind[IntegerVariable]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_copy_and_pickle_keep_the_kind[IntegerVariable].1
+  'cannot set WRITEABLE flag to True of this array'
+# ---
 # name: test_frozen[ContinuousVariable-lower_bound]
   '''
   1 validation error for ContinuousVariable
@@ -250,6 +262,9 @@
     Input should be <DataType.INTEGER: 'integer'> [type=literal_error, input_value='complex', input_type=str]
       For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
   '''
+# ---
+# name: test_model_copy_leaves_original_alone
+  'cannot set WRITEABLE flag to True of this array'
 # ---
 # name: test_model_copy_with_another_type[ContinuousVariable-integer]
   '''

@@ -62,7 +62,7 @@ def test_has_integer(names, expected) -> None:
     classes = {"x": ContinuousVariable, "n": IntegerVariable}
     for name in names:
         variables[name] = classes[name](size=1, lower_bound=0, upper_bound=1)
-    assert variables.has_integer_variable is expected
+    assert variables.has_integer_variables is expected
 
 
 def test_get_integer_components(variables) -> None:

@@ -263,7 +263,7 @@ class Variables(
         return mask
 
     @property
-    def has_integer_variable(self) -> bool:
+    def has_integer_variables(self) -> bool:
         """Whether the set has at least one integer variable."""
         return any(
             isinstance(variable, IntegerVariable)
