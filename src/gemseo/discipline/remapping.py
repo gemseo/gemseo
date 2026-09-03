@@ -34,6 +34,10 @@ if TYPE_CHECKING:
 
 Indices = tuple[str, int | Iterable[int]]
 NameMapping = dict[str, str | Indices]
+FormattedNameMapping = dict[str, tuple[str, slice | Iterable[int]]]
+
+_FULL_SLICE = slice(None)
+"""The indices of a variable mapped as a whole."""
 
 
 class RemappingDiscipline(Discipline):
@@ -62,43 +66,60 @@ class RemappingDiscipline(Discipline):
         """
         Args:
             discipline: The original discipline
-                for which each input variable must have a default value.
+                for which each input variable mapped component-wise
+                must have a default value as a NumPy array.
             input_mapping: The input names to the original input names.
             output_mapping: The output names to the original output names.
 
         Raises:
             ValueError: When an input variable of the original discipline
-                has no default value.
+                is mapped component-wise but has no default value.
         """  # noqa: D205, D212, D415
-        if discipline.io.input_grammar and len(
-            discipline.io.input_grammar.defaults
-        ) != len(discipline.io.input_grammar):
-            msg = (
-                "Some input variables of the original discipline "
-                "have no default values."
-            )
-            raise ValueError(msg)
-
         self._discipline = discipline
-        self._empty_original_input_data = {
-            k: empty(v.shape, dtype=v.dtype)
-            for k, v in discipline.io.input_grammar.defaults.items()
-        }
         original_input_grammar = discipline.io.input_grammar
         original_output_grammar = discipline.io.output_grammar
         input_mapping = input_mapping or {n: n for n in original_input_grammar}
         output_mapping = output_mapping or {n: n for n in original_output_grammar}
         self._input_mapping = self.__format_mapping(
-            input_mapping, discipline.io.input_grammar
+            input_mapping, original_input_grammar
         )
         self._output_mapping = self.__format_mapping(
-            output_mapping, discipline.io.output_grammar
+            output_mapping, original_output_grammar
         )
+        # Only the original input variables mapped component-wise
+        # require a default value, used as a template to be filled component-wise.
+        original_defaults = original_input_grammar.defaults
+        component_mapped_names = {
+            name
+            for name, indices in self._input_mapping.values()
+            if indices != _FULL_SLICE
+        }
+        names_wo_default = sorted(component_mapped_names - original_defaults.keys())
+        if names_wo_default:
+            msg = (
+                "The input variables of the original discipline "
+                "mapped component-wise must have default values; "
+                f"the following ones have no default value: "
+                f"{', '.join(names_wo_default)}."
+            )
+            raise ValueError(msg)
+
+        self._empty_original_input_data = {
+            name: empty(
+                original_defaults[name].shape, dtype=original_defaults[name].dtype
+            )
+            for name in component_mapped_names
+        }
         super().__init__(name=self._discipline.name)
         self.io.input_grammar.update_from_names(input_mapping.keys())
         self.io.output_grammar.update_from_names(output_mapping.keys())
         self.io.input_grammar.defaults = self.__convert_from_origin(
-            discipline.io.input_grammar.defaults, self._input_mapping
+            original_defaults,
+            {
+                new_name: mapping
+                for new_name, mapping in self._input_mapping.items()
+                if mapping[0] in original_defaults
+            },
         )
         self.add_differentiated_inputs(
             self.__get_new_data_names(
@@ -155,7 +176,7 @@ class RemappingDiscipline(Discipline):
     @classmethod
     def __format_mapping(
         cls, mapping: NameMapping, grammar: BaseGrammar
-    ) -> dict[str, tuple[str, slice | Iterable[int]]]:
+    ) -> FormattedNameMapping:
         """Format a mapping as `{"current_name": ("original_name", components)}`.
 
         Args:
@@ -196,7 +217,7 @@ class RemappingDiscipline(Discipline):
     @staticmethod
     def __convert_from_origin(
         original_data: StrKeyMapping,
-        name_mapping: NameMapping,
+        name_mapping: FormattedNameMapping,
     ) -> StrKeyMapping:
         """Convert original data to the current format.
 
@@ -209,7 +230,9 @@ class RemappingDiscipline(Discipline):
             The current data mapping the current names to the corresponding values.
         """
         return {
-            new_name: original_data[original_name][args]
+            new_name: original_data[original_name]
+            if args == _FULL_SLICE
+            else original_data[original_name][args]
             for new_name, (original_name, args) in name_mapping.items()
         }
 
@@ -227,12 +250,15 @@ class RemappingDiscipline(Discipline):
         original_input_data = self._empty_original_input_data.copy()
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
-            original_input_data[original_name][args] = value
+            if args == _FULL_SLICE:
+                original_input_data[original_name] = value
+            else:
+                original_input_data[original_name][args] = value
         return original_input_data
 
     @staticmethod
     def __get_new_data_names(
-        data_names: Iterable[str], name_mapping: NameMapping
+        data_names: Iterable[str], name_mapping: FormattedNameMapping
     ) -> list[str]:
         """Return new data names from data names based on a name mapping.
 

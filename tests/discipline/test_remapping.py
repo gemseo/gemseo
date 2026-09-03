@@ -26,6 +26,7 @@ from numpy.testing import assert_equal
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammar.simple import SimpleGrammar
 from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline.auto_py import AutoPyDiscipline
 from gemseo.discipline.remapping import RemappingDiscipline
 from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.pickle import from_pickle
@@ -136,14 +137,24 @@ def test_original_discipline(discipline) -> None:
     assert discipline.original_discipline == discipline._discipline
 
 
+def test_with_discipline_wo_default_values() -> None:
+    """Check that the wrapped discipline needs no default input value."""
+    discipline = DummyDiscipline(input_names=["x", "y"])
+    remapping_discipline = RemappingDiscipline(
+        discipline, {"new_x": "x", "new_y": "y"}, {}
+    )
+    assert remapping_discipline.io.input_grammar.keys() == {"new_x", "new_y"}
+    assert not remapping_discipline.io.input_grammar.defaults
+
+
 @pytest.mark.parametrize("use_default", [False, True])
-def test_with_discipline_wo_default_values(use_default, snapshot) -> None:
-    """Check that the wrapped discipline must have default input values."""
+def test_component_mapping_wo_default_values(use_default, snapshot) -> None:
+    """Check that an input mapped component-wise must have a default value."""
     discipline = DummyDiscipline(input_names=["x", "y"])
     if use_default:
-        discipline.io.input_grammar.defaults["x"] = array([0.0])
+        discipline.io.input_grammar.defaults["x"] = array([0.0, 1.0])
     with assert_exception(ValueError, snapshot):
-        RemappingDiscipline(discipline, {}, {})
+        RemappingDiscipline(discipline, {"new_x": ("x", 0), "new_y": ("y", 0)}, {})
 
 
 def test_discipline_name(discipline) -> None:
@@ -333,3 +344,56 @@ def test_linearize():
     )
     assert_equal(old_jac["old_a"]["old_b"], new_jac["new_a"]["new_b"])
     assert_equal(old_jac["old_a"]["old_c"], new_jac["new_a"]["new_c"])
+
+
+def add_arrays(a, b):
+    """Sum two variables without default values."""
+    c = a + b
+    return c  # noqa: RET504
+
+
+def add_floats(a: float = 2.0, b: float = 3.0) -> float:
+    """Sum two float variables."""
+    c = a + b
+    return c  # noqa: RET504
+
+
+def test_auto_py_discipline_wo_default_values():
+    """Check the remapping of an AutoPyDiscipline without default input values."""
+    discipline = RemappingDiscipline(
+        AutoPyDiscipline(add_arrays),
+        input_mapping={"x": "a", "y": "b"},
+        output_mapping={"z": "c"},
+    )
+    assert not discipline.io.input_grammar.defaults
+    discipline.execute({"x": array([1.0]), "y": array([2.0])})
+    assert_equal(discipline.io.output_data["z"], array([3.0]))
+
+
+def test_non_array_values():
+    """Check the remapping of a discipline handling non-array values."""
+    discipline = RemappingDiscipline(
+        AutoPyDiscipline(add_floats),
+        input_mapping={"x": "a", "y": "b"},
+        output_mapping={"z": "c"},
+    )
+    assert discipline.io.input_grammar.defaults == {"x": 2.0, "y": 3.0}
+    discipline.execute()
+    assert discipline.io.output_data["z"] == 5.0
+    discipline.execute({"x": 1.0})
+    assert discipline.io.output_data["z"] == 4.0
+
+
+def test_unmapped_input_keeps_its_default_value():
+    """Check that an input missing from the mapping keeps its default value."""
+    original_discipline = AnalyticDiscipline({"z": "a + b"})
+    original_discipline.io.input_grammar.defaults.update({
+        "a": array([1.0]),
+        "b": array([100.0]),
+    })
+    discipline = RemappingDiscipline(
+        original_discipline, input_mapping={"x": "a"}, output_mapping={"zz": "z"}
+    )
+    discipline.execute({"x": array([1.0])})
+    assert_equal(original_discipline.io.input_data["b"], array([100.0]))
+    assert_equal(discipline.io.output_data["zz"], array([101.0]))
