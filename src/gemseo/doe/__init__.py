@@ -28,67 +28,37 @@ from gemseo.util.package_import import install_lazy_reexport
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
     from gemseo.core.problem.evaluation import EvaluationProblem  # noqa: F401
-    from gemseo.doe.custom_doe.settings.custom_doe_settings import (
-        CustomDOE_Settings,  # noqa: F401
-    )
+    from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings  # noqa: F401
     from gemseo.doe.diagonal_doe.diagonal_doe import DiagonalDOE_Settings  # noqa: F401
-    from gemseo.doe.morris_doe.settings.morris_doe_settings import (
-        MorrisDOE_Settings,  # noqa: F401
-    )
-    from gemseo.doe.oat_doe.settings.oat_doe_settings import (
-        OATDOE_Settings,  # noqa: F401
-    )
+    from gemseo.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings  # noqa: F401
+    from gemseo.doe.oat_doe.settings.oat_doe_settings import OATDOE_Settings  # noqa: F401
     from gemseo.doe.openturns.settings.ot_axial import OT_AXIAL_Settings  # noqa: F401
-    from gemseo.doe.openturns.settings.ot_composite import (
-        OT_COMPOSITE_Settings,  # noqa: F401
-    )
-    from gemseo.doe.openturns.settings.ot_factorial import (
-        OT_FACTORIAL_Settings,  # noqa: F401
-    )
+    from gemseo.doe.openturns.settings.ot_composite import OT_COMPOSITE_Settings  # noqa: F401
+    from gemseo.doe.openturns.settings.ot_factorial import OT_FACTORIAL_Settings  # noqa: F401
     from gemseo.doe.openturns.settings.ot_faure import OT_FAURE_Settings  # noqa: F401
-    from gemseo.doe.openturns.settings.ot_fullfact import (
-        OT_FULLFACT_Settings,  # noqa: F401
-    )
+    from gemseo.doe.openturns.settings.ot_fullfact import OT_FULLFACT_Settings  # noqa: F401
     from gemseo.doe.openturns.settings.ot_halton import OT_HALTON_Settings  # noqa: F401
-    from gemseo.doe.openturns.settings.ot_haselgrove import (
-        OT_HASELGROVE_Settings,  # noqa: F401
-    )
+    from gemseo.doe.openturns.settings.ot_haselgrove import OT_HASELGROVE_Settings  # noqa: F401
     from gemseo.doe.openturns.settings.ot_lhs import OT_LHS_Settings  # noqa: F401
     from gemseo.doe.openturns.settings.ot_lhsc import OT_LHSC_Settings  # noqa: F401
-    from gemseo.doe.openturns.settings.ot_monte_carlo import (
-        OT_MONTE_CARLO_Settings,  # noqa: F401
-    )
-    from gemseo.doe.openturns.settings.ot_opt_lhs import (
-        OT_OPT_LHS_Settings,  # noqa: F401
-    )
+    from gemseo.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings  # noqa: F401
+    from gemseo.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings  # noqa: F401
     from gemseo.doe.openturns.settings.ot_random import OT_RANDOM_Settings  # noqa: F401
     from gemseo.doe.openturns.settings.ot_reverse_halton import (
         OT_REVERSE_HALTON_Settings,  # noqa: F401
     )
     from gemseo.doe.openturns.settings.ot_sobol import OT_SOBOL_Settings  # noqa: F401
-    from gemseo.doe.openturns.settings.ot_sobol_indices import (
-        OT_SOBOL_INDICES_Settings,  # noqa: F401
-    )
-    from gemseo.doe.pydoe.settings.pydoe_bbdesign import (
-        PYDOE_BBDESIGN_Settings,  # noqa: F401
-    )
-    from gemseo.doe.pydoe.settings.pydoe_ccdesign import (
-        PYDOE_CCDESIGN_Settings,  # noqa: F401
-    )
+    from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings  # noqa: F401
+    from gemseo.doe.pydoe.settings.pydoe_bbdesign import PYDOE_BBDESIGN_Settings  # noqa: F401
+    from gemseo.doe.pydoe.settings.pydoe_ccdesign import PYDOE_CCDESIGN_Settings  # noqa: F401
     from gemseo.doe.pydoe.settings.pydoe_ff2n import PYDOE_FF2N_Settings  # noqa: F401
-    from gemseo.doe.pydoe.settings.pydoe_fullfact import (
-        PYDOE_FULLFACT_Settings,  # noqa: F401
-    )
+    from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings  # noqa: F401
     from gemseo.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings  # noqa: F401
-    from gemseo.doe.pydoe.settings.pydoe_pbdesign import (
-        PYDOE_PBDESIGN_Settings,  # noqa: F401
-    )
+    from gemseo.doe.pydoe.settings.pydoe_pbdesign import PYDOE_PBDESIGN_Settings  # noqa: F401
     from gemseo.doe.scipy.settings.halton import Halton_Settings  # noqa: F401
     from gemseo.doe.scipy.settings.lhs import LHS_Settings  # noqa: F401
     from gemseo.doe.scipy.settings.mc import MC_Settings  # noqa: F401
-    from gemseo.doe.scipy.settings.poisson_disk import (
-        PoissonDisk_Settings,  # noqa: F401
-    )
+    from gemseo.doe.scipy.settings.poisson_disk import PoissonDisk_Settings  # noqa: F401
     from gemseo.doe.scipy.settings.sobol import Sobol_Settings  # noqa: F401
 
 # Exported name -> "module.path:Attr" (lazy-loaded on attribute access).

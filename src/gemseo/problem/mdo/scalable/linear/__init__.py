@@ -23,9 +23,7 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.problem.mdo.scalable.linear.linear_discipline import (
-        LinearDiscipline,  # noqa: F401
-    )
+    from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _NAME_TO_LOCATION: Final[dict[str, str]] = {

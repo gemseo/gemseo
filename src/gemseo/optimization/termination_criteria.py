@@ -37,9 +37,7 @@ from numpy.linalg import norm
 from gemseo.core.problem.termination_criterion import DesvarIsNan  # noqa: F401
 from gemseo.core.problem.termination_criterion import FtolReached
 from gemseo.core.problem.termination_criterion import FunctionIsNan  # noqa: F401
-from gemseo.core.problem.termination_criterion import (  # noqa: F401
-    MaxIterReachedException,
-)
+from gemseo.core.problem.termination_criterion import MaxIterReachedException  # noqa: F401
 from gemseo.core.problem.termination_criterion import MaxTimeReached  # noqa: F401
 from gemseo.core.problem.termination_criterion import TerminationCriterion
 from gemseo.core.problem.termination_criterion import XtolReached

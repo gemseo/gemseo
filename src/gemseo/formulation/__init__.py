@@ -23,13 +23,9 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.formulation.bilevel_bcd_settings import (
-        BiLevelBCD_Settings,  # noqa: F401
-    )
+    from gemseo.formulation.bilevel_bcd_settings import BiLevelBCD_Settings  # noqa: F401
     from gemseo.formulation.bilevel_settings import BiLevel_Settings  # noqa: F401
-    from gemseo.formulation.disciplinary_opt_settings import (
-        DisciplinaryOpt_Settings,  # noqa: F401
-    )
+    from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings  # noqa: F401
     from gemseo.formulation.idf_settings import IDF_Settings  # noqa: F401
     from gemseo.formulation.mdf_settings import MDF_Settings  # noqa: F401
 

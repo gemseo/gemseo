@@ -68,18 +68,12 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     # static visibility for mypy / IDEs
-    from gemseo.problem.mdo.scalable.data_driven.diagonal import (
-        ScalableDiagonalModel,  # noqa: F401
-    )
+    from gemseo.problem.mdo.scalable.data_driven.diagonal import ScalableDiagonalModel  # noqa: F401
     from gemseo.problem.mdo.scalable.data_driven.discipline import (
         DataDrivenScalableDiscipline,  # noqa: F401
     )
-    from gemseo.problem.mdo.scalable.data_driven.problem import (
-        ScalableProblem,  # noqa: F401
-    )
-    from gemseo.problem.mdo.scalable.data_driven.study.result import (
-        ScalabilityResult,  # noqa: F401
-    )
+    from gemseo.problem.mdo.scalable.data_driven.problem import ScalableProblem  # noqa: F401
+    from gemseo.problem.mdo.scalable.data_driven.study.result import ScalabilityResult  # noqa: F401
 
 # Exported name -> location (lazy-loaded on attribute access).
 _NAME_TO_LOCATION: Final[dict[str, str]] = {

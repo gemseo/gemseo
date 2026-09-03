@@ -23,9 +23,7 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.machine_learning.classification.quality.f1_measure import (
-        F1Measure,  # noqa: F401
-    )
+    from gemseo.machine_learning.classification.quality.f1_measure import F1Measure  # noqa: F401
     from gemseo.machine_learning.classification.quality.factory import (
         CLASSIFIER_QUALITY_FACTORY,  # noqa: F401
     )

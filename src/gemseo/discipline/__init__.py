@@ -25,27 +25,17 @@ if TYPE_CHECKING:
     # static visibility for mypy / IDEs
     from gemseo.core.discipline.discipline import Discipline  # noqa: F401
     from gemseo.discipline.analytic import AnalyticDiscipline  # noqa: F401
-    from gemseo.discipline.array_based_function import (
-        ArrayBasedFunctionDiscipline,  # noqa: F401
-    )
+    from gemseo.discipline.array_based_function import ArrayBasedFunctionDiscipline  # noqa: F401
     from gemseo.discipline.auto_py import AutoPyDiscipline  # noqa: F401
-    from gemseo.discipline.chain.additive_chain import (
-        AdditiveDisciplineChain,  # noqa: F401
-    )
+    from gemseo.discipline.chain.additive_chain import AdditiveDisciplineChain  # noqa: F401
     from gemseo.discipline.chain.chain import DisciplineChain  # noqa: F401
     from gemseo.discipline.chain.initialization_chain import (
         InitializationDisciplineChain,  # noqa: F401
     )
-    from gemseo.discipline.chain.parallel_chain import (
-        ParallelDisciplineChain,  # noqa: F401
-    )
-    from gemseo.discipline.chain.warm_started_chain import (
-        WarmStartedDisciplineChain,  # noqa: F401
-    )
+    from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain  # noqa: F401
+    from gemseo.discipline.chain.warm_started_chain import WarmStartedDisciplineChain  # noqa: F401
     from gemseo.discipline.concatenater import Concatenater  # noqa: F401
-    from gemseo.discipline.constraint_aggregation import (
-        ConstraintAggregation,  # noqa: F401
-    )
+    from gemseo.discipline.constraint_aggregation import ConstraintAggregation  # noqa: F401
     from gemseo.discipline.factory import DISCIPLINE_FACTORY  # noqa: F401
     from gemseo.discipline.linear_combination import LinearCombination  # noqa: F401
     from gemseo.discipline.ode.ode_discipline import ODEDiscipline  # noqa: F401
@@ -54,9 +44,7 @@ if TYPE_CHECKING:
     from gemseo.discipline.surrogate import SurrogateDiscipline  # noqa: F401
     from gemseo.discipline.taylor import TaylorDiscipline  # noqa: F401
     from gemseo.discipline.wrapper.disc_from_exe import DiscFromExe  # noqa: F401
-    from gemseo.discipline.wrapper.filtering_discipline import (
-        FilteringDiscipline,  # noqa: F401
-    )
+    from gemseo.discipline.wrapper.filtering_discipline import FilteringDiscipline  # noqa: F401
     from gemseo.discipline.wrapper.job_scheduler.lsf import LSF  # noqa: F401
     from gemseo.discipline.wrapper.job_scheduler.slurm import SLURM  # noqa: F401
     from gemseo.discipline.wrapper.retry_discipline import RetryDiscipline  # noqa: F401

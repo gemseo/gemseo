@@ -67,35 +67,25 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.machine_learning.regression.model.factory import (
-        REGRESSOR_FACTORY,  # noqa: F401
-    )
+    from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY  # noqa: F401
     from gemseo.machine_learning.regression.model.fce import FCERegressor  # noqa: F401
-    from gemseo.machine_learning.regression.model.gpr import (
-        GaussianProcessRegressor,  # noqa: F401
-    )
+    from gemseo.machine_learning.regression.model.gpr import GaussianProcessRegressor  # noqa: F401
     from gemseo.machine_learning.regression.model.gradient_boosting import (
         GradientBoostingRegressor,  # noqa: F401
     )
-    from gemseo.machine_learning.regression.model.linreg import (
-        LinearRegressor,  # noqa: F401
-    )
+    from gemseo.machine_learning.regression.model.linreg import LinearRegressor  # noqa: F401
     from gemseo.machine_learning.regression.model.mlp import MLPRegressor  # noqa: F401
     from gemseo.machine_learning.regression.model.moe import MOERegressor  # noqa: F401
     from gemseo.machine_learning.regression.model.ot_gpr import (
         OTGaussianProcessRegressor,  # noqa: F401
     )
     from gemseo.machine_learning.regression.model.pce import PCERegressor  # noqa: F401
-    from gemseo.machine_learning.regression.model.polyreg import (
-        PolynomialRegressor,  # noqa: F401
-    )
+    from gemseo.machine_learning.regression.model.polyreg import PolynomialRegressor  # noqa: F401
     from gemseo.machine_learning.regression.model.random_forest import (
         RandomForestRegressor,  # noqa: F401
     )
     from gemseo.machine_learning.regression.model.rbf import RBFRegressor  # noqa: F401
-    from gemseo.machine_learning.regression.model.regressor_chain import (
-        RegressorChain,  # noqa: F401
-    )
+    from gemseo.machine_learning.regression.model.regressor_chain import RegressorChain  # noqa: F401
     from gemseo.machine_learning.regression.model.svm import SVMRegressor  # noqa: F401
     from gemseo.machine_learning.regression.model.tps import TPSRegressor  # noqa: F401
 

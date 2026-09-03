@@ -40,15 +40,9 @@ if TYPE_CHECKING:
     from gemseo.problem.uncertainty.ishigami.ishigami_discipline import (
         IshigamiDiscipline,  # noqa: F401
     )
-    from gemseo.problem.uncertainty.ishigami.ishigami_function import (
-        IshigamiFunction,  # noqa: F401
-    )
-    from gemseo.problem.uncertainty.ishigami.ishigami_problem import (
-        IshigamiProblem,  # noqa: F401
-    )
-    from gemseo.problem.uncertainty.ishigami.ishigami_space import (
-        IshigamiSpace,  # noqa: F401
-    )
+    from gemseo.problem.uncertainty.ishigami.ishigami_function import IshigamiFunction  # noqa: F401
+    from gemseo.problem.uncertainty.ishigami.ishigami_problem import IshigamiProblem  # noqa: F401
+    from gemseo.problem.uncertainty.ishigami.ishigami_space import IshigamiSpace  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _NAME_TO_LOCATION: Final[dict[str, str]] = {

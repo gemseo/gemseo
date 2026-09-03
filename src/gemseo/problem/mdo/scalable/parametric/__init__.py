@@ -102,9 +102,7 @@ if TYPE_CHECKING:
     from gemseo.problem.mdo.scalable.parametric.scalable_design_space import (
         ScalableDesignSpace,  # noqa: F401
     )
-    from gemseo.problem.mdo.scalable.parametric.scalable_problem import (
-        ScalableProblem,  # noqa: F401
-    )
+    from gemseo.problem.mdo.scalable.parametric.scalable_problem import ScalableProblem  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _NAME_TO_LOCATION: Final[dict[str, str]] = {

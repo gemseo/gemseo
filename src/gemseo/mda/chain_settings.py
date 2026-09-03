@@ -22,9 +22,7 @@ from typing import ClassVar  # Noqa: TC003
 from pydantic import Field
 
 from gemseo.core.coupling_structure import CouplingStructure  # Noqa: TC001
-from gemseo.mda.core.base_parallel_solver_settings import (
-    BaseMDAParallelSolverSettings,  # Noqa: TC001
-)
+from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings  # Noqa: TC001
 from gemseo.mda.core.base_settings import BaseMDASettings  # noqa: TC001
 from gemseo.mda.core.composed_settings import ComposedMDASettings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings

@@ -113,9 +113,7 @@ if TYPE_CHECKING:
     # static visibility for mypy / IDEs
     from gemseo.problem.mdo.sellar.sellar_1 import Sellar1  # noqa: F401
     from gemseo.problem.mdo.sellar.sellar_2 import Sellar2  # noqa: F401
-    from gemseo.problem.mdo.sellar.sellar_design_space import (
-        SellarDesignSpace,  # noqa: F401
-    )
+    from gemseo.problem.mdo.sellar.sellar_design_space import SellarDesignSpace  # noqa: F401
     from gemseo.problem.mdo.sellar.sellar_system import SellarSystem  # noqa: F401
 
 # This allows to test a specific data converter.

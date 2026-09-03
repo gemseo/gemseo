@@ -23,9 +23,7 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.problem.mdo.aerostructure.aerostructure import (
-        Aerodynamics,  # noqa: F401
-    )
+    from gemseo.problem.mdo.aerostructure.aerostructure import Aerodynamics  # noqa: F401
     from gemseo.problem.mdo.aerostructure.aerostructure import Mission  # noqa: F401
     from gemseo.problem.mdo.aerostructure.aerostructure import Structure  # noqa: F401
     from gemseo.problem.mdo.aerostructure.aerostructure_design_space import (

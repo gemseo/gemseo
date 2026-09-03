@@ -28,36 +28,22 @@ if TYPE_CHECKING:
     from gemseo.post.basic_history import BasicHistory  # noqa: F401
     from gemseo.post.basic_history_settings import BasicHistory_Settings  # noqa: F401
     from gemseo.post.constraint_radar import ConstraintRadar  # noqa: F401
-    from gemseo.post.constraint_radar_settings import (
-        ConstraintRadar_Settings,  # noqa: F401
-    )
+    from gemseo.post.constraint_radar_settings import ConstraintRadar_Settings  # noqa: F401
     from gemseo.post.constraints_history import ConstraintsHistory  # noqa: F401
-    from gemseo.post.constraints_history_settings import (
-        ConstraintsHistory_Settings,  # noqa: F401
-    )
+    from gemseo.post.constraints_history_settings import ConstraintsHistory_Settings  # noqa: F401
     from gemseo.post.correlations import Correlations  # noqa: F401
     from gemseo.post.correlations_settings import Correlations_Settings  # noqa: F401
     from gemseo.post.factory import POST_FACTORY  # noqa: F401
     from gemseo.post.gradient_sensitivity import GradientSensitivity  # noqa: F401
-    from gemseo.post.gradient_sensitivity_settings import (
-        GradientSensitivity_Settings,  # noqa: F401
-    )
+    from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings  # noqa: F401
     from gemseo.post.hessian_history import HessianHistory  # noqa: F401
-    from gemseo.post.hessian_history_settings import (
-        HessianHistory_Settings,  # noqa: F401
-    )
+    from gemseo.post.hessian_history_settings import HessianHistory_Settings  # noqa: F401
     from gemseo.post.obj_constr_hist import ObjConstrHist  # noqa: F401
-    from gemseo.post.obj_constr_hist_settings import (
-        ObjConstrHist_Settings,  # noqa: F401
-    )
+    from gemseo.post.obj_constr_hist_settings import ObjConstrHist_Settings  # noqa: F401
     from gemseo.post.opt_history_view import OptHistoryView  # noqa: F401
-    from gemseo.post.opt_history_view_settings import (
-        OptHistoryView_Settings,  # noqa: F401
-    )
+    from gemseo.post.opt_history_view_settings import OptHistoryView_Settings  # noqa: F401
     from gemseo.post.parallel_coordinates import ParallelCoordinates  # noqa: F401
-    from gemseo.post.parallel_coordinates_settings import (
-        ParallelCoordinates_Settings,  # noqa: F401
-    )
+    from gemseo.post.parallel_coordinates_settings import ParallelCoordinates_Settings  # noqa: F401
     from gemseo.post.pareto_front import ParetoFront  # noqa: F401
     from gemseo.post.pareto_front_settings import ParetoFront_Settings  # noqa: F401
     from gemseo.post.quad_approx import QuadApprox  # noqa: F401
@@ -65,17 +51,13 @@ if TYPE_CHECKING:
     from gemseo.post.robustness import Robustness  # noqa: F401
     from gemseo.post.robustness_settings import Robustness_Settings  # noqa: F401
     from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix  # noqa: F401
-    from gemseo.post.scatter_plot_matrix_settings import (
-        ScatterPlotMatrix_Settings,  # noqa: F401
-    )
+    from gemseo.post.scatter_plot_matrix_settings import ScatterPlotMatrix_Settings  # noqa: F401
     from gemseo.post.som import SOM  # noqa: F401
     from gemseo.post.som_settings import SOM_Settings  # noqa: F401
     from gemseo.post.topology_view import TopologyView  # noqa: F401
     from gemseo.post.topology_view_settings import TopologyView_Settings  # noqa: F401
     from gemseo.post.variable_influence import VariableInfluence  # noqa: F401
-    from gemseo.post.variable_influence_settings import (
-        VariableInfluence_Settings,  # noqa: F401
-    )
+    from gemseo.post.variable_influence_settings import VariableInfluence_Settings  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _NAME_TO_LOCATION: Final[dict[str, str]] = {

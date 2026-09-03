@@ -57,24 +57,16 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.uncertainty.distribution.factory import (
-        DISTRIBUTION_FACTORY,  # noqa: F401
-    )
-    from gemseo.uncertainty.distribution.openturns.beta import (
-        OTBetaDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY  # noqa: F401
+    from gemseo.uncertainty.distribution.openturns.beta import OTBetaDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.beta_settings import (
         OTBetaDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.openturns.dirac import (
-        OTDiracDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.openturns.dirac import OTDiracDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.dirac_settings import (
         OTDiracDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.openturns.distribution import (
-        OTDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.openturns.distribution import OTDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.distribution_fitter import (
         OTDistributionFitter,  # noqa: F401
     )
@@ -93,18 +85,14 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.distribution.openturns.finite_discrete_settings import (
         OTFiniteDiscreteDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.openturns.joint import (
-        OTJointDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.openturns.joint import OTJointDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.log_normal import (
         OTLogNormalDistribution,  # noqa: F401
     )
     from gemseo.uncertainty.distribution.openturns.log_normal_settings import (
         OTLogNormalDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.openturns.normal import (
-        OTNormalDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.openturns.normal import OTNormalDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.normal_settings import (
         OTNormalDistribution_Settings,  # noqa: F401
     )
@@ -114,27 +102,19 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.distribution.openturns.triangular_settings import (
         OTTriangularDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.openturns.uniform import (
-        OTUniformDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.openturns.uniform import OTUniformDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.uniform_settings import (
         OTUniformDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.openturns.weibull import (
-        OTWeibullDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.openturns.weibull import OTWeibullDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.weibull_settings import (
         OTWeibullDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.scipy.beta import (
-        SPBetaDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.scipy.beta import SPBetaDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.scipy.beta_settings import (
         SPBetaDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.scipy.distribution import (
-        SPDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.scipy.distribution import SPDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.scipy.distribution_fitter import (
         SPDistributionFitter,  # noqa: F401
     )
@@ -147,18 +127,12 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.distribution.scipy.exponential_settings import (
         SPExponentialDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.scipy.joint import (
-        SPJointDistribution,  # noqa: F401
-    )
-    from gemseo.uncertainty.distribution.scipy.log_normal import (
-        SPLogNormalDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.scipy.joint import SPJointDistribution  # noqa: F401
+    from gemseo.uncertainty.distribution.scipy.log_normal import SPLogNormalDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.scipy.log_normal_settings import (
         SPLogNormalDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.scipy.normal import (
-        SPNormalDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.scipy.normal import SPNormalDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.scipy.normal_settings import (
         SPNormalDistribution_Settings,  # noqa: F401
     )
@@ -168,15 +142,11 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.distribution.scipy.triangular_settings import (
         SPTriangularDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.scipy.uniform import (
-        SPUniformDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.scipy.uniform import SPUniformDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.scipy.uniform_settings import (
         SPUniformDistribution_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.distribution.scipy.weibull import (
-        SPWeibullDistribution,  # noqa: F401
-    )
+    from gemseo.uncertainty.distribution.scipy.weibull import SPWeibullDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.scipy.weibull_settings import (
         SPWeibullDistribution_Settings,  # noqa: F401
     )

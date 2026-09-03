@@ -58,9 +58,7 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.problem.uncertainty.wing_weight.discipline import (
-        WingWeightDiscipline,  # noqa: F401
-    )
+    from gemseo.problem.uncertainty.wing_weight.discipline import WingWeightDiscipline  # noqa: F401
     from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
         WingWeightUncertainSpace,  # noqa: F401
     )

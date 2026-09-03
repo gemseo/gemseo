@@ -42,12 +42,8 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.uncertainty.sensitivity.correlation import (
-        CorrelationAnalysis,  # noqa: F401
-    )
-    from gemseo.uncertainty.sensitivity.factory import (
-        SENSITIVITY_ANALYSIS_FACTORY,  # noqa: F401
-    )
+    from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysis  # noqa: F401
+    from gemseo.uncertainty.sensitivity.factory import SENSITIVITY_ANALYSIS_FACTORY  # noqa: F401
     from gemseo.uncertainty.sensitivity.hsic import HSICAnalysis  # noqa: F401
     from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis  # noqa: F401
     from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis  # noqa: F401

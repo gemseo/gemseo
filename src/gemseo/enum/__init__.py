@@ -28,9 +28,7 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.core.algorithm.progress_bar_data.factory import (
-        ProgressBarDataName,  # noqa: F401
-    )
+    from gemseo.core.algorithm.progress_bar_data.factory import ProgressBarDataName  # noqa: F401
     from gemseo.core.derivative.derivation_mode import DerivationMode  # noqa: F401
     from gemseo.core.discipline.base_discipline import CacheType  # noqa: F401
     from gemseo.core.discipline.discipline import Discipline as _Discipline
@@ -50,22 +48,14 @@ if TYPE_CHECKING:
     from gemseo.doe.pydoe.settings.pydoe_ccdesign import Alpha  # noqa: F401
     from gemseo.doe.pydoe.settings.pydoe_ccdesign import Face  # noqa: F401
     from gemseo.doe.pydoe.settings.pydoe_lhs import Criterion  # noqa: F401
-    from gemseo.doe.scipy.settings.base_scipy_doe_settings import (
-        Hypersphere,  # noqa: F401
-    )
-    from gemseo.doe.scipy.settings.base_scipy_doe_settings import (
-        Optimizer,  # noqa: F401
-    )
+    from gemseo.doe.scipy.settings.base_scipy_doe_settings import Hypersphere  # noqa: F401
+    from gemseo.doe.scipy.settings.base_scipy_doe_settings import Optimizer  # noqa: F401
     from gemseo.doe.scipy.settings.base_scipy_doe_settings import Strength  # noqa: F401
     from gemseo.machine_learning.core.quality.base_ml_model_quality import (
         BaseMLModelQuality as _BaseMLModelQuality,
     )
-    from gemseo.machine_learning.linear_model_fitting.ridge_cv_settings import (
-        GCVMode,  # noqa: F401
-    )
-    from gemseo.machine_learning.linear_model_fitting.ridge_settings import (
-        Solver,  # noqa: F401
-    )
+    from gemseo.machine_learning.linear_model_fitting.ridge_cv_settings import GCVMode  # noqa: F401
+    from gemseo.machine_learning.linear_model_fitting.ridge_settings import Solver  # noqa: F401
     from gemseo.machine_learning.regression.model.fce_settings import (
         OrthonormalFunctionBasis,  # noqa: F401
     )
@@ -87,9 +77,7 @@ if TYPE_CHECKING:
     from gemseo.mda.jacobian_assembly import JacobianAssembly as _JacobianAssembly
     from gemseo.mda.jacobian_assembly import MDADerivationMode  # noqa: F401
     from gemseo.mda.quasi_newton_settings import QuasiNewtonMethod  # noqa: F401
-    from gemseo.mda.sequence_transformer.acceleration import (
-        AccelerationMethod,  # noqa: F401
-    )
+    from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod  # noqa: F401
     from gemseo.post._engine.robustness_quantifier import (
         RobustnessQuantifier as _RobustnessQuantifier,
     )
@@ -123,9 +111,7 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.distribution.scipy.distribution_fitter import (
         SPDistributionFitter as _SPDistributionFitter,
     )
-    from gemseo.uncertainty.sensitivity.correlation import (
-        CorrelationAnalysisMethod,  # noqa: F401
-    )
+    from gemseo.uncertainty.sensitivity.correlation import CorrelationAnalysisMethod  # noqa: F401
     from gemseo.uncertainty.sensitivity.form import FORMAnalysisMethod  # noqa: F401
     from gemseo.uncertainty.sensitivity.hsic import HSICAnalysis as _HSICAnalysis
     from gemseo.uncertainty.sensitivity.hsic import HSICAnalysisMethod  # noqa: F401
@@ -136,12 +122,8 @@ if TYPE_CHECKING:
         BaseToleranceInterval as _BaseToleranceInterval,
     )
     from gemseo.util.base_name_generator import BaseNameGenerator as _BaseNameGenerator
-    from gemseo.util.derivative.approximation_mode import (
-        ApproximationMode,  # noqa: F401
-    )
-    from gemseo.util.derivative.approximation_mode import (
-        HybridApproximationMode,  # noqa: F401
-    )
+    from gemseo.util.derivative.approximation_mode import ApproximationMode  # noqa: F401
+    from gemseo.util.derivative.approximation_mode import HybridApproximationMode  # noqa: F401
     from gemseo.util.file_path_manager import FilePathManager as _FilePathManager
     from gemseo.util.multiprocessing.start_method import (
         MultiProcessingStartMethod as _MultiProcessingStartMethod,

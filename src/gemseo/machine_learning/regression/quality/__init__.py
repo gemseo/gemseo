@@ -26,21 +26,11 @@ if TYPE_CHECKING:
     from gemseo.machine_learning.regression.quality.factory import (
         REGRESSOR_QUALITY_FACTORY,  # noqa: F401
     )
-    from gemseo.machine_learning.regression.quality.mae_measure import (
-        MAEMeasure,  # noqa: F401
-    )
-    from gemseo.machine_learning.regression.quality.me_measure import (
-        MEMeasure,  # noqa: F401
-    )
-    from gemseo.machine_learning.regression.quality.mse_measure import (
-        MSEMeasure,  # noqa: F401
-    )
-    from gemseo.machine_learning.regression.quality.r2_measure import (
-        R2Measure,  # noqa: F401
-    )
-    from gemseo.machine_learning.regression.quality.rmse_measure import (
-        RMSEMeasure,  # noqa: F401
-    )
+    from gemseo.machine_learning.regression.quality.mae_measure import MAEMeasure  # noqa: F401
+    from gemseo.machine_learning.regression.quality.me_measure import MEMeasure  # noqa: F401
+    from gemseo.machine_learning.regression.quality.mse_measure import MSEMeasure  # noqa: F401
+    from gemseo.machine_learning.regression.quality.r2_measure import R2Measure  # noqa: F401
+    from gemseo.machine_learning.regression.quality.rmse_measure import RMSEMeasure  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _NAME_TO_LOCATION: Final[dict[str, str]] = {

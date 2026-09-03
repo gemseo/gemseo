@@ -23,18 +23,14 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.uncertainty.reliability.factory import (
-        RELIABILITY_ALGORITHM_FACTORY,  # noqa: F401
-    )
+    from gemseo.uncertainty.reliability.factory import RELIABILITY_ALGORITHM_FACTORY  # noqa: F401
     from gemseo.uncertainty.reliability.openturns.directional_sampling_settings import (
         OT_DirectionalSampling_Settings,  # noqa: F401
     )
     from gemseo.uncertainty.reliability.openturns.faure_settings import (
         OT_Faure_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.reliability.openturns.form_settings import (
-        OT_FORM_Settings,  # noqa: F401
-    )
+    from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings  # noqa: F401
     from gemseo.uncertainty.reliability.openturns.halton_settings import (
         OT_Halton_Settings,  # noqa: F401
     )
@@ -50,12 +46,8 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.reliability.openturns.is_spce_settings import (
         OT_IS_SPCE_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.reliability.openturns.lhs_settings import (
-        OT_LHS_Settings,  # noqa: F401
-    )
-    from gemseo.uncertainty.reliability.openturns.mc_settings import (
-        OT_MC_Settings,  # noqa: F401
-    )
+    from gemseo.uncertainty.reliability.openturns.lhs_settings import OT_LHS_Settings  # noqa: F401
+    from gemseo.uncertainty.reliability.openturns.mc_settings import OT_MC_Settings  # noqa: F401
     from gemseo.uncertainty.reliability.openturns.multi_form_settings import (
         OT_MultiFORM_Settings,  # noqa: F401
     )
@@ -65,9 +57,7 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.reliability.openturns.sobol_settings import (
         OT_Sobol_Settings,  # noqa: F401
     )
-    from gemseo.uncertainty.reliability.openturns.sorm_settings import (
-        OT_SORM_Settings,  # noqa: F401
-    )
+    from gemseo.uncertainty.reliability.openturns.sorm_settings import OT_SORM_Settings  # noqa: F401
     from gemseo.uncertainty.reliability.openturns.subset_sampling_settings import (
         OT_SubsetSampling_Settings,  # noqa: F401
     )
@@ -75,9 +65,7 @@ if TYPE_CHECKING:
         OT_SystemFORM_Settings,  # noqa: F401
     )
     from gemseo.uncertainty.reliability.problem import ReliabilityProblem  # noqa: F401
-    from gemseo.uncertainty.reliability.scenario import (
-        ReliabilityScenario,  # noqa: F401
-    )
+    from gemseo.uncertainty.reliability.scenario import ReliabilityScenario  # noqa: F401
 
 
 # Class name -> defining submodule (lazy-loaded on attribute access).

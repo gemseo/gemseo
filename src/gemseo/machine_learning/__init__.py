@@ -52,9 +52,7 @@ if TYPE_CHECKING:
     from gemseo.machine_learning.clustering.model.gaussian_mixture_settings import (
         GaussianMixture_Settings,  # noqa: F401
     )
-    from gemseo.machine_learning.clustering.model.kmeans_settings import (
-        KMeans_Settings,  # noqa: F401
-    )
+    from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Settings  # noqa: F401
     from gemseo.machine_learning.core.model.base_ml_model import BaseMLModel
     from gemseo.machine_learning.core.model.base_ml_model import TransformerType
     from gemseo.machine_learning.regression.model.fce_settings import (

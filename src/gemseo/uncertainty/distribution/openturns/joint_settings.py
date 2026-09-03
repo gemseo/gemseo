@@ -27,9 +27,7 @@ from pydantic import model_validator
 from gemseo.uncertainty.distribution.core.base_joint_settings import (
     BaseJointDistributionSettings,
 )
-from gemseo.uncertainty.distribution.core.base_settings import (  # noqa: TC001
-    BaseDistributionSettings,
-)
+from gemseo.uncertainty.distribution.core.base_settings import BaseDistributionSettings  # noqa: TC001
 from gemseo.uncertainty.distribution.openturns.base_settings import (
     BaseOTDistributionSettings,
 )
