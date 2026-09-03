@@ -1,33 +1,51 @@
-exclude: ^(tests/.*\.tikz)
+# commitizen runs at the commit-msg stage,
+# its shim shall be installed too.
+default_install_hook_types: [pre-commit, commit-msg]
+# Without this, a hook runs at every installed stage,
+# the file hooks would run again when checking the commit message.
+default_stages: [pre-commit]
+# For the builtin repository and this very key.
+minimum_prek_version: "0.5.1"
+
+exclude: ^tests/.*\.tikz$
 
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+  # The hooks bundled with prek: nothing to clone, no environment to create.
+  - repo: builtin
     hooks:
       - id: trailing-whitespace
         exclude: \.ambr$
       - id: end-of-file-fixer
         exclude: LICENSES/headers
       - id: check-yaml
-        # !reference is specific to gitlab
-        # !! prefix is specific to mkdocs
-        exclude: \.gitlab-ci.yml|mkdocs.yml|mkdocs-fast.yml
+        exclude: ^mkdocs(-fast)?\.yml$
+      # The !!python/name tag of mkdocs cannot be loaded,
+      # check the syntax only.
+      - id: check-yaml
+        name: check yaml syntax only
+        args: [--unsafe]
+        files: ^mkdocs(-fast)?\.yml$
       - id: check-added-large-files
-        exclude: ^griffe-dump.json$
+        exclude: ^griffe-dump\.json$
       - id: check-json
+      - id: check-toml
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: check-case-conflict
+      # The tests are also run on Windows.
+      - id: check-illegal-windows-names
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: fix-byte-order-marker
+
+  # The builtin implementation of pretty-format-json renders the floats
+  # differently (1e-06 becomes 1e-6) and would rewrite the JSON test data.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
       - id: pretty-format-json
         args: [--autofix, --no-sort-keys]
-        exclude: \.ipynb
-      - id: check-toml
-      - id: destroyed-symlinks
-      - id: check-symlinks
-
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-      - id: rst-backticks
-      - id: rst-directive-colons
-      - id: rst-inline-touching-normal
+        exclude: \.ipynb$
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.12.9
@@ -37,20 +55,14 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.5
     hooks:
+      # The markdown files are handled by rumdl,
+      # which itself delegates the code blocks to ruff,
+      # the default types of ruff-format include markdown.
       - id: ruff-check
         types_or: [python, pyi, jupyter]
         args: [--exit-non-zero-on-fix]
       - id: ruff-format
         types_or: [python, pyi, jupyter]
-
-  # - repo: https://github.com/myint/docformatter
-  #   rev: v1.7.5
-  #   hooks:
-  #     - id: docformatter
-  #       args: [
-  #         --in-place,
-  #         --black,
-  #       ]
 
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v4.18.0
@@ -62,7 +74,7 @@ repos:
     rev: v0.2.63
     hooks:
       - id: rumdl-fmt
-        exclude: ^.gitlab
+        exclude: ^\.gitlab
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.6

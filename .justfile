@@ -87,7 +87,7 @@ publish: dist
 [group('lifecycle')]
 update:
     uv lock --upgrade
-    uv run --only-group check prek autoupdate
+    uv run --only-group check prek update
 
 # Ensure the project virtualenv is up to date and has the base dependencies
 [group('lifecycle')]
