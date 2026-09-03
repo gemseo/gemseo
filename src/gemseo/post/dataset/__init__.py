@@ -56,9 +56,7 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.heatmap import Heatmap  # noqa: F401
     from gemseo.post.dataset.lines import Lines  # noqa: F401
     from gemseo.post.dataset.pair_plot import PairPlot  # noqa: F401
-    from gemseo.post.dataset.parallel_coordinates import (
-        ParallelCoordinates,  # noqa: F401
-    )
+    from gemseo.post.dataset.parallel_coordinates import ParallelCoordinates  # noqa: F401
     from gemseo.post.dataset.radar_chart import RadarChart  # noqa: F401
     from gemseo.post.dataset.radviz import RadViz  # noqa: F401
     from gemseo.post.dataset.scatter import Scatter  # noqa: F401

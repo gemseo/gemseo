@@ -43,9 +43,7 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.machine_learning.clustering.model.factory import (
-        CLUSTERER_FACTORY,  # noqa: F401
-    )
+    from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY  # noqa: F401
     from gemseo.machine_learning.clustering.model.gaussian_mixture import (
         GaussianMixture,  # noqa: F401
     )

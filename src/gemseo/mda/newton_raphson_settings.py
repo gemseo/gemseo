@@ -20,9 +20,7 @@ from typing import ClassVar
 
 from pydantic import Field
 
-from gemseo.linear.core.base_linear_solver_settings import (
-    BaseLinearSolverSettings,  # noqa: TC001
-)
+from gemseo.linear.core.base_linear_solver_settings import BaseLinearSolverSettings  # noqa: TC001
 from gemseo.linear.scipy_linalg import LGMRES_Settings
 from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.util.typing import StrKeyMapping  # noqa: TC001

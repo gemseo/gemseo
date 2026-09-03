@@ -38,18 +38,12 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.machine_learning.classification.model.factory import (
-        CLASSIFIER_FACTORY,  # noqa: F401
-    )
-    from gemseo.machine_learning.classification.model.knn import (
-        KNNClassifier,  # noqa: F401
-    )
+    from gemseo.machine_learning.classification.model.factory import CLASSIFIER_FACTORY  # noqa: F401
+    from gemseo.machine_learning.classification.model.knn import KNNClassifier  # noqa: F401
     from gemseo.machine_learning.classification.model.random_forest import (
         RandomForestClassifier,  # noqa: F401
     )
-    from gemseo.machine_learning.classification.model.svm import (
-        SVMClassifier,  # noqa: F401
-    )
+    from gemseo.machine_learning.classification.model.svm import SVMClassifier  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _NAME_TO_LOCATION: Final[dict[str, str]] = {

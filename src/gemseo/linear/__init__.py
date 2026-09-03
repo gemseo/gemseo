@@ -33,9 +33,7 @@ if TYPE_CHECKING:
     # static visibility for mypy / IDEs
     from gemseo.linear.problem import LinearProblem  # noqa: F401
     from gemseo.linear.scipy_linalg.settings.bicg import BICG_Settings  # noqa: F401
-    from gemseo.linear.scipy_linalg.settings.bicgstab import (  # noqa: F401
-        BICGSTAB_Settings,
-    )
+    from gemseo.linear.scipy_linalg.settings.bicgstab import BICGSTAB_Settings  # noqa: F401
     from gemseo.linear.scipy_linalg.settings.cg import CG_Settings  # noqa: F401
     from gemseo.linear.scipy_linalg.settings.cgs import CGS_Settings  # noqa: F401
     from gemseo.linear.scipy_linalg.settings.gcrot import GCROT_Settings  # noqa: F401

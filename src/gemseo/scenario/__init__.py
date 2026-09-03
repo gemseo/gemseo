@@ -26,9 +26,7 @@ if TYPE_CHECKING:
     from gemseo.scenario.adapter.mdo_objective_scenario_adapter import (
         MDOObjectiveScenarioAdapter,  # noqa: F401
     )
-    from gemseo.scenario.adapter.mdo_scenario_adapter import (
-        MDOScenarioAdapter,  # noqa: F401
-    )
+    from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter  # noqa: F401
     from gemseo.scenario.evaluation import EvaluationScenario  # noqa: F401
     from gemseo.scenario.factory import SCENARIO_FACTORY  # noqa: F401
     from gemseo.scenario.mdo import MDOScenario  # noqa: F401

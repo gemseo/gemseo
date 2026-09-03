@@ -34,9 +34,7 @@ if TYPE_CHECKING:
     from gemseo.optimization.augmented_lagrangian.settings.order_1 import (  # noqa: F401
         Augmented_Lagrangian_Order_1_Settings,
     )
-    from gemseo.optimization.mnbi.settings.mnbi_settings import (  # noqa: F401
-        MNBI_Settings,
-    )
+    from gemseo.optimization.mnbi.settings.mnbi_settings import MNBI_Settings  # noqa: F401
     from gemseo.optimization.multi_start.settings.multi_start_settings import (  # noqa: F401
         MultiStart_Settings,
     )
@@ -49,9 +47,7 @@ if TYPE_CHECKING:
     from gemseo.optimization.nlopt.settings.nlopt_cobyla_settings import (  # noqa: F401
         NLOPT_COBYLA_Settings,
     )
-    from gemseo.optimization.nlopt.settings.nlopt_mma_settings import (  # noqa: F401
-        NLOPT_MMA_Settings,
-    )
+    from gemseo.optimization.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Settings  # noqa: F401
     from gemseo.optimization.nlopt.settings.nlopt_newuoa_settings import (  # noqa: F401
         NLOPT_NEWUOA_Settings,
     )
@@ -65,30 +61,20 @@ if TYPE_CHECKING:
     from gemseo.optimization.scipy_global.settings.dual_annealing import (  # noqa: F401
         DUAL_ANNEALING_Settings,
     )
-    from gemseo.optimization.scipy_global.settings.shgo import (  # noqa: F401
-        SHGO_Settings,
-    )
+    from gemseo.optimization.scipy_global.settings.shgo import SHGO_Settings  # noqa: F401
     from gemseo.optimization.scipy_linprog.settings.highs_dual_simplex import (  # noqa: F401
         DUAL_SIMPLEX_Settings,
     )
     from gemseo.optimization.scipy_linprog.settings.highs_interior_point import (  # noqa: F401
         INTERIOR_POINT_Settings,
     )
-    from gemseo.optimization.scipy_local.settings.cobyla import (  # noqa: F401
-        COBYLA_Settings,
-    )
-    from gemseo.optimization.scipy_local.settings.cobyqa import (  # noqa: F401
-        COBYQA_Settings,
-    )
-    from gemseo.optimization.scipy_local.settings.lbfgsb import (  # noqa: F401
-        L_BFGS_B_Settings,
-    )
+    from gemseo.optimization.scipy_local.settings.cobyla import COBYLA_Settings  # noqa: F401
+    from gemseo.optimization.scipy_local.settings.cobyqa import COBYQA_Settings  # noqa: F401
+    from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings  # noqa: F401
     from gemseo.optimization.scipy_local.settings.nelder_mead import (  # noqa: F401
         NELDER_MEAD_Settings,
     )
-    from gemseo.optimization.scipy_local.settings.slsqp import (  # noqa: F401
-        SLSQP_Settings,
-    )
+    from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings  # noqa: F401
     from gemseo.optimization.scipy_local.settings.tnc import TNC_Settings  # noqa: F401
     from gemseo.optimization.scipy_milp.settings.scipy_milp_settings import (  # noqa: F401
         MILP_Settings,
