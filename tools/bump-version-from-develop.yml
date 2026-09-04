@@ -21,16 +21,23 @@
 # Apply a single entry to a name: a value is already the final name, never feed it back
 # in. A name matching no entry is unchanged.
 #
-# No public class attribute, method or signature was renamed between `develop` and this
-# branch, so a rebase needs the names below and little else. Private internals did move
-# though: a branch touching them has to reconcile its design with the one of this branch.
+# Apart from `flatten_processes`, no public class attribute, method or signature was
+# renamed between `develop` and this branch, so a rebase needs the names below and
+# little else. Private internals did move though: a branch touching them has to
+# reconcile its design with the one of this branch.
+#
+# `flatten_processes` (`get_sub_disciplines` on `develop`) renamed its first argument
+# from `disciplines` to `processes`: a call passing it by keyword needs that rename on
+# top of the `names:` entry. It also flattens any `EvaluationScenario`, where `develop`
+# flattens an `MDOScenario` only and returns any other scenario as is. A branch relying
+# on either of these has to account for the difference.
 #
 # The `gemseo.settings` package was dissolved into the packages of the settings it
 # exposed; its modules are listed one by one and the package itself has no counterpart.
 #
 # Every old name below exists on `develop` and every new name exists on this branch,
 # checked against both source trees; 207 modules and packages,
-# 17 module-level names.
+# 18 module-level names.
 
 # Renamed and moved modules and packages.
 modules:
@@ -262,3 +269,4 @@ names:
   gemseo.uncertainty.BaseStatistics: gemseo.uncertainty.statistic.core.base.BaseStatistics
   gemseo.uncertainty.Dataset: gemseo.dataset.dataset.Dataset
   gemseo.uncertainty.IODataset: gemseo.dataset.io_dataset.IODataset
+  gemseo.utils.discipline.get_sub_disciplines: gemseo.util.discipline.flatten_processes
