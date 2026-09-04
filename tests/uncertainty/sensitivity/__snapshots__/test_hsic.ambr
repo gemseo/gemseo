@@ -5,3 +5,21 @@
 # name: test_filter[conditional-kwargs1]
   'Asymptotic p-values are not available for conditional HSIC.'
 # ---
+# name: test_filter_conditional_without_permutation_p_values[False]
+  'The p-values estimated through permutations are not available; use compute_indices(..., use_permutations=True).'
+# ---
+# name: test_filter_conditional_without_permutation_p_values[True]
+  'Asymptotic p-values are not available for conditional HSIC.'
+# ---
+# name: test_filter_without_permutation_p_values
+  'The p-values estimated through permutations are not available; use compute_indices(..., use_permutations=True).'
+# ---
+# name: test_main_indices_before_compute_indices
+  'The sensitivity indices have not been computed; use compute_indices().'
+# ---
+# name: test_main_indices_without_p_values[p-value-asymptotic-conditional]
+  'Asymptotic p-values are not available for conditional HSIC.'
+# ---
+# name: test_main_indices_without_p_values[p-value-permutation-global]
+  'The p-values estimated through permutations are not available; use compute_indices(..., use_permutations=True).'
+# ---
