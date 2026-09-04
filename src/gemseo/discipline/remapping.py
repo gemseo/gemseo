@@ -62,10 +62,10 @@ class RemappingDiscipline(Discipline):
     default_grammar_type = Discipline.GrammarType.SIMPLER
 
     _input_mapping: FormattedNameMapping
-    """The input names of this discipline to those of the original discipline."""
+    """The map from an input name of this discipline to an input name the original discipline."""
 
     _output_mapping: FormattedNameMapping
-    """The output names of this discipline to those of the original discipline."""
+    """The map from an output name of this discipline to an output name the original discipline."""
 
     _empty_original_input_data: dict[str, ndarray]
     """The empty arrays to fill component-wise with the input data of this discipline.
@@ -85,8 +85,10 @@ class RemappingDiscipline(Discipline):
             discipline: The original discipline
                 for which each input variable mapped component-wise
                 must have a default value as a NumPy array.
-            input_mapping: The input names to the original input names.
-            output_mapping: The output names to the original output names.
+            input_mapping: The map from an input name of this discipline
+                to an input name the original discipline
+            output_mapping: The map from an output name of this discipline
+                to an output name the original discipline
 
         Raises:
             ValueError: When an input variable of the original discipline
