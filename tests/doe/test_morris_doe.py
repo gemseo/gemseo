@@ -14,8 +14,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import pytest
 from numpy import array
 from numpy.testing import assert_almost_equal
+from pydantic import ValidationError
 
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.morris_doe.morris_doe import MorrisDOE
@@ -79,7 +81,12 @@ def test_morris_doe_custom_doe():
 
 
 def test_morris_doe_step():
-    """Check Morris DOE algo with the options step."""
+    """Check Morris DOE algo with the options step.
+
+    The initial coordinates equal to 0.9 are perturbed downwards,
+    as adding the step 0.1 would move them to 1,
+    where the quantile function of an input variable can be infinite.
+    """
     morris = MorrisDOE()
     a = morris.sample_unit_hypercube(
         3,
@@ -96,10 +103,17 @@ def test_morris_doe_step():
             [0.1, 0.5, 0.9],
             [0.2, 0.5, 0.9],
             [0.2, 0.6, 0.9],
-            [0.2, 0.6, 1.0],
+            [0.2, 0.6, 0.8],
             [0.9, 0.5, 0.1],
-            [1.0, 0.5, 0.1],
-            [1.0, 0.6, 0.1],
-            [1.0, 0.6, 0.2],
+            [0.8, 0.5, 0.1],
+            [0.8, 0.6, 0.1],
+            [0.8, 0.6, 0.2],
         ]),
     )
+
+
+@pytest.mark.parametrize("step", [0.5, 0.6])
+def test_morris_doe_step_too_large(step, snapshot):
+    """Check that a step reaching 0.5 is rejected, as in the OAT DOE it feeds."""
+    with assert_exception(ValidationError, snapshot):
+        MorrisDOE_Settings(step=step)

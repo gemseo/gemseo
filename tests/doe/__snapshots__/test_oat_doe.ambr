@@ -1,0 +1,17 @@
+# serializer version: 1
+# name: test_oat_doe_step_too_large[0.5]
+  '''
+  1 validation error for OATDOE_Settings
+  step
+    Input should be less than 0.5 [type=less_than, input_value=0.5, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/less_than
+  '''
+# ---
+# name: test_oat_doe_step_too_large[0.6]
+  '''
+  1 validation error for OATDOE_Settings
+  step
+    Input should be less than 0.5 [type=less_than, input_value=0.6, input_type=float]
+      For further information visit https://errors.pydantic.dev/X.Y/v/less_than
+  '''
+# ---

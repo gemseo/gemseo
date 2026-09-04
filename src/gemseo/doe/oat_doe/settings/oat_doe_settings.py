@@ -16,11 +16,16 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from pydantic import Field
 from pydantic.types import PositiveFloat  # noqa: TC002
 
 from gemseo.doe.core.base_doe_settings import BaseDOESettings
 from gemseo.util.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
+
+DEFAULT_STEP: Final[float] = 0.05
+"""The default relative step of the OAT method."""
 
 
 class OATDOE_Settings(BaseDOESettings):  # noqa: N801
@@ -31,10 +36,13 @@ class OATDOE_Settings(BaseDOESettings):  # noqa: N801
     )
 
     step: PositiveFloat = Field(
-        default=0.05,
+        default=DEFAULT_STEP,
+        lt=0.5,
         description="""The relative step of the OAT DOE.
 
-The step in the `x` direction is
-step*(max_x-min_x)` if `x+step*(max_x-min_x)<=max_x` and
-`-step*(max_x- min_x)` otherwise.""",
+This step is taken in the unit hypercube:
+the `i`-th coordinate `u` of the initial point becomes
+`u+step` if `u+step<1` and `u-step` otherwise.
+It must be smaller than 0.5
+so that the perturbed coordinate stays in the open interval `(0,1)`.""",
     )
