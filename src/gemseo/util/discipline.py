@@ -29,17 +29,16 @@ from prettytable import PrettyTable
 
 from gemseo.core.discipline.data_processor import NameMapping
 from gemseo.core.discipline.discipline import Discipline
-from gemseo.core.discipline.process_discipline import ProcessDiscipline
 from gemseo.util.repr_html import REPR_HTML_WRAPPER
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
-    from collections.abc import MutableSequence
 
     from pandas import DataFrame
     from typing_extensions import Self
 
+    from gemseo.core._base_monitored_process import BaseMonitoredProcess
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.formulation.core.base import BaseFormulation
     from gemseo.scenario.mdo import MDOScenario
@@ -161,68 +160,41 @@ def get_all_outputs(
     )
 
 
-# TODO: API: make the name of the method more explicit.
-def get_sub_disciplines(
-    disciplines: Iterable[BaseDiscipline | MDOScenario | BaseFormulation],
+def flatten_processes(
+    processes: Iterable[BaseMonitoredProcess | BaseFormulation],
     recursive: bool = False,
-) -> list[BaseDiscipline]:
-    """Determine the sub-disciplines.
+) -> list[BaseMonitoredProcess]:
+    """Replace processes by the processes they are made of.
 
-    This method lists the sub-disciplines' disciplines. It will list up to one level
-    of disciplines contained inside another one unless the `recursive` argument is
-    set to `True`.
+    A process exposing a non-empty `disciplines` attribute is replaced by these
+    disciplines, which can be processes themselves;
+    this covers
+    [ProcessDiscipline][gemseo.core.discipline.process_discipline.ProcessDiscipline],
+    [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]
+    and [BaseFormulation][gemseo.formulation.core.base.BaseFormulation] objects.
+    Anything else is kept as is.
 
     Args:
-        disciplines: The disciplines, scenarios and formulations
-            from which the sub-disciplines will be determined.
-        recursive: If `True`, the method will look inside any discipline that has
-            other disciplines inside until it reaches a discipline without
-            sub-disciplines, in this case the return value will not include any
-            discipline that has sub-disciplines. If `False`, the method will list
-            up to one level of disciplines contained inside another one, in this
-            case the return value may include disciplines that contain
-            sub-disciplines.
+        processes: The processes to flatten.
+        recursive: Whether to descend until reaching processes containing no
+            other process, so that the result contains no composite process.
+            Otherwise, descend by one level only
+            and the result can contain composite processes.
 
     Returns:
-        The sub-disciplines.
+        The processes, without duplicates, in order of first appearance.
     """
-    from gemseo.formulation.core.base import BaseFormulation
-    from gemseo.scenario.mdo import MDOScenario
-
-    sub_disciplines = []
-
-    for discipline in disciplines:
-        if (
-            not isinstance(
-                discipline, (MDOScenario, BaseFormulation, ProcessDiscipline)
-            )
-            or not discipline.disciplines
-        ):
-            _add_to_sub([discipline], sub_disciplines)
+    flattened_processes = []
+    for process in processes:
+        disciplines = getattr(process, "disciplines", ())
+        if not disciplines:
+            flattened_processes.append(process)
         elif recursive:
-            _add_to_sub(
-                get_sub_disciplines(discipline.disciplines, recursive=True),
-                sub_disciplines,
-            )
+            flattened_processes.extend(flatten_processes(disciplines, recursive=True))
         else:
-            _add_to_sub(discipline.disciplines, sub_disciplines)
+            flattened_processes.extend(disciplines)
 
-    return sub_disciplines
-
-
-def _add_to_sub(
-    disciplines: Iterable[BaseDiscipline],
-    sub_disciplines: MutableSequence[BaseDiscipline],
-) -> None:
-    """Add the disciplines of the sub-scenarios to the sub-disciplines.
-
-    A sub-discipline is only added if it is not already in `sub_disciplines`.
-
-    Args:
-        disciplines: The disciplines.
-        sub_disciplines: The current sub-disciplines.
-    """
-    sub_disciplines.extend(disc for disc in disciplines if disc not in sub_disciplines)
+    return list(dict.fromkeys(flattened_processes))
 
 
 _MESSAGE = "Two disciplines, among which {}, compute the same outputs: {}"

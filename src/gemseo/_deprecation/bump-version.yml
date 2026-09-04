@@ -464,6 +464,7 @@ attributes:
   gemseo.utils.constants.C_LONG_MAX: INFINITE_INT
   gemseo.utils.derivatives.error_estimators.EPSILON: gemseo.util.constant.EPSILON
   gemseo.utils.derivatives.finite_differences.FirstOrderFD: ForwardDifferences
+  gemseo.utils.discipline.get_sub_disciplines: flatten_processes
   gemseo.utils.directory_creator.DirectoryNamingMethod: Naming
 
   gemseo.utils.xdsm.XDSM: gemseo.util.xdsm.xdsm.XDSM
@@ -907,6 +908,8 @@ functions:
     disc_name: name
   generate_xdsm:
     discipline: process
+  get_sub_disciplines:
+    disciplines: processes
 
   # key_to_value naming convention (changelog 1797)
   update_default_input_values:

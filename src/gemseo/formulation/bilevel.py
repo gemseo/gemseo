@@ -37,7 +37,7 @@ from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.scenario.scenario_result.bilevel_scenario_result import (
     BiLevelScenarioResult,
 )
-from gemseo.util.discipline import get_sub_disciplines
+from gemseo.util.discipline import flatten_processes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -124,9 +124,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             )
         self._disciplines_as_sub_scenario = self._settings.disciplines_as_sub_scenario
         self._scenario_adapters = []
-        self.coupling_structure = CouplingStructure(
-            get_sub_disciplines(self.disciplines)
-        )
+        self.coupling_structure = CouplingStructure(flatten_processes(self.disciplines))
         self._mda1, self._mda2 = self._create_mdas()
 
         self._create_scenario_adapters(
@@ -336,7 +334,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             if (mda2 := self._settings.mda2_instance) is None:
                 mda2 = MDA_FACTORY.create(
                     self._settings.main_mda_settings.target_class_name,
-                    get_sub_disciplines(self.disciplines),
+                    flatten_processes(self.disciplines),
                     settings=self._settings.main_mda_settings,
                 )
                 mda2.settings.warm_start = False
