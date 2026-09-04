@@ -37,7 +37,7 @@ OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | 
 class OATDOE(BaseDOELibrary[OATDOE_Settings]):
     r"""The DOE used by a One-factor-at-a-Time sensitivity analysis.
 
-    The purpose of the OAT is to quantify the elementary effect
+    The purpose of the OAT is to quantify the finite difference
 
     $$
        df_i = f(X_1+dX_1,\ldots,X_{i-1}+dX_{i-1},X_i+dX_i,\ldots,X_d)
@@ -49,20 +49,34 @@ class OATDOE(BaseDOELibrary[OATDOE_Settings]):
 
     $$df_1 = f(X_1+dX_1,\ldots,X_d)-f(X_1,\ldots,X_d)$$
 
-    The elementary effects $df_1,\ldots,df_d$ are computed sequentially
+    The finite differences $df_1,\ldots,df_d$ are computed sequentially
     from an initial point
 
     $$X=(X_1,\ldots,X_d)$$
 
-    From these elementary effects, we can compare their absolute values
+    From these finite differences, we can compare their absolute values
     $|df_1|,\ldots,|df_d|$ and sort $X_1,\ldots,X_d$ accordingly.
+
+    The OAT method works on the unit hypercube,
+    namely the probability scale of the input variables:
+    it adds the relative step $\delta_r$
+    to the $i$-th coordinate $u_i$ of the initial point,
+    and subtracts it instead whenever $u_i+\delta_r\geq 1$,
+    so that the perturbed coordinate stays in the open interval $(0,1)$
+    where the quantile functions of the input variables are finite.
+    This is why $\delta_r$ must be smaller than $1/2$.
+    The variation $dX_i$ is then negative,
+    which changes the sign of the corresponding finite difference.
 
     Note that
     GEMSEO does not implement this sensitivity analysis
     but this DOE is used by
     the [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis],
     which repeats this sensitivity analysis
-    and computes statistics from the repetitions.
+    and computes statistics from the repetitions,
+    either from the finite differences
+    or from the elementary effects in the sense of Morris (1991),
+    namely the finite differences divided by the signed step that produced them.
     """
 
     ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
@@ -86,7 +100,7 @@ class OATDOE(BaseDOELibrary[OATDOE_Settings]):
         for i in range(len(initial_point)):
             current_point = points[-1].copy()
             points.append(current_point)
-            if current_point[i] + step > 1:
+            if current_point[i] + step >= 1:
                 current_point[i] -= step
             else:
                 current_point[i] += step

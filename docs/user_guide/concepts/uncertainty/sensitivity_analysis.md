@@ -117,21 +117,42 @@ This method is cheap (a few dozens or hundred samples suffice) but limited to li
 
 ### Morris analysis
 
-Morris analysis is a screening method designed for high-dimensional problems.
+Morris analysis [@morris1991] is a screening method designed for high-dimensional problems.
 It is an [elementary effects method](https://en.wikipedia.org/wiki/Elementary_effects_method):
 along $r$ random trajectories in the input space,
 each input is perturbed one at a time (OAT)
-and the resulting finite difference of the output — the *elementary effect* — is recorded.
-Averaging these effects over the trajectories yields six statistics per input:
+and the resulting finite difference of the output is recorded.
+Averaging these finite differences over the trajectories yields six statistics per input:
 
-| Index            | Interpretation                                                            |
-|------------------|---------------------------------------------------------------------------|
-| $\mu$            | Mean of the elementary effects (sign indicates direction)                 |
-| $\mu^*$          | Mean of the **absolute** elementary effects — overall influence           |
-| $\sigma$         | Standard deviation of elementary effects — non-linearity and interactions |
-| `relative_sigma` | Ratio $\sigma / \mu^*$                                                    |
-| `min`            | Minimum of the absolute elementary effects                                |
-| `max`            | Maximum of the absolute elementary effects                                |
+| Index            | Interpretation                                                                              |
+|------------------|---------------------------------------------------------------------------------------------|
+| $\mu$            | Mean of the finite differences (sign indicates direction)                                   |
+| $\mu^*$          | Mean of the **absolute** finite differences [@campolongo2007] — overall influence           |
+| $\sigma$         | Unbiased standard deviation of the **signed** finite differences — non-linearity and interactions |
+| `relative_sigma` | Ratio $\sigma / \mu^*$                                                                      |
+| `min`            | Minimum of the absolute finite differences                                                  |
+| `max`            | Maximum of the absolute finite differences                                                  |
+
+A finite difference is an increment of the output.
+Passing `use_elementary_effects=True` to
+[compute_indices()][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.compute_indices]
+computes the same six statistics from the *elementary effects* instead,
+namely from the finite differences divided by the signed perturbation
+$dx_i = F_i^{-1}(v_i) - F_i^{-1}(u_i)$ that produced them,
+where $\delta_r$ is the relative step of the OAT method,
+smaller than $1/2$ so that $v_i$ stays in $(0,1)$,
+$u_i$ the initial point of the trajectory on the probability scale,
+$F_i$ the cumulative distribution function of the $i$-th input
+and $v_i=u_i+\delta_r$ if $u_i+\delta_r<1$ and $v_i=u_i-\delta_r$ otherwise.
+This perturbation reduces to $\delta_r(\max(x_i) - \min(x_i))$
+for a uniformly distributed input,
+and is negative when the OAT method perturbed the input downwards,
+namely when $u_i+\delta_r\geq 1$.
+An elementary effect can be seen as
+a rough approximation of the derivative of an output with respect to an input.
+The perturbation $dx_i$ varies from one input to another,
+so the two conventions may rank the inputs differently,
+and `relative_sigma` differs as well.
 
 Interpretation: a high $\mu^*$ signals an influential input;
 a high $\sigma$ relative to $\mu^*$ signals non-linear effects or interactions with other inputs;
@@ -146,6 +167,13 @@ inputs in the upper-right quadrant are both influential and non-linear/interacti
 while inputs near the origin can be screened out:
 
 ![Morris μ* vs σ scatter plot](figs/morris_analysis.png)
+
+The title of this figure states
+whether the indices are those of the finite differences
+or those of the elementary effects,
+which
+[uses_elementary_effects][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis.uses_elementary_effects]
+also reports.
 
 It is efficient for initial screening but does not quantify the exact contributions of the uncertain inputs.
 

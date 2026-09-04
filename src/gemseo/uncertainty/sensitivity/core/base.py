@@ -35,7 +35,10 @@ from typing import TypeVar
 
 from numpy import array
 from numpy import hstack
+from numpy import isnan
 from numpy import linspace
+from numpy import nanmax
+from numpy import nansum
 from numpy import newaxis
 from numpy import vstack
 from pandas import MultiIndex
@@ -65,6 +68,7 @@ from gemseo.util.string import convert_strings_to_iterable
 from gemseo.util.string import filter_names
 from gemseo.util.string import get_name_and_component
 from gemseo.util.string import get_variables_with_components
+from gemseo.util.string import pretty_str
 from gemseo.util.string import repr_variable
 from gemseo.util.typing import RealArray
 
@@ -360,14 +364,19 @@ class BaseGenericSensitivityAnalysis(
         Returns:
             The names of the inputs sorted by cumulative sensitivity index,
             which is the sum of the absolute values of the sensitivity indices
-            associated to the different components of an input.
+            associated to the different components of an input,
+            skipping the components whose index is `nan`;
+            an input whose every component has a `nan` index is ranked last.
         """
         output_name, output_component = get_name_and_component(output)
         return [
             input_name
             for input_name, _ in sorted(
                 self.main_indices[output_name][output_component].items(),
-                key=lambda indices: abs(indices[1]).sum(),
+                key=lambda indices: (
+                    not isnan(indices[1]).all(),
+                    nansum(abs(indices[1])),
+                ),
                 reverse=True,
             )
         ]
@@ -558,6 +567,7 @@ class BaseGenericSensitivityAnalysis(
             input_names: The names of the inputs
                 for which to display the sensitivity indices.
                 If empty, all the inputs are considered.
+                The input components without sensitivity indices are left out.
             standardize: Whether to scale the indices to $[0,1]$.
             title: The title of the plot, if any.
             save: Whether to save the figure.
@@ -586,6 +596,9 @@ class BaseGenericSensitivityAnalysis(
 
         Returns:
             A bar plot representing the sensitivity indices.
+
+        Raises:
+            ValueError: When no input component has sensitivity indices.
         """
         if bar_plot_settings is None:
             bar_plot_settings = BarPlot_Settings()
@@ -645,7 +658,11 @@ class BaseGenericSensitivityAnalysis(
                 If empty, use the first one.
 
         Returns:
-            The dataset to plot.
+            The dataset to plot,
+            without the input components that have no sensitivity indices.
+
+        Raises:
+            ValueError: When no input component has sensitivity indices.
         """
         sizes = {k: len(v) for k, v in self.main_indices.items()}
         if standardize:
@@ -661,24 +678,37 @@ class BaseGenericSensitivityAnalysis(
             for input_name in input_names:
                 data[input_name].append(indices[input_name])
 
-        dataset = Dataset(
-            hstack([vstack(data[input_name]) for input_name in input_names]),
-            columns=MultiIndex.from_tuples(
-                [
-                    (Dataset.PARAMETER_GROUP, input_name, index)
-                    for input_name in input_names
-                    for index in range(
-                        self.dataset.variable_name_to_n_components[input_name]
-                    )
-                ],
-                names=Dataset.COLUMN_LEVEL_NAMES,
-            ),
-        )
-
-        dataset.index = [
+        output_labels = [
             repr_variable(name, component, size=self._get_output_n_components(name))
             for name, component in outputs
         ]
+        # An input component whose index is NaN has no index at all;
+        # it cannot be plotted
+        # and would make the plot fail, e.g. as an axis limit.
+        columns = []
+        values = []
+        for input_name in input_names:
+            for component, component_values in enumerate(vstack(data[input_name]).T):
+                if isnan(component_values).any():
+                    continue
+
+                columns.append((Dataset.PARAMETER_GROUP, input_name, component))
+                values.append(component_values)
+
+        if not values:
+            msg = (
+                "The sensitivity indices of the inputs "
+                f"{pretty_str(input_names, use_and=True)} are NaN "
+                f"for the outputs {pretty_str(output_labels, use_and=True)}; "
+                "there is nothing to plot."
+            )
+            raise ValueError(msg)
+
+        dataset = Dataset(
+            vstack(values).T,
+            columns=MultiIndex.from_tuples(columns, names=Dataset.COLUMN_LEVEL_NAMES),
+        )
+        dataset.index = output_labels
         if sort:
             if sorting_output:
                 name, component = get_name_and_component(sorting_output)
@@ -730,6 +760,7 @@ class BaseGenericSensitivityAnalysis(
             input_names: The names of the inputs
                 for which to display the sensitivity indices.
                 If empty, all the inputs are considered.
+                The input components without sensitivity indices are left out.
             standardize: Whether to scale the indices to $[0,1]$.
             title: The title of the plot, if any.
             save: Whether to save the figure.
@@ -755,6 +786,9 @@ class BaseGenericSensitivityAnalysis(
 
         Returns:
             A radar chart representing the sensitivity indices.
+
+        Raises:
+            ValueError: When no input component has sensitivity indices.
         """
         if radar_chart_settings is None:
             radar_chart_settings = RadarChart_Settings()
@@ -813,6 +847,9 @@ class BaseGenericSensitivityAnalysis(
 
         This method allows to use either a bar plot (default option) or a radar chart.
 
+        The indices of an analysis are divided by its largest index,
+        ignoring the input components that have no index.
+
         Args:
             indices: The sensitivity indices.
             output: The output
@@ -855,8 +892,15 @@ class BaseGenericSensitivityAnalysis(
             )
             dataset.add_variable(input_name, data)
         data = dataset.get_view(group_names=dataset.PARAMETER_GROUP).to_numpy()
+        # An input component whose index is NaN must not spoil
+        # the largest index of the analysis it belongs to;
+        # the divisor of an analysis without any index is left at one,
+        # as nanmax would reduce an all-NaN slice.
+        maxima = array([
+            1.0 if isnan(indices).all() else nanmax(indices) for indices in data
+        ])
         dataset.update_data(
-            data / data.max(axis=1)[:, newaxis], group_names=dataset.PARAMETER_GROUP
+            data / maxima[:, newaxis], group_names=dataset.PARAMETER_GROUP
         )
         dataset.index = [method.main_method for method in methods]
         if use_bar_plot:
@@ -922,6 +966,8 @@ class BaseGenericSensitivityAnalysis(
 
         Each index is replaced by its absolute value divided by the largest index.
         Thus, the standardized indices belong to the interval $[0,1]$.
+        The indices that are `nan` do not contribute to the largest index
+        and are left as they are.
 
         Args:
             indices: The indices to be standardized.
@@ -932,10 +978,14 @@ class BaseGenericSensitivityAnalysis(
         new_indices = deepcopy(indices)
         for output_name, output_indices in indices.items():
             for output_component, output_component_indices in enumerate(output_indices):
-                max_value = max(
-                    abs(value)[0] for value in output_component_indices.values()
-                )
+                values = abs(hstack(list(output_component_indices.values())))
+                if isnan(values).all():
+                    # No index is a number,
+                    # and so there is no largest index to divide by;
+                    # nanmax would also warn when reducing an all-NaN slice.
+                    continue
 
+                max_value = nanmax(values)
                 for input_name, input_indices in output_component_indices.items():
                     new_indices[output_name][output_component][input_name] = (
                         abs(input_indices) / max_value

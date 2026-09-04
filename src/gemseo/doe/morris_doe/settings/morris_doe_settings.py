@@ -24,6 +24,7 @@ from pydantic import PositiveFloat
 from pydantic import model_validator
 
 from gemseo.doe.core.base_doe_settings import BaseDOESettings
+from gemseo.doe.oat_doe.settings.oat_doe_settings import DEFAULT_STEP
 from gemseo.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 
 if TYPE_CHECKING:
@@ -51,8 +52,11 @@ class MorrisDOE_Settings(BaseDOESettings):  # noqa: N801
     )
 
     step: PositiveFloat = Field(
-        default=0.05,
-        description="The relative step of the OAT DOE.",
+        default=DEFAULT_STEP,
+        lt=0.5,
+        description="The relative step of the OAT DOE. "
+        "It must be smaller than 0.5 "
+        "so that the perturbed coordinate stays in the open interval `(0,1)`.",
     )
 
     @model_validator(mode="after")

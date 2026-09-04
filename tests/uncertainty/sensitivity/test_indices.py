@@ -27,7 +27,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import isnan
 from numpy import linspace
+from numpy import nan
 from numpy import pi
 from numpy import sin
 from numpy.testing import assert_array_equal
@@ -149,6 +151,37 @@ class SecondMockSensitivityAnalysis(MockSensitivityAnalysis):
         return self.indices.m2
 
 
+class NaNMockSensitivityAnalysis(MockSensitivityAnalysis):
+    """A sensitivity analysis whose indices are partly `nan`.
+
+    The input `x1` has no index at all,
+    and the first component of the input `x2` has no index either.
+    """
+
+    @property
+    def main_indices(self):
+        return {
+            "y1": [{"x1": array([nan]), "x2": array([nan, 1.75])}],
+            "y2": [
+                {"x1": array([nan]), "x2": array([nan, 2.75])},
+                {"x1": array([nan]), "x2": array([nan, 3.75])},
+            ],
+        }
+
+
+class ZeroAndNaNMockSensitivityAnalysis(MockSensitivityAnalysis):
+    """A sensitivity analysis mixing a `nan` index and a zero one.
+
+    The input `x1` has no index at all,
+    while the indices of the input `x2` are zero,
+    as when an output does not depend on an input.
+    """
+
+    @property
+    def main_indices(self):
+        return {"y1": [{"x1": array([nan]), "x2": array([0.0, 0.0])}]}
+
+
 class MockMorrisAnalysisIndices(MorrisAnalysis):
     """A mock of a Morris sensitivity analysis, from which a dataset can be exported."""
 
@@ -225,6 +258,20 @@ def second_mock_sensitivity_analysis() -> SecondMockSensitivityAnalysis:
         return SecondMockSensitivityAnalysis()
 
 
+@pytest.fixture
+def nan_mock_sensitivity_analysis() -> NaNMockSensitivityAnalysis:
+    """Return an instance of NaNMockSensitivityAnalysis."""
+    with concretize_classes(NaNMockSensitivityAnalysis):
+        return NaNMockSensitivityAnalysis()
+
+
+@pytest.fixture
+def zero_and_nan_mock_sensitivity_analysis() -> ZeroAndNaNMockSensitivityAnalysis:
+    """Return an instance of ZeroAndNaNMockSensitivityAnalysis."""
+    with concretize_classes(ZeroAndNaNMockSensitivityAnalysis):
+        return ZeroAndNaNMockSensitivityAnalysis()
+
+
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -299,6 +346,50 @@ def test_sort_parameters(mock_sensitivity_analysis, output) -> None:
     """
     parameters = mock_sensitivity_analysis.sort_input_variables(output)
     assert parameters == ["x2", "x1"]
+
+
+@pytest.mark.parametrize("output", ["y1", ("y1", 0), ("y2", 0)])
+def test_sort_parameters_with_nan(nan_mock_sensitivity_analysis, output) -> None:
+    """Check that the inputs whose indices are `nan` are ranked last.
+
+    The cumulative index of an input sums the components that have an index,
+    and so `x1`, which has none, comes after `x2`,
+    whose second component has one.
+    """
+    assert nan_mock_sensitivity_analysis.sort_input_variables(output) == ["x2", "x1"]
+
+
+def test_sort_parameters_with_nan_and_zero(
+    zero_and_nan_mock_sensitivity_analysis,
+) -> None:
+    """Check that an input without index is ranked after an input with a zero index.
+
+    The cumulative index of `x1`, which has no index at all,
+    and that of `x2`, whose indices are zero, are both zero,
+    and so only the presence of an index can tell the two apart.
+    """
+    analysis = zero_and_nan_mock_sensitivity_analysis
+    assert analysis.sort_input_variables("y1") == ["x2", "x1"]
+
+
+@pytest.mark.parametrize(
+    ("standardize", "expected"),
+    [(False, [[1.75], [2.75], [3.75]]), (True, [[1.0]] * 3)],
+)
+def test_plot_bar_without_the_components_without_indices(
+    nan_mock_sensitivity_analysis, standardize, expected
+) -> None:
+    """Check that the plotted dataset leaves out the components without indices.
+
+    The input `x1` has no index at all
+    and the first component of the input `x2` has no index either,
+    and so the second component of `x2` is the only one left to plot.
+    """
+    dataset = nan_mock_sensitivity_analysis.plot_bar(
+        save=False, standardize=standardize
+    ).dataset
+    assert dataset.columns.tolist() == [(dataset.PARAMETER_GROUP, "x2", 1)]
+    assert_array_equal(dataset.to_numpy(), array(expected))
 
 
 def test_convert_to_dataset(mock_sensitivity_analysis) -> None:
@@ -395,6 +486,25 @@ def test_standardize_indices() -> None:
         ],
     }
     assert standardized_indices == expected_standardized_indices
+
+
+def test_standardize_indices_with_nan() -> None:
+    """Check that standardize_indices() ignores the indices that are `nan`.
+
+    A `nan` index does not contribute to the largest index,
+    which the other indices are divided by,
+    and is left as it is.
+    """
+    indices = {
+        "y1": [{"x1": array([nan]), "x2": array([0.5]), "x3": array([1.0])}],
+        "y2": [{"x1": array([nan]), "x2": array([nan]), "x3": array([nan])}],
+    }
+    standardized_indices = BaseSensitivityAnalysis.standardize_indices(indices)
+    assert isnan(standardized_indices["y1"][0]["x1"]).all()
+    assert_array_equal(standardized_indices["y1"][0]["x2"], array([0.5]))
+    assert_array_equal(standardized_indices["y1"][0]["x3"], array([1.0]))
+    # No index of the output y2 is a number, and so all of them are left as they are.
+    assert all(isnan(value).all() for value in standardized_indices["y2"][0].values())
 
 
 def test_multiple_disciplines(parameter_space) -> None:
