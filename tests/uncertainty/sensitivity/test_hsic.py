@@ -49,6 +49,7 @@ from gemseo.uncertainty.sensitivity.hsic import HSICAnalysisMethod
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
+    from gemseo.dataset.io_dataset import IODataset
     from gemseo.util.typing import IntegerArray
 
 
@@ -59,8 +60,8 @@ def analysis_type(request) -> HSICAnalysis.AnalysisType:
 
 
 @pytest.fixture(scope="module")
-def hsic_analysis() -> HSICAnalysis:
-    """An HSIC sensitivity analysis before calling the compute_indices method."""
+def samples() -> IODataset:
+    """The samples shared by the HSIC sensitivity analyses."""
     discipline = AnalyticDiscipline({"y1": "x1+2*x2", "y2": "x1-2*x2"})
 
     uncertain_space = ParameterSpace()
@@ -69,15 +70,22 @@ def hsic_analysis() -> HSICAnalysis:
 
     analysis = HSICAnalysis()
     analysis.compute_samples([discipline], uncertain_space, 100)
-    return analysis
+    return analysis.dataset
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
+def hsic_analysis(samples) -> HSICAnalysis:
+    """An HSIC sensitivity analysis before calling the compute_indices method."""
+    return HSICAnalysis(samples=samples)
+
+
+@pytest.fixture
 def hsic_analysis_2(hsic_analysis, analysis_type) -> HSICAnalysis:
     """A HSIC sensitivity analysis after calling the compute_indices method."""
     hsic_analysis.compute_indices(
         output_bounds={"y1": ([0], [1]), "y2": ([1], [float("inf")])},
         analysis_type=analysis_type,
+        use_permutations=True,
         n_permutations=90,
         seed=3,
     )
@@ -103,16 +111,10 @@ def significant_variables(analysis_type) -> dict[str, list[dict[str, IntegerArra
 
 
 @pytest.fixture(scope="module")
-def openturns_hsic_indices(
-    hsic_analysis, analysis_type
-) -> HSICAnalysis.SensitivityIndices:
+def openturns_hsic_indices(samples, analysis_type) -> HSICAnalysis.SensitivityIndices:
     """The HSIC and R2-HSIC indices calculated directly from OpenTURNS."""
     RandomGenerator.SetSeed(3)
-    input_samples = Sample(
-        hsic_analysis.dataset.get_view(
-            group_names=hsic_analysis.dataset.INPUT_GROUP
-        ).to_numpy()
-    )
+    input_samples = Sample(samples.get_view(group_names=samples.INPUT_GROUP).to_numpy())
     x1_covariance_model = SquaredExponential(1)
     x1_covariance_model.setScale(
         input_samples.getMarginal(0).computeStandardDeviation()
@@ -122,9 +124,9 @@ def openturns_hsic_indices(
         input_samples.getMarginal(1).computeStandardDeviation()
     )
     y1_samples = Sample(
-        hsic_analysis.dataset
+        samples
         .get_view(
-            group_names=hsic_analysis.dataset.OUTPUT_GROUP,
+            group_names=samples.OUTPUT_GROUP,
             variable_names="y1",
         )
         .to_numpy()
@@ -133,9 +135,9 @@ def openturns_hsic_indices(
     y1_covariance_model = SquaredExponential(1)
     y1_covariance_model.setScale(y1_samples.computeStandardDeviation())
     y2_samples = Sample(
-        hsic_analysis.dataset
+        samples
         .get_view(
-            group_names=hsic_analysis.dataset.OUTPUT_GROUP,
+            group_names=samples.OUTPUT_GROUP,
             variable_names="y2",
         )
         .to_numpy()
@@ -312,3 +314,82 @@ def test_plot(hsic_analysis, tmp_wd):
     hsic_analysis.compute_indices()
     plot = hsic_analysis.plot("y1", save=False)
     assert plot.__class__.__name__ == "BarPlot"
+
+
+def test_permutation_p_values_not_computed_by_default(hsic_analysis) -> None:
+    """Check that the p-values are not estimated through permutations by default."""
+    indices = hsic_analysis.compute_indices()
+    assert not indices.p_value_permutation
+    assert indices.hsic
+    assert indices.r2_hsic
+    assert indices.p_value_asymptotic
+
+
+def test_n_permutations_ignored_without_use_permutations(hsic_analysis) -> None:
+    """Check that n_permutations is ignored when use_permutations is False."""
+    indices = hsic_analysis.compute_indices(n_permutations=1)
+    other_indices = hsic_analysis.compute_indices(n_permutations=1000)
+    assert not indices.p_value_permutation
+    assert not other_indices.p_value_permutation
+    assert indices == other_indices
+
+
+def test_use_permutations(hsic_analysis) -> None:
+    """Check that use_permutations enables the p-values estimated by permutations."""
+    indices = hsic_analysis.compute_indices(use_permutations=True, n_permutations=10)
+    assert indices.p_value_permutation
+    for output_name in ["y1", "y2"]:
+        for input_name in ["x1", "x2"]:
+            assert indices.p_value_permutation[output_name][0][input_name].shape == (1,)
+
+
+def test_filter_without_permutation_p_values(hsic_analysis, snapshot) -> None:
+    """Check the error raised when the permutation p-values have not been computed."""
+    hsic_analysis.compute_indices()
+    with assert_exception(ValueError, snapshot):
+        hsic_analysis.filter(use_asymptotic=False)
+
+
+@pytest.mark.parametrize("use_asymptotic", [False, True])
+def test_filter_conditional_without_permutation_p_values(
+    hsic_analysis, use_asymptotic, snapshot
+) -> None:
+    """Check that filtering a conditional analysis requires the permutation p-values."""
+    hsic_analysis.compute_indices(
+        output_bounds={"y1": ([0], [1]), "y2": ([1], [float("inf")])},
+        analysis_type=HSICAnalysis.AnalysisType.CONDITIONAL,
+    )
+    with assert_exception(ValueError, snapshot):
+        hsic_analysis.filter(use_asymptotic=use_asymptotic)
+
+
+def test_main_indices_before_compute_indices(snapshot) -> None:
+    """Check the error raised when reading main_indices before computing them."""
+    with assert_exception(ValueError, snapshot):
+        HSICAnalysis().main_indices  # noqa: B018
+
+
+@pytest.mark.parametrize(
+    ("main_method", "analysis_type"),
+    [
+        (
+            HSICAnalysisMethod.P_VALUE_PERMUTATION,
+            HSICAnalysis.AnalysisType.GLOBAL,
+        ),
+        (
+            HSICAnalysisMethod.P_VALUE_ASYMPTOTIC,
+            HSICAnalysis.AnalysisType.CONDITIONAL,
+        ),
+    ],
+)
+def test_main_indices_without_p_values(
+    hsic_analysis, main_method, analysis_type, snapshot, monkeypatch
+) -> None:
+    """Check the error raised when the p-values of main_method are not available."""
+    hsic_analysis.compute_indices(
+        output_bounds={"y1": ([0], [1]), "y2": ([1], [float("inf")])},
+        analysis_type=analysis_type,
+    )
+    monkeypatch.setattr(hsic_analysis, "main_method", main_method)
+    with assert_exception(ValueError, snapshot):
+        hsic_analysis.main_indices  # noqa: B018

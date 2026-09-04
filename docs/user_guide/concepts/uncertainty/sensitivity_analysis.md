@@ -207,6 +207,18 @@ is R²-HSIC (normalized, always positive, comparable across inputs).
 [filter()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.filter]
 keeps only the inputs whose dependence is statistically significant.
 
+The p-value comes in two flavors:
+an asymptotic one, obtained with a closed-form formula,
+and one estimated through permutations.
+Only the asymptotic p-value is computed by default,
+as the permutation-based one costs `n_permutations` HSIC estimations
+and dominates the computation time on large samples;
+set the `use_permutations` argument of
+[compute_indices()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
+to `True` to estimate it.
+The asymptotic p-value does not exist for a conditional analysis (see below),
+which therefore requires `use_permutations=True` to be filtered.
+
 In addition to GSA (default),
 GEMSEO supports three analysis modes via the `analysis_type` argument of
 [compute_indices()][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]:

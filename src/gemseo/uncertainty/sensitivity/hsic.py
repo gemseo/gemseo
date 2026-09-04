@@ -223,6 +223,7 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
         analysis_type: AnalysisType = AnalysisType.GLOBAL,
         seed: int | None = SEED,
         n_permutations: int = 100,
+        use_permutations: bool = False,
     ) -> SensitivityIndices:
         """
         Args:
@@ -254,6 +255,14 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
                 the current state of `openturns.RandomGenerator` is used
                 (no reseeding).
             n_permutations: The number of permutations used to estimate the p-values.
+                This argument is ignored when `use_permutations` is `False`.
+            use_permutations: Whether to estimate the p-values by permutations,
+                in addition to the asymptotic estimate.
+                This estimation costs `n_permutations` HSIC estimations
+                and dominates the computation time;
+                the asymptotic p-values are a much cheaper alternative,
+                except for conditional sensitivity analysis
+                for which they do not exist.
         """  # noqa: D205 D212 D415
         if analysis_type == self.AnalysisType.CONDITIONAL:
             statistic_estimator = self.StatisticEstimator.VSTAT
@@ -283,12 +292,16 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
         input_covariance_models = self.__compute_covariance_models(
             input_samples, input_covariance_model_class
         )
+        skipped_methods = set()
         # The asymptotic p-value does not exist for conditional analysis.
-        skip_asymptotic = analysis_type == self.AnalysisType.CONDITIONAL
+        if analysis_type == self.AnalysisType.CONDITIONAL:
+            skipped_methods.add(HSICAnalysisMethod.P_VALUE_ASYMPTOTIC)
+        # Estimating the p-values by permutations costs n_permutations HSIC
+        # estimations and dominates the computation time: do it only on demand.
+        if not use_permutations:
+            skipped_methods.add(HSICAnalysisMethod.P_VALUE_PERMUTATION)
         active_methods = [
-            method
-            for method in HSICAnalysisMethod
-            if not (method == HSICAnalysisMethod.P_VALUE_ASYMPTOTIC and skip_asymptotic)
+            method for method in HSICAnalysisMethod if method not in skipped_methods
         ]
         # Keep every method field so the dataclass is fully built;
         # a skipped method (e.g. the asymptotic p-value for CSA) stays empty.
@@ -343,6 +356,56 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
         self._indices = self.SensitivityIndices(**indices)
         return self.indices
 
+    def __check_indices_are_available(
+        self, indices: FirstOrderIndicesType, method: HSICAnalysisMethod
+    ) -> None:
+        """Check that the sensitivity indices of a given method are available.
+
+        Args:
+            indices: The sensitivity indices related to the method.
+            method: The sensitivity analysis method.
+
+        Raises:
+            ValueError: When the sensitivity indices are not available.
+        """
+        if indices:
+            return
+
+        # The HSIC indices are computed whatever the settings of compute_indices.
+        if not self._indices.hsic:
+            msg = (
+                "The sensitivity indices have not been computed; use compute_indices()."
+            )
+        elif method == HSICAnalysisMethod.P_VALUE_PERMUTATION:
+            msg = (
+                "The p-values estimated through permutations are not available; "
+                "use compute_indices(..., use_permutations=True)."
+            )
+        else:
+            msg = "Asymptotic p-values are not available for conditional HSIC."
+
+        raise ValueError(msg)
+
+    @property
+    def main_indices(self) -> FirstOrderIndicesType:
+        """The main sensitivity indices.
+
+        Given an input and an output,
+        a main sensitivity index is a NumPy array that can be accessed through
+        `analysis.main_indices.method_name[output_name][output_component][input_name]`.
+
+        For constant output components,
+        `analysis.main_indices.method_name[output_name][output_component]` is `None`.
+
+        Raises:
+            ValueError: When the sensitivity indices related to
+                [main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
+                are not available.
+        """
+        indices = super().main_indices
+        self.__check_indices_are_available(indices, self.main_method)
+        return indices
+
     def filter(
         self, level: float = 0.05, use_asymptotic: bool = True
     ) -> dict[str, list[dict[str, IntegerArray]]]:
@@ -355,23 +418,34 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
         Args:
             level: The significance level of the statistical hypothesis test in $(0,1)$.
             use_asymptotic: Whether to use asymptotic p-values.
-                Otherwise, use the p-values estimated through bootstrap permutations.
+                Otherwise, use the p-values estimated through permutations,
+                which requires
+                [compute_indices][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
+                to have been called with `use_permutations` set to `True`.
                 Asymptotic p-values are not available for conditional HSIC.
 
         Returns:
             The significant input components for each output component.
 
         Raises:
-            ValueError: When `use_asymptotic` is `True`
-                and the type of HSIC is conditional.
+            ValueError: When the requested p-values have not been computed,
+                either because
+                [compute_indices][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.compute_indices]
+                has not been called,
+                or because `use_asymptotic` is `True`
+                and the type of HSIC is conditional,
+                or because `use_asymptotic` is `False`
+                and the p-values were not estimated through permutations.
         """
-        if use_asymptotic:
-            output_name_to_p_values = self._indices.p_value_asymptotic
-            if not output_name_to_p_values:
-                msg = "Asymptotic p-values are not available for conditional HSIC."
-                raise ValueError(msg)
-        else:
-            output_name_to_p_values = self._indices.p_value_permutation
+        method = (
+            HSICAnalysisMethod.P_VALUE_ASYMPTOTIC
+            if use_asymptotic
+            else HSICAnalysisMethod.P_VALUE_PERMUTATION
+        )
+        output_name_to_p_values = getattr(
+            self._indices, self._get_index_field_name(method)
+        )
+        self.__check_indices_are_available(output_name_to_p_values, method)
 
         return {
             output_name: [
