@@ -960,7 +960,7 @@ requires-dist = [
     { name = "sympy", marker = "extra == 'all'", specifier = ">=1.5,<=1.14.0" },
     { name = "tqdm", specifier = ">=4.50,<=4.70.0" },
     { name = "typing-extensions", specifier = ">=4,<5" },
-    { name = "xdsmjs", specifier = ">=1.0.0,<=2.0.0" },
+    { name = "xdsmjs", specifier = ">=1.0.0,<=2.1.0" },
     { name = "xxhash", specifier = ">=3.0.0,<=3.7.1" },
 ]
 provides-extras = ["all"]
@@ -3805,9 +3805,9 @@ wheels = [
 
 [[package]]
 name = "xdsmjs"
-version = "2.0.0"
+version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a9/d4/d233fbbf228dbe2644d236240cee3e5a9d693aa0a1488632a1d55dd67680/xdsmjs-2.0.0.tar.gz", hash = "sha256:314183dbcf66ab13af1262158a0e45467146ee56856013a8225bf1c0b447562a", size = 28985, upload-time = "2023-02-15T10:33:22.823Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/61/68/13d1f44b3aec099e64ff865b1738ff0f14a2d7c40094214cf0dbd90b3c31/xdsmjs-2.1.0.tar.gz", hash = "sha256:55a0bb065496edfcf92fb751b33cdcbcbdf4d8237bdbe317b938f94d46be0746", size = 35977, upload-time = "2026-08-21T09:57:04.138Z" }
 
 [[package]]
 name = "xxhash"
