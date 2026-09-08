@@ -22,10 +22,10 @@ from typing import Literal
 
 from numpy import array
 from numpy import atleast_1d
+from numpy import floor
 from numpy import full
 from numpy import inf
 from numpy import int64
-from numpy import isfinite
 from numpy import isinf
 from numpy import logical_and
 from numpy import mod
@@ -92,7 +92,9 @@ class IntegerVariable(BaseVariable):
         self, bound: BoundArray, bound_prefix: str
     ) -> None:
         # Check whether the components of the bound are integers (or infinite).
-        indices = logical_and(isfinite(bound), mod(bound, 1)).nonzero()[0]
+        # Floor leaves the infinite components unchanged,
+        # unlike mod, which returns nan and emits a RuntimeWarning for them.
+        indices = (bound != floor(bound)).nonzero()[0]
         if len(indices):
             plural = len(indices) > 1
             msg = (
