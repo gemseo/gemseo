@@ -37,8 +37,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Sequence
 
-    from gemseo.core.derivative.graph_traversal import DisciplineIOs
     from gemseo.core.discipline.base_discipline import BaseDiscipline
+    from gemseo.core.util._graph_traversal import DisciplineIOs
 
 
 class _ProcessFlow(BaseProcessFlow):

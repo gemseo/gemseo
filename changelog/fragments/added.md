@@ -13,3 +13,6 @@
   determines automatically the I/O's from the model and defines the grammar from them. This means that different
   disciplines that inherit from `BaseModelDiscipline` can share the same Pydantic model, each of them using only a
   subset of the model's fields for their I/O's.
+- `gemseo.discipline.propagate_namespace` propagates a namespace forward along the discipline coupling graph, namespacing every
+  input and output affected by the seed variables while leaving untouched the variables that are neither seeds nor
+  produced inside the reached set.
