@@ -169,6 +169,41 @@ def test_whole_submodel_assignment_discipline():
     assert output_data["inner.b"] == 4.0
 
 
+class SubModel(BaseModel):
+    """A sub-model forwarded from one field to another."""
+
+    a: float = 1.0
+
+    b: float = 1.0
+
+
+class PassThroughModel(BaseModel):
+    """A model whose input sub-model is forwarded to an output field."""
+
+    inp: SubModel = SubModel()
+
+    out: SubModel = SubModel()
+
+    z: float = 0.0
+
+
+class PassThroughDisc(BaseModelDiscipline):
+    """A discipline forwarding a whole sub-model to another field."""
+
+    def _run_from_model(self, model: PassThroughModel) -> None:
+        model.out = model.inp
+        model.z = model.out.a + model.inp.b
+
+
+def test_submodel_forwarded_to_another_field():
+    """Check that forwarding a sub-model keeps the source field's reads as inputs."""
+    discipline = PassThroughDisc(PassThroughModel())
+    assert set(discipline.io.input_grammar) == {"inp.a", "inp.b"}
+    assert set(discipline.io.output_grammar) == {"out.a", "out.b", "z"}
+    output_data = discipline.execute({"inp.a": 10.0, "inp.b": 100.0})
+    assert output_data["z"] == 110.0
+
+
 def test_method_based_discipline():
     """Check that fields accessed inside model methods are inferred as I/O."""
     discipline = MethodDiscipline(TotalModel())
@@ -255,3 +290,39 @@ def test_sellar_1_pydantic_execution(use_dummy_input, use_dummy_output, referenc
     if use_dummy_output:
         assert output_data["dummy_field"] == "A different string."
     assert_allclose(output_data["y.y_1"], reference_data["output"]["y.y_1"])
+
+
+class IntermediateModel(BaseModel):
+    """A model with a field computed and then re-used."""
+
+    x: NDArrayPydantic = ones(1)
+
+    a: NDArrayPydantic = ones(1)
+
+    b: NDArrayPydantic = zeros(1)
+
+    y: NDArrayPydantic = zeros(1)
+
+    z: NDArrayPydantic = zeros(1)
+
+
+class IntermediateDiscipline(BaseModelDiscipline):
+    """A discipline re-using a computed field to compute another one."""
+
+    def _run_from_model(self, model: IntermediateModel) -> None:
+        model.y = model.a * model.x**2 + model.b
+        model.z = model.y + 3.0
+
+
+def test_intermediate_value_is_not_an_input():
+    """Check that a computed field re-used to compute another one is not an input."""
+    discipline = IntermediateDiscipline(IntermediateModel())
+    assert set(discipline.io.input_grammar) == {"x", "a", "b"}
+    assert set(discipline.io.output_grammar) == {"y", "z"}
+    output_data = discipline.execute({
+        "x": array([3.0]),
+        "a": array([2.0]),
+        "b": array([1.0]),
+    })
+    assert_allclose(output_data["y"], array([19.0]))
+    assert_allclose(output_data["z"], array([22.0]))
