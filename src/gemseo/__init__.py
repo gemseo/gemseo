@@ -1289,7 +1289,22 @@ def write_design_space(
         delimiter: The string used to separate values for CSV files.
             This argument is not compatible with `header_char` nor
             `**table_options`.
-        append: Whether to append the data in the HDF file.
+        append: If `False`, the file is truncated
+            and the design space is exported.
+            If `True` and the file does not contain a design space,
+            the design space is exported
+            and the rest of the file is left untouched.
+            If `True` and the file already contains a design space,
+            both design spaces must have the same structure
+            (variables, sizes and types);
+            the bounds are overwritten,
+            and the current value is overwritten,
+            or removed when the exported design space has none.
+            This argument is ignored for CSV files.
+
+    Raises:
+        ValueError: If the HDF file already stores a design space with a
+            different structure.
     """
     design_space.to_file(output_file, fields=fields, delimiter=delimiter, append=append)
 

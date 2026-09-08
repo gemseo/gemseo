@@ -1207,10 +1207,24 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
         Args:
             file_path: The path to the file to export the design space.
-            append: If `True`, appends the data in the file.
+            append: If `False`, existing node data is replaced
+                by the current design space.
+                If `True` and the node does not contain a design space,
+                the design space is exported
+                and the rest of the file is left untouched.
+                If `True` and the node already contains a design space,
+                both design spaces must have the same structure
+                (variables, sizes and types);
+                the bounds are overwritten,
+                and the current value is overwritten,
+                or removed when the exported design space has none.
             hdf_node_path: The path of the HDF node in which
                 the design space should be exported.
                 If empty, the root node is considered.
+
+        Raises:
+            ValueError: If the file already stores a design space with a different
+                structure at this node.
         """
         _design_space_io.to_hdf(
             self, file_path, append=append, hdf_node_path=hdf_node_path
@@ -1282,9 +1296,24 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
                 If the extension starts with `"hdf"`,
                 the design space will be saved in an HDF file.
             delimiter: The string used to separate values for CSV files.
-            append: If `True`, appends the data in the HDF file.
+            append: If `False`, the file is truncated
+                and the design space is exported.
+                If `True` and the file does not contain a design space,
+                the design space is exported
+                and the rest of the file is left untouched.
+                If `True` and the file already contains a design space,
+                both design spaces must have the same structure
+                (variables, sizes and types);
+                the bounds are overwritten,
+                and the current value is overwritten,
+                or removed when the exported design space has none.
+                This argument is ignored for CSV files.
             fields: The fields to be exported in the CSV fields.
                 If empty, export all fields.
+
+        Raises:
+            ValueError: If the HDF file already stores a design space with a
+                different structure.
         """
         _design_space_io.to_file(
             self, file_path, delimiter=delimiter, append=append, fields=fields
