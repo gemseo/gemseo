@@ -1109,6 +1109,185 @@ def test_hdf5_append(tmp_wd) -> None:
     check_read_ds(ds, f_path)
 
 
+def test_hdf5_append_with_changed_bounds(tmp_wd) -> None:
+    """Check that appending a design space with different bounds is allowed.
+
+    The bounds define a domain rather than a structure,
+    so an export restricted around a point
+    shall not invalidate the stored design space.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, lower_bound=0.0, upper_bound=1.0)
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, lower_bound=0.4, upper_bound=0.6)
+    design_space.to_hdf(file_path, append=True)
+
+    read_design_space = DesignSpace.from_hdf(file_path)
+
+    assert read_design_space == design_space
+    assert_array_equal(read_design_space.get_lower_bound("x"), array([0.4, 0.4]))
+    assert_array_equal(read_design_space.get_upper_bound("x"), array([0.6, 0.6]))
+
+
+def test_hdf5_append_drops_the_stored_current_value(tmp_wd) -> None:
+    """Check that appending a design space without value drops the stored one."""
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.to_hdf(file_path, append=True)
+
+    assert not DesignSpace.from_hdf(file_path).has_current_value
+
+
+def test_hdf5_append_with_dropped_bound(tmp_wd) -> None:
+    """Check that appending a design space with a dropped bound is allowed.
+
+    The bounds of an integer variable are stored as integers when finite
+    and as floats otherwise,
+    so the dataset of a bound cannot always be written in place.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("x", 1, INTEGER, lower_bound=0, upper_bound=10)
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", 1, INTEGER, lower_bound=0)
+    design_space.to_hdf(file_path, append=True)
+
+    read_design_space = DesignSpace.from_hdf(file_path)
+
+    assert_array_equal(read_design_space.get_upper_bound("x"), array([inf]))
+
+
+def test_hdf5_append_does_not_grow_the_file(tmp_wd) -> None:
+    """Check that re-exporting an unchanged design space does not grow the file.
+
+    HDF5 does not reclaim the space freed by a deletion,
+    so the datasets shall be written in place.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    for index in range(10):
+        design_space.add_variable(f"x{index}", 3, lower_bound=0.0, upper_bound=1.0)
+
+    design_space.to_hdf(file_path)
+    initial_size = file_path.stat().st_size
+
+    for _ in range(20):
+        design_space.to_hdf(file_path, append=True)
+
+    assert file_path.stat().st_size == initial_size
+
+
+def test_hdf5_append_with_changed_size(tmp_wd, snapshot) -> None:
+    """Check that appending a design space with another size is rejected.
+
+    The size of a variable is part of the structure
+    that the input values stored in the file refer to.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, lower_bound=0.0, upper_bound=1.0)
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", 3, lower_bound=0.0, upper_bound=1.0)
+    with assert_exception(ValueError, snapshot):
+        design_space.to_hdf(file_path, append=True)
+
+    assert DesignSpace.from_hdf(file_path).variables["x"].size == 2
+
+
+def test_hdf5_append_with_changed_type(tmp_wd, snapshot) -> None:
+    """Check that appending a design space with another type is rejected."""
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("x", 1, INTEGER, lower_bound=0, upper_bound=10)
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", 1, FLOAT, lower_bound=0.0, upper_bound=10.0)
+    with assert_exception(ValueError, snapshot):
+        design_space.to_hdf(file_path, append=True)
+
+    assert DesignSpace.from_hdf(file_path).variables["x"].type == INTEGER
+
+
+def test_hdf5_append_with_changed_variable_names(tmp_wd, snapshot) -> None:
+    """Check that appending a design space with other variables is rejected."""
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
+    with assert_exception(ValueError, snapshot):
+        design_space.to_hdf(file_path, append=True)
+
+    assert DesignSpace.from_hdf(file_path).variable_names == ["x"]
+
+
+def test_hdf5_append_with_reordered_variables(tmp_wd, snapshot) -> None:
+    """Check that appending a design space with another order is rejected.
+
+    The order of the variables defines the components of an input value.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0)
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+    with assert_exception(ValueError, snapshot):
+        design_space.to_hdf(file_path, append=True)
+
+    assert DesignSpace.from_hdf(file_path).variable_names == ["x", "y"]
+
+
+def test_hdf5_append_with_several_changes(tmp_wd, snapshot) -> None:
+    """Check that all the structural mismatches are reported at once."""
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, INTEGER, lower_bound=0, upper_bound=10)
+    design_space.add_variable("y", 1, lower_bound=0.0, upper_bound=1.0)
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", 3, FLOAT, lower_bound=0.0, upper_bound=10.0)
+    design_space.add_variable("y", 2, lower_bound=0.0, upper_bound=1.0)
+    with assert_exception(ValueError, snapshot):
+        design_space.to_hdf(file_path, append=True)
+
+
+def test_hdf5_append_at_a_node_with_changed_size(tmp_wd, snapshot) -> None:
+    """Check that the error message names the HDF node of the design space."""
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("x", 2, lower_bound=0.0, upper_bound=1.0)
+    design_space.to_hdf(file_path, hdf_node_path="node_ds")
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", 3, lower_bound=0.0, upper_bound=1.0)
+    with assert_exception(ValueError, snapshot):
+        design_space.to_hdf(file_path, append=True, hdf_node_path="node_ds")
+
+    read_design_space = DesignSpace.from_hdf(file_path, hdf_node_path="node_ds")
+
+    assert read_design_space.variables["x"].size == 2
+
+
 def test_hdf5_with_node(tmp_wd):
     """Tests the hdf import/export of a Design space in a specific node."""
     ref_ds = get_sobieski_design_space()

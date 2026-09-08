@@ -397,6 +397,44 @@
 # name: test_get_current_value_partially_missing_as_array_not_normalized[True-variable_names2]
   "'There is no current value for the design variables: y.'"
 # ---
+# name: test_hdf5_append_at_a_node_with_changed_size
+  '''
+  The design space stored in the node '/node_ds' of the HDF file ds.h5 has a different structure:
+  - The size of the design variable 'x' is 2; got 3.
+  '''
+# ---
+# name: test_hdf5_append_with_changed_size
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
+  - The size of the design variable 'x' is 2; got 3.
+  '''
+# ---
+# name: test_hdf5_append_with_changed_type
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
+  - The type of the design variable 'x' is 'integer'; got 'float'.
+  '''
+# ---
+# name: test_hdf5_append_with_changed_variable_names
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
+  - The names of the design variables are ['x']; got ['y'].
+  '''
+# ---
+# name: test_hdf5_append_with_reordered_variables
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
+  - The names of the design variables are ['x', 'y']; got ['y', 'x'].
+  '''
+# ---
+# name: test_hdf5_append_with_several_changes
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
+  - The size of the design variable 'x' is 2; got 3.
+  - The type of the design variable 'x' is 'integer'; got 'float'.
+  - The size of the design variable 'y' is 1; got 2.
+  '''
+# ---
 # name: test_normalize_vect_out_with_wrong_dtype
   'Expected an out array of dtype float64; got int64.'
 # ---

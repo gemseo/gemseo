@@ -62,20 +62,95 @@ def _to_real(data: ndarray) -> ndarray:
     return array(array(data, copy=False).real, dtype=float64)
 
 
-def _read_opt_attr_array(var_group: h5py.Group, dataset_name: str) -> ndarray | None:
-    """Read a dataset from an HDF group if it exists.
+def _get_dataset(group: h5py.Group, name: str) -> ndarray | None:
+    """Retrieve the dataset stored in an HDF group.
 
     Args:
-        var_group: The HDF group of a variable.
-        dataset_name: The name of the dataset to read.
+        group: The HDF group.
+        name: The name of the dataset.
 
     Returns:
         The dataset as an array, or `None` if it does not exist.
     """
-    data = var_group.get(dataset_name)
-    if data is not None:
-        data = array(data)
-    return data
+    dataset = group.get(name)
+    if dataset is not None:
+        dataset = array(dataset)
+    return dataset
+
+
+def _check_structure_is_unchanged(
+    design_space: DesignSpace, space_group: h5py.Group, file_path: str | Path
+) -> None:
+    """Check that a design space is consistent with that of an HDF file.
+
+    Only the structure that the stored input values rely on is compared:
+    the variable names, in order, and the size and the type of each variable.
+
+    Args:
+        design_space: The design space.
+        space_group: The HDF group of the reference design space.
+        file_path: The HDF file path.
+
+    Raises:
+        ValueError: If the design spaces are not consistent.
+    """
+    error_messages = []
+    stored_names = [name.decode() for name in get_hdf5_group(space_group, _NAMES_GROUP)]
+    if design_space.variable_names != stored_names:
+        # The variables are compared one by one only when they match,
+        # otherwise a variable may be missing from the HDF file.
+        error_messages.append(
+            f"The names of the design variables are {stored_names}; "
+            f"got {design_space.variable_names}."
+        )
+    else:
+        for name, variable in design_space._variables.items():
+            variable_group = get_hdf5_group(space_group, name)
+            stored_size = get_hdf5_group(variable_group, _SIZE_GROUP)[()]
+            if stored_size != variable.size:
+                error_messages.append(
+                    f"The size of the design variable {name!r} is {stored_size}; "
+                    f"got {variable.size}."
+                )
+
+            stored_type = get_hdf5_group(variable_group, _VAR_TYPE_GROUP)[0].decode()
+            if stored_type != variable.type:
+                error_messages.append(
+                    f"The type of the design variable {name!r} is {stored_type!r}; "
+                    f"got {variable.type.value!r}."
+                )
+
+    if error_messages:
+        errors = "\n".join(f"- {error_message}" for error_message in error_messages)
+        msg = (
+            f"The design space stored in the node {space_group.parent.name!r} "
+            f"of the HDF file {file_path} has a different structure:\n{errors}"
+        )
+        raise ValueError(msg)
+
+
+def _write_dataset(group: h5py.Group, name: str, data: ndarray) -> None:
+    """Write a dataset of an HDF group, creating it if needed.
+
+    The data are written in place when the dataset can hold them,
+    because HDF5 does not reclaim the space freed by a deletion.
+
+    Args:
+        group: The HDF group of the dataset.
+        name: The name of the dataset.
+        data: The data to write.
+    """
+    dataset = group.get(name)
+    if dataset is not None and (
+        dataset.shape != data.shape or dataset.dtype != data.dtype
+    ):
+        del group[name]
+        dataset = None
+
+    if dataset is None:
+        group.create_dataset(name, data=data)
+    else:
+        dataset[...] = data
 
 
 def to_hdf(
@@ -84,53 +159,67 @@ def to_hdf(
     append: bool = False,
     hdf_node_path: str = "",
 ) -> None:
-    """Export a design space to an HDF file.
+    """Export the design space to an HDF file node.
 
     Args:
         design_space: The design space.
         file_path: The path to the file.
-        append: If `True`, append to the file.
-        hdf_node_path: The path of the HDF node in which the design space
-            should be exported. If empty, the root node is used.
+        append: If `False`, the file is truncated
+            and the design space is exported to the node.
+            If `True` and the node does not contain a design space,
+            the design space is exported
+            and the rest of the file is left untouched.
+            If `True` and the node already contains a design space,
+            both design spaces must have the same structure
+            (variables, sizes and types);
+            the bounds are overwritten,
+            and the current value is overwritten,
+            or removed when the exported design space has none.
+        hdf_node_path: The path of the HDF file node.
+            If empty, the root node is used.
+
+    Raises:
+        ValueError: If the file already stores a design space with a different
+            structure at this node.
     """
     mode = "a" if append else "w"
 
     with h5py.File(file_path, mode) as h5file:
         if hdf_node_path:
             h5file = h5file.require_group(hdf_node_path)
-        design_vars_grp = h5file.require_group(_DESIGN_SPACE_GROUP)
-        name_array = array(design_space.variable_names, dtype=bytes_)
-        names_dataset = design_vars_grp.require_dataset(
-            _NAMES_GROUP, name_array.shape, name_array.dtype
-        )
-        names_dataset[...] = name_array
+
+        space_group = h5file.get(_DESIGN_SPACE_GROUP)
+        if space_group is None:
+            space_group = h5file.create_group(_DESIGN_SPACE_GROUP)
+            space_group.create_dataset(
+                _NAMES_GROUP, data=array(design_space.variable_names, dtype=bytes_)
+            )
+        else:
+            _check_structure_is_unchanged(design_space, space_group, file_path)
 
         for name, variable in design_space._variables.items():
-            var_grp = design_vars_grp.require_group(name)
-            size_ds = var_grp.require_dataset(_SIZE_GROUP, (), dtype=INT64_DTYPE)
-            size_ds[...] = variable.size
-
-            lb = array(variable.lower_bound, copy=False)
-            lb_ds = var_grp.require_dataset(_LB_GROUP, lb.shape, lb.dtype)
-            lb_ds[...] = lb
-
-            ub = array(variable.upper_bound, copy=False)
-            ub_ds = var_grp.require_dataset(_UB_GROUP, ub.shape, ub.dtype)
-            ub_ds[...] = ub
-
-            data_array = array([variable.type] * variable.size, dtype="bytes")
-            type_ds = var_grp.require_dataset(
-                _VAR_TYPE_GROUP, data_array.shape, data_array.dtype
+            variable_group = space_group.require_group(name)
+            _write_dataset(
+                variable_group, _SIZE_GROUP, array(variable.size, dtype=INT64_DTYPE)
             )
-            type_ds[...] = data_array
+            _write_dataset(
+                variable_group, _LB_GROUP, array(variable.lower_bound, copy=False)
+            )
+            _write_dataset(
+                variable_group, _UB_GROUP, array(variable.upper_bound, copy=False)
+            )
+            _write_dataset(
+                variable_group,
+                _VAR_TYPE_GROUP,
+                array([variable.type] * variable.size, dtype="bytes"),
+            )
 
             value = design_space._current_value.get(name)
-            if value is not None:
-                real_val = _to_real(value)
-                val_ds = var_grp.require_dataset(
-                    _VALUE_GROUP, real_val.shape, real_val.dtype
-                )
-                val_ds[...] = real_val
+            if value is None:
+                if _VALUE_GROUP in variable_group:
+                    del variable_group[_VALUE_GROUP]
+            else:
+                _write_dataset(variable_group, _VALUE_GROUP, _to_real(value))
 
 
 def from_hdf(
@@ -150,16 +239,16 @@ def from_hdf(
     design_space = cls()
     with h5py.File(file_path) as h5file:
         h5file = get_hdf5_group(h5file, hdf_node_path)
-        design_vars_grp = get_hdf5_group(h5file, _DESIGN_SPACE_GROUP)
-        variable_names = get_hdf5_group(design_vars_grp, _NAMES_GROUP)
+        space_group = get_hdf5_group(h5file, _DESIGN_SPACE_GROUP)
+        variable_names = get_hdf5_group(space_group, _NAMES_GROUP)
         for name in variable_names:
             name = name.decode()
-            var_group = get_hdf5_group(design_vars_grp, name)
-            l_b = _read_opt_attr_array(var_group, _LB_GROUP)
-            u_b = _read_opt_attr_array(var_group, _UB_GROUP)
-            var_type = _read_opt_attr_array(var_group, _VAR_TYPE_GROUP)[0]
-            value = _read_opt_attr_array(var_group, _VALUE_GROUP)
-            size = get_hdf5_group(var_group, _SIZE_GROUP)[()]
+            variable_group = get_hdf5_group(space_group, name)
+            l_b = _get_dataset(variable_group, _LB_GROUP)
+            u_b = _get_dataset(variable_group, _UB_GROUP)
+            var_type = _get_dataset(variable_group, _VAR_TYPE_GROUP)[0]
+            value = _get_dataset(variable_group, _VALUE_GROUP)
+            size = get_hdf5_group(variable_group, _SIZE_GROUP)[()]
             design_space.add_variable(name, size, var_type, l_b, u_b, value)
     design_space.check()
     return design_space
@@ -314,8 +403,23 @@ def to_file(
         file_path: The path to the file. An `.hdf`/`.h5` extension selects HDF,
             otherwise CSV is used.
         delimiter: The string used to separate values for CSV files.
-        append: If `True`, append to the HDF file.
+        append: If `False`, the file is truncated
+            and the design space is exported.
+            If `True` and the file does not contain a design space,
+            the design space is exported
+            and the rest of the file is left untouched.
+            If `True` and the file already contains a design space,
+            both design spaces must have the same structure
+            (variables, sizes and types);
+            the bounds are overwritten,
+            and the current value is overwritten,
+            or removed when the exported design space has none.
+            This argument is ignored for CSV files.
         fields: The fields to be exported for CSV files. If empty, export all.
+
+    Raises:
+        ValueError: If the HDF file already stores a design space with a
+            different structure.
     """
     file_path = Path(file_path)
     if file_path.suffix.startswith((".hdf", ".h5")):
