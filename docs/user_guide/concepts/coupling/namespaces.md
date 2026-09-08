@@ -62,6 +62,79 @@ The figure below illustrates how namespaces can modify the coupling structure.
 
 ![Controlling the couplings using namespaces.](figs/namespaces_and_coupling.png)
 
+## Propagating a namespace over a group of disciplines { #concept-namespace-propagation }
+
+Calling
+[add_namespace_to_input()][gemseo.core.discipline.base_discipline.BaseDiscipline.add_namespace_to_input]
+and
+[add_namespace_to_output()][gemseo.core.discipline.base_discipline.BaseDiscipline.add_namespace_to_output]
+by hand gives the finest control over which couplings are kept and which are broken,
+which is why it remains the right tool
+when only one or two disciplines need namespacing.
+But cascading a namespace over a whole group of coupled disciplines this way
+means calling these methods once per affected input and output,
+and forgetting a single call silently breaks a coupling
+instead of raising an error.
+
+[propagate_namespace()][gemseo.discipline.namespace.propagate_namespace] automates this cascade.
+Starting from the disciplines that own the *seed* variables
+(the `variable_names` argument),
+it walks the coupling graph forward
+and namespaces every input and output affected by the propagation,
+so that the couplings inside the group survive the renaming
+instead of being broken one discipline at a time.
+
+The affected variables are precisely:
+
+- every output of every reached discipline,
+- among its inputs, the seeds themselves
+  and the variables produced inside the reached set.
+
+Any other input —
+one that is neither a seed nor produced inside the reached set —
+stays bare.
+In particular,
+a global design variable passed as a seed *is* namespaced:
+being a seed is what matters, not the variable's role.
+
+!!! warning
+    The group of disciplines passed to
+    [propagate_namespace()][gemseo.discipline.namespace.propagate_namespace] must be self-contained.
+    Every output of every reached discipline is namespaced,
+    not only the ones carrying the propagation,
+    so the renaming also affects references held by objects that are not disciplines,
+    and that therefore cannot be checked by
+    [propagate_namespace()][gemseo.discipline.namespace.propagate_namespace]:
+
+    - the variable names of a [DesignSpace][gemseo.space.design.DesignSpace],
+    - the objective, constraint and observable names
+      passed to a formulation or to a scenario,
+    - the coupling names passed to [create_mda()][gemseo.create_mda]
+      and any variable name stored in settings.
+
+    None of these are reachable from the disciplines,
+    so no diagnostic can be emitted for them:
+    the coupling those references stood for is silently gone.
+    Use the returned mapping —
+    each reached discipline paired with the original names
+    of its affected inputs and outputs —
+    to rewrite such external references by prepending the namespace to them.
+
+[propagate_namespace()][gemseo.discipline.namespace.propagate_namespace] raises a `ValueError` when
+
+- a seed name is neither an input nor an output of any of the disciplines,
+- an affected input or output already carries a namespace,
+- an affected output is also produced by a discipline outside the reached set.
+
+The second case is a composition limit rather than a typo guard:
+a group whose affected variables already carry a namespace
+cannot be passed to [propagate_namespace()][gemseo.discipline.namespace.propagate_namespace] at all,
+so the cascade cannot be applied twice
+and cannot be used to build the nested namespaces described in the next section.
+
+!!! how-to
+    - [Propagate a namespace over a group of disciplines][propagate-a-namespace-over-a-group-of-disciplines]
+
 ## Nested namespaces in process disciplines
 
 A process discipline

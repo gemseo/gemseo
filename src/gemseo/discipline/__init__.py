@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from gemseo.discipline.constraint_aggregation import ConstraintAggregation  # noqa: F401
     from gemseo.discipline.factory import DISCIPLINE_FACTORY  # noqa: F401
     from gemseo.discipline.linear_combination import LinearCombination  # noqa: F401
+    from gemseo.discipline.namespace import propagate_namespace  # noqa: F401
     from gemseo.discipline.ode.ode_discipline import ODEDiscipline  # noqa: F401
     from gemseo.discipline.remapping import RemappingDiscipline  # noqa: F401
     from gemseo.discipline.splitter import Splitter  # noqa: F401
@@ -74,6 +75,7 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "SurrogateDiscipline": "surrogate",
     "TaylorDiscipline": "taylor",
     "WarmStartedDisciplineChain": "chain.warm_started_chain",
+    "propagate_namespace": "namespace",
 }
 
 install_lazy_reexport(globals(), _NAME_TO_LOCATION)

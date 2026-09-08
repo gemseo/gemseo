@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_already_namespaced_raises_without_mutation
+  "The following affected variables already have a namespace and cannot be namespaced again: 'q' of discipline 'e' (namespace 'pre2') and 'y' of discipline 'a' (namespace 'pre1')."
+# ---
+# name: test_producer_outside_reached_set_raises_without_mutation
+  "The following variables are produced both inside and outside the set of disciplines reached from the seeds, so namespacing them would break those couplings: 'u' of discipline 'f' and 'z' of discipline 'g'."
+# ---
+# name: test_unknown_seed_raises_without_mutation
+  "The following seed variables are neither inputs nor outputs of the disciplines: 'other' and 'unknown'."
+# ---

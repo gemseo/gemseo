@@ -21,9 +21,10 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import NamedTuple
 
 from gemseo.core.dependency_graph import DependencyGraph
+from gemseo.core.util._graph_traversal import DisciplineIOs
+from gemseo.core.util._graph_traversal import compute_reachable_nodes
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -33,40 +34,6 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
 _IO = DependencyGraph.IO
-
-
-class DisciplineIOs(NamedTuple):
-    """Coupling inputs and outputs of a discipline within a set of disciplines."""
-
-    inputs: frozenset[str]
-    """Upstream coupling inputs and own differentiation inputs."""
-
-    outputs: frozenset[str]
-    """Downstream coupling outputs and own differentiation outputs."""
-
-
-def _compute_reachable_nodes(
-    graph: DiGraph,
-    sources: Iterable[Discipline],
-) -> set[Discipline]:
-    """Compute the disciplines reachable from sources in a coupling graph.
-
-    Args:
-        graph: The directed coupling graph.
-        sources: The source disciplines to explore from.
-
-    Returns:
-        The set of disciplines reachable from the source disciplines,
-        sources included.
-    """
-    reached = set(sources)
-    stack = list(sources)
-    while stack:
-        for successor in graph.successors(stack.pop()):
-            if successor not in reached:
-                reached.add(successor)
-                stack.append(successor)
-    return reached
 
 
 def set_differentiated_ios(
@@ -104,8 +71,8 @@ def set_differentiated_ios(
         if names := output_names.intersection(discipline.io.output_grammar):
             destinations[discipline] = names
 
-    forward = _compute_reachable_nodes(graph, sources)
-    backward = _compute_reachable_nodes(graph.reverse(copy=False), destinations)
+    forward = compute_reachable_nodes(graph, sources.keys())
+    backward = compute_reachable_nodes(graph.reverse(copy=False), destinations.keys())
 
     successors = graph.successors
     predecessors = graph.predecessors
