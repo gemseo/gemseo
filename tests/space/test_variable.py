@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import pickle
+import warnings
 from copy import copy
 from copy import deepcopy
 from inspect import isabstract
@@ -409,3 +410,26 @@ def test_legacy_variable_is_not_a_kind() -> None:
     """
     assert not issubclass(Variable, BaseVariable)
     assert "Variable" not in VariableFactory().class_names
+
+
+@pytest.mark.parametrize(
+    ("lower_bound", "upper_bound"),
+    [
+        (array([-inf, 0]), array([inf, 1])),
+        (array([-inf, 0]), array([1, 1])),
+        (array([1, 0]), array([inf, 1])),
+    ],
+)
+@pytest.mark.parametrize("size", [1, 2])
+def test_unbounded_integer_variable(lower_bound, upper_bound, size) -> None:
+    """Check that an unbounded integer variable does not warn about its bounds."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        variable = IntegerVariable(
+            size=size,
+            lower_bound=lower_bound[:size],
+            upper_bound=upper_bound[:size],
+        )
+
+    assert_array_equal(variable.lower_bound, lower_bound[:size])
+    assert_array_equal(variable.upper_bound, upper_bound[:size])
