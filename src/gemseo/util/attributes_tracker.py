@@ -20,6 +20,26 @@ The primary use case is grammar auto-inference for
 A discipline's inputs and outputs are determined by observing which model
 fields are **read** and which are **written** during a dry-run of the user's
 `_run_from_model` implementation.
+A field read only after having been assigned as a whole is not an input: its
+value is computed by the discipline itself. An element-wise write
+(`model.y[0] = ...`) is told apart from a whole assignment; what cannot be
+told apart is *which* elements the write covered. Hence the reads that
+follow an element-wise write are kept recorded, and such a field stays an
+input when it is also read; written element-wise and never read, it is an
+output only.
+
+This rule holds only for the reads the tracker intercepts: item access,
+iteration, `len`, membership, equality, the operations that reach
+`__array_ufunc__` (`+` and the reductions built on it, such as `sum`,
+`mean` and `max`), and the sequence methods named in
+`_SequenceTracker._READER_NAMES` and `_READING_WRITER_NAMES`. Reads that
+never reach the tracker, such as `numpy.asarray(model.y)`, `numpy.dot`,
+or the array methods that are not ufunc-backed (`tolist`, `item`,
+`tobytes`, `argmax`), go unrecorded. A field written element-wise and
+read only through such an access is then inferred as an output only,
+silently losing an input, with no error raised. The mitigation is to read
+the field through an intercepted access, e.g. `model.y[:]` or
+`model.y.sum()` instead of `numpy.asarray(model.y)`.
 
 ## Tracking mechanism
 [wrap_with_attributes_tracking][gemseo.util.attributes_tracker.wrap_with_attributes_tracking]
@@ -86,16 +106,25 @@ class _TrackingState:
     """The attribute accesses recorded for one tracked model instance."""
 
     attrs_read: set[str] = field(default_factory=set)
-    """The read attribute names."""
+    """The names of the attributes read before having been assigned as a whole."""
 
     attrs_written: set[str] = field(default_factory=set)
     """The written attribute names."""
 
-    replaced_models: dict[str, list[BaseModel]] = field(default_factory=dict)
-    """The tracked sub-models replaced by whole-field assignments, by field name.
+    attrs_assigned: set[str] = field(default_factory=set)
+    """The names of the attributes assigned as a whole.
 
-    They are kept so that the accesses recorded on them before the
-    replacement still contribute to the inferred fields.
+    Unlike `attrs_written`, the element-wise writes (`model.y[0] = ...`) are
+    excluded: recorded at field granularity, they do not prove that the
+    incoming value is entirely gone.
+    Only the attributes recorded here make the reads that follow be ignored.
+    """
+
+    replaced_models: dict[str, BaseModel] = field(default_factory=dict)
+    """The sub-model replaced by the first whole-field assignment, by field name.
+
+    It is kept so that the accesses recorded on it before the replacement
+    still contribute to the inferred fields.
     """
 
 
@@ -112,6 +141,10 @@ class _ModelTrackerMixin:
     def __getattribute__(self, name: str) -> Any:
         """Record a read access and return a (possibly wrapped) field value.
 
+        The read is only recorded when the field has not been assigned as a
+        whole yet: a field read after such an assignment holds a value
+        computed by the tracked code itself, hence it is not an input.
+
         Container values are wrapped in trackers on first read and the
         wrapped value is stored back into the instance dictionary so that
         later item accesses accumulate on the same tracker.
@@ -124,7 +157,8 @@ class _ModelTrackerMixin:
             state = instance_dict.get(_STATE_KEY)
             value = instance_dict.get(name, _MISSING)
             if state is not None and value is not _MISSING:
-                state.attrs_read.add(name)
+                if name not in state.attrs_assigned:
+                    state.attrs_read.add(name)
                 wrapped_value = _wrap_value(value, name, state)
                 if wrapped_value is not value:
                     instance_dict[name] = wrapped_value
@@ -139,23 +173,40 @@ class _ModelTrackerMixin:
         behave as for the original model; the write is only recorded when
         the assignment succeeded.
         """
-        instance_dict = object.__getattribute__(self, "__dict__")
-        old_value = instance_dict.get(name)
+        old_value = object.__getattribute__(self, "__dict__").get(name)
         super().__setattr__(name, value)
         if name in type(self).model_fields:
+            # The instance dictionary is read back since Pydantic rebinds it
+            # when the model validates its assignments.
+            instance_dict = object.__getattribute__(self, "__dict__")
             state = instance_dict.get(_STATE_KEY)
             if state is not None:
                 state.attrs_written.add(name)
+                # Only the sub-model replaced by the first assignment can hold
+                # input reads: the ones assigned afterwards were built by the
+                # tracked code itself.
+                is_first_assignment = name not in state.attrs_assigned
+                state.attrs_assigned.add(name)
                 if (
-                    isinstance(old_value, BaseModel)
+                    isinstance(old_value, _SequenceTracker)
+                    and old_value.attrs_written
+                    and not old_value.attrs_read
+                ):
+                    # The read recorded by the access that precedes an
+                    # element-wise write does not survive the replacement of
+                    # the container it was recorded for.
+                    state.attrs_read.discard(name)
+                if (
+                    is_first_assignment
+                    and isinstance(old_value, BaseModel)
                     and _STATE_KEY in old_value.__dict__
                 ):
                     # Keep the accesses recorded on the replaced sub-model.
-                    state.replaced_models.setdefault(name, []).append(old_value)
+                    state.replaced_models[name] = old_value
 
     @property
     def attrs_read(self) -> set[str]:
-        """The read field names."""
+        """The names of the fields read before having been assigned as a whole."""
         return self.__dict__[_STATE_KEY].attrs_read
 
     @property
@@ -165,6 +216,9 @@ class _ModelTrackerMixin:
 
     def get_input_model(self) -> type[BaseModel]:
         """Return a model whose fields were read during the tracked execution.
+
+        The fields assigned as a whole before being read are excluded: their
+        values are computed by the tracked execution itself.
 
         Returns:
             A dynamically created Pydantic model class with one field per
@@ -330,7 +384,16 @@ class _SequenceTracker(_BaseTracker):
         self.parent_tracker = parent_tracker
 
     def _record_read(self) -> None:
-        """Notify the trackers of a read access."""
+        """Notify the trackers of a read access.
+
+        Nothing is recorded once the field has been assigned as a whole:
+        its contents are then computed by the tracked code itself, hence not
+        an input.
+        An element-wise write does not discard the read, since the elements
+        that were not written still hold the incoming value.
+        """
+        if self.parent_attr_name in self.parent_tracker.attrs_assigned:
+            return
         self.parent_tracker.attrs_read.add(self.parent_attr_name)
         self.attrs_read.add(self.SEQUENCE_MARKER)
 
@@ -638,9 +701,13 @@ def _get_tracker_data(model: BaseModel, is_written: bool) -> dict[str, Any]:
        the written records are added directly with their `FieldInfo`.
     b. **Leaf read fields** (`is_written=False`): attributes that appear in
        the read records but whose value is *not* another tracker are added
-       with their `FieldInfo`.
+       with their `FieldInfo`.  The attributes read only after having been
+       assigned as a whole are not in the read records.
     c. **Nested model fields**: if an attribute's value is a tracked model
-       (i.e. the field holds a sub-model), the function recurses into it.
+       (i.e. the field holds a sub-model), the function recurses into it,
+       unless the field was assigned as a whole: a read that follows such an
+       assignment is not an input, since the sub-model instance is then the
+       one computed by the tracked code itself.
        If the recursion yields no fields, the field is excluded — this
        avoids exposing a sub-model as an input when it was only written to,
        or when only its methods were called.
@@ -674,12 +741,17 @@ def _get_tracker_data(model: BaseModel, is_written: bool) -> dict[str, Any]:
             if attr_value.attrs_written and not attr_value.attrs_read:
                 # The attribute was only written to.
                 continue
-        elif is_submodel and _STATE_KEY in attr_value.__dict__:
+        elif (
+            is_submodel
+            and _STATE_KEY in attr_value.__dict__
+            and attr_name not in state.attrs_assigned
+        ):
             tracker_data = _get_tracker_data(attr_value, is_written)
         if not is_written:
-            # The accesses recorded on sub-models replaced by whole-field
-            # assignments contribute to the read fields.
-            for replaced_model in state.replaced_models.get(attr_name, ()):
+            # The accesses recorded on a sub-model replaced by a whole-field
+            # assignment contribute to the read fields.
+            replaced_model = state.replaced_models.get(attr_name)
+            if replaced_model is not None:
                 replaced_data = _get_tracker_data(replaced_model, is_written)
                 replaced_data.update(tracker_data)
                 tracker_data = replaced_data
@@ -725,8 +797,9 @@ def wrap_with_attributes_tracking(obj: BaseModel) -> BaseModel:
     The tracked copy behaves like the original model (`isinstance` checks,
     methods, computed fields and validation are unaffected) while attribute
     accesses are silently recorded.  Call `get_input_model()` on it to obtain
-    a Pydantic model class whose fields are the **read** attributes (inputs),
-    and `get_output_model()` for the **written** attributes (outputs).
+    a Pydantic model class whose fields are the attributes **read before being
+    assigned as a whole** (inputs), and `get_output_model()` for the
+    **written** attributes (outputs).
 
     Args:
         obj: The Pydantic `BaseModel` instance to track.

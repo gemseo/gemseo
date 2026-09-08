@@ -85,7 +85,8 @@ discipline = QuadraticDiscipline(model)
 # %%
 # ### 4. Inspect the auto-inferred grammar names
 #
-# ``x``, ``a``, and ``b`` were **read** in ``_run_from_model`` → inputs.
+# ``x``, ``a``, and ``b`` were **read before being written** in
+# ``_run_from_model`` → inputs.
 # ``y`` was **written** → output.
 print("Inputs :", sorted(discipline.io.input_grammar.keys()))
 print("Outputs:", sorted(discipline.io.output_grammar.keys()))
@@ -114,6 +115,46 @@ print("y =", output["y"])  # 2 * 3**2 + 1 = 19
 #   default) instead of a computed one, with no error raised.
 # - Avoid side effects and non-deterministic field accesses in
 #   ``_run_from_model``, for the same reason.
+
+# %%
+# ## Intermediate values
+#
+# A field is an input only when it is read **before** having been assigned as
+# a whole.
+# A field that the discipline computes and then re-uses to compute another one
+# is an output only: its value does not come from another discipline.
+
+
+class ChainedModel(BaseModel):
+    """Inputs and outputs of ``y = a * x**2 + b`` followed by ``z = y + 3``."""
+
+    x: float = Field(default=1.0, description="Independent variable.")
+    a: float = Field(default=1.0, description="Quadratic coefficient.")
+    b: float = Field(default=0.0, description="Constant offset.")
+    y: float = Field(default=0.0, description="Intermediate value.")
+    z: float = Field(default=0.0, description="Function value.")
+
+
+class ChainedDiscipline(BaseModelDiscipline):
+    """Compute ``y = a * x**2 + b`` then ``z = y + 3``."""
+
+    def _run_from_model(self, model: ChainedModel) -> None:
+        model.y = model.a * model.x**2 + model.b
+        model.z = model.y + 3.0
+
+
+chained_discipline = ChainedDiscipline(ChainedModel())
+
+# %%
+# ``y`` is read on the second line but written on the first one:
+# it is an output, not an input.
+print("Inputs :", sorted(chained_discipline.io.input_grammar.keys()))
+print("Outputs:", sorted(chained_discipline.io.output_grammar.keys()))
+
+# %%
+# The converse also holds: a field read **before** being written is both an
+# input and an output, as in ``model.y = model.y + 1``, which makes the
+# discipline self-coupled.
 
 # %%
 # ## Access fields as attributes

@@ -44,9 +44,18 @@ class BaseModelDiscipline(Discipline):
     At construction time,
     `_run_from_model` is called once with a tracked copy of *model* (see
     [wrap_with_attributes_tracking][gemseo.util.attributes_tracker.wrap_with_attributes_tracking]).
-    The tracking layer records which model fields are **read** (→ discipline inputs)
-    and which are **written** (→ discipline outputs).
+    The tracking layer records which model fields are **read before having
+    been assigned as a whole** (→ discipline inputs) and which are
+    **written** (→ discipline outputs).
     Fields that are neither read nor written are ignored.
+
+    A field computed and then re-used as an intermediate value is an output
+    only: its value comes from the discipline, not from another one.
+    A field read before being written is both an input and an output,
+    e.g. `model.y = model.y + 1`.
+    A field whose elements only are written, e.g. `model.y[0] = ...`, does not
+    lose the reads that follow: unlike a field assigned as a whole, it stays an
+    input when it is read as well.
 
     Nested models are supported: a field `y_1` on a sub-model `y` becomes
     the flat name `"y.y_1"` in the grammar.
@@ -97,7 +106,8 @@ class BaseModelDiscipline(Discipline):
 
         A tracked deep copy of the stored model is passed to
         `_run_from_model`.
-        Fields that are **read** during that call become discipline inputs;
+        Fields that are **read before having been assigned as a whole** during
+        that call become discipline inputs;
         fields that are **written** become discipline outputs.
         The resulting grammars replace `input_grammar` and `output_grammar`.
         """

@@ -29,6 +29,7 @@ from pydantic import PrivateAttr
 from pydantic import ValidationError
 from pydantic import computed_field
 
+from gemseo.util.attributes_tracker import _STATE_KEY
 from gemseo.util.attributes_tracker import _create_tracker_class
 from gemseo.util.attributes_tracker import _ModelTrackerMixin
 from gemseo.util.attributes_tracker import _NDArrayTracker
@@ -561,3 +562,191 @@ def test_container_trackers_share_class(tracker) -> None:
     second_type = type(tracker.sub.rw_sequence)
     assert first_type is second_type
     assert issubclass(first_type, _SequenceTracker)
+
+
+class IntermediateModel(BaseModel):
+    a: float = 1.0
+    b: float = 2.0
+    y: float = 0.0
+    z: float = 0.0
+
+
+def test_write_then_read_not_input() -> None:
+    """A field read after having been written must not be an input."""
+    tracker = wrap_with_attributes_tracking(IntermediateModel())
+    tracker.y = tracker.a + tracker.b
+    tracker.z = tracker.y + 3.0
+    assert tracker.get_input_model().model_fields.keys() == {"a", "b"}
+    assert tracker.get_output_model().model_fields.keys() == {"y", "z"}
+
+
+def test_read_then_write_is_input() -> None:
+    """A field read before being written must be both an input and an output."""
+    tracker = wrap_with_attributes_tracking(IntermediateModel())
+    tracker.y = tracker.y + tracker.a
+    assert tracker.get_input_model().model_fields.keys() == {"a", "y"}
+    assert tracker.get_output_model().model_fields.keys() == {"y"}
+
+
+def test_whole_submodel_assignment_then_read_not_input() -> None:
+    """A field of a wholly assigned sub-model read afterwards is not an input."""
+    tracker = wrap_with_attributes_tracking(Outer())
+    tracker.inner = Inner(a=tracker.x, b=2.0)
+    tracker.x = tracker.inner.b
+    assert tracker.get_input_model().model_fields.keys() == {"x"}
+    assert tracker.get_output_model().model_fields.keys() == {
+        "inner.a",
+        "inner.b",
+        "x",
+    }
+
+
+def test_whole_nested_submodel_assignment_then_read_not_input() -> None:
+    """A leaf of a wholly assigned nested sub-model read afterwards is not an input."""
+    tracker = wrap_with_attributes_tracking(Top())
+    tracker.mid = Mid(a=2.0, deep=Deep(c=4.0))
+    assert tracker.mid.deep.c == 4.0
+    assert not tracker.get_input_model().model_fields
+    assert tracker.get_output_model().model_fields.keys() == {"mid.a", "mid.deep.c"}
+
+
+def test_submodel_read_before_whole_assignment_then_read_not_input() -> None:
+    """A sub-model field read before the replacement stays the only input."""
+    tracker = wrap_with_attributes_tracking(Outer())
+    assert tracker.inner.a == 1.0
+    tracker.inner = Inner()
+    assert tracker.inner.b == 2.0
+    assert tracker.get_input_model().model_fields.keys() == {"inner.a"}
+    assert tracker.get_output_model().model_fields.keys() == {"inner.a", "inner.b"}
+
+
+def test_second_whole_submodel_assignment_then_read_not_input() -> None:
+    """Only the sub-model replaced by the first whole assignment holds inputs."""
+    tracker = wrap_with_attributes_tracking(Outer())
+    tracker.inner = Inner(a=tracker.inner.a + 1.0, b=0.0)
+    tracker.x = tracker.inner.b
+    tracker.inner = Inner(a=tracker.x, b=tracker.x)
+    assert tracker.get_input_model().model_fields.keys() == {"inner.a"}
+
+
+def test_whole_submodel_assignment_does_not_track_the_assigned_model() -> None:
+    """Assigning a sub-model must not convert it at assignment time."""
+    inner = Inner()
+    tracker = wrap_with_attributes_tracking(Outer())
+    tracker.inner = inner
+    assert type(inner) is Inner
+    assert _STATE_KEY not in inner.__dict__
+
+
+class ValidatedOuter(BaseModel, validate_assignment=True):
+    x: float = 1.0
+    inner: Inner = Inner()
+
+
+def test_validated_whole_submodel_assignment_then_read_not_input() -> None:
+    """A validated whole sub-model assignment must also discard the later reads."""
+    tracker = wrap_with_attributes_tracking(ValidatedOuter())
+    assert tracker.inner.a == 1.0
+    tracker.inner = Inner()
+    tracker.x = tracker.inner.b
+    assert tracker.get_input_model().model_fields.keys() == {"inner.a"}
+    assert tracker.get_output_model().model_fields.keys() == {
+        "inner.a",
+        "inner.b",
+        "x",
+    }
+
+
+class ArrayIntermediateModel(BaseModel):
+    x: NDArrayPydantic[float64] = ones(2)
+    y: NDArrayPydantic[float64] = zeros(2)
+    z: NDArrayPydantic[float64] = zeros(2)
+
+
+def test_container_whole_write_then_read_not_input() -> None:
+    """A container read after having been wholly assigned is not an input."""
+    tracker = wrap_with_attributes_tracking(ContainerModel())
+    tracker.lst = [3.0, 4.0]
+    tracker.out = tracker.lst[0] + 1.0
+    assert not tracker.get_input_model().model_fields
+    assert tracker.get_output_model().model_fields.keys() == {"lst", "out"}
+
+
+def test_container_element_write_then_read_is_input() -> None:
+    """A container with only some items written must remain an input."""
+    tracker = wrap_with_attributes_tracking(ContainerModel())
+    tracker.lst[0] = 3.0
+    tracker.out = tracker.lst[1] + 1.0
+    assert tracker.get_input_model().model_fields.keys() == {"lst"}
+    assert tracker.get_output_model().model_fields.keys() == {"lst", "out"}
+
+
+def test_ndarray_whole_write_then_read_not_input() -> None:
+    """An array read after having been wholly assigned is not an input."""
+    tracker = wrap_with_attributes_tracking(ArrayIntermediateModel())
+    tracker.y = tracker.x * 2.0
+    tracker.z = tracker.y + 1.0
+    assert tracker.get_input_model().model_fields.keys() == {"x"}
+    assert tracker.get_output_model().model_fields.keys() == {"y", "z"}
+
+
+def test_ndarray_element_write_then_read_is_input() -> None:
+    """An array with only some elements written must remain an input."""
+    tracker = wrap_with_attributes_tracking(ArrayIntermediateModel())
+    tracker.y[0] = 1.0
+    tracker.z = tracker.y + 1.0
+    assert tracker.get_input_model().model_fields.keys() == {"y"}
+    assert tracker.get_output_model().model_fields.keys() == {"y", "z"}
+
+
+def test_container_stale_read_discarded_after_whole_assignment() -> None:
+    """A read recorded before an element-wise write must not survive a replacement."""
+    tracker = wrap_with_attributes_tracking(ArrayIntermediateModel())
+    tracker.y[0] = 1.0
+    tracker.y = tracker.x * 2.0
+    assert tracker.get_input_model().model_fields.keys() == {"x"}
+
+
+def test_container_read_before_whole_assignment_is_input() -> None:
+    """A container read as a whole before its replacement stays an input."""
+    tracker = wrap_with_attributes_tracking(ArrayIntermediateModel())
+    total = float(tracker.y.sum())
+    tracker.y = tracker.x * total
+    assert tracker.get_input_model().model_fields.keys() == {"x", "y"}
+
+
+class Piece(BaseModel):
+    a: NDArrayPydantic[float64] = ones(1)
+    b: NDArrayPydantic[float64] = ones(1)
+
+
+class PassThrough(BaseModel):
+    inp: Piece = Piece()
+    out: Piece = Piece()
+    z: NDArrayPydantic[float64] = ones(1)
+
+
+def test_submodel_forwarded_to_another_field_keeps_source_reads() -> None:
+    """A sub-model forwarded to another field must not lose the source reads.
+
+    Both fields then share the same tracked sub-model instance and hence the
+    same tracking state; the reads recorded through the source field must not
+    be discarded because the target field was assigned as a whole.
+    """
+    tracker = wrap_with_attributes_tracking(PassThrough())
+    tracker.out = tracker.inp
+    tracker.z = tracker.out.a + tracker.inp.b
+    assert tracker.get_input_model().model_fields.keys() == {"inp.a", "inp.b"}
+    assert tracker.get_output_model().model_fields.keys() == {
+        "out.a",
+        "out.b",
+        "z",
+    }
+
+
+def test_container_unintercepted_read_before_whole_assignment_is_input() -> None:
+    """A container read outside the tracker before its replacement stays an input."""
+    tracker = wrap_with_attributes_tracking(ArrayIntermediateModel())
+    doubled = asarray(tracker.y) * 2.0
+    tracker.y = tracker.x + doubled
+    assert tracker.get_input_model().model_fields.keys() == {"x", "y"}
