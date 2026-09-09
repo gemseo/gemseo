@@ -43,6 +43,7 @@ if TYPE_CHECKING:
     from gemseo.space.design._bounds import Bounds
     from gemseo.space.design._normalizer import Normalizer
     from gemseo.space.design._variables import Variables
+    from gemseo.util.typing import NumberArray
 
 
 class Value(RegistryDerivedData):
@@ -54,16 +55,16 @@ class Value(RegistryDerivedData):
     __normalizer: Normalizer
     """The normalizer."""
 
-    __name_to_value: dict[str, ndarray]
+    __name_to_value: dict[str, NumberArray]
     """The map from a variable name to a variable value."""
 
-    __name_to_normalized_value: dict[str, ndarray]
+    __name_to_normalized_value: dict[str, NumberArray]
     """The map from a variable name to a normalized variable value."""
 
-    __full_value: ndarray
+    __full_value: NumberArray
     """The derived full value."""
 
-    __normalized_full_value: ndarray
+    __normalized_full_value: NumberArray
     """The derived normalized full value."""
 
     __mutation_count: int
@@ -78,7 +79,7 @@ class Value(RegistryDerivedData):
     __common_dtype: dtype
     """The common dtype of the current values, driving normalization upcasting."""
 
-    __name_to_value_view: ReadOnlyMapping[str, ndarray | None]
+    __name_to_value_view: ReadOnlyMapping[str, NumberArray | None]
     """The read-only view on `__name_to_value`."""
 
     def __init__(
@@ -108,7 +109,7 @@ class Value(RegistryDerivedData):
         self.__name_to_value_view = ReadOnlyMapping(self.__name_to_value)
 
     @property
-    def name_to_value(self) -> ReadOnlyMapping[str, ndarray | None]:
+    def name_to_value(self) -> ReadOnlyMapping[str, NumberArray | None]:
         """The map from a variable name to a variable value (read-only).
 
         A variable value is `None` when the variable has no value.
@@ -218,7 +219,7 @@ class Value(RegistryDerivedData):
 
     def set(
         self,
-        value: ndarray | Mapping[str, ndarray | None] | OptimizationResult,
+        value: NumberArray | Mapping[str, NumberArray | None] | OptimizationResult,
     ) -> None:
         """Set the current value.
 
@@ -274,7 +275,7 @@ class Value(RegistryDerivedData):
 
         self.__update_metadata()
 
-    def set_variable(self, name: str, value: ndarray | None) -> None:
+    def set_variable(self, name: str, value: NumberArray | None) -> None:
         """Set the current value of a single variable.
 
         Args:
@@ -337,7 +338,8 @@ class Value(RegistryDerivedData):
         """Initialize the current values that are missing.
 
         Use the center of the bounds when both are finite, otherwise the
-        finite bound, otherwise zero.
+        finite bound, otherwise zero; for a discrete variable, use its first
+        choice instead.
         """
         # A value invalidated by a resize must read as missing here,
         # otherwise the variable would keep its stale wrong-size value.
@@ -396,7 +398,7 @@ class Value(RegistryDerivedData):
         complex_to_real: bool = False,
         as_dict: bool = False,
         normalize: bool = False,
-    ) -> ndarray | dict[str, ndarray]:
+    ) -> NumberArray | dict[str, NumberArray]:
         """Return the values of variables.
 
         Args:
@@ -478,7 +480,7 @@ class Value(RegistryDerivedData):
             complex_to_real,
         )
 
-    def __get_array(self) -> ndarray:
+    def __get_array(self) -> NumberArray:
         """Return the current full value, populating the derived value.
 
         Returns:
@@ -516,8 +518,8 @@ class Value(RegistryDerivedData):
 
     @staticmethod
     def __format_values(
-        name_to_value: dict[str, ndarray], complex_to_real: bool
-    ) -> dict[str, ndarray]:
+        name_to_value: dict[str, NumberArray], complex_to_real: bool
+    ) -> dict[str, NumberArray]:
         """Cast variable values to real numbers if requested.
 
         Args:
@@ -532,7 +534,7 @@ class Value(RegistryDerivedData):
         return name_to_value
 
     @staticmethod
-    def __format_full_value(value: ndarray, complex_to_real: bool) -> ndarray:
+    def __format_full_value(value: NumberArray, complex_to_real: bool) -> NumberArray:
         """Cast a full value to real if requested.
 
         Args:

@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
-from typing import Literal
 
 from numpy import array
 from numpy import atleast_1d
@@ -30,19 +29,18 @@ from numpy import isinf
 from numpy import logical_and
 from numpy import mod
 
-from gemseo.space._variable._base import BaseVariable
-from gemseo.space._variable._base import ComponentDType
-from gemseo.space._variable._base import DataType
-from gemseo.space._variable._base import format_components
+from gemseo.space.variable._formatting import format_components
+from gemseo.space.variable.base import BaseVariable
+from gemseo.space.variable.base import ComponentDType
+from gemseo.space.variable.base import DataType
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-
-    from gemseo.space._variable._base import BoundArray
+    from gemseo.space.variable.base import BoundArray
     from gemseo.util.typing import BooleanArray
+    from gemseo.util.typing import NumberArray
 
 
-def _get_integer_mask(value: ndarray | complex) -> ndarray:
+def _get_integer_mask(value: NumberArray | complex) -> BooleanArray:
     """Return whether the components of an array are integer.
 
     `None` and infinite values will be interpreted as integers
@@ -57,7 +55,7 @@ def _get_integer_mask(value: ndarray | complex) -> ndarray:
     return array([x is None or isinf(x) or not mod(x, 1) for x in atleast_1d(value)])
 
 
-def _find_non_integer_indices(value: ndarray) -> set[int]:
+def _find_non_integer_indices(value: NumberArray) -> set[int]:
     """Return the indices of the components that are not integer.
 
     `None` and infinite components are treated as integer.
@@ -75,10 +73,8 @@ class IntegerVariable(BaseVariable):
     """A variable whose components are integers."""
 
     component_type: ClassVar[ComponentDType] = int64
-    """The NumPy type of the components of the variable."""
 
-    type: Literal[DataType.INTEGER] = DataType.INTEGER
-    """The type of data."""
+    type: ClassVar[DataType] = DataType.INTEGER
 
     def compute_normalization_mask(  # noqa: D102
         self, enable_integer_normalization: bool
@@ -105,5 +101,5 @@ class IntegerVariable(BaseVariable):
             )
             raise ValueError(msg)
 
-    def find_components_outside_domain(self, value: ndarray) -> set[int]:  # noqa: D102
+    def find_components_outside_domain(self, value: NumberArray) -> set[int]:  # noqa: D102
         return _find_non_integer_indices(value)

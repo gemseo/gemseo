@@ -1,0 +1,156 @@
+# serializer version: 1
+# name: test_model_copy_rejects_the_bounds[lower_bound]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, The domain of a discrete variable is its choices, from which its bounds are derived; the bounds are not settable. [type=value_error, input_value={'size': 1, 'choices': ar... 2.]), 'lower_bound': 0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_model_copy_rejects_the_bounds[upper_bound]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, The domain of a discrete variable is its choices, from which its bounds are derived; the bounds are not settable. [type=value_error, input_value={'size': 1, 'choices': ar... 2.]), 'upper_bound': 0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs0]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, A discrete variable must have at least one choice. [type=value_error, input_value={'choices': []}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs10]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, The following choices are not a finite number: nan (index 0) and nan (index 1). [type=value_error, input_value={'choices': [nan, nan, 1.0]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs1]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, A discrete variable must have at least one choice. [type=value_error, input_value={'choices': array([], dtype=float64)}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs2]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, The following choice is not a finite number: nan (index 0). [type=value_error, input_value={'choices': [nan]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs3]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, The following choice is not a finite number: inf (index 0). [type=value_error, input_value={'choices': [inf, 1]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs4]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, The dimension of choices must be 1; got 2. [type=value_error, input_value={'choices': array([[1., 2.],
+         [3., 4.]])}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs5]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, The domain of a discrete variable is its choices, from which its bounds are derived; the bounds are not settable. [type=value_error, input_value={'choices': [1, 2], 'lower_bound': 0}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs6]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, The domain of a discrete variable is its choices, from which its bounds are derived; the bounds are not settable. [type=value_error, input_value={'choices': [1, 2], 'upper_bound': 3}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs7]
+  '''
+  1 validation error for DiscreteVariable
+  size
+    Value error, A discrete variable is scalar; its size cannot be set to 2. [type=value_error, input_value=2, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_rejections[kwargs8]
+  '''
+  14 validation errors for DiscreteVariable
+  choices.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=['a', 'b'], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  choices.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=['a', 'b'], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  choices.list[union[int,float]].0.int
+    Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='a', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_parsing
+  choices.list[union[int,float]].0.float
+    Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='a', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_parsing
+  choices.list[union[int,float]].1.int
+    Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='b', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_parsing
+  choices.list[union[int,float]].1.float
+    Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='b', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_parsing
+  choices.set[union[int,float]].0.int
+    Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='a', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_parsing
+  choices.set[union[int,float]].0.float
+    Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='a', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_parsing
+  choices.set[union[int,float]].1.int
+    Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='b', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_parsing
+  choices.set[union[int,float]].1.float
+    Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='b', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_parsing
+  choices.`tuple[union[int,float], ...]`.0.int
+    Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='a', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_parsing
+  choices.`tuple[union[int,float], ...]`.0.float
+    Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='a', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_parsing
+  choices.`tuple[union[int,float], ...]`.1.int
+    Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='b', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_parsing
+  choices.`tuple[union[int,float], ...]`.1.float
+    Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='b', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_parsing
+  '''
+# ---
+# name: test_rejections[kwargs9]
+  '''
+  8 validation errors for DiscreteVariable
+  choices.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=[None], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  choices.chain[is-instance[ndarray],function-plain[validate()]]
+    Input should be an instance of ndarray [type=is_instance_of, input_value=[None], input_type=list]
+      For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
+  choices.list[union[int,float]].0.int
+    Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  choices.list[union[int,float]].0.float
+    Input should be a valid number [type=float_type, input_value=None, input_type=NoneType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  choices.set[union[int,float]].0.int
+    Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  choices.set[union[int,float]].0.float
+    Input should be a valid number [type=float_type, input_value=None, input_type=NoneType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  choices.`tuple[union[int,float], ...]`.0.int
+    Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/int_type
+  choices.`tuple[union[int,float], ...]`.0.float
+    Input should be a valid number [type=float_type, input_value=None, input_type=NoneType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/float_type
+  '''
+# ---

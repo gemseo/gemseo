@@ -36,18 +36,18 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
-    from numpy import ndarray
-
     from gemseo.space.design._variables import Variables
+    from gemseo.util.typing import BooleanArray
+    from gemseo.util.typing import NumberArray
 
 
 class Bounds(RegistryDerivedData):
     """Read/write access to the lower/upper bounds of versioned variables."""
 
-    __full_lower_bound: ndarray
+    __full_lower_bound: NumberArray
     """The lower bound of the full vector."""
 
-    __full_upper_bound: ndarray
+    __full_upper_bound: NumberArray
     """The upper bound of the full vector."""
 
     def __init__(self, variables: Variables) -> None:
@@ -74,7 +74,7 @@ class Bounds(RegistryDerivedData):
         # reset the guard so that the next access rebuilds and refreezes them.
         self._register_guard(self._rebuild)
 
-    def get_lower_bound(self, name: str) -> ndarray:
+    def get_lower_bound(self, name: str) -> NumberArray:
         """Return the lower bound of a variable.
 
         Args:
@@ -89,7 +89,7 @@ class Bounds(RegistryDerivedData):
         # so NumPy refuses to re-enable its writeable flag.
         return self._variables[name].lower_bound.view()
 
-    def get_upper_bound(self, name: str) -> ndarray:
+    def get_upper_bound(self, name: str) -> NumberArray:
         """Return the upper bound of a variable.
 
         Args:
@@ -140,7 +140,7 @@ class Bounds(RegistryDerivedData):
         self.__full_upper_bound.setflags(write=False)
 
     @property
-    def full_lower_bound(self) -> ndarray:
+    def full_lower_bound(self) -> NumberArray:
         """The lower bound of the full vector (read-only)."""
         self._refresh()
         # Hand out a read-only view rather than the cache itself,
@@ -148,7 +148,7 @@ class Bounds(RegistryDerivedData):
         return self.__full_lower_bound.view()
 
     @property
-    def full_upper_bound(self) -> ndarray:
+    def full_upper_bound(self) -> NumberArray:
         """The upper bound of the full vector (read-only)."""
         self._refresh()
         return self.__full_upper_bound.view()
@@ -158,20 +158,20 @@ class Bounds(RegistryDerivedData):
         self,
         names: Sequence[str] = (),
         as_dict: Literal[False] = False,
-    ) -> ndarray: ...
+    ) -> NumberArray: ...
 
     @overload
     def get_lower_bounds(
         self,
         names: Sequence[str] = (),
         as_dict: Literal[True] = True,
-    ) -> dict[str, ndarray]: ...
+    ) -> dict[str, NumberArray]: ...
 
     def get_lower_bounds(
         self,
         names: Sequence[str] = (),
         as_dict: bool = False,
-    ) -> ndarray | dict[str, ndarray]:
+    ) -> NumberArray | dict[str, NumberArray]:
         """Return the lower bounds of variables.
 
         Args:
@@ -191,20 +191,20 @@ class Bounds(RegistryDerivedData):
         self,
         names: Sequence[str] = (),
         as_dict: Literal[False] = False,
-    ) -> ndarray: ...
+    ) -> NumberArray: ...
 
     @overload
     def get_upper_bounds(
         self,
         names: Sequence[str] = (),
         as_dict: Literal[True] = True,
-    ) -> dict[str, ndarray]: ...
+    ) -> dict[str, NumberArray]: ...
 
     def get_upper_bounds(
         self,
         names: Sequence[str] = (),
         as_dict: bool = False,
-    ) -> ndarray | dict[str, ndarray]:
+    ) -> NumberArray | dict[str, NumberArray]:
         """Return the upper bounds of variables.
 
         Args:
@@ -224,7 +224,7 @@ class Bounds(RegistryDerivedData):
         names: Sequence[str],
         as_dict: bool,
         select_lower_bounds: bool,
-    ) -> ndarray | dict[str, ndarray]:
+    ) -> NumberArray | dict[str, NumberArray]:
         """Select the bounds of variables, building only the requested ones.
 
         Args:
@@ -263,9 +263,9 @@ class Bounds(RegistryDerivedData):
 
     def get_active_bounds_masks(
         self,
-        name_to_value: Mapping[str, ndarray],
+        name_to_value: Mapping[str, NumberArray],
         atol: float = 1e-8,
-    ) -> tuple[dict[str, ndarray], dict[str, ndarray]]:
+    ) -> tuple[dict[str, BooleanArray], dict[str, BooleanArray]]:
         """Compute the active lower-bound and upper-bound mask of a point.
 
         Args:
@@ -276,8 +276,8 @@ class Bounds(RegistryDerivedData):
             A map from a variable name to an active lower-bound mask,
             followed by a map from a variable name to an active upper-bound mask.
         """
-        active_lower_bound: dict[str, ndarray] = {}
-        active_upper_bound: dict[str, ndarray] = {}
+        active_lower_bound: dict[str, BooleanArray] = {}
+        active_upper_bound: dict[str, BooleanArray] = {}
         for name in self._variables:
             lower_bound = self.get_lower_bound(name)
             lower_bound = where(equal(lower_bound, None), -inf, lower_bound)
@@ -290,9 +290,9 @@ class Bounds(RegistryDerivedData):
 
     def clip_to_bounds(
         self,
-        full_value: ndarray,
+        full_value: NumberArray,
         normalized: bool = False,
-    ) -> ndarray:
+    ) -> NumberArray:
         """Clip a full value to the bounds, component-wise.
 
         Args:

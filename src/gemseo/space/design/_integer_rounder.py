@@ -23,10 +23,9 @@ from numpy import round as np_round
 from gemseo.space.design._registry_derived_data import RegistryDerivedData
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-
     from gemseo.space.design._variables import Variables
     from gemseo.util.typing import BooleanArray
+    from gemseo.util.typing import NumberArray
 
 
 class IntegerRounder(RegistryDerivedData):
@@ -61,7 +60,7 @@ class IntegerRounder(RegistryDerivedData):
         self._refresh()
         return not self.__no_integer
 
-    def round(self, full_value: ndarray, copy: bool = True) -> ndarray:
+    def round(self, full_value: NumberArray, copy: bool = True) -> NumberArray:
         """Round the integer components of a full value.
 
         Args:

@@ -48,10 +48,11 @@ from gemseo.core.function.array_function import ArrayFunction
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.result import OptimizationResult
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
-from gemseo.space._variable import ContinuousVariable
-from gemseo.space._variable import IntegerVariable
-from gemseo.space._variable import Variable
 from gemseo.space.design import DesignSpace
+from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable._legacy import Variable
 from gemseo.util.pickle import from_pickle
 from gemseo.util.repr_html import REPR_HTML_WRAPPER
 from gemseo.util.testing.helper import assert_exception
@@ -64,6 +65,7 @@ DesignVariableType = DesignSpace.DesignVariableType
 
 FLOAT = DesignSpace.DesignVariableType.FLOAT
 INTEGER = DesignSpace.DesignVariableType.INTEGER
+DISCRETE = DesignSpace.DesignVariableType.DISCRETE
 
 
 @pytest.fixture
@@ -473,6 +475,21 @@ def test_filter_dimensions_nonexistent(
     """Check that the design space cannot filter nonexistent dimensions."""
     with assert_exception(ValueError, snapshot):
         design_space.filter_dimensions("x5", indices)
+
+
+def test_filter_dimensions_duplicated_on_a_discrete_variable(snapshot) -> None:
+    """Check filtering a discrete variable with more components than it has.
+
+    Every requested index exists (0 is the only component of a discrete
+    variable), so the upfront nonexistent-dimension check lets the request
+    through; the rejection must then come from the variable itself, with a
+    clear message rather than a raw pydantic error naming the internal `size`
+    field.
+    """
+    space = DesignSpace()
+    space.add_variable("t", variable=DiscreteVariable(choices=[1, 2, 3]))
+    with assert_exception(ValidationError, snapshot):
+        space.filter_dimensions("t", [0, 0])
 
 
 def check_variable(
@@ -2554,7 +2571,7 @@ def test_unpickle_design_space_of_the_last_release() -> None:
     """
     with pytest.warns(
         DeprecationWarning,
-        match="The class 'gemseo.space._variable.Variable' is deprecated",
+        match="The class 'gemseo.space.variable.Variable' is deprecated",
     ):
         space = from_pickle(CURRENT_DIR / "design_space_6_3_3.pkl")
 
@@ -2609,7 +2626,7 @@ def test_unpickle_pre_refactor_design_space_with_legacy_variables() -> None:
 
     with pytest.warns(
         DeprecationWarning,
-        match="The class 'gemseo.space._variable.Variable' is deprecated",
+        match="The class 'gemseo.space.variable.Variable' is deprecated",
     ):
         restored = pickle.loads(pickle.dumps(space))
 
@@ -3030,3 +3047,458 @@ def test_enable_integer_variables_normalization_getter() -> None:
     assert not space.enable_integer_variables_normalization
     space.enable_integer_variables_normalization = True
     assert space.enable_integer_variables_normalization
+
+
+@pytest.fixture
+def discrete_design_space() -> DesignSpace:
+    """A design space mixing the three kinds of variable."""
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "x", value=0.5, variable=ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
+    )
+    design_space.add_variable(
+        "n", value=4, variable=IntegerVariable(lower_bound=1, upper_bound=10)
+    )
+    design_space.add_variable(
+        "t", value=0.55, variable=DiscreteVariable(choices=[0.72, 0.45, 0.55])
+    )
+    design_space.add_variable("p", variable=DiscreteVariable(choices=[2, 4, 6, 8]))
+    return design_space
+
+
+def test_add_variable_from_variable() -> None:
+    """Check the addition of a variable of any kind from its object."""
+    design_space = DesignSpace()
+    variable = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
+    design_space.add_variable("x", value=0.5, variable=variable)
+
+    # The variable object is stored as is, not rebuilt.
+    assert design_space._variables["x"] is variable
+    # A scalar value is broadcast over the components.
+    assert_array_equal(design_space.get_current_value(["x"]), array([0.5, 0.5]))
+
+
+def test_add_without_value() -> None:
+    """Check that a variable added without a value has a None entry."""
+    design_space = DesignSpace()
+    design_space.add_variable("t", variable=DiscreteVariable(choices=[1, 2]))
+    assert design_space._current_value["t"] is None
+
+
+def test_add_already_existing_variable(snapshot) -> None:
+    """Check that adding an existing variable raises."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", variable=ContinuousVariable())
+    with assert_exception(ValueError, snapshot):
+        design_space.add_variable("x", variable=ContinuousVariable())
+
+
+def test_add_with_an_invalid_value_rolls_back(snapshot) -> None:
+    """Check that a variable whose value is rejected is not registered."""
+    design_space = DesignSpace()
+    with assert_exception(ValueError, snapshot):
+        design_space.add_variable(
+            "t", value=3, variable=DiscreteVariable(choices=[2, 4])
+        )
+
+    assert "t" not in design_space
+
+
+def test_add_variable_from_bounds() -> None:
+    """Check that add_variable keeps building a variable from its bounds."""
+    design_space = DesignSpace()
+    design_space.add_variable("n", 2, INTEGER, 0, 10, 5)
+
+    assert design_space.get_type("n") == INTEGER
+    assert_array_equal(design_space.get_current_value(["n"]), array([5, 5]))
+
+
+def test_add_variable_with_discrete_type_raises(snapshot) -> None:
+    """Check that add_variable rejects a discrete request without a variable."""
+    design_space = DesignSpace()
+    with assert_exception(ValueError, snapshot):
+        design_space.add_variable("t", type_=DISCRETE)
+
+
+def test_discrete_variable_scalar_value_shape(discrete_design_space) -> None:
+    """Check that a scalar value is stored as a shape-(1,) array."""
+    value = discrete_design_space.get_current_value(["t"])
+    assert value.shape == (1,)
+    assert_array_equal(value, array([0.55]))
+
+
+def test_discrete_variable_derived_bounds(discrete_design_space) -> None:
+    """Check that the bounds of a discrete variable are its extreme values."""
+    assert_array_equal(discrete_design_space.get_lower_bound("t"), array([0.45]))
+    assert_array_equal(discrete_design_space.get_upper_bound("t"), array([0.72]))
+
+
+@pytest.mark.parametrize("setter", ["set_lower_bound", "set_upper_bound"])
+def test_discrete_variable_bounds_are_not_settable(
+    discrete_design_space, setter
+) -> None:
+    """Check that the bounds of a discrete variable cannot be set."""
+    with pytest.raises(ValidationError, match="the bounds are not settable"):
+        getattr(discrete_design_space, setter)("t", 0.5)
+
+
+def test_discrete_variable_initialize_missing_current_values(
+    discrete_design_space,
+) -> None:
+    """Check that a missing value is the first choice."""
+    discrete_design_space.initialize_missing_current_values()
+    # Not the center 5.0 of the derived bounds [2, 8].
+    assert_array_equal(discrete_design_space.get_current_value(["p"]), array([2.0]))
+
+
+def test_discrete_variable_is_neither_normalized_nor_rounded(
+    discrete_design_space,
+) -> None:
+    """Check that a discrete component is left untouched by the transformations."""
+    discrete_design_space.initialize_missing_current_values()
+    value = discrete_design_space.get_current_value()
+
+    assert_array_equal(discrete_design_space.normalize_vect(value)[2:], value[2:])
+    assert_array_equal(discrete_design_space.round_vect(value)[2:], value[2:])
+
+
+def test_discrete_variable_rejects_a_non_choice(
+    discrete_design_space, snapshot
+) -> None:
+    """Check that a value inside the bounds but not a choice is rejected."""
+    with assert_exception(ValueError, snapshot):
+        discrete_design_space.set_current_variable("t", array([0.6]))
+
+
+def test_discrete_variable_hdf(tmp_wd, discrete_design_space) -> None:
+    """Check that an HDF round-trip preserves the choices."""
+    file_path = Path("ds.h5")
+    discrete_design_space.to_hdf(file_path)
+    design_space = DesignSpace.from_hdf(file_path)
+
+    assert design_space == discrete_design_space
+    assert_array_equal(design_space.variables["p"].choices, array([2.0, 4, 6, 8]))
+
+
+def test_discrete_variable_hdf_append(tmp_wd, discrete_design_space) -> None:
+    """Check that appending to an HDF file preserves the choices."""
+    file_path = Path("ds.h5")
+    discrete_design_space.to_hdf(file_path)
+    discrete_design_space.to_hdf(file_path, append=True)
+
+    assert DesignSpace.from_hdf(file_path) == discrete_design_space
+
+
+def test_discrete_variable_hdf_append_then_continuous(tmp_wd, snapshot) -> None:
+    """Check that re-exporting a discrete variable as another kind is rejected.
+
+    Were the append allowed, the choices dataset of the first export would
+    survive next to a continuous variable and ``from_hdf`` would refuse the very
+    file ``to_hdf`` just wrote.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("t", variable=DiscreteVariable(choices=[0.0, 1.0, 2.0]))
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "t", variable=ContinuousVariable(lower_bound=0.0, upper_bound=5.0)
+    )
+    with assert_exception(ValueError, snapshot):
+        design_space.to_hdf(file_path, append=True)
+
+    assert_array_equal(
+        DesignSpace.from_hdf(file_path).variables["t"].choices,
+        array([0.0, 1.0, 2.0]),
+    )
+
+
+def test_discrete_variable_hdf_append_with_changed_length(tmp_wd) -> None:
+    """Check appending a discrete variable whose choices changed length.
+
+    The old dataset must be replaced rather than resized in place, otherwise
+    the write fails after size, l_b, u_b and var_type have already been
+    overwritten, leaving a half-written variable group that is silently
+    misread with the old choices and bounds.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("t", variable=DiscreteVariable(choices=[5.0, 6.0]))
+    design_space.to_hdf(file_path)
+
+    design_space = DesignSpace()
+    design_space.add_variable("t", variable=DiscreteVariable(choices=[1.0, 2.0, 3.0]))
+    design_space.to_hdf(file_path, append=True)
+
+    read_design_space = DesignSpace.from_hdf(file_path)
+
+    assert read_design_space == design_space
+    assert_array_equal(read_design_space.variables["t"].choices, array([1.0, 2.0, 3.0]))
+    assert_array_equal(read_design_space.get_lower_bound("t"), array([1.0]))
+    assert_array_equal(read_design_space.get_upper_bound("t"), array([3.0]))
+
+
+def test_from_hdf_rejects_inconsistent_choices(tmp_wd, snapshot) -> None:
+    """Check that a choices dataset on a non-discrete variable raises.
+
+    ``to_hdf()`` never produces such a file; this covers a hand-edited or
+    otherwise corrupted one.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable(
+        "t", variable=ContinuousVariable(lower_bound=0.0, upper_bound=5.0)
+    )
+    design_space.to_hdf(file_path)
+
+    with h5py.File(file_path, "a") as h5file:
+        h5file["design_space"]["t"].create_dataset(
+            "choices", data=array([1.0, 2.0, 3.0])
+        )
+
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_hdf(file_path)
+
+
+def test_from_hdf_with_discrete_type_and_no_choices(tmp_wd, snapshot) -> None:
+    """Check that a discrete variable group with no choices raises.
+
+    ``to_hdf()`` never produces such a file; this covers a hand-edited or
+    otherwise corrupted one.
+    """
+    file_path = Path("ds.h5")
+    design_space = DesignSpace()
+    design_space.add_variable("t", lower_bound=1.0, upper_bound=3.0)
+    design_space.to_hdf(file_path)
+
+    with h5py.File(file_path, "a") as h5file:
+        var_group = h5file["design_space"]["t"]
+        del var_group["var_type"]
+        var_group.create_dataset("var_type", data=array([b"discrete"]))
+
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_hdf(file_path)
+
+
+def test_discrete_variable_csv(tmp_wd, discrete_design_space) -> None:
+    """Check that a CSV round-trip preserves the choices."""
+    file_path = Path("ds.csv")
+    discrete_design_space.to_csv(file_path)
+    header = file_path.read_text().splitlines()[0]
+
+    assert header.split()[-1] == "choices"
+
+    design_space = DesignSpace.from_csv(file_path)
+
+    assert design_space == discrete_design_space
+    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
+
+
+def test_discrete_variable_csv_with_explicit_fields(
+    tmp_wd, discrete_design_space
+) -> None:
+    """Check that an explicit fields list still allows a lossless round trip."""
+    file_path = Path("ds.csv")
+    discrete_design_space.to_csv(
+        file_path, fields=["name", "lower_bound", "value", "upper_bound", "type"]
+    )
+    header = file_path.read_text().splitlines()[0]
+
+    assert header.split()[-1] == "choices"
+
+    design_space = DesignSpace.from_csv(file_path)
+
+    assert design_space == discrete_design_space
+    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
+
+
+def test_discrete_variable_csv_with_explicit_fields_without_type(
+    tmp_wd, discrete_design_space
+) -> None:
+    """Check that a fields list missing "type" still allows a lossless round trip."""
+    file_path = Path("ds.csv")
+    discrete_design_space.to_csv(
+        file_path, fields=["name", "lower_bound", "value", "upper_bound"]
+    )
+    header = file_path.read_text().splitlines()[0].split()
+
+    assert header[-2:] == ["choices", "type"]
+
+    design_space = DesignSpace.from_csv(file_path)
+
+    assert design_space == discrete_design_space
+    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
+
+
+def test_discrete_variable_csv_with_choices_in_fields(
+    tmp_wd, discrete_design_space
+) -> None:
+    """Check that an explicit "choices" field is not duplicated."""
+    file_path = Path("ds.csv")
+    discrete_design_space.to_csv(
+        file_path, fields=["name", "lower_bound", "value", "upper_bound", "choices"]
+    )
+    header = file_path.read_text().splitlines()[0].split()
+
+    assert header == ["name", "lower_bound", "value", "upper_bound", "choices", "type"]
+
+    design_space = DesignSpace.from_csv(file_path)
+
+    assert design_space == discrete_design_space
+    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
+
+
+def test_from_csv_rejects_inconsistent_choices(tmp_wd, snapshot) -> None:
+    """Check that a populated choices cell outside a discrete row raises."""
+    file_path = Path("ds.csv")
+    file_path.write_text(
+        "name lower_bound value upper_bound type choices\n"
+        "t 1.0 None 3.0 float 1.0|2.0|3.0\n"
+    )
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_csv(file_path)
+
+
+def test_from_csv_with_discrete_type_and_no_choices(tmp_wd, snapshot) -> None:
+    """Check that a discrete row with an empty choices cell raises."""
+    file_path = Path("ds.csv")
+    file_path.write_text(
+        "name lower_bound value upper_bound type choices\n"
+        "t 1.0 None 3.0 discrete None\n"
+    )
+    with assert_exception(ValueError, snapshot):
+        DesignSpace.from_csv(file_path)
+
+
+def test_discrete_variable_csv_with_the_separator_as_delimiter(
+    tmp_wd, discrete_design_space, snapshot
+) -> None:
+    """Check that a delimiter colliding with the separator raises."""
+    with assert_exception(ValueError, snapshot):
+        discrete_design_space.to_csv(Path("ds.csv"), delimiter="|")
+
+
+def test_csv_without_discrete_variable_is_unchanged(tmp_wd, design_space) -> None:
+    """Check that a space with no discrete variable exports five columns."""
+    file_path = Path("ds.csv")
+    design_space.to_csv(file_path)
+
+    assert file_path.read_text().splitlines()[0].split() == [
+        "name",
+        "lower_bound",
+        "value",
+        "upper_bound",
+        "type",
+    ]
+
+
+def test_to_csv_with_choices_field_and_no_discrete_variable(
+    tmp_wd, design_space
+) -> None:
+    """Check that requesting choices without a discrete variable works.
+
+    A bare pandas KeyError must not be raised;
+    the column is silently dropped, consistent with get_pretty_table().
+    """
+    file_path = Path("ds.csv")
+    design_space.to_csv(
+        file_path, fields=["name", "lower_bound", "upper_bound", "choices"]
+    )
+
+    assert file_path.read_text().splitlines()[0].split() == [
+        "name",
+        "lower_bound",
+        "upper_bound",
+    ]
+
+
+def test_discrete_variable_pretty_table(discrete_design_space, snapshot) -> None:
+    """Check that the tabular view does not show the choices."""
+    discrete_design_space.initialize_missing_current_values()
+    assert discrete_design_space.get_pretty_table().get_string() == snapshot
+
+
+def test_discrete_variable_str(discrete_design_space, snapshot) -> None:
+    """Check that str(...) does not show the choices."""
+    discrete_design_space.initialize_missing_current_values()
+    assert str(discrete_design_space) == snapshot
+
+
+def test_discrete_variable_repr_html(discrete_design_space, snapshot) -> None:
+    """Check the HTML representation of a space holding a discrete variable."""
+    discrete_design_space.initialize_missing_current_values()
+    assert discrete_design_space._repr_html_() == snapshot
+
+
+def test_pretty_table_fields(design_space, discrete_design_space) -> None:
+    """Check that a discrete variable adds no column to the tabular view."""
+    fields = [
+        "name",
+        "lower_bound",
+        "value",
+        "upper_bound",
+        "type",
+    ]
+
+    assert design_space.get_pretty_table().field_names == fields
+    assert discrete_design_space.get_pretty_table().field_names == fields
+
+
+def test_discrete_variable_extend(discrete_design_space) -> None:
+    """Check that extending a design space preserves the choices."""
+    design_space = DesignSpace()
+    design_space.extend(discrete_design_space)
+
+    assert design_space == discrete_design_space
+    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
+
+
+def test_discrete_variable_add_variables_from(discrete_design_space) -> None:
+    """Check that adding variables from a space preserves the choices."""
+    design_space = DesignSpace()
+    design_space.add_variables_from(discrete_design_space, "t")
+
+    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
+
+
+def test_discrete_variable_rename(discrete_design_space) -> None:
+    """Check that renaming a variable preserves the choices."""
+    discrete_design_space.rename_variable("t", "u")
+
+    assert_array_equal(
+        discrete_design_space.variables["u"].choices, array([0.45, 0.55, 0.72])
+    )
+
+
+def test_discrete_variable_filter_dimensions(discrete_design_space) -> None:
+    """Check that filtering the only dimension of a discrete variable is an identity."""
+    variable = discrete_design_space._variables["t"]
+    discrete_design_space.filter_dimensions("t", [0])
+
+    assert discrete_design_space._variables["t"] is variable
+
+
+def test_discrete_variable_to_scalar_variables(discrete_design_space) -> None:
+    """Check that splitting into scalar variables preserves the choices."""
+    design_space = discrete_design_space.to_scalar_variables()
+
+    assert_array_equal(design_space.variables["t"].choices, array([0.45, 0.55, 0.72]))
+
+
+def test_discrete_variable_copy_and_pickle(discrete_design_space) -> None:
+    """Check that copying and unpickling preserve the choices."""
+    for design_space in (
+        deepcopy(discrete_design_space),
+        pickle.loads(pickle.dumps(discrete_design_space)),
+    ):
+        assert design_space == discrete_design_space
+        choices = design_space.variables["t"].choices
+        assert_array_equal(choices, array([0.45, 0.55, 0.72]))
+        assert not choices.flags.writeable
+
+
+def test_discrete_variable_mixed_dtypes(discrete_design_space) -> None:
+    """Check the promotion of the dtypes of a space mixing the three kinds."""
+    discrete_design_space.initialize_missing_current_values()
+    assert discrete_design_space.get_current_value().dtype == float64

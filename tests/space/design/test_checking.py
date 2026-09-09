@@ -24,14 +24,15 @@ from numpy import array
 from numpy import dtype
 from numpy import zeros
 
-from gemseo.space._variable import ContinuousVariable
-from gemseo.space._variable import IntegerVariable
 from gemseo.space.design._bounds import Bounds
 from gemseo.space.design._checking import check
 from gemseo.space.design._checking import check_addable_value
 from gemseo.space.design._checking import check_membership
 from gemseo.space.design._checking import check_out_array
 from gemseo.space.design._variables import Variables
+from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import IntegerVariable
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -284,3 +285,66 @@ def test_check_out_array_wrong_dtype(snapshot) -> None:
     """Check the error raised when the array has not the dtype of the result."""
     with assert_exception(ValueError, snapshot):
         check_out_array(zeros(3), dtype("complex128"), (3,))
+
+
+@pytest.fixture
+def discrete_variables() -> Variables:
+    """A variables with a float variable and a discrete variable."""
+    variables = Variables()
+    variables["x"] = ContinuousVariable(lower_bound=0.0, upper_bound=10.0)
+    variables["d"] = DiscreteVariable(choices=[2.0, 5.0])
+    return variables
+
+
+@pytest.fixture
+def discrete_bounds(discrete_variables: Variables) -> Bounds:
+    """The bounds of the variables including a discrete one."""
+    return Bounds(discrete_variables)
+
+
+def test_check_addable_value_outside_a_discrete_domain(
+    discrete_variables: Variables, snapshot
+) -> None:
+    """Check that a value that is not a choice raises."""
+    with assert_exception(ValueError, snapshot):
+        check_addable_value(discrete_variables, array([3.0]), "d")
+
+
+@pytest.mark.parametrize("value", [{"x": array([1.0]), "d": array([3.0])}])
+def test_check_membership_dict_outside_a_discrete_domain(
+    discrete_variables: Variables, discrete_bounds: Bounds, value, snapshot
+) -> None:
+    """Check that the mapping path rejects a value that is not a choice."""
+    with assert_exception(ValueError, snapshot):
+        check_membership(discrete_variables, discrete_bounds, value)
+
+
+def test_check_membership_array_outside_a_discrete_domain(
+    discrete_variables: Variables, discrete_bounds: Bounds, snapshot
+) -> None:
+    """Check that the array path rejects a value that is not a choice.
+
+    The value lies within the derived bounds, so the bound comparison accepts it.
+    """
+    with assert_exception(ValueError, snapshot):
+        check_membership(discrete_variables, discrete_bounds, array([1.0, 3.0]))
+
+
+def test_check_membership_array_within_a_discrete_domain(
+    discrete_variables: Variables, discrete_bounds: Bounds
+) -> None:
+    """Check that the array path accepts the choices."""
+    check_membership(discrete_variables, discrete_bounds, array([1.0, 5.0]))
+
+
+def test_check_membership_2d_array_with_a_discrete_variable(
+    discrete_variables: Variables, discrete_bounds: Bounds, snapshot
+) -> None:
+    """Check that the array path handles several values at once."""
+    check_membership(
+        discrete_variables, discrete_bounds, array([[1.0, 5.0], [2.0, 2.0]])
+    )
+    with assert_exception(ValueError, snapshot):
+        check_membership(
+            discrete_variables, discrete_bounds, array([[1.0, 5.0], [2.0, 3.0]])
+        )

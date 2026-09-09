@@ -56,9 +56,6 @@ from numpy import inf
 from numpy import ndarray
 
 from gemseo.optimization.result import OptimizationResult
-from gemseo.space._variable import TYPE_MAP
-from gemseo.space._variable import DataType
-from gemseo.space._variable._factory import VARIABLE_FACTORY
 from gemseo.space.design import _checking
 from gemseo.space.design import _io as _design_space_io
 from gemseo.space.design import _view
@@ -69,6 +66,9 @@ from gemseo.space.design._integer_rounder import IntegerRounder
 from gemseo.space.design._normalizer import Normalizer
 from gemseo.space.design._value import Value
 from gemseo.space.design._variables import Variables
+from gemseo.space.variable import TYPE_MAP
+from gemseo.space.variable import DataType
+from gemseo.space.variable.factory import VARIABLE_FACTORY
 from gemseo.space.variables_view import VariablesView
 from gemseo.util.string import convert_strings_to_iterable
 from gemseo.util.string import pretty_str
@@ -83,13 +83,17 @@ if TYPE_CHECKING:
     from numpy import int64
     from prettytable import PrettyTable
 
+    from gemseo.space.variable import BaseVariable
     from gemseo.util.read_only_mapping import ReadOnlyMapping
     from gemseo.util.typing import BooleanArray
     from gemseo.util.typing import IntegerArray
+    from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealOrComplexArrayT
     from gemseo.util.typing import StrPath
 
 LOGGER = logging.getLogger(__name__)
+
+_BOUNDED_TYPES = {DataType.FLOAT, DataType.INTEGER}
 
 
 class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
@@ -190,7 +194,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
                 self.__dict__[key] = value
 
     @property
-    def _current_value(self) -> Mapping[str, ndarray | None]:
+    def _current_value(self) -> Mapping[str, NumberArray | None]:
         """The current design value.
 
         Maps every variable to its current value,
@@ -325,36 +329,66 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         lower_bound: complex | Iterable[complex] = -inf,
         upper_bound: complex | Iterable[complex] = inf,
         value: complex | Iterable[complex] | None = None,
+        variable: BaseVariable | None = None,
     ) -> None:
         r"""Add a variable to the design space.
 
+        To add a variable whose domain is defined by its bounds,
+        you can use
+        either all the arguments except `variable`,
+        or the arguments `name` and `variable` only.
+        To add a variable whose domain is not defined by its bounds,
+        you must use the `name` and `variable` arguments only.
+        In both cases, you can also specify its default value
+        using the `value` argument.
+
         Args:
             name: The name of the variable.
-            size: The size of the variable.
+            size: The size of the variable; ignored if `variable` is passed.
             type_: Either the type of the variable
-                or the types of its components.
+                or the types of its components;
+                ignored if `variable` is passed.
             lower_bound: The lower bound of the variable.
                 If `None`, use $-\infty$.
+                Ignored if `variable` is passed.
             upper_bound: The upper bound of the variable.
                 If `None`, use $+\infty$.
+                Ignored if `variable` is passed.
             value: The default value of the variable.
                 If `None`, do not use a default value.
+            variable: A variable of any kind.
+                If `None`,
+                    build a continuous or integer variable
+                    from `size`, `type_`, `lower_bound` and `upper_bound`.
 
         Raises:
             ValueError: Either if the variable already exists,
-                if a size, type or bound is wrong
+                if the type is neither continuous nor integer
+                and no `variable` is passed,
+                if a size, type or bound is wrong,
                 or if the value is not within the bounds.
         """
+        if variable is None:
+            decoded_type_ = type_.decode() if isinstance(type_, bytes) else type_
+            if decoded_type_ not in _BOUNDED_TYPES:
+                msg = (
+                    "Only continuous and integer variables may be declared "
+                    "through the type_ argument of add_variable; "
+                    "use the variable argument instead."
+                )
+                raise ValueError(msg)
+            variable = VARIABLE_FACTORY.create(
+                type_,
+                size=size,
+                lower_bound=lower_bound,
+                upper_bound=upper_bound,
+            )
+
         if name in self._variables:
             msg = f"The variable {name!r} already exists."
             raise ValueError(msg)
 
-        variable = VARIABLE_FACTORY.create(
-            type_,
-            size=size,
-            lower_bound=lower_bound,
-            upper_bound=upper_bound,
-        )
+        size = variable.size
         self._variables[name] = variable
         if value is None:
             # Register the variable with no value so that every variable of the
@@ -426,7 +460,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
     def check_membership(
         self,
-        x_vect: Mapping[str, ndarray | None] | ndarray,
+        x_vect: Mapping[str, NumberArray | None] | NumberArray,
         variable_names: Sequence[str] = (),
     ) -> None:
         """Check whether the variables satisfy the design space requirements.
@@ -448,9 +482,9 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
     def get_active_bounds(
         self,
-        x_vect: ndarray | None = None,
+        x_vect: NumberArray | None = None,
         tol: float = 1e-8,
-    ) -> tuple[dict[str, ndarray], dict[str, ndarray]]:
+    ) -> tuple[dict[str, BooleanArray], dict[str, BooleanArray]]:
         """Determine which bound constraints of a design value are active.
 
         Args:
@@ -525,7 +559,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         complex_to_real: bool = False,
         as_dict: bool = False,
         normalize: bool = False,
-    ) -> ndarray | dict[str, ndarray]:
+    ) -> NumberArray | dict[str, NumberArray]:
         """Return the current design value.
 
         If the names of the variables are empty then an empty data is returned.
@@ -737,7 +771,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         x_vect: RealOrComplexArrayT,
         minus_lb: bool = True,
         no_check: bool = False,
-        out: ndarray | None = None,
+        out: NumberArray | None = None,
     ) -> RealOrComplexArrayT:
         """Denormalize a normalized vector of the design space.
 
@@ -806,7 +840,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         x_vect: RealOrComplexArrayT,
         minus_lb: bool = True,
         no_check: bool = False,
-        out: ndarray | None = None,
+        out: NumberArray | None = None,
     ) -> RealOrComplexArrayT:
         """Denormalize a normalized vector of the design space.
 
@@ -838,9 +872,9 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
     def transform_vect(
         self,
-        x_vect: ndarray,
-        out: ndarray | None = None,
-    ) -> ndarray:
+        x_vect: NumberArray,
+        out: NumberArray | None = None,
+    ) -> NumberArray:
         """Map a point of the design space to a vector with components in $[0,1]$.
 
         Args:
@@ -859,10 +893,10 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
     def untransform_vect(
         self,
-        x_vect: ndarray,
+        x_vect: NumberArray,
         no_check: bool = False,
-        out: ndarray | None = None,
-    ) -> ndarray:
+        out: NumberArray | None = None,
+    ) -> NumberArray:
         """Map a vector with components in $[0,1]$ to the design space.
 
         Args:
@@ -882,9 +916,9 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
     def round_vect(
         self,
-        x_vect: ndarray,
+        x_vect: NumberArray,
         copy: bool = True,
-    ) -> ndarray:
+    ) -> NumberArray:
         """Round the vector where variables are of integer type.
 
         Args:
@@ -898,7 +932,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
     def set_current_value(
         self,
-        value: ndarray | Mapping[str, ndarray | None] | OptimizationResult,
+        value: NumberArray | Mapping[str, NumberArray | None] | OptimizationResult,
     ) -> None:
         """Set the current design value of all the variables.
 
@@ -959,7 +993,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
     def set_current_variable(
         self,
         name: str,
-        current_value: ndarray | None,
+        current_value: NumberArray | None,
     ) -> None:
         """Set the current value of a single variable.
 
@@ -1012,7 +1046,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         """
         return str(self._variables[name].type)
 
-    def get_lower_bound(self, name: str) -> ndarray:
+    def get_lower_bound(self, name: str) -> NumberArray:
         """Return the lower bound of a variable.
 
         Args:
@@ -1024,7 +1058,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         """
         return self._bounds.get_lower_bound(name)
 
-    def get_upper_bound(self, name: str) -> ndarray:
+    def get_upper_bound(self, name: str) -> NumberArray:
         """Return the upper bound of a variable.
 
         Args:
@@ -1041,20 +1075,20 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         self,
         variable_names: Sequence[str] = (),
         as_dict: Literal[False] = False,
-    ) -> ndarray: ...
+    ) -> NumberArray: ...
 
     @overload
     def get_lower_bounds(
         self,
         variable_names: Sequence[str] = (),
         as_dict: Literal[True] = False,
-    ) -> dict[str, ndarray]: ...
+    ) -> dict[str, NumberArray]: ...
 
     def get_lower_bounds(
         self,
         variable_names: Sequence[str] = (),
         as_dict: bool = False,
-    ) -> ndarray | dict[str, ndarray]:
+    ) -> NumberArray | dict[str, NumberArray]:
         """Return the lower bounds of design variables.
 
         Args:
@@ -1074,20 +1108,20 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         self,
         variable_names: Sequence[str] = (),
         as_dict: Literal[False] = False,
-    ) -> ndarray: ...
+    ) -> NumberArray: ...
 
     @overload
     def get_upper_bounds(
         self,
         variable_names: Sequence[str] = (),
         as_dict: Literal[True] = False,
-    ) -> dict[str, ndarray]: ...
+    ) -> dict[str, NumberArray]: ...
 
     def get_upper_bounds(
         self,
         variable_names: Sequence[str] = (),
         as_dict: bool = False,
-    ) -> ndarray | dict[str, ndarray]:
+    ) -> NumberArray | dict[str, NumberArray]:
         """Return the upper bounds of design variables.
 
         Args:
@@ -1128,8 +1162,8 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
     def convert_array_to_dict(
         self,
-        x_vect: ndarray,
-    ) -> dict[str, ndarray]:
+        x_vect: NumberArray,
+    ) -> dict[str, NumberArray]:
         """Convert a design array into a dictionary indexed by the variables names.
 
         Args:
@@ -1142,9 +1176,9 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
     def convert_dict_to_array(
         self,
-        design_values: Mapping[str, ndarray],
+        design_values: Mapping[str, NumberArray],
         variable_names: Iterable[str] = (),
-    ) -> ndarray:
+    ) -> NumberArray:
         """Convert a mapping of design values into a NumPy array.
 
         Args:
@@ -1373,9 +1407,9 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
 
     def project_into_bounds(
         self,
-        x_vect: ndarray,
+        x_vect: NumberArray,
         normalized: bool = False,
-    ) -> ndarray:
+    ) -> NumberArray:
         """Project a vector onto the bounds, using a simple coordinate wise approach.
 
         Args:
@@ -1436,13 +1470,11 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
             other: The design space to be appended to the current one.
         """
         for name, variable in other._variables.items():
+            # Share the variable object rather than rebuilding it from its bounds,
+            # so that a field belonging to its kind is not dropped;
+            # a variable is immutable, so sharing it is safe.
             self.add_variable(
-                name,
-                variable.size,
-                variable.type,
-                variable.lower_bound,
-                variable.upper_bound,
-                other._current_value.get(name),
+                name, value=other._current_value.get(name), variable=variable
             )
 
     def rename_variable(
@@ -1467,7 +1499,8 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         - the center of the design space when the lower and upper bounds are finite,
         - the lower bounds when the upper bounds are infinite,
         - the upper bounds when the lower bounds are infinite,
-        - zero when the lower and upper bounds are infinite.
+        - zero when the lower and upper bounds are infinite,
+        - the first choice of a discrete variable.
         """
         self._current.initialize_missing()
 
@@ -1488,14 +1521,11 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
             space: The other variable space.
             name: The name of the variable.
         """
-        variable = space._variables[name]
+        # Share the variable object rather than rebuilding it from its bounds,
+        # so that a field belonging to its kind is not dropped;
+        # a variable is immutable, so sharing it is safe.
         self.add_variable(
-            name,
-            size=variable.size,
-            type_=variable.type,
-            lower_bound=variable.lower_bound,
-            upper_bound=variable.upper_bound,
-            value=space._current_value.get(name),
+            name, value=space._current_value.get(name), variable=space.variables[name]
         )
 
     def to_scalar_variables(self) -> DesignSpace:
@@ -1516,6 +1546,15 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
             except KeyError:
                 # The variable has no current value.
                 current_value = full(size, None)
+
+            if size == 1:
+                # Splitting a scalar variable is the identity;
+                # share the variable object rather than rebuilding it from its bounds,
+                # so that a field belonging to its kind is not dropped.
+                design_space.add_variable(
+                    name, value=current_value[0], variable=self._variables[name]
+                )
+                continue
 
             for index, indexed_name in enumerate(self.get_indexed_variable_names(name)):
                 design_space.add_variable(

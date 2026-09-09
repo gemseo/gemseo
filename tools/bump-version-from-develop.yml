@@ -43,7 +43,7 @@
 modules:
   gemseo.algos: gemseo.core.algorithm
   gemseo.algos._hdf_database: gemseo.core.problem._hdf_database
-  gemseo.algos._variable: gemseo.space._variable
+  gemseo.algos._variable: gemseo.space.variable
   gemseo.algos.aggregation: gemseo.optimization.aggregation
   gemseo.algos.aggregation.core: gemseo.optimization.aggregation._functions
   gemseo.algos.base_algo_factory: gemseo.core.algorithm.base_algorithm_factory

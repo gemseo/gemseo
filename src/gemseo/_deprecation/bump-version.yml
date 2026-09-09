@@ -152,7 +152,7 @@ modules:
   gemseo.algos.design_space: gemseo.space.design
   gemseo.algos.parameter_space_factory: gemseo.space.factory
   gemseo.algos.parameter_space: gemseo.space.parameter
-  gemseo.algos._variable: gemseo.space._variable
+  gemseo.algos._variable: gemseo.space.variable
   gemseo.algos.linear_solvers: linear_solver
   gemseo.algos.sequence_transformer: gemseo.mda.sequence_transformer
   gemseo.algos.opt.core.linear_constraints: gemseo.optimization._util.linear_constraint

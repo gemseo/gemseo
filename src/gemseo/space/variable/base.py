@@ -33,12 +33,13 @@ from numpy import int64
 from numpy import isnan
 from numpy import ndarray
 from pydantic import BaseModel
+from pydantic import Field
 from pydantic import PositiveInt
 from pydantic import model_validator
 from strenum import StrEnum
 
+from gemseo.space.variable._formatting import format_components
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
-from gemseo.util.string import pretty_str
 from gemseo.util.typing import IntegerArray
 from gemseo.util.typing import RealArray
 
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from gemseo.util.typing import BooleanArray
+    from gemseo.util.typing import NumberArray
 
 
 _LOWER_BOUND: Final[str] = "lower_bound"
@@ -73,31 +75,15 @@ BoundArray = IntegerArray | RealArray
 ComponentDType = type[int64 | float64]
 
 
-def format_components(array: ndarray, indices: Iterable[int]) -> str:
-    """Return a readable representation of some components of an array.
-
-    Args:
-        array: The array.
-        indices: The indices of the components,
-            sorted in ascending order in the representation.
-
-    Returns:
-        The components with their indices,
-        e.g. `"nan (index 0) and inf (index 2)"`.
-    """
-    return pretty_str(
-        [f"{array[index]} (index {index})" for index in sorted(indices)], sort=False
-    )
-
-
 class DataType(StrEnum):
     """The type of variable data."""
 
+    DISCRETE = "discrete"
     FLOAT = "float"
     INTEGER = "integer"
 
 
-class BaseVariable(BaseModel, ABC, frozen=True):
+class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):
     """The base class of a variable.
 
     A variable is defined by
@@ -112,27 +98,28 @@ class BaseVariable(BaseModel, ABC, frozen=True):
     A variable is immutable.
 
     This class is abstract:
-    a concrete subclass pins [type][gemseo.space._variable._base.BaseVariable.type]
-    to one [DataType][gemseo.space._variable._base.DataType] member
+    a concrete subclass pins [type][gemseo.space.variable.BaseVariable.type]
+    to one [DataType][gemseo.space.variable.DataType] member
     and implements the kind-specific hooks.
     Build a variable with
-    [VariableFactory][gemseo.space._variable._factory.VariableFactory].
+    `VariableFactory`.
     """
 
-    component_type: ClassVar[ComponentDType]
+    component_type: ClassVar[ComponentDType] = float64
     """The NumPy type of the components of the variable."""
 
-    size: PositiveInt = 1
-    """The size of the variable."""
-
-    type: DataType = DataType.FLOAT
+    type: ClassVar[DataType] = DataType.FLOAT
     """The type of data."""
 
-    lower_bound: BoundType = -inf
-    """The lower bound of the variable."""
+    size: PositiveInt = Field(default=1, description="The size of the variable.")
 
-    upper_bound: BoundType = inf
-    """The upper bound of the variable."""
+    lower_bound: BoundType = Field(
+        default=-inf, description="The lower bound of the variable."
+    )
+
+    upper_bound: BoundType = Field(
+        default=inf, description="The upper bound of the variable."
+    )
 
     @model_validator(mode="after")
     def __validate_variable(self) -> Self:
@@ -227,7 +214,7 @@ class BaseVariable(BaseModel, ABC, frozen=True):
 
         self.check_finite_bound_components(bound, bound_prefix)
 
-    def cast(self, value: ndarray) -> ndarray:
+    def cast(self, value: ndarray) -> NumberArray:
         """Cast a value of the variable to the NumPy type of the variable.
 
         Args:
@@ -239,7 +226,9 @@ class BaseVariable(BaseModel, ABC, frozen=True):
         return value.astype(self.component_type)
 
     @staticmethod
-    def compute_default_component(lower_bound_i: float, upper_bound_i: float) -> float:
+    def compute_default_component_value(
+        lower_bound_i: float, upper_bound_i: float
+    ) -> float:
         """Compute the default value of a component from its bounds.
 
         Use the center of the bounds when both are finite,
@@ -261,17 +250,16 @@ class BaseVariable(BaseModel, ABC, frozen=True):
 
         return (lower_bound_i + upper_bound_i) / 2
 
-    def compute_default_value(self) -> ndarray:
-        """Compute the default value of the variable from its bounds.
+    def compute_default_value(self) -> NumberArray:
+        """Compute the default value of the variable.
 
         Returns:
-            The default value of the variable, one component per component of the
-            variable.
+            The component-wise center.
         """
         return array(
             list(
                 starmap(
-                    self.compute_default_component,
+                    self.compute_default_component_value,
                     zip(self.lower_bound, self.upper_bound, strict=True),
                 )
             ),
@@ -309,7 +297,7 @@ class BaseVariable(BaseModel, ABC, frozen=True):
                 the domain of the kind of variable.
         """
 
-    def find_components_outside_domain(self, value: ndarray) -> set[int]:
+    def find_components_outside_domain(self, value: NumberArray) -> set[int]:
         """Return the indices of the components outside the domain of the variable.
 
         Any component is in the domain unless a subclass restricts it.
@@ -321,6 +309,52 @@ class BaseVariable(BaseModel, ABC, frozen=True):
             The indices of the components outside the domain of the variable.
         """
         return set()
+
+    def _get_out_of_domain_message(
+        self, name: str, value: NumberArray, indices: Iterable[int]
+    ) -> str:
+        """Return the message telling that some values are outside the domain.
+
+        The wording belongs to the kind of the variable,
+        so that a kind whose domain is not an interval can phrase its own failure.
+
+        Args:
+            name: The name of the variable.
+            value: The value of the variable.
+            indices: The indices of the components outside the domain.
+
+        Returns:
+            The message.
+        """
+        indices = list(indices)
+        plural = len(indices) > 1
+        return (
+            f"The following value{'s' if plural else ''} of variable '{name}' "
+            f"{'are' if plural else 'is'} neither None nor {self.type} "
+            f"while variable '{name}' is of type {self.type}: "
+            f"{format_components(value, indices)}."
+        )
+
+    def _get_out_of_domain_component_message(
+        self, name: str, index: int, value_i: Any
+    ) -> str:
+        """Return the message telling that a component is outside the domain.
+
+        The wording belongs to the kind of the variable,
+        so that a kind whose domain is not an interval can phrase its own failure.
+
+        Args:
+            name: The name of the variable.
+            index: The index of the component.
+            value_i: The value of the component.
+
+        Returns:
+            The message.
+        """
+        return (
+            f"The variable {name} is of type {self.type}; "
+            f"got {name}[{index}] = {value_i}."
+        )
 
     def __copy__(self) -> Self:
         # A variable is immutable and its bound arrays are read-only,
@@ -352,7 +386,20 @@ class BaseVariable(BaseModel, ABC, frozen=True):
         if not update:
             return self
 
-        return self.model_validate({**self.__dict__, **update})
+        # A bound always sits in __dict__, even one derived rather than passed by the
+        # caller (e.g. the bounds of a discrete variable, derived from its potential
+        # values). Re-including such a derived bound here would mark it as set on the
+        # re-validated copy, tripping a subclass check meant for a caller-supplied
+        # bound (e.g. DiscreteVariable.__check_bounds_are_not_set). Carry a bound over
+        # only when it was set on this instance, or when the caller's update sets it.
+        fields_set = self.model_fields_set
+        payload = {
+            name: value
+            for name, value in self.__dict__.items()
+            if name not in (_LOWER_BOUND, _UPPER_BOUND) or name in fields_set
+        }
+        payload.update(update)
+        return self.model_validate(payload)
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         super().__setstate__(state)
@@ -366,6 +413,9 @@ class BaseVariable(BaseModel, ABC, frozen=True):
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, BaseVariable):
+            return False
+
+        if self.type != other.type:
             return False
 
         # Compare the fields of the kind of the variable

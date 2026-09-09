@@ -27,6 +27,7 @@ from numpy.testing import assert_array_equal
 
 from gemseo.space.design import DesignSpace
 from gemseo.space.design._variables import UnknownVariableError
+from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variables_view import VariablesView
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 from gemseo.util.testing.helper import assert_exception
@@ -40,6 +41,14 @@ def space() -> DesignSpace:
     """A design space with a single scalar variable."""
     space = DesignSpace()
     space.add_variable("x")
+    return space
+
+
+@pytest.fixture
+def discrete_space() -> DesignSpace:
+    """A design space with a single discrete variable."""
+    space = DesignSpace()
+    space.add_variable("t", variable=DiscreteVariable(choices=[0.45, 0.55, 0.72]))
     return space
 
 
@@ -76,6 +85,17 @@ def test_variables_view_has_integer_variables(space) -> None:
     space.add_variable("n", type_=DesignSpace.DesignVariableType.INTEGER)
     assert space.variables.has_integer_variables
     assert space.has_integer_variables
+
+
+def test_variables_view_has_discrete_variables(space: DesignSpace) -> None:
+    """Check that the view tells whether a variable is of discrete type."""
+    assert not space.variables.has_discrete_variables
+
+    space.add_variable("t", variable=DiscreteVariable(choices=[0.45, 0.55, 0.72]))
+    assert space.variables.has_discrete_variables
+
+    space.remove_variable("t")
+    assert not space.variables.has_discrete_variables
 
 
 def test_variables_view_is_live(space) -> None:
@@ -200,3 +220,33 @@ def test_variables_view_gives_immutable_bounds_after_copy(
 
     with assert_exception(ValueError, snapshot):
         bound.setflags(write=True)
+
+
+def test_variables_view_gives_immutable_choices(discrete_space, snapshot) -> None:
+    """Check that the choices read through the view cannot be unfrozen.
+
+    A discrete variable stores a read-only view of its choices,
+    for the reason its bounds are stored as such;
+    see test_variables_view_gives_immutable_bounds.
+    """
+    choices = discrete_space.variables["t"].choices
+
+    assert_array_equal(choices, array([0.45, 0.55, 0.72]))
+    assert not choices.flags.writeable
+
+    with assert_exception(ValueError, snapshot):
+        choices.setflags(write=True)
+
+
+@pytest.mark.parametrize("copy_space", [deepcopy, copy_with_pickle])
+def test_variables_view_gives_immutable_choices_after_copy(
+    discrete_space, copy_space: Callable[[DesignSpace], DesignSpace], snapshot
+) -> None:
+    """Check that the choices of a copied space are immutable through its view."""
+    choices = copy_space(discrete_space).variables["t"].choices
+
+    assert_array_equal(choices, array([0.45, 0.55, 0.72]))
+    assert not choices.flags.writeable
+
+    with assert_exception(ValueError, snapshot):
+        choices.setflags(write=True)

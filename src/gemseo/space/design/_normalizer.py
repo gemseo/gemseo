@@ -34,11 +34,12 @@ from gemseo.util._numpy import convert_array_type
 
 if TYPE_CHECKING:
     from numpy import dtype
-    from numpy import ndarray
 
     from gemseo.space.design._bounds import Bounds
     from gemseo.space.design._integer_rounder import IntegerRounder
     from gemseo.space.design._variables import Variables
+    from gemseo.util.typing import IntegerArray
+    from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealOrComplexArrayT
 
 
@@ -54,14 +55,15 @@ class Normalizer(RegistryDerivedData):
     __integer_rounder: IntegerRounder
     """The rounder of the integer components of the design vector."""
 
-    __normalization_factor: ndarray | None
-    """The normalization factor `upper - lower`."""
+    __normalization_factor: NumberArray | None
+    """The normalization factor `upper - lower`. `None` when never been used."""
 
-    __normalization_factor_inv: ndarray | None
-    """The inverse of the normalization factor."""
+    __normalization_factor_inv: NumberArray | None
+    """The inverse of the normalization factor. `None` when never been used."""
 
-    __normalization_indices: ndarray | None
-    """The indices of the normalizable components of the design vector."""
+    __normalization_indices: IntegerArray | None
+    """The indices of the normalizable components of the design vector.
+    `None` when never been used."""
 
     def __init__(
         self,
@@ -171,7 +173,7 @@ class Normalizer(RegistryDerivedData):
         common_dtype: dtype,
         add_lower_bound: bool = True,
         no_check: bool = False,
-        out: ndarray | None = None,
+        out: NumberArray | None = None,
     ) -> RealOrComplexArrayT:
         """Denormalize a normalized full value.
 

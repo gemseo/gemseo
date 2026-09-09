@@ -101,7 +101,7 @@ if TYPE_CHECKING:
     # TODO: name conflict (issue #1812): DataType clashes with SobieskiBase.DataType;
     # rename both at definition site (DesignVariableType / SobieskiDataType) and drop
     # the aliases.
-    from gemseo.space._variable import DataType as DesignVariableType  # noqa: F401
+    from gemseo.space.variable import DataType as DesignVariableType  # noqa: F401
     from gemseo.uncertainty.distribution.core.base_fitter import (
         BaseDistributionFitter as _BaseDistributionFitter,
     )
@@ -254,7 +254,7 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "DatasetTrend": "gemseo.post.dataset.trend:Trend",
     "DatasetType": "gemseo.problem.dataset:DatasetType",
     "DerivationMode": "gemseo.core.derivative.derivation_mode:DerivationMode",
-    "DesignVariableType": "gemseo.space._variable:DataType",
+    "DesignVariableType": "gemseo.space.variable:DataType",
     "DifferentiationMethod": (
         "gemseo.core.problem.evaluation:EvaluationProblem.DifferentiationMethod"
     ),

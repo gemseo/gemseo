@@ -30,7 +30,7 @@ Each variable is described by:
 
 - a name,
 - a size (default: 1),
-- a type ([read more][concept-variable-types]), either `"float"` (continuous, default) or `"integer"` (discrete),
+- a type ([read more][concept-variable-types]), either `"float"` (continuous, default), `"integer"` or `"discrete"`,
 - a lower bound (default: $-\infty$),
 - an upper bound (default: $\infty$),
 - a current value (default: none).
@@ -60,10 +60,17 @@ or as a member of the `DesignSpace.DesignVariableType` enumeration
 and [variable_types][gemseo.space.design.DesignSpace.variable_types]
 read it back as a string.
 
-Two types are available:
+Three types are available:
 
 - `"float"` for the continuous variables (default),
-- `"integer"` for the integer variables.
+- `"integer"` for the integer variables,
+- `"discrete"` for the discrete numeric variables.
+
+A discrete variable carries the list of the values it can take;
+no bound-shaped signature can express that list,
+so it is declared by passing a variable object
+to the `variable` argument of
+[add_variable()][gemseo.space.design.DesignSpace.add_variable].
 
 ### Continuous variables { #concept-continuous-variables }
 
@@ -121,12 +128,66 @@ tell where the integer variables are.
     - [add_variable()][gemseo.space.design.DesignSpace.add_variable]
     - [get_type()][gemseo.space.design.DesignSpace.get_type]
     - [variable_types][gemseo.space.design.DesignSpace.variable_types]
+    - [variables][gemseo.space.design.DesignSpace.variables]
     - [has_integer_variables][gemseo.space.design.DesignSpace.has_integer_variables]
     - [get_integer_mask()][gemseo.space.design.DesignSpace.get_integer_mask]
     - [round_vect()][gemseo.space.design.DesignSpace.round_vect]
 
 !!! how-to
     - [How to cast parameters into different types][]
+
+### Discrete variables { #concept-discrete-variables }
+
+A discrete variable can only take a limited number of numeric values,
+called its choices.
+
+Think of the number of plies of a composite laminate
+chosen from a qualified catalogue,
+or of a thickness that a supplier only delivers in $0.4$ mm and $0.47$ mm:
+a value in between is not manufacturable,
+even though it lies between the smallest and the largest one.
+
+The choices must be numbers,
+and cannot be changed afterwards.
+A discrete variable is scalar:
+declare a vector of discrete quantities as several discrete variables.
+
+The lower (resp. upper) bound is the smallest (resp. largest) choice;
+it cannot be set manually.
+
+When a variable has no value,
+[initialize_missing_current_values()][gemseo.space.design.DesignSpace.initialize_missing_current_values]
+gives it its first choice.
+
+[variables][gemseo.space.design.DesignSpace.variables]
+reads the choices back,
+as `design_space.variables["thickness"].choices`,
+while [has_discrete_variables][gemseo.space.design.DesignSpace.has_discrete_variables]
+tells whether the design space holds a discrete variable.
+
+A variable read through that view can be given to another space,
+whatever its kind,
+which is the only way to share a discrete variable:
+
+```python
+other_space.add_variable("thickness", variable=design_space.variables["thickness"])
+```
+
+!!! warning
+    The optimization and DOE algorithms do not currently allow the use of discrete variables and return an error.
+
+!!! note
+    The components of a discrete variable are stored as floats,
+    so a variable whose choices are integers,
+    e.g. `[2, 4, 6, 8]`,
+    has `2.0` as first choice.
+
+??? abstract "API"
+
+    - [add_variable()][gemseo.space.design.DesignSpace.add_variable]
+    - [variables][gemseo.space.design.DesignSpace.variables]
+    - [has_discrete_variables][gemseo.space.design.DesignSpace.has_discrete_variables]
+    - [DiscreteVariable][gemseo.space.variable.DiscreteVariable]
 
 ## Integer relaxation { #concept-integer-relaxation }
 
@@ -146,7 +207,7 @@ into $x_{\mathrm{normalized}}$ in $[0, 1]$:
 where $l_b(x)$ and $u_b(x)$ are the lower and upper bounds of the variable $x$.
 
 !!! warning
-    Integer variables are not normalized.
+    Integer and discrete variables cannot be normalized.
 
 !!! how-to
     - [How to (un)normalize design parameters][]

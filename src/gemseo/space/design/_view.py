@@ -64,7 +64,7 @@ def get_pretty_table(
 
     table = PrettyTable(field_names)
     table.custom_format = _format_value_in_pretty_table_16
-    for name, variable in design_space._variables.items():
+    for name, variable in design_space.variables.items():
         value = design_space._current_value.get(name)
         name_template = f"{name}"
         if with_index and variable.size > 1:

@@ -21,8 +21,9 @@ from typing import TYPE_CHECKING
 
 from numpy import zeros
 
-from gemseo.space._variable import BaseVariable
-from gemseo.space._variable._integer import IntegerVariable
+from gemseo.space.variable import BaseVariable
+from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import IntegerVariable
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 
@@ -44,7 +45,7 @@ class UnknownVariableError(KeyError):
 class Variables(
     MutableMapping[str, BaseVariable], metaclass=ABCGoogleDocstringInheritanceMeta
 ):
-    """A registry of [BaseVariable][gemseo.space._variable.BaseVariable] objects.
+    """A registry of [BaseVariable][gemseo.space.variable.BaseVariable] objects.
 
     This registry is ordered and versioned.
 
@@ -68,7 +69,7 @@ class Variables(
 
     The registry is itself a
     [MutableMapping][collections.abc.MutableMapping] from a variable name to a
-    [BaseVariable][gemseo.space._variable.BaseVariable]:
+    [BaseVariable][gemseo.space.variable.BaseVariable]:
     read it with `registry[name]`, `.keys()`, `.values()`, `.items()`, `.get()`,
     iteration, membership and length;
     insert or replace a variable with `registry[name] = variable`
@@ -94,6 +95,9 @@ class Variables(
     __size: int
     """The size of the full vector."""
 
+    __has_discrete_variables: bool
+    """Whether the set has at least one discrete variable."""
+
     __version: int
     """The version number of the variables."""
 
@@ -111,6 +115,7 @@ class Variables(
         self.__name_to_indices = {}
         self.__name_to_normalization_mask = {}
         self.__size = 0
+        self.__has_discrete_variables = False
         self.__version = 0
         self.__enable_integer_variables_normalization = False
         self.name_to_indices = ReadOnlyMapping(self.__name_to_indices)
@@ -176,12 +181,26 @@ class Variables(
         self.bump_version()
 
     def __reindex(self) -> None:
-        """Rebuild the contiguous index ranges and the full-vector size from scratch."""
+        """Rebuild the indexes.
+
+        Are considered:
+            - index ranges,
+            - the full-vector size and
+            - the discrete variables flag.
+
+        Everything is rebuilt from scratch,
+        so this stays correct regardless of how a variable was added, replaced
+        or removed.
+        """
         start = 0
+        has_discrete_variables = False
         for name, variable in self.__name_to_variable.items():
             self.__name_to_indices[name] = range(start, start + variable.size)
             start += variable.size
+            if not has_discrete_variables and isinstance(variable, DiscreteVariable):
+                has_discrete_variables = True
         self.__size = start
+        self.__has_discrete_variables = has_discrete_variables
 
     def rename(self, current_name: str, new_name: str) -> None:
         """Rename a variable.
@@ -225,15 +244,22 @@ class Variables(
         """
         variable = self[name]
         idx = list(components)
-        # Rebuild the entry from its source so that the kind of the variable
-        # and any field of that kind are preserved.
-        new_variable = variable.model_copy(
-            update={
-                "size": len(components),
-                "lower_bound": variable.lower_bound[idx],
-                "upper_bound": variable.upper_bound[idx],
-            }
-        )
+        if idx == list(range(variable.size)):
+            # Keeping every component in order is an identity;
+            # the frozen variable can be shared,
+            # which also spares a kind whose bounds are derived
+            # a rebuild passing them explicitly.
+            new_variable = variable
+        else:
+            # Rebuild the entry from its source so that the kind of the variable
+            # and any field of that kind are preserved.
+            new_variable = variable.model_copy(
+                update={
+                    "size": len(components),
+                    "lower_bound": variable.lower_bound[idx],
+                    "upper_bound": variable.upper_bound[idx],
+                }
+            )
         self.__name_to_variable[name] = new_variable
         self.__name_to_normalization_mask[name] = self.__compute_normalization_mask(
             new_variable
@@ -270,12 +296,17 @@ class Variables(
             for variable in self.__name_to_variable.values()
         )
 
+    @property
+    def has_discrete_variables(self) -> bool:
+        """Whether the set has at least one discrete variable."""
+        return self.__has_discrete_variables
+
     def __compute_normalization_mask(self, variable: BaseVariable) -> BooleanArray:
         """Compute the normalization policy mask of a variable.
 
         The policy belongs to the kind of the variable;
         this method only forwards the integer-normalization setting of the set to
-        [BaseVariable.compute_normalization_mask][gemseo.space._variable._base.BaseVariable.compute_normalization_mask].
+        [BaseVariable.compute_normalization_mask][gemseo.space.variable.BaseVariable.compute_normalization_mask].
 
         Args:
             variable: The variable.

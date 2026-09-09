@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import pickle
+from pathlib import Path
 
 import pytest
 from numpy import allclose
@@ -47,9 +48,10 @@ from gemseo.dataset.io_dataset import IODataset
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.openturns.settings.ot_monte_carlo import OT_MONTE_CARLO_Settings
 from gemseo.scenario.mdo import EvaluationScenario
-from gemseo.space._variable import ContinuousVariable
 from gemseo.space.design import DesignSpace
 from gemseo.space.parameter import ParameterSpace
+from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import DiscreteVariable
 from gemseo.uncertainty.distribution.openturns.distribution_settings import (
     OTDistribution_Settings,
 )
@@ -1353,3 +1355,61 @@ def test_discrete_distribution_scenario(mixed_int_uncertain_space):
         ]),
         decimal=2,
     )
+
+
+@pytest.fixture
+def discrete_parameter_space() -> ParameterSpace:
+    """A parameter space with a discrete variable and a random variable."""
+    space = ParameterSpace()
+    space.add_variable("d", value=3, variable=DiscreteVariable(choices=[1, 3]))
+    space.add_random_variable("u", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+    return space
+
+
+def test_discrete_variable_is_deterministic(discrete_parameter_space) -> None:
+    """Check that a discrete variable is a deterministic variable."""
+    assert discrete_parameter_space.deterministic_variables == ["d"]
+    assert discrete_parameter_space.uncertain_variables == ["u"]
+
+
+def test_discrete_variable_pretty_table(discrete_parameter_space, snapshot) -> None:
+    """Check that the tabular view shows the distribution but not the choices."""
+    assert discrete_parameter_space.get_pretty_table().get_string() == snapshot
+
+
+def test_discrete_variable_hdf(tmp_wd, discrete_parameter_space) -> None:
+    """Check that an HDF round-trip preserves the choices."""
+    file_path = Path("ps.h5")
+    discrete_parameter_space.to_hdf(file_path)
+    space = ParameterSpace.from_hdf(file_path)
+
+    assert space == discrete_parameter_space
+    assert_array_equal(space.variables["d"].choices, array([1.0, 3.0]))
+
+
+def test_discrete_variable_compute_samples(discrete_parameter_space) -> None:
+    """Check that sampling the random variables ignores the discrete one."""
+    samples = discrete_parameter_space.compute_samples(2)
+    assert samples.shape == (2, 1)
+
+
+def test_discrete_variable_extract_deterministic_space(
+    discrete_parameter_space,
+) -> None:
+    """Check that extracting the deterministic part keeps a discrete variable."""
+    deterministic_space = discrete_parameter_space.extract_deterministic_space()
+    assert isinstance(deterministic_space, DesignSpace)
+    assert deterministic_space.variable_names == ["d"]
+    assert_array_equal(deterministic_space.variables["d"].choices, array([1.0, 3.0]))
+    assert_array_equal(deterministic_space.get_current_value(["d"]), array([3.0]))
+    assert_array_equal(deterministic_space.get_lower_bound("d"), array([1.0]))
+    assert_array_equal(deterministic_space.get_upper_bound("d"), array([3.0]))
+
+
+def test_discrete_variable_to_design_space(discrete_parameter_space) -> None:
+    """Check that converting to a design space keeps a discrete variable."""
+    design_space = discrete_parameter_space.to_design_space()
+    assert isinstance(design_space, DesignSpace)
+    assert design_space.variable_names == ["d", "u"]
+    assert_array_equal(design_space.variables["d"].choices, array([1.0, 3.0]))
+    assert_array_equal(design_space.get_current_value(["d"]), array([3.0]))

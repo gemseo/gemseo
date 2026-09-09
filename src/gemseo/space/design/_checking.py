@@ -26,8 +26,8 @@ from numpy import isnan
 from numpy import ndarray
 from numpy import vectorize
 
-from gemseo.space._variable import format_components
 from gemseo.space.design._constants import BOUND_ATOL
+from gemseo.space.variable._formatting import format_components
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -38,6 +38,8 @@ if TYPE_CHECKING:
 
     from gemseo.space.design._bounds import Bounds
     from gemseo.space.design._variables import Variables
+    from gemseo.space.variable import BaseVariable
+    from gemseo.util.typing import NumberArray
 
 
 def _is_numeric(value: Any) -> bool:
@@ -52,7 +54,7 @@ def _is_numeric(value: Any) -> bool:
     return value is None or isinstance(value, Complex)
 
 
-def _is_not_nan(value: ndarray) -> bool:
+def _is_not_nan(value: NumberArray) -> bool:
     """Check that a value is not a nan.
 
     Args:
@@ -66,7 +68,7 @@ def _is_not_nan(value: ndarray) -> bool:
 
 def check_addable_value(
     variables: Variables,
-    value: ndarray,
+    value: NumberArray,
     name: str,
 ) -> bool:
     """Check that the value of a variable is valid before adding it.
@@ -130,20 +132,15 @@ def check_addable_value(
     variable = variables[name]
     indices = variable.find_components_outside_domain(value)
     if indices:
-        plural = len(indices) > 1
-        msg = (
-            f"The following value{'s' if plural else ''} of variable '{name}' "
-            f"{'are' if plural else 'is'} neither None nor {variable.type} "
-            f"while variable '{name}' is of type {variable.type}: "
-            f"{format_components(value, indices)}."
-        )
+        # The wording of the failure belongs to the kind of the variable.
+        msg = variable._get_out_of_domain_message(name, value, indices)
         raise ValueError(msg)
 
     return True
 
 
 def check_out_array(
-    out: ndarray,
+    out: NumberArray,
     dtype_: dtype,
     shape: tuple[int, ...],
 ) -> None:
@@ -172,7 +169,7 @@ def check_out_array(
 def check_membership(
     variables: Variables,
     bounds: Bounds,
-    value: Mapping[str, ndarray | None] | ndarray,
+    value: Mapping[str, NumberArray | None] | NumberArray,
     names: Sequence[str] = (),
 ) -> None:
     """Check whether a value satisfies the bounds and the domains of the kinds.
@@ -200,6 +197,19 @@ def check_membership(
         if (shape := value.shape)[-1] != (size := variables.size):
             msg = f"Expected an array of shape (..., {size}); got {shape}."
             raise ValueError(msg)
+
+        if not names and variables.has_discrete_variables:
+            # The bounds of a discrete variable are derived from its choices,
+            # so the vectorized bound comparison cannot tell a non-candidate value
+            # lying inside the bounds from a candidate one;
+            # fall back to the per-variable path,
+            # which asks each variable about its own domain.
+            if value.ndim > 1:
+                for value_i in value:
+                    check_membership(variables, bounds, value_i)
+                return
+
+            names = list(variables)
 
         if names:
             name_to_size = {name: variables[name].size for name in names}
@@ -239,7 +249,7 @@ def check(variables: Variables, current_value_checker: Callable[[], None]) -> No
     current_value_checker()
 
 
-def _check_membership_array(bounds: Bounds, full_value: ndarray) -> None:
+def _check_membership_array(bounds: Bounds, full_value: NumberArray) -> None:
     """Check that the full value stays within the bounds.
 
     Args:
@@ -280,7 +290,7 @@ def _check_membership_array(bounds: Bounds, full_value: ndarray) -> None:
 
 
 def _check_index_in_domain(
-    variable: Any,
+    variable: BaseVariable,
     name: str,
     index: int,
     value_i: Any,
@@ -301,14 +311,12 @@ def _check_index_in_domain(
             of the variable.
     """
     if index in out_of_domain_indices:
-        msg = (
-            f"The variable {name} is of type {variable.type}; "
-            f"got {name}[{index}] = {value_i}."
-        )
+        # The wording of the failure belongs to the kind of the variable.
+        msg = variable._get_out_of_domain_component_message(name, index, value_i)
         raise ValueError(msg)
 
 
-def check_domain(variables: Variables, name: str, value: ndarray) -> None:
+def check_domain(variables: Variables, name: str, value: NumberArray) -> None:
     """Check that a value lies within the domain of the kind of a variable.
 
     A value whose size does not match the variable is left unchecked here,
@@ -334,7 +342,7 @@ def check_domain(variables: Variables, name: str, value: ndarray) -> None:
 
 def _check_membership_dict(
     variables: Variables,
-    name_to_value: Mapping[str, ndarray | None],
+    name_to_value: Mapping[str, NumberArray | None],
     names: Sequence[str],
 ) -> None:
     """Check that a per-variable mapping stays within the per-variable bounds.
