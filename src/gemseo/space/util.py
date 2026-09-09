@@ -21,29 +21,28 @@ from typing import Literal
 from typing import overload
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-
     from gemseo.space.design import DesignSpace
+    from gemseo.util.typing import NumberArray
 
 
 @overload
 def get_value_and_bounds(
     design_space: DesignSpace, normalize_ds: bool, as_dict: Literal[False] = False
-) -> tuple[ndarray, ndarray, ndarray]: ...
+) -> tuple[NumberArray, NumberArray, NumberArray]: ...
 
 
 @overload
 def get_value_and_bounds(
     design_space: DesignSpace, normalize_ds: bool, as_dict: Literal[True] = True
-) -> tuple[dict[str, ndarray], dict[str, ndarray], dict[str, ndarray]]: ...
+) -> tuple[dict[str, NumberArray], dict[str, NumberArray], dict[str, NumberArray]]: ...
 
 
 # TODO: return the design space to be used by the solver instead of a tuple
 def get_value_and_bounds(
     design_space: DesignSpace, normalize_ds: bool, as_dict: bool = False
 ) -> (
-    tuple[ndarray, ndarray, ndarray]
-    | tuple[dict[str, ndarray], dict[str, ndarray], dict[str, ndarray]]
+    tuple[NumberArray, NumberArray, NumberArray]
+    | tuple[dict[str, NumberArray], dict[str, NumberArray], dict[str, NumberArray]]
 ):
     """Return the design variable values and their lower and upper bounds.
 

@@ -102,6 +102,7 @@ if TYPE_CHECKING:
         BaseDistributionSettings,
     )
     from gemseo.util.pydantic import BaseSettings
+    from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
 
 from numpy import array
@@ -410,7 +411,7 @@ class ParameterSpace(DesignSpace):
         self,
         n_samples: int = 1,
         as_dict: bool = False,
-    ) -> dict[str, ndarray] | ndarray:
+    ) -> dict[str, NumberArray] | NumberArray:
         """Sample the random variables and return the realizations.
 
         Args:
@@ -437,9 +438,9 @@ class ParameterSpace(DesignSpace):
 
     def __transform(
         self,
-        value: dict[str, ndarray],
+        value: dict[str, NumberArray],
         inverse: bool = False,
-    ) -> dict[str, ndarray]:
+    ) -> dict[str, NumberArray]:
         """Evaluate the Rosenblatt transform of the uncertain variables.
 
         This transform maps the uncertain variables
@@ -655,12 +656,12 @@ class ParameterSpace(DesignSpace):
 
     def denormalize_vect(
         self,
-        x_vect: ndarray,
+        x_vect: NumberArray,
         minus_lb: bool = True,
         no_check: bool = False,
         use_dist: bool = False,
-        out: ndarray | None = None,
-    ) -> ndarray:
+        out: NumberArray | None = None,
+    ) -> NumberArray:
         """Denormalize a normalized vector of the parameter space.
 
         If `use_dist` is True,
@@ -701,12 +702,12 @@ class ParameterSpace(DesignSpace):
 
     def unnormalize_vect(
         self,
-        x_vect: ndarray,
+        x_vect: NumberArray,
         minus_lb: bool = True,
         no_check: bool = False,
         use_dist: bool = False,
-        out: ndarray | None = None,
-    ) -> ndarray:
+        out: NumberArray | None = None,
+    ) -> NumberArray:
         """Denormalize a normalized vector of the parameter space.
 
         Deprecated:
@@ -738,8 +739,8 @@ class ParameterSpace(DesignSpace):
         )
 
     def __denormalize_vect(
-        self, x_vect: ndarray, minus_lb: bool, no_check: bool
-    ) -> ndarray:
+        self, x_vect: NumberArray, minus_lb: bool, no_check: bool
+    ) -> NumberArray:
         data_names = self._variables.keys()
         data_sizes = self.variable_sizes
         x_u_geom = super().denormalize_vect(
@@ -757,26 +758,26 @@ class ParameterSpace(DesignSpace):
 
     def transform_vect(  # noqa:D102
         self,
-        x_vect: ndarray,
-        out: ndarray | None = None,
-    ) -> ndarray:
+        x_vect: NumberArray,
+        out: NumberArray | None = None,
+    ) -> NumberArray:
         return self.normalize_vect(x_vect, use_dist=True, out=out)
 
     def untransform_vect(  # noqa:D102
         self,
-        x_vect: ndarray,
+        x_vect: NumberArray,
         no_check: bool = False,
-        out: ndarray | None = None,
-    ) -> ndarray:
+        out: NumberArray | None = None,
+    ) -> NumberArray:
         return self.denormalize_vect(x_vect, use_dist=True, no_check=no_check, out=out)
 
     def normalize_vect(
         self,
-        x_vect: ndarray,
+        x_vect: NumberArray,
         minus_lb: bool = True,
         use_dist: bool = False,
-        out: ndarray | None = None,
-    ) -> ndarray:
+        out: NumberArray | None = None,
+    ) -> NumberArray:
         """Normalize a vector of the parameter space.
 
         If `use_dist` is True,
@@ -813,7 +814,7 @@ class ParameterSpace(DesignSpace):
         return self.__store(self.__normalize_vect(x_vect, minus_lb), out)
 
     @staticmethod
-    def __store(value: ndarray, out: ndarray | None) -> ndarray:
+    def __store(value: NumberArray, out: NumberArray | None) -> NumberArray:
         """Store a value in the array of the caller, if any.
 
         Args:
@@ -835,7 +836,7 @@ class ParameterSpace(DesignSpace):
         out[...] = value
         return out
 
-    def __normalize_vect(self, x_vect: ndarray, minus_lb: bool) -> ndarray:
+    def __normalize_vect(self, x_vect: NumberArray, minus_lb: bool) -> NumberArray:
         data_names = self._variables.keys()
         data_sizes = self.variable_sizes
         dict_sample = split_array_to_dict_of_arrays(x_vect, data_sizes, data_names)
@@ -890,14 +891,15 @@ class ParameterSpace(DesignSpace):
         """
         deterministic_space = DesignSpace()
         for name in self.deterministic_variables:
+            # Share the variable as is, e.g. so that the bounds of a discrete
+            # variable, which are derived from its choices and cannot be
+            # set explicitly, are preserved; the variable is immutable, so sharing
+            # it cannot let mutating the new space corrupt this parameter space.
             deterministic_space.add_variable(
-                name, self.get_size(name), self.get_type(name)
+                name,
+                value=self._current_value.get(name),
+                variable=self._variables[name],
             )
-            value = self._current_value.get(name)
-            if value is not None:
-                deterministic_space.set_current_variable(name, value)
-            deterministic_space.set_lower_bound(name, self.get_lower_bound(name))
-            deterministic_space.set_upper_bound(name, self.get_upper_bound(name))
         return deterministic_space
 
     @staticmethod

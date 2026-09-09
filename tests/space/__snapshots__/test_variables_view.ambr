@@ -17,6 +17,15 @@
 # name: test_variables_view_gives_immutable_bounds_after_copy[upper_bound-deepcopy]
   'cannot set WRITEABLE flag to True of this array'
 # ---
+# name: test_variables_view_gives_immutable_choices
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_immutable_choices_after_copy[copy_with_pickle]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_immutable_choices_after_copy[deepcopy]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
 # name: test_variables_view_unknown_name
   "No variable named 'y'."
 # ---

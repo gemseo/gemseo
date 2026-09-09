@@ -22,10 +22,10 @@ from numpy import complex128
 from numpy import float64
 from numpy.testing import assert_array_equal
 
-from gemseo.space._variable import ContinuousVariable
 from gemseo.space.design._codec import concatenate_values
 from gemseo.space.design._codec import split_full_value
 from gemseo.space.design._variables import Variables
+from gemseo.space.variable import ContinuousVariable
 
 
 @pytest.fixture

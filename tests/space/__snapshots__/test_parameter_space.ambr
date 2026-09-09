@@ -11,6 +11,16 @@
 # name: test_copula_error_missing_variable
   "There is no variable name 'x'."
 # ---
+# name: test_discrete_variable_pretty_table
+  '''
+  +------+-------------+-------+-------------+----------+-------------------------+
+  | name | lower_bound | value | upper_bound | type     |       distribution      |
+  +------+-------------+-------+-------------+----------+-------------------------+
+  | d    |      1      |   3   |      3      | discrete |                         |
+  | u    |     -inf    |   0   |     inf     | float    | norm(mu=0.0, sigma=1.0) |
+  +------+-------------+-------+-------------+----------+-------------------------+
+  '''
+# ---
 # name: test_existing_variable
   "The variable 'a' already exists."
 # ---

@@ -21,10 +21,11 @@ from collections.abc import MutableMapping
 import pytest
 from numpy.testing import assert_array_equal
 
-from gemseo.space._variable import ContinuousVariable
-from gemseo.space._variable import DataType
-from gemseo.space._variable import IntegerVariable
 from gemseo.space.design._variables import Variables
+from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import DataType
+from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import IntegerVariable
 
 
 @pytest.fixture
@@ -161,3 +162,72 @@ def test_filter_components_custom_variable(variables) -> None:
     variables.filter_components("x", [1])
     assert isinstance(variables["x"], MyVariable)
     assert variables["x"].size == 1
+
+
+@pytest.mark.parametrize(
+    ("names", "expected"),
+    [((), False), (("x",), False), (("d",), True), (("x", "d"), True)],
+)
+def test_has_discrete(names, expected) -> None:
+    """Check the detection of discrete variables."""
+    variables = Variables()
+    for name in names:
+        if name == "d":
+            variables[name] = DiscreteVariable(choices=[1, 2])
+        else:
+            variables[name] = ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
+
+    assert variables.has_discrete_variables is expected
+
+
+def test_has_discrete_variable_tracks_mutations() -> None:
+    """Check that the cached discrete-variable count stays correct across mutations."""
+    variables = Variables()
+    variables["x"] = ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
+    assert variables.has_discrete_variables is False
+
+    variables["d"] = DiscreteVariable(choices=[1, 2])
+    assert variables.has_discrete_variables is True
+
+    # Overwriting a discrete variable with a continuous one turns it off.
+    variables["d"] = ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
+    assert variables.has_discrete_variables is False
+
+    # Overwriting a continuous variable with a discrete one turns it on.
+    variables["d"] = DiscreteVariable(choices=[1, 2])
+    assert variables.has_discrete_variables is True
+
+    # Removing the last discrete variable turns it off.
+    del variables["d"]
+    assert variables.has_discrete_variables is False
+
+    # filter_components() preserves the kind of the variable (a discrete
+    # variable is always scalar, so only the identity filtering applies),
+    # so it must not flip the flag either way.
+    variables["d"] = DiscreteVariable(choices=[1, 2, 3])
+    variables.filter_components("d", [0])
+    assert variables.has_discrete_variables is True
+
+    del variables["d"]
+    assert variables.has_discrete_variables is False
+
+
+def test_filter_components_keeping_all(variables) -> None:
+    """Check that keeping every component in order shares the variable."""
+    variable = variables["x"]
+    version = variables.version
+    variables.filter_components("x", [0, 1])
+
+    assert variables["x"] is variable
+    assert variables.version == version + 1
+
+
+def test_filter_components_of_a_discrete_variable() -> None:
+    """Check that filtering the only component of a discrete variable is an identity."""
+    variables = Variables()
+    variables["d"] = DiscreteVariable(choices=[2, 4])
+    variable = variables["d"]
+    variables.filter_components("d", [0])
+
+    assert variables["d"] is variable
+    assert_array_equal(variables["d"].choices, [2.0, 4.0])

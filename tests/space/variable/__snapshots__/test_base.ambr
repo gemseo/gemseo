@@ -55,38 +55,16 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_bound_with_non_integer_components[bound0-lower]
-  '''
-  1 validation error for IntegerVariable
-    Value error, The following lower bound component is neither integer nor infinite while the variable is of type integer: 1.5 (index 0). [type=value_error, input_value={'size': 1, 'lower_bound': array([1.5])}, input_type=dict]
-      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
-  '''
-# ---
-# name: test_bound_with_non_integer_components[bound0-upper]
-  '''
-  1 validation error for IntegerVariable
-    Value error, The following upper bound component is neither integer nor infinite while the variable is of type integer: 1.5 (index 0). [type=value_error, input_value={'size': 1, 'upper_bound': array([1.5])}, input_type=dict]
-      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
-  '''
-# ---
-# name: test_bound_with_non_integer_components[bound1-lower]
-  '''
-  1 validation error for IntegerVariable
-    Value error, The following lower bound components are neither integer nor infinite while the variable is of type integer: 1.5 (index 0) and 2.5 (index 1). [type=value_error, input_value={'size': 2, 'lower_bound': array([1.5, 2.5])}, input_type=dict]
-      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
-  '''
-# ---
-# name: test_bound_with_non_integer_components[bound1-upper]
-  '''
-  1 validation error for IntegerVariable
-    Value error, The following upper bound components are neither integer nor infinite while the variable is of type integer: 1.5 (index 0) and 2.5 (index 1). [type=value_error, input_value={'size': 2, 'upper_bound': array([1.5, 2.5])}, input_type=dict]
-      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
-  '''
-# ---
 # name: test_copy_and_pickle_keep_the_kind[ContinuousVariable]
   'cannot set WRITEABLE flag to True of this array'
 # ---
 # name: test_copy_and_pickle_keep_the_kind[ContinuousVariable].1
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_copy_and_pickle_keep_the_kind[DiscreteVariable]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_copy_and_pickle_keep_the_kind[DiscreteVariable].1
   'cannot set WRITEABLE flag to True of this array'
 # ---
 # name: test_copy_and_pickle_keep_the_kind[IntegerVariable]
@@ -106,6 +84,22 @@
 # name: test_frozen[ContinuousVariable-upper_bound]
   '''
   1 validation error for ContinuousVariable
+  upper_bound
+    Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_frozen[DiscreteVariable-lower_bound]
+  '''
+  1 validation error for DiscreteVariable
+  lower_bound
+    Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_frozen[DiscreteVariable-upper_bound]
+  '''
+  1 validation error for DiscreteVariable
   upper_bound
     Instance is frozen [type=frozen_instance, input_value=0, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
@@ -247,52 +241,33 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/float_type
   '''
 # ---
-# name: test_invalid_type[ContinuousVariable]
-  '''
-  1 validation error for ContinuousVariable
-  type
-    Input should be <DataType.FLOAT: 'float'> [type=literal_error, input_value='complex', input_type=str]
-      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
-  '''
-# ---
-# name: test_invalid_type[IntegerVariable]
-  '''
-  1 validation error for IntegerVariable
-  type
-    Input should be <DataType.INTEGER: 'integer'> [type=literal_error, input_value='complex', input_type=str]
-      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
-  '''
-# ---
-# name: test_model_copy_leaves_original_alone
-  'cannot set WRITEABLE flag to True of this array'
-# ---
 # name: test_model_copy_with_another_type[ContinuousVariable-integer]
   '''
   1 validation error for ContinuousVariable
   type
-    Input should be <DataType.FLOAT: 'float'> [type=literal_error, input_value=<DataType.INTEGER: 'integer'>, input_type=DataType]
-      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+    Extra inputs are not permitted [type=extra_forbidden, input_value=<DataType.INTEGER: 'integer'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
   '''
 # ---
 # name: test_model_copy_with_another_type[IntegerVariable-float]
   '''
   1 validation error for IntegerVariable
   type
-    Input should be <DataType.INTEGER: 'integer'> [type=literal_error, input_value=<DataType.FLOAT: 'float'>, input_type=DataType]
-      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+    Extra inputs are not permitted [type=extra_forbidden, input_value=<DataType.FLOAT: 'float'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
   '''
 # ---
 # name: test_model_copy_with_inconsistent_update[ContinuousVariable]
   '''
   1 validation error for ContinuousVariable
-    Value error, The lower bound should be of size 5. [type=value_error, input_value={'size': 5, 'type': <Data...bound': array([1., 1.])}, input_type=dict]
+    Value error, The lower bound should be of size 5. [type=value_error, input_value={'size': 5, 'lower_bound'...bound': array([1., 1.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_model_copy_with_inconsistent_update[IntegerVariable]
   '''
   1 validation error for IntegerVariable
-    Value error, The lower bound should be of size 5. [type=value_error, input_value={'size': 5, 'type': <Data...r_bound': array([1, 1])}, input_type=dict]
+    Value error, The lower bound should be of size 5. [type=value_error, input_value={'size': 5, 'lower_bound'...r_bound': array([1, 1])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -356,20 +331,84 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
   '''
 # ---
-# name: test_type_of_another_kind[ContinuousVariable-integer]
+# name: test_type_is_not_settable[complex-ContinuousVariable]
   '''
   1 validation error for ContinuousVariable
   type
-    Input should be <DataType.FLOAT: 'float'> [type=literal_error, input_value=<DataType.INTEGER: 'integer'>, input_type=DataType]
-      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+    Extra inputs are not permitted [type=extra_forbidden, input_value='complex', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
   '''
 # ---
-# name: test_type_of_another_kind[IntegerVariable-float]
+# name: test_type_is_not_settable[complex-IntegerVariable]
   '''
   1 validation error for IntegerVariable
   type
-    Input should be <DataType.INTEGER: 'integer'> [type=literal_error, input_value=<DataType.FLOAT: 'float'>, input_type=DataType]
-      For further information visit https://errors.pydantic.dev/X.Y/v/literal_error
+    Extra inputs are not permitted [type=extra_forbidden, input_value='complex', input_type=str]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_type_is_not_settable[discrete-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
+  type
+    Extra inputs are not permitted [type=extra_forbidden, input_value=<DataType.DISCRETE: 'discrete'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_type_is_not_settable[discrete-IntegerVariable]
+  '''
+  1 validation error for IntegerVariable
+  type
+    Extra inputs are not permitted [type=extra_forbidden, input_value=<DataType.DISCRETE: 'discrete'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_type_is_not_settable[float-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
+  type
+    Extra inputs are not permitted [type=extra_forbidden, input_value=<DataType.FLOAT: 'float'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_type_is_not_settable[float-IntegerVariable]
+  '''
+  1 validation error for IntegerVariable
+  type
+    Extra inputs are not permitted [type=extra_forbidden, input_value=<DataType.FLOAT: 'float'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_type_is_not_settable[integer-ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
+  type
+    Extra inputs are not permitted [type=extra_forbidden, input_value=<DataType.INTEGER: 'integer'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_type_is_not_settable[integer-IntegerVariable]
+  '''
+  1 validation error for IntegerVariable
+  type
+    Extra inputs are not permitted [type=extra_forbidden, input_value=<DataType.INTEGER: 'integer'>, input_type=DataType]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_unknown_field[ContinuousVariable]
+  '''
+  1 validation error for ContinuousVariable
+  unknown
+    Extra inputs are not permitted [type=extra_forbidden, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_unknown_field[IntegerVariable]
+  '''
+  1 validation error for IntegerVariable
+  unknown
+    Extra inputs are not permitted [type=extra_forbidden, input_value=0, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
   '''
 # ---
 # name: test_wrong_boundaries[ContinuousVariable]

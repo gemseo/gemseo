@@ -20,10 +20,10 @@ import pytest
 from numpy import array
 from numpy.testing import assert_array_equal
 
-from gemseo.space._variable import ContinuousVariable
-from gemseo.space._variable import IntegerVariable
 from gemseo.space.design._integer_rounder import IntegerRounder
 from gemseo.space.design._variables import Variables
+from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import IntegerVariable
 
 
 @pytest.fixture

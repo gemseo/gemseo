@@ -27,6 +27,8 @@ from numpy import float64
 from numpy import genfromtxt
 from pandas import DataFrame
 
+from gemseo.space.design._constants import _CHOICES_GROUP
+from gemseo.space.design._constants import _CHOICES_SEPARATOR
 from gemseo.space.design._constants import _DESIGN_SPACE_GROUP
 from gemseo.space.design._constants import _LB_GROUP
 from gemseo.space.design._constants import _NAMES_GROUP
@@ -35,6 +37,8 @@ from gemseo.space.design._constants import _TABLE_NAMES
 from gemseo.space.design._constants import _UB_GROUP
 from gemseo.space.design._constants import _VALUE_GROUP
 from gemseo.space.design._constants import _VAR_TYPE_GROUP
+from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable.factory import VARIABLE_FACTORY
 from gemseo.util._numpy import INT64_DTYPE
 from gemseo.util.hdf5 import get_hdf5_group
 
@@ -45,12 +49,14 @@ if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.space.design import DesignSpace
+    from gemseo.space.variable import BaseVariable
+    from gemseo.util.typing import NumberArray
 
 _MINIMAL_FIELDS: Final[list[str]] = ["name", "lower_bound", "upper_bound"]
 """The minimal fields required in a design space CSV file."""
 
 
-def _to_real(data: ndarray) -> ndarray:
+def _to_real(data: NumberArray) -> NumberArray:
     """Cast a possibly-complex array to a real `float64` array.
 
     Args:
@@ -104,7 +110,7 @@ def _check_structure_is_unchanged(
             f"got {design_space.variable_names}."
         )
     else:
-        for name, variable in design_space._variables.items():
+        for name, variable in design_space.variables.items():
             variable_group = get_hdf5_group(space_group, name)
             stored_size = get_hdf5_group(variable_group, _SIZE_GROUP)[()]
             if stored_size != variable.size:
@@ -197,8 +203,18 @@ def to_hdf(
         else:
             _check_structure_is_unchanged(design_space, space_group, file_path)
 
-        for name, variable in design_space._variables.items():
+        for name, variable in design_space.variables.items():
             variable_group = space_group.require_group(name)
+
+            if isinstance(variable, DiscreteVariable):
+                # A variable cannot lose its choices from one export to the next:
+                # _check_structure_is_unchanged() rejects a change of type.
+                _write_dataset(
+                    variable_group,
+                    _CHOICES_GROUP,
+                    array(variable.choices, copy=False),
+                )
+
             _write_dataset(
                 variable_group, _SIZE_GROUP, array(variable.size, dtype=INT64_DTYPE)
             )
@@ -249,9 +265,63 @@ def from_hdf(
             var_type = _get_dataset(variable_group, _VAR_TYPE_GROUP)[0]
             value = _get_dataset(variable_group, _VALUE_GROUP)
             size = get_hdf5_group(variable_group, _SIZE_GROUP)[()]
-            design_space.add_variable(name, size, var_type, l_b, u_b, value)
+            choices = _get_dataset(variable_group, _CHOICES_GROUP)
+            decoded_var_type = (
+                var_type.decode() if isinstance(var_type, bytes) else var_type
+            )
+            if choices is None:
+                if decoded_var_type == cls.DesignVariableType.DISCRETE:
+                    msg = (
+                        f"Malformed DesignSpace input file {file_path} has no "
+                        f"choices for the variable {name!r} of type "
+                        f"{cls.DesignVariableType.DISCRETE.value!r}."
+                    )
+                    raise ValueError(msg)
+
+                design_space.add_variable(
+                    name,
+                    size=size,
+                    type_=var_type,
+                    lower_bound=l_b,
+                    upper_bound=u_b,
+                    value=value,
+                )
+            else:
+                if decoded_var_type != cls.DesignVariableType.DISCRETE:
+                    msg = (
+                        f"Malformed DesignSpace input file {file_path} has "
+                        f"choices for the variable {name!r} of type "
+                        f"{decoded_var_type!r} instead of "
+                        f"{cls.DesignVariableType.DISCRETE.value!r}."
+                    )
+                    raise ValueError(msg)
+
+                # The bounds of a discrete variable are derived from its choices,
+                # so the persisted ones are informational.
+                design_space.add_variable(
+                    name,
+                    value=value,
+                    variable=VARIABLE_FACTORY.create(var_type, choices=choices),
+                )
     design_space.check()
     return design_space
+
+
+def _format_choices_cell(variable: BaseVariable) -> str:
+    """Return the CSV cell storing the choices of a variable.
+
+    Args:
+        variable: The variable.
+
+    Returns:
+        The choices separated by `_CHOICES_SEPARATOR`,
+        or `"None"` when the variable is not discrete.
+    """
+    if not isinstance(variable, DiscreteVariable):
+        # An empty cell would make a whitespace-delimited file unreadable.
+        return "None"
+
+    return _CHOICES_SEPARATOR.join(str(value) for value in variable.choices)
 
 
 def _to_dataframe(design_space: DesignSpace) -> DataFrame:
@@ -268,13 +338,16 @@ def _to_dataframe(design_space: DesignSpace) -> DataFrame:
     lower_bounds: list = []
     upper_bounds: list = []
     variable_types: list[str] = []
-    for name, variable in design_space._variables.items():
+    choices: list[str] = []
+    for name, variable in design_space.variables.items():
         curr = design_space._current_value.get(name)
+        cell = _format_choices_cell(variable)
         for i in range(variable.size):
             variable_names.append(name)
             variable_types.append(variable.type)
             lower_bounds.append(variable.lower_bound[i])
             upper_bounds.append(variable.upper_bound[i])
+            choices.append(cell)
             # Strip the imaginary part of a complex-step perturbation.
             value = None if curr is None else curr[i].real
             variable_values.append(value)
@@ -285,6 +358,9 @@ def _to_dataframe(design_space: DesignSpace) -> DataFrame:
         "upper_bound": upper_bounds,
         "type": variable_types,
     }
+    if design_space.variables.has_discrete_variables:
+        # Do not add a column that every variable would leave empty.
+        data[_CHOICES_GROUP] = choices
     return DataFrame(data)
 
 
@@ -302,14 +378,65 @@ def to_csv(
         fields: The fields to be exported. If empty, export all fields.
         delimiter: The string used to separate values.
     """
+    separator = delimiter or " "
+    columns = list(fields) if fields else list(_TABLE_NAMES)
+    if design_space.variables.has_discrete_variables:
+        if separator == _CHOICES_SEPARATOR:
+            msg = (
+                "A design space holding a discrete variable cannot be exported "
+                f"with {_CHOICES_SEPARATOR!r} as delimiter, "
+                "which separates the choices within a cell."
+            )
+            raise ValueError(msg)
+
+        # A file written by to_csv must always be readable back by from_csv,
+        # whichever way fields was supplied.
+        if _CHOICES_GROUP not in columns:
+            columns.append(_CHOICES_GROUP)
+
+        type_field = _TABLE_NAMES[-1]
+        if type_field not in columns:
+            columns.append(type_field)
+    elif _CHOICES_GROUP in columns:
+        # _to_dataframe() below does not emit this column when there is no
+        # discrete variable; drop it here instead of letting DataFrame.to_csv()
+        # raise a bare pandas KeyError for an explicitly requested column.
+        columns = [column for column in columns if column != _CHOICES_GROUP]
+
     dataframe = _to_dataframe(design_space)
     dataframe.to_csv(
         Path(output_file),
-        sep=delimiter or " ",
+        sep=separator,
         index=False,
-        columns=fields or _TABLE_NAMES,
+        columns=columns,
         na_rep="None",
     )
+
+
+def _read_choices_cell(
+    str_data: ndarray, col_map: dict[str, int], row: int
+) -> list[float] | None:
+    """Read the choices of a variable from a CSV row.
+
+    Args:
+        str_data: The CSV data read as strings.
+        col_map: The map from a field name to its column index.
+        row: The index of the row of the variable.
+
+    Returns:
+        The choices,
+        or `None` when the file has no such column
+        or the variable is not discrete.
+    """
+    index = col_map.get(_CHOICES_GROUP)
+    if index is None:
+        return None
+
+    cell = str_data[row, index]
+    if not cell or cell == "None":
+        return None
+
+    return [float(value) for value in cell.split(_CHOICES_SEPARATOR)]
 
 
 def from_csv(
@@ -383,7 +510,33 @@ def from_csv(
             var_type = str_data[k, col_map[var_type_field]]
         else:
             var_type = cls.DesignVariableType.FLOAT
-        design_space.add_variable(name, size, var_type, l_b, u_b, value)
+        choices = _read_choices_cell(str_data, col_map, k)
+        if choices is not None and var_type != cls.DesignVariableType.DISCRETE:
+            msg = (
+                f"Malformed DesignSpace input file {file_path} has choices "
+                f"for the variable {name!r} of type {str(var_type)!r} "
+                f"instead of {cls.DesignVariableType.DISCRETE.value!r}."
+            )
+            raise ValueError(msg)
+
+        if choices is None:
+            if var_type == cls.DesignVariableType.DISCRETE:
+                msg = (
+                    f"Malformed DesignSpace input file {file_path} has no "
+                    f"choices for the variable {name!r} of type "
+                    f"{cls.DesignVariableType.DISCRETE.value!r}."
+                )
+                raise ValueError(msg)
+
+            design_space.add_variable(name, size, var_type, l_b, u_b, value)
+        else:
+            # The bounds of a discrete variable are derived from its choices,
+            # so the persisted ones are informational.
+            design_space.add_variable(
+                name,
+                value=value,
+                variable=VARIABLE_FACTORY.create(var_type, choices=choices),
+            )
         k += size
     design_space.check()
     return design_space

@@ -17,34 +17,22 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from typing import ClassVar
-from typing import Literal
 
-from numpy import float64
 from numpy import inf
 from numpy import iscomplexobj
 from numpy import logical_and
 
-from gemseo.space._variable._base import BaseVariable
-from gemseo.space._variable._base import ComponentDType
-from gemseo.space._variable._base import DataType
+from gemseo.space.variable.base import BaseVariable
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-
     from gemseo.util.typing import BooleanArray
+    from gemseo.util.typing import NumberArray
 
 
 class ContinuousVariable(BaseVariable):
     """A variable whose components are real numbers."""
 
-    component_type: ClassVar[ComponentDType] = float64
-    """The NumPy type of the components of the variable."""
-
-    type: Literal[DataType.FLOAT] = DataType.FLOAT
-    """The type of data."""
-
-    def cast(self, value: ndarray) -> ndarray:
+    def cast(self, value: NumberArray) -> NumberArray:
         """Cast a value of the variable to the NumPy type of the variable.
 
         The NumPy type of a complex value is left untouched

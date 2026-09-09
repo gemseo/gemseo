@@ -22,8 +22,8 @@ from warnings import warn
 from numpy import inf
 from pydantic import BaseModel
 
-from gemseo.space._variable._base import DataType
-from gemseo.space._variable._factory import VARIABLE_FACTORY
+from gemseo.space.variable.base import DataType
+from gemseo.space.variable.factory import VARIABLE_FACTORY
 
 
 class Variable(BaseModel):
@@ -31,9 +31,9 @@ class Variable(BaseModel):
 
     A single `Variable` class used to define a variable of any data type. It has been
     replaced by one class per data type, namely
-    [ContinuousVariable][gemseo.space._variable._continuous.ContinuousVariable] and
-    [IntegerVariable][gemseo.space._variable._integer.IntegerVariable], built by
-    [VariableFactory][gemseo.space._variable._factory.VariableFactory].
+    [ContinuousVariable][gemseo.space.variable.ContinuousVariable] and
+    [IntegerVariable][gemseo.space.variable.IntegerVariable], built by
+    `VariableFactory`.
 
     A pickle refers to a class by name, so loading a design space pickled by such a
     release requires this name to still resolve. This class exists for that sole
@@ -73,7 +73,7 @@ class Variable(BaseModel):
             upper_bound=fields.get("upper_bound", inf),
         )
         warn(
-            "The class 'gemseo.space._variable.Variable' is deprecated; "
+            "The class 'gemseo.space.variable.Variable' is deprecated; "
             f"the variable has been restored as a {type(variable).__name__}. "
             "Save the design space again "
             "to store it with the current variable classes.",

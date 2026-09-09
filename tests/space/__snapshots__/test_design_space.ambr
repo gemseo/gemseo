@@ -5,6 +5,9 @@
 # name: test_active_bounds.1
   "'There is no current value for the design variables: x, y and z.'"
 # ---
+# name: test_add_already_existing_variable
+  "The variable 'x' already exists."
+# ---
 # name: test_add_variable_when_already_exists
   "The variable 'varname' already exists."
 # ---
@@ -69,6 +72,9 @@
 # name: test_add_variable_with_2d_object[value]
   "The value [[1.]] of variable 'varname' has a dimension greater than 1 while a scalar or a 1D iterable object (array, list, tuple, ...) was expected."
 # ---
+# name: test_add_variable_with_discrete_type_raises
+  'Only continuous and integer variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
+# ---
 # name: test_add_variable_with_inconsistent_bound_size[lower_bound]
   '''
   1 validation error for ContinuousVariable
@@ -101,7 +107,7 @@
   "The following value of variable 'varname' is neither None nor a number: nan (index 0)."
 # ---
 # name: test_add_variable_with_unkown_type
-  "There is no variable class of type 'a'; the available types are: float and integer."
+  'Only continuous and integer variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
 # ---
 # name: test_add_variable_with_unnumerizable_value
   "The following value of variable 'varname' is neither None nor complex and cannot be cast to float: <built-in function len> (index 0)."
@@ -143,31 +149,34 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
   '''
 # ---
+# name: test_add_with_an_invalid_value_rolls_back
+  "The following value of variable 't' is not among its choices [2.0, 4.0]: 3 (index 0)."
+# ---
 # name: test_bounds_set_lower_bound_with_inconsistent_size
   '''
   1 validation error for ContinuousVariable
-    Value error, The lower bound should be of size 1. [type=value_error, input_value={'size': 1, 'type': <Data...per_bound': array([2.])}, input_type=dict]
+    Value error, The lower bound should be of size 1. [type=value_error, input_value={'size': 1, 'lower_bound'...per_bound': array([2.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_lower_bound_with_nan
   '''
   1 validation error for ContinuousVariable
-    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...per_bound': array([2.])}, input_type=dict]
+    Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound'...per_bound': array([2.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_upper_bound_with_inconsistent_size
   '''
   1 validation error for ContinuousVariable
-    Value error, The upper bound should be of size 1. [type=value_error, input_value={'size': 1, 'type': <Data...bound': array([1., 1.])}, input_type=dict]
+    Value error, The upper bound should be of size 1. [type=value_error, input_value={'size': 1, 'lower_bound'...bound': array([1., 1.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_upper_bound_with_nan
   '''
   1 validation error for ContinuousVariable
-    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'type': <Data...f]), 'upper_bound': nan}, input_type=dict]
+    Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound'...f]), 'upper_bound': nan}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
@@ -235,6 +244,96 @@
 # name: test_dict_to_array_key_error
   "'y'"
 # ---
+# name: test_discrete_variable_csv_with_the_separator_as_delimiter
+  "A design space holding a discrete variable cannot be exported with '|' as delimiter, which separates the choices within a cell."
+# ---
+# name: test_discrete_variable_hdf_append_then_continuous
+  '''
+  The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
+  - The type of the design variable 't' is 'discrete'; got 'float'.
+  '''
+# ---
+# name: test_discrete_variable_pretty_table
+  '''
+  +------+-------------+-------+-------------+----------+
+  | name | lower_bound | value | upper_bound | type     |
+  +------+-------------+-------+-------------+----------+
+  | x    |      0      |  0.5  |      1      | float    |
+  | n    |      1      |   4   |      10     | integer  |
+  | t    |     0.45    |  0.55 |     0.72    | discrete |
+  | p    |      2      |   2   |      8      | discrete |
+  +------+-------------+-------+-------------+----------+
+  '''
+# ---
+# name: test_discrete_variable_rejects_a_non_choice
+  'The variable t is discrete with the choices [0.45, 0.55, 0.72]; got t[0] = 0.6.'
+# ---
+# name: test_discrete_variable_repr_html
+  '''
+  <div style='margin: 1em;'>Design space:<br/><table>
+      <thead>
+          <tr>
+              <th>Name</th>
+              <th>Lower bound</th>
+              <th>Value</th>
+              <th>Upper bound</th>
+              <th>Type</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr>
+              <td>x</td>
+              <td>0</td>
+              <td>0.5</td>
+              <td>1</td>
+              <td>float</td>
+          </tr>
+          <tr>
+              <td>n</td>
+              <td>1</td>
+              <td>4</td>
+              <td>10</td>
+              <td>integer</td>
+          </tr>
+          <tr>
+              <td>t</td>
+              <td>0.45</td>
+              <td>0.55</td>
+              <td>0.72</td>
+              <td>discrete</td>
+          </tr>
+          <tr>
+              <td>p</td>
+              <td>2</td>
+              <td>2</td>
+              <td>8</td>
+              <td>discrete</td>
+          </tr>
+      </tbody>
+  </table></div>
+  '''
+# ---
+# name: test_discrete_variable_str
+  '''
+  Design space:
+  +------+-------------+-------+-------------+----------+
+  | Name | Lower bound | Value | Upper bound | Type     |
+  +------+-------------+-------+-------------+----------+
+  | x    |      0      |  0.5  |      1      | float    |
+  | n    |      1      |   4   |      10     | integer  |
+  | t    |     0.45    |  0.55 |     0.72    | discrete |
+  | p    |      2      |   2   |      8      | discrete |
+  +------+-------------+-------+-------------+----------+
+  '''
+# ---
+# name: test_filter_dimensions_duplicated_on_a_discrete_variable
+  '''
+  1 validation error for DiscreteVariable
+  size
+    Value error, A discrete variable is scalar; its size cannot be set to 2. [type=value_error, input_value=2, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
 # name: test_filter_dimensions_nonexistent[indices0-Dimension 3 of variable 'x5' does not exist.]
   "Dimension 3 of variable 'x5' does not exist."
 # ---
@@ -243,6 +342,18 @@
 # ---
 # name: test_filter_with_an_unknown_variable
   "No variable named 'unknown_x'."
+# ---
+# name: test_from_csv_rejects_inconsistent_choices
+  "Malformed DesignSpace input file ds.csv has choices for the variable 't' of type 'float' instead of 'discrete'."
+# ---
+# name: test_from_csv_with_discrete_type_and_no_choices
+  "Malformed DesignSpace input file ds.csv has no choices for the variable 't' of type 'discrete'."
+# ---
+# name: test_from_hdf_rejects_inconsistent_choices
+  "Malformed DesignSpace input file ds.h5 has choices for the variable 't' of type 'float' instead of 'discrete'."
+# ---
+# name: test_from_hdf_with_discrete_type_and_no_choices
+  "Malformed DesignSpace input file ds.h5 has no choices for the variable 't' of type 'discrete'."
 # ---
 # name: test_get_current_value_bad_names
   'There are no such variables named: bar and foo.'

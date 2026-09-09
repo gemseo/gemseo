@@ -28,12 +28,13 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
 
-    from numpy import ndarray
-
     from gemseo.space.design._variables import Variables
+    from gemseo.util.typing import NumberArray
 
 
-def split_full_value(value: ndarray, variables: Variables) -> dict[str, ndarray]:
+def split_full_value(
+    value: NumberArray, variables: Variables
+) -> dict[str, NumberArray]:
     """Split a full value by variable name.
 
     Args:
@@ -48,9 +49,9 @@ def split_full_value(value: ndarray, variables: Variables) -> dict[str, ndarray]
 
 
 def concatenate_values(
-    name_to_value: Mapping[str, ndarray],
+    name_to_value: Mapping[str, NumberArray],
     names: Iterable[str],
-) -> ndarray:
+) -> NumberArray:
     """Concatenate the values of the variables.
 
     Args:

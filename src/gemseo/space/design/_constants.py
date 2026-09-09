@@ -18,8 +18,9 @@ from __future__ import annotations
 
 from typing import Final
 
-from gemseo.space._variable._base import _LOWER_BOUND
-from gemseo.space._variable._base import _UPPER_BOUND
+from gemseo.space.variable.base import _LOWER_BOUND
+from gemseo.space.variable.base import _UPPER_BOUND
+from gemseo.space.variable.discrete import _CHOICES
 from gemseo.util.constant import EPSILON
 
 BOUND_ATOL: Final[float] = 100.0 * EPSILON
@@ -45,6 +46,19 @@ _VALUE_GROUP: Final[str] = "value"
 
 _SIZE_GROUP: Final[str] = "size"
 """The name of the HDF dataset storing a variable size."""
+
+_CHOICES_GROUP: Final[str] = _CHOICES
+"""The name of the HDF dataset storing the choices of a variable.
+
+This is also the name of the CSV column.
+"""
+
+_CHOICES_SEPARATOR: Final[str] = "|"
+"""The string separating the choices within a CSV cell.
+
+A CSV file is exported with a space delimiter by default,
+so the separator shall not be a whitespace.
+"""
 
 _TABLE_NAMES: Final[list[str]] = [
     "name",

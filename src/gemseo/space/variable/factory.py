@@ -21,8 +21,8 @@ from typing import Any
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.space._variable._base import BaseVariable
-from gemseo.space._variable._base import DataType
+from gemseo.space.variable.base import BaseVariable
+from gemseo.space.variable.base import DataType
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ class VariableFactory(BaseFactory[BaseVariable]):
     """A factory of variables."""
 
     _CLASS = BaseVariable
-    _PACKAGE_NAMES = ("gemseo.space._variable",)
+    _PACKAGE_NAMES = ("gemseo.space.variable",)
 
     __data_type_to_class_name: dict[DataType, str]
     """The map from a data type to the name of the class pinning it."""
@@ -52,7 +52,7 @@ class VariableFactory(BaseFactory[BaseVariable]):
         if not self.__data_type_to_class_name:
             data_type_to_class_name = {}
             for class_name in self.class_names:
-                data_type = self.get_class(class_name).model_fields["type"].default
+                data_type = self.get_class(class_name).type
                 other_class_name = data_type_to_class_name.get(data_type)
                 if other_class_name is not None:
                     msg = (
@@ -67,7 +67,7 @@ class VariableFactory(BaseFactory[BaseVariable]):
 
         return self.__data_type_to_class_name
 
-    def create_from_settings(
+    def create_from_settings(  # noqa: D102
         self,
         settings: BaseSettings,
         *args: Any,

@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_model_copy_leaves_original_alone
+  'cannot set WRITEABLE flag to True of this array'
+# ---

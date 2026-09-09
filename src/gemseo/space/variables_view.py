@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo.space._variable import BaseVariable
+from gemseo.space.variable import BaseVariable
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 
 if TYPE_CHECKING:
@@ -55,3 +55,8 @@ class VariablesView(ReadOnlyMapping[str, BaseVariable]):
     def has_integer_variables(self) -> bool:
         """Whether at least one variable is of integer type."""
         return self._mapping.has_integer_variables
+
+    @property
+    def has_discrete_variables(self) -> bool:
+        """Whether at least one variable is of discrete type."""
+        return self._mapping.has_discrete_variables

@@ -19,10 +19,11 @@ from __future__ import annotations
 import pytest
 from numpy.testing import assert_array_equal
 
-from gemseo.space._variable import ContinuousVariable
-from gemseo.space._variable import DataType
-from gemseo.space._variable import IntegerVariable
-from gemseo.space._variable import VariableFactory
+from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import DataType
+from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable.factory import VariableFactory
 from gemseo.util.pydantic import BaseSettings
 from gemseo.util.testing.helper import assert_exception
 
@@ -43,7 +44,11 @@ def test_create_from_settings_not_implemented(factory) -> None:
 
 def test_class_names(factory) -> None:
     """Check that the concrete kinds are discovered and the abstract base is not."""
-    assert factory.class_names == ["ContinuousVariable", "IntegerVariable"]
+    assert factory.class_names == [
+        "ContinuousVariable",
+        "DiscreteVariable",
+        "IntegerVariable",
+    ]
 
 
 def test_singleton(factory) -> None:
@@ -133,3 +138,11 @@ def test_duplicate_data_type(factory, monkeypatch, snapshot) -> None:
     )
     with assert_exception(ValueError, snapshot):
         factory.create("float")
+
+
+def test_create_discrete_variable(factory) -> None:
+    """Check the creation of a discrete variable from its data type."""
+    variable = factory.create(DataType.DISCRETE, choices=[4, 2])
+
+    assert isinstance(variable, DiscreteVariable)
+    assert_array_equal(variable.choices, [2.0, 4.0])

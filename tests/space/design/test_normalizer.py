@@ -25,12 +25,12 @@ from numpy import int64
 from numpy import zeros
 from numpy.testing import assert_array_equal
 
-from gemseo.space._variable import ContinuousVariable
-from gemseo.space._variable import IntegerVariable
 from gemseo.space.design._bounds import Bounds
 from gemseo.space.design._integer_rounder import IntegerRounder
 from gemseo.space.design._normalizer import Normalizer
 from gemseo.space.design._variables import Variables
+from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import IntegerVariable
 from gemseo.util.testing.helper import assert_exception
 
 

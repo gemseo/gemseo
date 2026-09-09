@@ -281,7 +281,7 @@ def test_class_deprecation_is_visible_under_the_default_filters():
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert "The class 'gemseo.space._variable.Variable' is deprecated" in result.stderr
+    assert "The class 'gemseo.space.variable.Variable' is deprecated" in result.stderr
 
 
 def test_renamed_submodule_is_not_an_attribute_rename():
