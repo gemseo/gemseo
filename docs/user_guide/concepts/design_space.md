@@ -162,16 +162,8 @@ gives it its first choice.
 [variables][gemseo.space.design.DesignSpace.variables]
 reads the choices back,
 as `design_space.variables["thickness"].choices`,
-while [has_discrete_variables][gemseo.space.design.DesignSpace.has_discrete_variables]
+while [has_discrete_variables][gemseo.space.variables_view.VariablesView.has_discrete_variables]
 tells whether the design space holds a discrete variable.
-
-A variable read through that view can be given to another space,
-whatever its kind,
-which is the only way to share a discrete variable:
-
-```python
-other_space.add_variable("thickness", variable=design_space.variables["thickness"])
-```
 
 !!! warning
     The optimization and DOE algorithms do not currently allow the use of discrete variables and return an error.
@@ -186,7 +178,7 @@ other_space.add_variable("thickness", variable=design_space.variables["thickness
 
     - [add_variable()][gemseo.space.design.DesignSpace.add_variable]
     - [variables][gemseo.space.design.DesignSpace.variables]
-    - [has_discrete_variables][gemseo.space.design.DesignSpace.has_discrete_variables]
+    - [has_discrete_variables][gemseo.space.variables_view.VariablesView.has_discrete_variables]
     - [DiscreteVariable][gemseo.space.variable.DiscreteVariable]
 
 ## Integer relaxation { #concept-integer-relaxation }
