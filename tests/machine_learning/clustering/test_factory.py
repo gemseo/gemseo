@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
+from gemseo.machine_learning.clustering.model.factory import clusterer_factory
 from gemseo.machine_learning.clustering.model.kmeans import KMeans
 from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Settings
 from gemseo.problem.dataset.iris import create_iris_dataset
@@ -35,7 +35,7 @@ from gemseo.problem.dataset.iris import create_iris_dataset
 if TYPE_CHECKING:
     from gemseo.dataset.io_dataset import IODataset
 
-N_CLUSTERS = 3
+n_clusters = 3
 
 
 @pytest.fixture
@@ -47,7 +47,7 @@ def dataset() -> IODataset:
 def test_constructor() -> None:
     """Test ClustererFactory constructor."""
     # plugins may add classes
-    assert set(CLUSTERER_FACTORY.class_names) <= {
+    assert set(clusterer_factory.class_names) <= {
         "GaussianMixture",
         "KMeans",
         "BasePredictiveClusterer",
@@ -57,8 +57,8 @@ def test_constructor() -> None:
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     assert isinstance(
-        CLUSTERER_FACTORY.create(
-            "KMeans", dataset, KMeans_Settings(n_clusters=N_CLUSTERS)
+        clusterer_factory.create(
+            "KMeans", dataset, KMeans_Settings(n_clusters=n_clusters)
         ),
         KMeans,
     )
@@ -66,5 +66,5 @@ def test_create(dataset) -> None:
 
 def test_is_available() -> None:
     """Test the existence of a clustering model."""
-    assert CLUSTERER_FACTORY.is_available("KMeans")
-    assert not CLUSTERER_FACTORY.is_available("LinearRegressor")
+    assert clusterer_factory.is_available("KMeans")
+    assert not clusterer_factory.is_available("LinearRegressor")

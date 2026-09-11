@@ -26,21 +26,21 @@ from scipy.sparse import rand
 from scipy.sparse import random_array
 
 from gemseo.core.derivative.jacobian_operator import JacobianOperator
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
     from gemseo.util.typing import SparseOrDenseRealArray
 
-RNG = default_rng(SEED)
+rng = default_rng(seed)
 
-RECTANGULAR_SHAPE = (10, 5)
+rectangular_shape = (10, 5)
 
-ARRAY_FACTORIES = {
-    "dense": lambda shape: RNG.normal(size=shape),
-    "spmatrix": lambda shape: rand(*shape, density=0.25, rng=RNG),
-    "sparray": lambda shape: random_array(shape, density=0.25, rng=RNG),
+array_factories = {
+    "dense": lambda shape: rng.normal(size=shape),
+    "spmatrix": lambda shape: rand(*shape, density=0.25, rng=rng),
+    "sparray": lambda shape: random_array(shape, density=0.25, rng=rng),
 }
 
 
@@ -79,14 +79,14 @@ class MatrixJacobianOperator(JacobianOperator):
         return self.matrix.T @ x
 
 
-@pytest.fixture(params=ARRAY_FACTORIES.values(), ids=list(ARRAY_FACTORIES))
+@pytest.fixture(params=array_factories.values(), ids=list(array_factories))
 def array(request) -> SparseOrDenseRealArray:
     """Generate a random NumPy array or SciPy sparse array.
 
     Returns:
         A random array of rectangular shape.
     """
-    return request.param(RECTANGULAR_SHAPE)
+    return request.param(rectangular_shape)
 
 
 @pytest.fixture
@@ -96,7 +96,7 @@ def jacobian_operator() -> MatrixJacobianOperator:
     Returns:
         The Jacobian operator.
     """
-    return MatrixJacobianOperator(RNG.normal(size=RECTANGULAR_SHAPE))
+    return MatrixJacobianOperator(rng.normal(size=rectangular_shape))
 
 
 def assert_equivalent_to_matrix(
@@ -115,19 +115,19 @@ def assert_equivalent_to_matrix(
 
 def test_unimplemented_products() -> None:
     """Tests errors raised when the matrix-vector products are not implemented."""
-    jacobian = JacobianOperator(dtype(float), RECTANGULAR_SHAPE)
+    jacobian = JacobianOperator(dtype(float), rectangular_shape)
 
     with pytest.raises(RecursionError):
-        jacobian.matvec(RNG.normal(size=RECTANGULAR_SHAPE[1]))
+        jacobian.matvec(rng.normal(size=rectangular_shape[1]))
 
     with pytest.raises(NotImplementedError):
-        jacobian.rmatvec(RNG.normal(size=RECTANGULAR_SHAPE[0]))
+        jacobian.rmatvec(rng.normal(size=rectangular_shape[0]))
 
 
 def test_matvec(jacobian_operator) -> None:
     """Tests the matrix-vector products of the operator and its adjoint."""
     m, n = jacobian_operator.shape
-    x, y = RNG.normal(size=n), RNG.normal(size=m)
+    x, y = rng.normal(size=n), rng.normal(size=m)
 
     assert (jacobian_operator.dot(x) == jacobian_operator.matrix @ x).all()
     assert (jacobian_operator.T.dot(y) == jacobian_operator.matrix.T @ y).all()
@@ -136,7 +136,7 @@ def test_matvec(jacobian_operator) -> None:
 def test_copy(jacobian_operator) -> None:
     """Tests the copying."""
     m, n = jacobian_operator.shape
-    x, y = RNG.normal(size=n), RNG.normal(size=m)
+    x, y = rng.normal(size=n), rng.normal(size=m)
 
     jacobian_copy = jacobian_operator.copy()
 
@@ -156,7 +156,7 @@ def test_transpose(jacobian_operator) -> None:
 
 def test_shift_identity() -> None:
     """Tests the shifting by minus the identity."""
-    jacobian_operator = MatrixJacobianOperator(RNG.normal(size=(5, 5)))
+    jacobian_operator = MatrixJacobianOperator(rng.normal(size=(5, 5)))
 
     assert_equivalent_to_matrix(
         jacobian_operator.shift_identity(),
@@ -166,8 +166,8 @@ def test_shift_identity() -> None:
 
 def test_real() -> None:
     """Tests the real casting of the Jacobian operator output."""
-    matrix = RNG.normal(size=RECTANGULAR_SHAPE) + 1j * RNG.normal(
-        size=RECTANGULAR_SHAPE
+    matrix = rng.normal(size=rectangular_shape) + 1j * rng.normal(
+        size=rectangular_shape
     )
     jacobian_operator = MatrixJacobianOperator(matrix)
 
@@ -177,7 +177,7 @@ def test_real() -> None:
 def test_dtype_promotion(jacobian_operator) -> None:
     """Tests the data type promotion of operations between Jacobian operators."""
     complex_operator = MatrixJacobianOperator(
-        RNG.normal(size=RECTANGULAR_SHAPE).astype(complex128)
+        rng.normal(size=rectangular_shape).astype(complex128)
     )
 
     assert (jacobian_operator + complex_operator).dtype == complex128

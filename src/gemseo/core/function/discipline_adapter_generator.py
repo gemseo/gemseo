@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.core.function.discipline_adapter import DisciplineAdapter
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -59,7 +59,7 @@ class DisciplineAdapterGenerator:
     def __init__(
         self,
         discipline: Discipline,
-        name_to_size: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
+        name_to_size: MutableMapping[str, int] = read_only_empty_dict,
     ) -> None:
         """
         Args:
@@ -75,7 +75,7 @@ class DisciplineAdapterGenerator:
         self,
         input_names: Sequence[str],
         output_names: Sequence[str],
-        default_input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        default_input_data: Mapping[str, ndarray] = read_only_empty_dict,
         is_differentiable: bool = True,
         differentiated_input_names_substitute: Sequence[str] = (),
     ) -> DisciplineAdapter:

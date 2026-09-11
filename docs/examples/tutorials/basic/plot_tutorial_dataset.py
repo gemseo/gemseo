@@ -79,13 +79,13 @@ isinstance(dataset, DataFrame)
 # The data must be a 2-D NumPy array shaped as `(n_entries, n_components)`.
 # When no group is specified,
 # the variable is placed in the default group
-# (see [DEFAULT_GROUP][gemseo.dataset.dataset.Dataset.DEFAULT_GROUP]).
+# (see [default_group][gemseo.dataset.dataset.Dataset.default_group]).
 dataset.add_variable("a", array([[1, 2], [3, 4]]))
 dataset
 
 # %%
 # The default group name is:
-dataset.DEFAULT_GROUP
+dataset.default_group
 
 # %%
 # To assign a variable to a specific group, pass the `group_name` argument:
@@ -124,7 +124,7 @@ dataset
 # %%
 # Both `variable_names` and `variable_name_to_n_components` are optional.
 # When omitted, GEMSEO uses the
-# [DEFAULT_VARIABLE_NAME][gemseo.dataset.dataset.Dataset.DEFAULT_VARIABLE_NAME]
+# [default_variable_name][gemseo.dataset.dataset.Dataset.default_variable_name]
 # `"x"` with as many components as there are columns:
 dataset.add_group("G3", array([[1.2, 2.2], [3.2, 4.2]]))
 dataset
@@ -261,8 +261,8 @@ dataset.to_dict_of_arrays(False)
 #
 # [IODataset][gemseo.dataset.io_dataset.IODataset] is a subclass of
 # [Dataset][gemseo.dataset.dataset.Dataset] that pre-defines two group names:
-# [INPUT_GROUP][gemseo.dataset.io_dataset.IODataset.INPUT_GROUP]
-# and [OUTPUT_GROUP][gemseo.dataset.io_dataset.IODataset.OUTPUT_GROUP].
+# [input_group][gemseo.dataset.io_dataset.IODataset.input_group]
+# and [output_group][gemseo.dataset.io_dataset.IODataset.output_group].
 # It is the recommended structure for supervised machine learning
 # and sensitivity analysis workflows.
 #
@@ -315,13 +315,13 @@ io_dataset.output_dataset
 # is a subclass of [Dataset][gemseo.dataset.dataset.Dataset]
 # that pre-defines group names for the typical quantities found in an
 # optimization history:
-# [DESIGN_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.DESIGN_GROUP],
-# [OBJECTIVE_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
-# [OBSERVABLE_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP],
+# [design_group][gemseo.dataset.optimization_dataset.OptimizationDataset.design_group],
+# [objective_group][gemseo.dataset.optimization_dataset.OptimizationDataset.objective_group],
+# [observable_group][gemseo.dataset.optimization_dataset.OptimizationDataset.observable_group],
 # as well as
-# [EQUALITY_CONSTRAINT_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP]
+# [equality_constraint_group][gemseo.dataset.optimization_dataset.OptimizationDataset.equality_constraint_group]
 # and
-# [INEQUALITY_CONSTRAINT_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP].
+# [inequality_constraint_group][gemseo.dataset.optimization_dataset.OptimizationDataset.inequality_constraint_group].
 #
 # Use the dedicated helpers to add individual variables ...
 opt_dataset = OptimizationDataset()

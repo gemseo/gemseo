@@ -28,23 +28,23 @@ from gemseo.util import timer  # noqa: E402
 from gemseo.util.testing.helper import concretize_classes
 from gemseo.util.testing.mock import SleepingCounter
 
-NAME: Final[str] = "name"
+name: Final[str] = "name"
 
 
 @pytest.fixture
 def process():
     with concretize_classes(BaseMonitoredProcess):
-        return BaseMonitoredProcess(NAME)
+        return BaseMonitoredProcess(name)
 
 
 def test_init(process):
     """Verify __init__."""
-    assert process.name == NAME
+    assert process.name == name
 
 
 def test_str(process):
     """Verify __str__."""
-    assert str(process) == NAME
+    assert str(process) == name
 
 
 @pytest.mark.parametrize("enable_statistics", [True, False])

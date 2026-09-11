@@ -61,13 +61,13 @@ class BaseSettings(BasePydanticModel):
     """The base class for settings.
 
     To change the default values of field defined in base classes,
-    set the `_INHERITED_FIELD_DEFAULTS` class attribute in the derived class,
+    set the `_inherited_field_defaults` class attribute in the derived class,
     this attribute maps the field names to the new default field values.
     Changing the field type annotation can be done in a similar way
-    with the `_INHERITED_FIELD_TYPES` class attribute.
+    with the `_inherited_field_types` class attribute.
     """
 
-    __TARGET_CLASS_NAME: ClassVar[str] = ""
+    __target_class_name: ClassVar[str] = ""
     """The name of the class using these settings.
 
     This name is determined automatically
@@ -76,13 +76,13 @@ class BaseSettings(BasePydanticModel):
     of the target class that is bound to the settings class.
     """
 
-    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {}
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {}
     """The mapping from inherited field names to new default values."""
 
-    _INHERITED_FIELD_TYPES: ClassVar[StrKeyMapping] = {}
+    _inherited_field_types: ClassVar[StrKeyMapping] = {}
     """The mapping from inherited field names to new type annotations."""
 
-    __SETTINGS_SUFFIX: ClassVar[str] = "_Settings"
+    __settings_suffix: ClassVar[str] = "_Settings"
     """The suffix used to determine the target class name."""
 
     @classmethod
@@ -92,24 +92,24 @@ class BaseSettings(BasePydanticModel):
         base_classes = cls.__mro__[1:-1]
         # Determine automatically the target class name,
         # when the current class name ends with a specific suffix.
-        if cls.__name__.endswith(cls.__SETTINGS_SUFFIX) and (
+        if cls.__name__.endswith(cls.__settings_suffix) and (
             # And when the target class name is not already set
             # (typically when all the parent classes are not exposed to end users).
-            not cls.__TARGET_CLASS_NAME
+            not cls.__target_class_name
             # Or when the first parent class it inherits from has a target class name.
             # (typically when the first parent class is exposed to end users)
             # This allows to distinguish the case when the current has the
             # target class name forced in its definition.
             or (
                 len(base_classes) > 1
-                and cls.__TARGET_CLASS_NAME == base_classes[0].__TARGET_CLASS_NAME
+                and cls.__target_class_name == base_classes[0].__target_class_name
             )
         ):
-            cls.__TARGET_CLASS_NAME = cls.__name__.removesuffix(cls.__SETTINGS_SUFFIX)
+            cls.__target_class_name = cls.__name__.removesuffix(cls.__settings_suffix)
         fields = cls.__pydantic_fields__
-        for name, type_ in cls._INHERITED_FIELD_TYPES.items():
+        for name, type_ in cls._inherited_field_types.items():
             fields[name].annotation = type_
-        for name, default in cls._INHERITED_FIELD_DEFAULTS.items():
+        for name, default in cls._inherited_field_defaults.items():
             fields[name].default = default
         cls.model_rebuild(force=True)
 
@@ -118,7 +118,7 @@ class BaseSettings(BasePydanticModel):
         self,
     ) -> str:
         """The name of the class intended to use these settings."""
-        return self.__TARGET_CLASS_NAME
+        return self.__target_class_name
 
 
 def copy_field(name: str, model: type[BasePydanticModel], **kwargs: Any) -> FieldInfo:

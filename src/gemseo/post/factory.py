@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
@@ -36,8 +37,8 @@ if TYPE_CHECKING:
 class PostFactory(BaseFactory[BasePost[Any]]):
     """A factory of post-processors."""
 
-    _CLASS = BasePost
-    _PACKAGE_NAMES = ("gemseo.post",)
+    _class: ClassVar[type[BasePost]] = BasePost
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.post",)
 
     def execute(
         self,
@@ -58,5 +59,5 @@ class PostFactory(BaseFactory[BasePost[Any]]):
         return post
 
 
-POST_FACTORY: Final[PostFactory] = PostFactory()
+post_factory: Final[PostFactory] = PostFactory()
 """The factory for `BasePost` objects."""

@@ -93,10 +93,10 @@ if TYPE_CHECKING:
 class EmpiricalStatistics(BaseStatistics):
     """A toolbox to compute statistics empirically."""
 
-    __CDF_LABEL: Final[str] = "CDF"
+    __cdf_label: Final[str] = "CDF"
     """The label for the cumulative distribution function."""
 
-    __PDF_LABEL: Final[str] = "PDF"
+    __pdf_label: Final[str] = "PDF"
     """The label for the probability density function."""
 
     def compute_maximum(self) -> dict[str, RealArray]:  # noqa: D102
@@ -316,7 +316,7 @@ class EmpiricalStatistics(BaseStatistics):
                 x = linspace(samples.min(), samples.max(), 1000)
                 xlabel = repr_variable(name, index, size)
                 settings = Lines_Settings(
-                    variables=(self.__PDF_LABEL,),
+                    variables=(self.__pdf_label,),
                     abscissa_variable=name,
                     xlabel=xlabel,
                     ylabel="Probability density function",
@@ -325,7 +325,7 @@ class EmpiricalStatistics(BaseStatistics):
                 plot = Lines(
                     Dataset.from_array(
                         vstack((x, gaussian_kde(samples)(x))).T,
-                        variable_names=[name, self.__PDF_LABEL],
+                        variable_names=[name, self.__pdf_label],
                     ),
                     settings,
                 )
@@ -369,7 +369,7 @@ class EmpiricalStatistics(BaseStatistics):
             ):
                 xlabel = repr_variable(name, index, size)
                 settings = Lines_Settings(
-                    variables=(self.__CDF_LABEL,),
+                    variables=(self.__cdf_label,),
                     abscissa_variable=name,
                     xlabel=xlabel,
                     ylabel="Cumulative probability function",
@@ -378,7 +378,7 @@ class EmpiricalStatistics(BaseStatistics):
                 plot = Lines(
                     Dataset.from_array(
                         vstack(self.__evaluate_ecdf(samples)).T,
-                        variable_names=[name, self.__CDF_LABEL],
+                        variable_names=[name, self.__cdf_label],
                     ),
                     settings,
                 )

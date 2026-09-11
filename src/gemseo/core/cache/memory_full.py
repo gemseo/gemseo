@@ -119,7 +119,7 @@ class MemoryFullCache(BaseFullCache):
         data = self.__data[index].get(group, {})
         if group == self.Group.JACOBIAN and data:
             return nest_flat_bilevel_dict(
-                cast("JacobianData", data), separator=self._JACOBIAN_SEPARATOR
+                cast("JacobianData", data), separator=self._jacobian_separator
             )
         return data
 

@@ -27,11 +27,11 @@ from gemseo.mda.sequence_transformer.factory import SequenceTransformerFactory
 if TYPE_CHECKING:
     from numpy import ndarray
 
-A_TOL: float = 1e-6
-DIMENSION: int = 100
-MEAN_ANOMALY = arange(DIMENSION) + 1
-EXCENTRICITY = 0.95
-INITIAL_VECTOR = ones(DIMENSION)
+a_tol: float = 1e-6
+dimension: int = 100
+mean_anomaly = arange(dimension) + 1
+excentricity = 0.95
+initial_vector = ones(dimension)
 
 
 def g(x: ndarray) -> ndarray:
@@ -43,7 +43,7 @@ def g(x: ndarray) -> ndarray:
     Returns:
         The image G(x).
     """
-    return MEAN_ANOMALY + EXCENTRICITY * sin(x)
+    return mean_anomaly + excentricity * sin(x)
 
 
 @pytest.mark.parametrize(
@@ -52,7 +52,7 @@ def g(x: ndarray) -> ndarray:
 )
 def test_overrelaxation(factor) -> None:
     """Tests the over relaxation method."""
-    x_0 = INITIAL_VECTOR.copy()
+    x_0 = initial_vector.copy()
     transformer = SequenceTransformerFactory().create("OverRelaxation", factor=factor)
 
     x_1 = g(x_0)

@@ -31,7 +31,7 @@ from typing import Any
 if TYPE_CHECKING:
     from pathlib import Path
 
-_INK = "#7f7f7f"
+_ink = "#7f7f7f"
 """The color of the figure decorations.
 
 The balance point between the two page backgrounds: a contrast ratio of 4.0
@@ -39,30 +39,30 @@ against the white page of the default scheme and 4.0 against the ``#1e2129``
 page of the slate scheme. No single color does better on both.
 """
 
-_RC_PARAMS: dict[str, Any] = {
+_rc_params: dict[str, Any] = {
     # Let the page background show through instead of painting a white one.
     # This makes both the figure patch and the Axes patches transparent.
     "savefig.transparent": True,
     # The ink of everything drawn on top of that background. The title follows
     # `text.color` since `axes.titlecolor` defaults to "auto".
-    "text.color": _INK,
-    "axes.labelcolor": _INK,
-    "axes.edgecolor": _INK,
-    "xtick.color": _INK,
-    "ytick.color": _INK,
+    "text.color": _ink,
+    "axes.labelcolor": _ink,
+    "axes.edgecolor": _ink,
+    "xtick.color": _ink,
+    "ytick.color": _ink,
     # matplotlib 3.11 defaults `hatch.color` to "edge", i.e. the hatch follows the
     # edge color of the artist, but 3.10 defaults it to black; the docs are built
     # with the oldest supported Python, hence with matplotlib 3.10.
-    "hatch.color": _INK,
+    "hatch.color": _ink,
     # `savefig.transparent` does not reach the legend patch, which would stay
     # white; only its edge is kept. A legend therefore masks nothing, so no figure
     # may rely on its patch to hide the data behind it.
     "legend.facecolor": "none",
-    "legend.edgecolor": _INK,
+    "legend.edgecolor": _ink,
     "legend.framealpha": 1.0,
     # Keep the grid lighter than the ink, as the default "#b0b0b0" is, but
     # without being nearly white on a dark page.
-    "grid.color": _INK,
+    "grid.color": _ink,
     "grid.alpha": 0.4,
 }
 """The rcParams making the figures legible on both page backgrounds.
@@ -81,4 +81,4 @@ def reset_style(gallery_conf: dict[str, Any], fname: Path) -> None:
     """
     import matplotlib
 
-    matplotlib.rcParams.update(_RC_PARAMS)
+    matplotlib.rcParams.update(_rc_params)

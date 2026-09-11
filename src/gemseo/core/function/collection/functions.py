@@ -36,7 +36,7 @@ class Functions(MutableSequence[ArrayFunction]):
     _functions: list[ArrayFunction]
     """The functions."""
 
-    _F_TYPES: ClassVar[tuple[ArrayFunction.FunctionType]] = ()
+    _f_types: ClassVar[tuple[ArrayFunction.FunctionType]] = ()
     """The authorized types of functions.
 
     If empty, authorized all types.
@@ -88,10 +88,10 @@ class Functions(MutableSequence[ArrayFunction]):
             ValueError: When the function type is not authorized.
         """
         type_ = _function.f_type
-        if self._F_TYPES and type_ not in self._F_TYPES:
+        if self._f_types and type_ not in self._f_types:
             msg = (
                 f"The function type '{type_}' is not "
-                f"one of those authorized ({pretty_str(self._F_TYPES)})."
+                f"one of those authorized ({pretty_str(self._f_types)})."
             )
             raise ValueError(msg)
 

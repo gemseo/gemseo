@@ -57,6 +57,7 @@ import numbers
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import inf
 
@@ -79,13 +80,13 @@ if TYPE_CHECKING:
     from gemseo.optimization.core.base_optimizer_settings import BaseOptimizerSettings
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-RESULTS_DIRECTORY = Path("results")
-POST_DIRECTORY = Path("visualization")
-POSTOPTIM_DIRECTORY = POST_DIRECTORY / "optimization_history"
-POSTSTUDY_DIRECTORY = POST_DIRECTORY / "scalability_study"
-POSTSCAL_DIRECTORY = POST_DIRECTORY / "dependency_matrix"
+results_directory: Final[Path] = Path("results")
+post_directory: Final[Path] = Path("visualization")
+postoptim_directory: Final[Path] = post_directory / "optimization_history"
+poststudy_directory: Final[Path] = post_directory / "scalability_study"
+postscal_directory: Final[Path] = post_directory / "dependency_matrix"
 
 
 class ScalabilityStudy:
@@ -163,7 +164,7 @@ class ScalabilityStudy:
                 to get results earlier than final step.
             coupling_variables: The names of the coupling variables.
         """
-        LOGGER.info("Initialize the scalability study")
+        logger.info("Initialize the scalability study")
         self.prefix = prefix
         self.directory = Path(directory)
         self.__create_directories()
@@ -214,20 +215,20 @@ class ScalabilityStudy:
         msg.add("Feasibility level: {}", self.feasibility_level)
         msg.add("Start at equilibrium: {}", self.start_at_equilibrium)
         msg.add("Early stopping: {}", self.early_stopping)
-        LOGGER.info("%s", msg)
+        logger.info("%s", msg)
 
     def __create_directories(self) -> None:
         """Create the different directories to store results, post-processings, ..."""
         self.directory.mkdir(exist_ok=True)
-        post = self.directory / POST_DIRECTORY
+        post = self.directory / post_directory
         post.mkdir(exist_ok=True)
-        postoptim = self.directory / POSTOPTIM_DIRECTORY
+        postoptim = self.directory / postoptim_directory
         postoptim.mkdir(exist_ok=True)
-        poststudy = self.directory / POSTSTUDY_DIRECTORY
+        poststudy = self.directory / poststudy_directory
         poststudy.mkdir(exist_ok=True)
-        postscal = self.directory / POSTSCAL_DIRECTORY
+        postscal = self.directory / postscal_directory
         postscal.mkdir(exist_ok=True)
-        results = self.directory / RESULTS_DIRECTORY
+        results = self.directory / results_directory
         results.mkdir(exist_ok=True)
         msg = MultiLineString()
         msg.indent()
@@ -239,7 +240,7 @@ class ScalabilityStudy:
         msg.add("Scalability views: {}", poststudy)
         msg.add("Dependency matrices: {}", postscal)
         msg.add("Results: {}", results)
-        LOGGER.info("%s", msg)
+        logger.info("%s", msg)
 
     def add_discipline(self, data: IODataset) -> None:
         """This method adds a disciplinary dataset from a dataset.
@@ -250,12 +251,12 @@ class ScalabilityStudy:
         self._group_dep[data.name] = {}
         self._all_data = data.get_view().to_numpy()
         self.datasets.append(data)
-        for output_name in data.get_variable_names(data.OUTPUT_GROUP):
+        for output_name in data.get_variable_names(data.output_group):
             self.set_fill_factor(data.name, output_name, self._default_fill_factor)
         inputs = pretty_str(
             [
                 f"{name}({data.variable_name_to_n_components[name]})"
-                for name in data.get_variable_names(data.INPUT_GROUP)
+                for name in data.get_variable_names(data.input_group)
             ],
             sort=False,
             use_and=False,
@@ -263,7 +264,7 @@ class ScalabilityStudy:
         outputs = pretty_str(
             [
                 f"{name}({data.variable_name_to_n_components[name]})"
-                for name in data.get_variable_names(data.OUTPUT_GROUP)
+                for name in data.get_variable_names(data.output_group)
             ],
             sort=False,
             use_and=False,
@@ -275,7 +276,7 @@ class ScalabilityStudy:
         msg.add("Inputs: {}", inputs)
         msg.add("Outputs: {}", outputs)
         msg.add("Built from {}", len(data))
-        LOGGER.info("%s", msg)
+        logger.info("%s", msg)
 
     @property
     def discipline_names(self) -> list[str]:
@@ -350,7 +351,7 @@ class ScalabilityStudy:
             msg = f"{varname} is not a string."
             raise TypeError(msg)
         output_names = next(
-            dataset.get_variable_names(dataset.OUTPUT_GROUP)
+            dataset.get_variable_names(dataset.output_group)
             for dataset in self.datasets
             if dataset.name == discipline
         )
@@ -374,7 +375,7 @@ class ScalabilityStudy:
         """
         self.__check_discipline(discipline)
         input_names_ = next(
-            dataset.get_variable_names(dataset.INPUT_GROUP)
+            dataset.get_variable_names(dataset.input_group)
             for dataset in self.datasets
             if dataset.name == discipline
         )
@@ -470,7 +471,7 @@ class ScalabilityStudy:
         msg.add("Algorithm options: {}", algo_settings)
         msg.add("Formulation: {}", formulation_name)
         msg.add("Formulation options: {}", formulation_settings)
-        LOGGER.info("%s", msg)
+        logger.info("%s", msg)
 
     def add_scaling_strategies(
         self,
@@ -556,7 +557,7 @@ class ScalabilityStudy:
             msg.add("Inequality constraints: {}", ineq_cstr_size[idx])
             msg.add("Variables: {}", var_str)
             msg.dedent()
-        LOGGER.info("%s", msg)
+        logger.info("%s", msg)
 
     @staticmethod
     def __format_scaling(size: int | list[int], n_scaling: int) -> list[int]:
@@ -645,7 +646,7 @@ class ScalabilityStudy:
         ExecutionStatistics.is_enabled = True
 
         plural = "s" if n_replicates > 1 else ""
-        LOGGER.info("Execute scalability study %s time%s", n_replicates, plural)
+        logger.info("Execute scalability study %s time%s", n_replicates, plural)
         if not self.formulations and not self.algorithms:
             msg = (
                 "A scalable study needs at least 1 optimization strategy, "
@@ -673,7 +674,7 @@ class ScalabilityStudy:
                         n_replicates,
                     )
                     msg.add(counter, *data)
-                    LOGGER.info("%s", msg)
+                    logger.info("%s", msg)
                     msg = MultiLineString()
                     msg.indent()
                     msg.indent()
@@ -715,7 +716,7 @@ class ScalabilityStudy:
                     fpath = result.get_file_path(self.directory)
                     msg.add("Save statistics in {}", fpath)
                     result.to_pickle(str(self.directory))
-                    LOGGER.debug("%s", msg)
+                    logger.debug("%s", msg)
 
         ExecutionStatistics.is_enabled = execution_statistics_was_enabled
 
@@ -776,7 +777,7 @@ class ScalabilityStudy:
         name = "_".join([self.prefix] + [str(var) for var in varnames])
         if name[0] == "_":
             name = name[1:]
-        return self.directory / POSTSCAL_DIRECTORY / name
+        return self.directory / postscal_directory / name
 
     def __optview_path(
         self, algo: str, formulation: str, id_scaling: int, replicate: int
@@ -791,7 +792,7 @@ class ScalabilityStudy:
         """
         path = (
             self.directory
-            / POSTOPTIM_DIRECTORY
+            / postoptim_directory
             / Path(f"{self.prefix}_{algo}_{formulation}")
             / Path(f"scaling_{id_scaling + 1}")
             / Path(f"replicate_{replicate}")

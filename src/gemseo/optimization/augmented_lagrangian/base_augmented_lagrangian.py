@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from gemseo.optimization.result import OptimizationResult
     from gemseo.util.typing import NumberArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseAugmentedLagrangianSettings)
 
@@ -115,15 +115,15 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         x = self._problem.design_space.get_current_value()
         message = None
         for iteration in range(self._settings.max_iter):
-            LOGGER.debug("iteration: %s", iteration)
-            LOGGER.debug(
+            logger.debug("iteration: %s", iteration)
+            logger.debug(
                 "inequality Lagrange multiplier approximations:  %s", ineq_multipliers
             )
-            LOGGER.debug(
+            logger.debug(
                 "equality Lagrange multiplier approximations:  %s", eq_multipliers
             )
-            LOGGER.debug("Active constraint residual:  %s", active_constraint_residual)
-            LOGGER.debug("penalty:  %s", self._rho)
+            logger.debug("Active constraint residual:  %s", active_constraint_residual)
+            logger.debug("penalty:  %s", self._rho)
 
             # Get the next design candidate solving the sub-problem.
             f_calls_sub_prob, x_new = self.__solve_sub_problem(
@@ -257,7 +257,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
     ) -> None:
         """Check if 'precond' is in sub_algorithm_settings and log if detected."""
         if "precond" in sub_algorithm_settings.model_fields_set:
-            LOGGER.info("Preconditioner Detected")
+            logger.info("Preconditioner Detected")
 
     def __solve_sub_problem(
         self,

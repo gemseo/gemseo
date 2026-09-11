@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.core.discipline import Discipline
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -49,7 +49,7 @@ class TaylorDiscipline(Discipline):
     def __init__(
         self,
         discipline: Discipline,
-        input_data: Mapping[str, NDArray[float]] = READ_ONLY_EMPTY_DICT,
+        input_data: Mapping[str, NDArray[float]] = read_only_empty_dict,
         input_names: Iterable[str] = (),
         output_names: Iterable[str] = (),
         name: str = "",

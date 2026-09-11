@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     )
     from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseFullFactorialDOE(BaseDOE):
@@ -119,7 +119,7 @@ class BaseFullFactorialDOE(BaseDOE):
 
         final_n_samples = n_samples_dir**dimension
         if final_n_samples != n_samples:
-            LOGGER.warning(
+            logger.warning(
                 (
                     "A full-factorial DOE of %s samples in dimension %s does not exist;"
                     " use %s samples instead, "

@@ -39,7 +39,7 @@ from scipy.optimize import rosen
 from gemseo import execute_algo
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.dataset.io_dataset import IODataset
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
 from gemseo.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.machine_learning.regression.model.ot_gpr import OTGaussianProcessRegressor
@@ -50,17 +50,17 @@ from gemseo.machine_learning.regression.model.ot_gpr_settings import (
 from gemseo.machine_learning.regression.model.ot_gpr_settings import Trend
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
-from gemseo.util._compatibility.openturns import GPR_ALGO_CLASS
-from gemseo.util._compatibility.openturns import GPR_CONDITIONAL_COVARIANCE_CLASS
+from gemseo.util._compatibility.openturns import gpr_algo_class
+from gemseo.util._compatibility.openturns import gpr_conditional_covariance_class
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-OTGaussianProcessRegressor.HMATRIX_ASSEMBLY_EPSILON = 1e-10
-OTGaussianProcessRegressor.HMATRIX_RECOMPRESSION_EPSILON = 1e-10
+OTGaussianProcessRegressor.hmatrix_assembly_epsilon = 1e-10
+OTGaussianProcessRegressor.hmatrix_recompression_epsilon = 1e-10
 # The EPSILONs are reduced to make the HMAT-based Kriging interpolating.
 
-OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK = 9
+OTGaussianProcessRegressor.max_size_for_lapack = 9
 
 
 # The maximum learning sample size to use LAPACK is reduced to accelerate the tests.
@@ -104,7 +104,7 @@ def dataset_2(problem) -> IODataset:
             data.get_view(variable_names="rosen").to_numpy(),
             -data.get_view(variable_names="rosen").to_numpy(),
         )),
-        group_name=data.OUTPUT_GROUP,
+        group_name=data.output_group,
     )
     return data
 
@@ -119,16 +119,16 @@ def kriging(dataset) -> OTGaussianProcessRegressor:
 
 def test_class_constants(kriging):
     """Check the class constants."""
-    assert kriging.LIBRARY == "OpenTURNS"
-    assert kriging.SHORT_NAME == "GPR"
+    assert kriging.library == "OpenTURNS"
+    assert kriging.short_name == "GPR"
 
 
 @pytest.mark.parametrize(
     ("n_samples", "use_hmat"),
     [
         (1, False),
-        (OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK, False),
-        (OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK + 1, True),
+        (OTGaussianProcessRegressor.max_size_for_lapack, False),
+        (OTGaussianProcessRegressor.max_size_for_lapack + 1, True),
     ],
 )
 def test_kriging_use_hmat_default(n_samples, use_hmat):
@@ -137,8 +137,8 @@ def test_kriging_use_hmat_default(n_samples, use_hmat):
         zeros((n_samples, 2)),
         variable_names=["in", "out"],
         variable_name_to_group_name={
-            "in": IODataset.INPUT_GROUP,
-            "out": IODataset.OUTPUT_GROUP,
+            "in": IODataset.input_group,
+            "out": IODataset.output_group,
         },
     )
     assert OTGaussianProcessRegressor(dataset).use_hmat is use_hmat
@@ -163,7 +163,7 @@ def test_kriging_predict_on_learning_set(dataset):
     kriging = OTGaussianProcessRegressor(dataset)
     kriging.learn()
     for x in kriging.learning_set.get_view(
-        group_names=IODataset.INPUT_GROUP
+        group_names=IODataset.input_group
     ).to_numpy():
         prediction = kriging.predict({"x": x})
         assert_allclose(prediction["sum"], sum(x), atol=1e-3)
@@ -196,7 +196,7 @@ def test_kriging_predict_std_on_learning_set(transformer, dataset):
     )
     kriging.learn()
     for x in kriging.learning_set.get_view(
-        group_names=IODataset.INPUT_GROUP
+        group_names=IODataset.input_group
     ).to_numpy():
         assert_allclose(kriging.predict_std(x), 0, atol=1e-1)
 
@@ -213,15 +213,15 @@ def test_kriging_predict_std(transformer, dataset, x1, x2):
     kriging = OTGaussianProcessRegressor(
         dataset, OTGaussianProcessRegressor_Settings(transformer=transformer)
     )
-    original_method = GPR_CONDITIONAL_COVARIANCE_CLASS.getConditionalCovariance
+    original_method = gpr_conditional_covariance_class.getConditionalCovariance
     v1 = 4.0 + x1 + x2
     v2 = 9.0 + x1 + x2
-    GPR_CONDITIONAL_COVARIANCE_CLASS.getConditionalCovariance = Mock(
+    gpr_conditional_covariance_class.getConditionalCovariance = Mock(
         return_value=CovarianceMatrix(2, [v1, 0.5, 0.5, v2])
     )
     kriging.learn()
     assert_allclose(kriging.predict_std(array([x1, x2])), array([v1, v2]) ** 0.5)
-    GPR_CONDITIONAL_COVARIANCE_CLASS.getConditionalCovariance = original_method
+    gpr_conditional_covariance_class.getConditionalCovariance = original_method
 
 
 @pytest.mark.parametrize(
@@ -304,7 +304,7 @@ def test_default_optimizer(dataset):
         dataset,
         OTGaussianProcessRegressor_Settings(multi_start_algo_settings=None),
     )
-    with mock.patch.object(GPR_ALGO_CLASS, "setOptimizationAlgorithm") as method:
+    with mock.patch.object(gpr_algo_class, "setOptimizationAlgorithm") as method:
         model.learn()
 
     assert method.call_args.args[0].__class__.__name__ == "TNC"
@@ -319,7 +319,7 @@ def test_custom_optimizer(dataset):
             optimizer=optimizer, multi_start_algo_settings=None
         ),
     )
-    with mock.patch.object(GPR_ALGO_CLASS, "setOptimizationAlgorithm") as method:
+    with mock.patch.object(gpr_algo_class, "setOptimizationAlgorithm") as method:
         model.learn()
 
     assert method.call_args.args[0] == optimizer
@@ -355,7 +355,7 @@ def test_custom_optimization_space(dataset, optimization_space_type):
             optimization_space=optimization_space, multi_start_algo_settings=None
         ),
     )
-    with mock.patch.object(GPR_ALGO_CLASS, "setOptimizationBounds") as method:
+    with mock.patch.object(gpr_algo_class, "setOptimizationBounds") as method:
         model.learn()
 
     interval = method.call_args.args[0]
@@ -392,7 +392,7 @@ def test_multi_start_optimization(dataset):
             multi_start_algo_settings=LHS_Settings(n_samples=9, strength=2),
         ),
     )
-    with mock.patch.object(GPR_ALGO_CLASS, "setOptimizationAlgorithm") as method:
+    with mock.patch.object(gpr_algo_class, "setOptimizationAlgorithm") as method:
         model.learn()
 
     optimizer = method.call_args.args[0]
@@ -406,7 +406,7 @@ def test_multi_start_optimization(dataset):
         lower_bound=ot_interval.getLowerBound(),
         upper_bound=ot_interval.getUpperBound(),
     )
-    doe_algo = DOE_LIBRARY_FACTORY.create("LHS")
+    doe_algo = doe_library_factory.create("LHS")
     assert_equal(
         doe,
         doe_algo.sample_space(

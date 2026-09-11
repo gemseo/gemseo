@@ -28,7 +28,7 @@ import pytest
 
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+from gemseo.machine_learning.regression.model.factory import regressor_factory
 from gemseo.machine_learning.regression.model.linreg import LinearRegressor
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
@@ -36,7 +36,7 @@ from gemseo.space.design import DesignSpace
 if TYPE_CHECKING:
     from gemseo.dataset.dataset import Dataset
 
-LEARNING_SIZE = 9
+learning_size = 9
 
 
 @pytest.fixture
@@ -49,7 +49,7 @@ def dataset() -> Dataset:
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y_1")
-    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=learning_size))
     return discipline.cache.to_dataset("dataset_name")
 
 
@@ -63,17 +63,17 @@ def test_constructor() -> None:
         "PolynomialRegressor",
         "RBFRegressor",
         "RandomForestRegressor",
-    } <= set(REGRESSOR_FACTORY.class_names)
+    } <= set(regressor_factory.class_names)
 
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     assert isinstance(
-        REGRESSOR_FACTORY.create("LinearRegressor", data=dataset), LinearRegressor
+        regressor_factory.create("LinearRegressor", data=dataset), LinearRegressor
     )
 
 
 def test_is_available() -> None:
     """Test the existence of a regression model."""
-    assert REGRESSOR_FACTORY.is_available("LinearRegressor")
-    assert not REGRESSOR_FACTORY.is_available("Dummy")
+    assert regressor_factory.is_available("LinearRegressor")
+    assert not regressor_factory.is_available("Dummy")

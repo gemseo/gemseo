@@ -35,7 +35,7 @@ from gemseo.core.problem.evaluation import EvaluationType  # noqa:TC001
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseDOESettings(BaseDriverSettings):
@@ -101,7 +101,7 @@ This option is not compatible with the vectorization of functions evaluations.
             NotImplementedError: When combining parallelization and vectorization.
         """
         if self.wait_time_between_samples > 0 and self.n_processes == 1:
-            LOGGER.warning(
+            logger.warning(
                 "The option 'wait_time_between_samples' is ignored "
                 "when the option 'n_processes' is 1 (serial mode)."
             )

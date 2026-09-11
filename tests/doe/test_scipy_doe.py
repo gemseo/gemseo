@@ -58,8 +58,8 @@ def test_generate_samples(algo_name, version, seed, caplog, monkeypatch) -> None
     )
     library._settings.seed = seed
 
-    scipy_version = scipy_doe.SCIPY_VERSION
-    scipy_doe.SCIPY_VERSION = parse_version(version)
+    scipy_version = scipy_doe.scipy_version
+    scipy_doe.scipy_version = parse_version(version)
     if scipy_version >= parse_version("1.12") and hasattr(
         library._settings, "centered"
     ):
@@ -67,7 +67,7 @@ def test_generate_samples(algo_name, version, seed, caplog, monkeypatch) -> None
     variables_space = DesignSpace()
     variables_space.add_variable("x", size=dimension)
     samples = library._generate_unit_samples(variables_space)
-    scipy_doe.SCIPY_VERSION = scipy_version
+    scipy_doe.scipy_version = scipy_version
 
     assert samples.shape == (n_samples, dimension)
 

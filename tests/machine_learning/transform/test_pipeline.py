@@ -52,19 +52,19 @@ def transformers() -> list[BaseTransformer]:
     return [Scaler(coefficient=2), Scaler(offset=3), Scaler(coefficient=5)]
 
 
-C_1 = array([2, 1, 1])
-OFF_2 = 3
-OFF_3 = array([0, 10, 100])
-C_3 = array([5, 1, 2])
+c_1 = array([2, 1, 1])
+off_2 = 3
+off_3 = array([0, 10, 100])
+c_3 = array([5, 1, 2])
 
 
 @pytest.fixture
 def other_transformers():
     """Transformers for pipeline."""
     return [
-        Scaler(coefficient=C_1),
-        Scaler(offset=OFF_2),
-        Scaler(offset=OFF_3, coefficient=C_3),
+        Scaler(coefficient=c_1),
+        Scaler(offset=off_2),
+        Scaler(offset=off_3, coefficient=c_3),
     ]
 
 
@@ -125,7 +125,7 @@ def test_transform(data, transformers, other_transformers) -> None:
     yet_another_pipeline = Pipeline(transformers=other_transformers)
     yet_another_pipeline.fit(data)
     transformed_data = yet_another_pipeline.transform(data)
-    assert allclose(transformed_data, OFF_3 + C_3 * (OFF_2 + C_1 * data))
+    assert allclose(transformed_data, off_3 + c_3 * (off_2 + c_1 * data))
 
 
 def test_inverse_transform(data, transformers, other_transformers) -> None:
@@ -143,7 +143,7 @@ def test_inverse_transform(data, transformers, other_transformers) -> None:
     yet_another_pipeline = Pipeline(transformers=other_transformers)
     yet_another_pipeline.fit(data)
     transformed_data = yet_another_pipeline.inverse_transform(data)
-    assert allclose(transformed_data, ((data - OFF_3) / C_3 - OFF_2) / C_1)
+    assert allclose(transformed_data, ((data - off_3) / c_3 - off_2) / c_1)
 
 
 def test_compute_jacobian(data, transformers, other_transformers) -> None:
@@ -163,7 +163,7 @@ def test_compute_jacobian(data, transformers, other_transformers) -> None:
     yet_another_pipeline = Pipeline(transformers=other_transformers)
     yet_another_pipeline.fit(data)
     jacobian = yet_another_pipeline.compute_jacobian(data)
-    assert allclose(jacobian, diag(C_3 * C_1))
+    assert allclose(jacobian, diag(c_3 * c_1))
 
 
 def test_compute_jacobian_inverse(data, transformers, other_transformers) -> None:
@@ -183,4 +183,4 @@ def test_compute_jacobian_inverse(data, transformers, other_transformers) -> Non
     yet_another_pipeline = Pipeline(transformers=other_transformers)
     yet_another_pipeline.fit(data)
     inv_jacobian = yet_another_pipeline.compute_jacobian_inverse(data)
-    assert allclose(inv_jacobian, diag(1 / C_1 * 1 / C_3))
+    assert allclose(inv_jacobian, diag(1 / c_1 * 1 / c_3))

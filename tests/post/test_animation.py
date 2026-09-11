@@ -23,13 +23,13 @@ from gemseo.optimization.nlopt.settings.nlopt_mma_settings import NLOPT_MMA_Sett
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.animation import Animation
 from gemseo.post.animation_settings import Animation_Settings
-from gemseo.post.factory import POST_FACTORY
+from gemseo.post.factory import post_factory
 from gemseo.problem.topology_optimization.topopt_initialize import (
     initialize_design_space_and_discipline_to,
 )
 
-DIR_PATH = Path(__file__).parent
-POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
+dir_path = Path(__file__).parent
+power2_path = dir_path / "power2_opt_pb.h5"
 
 
 @pytest.mark.parametrize("n_rep", [1, 0])
@@ -41,7 +41,7 @@ def test_common_scenario(
 ) -> None:
     """Check Animation with objective, standardized or not."""
     animation = Animation(common_problem)
-    post_processing = POST_FACTORY.create("BasicHistory", common_problem)
+    post_processing = post_factory.create("BasicHistory", common_problem)
     pp_settings = post_processing.settings_class(
         variable_names=["obj", "eq", "neg", "pos", "x"],
     )
@@ -63,7 +63,7 @@ def test_common_scenario(
 def test_large_common_scenario(large_common_problem, tmp_wd) -> None:
     """Check Animation with objective, standardized or not."""
     opt = Animation(large_common_problem)
-    post_processing = POST_FACTORY.create("BasicHistory", large_common_problem)
+    post_processing = post_factory.create("BasicHistory", large_common_problem)
     pp_settings = post_processing.settings_class(
         variable_names=["obj", "eq", "neg", "pos", "x"],
     )
@@ -78,9 +78,9 @@ def test_large_common_scenario(large_common_problem, tmp_wd) -> None:
 
 def test_opt_hist_const(tmp_wd) -> None:
     """Test that a problem with constraints is properly rendered."""
-    problem = OptimizationProblem.from_hdf(POWER2_PATH)
+    problem = OptimizationProblem.from_hdf(power2_path)
     opt = Animation(problem)
-    post_processing = POST_FACTORY.create("OptHistoryView", problem)
+    post_processing = post_factory.create("OptHistoryView", problem)
     pp_settings = post_processing.settings_class(
         variable_names=["x"],
         file_path="power2_2",
@@ -128,7 +128,7 @@ def test_l_shape(tmp_wd) -> None:
         value=volume_fraction,
     )
     scenario.execute(NLOPT_MMA_Settings(max_iter=10))
-    post_processing = POST_FACTORY.create("TopologyView", scenario.formulation.problem)
+    post_processing = post_factory.create("TopologyView", scenario.formulation.problem)
     pp_settings = post_processing.settings_class(n_x=n_x, n_y=n_y)
     output_files = scenario.post_process(
         Animation_Settings(

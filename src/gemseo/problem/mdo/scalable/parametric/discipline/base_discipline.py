@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from gemseo.core.discipline import Discipline
 
@@ -39,10 +40,10 @@ class BaseDiscipline(Discipline):
     relies on a GEMSEO-free core discipline.
     """
 
-    _CORE_DISCIPLINE_CLASS: type[_BaseDiscipline]
+    _core_discipline_class: ClassVar[type[_BaseDiscipline]]
     """The class of the core discipline."""
 
-    _discipline: _CORE_DISCIPLINE_CLASS  # noqa: F821
+    _discipline: _core_discipline_class  # noqa: F821
     """The core discipline."""
 
     def __init__(
@@ -57,7 +58,7 @@ class BaseDiscipline(Discipline):
                 as `CoreDiscipline(*core_discipline_parameters)`.
             **default_input_values: The default values of the input variables.
         """  # noqa: D205 D212
-        self._discipline = self._CORE_DISCIPLINE_CLASS(
+        self._discipline = self._core_discipline_class(
             *core_discipline_parameters, **default_input_values
         )
         super().__init__(self._discipline.name)

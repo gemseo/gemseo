@@ -30,11 +30,11 @@ if TYPE_CHECKING:
 
     from gemseo.mda.sequence_transformer.sequence_transformer import SequenceTransformer
 
-A_TOL: float = 1e-6
-DIMENSION: int = 100
-MEAN_ANOMALY = arange(DIMENSION) + 1
-EXCENTRICITY = 0.95
-INITIAL_VECTOR = ones(DIMENSION)
+a_tol: float = 1e-6
+dimension: int = 100
+mean_anomaly = arange(dimension) + 1
+excentricity = 0.95
+initial_vector = ones(dimension)
 
 factory = SequenceTransformerFactory()
 
@@ -48,11 +48,11 @@ def g(x: ndarray) -> ndarray:
     Returns:
         The image G(x).
     """
-    return MEAN_ANOMALY + EXCENTRICITY * sin(x)
+    return mean_anomaly + excentricity * sin(x)
 
 
 def fixed_point_method(
-    x_0: ndarray, tol: float = A_TOL, transformer: SequenceTransformer | None = None
+    x_0: ndarray, tol: float = a_tol, transformer: SequenceTransformer | None = None
 ):
     """The fixed-point iteration method associated with the function g above.
 
@@ -90,7 +90,7 @@ def fixed_point_method(
 @pytest.fixture(scope="module")
 def compute_reference_n_iter():
     """Compute the number of fixed-point iteration without sequence transformer."""
-    return fixed_point_method(INITIAL_VECTOR, tol=A_TOL)
+    return fixed_point_method(initial_vector, tol=a_tol)
 
 
 @pytest.mark.parametrize(
@@ -109,7 +109,7 @@ def test_sequence_transformer(compute_reference_n_iter, transformer) -> None:
     transformer_ = factory.create(transformer)
 
     n_iter_ref = compute_reference_n_iter
-    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=transformer_)
+    n_iter = fixed_point_method(initial_vector, tol=a_tol, transformer=transformer_)
 
     assert n_iter <= n_iter_ref
 
@@ -142,7 +142,7 @@ def test_composite(compute_reference_n_iter) -> None:
     )
 
     n_iter_ref = compute_reference_n_iter
-    n_iter = fixed_point_method(INITIAL_VECTOR, tol=A_TOL, transformer=transformer)
+    n_iter = fixed_point_method(initial_vector, tol=a_tol, transformer=transformer)
 
     assert n_iter <= n_iter_ref
 

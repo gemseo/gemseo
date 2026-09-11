@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 class PLS(BaseDimensionReduction):
     """Partial Least Square regression."""
 
-    CROSSED: Final[bool] = True
+    crossed: Final[bool] = True
 
     def __init__(
         self,

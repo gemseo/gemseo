@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Correlations(BasePost[Correlations_Settings]):
@@ -56,7 +56,7 @@ class Correlations(BasePost[Correlations_Settings]):
     post-processor considers all the correlations greater than a threshold.
     """
 
-    MAXIMUM_CORRELATION_COEFFICIENT: ClassVar[float] = 1.0 - 1e-9
+    maximum_correlation_coefficient: ClassVar[float] = 1.0 - 1e-9
     """The maximum correlation coefficient above which the variable is not plotted."""
 
     settings_class: ClassVar[type[Correlations_Settings]] = Correlations_Settings
@@ -109,7 +109,7 @@ class Correlations(BasePost[Correlations_Settings]):
         x_history = dataset.design_dataset.to_numpy()
         variable_history = hstack((variable_history, x_history))
         x_names = dataset.get_columns(
-            dataset.get_variable_names(group_name=dataset.DESIGN_GROUP)
+            dataset.get_variable_names(group_name=dataset.design_group)
         )
         variable_names = dataset.get_columns(func_names)
         variable_names.extend(x_names)
@@ -128,9 +128,9 @@ class Correlations(BasePost[Correlations_Settings]):
         correlation_coefficients = self.__compute_correlations(variable_history)
         i_corr, j_corr = (
             (np.abs(correlation_coefficients) > coeff_limit)
-            & (np.abs(correlation_coefficients) < self.MAXIMUM_CORRELATION_COEFFICIENT)
+            & (np.abs(correlation_coefficients) < self.maximum_correlation_coefficient)
         ).nonzero()
-        LOGGER.info("Detected %s correlations > %s", i_corr.size, coeff_limit)
+        logger.info("Detected %s correlations > %s", i_corr.size, coeff_limit)
 
         if i_corr.size <= 16:
             n_plots_x = n_plots_y = 4

@@ -31,8 +31,8 @@ class OT_SystemFORM(OT_FORM):  # noqa: N801
 
     settings_class: ClassVar[type[OT_SystemFORM_Settings]] = OT_SystemFORM_Settings
 
-    _ALGO_CLASS: ClassVar[type[SystemFORM]] = SystemFORM
+    _algo_class: ClassVar[type[SystemFORM]] = SystemFORM
 
-    SUPPORT_ELEMENTARY_EVENT_COMBINATIONS: ClassVar[bool] = True
+    support_elementary_event_combinations: ClassVar[bool] = True
 
-    _USE_MULTIFORM_RESULT: ClassVar[bool] = True
+    _use_multiform_result: ClassVar[bool] = True

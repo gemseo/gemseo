@@ -54,16 +54,16 @@ class FCERegressor(BaseFCERegressor):
     with $\delta$ the Kronecker delta.
     """
 
-    SHORT_NAME: ClassVar[str] = "FCE"
-    LIBRARY: ClassVar[str] = "GEMSEO"
+    short_name: ClassVar[str] = "FCE"
+    library: ClassVar[str] = "GEMSEO"
 
     settings_class: ClassVar[type[FCERegressor_Settings]] = FCERegressor_Settings
 
     __basis: BaseBasis | None
     """The orthonormal multivariate basis after training, `None` before."""
 
-    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = (
-        BaseFCERegressor._ATTR_NOT_TO_SERIALIZE.union({
+    _attr_not_to_serialize: ClassVar[set[str]] = (
+        BaseFCERegressor._attr_not_to_serialize.union({
             "_FCERegressor__basis",
             "_basis_functions",
             "_isoprobabilistic_transformation",

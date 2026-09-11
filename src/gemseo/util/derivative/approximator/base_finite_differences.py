@@ -29,7 +29,7 @@ from numpy import atleast_1d
 from numpy import full
 from numpy import zeros
 
-from gemseo.util.constant import EPSILON
+from gemseo.util.constant import epsilon
 from gemseo.util.derivative.approximator.base import BaseGradientApproximator
 from gemseo.util.derivative.error_estimator import compute_best_step
 
@@ -42,14 +42,14 @@ if TYPE_CHECKING:
 class BaseFiniteDifferences(BaseGradientApproximator):
     """A base class for gradient approximation by finite differences."""
 
-    _DEFAULT_STEP: ClassVar[float] = 1.0e-6
+    _default_step: ClassVar[float] = 1.0e-6
 
     def _get_opt_step(
         self,
         f_p: RealArray,
         f_0: RealArray,
         f_m: RealArray,
-        numerical_error: float = EPSILON,
+        numerical_error: float = epsilon,
     ) -> tuple[floating, floating]:
         r"""Compute the optimal step of a function.
 
@@ -96,7 +96,7 @@ class BaseFiniteDifferences(BaseGradientApproximator):
     def compute_optimal_step(
         self,
         x_vect: RealArray,
-        numerical_error: float = EPSILON,
+        numerical_error: float = epsilon,
         **kwargs: Any,
     ) -> tuple[RealArray, RealArray]:
         r"""Compute the gradient by real step.

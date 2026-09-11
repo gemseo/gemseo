@@ -37,10 +37,10 @@ from gemseo.linear.problem import LinearProblem
 from gemseo.linear.scipy_linalg import BICGSTAB_Settings
 from gemseo.linear.scipy_linalg.scipy_linalg import ScipyLinalgAlgos
 from gemseo.linear.scipy_linalg.settings.lgmres import LGMRES_Settings
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 from gemseo.util.testing.helper import assert_exception
 
-RESIDUALS_TOL = 1e-12
+residuals_tol = 1e-12
 
 
 @pytest.fixture(scope="module")
@@ -68,7 +68,7 @@ def test_default() -> None:
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     factory.execute(problem, settings=LGMRES_Settings(max_iter=1000))
     assert problem.solution is not None
-    assert problem.compute_residuals() < RESIDUALS_TOL
+    assert problem.compute_residuals() < residuals_tol
 
 
 @pytest.mark.parametrize("n", [1, 4, 20])
@@ -111,27 +111,27 @@ def test_linsolve(algo_name, n, use_preconditioner, use_x0, use_ilu_precond) -> 
     )
     factory.execute(problem, settings=settings)
     assert problem.solution is not None
-    assert problem.compute_residuals() < RESIDUALS_TOL
+    assert problem.compute_residuals() < residuals_tol
 
     assert problem.solution is not None
-    assert norm(problem.lhs.dot(problem.solution) - problem.rhs) < RESIDUALS_TOL
+    assert norm(problem.lhs.dot(problem.solution) - problem.rhs) < residuals_tol
 
 
 def test_common_dtype_cplx() -> None:
     factory = LinearSolverLibraryFactory()
     problem = LinearProblem(eye(2, dtype="complex128"), ones(2))
     factory.execute(problem, settings=LGMRES_Settings())
-    assert problem.compute_residuals() < RESIDUALS_TOL
+    assert problem.compute_residuals() < residuals_tol
 
     problem = LinearProblem(eye(2), ones(2, dtype="complex128"))
     factory.execute(problem, settings=LGMRES_Settings())
-    assert problem.compute_residuals() < RESIDUALS_TOL
+    assert problem.compute_residuals() < residuals_tol
 
 
 def test_not_converged(caplog) -> None:
     """Tests the cases when convergence fails and save_when_fail option."""
     factory = LinearSolverLibraryFactory()
-    rng = default_rng(SEED)
+    rng = default_rng(seed)
     n = 100
     problem = LinearProblem(rng.random((n, n)), rng.random(n))
     lib = factory.create("BICGSTAB")

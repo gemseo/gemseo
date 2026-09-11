@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.process_discipline import ProcessDiscipline
     from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class IDF(BaseMDOFormulation[IDF_Settings]):
@@ -116,7 +116,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
                 self._settings.use_threading,
             )
         elif (n_processes := self._settings.n_processes) > 1:
-            LOGGER.info(
+            logger.info(
                 "IDF formulation: running in parallel on %s processes.",
                 n_processes,
             )
@@ -171,7 +171,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
         # Set the target coupling variables to their equilibrium values.
         msg = "IDF formulation: the initial MDA sets %s to %s (before: %s)."
         for name in self.__coupling_structure.all_couplings:
-            LOGGER.info(msg, name, current := final[name], initial[name])
+            logger.info(msg, name, current := final[name], initial[name])
             design_space.set_current_variable(name, current)
 
     def _update_top_level_disciplines(self) -> None:

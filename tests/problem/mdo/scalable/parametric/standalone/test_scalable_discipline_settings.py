@@ -22,16 +22,16 @@
 from __future__ import annotations
 
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_D_I,
+    default_d_i,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_P_I,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings import (  # noqa: E501
-    DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
+    default_p_i,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings import (  # noqa: E501
     ScalableDisciplineSettings,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings import (  # noqa: E501
+    default_scalable_discipline_settings,
 )
 
 
@@ -42,13 +42,13 @@ def test_scalable_discipline_settings() -> None:
     assert settings.p_i == 5
 
     assert ScalableDisciplineSettings() == ScalableDisciplineSettings(
-        DEFAULT_D_I, DEFAULT_P_I
+        default_d_i, default_p_i
     )
 
 
 def test_default_scalable_discipline_settings() -> None:
-    """Check the tuple DEFAULT_SCALABLE_DISCIPLINE_SETTINGS."""
+    """Check the tuple default_scalable_discipline_settings."""
     assert (
         ScalableDisciplineSettings(),
         ScalableDisciplineSettings(),
-    ) == DEFAULT_SCALABLE_DISCIPLINE_SETTINGS
+    ) == default_scalable_discipline_settings

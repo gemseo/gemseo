@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class HDF5Cache(BaseFullCache):
@@ -133,7 +133,7 @@ class HDF5Cache(BaseFullCache):
         cache_size = len(self._hash_to_indices)
         if cache_size > 0:
             msg = "Found %s entries in the cache file : %s node : %s"
-            LOGGER.info(
+            logger.info(
                 msg, cache_size, self.__hdf_file.hdf_file_path, self.__hdf_node_path
             )
 
@@ -181,7 +181,7 @@ class HDF5Cache(BaseFullCache):
             for output_name, value in data.items():
                 data[output_name] = to_value(output_name, value)
         elif group == self.Group.JACOBIAN:
-            data = nest_flat_bilevel_dict(data, separator=self._JACOBIAN_SEPARATOR)
+            data = nest_flat_bilevel_dict(data, separator=self._jacobian_separator)
         return data
 
     def _write_data(

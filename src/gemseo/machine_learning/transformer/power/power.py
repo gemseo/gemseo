@@ -47,7 +47,7 @@ class Power(BaseTransformer):
     lambdas_: RealArray
     """The parameters of the power transformation for the selected features."""
 
-    _TRANSFORMER_NAME: ClassVar[str] = "yeo-johnson"
+    _transformer_name: ClassVar[str] = "yeo-johnson"
     """The name of the transformer in scikit-learn."""
 
     def __init__(self, name: str = "", standardize: bool = True) -> None:
@@ -58,7 +58,7 @@ class Power(BaseTransformer):
         """  # noqa: D205 D212
         super().__init__(name, standardize=standardize)
         self.__power_transformer = PowerTransformer(
-            method=self._TRANSFORMER_NAME,
+            method=self._transformer_name,
             standardize=standardize,
         )
 

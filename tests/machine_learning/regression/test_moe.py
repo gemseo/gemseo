@@ -58,27 +58,27 @@ from gemseo.machine_learning.regression.model.polyreg_settings import (
 )
 from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
 from gemseo.machine_learning.transformer.scaler.scaler import Scaler
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 
-ROOT_LEARNING_SIZE = 6
-LEARNING_SIZE = ROOT_LEARNING_SIZE**2
+root_learning_size = 6
+learning_size = root_learning_size**2
 
-INPUT_VALUE = {"x_1": array([1.0]), "x_2": array([2.0])}
-ARRAY_INPUT_VALUE = array([1.0, 2.0])
-INPUT_VALUES = {
+input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
+array_input_value = array([1.0, 2.0])
+input_values = {
     "x_1": array([[1.0], [0.0], [-1.0], [0.5], [0.1], [1.0]]),
     "x_2": array([[2.0], [0.0], [1.0], [-0.7], [0.4], [0.5]]),
 }
 
-ATOL = 1e-5
-RTOL = 1e-5
+atol = 1e-5
+rtol = 1e-5
 
 
 @pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the regression models."""
-    x_1 = linspace(0, 1, ROOT_LEARNING_SIZE)
-    x_2 = linspace(0, 1, ROOT_LEARNING_SIZE)
+    x_1 = linspace(0, 1, root_learning_size)
+    x_2 = linspace(0, 1, root_learning_size)
     grid_x_1, grid_x_2 = meshgrid(x_1, x_2)
     x_1 = grid_x_1.flatten()[:, newaxis]
     x_2 = grid_x_2.flatten()[:, newaxis]
@@ -174,22 +174,22 @@ def test_set_models(dataset) -> None:
 
 def test_predict_class(model, model_with_transform) -> None:
     """Test class prediction."""
-    prediction = model.predict_class(INPUT_VALUE)
+    prediction = model.predict_class(input_value)
     assert isinstance(prediction, dict)
     assert prediction["labels"].shape == (1,)
-    assert model.predict_class(ARRAY_INPUT_VALUE) == prediction["labels"]
+    assert model.predict_class(array_input_value) == prediction["labels"]
 
-    prediction = model.predict_class(INPUT_VALUES)
+    prediction = model.predict_class(input_values)
     assert isinstance(prediction, dict)
     assert prediction["labels"].shape == (6, 1)
 
-    prediction = model_with_transform.predict_class(INPUT_VALUES)
+    prediction = model_with_transform.predict_class(input_values)
     assert isinstance(prediction, dict)
     assert prediction["labels"].shape == (6, 1)
 
 
 @pytest.mark.parametrize(
-    ("input_data", "shape"), [(INPUT_VALUE, (1,)), (INPUT_VALUES, (6, 1))]
+    ("input_data", "shape"), [(input_value, (1,)), (input_values, (6, 1))]
 )
 @pytest.mark.parametrize("index", [0, 1])
 def test_predict_local_model(model, input_data, index, shape) -> None:
@@ -200,7 +200,7 @@ def test_predict_local_model(model, input_data, index, shape) -> None:
 
 def test_local_model_transform(model_with_transform) -> None:
     """Test prediction of individual regression model."""
-    prediction = model_with_transform.predict_local_model(INPUT_VALUES, 0)
+    prediction = model_with_transform.predict_local_model(input_values, 0)
     assert isinstance(prediction, dict)
     assert "y" in prediction
     assert prediction["y"].shape == (6, 1)
@@ -208,7 +208,7 @@ def test_local_model_transform(model_with_transform) -> None:
 
 def test_predict(model) -> None:
     """Test prediction."""
-    prediction = model.predict(INPUT_VALUES)
+    prediction = model.predict(input_values)
     assert isinstance(prediction, dict)
     assert "y" in prediction
     assert prediction["y"].shape == (6, 1)
@@ -216,7 +216,7 @@ def test_predict(model) -> None:
 
 def test_predict_jacobian(model) -> None:
     """Test jacobian prediction."""
-    jac = model.predict_jacobian(INPUT_VALUES)
+    jac = model.predict_jacobian(input_values)
     assert isinstance(jac, dict)
     assert jac["y"]["x_1"].shape == (6, 1, 1)
     assert jac["y"]["x_2"].shape == (6, 1, 1)
@@ -225,7 +225,7 @@ def test_predict_jacobian(model) -> None:
 def test_predict_jacobian_soft(model_soft) -> None:
     """Test predict jacobian soft."""
     with pytest.raises(NotImplementedError):
-        model_soft.predict_jacobian(INPUT_VALUES)
+        model_soft.predict_jacobian(input_values)
 
 
 def test_repr_str_(model) -> None:
@@ -246,7 +246,7 @@ def test_repr_str_(model) -> None:
 
 def test_repr_html(model) -> None:
     """Check MOERegressor._repr_html."""
-    assert model._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert model._repr_html_() == repr_html_wrapper.format(
         "MOERegressor(hard=True, input_names=(), output_names=(), parameters={}, "
         "transformer={})<br/>"
         "<ul>"

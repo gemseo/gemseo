@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 from openturns import HaselgroveSequence
 
@@ -32,4 +32,4 @@ class OTHaselgroveSequence(BaseOTLowDiscrepancySequence):
          This class is a singleton.
     """
 
-    _ALGO_CLASS: Final[type[HaselgroveSequence]] = HaselgroveSequence
+    _algo_class: ClassVar[type[HaselgroveSequence]] = HaselgroveSequence

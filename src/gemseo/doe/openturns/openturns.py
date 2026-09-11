@@ -21,8 +21,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from collections.abc import Sequence
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -66,8 +68,6 @@ from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Sett
 from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-
     from gemseo.doe.core.base_doe import BaseDOE
     from gemseo.space.design import DesignSpace
     from gemseo.util.typing import NumberArray
@@ -87,147 +87,147 @@ class OpenTURNS(BaseDOELibrary[BaseOpenTURNSSettings]):
     """The OpenTURNS DOE algorithms library."""
 
     # Algorithm names within GEMSEO
-    __AXIAL: Final[str] = "OT_AXIAL"
-    __COMPOSITE: Final[str] = "OT_COMPOSITE"
-    __FACTORIAL: Final[str] = "OT_FACTORIAL"
-    __FAURE: Final[str] = "OT_FAURE"
-    __FULLFACT: Final[str] = "OT_FULLFACT"
-    __HALTON: Final[str] = "OT_HALTON"
-    __HASELGROVE: Final[str] = "OT_HASELGROVE"
-    __LHS: Final[str] = "OT_LHS"
-    __LHSC: Final[str] = "OT_LHSC"
-    __MONTE_CARLO: Final[str] = "OT_MONTE_CARLO"
-    __OPT_LHS: Final[str] = "OT_OPT_LHS"
-    __RANDOM: Final[str] = "OT_RANDOM"
-    __REVERSE_HALTON: Final[str] = "OT_REVERSE_HALTON"
-    __SOBOL: Final[str] = "OT_SOBOL"
-    __SOBOL_INDICES: Final[str] = "OT_SOBOL_INDICES"
+    __axial: Final[str] = "OT_AXIAL"
+    __composite: Final[str] = "OT_COMPOSITE"
+    __factorial: Final[str] = "OT_FACTORIAL"
+    __faure: Final[str] = "OT_FAURE"
+    __fullfact: Final[str] = "OT_FULLFACT"
+    __halton: Final[str] = "OT_HALTON"
+    __haselgrove: Final[str] = "OT_HASELGROVE"
+    __lhs: Final[str] = "OT_LHS"
+    __lhsc: Final[str] = "OT_LHSC"
+    __monte_carlo: Final[str] = "OT_MONTE_CARLO"
+    __opt_lhs: Final[str] = "OT_OPT_LHS"
+    __random: Final[str] = "OT_RANDOM"
+    __reverse_halton: Final[str] = "OT_REVERSE_HALTON"
+    __sobol: Final[str] = "OT_SOBOL"
+    __sobol_indices: Final[str] = "OT_SOBOL_INDICES"
 
-    __NAMES_TO_CLASSES: Final[Mapping[str, type[BaseDOE]]] = {
-        __AXIAL: OTAxialDOE,
-        __COMPOSITE: OTCompositeDOE,
-        __FAURE: OTFaureSequence,
-        __FACTORIAL: OTFactorialDOE,
-        __FULLFACT: OTFullFactorialDOE,
-        __HALTON: OTHaltonSequence,
-        __HASELGROVE: OTHaselgroveSequence,
-        __LHS: OTStandardLHS,
-        __LHSC: OTCenteredLHS,
-        __MONTE_CARLO: OTMonteCarlo,
-        __OPT_LHS: OTOptimalLHS,
-        __RANDOM: OTMonteCarlo,
-        __REVERSE_HALTON: OTReverseHaltonSequence,
-        __SOBOL: OTSobolSequence,
-        __SOBOL_INDICES: OTSobolDOE,
-    }
+    __names_to_classes: Final[Mapping[str, type[BaseDOE]]] = MappingProxyType({
+        __axial: OTAxialDOE,
+        __composite: OTCompositeDOE,
+        __faure: OTFaureSequence,
+        __factorial: OTFactorialDOE,
+        __fullfact: OTFullFactorialDOE,
+        __halton: OTHaltonSequence,
+        __haselgrove: OTHaselgroveSequence,
+        __lhs: OTStandardLHS,
+        __lhsc: OTCenteredLHS,
+        __monte_carlo: OTMonteCarlo,
+        __opt_lhs: OTOptimalLHS,
+        __random: OTMonteCarlo,
+        __reverse_halton: OTReverseHaltonSequence,
+        __sobol: OTSobolSequence,
+        __sobol_indices: OTSobolDOE,
+    })
     """The algorithm names bound to the OpenTURNS classes."""
 
-    __DOC: Final[str] = "http://openturns.github.io/openturns/latest/user_manual/"
+    __doc: Final[str] = "http://openturns.github.io/openturns/latest/user_manual/"
 
     ALGORITHM_INFOS: ClassVar[dict[str, OpenTURNSAlgorithmDescription]] = {
-        __SOBOL: OpenTURNSAlgorithmDescription(
-            algorithm_name=__SOBOL,
+        __sobol: OpenTURNSAlgorithmDescription(
+            algorithm_name=__sobol,
             description="Sobol sequence",
-            internal_algorithm_name=__SOBOL,
-            website=f"{__DOC}_generated/openturns.SobolSequence.html",
+            internal_algorithm_name=__sobol,
+            website=f"{__doc}_generated/openturns.SobolSequence.html",
             settings_class=OT_SOBOL_Settings,
         ),
-        __RANDOM: OpenTURNSAlgorithmDescription(
-            algorithm_name=__RANDOM,
+        __random: OpenTURNSAlgorithmDescription(
+            algorithm_name=__random,
             description="Random sampling",
-            internal_algorithm_name=__RANDOM,
-            website=f"{__DOC}_generated/openturns.Uniform.html",
+            internal_algorithm_name=__random,
+            website=f"{__doc}_generated/openturns.Uniform.html",
             settings_class=OT_RANDOM_Settings,
         ),
-        __HASELGROVE: OpenTURNSAlgorithmDescription(
-            algorithm_name=__HASELGROVE,
+        __haselgrove: OpenTURNSAlgorithmDescription(
+            algorithm_name=__haselgrove,
             description="Haselgrove sequence",
-            internal_algorithm_name=__HASELGROVE,
-            website=f"{__DOC}_generated/openturns.HaselgroveSequence.html",
+            internal_algorithm_name=__haselgrove,
+            website=f"{__doc}_generated/openturns.HaselgroveSequence.html",
             settings_class=OT_HASELGROVE_Settings,
         ),
-        __REVERSE_HALTON: OpenTURNSAlgorithmDescription(
-            algorithm_name=__REVERSE_HALTON,
+        __reverse_halton: OpenTURNSAlgorithmDescription(
+            algorithm_name=__reverse_halton,
             description="Reverse Halton",
-            internal_algorithm_name=__REVERSE_HALTON,
-            website=f"{__DOC}_generated/openturns.ReverseHaltonSequence.html",
+            internal_algorithm_name=__reverse_halton,
+            website=f"{__doc}_generated/openturns.ReverseHaltonSequence.html",
             settings_class=OT_REVERSE_HALTON_Settings,
         ),
-        __HALTON: OpenTURNSAlgorithmDescription(
-            algorithm_name=__HALTON,
+        __halton: OpenTURNSAlgorithmDescription(
+            algorithm_name=__halton,
             description="Halton sequence",
-            internal_algorithm_name=__HALTON,
-            website=f"{__DOC}_generated/openturns.HaltonSequence.html",
+            internal_algorithm_name=__halton,
+            website=f"{__doc}_generated/openturns.HaltonSequence.html",
             settings_class=OT_HALTON_Settings,
         ),
-        __FAURE: OpenTURNSAlgorithmDescription(
-            algorithm_name=__FAURE,
+        __faure: OpenTURNSAlgorithmDescription(
+            algorithm_name=__faure,
             description="Faure sequence",
-            internal_algorithm_name=__FAURE,
-            website=f"{__DOC}_generated/openturns.FaureSequence.html",
+            internal_algorithm_name=__faure,
+            website=f"{__doc}_generated/openturns.FaureSequence.html",
             settings_class=OT_FAURE_Settings,
         ),
-        __MONTE_CARLO: OpenTURNSAlgorithmDescription(
-            algorithm_name=__MONTE_CARLO,
+        __monte_carlo: OpenTURNSAlgorithmDescription(
+            algorithm_name=__monte_carlo,
             description="Monte Carlo sequence",
-            internal_algorithm_name=__MONTE_CARLO,
-            website=f"{__DOC}_generated/openturns.Uniform.html",
+            internal_algorithm_name=__monte_carlo,
+            website=f"{__doc}_generated/openturns.Uniform.html",
             settings_class=OT_MONTE_CARLO_Settings,
         ),
-        __FACTORIAL: OpenTURNSAlgorithmDescription(
-            algorithm_name=__FACTORIAL,
+        __factorial: OpenTURNSAlgorithmDescription(
+            algorithm_name=__factorial,
             description="Factorial design",
-            internal_algorithm_name=__FACTORIAL,
-            website=f"{__DOC}_generated/openturns.Factorial.html",
+            internal_algorithm_name=__factorial,
+            website=f"{__doc}_generated/openturns.Factorial.html",
             settings_class=OT_FACTORIAL_Settings,
         ),
-        __COMPOSITE: OpenTURNSAlgorithmDescription(
-            algorithm_name=__COMPOSITE,
+        __composite: OpenTURNSAlgorithmDescription(
+            algorithm_name=__composite,
             description="Composite design",
-            internal_algorithm_name=__COMPOSITE,
-            website=f"{__DOC}_generated/openturns.Composite.html",
+            internal_algorithm_name=__composite,
+            website=f"{__doc}_generated/openturns.Composite.html",
             settings_class=OT_COMPOSITE_Settings,
         ),
-        __AXIAL: OpenTURNSAlgorithmDescription(
-            algorithm_name=__AXIAL,
+        __axial: OpenTURNSAlgorithmDescription(
+            algorithm_name=__axial,
             description="Axial design",
-            internal_algorithm_name=__AXIAL,
-            website=f"{__DOC}_generated/openturns.Axial.html",
+            internal_algorithm_name=__axial,
+            website=f"{__doc}_generated/openturns.Axial.html",
             settings_class=OT_AXIAL_Settings,
         ),
-        __OPT_LHS: OpenTURNSAlgorithmDescription(
-            algorithm_name=__OPT_LHS,
+        __opt_lhs: OpenTURNSAlgorithmDescription(
+            algorithm_name=__opt_lhs,
             description="Optimal Latin Hypercube Sampling",
-            internal_algorithm_name=__OPT_LHS,
-            website=f"{__DOC}_generated/openturns.SimulatedAnnealingLHS.html",
+            internal_algorithm_name=__opt_lhs,
+            website=f"{__doc}_generated/openturns.SimulatedAnnealingLHS.html",
             settings_class=OT_OPT_LHS_Settings,
         ),
-        __LHS: OpenTURNSAlgorithmDescription(
-            algorithm_name=__LHS,
+        __lhs: OpenTURNSAlgorithmDescription(
+            algorithm_name=__lhs,
             description="Latin Hypercube Sampling",
-            internal_algorithm_name=__LHS,
-            website=f"{__DOC}_generated/openturns.LHSExperiment.html",
+            internal_algorithm_name=__lhs,
+            website=f"{__doc}_generated/openturns.LHSExperiment.html",
             settings_class=OT_LHS_Settings,
         ),
-        __LHSC: OpenTURNSAlgorithmDescription(
-            algorithm_name=__LHSC,
+        __lhsc: OpenTURNSAlgorithmDescription(
+            algorithm_name=__lhsc,
             description="Centered Latin Hypercube Sampling",
-            internal_algorithm_name=__LHSC,
-            website=f"{__DOC}_generated/openturns.LHSExperiment.html",
+            internal_algorithm_name=__lhsc,
+            website=f"{__doc}_generated/openturns.LHSExperiment.html",
             settings_class=OT_LHSC_Settings,
         ),
-        __FULLFACT: OpenTURNSAlgorithmDescription(
-            algorithm_name=__FULLFACT,
+        __fullfact: OpenTURNSAlgorithmDescription(
+            algorithm_name=__fullfact,
             description="Full factorial design",
-            internal_algorithm_name=__FULLFACT,
-            website=f"{__DOC}_generated/openturns.Box.html",
+            internal_algorithm_name=__fullfact,
+            website=f"{__doc}_generated/openturns.Box.html",
             settings_class=OT_FULLFACT_Settings,
         ),
-        __SOBOL_INDICES: OpenTURNSAlgorithmDescription(
-            algorithm_name=__SOBOL_INDICES,
+        __sobol_indices: OpenTURNSAlgorithmDescription(
+            algorithm_name=__sobol_indices,
             description="DOE for Sobol indices",
-            internal_algorithm_name=__SOBOL_INDICES,
-            website=f"{__DOC}_generated/openturns.SobolIndicesAlgorithm.html",
+            internal_algorithm_name=__sobol_indices,
+            website=f"{__doc}_generated/openturns.SobolIndicesAlgorithm.html",
             settings_class=OT_SOBOL_INDICES_Settings,
         ),
     }
@@ -237,5 +237,5 @@ class OpenTURNS(BaseDOELibrary[BaseOpenTURNSSettings]):
         design_space: DesignSpace,
     ) -> NumberArray:
         openturns.RandomGenerator.SetSeed(self._seeder.get_seed(self._settings.seed))
-        doe_algo = self.__NAMES_TO_CLASSES[self._algo_name]()
+        doe_algo = self.__names_to_classes[self._algo_name]()
         return doe_algo.generate_samples(design_space.dimension, self._settings)

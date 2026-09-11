@@ -26,4 +26,4 @@ from gemseo.uncertainty.reliability.openturns.base_qmc_settings import BaseOTQMC
 class OT_Haselgrove_Settings(BaseOTQMCSettings):  # noqa: N801
     """The settings of the QMC algorithm using the Haselgrove sequence."""
 
-    _SEQUENCE_CLASS: ClassVar[type[HaselgroveSequence]] = HaselgroveSequence
+    _sequence_class: ClassVar[type[HaselgroveSequence]] = HaselgroveSequence

@@ -43,6 +43,7 @@ from pathlib import Path
 from tempfile import mkdtemp
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 from gemseo.core._process_flow.execution_sequence.execution_sequence import (
     ExecutionSequence,
@@ -75,10 +76,12 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-OPT_NAME = OPT_ID = "Opt"
-USER_NAME = USER_ID = "_U_"
+opt_name: Final[str] = "Opt"
+opt_id: Final[str] = "Opt"
+user_name: Final[str] = "_U_"
+user_id: Final[str] = "_U_"
 
 EdgeType = dict[str, Discipline | list[str]]
 NodeType = dict[str, str]
@@ -233,7 +236,7 @@ class XDSMizer:
             save_pdf=self.save_pdf,
         )
         if self.log_workflow_status:
-            LOGGER.info(str(self._monitor))
+            logger.info(str(self._monitor))
 
     def run(
         self,
@@ -369,8 +372,8 @@ class XDSMizer:
         statuses = self.workflow.get_statuses()
 
         # Optimization
-        self.to_id[self.root_atom] = OPT_ID
-        opt_node = {"id": OPT_ID, "name": algoname, "type": "optimization"}
+        self.to_id[self.root_atom] = opt_id
+        opt_node = {"id": opt_id, "name": algoname, "type": "optimization"}
         if statuses[self.root_atom.uuid]:
             opt_node["status"] = str(statuses[self.root_atom.uuid])
 
@@ -467,8 +470,8 @@ class XDSMizer:
         if self._is_scenario:
             user_pattern = "L({})" if self.scenario.name == "Sampling" else "{}^(0)"
             opt_pattern = "{}^(1:N)" if self.scenario.name == "Sampling" else "{}^*"
-            add_edge(USER_ID, OPT_ID, [user_pattern.format(x) for x in to_opt])
-            add_edge(OPT_ID, USER_ID, [opt_pattern.format(x) for x in to_user])
+            add_edge(user_id, opt_id, [user_pattern.format(x) for x in to_opt])
+            add_edge(opt_id, user_id, [opt_pattern.format(x) for x in to_user])
 
         # Disciplines to/from optimization
         for atom in self.atoms:
@@ -481,13 +484,13 @@ class XDSMizer:
                 )
 
                 if varnames:
-                    add_edge(OPT_ID, self.to_id[atom], varnames)
+                    add_edge(opt_id, self.to_id[atom], varnames)
 
                 varnames = sorted(
                     set(atom.process.io.output_grammar) & set(function_varnames)
                 )
                 if varnames:
-                    add_edge(self.to_id[atom], OPT_ID, varnames)
+                    add_edge(self.to_id[atom], opt_id, varnames)
 
         # Disciplines to User/Optimization (from User is already handled at
         # optimizer level)
@@ -504,9 +507,9 @@ class XDSMizer:
                     o for o in atom.process.io.output_grammar if o in disc_to_opt
                 ]
                 if out_to_user:
-                    add_edge(self.to_id[atom], USER_ID, [x + "^*" for x in out_to_user])
+                    add_edge(self.to_id[atom], user_id, [x + "^*" for x in out_to_user])
                 if out_to_opt:
-                    add_edge(self.to_id[atom], OPT_ID, out_to_opt)
+                    add_edge(self.to_id[atom], opt_id, out_to_opt)
 
         # Disciplines to/from disciplines
         for coupling in self.scenario.get_process_flow().get_data_flow():
@@ -602,7 +605,7 @@ class XDSMizer:
 
     def _create_workflow(self) -> list[str, IdsType]:
         """Manage the creation of the XDSM workflow creation from a formulation one."""
-        return [USER_ID, expand(self.workflow, self.to_id)]
+        return [user_id, expand(self.workflow, self.to_id)]
 
 
 def expand(
@@ -639,7 +642,7 @@ def expand(
     elif isinstance(wks, LoopExecSequence):
         if (
             isinstance(wks.atom_controller.process, EvaluationScenario)
-            and to_id[wks.atom_controller] != OPT_ID
+            and to_id[wks.atom_controller] != opt_id
         ):
             # sub-scnario consider only the controller
             ids = [to_id[wks.atom_controller]]

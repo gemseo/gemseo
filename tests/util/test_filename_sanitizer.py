@@ -35,7 +35,7 @@ import pytest
 
 from gemseo.util import _filename_sanitizer
 from gemseo.util._filename_sanitizer import secure_filename
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.platform import platform_is_windows
 
 
 def test_secure_filename():
@@ -49,7 +49,7 @@ def test_secure_filename():
     assert secure_filename("__filename__") == "filename"
     assert secure_filename("foo$&^*)bar") == "foobar"
     assert secure_filename("con.bar") == (
-        "_con.bar" if PLATFORM_IS_WINDOWS else "con.bar"
+        "_con.bar" if platform_is_windows else "con.bar"
     )
 
 

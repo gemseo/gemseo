@@ -91,13 +91,16 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
     constraints_grad: Mapping[str, ndarray | None] | None = None
     """The values of the gradients of the constraints at the optimum."""
 
-    __CGRAD_TAG = "constr_grad:"
-    __CGRAD_TAG_LEN = len(__CGRAD_TAG)
-    __C_TAG = "constr:"
-    __C_TAG_LEN = len(__C_TAG)
-    __CONSTRAINTS_VALUES = "constraint_values"
-    __CONSTRAINTS_GRAD = "constraints_grad"
-    __NOT_DICT_KEYS: ClassVar[list[str]] = [__CONSTRAINTS_VALUES, __CONSTRAINTS_GRAD]
+    __cgrad_tag: ClassVar[str] = "constr_grad:"
+    __cgrad_tag_len: ClassVar[int] = len(__cgrad_tag)
+    __c_tag: ClassVar[str] = "constr:"
+    __c_tag_len: ClassVar[int] = len(__c_tag)
+    __constraints_values: ClassVar[str] = "constraint_values"
+    __constraints_grad: ClassVar[str] = "constraints_grad"
+    __not_dict_keys: ClassVar[tuple[str, ...]] = (
+        __constraints_values,
+        __constraints_grad,
+    )
 
     @property
     def _string_representation(self) -> MultiLineString:
@@ -177,11 +180,11 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
             A dictionary representation of the optimization result.
         """
         dict_ = {
-            k: v for k, v in self.__dict__.items() if k not in self.__NOT_DICT_KEYS
+            k: v for k, v in self.__dict__.items() if k not in self.__not_dict_keys
         }
         for mapping, prefix in [
-            (self.constraint_values, self.__C_TAG),
-            (self.constraints_grad, self.__CGRAD_TAG),
+            (self.constraint_values, self.__c_tag),
+            (self.constraints_grad, self.__cgrad_tag),
         ]:
             if mapping is not None:
                 for key, value in mapping.items():
@@ -208,18 +211,18 @@ class OptimizationResult(metaclass=ABCGoogleDocstringInheritanceMeta):
         cstr = {}
         cstr_grad = {}
         for key, value in dict_.items():
-            if key.startswith(cls.__C_TAG):
-                cstr[key[cls.__C_TAG_LEN :]] = value
+            if key.startswith(cls.__c_tag):
+                cstr[key[cls.__c_tag_len :]] = value
 
-            if key.startswith(cls.__CGRAD_TAG):
-                cstr_grad[key[cls.__CGRAD_TAG_LEN :]] = value
+            if key.startswith(cls.__cgrad_tag):
+                cstr_grad[key[cls.__cgrad_tag_len :]] = value
 
         optimization_result = {
             key.name: dict_[key.name] for key in fields(cls) if key.name in dict_
         }
         optimization_result.update({
-            cls.__CONSTRAINTS_VALUES: cstr or None,
-            cls.__CONSTRAINTS_GRAD: cstr_grad or None,
+            cls.__constraints_values: cstr or None,
+            cls.__constraints_grad: cstr_grad or None,
         })
         return cls(**optimization_result)
 

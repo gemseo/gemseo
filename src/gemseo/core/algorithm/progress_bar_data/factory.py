@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from strenum import StrEnum
@@ -28,18 +29,20 @@ from gemseo.util.string import convert_camel_case_to_screaming_snake_case
 class ProgressBarDataFactory(BaseFactory):
     """The factory for `BaseProgressBarData` objects."""
 
-    _CLASS = BaseProgressBarData
-    _PACKAGE_NAMES = ("gemseo.core.algorithm.progress_bar_data",)
+    _class: ClassVar[type[BaseProgressBarData]] = BaseProgressBarData
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.core.algorithm.progress_bar_data",
+    )
 
 
-PROGRESS_BAR_DATA_FACTORY: Final[ProgressBarDataFactory] = ProgressBarDataFactory()
+progress_bar_data_factory: Final[ProgressBarDataFactory] = ProgressBarDataFactory()
 """The factory for `BaseProgressBarData` objects."""
 
 ProgressBarDataName = StrEnum(
     "ProgressBarDataName",
     {
         convert_camel_case_to_screaming_snake_case(name): name
-        for name in PROGRESS_BAR_DATA_FACTORY.class_names
+        for name in progress_bar_data_factory.class_names
     },
 )
 """A name of a [BaseProgressBarData][gemseo.core.algorithm.progress_bar_data.base.BaseProgressBarData] subclass."""  # noqa: E501

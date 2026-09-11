@@ -38,7 +38,7 @@ from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_S
 if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
 
-_SCALE_INVARIANT_KERNELS: Final[frozenset[str]] = frozenset((
+_scale_invariant_kernels: Final[frozenset[str]] = frozenset((
     "linear",
     "thin_plate_spline",
     "cubic",
@@ -70,14 +70,14 @@ class RBFRegressor(BaseRegressor):
     SciPy class.
     """
 
-    SHORT_NAME: ClassVar[str] = "RBF"
-    LIBRARY: ClassVar[str] = "SciPy"
+    short_name: ClassVar[str] = "RBF"
+    library: ClassVar[str] = "SciPy"
 
     settings_class: ClassVar[type[BaseRBFRegressorSettings]] = RBFRegressor_Settings
 
     def _fit(self, input_data: RealArray, output_data: RealArray) -> None:
         epsilon = self._settings.epsilon_
-        if epsilon is None and self._settings.kernel_ not in _SCALE_INVARIANT_KERNELS:
+        if epsilon is None and self._settings.kernel_ not in _scale_invariant_kernels:
             extents = input_data.max(0) - input_data.min(0)
             extents = extents[extents.nonzero()]
             size = extents.size

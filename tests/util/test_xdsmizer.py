@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from copy import deepcopy
 from pathlib import Path
@@ -42,7 +43,7 @@ from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
 from gemseo.formulation.bilevel_settings import BiLevel_Settings
 from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.formulation.mdf_settings import MDF_Settings
 from gemseo.mda.chain import MDAChain
 from gemseo.mda.chain_settings import MDAChain_Settings
@@ -103,7 +104,7 @@ def build_sobieski_scenario(
     scenario = MDOScenario(
         disciplines,
         SobieskiDesignSpace(),
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             formulation_name
         ).settings_class(**formulation_settings),
     )
@@ -767,6 +768,24 @@ def test_run_return(tmp_wd, directory_path, file_name, save_html) -> None:
         html_file_path = xdsm.html_file_path
         assert html_file_path.exists()
         assert html_file_path.name == html_file_name
+
+
+def test_monitor_log_workflow_status(tmp_wd, caplog) -> None:
+    """Check that XDSMizer.update() logs the workflow status when requested."""
+    design_space = DesignSpace()
+    design_space.add_variable("x")
+    discipline = AnalyticDiscipline({"y": "x"})
+    scenario = MDOScenario([discipline], design_space)
+    scenario.add_objective("y")
+
+    xdsmizer = XDSMizer(scenario)
+    xdsmizer.monitor(directory_path=tmp_wd, log_workflow_status=True)
+
+    with caplog.at_level(logging.INFO, logger="gemseo.util.xdsm.xdsmizer"):
+        xdsmizer.update(xdsmizer.atoms[0])
+
+    assert caplog.messages
+    assert caplog.messages[-1] == str(xdsmizer._monitor)
 
 
 def test_mda_chain(options) -> None:

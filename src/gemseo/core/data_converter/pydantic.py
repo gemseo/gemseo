@@ -64,15 +64,15 @@ class PydanticGrammarDataConverter(BaseDataConverter["PydanticGrammar"]):
         if issubdtype(dtype, inexact):
             # Float or complex dtype: matches any continuous scalar type.
             return any(
-                t in types for t in self._IS_CONTINUOUS_TYPES if t is not ndarray
+                t in types for t in self._is_continuous_types if t is not ndarray
             )
 
         if issubdtype(dtype, np_integer):
             # Integer dtype: matches any numeric-but-not-continuous scalar type.
             return any(
                 t in types
-                for t in self._IS_NUMERIC_TYPES
-                if t not in self._IS_CONTINUOUS_TYPES
+                for t in self._is_numeric_types
+                if t not in self._is_continuous_types
             )
 
         return False

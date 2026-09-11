@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 
 from gemseo.formulation.bilevel import BiLevel
 from gemseo.formulation.bilevel_bcd_settings import BiLevelBCD_Settings
-from gemseo.mda.factory import MDA_FACTORY
+from gemseo.mda.factory import mda_factory
 
 if TYPE_CHECKING:
     from typing import ClassVar
@@ -62,7 +62,7 @@ class BiLevelBCD(BiLevel):
         return self._bcd_mda
 
     def _create_sub_scenarios_chain(self) -> MDAGaussSeidel:
-        self._bcd_mda = MDA_FACTORY.create(
+        self._bcd_mda = mda_factory.create(
             "MDAGaussSeidel",
             self.scenario_adapters,
             settings=self._settings.bcd_mda_settings,

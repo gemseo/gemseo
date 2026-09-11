@@ -32,14 +32,14 @@ from gemseo.machine_learning.transformer.dimension_reduction.kpca import KPCA
 if TYPE_CHECKING:
     from numpy import ndarray
 
-N_SAMPLES = 10
-N_FEATURES = 8
+n_samples = 10
+n_features = 8
 
 
 @pytest.fixture
 def data() -> ndarray:
     """The dataset used to build the transformer, based on a 1D-mesh."""
-    return linspace(0, 1, N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
+    return linspace(0, 1, n_samples * n_features).reshape(n_samples, n_features)
 
 
 def test_constructor() -> None:
@@ -81,11 +81,11 @@ def test_inverse_transform(data) -> None:
     n_components = 3
     kpca = KPCA(n_components=n_components)
     kpca.fit(data)
-    data = linspace(0, 1, N_SAMPLES * n_components)
-    data = data.reshape((N_SAMPLES, n_components))
+    data = linspace(0, 1, n_samples * n_components)
+    data = data.reshape((n_samples, n_components))
     restored_data = kpca.inverse_transform(data)
     assert restored_data.shape[0] == data.shape[0]
-    assert restored_data.shape[1] == N_FEATURES
+    assert restored_data.shape[1] == n_features
 
 
 def test_shape(data) -> None:

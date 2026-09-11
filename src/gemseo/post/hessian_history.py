@@ -37,7 +37,7 @@ from numpy import min as np_min
 from numpy import ones_like
 
 from gemseo.core.problem.database import Database
-from gemseo.post._engine.colormap import PARULA
+from gemseo.post._engine.colormap import parula
 from gemseo.post._engine.hessian import SR1Approx
 from gemseo.post.core.base_post import BasePost
 from gemseo.post.hessian_history_settings import HessianHistory_Settings
@@ -48,7 +48,7 @@ class HessianHistory(BasePost):
 
     settings_class: ClassVar[type[HessianHistory_Settings]] = HessianHistory_Settings
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+    _use_jacobian_data: ClassVar[bool] = True
 
     def _plot(self, settings: HessianHistory_Settings) -> None:
         obj_grad_name = Database.get_gradient_name(
@@ -103,7 +103,7 @@ class HessianHistory(BasePost):
 
         img = ax.imshow(
             diag.real,
-            cmap=PARULA,
+            cmap=parula,
             interpolation="nearest",
             aspect="auto",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0),

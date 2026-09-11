@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from numpy import array
 from numpy import expand_dims
@@ -62,10 +63,12 @@ class AnalyticDiscipline(Discipline):
     E.g. `{"out": ["in_1", "in_2"]}`.
     """
 
-    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union([
-        "_sympy_funcs",
-        "_sympy_jac_funcs",
-    ])
+    _attr_not_to_serialize: ClassVar[set[str]] = (
+        Discipline._attr_not_to_serialize.union([
+            "_sympy_funcs",
+            "_sympy_jac_funcs",
+        ])
+    )
 
     def __init__(
         self,

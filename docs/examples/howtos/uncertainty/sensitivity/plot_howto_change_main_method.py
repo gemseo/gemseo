@@ -26,7 +26,7 @@ as the ranking and visualization criterion.
 The
 [main_method][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.main_method]
 attribute sets the active index type.
-Its default value is the class attribute `_DEFAULT_MAIN_METHOD`.
+Its default value is the class attribute `_default_main_method`.
 It can be reassigned at any point — before or after
 [compute_indices()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_indices] —
 without re-running the analysis.

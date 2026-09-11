@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
@@ -29,9 +30,9 @@ if TYPE_CHECKING:
 class DataConverterFactory(BaseFactory[BaseDataConverter["BaseGrammar"]]):
     """Factory for converters of data values to NumPy arrays and vice versa."""
 
-    _CLASS = BaseDataConverter
-    _PACKAGE_NAMES = ("gemseo.core.data_converter",)
+    _class: ClassVar[type[BaseDataConverter[BaseGrammar]]] = BaseDataConverter  # type: ignore[type-abstract]
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.core.data_converter",)
 
 
-DATA_CONVERTER_FACTORY: Final[DataConverterFactory] = DataConverterFactory()
+data_converter_factory: Final[DataConverterFactory] = DataConverterFactory()
 """The factory for `DataConverter` objects."""

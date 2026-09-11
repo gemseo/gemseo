@@ -93,8 +93,8 @@ if TYPE_CHECKING:
 class GaussianMixture(BasePredictiveClusterer):
     """The Gaussian mixture clustering model."""
 
-    SHORT_NAME: ClassVar[str] = "GMM"
-    LIBRARY: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "GMM"
+    library: ClassVar[str] = "scikit-learn"
 
     settings_class: ClassVar[type[GaussianMixture_Settings]] = GaussianMixture_Settings
 

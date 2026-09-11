@@ -38,8 +38,8 @@ if TYPE_CHECKING:
 
 
 __EUCLIDEAN: Final[str] = "euclidean"
-_DEFAULT_DISCREPANCY_TYPE_NAME: Final[str] = "CD"
-_DEFAULT_POWER: Final[int] = 50
+_default_discrepancy_type_name: Final[str] = "CD"
+_default_power: Final[int] = 50
 
 
 class DOEMeasures(NamedTuple):
@@ -76,8 +76,8 @@ class DOEQuality:
     def __init__(
         self,
         samples: RealArray,
-        power: int = _DEFAULT_POWER,
-        discrepancy_type_name: DiscrepancyTypeNameType = _DEFAULT_DISCREPANCY_TYPE_NAME,
+        power: int = _default_power,
+        discrepancy_type_name: DiscrepancyTypeNameType = _default_discrepancy_type_name,
         **discrepancy_options: Any,
     ) -> None:
         r"""
@@ -162,7 +162,7 @@ def compute_mindist_criterion(samples: RealArray) -> float:
 
 def compute_discrepancy(
     samples: RealArray,
-    type_name: DiscrepancyTypeNameType = _DEFAULT_DISCREPANCY_TYPE_NAME,
+    type_name: DiscrepancyTypeNameType = _default_discrepancy_type_name,
     **options: Any,
 ) -> float:
     """Compute the discrepancy of a sample set (the smaller, the better).
@@ -178,7 +178,7 @@ def compute_discrepancy(
     return qmc.discrepancy(samples, method=type_name, **options)
 
 
-def compute_phip_criterion(samples: RealArray, power: float = _DEFAULT_POWER) -> float:
+def compute_phip_criterion(samples: RealArray, power: float = _default_power) -> float:
     r"""Compute the $\phi^p$ criterion of a sample set (the smaller, the better).
 
     !!! quote "References"

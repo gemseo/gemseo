@@ -34,7 +34,7 @@ from gemseo.mda.newton_raphson_settings import MDANewtonRaphson_Settings
 from .mda_gauss_seidel import SobieskiMDAGaussSeidel
 from .mda_jacobi import SobieskiMDAJacobi
 
-DIRNAME = os.path.dirname(__file__)
+dirname = os.path.dirname(__file__)
 
 
 def test_compare_mda_jacobi_gs() -> None:
@@ -46,7 +46,7 @@ def test_compare_mda_jacobi_gs() -> None:
     out2 = mda2.execute()
 
     for key, value1 in out1.items():
-        if key == mda.NORMALIZED_RESIDUAL_NORM:
+        if key == mda.normalized_residual_norm_name:
             continue
         assert (
             np.linalg.norm(np.array(out2[key] - value1)) / np.linalg.norm(value1) < 1e-2
@@ -76,7 +76,7 @@ def test_mda_jacobi_newton_hybrid(sellar_with_2d_array, sellar_disciplines) -> N
     out3 = mda_hybrid.execute()
 
     for key, value1 in out1.items():
-        if key == mda_j.NORMALIZED_RESIDUAL_NORM:
+        if key == mda_j.normalized_residual_norm_name:
             continue
         nv1 = np.linalg.norm(value1)
         if nv1 > 1e-14:

@@ -30,7 +30,7 @@ from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.post.gantt_chart import create_gantt_chart
 from gemseo.util.testing.helper import assert_exception
 
-TIME_STAMPS_PATH = Path(__file__).parent / "time_stamps.pickle"
+time_stamps_path = Path(__file__).parent / "time_stamps.pickle"
 
 
 def setup_module(module):
@@ -57,7 +57,7 @@ def reset_time_stamping():
 @pytest.fixture(scope="module")
 def time_stamps_data():
     """Return the reference time stamps from local pickle."""
-    with TIME_STAMPS_PATH.open("rb") as infile:
+    with time_stamps_path.open("rb") as infile:
         return pickle.load(infile)
 
 

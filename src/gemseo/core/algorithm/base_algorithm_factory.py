@@ -42,10 +42,10 @@ if TYPE_CHECKING:
 class _AlgorithmFactoryMeta(ABCMeta):
     """A metaclass to add an internal factory class derived from [BaseFactory][gemseo.core.base_factory.BaseFactory]."""  # noqa: E501
 
-    _CLASS: ClassVar[type]
+    _class: ClassVar[type]
     """The base class that the factory can build."""
 
-    _PACKAGE_NAMES: ClassVar[list[str]]
+    _package_names: ClassVar[list[str]]
     """The fully qualified names of the modules to search."""
 
     _Factory: type[BaseFactory[BaseAlgorithmLibrary]]
@@ -63,7 +63,7 @@ class _AlgorithmFactoryMeta(ABCMeta):
             cls._Factory = type(
                 "_Factory",
                 (BaseFactory,),
-                {"_CLASS": cls._CLASS, "_PACKAGE_NAMES": cls._PACKAGE_NAMES},
+                {"_class": cls._class, "_package_names": cls._package_names},
             )
             # Set the correct fully qualified name for pickling.
             cls._Factory.__module__ = cls.__module__
@@ -87,8 +87,8 @@ class BaseAlgorithmFactory(metaclass=_AlgorithmFactoryMeta):
     ```python
 
        class AFactory(BaseAlgorithmFactory):
-           _CLASS = ABaseClass
-           _PACKAGE_NAMES = (
+           _class = ABaseClass
+           _package_names = (
                "first.module.fully.qualified.name",
                "second.module.fully.qualified.name",
            )
@@ -124,12 +124,12 @@ class BaseAlgorithmFactory(metaclass=_AlgorithmFactoryMeta):
 
     @property
     @abstractmethod
-    def _CLASS(self) -> type:  # noqa:N802
+    def _class(self) -> type:  # noqa:N802
         """The base class that the factory can build."""
 
     @property
     @abstractmethod
-    def _PACKAGE_NAMES(self) -> list[str]:  # noqa:N802
+    def _package_names(self) -> list[str]:
         """The fully qualified names of the modules to search."""
 
     def is_available(self, name: str) -> bool:

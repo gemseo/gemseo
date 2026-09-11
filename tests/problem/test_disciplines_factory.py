@@ -25,21 +25,21 @@ import pytest
 
 from gemseo.discipline.factory import DisciplineFactory
 
-DATA_PATH = str(Path(__file__).parent / "data")
+data_path = str(Path(__file__).parent / "data")
 
 # TODO: some of theses tests are actually Factory tests, move them to the right
 # place
 
 
 def test_init(monkeypatch, reset_factory) -> None:
-    monkeypatch.setenv("GEMSEO_PATH", DATA_PATH)
+    monkeypatch.setenv("GEMSEO_PATH", data_path)
 
     fact1 = DisciplineFactory()
     # Force update since we changed the GEMSEO_PATH
     fact1.update()
     assert fact1.is_available("DummyDisciplineIMP")
 
-    gemseo_path = f"{DATA_PATH}:{DATA_PATH}"
+    gemseo_path = f"{data_path}:{data_path}"
     monkeypatch.setenv("GEMSEO_PATH", gemseo_path)
     fact1.update()
 
@@ -55,7 +55,7 @@ def test_init(monkeypatch, reset_factory) -> None:
 
 
 def test_create(monkeypatch, reset_factory) -> None:
-    monkeypatch.setenv("GEMSEO_PATH", DATA_PATH)
+    monkeypatch.setenv("GEMSEO_PATH", data_path)
     fact = DisciplineFactory()
     dummy = fact.create("DummyDisciplineIMP", opts1=1)
     assert dummy.opts1 == 1

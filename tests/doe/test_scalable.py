@@ -24,19 +24,19 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.util.testing.helper import assert_exception
 
 from .utils import check_problem_execution
 from .utils import execute_problem
 
-DOE_LIB_NAME = "DiagonalDOE"
+doe_lib_name = "DiagonalDOE"
 
 
 def test_init() -> None:
     """Check the creation of the library."""
-    if DOE_LIBRARY_FACTORY.is_available(DOE_LIB_NAME):
-        DOE_LIBRARY_FACTORY.create(DOE_LIB_NAME)
+    if doe_library_factory.is_available(doe_lib_name):
+        doe_library_factory.create(doe_lib_name)
 
 
 def test_invalid_algo(snapshot) -> None:
@@ -61,7 +61,7 @@ def test_diagonal_doe_on_rosenbrock(dimension) -> None:
     assert (
         check_problem_execution(
             dimension,
-            DOE_LIB_NAME,
+            doe_lib_name,
             lambda algo, dim, n_samples: n_samples,
             {"n_samples": 13},
         )
@@ -87,8 +87,8 @@ def variables_space():
 
 def test_compute_doe(variables_space) -> None:
     """Check the computation of a DOE out of a variables space."""
-    library = DOE_LIBRARY_FACTORY.create(DOE_LIB_NAME)
-    settings = library.ALGORITHM_INFOS[DOE_LIB_NAME].settings_class(n_samples=3)
+    library = doe_library_factory.create(doe_lib_name)
+    settings = library.ALGORITHM_INFOS[doe_lib_name].settings_class(n_samples=3)
     doe = library.sample_unit_hypercube(variables_space.dimension, settings=settings)
     assert_equal(doe, array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]))
 
@@ -102,8 +102,8 @@ def test_compute_doe(variables_space) -> None:
 )
 def test_reverse(variables_space, reverse, samples) -> None:
     """Check the sampling of variables in reverse order."""
-    library = DOE_LIBRARY_FACTORY.create(DOE_LIB_NAME)
-    settings = library.ALGORITHM_INFOS[DOE_LIB_NAME].settings_class(
+    library = doe_library_factory.create(doe_lib_name)
+    settings = library.ALGORITHM_INFOS[doe_lib_name].settings_class(
         n_samples=3, reverse=reverse
     )
     doe = library.sample_space(

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Final
 
 from gemseo.optimization._trust_region.trust_updater import PenaltyUpdater
 from gemseo.optimization._trust_region.trust_updater import RadiusUpdater
@@ -38,14 +39,14 @@ class UpdaterFactory:
     See [TrustUpdater][gemseo.optimization._trust_region.trust_updater.TrustUpdater].
     """
 
-    RADIUS = "radius"
-    PENALTY = "penalty"
-    TRUST_PARAMETERS: ClassVar[list[str]] = [RADIUS, PENALTY]
+    radius: Final[str] = "radius"
+    penalty: Final[str] = "penalty"
+    trust_parameters: ClassVar[list[str]] = [radius, penalty]
 
     def __init__(self) -> None:  # noqa:D107
         self.__update_name_to_updater = {
-            UpdaterFactory.RADIUS: RadiusUpdater,
-            UpdaterFactory.PENALTY: PenaltyUpdater,
+            UpdaterFactory.radius: RadiusUpdater,
+            UpdaterFactory.penalty: PenaltyUpdater,
         }
 
     def create(

@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.machine_learning.core.quality.base_ml_model_quality import (
     BaseMLModelQuality,
@@ -25,5 +27,5 @@ from gemseo.machine_learning.core.quality.base_ml_model_quality import (
 class MLModelQualityFactory(BaseFactory):
     """A factory of objects to assess the quality of an ML model."""
 
-    _CLASS = BaseMLModelQuality
-    _PACKAGE_NAMES = ("gemseo.machine_learning",)
+    _class: ClassVar[type[BaseMLModelQuality]] = BaseMLModelQuality
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.machine_learning",)

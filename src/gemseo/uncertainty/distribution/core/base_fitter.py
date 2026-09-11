@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 FittingTestResultType = tuple[bool, Mapping[str, float]]
 MeasureType = FittingTestResultType | float
@@ -54,7 +54,7 @@ class BaseDistributionFitter(
     _samples: Any
     """The samples."""
 
-    _CRITERIA_TO_WRAPPED_OBJECTS: ClassVar[StrKeyMapping]
+    _criteria_to_wrapped_objects: ClassVar[StrKeyMapping]
     """Fitting criteria to objects of the UQ library."""
 
     DistributionName: ClassVar[StrEnum]
@@ -78,7 +78,7 @@ class BaseDistributionFitter(
         BEST = "best"
         """Select the distribution that best satisfies a fitting criterion"""
 
-    _FITTING_CRITERIA_TO_MINIMIZE: ClassVar[set[str]] = set()
+    _fitting_criteria_to_minimize: ClassVar[set[str]] = set()
     """The fitting criteria to minimize (the others are to be maximized)."""
 
     def __init__(self, data: RealArray) -> None:
@@ -256,7 +256,7 @@ class BaseDistributionFitter(
         if is_significant_test:
             measures = [measure[1]["p-value"] for index, measure in enumerate(measures)]
             if all(p_value < level for p_value in measures):
-                LOGGER.warning(
+                logger.warning(
                     "All criteria values are lower than the significance level %s.",
                     level,
                 )
@@ -290,7 +290,7 @@ class BaseDistributionFitter(
             The index of the best probability distribution
             according to a fitting criterion.
         """
-        op = min if fitting_criterion in cls._FITTING_CRITERIA_TO_MINIMIZE else max
+        op = min if fitting_criterion in cls._fitting_criteria_to_minimize else max
         return measures.index(op(measures))
 
     @property

@@ -29,11 +29,11 @@ from gemseo.optimization.augmented_lagrangian.settings.order_0 import (
 from gemseo.optimization.augmented_lagrangian.settings.order_1 import (
     Augmented_Lagrangian_Order_1_Settings,
 )
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.lagrange_multipliers import LagrangeMultipliers
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.optimization.termination_criteria import KKT_RESIDUAL_NORM
+from gemseo.optimization.termination_criteria import kkt_residual_norm
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.util.pydantic import create_model
@@ -51,10 +51,10 @@ def test_kkt_norm_correctly_stored(problem) -> None:
         "sub_algorithm_settings": L_BFGS_B_Settings(),
     }
     problem.reset()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(
+    optimization_library_factory.execute(
         problem, settings=Augmented_Lagrangian_Order_1_Settings(**options)
     )
-    kkt_hist = problem.database.get_function_history(KKT_RESIDUAL_NORM)
+    kkt_hist = problem.database.get_function_history(kkt_residual_norm)
     obj_grad_hist = problem.database.get_gradient_history(problem.objective.name)
     obj_hist = problem.database.get_function_history(problem.objective.name)
     assert len(kkt_hist) == obj_grad_hist.shape[0]
@@ -194,7 +194,7 @@ def test_n_obj_func_calls(enable_function_statistics):
         "sub_algorithm_settings": L_BFGS_B_Settings(),
     }
 
-    optimizer = OPTIMIZATION_LIBRARY_FACTORY.create("Augmented_Lagrangian_Order_1")
+    optimizer = optimization_library_factory.create("Augmented_Lagrangian_Order_1")
     problem.reset()
     optimizer.execute(
         problem, settings=Augmented_Lagrangian_Order_1_Settings(**options)
@@ -237,7 +237,7 @@ def rosenbrock_opt_problem():
 @pytest.fixture
 def optimizer():
     # Create an optimizer instance
-    return OPTIMIZATION_LIBRARY_FACTORY.create("Augmented_Lagrangian_Order_1")
+    return optimization_library_factory.create("Augmented_Lagrangian_Order_1")
 
 
 def test_solve_sub_problem_adds_constraints_with_rosenbrock(
@@ -314,7 +314,7 @@ def test_solve_sub_problem_triggers_update_options_callback(
 
 
 def test_preconditioner_logging_direct(optimizer, caplog):
-    """Test that LOGGER.info is called when 'precond' is in sub_algorithm_settings."""
+    """Test that logger.info is called when 'precond' is in sub_algorithm_settings."""
 
     # Define sub_algorithm_settings with "precond" present
 

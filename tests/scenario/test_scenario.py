@@ -45,8 +45,8 @@ from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.optimization_dataset import OptimizationDataset
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
 from gemseo.formulation.factory import MDOFormulationFactory
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.formulation.mdf_settings import MDF_Settings
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.result import OptimizationResult
@@ -69,8 +69,8 @@ from gemseo.util.testing.helper import assert_exception
 if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
 
-PARENT_PATH = Path(__file__).parent
-SOBIESKI_HDF5_PATH = PARENT_PATH / "mdf_backup.h5"
+parent_path = Path(__file__).parent
+sobieski_hdf5_path = parent_path / "mdf_backup.h5"
 
 
 def build_mdo_scenario(
@@ -105,7 +105,7 @@ def build_mdo_scenario(
     scenario = MDOScenario(
         disciplines,
         design_space,
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             formulation_name
         ).settings_class(),
     )
@@ -206,7 +206,7 @@ def test_backup_error(tmp_wd, mdf_scenario, snapshot) -> None:
 @pytest.mark.parametrize("load", [True, False])
 def test_optimization_hist_backup_pre_load(tmp_wd, mdf_scenario, load) -> None:
     """Test the load option of the optimization history backup."""
-    mdf_scenario.set_backup_settings(SOBIESKI_HDF5_PATH, load=load)
+    mdf_scenario.set_backup_settings(sobieski_hdf5_path, load=load)
     database = mdf_scenario.formulation.problem.database
     assert len(database) == 4 if load else len(database) == 0
 
@@ -1097,7 +1097,7 @@ def test_listener_dataset():
     expected.add_design_variable("x", array([[1.0]]))
     expected.add_objective_variable("y", array([[2.0]]))
     expected.add_variable(
-        "z", array([[3.0]]), group_name=OptimizationDataset.OBSERVABLE_GROUP
+        "z", array([[3.0]]), group_name=OptimizationDataset.observable_group
     )
 
     assert_frame_equal(dataset, expected)

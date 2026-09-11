@@ -30,14 +30,14 @@ from gemseo.discipline.factory import DisciplineFactory
 from gemseo.doe.factory import DOELibraryFactory
 from gemseo.formulation.factory import MDOFormulationFactory
 from gemseo.linear.factory import LinearSolverLibraryFactory
-from gemseo.machine_learning.classification.model.factory import CLASSIFIER_FACTORY
-from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
+from gemseo.machine_learning.classification.model.factory import classifier_factory
+from gemseo.machine_learning.clustering.model.factory import clusterer_factory
 from gemseo.machine_learning.core.quality.factory import MLModelQualityFactory
-from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+from gemseo.machine_learning.regression.model.factory import regressor_factory
 from gemseo.mda.factory import MDAFactory
 from gemseo.ode.factory import ODESolverLibraryFactory
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
-from gemseo.post.factory import POST_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
+from gemseo.post.factory import post_factory
 from gemseo.uncertainty.distribution.factory import DistributionFactory
 from gemseo.uncertainty.sensitivity.factory import SensitivityAnalysisFactory
 from gemseo.util.source_parsing import get_options_doc
@@ -81,16 +81,16 @@ def get_algorithm_features(
     Raises:
         ValueError: When the optimization algorithm does not exist.
     """
-    if not OPTIMIZATION_LIBRARY_FACTORY.is_available(algorithm_name):
+    if not optimization_library_factory.is_available(algorithm_name):
         msg = f"{algorithm_name} is not the name of an optimization algorithm."
         raise ValueError(msg)
 
-    driver = OPTIMIZATION_LIBRARY_FACTORY.create(algorithm_name)
+    driver = optimization_library_factory.create(algorithm_name)
     description = driver.ALGORITHM_INFOS[algorithm_name]
     return AlgorithmFeatures(
         algorithm_name=description.algorithm_name,
         library_name=description.library_name,
-        root_package_name=OPTIMIZATION_LIBRARY_FACTORY.get_library_name(
+        root_package_name=optimization_library_factory.get_library_name(
             driver.__class__.__name__
         ),
         handle_equality_constraints=description.handle_equality_constraints,
@@ -616,13 +616,13 @@ algos_options_docs = [
     BasePostAlgoOptionsDoc(
         "clustering",
         "Clustering models",
-        CLUSTERER_FACTORY,
+        clusterer_factory,
         pydantic_model_module_path="settings.machine_learning",
     ),
     BasePostAlgoOptionsDoc(
         "classification",
         "Classification models",
-        CLASSIFIER_FACTORY,
+        classifier_factory,
         pydantic_model_module_path="settings.machine_learning",
     ),
     InitOptionsDoc(
@@ -646,7 +646,7 @@ algos_options_docs = [
     BasePostAlgoOptionsDoc(
         "post",
         "Post-processing algorithms",
-        POST_FACTORY,
+        post_factory,
         pydantic_model_module_path="settings.post",
     ),
     DriverOptionsDoc(
@@ -659,7 +659,7 @@ algos_options_docs = [
     DriverOptionsDoc(
         "opt",
         "Optimization algorithms",
-        OPTIMIZATION_LIBRARY_FACTORY,
+        optimization_library_factory,
         pydantic_model_module_path="settings.opt",
     ),
     DriverOptionsDoc(
@@ -696,7 +696,7 @@ for algos_options_doc in algos_options_docs:
 options_doc = BasePostAlgoOptionsDoc(
     "regression",
     "Regression models",
-    REGRESSOR_FACTORY,
+    regressor_factory,
     pydantic_model_module_path="settings.machine_learning",
 )
 options_doc.to_rst()

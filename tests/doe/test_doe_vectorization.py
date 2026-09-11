@@ -35,7 +35,7 @@ from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.doe.scipy.settings.mc import MC_Settings
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
@@ -84,7 +84,7 @@ def design_space() -> DesignSpace:
     return ds
 
 
-N_SAMPLES = 3
+n_samples = 3
 """The number of samples used by the DOE algorithms in the test functions."""
 
 
@@ -93,7 +93,7 @@ def database(design_space, eval_jac) -> Database:
     """The reference database."""
     db = Database(input_space=design_space)
     lib = SciPyDOE("MC")
-    samples = lib.sample_space(design_space, MC_Settings(n_samples=N_SAMPLES))
+    samples = lib.sample_space(design_space, MC_Settings(n_samples=n_samples))
     for sample in samples:
         db.store(sample, {"out": f_vectorized(sample)})
         if eval_jac:
@@ -193,7 +193,7 @@ def test_doe_vectorize_evaluation_problem(
     lib.execute(
         problem,
         settings=MC_Settings(
-            n_samples=N_SAMPLES,
+            n_samples=n_samples,
             vectorize=vectorize,
             eval_jac=eval_jac,
             callbacks=(callback,),
@@ -201,7 +201,7 @@ def test_doe_vectorize_evaluation_problem(
     )
 
     # Check the number of calls to the PreprocessedFunction.
-    assert problem.observables[-1].n_calls == (1 if vectorize else N_SAMPLES)
+    assert problem.observables[-1].n_calls == (1 if vectorize else n_samples)
 
     # Check the evaluations
     # in terms of input values, output values and gradient values.
@@ -240,12 +240,12 @@ def test_doe_vectorize_optimization_problem(
     lib.execute(
         problem,
         settings=MC_Settings(
-            n_samples=N_SAMPLES, vectorize=vectorize, eval_jac=eval_jac
+            n_samples=n_samples, vectorize=vectorize, eval_jac=eval_jac
         ),
     )
 
     # Check the number of calls to the PreprocessedFunction.
-    assert problem.objective.n_calls == 1 if vectorize else N_SAMPLES
+    assert problem.objective.n_calls == 1 if vectorize else n_samples
 
     # Check the evaluations
     # in terms of input values, output values and gradient values.
@@ -273,12 +273,12 @@ def test_doe_vectorize_scenario(
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("out")
     scenario.execute(
-        MC_Settings(n_samples=N_SAMPLES, vectorize=vectorize, eval_jac=eval_jac)
+        MC_Settings(n_samples=n_samples, vectorize=vectorize, eval_jac=eval_jac)
     )
     problem = scenario.formulation.problem
 
     # Check the number of calls to the PreprocessedFunction.
-    assert problem.objective.n_calls == 1 if vectorize else N_SAMPLES
+    assert problem.objective.n_calls == 1 if vectorize else n_samples
 
     # Check the evaluations
     # in terms of input values, output values and gradient values.
@@ -299,7 +299,7 @@ def test_vectorization_sellar(eval_jac, formulation_name, n):
     scenario = MDOScenario(
         [cls(n=n) for cls in classes],
         SellarDesignSpace(n=n),
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             formulation_name
         ).settings_class(),
     )
@@ -307,7 +307,7 @@ def test_vectorization_sellar(eval_jac, formulation_name, n):
     scenario.add_constraint("c_1")
     scenario.add_constraint("c_2")
     scenario.execute(
-        MC_Settings(n_samples=N_SAMPLES, vectorize=False, eval_jac=eval_jac)
+        MC_Settings(n_samples=n_samples, vectorize=False, eval_jac=eval_jac)
     )
     reference = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 
@@ -315,7 +315,7 @@ def test_vectorization_sellar(eval_jac, formulation_name, n):
     scenario = MDOScenario(
         [cls(n=n) for cls in classes],
         SellarDesignSpace(n=n),
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             formulation_name
         ).settings_class(),
     )
@@ -323,7 +323,7 @@ def test_vectorization_sellar(eval_jac, formulation_name, n):
     scenario.add_constraint("c_1")
     scenario.add_constraint("c_2")
     scenario.execute(
-        MC_Settings(n_samples=N_SAMPLES, vectorize=True, eval_jac=eval_jac)
+        MC_Settings(n_samples=n_samples, vectorize=True, eval_jac=eval_jac)
     )
     result = scenario.formulation.problem.database.to_dataset(export_gradients=True)
 

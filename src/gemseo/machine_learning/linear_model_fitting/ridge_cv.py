@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from sklearn.linear_model import RidgeCV as SKLearnRidgeCV
 
 from gemseo.machine_learning.linear_model_fitting.core.base_sklearn_linear_model_fitter import (  # noqa: E501
@@ -43,4 +45,4 @@ class RidgeCV(BaseSKLearnLinearModelFitter[SKLearnRidgeCV, RidgeCV_Settings]):
 
     settings_class = RidgeCV_Settings
 
-    _FITTER_CLASS = SKLearnRidgeCV
+    _fitter_class: ClassVar[type[SKLearnRidgeCV]] = SKLearnRidgeCV

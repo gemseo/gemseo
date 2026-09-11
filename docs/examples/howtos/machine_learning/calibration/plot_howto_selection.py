@@ -65,8 +65,8 @@ x = sort(rng.random(n))
 y = x**2 + rng.normal(0, 0.05, n)
 
 training_dataset = IODataset()
-training_dataset.add_variable("x", x[:, None], training_dataset.INPUT_GROUP)
-training_dataset.add_variable("y", y[:, None], training_dataset.OUTPUT_GROUP)
+training_dataset.add_variable("x", x[:, None], training_dataset.input_group)
+training_dataset.add_variable("y", y[:, None], training_dataset.output_group)
 
 # %%
 # ### 2. Create a selection algorithm
@@ -112,7 +112,7 @@ finex = linspace(0, 1, 1000)
 for candidate in selector.candidates:
     model = candidate[0]
     predy = model.predict(finex[:, None])[:, 0]
-    plt.plot(finex, predy, label=model.SHORT_NAME)
+    plt.plot(finex, predy, label=model.short_name)
 plt.scatter(x, y, label="Training points")
 plt.legend()
 

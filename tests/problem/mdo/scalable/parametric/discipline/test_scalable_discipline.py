@@ -87,7 +87,7 @@ def core_scalable_discipline(
 
 def test_wrapped_discipline(scalable_discipline) -> None:
     """Check that ScalableDiscipline is composed of a CoreScalableDiscipline."""
-    assert CoreScalableDiscipline == scalable_discipline._CORE_DISCIPLINE_CLASS
+    assert CoreScalableDiscipline == scalable_discipline._core_discipline_class
 
 
 def test_execution(scalable_discipline, core_scalable_discipline) -> None:

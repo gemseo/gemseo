@@ -26,6 +26,6 @@ from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
 class MDAJacobi_Settings(BaseMDAParallelSolverSettings):  # noqa: N801
     """The settings for [MDAJacobi][gemseo.mda.jacobi.MDAJacobi]."""
 
-    _INHERITED_FIELD_DEFAULTS: ClassVar[dict[str, Any]] = {
+    _inherited_field_defaults: ClassVar[dict[str, Any]] = {
         "acceleration_method": AccelerationMethod.ALTERNATE_2_DELTA,
     }

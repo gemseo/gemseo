@@ -23,7 +23,7 @@ from numpy import inf
 from pydantic import BaseModel
 
 from gemseo.space.variable.base import DataType
-from gemseo.space.variable.factory import VARIABLE_FACTORY
+from gemseo.space.variable.factory import variable_factory
 
 
 class Variable(BaseModel):
@@ -66,7 +66,7 @@ class Variable(BaseModel):
                 hierarchy of variables.
         """
         fields = state.get("__dict__", {})
-        variable = VARIABLE_FACTORY.create(
+        variable = variable_factory.create(
             fields.get("type", DataType.FLOAT),
             size=fields.get("size", 1),
             lower_bound=fields.get("lower_bound", -inf),

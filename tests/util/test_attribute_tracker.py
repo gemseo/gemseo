@@ -29,11 +29,11 @@ from pydantic import PrivateAttr
 from pydantic import ValidationError
 from pydantic import computed_field
 
-from gemseo.util.attributes_tracker import _STATE_KEY
 from gemseo.util.attributes_tracker import _create_tracker_class
 from gemseo.util.attributes_tracker import _ModelTrackerMixin
 from gemseo.util.attributes_tracker import _NDArrayTracker
 from gemseo.util.attributes_tracker import _SequenceTracker
+from gemseo.util.attributes_tracker import _state_key
 from gemseo.util.attributes_tracker import track_model
 from gemseo.util.attributes_tracker import wrap_with_attributes_tracking
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
@@ -635,7 +635,7 @@ def test_whole_submodel_assignment_does_not_track_the_assigned_model() -> None:
     tracker = wrap_with_attributes_tracking(Outer())
     tracker.inner = inner
     assert type(inner) is Inner
-    assert _STATE_KEY not in inner.__dict__
+    assert _state_key not in inner.__dict__
 
 
 class ValidatedOuter(BaseModel, validate_assignment=True):

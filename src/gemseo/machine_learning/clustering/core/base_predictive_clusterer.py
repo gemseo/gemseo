@@ -72,7 +72,7 @@ class BasePredictiveClusterer(BaseClusterer):
             data = concatenate_dict_of_arrays_to_array(data, self.var_names)
 
         data_2d = atleast_2d(data)
-        parameters = self.learning_set.DEFAULT_GROUP
+        parameters = self.learning_set.default_group
         if parameters in self.transformer:
             data_2d = self.transformer[parameters].transform(data_2d)
 

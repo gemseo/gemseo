@@ -29,7 +29,7 @@ from numpy import concatenate
 from numpy import generic
 from numpy import ndarray
 
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
@@ -80,7 +80,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     _grammar: T
     """The grammar providing the data types used for the conversions."""
 
-    _NON_ARRAY_TYPES: ClassVar[tuple[type, ...]] = (
+    _non_array_types: ClassVar[tuple[type, ...]] = (
         int,
         float,
         complex,
@@ -89,7 +89,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     )
     """The base types that are not arrays like."""
 
-    _IS_CONTINUOUS_TYPES: ClassVar[tuple[type, ...]] = (
+    _is_continuous_types: ClassVar[tuple[type, ...]] = (
         float,
         complex,
         Complex,
@@ -97,9 +97,9 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
     )
     """The types that represent continuous data."""
 
-    _IS_NUMERIC_TYPES: ClassVar[tuple[type, ...]] = (
+    _is_numeric_types: ClassVar[tuple[type, ...]] = (
         int,
-        *_IS_CONTINUOUS_TYPES,
+        *_is_continuous_types,
     )
     """The types that represent numeric data."""
 
@@ -157,7 +157,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         converters = self.array_to_value_converters
         if converters and (converter := converters.get(name)):
             return converter(array)
-        if self._has_type(name, self._NON_ARRAY_TYPES):
+        if self._has_type(name, self._non_array_types):
             item = array[0]
             # A NumPy scalar is converted to a Python scalar because most of the NumPy
             # scalar types, such as int64, do not derive from the Python type they
@@ -184,7 +184,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         getters = cls.value_size_getters
         if getters and (getter := getters.get(name)):
             return getter(value)
-        if isinstance(value, cls._NON_ARRAY_TYPES):
+        if isinstance(value, cls._non_array_types):
             return 1
 
         return cast("NumberArray", value).size
@@ -193,7 +193,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         self,
         names: Iterable[str],
         data: StrKeyMapping,
-        name_to_size: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        name_to_size: Mapping[str, int] = read_only_empty_dict,
     ) -> tuple[dict[str, slice], int]:
         """Compute a mapping from data names to data value slices.
 
@@ -298,7 +298,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         Returns:
             Whether the grammar item is numeric.
         """
-        return self._has_type(name, self._IS_NUMERIC_TYPES)
+        return self._has_type(name, self._is_numeric_types)
 
     def is_continuous(self, name: str) -> bool:
         """Return whether a grammar item is continuous.
@@ -309,7 +309,7 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         Returns:
             Whether the grammar item is continuous.
         """
-        return self._has_type(name, self._IS_CONTINUOUS_TYPES)
+        return self._has_type(name, self._is_continuous_types)
 
     @abstractmethod
     def _has_type(self, name: str, types: tuple[type, ...]) -> bool:

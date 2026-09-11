@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.algorithm.base_algorithm_factory import BaseAlgorithmFactory
@@ -30,9 +31,9 @@ from gemseo.ode.core.base_ode_solver_library import BaseODESolverLibrary
 class ODESolverLibraryFactory(BaseAlgorithmFactory):
     """A factory of ODE solver libraries."""
 
-    _CLASS = BaseODESolverLibrary
-    _PACKAGE_NAMES = ("gemseo.ode",)
+    _class: ClassVar[type[BaseODESolverLibrary]] = BaseODESolverLibrary
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.ode",)
 
 
-ODE_SOLVER_LIBRARY_FACTORY: Final[ODESolverLibraryFactory] = ODESolverLibraryFactory()
+ode_solver_library_factory: Final[ODESolverLibraryFactory] = ODESolverLibraryFactory()
 """The factory of ODE solver libraries."""

@@ -47,8 +47,8 @@ if TYPE_CHECKING:
 class RandomForestRegressor(BaseRegressor):
     """Random forest regression."""
 
-    SHORT_NAME: ClassVar[str] = "RF"
-    LIBRARY: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "RF"
+    library: ClassVar[str] = "scikit-learn"
 
     settings_class: ClassVar[type[RandomForestRegressor_Settings]] = (
         RandomForestRegressor_Settings

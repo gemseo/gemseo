@@ -16,20 +16,23 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.post.machine_learning.ml_regressor_quality_viewer import (
         MLRegressorQualityViewer,  # noqa: F401
     )
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "MLRegressorQualityViewer": "ml_regressor_quality_viewer",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

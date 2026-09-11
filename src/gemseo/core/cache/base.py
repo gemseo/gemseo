@@ -63,7 +63,7 @@ if TYPE_CHECKING:
         ) -> bool: ...
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
@@ -156,7 +156,7 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
                 rather than re-evaluating the discipline.
                 This tolerance could be useful to optimize CPU time.
                 It could be something like twice
-                [EPSILON][gemseo.util.constant.EPSILON].
+                [epsilon][gemseo.util.constant.epsilon].
             name: A name for the cache. If empty, use the class name.
         """  # noqa: D205, D212, D415
         self._tolerance = tolerance
@@ -266,7 +266,7 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
     ) -> None:
         output_data, jacobian_data = data
         if not output_data and not jacobian_data:
-            LOGGER.warning(
+            logger.warning(
                 "Cannot add the entry to the cache "
                 "as both output data and Jacobian data are missing."
             )
@@ -346,7 +346,7 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
             categorize: Whether to distinguish
                 between the different groups of variables.
                 Otherwise, group all the variables in
-                [PARAMETER_GROUP][gemseo.dataset.dataset.Dataset.PARAMETER_GROUP].
+                [parameter_group][gemseo.dataset.dataset.Dataset.parameter_group].
             input_names: The names of the inputs to be exported.
                 If empty, use all the inputs.
             output_names: The names of the outputs to be exported.
@@ -362,11 +362,11 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
 
         if categorize:
             dataset_class = IODataset
-            input_group = IODataset.INPUT_GROUP
-            output_group = IODataset.OUTPUT_GROUP
+            input_group = IODataset.input_group
+            output_group = IODataset.output_group
         else:
             dataset_class = Dataset
-            input_group = output_group = Dataset.DEFAULT_GROUP
+            input_group = output_group = Dataset.default_group
 
         data = []
         columns = []
@@ -395,7 +395,7 @@ class BaseCache(ABCMapping[StrKeyMapping, CacheEntry]):
             dataset_name=dataset_name,
             columns=MultiIndex.from_tuples(
                 columns,
-                names=dataset_class.COLUMN_LEVEL_NAMES,
+                names=dataset_class.column_level_names,
             ),
         )
 

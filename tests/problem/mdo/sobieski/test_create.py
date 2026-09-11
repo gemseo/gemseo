@@ -23,7 +23,7 @@ import pytest
 from gemseo.problem.mdo.sobieski.design_space import create_design_space
 from gemseo.problem.mdo.sobieski.discipline import create_disciplines
 
-DISCIPLINES = [
+expected_discipline_names = [
     "SobieskiStructure",
     "SobieskiAerodynamics",
     "SobieskiPropulsion",
@@ -35,7 +35,7 @@ DISCIPLINES = [
 def test_create_disciplines(dtype) -> None:
     """Check the creation of the disciplines."""
     disciplines = create_disciplines(dtype)
-    assert [discipline.name for discipline in disciplines] == DISCIPLINES
+    assert [discipline.name for discipline in disciplines] == expected_discipline_names
 
     for discipline in disciplines:
         assert str(discipline.io.input_grammar.defaults["x_shared"].dtype) == dtype

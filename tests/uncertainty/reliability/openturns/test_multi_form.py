@@ -69,7 +69,7 @@ def uncertain_space() -> ParameterSpace:
 def test_multi_form(function, uncertain_space, settings, greater, expected):
     """Test OT_MultiFORM."""
     multi_form = OT_MultiFORM()
-    assert multi_form._USE_MULTIFORM_RESULT
+    assert multi_form._use_multiform_result
     kwargs = {}
     if settings is not None:
         kwargs["settings"] = OT_MultiFORM_Settings(optimizer=settings())

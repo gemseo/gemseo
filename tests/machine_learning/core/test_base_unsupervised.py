@@ -50,7 +50,7 @@ def test_constructor(dataset) -> None:
         ml_model = BaseMLUnsupervisedModel(dataset)
 
     assert ml_model.algo is None
-    assert ml_model.var_names == dataset.get_variable_names(dataset.DEFAULT_GROUP)
+    assert ml_model.var_names == dataset.get_variable_names(dataset.default_group)
 
 
 def test_variable_limitation(dataset) -> None:

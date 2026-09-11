@@ -35,7 +35,7 @@ class OT_MC(BaseOTReliabilityAlgorithm):  # noqa: N801
 
     settings_class: ClassVar[type[OT_MC_Settings]] = OT_MC_Settings
 
-    _ALGO_CLASS: ClassVar[type[ProbabilitySimulationAlgorithm]] = (
+    _algo_class: ClassVar[type[ProbabilitySimulationAlgorithm]] = (
         ProbabilitySimulationAlgorithm
     )
 
@@ -49,7 +49,7 @@ class OT_MC(BaseOTReliabilityAlgorithm):  # noqa: N801
 
         ot_event = self._create_ot_event(event_name, problem)
 
-        algo = self._ALGO_CLASS(ot_event, settings.create_experiment())
+        algo = self._algo_class(ot_event, settings.create_experiment())
         algo.setConvergenceStrategy(Null())
         algo.setMaximumCoefficientOfVariation(settings.maximum_coefficient_of_variation)
         algo.setMaximumOuterSampling(settings.maximum_outer_sampling)

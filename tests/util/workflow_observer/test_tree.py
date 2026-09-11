@@ -25,12 +25,12 @@ import pytest
 from gemseo.util._workflow_observer.tree import ObserverTree
 from gemseo.util.testing.helper import assert_exception
 
-_STATE_ATTR = "_ObserverTree__parent_id_to_observer"
+_state_attr = "_ObserverTree__parent_id_to_observer"
 
 
 @pytest.fixture
 def isolated_tree(monkeypatch):
-    monkeypatch.setattr(ObserverTree, _STATE_ATTR, {})
+    monkeypatch.setattr(ObserverTree, _state_attr, {})
     return ObserverTree()
 
 
@@ -43,14 +43,14 @@ def test_parent_returns_top_of_current_pid_queue(monkeypatch):
     queue: LifoQueue = LifoQueue()
     queue.put(object())
     queue.put(sentinel)
-    monkeypatch.setattr(ObserverTree, _STATE_ATTR, {getpid(): queue})
+    monkeypatch.setattr(ObserverTree, _state_attr, {getpid(): queue})
     assert ObserverTree().parent is sentinel
 
 
 def test_parent_raises_when_no_id_matches(monkeypatch, snapshot):
     queue: LifoQueue = LifoQueue()
     queue.put(object())
-    monkeypatch.setattr(ObserverTree, _STATE_ATTR, {-1: queue})
+    monkeypatch.setattr(ObserverTree, _state_attr, {-1: queue})
     with assert_exception(RuntimeError, snapshot):
         _ = ObserverTree().parent
 
@@ -60,7 +60,7 @@ def test_parent_uses_thread_parent_id_when_set(monkeypatch):
     queue: LifoQueue = LifoQueue()
     queue.put(sentinel)
     thread_parent_id = 424242
-    monkeypatch.setattr(ObserverTree, _STATE_ATTR, {thread_parent_id: queue})
+    monkeypatch.setattr(ObserverTree, _state_attr, {thread_parent_id: queue})
 
     class _FakeThread:
         parent_id = thread_parent_id
@@ -74,7 +74,7 @@ def test_parent_uses_thread_parent_id_when_set(monkeypatch):
 def test_put_adds_observer_to_current_pid_queue(isolated_tree):
     sentinel = object()
     isolated_tree.put(sentinel)
-    state = getattr(ObserverTree, _STATE_ATTR)
+    state = getattr(ObserverTree, _state_attr)
     assert getpid() in state
     assert state[getpid()].queue[-1] is sentinel
 
@@ -85,11 +85,11 @@ def test_pop_removes_top_observer(isolated_tree):
     isolated_tree.put(first)
     isolated_tree.put(second)
     isolated_tree.pop()
-    state = getattr(ObserverTree, _STATE_ATTR)
+    state = getattr(ObserverTree, _state_attr)
     assert state[getpid()].queue[-1] is first
 
 
 def test_pop_deletes_empty_queue_entry(isolated_tree):
     isolated_tree.put(object())
     isolated_tree.pop()
-    assert getpid() not in getattr(ObserverTree, _STATE_ATTR)
+    assert getpid() not in getattr(ObserverTree, _state_attr)

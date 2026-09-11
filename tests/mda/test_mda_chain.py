@@ -38,7 +38,7 @@ from gemseo.linear.scipy_linalg import LGMRES_Settings
 from gemseo.linear.scipy_linalg import TFQMR_Settings
 from gemseo.mda.chain import MDAChain
 from gemseo.mda.chain_settings import MDAChain_Settings
-from gemseo.mda.factory import MDA_FACTORY
+from gemseo.mda.factory import mda_factory
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
 from gemseo.mda.jacobian_assembly import JacobianAssembly
@@ -59,7 +59,7 @@ from .utils import generate_parallel_doe
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-DISC_DESCR_16D = [
+disc_descr_16d = [
     ("A", ["a"], ["b"]),
     ("B", ["c"], ["a", "n"]),
     ("C", ["b", "d"], ["c", "e"]),
@@ -82,7 +82,7 @@ DISC_DESCR_16D = [
 @pytest.fixture
 def coupled_disciplines() -> Sequence[Discipline]:
     """A set of 16 coupled disciplines."""
-    return create_disciplines_from_desc(DISC_DESCR_16D)
+    return create_disciplines_from_desc(disc_descr_16d)
 
 
 def test_set_solver(sellar_with_2d_array, sellar_disciplines) -> None:
@@ -144,11 +144,11 @@ def test_sellar_chain_linearize(sellar_with_2d_array, sellar_disciplines) -> Non
         step=1e-6,
     )
 
-    assert mda_chain.io.output_data[mda_chain.NORMALIZED_RESIDUAL_NORM][0] < 1e-13
+    assert mda_chain.io.output_data[mda_chain.normalized_residual_norm_name][0] < 1e-13
 
 
 def test_16_disc_parallel() -> None:
-    disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
+    disciplines = create_disciplines_from_desc(disc_descr_16d)
     MDAChain(disciplines)
 
 
@@ -156,7 +156,7 @@ def test_16_disc_parallel() -> None:
     "in_gtype", [Discipline.GrammarType.SIMPLE, Discipline.GrammarType.JSON]
 )
 def test_simple_grammar_type(in_gtype) -> None:
-    disciplines = create_disciplines_from_desc(DISC_DESCR_16D)
+    disciplines = create_disciplines_from_desc(disc_descr_16d)
     mda = MDAChain(disciplines)
     assert isinstance(mda.io.input_grammar, SimpleGrammar)
     assert isinstance(mda.discipline_chain.io.input_grammar, SimpleGrammar)
@@ -281,7 +281,7 @@ def test_mdachain_parallel_discipline_chain() -> None:
     assert type(mdachain.discipline_chain.disciplines[2]) is ParallelDisciplineChain
 
 
-PARALLEL_OPTIONS = [
+parallel_options = [
     {
         "mdachain_parallelize_tasks": False,
         "mdachain_parallel_settings": {},
@@ -305,7 +305,7 @@ PARALLEL_OPTIONS = [
 ]
 
 
-@pytest.mark.parametrize("parallel_options", PARALLEL_OPTIONS)
+@pytest.mark.parametrize("parallel_options", parallel_options)
 def test_mdachain_paralleldisciplinechain_options(parallel_options) -> None:
     """Test the parallel discipline chain in a MDAChain with various arguments."""
     disciplines = analytic_disciplines_from_desc((
@@ -437,7 +437,7 @@ def test_inner_mda_name_setting(coupled_disciplines, inner_mda_settings):
         coupled_disciplines,
         settings=MDAChain_Settings(inner_mda_settings=inner_mda_settings),
     )
-    cls = MDA_FACTORY.get_class(inner_mda_settings.target_class_name)
+    cls = mda_factory.get_class(inner_mda_settings.target_class_name)
     for inner_mda in mda_chain.inner_mdas:
         assert isinstance(inner_mda, cls)
         assert inner_mda.settings == inner_mda_settings

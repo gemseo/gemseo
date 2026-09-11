@@ -32,7 +32,7 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.util.pickle import from_pickle
 
-N_SAMPLES = 10
+n_samples = 10
 
 
 @pytest.fixture(scope="module")

@@ -19,13 +19,14 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 from typing import Literal
 from typing import overload
 
 from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.discipline.namespace import namespaces_separator
-from gemseo.core.grammar.factory import GRAMMAR_FACTORY
 from gemseo.core.grammar.factory import GrammarType
+from gemseo.core.grammar.factory import grammar_factory
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
@@ -37,7 +38,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
-_DATA_DEPRECATION_MSG = (
+_data_deprecation_msg: Final[str] = (
     "`IO.data` is deprecated; use `IO.input_data` / `IO.output_data` instead."
 )
 
@@ -114,7 +115,7 @@ class IO:
             input_grammar_file: The path to the file of the input grammar.
             output_grammar_file: The path to the file of the output grammar.
         """  # noqa: D205, D212
-        self.input_grammar = GRAMMAR_FACTORY.create(
+        self.input_grammar = grammar_factory.create(
             grammar_type,
             name=f"{discipline_name}_discipline_input",
             file_path=input_grammar_file,
@@ -123,7 +124,7 @@ class IO:
             directory_path=grammar_directory,
             file_name_suffix="input",
         )
-        self.output_grammar = GRAMMAR_FACTORY.create(
+        self.output_grammar = grammar_factory.create(
             grammar_type,
             name=f"{discipline_name}_discipline_output",
             file_path=output_grammar_file,
@@ -215,12 +216,12 @@ class IO:
         On write, splits the assigned mapping into the two stores by grammar
         membership; names in neither grammar are stored on the output side.
         """
-        warnings.warn(_DATA_DEPRECATION_MSG, DeprecationWarning, stacklevel=2)
+        warnings.warn(_data_deprecation_msg, DeprecationWarning, stacklevel=2)
         return self.get_merged_data(as_dict=False)
 
     @data.setter
     def data(self, data: MutableStrKeyMapping) -> None:
-        warnings.warn(_DATA_DEPRECATION_MSG, DeprecationWarning, stacklevel=2)
+        warnings.warn(_data_deprecation_msg, DeprecationWarning, stacklevel=2)
         self._set_data_no_warn(data)
 
     def _set_data_no_warn(self, data: MutableStrKeyMapping) -> None:

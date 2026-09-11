@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 
 DataType = float | ndarray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class AutoPyDiscipline(Discipline):
@@ -115,9 +115,9 @@ class AutoPyDiscipline(Discipline):
     __sizes: dict[str, int]
     """The sizes of the input and output variables."""
 
-    __LOG_PREFIX: Final[str] = "The py_func of the AutoPyDiscipline '%s' has"
+    __log_prefix: Final[str] = "The py_func of the AutoPyDiscipline '%s' has"
 
-    __LOG_SUFFIX: Final[str] = (
+    __log_suffix: Final[str] = (
         "The grammars of this discipline will not use the type hints at all."
     )
 
@@ -237,10 +237,10 @@ class AutoPyDiscipline(Discipline):
             missing_args_types = set(self.__input_names).difference(type_hints.keys())
             if missing_args_types:
                 msg = (
-                    f"{self.__LOG_PREFIX} missing type hints for the arguments %s."
-                    f"{self.__LOG_SUFFIX}"
+                    f"{self.__log_prefix} missing type hints for the arguments %s."
+                    f"{self.__log_suffix}"
                 )
-                LOGGER.warning(msg, self.name, pretty_repr(missing_args_types))
+                logger.warning(msg, self.name, pretty_repr(missing_args_types))
                 raise_if_inconsistency = False
             else:
                 name_to_input_type = {
@@ -261,11 +261,11 @@ class AutoPyDiscipline(Discipline):
                 origin = get_origin(return_type)
                 if origin is not tuple:
                     msg = (
-                        f"{self.__LOG_PREFIX} bad return type hints: "
+                        f"{self.__log_prefix} bad return type hints: "
                         "expecting a tuple of types, got %s."
-                        f"{self.__LOG_SUFFIX}"
+                        f"{self.__log_suffix}"
                     )
-                    LOGGER.warning(msg, self.name, return_type)
+                    logger.warning(msg, self.name, return_type)
                     raise_if_inconsistency = False
                 else:
                     type_args = get_args(return_type)
@@ -273,12 +273,12 @@ class AutoPyDiscipline(Discipline):
                     n_output_names = len(self.__output_names)
                     if n_type_args != n_output_names:
                         msg = (
-                            f"{self.__LOG_PREFIX} bad return type hints: "
+                            f"{self.__log_prefix} bad return type hints: "
                             "the number of return values (%i) and return types (%i) "
                             "shall be equal. "
-                            f"{self.__LOG_SUFFIX}"
+                            f"{self.__log_suffix}"
                         )
-                        LOGGER.warning(msg, self.name, n_output_names, n_type_args)
+                        logger.warning(msg, self.name, n_output_names, n_type_args)
                         raise_if_inconsistency = False
                     else:
                         name_to_output_type = dict(
@@ -306,12 +306,12 @@ class AutoPyDiscipline(Discipline):
 
         if raise_if_inconsistency and (name_to_input_type or name_to_output_type):
             msg = (
-                f"{self.__LOG_PREFIX} inconsistent type hints: "
+                f"{self.__log_prefix} inconsistent type hints: "
                 "either both the signature arguments and the return values shall have "
                 "type hints or none. "
-                f"{self.__LOG_SUFFIX}"
+                f"{self.__log_suffix}"
             )
-            LOGGER.warning(msg, self.name)
+            logger.warning(msg, self.name)
 
         self.io.input_grammar.update_from_names(self.__input_names)
         for key, value in defaults.items():

@@ -21,8 +21,8 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 from gemseo.core.derivative.derivation_mode import DerivationMode
-from gemseo.util.constant import N_CPUS
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import n_cpus
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.derivative.check.base import BaseJacobianChecker
 from gemseo.util.derivative.derivatives_approx import DisciplineJacApprox
@@ -105,7 +105,7 @@ class DisciplineJacobianChecker(BaseJacobianChecker[str]):
 
     def check(
         self,
-        input_value: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        input_value: StrKeyMapping = read_only_empty_dict,
         atol: float = 1e-8,
         rtol: float = 1e-8,
         inputs: Iterable[str] = (),
@@ -125,7 +125,7 @@ class DisciplineJacobianChecker(BaseJacobianChecker[str]):
         fig_size_y: float = 10,
         indices: Mapping[
             str, int | Sequence[int] | Ellipsis | slice
-        ] = READ_ONLY_EMPTY_DICT,
+        ] = read_only_empty_dict,
     ) -> bool:
         """Check the Jacobian.
 
@@ -176,7 +176,7 @@ class DisciplineJacobianChecker(BaseJacobianChecker[str]):
             discipline,
             approx_method=approximation_mode,
             parallel=n_processes != 1,
-            n_processes=N_CPUS if n_processes == 0 else n_processes,
+            n_processes=n_cpus if n_processes == 0 else n_processes,
             use_threading=use_threading,
             wait_time_between_fork=wait_time_between_fork,
             **({} if step is None else {"step": step}),

@@ -43,11 +43,11 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
-MDF_HIST_PATH = Path(__file__).parent / "mdf_history.h5"
-ROSENBROCK_2_PATH = Path(__file__).parent / "rosenbrock_2_opt_pb.h5"
-ROSENBROCK_5_PATH = Path(__file__).parent / "rosenbrock_5_opt_pb.h5"
-ROSENBROCK_35_PATH = Path(__file__).parent / "rosenbrock_35_opt_pb.h5"
-ROSENBROCK_2_LB_UB_PATH = Path(__file__).parent / "rosenbrock_2_lb_ub_opt_pb.h5"
+mdf_hist_path = Path(__file__).parent / "mdf_history.h5"
+rosenbrock_2_path = Path(__file__).parent / "rosenbrock_2_opt_pb.h5"
+rosenbrock_5_path = Path(__file__).parent / "rosenbrock_5_opt_pb.h5"
+rosenbrock_35_path = Path(__file__).parent / "rosenbrock_35_opt_pb.h5"
+rosenbrock_2_lb_ub_path = Path(__file__).parent / "rosenbrock_2_lb_ub_opt_pb.h5"
 
 
 def build_history(
@@ -95,7 +95,7 @@ def compare_approximations(
 
 def test_scaling() -> None:
     """Test that the scaling option works properly."""
-    _, result, problem = build_history(ROSENBROCK_2_LB_UB_PATH)
+    _, result, problem = build_history(rosenbrock_2_lb_ub_path)
 
     database = problem.database
     approx = HessianApproximation(database)
@@ -146,7 +146,7 @@ def compute_error(
 
 def test_baseclass_methods(snapshot) -> None:
     """Test the different types of hessian approximation."""
-    _, _, problem = build_history(ROSENBROCK_2_PATH)
+    _, _, problem = build_history(rosenbrock_2_path)
     database = problem.database
     apprx = HessianApproximation(database)
     # 73 items in database
@@ -196,7 +196,7 @@ def test_baseclass_methods(snapshot) -> None:
 
 def test_get_x_grad_history_on_sobieski(snapshot) -> None:
     """Test the gradient history on the Sobieski problem."""
-    opt_pb = OptimizationProblem.from_hdf(MDF_HIST_PATH)
+    opt_pb = OptimizationProblem.from_hdf(mdf_hist_path)
     apprx = HessianApproximation(opt_pb.database)
     with assert_exception(ValueError, snapshot):
         apprx.get_x_grad_history("g_1")
@@ -229,7 +229,7 @@ def test_get_x_grad_history_on_sobieski(snapshot) -> None:
 
 def test_n_2() -> None:
     """Test the hessian approximation with the Rosenbrock problem at n=2."""
-    h_ref, _, problem = build_history(ROSENBROCK_2_PATH)
+    h_ref, _, problem = build_history(rosenbrock_2_path)
     compare_approximations(h_ref, BFGSApprox, problem, first_iter=8, ermax=3.0)
     compare_approximations(h_ref, LSTSQApprox, problem, first_iter=13, ermax=20.0)
     compare_approximations(h_ref, SR1Approx, problem, first_iter=7, ermax=30.0)
@@ -240,7 +240,7 @@ def test_n_2() -> None:
 
 def test_n_5() -> None:
     """Test the hessian approximation with the Rosenbrock problem at n=5."""
-    h_ref, _, problem = build_history(ROSENBROCK_5_PATH)
+    h_ref, _, problem = build_history(rosenbrock_5_path)
     compare_approximations(h_ref, BFGSApprox, problem, first_iter=5, ermax=30.0)
     compare_approximations(h_ref, LSTSQApprox, problem, first_iter=19, ermax=40.0)
     compare_approximations(h_ref, SR1Approx, problem, first_iter=5, ermax=30.0)
@@ -251,7 +251,7 @@ def test_n_5() -> None:
 
 def test_n_35() -> None:
     """Test the hessian approximation with the Rosenbrock problem at n=35."""
-    h_ref, _, problem = build_history(ROSENBROCK_35_PATH)
+    h_ref, _, problem = build_history(rosenbrock_35_path)
     compare_approximations(h_ref, SR1Approx, problem, first_iter=5, ermax=40.0)
     compare_approximations(h_ref, LSTSQApprox, problem, first_iter=30, ermax=110.0)
     compare_approximations(h_ref, SR1Approx, problem, first_iter=30, ermax=47.0)
@@ -262,7 +262,7 @@ def test_n_35() -> None:
 
 def test_build_inverse_approximation(snapshot) -> None:
     """Test the creation of an inverse approximation."""
-    _, _, problem = build_history(ROSENBROCK_2_LB_UB_PATH)
+    _, _, problem = build_history(rosenbrock_2_lb_ub_path)
     database = problem.database
     approx = HessianApproximation(database)
     funcname = problem.objective.name

@@ -2,6 +2,8 @@
 - `gemseo.utils.xdsmizer` was removed; use `gemseo.utils.xdsm.xdsmizer` instead.
 - `gemseo.utils.xdsm_to_pdf` was removed; use `gemseo.utils.xdsm.xdsm_to_pdf` instead.
 - `gemseo.utils.logging_tools` was removed; use `gemseo.utils.logging` instead.
+- The `STUDY_ANALYSIS_TYPES` constant of `gemseo.utils.study_analyses.study_analysis_cli` was removed from the public API; it is now internal to this module and has no public replacement.
+- The `CMAPS`, `MAGMA_DATA`, `INFERNO_DATA`, `PLASMA_DATA`, `VIRIDIS_DATA` and `PARULA_DATA` constants of `gemseo.post.core.colormaps` were removed from the public API; they are now internal to this module and have no public replacement.
 - `gemseo.uncertainty.statistics.parametric_statistics` was removed; use `gemseo.uncertainty.statistics.ot_parametric_statistics` instead.
 - `gemseo.uncertainty.statistics.parametric_statistics.ParametricStatistics` was removed; use `gemseo.uncertainty.statistics.ot_parametric_statistics.OTParametricStatistics` instead.
 - `gemseo.uncertainty.distributions.openturns.fitting` was removed; use `gemseo.uncertainty.distributions.openturns.distribution_fitter` instead.
@@ -32,8 +34,8 @@
 - The `FunctionFromDiscipline.generator_class` class attribute was removed.
 - The `CacheEntry.inputs` field was removed; caches are dictionaries whose keys are the inputs and values are the cache entries.
 - The `BaseCache.get_all_entries` field was removed; use `BaseCache.items`.
-- The `OptimizationDataset.FUNCTION_GROUP` class attribute was removed; use `OBJECTIVE_GROUP`, `EQUALITY_CONSTRAINT_GROUP`, `INEQUALITY_CONSTRAINT_GROUP`, or `OBSERVABLE_GROUP` instead.
-- The `OptimizationDataset.CONSTRAINT_GROUP` class attribute was removed; use `EQUALITY_CONSTRAINT_GROUP` and/or `INEQUALITY_CONSTRAINT_GROUP` instead.
+- The `OptimizationDataset.FUNCTION_GROUP` class attribute was removed; use `objective_group`, `equality_constraint_group`, `inequality_constraint_group`, or `observable_group` instead.
+- The `OptimizationDataset.CONSTRAINT_GROUP` class attribute was removed; use `equality_constraint_group` and/or `inequality_constraint_group` instead.
 - The `OptimizationDataset.add_constraint_variable` method was removed; use `add_equality_constraint_variable` or `add_inequality_constraint_variable` instead.
 - The `OptimizationDataset.add_constraint_group` method was removed; use `add_equality_constraint_group` or `add_inequality_constraint_group` instead.
 - The `OptimizationDataset.constraint_names` method was removed; use `inequality_constraint_names` or `equality_constraint_names` instead.

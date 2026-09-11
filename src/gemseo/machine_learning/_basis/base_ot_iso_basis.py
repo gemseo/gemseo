@@ -32,12 +32,12 @@ if TYPE_CHECKING:
 class BaseOTIsoBasis(BaseOTBasis):
     """The base class for OpenTURNS multivariate orthonormal bases with iso-sub-basis."""  # noqa: E501
 
-    _FACTORY: ClassVar[type[OrthogonalUniVariateFunctionFactory]]
+    _factory: ClassVar[type[OrthogonalUniVariateFunctionFactory]]
     """The OpenTURNS orthogonal univariate function factory."""
 
     def _create_full_basis(
         self, input_dimension: int, enumerate_function: LinearEnumerateFunction
     ) -> OrthogonalProductFunctionFactory:
         return OrthogonalProductFunctionFactory(
-            [self._FACTORY()] * input_dimension, enumerate_function
+            [self._factory()] * input_dimension, enumerate_function
         )

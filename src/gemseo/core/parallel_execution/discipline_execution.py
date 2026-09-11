@@ -23,7 +23,7 @@ from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.util.constant import N_CPUS
+from gemseo.util.constant import n_cpus
 from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineD
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        n_processes: int = N_CPUS,
+        n_processes: int = n_cpus,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
         exceptions_to_re_raise: Sequence[type[Exception]] = (),
@@ -82,7 +82,7 @@ class DiscParallelExecution(CallableParallelExecution[StrKeyMapping, DisciplineD
         if len(self._disciplines) == 1 or len(self._disciplines) != len(inputs):
             if (
                 not self.use_threading
-                and self.MULTI_PROCESSING_START_METHOD
+                and self.multi_processing_start_method
                 != self.MultiProcessingStartMethod.FORK
                 and ExecutionStatistics.is_enabled
             ):

@@ -26,17 +26,17 @@ from packaging.version import parse as parse_version
 if TYPE_CHECKING:
     from packaging.version import Version
 
-MATPLOTLIB_VERSION: Final[Version] = parse_version(version("matplotlib"))
+matplotlib_version: Final[Version] = parse_version(version("matplotlib"))
 
 
 def boxplot(x, labels=None, vert=None, ax=None, **kwargs):  # noqa: D103
     plot = (plt if ax is None else ax).boxplot
-    if parse_version("3.9") > MATPLOTLIB_VERSION:
+    if parse_version("3.9") > matplotlib_version:
         kwargs["labels"] = labels
     else:
         kwargs["tick_labels"] = labels
 
-    if parse_version("3.10") > MATPLOTLIB_VERSION:
+    if parse_version("3.10") > matplotlib_version:
         kwargs["vert"] = vert
     else:
         kwargs["orientation"] = "vertical" if vert in [True, None] else "horizontal"

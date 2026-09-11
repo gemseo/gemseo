@@ -27,7 +27,7 @@ from gemseo.util.typing import StrKeyMapping
 
 
 class ScatterPlotMatrix_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
-    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 10.0)}
     filter_non_feasible: bool = Field(
         default=False,
         description="Whether to remove the non-feasible points from the data.",

@@ -46,8 +46,8 @@ class SPUniformDistribution(SPDistribution):
                     "scale": settings.maximum - settings.minimum,
                 },
                 standard_parameters={
-                    self._LOWER: settings.minimum,
-                    self._UPPER: settings.maximum,
+                    self._lower: settings.minimum,
+                    self._upper: settings.maximum,
                 },
             )
         )

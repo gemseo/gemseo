@@ -26,7 +26,7 @@ from typing import ClassVar
 class TerminationCriterion(Exception):  # noqa: N818
     """Stop driver for some reason."""
 
-    _MESSAGE: ClassVar[str] = ""
+    _message: ClassVar[str] = ""
     """The default message describing the termination criterion."""
 
     @property
@@ -35,13 +35,13 @@ class TerminationCriterion(Exception):  # noqa: N818
 
         The first exception argument if any, the default message otherwise.
         """
-        return str(self.args[0]) if self.args else self._MESSAGE
+        return str(self.args[0]) if self.args else self._message
 
 
 class FunctionIsNan(TerminationCriterion):  # noqa: N818
     """Stops driver when a function has NaN value or NaN Jacobian."""
 
-    _MESSAGE: ClassVar[str] = (
+    _message: ClassVar[str] = (
         "Function value or gradient or constraint is NaN, "
         "and problem.stop_if_nan is set to True. "
     )
@@ -50,25 +50,25 @@ class FunctionIsNan(TerminationCriterion):  # noqa: N818
 class DesvarIsNan(TerminationCriterion):  # noqa: N818
     """Stops driver when the design variables are nan."""
 
-    _MESSAGE: ClassVar[str] = "Design variables are NaN. "
+    _message: ClassVar[str] = "Design variables are NaN. "
 
 
 class MaxIterReachedException(TerminationCriterion):  # noqa: N818
     """Exception raised when the maximum number of iterations is reached."""
 
-    _MESSAGE: ClassVar[str] = "Maximum number of iterations reached. "
+    _message: ClassVar[str] = "Maximum number of iterations reached. "
 
 
 class MaxTimeReached(TerminationCriterion):  # noqa: N818
     """Exception raised when the maximum execution time is reached."""
 
-    _MESSAGE: ClassVar[str] = "Maximum time reached. "
+    _message: ClassVar[str] = "Maximum time reached. "
 
 
 class FtolReached(TerminationCriterion):  # noqa: N818
     """Exception raised when the f_tol_rel or f_tol_abs criteria is reached."""
 
-    _MESSAGE: ClassVar[str] = (
+    _message: ClassVar[str] = (
         "Successive iterates of the objective function "
         "are closer than ftol_rel or ftol_abs. "
     )
@@ -77,7 +77,7 @@ class FtolReached(TerminationCriterion):  # noqa: N818
 class XtolReached(TerminationCriterion):  # noqa: N818
     """Exception raised when the x_tol_rel or x_tol_abs criteria is reached."""
 
-    _MESSAGE: ClassVar[str] = (
+    _message: ClassVar[str] = (
         "Successive iterates of the design variables "
         "are closer than xtol_rel or xtol_abs. "
     )

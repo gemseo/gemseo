@@ -52,9 +52,9 @@ if TYPE_CHECKING:
     from gemseo.util._workflow_observer.base_observer import ObservationSpec
     from gemseo.util._workflow_observer.interface import WorkflowObserverInterface
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-_WRAPPER_ATTRIBUTE: Final[str] = "__workflow_observer_wrapper__"
+_wrapper_attribute: Final[str] = "__workflow_observer_wrapper__"
 """The attribute marking the method wrappers created by this module.
 
 When a concrete subclass of an observed concrete class is decorated,
@@ -193,7 +193,7 @@ def _decorate_class(
         observer_class: The workflow observer class to instantiate.
         class_: The class to decorate.
     """
-    if not getattr(class_.__init__, _WRAPPER_ATTRIBUTE, False):
+    if not getattr(class_.__init__, _wrapper_attribute, False):
         class_.__init__ = _decorate_init(class_.__init__, observer_class)
 
     _decorate_methods(class_, spec.method_names_for_start, _decorate_with_start)
@@ -218,7 +218,7 @@ def _decorate_methods(
     """
     for method_name in method_names:
         method = getattr(class_, method_name)
-        if not getattr(method, _WRAPPER_ATTRIBUTE, False):
+        if not getattr(method, _wrapper_attribute, False):
             setattr(class_, method_name, decorator(method))
 
 
@@ -254,7 +254,7 @@ def _decorate_init(
                 self, CallArguments(args=args, kwargs=kwargs)
             )
 
-    setattr(_wrapper, _WRAPPER_ATTRIBUTE, True)
+    setattr(_wrapper, _wrapper_attribute, True)
     return _wrapper
 
 
@@ -282,7 +282,7 @@ def _decorate_with_start(callable_: Callable) -> Callable:
         observer.start(CallSpec(callable_=callable_, args=args, kwargs=kwargs))
         return callable_(self, *args, **kwargs)
 
-    setattr(_wrapper, _WRAPPER_ATTRIBUTE, True)
+    setattr(_wrapper, _wrapper_attribute, True)
     return _wrapper
 
 
@@ -317,7 +317,7 @@ def _decorate_with_finish(callable_: Callable) -> Callable:
         observer.end(call_spec, returned_data)
         return returned_data
 
-    setattr(_wrapper, _WRAPPER_ATTRIBUTE, True)
+    setattr(_wrapper, _wrapper_attribute, True)
     return _wrapper
 
 
@@ -353,7 +353,7 @@ def _decorate_with_both(callable_: Callable) -> Callable:
         observer.end(call_spec, returned_data)
         return returned_data
 
-    setattr(_wrapper, _WRAPPER_ATTRIBUTE, True)
+    setattr(_wrapper, _wrapper_attribute, True)
     return _wrapper
 
 
@@ -415,7 +415,7 @@ def _end_observation_safely(
     try:
         observer.end(call_spec, None)
     except Exception:
-        LOGGER.exception(
+        logger.exception(
             "The observation of %s could not be ended.",
             call_spec.callable_.__qualname__,
         )

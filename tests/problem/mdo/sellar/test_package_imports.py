@@ -20,5 +20,5 @@ import gemseo.problem.mdo.sellar
 from gemseo.util.testing.package_import import make_lazy_reexport_tests
 
 globals().update(
-    make_lazy_reexport_tests(gemseo.problem.mdo.sellar, extra_all=("WITH_2D_ARRAY",))
+    make_lazy_reexport_tests(gemseo.problem.mdo.sellar, extra_all=("with_2d_array",))
 )

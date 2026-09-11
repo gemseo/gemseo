@@ -69,7 +69,7 @@ from gemseo.uncertainty.distribution.core.base_fitter import BaseDistributionFit
 from gemseo.uncertainty.statistic.core.base import BaseStatistics
 from gemseo.uncertainty.statistic.tolerance_interval.base import BaseToleranceInterval
 from gemseo.uncertainty.statistic.tolerance_interval.factory import (
-    TOLERANCE_INTERVAL_FACTORY,
+    tolerance_interval_factory,
 )
 from gemseo.util.matplotlib_figure import save_show_figure
 from gemseo.util.string import pretty_str
@@ -97,7 +97,7 @@ _FittingCriterionT = TypeVar("_FittingCriterionT", bound=StrEnum)
 _SignificanceTestT = TypeVar("_SignificanceTestT", bound=StrEnum)
 _DistributionT = TypeVar("_DistributionT", bound="BaseDistribution")
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseParametricStatistics(
@@ -135,7 +135,7 @@ class BaseParametricStatistics(
     SelectionCriterion: ClassVar[StrEnum] = BaseDistributionFitter.SelectionCriterion
     """The enumeration of selection criteria."""
 
-    _DISTRIBUTION_FITTER: ClassVar[type[BaseDistributionFitter]]
+    _distribution_fitter: ClassVar[type[BaseDistributionFitter]]
     """The distribution fitter class."""
 
     fitting_criterion: _FittingCriterionT
@@ -187,13 +187,13 @@ class BaseParametricStatistics(
         """  # noqa: D205,D212,D415
         super().__init__(dataset, variable_names, name)
         self.fitting_criterion = self.FittingCriterion(
-            fitting_criterion or self._DISTRIBUTION_FITTER.default_fitting_criterion
+            fitting_criterion or self._distribution_fitter.default_fitting_criterion
         )
         self.selection_criterion = selection_criterion
-        LOGGER.info("| Set goodness-of-fit criterion: %s.", fitting_criterion)
+        logger.info("| Set goodness-of-fit criterion: %s.", fitting_criterion)
         self.level = level
         if self.fitting_criterion in {test.value for test in self.SignificanceTest}:
-            LOGGER.info("| Set significance level of hypothesis test: %s.", level)
+            logger.info("| Set significance level of hypothesis test: %s.", level)
 
         self._all_distributions = self._fit_distributions(distributions)
         self.__distributions = {}
@@ -366,9 +366,9 @@ class BaseParametricStatistics(
         Returns:
             The best distributions for the different variables.
         """
-        LOGGER.info("Select the best distribution for each variable.")
+        logger.info("Select the best distribution for each variable.")
         distributions = {}
-        select_from_measures = self._DISTRIBUTION_FITTER.select_from_measures
+        select_from_measures = self._distribution_fitter.select_from_measures
         for variable in self.names:
             selected_distribution_names = []
             marginal_distributions = []
@@ -389,7 +389,7 @@ class BaseParametricStatistics(
                 best_dist = all_distributions[distribution_name]["fitted_distribution"]
                 selected_distribution_names.append(distribution_name)
                 marginal_distributions.append(best_dist)
-                LOGGER.info(
+                logger.info(
                     "| The best distribution for %s[%s] is %s.",
                     variable,
                     component,
@@ -422,14 +422,14 @@ class BaseParametricStatistics(
         Returns:
             The distributions for the different variables.
         """
-        LOGGER.info(
+        logger.info(
             "Fit different distributions (%s) per variable "
             "and compute the goodness-of-fit criterion.",
             pretty_str(distributions, sort=False),
         )
         results = {}
         for name in self.names:
-            LOGGER.info("| Fit different distributions for %s.", name)
+            logger.info("| Fit different distributions for %s.", name)
             dataset_values = self.dataset.get_view(variable_names=name).to_numpy()
             results[name] = [
                 self._fit_marginal_distributions(column, distributions)
@@ -451,7 +451,7 @@ class BaseParametricStatistics(
         Returns:
             The distributions for the different variables.
         """
-        factory = self._DISTRIBUTION_FITTER(samples)
+        factory = self._distribution_fitter(samples)
         result = {}
         for distribution in distributions:
             fitted_distribution = factory.fit(distribution)
@@ -533,7 +533,7 @@ class BaseParametricStatistics(
             msg = "The argument 'confidence' must be a number in [0,1]."
             raise ValueError(msg)
 
-        get_class = TOLERANCE_INTERVAL_FACTORY.get_class
+        get_class = tolerance_interval_factory.get_class
         return {
             name: [
                 get_class(f"{distribution.name}ToleranceInterval")(

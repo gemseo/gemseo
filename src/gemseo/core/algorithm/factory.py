@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.algorithm.base_algorithm_factory import BaseAlgorithmFactory
 from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 
@@ -23,5 +25,5 @@ from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 class DriverLibraryFactory(BaseAlgorithmFactory):
     """A factory of driver libraries."""
 
-    _CLASS = BaseDriverLibrary
-    _PACKAGE_NAMES = ("gemseo.doe", "gemseo.optimization")
+    _class: ClassVar[type[BaseDriverLibrary]] = BaseDriverLibrary
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.doe", "gemseo.optimization")

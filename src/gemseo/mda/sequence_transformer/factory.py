@@ -20,6 +20,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.mda.sequence_transformer.sequence_transformer import SequenceTransformer
 
@@ -27,5 +29,5 @@ from gemseo.mda.sequence_transformer.sequence_transformer import SequenceTransfo
 class SequenceTransformerFactory(BaseFactory):
     """A factory of sequence transformers."""
 
-    _CLASS = SequenceTransformer
-    _PACKAGE_NAMES = ("gemseo.mda.sequence_transformer",)
+    _class: ClassVar[type[SequenceTransformer]] = SequenceTransformer
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.mda.sequence_transformer",)

@@ -60,10 +60,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from gemseo.core.discipline import Discipline
 from gemseo.problem.mdo.scalable.data_driven.factory import ScalableModelFactory
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
@@ -77,13 +78,15 @@ if TYPE_CHECKING:
 class DataDrivenScalableDiscipline(Discipline):
     """A scalable discipline."""
 
-    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union(["scalable_model"])
+    _attr_not_to_serialize: ClassVar[set[str]] = (
+        Discipline._attr_not_to_serialize.union(["scalable_model"])
+    )
 
     def __init__(
         self,
         name: str,
         data: IODataset,
-        sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        sizes: Mapping[str, int] = read_only_empty_dict,
         **parameters: Any,
     ) -> None:
         """
@@ -110,10 +113,10 @@ class DataDrivenScalableDiscipline(Discipline):
             data: The training dataset.
         """
         self.io.input_grammar.update_from_names(
-            data.get_variable_names(data.INPUT_GROUP)
+            data.get_variable_names(data.input_group)
         )
         self.io.output_grammar.update_from_names(
-            data.get_variable_names(data.OUTPUT_GROUP)
+            data.get_variable_names(data.output_group)
         )
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:

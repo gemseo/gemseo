@@ -72,7 +72,7 @@ def test_add_input_variable() -> None:
 
     dataset = Dataset()
     dataset.name = io_dataset.__class__.__name__
-    dataset.add_variable("x", [[1.0], [2.0]], group_name=IODataset.INPUT_GROUP)
+    dataset.add_variable("x", [[1.0], [2.0]], group_name=IODataset.input_group)
 
     assert_frame_equal(io_dataset, dataset)
 
@@ -84,7 +84,7 @@ def test_add_output_variable() -> None:
 
     dataset = Dataset()
     dataset.name = io_dataset.__class__.__name__
-    dataset.add_variable("x", [[1.0], [2.0]], group_name=IODataset.OUTPUT_GROUP)
+    dataset.add_variable("x", [[1.0], [2.0]], group_name=IODataset.output_group)
 
     assert_frame_equal(io_dataset, dataset)
 
@@ -96,7 +96,7 @@ def test_add_input_group() -> None:
 
     dataset = Dataset()
     dataset.name = io_dataset.__class__.__name__
-    dataset.add_group(IODataset.INPUT_GROUP, [[1.0], [2.0]], ["x"])
+    dataset.add_group(IODataset.input_group, [[1.0], [2.0]], ["x"])
 
     assert_frame_equal(io_dataset.input_dataset, dataset)
 
@@ -108,18 +108,18 @@ def test_add_output_group() -> None:
 
     dataset = Dataset()
     dataset.name = io_dataset.__class__.__name__
-    dataset.add_group(IODataset.OUTPUT_GROUP, [[1.0], [2.0]], ["x"])
+    dataset.add_group(IODataset.output_group, [[1.0], [2.0]], ["x"])
 
     assert_frame_equal(io_dataset.output_dataset, dataset)
 
 
 def test_input_dataset(dataset) -> None:
     """Test the method input_dataset."""
-    input_dataset = dataset.get_view(group_names=dataset.INPUT_GROUP)
+    input_dataset = dataset.get_view(group_names=dataset.input_group)
     assert_frame_equal(dataset.input_dataset, input_dataset)
 
 
 def test_output_dataset(dataset) -> None:
     """Test the property output_dataset."""
-    output_dataset = dataset.get_view(group_names=dataset.OUTPUT_GROUP)
+    output_dataset = dataset.get_view(group_names=dataset.output_group)
     assert_frame_equal(dataset.output_dataset, output_dataset)

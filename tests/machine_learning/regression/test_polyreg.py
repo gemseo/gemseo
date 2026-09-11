@@ -43,22 +43,22 @@ from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
 from gemseo.util.testing.helper import assert_exception
 
-LEARNING_SIZE = 50
-DEGREE = 5
-N_INPUTS = 2
-N_OUTPUTS = 3
-N_POWERS = comb(N_INPUTS + DEGREE, N_INPUTS, exact=True) - 1
+learning_size = 50
+degree = 5
+n_inputs = 2
+n_outputs = 3
+n_powers = comb(n_inputs + degree, n_inputs, exact=True) - 1
 
-COEFFICIENTS = zeros((N_OUTPUTS, N_POWERS))
-COEFFICIENTS[0, [0, 4]] = [1, 1]
-COEFFICIENTS[1, [3, 5]] = [4, 5]
-COEFFICIENTS[2, [7, 19]] = [10, 7]
+expected_coefficients = zeros((n_outputs, n_powers))
+expected_coefficients[0, [0, 4]] = [1, 1]
+expected_coefficients[1, [3, 5]] = [4, 5]
+expected_coefficients[2, [7, 19]] = [10, 7]
 
 # 1D
-INPUT_VALUE = {"x_1": array([1]), "x_2": array([2])}
+input_value = {"x_1": array([1]), "x_2": array([2])}
 
 # 2D
-ANOTHER_INPUT_VALUE = {
+another_input_value = {
     "x_1": array([[0], [0], [1], [2]]),
     "x_2": array([[0], [1], [2], [2]]),
 }
@@ -67,7 +67,7 @@ ANOTHER_INPUT_VALUE = {
 @pytest.fixture
 def dataset() -> IODataset:
     """Dataset from a R^2 -> R^3 function sampled over [-1, 2]^2."""
-    root_learning_size = int(sqrt(LEARNING_SIZE))
+    root_learning_size = int(sqrt(learning_size))
     x_1 = linspace(-1, 2, root_learning_size)
     x_2 = linspace(-1, 2, root_learning_size)
     x_1, x_2 = meshgrid(x_1, x_2)
@@ -80,11 +80,11 @@ def dataset() -> IODataset:
     variables = ["x_1", "x_2", "y_1", "y_2", "y_3"]
     variable_name_to_n_components = {"x_1": 1, "x_2": 1, "y_1": 1, "y_2": 1, "y_3": 1}
     variable_name_to_group_name = {
-        "x_1": IODataset.INPUT_GROUP,
-        "x_2": IODataset.INPUT_GROUP,
-        "y_1": IODataset.OUTPUT_GROUP,
-        "y_2": IODataset.OUTPUT_GROUP,
-        "y_3": IODataset.OUTPUT_GROUP,
+        "x_1": IODataset.input_group,
+        "x_2": IODataset.input_group,
+        "y_1": IODataset.output_group,
+        "y_2": IODataset.output_group,
+        "y_3": IODataset.output_group,
     }
 
     return IODataset.from_array(
@@ -106,14 +106,14 @@ def dataset_from_cache() -> IODataset:
     design_space.add_variable("x_1", lower_bound=-1, upper_bound=2)
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y_1")
-    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=learning_size))
     return discipline.cache.to_dataset("dataset_name")
 
 
 @pytest.fixture
 def model(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor."""
-    polyreg = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=DEGREE))
+    polyreg = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=degree))
     polyreg.learn()
     return polyreg
 
@@ -122,7 +122,7 @@ def model(dataset) -> PolynomialRegressor:
 def model_without_intercept(dataset) -> PolynomialRegressor:
     """A trained PolynomialRegressor without intercept fitting."""
     polyreg = PolynomialRegressor(
-        dataset, PolynomialRegressor_Settings(degree=DEGREE, fit_intercept=False)
+        dataset, PolynomialRegressor_Settings(degree=degree, fit_intercept=False)
     )
     polyreg.learn()
     return polyreg
@@ -163,15 +163,15 @@ def test_intercept(model, model_without_intercept) -> None:
 
 def test_coefficients(model) -> None:
     """Test coefficients."""
-    assert model.coefficients.shape == (N_OUTPUTS, N_POWERS)
+    assert model.coefficients.shape == (n_outputs, n_powers)
     coefficients = model.get_coefficients(as_dict=False)
-    assert allclose(coefficients, COEFFICIENTS, atol=1.0e-12)
+    assert allclose(coefficients, expected_coefficients, atol=1.0e-12)
 
 
 def test_prediction(model) -> None:
     """Test prediction."""
-    prediction = model.predict(INPUT_VALUE)
-    another_prediction = model.predict(ANOTHER_INPUT_VALUE)
+    prediction = model.predict(input_value)
+    another_prediction = model.predict(another_input_value)
     assert isinstance(prediction, dict)
     assert isinstance(another_prediction, dict)
     assert allclose(prediction["y_1"], array([6]))
@@ -182,8 +182,8 @@ def test_prediction(model) -> None:
 
 def test_prediction_jacobian(model) -> None:
     """Test jacobian prediction."""
-    jacobian = model.predict_jacobian(INPUT_VALUE)
-    another_jacobian = model.predict_jacobian(ANOTHER_INPUT_VALUE)
+    jacobian = model.predict_jacobian(input_value)
+    another_jacobian = model.predict_jacobian(another_input_value)
     assert isinstance(jacobian, dict)
     assert isinstance(another_jacobian, dict)
     assert allclose(jacobian["y_1"]["x_1"], 1)
@@ -199,5 +199,5 @@ def test_jacobian_constant(dataset) -> None:
     """Test Jacobians linear polynomials."""
     model_ = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     model_.learn()
-    model_.predict_jacobian(INPUT_VALUE)
-    model_.predict_jacobian(ANOTHER_INPUT_VALUE)
+    model_.predict_jacobian(input_value)
+    model_.predict_jacobian(another_input_value)

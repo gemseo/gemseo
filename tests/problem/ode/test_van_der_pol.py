@@ -23,8 +23,8 @@ import pytest
 from numpy import array
 from numpy.linalg import norm
 
-from gemseo.ode.factory import ODE_SOLVER_LIBRARY_FACTORY
 from gemseo.ode.factory import ODESolverLibraryFactory
+from gemseo.ode.factory import ode_solver_library_factory
 from gemseo.ode.scipy_ode.settings.radau import Radau_Settings
 from gemseo.problem.ode.van_der_pol import VanDerPol
 
@@ -45,7 +45,7 @@ parametrized_algo_names = pytest.mark.parametrize(
 def test_run(algo_name) -> None:
     """Solve Van der Pol with the jacobian analytical expression."""
     problem = VanDerPol()
-    lib = ODE_SOLVER_LIBRARY_FACTORY.create(algo_name)
+    lib = ode_solver_library_factory.create(algo_name)
     settings = lib.ALGORITHM_INFOS[algo_name].settings_class(first_step=10e-6)
     lib.execute(problem, settings=settings)
     assert problem.result.algorithm_has_converged
@@ -69,7 +69,7 @@ def test_van_der_pol_jacobian_explicit_expression() -> None:
 def test_van_der_pol_with_initial_state(algo_name) -> None:
     """Solve Van der Pol for an initial condition that is not the default."""
     problem = VanDerPol(state=(1.0, -1.0))
-    lib = ODE_SOLVER_LIBRARY_FACTORY.create(algo_name)
+    lib = ode_solver_library_factory.create(algo_name)
     settings = lib.ALGORITHM_INFOS[algo_name].settings_class(first_step=10e-6)
     lib.execute(problem, settings=settings)
     assert problem.result.algorithm_has_converged

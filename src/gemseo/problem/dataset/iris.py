@@ -84,8 +84,8 @@ def create_iris_dataset(
 
     if as_io:
         groups = {
-            "parameters": IODataset.INPUT_GROUP,
-            "labels": IODataset.OUTPUT_GROUP,
+            "parameters": IODataset.input_group,
+            "labels": IODataset.output_group,
         }
         for group, new_group in groups.items():
             dataset.rename_group(group_name=group, new_group_name=new_group)

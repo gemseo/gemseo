@@ -152,7 +152,7 @@ class SobolIndicesEstimatorMixin:
             Computer Physics Communications, 145(2):280-297, 2002.
         """
 
-    _ALGO_NAME_TO_CLASS: Final[dict[Algorithm, type]] = {
+    _algo_name_to_class: Final[dict[Algorithm, type]] = {
         Algorithm.SALTELLI: SaltelliSensitivityAlgorithm,
         Algorithm.JANSEN: JansenSensitivityAlgorithm,
         Algorithm.MAUNTZ_KUCHERENKO: MauntzKucherenkoSensitivityAlgorithm,
@@ -161,13 +161,13 @@ class SobolIndicesEstimatorMixin:
     }
     """The map from a sensitivity algorithm to an OpenTURNS class."""
 
-    _GET_FIRST_ORDER_INDICES: Final[str] = "getFirstOrderIndices"
-    _GET_SECOND_ORDER_INDICES: Final[str] = "getSecondOrderIndices"
-    _GET_TOTAL_ORDER_INDICES: Final[str] = "getTotalOrderIndices"
+    _get_first_order_indices: Final[str] = "getFirstOrderIndices"
+    _get_second_order_indices: Final[str] = "getSecondOrderIndices"
+    _get_total_order_indices: Final[str] = "getTotalOrderIndices"
 
-    _INTERACTION_METHODS: ClassVar[tuple[str, ...]] = ("second",)
+    _interaction_methods: ClassVar[tuple[str, ...]] = ("second",)
 
-    _DEFAULT_MAIN_METHOD: ClassVar[SobolAnalysisMethod] = SobolAnalysisMethod.FIRST
+    _default_main_method: ClassVar[SobolAnalysisMethod] = SobolAnalysisMethod.FIRST
 
     _output_name_to_sobol_algos: dict[str, list[SobolIndicesAlgorithmImplementation]]
     """The map from an output name to its OpenTURNS Sobol' algorithms."""
@@ -262,7 +262,7 @@ class SobolIndicesEstimatorMixin:
             The first-, second- or total-order indices.
         """
         dataset: IODataset = self.dataset
-        if method_name == self._GET_SECOND_ORDER_INDICES and not dataset.misc.get(
+        if method_name == self._get_second_order_indices and not dataset.misc.get(
             "eval_second_order", False
         ):
             return {}
@@ -281,7 +281,7 @@ class SobolIndicesEstimatorMixin:
             ]
             for output_name, algorithms in self._output_name_to_sobol_algos.items()
         }
-        if method_name == self._GET_SECOND_ORDER_INDICES:
+        if method_name == self._get_second_order_indices:
             return {
                 output_name: [
                     None

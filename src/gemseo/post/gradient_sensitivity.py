@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
@@ -55,7 +55,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
         GradientSensitivity_Settings
     )
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+    _use_jacobian_data: ClassVar[bool] = True
 
     def _plot(self, settings: GradientSensitivity_Settings) -> None:
         compute_missing_gradients = settings.compute_missing_gradients
@@ -131,7 +131,7 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
                     jacobian_functions=jacobian_functions or None,
                 )
             except NotImplementedError:
-                LOGGER.info(
+                logger.info(
                     "The missing gradients for an OptimizationProblem without "
                     "callable functions cannot be computed."
                 )

@@ -34,6 +34,7 @@ from gemseo.core.data_converter.simple import SimpleGrammarDataConverter
 from gemseo.core.grammar.simple import SimpleGrammar
 
 if TYPE_CHECKING:
+    from gemseo.core.data_converter.base import BaseDataConverter
     from gemseo.core.data_converter.base import ValueType
     from gemseo.util.typing import NumberArray
 
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
 class DictGrammar(SimpleGrammar):
     """A simple grammar that accepts dictionaries."""
 
-    DATA_CONVERTER_CLASS = "DictDataConverter"
+    data_converter_class: ClassVar[str | type[BaseDataConverter]] = "DictDataConverter"
 
 
 class DictDataConverter(SimpleGrammarDataConverter):
@@ -49,9 +50,9 @@ class DictDataConverter(SimpleGrammarDataConverter):
 
     _MAPPING_TYPES: ClassVar[tuple[type, ...]] = (dict, Mapping)
 
-    _IS_CONTINUOUS_TYPES: ClassVar[tuple[type, ...]] = (float, complex, *_MAPPING_TYPES)
+    _is_continuous_types: ClassVar[tuple[type, ...]] = (float, complex, *_MAPPING_TYPES)
 
-    _IS_NUMERIC_TYPES: ClassVar[tuple[type, ...]] = (int, *_IS_CONTINUOUS_TYPES)
+    _is_numeric_types: ClassVar[tuple[type, ...]] = (int, *_is_continuous_types)
 
     def convert_value_to_array(  # noqa: D102
         self,

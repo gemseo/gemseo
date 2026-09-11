@@ -26,11 +26,11 @@ import pytest
 from numpy import array
 
 from gemseo import set_data_converters
-from gemseo.problem.mdo.sellar import WITH_2D_ARRAY
+from gemseo.problem.mdo.sellar import with_2d_array
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problem.mdo.sellar.variable import X_SHARED
+from gemseo.problem.mdo.sellar.variable import x_shared
 from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.testing.pytest_conftest import *  # noqa: F401,F403
 
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 # Use a non GUI rendering backend for matplotlib.
 matplotlib.use("agg")
 
-DOC_EXAMPLE_MARK = "doc_examples"
+doc_example_mark = "doc_examples"
 
 
 def pytest_collection_modifyitems(
@@ -53,10 +53,10 @@ def pytest_collection_modifyitems(
     """Skip by default some marked tests."""
     if not config.getoption("-m"):
         skip_me = pytest.mark.skip(
-            reason=f"use '-m {DOC_EXAMPLE_MARK}' to run this test"
+            reason=f"use '-m {doc_example_mark}' to run this test"
         )
         for item in items:
-            if DOC_EXAMPLE_MARK in item.keywords:
+            if doc_example_mark in item.keywords:
                 item.add_marker(skip_me)
 
 
@@ -103,10 +103,10 @@ def two_virtual_disciplines() -> list[Discipline]:
 @pytest.fixture
 def sellar_with_2d_array() -> Generator[None, Any, None]:
     """Change the data-converter temporary for sellar with 2d x_shared array."""
-    if WITH_2D_ARRAY:  # pragma: no cover
+    if with_2d_array:  # pragma: no cover
         set_data_converters(
-            {X_SHARED: operator.itemgetter(0)},
-            {X_SHARED: lambda a: array([a])},
+            {x_shared: operator.itemgetter(0)},
+            {x_shared: lambda a: array([a])},
             {},
         )
         yield

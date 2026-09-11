@@ -59,7 +59,7 @@ from gemseo.core.discipline.base_discipline import CacheType
 from gemseo.discipline.auto_py import AutoPyDiscipline
 from gemseo.discipline.ode.ode_discipline import ODEDiscipline
 from gemseo.ode.scipy_ode.settings.rk45 import RK45_Settings
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -83,7 +83,7 @@ class OscillatorDiscipline(ODEDiscipline):
         omega: float,
         times: RealArray,
         return_trajectories: bool = False,
-        final_state_names: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
+        final_state_names: Mapping[str, str] = read_only_empty_dict,
         cache_inner_discipline_is_none: bool = True,
     ):
         """

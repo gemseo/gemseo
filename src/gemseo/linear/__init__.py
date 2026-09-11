@@ -24,12 +24,15 @@ Together with the problem they solve
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.linear.problem import LinearProblem  # noqa: F401
     from gemseo.linear.scipy_linalg.settings.bicg import BICG_Settings  # noqa: F401
@@ -43,7 +46,7 @@ if TYPE_CHECKING:
 
 # Exported name -> "module.path:Attr" (lazy-loaded on attribute access).
 # The module path is relative to this package.
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "BICGSTAB_Settings": "scipy_linalg.settings.bicgstab:BICGSTAB_Settings",
     "BICG_Settings": "scipy_linalg.settings.bicg:BICG_Settings",
     "CGS_Settings": "scipy_linalg.settings.cgs:CGS_Settings",
@@ -53,6 +56,6 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "LGMRES_Settings": "scipy_linalg.settings.lgmres:LGMRES_Settings",
     "LinearProblem": "problem:LinearProblem",
     "TFQMR_Settings": "scipy_linalg.settings.tfqmr:TFQMR_Settings",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

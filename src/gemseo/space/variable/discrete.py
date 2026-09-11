@@ -32,16 +32,16 @@ from pydantic import field_validator
 from pydantic import model_validator
 
 from gemseo.space.variable._formatting import format_components
-from gemseo.space.variable.base import _LOWER_BOUND
-from gemseo.space.variable.base import _UPPER_BOUND
 from gemseo.space.variable.base import BaseVariable
 from gemseo.space.variable.base import DataType
 from gemseo.space.variable.base import ScalarBoundType
+from gemseo.space.variable.base import _lower_bound
+from gemseo.space.variable.base import _upper_bound
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
 from gemseo.util.string import pretty_str
 from gemseo.util.typing import BooleanArray
 
-_CHOICES: Final[str] = "choices"
+_choices: Final[str] = "choices"
 """The name of the field storing the choices of a discrete variable."""
 
 if TYPE_CHECKING:
@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
 
-_MAX_DISPLAYED_CHOICES: Final[int] = 6
+_max_displayed_choices: Final[int] = 6
 """The number of choices displayed in an error message."""
 
 ChoicesType = (
@@ -136,7 +136,7 @@ class DiscreteVariable(BaseVariable):
         # Freeze the validated choices using setflags + view.
         sorted_unique_choices.setflags(write=False)
         # Bypass assignment validation to avoid recursion when using setattr.
-        self.__dict__[_CHOICES] = sorted_unique_choices.view()
+        self.__dict__[_choices] = sorted_unique_choices.view()
         self.__derive_bounds(sorted_unique_choices)
         return self
 
@@ -147,7 +147,7 @@ class DiscreteVariable(BaseVariable):
             ValueError: If a bound is passed explicitly.
         """
         fields_set = self.model_fields_set
-        if fields_set & {_LOWER_BOUND, _UPPER_BOUND}:
+        if fields_set & {_lower_bound, _upper_bound}:
             msg = (
                 "The domain of a discrete variable is its choices, "
                 "from which its bounds are derived; the bounds are not settable."
@@ -203,7 +203,7 @@ class DiscreteVariable(BaseVariable):
         Args:
             choices: The choices, sorted in ascending order.
         """
-        for name, index in ((_LOWER_BOUND, 0), (_UPPER_BOUND, -1)):
+        for name, index in ((_lower_bound, 0), (_upper_bound, -1)):
             bound = array([choices[index]], dtype=self.component_type)
             bound.setflags(write=False)
             self.__dict__[name] = bound.view()
@@ -233,7 +233,7 @@ class DiscreteVariable(BaseVariable):
     def _format_choices(self) -> str:
         """Return a readable representation of the choices for an error message.
 
-        Beyond `_MAX_DISPLAYED_CHOICES` choices,
+        Beyond `_max_displayed_choices` choices,
         the set is elided around its extremes and followed by its length,
         so that a message quoting many choices stays readable.
 
@@ -242,11 +242,11 @@ class DiscreteVariable(BaseVariable):
             e.g. `"[2.0, 4.0, 6.0, ..., 96.0, 98.0, 100.0] (50 choices)"`.
         """
         choices = self.choices
-        if len(choices) <= _MAX_DISPLAYED_CHOICES:
+        if len(choices) <= _max_displayed_choices:
             return f"[{pretty_str(choices, sort=False, use_and=False)}]"
 
-        n_head = _MAX_DISPLAYED_CHOICES // 2
-        n_tail = _MAX_DISPLAYED_CHOICES - n_head
+        n_head = _max_displayed_choices // 2
+        n_tail = _max_displayed_choices - n_head
         head = pretty_str(choices[:n_head], sort=False, use_and=False)
         tail = pretty_str(choices[-n_tail:], sort=False, use_and=False)
         return f"[{head}, ..., {tail}] ({len(choices)} choices)"
@@ -278,6 +278,6 @@ class DiscreteVariable(BaseVariable):
         # NumPy does not preserve the writeable flag across pickling,
         # and Pydantic restores the model without re-validating it,
         # so refreeze the choices here.
-        choices = self.__dict__[_CHOICES]
+        choices = self.__dict__[_choices]
         choices.setflags(write=False)
-        self.__dict__[_CHOICES] = choices.view()
+        self.__dict__[_choices] = choices.view()

@@ -49,8 +49,8 @@ from .mda_gauss_seidel import SobieskiMDAGaussSeidel
 if TYPE_CHECKING:
     from numpy import ndarray
 
-CWD = Path(__file__).parent
-RNG = default_rng()
+cwd = Path(__file__).parent
+rng = default_rng()
 
 MDADerivationMode = JacobianAssembly.MDADerivationMode
 
@@ -325,9 +325,9 @@ def test_sparse_jacobian_assembly(mode, jacobian_type, matrix_format) -> None:
     ja = JacobianAssembly(mc)
 
     inputs = {
-        "x": RNG.normal(size=io_size),
-        "a": RNG.normal(size=io_size),
-        "b": RNG.normal(size=io_size),
+        "x": rng.normal(size=io_size),
+        "a": rng.normal(size=io_size),
+        "b": rng.normal(size=io_size),
     }
 
     ja.total_derivatives(inputs, ["f"], ["x"], mc.all_couplings)

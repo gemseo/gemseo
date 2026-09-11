@@ -89,7 +89,7 @@ class ScipyMILP(BaseOptimizationLibrary[MILP_Settings]):
         ),
     }
 
-    _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = True
+    _support_sparse_jacobian: ClassVar[bool] = True
     """Whether the library support sparse Jacobians."""
 
     def __init__(self, algo_name: str = "MILP") -> None:  # noqa:D107

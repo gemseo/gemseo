@@ -26,4 +26,4 @@ from gemseo.uncertainty.reliability.openturns.base_qmc_settings import BaseOTQMC
 class OT_Sobol_Settings(BaseOTQMCSettings):  # noqa: N801
     """The settings of the QMC algorithm using the Sobol' sequence."""
 
-    _SEQUENCE_CLASS: ClassVar[type[SobolSequence]] = SobolSequence
+    _sequence_class: ClassVar[type[SobolSequence]] = SobolSequence

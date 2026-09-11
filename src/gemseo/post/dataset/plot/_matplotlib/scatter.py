@@ -21,8 +21,8 @@ from typing import TYPE_CHECKING
 
 from gemseo.post.dataset.plot._matplotlib.plot import MatplotlibPlot
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
-from gemseo.post.dataset.trend import _TREND_FUNCTIONS
 from gemseo.post.dataset.trend import Trend
+from gemseo.post.dataset.trend import _trend_functions
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -52,7 +52,7 @@ class Scatter(MatplotlibPlot[Scatter_Settings]):
         trend_function_creator = settings.trend
         if trend_function_creator != Trend.NONE:
             if not isinstance(trend_function_creator, Callable):
-                trend_function_creator = _TREND_FUNCTIONS[trend_function_creator]
+                trend_function_creator = _trend_functions[trend_function_creator]
 
             indices = x_values[:, 0].argsort()
             x_values = x_values[indices]

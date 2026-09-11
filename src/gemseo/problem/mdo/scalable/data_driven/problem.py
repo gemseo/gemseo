@@ -68,14 +68,14 @@ from gemseo import generate_n2_plot
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulation.mdf_settings import MDF_Settings
-from gemseo.mda.factory import MDA_FACTORY
+from gemseo.mda.factory import mda_factory
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.mdo.scalable.data_driven.discipline import (
     DataDrivenScalableDiscipline,
 )
 from gemseo.space.design import DesignSpace
 from gemseo.util.discipline import get_all_inputs
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 from gemseo.util.string import MultiLineString
 from gemseo.util.string import pretty_str
 
@@ -93,7 +93,7 @@ if TYPE_CHECKING:
     from gemseo.scenario.mdo import MDOScenario
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ScalableProblem:
@@ -125,11 +125,11 @@ class ScalableProblem:
         self.disciplines = [dataset.name for dataset in datasets]
         self.data = {dataset.name: dataset for dataset in datasets}
         self.inputs = {
-            dataset.name: dataset.get_variable_names(dataset.INPUT_GROUP)
+            dataset.name: dataset.get_variable_names(dataset.input_group)
             for dataset in datasets
         }
         self.outputs = {
-            dataset.name: dataset.get_variable_names(dataset.OUTPUT_GROUP)
+            dataset.name: dataset.get_variable_names(dataset.output_group)
             for dataset in datasets
         }
         self.varsizes = {}
@@ -445,8 +445,8 @@ class ScalableProblem:
         Returns:
             The equilibrium point.
         """
-        LOGGER.info("Build a preliminary MDA to start at equilibrium")
-        factory = MDA_FACTORY
+        logger.info("Build a preliminary MDA to start at equilibrium")
+        factory = mda_factory
         mda = factory.create(mda_name, self.scaled_disciplines, **mda_settings)
         if len(mda.coupling_structure.strong_couplings) == 0:
             mda = factory.create(
@@ -473,7 +473,7 @@ class ScalableProblem:
             feasibility_level = dict.fromkeys(self.ineq_constraints, feasibility_level)
         for constraint, alphai in feasibility_level.items():
             if constraint in list(equilibrium.keys()):
-                sample = default_rng(SEED).random(len(equilibrium[constraint]))
+                sample = default_rng(seed).random(len(equilibrium[constraint]))
                 val = equilibrium[constraint]
                 taui = where(
                     sample < active_probability, val, alphai + (1 - alphai) * val

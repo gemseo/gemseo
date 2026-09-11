@@ -26,10 +26,10 @@ from gemseo.space.variable import BaseVariable
 from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable._legacy import Variable
 from gemseo.space.variable.factory import VariableFactory
-from tests.space.variable.utils import KINDS
+from tests.space.variable.utils import kinds
 
 
-@pytest.mark.parametrize("kind", KINDS)
+@pytest.mark.parametrize("kind", kinds)
 def test_unpickle_legacy_variable(kind) -> None:
     """Check that a variable pickled before the hierarchy is restored as its kind."""
     legacy = Variable(

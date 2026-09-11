@@ -51,12 +51,15 @@ and the description given here is based on that of
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.problem.uncertainty.wing_weight.discipline import WingWeightDiscipline  # noqa: F401
     from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
@@ -64,9 +67,9 @@ if TYPE_CHECKING:
     )
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "WingWeightDiscipline": "discipline",
     "WingWeightUncertainSpace": "uncertain_space",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

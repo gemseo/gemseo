@@ -35,7 +35,7 @@ from gemseo.space.variable import DataType
 from gemseo.space.variable import IntegerVariable
 from gemseo.util.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 from gemseo.util.testing.helper import assert_exception
-from tests.space.variable.utils import KINDS
+from tests.space.variable.utils import kinds
 
 
 def test_base_variable_is_abstract() -> None:
@@ -46,7 +46,7 @@ def test_base_variable_is_abstract() -> None:
         BaseVariable()
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize(
     ("size", "lower_bound", "upper_bound"),
     [
@@ -70,7 +70,7 @@ def test_initialization(
     assert (my_variable.upper_bound == atleast_1d(upper_bound)).all()
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize("size", [-1, 0])
 def test_non_positive_size(cls, size, snapshot) -> None:
     """Check non-positive variables size."""
@@ -78,7 +78,7 @@ def test_non_positive_size(cls, size, snapshot) -> None:
         cls(size=size)
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize(
     "type_", ["complex", DataType.FLOAT, DataType.INTEGER, DataType.DISCRETE]
 )
@@ -91,14 +91,14 @@ def test_type_is_not_settable(cls, type_, snapshot) -> None:
         cls(type=type_)
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 def test_unknown_field(cls, snapshot) -> None:
     """Check that an unknown field is rejected instead of being ignored."""
     with assert_exception(ValidationError, snapshot):
         cls(unknown=0)
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize("side", ["lower", "upper"])
 def test_invalid_bound_size(cls, side, snapshot) -> None:
     """Check invalid bound size."""
@@ -106,7 +106,7 @@ def test_invalid_bound_size(cls, side, snapshot) -> None:
         cls(**{f"{side}_bound": [0, 0]})
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize("side", ["lower", "upper"])
 def test_invalid_bound_value_scalar(cls, side, snapshot) -> None:
     """Check invalid bound value type."""
@@ -114,7 +114,7 @@ def test_invalid_bound_value_scalar(cls, side, snapshot) -> None:
         cls(**{f"{side}_bound": 1j})
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 def test_wrong_boundaries(cls: type[BaseVariable], snapshot) -> None:
     """Test the instantiation with `upper_bound` lower than `lower_bound`."""
     with assert_exception(ValueError, snapshot):
@@ -128,7 +128,7 @@ def test_frozen(variable, bound, snapshot) -> None:
         setattr(variable, bound, 0)
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize("side", ["lower", "upper"])
 @pytest.mark.parametrize("bound", [array([nan]), array([nan, nan])])
 def test_bound_with_nan_components(cls, side, bound, snapshot) -> None:
@@ -137,7 +137,7 @@ def test_bound_with_nan_components(cls, side, bound, snapshot) -> None:
         cls(size=bound.size, **{f"{side}_bound": bound})
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize("side", ["lower", "upper"])
 def test_multidimensional_bound(cls, side, snapshot) -> None:
     """Check a bound with more than one dimension."""
@@ -151,7 +151,7 @@ def test_model_copy_without_update(variable) -> None:
     assert variable.model_copy(deep=True) is variable
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 def test_model_copy_with_inconsistent_update(cls, snapshot) -> None:
     """Check that an update inconsistent with the bounds is rejected.
 
@@ -197,7 +197,7 @@ def test_copy_and_pickle_keep_the_kind(variable, snapshot) -> None:
 
 @pytest.mark.parametrize("enable_integer_normalization", [False, True])
 @pytest.mark.parametrize("upper_bound", [1, inf])
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 def test_compute_normalization_mask(
     cls, upper_bound, enable_integer_normalization
 ) -> None:
@@ -210,7 +210,7 @@ def test_compute_normalization_mask(
     assert_array_equal(policy, [expected] * 2)
 
 
-@pytest.mark.parametrize("cls", KINDS)
+@pytest.mark.parametrize("cls", kinds)
 def test_find_components_outside_domain_with_none_and_inf(cls) -> None:
     """Check that None and infinite components are in the domain of a variable."""
     variable = cls(size=2, lower_bound=0, upper_bound=inf)

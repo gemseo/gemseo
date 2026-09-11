@@ -148,10 +148,10 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
     name: str
     """The name of the object."""
 
-    SYMBOLS: ClassVar[dict[str, str]] = {}
+    symbols: ClassVar[dict[str, str]] = {}
 
-    __QUARTILE_LEVELS: Final[list[float]] = [0.25, 0.5, 0.75]
-    __QUARTILE_ORDERS: Final[list[int]] = [1, 2, 3]
+    __quartile_levels: Final[tuple[float, ...]] = (0.25, 0.5, 0.75)
+    __quartile_orders: Final[tuple[int, ...]] = (1, 2, 3)
 
     def __init__(
         self,
@@ -232,7 +232,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             [compute_b_value()][gemseo.uncertainty.statistic.core.base.BaseStatistics.compute_b_value]
         """
 
-    SYMBOLS["tolerance_interval"] = "TI"
+    symbols["tolerance_interval"] = "TI"
 
     def compute_a_value(self) -> dict[str, RealArray]:
         r"""Compute the A-value $\text{Aval}[X]$.
@@ -255,7 +255,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             ).items()
         }
 
-    SYMBOLS["a_value"] = "Aval"
+    symbols["a_value"] = "Aval"
 
     def compute_b_value(self) -> dict[str, RealArray]:
         r"""Compute the B-value $\text{Bval}[X]$.
@@ -278,7 +278,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             ).items()
         }
 
-    SYMBOLS["b_value"] = "Bval"
+    symbols["b_value"] = "Bval"
 
     @abstractmethod
     def compute_maximum(self) -> dict[str, RealArray]:
@@ -288,7 +288,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise maximum of the different variables.
         """
 
-    SYMBOLS["maximum"] = "Max"
+    symbols["maximum"] = "Max"
 
     @abstractmethod
     def compute_mean(self) -> dict[str, RealArray]:
@@ -298,7 +298,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise mean of the different variables.
         """
 
-    SYMBOLS["mean"] = "E"
+    symbols["mean"] = "E"
 
     def compute_margin(self, std_factor: float) -> dict[str, RealArray]:
         r"""Compute a margin $\text{Margin}[X]=\mathbb{E}[X]+\kappa\mathbb{S}[X]$.
@@ -317,8 +317,8 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     compute_mean_std = compute_margin
 
-    SYMBOLS["mean_std"] = "E_StD"
-    SYMBOLS["margin"] = "Margin"
+    symbols["mean_std"] = "E_StD"
+    symbols["margin"] = "Margin"
 
     @abstractmethod
     def compute_minimum(self) -> dict[str, RealArray]:
@@ -328,7 +328,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise minimum of the different variables.
         """
 
-    SYMBOLS["minimum"] = "Min"
+    symbols["minimum"] = "Min"
 
     def compute_median(self) -> dict[str, RealArray]:
         r"""Compute the median $\text{Med}[X]$.
@@ -338,7 +338,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         return self.compute_quantile(0.5)
 
-    SYMBOLS["median"] = "Med"
+    symbols["median"] = "Med"
 
     def compute_percentile(self, order: int) -> dict[str, RealArray]:
         r"""Compute the n-th percentile $\text{p}[X; n]$.
@@ -357,7 +357,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             raise TypeError(msg)
         return self.compute_quantile(order / 100.0)
 
-    SYMBOLS["percentile"] = "p"
+    symbols["percentile"] = "p"
 
     @abstractmethod
     def compute_probability(
@@ -401,7 +401,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             this statistics is not computed component-wise).
         """
 
-    SYMBOLS["probability"] = "P"
+    symbols["probability"] = "P"
 
     @abstractmethod
     def compute_quantile(self, prob: float) -> dict[str, RealArray]:
@@ -414,7 +414,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise quantile of the different variables.
         """
 
-    SYMBOLS["quantile"] = "Q"
+    symbols["quantile"] = "Q"
 
     def compute_quartile(self, order: int) -> dict[str, RealArray]:
         r"""Compute the n-th quartile $q[X; n]$.
@@ -428,13 +428,13 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         Raises:
             ValueError: When $n\notin\{1,2,3\}$.
         """
-        if order not in self.__QUARTILE_ORDERS:
+        if order not in self.__quartile_orders:
             msg = "Quartile order must be in {1, 2, 3}."
             raise ValueError(msg)
 
-        return self.compute_quantile(self.__QUARTILE_LEVELS[order - 1])
+        return self.compute_quantile(self.__quartile_levels[order - 1])
 
-    SYMBOLS["quartile"] = "q"
+    symbols["quartile"] = "q"
 
     @abstractmethod
     def compute_range(self) -> dict[str, RealArray]:
@@ -444,7 +444,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise range of the different variables.
         """
 
-    SYMBOLS["range"] = "R"
+    symbols["range"] = "R"
 
     @abstractmethod
     def compute_standard_deviation(self) -> dict[str, RealArray]:
@@ -454,7 +454,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise standard deviation of the different variables.
         """
 
-    SYMBOLS["standard_deviation"] = "StD"
+    symbols["standard_deviation"] = "StD"
 
     def compute_variation_coefficient(self) -> dict[str, RealArray]:
         r"""Compute the coefficient of variation $CoV[X]$.
@@ -469,7 +469,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
         standard_deviation = self.compute_standard_deviation()
         return {name: standard_deviation[name] / mean[name] for name in mean}
 
-    SYMBOLS["variation_coefficient"] = "CoV"
+    symbols["variation_coefficient"] = "CoV"
 
     @abstractmethod
     def compute_variance(self) -> dict[str, RealArray]:
@@ -479,7 +479,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise variance of the different variables.
         """
 
-    SYMBOLS["variance"] = "V"
+    symbols["variance"] = "V"
 
     @abstractmethod
     def compute_moment(self, order: int) -> dict[str, RealArray]:
@@ -492,7 +492,7 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             The component-wise moment of the different variables.
         """
 
-    SYMBOLS["moment"] = "M"
+    symbols["moment"] = "M"
 
     @classmethod
     def compute_expression(
@@ -532,6 +532,6 @@ class BaseStatistics(metaclass=ABCGoogleDocstringInheritanceMeta):
             separator = "; "
 
         return (
-            f"{cls.SYMBOLS.get(statistic_name, statistic_name)}"
+            f"{cls.symbols.get(statistic_name, statistic_name)}"
             f"[{variable_name}{separator}{value}]"
         )

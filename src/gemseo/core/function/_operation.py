@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
     """A helper to create a function applying an operation to another function."""
 
-    __SUM_SUBTRACTION_PATTERN: Final[Pattern[str]] = re_compile(
+    __sum_subtraction_pattern: Final[Pattern[str]] = re_compile(
         r"""^([^\(].*[+-].*[^\)])$| # Sum/subtraction with one or many parentheses
             ^(.+[+-].*[^\)])$| # Sum/subtraction with one or many end parentheses
             ^([^\(].*[+-].+)$ # Sum/subtraction with one or many starting parentheses"""
@@ -170,7 +170,7 @@ class _OperationFunctionMaker(metaclass=GoogleDocstringInheritanceMeta):
         """
         is_sum_subtraction = bool(
             search(
-                cls.__SUM_SUBTRACTION_PATTERN,
+                cls.__sum_subtraction_pattern,
                 expression,
             )
         )

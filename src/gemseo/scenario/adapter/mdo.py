@@ -75,7 +75,7 @@ class MDOScenarioAdapter(EvaluationScenarioAdapter):
     post_optimal_analysis: PostOptimalAnalysis | None
     """The post-optimal analysis, if the adapter has been linearized."""
 
-    MULTIPLIER_SUFFIX: ClassVar[str] = "_multiplier"
+    multiplier_suffix: ClassVar[str] = "_multiplier"
 
     def __init__(
         self,
@@ -206,7 +206,7 @@ class MDOScenarioAdapter(EvaluationScenarioAdapter):
             The name of a bound-constraint multiplier.
         """
         upp_or_low = "upp" if is_upper else "low"
-        return f"{variable_name}_{upp_or_low}-bnd{cls.MULTIPLIER_SUFFIX}"
+        return f"{variable_name}_{upp_or_low}-bnd{cls.multiplier_suffix}"
 
     @classmethod
     def get_cstr_mult_name(
@@ -221,7 +221,7 @@ class MDOScenarioAdapter(EvaluationScenarioAdapter):
         Returns:
             The name of the multiplier.
         """
-        return constraint_name + cls.MULTIPLIER_SUFFIX
+        return constraint_name + cls.multiplier_suffix
 
     def _post_run(self) -> None:
         super()._post_run()
@@ -326,19 +326,19 @@ class MDOScenarioAdapter(EvaluationScenarioAdapter):
         multipliers = lagrange.get_multipliers_arrays()
         self.io.output_data.update({
             self.get_bnd_mult_name(name, False): mult
-            for name, mult in multipliers[lagrange.LOWER_BOUNDS].items()
+            for name, mult in multipliers[lagrange.lower_bounds].items()
         })
         self.io.output_data.update({
             self.get_bnd_mult_name(name, True): mult
-            for name, mult in multipliers[lagrange.UPPER_BOUNDS].items()
+            for name, mult in multipliers[lagrange.upper_bounds].items()
         })
         self.io.output_data.update({
             self.get_cstr_mult_name(name): mult
-            for name, mult in multipliers[lagrange.EQUALITY].items()
+            for name, mult in multipliers[lagrange.equality].items()
         })
         self.io.output_data.update({
             self.get_cstr_mult_name(name): mult
-            for name, mult in multipliers[lagrange.INEQUALITY].items()
+            for name, mult in multipliers[lagrange.inequality].items()
         })
 
     def _compute_jacobian(
@@ -439,7 +439,7 @@ class MDOScenarioAdapter(EvaluationScenarioAdapter):
             # the partial derivative of the objective w.r.t. them is assumed zero
             # and its total derivative reduces to the multiplier term.
             self.jac[objective_names[0]] = dict(
-                self.jac[PostOptimalAnalysis.MULT_DOT_CONSTR_JAC]
+                self.jac[PostOptimalAnalysis.mult_dot_constr_jac]
             )
 
     def _compute_auxiliary_jacobians(

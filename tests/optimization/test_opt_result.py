@@ -30,14 +30,14 @@ from gemseo import execute_algo
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.result import OptimizationResult
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -154,7 +154,7 @@ def test_repr(optimization_result) -> None:
 
 def test_repr_html(optimization_result) -> None:
     """Check OptimizationResult._repr_html_."""
-    assert optimization_result._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert optimization_result._repr_html_() == repr_html_wrapper.format(
         "Optimization result:<br/>"
         "<ul>"
         "<li>Design variables: [0.5]</li>"
@@ -259,7 +259,7 @@ def test_from_optimization_problem(
 def test_opt_result_from_opt_problem(tmp_path):
     """Test the creation of an OptimizationResult from an OptimizationProblem."""
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings(max_iter=50))
+    optimization_library_factory.execute(problem, settings=SLSQP_Settings(max_iter=50))
     out_file = tmp_path / "output.hdf"
     problem.to_hdf(out_file)
     read_problem = OptimizationProblem.from_hdf(out_file)

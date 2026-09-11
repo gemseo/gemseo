@@ -24,4 +24,4 @@ from gemseo.uncertainty.distribution.core.base_settings import BaseDistributionS
 class BaseSPDistributionSettings(BaseDistributionSettings):  # noqa: N801
     """The base class for the settings of a SciPy-based probability distribution."""
 
-    _LIBRARY_NAME: ClassVar[str] = "SciPy"
+    _library_name: ClassVar[str] = "SciPy"

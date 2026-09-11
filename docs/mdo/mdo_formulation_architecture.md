@@ -100,11 +100,11 @@ classDiagram
 
     BaseMDOFormulation <|-- BiLevel
     class BiLevel {
-        +CHAIN_NAME
-        +DEFAULT_SCENARIO_RESULT_CLASS_NAME
+        +chain_name
+        +default_scenario_result_class_name
         +LEVELS
-        +MDA1_RESIDUAL_NAMESPACE
-        +MDA2_RESIDUAL_NAMESPACE
+        +mda1_residual_namespace
+        +mda2_residual_namespace
         +SUBSCENARIOS_LEVEL
         +SYSTEM_LEVEL
         +Settings

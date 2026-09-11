@@ -102,11 +102,11 @@ r2.compute_test_measure(test_dataset)
 # namely scaling both input and output variables between 0 and 1
 # using the minimum and maximum values from the training dataset
 # (see [MinMaxScaler][gemseo.machine_learning.transformer.scaler.min_max_scaler.MinMaxScaler]).
-# Use the `DEFAULT_TRANSFORMER` attribute of the regressor for that purpose.
+# Use the `default_transformer` attribute of the regressor for that purpose.
 regressor = GaussianProcessRegressor(
     training_dataset,
     settings=GaussianProcessRegressor_Settings(
-        transformer=GaussianProcessRegressor.DEFAULT_TRANSFORMER
+        transformer=GaussianProcessRegressor.default_transformer
     ),
 )
 regressor.learn()
@@ -159,7 +159,7 @@ r2.compute_test_measure(test_dataset)
 # using scaling as data transformation policy.
 # The data transformation policy can be set
 # using the `transformer` parameter of the ML model settings.
-# The `DEFAULT_TRANSFORMER` attribute of regressors defines a min-max scaling policy
+# The `default_transformer` attribute of regressors defines a min-max scaling policy
 # for both input and output variables.
 #
 # !!! note

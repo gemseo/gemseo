@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import atleast_1d
 from numpy import hstack
@@ -43,7 +44,7 @@ if TYPE_CHECKING:
 
     from gemseo.optimization.problem import OptimizationProblem
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class PostOptimalAnalysis:
@@ -93,7 +94,7 @@ class PostOptimalAnalysis:
     """
 
     # Dictionary key for term "Lagrange multipliers dot constraints Jacobian"
-    MULT_DOT_CONSTR_JAC = "mult_dot_constr_jac"
+    mult_dot_constr_jac: Final[str] = "mult_dot_constr_jac"
 
     def __init__(
         self, opt_problem: OptimizationProblem, ineq_tol: float | None = None
@@ -152,8 +153,8 @@ class PostOptimalAnalysis:
 
         # Compute the Lagrange multipliers
         multipliers = self.lagrange_computer.compute(self.x_opt, self.ineq_tol)
-        _, mul_ineq = multipliers.get(LagrangeMultipliers.INEQUALITY, ([], []))
-        _, mul_eq = multipliers.get(LagrangeMultipliers.EQUALITY, ([], []))
+        _, mul_ineq = multipliers.get(LagrangeMultipliers.inequality, ([], []))
+        _, mul_eq = multipliers.get(LagrangeMultipliers.equality, ([], []))
 
         # Get the array to validate the inequality constraints
         total_ineq_jac = self._get_act_ineq_jac(total_jac, parameters)
@@ -183,9 +184,9 @@ class PostOptimalAnalysis:
         # Assess the validity
         valid = error < threshold
         if valid:
-            LOGGER.info("Post-optimality is valid.")
+            logger.info("Post-optimality is valid.")
         else:
-            LOGGER.info("Post-optimality assumption is wrong by %s%%.", error * 100.0)
+            logger.info("Post-optimality assumption is wrong by %s%%.", error * 100.0)
 
         return valid, ineq_corr, eq_corr
 
@@ -328,14 +329,14 @@ class PostOptimalAnalysis:
         if multipliers is None:
             self._compute_lagrange_multipliers()
             multipliers = self.lagrange_computer.lagrange_multipliers
-        _, mul_ineq = multipliers.get(LagrangeMultipliers.INEQUALITY, ([], []))
-        _, mul_eq = multipliers.get(LagrangeMultipliers.EQUALITY, ([], []))
+        _, mul_ineq = multipliers.get(LagrangeMultipliers.inequality, ([], []))
+        _, mul_eq = multipliers.get(LagrangeMultipliers.equality, ([], []))
 
         # Build the Jacobians of the active constraints
         act_ineq_jac = self._get_act_ineq_jac(functions_jac, input_names)
         eq_jac = self._get_eq_jac(functions_jac, input_names)
 
-        jac = {self.output_names[0]: {}, self.MULT_DOT_CONSTR_JAC: {}}
+        jac = {self.output_names[0]: {}, self.mult_dot_constr_jac: {}}
         for input_name in input_names:
             # Contribution of the objective
             jac_obj_arr = functions_jac[self.output_names[0]][input_name]
@@ -354,7 +355,7 @@ class PostOptimalAnalysis:
             # Assemble the Jacobian of the Lagrangian
             if not self.optimization_problem.minimize_objective:
                 jac_cstr_arr *= -1.0
-            jac[self.MULT_DOT_CONSTR_JAC][input_name] = jac_cstr_arr
+            jac[self.mult_dot_constr_jac][input_name] = jac_cstr_arr
             jac[self.output_names[0]][input_name] = jac_obj_arr + jac_cstr_arr
 
         return jac

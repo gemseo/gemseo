@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.cache.base import BaseCache
 
@@ -28,5 +30,5 @@ from gemseo.core.cache.base import BaseCache
 class CacheFactory(BaseFactory[BaseCache]):
     """A factory of caches."""
 
-    _CLASS = BaseCache
-    _PACKAGE_NAMES = ("gemseo.core.cache",)
+    _class: ClassVar[type[BaseCache]] = BaseCache  # type: ignore[type-abstract]
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.core.cache",)

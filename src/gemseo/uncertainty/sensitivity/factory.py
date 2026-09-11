@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
@@ -30,11 +31,13 @@ from gemseo.uncertainty.sensitivity.core.base import BaseGenericSensitivityAnaly
 class SensitivityAnalysisFactory(BaseFactory):
     """A factory of sensitivity analyses."""
 
-    _CLASS = BaseGenericSensitivityAnalysis
-    _PACKAGE_NAMES = ("gemseo.uncertainty.sensitivity",)
+    _class: ClassVar[type[BaseGenericSensitivityAnalysis]] = (
+        BaseGenericSensitivityAnalysis
+    )
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.uncertainty.sensitivity",)
 
 
-SENSITIVITY_ANALYSIS_FACTORY: Final[SensitivityAnalysisFactory] = (
+sensitivity_analysis_factory: Final[SensitivityAnalysisFactory] = (
     SensitivityAnalysisFactory()
 )
 """The factory for `BaseSensitivityAnalysis` objects."""

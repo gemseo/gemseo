@@ -30,6 +30,7 @@ from copy import deepcopy
 from numbers import Complex
 from os import PathLike
 from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -41,10 +42,10 @@ from fastjsonschema import compile as compile_schema
 from numpy import ndarray
 from pydantic import BaseModel
 
-from gemseo.core.grammar._python_to_json import PYTHON_TO_JSON_TYPES
+from gemseo.core.grammar._python_to_json import python_to_json_types
 from gemseo.core.grammar.base import BaseGrammar
 from gemseo.core.grammar.json_schema import MutableMappingSchemaBuilder
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -60,7 +61,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class JSONGrammar(BaseGrammar):
@@ -77,7 +78,7 @@ class JSONGrammar(BaseGrammar):
     it is assumed that a grammar element of type `ndarray` is a number.
     """
 
-    DATA_CONVERTER_CLASS: ClassVar[str] = "JSONGrammarDataConverter"
+    data_converter_class: ClassVar[str] = "JSONGrammarDataConverter"
 
     __validator: Callable[[StrKeyMapping], None] | None
     """The schema validator."""
@@ -99,7 +100,7 @@ class JSONGrammar(BaseGrammar):
     empty to avoid any side effects with the ones from the base class.
     """
 
-    __JSON_TO_PYTHON_TYPES: Final[dict[str, type]] = {
+    __json_to_python_types: Final[Mapping[str, type]] = MappingProxyType({
         "array": ndarray,
         "string": str,
         "integer": int,
@@ -108,17 +109,14 @@ class JSONGrammar(BaseGrammar):
         # such that a float number is a subtype of complex number.
         # This is especially important when converting to SimpleGrammar.
         "number": Complex,
-    }
+    })
     """The mapping from JSON types to Python types."""
-
-    __PYTHON_TO_JSON_TYPES: Final[dict[type, str]] = PYTHON_TO_JSON_TYPES
-    """The mapping from Python types to JSON types."""
 
     def __init__(
         self,
         name: str,
         file_path: StrPath = "",
-        descriptions: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
+        descriptions: Mapping[str, str] = read_only_empty_dict,
     ) -> None:
         """
         Args:
@@ -224,7 +222,7 @@ class JSONGrammar(BaseGrammar):
                 if element_type is None:
                     sub_property = {}
                 else:
-                    json_type = self.__PYTHON_TO_JSON_TYPES[element_type]
+                    json_type = python_to_json_types[element_type]
                     sub_property = {"type": json_type}
                     if element_type == ndarray:
                         sub_property["items"] = {"type": "number"}
@@ -490,7 +488,7 @@ class JSONGrammar(BaseGrammar):
             if not isinstance(json_type, str):
                 name_to_type[property_name] = None
             else:
-                name_to_type[property_name] = self.__JSON_TO_PYTHON_TYPES.get(json_type)
+                name_to_type[property_name] = self.__json_to_python_types.get(json_type)
         return name_to_type
 
     def _invalidate_caches(self) -> None:

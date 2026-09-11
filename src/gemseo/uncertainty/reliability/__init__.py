@@ -16,14 +16,17 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
-    from gemseo.uncertainty.reliability.factory import RELIABILITY_ALGORITHM_FACTORY  # noqa: F401
+    from gemseo.uncertainty.reliability.factory import reliability_algorithm_factory  # noqa: F401
     from gemseo.uncertainty.reliability.openturns.directional_sampling_settings import (
         OT_DirectionalSampling_Settings,  # noqa: F401
     )
@@ -69,7 +72,7 @@ if TYPE_CHECKING:
 
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "OT_DirectionalSampling_Settings": "openturns.directional_sampling_settings",
     "OT_FORM_Settings": "openturns.form_settings",
     "OT_Faure_Settings": "openturns.faure_settings",
@@ -86,9 +89,9 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "OT_Sobol_Settings": "openturns.sobol_settings",
     "OT_SubsetSampling_Settings": "openturns.subset_sampling_settings",
     "OT_SystemFORM_Settings": "openturns.system_form_settings",
-    "RELIABILITY_ALGORITHM_FACTORY": "factory",
     "ReliabilityProblem": "problem",
     "ReliabilityScenario": "scenario",
-}
+    "reliability_algorithm_factory": "factory",
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

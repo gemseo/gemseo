@@ -118,14 +118,14 @@ def expected_nodes(n2_json):
     nodes = []
     desc = n2_json._create_group_html(0, disciplines, n_groups, children)
     nodes.append({
-        "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(0),
+        "name": n2_json._default_group_template.format(0),
         "is_group": True,
         "group": 0,
         "description": desc,
     })
     desc = n2_json._create_group_html(1, disciplines, n_groups, children)
     nodes.append({
-        "name": n2_json._DEFAULT_GROUP_TEMPLATE.format(1),
+        "name": n2_json._default_group_template.format(1),
         "is_group": True,
         "group": 1,
         "description": desc,
@@ -383,8 +383,8 @@ def test_create_nodes(n2_json, expected_nodes) -> None:
     )
 
     assert groups == [
-        n2_json._DEFAULT_WEAKLY_COUPLED_DISCIPLINES,
-        n2_json._DEFAULT_GROUP_TEMPLATE.format(1),
+        n2_json._default_weakly_coupled_disciplines,
+        n2_json._default_group_template.format(1),
     ]
 
     assert nodes == expected_nodes
@@ -397,7 +397,7 @@ def test_default_group_template(name) -> None:
     Args:
         name: The name of the group.
     """
-    assert N2JSON._DEFAULT_GROUP_TEMPLATE.format(name) == f"Group {name}"
+    assert N2JSON._default_group_template.format(name) == f"Group {name}"
 
 
 def test_create_links(n2_json, expected_links) -> None:
@@ -437,8 +437,8 @@ def test_loads(n2_json, expected_links, expected_nodes) -> None:
         "self_coupled_disciplines",
     }
     assert json["groups"] == [
-        n2_json._DEFAULT_WEAKLY_COUPLED_DISCIPLINES,
-        n2_json._DEFAULT_GROUP_TEMPLATE.format(1),
+        n2_json._default_weakly_coupled_disciplines,
+        n2_json._default_group_template.format(1),
     ]
     assert json["children"] == [[2], [3, 4]]
     assert json["links"] == expected_links

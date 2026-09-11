@@ -36,6 +36,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
@@ -55,12 +56,12 @@ if TYPE_CHECKING:
 class R2Measure(BaseRegressorQuality):
     """The R2 score to assess the quality of a regressor."""
 
-    SMALLER_IS_BETTER = False
+    smaller_is_better: ClassVar[bool] = False
 
     def __init__(
         self,
         model: BaseRegressor,
-        fit_transformers: bool = BaseRegressorQuality._FIT_TRANSFORMERS,
+        fit_transformers: bool = BaseRegressorQuality._default_fit_transformers,
     ) -> None:
         """
         Args:
@@ -77,7 +78,7 @@ class R2Measure(BaseRegressorQuality):
         return r2_score(
             outputs,
             predictions,
-            multioutput=self._GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT[multioutput],
+            multioutput=self._gemseo_multioutput_to_sklearn_multioutput[multioutput],
         )
 
     def compute_cross_validation_measure(  # noqa: D102
@@ -85,7 +86,7 @@ class R2Measure(BaseRegressorQuality):
         n_folds: int = 5,
         samples: list[int] = (),
         multioutput: bool = True,
-        randomize: bool = BaseRegressorQuality._RANDOMIZE,
+        randomize: bool = BaseRegressorQuality._randomize,
         seed: int | None = None,
         as_dict: bool = False,
         store_resampling_result: bool = False,
@@ -156,7 +157,7 @@ class R2Measure(BaseRegressorQuality):
                 mse += mean_squared_error(
                     output_data[split.test],
                     prediction,
-                    multioutput=self._GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT[
+                    multioutput=self._gemseo_multioutput_to_sklearn_multioutput[
                         multioutput
                     ],
                 )

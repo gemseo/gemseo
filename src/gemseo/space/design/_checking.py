@@ -26,7 +26,7 @@ from numpy import isnan
 from numpy import ndarray
 from numpy import vectorize
 
-from gemseo.space.design._constants import BOUND_ATOL
+from gemseo.space.design._constants import bound_atol
 from gemseo.space.variable._formatting import format_components
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
@@ -266,7 +266,7 @@ def _check_membership_array(bounds: Bounds, full_value: NumberArray) -> None:
 
     lower_bound = bounds.full_lower_bound
     upper_bound = bounds.full_upper_bound
-    violated_components = (full_value < lower_bound - BOUND_ATOL).nonzero()[0]
+    violated_components = (full_value < lower_bound - bound_atol).nonzero()[0]
     if len(violated_components):
         value_ = full_value[violated_components]
         lower_bound_ = lower_bound[violated_components]
@@ -277,7 +277,7 @@ def _check_membership_array(bounds: Bounds, full_value: NumberArray) -> None:
         )
         raise ValueError(msg)
 
-    violated_components = (full_value > upper_bound + BOUND_ATOL).nonzero()[0]
+    violated_components = (full_value > upper_bound + bound_atol).nonzero()[0]
     if len(violated_components):
         value_ = full_value[violated_components]
         upper_bound_ = upper_bound[violated_components]
@@ -376,7 +376,7 @@ def _check_membership_dict(
         for i in range(variable.size):
             value_i = value[i].real
             lower_bound = variable.lower_bound[i]
-            if value_i < lower_bound - BOUND_ATOL:
+            if value_i < lower_bound - bound_atol:
                 msg = (
                     f"The component {name}[{i}] of the given array ({value_i}) "
                     f"is lower than the lower bound ({lower_bound}) "
@@ -385,7 +385,7 @@ def _check_membership_dict(
                 raise ValueError(msg)
 
             upper_bound = variable.upper_bound[i]
-            if upper_bound + BOUND_ATOL < value_i:
+            if upper_bound + bound_atol < value_i:
                 msg = (
                     f"The component {name}[{i}] of the given array ({value_i}) "
                     f"is greater than the upper bound ({upper_bound}) "

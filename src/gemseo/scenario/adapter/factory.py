@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.scenario.adapter.evaluation import EvaluationScenarioAdapter
 
@@ -23,5 +25,5 @@ from gemseo.scenario.adapter.evaluation import EvaluationScenarioAdapter
 class ScenarioAdapterFactory(BaseFactory):
     """A factory of scenario adapters."""
 
-    _CLASS = EvaluationScenarioAdapter
-    _PACKAGE_NAMES = ("gemseo.scenario.adapter",)
+    _class: ClassVar[type[EvaluationScenarioAdapter]] = EvaluationScenarioAdapter
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.scenario.adapter",)

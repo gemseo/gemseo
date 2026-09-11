@@ -32,23 +32,16 @@ from pandas._testing import assert_frame_equal
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.doe.scipy.settings.mc import MC_Settings
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.jacobi import MDAJacobi
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
+from gemseo.problem.mdo.sellar import variable
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sellar.sellar_design_space import SellarDesignSpace
 from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problem.mdo.sellar.util import WITH_2D_ARRAY
-from gemseo.problem.mdo.sellar.variable import C_1
-from gemseo.problem.mdo.sellar.variable import C_2
-from gemseo.problem.mdo.sellar.variable import OBJ
-from gemseo.problem.mdo.sellar.variable import X_1
-from gemseo.problem.mdo.sellar.variable import X_2
-from gemseo.problem.mdo.sellar.variable import X_SHARED
-from gemseo.problem.mdo.sellar.variable import Y_1
-from gemseo.problem.mdo.sellar.variable import Y_2
+from gemseo.problem.mdo.sellar.util import with_2d_array
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
 from gemseo.util.derivative.check.mda import MDAJacobianChecker
@@ -81,14 +74,14 @@ def disciplines(n: int) -> tuple[SellarSystem, Sellar1, Sellar2]:
 def input_data(n: int) -> dict[str, ndarray]:
     """Generate a point at which the problem is linearized."""
     x_shared = [1.2, 3.4]
-    if WITH_2D_ARRAY:  # pragma: no cover
+    if with_2d_array:  # pragma: no cover
         x_shared = [x_shared]
     return {
-        X_1: full(n, 2.1),
-        X_2: full(n, 2.1),
-        X_SHARED: array(x_shared),
-        Y_1: full(n, 2.135),
-        Y_2: full(n, 3.584),
+        variable.x_1: full(n, 2.1),
+        variable.x_2: full(n, 2.1),
+        variable.x_shared: array(x_shared),
+        variable.y_1: full(n, 2.135),
+        variable.y_2: full(n, 3.584),
     }
 
 
@@ -98,11 +91,15 @@ def output_data(
 ) -> dict[str, ndarray]:
     """The default output data."""
     if isinstance(discipline, SellarSystem):
-        return {OBJ: array([1.36787944]), C_1: full(n, 2.16), C_2: full(n, -23.0)}
+        return {
+            variable.obj: array([1.36787944]),
+            variable.c_1: full(n, 2.16),
+            variable.c_2: full(n, -23.0),
+        }
     if isinstance(discipline, Sellar1):
-        return {Y_1: full(n, 0.89442719)}
+        return {variable.y_1: full(n, 0.89442719)}
 
-    return {Y_2: full(n, 2.0)}
+    return {variable.y_2: full(n, 2.0)}
 
 
 @pytest.fixture
@@ -191,18 +188,22 @@ def test_exec(
     scenario = MDOScenario(
         disciplines,
         SellarDesignSpace(n=n),
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             formulation
         ).settings_class(),
     )
     scenario.add_objective("obj")
     scenario.set_differentiation_method(differentiation_method)
-    scenario.add_constraint(C_1, constraint_type=ArrayFunction.ConstraintType.INEQ)
-    scenario.add_constraint(C_2, constraint_type=ArrayFunction.ConstraintType.INEQ)
+    scenario.add_constraint(
+        variable.c_1, constraint_type=ArrayFunction.ConstraintType.INEQ
+    )
+    scenario.add_constraint(
+        variable.c_2, constraint_type=ArrayFunction.ConstraintType.INEQ
+    )
     scenario.execute(SLSQP_Settings(max_iter=20))
 
     x_opt = scenario.design_space.get_current_value(as_dict=True)
-    x_opt = concatenate((x_opt[X_1], x_opt[X_SHARED]))
+    x_opt = concatenate((x_opt[variable.x_1], x_opt[variable.x_shared]))
 
     assert scenario.optimization_result.f_opt == pytest.approx(3.18339, rel=0.001)
     assert x_opt == pytest.approx(x_opt, abs=0.0001)

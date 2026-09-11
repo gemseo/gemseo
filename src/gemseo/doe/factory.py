@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.algorithm.factory import DriverLibraryFactory
@@ -30,9 +31,9 @@ from gemseo.doe.core.base_doe_library import BaseDOELibrary
 class DOELibraryFactory(DriverLibraryFactory):
     """A factory of DOE libraries."""
 
-    _CLASS = BaseDOELibrary
-    _PACKAGE_NAMES = ("gemseo.doe",)
+    _class: ClassVar[type[BaseDOELibrary]] = BaseDOELibrary
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.doe",)
 
 
-DOE_LIBRARY_FACTORY: Final[DOELibraryFactory] = DOELibraryFactory()
+doe_library_factory: Final[DOELibraryFactory] = DOELibraryFactory()
 """The factory for `DOELibrary` objects."""

@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.formulation.mdf import MDF
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
@@ -42,14 +42,14 @@ def non_mdo_formulations(monkeypatch):
 
 def test_is_available(non_mdo_formulations) -> None:
     """Check the method is_available."""
-    assert MDO_FORMULATION_FACTORY.is_available("MDF")
-    assert not MDO_FORMULATION_FACTORY.is_available("ANotMDOFormulation")
+    assert mdo_formulation_factory.is_available("MDF")
+    assert not mdo_formulation_factory.is_available("ANotMDOFormulation")
 
 
 def test_create_with_wrong_formulation_name(snapshot) -> None:
     """Check that a BaseMDOFormulation cannot be instantiated with a wrong name."""
     with assert_exception(ImportError, snapshot):
-        MDO_FORMULATION_FACTORY.create("foo", None, None, None)
+        mdo_formulation_factory.create("foo", None, None, None)
 
 
 def test_create() -> None:
@@ -57,7 +57,7 @@ def test_create() -> None:
     design_space = DesignSpace()
     design_space.add_variable("x_shared", 3)
     problem = OptimizationProblem(design_space)
-    formulation = MDO_FORMULATION_FACTORY.create(
+    formulation = mdo_formulation_factory.create(
         "MDF", problem, [Sellar1(), Sellar2(), SellarSystem()]
     )
     problem.objective = formulation.create_objective(["obj"])

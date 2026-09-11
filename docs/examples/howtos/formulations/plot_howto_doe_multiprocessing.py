@@ -33,7 +33,7 @@ from gemseo.doe import PYDOE_LHS_Settings
 from gemseo.formulation import MDF_Settings
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 from gemseo.scenario import EvaluationScenario
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.platform import platform_is_windows
 
 # %%
 # ### 1. Generate your DOE scenario
@@ -66,7 +66,7 @@ scenario.add_observable("y_4")
 # !!! warning
 #       The multiprocessing option has some limitations on Windows,
 #       so you deactivate it in case of Windows usage.
-n_processes = 4 if not PLATFORM_IS_WINDOWS else 1
+n_processes = 4 if not platform_is_windows else 1
 
 # %%
 # The number of processes is specified through the DOE algorithm settings.

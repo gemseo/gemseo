@@ -37,8 +37,8 @@ if TYPE_CHECKING:
 class MLPRegressor(BaseRegressor):
     """MultiLayer perceptron (MLP)."""
 
-    LIBRARY: ClassVar[str] = "scikit-learn"
-    SHORT_NAME: ClassVar[str] = "MLP"
+    library: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "MLP"
 
     settings_class: ClassVar[type[MLPRegressor_Settings]] = MLPRegressor_Settings
 

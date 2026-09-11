@@ -16,24 +16,27 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.space.design import DesignSpace  # noqa: F401
-    from gemseo.space.factory import DESIGN_SPACE_FACTORY  # noqa: F401
-    from gemseo.space.factory import PARAMETER_SPACE_FACTORY  # noqa: F401
+    from gemseo.space.factory import design_space_factory  # noqa: F401
+    from gemseo.space.factory import parameter_space_factory  # noqa: F401
     from gemseo.space.parameter import ParameterSpace  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
-    "DESIGN_SPACE_FACTORY": "factory",
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "DesignSpace": "design",
-    "PARAMETER_SPACE_FACTORY": "factory",
     "ParameterSpace": "parameter",
-}
+    "design_space_factory": "factory",
+    "parameter_space_factory": "factory",
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

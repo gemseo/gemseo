@@ -35,8 +35,8 @@ if TYPE_CHECKING:
 class CompositeSequenceTransformer(SequenceTransformer):
     """A composite of SequenceTransformer."""
 
-    _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 0
-    _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 0
+    _minimum_number_of_iterates: ClassVar[int] = 0
+    _minimum_number_of_residuals: ClassVar[int] = 0
 
     _sequence_transformers: Iterable[SequenceTransformer]
     """The sequence transformers that are chained."""

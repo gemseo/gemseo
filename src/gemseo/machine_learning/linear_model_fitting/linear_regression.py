@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from sklearn.linear_model import LinearRegression as SKLearnLinearRegression
 
 from gemseo.machine_learning.linear_model_fitting.core.base_sklearn_linear_model_fitter import (  # noqa: E501
@@ -45,4 +47,4 @@ class LinearRegression(
 
     settings_class = LinearRegression_Settings
 
-    _FITTER_CLASS = SKLearnLinearRegression
+    _fitter_class: ClassVar[type[SKLearnLinearRegression]] = SKLearnLinearRegression

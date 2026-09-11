@@ -20,6 +20,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.algorithm.base_algorithm_factory import BaseAlgorithmFactory
@@ -29,8 +30,8 @@ from gemseo.linear.core.base_linear_solver_library import BaseLinearSolverLibrar
 class LinearSolverLibraryFactory(BaseAlgorithmFactory):
     """A factory of linear solver libraries."""
 
-    _CLASS = BaseLinearSolverLibrary
-    _PACKAGE_NAMES = ("gemseo.linear",)
+    _class: ClassVar[type[BaseLinearSolverLibrary]] = BaseLinearSolverLibrary
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.linear",)
 
     @property
     def linear_solvers(self) -> list[str]:
@@ -38,7 +39,7 @@ class LinearSolverLibraryFactory(BaseAlgorithmFactory):
         return self._factory.class_names
 
 
-LINEAR_SOLVER_LIBRARY_FACTORY: Final[LinearSolverLibraryFactory] = (
+linear_solver_library_factory: Final[LinearSolverLibraryFactory] = (
     LinearSolverLibraryFactory()
 )
 """The factory of `BaseLinearSolverLibrary` objects."""

@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from gemseo.util.hashable_ndarray import HashableNdarray
     from gemseo.util.typing import StrKeyMapping
 
-_NOT_EVALUATED_MESSAGE: Final[str] = "Not evaluated"
+_not_evaluated_message: Final[str] = "Not evaluated"
 """The message to be logged instead of the objective value when not evaluated."""
 
 
@@ -38,10 +38,10 @@ class ProgressBarData(BaseProgressBarData):
     __change_objective_sign: bool
     """Whether to change the sign of the objective value before logging it."""
 
-    __OBJ_KEY: Final[str] = "obj"
+    __obj_key: Final[str] = "obj"
     """The key of the progress bar data corresponding to the objective."""
 
-    __FEAS_KEY: Final[str] = "feas"
+    __feas_key: Final[str] = "feas"
     """The key of the progress bar data corresponding to the feasibility."""
 
     def __init__(self, problem: OptimizationProblem) -> None:  # noqa: D107
@@ -65,7 +65,7 @@ class ProgressBarData(BaseProgressBarData):
             self._problem.objective.name, input_value
         )
         if obj is None:
-            return _NOT_EVALUATED_MESSAGE
+            return _not_evaluated_message
 
         if self.__change_objective_sign:
             obj = -obj
@@ -81,6 +81,6 @@ class ProgressBarData(BaseProgressBarData):
 
         feasible = self._problem.history.check_design_point_is_feasible(input_value)[0]
         return {
-            self.__OBJ_KEY: self.__get_objective_value(input_value),
-            self.__FEAS_KEY: str(feasible),
+            self.__obj_key: self.__get_objective_value(input_value),
+            self.__feas_key: str(feasible),
         }

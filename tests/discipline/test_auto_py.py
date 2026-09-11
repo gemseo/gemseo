@@ -39,7 +39,7 @@ from gemseo.core.parallel_execution.discipline_execution import DiscParallelExec
 from gemseo.discipline.auto_py import AutoPyDiscipline
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
-from gemseo.problem.mdo.sellar import WITH_2D_ARRAY
+from gemseo.problem.mdo.sellar import with_2d_array
 from gemseo.problem.mdo.sellar.util import get_initial_data
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 from gemseo.util.derivative.check.mda import MDAJacobianChecker
@@ -47,7 +47,7 @@ from gemseo.util.testing.helper import assert_exception
 from gemseo.util.typing import IntegerArray  # noqa: TC001
 from gemseo.util.typing import RealArray  # noqa: TC001
 
-X_DIM = 4
+x_dim = 4
 
 
 @pytest.fixture
@@ -55,10 +55,10 @@ def design_space():
     design_space = create_design_space()
     design_space.add_variable(
         "x",
-        X_DIM,
-        lower_bound=-2 * ones(X_DIM),
-        upper_bound=2 * ones(X_DIM),
-        value=zeros(X_DIM),
+        x_dim,
+        lower_bound=-2 * ones(x_dim),
+        upper_bound=2 * ones(x_dim),
+        value=zeros(x_dim),
     )
     return design_space
 
@@ -457,7 +457,7 @@ def compute_y_1(
     Returns:
         The value of the coupling variable :math:`y_1`.
     """
-    if WITH_2D_ARRAY:
+    if with_2d_array:
         x_shared = x_shared.flatten()
     y_1 = float(sqrt(x_shared[0] ** 2 + x_shared[1] + x_1[0] - 0.2 * y_2[0]))
     return y_1  # noqa: RET504
@@ -469,7 +469,7 @@ def compute_jacobian_1(
     y_2: ndarray,
 ) -> ndarray:
     jac = ones((1, 4))
-    if WITH_2D_ARRAY:
+    if with_2d_array:
         x_shared = x_shared.flatten()
     inv_denom = 1.0 / compute_y_1(x_1, x_shared, y_2)
     jac[0][0] = 0.5 * inv_denom
@@ -492,7 +492,7 @@ def compute_y_2(
     Returns:
         The value of the coupling variable :math:`y_2`.
     """
-    if WITH_2D_ARRAY:
+    if with_2d_array:
         x_shared = x_shared.flatten()
     out = x_shared[0] + x_shared[1]
     y_2 = array([y_1 + out])
@@ -523,7 +523,7 @@ def test_mda(x_1, mda_name, sellar_with_2d_array, sellar_disciplines) -> None:
 
     sellar_1 = AutoPyDiscipline(compute_y_1, py_jac=compute_jacobian_1)
     sellar_2 = AutoPyDiscipline(compute_y_2, py_jac=compute_jacobian_2)
-    if WITH_2D_ARRAY:
+    if with_2d_array:
         schema = {
             "properties": {
                 "x_shared": {

@@ -26,7 +26,7 @@ from gemseo.util.derivative.check.function import FunctionJacobianChecker
 # A linear function f(x) = A @ x with known constant Jacobian A.
 _A = array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
 _X = array([1.0, 2.0, 3.0])
-_X_1D = array([1.0])
+_x_1d = array([1.0])
 
 
 # Module-level callables are required for multiprocessing (spawn on Windows).

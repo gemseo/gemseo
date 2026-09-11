@@ -20,7 +20,7 @@ from multiprocessing import get_start_method
 
 from strenum import StrEnum
 
-from gemseo.util.platform import PLATFORM_IS_LINUX
+from gemseo.util.platform import platform_is_linux
 
 
 class MultiProcessingStartMethod(StrEnum):
@@ -31,9 +31,9 @@ class MultiProcessingStartMethod(StrEnum):
     FORKSERVER = "forkserver"
 
 
-MULTI_PROCESSING_START_METHOD: MultiProcessingStartMethod = (
+multi_processing_start_method: MultiProcessingStartMethod = (
     MultiProcessingStartMethod.FORK
-    if PLATFORM_IS_LINUX
+    if platform_is_linux
     else MultiProcessingStartMethod(get_start_method())
 )
 """The start method used by GEMSEO to create the worker processes.
@@ -50,6 +50,6 @@ Change this value to use another start method:
 from gemseo.util.multiprocessing import start_method
 from gemseo.util.multiprocessing.start_method import MultiProcessingStartMethod
 
-start_method.MULTI_PROCESSING_START_METHOD = MultiProcessingStartMethod.SPAWN
+start_method.multi_processing_start_method = MultiProcessingStartMethod.SPAWN
 ```
 """

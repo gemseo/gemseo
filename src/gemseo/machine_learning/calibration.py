@@ -52,18 +52,19 @@ while the output is the quality criterion.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import argmin
 from numpy import array
 
 from gemseo.core.discipline import Discipline
 from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings
-from gemseo.machine_learning.core.model.factory import ML_MODEL_FACTORY
+from gemseo.machine_learning.core.model.factory import ml_model_factory
 from gemseo.machine_learning.core.quality.base_ml_model_quality import (
     BaseMLModelQuality,
 )
 from gemseo.scenario.mdo import MDOScenario
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -106,9 +107,9 @@ class MLModelAssessor(Discipline):
     """The instances of the machine learning model (one per execution of the machine
     learning model assessor)."""
 
-    CRITERION = "criterion"
-    LEARNING = "learning"
-    MULTIOUTPUT = "multioutput"
+    criterion: Final[str] = "criterion"
+    learning: Final[str] = "learning"
+    multioutput: Final[str] = "multioutput"
 
     def __init__(
         self,
@@ -117,7 +118,7 @@ class MLModelAssessor(Discipline):
         parameters: Iterable[str],
         measure: type[BaseMLModelQuality],
         measure_evaluation_method_name: BaseMLModelQuality.EvaluationMethod = BaseMLModelQuality.EvaluationMethod.LEARN,  # noqa: E501
-        measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
+        measure_options: MeasureOptionsType = read_only_empty_dict,
     ) -> None:
         """
         Args:
@@ -137,7 +138,7 @@ class MLModelAssessor(Discipline):
         """  # noqa: D205 D212
         super().__init__()
         self.io.input_grammar.update_from_names(parameters)
-        self.io.output_grammar.update_from_names([self.CRITERION, self.LEARNING])
+        self.io.output_grammar.update_from_names([self.criterion, self.learning])
         self.model_name = settings.target_class_name
         self.__measure = measure
         self.__measure_options = dict(measure_options)
@@ -149,7 +150,7 @@ class MLModelAssessor(Discipline):
             msg = "MLModelAssessor does not support multioutput."
             raise ValueError(msg)
 
-        self.__measure_options[self.MULTIOUTPUT] = False
+        self.__measure_options[self.multioutput] = False
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         """Run method.
@@ -169,7 +170,7 @@ class MLModelAssessor(Discipline):
         for name, value in inputs.items():
             setattr(settings, name, value)
 
-        model = ML_MODEL_FACTORY.create_from_settings(settings, self.__training_dataset)
+        model = ml_model_factory.create_from_settings(settings, self.__training_dataset)
         model.learn()
         measure = self.__measure(model)
         compute_criterion = getattr(
@@ -218,7 +219,7 @@ class MLModelCalibration:
         measure: type[BaseMLModelQuality],
         measure_evaluation_method_name: str
         | BaseMLModelQuality.EvaluationMethod = BaseMLModelQuality.EvaluationMethod.LEARN,  # noqa: E501
-        measure_options: MeasureOptionsType = READ_ONLY_EMPTY_DICT,
+        measure_options: MeasureOptionsType = read_only_empty_dict,
     ) -> None:
         """
         Args:
@@ -241,7 +242,7 @@ class MLModelCalibration:
         )
         self.model_assessor = model_assessor
         self.calibration_space = calibration_space
-        self.maximize_objective = not measure.SMALLER_IS_BETTER
+        self.maximize_objective = not measure.smaller_is_better
         self.dataset = None
         self.optimal_parameters = None
         self.optimal_criterion = None
@@ -262,15 +263,15 @@ class MLModelCalibration:
             formulation_settings=DisciplinaryOpt_Settings(),
         )
         self.scenario.add_objective(
-            self.model_assessor.CRITERION, minimize=not self.maximize_objective
+            self.model_assessor.criterion, minimize=not self.maximize_objective
         )
-        self.scenario.add_observable(self.model_assessor.LEARNING)
+        self.scenario.add_observable(self.model_assessor.learning)
         self.scenario.execute(settings)
         self.dataset = self.scenario.to_dataset(opt_naming=False)
         self.optimal_parameters = self.scenario.optimization_result.x_opt_as_dict
         self.optimal_criterion = self.scenario.optimization_result.f_opt
         self.optimal_model = self.models[
-            argmin(self.get_history(self.model_assessor.CRITERION))
+            argmin(self.get_history(self.model_assessor.criterion))
         ]
 
     def get_history(
@@ -288,7 +289,7 @@ class MLModelCalibration:
         if self.dataset is None:
             return None
 
-        if name == self.model_assessor.CRITERION and self.maximize_objective:
+        if name == self.model_assessor.criterion and self.maximize_objective:
             return -self.dataset.get_view(variable_names="-" + name).to_numpy()
         return self.dataset.get_view(variable_names=name).to_numpy()
 

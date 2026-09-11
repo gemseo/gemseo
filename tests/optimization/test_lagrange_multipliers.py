@@ -18,6 +18,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 from copy import deepcopy
 from pathlib import Path
 
@@ -30,7 +31,7 @@ from numpy.testing import assert_allclose
 from gemseo import create_scenario
 from gemseo import execute_algo
 from gemseo.core.function.array_function import ArrayFunction
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.lagrange_multipliers import LagrangeMultipliers
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
@@ -39,8 +40,8 @@ from gemseo.problem.optimization.power_2 import Power2
 from gemseo.space.design import DesignSpace
 from gemseo.util.derivative.error_estimator import compute_best_step
 
-DS_FILE = Path(__file__).parent / "sobieski_design_space.csv"
-SLSQP_OPTIONS = {
+ds_file = Path(__file__).parent / "sobieski_design_space.csv"
+slsqp_options = {
     "eq_tolerance": 1e-11,
     "ftol_abs": 1e-14,
     "ftol_rel": 1e-14,
@@ -87,7 +88,7 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound) -> None:
     ("normalize", "eps", "tol"), [(False, 1e-5, 1e-6), (True, 1e-3, 1e-8)]
 )
 def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) -> None:
-    options = deepcopy(SLSQP_OPTIONS)
+    options = deepcopy(slsqp_options)
     options["normalize_design_space"] = normalize
     problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
     execute_algo(problem, algo_name="SLSQP", **options)
@@ -111,14 +112,14 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) ->
 
 
 def test_lagrangian_validation_eq(problem) -> None:
-    execute_algo(problem, algo_name="SLSQP", **SLSQP_OPTIONS)
+    execute_algo(problem, algo_name="SLSQP", **slsqp_options)
     lagrange = LagrangeMultipliers(problem)
     lagrangian = lagrange.compute(problem.solution.x_opt)
 
     def obj(eq_val):
         problem2 = Power2()
         problem2.constraints[-1] += eq_val
-        execute_algo(problem2, algo_name="SLSQP", **SLSQP_OPTIONS)
+        execute_algo(problem2, algo_name="SLSQP", **slsqp_options)
         return problem2.solution.f_opt
 
     eps = 1e-5
@@ -129,7 +130,7 @@ def test_lagrangian_validation_eq(problem) -> None:
 
 
 def test_lagrangian_validation_ineq_normalize() -> None:
-    options = deepcopy(SLSQP_OPTIONS)
+    options = deepcopy(slsqp_options)
     options["normalize_design_space"] = True
 
     def obj(eq_val):
@@ -179,17 +180,17 @@ def test_lagrangian_constraint(
     lag = lagrange.compute(problem.solution.x_opt)
 
     if constraint_type == scenario.ConstraintType.EQ:
-        assert lagrange.EQUALITY in lag
-        assert len(lag[lagrange.EQUALITY][-1]) == 2
+        assert lagrange.equality in lag
+        assert len(lag[lagrange.equality][-1]) == 2
 
     else:
-        assert lagrange.INEQUALITY in lag
+        assert lagrange.inequality in lag
         for c_vals in lag.values():
             assert (c_vals[-1] > 0).all()
 
 
 def test_lagrange_store(problem) -> None:
-    options = deepcopy(SLSQP_OPTIONS)
+    options = deepcopy(slsqp_options)
     options["normalize_design_space"] = True
     execute_algo(problem, algo_name="SLSQP", **options)
     lagrange = LagrangeMultipliers(problem)
@@ -202,6 +203,18 @@ def test_lagrange_store(problem) -> None:
     lagrange.active_ub_names = []
     lagrange.active_ineq_names = [0]
     lagrange._store_multipliers(-1 * np.ones(10))
+
+
+def test_lagrange_negative_lower_bound_warning(problem, caplog) -> None:
+    """Check the warning logged for negative multipliers on active lower bounds."""
+    options = deepcopy(slsqp_options)
+    options["normalize_design_space"] = True
+    execute_algo(problem, algo_name="SLSQP", **options)
+    lagrange = LagrangeMultipliers(problem)
+    lagrange.active_lb_names = ["x!0"]
+    with caplog.at_level(logging.WARNING, logger="gemseo"):
+        lagrange._store_multipliers(-1 * np.ones(10))
+    assert "Negative Lagrange multipliers for lower bounds on variables" in caplog.text
 
 
 parametrized_options = pytest.mark.parametrize(
@@ -266,7 +279,7 @@ def test_2d_ineq(
 def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
-    settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_eq, **opt)
+    settings = optimization_library_factory.create_settings(algo_eq, **opt)
     analytical_test_2d_eq.execute(settings)
     problem = analytical_test_2d_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)
@@ -283,7 +296,7 @@ def test_2d_eq(analytical_test_2d_eq, options, algo_eq) -> None:
 def test_2d_multiple_eq(analytical_test_2d__multiple_eq, options, algo_eq) -> None:
     """Test for lagrange multiplier inequality almost optimum."""
     opt = options.copy()
-    settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_eq, **opt)
+    settings = optimization_library_factory.create_settings(algo_eq, **opt)
     analytical_test_2d__multiple_eq.execute(settings)
     problem = analytical_test_2d__multiple_eq.formulation.problem
     lagrange = LagrangeMultipliers(problem)

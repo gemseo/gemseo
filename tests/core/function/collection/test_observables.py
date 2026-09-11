@@ -30,7 +30,7 @@ def test_functions():
 
 def test_f_types():
     """Check the authorized function types."""
-    assert Observables._F_TYPES == (ArrayFunction.FunctionType.OBS,)
+    assert Observables._f_types == (ArrayFunction.FunctionType.OBS,)
 
 
 def test_format_cast(problem):

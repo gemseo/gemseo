@@ -29,12 +29,12 @@ from gemseo.post.constraint_radar import ConstraintRadar
 from gemseo.post.constraint_radar_settings import ConstraintRadar_Settings
 from gemseo.util.testing.helper import assert_exception
 
-POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
+power2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 
 @pytest.fixture(scope="module")
 def problem():
-    return OptimizationProblem.from_hdf(file_path=POWER2)
+    return OptimizationProblem.from_hdf(file_path=power2)
 
 
 @pytest.mark.parametrize(

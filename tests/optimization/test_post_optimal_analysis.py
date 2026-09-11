@@ -18,15 +18,17 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+import logging
 import unittest
 
+import pytest
 from numpy import allclose
 from numpy import array
 from numpy import dot
 from numpy.linalg import norm
 
 from gemseo.core.function.array_function import ArrayFunction
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.post_optimal_analysis import PostOptimalAnalysis
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
@@ -45,6 +47,15 @@ class TestPostOptimalAnalysis(unittest.TestCase):
     If 0<=p<=1 then the unique optimizer is [1, p]*p/(p+1).
     If p>1 then there is no solution.
     """
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog) -> None:
+        """Inject pytest's caplog fixture into this unittest.TestCase.
+
+        Args:
+            caplog: The pytest fixture capturing the log records.
+        """
+        self.caplog = caplog
 
     def get_solution(self, p=0.5, minimize=True):
         """Returns the solution of the parameterized optimization problem.
@@ -126,7 +137,7 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         if solve:
             if not minimize:
                 opt_problem.minimize_objective = False
-            OPTIMIZATION_LIBRARY_FACTORY.execute(opt_problem, settings=SLSQP_Settings())
+            optimization_library_factory.execute(opt_problem, settings=SLSQP_Settings())
 
         return opt_problem
 
@@ -237,3 +248,23 @@ class TestPostOptimalAnalysis(unittest.TestCase):
         post_optimal_analyzer = PostOptimalAnalysis(max_problem)
         jac_computed = post_optimal_analyzer.execute(["f"], ["p"], jac_at_sol)
         assert allclose(jac_computed["f"]["p"], -jac_target)
+
+    def test_check_validity_invalid(self) -> None:
+        """Tests that an invalid post-optimality assumption is logged."""
+        p = 0.5
+        opt_problem = self.get_problem(p)
+        analyzer = PostOptimalAnalysis(opt_problem)
+        sol, sol_der, jac_at_sol = self.get_solution(p)
+        total_jac = {
+            "g": {"p": array([[-sol_der[0] - sol_der[1] + 1.0]])},
+            "h": {"p": array([[p * sol_der[0] - sol_der[1] + sol[0]]])},
+        }
+
+        # A negative threshold cannot be met by a norm, which is always
+        # non-negative, so the post-optimality assumption is always invalid.
+        with self.caplog.at_level(logging.INFO, logger="gemseo"):
+            valid, _, _ = analyzer.check_validity(
+                total_jac, jac_at_sol, ["p"], threshold=-1.0
+            )
+        assert not valid
+        assert "Post-optimality assumption is wrong by" in self.caplog.text

@@ -21,10 +21,12 @@ import importlib.util
 import io
 import os
 import pickle
+import pkgutil
 import subprocess
 import sys
 import warnings
 from pathlib import Path
+from typing import ClassVar
 
 import pytest
 
@@ -176,22 +178,22 @@ def test_dropped_reexport_warning_gives_the_new_location():
 
 def test_renamed_module_level_constant():
     """A constant renamed in a module that moved is reachable from the old path."""
-    from gemseo.util.constant import INFINITE_INT
+    from gemseo.util.constant import infinite_int
 
-    with pytest.warns(DeprecationWarning, match="'gemseo.util.constant.INFINITE_INT'"):
+    with pytest.warns(DeprecationWarning, match="'gemseo.util.constant.infinite_int'"):
         from gemseo.utils.constants import C_LONG_MAX
 
-    assert C_LONG_MAX == INFINITE_INT
+    assert infinite_int == C_LONG_MAX
 
 
 def test_moved_module_level_constant():
     """A constant moved to another module is reachable from the old path."""
-    from gemseo.util.constant import EPSILON
+    from gemseo.util.constant import epsilon
 
-    with pytest.warns(DeprecationWarning, match="'gemseo.util.constant.EPSILON'"):
+    with pytest.warns(DeprecationWarning, match="'gemseo.util.constant.epsilon'"):
         from gemseo.utils.derivatives.error_estimators import EPSILON as OLD_EPSILON
 
-    assert OLD_EPSILON == EPSILON
+    assert epsilon == OLD_EPSILON
 
 
 def test_star_import_from_deprecated_module():
@@ -365,15 +367,17 @@ def test_live_module_without_real_spec_is_left_to_the_import_machinery(monkeypat
 def test_install_ignores_the_live_modules_not_imported_yet(monkeypatch):
     """`install` leaves the live modules that are not imported yet to the finder.
 
-    The user warning filters are left alone at the same time, as both depend on the
-    state that `install` finds rather than on the alias tables.
+    Its post-insert sweep only iterates the modules already in `sys.modules`, so a
+    module that is not imported yet is never touched by it (and never accidentally
+    imported by it either). The user warning filters are left alone at the same
+    time, as both depend on the state that `install` finds rather than on the alias
+    tables.
     """
     from gemseo import _deprecation
 
     module_name = "gemseo.post.dataset.radviz"
     monkeypatch.delitem(sys.modules, module_name)
     monkeypatch.setattr(_deprecation, "_installed", False)
-    monkeypatch.setattr(_deprecation, "LIVE_ALIASED_MODULES", frozenset({module_name}))
     monkeypatch.setattr(sys, "warnoptions", ["error::DeprecationWarning"])
     monkeypatch.setattr(sys, "meta_path", list(sys.meta_path))
     filters = list(warnings.filters)
@@ -508,17 +512,17 @@ def test_every_rename_entry_is_reachable():
     The names whose migration cannot be automated are excluded:
     importing one raises instead of resolving.
     """
-    from gemseo._deprecation.aliases import ATTRIBUTE_RENAMES
-    from gemseo._deprecation.aliases import MANUAL_MIGRATIONS
-    from gemseo._deprecation.aliases import MODULE_RENAMES
+    from gemseo._deprecation.aliases import attribute_renames
+    from gemseo._deprecation.aliases import manual_migrations
+    from gemseo._deprecation.aliases import module_renames
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
-        for old_module in MODULE_RENAMES:
+        for old_module in module_renames:
             importlib.import_module(old_module)
-        for old_module, renames in ATTRIBUTE_RENAMES.items():
+        for old_module, renames in attribute_renames.items():
             module = importlib.import_module(old_module)
-            manual_names = MANUAL_MIGRATIONS.get(old_module, {})
+            manual_names = manual_migrations.get(old_module, {})
             for old_name in renames:
                 if old_name not in manual_names:
                     getattr(module, old_name)
@@ -545,11 +549,11 @@ def test_manual_migration_raises(snapshot):
 
 def test_every_manual_migration_entry_raises():
     """Every entry of the manual-migration table raises instead of being aliased."""
-    from gemseo._deprecation.aliases import MANUAL_MIGRATIONS
+    from gemseo._deprecation.aliases import manual_migrations
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
-        for old_module, migrations in MANUAL_MIGRATIONS.items():
+        for old_module, migrations in manual_migrations.items():
             module = importlib.import_module(old_module)
             for old_name in migrations:
                 with pytest.raises(ImportError):
@@ -563,10 +567,18 @@ def test_manual_migration_raises_for_dissolved_package(monkeypatch, snapshot):
         monkeypatch: Fixture to patch the manual-migration table.
         snapshot: Fixture to compare the error message with a snapshot.
     """
-    from gemseo._deprecation.aliases import MANUAL_MIGRATIONS
+    from gemseo import _deprecation
+    from gemseo._deprecation.aliases import manual_migrations
 
-    monkeypatch.setitem(
-        MANUAL_MIGRATIONS, "gemseo.settings", {"Animation": "gemseo.post.Animation"}
+    # The table is frozen, and read through the name bound in `_deprecation`, so it is
+    # replaced there instead of being mutated.
+    monkeypatch.setattr(
+        _deprecation,
+        "manual_migrations",
+        {
+            **manual_migrations,
+            "gemseo.settings": {"Animation": "gemseo.post.Animation"},
+        },
     )
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", DeprecationWarning)
@@ -586,7 +598,7 @@ def test_manual_migration_raises_for_dissolved_package(monkeypatch, snapshot):
             "EvaluationProblem",
             "gemseo.core.problem.evaluation",
         ),
-        # Class rename applies via ATTRIBUTE_RENAMES.
+        # Class rename applies via attribute_renames.
         (
             "gemseo.algos.base_algo_factory",
             "BaseAlgoFactory",
@@ -636,3 +648,265 @@ def test_pickle_find_class(module_name, class_name, expected_module):
         unpickler = pickle.Unpickler(io.BytesIO(b""))
         cls = unpickler.find_class(module_name, class_name)
     assert cls.__module__ == expected_module
+
+
+def test_renamed_class_attribute_warns_and_resolves():
+    """The old name of a renamed class attribute warns and resolves to the new one."""
+    from gemseo.dataset.dataset import Dataset
+
+    with pytest.warns(DeprecationWarning, match="'DEFAULT_GROUP'"):
+        old_value = Dataset.DEFAULT_GROUP
+
+    assert old_value == Dataset.default_group
+
+
+def test_renamed_class_attribute_warns_and_resolves_through_an_instance():
+    """The old name of a renamed class attribute also resolves through an instance."""
+    from gemseo.dataset.dataset import Dataset
+
+    dataset = Dataset()
+    with pytest.warns(DeprecationWarning, match="'DEFAULT_GROUP'"):
+        old_value = dataset.DEFAULT_GROUP
+
+    assert old_value == dataset.default_group
+
+
+def test_renamed_class_attribute_of_a_renamed_class_warns_and_resolves():
+    """A class attribute renamed together with the class itself still resolves.
+
+    The `classes:` section keys its block by the class's old name (`BaseMLAlgo`);
+    the table is rekeyed to the class's current name (`BaseMLModel`) so this works.
+    """
+    from gemseo.machine_learning.core.model.base_ml_model import BaseMLModel
+
+    with pytest.warns(DeprecationWarning, match="'SHORT_ALGO_NAME'"):
+        old_value = BaseMLModel.SHORT_ALGO_NAME
+
+    assert old_value == BaseMLModel.short_name
+
+
+def test_renamed_class_attribute_of_the_standalone_sobieski_structure_resolves():
+    """The standalone SobieskiStructure's renamed class attribute keeps resolving.
+
+    A different class of the same name, `gemseo.problem.mdo.sobieski.discipline.
+    SobieskiStructure` (the public discipline wrapper), shares no attribute with this
+    one; the alias must still be installed here since this class does declare
+    `stress_limit`.
+    """
+    from gemseo.problem.mdo.sobieski.standalone.structure import SobieskiStructure
+
+    with pytest.warns(DeprecationWarning, match="'STRESS_LIMIT'"):
+        old_value = SobieskiStructure.STRESS_LIMIT
+
+    assert old_value == SobieskiStructure.stress_limit == 1.09
+
+
+def test_renamed_protected_class_attribute_warns_and_resolves():
+    """A renamed protected (`_`-prefixed) class attribute also warns and resolves.
+
+    The public renames above are exercised through `Dataset`, whose renamed
+    attributes are plain class constants; `TerminationCriterion._MESSAGE` plays the
+    same role here for a protected name, its new name `_message` being a plain
+    class attribute rather than one set only in `__init__`, so it resolves on the
+    class itself.
+    """
+    from gemseo.core.problem.termination_criterion import TerminationCriterion
+
+    with pytest.warns(DeprecationWarning, match="'_MESSAGE'"):
+        old_value = TerminationCriterion._MESSAGE
+
+    assert old_value is TerminationCriterion._message
+
+
+def test_renamed_class_attribute_skips_an_unrelated_class_of_the_same_name():
+    """A `classes:` entry is not applied to a different class sharing its name.
+
+    `gemseo.problem.mdo.sobieski.discipline.SobieskiStructure` (the public
+    discipline wrapper) merely shares its name with `gemseo.problem.mdo.sobieski.
+    standalone.structure.SobieskiStructure`, the class the `STRESS_LIMIT` rename
+    entry is written for; the wrapper never had `STRESS_LIMIT` and must not be given
+    the alias.
+    """
+    from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        assert not hasattr(SobieskiStructure, "STRESS_LIMIT")
+
+
+def test_setting_a_renamed_class_attribute_on_an_instance_writes_the_new_name():
+    """Setting the old name on an instance writes the new attribute instead."""
+    from gemseo.dataset.dataset import Dataset
+
+    dataset = Dataset()
+    with pytest.warns(DeprecationWarning, match="'DEFAULT_GROUP'"):
+        dataset.DEFAULT_GROUP = "custom_group"
+
+    assert dataset.default_group == "custom_group"
+
+
+def test_subclass_body_assigning_a_renamed_class_attribute_warns_and_remaps():
+    """A subclass body that still assigns the old name is remapped to the new one."""
+    from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+
+    with pytest.warns(DeprecationWarning, match="'DEFAULT_TRANSFORMER'"):
+
+        class NewRegressor(BaseRegressor):
+            DEFAULT_TRANSFORMER: ClassVar = {"scale": 1}
+
+    assert NewRegressor.default_transformer == {"scale": 1}
+
+
+def test_subclass_body_assigning_both_names_keeps_the_new_value():
+    """A subclass assigning both the old and the new name keeps the new value."""
+    from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+
+    class NewRegressor(BaseRegressor):
+        DEFAULT_TRANSFORMER: ClassVar = {"old": True}
+        default_transformer: ClassVar = {"new": True}
+
+    assert NewRegressor.default_transformer == {"new": True}
+
+
+def test_subclass_body_assigning_a_renamed_protected_class_attribute_warns_and_remaps():
+    """A subclass body assigning an old protected class attribute is remapped.
+
+    Regression test: before protected (`_`-prefixed) class attributes were covered
+    by the `classes:` table, nothing remapped a subclass body still assigning the
+    old name (e.g. `_ATTR_NOT_TO_SERIALIZE`) to the new one
+    (`_attr_not_to_serialize`), so the assignment was silently dropped and the base
+    class's default value was used instead, e.g. silently breaking the pickling of
+    a discipline overriding which attributes not to serialize.
+    """
+    from gemseo.core.discipline import Discipline
+
+    new_value = Discipline._attr_not_to_serialize.union(["_lock"])
+
+    with pytest.warns(DeprecationWarning, match="'_ATTR_NOT_TO_SERIALIZE'"):
+
+        class NewDiscipline(Discipline):
+            _ATTR_NOT_TO_SERIALIZE: ClassVar = new_value
+
+    assert NewDiscipline._attr_not_to_serialize == new_value
+
+
+def test_subclass_body_assigning_renamed_protected_factory_attribute_warns_and_remaps():
+    """A factory subclass body assigning old protected names is remapped.
+
+    Same regression as above, on the other documented plugin extension point: a
+    [BaseFactory][gemseo.core.base_factory.BaseFactory] subclass is meant to
+    override `_class` and `_package_names` (see its docstring), so a subclass whose
+    body still assigns the old names, `_CLASS` and `_PACKAGE_NAMES`, must have both
+    remapped.
+    """
+    from gemseo.core.base_factory import BaseFactory
+
+    with pytest.warns(DeprecationWarning, match="'_CLASS'") as records:
+
+        class NewFactory(BaseFactory):
+            _CLASS: ClassVar = object
+            _PACKAGE_NAMES: ClassVar = ("gemseo",)
+
+    messages = [str(record.message) for record in records]
+    assert (
+        "The attribute '_CLASS' of the class 'BaseFactory' is deprecated; "
+        "use '_class' instead." in messages
+    )
+    assert (
+        "The attribute '_PACKAGE_NAMES' of the class 'BaseFactory' is deprecated; "
+        "use '_package_names' instead." in messages
+    )
+    assert NewFactory._class is object
+    assert NewFactory._package_names == ("gemseo",)
+
+
+def test_unknown_attribute_of_an_aliased_class_raises(snapshot):
+    """An attribute unrelated to any rename still raises `AttributeError`."""
+    from gemseo.dataset.dataset import Dataset
+
+    with assert_exception(AttributeError, snapshot):
+        Dataset.does_not_exist_at_all  # noqa: B018
+
+
+def test_existing_init_subclass_hook_still_runs_after_injection():
+    """A base class's own `__init_subclass__` still runs after alias injection."""
+    from gemseo._deprecation import _alias_class_attributes
+
+    created_subclasses = []
+
+    class Base:
+        def __init_subclass__(cls, **kwargs) -> None:
+            super().__init_subclass__(**kwargs)
+            created_subclasses.append(cls)
+
+    _alias_class_attributes(Base, {"OLD": "new"})
+
+    class Sub(Base):
+        pass
+
+    assert created_subclasses == [Sub]
+
+
+def test_every_class_attribute_rename_is_reachable():
+    """Every class-attribute-rename entry aliases a live, importable class.
+
+    A class is found by walking every `gemseo` module (skipping the ones an optional
+    dependency prevents from importing) and looking for a class defined there whose
+    name is a `class_attribute_renames` key. Several classes may share that name, and
+    `_alias_class_attributes` skips a homonym that does not declare the new name, so
+    for each of its old names, the alias must be installed (a `_RenamedClassAttribute`
+    descriptor) on at least one of the classes sharing the name, or, for a stale table
+    entry, the old name must still be live on at least one of them.
+    """
+    from gemseo._deprecation import _RenamedClassAttribute
+    from gemseo._deprecation.aliases import class_attribute_renames
+
+    def check_rename_is_reachable(classes: list[type], old_name: str) -> bool:
+        """Check whether a rename's old name resolves on at least one class.
+
+        Args:
+            classes: The classes sharing the name the rename entry is keyed by.
+            old_name: The old attribute name to check.
+
+        Returns:
+            Whether at least one class either carries the `_RenamedClassAttribute`
+            descriptor for `old_name`, or still exposes `old_name` live (a stale
+            entry correctly left alone).
+        """
+        for cls in classes:
+            if isinstance(cls.__dict__.get(old_name), _RenamedClassAttribute):
+                return True
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                if hasattr(cls, old_name):
+                    # A stale entry correctly left alone: the old name is still live.
+                    return True
+        return False
+
+    root = Path(gemseo.__file__).parent
+    found: dict[str, list[type]] = {}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        for module_info in pkgutil.walk_packages([str(root)], prefix="gemseo."):
+            try:
+                module = importlib.import_module(module_info.name)
+            except ImportError:
+                continue
+            for obj in list(vars(module).values()):
+                if (
+                    isinstance(obj, type)
+                    and getattr(obj, "__module__", None) == module.__name__
+                    and obj.__name__ in class_attribute_renames
+                ):
+                    found.setdefault(obj.__name__, []).append(obj)
+
+    missing = sorted(set(class_attribute_renames) - set(found))
+    assert not missing, f"registered class(es) not found live: {missing}"
+
+    broken = []
+    for name, classes in found.items():
+        for old_name, new_name in class_attribute_renames[name].items():
+            if check_rename_is_reachable(classes, old_name):
+                continue
+            broken.append(f"{name}.{old_name} -> {new_name}")
+    assert not broken, f"alias not installed for: {broken}"

@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
@@ -31,10 +32,11 @@ from strenum import StrEnum
 from gemseo.post._engine.hessian import BFGSApprox
 from gemseo.post._engine.hessian import LSTSQApprox
 from gemseo.post._engine.hessian import SR1Approx
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Mapping
     from collections.abc import Sized
 
     from numpy import ndarray
@@ -53,11 +55,11 @@ class RobustnessQuantifier:
         SR1 = "SR1"
         LEAST_SQUARES = "LEAST_SQUARES"
 
-    __APPROXIMATION_TO_METHOD: Final[Approximation, Callable] = {
+    __approximation_to_method: Final[Mapping[Approximation, type]] = MappingProxyType({
         Approximation.BFGS: BFGSApprox,
         Approximation.SR1: SR1Approx,
         Approximation.LEAST_SQUARES: LSTSQApprox,
-    }
+    })
 
     def __init__(
         self,
@@ -70,7 +72,7 @@ class RobustnessQuantifier:
             approximation_method: The approximation method for the Hessian.
         """  # noqa: D205, D212, D415
         self.history = history
-        self.approximator = self.__APPROXIMATION_TO_METHOD[approximation_method](
+        self.approximator = self.__approximation_to_method[approximation_method](
             history
         )
         self.b_mat = None
@@ -234,7 +236,7 @@ class RobustnessQuantifier:
             raise ValueError(
                 "Covariance matrix dimension " + "incompatible with mean dimensions"
             )
-        ran = default_rng(SEED).multivariate_normal(mean, cov, n_samples).T
+        ran = default_rng(seed).multivariate_normal(mean, cov, n_samples).T
         vals = np.zeros(n_samples)
         if func is None:
             func = self.compute_function_approximation

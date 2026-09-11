@@ -35,7 +35,7 @@ from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class _BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):

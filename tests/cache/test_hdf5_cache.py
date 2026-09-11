@@ -26,7 +26,7 @@ from numpy import array
 from numpy import ones
 
 from gemseo.core.cache.factory import CacheFactory
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 
 if TYPE_CHECKING:
     from gemseo.core.cache.hdf5 import HDF5Cache
@@ -97,7 +97,7 @@ def test_repr_html(tmp_wd) -> None:
     cache = create_cache()
     cache[{"i": ones(1)}] = ({"o": ones(1)}, None)
     cache[{"i": ones(2)}] = ({"o": ones(2)}, None)
-    assert cache._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert cache._repr_html_() == repr_html_wrapper.format(
         "Name: Dummy<br/>"
         "<ul>"
         "<li>Type: HDF5Cache</li>"

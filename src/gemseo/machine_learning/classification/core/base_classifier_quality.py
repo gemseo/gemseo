@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.machine_learning.classification.core.base_classifier import BaseClassifier
 from gemseo.machine_learning.regression.core.base_regressor_quality import (
     BaseRegressorQuality,
@@ -30,5 +32,7 @@ from gemseo.machine_learning.regression.core.base_regressor_quality import (
 class BaseClassifierQuality(BaseRegressorQuality):
     """The base class to assess the quality of a classifier."""
 
-    _CLASS = BaseClassifier
-    _PACKAGE_NAMES = ("gemseo.machine_learning.classification.quality",)
+    _class: ClassVar[type[BaseClassifier]] = BaseClassifier
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.machine_learning.classification.quality",
+    )

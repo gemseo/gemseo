@@ -28,22 +28,22 @@ from numpy import ones
 from numpy import zeros
 
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_D_0,
+    default_d_0,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings import (  # noqa: E501
-    DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
+    default_scalable_discipline_settings,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable import Variable
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    SHARED_DESIGN_VARIABLE_NAME,
-)
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_coupling_name,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_x_local_name,
 )
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    shared_design_variable_name,
+)
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -71,9 +71,9 @@ class ScalableDesignSpace:
         self,
         scalable_discipline_settings: Iterable[
             ScalableDisciplineSettings
-        ] = DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
-        d_0: int = DEFAULT_D_0,
-        name_to_default_value: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        ] = default_scalable_discipline_settings,
+        d_0: int = default_d_0,
+        name_to_default_value: Mapping[str, ndarray] = read_only_empty_dict,
     ) -> None:
         r"""
         Args:
@@ -83,7 +83,7 @@ class ScalableDesignSpace:
             name_to_default_value: The default values of the variables.
         """  # noqa: D205 D212
         self.variables = []
-        name = SHARED_DESIGN_VARIABLE_NAME
+        name = shared_design_variable_name
         self.__add_variable(name, d_0, name_to_default_value.get(name))
         for index, settings in enumerate(scalable_discipline_settings):
             name = get_x_local_name(index + 1)

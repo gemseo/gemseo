@@ -27,6 +27,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import append
 from numpy import array
@@ -43,9 +44,9 @@ if TYPE_CHECKING:
 class SobieskiPropulsion(SobieskiDiscipline):
     """Propulsion discipline for the Sobieski's SSBJ use case."""
 
-    ESF_UPPER_LIMIT = 1.5
-    ESF_LOWER_LIMIT = 0.5
-    TEMPERATURE_LIMIT = 1.02
+    esf_upper_limit: Final[float] = 1.5
+    esf_lower_limit: Final[float] = 0.5
+    temperature_limit: Final[float] = 1.02
 
     def __init__(self, sobieski_base: SobieskiBase) -> None:  # noqa: D107
         super().__init__(sobieski_base)
@@ -435,11 +436,11 @@ class SobieskiPropulsion(SobieskiDiscipline):
 
         if not true_cstr:
             g_3 = append(
-                g_3[0] - self.ESF_UPPER_LIMIT,
+                g_3[0] - self.esf_upper_limit,
                 (
-                    self.ESF_LOWER_LIMIT - g_3[0],
+                    self.esf_lower_limit - g_3[0],
                     g_3[2],
-                    g_3[1] - self.TEMPERATURE_LIMIT,
+                    g_3[1] - self.temperature_limit,
                 ),
             )
         return y_3, y_34, y_31, y_32, g_3

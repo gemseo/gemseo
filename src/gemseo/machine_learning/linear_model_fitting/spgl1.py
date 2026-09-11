@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from numpy import vstack
 from spgl1 import spgl1
@@ -71,7 +72,7 @@ class SPGL1(BaseLinearModelFitter[_SGPL1FittingFunction, SPGL1_Settings]):
 
     settings_class = SPGL1_Settings
 
-    _FITTER_CLASS = _SGPL1FittingFunction
+    _fitter_class: ClassVar[type[_SGPL1FittingFunction]] = _SGPL1FittingFunction
 
     def _fit(
         self,

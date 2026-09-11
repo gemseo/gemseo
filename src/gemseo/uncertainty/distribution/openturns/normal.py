@@ -43,8 +43,8 @@ class OTNormalDistribution(OTDistribution):
                 interfaced_distribution="Normal",
                 parameters=(settings.mu, settings.sigma),
                 standard_parameters={
-                    self._MU: settings.mu,
-                    self._SIGMA: settings.sigma,
+                    self._mu: settings.mu,
+                    self._sigma: settings.sigma,
                 },
                 transformation=settings.transformation,
                 lower_bound=settings.lower_bound,

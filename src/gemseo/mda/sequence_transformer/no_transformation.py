@@ -33,8 +33,8 @@ if TYPE_CHECKING:
 class NoTransformation(SequenceTransformer):
     """A SequenceTransformer which leaves the sequence unchanged."""
 
-    _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 0
-    _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 0
+    _minimum_number_of_iterates: ClassVar[int] = 0
+    _minimum_number_of_residuals: ClassVar[int] = 0
 
     def _compute_transformed_iterate(self) -> None:  # pragma: no cover
         pass

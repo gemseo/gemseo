@@ -26,33 +26,33 @@ from typing import Final
 from numpy import iinfo
 from numpy import int32
 
-N_CPUS: Final[int] = cpu_count()
+n_cpus: Final[int] = cpu_count()
 """The number of CPUs in the system."""
 
-READ_ONLY_EMPTY_DICT: Final[MappingProxyType[Any, Any]] = MappingProxyType({})
+read_only_empty_dict: Final[MappingProxyType[Any, Any]] = MappingProxyType({})
 """A read-only empty dictionary."""
 
-SETTINGS: Final[str] = "settings"
+settings: Final[str] = "settings"
 """The name of the argument to pass a Pydantic model."""
 
-INFINITE_INT: Final[int] = iinfo(int32).max
+infinite_int: Final[int] = iinfo(int32).max
 """An integer standing for infinity, i.e. the largest 32-bit integer."""
 
-EPSILON: Final[float] = sys.float_info.epsilon
+epsilon: Final[float] = sys.float_info.epsilon
 """The machine epsilon."""
 
 # Default settings for GlobalConfiguration
-_CHECK_DESVARS_BOUNDS: Final[bool] = True
-_ENABLE_DISCIPLINE_CACHE: Final[bool] = True
-_ENABLE_DISCIPLINE_STATISTICS: Final[bool] = False
-_ENABLE_DISCIPLINE_STATUS: Final[bool] = False
-_ENABLE_FUNCTION_STATISTICS: Final[bool] = False
-_ENABLE_PARALLEL_EXECUTION: Final[bool] = True
-_ENABLE_PROGRESS_BAR: Final[bool] = True
-_VALIDATE_INPUT_DATA: Final[bool] = True
-_VALIDATE_OUTPUT_DATA: Final[bool] = True
-_LOGGING_DATE_FORMAT: Final[str] = "%H:%M:%S"
-_LOGGING_MESSAGE_FORMAT: Final[str] = "%(levelname)8s - %(asctime)s: %(message)s"
-_LOGGING_LEVEL: Final[int] = logging.INFO
-_LOGGING_FILE_MODE: Final[str] = "a"
-_LOGGING_FILE_PATH: Final[str] = ""
+_check_desvars_bounds: Final[bool] = True
+_enable_discipline_cache: Final[bool] = True
+_enable_discipline_statistics: Final[bool] = False
+_enable_discipline_status: Final[bool] = False
+_enable_function_statistics: Final[bool] = False
+_enable_parallel_execution: Final[bool] = True
+_enable_progress_bar: Final[bool] = True
+_validate_input_data: Final[bool] = True
+_validate_output_data: Final[bool] = True
+_logging_date_format: Final[str] = "%H:%M:%S"
+_logging_message_format: Final[str] = "%(levelname)8s - %(asctime)s: %(message)s"
+_logging_level: Final[int] = logging.INFO
+_logging_file_mode: Final[str] = "a"
+_logging_file_path: Final[str] = ""

@@ -35,12 +35,12 @@ from gemseo.machine_learning.classification.model.svm_settings import (
 )
 from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
 
-N_INPUTS = 2
-N_CLASSES = 4
+n_inputs = 2
+n_classes = 4
 
-INPUT_VALUE = {"x_1": array([1.0]), "x_2": array([1.0])}
+input_value = {"x_1": array([1.0]), "x_2": array([1.0])}
 
-INPUT_VALUES = {
+input_values = {
     "x_1": array([[1.0], [0.0], [1.0], [0.0], [0.5]]),
     "x_2": array([[1.0], [0.0], [0.0], [1.0], [0.5]]),
 }
@@ -57,9 +57,9 @@ def dataset() -> IODataset:
     output_data = output_data.astype(int)
     dataset_ = IODataset()
     dataset_.add_group(
-        IODataset.INPUT_GROUP, input_data, ["x_1", "x_2"], {"x_1": 1, "x_2": 1}
+        IODataset.input_group, input_data, ["x_1", "x_2"], {"x_1": 1, "x_2": 1}
     )
-    dataset_.add_group(IODataset.OUTPUT_GROUP, output_data, ["y_1"], {"y_1": 1})
+    dataset_.add_group(IODataset.output_group, output_data, ["y_1"], {"y_1": 1})
     return dataset_
 
 
@@ -88,8 +88,8 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     svm = SVMClassifier(dataset)
     assert svm.algo is not None
-    assert svm.SHORT_NAME == "SVM"
-    assert svm.LIBRARY == "scikit-learn"
+    assert svm.short_name == "SVM"
+    assert svm.library == "scikit-learn"
 
 
 def test_learn(dataset) -> None:
@@ -101,8 +101,8 @@ def test_learn(dataset) -> None:
 
 def test_predict(model) -> None:
     """Test prediction."""
-    prediction = model.predict(INPUT_VALUE)
-    predictions = model.predict(INPUT_VALUES)
+    prediction = model.predict(input_value)
+    predictions = model.predict(input_values)
 
     assert isinstance(prediction, dict)
     assert isinstance(prediction["y_1"], ndarray)
@@ -115,8 +115,8 @@ def test_predict(model) -> None:
 
 def test_predict_with_transform(model_with_transform) -> None:
     """Test prediction."""
-    prediction = model_with_transform.predict(INPUT_VALUE)
-    predictions = model_with_transform.predict(INPUT_VALUES)
+    prediction = model_with_transform.predict(input_value)
+    predictions = model_with_transform.predict(input_values)
 
     assert isinstance(prediction, dict)
     assert isinstance(prediction["y_1"], ndarray)
@@ -131,8 +131,8 @@ def test_predict_with_transform(model_with_transform) -> None:
 def test_predict_proba(model) -> None:
     """Test probability prediction."""
     for hard in [True, False]:
-        proba = model.predict_proba(INPUT_VALUE, hard)
-        probas = model.predict_proba(INPUT_VALUES, hard)
+        proba = model.predict_proba(input_value, hard)
+        probas = model.predict_proba(input_values, hard)
         assert isinstance(proba, dict)
         assert isinstance(probas, dict)
         assert isinstance(proba["y_1"], ndarray)
@@ -148,8 +148,8 @@ def test_predict_proba(model) -> None:
 def test_predict_proba_transform(model_with_transform) -> None:
     """Test probability prediction."""
     for hard in [True, False]:
-        proba = model_with_transform.predict_proba(INPUT_VALUE, hard)
-        probas = model_with_transform.predict_proba(INPUT_VALUES, hard)
+        proba = model_with_transform.predict_proba(input_value, hard)
+        probas = model_with_transform.predict_proba(input_values, hard)
         assert isinstance(proba, dict)
         assert isinstance(probas, dict)
         assert isinstance(proba["y_1"], ndarray)
@@ -166,9 +166,9 @@ def test_not_predict_proba(dataset) -> None:
     """Test not implemented soft predict proba case."""
     svm = SVMClassifier(dataset)
     svm.learn()
-    svm.predict_proba(INPUT_VALUE)
-    svm.predict_proba(INPUT_VALUES)
+    svm.predict_proba(input_value)
+    svm.predict_proba(input_values)
     with pytest.raises(NotImplementedError):
-        svm.predict_proba(INPUT_VALUE, False)
+        svm.predict_proba(input_value, False)
     with pytest.raises(NotImplementedError):
-        svm.predict_proba(INPUT_VALUES, False)
+        svm.predict_proba(input_values, False)

@@ -87,10 +87,10 @@ class BaseDatasetPlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         MATPLOTLIB = "MatplotlibPlotFactory"
         PLOTLY = "PlotlyPlotFactory"
 
-    DEFAULT_PLOT_ENGINE: ClassVar[PlotEngine] = PlotEngine.MATPLOTLIB
+    default_plot_engine: ClassVar[PlotEngine] = PlotEngine.MATPLOTLIB
     """The default engine of plots."""
 
-    FILE_FORMATS_TO_PLOT_ENGINES: ClassVar[dict[str, PlotEngine]] = {
+    file_formats_to_plot_engines: ClassVar[dict[str, PlotEngine]] = {
         "html": PlotEngine.PLOTLY
     }
     """The file formats bound to the engines of plots.
@@ -100,7 +100,7 @@ class BaseDatasetPlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     uses this dictionary
     to select the engine of plots associated with its `file_format` argument.
     If missing, the method uses the
-    [DEFAULT_PLOT_ENGINE][gemseo.post.dataset.base.BaseDatasetPlot.DEFAULT_PLOT_ENGINE].
+    [default_plot_engine][gemseo.post.dataset.base.BaseDatasetPlot.default_plot_engine].
     """
 
     settings_class: ClassVar[type[T]]
@@ -181,8 +181,8 @@ class BaseDatasetPlot(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         if suffix:
             file_format = suffix[1:]
 
-        engine = self.FILE_FORMATS_TO_PLOT_ENGINES.get(
-            file_format, self.DEFAULT_PLOT_ENGINE
+        engine = self.file_formats_to_plot_engines.get(
+            file_format, self.default_plot_engine
         )
         plot_factory: PlotFactory[Any] = PlotFactoryFactory().create(engine)
         plot: BasePlot = plot_factory.create(

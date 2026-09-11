@@ -23,7 +23,7 @@ from typing import ClassVar
 
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammar.json import JSONGrammar
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
 from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
@@ -70,7 +70,7 @@ class FormulationsBaseTest(unittest.TestCase):
         scenario = MDOScenario(
             disciplines,
             design_space,
-            formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation_settings=mdo_formulation_factory.get_class(
                 formulation_name
             ).settings_class(**options),
         )

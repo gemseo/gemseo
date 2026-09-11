@@ -44,12 +44,12 @@ def dataset_2(dataset) -> IODataset:
     data.add_variable(
         "x",
         dataset.get_view(variable_names="x").to_numpy(),
-        group_name=data.INPUT_GROUP,
+        group_name=data.input_group,
     )
     data.add_variable(
         "rosen",
         dataset.get_view(variable_names="rosen").to_numpy(),
-        group_name=data.OUTPUT_GROUP,
+        group_name=data.output_group,
     )
     data.add_variable(
         "rosen2",
@@ -57,7 +57,7 @@ def dataset_2(dataset) -> IODataset:
             dataset.get_view(variable_names="rosen").to_numpy(),
             dataset.get_view(variable_names="rosen").to_numpy(),
         )),
-        group_name=data.OUTPUT_GROUP,
+        group_name=data.output_group,
     )
     return data
 
@@ -65,10 +65,10 @@ def dataset_2(dataset) -> IODataset:
 @pytest.fixture(scope="module")
 def input_data(dataset: IODataset) -> ndarray:
     """The learning input data."""
-    return dataset.get_view(group_names=dataset.INPUT_GROUP).to_numpy()
+    return dataset.get_view(group_names=dataset.input_group).to_numpy()
 
 
 @pytest.fixture(scope="module")
 def output_data(dataset: IODataset) -> ndarray:
     """The learning output data."""
-    return dataset.get_view(group_names=dataset.OUTPUT_GROUP).to_numpy()
+    return dataset.get_view(group_names=dataset.output_group).to_numpy()

@@ -25,10 +25,6 @@ from numpy import ndarray
 
 from gemseo import create_mda
 from gemseo.core.discipline import Discipline
-from gemseo.problem.mdo.scalable.linear.disciplines_generator import DESC_3_DISC_WEAK
-from gemseo.problem.mdo.scalable.linear.disciplines_generator import DESC_4_DISC_WEAK
-from gemseo.problem.mdo.scalable.linear.disciplines_generator import DESC_16_DISC
-from gemseo.problem.mdo.scalable.linear.disciplines_generator import DESC_DISC_REPEATED
 from gemseo.problem.mdo.scalable.linear.disciplines_generator import _get_disc_names
 from gemseo.problem.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_desc,
@@ -36,15 +32,19 @@ from gemseo.problem.mdo.scalable.linear.disciplines_generator import (
 from gemseo.problem.mdo.scalable.linear.disciplines_generator import (
     create_disciplines_from_sizes,
 )
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import desc_3_disc_weak
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import desc_4_disc_weak
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import desc_16_disc
+from gemseo.problem.mdo.scalable.linear.disciplines_generator import desc_disc_repeated
 from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 from gemseo.util.testing.helper import assert_exception
 
-DESCRIPTIONS = [
-    DESC_3_DISC_WEAK,
-    DESC_4_DISC_WEAK,
-    DESC_16_DISC,
-    DESC_DISC_REPEATED,
+descriptions = [
+    desc_3_disc_weak,
+    desc_4_disc_weak,
+    desc_16_disc,
+    desc_disc_repeated,
 ]
 
 
@@ -57,7 +57,7 @@ def test_fail_no_output(snapshot) -> None:
         create_disciplines_from_desc([("A", [], ["y"])])
 
 
-@pytest.mark.parametrize("descriptions", DESCRIPTIONS)
+@pytest.mark.parametrize("descriptions", descriptions)
 def test_creation(descriptions) -> None:
     """Test that the disciplines are well generated according to spec."""
     disciplines = create_disciplines_from_desc(descriptions)
@@ -68,7 +68,7 @@ def test_creation(descriptions) -> None:
         assert sorted(out.keys()) == sorted(description[2])
 
 
-@pytest.mark.parametrize("desc", DESCRIPTIONS[:-1])
+@pytest.mark.parametrize("desc", descriptions[:-1])
 def test_mda_convergence(desc) -> None:
     """Test that the generated disciplines have an equilibrium point."""
     disciplines = create_disciplines_from_desc(desc)
@@ -156,7 +156,7 @@ def test_get_disc_names(nb_of_names) -> None:
 def test_jacobian_format(matrix_format: LinearDiscipline.MatrixFormat) -> None:
     """Test that the Jacobian matrices have the specified format."""
     disciplines = create_disciplines_from_desc(
-        DESC_16_DISC,
+        desc_16_disc,
         inputs_size=10,
         outputs_size=20,
         matrix_format=matrix_format,

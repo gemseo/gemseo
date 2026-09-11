@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.problem.mdo.scalable.parametric.discipline.base_discipline import (
     BaseDiscipline,
@@ -30,10 +31,10 @@ from gemseo.problem.mdo.scalable.parametric.standalone.discipline.main_disciplin
     MainDiscipline as _MainDiscipline,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    SHARED_DESIGN_VARIABLE_NAME,
+    get_coupling_name,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    get_coupling_name,
+    shared_design_variable_name,
 )
 
 if TYPE_CHECKING:
@@ -50,7 +51,7 @@ class MainDiscipline(BaseDiscipline):
     hand side of the constraints $t_1-y_1\leq 0,\ldots,t_N-y_N\leq 0$.
     """
 
-    _CORE_DISCIPLINE_CLASS = _MainDiscipline
+    _core_discipline_class: ClassVar[type[_MainDiscipline]] = _MainDiscipline
 
     __n_scalable_disciplines: int
     r"""The number of scalable disciplines $N$."""
@@ -76,7 +77,7 @@ class MainDiscipline(BaseDiscipline):
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         return self._discipline(
-            input_data[SHARED_DESIGN_VARIABLE_NAME],
+            input_data[shared_design_variable_name],
             **{y_i_name: input_data[y_i_name] for y_i_name in self.__y_i_names},
         )
 
@@ -87,7 +88,7 @@ class MainDiscipline(BaseDiscipline):
     ) -> None:
         self._init_jacobian(input_names, output_names)
         jac = self._discipline(
-            self.io.input_data[SHARED_DESIGN_VARIABLE_NAME],
+            self.io.input_data[shared_design_variable_name],
             compute_jacobian=True,
             **{y_i_name: self.io.input_data[y_i_name] for y_i_name in self.__y_i_names},
         )

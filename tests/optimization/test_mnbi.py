@@ -138,7 +138,7 @@ def test_protected_const(binh_korn, snapshot):
 
     protected_constraint = ArrayFunction(
         lambda x: x,
-        name=MNBI._MNBI__SUB_OPTIM_CONSTRAINT_NAME,
+        name=MNBI._MNBI__sub_optim_constraint_name,
         f_type=ArrayFunction.ConstraintType.INEQ,
     )
     binh_korn.add_constraint(protected_constraint)

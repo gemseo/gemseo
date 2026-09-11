@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class XLSStudyParser:
@@ -143,18 +143,18 @@ class XLSStudyParser:
     output_names: set[str]
     """The names of the output variables."""
 
-    SCENARIO_PREFIX: Final[str] = "Scenario"
-    DISCIPLINE: Final[str] = "Discipline"
-    DISCIPLINES: Final[str] = "Disciplines"
-    OBJECTIVE_FUNCTION: Final[str] = "Objective function"
-    CONSTRAINTS: Final[str] = "Constraints"
-    DESIGN_VARIABLES: Final[str] = "Design variables"
-    FORMULATION: Final[str] = "Formulation"
-    OPTIONS: Final[str] = "Options"
-    OPTION_VALUES: Final[str] = "Options values"
-    __INPUTS: Final[str] = "Inputs"
-    __OUTPUTS: Final[str] = "Outputs"
-    __SPACE: Final[str] = MultiLineString.INDENTATION
+    scenario_prefix: Final[str] = "Scenario"
+    discipline: Final[str] = "Discipline"
+    disciplines_key: Final[str] = "Disciplines"
+    objective_function: Final[str] = "Objective function"
+    constraints: Final[str] = "Constraints"
+    design_variables: Final[str] = "Design variables"
+    formulation: Final[str] = "Formulation"
+    options: Final[str] = "Options"
+    option_values: Final[str] = "Options values"
+    __inputs: Final[str] = "Inputs"
+    __outputs: Final[str] = "Outputs"
+    __space: Final[str] = MultiLineString.indentation
 
     def __init__(self, xls_study_path: str, has_scenario: bool = True) -> None:
         """Args:
@@ -172,7 +172,7 @@ class XLSStudyParser:
                 xls_study_path, sheet_name=None, engine="openpyxl"
             )
         except OSError:
-            LOGGER.exception("Failed to open the study file: %s", xls_study_path)
+            logger.exception("Failed to open the study file: %s", xls_study_path)
             raise
 
         self.__log_number_objects_detected(True)
@@ -200,7 +200,7 @@ class XLSStudyParser:
         string.indent()
         missing_column_msg = "The sheet of the discipline '{}' must have a column '{}'"
         for sheet_name, sheet_value in self.worksheets.items():
-            if sheet_name.startswith(self.SCENARIO_PREFIX):
+            if sheet_name.startswith(self.scenario_prefix):
                 continue
 
             # We use add("{}", sheet_name) rather than add(sheet_name)
@@ -208,33 +208,33 @@ class XLSStudyParser:
             # e.g. "Discipline{1}".
             string.add("{}", sheet_name)
             try:
-                input_names = self.__get_series(sheet_value, self.__INPUTS)
+                input_names = self.__get_series(sheet_value, self.__inputs)
                 all_inputs += input_names
             except ValueError:
                 raise ValueError(
-                    missing_column_msg.format(sheet_name, self.__INPUTS)
+                    missing_column_msg.format(sheet_name, self.__inputs)
                 ) from None
 
             try:
-                output_names = self.__get_series(sheet_value, self.__OUTPUTS)
+                output_names = self.__get_series(sheet_value, self.__outputs)
                 all_outputs += output_names
             except ValueError:
                 raise ValueError(
-                    missing_column_msg.format(sheet_name, self.__OUTPUTS)
+                    missing_column_msg.format(sheet_name, self.__outputs)
                 ) from None
 
             discipline = DummyDiscipline(sheet_name)
             discipline.io.input_grammar.update_from_names(input_names)
             discipline.io.output_grammar.update_from_names(output_names)
             string.indent()
-            string.add("{}: {}", self.__INPUTS, pretty_str(input_names, use_and=False))
+            string.add("{}: {}", self.__inputs, pretty_str(input_names, use_and=False))
             string.add(
-                "{}: {}", self.__OUTPUTS, pretty_str(output_names, use_and=False)
+                "{}: {}", self.__outputs, pretty_str(output_names, use_and=False)
             )
             string.dedent()
             self.disciplines[sheet_name] = discipline
 
-        LOGGER.info("%s", string)
+        logger.info("%s", string)
         self.input_names = set(all_inputs)
         self.output_names = set(all_outputs)
 
@@ -288,45 +288,45 @@ class XLSStudyParser:
         missing_column_msg = "Scenario {} has no {} column."
         for frame_name, frame in worksheets.items():
             try:
-                disciplines = self.__get_series(frame, self.DISCIPLINES)
+                disciplines = self.__get_series(frame, self.disciplines_key)
             except ValueError:
                 raise ValueError(
-                    missing_column_msg.format(frame_name, self.DISCIPLINES)
+                    missing_column_msg.format(frame_name, self.disciplines_key)
                 ) from None
 
             try:
-                design_variables = self.__get_series(frame, self.DESIGN_VARIABLES)
+                design_variables = self.__get_series(frame, self.design_variables)
             except ValueError:
                 raise ValueError(
-                    missing_column_msg.format(frame_name, self.DESIGN_VARIABLES)
+                    missing_column_msg.format(frame_name, self.design_variables)
                 ) from None
 
             try:
-                objectives = self.__get_series(frame, self.OBJECTIVE_FUNCTION)
+                objectives = self.__get_series(frame, self.objective_function)
             except ValueError:
                 raise ValueError(
-                    missing_column_msg.format(frame_name, self.OBJECTIVE_FUNCTION)
+                    missing_column_msg.format(frame_name, self.objective_function)
                 ) from None
 
             try:
-                constraints = self.__get_series(frame, self.CONSTRAINTS)
+                constraints = self.__get_series(frame, self.constraints)
             except ValueError:
                 raise ValueError(
-                    missing_column_msg.format(frame_name, self.CONSTRAINTS)
+                    missing_column_msg.format(frame_name, self.constraints)
                 ) from None
 
             try:
-                formulation = self.__get_series(frame, self.FORMULATION)
+                formulation = self.__get_series(frame, self.formulation)
             except ValueError:
                 raise ValueError(
-                    missing_column_msg.format(frame_name, self.FORMULATION)
+                    missing_column_msg.format(frame_name, self.formulation)
                 ) from None
 
-            options = self.__get_series(frame, self.OPTIONS, False)
-            option_values = self.__get_series(frame, self.OPTION_VALUES, False)
+            options = self.__get_series(frame, self.options, False)
+            option_values = self.__get_series(frame, self.option_values, False)
 
             if len(formulation) != 1:
-                msg = f"Scenario {frame_name!s} must have one {self.FORMULATION} value."
+                msg = f"Scenario {frame_name!s} must have one {self.formulation} value."
                 raise ValueError(msg) from None
 
             if options is not None and len(options) != len(option_values):
@@ -337,24 +337,24 @@ class XLSStudyParser:
                 raise ValueError(msg) from None
 
             scenario_description = {
-                self.DISCIPLINES: disciplines,
-                self.OBJECTIVE_FUNCTION: objectives,
-                self.CONSTRAINTS: constraints,
-                self.DESIGN_VARIABLES: design_variables,
-                self.FORMULATION: formulation[0],
-                self.OPTIONS: options,
-                self.OPTION_VALUES: option_values,
+                self.disciplines_key: disciplines,
+                self.objective_function: objectives,
+                self.constraints: constraints,
+                self.design_variables: design_variables,
+                self.formulation: formulation[0],
+                self.options: options,
+                self.option_values: option_values,
             }
 
             self.scenarios[frame_name] = scenario_description
 
         for scenario_name, scenario_description in self.scenarios.items():
             self.__check_scenario_description(
-                scenario_description[self.OBJECTIVE_FUNCTION],
-                scenario_description[self.CONSTRAINTS],
-                scenario_description[self.DISCIPLINES],
-                scenario_description[self.DESIGN_VARIABLES],
-                scenario_description[self.FORMULATION],
+                scenario_description[self.objective_function],
+                scenario_description[self.constraints],
+                scenario_description[self.disciplines_key],
+                scenario_description[self.design_variables],
+                scenario_description[self.formulation],
                 scenario_name,
             )
 
@@ -374,11 +374,11 @@ class XLSStudyParser:
         worksheets = {
             sheet_name: sheet_value
             for sheet_name, sheet_value in self.worksheets.items()
-            if sheet_name.startswith(self.SCENARIO_PREFIX) is not is_discipline
+            if sheet_name.startswith(self.scenario_prefix) is not is_discipline
         }
         if worksheets:
             n_worksheets = len(worksheets)
-            LOGGER.info(
+            logger.info(
                 "%s %s%s detected",
                 n_worksheets,
                 "discipline" if is_discipline else "scenario",
@@ -425,7 +425,7 @@ class XLSStudyParser:
         string.add("Constraints: {}", pretty_str(constraints, use_and=False))
         string.add("Design variables: {}", pretty_str(design_variables, use_and=False))
         string.add("Formulation: {}", formulation_name)
-        LOGGER.info("%s", string)
+        logger.info("%s", string)
 
         missing = set(design_variables) - self.input_names
         if missing:

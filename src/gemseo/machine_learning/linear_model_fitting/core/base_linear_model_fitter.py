@@ -31,7 +31,7 @@ from numpy import vstack
 from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings import (  # noqa: E501
     BaseLinearModelFitterSettings,
 )
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 from gemseo.util.pydantic import create_model
 
@@ -60,12 +60,12 @@ class BaseLinearModelFitter(
     _settings: SettingsType
     """The settings of the linear model fitting algorithm."""
 
-    _PRIORITARY_FITTER_KWARGS: ClassVar[Mapping[str, Any]] = READ_ONLY_EMPTY_DICT
+    _prioritary_fitter_kwargs: ClassVar[Mapping[str, Any]] = read_only_empty_dict
     """Some keyword arguments of the wrapped linear model fitting algorithm."""
 
     @property
     @abstractmethod
-    def _FITTER_CLASS(self) -> type[FitterType]:  # noqa: N802
+    def _fitter_class(self) -> type[FitterType]:
         """The wrapped linear model fitting algorithm."""
 
     def __init__(self, settings: SettingsType | None = None) -> None:
@@ -79,8 +79,8 @@ class BaseLinearModelFitter(
         fitter_kwargs = settings.model_dump(
             exclude=BaseLinearModelFitterSettings.model_fields.keys()
         )
-        fitter_kwargs.update(self._PRIORITARY_FITTER_KWARGS)
-        self._fitter = self._FITTER_CLASS(**fitter_kwargs)
+        fitter_kwargs.update(self._prioritary_fitter_kwargs)
+        self._fitter = self._fitter_class(**fitter_kwargs)
         self._settings = settings
 
     def fit(

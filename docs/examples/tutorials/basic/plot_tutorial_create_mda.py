@@ -191,7 +191,7 @@ gauss_seidel_mda.residual_history
 # They are determined from the discipline inputs and outputs.
 # You may have noticed that an additional output is set for the MDA,
 # which is not in the disciplines outputs.
-name = gauss_seidel_mda.NORMALIZED_RESIDUAL_NORM
+name = gauss_seidel_mda.normalized_residual_norm_name
 name, output_data[name]
 
 # %%

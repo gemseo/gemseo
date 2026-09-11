@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from gemseo.space.design import DesignSpace
     from gemseo.util.derivative.approximation_mode import ApproximationMode
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
@@ -48,10 +48,10 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
     f_pointer: Callable[[ndarray, Any, ...], ndarray]
     """The pointer to the function to derive."""
 
-    _APPROXIMATION_MODE: ClassVar[ApproximationMode]
+    _approximation_mode: ClassVar[ApproximationMode]
     """The approximation mode that a derived class implements."""
 
-    _DEFAULT_STEP: ClassVar[float]
+    _default_step: ClassVar[float]
     """The default value for the step."""
 
     def __init__(
@@ -83,7 +83,7 @@ class BaseGradientApproximator(metaclass=ABCGoogleDocstringInheritanceMeta):
         if isinstance(step, ndarray) or step != 0.0:
             self.step = step
         else:
-            self._step = self._DEFAULT_STEP
+            self._step = self._default_step
 
         self._design_space = design_space
         self._normalize = normalize

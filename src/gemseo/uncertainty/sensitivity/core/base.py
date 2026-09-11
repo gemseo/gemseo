@@ -46,7 +46,7 @@ from strenum import StrEnum
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.io_dataset import IODataset
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.formulation.mdf_settings import MDF_Settings
 from gemseo.post.dataset.bar_plot import BarPlot
 from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
@@ -57,7 +57,7 @@ from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 from gemseo.post.dataset.surfaces import Surfaces
 from gemseo.post.dataset.surfaces_settings import Surfaces_Settings
 from gemseo.scenario.evaluation import EvaluationScenario
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.discipline import get_all_outputs
 from gemseo.util.file_path_manager import FilePathManager
@@ -132,10 +132,10 @@ class BaseGenericSensitivityAnalysis(
     [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples].
     """
 
-    _INTERACTION_METHODS: ClassVar[tuple[str, ...]] = ()
+    _interaction_methods: ClassVar[tuple[str, ...]] = ()
     """The names of the sensitivity methods considering interaction effects."""
 
-    _DEFAULT_MAIN_METHOD: ClassVar[StrEnum]
+    _default_main_method: ClassVar[StrEnum]
     """The name of the default main sensitivity analysis method."""
 
     _input_names: list[str]
@@ -187,7 +187,7 @@ class BaseGenericSensitivityAnalysis(
             FilePathManager.FileType.FIGURE,
             default_name=FilePathManager.to_snake_case(self.__class__.__name__),
         )
-        self.main_method = self._DEFAULT_MAIN_METHOD
+        self.main_method = self._default_main_method
         if self.dataset is None:
             self._input_names = []
             self._output_names = []
@@ -216,7 +216,7 @@ class BaseGenericSensitivityAnalysis(
                 If `None`,
                 use the default settings of the default DOE algorithm
                 (see
-                [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.DEFAULT_DRIVER]).
+                [default_driver][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.default_driver]).
             formulation_settings: The settings of the MDO formulation.
                 If `None`,
                 use the default settings of the MDF formulation.
@@ -313,7 +313,7 @@ class BaseGenericSensitivityAnalysis(
         Returns:
             The input samples shaped as `(n_samples, input_dimension)`.
         """
-        return self.dataset.get_view(group_names=self.dataset.INPUT_GROUP).to_numpy()
+        return self.dataset.get_view(group_names=self.dataset.input_group).to_numpy()
 
     def _iter_output_components(
         self, output_names: Iterable[str]
@@ -332,7 +332,7 @@ class BaseGenericSensitivityAnalysis(
         dataset = self.dataset
         for output_name in output_names:
             samples = dataset.get_view(
-                group_names=dataset.OUTPUT_GROUP, variable_names=output_name
+                group_names=dataset.output_group, variable_names=output_name
             ).to_numpy()
             for component_index, component_samples in enumerate(samples.T):
                 data = component_samples[:, newaxis]
@@ -446,7 +446,7 @@ class BaseGenericSensitivityAnalysis(
         directory_path: StrPath = "",
         file_name: str = "",
         file_format: str = "",
-        properties: Mapping[str, DatasetPlotPropertyType] = READ_ONLY_EMPTY_DICT,
+        properties: Mapping[str, DatasetPlotPropertyType] = read_only_empty_dict,
     ) -> Curves | Surfaces:
         """Plot the sensitivity indices related to a 1D or 2D functional output.
 
@@ -692,7 +692,7 @@ class BaseGenericSensitivityAnalysis(
                 if isnan(component_values).any():
                     continue
 
-                columns.append((Dataset.PARAMETER_GROUP, input_name, component))
+                columns.append((Dataset.parameter_group, input_name, component))
                 values.append(component_values)
 
         if not values:
@@ -706,7 +706,7 @@ class BaseGenericSensitivityAnalysis(
 
         dataset = Dataset(
             vstack(values).T,
-            columns=MultiIndex.from_tuples(columns, names=Dataset.COLUMN_LEVEL_NAMES),
+            columns=MultiIndex.from_tuples(columns, names=Dataset.column_level_names),
         )
         dataset.index = output_labels
         if sort:
@@ -891,7 +891,7 @@ class BaseGenericSensitivityAnalysis(
                 ])
             )
             dataset.add_variable(input_name, data)
-        data = dataset.get_view(group_names=dataset.PARAMETER_GROUP).to_numpy()
+        data = dataset.get_view(group_names=dataset.parameter_group).to_numpy()
         # An input component whose index is NaN must not spoil
         # the largest index of the analysis it belongs to;
         # the divisor of an analysis without any index is left at one,
@@ -900,7 +900,7 @@ class BaseGenericSensitivityAnalysis(
             1.0 if isnan(indices).all() else nanmax(indices) for indices in data
         ])
         dataset.update_data(
-            data / maxima[:, newaxis], group_names=dataset.PARAMETER_GROUP
+            data / maxima[:, newaxis], group_names=dataset.parameter_group
         )
         dataset.index = [method.main_method for method in methods]
         if use_bar_plot:
@@ -935,7 +935,7 @@ class BaseGenericSensitivityAnalysis(
 
         dataset = Dataset()
         for method, indices in asdict(self.indices).items():
-            if method in self._INTERACTION_METHODS:
+            if method in self._interaction_methods:
                 dataset.misc[method] = indices
                 continue
 
@@ -1018,7 +1018,7 @@ class BaseGenericSensitivityAnalysis(
 class BaseSensitivityAnalysis(BaseGenericSensitivityAnalysis[T]):
     """Base class for sensitivity analysis where outputs are disciplinary outputs."""
 
-    DEFAULT_DRIVER: ClassVar[str] = ""
+    default_driver: ClassVar[str] = ""
     """The default DOE algorithm to sample the disciplines."""
 
     def compute_samples(
@@ -1041,7 +1041,7 @@ class BaseSensitivityAnalysis(BaseGenericSensitivityAnalysis[T]):
                 If `None`,
                 use the default settings of the default DOE algorithm
                 (see
-                [DEFAULT_DRIVER][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.DEFAULT_DRIVER]).
+                [default_driver][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.default_driver]).
             backup_settings: The settings of the backup file to store the samples
                 if any.
             formulation_settings: The settings of the MDO formulation.
@@ -1050,7 +1050,7 @@ class BaseSensitivityAnalysis(BaseGenericSensitivityAnalysis[T]):
         """  # noqa: D205, D212
         disciplines = list(disciplines)
         if algo_settings is None:
-            algo_settings = DOE_LIBRARY_FACTORY.create_settings(self.DEFAULT_DRIVER)
+            algo_settings = doe_library_factory.create_settings(self.default_driver)
         if n_samples > 0:
             algo_settings.n_samples = n_samples
         self._output_names = list(output_names or get_all_outputs(disciplines))

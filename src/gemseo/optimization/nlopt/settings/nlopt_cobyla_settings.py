@@ -22,14 +22,14 @@ from pydantic import NonNegativeInt
 from gemseo.optimization.nlopt.settings.base_gradient_free_nlopt_settings import (
     BaseGradientFreeNLoptSettings,
 )
-from gemseo.util.seeder import SEED
+from gemseo.util import seeder
 
 
 class NLOPT_COBYLA_Settings(BaseGradientFreeNLoptSettings):  # noqa: N801
     """The settings for the NLopt COBYLA algorithm."""
 
     seed: NonNegativeInt | None = Field(
-        default=SEED,
+        default=seeder.seed,
         description=(
             """The seed for the pseudo-randomization of simplex steps.
 

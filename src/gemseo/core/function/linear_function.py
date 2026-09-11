@@ -201,7 +201,7 @@ class LinearFunction(ArrayFunction):
         Returns:
             The literal expression of the linear function in scalar form.
         """
-        pattern = self.COEFF_FORMAT_1D
+        pattern = self.coeff_format_1d
         strings = []
         # Build the expression of the linear combination
         first_non_zero_index = -1
@@ -267,7 +267,7 @@ class LinearFunction(ArrayFunction):
                     ith_row = get_row(self._coefficients, i).toarray().flatten()
 
                 coefficients = (
-                    self.COEFF_FORMAT_ND.format(coefficient) for coefficient in ith_row
+                    self.coeff_format_nd.format(coefficient) for coefficient in ith_row
                 )
                 strings.append(f"[{' '.join(coefficients)}]")
             else:
@@ -280,7 +280,7 @@ class LinearFunction(ArrayFunction):
             # value at zero
             if i < out_dim:
                 strings.append(
-                    f"[{self.COEFF_FORMAT_ND.format(self._value_at_zero[i])}]"
+                    f"[{self.coeff_format_nd.format(self._value_at_zero[i])}]"
                 )
         return "".join(strings)
 

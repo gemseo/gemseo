@@ -61,7 +61,7 @@ def test_input_names_generation(coefficients) -> None:
     """Tests the generation of arguments strings."""
     # No arguments strings passed
     func = LinearFunction(coefficients, "f")
-    input_names = [f"{LinearFunction.DEFAULT_BASE_INPUT_NAME}[{i}]" for i in range(3)]
+    input_names = [f"{LinearFunction.default_base_input_name}[{i}]" for i in range(3)]
     assert func.input_names == input_names
     # Not enough arguments strings passed
     func = LinearFunction(coefficients, "f", input_names=["u", "v"])
@@ -86,7 +86,7 @@ def test_linear_function(coefs) -> None:
     """Tests the LinearFunction class."""
 
     linear_fun = LinearFunction(coefs, "f")
-    coeffs_str = (ArrayFunction.COEFF_FORMAT_1D.format(coeff) for coeff in (2, 9))
+    coeffs_str = (ArrayFunction.coeff_format_1d.format(coeff) for coeff in (2, 9))
     expr = "-x[2] + {}*x[3] + x[4] - {}*x[6]".format(*coeffs_str)
     assert linear_fun.expr == expr
     assert linear_fun.evaluate(np.ones(max(coefs.shape))) == -7.0
@@ -109,7 +109,7 @@ def test_nd_expression(coefficients) -> None:
         coefficients, "f", input_names=["x", "y"], value_at_zero=value_at_zero
     )
     coeffs_str = (
-        ArrayFunction.COEFF_FORMAT_ND.format(coeff) for coeff in (1, 2, 5, 3, 4, 6)
+        ArrayFunction.coeff_format_nd.format(coeff) for coeff in (1, 2, 5, 3, 4, 6)
     )
     expr = "[{} {}][x] + [{}]\n[{} {}][y]   [{}]".format(*coeffs_str)
     assert func.expr == expr
@@ -188,6 +188,6 @@ def test_linear_restriction(coefficients) -> None:
     assert (restriction.coefficients == array([[1.0], [4.0]])).all()
     assert (restriction.value_at_zero == array([15.0, 25.0])).all()
     assert restriction.input_names == ["x"]
-    coeffs_str = (ArrayFunction.COEFF_FORMAT_ND.format(val) for val in (1, 15, 4, 25))
+    coeffs_str = (ArrayFunction.coeff_format_nd.format(val) for val in (1, 15, 4, 25))
     expr = "[{}][x] + [{}]\n[{}]      [{}]".format(*coeffs_str)
     assert restriction.expr == expr

@@ -40,5 +40,5 @@ class OTMonteCarlo(BaseOTDOE):
         self, dimension: int, settings: BaseNSamplesBasedDOESettings
     ) -> RealArray:
         n_samples = settings.n_samples
-        samples = self._STANDARD_UNIFORM_DISTRIBUTION.getSample(dimension * n_samples)
+        samples = self._standard_uniform_distribution.getSample(dimension * n_samples)
         return array(samples).reshape((n_samples, dimension))

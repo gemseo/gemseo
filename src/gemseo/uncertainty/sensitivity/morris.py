@@ -41,9 +41,9 @@ from numpy import newaxis
 from numpy import where
 from strenum import StrEnum
 
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings
-from gemseo.doe.oat_doe.settings.oat_doe_settings import DEFAULT_STEP
+from gemseo.doe.oat_doe.settings.oat_doe_settings import default_step
 from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _reduce_differences(
@@ -232,9 +232,9 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
     __uses_elementary_effects: bool = False
     """Whether the indices are those of the elementary effects."""
 
-    DEFAULT_DRIVER: ClassVar[str] = "PYDOE_LHS"
+    default_driver: ClassVar[str] = "PYDOE_LHS"
 
-    _DEFAULT_MAIN_METHOD: ClassVar[MorrisAnalysisMethod] = MorrisAnalysisMethod.MU_STAR
+    _default_main_method: ClassVar[MorrisAnalysisMethod] = MorrisAnalysisMethod.MU_STAR
 
     def compute_samples(
         self,
@@ -246,7 +246,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         backup_settings: BackupSettings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,
         n_replicates: int = 5,
-        step: float = DEFAULT_STEP,
+        step: float = default_step,
     ) -> IODataset:
         r"""
         Args:
@@ -283,7 +283,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
                 where the quantile functions of the input variables are finite.
         """  # noqa: D205, D212, D415
         if algo_settings is None:
-            algo_settings = DOE_LIBRARY_FACTORY.create_settings(self.DEFAULT_DRIVER)
+            algo_settings = doe_library_factory.create_settings(self.default_driver)
 
         algo_settings.n_samples = n_replicates
         super().compute_samples(
@@ -369,7 +369,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         n_replicates = self.dataset.misc.get("n_replicates")
         if n_replicates is None:
             n_replicates = len(self.dataset) // (
-                1 + self.dataset.group_name_to_n_components[self.dataset.INPUT_GROUP]
+                1 + self.dataset.group_name_to_n_components[self.dataset.input_group]
             )
             self.dataset.misc["n_replicates"] = n_replicates
         return n_replicates
@@ -408,9 +408,9 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         """  # noqa: D205 D212 D415
         output_names = self._get_output_names(output_names)
         output_data = self.dataset.get_view(
-            group_names=self.dataset.OUTPUT_GROUP, variable_names=output_names
+            group_names=self.dataset.output_group, variable_names=output_names
         ).to_numpy()
-        input_size = self.dataset.group_name_to_n_components[self.dataset.INPUT_GROUP]
+        input_size = self.dataset.group_name_to_n_components[self.dataset.input_group]
         r = self.n_replicates
         output_differences = [
             output_data[i + 1 :: input_size + 1][:r]
@@ -426,13 +426,13 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
                 replicates = step != 0.0
                 n_moving_replicates = replicates.sum()
                 if not n_moving_replicates:
-                    LOGGER.warning(
+                    logger.warning(
                         "The input component %s does not vary in any OAT replicate; "
                         "its indices computed from the elementary effects are NaN.",
                         name,
                     )
                 elif n_moving_replicates < len(step):
-                    LOGGER.warning(
+                    logger.warning(
                         "%s of the %s OAT replicates "
                         "do not move the input component %s; "
                         "its indices computed from the elementary effects "
@@ -481,13 +481,13 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
 
         sizes = {
             name: len(
-                self.dataset.get_variable_components(self.dataset.INPUT_GROUP, name)
+                self.dataset.get_variable_components(self.dataset.input_group, name)
             )
             for name in self._input_names
         }
         output_sizes = {
             name: len(
-                self.dataset.get_variable_components(self.dataset.OUTPUT_GROUP, name)
+                self.dataset.get_variable_components(self.dataset.output_group, name)
             )
             for name in output_names
         }
@@ -497,7 +497,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
             name: [
                 self.dataset
                 .get_view(
-                    group_names=self.dataset.OUTPUT_GROUP,
+                    group_names=self.dataset.output_group,
                     variable_names=name,
                     components=i,
                 )

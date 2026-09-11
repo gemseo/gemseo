@@ -39,10 +39,10 @@ from gemseo.space.design import DesignSpace
 if TYPE_CHECKING:
     from gemseo.dataset.dataset import Dataset
 
-LEARNING_SIZE = 9
+learning_size = 9
 
-INPUT_VALUE = {"x_1": array([1]), "x_2": array([2])}
-INPUT_VALUES = {"x_1": array([[1], [0], [3]]), "x_2": array([[2], [1], [1]])}
+input_value = {"x_1": array([1]), "x_2": array([2])}
+input_values = {"x_1": array([[1], [0], [3]]), "x_2": array([[2], [1], [1]])}
 
 
 @pytest.fixture
@@ -55,7 +55,7 @@ def dataset() -> Dataset:
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y_1")
-    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=learning_size))
     return discipline.cache.to_dataset("dataset_name")
 
 
@@ -88,14 +88,14 @@ def test_learn(dataset) -> None:
     model_ = RandomForestRegressor(dataset)
     model_.learn()
     assert model_.algo is not None
-    assert model_.SHORT_NAME == "RF"
-    assert model_.LIBRARY == "scikit-learn"
+    assert model_.short_name == "RF"
+    assert model_.library == "scikit-learn"
 
 
 def test_prediction(model) -> None:
     """Test prediction."""
-    prediction = model.predict(INPUT_VALUE)
-    predictions = model.predict(INPUT_VALUES)
+    prediction = model.predict(input_value)
+    predictions = model.predict(input_values)
     assert isinstance(prediction, dict)
     assert isinstance(predictions, dict)
     assert "y_1" in prediction
@@ -112,8 +112,8 @@ def test_prediction(model) -> None:
 
 def test_model_1d_output(model_1d_output) -> None:
     """Test the case where n_outputs=1, a particular case for random forest."""
-    prediction = model_1d_output.predict(INPUT_VALUE)
-    predictions = model_1d_output.predict(INPUT_VALUES)
+    prediction = model_1d_output.predict(input_value)
+    predictions = model_1d_output.predict(input_values)
     assert isinstance(prediction, dict)
     assert isinstance(predictions, dict)
     assert "y_1" in prediction

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
@@ -32,8 +33,8 @@ if TYPE_CHECKING:
 class VariableFactory(BaseFactory[BaseVariable]):
     """A factory of variables."""
 
-    _CLASS = BaseVariable
-    _PACKAGE_NAMES = ("gemseo.space.variable",)
+    _class: ClassVar[type[BaseVariable]] = BaseVariable
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.space.variable",)
 
     __data_type_to_class_name: dict[DataType, str]
     """The map from a data type to the name of the class pinning it."""
@@ -121,5 +122,5 @@ class VariableFactory(BaseFactory[BaseVariable]):
         self.__data_type_to_class_name = {}
 
 
-VARIABLE_FACTORY: Final[VariableFactory] = VariableFactory()
+variable_factory: Final[VariableFactory] = VariableFactory()
 """The factory for `Variable` objects."""

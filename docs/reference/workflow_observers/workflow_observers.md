@@ -65,7 +65,7 @@ Base implementation providing:
 
 - Lifecycle management (`start()`, `end()`)
 - Integration with the observer tree
-- Processor delegation via `DMProcessorFactory` (module singleton `DM_PROCESSOR_FACTORY`)
+- Processor delegation via `DMProcessorFactory` (module singleton `dm_processor_factory`)
 - Status tracking (`Status` dataclass)
 
 Also defined in `base_observer.py`:

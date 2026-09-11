@@ -33,7 +33,7 @@ from genson.schema.strategies import Object
 from numpy import float64
 from numpy import int64
 
-from gemseo.core.grammar._util import NOT_IN_THE_GRAMMAR_MESSAGE
+from gemseo.core.grammar._util import not_in_the_grammar_message
 from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
@@ -213,7 +213,7 @@ class MutableMappingSchemaBuilder(
         """
         for name in names:
             if name not in self.properties:
-                msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
+                msg = not_in_the_grammar_message.format(name)
                 raise KeyError(msg)
 
     def add_schema(self, schema: Schema, update: bool) -> None:

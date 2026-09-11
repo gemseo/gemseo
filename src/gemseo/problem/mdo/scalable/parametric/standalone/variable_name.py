@@ -23,31 +23,31 @@ from __future__ import annotations
 
 from typing import Final
 
-SHARED_DESIGN_VARIABLE_NAME: Final[str] = "x_0"
+shared_design_variable_name: Final[str] = "x_0"
 """The name of the shared design variables."""
 
-OBJECTIVE_NAME: Final[str] = "f"
+objective_name: Final[str] = "f"
 """The name of the objective."""
 
-LOCAL_DESIGN_VARIABLE_BASE_NAME: Final[str] = "x"
+local_design_variable_base_name: Final[str] = "x"
 """The base name of a design variable.
 
 To be suffixed by the index of the corresponding scalable discipline, e.g. `"x_3"`.
 """
 
-UNCERTAIN_VARIABLE_BASE_NAME: Final[str] = "u"
+uncertain_variable_base_name: Final[str] = "u"
 """The base name of an uncertain variable.
 
 To be suffixed by the index of the corresponding scalable discipline, e.g. `"u_3"`.
 """
 
-CONSTRAINT_VARIABLE_BASE_NAME: Final[str] = "c"
+constraint_variable_base_name: Final[str] = "c"
 """The base name of a constraint.
 
 To be suffixed by the index of the corresponding scalable discipline, e.g. `"c_3"`.
 """
 
-COUPLING_VARIABLE_BASE_NAME: Final[str] = "y"
+coupling_variable_base_name: Final[str] = "y"
 """The base name of a coupling variable.
 
 To be suffixed by the index of the corresponding scalable discipline, e.g. `"y_3"`.
@@ -63,7 +63,7 @@ def get_u_local_name(index: int) -> str:
     Returns:
         The name of the uncertain variable specific to the scalable discipline.
     """
-    return __compute_name(UNCERTAIN_VARIABLE_BASE_NAME, index)
+    return __compute_name(uncertain_variable_base_name, index)
 
 
 def get_x_local_name(index: int) -> str:
@@ -75,7 +75,7 @@ def get_x_local_name(index: int) -> str:
     Returns:
         The name of the design variable specific to the scalable discipline.
     """
-    return __compute_name(LOCAL_DESIGN_VARIABLE_BASE_NAME, index)
+    return __compute_name(local_design_variable_base_name, index)
 
 
 def get_coupling_name(index: int) -> str:
@@ -87,7 +87,7 @@ def get_coupling_name(index: int) -> str:
     Returns:
         The name of the coupling variable outputted by the scalable discipline.
     """
-    return __compute_name(COUPLING_VARIABLE_BASE_NAME, index)
+    return __compute_name(coupling_variable_base_name, index)
 
 
 def get_constraint_name(index: int) -> str:
@@ -99,7 +99,7 @@ def get_constraint_name(index: int) -> str:
     Returns:
         The name of the constraint specific to the scalable discipline.
     """
-    return __compute_name(CONSTRAINT_VARIABLE_BASE_NAME, index)
+    return __compute_name(constraint_variable_base_name, index)
 
 
 def __compute_name(base_name: str, index: int) -> str:

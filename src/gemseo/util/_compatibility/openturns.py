@@ -30,23 +30,23 @@ if TYPE_CHECKING:
     from openturns import Sample
     from packaging.version import Version
 
-OT_VERSION: Final[Version] = parse_version(version("openturns"))
+ot_version: Final[Version] = parse_version(version("openturns"))
 
-OT_1_27: Final[Version] = parse_version("1.27")
+ot_1_27: Final[Version] = parse_version("1.27")
 
-if OT_VERSION >= OT_1_27:
+if ot_version >= ot_1_27:
     from openturns import GaussianProcessConditionalCovariance
     from openturns import GaussianProcessFitter
     from openturns import GaussianProcessRegression
     from openturns import GaussianProcessRegressionResult as OTGPRResult
 
-    GPR_ALGO_CLASS = GaussianProcessFitter
+    gpr_algo_class = GaussianProcessFitter
     """The OpenTURNS class fitting the covariance model of a Gaussian process."""
 
-    GPR_CONDITIONAL_COVARIANCE_CLASS = GaussianProcessConditionalCovariance
+    gpr_conditional_covariance_class = GaussianProcessConditionalCovariance
     """The OpenTURNS class owning `getConditionalCovariance`."""
 
-    LINEAR_ALGEBRA_RESOURCE_KEY = "GaussianProcessFitter-LinearAlgebra"
+    linear_algebra_resource_key = "GaussianProcessFitter-LinearAlgebra"
     """The `ResourceMap` key setting the linear algebra method of the GP fitter."""
 
     class GaussianProcessRegressionResult:
@@ -135,13 +135,13 @@ else:
     from openturns import KrigingAlgorithm
     from openturns import KrigingResult
 
-    GPR_ALGO_CLASS = KrigingAlgorithm
+    gpr_algo_class = KrigingAlgorithm
     """The OpenTURNS class fitting the covariance model of a Gaussian process."""
 
-    GPR_CONDITIONAL_COVARIANCE_CLASS = KrigingResult
+    gpr_conditional_covariance_class = KrigingResult
     """The OpenTURNS class owning `getConditionalCovariance`."""
 
-    LINEAR_ALGEBRA_RESOURCE_KEY = "KrigingAlgorithm-LinearAlgebra"
+    linear_algebra_resource_key = "KrigingAlgorithm-LinearAlgebra"
     """The `ResourceMap` key setting the linear algebra method of the GP fitter."""
 
     def build_gpr_result(algo: KrigingAlgorithm) -> KrigingResult:  # noqa: D103

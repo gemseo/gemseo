@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
+from typing import Final
 
 import numpy as np
 from docstring_inheritance import GoogleDocstringInheritanceMeta
@@ -75,7 +76,7 @@ if TYPE_CHECKING:
     from gemseo.dataset.optimization_dataset import OptimizationDataset
     from gemseo.space.design import DesignSpace
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
@@ -169,7 +170,7 @@ class HessianApproximation(metaclass=GoogleDocstringInheritanceMeta):
             )
         else:
             x_hist = self.history.get_view(
-                group_names=self.history.DESIGN_GROUP
+                group_names=self.history.design_group
             ).to_numpy()
             grad_name = Database.get_gradient_name(funcname)
             func_components = self.history.variable_name_to_n_components[funcname]
@@ -856,7 +857,7 @@ class SR1Approx(HessianApproximation):
        [SR1 algorithm.](https://en.wikipedia.org/wiki/Symmetric_rank-one)
     """
 
-    EPSILON = 1e-8
+    epsilon: Final[float] = 1e-8
 
     @staticmethod
     def iterate_approximation(  # noqa:D102
@@ -867,10 +868,10 @@ class SR1Approx(HessianApproximation):
     ) -> None:
         residuals = y_k - b_mat @ s_k
         denominator = residuals.T @ s_k
-        if abs(denominator) > SR1Approx.EPSILON * norm(s_k) * norm(residuals):
+        if abs(denominator) > SR1Approx.epsilon * norm(s_k) * norm(residuals):
             b_mat[:, :] = b_mat + (residuals / denominator) @ residuals.T
         else:
-            LOGGER.debug(
+            logger.debug(
                 "Denominator of SR1 update is too small, update skipped %s.",
                 denominator,
             )
@@ -944,9 +945,9 @@ class LSTSQApprox(HessianApproximation):
             return err
 
         x_0 = zeros(input_dimension * input_dimension)
-        LOGGER.debug("Start least squares problem..")
+        logger.debug("Start least squares problem..")
         x_opt, ier = leastsq(compute_error, x0=x_0)  # , cov_x, infodict, mesg, ier
-        LOGGER.debug("End least squares, msg=%s", ier)
+        logger.debug("End least squares, msg=%s", ier)
         hessian = y_to_b(x_opt)
 
         if return_x_grad:

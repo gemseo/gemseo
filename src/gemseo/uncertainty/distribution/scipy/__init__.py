@@ -50,7 +50,7 @@ are documented in such a way that a newbie could easily apprehend them.
 An
 [SPDistribution][gemseo.uncertainty.distribution.scipy.distribution.SPDistribution]
 has a
-[JOINT_DISTRIBUTION_CLASS][gemseo.uncertainty.distribution.scipy.distribution.SPDistribution.JOINT_DISTRIBUTION_CLASS]
+[joint_distribution_class][gemseo.uncertainty.distribution.scipy.distribution.SPDistribution.joint_distribution_class]
 which is a class to build a joint probability distribution
 related to given random variables from a list of
 [SPDistribution][gemseo.uncertainty.distribution.scipy.distribution.SPDistribution]

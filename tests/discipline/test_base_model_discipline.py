@@ -27,7 +27,7 @@ from pydantic import BaseModel
 from gemseo.discipline.base_model_discipline import BaseModelDiscipline
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Y(BaseModel):
@@ -75,7 +75,7 @@ class Sellar1Pydantic(BaseModelDiscipline):
         y_2 = sellar_model.y.y_2
         if self.__use_input_dummy_field:
             dummy_input = sellar_model.dummy_field
-            LOGGER.info("Dummy input: %s", dummy_input)
+            logger.info("Dummy input: %s", dummy_input)
 
         sellar_model.y.y_1 = array([(z[0] ** 2 + z[1] + x[0] - 0.2 * y_2[0]) ** 0.5])
         if self.__use_output_dummy_field:

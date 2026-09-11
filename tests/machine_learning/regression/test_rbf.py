@@ -42,10 +42,10 @@ from gemseo.util.testing.helper import assert_exception
 if TYPE_CHECKING:
     from gemseo.dataset.dataset import Dataset
 
-LEARNING_SIZE = 9
+learning_size = 9
 
-INPUT_VALUE = {"x_1": array([1.0]), "x_2": array([2.0])}
-INPUT_VALUES = {
+input_value = {"x_1": array([1.0]), "x_2": array([2.0])}
+input_values = {
     "x_1": array([[0.0], [0.0], [1.0], [2.0]]),
     "x_2": array([[0.0], [1.0], [2.0], [2.0]]),
 }
@@ -65,7 +65,7 @@ def dataset() -> Dataset:
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y_1")
-    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=learning_size))
     return discipline.cache.to_dataset("dataset_name")
 
 
@@ -96,8 +96,8 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     model_ = RBFRegressor(dataset)
     assert model_.algo is None
-    assert model_.SHORT_NAME == "RBF"
-    assert model_.LIBRARY == "SciPy"
+    assert model_.short_name == "RBF"
+    assert model_.library == "SciPy"
 
 
 def test_jacobian_not_implemented(dataset, snapshot) -> None:
@@ -105,7 +105,7 @@ def test_jacobian_not_implemented(dataset, snapshot) -> None:
     rbf = RBFRegressor(dataset, RBFRegressor_Settings(neighbors=3))
     rbf.learn()
     with assert_exception(NotImplementedError, snapshot):
-        rbf.predict_jacobian(INPUT_VALUE)
+        rbf.predict_jacobian(input_value)
 
 
 def test_learn(dataset) -> None:
@@ -157,15 +157,15 @@ def test_degree(dataset) -> None:
     model_ = RBFRegressor(dataset, RBFRegressor_Settings(degree=-1))
     model_.learn()
     assert model_.algo.powers.size == 0
-    assert model_.predict(INPUT_VALUE)["y_1"].shape == (1,)
-    assert model_.predict_jacobian(INPUT_VALUE)["y_1"]["x_1"].shape == (1, 1)
+    assert model_.predict(input_value)["y_1"].shape == (1,)
+    assert model_.predict_jacobian(input_value)["y_1"]["x_1"].shape == (1, 1)
 
 
 def test_neighbors(dataset) -> None:
     """Test the prediction of a local interpolant."""
     model_ = RBFRegressor(dataset, RBFRegressor_Settings(neighbors=5))
     model_.learn()
-    prediction = model_.predict(INPUT_VALUE)
+    prediction = model_.predict(input_value)
     assert allclose(prediction["y_1"], -prediction["y_2"])
 
 
@@ -176,8 +176,8 @@ def test_kernel(model) -> None:
 
 def test_prediction(model) -> None:
     """Test prediction."""
-    prediction = model.predict(INPUT_VALUE)
-    predictions = model.predict(INPUT_VALUES)
+    prediction = model.predict(input_value)
+    predictions = model.predict(input_values)
     assert isinstance(prediction, dict)
     assert isinstance(predictions, dict)
     assert allclose(prediction["y_1"], -prediction["y_2"])
@@ -188,8 +188,8 @@ def test_prediction(model) -> None:
 
 def test_pred_single_out(model_with_1d_output) -> None:
     """Test predict with one output variable."""
-    prediction = model_with_1d_output.predict(INPUT_VALUE)
-    predictions = model_with_1d_output.predict(INPUT_VALUES)
+    prediction = model_with_1d_output.predict(input_value)
+    predictions = model_with_1d_output.predict(input_values)
     assert isinstance(prediction, dict)
     assert isinstance(predictions, dict)
     prediction = model_with_1d_output.predict(array([1, 1]))
@@ -203,8 +203,8 @@ def test_predict_jacobian(dataset, kernel) -> None:
     """Test prediction."""
     model_ = RBFRegressor(dataset, RBFRegressor_Settings(kernel=kernel))
     model_.learn()
-    jacobian = model_.predict_jacobian(INPUT_VALUE)
-    jacobians = model_.predict_jacobian(INPUT_VALUES)
+    jacobian = model_.predict_jacobian(input_value)
+    jacobians = model_.predict_jacobian(input_values)
     assert isinstance(jacobian, dict)
     assert isinstance(jacobians, dict)
     assert allclose(jacobian["y_1"]["x_1"], -jacobian["y_2"]["x_1"])

@@ -26,7 +26,7 @@ from gemseo.util.typing import StrKeyMapping
 
 
 class ConstraintRadar_Settings(BasePostSettings):  # noqa: D101, N801
-    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (6.4, 4.8)}
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (6.4, 4.8)}
     iteration: int | None = Field(
         default=None,
         description=r"Either an iteration in $\{-N,\ldots,-1,1,\ldots,N\}$ or "

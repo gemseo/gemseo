@@ -29,8 +29,8 @@ from scipy.sparse import spmatrix
 if TYPE_CHECKING:
     from packaging.version import Version
 
-SCIPY_VERSION: Final[Version] = parse_version(version("scipy"))
-SCIPY_GREATER_THAN_1_16: Final[bool] = parse_version("1.16") <= SCIPY_VERSION
+scipy_version: Final[Version] = parse_version(version("scipy"))
+scipy_greater_than_1_16: Final[bool] = parse_version("1.16") <= scipy_version
 
 
 sparse_classes = (spmatrix, sparray)

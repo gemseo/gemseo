@@ -40,9 +40,9 @@ from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.doe.core.base_doe_settings import BaseDOESettings
 from gemseo.doe.factory import DOELibraryFactory
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.formulation.mdf_settings import MDF_Settings
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.discipline import flatten_processes
 from gemseo.util.discipline import get_all_outputs
 from gemseo.util.discipline import update_default_input_values
@@ -70,7 +70,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrPath
     from gemseo.util.xdsm.xdsm import XDSM
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class _ScenarioProcessFlow(BaseProcessFlow):
@@ -115,7 +115,7 @@ class EvaluationScenario(BaseMonitoredProcess):
     that is passed at instantiation.
     """
 
-    _ALGO_FACTORY_CLASS: ClassVar[type[DriverLibraryFactory]] = DOELibraryFactory
+    _algo_factory_class: ClassVar[type[DriverLibraryFactory]] = DOELibraryFactory
     """The type of algorithm factory."""
 
     _algo_factory: BaseAlgorithmFactory
@@ -133,7 +133,7 @@ class EvaluationScenario(BaseMonitoredProcess):
     _execution_result: Any
     """The result of the last execution."""
 
-    _formulation_factory: ClassVar[MDOFormulationFactory] = MDO_FORMULATION_FACTORY
+    _formulation_factory: ClassVar[MDOFormulationFactory] = mdo_formulation_factory
     """The factory of MDO formulations."""
 
     formulation: BaseFormulation
@@ -156,7 +156,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         design_space: DesignSpace,
         name: str = "",
         formulation_settings: BaseFormulationSettings | None = None,
-        default_input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        default_input_data: StrKeyMapping = read_only_empty_dict,
     ) -> None:
         """
         Args:
@@ -174,9 +174,9 @@ class EvaluationScenario(BaseMonitoredProcess):
                 This argument allows to change the values of other input variables.
         """  # noqa: D205, D212
         super().__init__(name)
-        # TODO: replace by self._algo_factory = self._ALGO_FACTORY_CLASS(use_cache=True)
+        # TODO: replace by self._algo_factory = self._algo_factory_class(use_cache=True)
         # once MR 2434 has been merged.
-        func = self._ALGO_FACTORY_CLASS
+        func = self._algo_factory_class
         kwargs = (
             {"use_cache": True}
             if "use_cache" in inspect.signature(func).parameters
@@ -376,9 +376,9 @@ class EvaluationScenario(BaseMonitoredProcess):
     def print_execution_metrics(self) -> None:
         """Print the total number of executions and cumulated runtime by discipline."""
         if ExecutionStatistics.is_enabled:
-            LOGGER.info("%s", self.__get_execution_metrics())
+            logger.info("%s", self.__get_execution_metrics())
         else:
-            LOGGER.info("The discipline counters are disabled.")
+            logger.info("The discipline counters are disabled.")
 
     def execute(
         self,
@@ -398,8 +398,8 @@ class EvaluationScenario(BaseMonitoredProcess):
         Raises:
             ValueError: If the algorithm settings are not defined.
         """
-        LOGGER.info("*** Start %s execution ***", self.name)
-        LOGGER.info("%r", self)
+        logger.info("*** Start %s execution ***", self.name)
+        logger.info("%r", self)
         initial_duration = self.execution_statistics.duration
 
         if algorithm_settings is not None:
@@ -450,9 +450,9 @@ class EvaluationScenario(BaseMonitoredProcess):
         execution_statistics = self.execution_statistics
         if execution_statistics.is_enabled:
             time_ = timedelta(seconds=execution_statistics.duration - initial_duration)
-            LOGGER.info("*** End %s execution (time: %s) ***", self.name, time_)
+            logger.info("*** End %s execution (time: %s) ***", self.name, time_)
         else:
-            LOGGER.info("*** End %s execution ***", self.name)
+            logger.info("*** End %s execution ***", self.name)
 
         return self._execution_result
 
@@ -513,7 +513,7 @@ class EvaluationScenario(BaseMonitoredProcess):
                 )
                 raise ValueError(msg)
             if erase:
-                LOGGER.warning(
+                logger.warning(
                     "Erasing evaluation backup in %s",
                     self._backup_file_path,
                 )

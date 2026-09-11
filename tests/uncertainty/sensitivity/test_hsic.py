@@ -114,7 +114,7 @@ def significant_variables(analysis_type) -> dict[str, list[dict[str, IntegerArra
 def openturns_hsic_indices(samples, analysis_type) -> HSICAnalysis.SensitivityIndices:
     """The HSIC and R2-HSIC indices calculated directly from OpenTURNS."""
     RandomGenerator.SetSeed(3)
-    input_samples = Sample(samples.get_view(group_names=samples.INPUT_GROUP).to_numpy())
+    input_samples = Sample(samples.get_view(group_names=samples.input_group).to_numpy())
     x1_covariance_model = SquaredExponential(1)
     x1_covariance_model.setScale(
         input_samples.getMarginal(0).computeStandardDeviation()
@@ -126,7 +126,7 @@ def openturns_hsic_indices(samples, analysis_type) -> HSICAnalysis.SensitivityIn
     y1_samples = Sample(
         samples
         .get_view(
-            group_names=samples.OUTPUT_GROUP,
+            group_names=samples.output_group,
             variable_names="y1",
         )
         .to_numpy()
@@ -137,7 +137,7 @@ def openturns_hsic_indices(samples, analysis_type) -> HSICAnalysis.SensitivityIn
     y2_samples = Sample(
         samples
         .get_view(
-            group_names=samples.OUTPUT_GROUP,
+            group_names=samples.output_group,
             variable_names="y2",
         )
         .to_numpy()

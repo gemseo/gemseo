@@ -36,15 +36,15 @@ class Data(NamedTuple):
     invalid: tuple
 
 
-INVALID_DATA = ([0], [0.0], 0, 0.0, "0", False)
+invalid_data = ([0], [0.0], 0, 0.0, "0", False)
 
 # Test data with type annotations bound to valid and invalid data.
 # For NDArrayPydantic[str_], valid data includes arrays with different string
 # lengths (e.g. <U1, <U11) — the validator ignores string length in the dtype.
-TYPES_TO_VALUES = {
-    _NDArrayPydantic: Data(array([0]), INVALID_DATA),
-    NDArrayPydantic: Data(array([0]), INVALID_DATA),
-    NDArrayPydantic[Any]: Data(array([0]), INVALID_DATA),
+types_to_values = {
+    _NDArrayPydantic: Data(array([0]), invalid_data),
+    NDArrayPydantic: Data(array([0]), invalid_data),
+    NDArrayPydantic[Any]: Data(array([0]), invalid_data),
     NDArrayPydantic[int]: Data(
         array([0], dtype=int),
         (
@@ -68,9 +68,9 @@ TYPES_TO_VALUES = {
         ),
     ),
     # The following verifies Unions, Callable is just not a type of the data item.
-    _NDArrayPydantic | Callable: Data(array([0]), INVALID_DATA),
-    NDArrayPydantic | Callable: Data(array([0]), INVALID_DATA),
-    NDArrayPydantic[Any] | Callable: Data(array([0]), INVALID_DATA),
+    _NDArrayPydantic | Callable: Data(array([0]), invalid_data),
+    NDArrayPydantic | Callable: Data(array([0]), invalid_data),
+    NDArrayPydantic[Any] | Callable: Data(array([0]), invalid_data),
     NDArrayPydantic[int] | Callable: Data(
         array([0]),
         (
@@ -92,14 +92,14 @@ TYPES_TO_VALUES = {
 }
 
 
-@pytest.mark.parametrize(("type_", "data"), TYPES_TO_VALUES.items())
+@pytest.mark.parametrize(("type_", "data"), types_to_values.items())
 def test_valid_data(type_, data) -> None:
     """Verify valid models built from annotate or the base class."""
     model = create_model("Model", name=(type_, ...))
     model(name=data.valid)
 
 
-@pytest.mark.parametrize(("type_", "data"), TYPES_TO_VALUES.items())
+@pytest.mark.parametrize(("type_", "data"), types_to_values.items())
 def test_invalid_data(type_, data) -> None:
     """Verify invalid models built from annotate or the base class."""
     model = create_model("Model", name=(type_, ...))

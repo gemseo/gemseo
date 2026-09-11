@@ -37,7 +37,7 @@ from gemseo.dataset.dataset import Dataset
 from gemseo.machine_learning.core.model.base_ml_model_settings import TransformerType
 from gemseo.machine_learning.transformer.core.base_transformer import BaseTransformer
 from gemseo.machine_learning.transformer.core.base_transformer import TransformerFactory
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 from gemseo.util.pydantic import create_model
 from gemseo.util.string import MultiLineString
@@ -104,18 +104,18 @@ class BaseMLModel(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
     algo: Any
     """The interfaced machine learning model, if any."""
 
-    SHORT_NAME: ClassVar[str] = "MLModel"
+    short_name: ClassVar[str] = "MLModel"
     """The short name of the machine learning model, often an acronym.
 
     Typically used for composite names, e.g.
-    `f"{model.SHORT_NAME}_{dataset.name}"` or
-    `f"{model.SHORT_NAME}_{discipline.name}"`.
+    `f"{model.short_name}_{dataset.name}"` or
+    `f"{model.short_name}_{discipline.name}"`.
     """
 
-    LIBRARY: ClassVar[str] = ""
+    library: ClassVar[str] = ""
     """The name of the library of the wrapped machine learning model."""
 
-    DEFAULT_TRANSFORMER: DefaultTransformerType = READ_ONLY_EMPTY_DICT
+    default_transformer: DefaultTransformerType = read_only_empty_dict
     """The default transformer for the input and output data, if any."""
 
     DataFormatters: ClassVar[type[BaseDataFormatters]]
@@ -248,8 +248,8 @@ class BaseMLModel(Serializable, metaclass=ABCGoogleDocstringInheritanceMeta):
             pretty_str(self._settings.model_dump(), use_and=False),
         )
         mls.indent()
-        if self.LIBRARY:
-            mls.add("based on the {} library", self.LIBRARY)
+        if self.library:
+            mls.add("based on the {} library", self.library)
         if self.is_trained:
             mls.add(
                 "built from {} learning samples", len(self._learning_samples_indices)

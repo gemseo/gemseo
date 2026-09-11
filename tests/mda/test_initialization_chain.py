@@ -34,7 +34,7 @@ from gemseo.util.testing.helper import assert_exception
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 
-DISC_DESCR_1 = [
+disc_descr_1 = [
     ("B", ["d", "c"], ["e"]),
     ("C", ["e", "g"], ["f"]),
     ("A", ["b", "f"], ["c"]),
@@ -48,7 +48,7 @@ def disciplines1() -> list[Discipline]:
     Returns:
          The disciplines.
     """
-    disciplines = create_disciplines_from_desc(DISC_DESCR_1)
+    disciplines = create_disciplines_from_desc(disc_descr_1)
     # Delete c default input of B
     disciplines[0].default_input_data.pop("c")
     # Delete e default input of E

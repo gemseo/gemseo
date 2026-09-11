@@ -56,9 +56,9 @@ class ComplexStep(BaseGradientApproximator):
         ACM Transactions on Mathematical Software, 29(3):245-262, 2003.
     """  # noqa: E501
 
-    _APPROXIMATION_MODE = ApproximationMode.COMPLEX_STEP
+    _approximation_mode: ClassVar[ApproximationMode] = ApproximationMode.COMPLEX_STEP
 
-    _DEFAULT_STEP: ClassVar[float] = 1e-20
+    _default_step: ClassVar[float] = 1e-20
 
     @BaseGradientApproximator.step.setter
     def step(self, value) -> None:  # noqa:D102

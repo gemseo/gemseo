@@ -25,6 +25,7 @@ import collections
 from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 from numpy import array
 from numpy import concatenate
@@ -40,7 +41,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
 
 
-STRING_SEPARATOR = "#&#"
+string_separator: Final[str] = "#&#"
 
 
 def concatenate_dict_of_arrays_to_array(
@@ -159,7 +160,7 @@ def deepcopy_dict_of_arrays(
 
 def nest_flat_bilevel_dict(
     flat_dict: StrKeyMapping,
-    separator: str = STRING_SEPARATOR,
+    separator: str = string_separator,
 ) -> StrKeyMapping:
     """Nest a flat bi-level dictionary where sub-dictionaries will have the same keys.
 
@@ -186,7 +187,7 @@ def nest_flat_bilevel_dict(
 def nest_flat_dict(
     flat_dict: StrKeyMapping,
     prefix: str = "",
-    separator: str = STRING_SEPARATOR,
+    separator: str = string_separator,
 ) -> StrKeyMapping:
     """Nest a flat dictionary.
 
@@ -233,7 +234,7 @@ def __nest_flat_mapping(
 
 def flatten_nested_bilevel_dict(
     nested_dict: StrKeyMapping,
-    separator: str = STRING_SEPARATOR,
+    separator: str = string_separator,
 ) -> StrKeyMapping:
     """Flatten a nested bi-level dictionary whose sub-dictionaries have the same keys.
 
@@ -257,7 +258,7 @@ def flatten_nested_bilevel_dict(
 def flatten_nested_dict(
     nested_dict: StrKeyMapping,
     prefix: str = "",
-    separator: str = STRING_SEPARATOR,
+    separator: str = string_separator,
 ) -> StrKeyMapping:
     """Flatten a nested dictionary.
 

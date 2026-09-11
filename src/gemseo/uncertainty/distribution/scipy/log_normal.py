@@ -61,9 +61,9 @@ class SPLogNormalDistribution(SPDistribution):
                     "scale": exp(log_mu),
                 },
                 standard_parameters={
-                    self._MU: settings.mu,
-                    self._SIGMA: settings.sigma,
-                    self._LOC: settings.location,
+                    self._mu: settings.mu,
+                    self._sigma: settings.sigma,
+                    self._loc: settings.location,
                 },
             )
         )

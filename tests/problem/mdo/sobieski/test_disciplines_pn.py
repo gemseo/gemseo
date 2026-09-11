@@ -42,8 +42,8 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
-FACTORS = [0.5, 1.0, 1.5]
-DECIMAL = 5
+factors = [0.5, 1.0, 1.5]
+decimal = 5
 
 
 @pytest.mark.parametrize("dtype", ["float64", "complex128"])
@@ -93,7 +93,7 @@ def compute_output_data(discipline: Discipline, factor: float) -> dict[str, ndar
     return discipline.io.get_output_data()
 
 
-@pytest.mark.parametrize("factor", FACTORS)
+@pytest.mark.parametrize("factor", factors)
 def test_mission_execute(factor) -> None:
     """Check the output data of SobieskiMissionPhysicalNaming."""
     output_data = compute_output_data(SobieskiMission(), factor)
@@ -103,7 +103,7 @@ def test_mission_execute(factor) -> None:
     assert_equal(output_data_pn["range"], output_data["y_4"])
 
 
-@pytest.mark.parametrize("factor", FACTORS)
+@pytest.mark.parametrize("factor", factors)
 def test_structure_execute(factor) -> None:
     """Check the output data of SobieskiStructurePhysicalNaming."""
     output_data = compute_output_data(SobieskiStructure(), factor)
@@ -119,7 +119,7 @@ def test_structure_execute(factor) -> None:
     assert_equal(output_data_pn["twist_c"], output_data["g_1"][5:7])
 
 
-@pytest.mark.parametrize("factor", FACTORS)
+@pytest.mark.parametrize("factor", factors)
 def test_aerodynamics_execute(factor) -> None:
     """Check the output data of SobieskiAerodynamicsPhysicalNaming."""
     output_data = compute_output_data(SobieskiAerodynamics(), factor)
@@ -133,7 +133,7 @@ def test_aerodynamics_execute(factor) -> None:
     assert_equal(output_data_pn["dp_dx"], output_data["g_2"])
 
 
-@pytest.mark.parametrize("factor", FACTORS)
+@pytest.mark.parametrize("factor", factors)
 def test_propulsion_execute(factor) -> None:
     """Check the output data of SobieskiPropulsionPhysicalNaming."""
     output_data = compute_output_data(SobieskiPropulsion(), factor)
@@ -153,7 +153,7 @@ def test_propulsion_execute(factor) -> None:
     "discipline_class",
     [SobieskiMission, SobieskiAerodynamics, SobieskiStructure, SobieskiPropulsion],
 )
-@pytest.mark.parametrize("factor", FACTORS)
+@pytest.mark.parametrize("factor", factors)
 def test_mission_linearize(discipline_class, factor) -> None:
     """Check the Jacobian data of the different disciplines."""
     discipline = discipline_class.create_with_physical_naming(dtype="complex128")
@@ -168,7 +168,7 @@ def mda():
     return MDAGaussSeidel(create_disciplines_with_physical_naming())
 
 
-@pytest.mark.parametrize("factor", FACTORS)
+@pytest.mark.parametrize("factor", factors)
 def test_coupling(factor, mda) -> None:
     """Check the MDA results of the four disciplines."""
     design_space = create_design_space(physical_naming=True)

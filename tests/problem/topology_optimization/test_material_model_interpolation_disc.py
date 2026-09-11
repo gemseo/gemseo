@@ -26,7 +26,7 @@ from gemseo.problem.topology_optimization.material_model_interpolation_disc impo
 )
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
-THRESHOLD = 1e-7
+threshold = 1e-7
 
 
 @pytest.fixture(scope="module")
@@ -42,7 +42,7 @@ def test_run_e(material_model) -> None:
     output_data = material_model.execute(
         input_data={"xPhys": ones(material_model.N_elements)}
     )
-    assert all(1.0 - THRESHOLD <= item <= 1.0 + THRESHOLD for item in output_data["E"])
+    assert all(1.0 - threshold <= item <= 1.0 + threshold for item in output_data["E"])
 
 
 def test_run_rho(material_model) -> None:
@@ -51,7 +51,7 @@ def test_run_rho(material_model) -> None:
         input_data={"xPhys": ones(material_model.N_elements)}
     )
     assert all(
-        1.0 - THRESHOLD <= item <= 1.0 + THRESHOLD for item in output_data["rho"]
+        1.0 - threshold <= item <= 1.0 + threshold for item in output_data["rho"]
     )
 
 
@@ -60,7 +60,7 @@ def test_jacobian(material_model) -> None:
     checker = DisciplineJacobianChecker(material_model)
     assert checker.check(
         material_model.io.get_input_data(),
-        atol=THRESHOLD,
-        rtol=THRESHOLD,
+        atol=threshold,
+        rtol=threshold,
         step=None,
     )

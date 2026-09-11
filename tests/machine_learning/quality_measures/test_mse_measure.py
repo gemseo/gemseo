@@ -44,36 +44,36 @@ from ..core.test_base_ml_model import DummyMLModel
 if TYPE_CHECKING:
     from gemseo.dataset.dataset import Dataset
 
-MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
-MODEL.set_cache(MODEL.CacheType.MEMORY_FULL)
+model = AnalyticDiscipline({"y": "1+x+x**2"})
+model.set_cache(model.CacheType.MEMORY_FULL)
 
-TOL_DEG_1 = 0.03
-TOL_DEG_2 = 0.001
-ATOL = 1e-12
+tol_deg_1 = 0.03
+tol_deg_2 = 0.001
+atol = 1e-12
 
 
 @pytest.fixture
 def dataset() -> Dataset:
     """The dataset used to train the regression models."""
-    MODEL.cache.clear()
+    model.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = MDOScenario([MODEL], design_space)
+    scenario = MDOScenario([model], design_space)
     scenario.add_objective("y")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=20))
-    return MODEL.cache.to_dataset()
+    return model.cache.to_dataset()
 
 
 @pytest.fixture
 def dataset_test() -> Dataset:
     """The dataset used to test the performance of the regression models."""
-    MODEL.cache.clear()
+    model.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = MDOScenario([MODEL], design_space)
+    scenario = MDOScenario([model], design_space)
     scenario.add_objective("y")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=5))
-    return MODEL.cache.to_dataset()
+    return model.cache.to_dataset()
 
 
 def test_constructor(dataset) -> None:
@@ -91,7 +91,7 @@ def test_compute_learning_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = MSEMeasure(model)
     mse_train = measure.compute_learning_measure()
-    assert mse_train < TOL_DEG_2
+    assert mse_train < tol_deg_2
     measure = RMSEMeasure(model)
     rmse_train = measure.compute_learning_measure()
     assert abs(mse_train**0.5 - rmse_train) < 1e-6
@@ -99,7 +99,7 @@ def test_compute_learning_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = MSEMeasure(model)
     mse_train = measure.compute_learning_measure()
-    assert mse_train < TOL_DEG_1
+    assert mse_train < tol_deg_1
 
     model = PolynomialRegressor(
         dataset,
@@ -109,21 +109,21 @@ def test_compute_learning_measure(dataset) -> None:
     )
     measure = MSEMeasure(model)
     mse_train = measure.compute_learning_measure()
-    assert mse_train < TOL_DEG_2
+    assert mse_train < tol_deg_2
 
 
 def test_compute_test_measure(dataset, dataset_test) -> None:
     """Test evaluate test method."""
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     mse_test = MSEMeasure(model).compute_test_measure(dataset_test)
-    assert mse_test < TOL_DEG_2
+    assert mse_test < tol_deg_2
     assert (
         abs(mse_test**0.5 - RMSEMeasure(model).compute_test_measure(dataset_test))
         < 1e-6
     )
 
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
-    assert MSEMeasure(model).compute_test_measure(dataset_test) < TOL_DEG_1
+    assert MSEMeasure(model).compute_test_measure(dataset_test) < tol_deg_1
 
     model = PolynomialRegressor(
         dataset,
@@ -131,7 +131,7 @@ def test_compute_test_measure(dataset, dataset_test) -> None:
             degree=2, transformer={"inputs": MinMaxScaler(), "outputs": MinMaxScaler()}
         ),
     )
-    assert MSEMeasure(model).compute_test_measure(test_data=dataset_test) < TOL_DEG_2
+    assert MSEMeasure(model).compute_test_measure(test_data=dataset_test) < tol_deg_2
 
 
 def test_compute_leave_one_out_measure(dataset) -> None:
@@ -139,7 +139,7 @@ def test_compute_leave_one_out_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = MSEMeasure(model)
     mse_loo = measure.compute_leave_one_out_measure()
-    assert mse_loo < TOL_DEG_2
+    assert mse_loo < tol_deg_2
     measure = RMSEMeasure(model)
     rmse_loo = measure.compute_leave_one_out_measure()
     assert abs(mse_loo**0.5 - rmse_loo) < 1e-6
@@ -147,7 +147,7 @@ def test_compute_leave_one_out_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = MSEMeasure(model)
     mse_loo = measure.compute_leave_one_out_measure()
-    assert mse_loo < TOL_DEG_1
+    assert mse_loo < tol_deg_1
 
 
 def test_compute_cross_validation_measure(dataset) -> None:
@@ -155,7 +155,7 @@ def test_compute_cross_validation_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = MSEMeasure(model)
     mse_kfolds = measure.compute_cross_validation_measure()
-    assert mse_kfolds < TOL_DEG_2
+    assert mse_kfolds < tol_deg_2
     measure = RMSEMeasure(model)
     rmse_kfolds = measure.compute_cross_validation_measure()
     assert abs(mse_kfolds**0.5 - rmse_kfolds) < 1e-6
@@ -163,7 +163,7 @@ def test_compute_cross_validation_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = MSEMeasure(model)
     mse_kfolds = measure.compute_cross_validation_measure()
-    assert mse_kfolds < TOL_DEG_1
+    assert mse_kfolds < tol_deg_1
 
     model = PolynomialRegressor(
         dataset,
@@ -173,7 +173,7 @@ def test_compute_cross_validation_measure(dataset) -> None:
     )
     measure = MSEMeasure(model, fit_transformers=True)
     mse_kfolds = measure.compute_cross_validation_measure()
-    assert mse_kfolds < TOL_DEG_2
+    assert mse_kfolds < tol_deg_2
 
 
 def test_compute_bootstrap_measure(dataset) -> None:
@@ -181,7 +181,7 @@ def test_compute_bootstrap_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = MSEMeasure(model)
     mse_bootstrap = measure.compute_bootstrap_measure()
-    assert mse_bootstrap < TOL_DEG_2
+    assert mse_bootstrap < tol_deg_2
     measure = RMSEMeasure(model)
     rmse_bootstrap = measure.compute_bootstrap_measure()
     rmse_bootstrap_2 = measure.compute_bootstrap_measure(samples=list(range(20)))
@@ -191,7 +191,7 @@ def test_compute_bootstrap_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = MSEMeasure(model)
     mse_bootstrap = measure.compute_bootstrap_measure()
-    assert mse_bootstrap < TOL_DEG_1
+    assert mse_bootstrap < tol_deg_1
 
 
 @pytest.mark.parametrize(

@@ -128,7 +128,7 @@ def test_jacobi_sobieski() -> None:
     mda.execute()
     assert mda.residual_history[-1] < 1e-4
 
-    assert mda.io.output_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
+    assert mda.io.output_data[mda.normalized_residual_norm_name][0] < 1e-4
 
 
 def test_mda_jacobi_parallel() -> None:
@@ -154,7 +154,7 @@ def test_jacobi_sellar(sellar_with_2d_array, sellar_disciplines) -> None:
     mda.execute()
 
     assert mda.residual_history[-1] < 1e-4
-    assert mda.io.output_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-4
+    assert mda.io.output_data[mda.normalized_residual_norm_name][0] < 1e-4
 
 
 def test_expected_workflow() -> None:

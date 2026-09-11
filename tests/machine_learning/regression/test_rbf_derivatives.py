@@ -18,14 +18,14 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.machine_learning.regression.model._rbf_derivatives import KERNEL_DERIVATIVES
 from gemseo.machine_learning.regression.model._rbf_derivatives import (
     BaseKernelDerivative,
 )
+from gemseo.machine_learning.regression.model._rbf_derivatives import kernel_derivatives
 from gemseo.machine_learning.regression.model.rbf_settings import RBF
 
 
 @pytest.mark.parametrize("kernel", RBF)
 def test_kernel_derivatives(kernel) -> None:
     """Check that every RBF kernel has a derivative."""
-    assert issubclass(KERNEL_DERIVATIVES[kernel], BaseKernelDerivative)
+    assert issubclass(kernel_derivatives[kernel], BaseKernelDerivative)

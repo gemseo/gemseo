@@ -90,11 +90,11 @@ class AugmentedLagrangianOrder1(
         self.__lagrange_multiplier_calculator.compute(x_opt)
         lag_ms = self.__lagrange_multiplier_calculator.get_multipliers_arrays()
         for constraint in self._problem.constraints.get_equality_constraints():
-            eq_lag[constraint.name] = lag_ms[LagrangeMultipliers.EQUALITY][
+            eq_lag[constraint.name] = lag_ms[LagrangeMultipliers.equality][
                 constraint.name
             ]
 
         for constraint in self._problem.constraints.get_inequality_constraints():
-            ineq_lag[constraint.name] = lag_ms[LagrangeMultipliers.INEQUALITY][
+            ineq_lag[constraint.name] = lag_ms[LagrangeMultipliers.inequality][
                 constraint.name
             ]

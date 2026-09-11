@@ -48,7 +48,7 @@ class MSEMeasure(BaseRegressorQuality):
     def __init__(
         self,
         model: BaseRegressor,
-        fit_transformers: bool = BaseRegressorQuality._FIT_TRANSFORMERS,
+        fit_transformers: bool = BaseRegressorQuality._default_fit_transformers,
     ) -> None:
         """
         Args:
@@ -65,5 +65,5 @@ class MSEMeasure(BaseRegressorQuality):
         return mean_squared_error(
             outputs,
             predictions,
-            multioutput=self._GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT[multioutput],
+            multioutput=self._gemseo_multioutput_to_sklearn_multioutput[multioutput],
         )

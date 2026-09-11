@@ -26,7 +26,7 @@ from typing import NoReturn
 from numpy import empty
 
 from gemseo.core.discipline import Discipline
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from gemseo.core.grammar.base import BaseGrammar
@@ -56,8 +56,8 @@ class RemappingDiscipline(Discipline):
     def __init__(
         self,
         discipline: Discipline,
-        input_mapping: NameMapping = READ_ONLY_EMPTY_DICT,
-        output_mapping: NameMapping = READ_ONLY_EMPTY_DICT,
+        input_mapping: NameMapping = read_only_empty_dict,
+        output_mapping: NameMapping = read_only_empty_dict,
     ) -> None:
         """
         Args:

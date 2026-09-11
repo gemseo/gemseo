@@ -51,7 +51,7 @@ class SPParametricStatistics(
     SignificanceTest: ClassVar[SPDistributionFitter.SignificanceTest] = (
         SPDistributionFitter.SignificanceTest
     )
-    _DISTRIBUTION_FITTER: ClassVar[SPDistributionFitter] = SPDistributionFitter
+    _distribution_fitter: ClassVar[SPDistributionFitter] = SPDistributionFitter
 
     def _get_pdf(self, distribution: rv_continuous_frozen) -> Callable[[float], float]:
         return distribution.pdf

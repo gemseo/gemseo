@@ -24,7 +24,7 @@ from pydantic import PositiveFloat  # noqa:TC002
 from gemseo.optimization.scipy_global.settings.base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
 )
-from gemseo.util.seeder import SEED
+from gemseo.util import seeder
 
 
 class DUAL_ANNEALING_Settings(BaseSciPyGlobalSettings):  # noqa: N801
@@ -67,7 +67,7 @@ The lower the acceptance parameter, the smaller the probability of acceptance.""
     )
 
     seed: int = Field(
-        default=SEED,
+        default=seeder.seed,
         description="""The random seed.""",
     )
 

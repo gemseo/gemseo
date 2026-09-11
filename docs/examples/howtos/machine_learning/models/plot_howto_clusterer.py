@@ -62,7 +62,7 @@ model = KMeans(
         # Remove the variable "specy"
         # that corresponds to the expected cluster from a biological perspective;
         # otherwise it would be cheating!
-        var_names=training_dataset.get_variable_names(training_dataset.PARAMETER_GROUP),
+        var_names=training_dataset.get_variable_names(training_dataset.parameter_group),
     ),
 )
 model.learn()

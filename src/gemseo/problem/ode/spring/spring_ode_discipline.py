@@ -30,11 +30,11 @@ from numpy import sin
 from numpy import sqrt
 
 from gemseo.discipline.ode.ode_discipline import ODEDiscipline
-from gemseo.problem.ode.spring.springs_dynamics_discipline import STATE_DOT_NAMES
-from gemseo.problem.ode.spring.springs_dynamics_discipline import STATE_NAMES
 from gemseo.problem.ode.spring.springs_dynamics_discipline import (
     SpringsDynamicsDiscipline,
 )
+from gemseo.problem.ode.spring.springs_dynamics_discipline import state_dot_names
+from gemseo.problem.ode.spring.springs_dynamics_discipline import state_names
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -54,8 +54,8 @@ class SpringODEDiscipline(ODEDiscipline):
         times: RealArray,
         left_position: float = 0.0,
         right_position: float = 0.0,
-        state_names: Sequence[str] = STATE_NAMES,
-        state_dot_names: Sequence[str] = STATE_DOT_NAMES,
+        state_names: Sequence[str] = state_names,
+        state_dot_names: Sequence[str] = state_dot_names,
         left_position_name: str = "left_position",
         right_position_name: str = "right_position",
         is_left_position_fixed: bool = False,

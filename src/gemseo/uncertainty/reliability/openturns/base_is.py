@@ -45,8 +45,8 @@ class BaseOTImportanceSampling(BaseOTReliabilityAlgorithm):  # noqa: N801
         self._set_seed(settings.seed)
 
         ot_event = self._create_ot_event(event_name, problem)
-        args = (getattr(settings, name) for name in settings.INSTANTIATION_ARGUMENTS)
-        algo = self._ALGO_CLASS(ot_event, *args)
+        args = (getattr(settings, name) for name in settings.instantiation_arguments)
+        algo = self._algo_class(ot_event, *args)
         algo.setConvergenceStrategy(Null())
         algo.setMaximumCoefficientOfVariation(settings.maximum_coefficient_of_variation)
         algo.setMaximumOuterSampling(settings.maximum_outer_sampling)

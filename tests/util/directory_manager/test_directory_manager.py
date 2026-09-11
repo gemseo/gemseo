@@ -52,7 +52,7 @@ from gemseo.util._directory_manager.settings import MDACleanUpPolicy
 from gemseo.util._directory_manager.settings import Settings
 from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.global_configuration import _configuration
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.platform import platform_is_windows
 from gemseo.util.testing.helper import assert_exception
 
 from ...formulation.bilevel_test_helper import create_sobieski_bilevel_bcd_scenario
@@ -67,9 +67,9 @@ if TYPE_CHECKING:
     from gemseo.scenario.evaluation import EvaluationScenario
     from gemseo.util.typing import StrKeyMapping
 
-REF_DIR_ROOT_PATH = Path(__file__).parent / "reference_directories"
-BASE_DIR = Path("root")
-PLATFORM = "windows" if PLATFORM_IS_WINDOWS else "linux"
+ref_dir_root_path = Path(__file__).parent / "reference_directories"
+base_dir = Path("root")
+platform = "windows" if platform_is_windows else "linux"
 
 
 @pytest.fixture(autouse=True)
@@ -232,11 +232,11 @@ def test_monolevel_scenarios_all_policies(
     scenario.execute(settings_model)
 
     ref_file_path = (
-        REF_DIR_ROOT_PATH
+        ref_dir_root_path
         / formulation_settings_model.target_class_name
         / scenario_type
-        / PLATFORM
-        / reference_directories.format(PLATFORM, clean_up_policy)
+        / platform
+        / reference_directories.format(platform, clean_up_policy)
     )
     assert_directory_tree(ref_file_path)
 
@@ -271,16 +271,16 @@ def test_mda_clean_up_policies_for_mono_level_scenarios(
     scenario.execute(SLSQP_Settings(max_iter=3))
 
     ref_file_path = (
-        REF_DIR_ROOT_PATH
+        ref_dir_root_path
         / "mda"
-        / reference_directories.format(PLATFORM, mda_clean_up_policy)
+        / reference_directories.format(platform, mda_clean_up_policy)
     )
     assert_directory_tree(ref_file_path)
 
 
 @parametrized_clean_up_policy
 @pytest.mark.skipif(
-    PLATFORM_IS_WINDOWS,
+    platform_is_windows,
     reason="Currently fails on Windows with pytest, works without pytest",
 )
 def test_directory_manager_with_multiprocessing(
@@ -297,11 +297,11 @@ def test_directory_manager_with_multiprocessing(
 
     reference_directories = "doe_bilevel_sobieski_parallel_{}_paths_{}.txt"
     ref_file_path = (
-        REF_DIR_ROOT_PATH
+        ref_dir_root_path
         / "bilevel"
         / "DOE"
-        / PLATFORM
-        / reference_directories.format(PLATFORM, clean_up_policy)
+        / platform
+        / reference_directories.format(platform, clean_up_policy)
     )
     assert_directory_tree(ref_file_path)
 
@@ -309,7 +309,7 @@ def test_directory_manager_with_multiprocessing(
 def test_directory_manager_with_spawn_multiprocessing(dm_settings, monkeypatch):
     """Verify the directories created by workers of the spawn start method."""
     monkeypatch.setattr(
-        CallableParallelExecution, "MULTI_PROCESSING_START_METHOD", "spawn"
+        CallableParallelExecution, "multi_processing_start_method", "spawn"
     )
     discipline = create_discipline("AnalyticDiscipline", expressions={"y": "2*x"})
     design_space = create_design_space()
@@ -342,7 +342,7 @@ def test_directory_manager_with_spawn_multiprocessing(dm_settings, monkeypatch):
 )
 @parametrized_clean_up_policy
 @pytest.mark.xfail(
-    PLATFORM_IS_WINDOWS,
+    platform_is_windows,
     reason="Windows can't handle directory paths that are too long.",
 )
 def test_all_policies_sobieski_bilevel(
@@ -362,11 +362,11 @@ def test_all_policies_sobieski_bilevel(
     scenario.execute(settings_model)
 
     ref_file_path = (
-        REF_DIR_ROOT_PATH
+        ref_dir_root_path
         / "bilevel"
         / scenario_type
-        / PLATFORM
-        / reference_directories.format(PLATFORM, clean_up_policy)
+        / platform
+        / reference_directories.format(platform, clean_up_policy)
     )
     assert_directory_tree(ref_file_path)
 
@@ -384,7 +384,7 @@ def test_all_policies_sobieski_bilevel(
 )
 @parametrized_clean_up_policy
 @pytest.mark.xfail(
-    PLATFORM_IS_WINDOWS,
+    platform_is_windows,
     reason="Windows can't handle directory paths that are too long.",
 )
 def test_all_policies_bilevel_bcd_sobieski(
@@ -398,7 +398,7 @@ def test_all_policies_bilevel_bcd_sobieski(
     """Test the directory creation for the bilevel bcd formulation."""
     dm_settings.clean_up_policy = clean_up_policy
 
-    short_names = PLATFORM == "windows"
+    short_names = platform == "windows"
 
     scenario = generate_sobieski_bilevel_bcd_scenario(
         short_names=short_names,
@@ -422,11 +422,11 @@ def test_all_policies_bilevel_bcd_sobieski(
     scenario.execute(settings_model)
 
     ref_file_path = (
-        REF_DIR_ROOT_PATH
+        ref_dir_root_path
         / "bcd"
         / scenario_type
-        / PLATFORM
-        / reference_directories.format(PLATFORM, clean_up_policy)
+        / platform
+        / reference_directories.format(platform, clean_up_policy)
     )
     ref_dir_paths = read_paths_from_txt(ref_file_path, dm_settings.execution_root_path)
     actual_dir_paths = {
@@ -605,7 +605,7 @@ def test_clean_up_preserves_unmanaged_directories(dm_settings, clean_up_policy):
 
 
 @pytest.mark.xfail(
-    PLATFORM_IS_WINDOWS,
+    platform_is_windows,
     reason="Windows can't handle directory paths that are too long.",
 )
 def test_backup_h5(dm_settings, generate_sobieski_bilevel_scenario):
@@ -927,7 +927,7 @@ def test_enabling_resets_only_the_directory_manager(dm_settings):
     """Verify that enabling resets the manager but not other multitons."""
     manager = DirectoryManager()
     # Capture the currently cached factory rather than the module-level
-    # GRAMMAR_FACTORY: a prior test may have cleared the whole multiton cache
+    # grammar_factory: a prior test may have cleared the whole multiton cache
     # (it is shared by all multitons), in which case the module-level singleton
     # is no longer the cached instance.
     grammar_factory = GrammarFactory()

@@ -48,7 +48,7 @@ the
 will be applied
 to all the variables of this group.
 If
-[DEFAULT_TRANSFORMER][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
+[default_transformer][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.default_transformer],
 do not transform the variables.""",
     )
 

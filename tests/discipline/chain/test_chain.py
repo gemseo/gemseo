@@ -31,17 +31,17 @@ from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDisciplin
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
-_APPROXIMATION_MODE = ApproximationMode.COMPLEX_STEP
-_APPROXIMATION_STEP = 1e-30
-_CHECK_JACOBIAN_KWARGS = {"atol": 1e-6, "rtol": 1e-6}
+_approximation_mode = ApproximationMode.COMPLEX_STEP
+_approximation_step = 1e-30
+_check_jacobian_kwargs = {"atol": 1e-6, "rtol": 1e-6}
 
 # The two explicit sweeps. AUTO only dispatches to one of these based on the
 # I/O sizes, so parametrizing correctness tests over it is redundant; AUTO's
 # dispatch is covered end-to-end by test_jacobian_with_heterogeneous_sizes and
 # directly by test_auto_linearization_mode_selection.
-_SWEEP_MODES = [ChainDerivationMode.FORWARD, ChainDerivationMode.REVERSE]
+_sweep_modes = [ChainDerivationMode.FORWARD, ChainDerivationMode.REVERSE]
 
-_DESCRIPTION = [
+_description = [
     ("A", ["x1", "x2"], ["a1", "a2", "a3"]),
     ("B", ["x3", "x4"], ["b1", "b2"]),
     ("C", ["a1", "b1"], ["c1", "c2"]),
@@ -60,7 +60,7 @@ _DESCRIPTION = [
     ("Q", ["l1", "m", "n", "y_p"], ["y3", "y4"]),
 ]
 
-_IO_SUBSETS = [
+_io_subsets = [
     # Full inputs/outputs
     (["x1", "x2", "x3", "x4", "x5", "x6", "p"], ["y1", "y2", "y3", "y4", "y_p"]),
     # A-stream: x1 and x2 drive g/h/i paths to y3/y4
@@ -135,7 +135,7 @@ def heterogeneous_jacobian_type_disciplines() -> list[LinearDiscipline]:
     ]
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 @pytest.mark.parametrize(
     "order",
     [
@@ -152,13 +152,13 @@ def test_linearization_varying_discipline_orders(
     checker = DisciplineJacobianChecker(chain)
     assert checker.check(
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 @pytest.mark.parametrize("expression", ["x", "2*x"])
 def test_jacobian_with_passthrough_discipline(expression, mode) -> None:
     """Jacobian is correct when a discipline re-emits an input under the same name.
@@ -174,13 +174,13 @@ def test_jacobian_with_passthrough_discipline(expression, mode) -> None:
     assert checker.check(
         {"x": ones(1), "y": ones(1)},
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 @pytest.mark.parametrize("permutation", list(permutations(range(3))))
 def test_jacobian_with_heterogeneous_jacobian_formats(
     heterogeneous_jacobian_type_disciplines, permutation, mode
@@ -192,9 +192,9 @@ def test_jacobian_with_heterogeneous_jacobian_formats(
     checker = DisciplineJacobianChecker(chain)
     assert checker.check(
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
     mf_idx = permutation.index(2)
@@ -229,9 +229,9 @@ def test_jacobian_with_heterogeneous_sizes(
     checker = DisciplineJacobianChecker(chain)
     assert checker.check(
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
@@ -267,7 +267,7 @@ def test_discipline_chain_execution_with_virtual_disciplines(
     assert chain.io.output_data["y"] == 2.0
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_skips_backward_coupling(mode) -> None:
     """Regression test for issue #1660.
 
@@ -288,7 +288,7 @@ def test_discipline_chain_skips_backward_coupling(mode) -> None:
     assert set(disciplines[0].jac["a1"]) == {"x"}
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_coupling_variable_as_chain_input(mode) -> None:
     """Regression test for issue #1670.
 
@@ -307,13 +307,13 @@ def test_discipline_chain_coupling_variable_as_chain_input(mode) -> None:
         inputs=["b"],
         outputs=["z"],
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_self_coupling_with_downstream_consumer(mode) -> None:
     """In chain P(p,x→p,w), R(p→z), p is self-coupled and consumed downstream.
 
@@ -331,13 +331,13 @@ def test_discipline_chain_self_coupling_with_downstream_consumer(mode) -> None:
         inputs=["p", "x"],
         outputs=["w", "z"],
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_self_coupled_variable_as_output(mode) -> None:
     """A self-coupled variable differentiated as a chain output.
 
@@ -351,13 +351,13 @@ def test_discipline_chain_self_coupled_variable_as_output(mode) -> None:
         inputs=["p", "x"],
         outputs=["p", "w"],
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_unreachable_input_output_pair(mode) -> None:
     """Zero Jacobian when no coupling path connects the input to the output.
 
@@ -374,14 +374,14 @@ def test_discipline_chain_unreachable_input_output_pair(mode) -> None:
         inputs=["x"],
         outputs=["y"],
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
     assert chain.jac["y"]["x"].nnz == 0
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_blind_overwrite(mode) -> None:
     """Regression test for issue #1821.
 
@@ -400,14 +400,14 @@ def test_discipline_chain_blind_overwrite(mode) -> None:
         inputs=["x", "u"],
         outputs=["z"],
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
     assert chain.jac["z"]["x"].nnz == 0
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_overwrite_with_intermediate_consumer(mode) -> None:
     """Regression test for issue #1821.
 
@@ -427,15 +427,15 @@ def test_discipline_chain_overwrite_with_intermediate_consumer(mode) -> None:
         inputs=["x", "u"],
         outputs=["z1", "z2"],
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
     assert chain.jac["z1"]["u"].nnz == 0
     assert chain.jac["z2"]["x"].nnz == 0
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_sequential_variable_update(mode) -> None:
     """A discipline consuming and re-producing o chains both producers.
 
@@ -453,13 +453,13 @@ def test_discipline_chain_sequential_variable_update(mode) -> None:
         inputs=["x", "u"],
         outputs=["z"],
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_output_independent_of_upstream_coupling(mode) -> None:
     """A downstream output independent of an upstream coupling is skipped.
 
@@ -478,13 +478,13 @@ def test_discipline_chain_output_independent_of_upstream_coupling(mode) -> None:
         inputs=["x", "x2"],
         outputs=["o1", "o2"],
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_discipline_chain_single_discipline(mode) -> None:
     """A chain of one discipline reproduces its Jacobian in every mode."""
     chain = DisciplineChain(
@@ -493,9 +493,9 @@ def test_discipline_chain_single_discipline(mode) -> None:
     checker = DisciplineJacobianChecker(chain)
     assert checker.check(
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
@@ -551,16 +551,16 @@ def test_jacobian_recomputed_on_io_subset_change(
     assert checker.check(
         inputs=["x1"],
         outputs=["y"],
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
     assert checker.check(
         inputs=["x2", "x3"],
         outputs=["y"],
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
@@ -585,7 +585,7 @@ def test_differentiated_ios_cached_on_repeated_io(
     assert chain._DisciplineChain__discipline_to_ios is cached
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
+@pytest.mark.parametrize("mode", _sweep_modes)
 def test_chain_jacobian_does_not_alias_subdiscipline_jacobians(
     heterogeneous_sizes_disciplines, mode
 ) -> None:
@@ -636,8 +636,8 @@ def test_adjoint_sweep_prunes_stale_coupling_entries(
         assert "a" not in jac_row
 
 
-@pytest.mark.parametrize("mode", _SWEEP_MODES)
-@pytest.mark.parametrize(("input_names", "output_names"), _IO_SUBSETS)
+@pytest.mark.parametrize("mode", _sweep_modes)
+@pytest.mark.parametrize(("input_names", "output_names"), _io_subsets)
 def test_discipline_chain_complex_topology_jacobian(
     input_names, output_names, mode
 ) -> None:
@@ -647,13 +647,13 @@ def test_discipline_chain_complex_topology_jacobian(
     and backward coupling (M→K via m, N→E via n), in the forward and reverse
     sweeps (AUTO dispatches to one of them, exercised elsewhere).
     """
-    chain = DisciplineChain(create_disciplines_from_desc(_DESCRIPTION))
+    chain = DisciplineChain(create_disciplines_from_desc(_description))
     checker = DisciplineJacobianChecker(chain)
     assert checker.check(
         inputs=input_names,
         outputs=output_names,
         linearization_mode=mode,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )

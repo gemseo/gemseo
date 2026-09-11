@@ -37,7 +37,7 @@ from scipy.optimize import rosen_der
 from gemseo.core.problem.database import Database
 from gemseo.core.problem.database import HashableNdarray
 from gemseo.dataset.dataset import Dataset
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
@@ -46,8 +46,8 @@ from gemseo.util.testing.helper import assert_exception
 if TYPE_CHECKING:
     from gemseo.optimization.result import OptimizationResult
 
-DIRNAME = Path(__file__).parent
-FAIL_HDF = DIRNAME / "fail.hdf5"
+dirname = Path(__file__).parent
+fail_hdf = dirname / "fail.hdf5"
 
 
 def rel_err(to_test, ref):
@@ -68,7 +68,7 @@ def rel_err(to_test, ref):
 def problem_and_result() -> tuple[Rosenbrock, OptimizationResult]:
     """The Rosenbrock problem solved with L_BFGS_B and the optimization result."""
     rosenbrock = Rosenbrock()
-    result = OPTIMIZATION_LIBRARY_FACTORY.execute(
+    result = optimization_library_factory.execute(
         rosenbrock, settings=L_BFGS_B_Settings()
     )
     return rosenbrock, result
@@ -216,7 +216,7 @@ def test_get_x_at_iteration() -> None:
     database = problem.database
     with pytest.raises(ValueError):
         database.get_x_vect(1)
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=L_BFGS_B_Settings())
+    optimization_library_factory.execute(problem, settings=L_BFGS_B_Settings())
     hist_g2 = database.get_x_vect(21)
     assert database.get_iteration(hist_g2) - 1 == 20
     with pytest.raises(KeyError):
@@ -459,7 +459,7 @@ def test_hdf_grad_export(tmp_wd, problem) -> None:
 
 def test_hdf_import() -> None:
     """Tests import from HDF."""
-    database = Database.from_hdf(DIRNAME / "rosen_grad.hdf5")
+    database = Database.from_hdf(dirname / "rosen_grad.hdf5")
     fname = "rosen"
     gname = Database.get_gradient_name(fname)
     hist_x = database.get_x_vect_history()
@@ -474,7 +474,7 @@ def test_hdf_import() -> None:
 
 def test_hdf_import_sob() -> None:
     """Tests import from HDF."""
-    database = Database.from_hdf(DIRNAME / "mdf_backup.h5")
+    database = Database.from_hdf(dirname / "mdf_backup.h5")
     hist_x = database.get_x_vect_history()
     assert len(hist_x) == 5
     for func in ("-y_4", "g_1", "g_2", "g_3"):
@@ -487,7 +487,7 @@ def test_hdf_import_sob() -> None:
 def test_opendace_import(tmp_wd) -> None:
     """Tests import from Opendace."""
     database = Database()
-    inf = DIRNAME / "rae2822_cl075_085_mach_068_074.xml"
+    inf = dirname / "rae2822_cl075_085_mach_068_074.xml"
     database.update_from_opendace(inf)
     outfpath = Path("rae2822_cl075_085_mach_068_074_cp.hdf5")
     database.to_hdf(outfpath)
@@ -552,7 +552,7 @@ def test_filter_database() -> None:
 
 def test_fail_import() -> None:
     with pytest.raises(KeyError):
-        Database.from_hdf(FAIL_HDF)
+        Database.from_hdf(fail_hdf)
 
 
 def test_remove_empty_entries() -> None:

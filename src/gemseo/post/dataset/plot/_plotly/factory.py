@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.post.dataset.plot._plotly.plot import PlotlyPlot
 from gemseo.post.dataset.plot.factory import PlotFactory
 
@@ -23,5 +25,5 @@ from gemseo.post.dataset.plot.factory import PlotFactory
 class PlotlyPlotFactory(PlotFactory):
     """A factory of plots based on plotly."""
 
-    _CLASS = PlotlyPlot
-    _PACKAGE_NAMES = ("gemseo.post.dataset.plot._plotly",)
+    _class: ClassVar[type[PlotlyPlot]] = PlotlyPlot
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.post.dataset.plot._plotly",)

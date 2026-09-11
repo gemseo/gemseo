@@ -27,4 +27,4 @@ from gemseo.machine_learning._basis.base_ot_iso_basis import BaseOTIsoBasis
 class Fourier(BaseOTIsoBasis):
     """The Fourier basis."""
 
-    _FACTORY: ClassVar[type[FourierSeriesFactory]] = FourierSeriesFactory
+    _factory: ClassVar[type[FourierSeriesFactory]] = FourierSeriesFactory

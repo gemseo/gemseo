@@ -31,6 +31,6 @@ class OT_IS_SPCE(BaseOTImportanceSampling):  # noqa: N801
 
     settings_class: ClassVar[type[OT_IS_SPCE_Settings]] = OT_IS_SPCE_Settings
 
-    _ALGO_CLASS: ClassVar[type[StandardSpaceCrossEntropyImportanceSampling]] = (
+    _algo_class: ClassVar[type[StandardSpaceCrossEntropyImportanceSampling]] = (
         StandardSpaceCrossEntropyImportanceSampling
     )

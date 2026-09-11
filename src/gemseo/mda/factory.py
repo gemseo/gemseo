@@ -24,6 +24,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 
 from pydantic_core import PydanticUndefined
@@ -43,8 +44,8 @@ MDAOptionType = (
 class MDAFactory(BaseFactory):
     """A factory of MDAs."""
 
-    _CLASS = BaseMDA
-    _PACKAGE_NAMES = ("gemseo.mda",)
+    _class: ClassVar[type[BaseMDA]] = BaseMDA
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.mda",)
 
     def get_options_doc(self, name: str) -> dict[str, str]:
         """Return the constructor documentation of a class.
@@ -79,5 +80,5 @@ class MDAFactory(BaseFactory):
         return defaults
 
 
-MDA_FACTORY: Final[MDAFactory] = MDAFactory()
+mda_factory: Final[MDAFactory] = MDAFactory()
 """The factory for `MDA` objects."""

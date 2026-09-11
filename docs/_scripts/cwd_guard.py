@@ -27,11 +27,11 @@ from pathlib import Path
 
 from mkdocs.plugins import event_priority
 
-_INITIAL_CWD = Path.cwd()
+_initial_cwd = Path.cwd()
 
 
 def _chdir() -> None:
-    os.chdir(_INITIAL_CWD)
+    os.chdir(_initial_cwd)
 
 
 def _reset_gemseo() -> None:

@@ -34,16 +34,16 @@ from gemseo.machine_learning.transformer.dimension_reduction.pls import PLS
 if TYPE_CHECKING:
     from numpy import ndarray
 
-N_SAMPLES = 10
-N_FEATURES = 8
+n_samples = 10
+n_features = 8
 
-RNG = default_rng()
+rng = default_rng()
 
 
 @pytest.fixture
 def data() -> tuple[ndarray, ndarray]:
     """The dataset used to build the transformer, based on a 1D-mesh."""
-    input_data = RNG.random((N_SAMPLES, N_FEATURES))
+    input_data = rng.random((n_samples, n_features))
     output_data = npsum(input_data, 1)[:, newaxis]
     return input_data, output_data
 
@@ -91,10 +91,10 @@ def test_inverse_transform(data) -> None:
     n_components = 3
     pca = PLS(n_components=n_components)
     pca.fit(input_data, output_data)
-    data = RNG.random((N_SAMPLES, n_components))
+    data = rng.random((n_samples, n_components))
     restored_data = pca.inverse_transform(data)
     assert restored_data.shape[0] == data.shape[0]
-    assert restored_data.shape[1] == N_FEATURES
+    assert restored_data.shape[1] == n_features
 
 
 def test_shape(data) -> None:

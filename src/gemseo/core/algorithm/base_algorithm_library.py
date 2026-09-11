@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.problem.base import BaseProblem
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=BaseSettings)
 
 
@@ -100,10 +100,10 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
     _settings: T | None
     """The Pydantic model for the settings of the formulation."""
 
-    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[T]]
+    _settings_class_to_exclude: ClassVar[type[T]]
     """The settings class whose fields should be excluded from settings."""
 
-    _ADDITIONAL_SETTINGS_CLASSES_TO_EXCLUDE: ClassVar[
+    _additional_settings_classes_to_exclude: ClassVar[
         tuple[type[BaseSettings], ...]
     ] = ()
     """Additional settings classes whose fields should be excluded from settings.
@@ -143,14 +143,14 @@ class BaseAlgorithmLibrary(Generic[T], metaclass=ABCGoogleDocstringInheritanceMe
     def _filter_settings(self) -> dict[str, Any]:
         """Generate a partial dictionary representation of the settings.
 
-        This dictionary does not include the fields from `_SETTINGS_CLASS_TO_EXCLUDE`
-        and `_ADDITIONAL_SETTINGS_CLASSES_TO_EXCLUDE`.
+        This dictionary does not include the fields from `_settings_class_to_exclude`
+        and `_additional_settings_classes_to_exclude`.
 
         Returns:
             A partial dictionary representation of the settings.
         """
-        fields_to_exclude = self._SETTINGS_CLASS_TO_EXCLUDE.model_fields.keys()
-        for settings_class in self._ADDITIONAL_SETTINGS_CLASSES_TO_EXCLUDE:
+        fields_to_exclude = self._settings_class_to_exclude.model_fields.keys()
+        for settings_class in self._additional_settings_classes_to_exclude:
             fields_to_exclude = fields_to_exclude | settings_class.model_fields.keys()
         return self._settings.model_dump(exclude=fields_to_exclude)
 

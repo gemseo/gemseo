@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 from gemseo.core.dependency_graph import DependencyGraph
 from gemseo.core.util._graph_traversal import DisciplineIOs
@@ -33,7 +34,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
 
-_IO = DependencyGraph.IO
+_io: Final[str] = DependencyGraph.io
 
 
 def set_differentiated_ios(
@@ -88,11 +89,11 @@ def set_differentiated_ios(
 
         for predecessor in predecessors(discipline):
             if predecessor in forward:
-                diff_inputs.update(get_edge_data(predecessor, discipline)[_IO])
+                diff_inputs.update(get_edge_data(predecessor, discipline)[_io])
 
         for successor in successors(discipline):
             if successor in backward:
-                diff_outputs.update(get_edge_data(discipline, successor)[_IO])
+                diff_outputs.update(get_edge_data(discipline, successor)[_io])
 
         discipline.add_differentiated_inputs(diff_inputs)
         discipline.add_differentiated_outputs(diff_outputs)

@@ -29,13 +29,13 @@ from numpy.testing import assert_allclose
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.machine_learning.clustering.core.base_clusterer import BaseClusterer
-from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
+from gemseo.machine_learning.clustering.model.factory import clusterer_factory
 from gemseo.problem.dataset.iris import create_iris_dataset
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
 from gemseo.util.testing.helper import assert_exception
 
-INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
+input_value = array([1.5, 1.5, 1.5, 1.5])
 
 
 class NewModel(BaseClusterer):
@@ -61,14 +61,14 @@ def dataset() -> Dataset:
     return create_iris_dataset()
 
 
-@pytest.mark.parametrize("class_name", CLUSTERER_FACTORY.class_names)
+@pytest.mark.parametrize("class_name", clusterer_factory.class_names)
 @pytest.mark.parametrize("before_training", [False, True])
 def test_pickle(class_name, dataset, before_training, tmp_wd):
     """Check that clustering models are picklable."""
-    reference_model = CLUSTERER_FACTORY.create(
+    reference_model = clusterer_factory.create(
         class_name,
         dataset,
-        CLUSTERER_FACTORY.get_class(class_name).settings_class(
+        clusterer_factory.get_class(class_name).settings_class(
             var_names=("sepal_length", "sepal_width", "petal_length", "petal_width")
         ),
     )
@@ -80,12 +80,12 @@ def test_pickle(class_name, dataset, before_training, tmp_wd):
         reference_model.learn()
         to_pickle(reference_model, "model.pkl")
 
-    reference_prediction = reference_model.predict(INPUT_VALUE)
+    reference_prediction = reference_model.predict(input_value)
 
     model = from_pickle("model.pkl")
     if before_training:
         model.learn()
 
-    output_value = model.predict(INPUT_VALUE)
+    output_value = model.predict(input_value)
 
     assert_allclose(output_value, reference_prediction)

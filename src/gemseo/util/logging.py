@@ -38,11 +38,11 @@ from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
 
-from gemseo.util.constant import _LOGGING_DATE_FORMAT
-from gemseo.util.constant import _LOGGING_FILE_MODE
-from gemseo.util.constant import _LOGGING_FILE_PATH
-from gemseo.util.constant import _LOGGING_LEVEL
-from gemseo.util.constant import _LOGGING_MESSAGE_FORMAT
+from gemseo.util.constant import _logging_date_format
+from gemseo.util.constant import _logging_file_mode
+from gemseo.util.constant import _logging_file_path
+from gemseo.util.constant import _logging_level
+from gemseo.util.constant import _logging_message_format
 from gemseo.util.typing import StrPath
 
 if TYPE_CHECKING:
@@ -75,25 +75,25 @@ so that logs from client code and third-party libraries are emitted too.""",
     )
 
     date_format: str = Field(
-        default=_LOGGING_DATE_FORMAT,
+        default=_logging_date_format,
         description="The logging date format.",
     )
 
     enable: bool = Field(default=True, description="Whether to enable GEMSEO logging.")
 
     file_path: StrPath = Field(
-        default=_LOGGING_FILE_PATH,
+        default=_logging_file_path,
         description="The path to the log file, if outputs must be written in a file.",
     )
 
     file_mode: str = Field(
-        default=_LOGGING_FILE_MODE,
+        default=_logging_file_mode,
         description="""The logging output file mode,
 either 'w' (overwrite) or 'a' (append).""",
     )
 
     level: str | int = Field(
-        default=_LOGGING_LEVEL,
+        default=_logging_level,
         description="""The numerical value or name of the logging level,
 as defined in `logging`.
 Values can either be
@@ -106,7 +106,7 @@ Values can either be
     )
 
     message_format: str = Field(
-        default=_LOGGING_MESSAGE_FORMAT, description="The logging message format."
+        default=_logging_message_format, description="The logging message format."
     )
 
     @model_validator(mode="after")

@@ -30,6 +30,6 @@ from gemseo.machine_learning.regression.model.tps_settings import TPSRegressor_S
 class TPSRegressor(RBFRegressor):
     """Thin plate spline (TPS) regression."""
 
-    SHORT_NAME: ClassVar[str] = "TPS"
+    short_name: ClassVar[str] = "TPS"
 
     settings_class: ClassVar[type[TPSRegressor_Settings]] = TPSRegressor_Settings

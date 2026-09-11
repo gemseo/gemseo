@@ -30,11 +30,12 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.auto_py import AutoPyDiscipline
+from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.discipline.chain.warm_started_chain import WarmStartedDisciplineChain
 from gemseo.formulation.bilevel import BiLevel
 from gemseo.formulation.bilevel_bcd import BiLevelBCD
 from gemseo.formulation.bilevel_settings import BiLevel_Settings
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.optimization.nlopt.settings.nlopt_cobyla_settings import (
@@ -309,7 +310,7 @@ def test_scenario_log_level(
         [AnalyticDiscipline({"z": "(x+y)**2"})],
         design_space.filter(["y"], copy=True),
         name="FooScenario",
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             sub_scenario_formulation
         ).settings_class(),
     )
@@ -318,7 +319,7 @@ def test_scenario_log_level(
     scenario = MDOScenario(
         [sub_scenario],
         design_space.filter(["x"]),
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             scenario_formulation
         ).settings_class(**settings),
     )
@@ -470,7 +471,7 @@ def test_system_variables_not_in_variables_to_warm_start(
     sub_scenario_1 = MDOScenario(
         [AnalyticDiscipline({"z": "(x+y)**2", "b": "c+y"}, "foo")],
         design_space.filter(["y"], copy=True),
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             sub_scenario_formulation
         ).settings_class(),
         name="FooScenario",
@@ -482,7 +483,7 @@ def test_system_variables_not_in_variables_to_warm_start(
         [AnalyticDiscipline({"c": "(x+b)**2"}, "bar")],
         design_space.filter(["b"], copy=True),
         name="BarScenario",
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             sub_scenario_formulation
         ).settings_class(),
     )
@@ -497,7 +498,7 @@ def test_system_variables_not_in_variables_to_warm_start(
             AnalyticDiscipline({"x": "x"}),
         ],
         design_space.filter(["x", "baz"]),
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             scenario_formulation
         ).settings_class(apply_constraints_to_sub_scenarios=False),
     )
@@ -640,6 +641,35 @@ def test_reset_x0_before_opt(generate_sobieski_bilevel_scenario, kwargs):
     assert scenario_adapters[2]._reset_x0_before_exec is reset_x0_before_opt
     is_warm_started = isinstance(scenario.formulation.chain, WarmStartedDisciplineChain)
     assert is_warm_started is not reset_x0_before_opt
+
+
+def test_reset_x0_before_opt_builds_a_plain_chain(
+    generate_sobieski_bilevel_scenario,
+) -> None:
+    """Verify that reset_x0_before_opt=True builds a plain DisciplineChain.
+
+    When ``reset_x0_before_opt`` is ``True``,
+    the inner chain must not warm start the design variables between
+    successive executions of the sub-scenarios,
+    hence it must be a plain
+    [DisciplineChain][gemseo.discipline.chain.chain.DisciplineChain]
+    rather than a
+    [WarmStartedDisciplineChain]
+    [gemseo.discipline.chain.warm_started_chain.WarmStartedDisciplineChain].
+
+    Args:
+        generate_sobieski_bilevel_scenario: Fixture to instantiate a Sobieski
+            BiLevel scenario.
+    """
+    scenario = generate_sobieski_bilevel_scenario(reset_x0_before_opt=True)
+    formulation = scenario.formulation
+    chain = formulation.chain
+
+    assert type(chain) is DisciplineChain
+    assert chain.name == formulation.chain_name
+    assert len(chain.disciplines) == 3
+    assert chain.disciplines[0] is formulation.mda1
+    assert chain.disciplines[-1] is formulation.mda2
 
 
 def test_optimal_local_design_history(generate_sobieski_bilevel_scenario):

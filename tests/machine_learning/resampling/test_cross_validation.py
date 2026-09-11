@@ -31,7 +31,7 @@ from gemseo.machine_learning.regression.model.linreg import LinearRegressor
 from gemseo.machine_learning.resampling.cross_validation import CrossValidation
 from gemseo.machine_learning.resampling.split import Split
 from gemseo.machine_learning.resampling.splits import Splits
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 
 @pytest.fixture(scope="module")
@@ -44,7 +44,7 @@ def test_default_properties(sample_indices) -> None:
     """Check the default values of the properties."""
     cross_validation = CrossValidation(sample_indices)
     assert_equal(cross_validation.sample_indices, sample_indices)
-    assert cross_validation.seed == SEED
+    assert cross_validation.seed == seed
     assert cross_validation.n_folds == 5
     assert cross_validation.randomize is False
     assert_array_equal(cross_validation.shuffled_sample_indices, sample_indices)

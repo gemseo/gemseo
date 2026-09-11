@@ -31,10 +31,10 @@ from gemseo.optimization.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_
 from gemseo.problem.mdo.scalable.data_driven.study.post import PostScalabilityStudy
 from gemseo.problem.mdo.scalable.data_driven.study.process import ScalabilityStudy
 from gemseo.problem.mdo.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.problem.mdo.sellar.variable import OBJ
-from gemseo.problem.mdo.sellar.variable import X_1
-from gemseo.problem.mdo.sellar.variable import X_SHARED
-from gemseo.problem.mdo.sellar.variable import Y_1
+from gemseo.problem.mdo.sellar.variable import obj
+from gemseo.problem.mdo.sellar.variable import x_1
+from gemseo.problem.mdo.sellar.variable import x_shared
+from gemseo.problem.mdo.sellar.variable import y_1
 from gemseo.scenario.mdo import MDOScenario
 
 
@@ -73,8 +73,8 @@ def sellar_use_case(tmp_wd, sellar_with_2d_array, sellar_disciplines):
         scenario = MDOScenario([discipline], design_space)
         scenario.add_objective(objective_name)
         scenario.execute(DiagonalDOE_Settings(n_samples=n_samples))
-    design_variables = [X_SHARED, X_1]
-    objective_name = OBJ
+    design_variables = [x_shared, x_1]
+    objective_name = obj
     os.mkdir("study_1")
     os.mkdir("study_2")
     os.makedirs("empty_dir/results")
@@ -83,7 +83,7 @@ def sellar_use_case(tmp_wd, sellar_with_2d_array, sellar_disciplines):
 
 def test_scalabilitystudy1(sellar_use_case, enable_discipline_statistics) -> None:
     design_variables, objective, f_name, discipline_names = sellar_use_case
-    variables = [{X_SHARED: i} for i in range(1, 2)]
+    variables = [{x_shared: i} for i in range(1, 2)]
     directory = "study_1"
     ScalabilityStudy(
         objective,
@@ -97,26 +97,26 @@ def test_scalabilitystudy1(sellar_use_case, enable_discipline_statistics) -> Non
             HDF5Cache(hdf_file_path=f_name, hdf_node_path=discipline_name).to_dataset()
         )
     assert discipline_names == study.discipline_names
-    study.set_input_output_dependency("SellarSystem", OBJ, [Y_1])
+    study.set_input_output_dependency("SellarSystem", obj, [y_1])
     with pytest.raises(ValueError):
-        study.set_input_output_dependency("SellarSystem", OBJ, Y_1)
+        study.set_input_output_dependency("SellarSystem", obj, y_1)
     with pytest.raises(ValueError):
-        study.set_input_output_dependency("SellarSystem", OBJ, ["dummy"])
+        study.set_input_output_dependency("SellarSystem", obj, ["dummy"])
     with pytest.raises(TypeError):
-        study.set_input_output_dependency("SellarSystem", OBJ, [1])
+        study.set_input_output_dependency("SellarSystem", obj, [1])
     with pytest.raises(TypeError):
-        study.set_input_output_dependency("SellarSystem", [OBJ], [Y_1])
+        study.set_input_output_dependency("SellarSystem", [obj], [y_1])
     with pytest.raises(ValueError):
-        study.set_input_output_dependency("SellarSystem", "dummy", [Y_1])
+        study.set_input_output_dependency("SellarSystem", "dummy", [y_1])
     with pytest.raises(TypeError):
-        study.set_input_output_dependency(["SellarSystem"], OBJ, [Y_1])
+        study.set_input_output_dependency(["SellarSystem"], obj, [y_1])
     with pytest.raises(ValueError):
-        study.set_input_output_dependency("dummy", OBJ, [Y_1])
-    study.set_fill_factor("SellarSystem", OBJ, 0.4)
+        study.set_input_output_dependency("dummy", obj, [y_1])
+    study.set_fill_factor("SellarSystem", obj, 0.4)
     with pytest.raises(TypeError):
-        study.set_fill_factor("SellarSystem", OBJ, "high")
+        study.set_fill_factor("SellarSystem", obj, "high")
     with pytest.raises(TypeError):
-        study.set_fill_factor("SellarSystem", OBJ, 1.4)
+        study.set_fill_factor("SellarSystem", obj, 1.4)
     with pytest.raises(ValueError):
         study.execute()
     study.add_optimization_strategy(
@@ -168,7 +168,7 @@ def test_scalabilitystudy1(sellar_use_case, enable_discipline_statistics) -> Non
 
 def test_scalabilitystudy2(sellar_use_case, enable_discipline_statistics) -> None:
     design_variables, objective, f_name, discipline_names = sellar_use_case
-    variables = [{X_SHARED: i} for i in range(1, 3)]
+    variables = [{x_shared: i} for i in range(1, 3)]
     study = ScalabilityStudy(objective, design_variables, "study_2")
     for discipline_name in discipline_names:
         study.add_discipline(

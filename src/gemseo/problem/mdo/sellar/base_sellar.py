@@ -29,10 +29,10 @@ if TYPE_CHECKING:
 class BaseSellar(Discipline):
     """A base class for the disciplines of the customizable Sellar MDO problem."""
 
-    _INPUT_NAMES: ClassVar[tuple[str]]
+    _input_names: ClassVar[tuple[str]]
     """The names of the inputs."""
 
-    _OUTPUT_NAMES: ClassVar[tuple[str]]
+    _output_names: ClassVar[tuple[str]]
     """The names of the outputs."""
 
     _n: int
@@ -45,9 +45,9 @@ class BaseSellar(Discipline):
         """  # noqa: D107 D205 D205 D212 D415
         super().__init__()
         self._n = n
-        default_input_data = get_initial_data(self._INPUT_NAMES, n)
+        default_input_data = get_initial_data(self._input_names, n)
         self.io.input_grammar.update_from_data(default_input_data)
-        self.io.output_grammar.update_from_data(get_initial_data(self._OUTPUT_NAMES, n))
+        self.io.output_grammar.update_from_data(get_initial_data(self._output_names, n))
         self.io.input_grammar.defaults = default_input_data
 
     @staticmethod

@@ -23,9 +23,9 @@ from gemseo import create_scenario
 from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import (
     DiagonalDOE_Settings,
 )
-from gemseo.mda.factory import MDA_FACTORY
+from gemseo.mda.factory import mda_factory
 from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 def generate_parallel_doe(
     main_mda_name: str = "MDAChain",
     n_samples: int = 4,
-    main_mda_settings: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+    main_mda_settings: StrKeyMapping = read_only_empty_dict,
 ) -> float:
     """Execute a parallel DOE with a custom `main_mda_name`.
 
@@ -48,7 +48,7 @@ def generate_parallel_doe(
         The optimum solution of the parallel DOE scenario.
     """
     design_space = SobieskiDesignSpace()
-    settings = MDA_FACTORY.get_class(main_mda_name).settings_class(**main_mda_settings)
+    settings = mda_factory.get_class(main_mda_name).settings_class(**main_mda_settings)
     scenario = create_scenario(
         create_discipline([
             "SobieskiPropulsion",

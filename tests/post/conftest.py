@@ -19,7 +19,7 @@ import pytest
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.doe.diagonal_doe.diagonal_doe import DiagonalDOE
 from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.openturns.openturns import OT_LHS_Settings
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
@@ -112,7 +112,7 @@ def common_problem_():
 def common_problem_lhs_():
     """A dummy optimization problem to check post-processors."""
     problem = Rosenbrock()
-    DOE_LIBRARY_FACTORY.execute(
+    doe_library_factory.execute(
         problem,
         settings=OT_LHS_Settings(n_samples=20, eval_jac=True),
     )

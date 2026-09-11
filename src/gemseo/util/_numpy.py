@@ -28,22 +28,22 @@ if TYPE_CHECKING:
 
     from numpy import ndarray
 
-COMPLEX128_DTYPE: Final = dtype("complex128")
+complex128_dtype: Final = dtype("complex128")
 """The NumPy complex number type with double-precision imaginary and real parts."""
 
-FLOAT64_DTYPE: Final = dtype("float64")
+float64_dtype: Final = dtype("float64")
 """The NumPy double-precision floating-point number type."""
 
-INT32_DTYPE: Final = dtype("int32")
+int32_dtype: Final = dtype("int32")
 """The NumPy signed integer type with 32 bits."""
 
-INT64_DTYPE: Final = dtype("int64")
+int64_dtype: Final = dtype("int64")
 """The NumPy signed integer type with 64 bits."""
 
-UINT32_DTYPE: Final = dtype("uint32")
+uint32_dtype: Final = dtype("uint32")
 """The NumPy unsigned integer type with 32 bits."""
 
-UINT64_DTYPE: Final = dtype("uint64")
+uint64_dtype: Final = dtype("uint64")
 """The NumPy unsigned integer type with 64 bits."""
 
 
@@ -81,7 +81,7 @@ def get_common_dtype(arrays: Iterable[ndarray]) -> dtype:
     for array_ in arrays:
         kind = array_.dtype.kind
         if kind == "c":
-            return COMPLEX128_DTYPE
+            return complex128_dtype
 
         if kind == "i":
             at_least_one_integer = True
@@ -90,12 +90,12 @@ def get_common_dtype(arrays: Iterable[ndarray]) -> dtype:
             at_least_one_float = True
 
     if at_least_one_float:
-        return FLOAT64_DTYPE
+        return float64_dtype
 
     if at_least_one_integer:
-        return INT64_DTYPE
+        return int64_dtype
 
-    return FLOAT64_DTYPE
+    return float64_dtype
 
 
 def hash_array(array: ndarray) -> str:
@@ -119,10 +119,10 @@ def hash_array(array: ndarray) -> str:
     Returns:
         The hexadecimal digest of the array.
     """
-    if array.dtype == INT32_DTYPE:
-        array = array.astype(INT64_DTYPE)
-    elif array.dtype == UINT32_DTYPE:
-        array = array.astype(UINT64_DTYPE)
+    if array.dtype == int32_dtype:
+        array = array.astype(int64_dtype)
+    elif array.dtype == uint32_dtype:
+        array = array.astype(uint64_dtype)
 
     # xxh3_64 requires C-contiguous data and view() requires at least one dimension;
     # ravel() returns a flat C-contiguous array and copies only when required.

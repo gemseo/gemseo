@@ -69,7 +69,7 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     name: str
     """The name of the transformer."""
 
-    CROSSED: ClassVar[bool] = False
+    crossed: ClassVar[bool] = False
     """Whether the [fit()][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer.fit] method requires two data arrays."""  # noqa: E501
 
     def __init__(self, name: str = "", **parameters: ParameterType) -> None:
@@ -252,5 +252,5 @@ class BaseTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 class TransformerFactory(BaseFactory):
     """A factory of transformers."""
 
-    _CLASS = BaseTransformer
-    _PACKAGE_NAMES = ("gemseo.machine_learning.transformer",)
+    _class: ClassVar[type[BaseTransformer]] = BaseTransformer
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.machine_learning.transformer",)

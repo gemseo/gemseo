@@ -67,7 +67,7 @@ def _get_ot_distribution_factories() -> dict[str, type[DistributionFactory]]:
 class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
     """Fit a probability distribution to data using the OpenTURNS library."""
 
-    _OT_DISTRIBUTION_NAMES_TO_OT_FACTORIES: Final[
+    _ot_distribution_names_to_ot_factories: Final[
         dict[str, type[DistributionFactory]]
     ] = _get_ot_distribution_factories()
 
@@ -75,7 +75,7 @@ class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
         "DistributionName",
         {
             convert_camel_case_to_screaming_snake_case(name): name
-            for name in sorted(_OT_DISTRIBUTION_NAMES_TO_OT_FACTORIES.keys())
+            for name in sorted(_ot_distribution_names_to_ot_factories.keys())
         },
     )
 
@@ -86,7 +86,7 @@ class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
 
     default_fitting_criterion: ClassVar[FittingCriterion] = FittingCriterion.BIC
 
-    _CRITERIA_TO_WRAPPED_OBJECTS: ClassVar[dict[FittingCriterion, FittingTest]] = {
+    _criteria_to_wrapped_objects: ClassVar[dict[FittingCriterion, FittingTest]] = {
         FittingCriterion.BIC: FittingTest.BIC,
         FittingCriterion.CHI_SQUARED: FittingTest.ChiSquared,
         FittingCriterion.KOLMOGOROV: FittingTest.Kolmogorov,
@@ -97,7 +97,7 @@ class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
         {"CHI_SQUARED": "ChiSquared", "KOLMOGOROV": "Kolmogorov"},
     )
 
-    _FITTING_CRITERIA_TO_MINIMIZE: ClassVar[set[FittingCriterion]] = {
+    _fitting_criteria_to_minimize: ClassVar[set[FittingCriterion]] = {
         FittingCriterion.BIC
     }
 
@@ -110,7 +110,7 @@ class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
         self,
         distribution: DistributionName,
     ) -> OTDistribution:
-        ot_factory = self._OT_DISTRIBUTION_NAMES_TO_OT_FACTORIES[distribution]
+        ot_factory = self._ot_distribution_names_to_ot_factories[distribution]
         fitted_distribution = ot_factory().build(self._samples)
         return OTDistribution(
             OTDistribution_Settings(
@@ -129,7 +129,7 @@ class OTDistributionFitter(BaseDistributionFitter[OTDistribution]):
             distribution = self.fit(distribution)
 
         openturns_distribution = distribution.distribution
-        openturns_test = self._CRITERIA_TO_WRAPPED_OBJECTS[criterion]
+        openturns_test = self._criteria_to_wrapped_objects[criterion]
         if criterion in {t.value for t in self.SignificanceTest}:
             return openturns_test(self._samples, openturns_distribution, level)
 

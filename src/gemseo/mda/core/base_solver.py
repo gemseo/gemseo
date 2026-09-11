@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import MutableStrKeyMapping
     from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseMDASolver(BaseMDA):
@@ -227,7 +227,7 @@ class BaseMDASolver(BaseMDA):
             return True
 
         if self._current_iter >= self.settings.max_mda_iter:
-            LOGGER.warning(
+            logger.warning(
                 "%s has reached its maximum number of iterations, "
                 "but the normalized residual norm %s is still above the tolerance %s.",
                 self.name,
@@ -240,7 +240,7 @@ class BaseMDASolver(BaseMDA):
             self.__n_consecutive_unsuccessful_iterations
             >= self.settings.max_consecutive_unsuccessful_iterations
         ):
-            LOGGER.warning(
+            logger.warning(
                 "%s has reached its maximum number of unsuccessful iterations, "
                 "but the normalized residual norm %s is still above the tolerance %s.",
                 self.name,
@@ -487,12 +487,12 @@ class BaseMDASolver(BaseMDA):
         self._current_iter += 1
 
         self.io.update_output_data({
-            self.NORMALIZED_RESIDUAL_NORM: array([self.normalized_residual_norm])
+            self.normalized_residual_norm_name: array([self.normalized_residual_norm])
         })
 
         if self.settings.log_convergence:
             msg = "{} running... Normalized residual norm = {} (iter. {})"
-            LOGGER.info(
+            logger.info(
                 msg.format(
                     self.name,
                     f"{self.normalized_residual_norm:.2e}",

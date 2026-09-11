@@ -36,8 +36,8 @@ from numpy import sin
 from numpy import sqrt
 from numpy import sum as np_sum
 
-from gemseo.ode.factory import ODE_SOLVER_LIBRARY_FACTORY
 from gemseo.ode.factory import ODESolverLibraryFactory
+from gemseo.ode.factory import ode_solver_library_factory
 from gemseo.ode.problem import ODEProblem
 from gemseo.ode.problem import ODEResult
 from gemseo.ode.scipy_ode.scipy_ode import ScipyODEAlgos
@@ -107,7 +107,7 @@ def test_ode_problem_1d(times_eval) -> None:
 
     settings = DOP853_Settings(first_step=1e-6)
     assert isinstance(
-        ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings),
+        ode_solver_library_factory.execute(problem, settings=settings),
         ODEResult,
     )
 
@@ -152,8 +152,8 @@ def test_ode_problem_2d() -> None:
     )
     problem.check_jacobian(array([0.0, 1.0]))
     algo_name = "DOP853"
-    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-6)
-    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
+    settings = ode_solver_library_factory.create_settings(algo_name, first_step=1e-6)
+    ode_solver_library_factory.execute(problem, settings=settings)
     assert problem.result.algorithm_has_converged
     assert problem.result.algorithm_name == algo_name
     assert problem.result.state_trajectories is not None
@@ -310,7 +310,7 @@ def test_unconverged(caplog) -> None:
         return state**2
 
     problem = ODEProblem(_func, array([1]), array([0.0, 1.0]))
-    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-6)
+    settings = ode_solver_library_factory.create_settings(algo_name, first_step=1e-6)
     ODESolverLibraryFactory().execute(problem, settings=settings)
 
     assert not problem.result.algorithm_has_converged
@@ -338,7 +338,7 @@ def test_problem_without_given_time_interval():
         times=time_interval,
         solve_at_algorithm_times=True,
     )
-    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-6)
+    settings = ode_solver_library_factory.create_settings(algo_name, first_step=1e-6)
     ODESolverLibraryFactory().execute(problem, settings=settings)
     reference_sol = exp(problem.result.times)
     assert problem.result.algorithm_has_converged
@@ -353,8 +353,8 @@ def test_inconsistent_space_and_time_shapes():
 
     problem = ODEProblem(_func, initial_state=array([1]), times=linspace(0.0, 0.5, 10))
     times_2 = linspace(0.0, 0.5, 3)
-    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-6)
-    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
+    settings = ode_solver_library_factory.create_settings(algo_name, first_step=1e-6)
+    ode_solver_library_factory.execute(problem, settings=settings)
 
     problem.result.times = times_2
 
@@ -391,8 +391,8 @@ def test_terminating_event() -> None:
         event_functions=(terminating_impact,),
     )
 
-    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-8)
-    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
+    settings = ode_solver_library_factory.create_settings(algo_name, first_step=1e-8)
+    ode_solver_library_factory.execute(problem, settings=settings)
 
     reference_sol = exact_solution(problem.result.times)
     assert allclose(reference_sol, problem.result.state_trajectories[0, :], atol=1e-6)
@@ -425,8 +425,8 @@ def test_terminating_event_fixed_times() -> None:
         event_functions=(terminating_impact,),
     )
 
-    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-8)
-    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
+    settings = ode_solver_library_factory.create_settings(algo_name, first_step=1e-8)
+    ode_solver_library_factory.execute(problem, settings=settings)
 
     reference_sol = exact_solution(problem.result.times)
     impact_instant = sqrt(-2 * initial_height / gravity_acceleration)
@@ -460,8 +460,8 @@ def test_terminating_event_outside_time_interval() -> None:
         event_functions=(terminating_impact,),
     )
 
-    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-8)
-    ODE_SOLVER_LIBRARY_FACTORY.execute(problem, settings=settings)
+    settings = ode_solver_library_factory.create_settings(algo_name, first_step=1e-8)
+    ode_solver_library_factory.execute(problem, settings=settings)
 
     reference_sol = exact_solution(problem.result.times)
     assert allclose(reference_sol, problem.result.state_trajectories[0, :], atol=1e-6)
@@ -505,9 +505,9 @@ def test_multiple_terminating_events() -> None:
         event_functions=(terminating_impact_ceiling, terminating_impact_floor),
     )
 
-    settings = ODE_SOLVER_LIBRARY_FACTORY.create_settings(algo_name, first_step=1e-8)
-    ODE_SOLVER_LIBRARY_FACTORY.execute(problem_1, settings=settings)
-    ODE_SOLVER_LIBRARY_FACTORY.execute(problem_2, settings=settings)
+    settings = ode_solver_library_factory.create_settings(algo_name, first_step=1e-8)
+    ode_solver_library_factory.execute(problem_1, settings=settings)
+    ode_solver_library_factory.execute(problem_2, settings=settings)
 
     reference_sol = exact_solution(problem_1.result.times)
 

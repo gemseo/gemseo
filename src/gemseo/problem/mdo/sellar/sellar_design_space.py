@@ -24,11 +24,11 @@ from numpy import array
 from numpy import ones
 from strenum import StrEnum
 
-from gemseo.problem.mdo.sellar.variable import X_1
-from gemseo.problem.mdo.sellar.variable import X_2
-from gemseo.problem.mdo.sellar.variable import X_SHARED
-from gemseo.problem.mdo.sellar.variable import Y_1
-from gemseo.problem.mdo.sellar.variable import Y_2
+from gemseo.problem.mdo.sellar.variable import x_1
+from gemseo.problem.mdo.sellar.variable import x_2
+from gemseo.problem.mdo.sellar.variable import x_shared
+from gemseo.problem.mdo.sellar.variable import y_1
+from gemseo.problem.mdo.sellar.variable import y_2
 from gemseo.space.design import DesignSpace
 
 
@@ -63,10 +63,10 @@ class SellarDesignSpace(DesignSpace):
             add_couplings: Whether to add the coupling variables to the design space.
         """  # noqa: D205 D212
         super().__init__()
-        self.add_variable(X_1, lower_bound=0.0, upper_bound=10.0, value=ones(n), size=n)
-        self.add_variable(X_2, lower_bound=0.0, upper_bound=10.0, value=ones(n), size=n)
+        self.add_variable(x_1, lower_bound=0.0, upper_bound=10.0, value=ones(n), size=n)
+        self.add_variable(x_2, lower_bound=0.0, upper_bound=10.0, value=ones(n), size=n)
         self.add_variable(
-            X_SHARED,
+            x_shared,
             2,
             lower_bound=(-10, 0.0),
             upper_bound=(10.0, 10.0),
@@ -74,14 +74,14 @@ class SellarDesignSpace(DesignSpace):
         )
         if add_couplings:
             self.add_variable(
-                Y_1,
+                y_1,
                 lower_bound=-100.0,
                 upper_bound=100.0,
                 value=ones(n),
                 size=n,
             )
             self.add_variable(
-                Y_2,
+                y_2,
                 lower_bound=-100.0,
                 upper_bound=100.0,
                 value=ones(n),

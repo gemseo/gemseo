@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.util.testing.helper import assert_exception
 
@@ -30,7 +30,7 @@ from gemseo.util.testing.helper import assert_exception
 @pytest.fixture
 def factory():
     """The DOE factory."""
-    return DOE_LIBRARY_FACTORY
+    return doe_library_factory
 
 
 def test_is_available(factory) -> None:

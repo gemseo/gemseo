@@ -52,8 +52,8 @@ classDiagram
 
     class BaseMLModel {
         <<abstract>>
-       +SHORT_NAME
-       +LIBRARY
+       +short_name
+       +library
        +model
        +is_trained
        +learning_set

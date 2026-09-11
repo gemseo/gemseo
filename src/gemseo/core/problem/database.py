@@ -57,8 +57,8 @@ from gemseo.core.problem._hdf_database import HDFDatabase
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.optimization_dataset import OptimizationDataset
 from gemseo.space.design import DesignSpace
-from gemseo.util._compatibility.numpy import NUMPY_GREATER_THAN_2
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util._compatibility.numpy import numpy_greater_than_2
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.ggobi_export import save_data_arrays_to_xml
 from gemseo.util.hashable_ndarray import HashableNdarray
 from gemseo.util.string import convert_strings_to_iterable
@@ -88,7 +88,7 @@ ListenerType = Callable[[DatabaseKeyType], None]
 [Database][gemseo.core.problem.database.Database].
 """
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Database(Mapping):
@@ -140,7 +140,7 @@ class Database(Mapping):
           the [store()][gemseo.core.problem.database.Database.store] method,
           the [input_space][gemseo.core.problem.database.Database.input_space]
           will include a single variable called
-          [DEFAULT_INPUT_NAME][gemseo.core.problem.database.Database.DEFAULT_INPUT_NAME],
+          [default_input_name][gemseo.core.problem.database.Database.default_input_name],
           with the right dimension;
         * `output_name`: either the name of the function
           that has been evaluated at `x_vect`,
@@ -156,16 +156,16 @@ class Database(Mapping):
     name: str
     """The name of the database."""
 
-    DEFAULT_INPUT_NAME: ClassVar[str] = "input"
+    default_input_name: ClassVar[str] = "input"
     """The default input name."""
 
-    MISSING_VALUE_TAG: ClassVar[str] = "NA"
+    missing_value_tag: ClassVar[str] = "NA"
     """The tag for a missing value."""
 
-    GRAD_TAG: ClassVar[str] = "@"
+    grad_tag: ClassVar[str] = "@"
     """The tag prefixing a function name to make it a gradient name.
 
-    E.g. `"@f"` is the name of the gradient of `"f"` when `GRAD_TAG == "@"`.
+    E.g. `"@f"` is the name of the gradient of `"f"` when `grad_tag == "@"`.
     """
 
     __data: dict[HashableNdarray, DatabaseValueType]
@@ -213,7 +213,7 @@ class Database(Mapping):
         """The input space."""
         if self and not self.__input_space:
             self.__input_space.add_variable(
-                self.DEFAULT_INPUT_NAME, size=self.get_last_n_x_vect(1)[0].size
+                self.default_input_name, size=self.get_last_n_x_vect(1)[0].size
             )
 
         return self.__input_space
@@ -722,7 +722,7 @@ class Database(Mapping):
         output_names = set()
         for output_name_to_value in self.__data.values():
             for outputs in output_name_to_value:
-                if skip_grad and outputs.startswith(self.GRAD_TAG):
+                if skip_grad and outputs.startswith(self.grad_tag):
                     continue
                 output_names.add(outputs)
 
@@ -732,7 +732,7 @@ class Database(Mapping):
         self,
         function_names: Iterable[str] = (),
         add_missing_tag: bool = False,
-        missing_tag: str | float = MISSING_VALUE_TAG,
+        missing_tag: str | float = missing_value_tag,
     ) -> tuple[list[list[float | ndarray]], list[ndarray]]:
         """Return the history of the inputs and outputs.
 
@@ -832,7 +832,7 @@ class Database(Mapping):
             The database defined in the file.
         """
         if log:
-            LOGGER.info(
+            logger.info(
                 "Importing the database from the file %s at node %s",
                 file_path,
                 hdf_node_path,
@@ -866,7 +866,7 @@ class Database(Mapping):
         self,
         function_names: Iterable[str] = (),
         add_missing_tag: bool = False,
-        missing_tag: str | float = MISSING_VALUE_TAG,
+        missing_tag: str | float = missing_value_tag,
         input_names: str | Iterable[str] = (),
         with_x_vect: bool = True,
     ) -> tuple[NumberArray, list[str], Iterable[str]]:
@@ -1014,7 +1014,7 @@ class Database(Mapping):
     def get_gradient_name(cls, name: str) -> str:
         """Return the name of the gradient related to a function.
 
-        This name is the concatenation of a GRAD_TAG, e.g. '@',
+        This name is the concatenation of a grad_tag, e.g. '@',
         and the name of the function, e.g. 'f'.
         With this example, the name of the gradient is '@f'.
 
@@ -1024,12 +1024,12 @@ class Database(Mapping):
         Returns:
             The name of the gradient based on the name of the function.
         """
-        return f"{cls.GRAD_TAG}{name}"
+        return f"{cls.grad_tag}{name}"
 
     def __str__(self) -> str:
         # The legacy printing option restores the representation of the NumPy scalars
         # used before NumPy 2, it neither exists nor is needed before NumPy 2.
-        context = printoptions(legacy="1.25") if NUMPY_GREATER_THAN_2 else nullcontext()
+        context = printoptions(legacy="1.25") if numpy_greater_than_2 else nullcontext()
         with context:
             return str(self.__data)
 
@@ -1065,11 +1065,11 @@ class Database(Mapping):
         export_gradients: bool = False,
         input_values: Iterable[RealArray] = (),
         dataset_class: type[Dataset] = Dataset,
-        input_group: str = Dataset.DEFAULT_GROUP,
-        output_group: str = Dataset.DEFAULT_GROUP,
-        gradient_group: str = Dataset.GRADIENT_GROUP,
+        input_group: str = Dataset.default_group,
+        output_group: str = Dataset.default_group,
+        gradient_group: str = Dataset.gradient_group,
         optimization_metadata: OptimizationMetadata | None = None,
-        group_to_variables: Mapping[str, Iterable[str]] = READ_ONLY_EMPTY_DICT,
+        group_to_variables: Mapping[str, Iterable[str]] = read_only_empty_dict,
     ) -> Dataset:
         """Export the database to a [Dataset][gemseo.dataset.dataset.Dataset].
 
@@ -1099,7 +1099,7 @@ class Database(Mapping):
         name_to_size = input_space.variable_sizes
         name_to_type = {
             (input_group, name, component): dtype(
-                input_space.VARIABLE_TYPES_TO_DTYPES[type_]
+                input_space.variable_types_to_dtypes[type_]
             )
             for name, type_ in input_space.variable_types.items()
             for component in range(input_space.get_size(name))
@@ -1157,7 +1157,7 @@ class Database(Mapping):
             dataset_name=dataset_name,
             columns=MultiIndex.from_tuples(
                 columns,
-                names=dataset_class.COLUMN_LEVEL_NAMES,
+                names=dataset_class.column_level_names,
             ),
         ).get_view(indices=positions)
         # In case of any future modification of self.input_space,

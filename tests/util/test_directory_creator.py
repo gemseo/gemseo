@@ -27,7 +27,7 @@ import pytest
 from gemseo.util.directory_creator import DirectoryCreator
 from gemseo.util.directory_creator import Naming
 
-BASE_DIR = Path("resource_dir")
+base_dir = Path("resource_dir")
 
 
 @pytest.fixture
@@ -40,10 +40,10 @@ def directories(tmp_wd) -> None:
     3. dir_no_number: a string without any number. Should not be considered.
     4. a file is added in the base directory.
     """
-    (BASE_DIR / "toto1").mkdir(parents=True)
-    (BASE_DIR / "3").mkdir()
-    (BASE_DIR / "dir_no_number").mkdir()
-    filepath = BASE_DIR / "toto.txt"
+    (base_dir / "toto1").mkdir(parents=True)
+    (base_dir / "3").mkdir()
+    (base_dir / "dir_no_number").mkdir()
+    filepath = base_dir / "toto.txt"
     with filepath.open("w") as f:
         f.write("foo")
 
@@ -74,7 +74,7 @@ def test_get_unique_run_folder_path_empty(empty_directory) -> None:
 def test_uuid_folder(tmp_wd, directories) -> None:
     """Test that unique folder based on `UUID` can be written in a non empty
     directory."""
-    dir_creator = DirectoryCreator(Naming.UUID, root_directory=BASE_DIR)
+    dir_creator = DirectoryCreator(Naming.UUID, root_directory=base_dir)
     for _ in range(2):
         folder_name = dir_creator.create()
         assert match(r"[0-9a-fA-F]{12}$", str(folder_name.name)) is not None
@@ -83,7 +83,7 @@ def test_uuid_folder(tmp_wd, directories) -> None:
 def test_run_dir_creator_serialization(tmp_wd) -> None:
     """Test that a DirectoryCreator can be serialized and deserialized in
     `UUID` mode."""
-    unique_dir_generator = DirectoryCreator(Naming.UUID, root_directory=BASE_DIR)
+    unique_dir_generator = DirectoryCreator(Naming.UUID, root_directory=base_dir)
     with open("run_folder.pkl", "wb") as file:
         pickle.dump(unique_dir_generator, file)
 

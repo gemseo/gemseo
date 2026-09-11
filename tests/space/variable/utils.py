@@ -20,13 +20,13 @@ from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 
-KINDS = (ContinuousVariable, IntegerVariable)
+kinds = (ContinuousVariable, IntegerVariable)
 """The kinds of variable whose domain is an interval."""
 
-ALL_KINDS = (*KINDS, DiscreteVariable)
+all_kinds = (*kinds, DiscreteVariable)
 """All the kinds of variable."""
 
-KIND_TO_KWARGS = {
+kind_to_kwargs = {
     ContinuousVariable: {"size": 1, "lower_bound": 0, "upper_bound": 1},
     IntegerVariable: {"size": 1, "lower_bound": 0, "upper_bound": 1},
     # A discrete variable derives its bounds from its choices.

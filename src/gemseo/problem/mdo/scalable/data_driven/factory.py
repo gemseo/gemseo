@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.problem.mdo.scalable.data_driven.model import ScalableModel
 
@@ -28,5 +30,5 @@ from gemseo.problem.mdo.scalable.data_driven.model import ScalableModel
 class ScalableModelFactory(BaseFactory):
     """A factory of scalable models."""
 
-    _CLASS = ScalableModel
-    _PACKAGE_NAMES = ("gemseo.problem.mdo.scalable",)
+    _class: ClassVar[type[ScalableModel]] = ScalableModel
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.problem.mdo.scalable",)

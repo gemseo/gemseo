@@ -32,16 +32,16 @@ from gemseo.core.function.preprocessed_function import PreprocessedFunction
 from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.util._directory_manager.settings import Settings as DirectoryManagerSettings
-from gemseo.util.constant import _CHECK_DESVARS_BOUNDS
-from gemseo.util.constant import _ENABLE_DISCIPLINE_CACHE
-from gemseo.util.constant import _ENABLE_DISCIPLINE_STATISTICS
-from gemseo.util.constant import _ENABLE_DISCIPLINE_STATUS
-from gemseo.util.constant import _ENABLE_FUNCTION_STATISTICS
-from gemseo.util.constant import _ENABLE_PARALLEL_EXECUTION
-from gemseo.util.constant import _ENABLE_PROGRESS_BAR
-from gemseo.util.constant import _VALIDATE_INPUT_DATA
-from gemseo.util.constant import _VALIDATE_OUTPUT_DATA
-from gemseo.util.constant import N_CPUS
+from gemseo.util.constant import _check_desvars_bounds
+from gemseo.util.constant import _enable_discipline_cache
+from gemseo.util.constant import _enable_discipline_statistics
+from gemseo.util.constant import _enable_discipline_status
+from gemseo.util.constant import _enable_function_statistics
+from gemseo.util.constant import _enable_parallel_execution
+from gemseo.util.constant import _enable_progress_bar
+from gemseo.util.constant import _validate_input_data
+from gemseo.util.constant import _validate_output_data
+from gemseo.util.constant import n_cpus
 from gemseo.util.logging import LoggingConfiguration
 
 if TYPE_CHECKING:
@@ -60,43 +60,43 @@ class GlobalConfiguration(
     """Global configuration."""
 
     check_desvars_bounds: bool = Field(
-        default=_CHECK_DESVARS_BOUNDS,
+        default=_check_desvars_bounds,
         description="""Whether to check the membership of design variables in the bounds
 when evaluating the functions
 in [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem].""",
     )
 
     enable_discipline_cache: bool = Field(
-        default=_ENABLE_DISCIPLINE_CACHE,
+        default=_enable_discipline_cache,
         description="Whether to enable the discipline cache.",
     )
 
     enable_discipline_statistics: bool = Field(
-        default=_ENABLE_DISCIPLINE_STATISTICS,
+        default=_enable_discipline_statistics,
         description="""Whether to record execution statistics
 of the disciplines such as
 the execution time, the number of executions and the number of linearizations.""",
     )
 
     enable_discipline_status: bool = Field(
-        default=_ENABLE_DISCIPLINE_STATUS,
+        default=_enable_discipline_status,
         description="Whether to enable discipline statuses.",
     )
 
     enable_function_statistics: bool = Field(
-        default=_ENABLE_FUNCTION_STATISTICS,
+        default=_enable_function_statistics,
         description="""Whether to record the statistics attached to the functions,
 in charge of counting their number of evaluations.""",
     )
 
     enable_parallel_execution: bool = Field(
-        default=_ENABLE_PARALLEL_EXECUTION,
+        default=_enable_parallel_execution,
         description="""Whether to let GEMSEO use parallelism
     (multi-processing or multi-threading) by default.""",
     )
 
     enable_progress_bar: bool = Field(
-        default=_ENABLE_PROGRESS_BAR,
+        default=_enable_progress_bar,
         description="""Whether to enable the progress bar attached to the drivers,
 in charge to log the execution of the process:
 iteration, execution time and objective value.""",
@@ -119,13 +119,13 @@ iteration, execution time and objective value.""",
     )
 
     validate_input_data: bool = Field(
-        default=_VALIDATE_INPUT_DATA,
+        default=_validate_input_data,
         description="""Whether to validate the input data of a discipline
 before execution.""",
     )
 
     validate_output_data: bool = Field(
-        default=_VALIDATE_OUTPUT_DATA,
+        default=_validate_output_data,
         description="""Whether to validate the output data of a discipline
 after execution.""",
     )
@@ -165,7 +165,7 @@ after execution.""",
     @field_validator("enable_parallel_execution")
     @classmethod
     def __validate_enable_parallel_execution(cls, v: bool) -> bool:
-        default_n_processes = N_CPUS if v else 1
+        default_n_processes = n_cpus if v else 1
         BaseMDAParallelSolverSettings.set_default_n_processes(default_n_processes)
         return v
 

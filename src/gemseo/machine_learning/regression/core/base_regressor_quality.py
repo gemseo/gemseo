@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
@@ -35,6 +36,7 @@ from gemseo.machine_learning.resampling.cross_validation import CrossValidation
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.dataset.io_dataset import IODataset
@@ -46,13 +48,15 @@ if TYPE_CHECKING:
 class BaseRegressorQuality(BaseMLModelQuality):
     """The base class to assess the quality of a regressor."""
 
-    __OUTPUT_NAME_SEPARATOR: Final[str] = "#"
+    __output_name_separator: Final[str] = "#"
     """A string to join output names."""
 
-    _GEMSEO_MULTIOUTPUT_TO_SKLEARN_MULTIOUTPUT: Final[dict[bool, str]] = {
-        True: "raw_values",
-        False: "uniform_average",
-    }
+    _gemseo_multioutput_to_sklearn_multioutput: Final[Mapping[bool, str]] = (
+        MappingProxyType({
+            True: "raw_values",
+            False: "uniform_average",
+        })
+    )
     """The map from the argument "multioutput" of GEMSEO to that of sklearn."""
 
     model: BaseMLSupervisedModel
@@ -60,7 +64,7 @@ class BaseRegressorQuality(BaseMLModelQuality):
     def __init__(
         self,
         model: BaseMLSupervisedModel,
-        fit_transformers: bool = BaseMLModelQuality._FIT_TRANSFORMERS,
+        fit_transformers: bool = BaseMLModelQuality._default_fit_transformers,
     ) -> None:
         """
         Args:
@@ -114,12 +118,12 @@ class BaseRegressorQuality(BaseMLModelQuality):
         return self._post_process_measure(
             self._compute_measure(
                 test_data.get_view(
-                    group_names=test_data.OUTPUT_GROUP,
+                    group_names=test_data.output_group,
                     variable_names=self.model.output_names,
                 ).to_numpy(),
                 self.model.predict(
                     test_data.get_view(
-                        group_names=test_data.INPUT_GROUP,
+                        group_names=test_data.input_group,
                         variable_names=self.model.input_names,
                     ).to_numpy()
                 ),
@@ -159,7 +163,7 @@ class BaseRegressorQuality(BaseMLModelQuality):
         n_folds: int = 5,
         samples: Sequence[int] = (),
         multioutput: bool = True,
-        randomize: bool = BaseMLModelQuality._RANDOMIZE,
+        randomize: bool = BaseMLModelQuality._randomize,
         seed: int | None = None,
         as_dict: bool = False,
         store_resampling_result: bool = False,
@@ -270,7 +274,7 @@ class BaseRegressorQuality(BaseMLModelQuality):
         data = atleast_1d(measure)
         names = self.model.output_names
         if not multioutput:
-            return {self.__OUTPUT_NAME_SEPARATOR.join(names): data}
+            return {self.__output_name_separator.join(names): data}
 
         return split_array_to_dict_of_arrays(
             data, self.model.learning_set.variable_name_to_n_components, names

@@ -48,7 +48,7 @@ from gemseo.util.testing.helper import assert_exception
 if TYPE_CHECKING:
     from gemseo.dataset.dataset import Dataset
 
-LEARNING_SIZE = 9
+learning_size = 9
 
 
 @pytest.fixture
@@ -61,11 +61,11 @@ def dataset() -> Dataset:
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y_1")
-    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=learning_size))
     return discipline.cache.to_dataset("dataset_name")
 
 
-@pytest.fixture(params=[{}, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
+@pytest.fixture(params=[{}, GaussianProcessRegressor.default_transformer])
 def model(request, dataset) -> GaussianProcessRegressor:
     """A trained GaussianProcessRegressor."""
     gpr = GaussianProcessRegressor(
@@ -75,7 +75,7 @@ def model(request, dataset) -> GaussianProcessRegressor:
     return gpr
 
 
-@pytest.fixture(params=[{}, GaussianProcessRegressor.DEFAULT_TRANSFORMER])
+@pytest.fixture(params=[{}, GaussianProcessRegressor.default_transformer])
 def model_1d(request, dataset) -> GaussianProcessRegressor:
     """A trained GaussianProcessRegressor with 1d output."""
     gpr = GaussianProcessRegressor(
@@ -89,8 +89,8 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     gpr = GaussianProcessRegressor(dataset)
     assert gpr.algo is not None
-    assert gpr.SHORT_NAME == "GPR"
-    assert gpr.LIBRARY == "scikit-learn"
+    assert gpr.short_name == "GPR"
+    assert gpr.library == "scikit-learn"
 
 
 def test_learn(dataset) -> None:

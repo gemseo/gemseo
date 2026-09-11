@@ -19,10 +19,11 @@ from __future__ import annotations
 import json
 from collections.abc import Sized
 from typing import TYPE_CHECKING
+from typing import Final as Final
 
 from jinja2 import Template
 
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -36,9 +37,9 @@ if TYPE_CHECKING:
 class N2JSON:
     """The JSON structure to be used by the D3.js-based N2 chart."""
 
-    _DEFAULT_GROUP_TEMPLATE = "Group {}"
-    _DEFAULT_WEAKLY_COUPLED_DISCIPLINES = "Weakly coupled disciplines"
-    __NA = "n/a"
+    _default_group_template: Final[str] = "Group {}"
+    _default_weakly_coupled_disciplines: Final[str] = "Weakly coupled disciplines"
+    __na: Final[str] = "n/a"
 
     def __init__(
         self,
@@ -94,7 +95,7 @@ class N2JSON:
     @staticmethod
     def _create_variables_html(
         names: Iterable[str],
-        variable_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_sizes: Mapping[str, int] = read_only_empty_dict,
     ) -> str:
         """Generate the HTML representation of variables from their names and sizes.
 
@@ -214,7 +215,7 @@ class N2JSON:
         """
         disciplines = [disciplines[child - n_groups] for child in children[group]]
         return Template("The disciplines of <b>{{group}}</b>:{{ disciplines }}").render(
-            group=cls._DEFAULT_GROUP_TEMPLATE.format(group),
+            group=cls._default_group_template.format(group),
             disciplines=cls._create_variables_html(disciplines),
         )
 
@@ -378,7 +379,7 @@ class N2JSON:
 
         groups_nodes = [
             {
-                "name": self._DEFAULT_GROUP_TEMPLATE.format(group_index),
+                "name": self._default_group_template.format(group_index),
                 "group": group_index,
                 "description": self._create_group_html(
                     group_index, disciplines, n_groups, children
@@ -389,10 +390,10 @@ class N2JSON:
         ]
 
         group_names = [
-            self._DEFAULT_GROUP_TEMPLATE.format(group_index)
+            self._default_group_template.format(group_index)
             for group_index in range(1, n_groups)
         ]
-        group_names = [self._DEFAULT_WEAKLY_COUPLED_DISCIPLINES, *group_names]
+        group_names = [self._default_weakly_coupled_disciplines, *group_names]
 
         return groups_nodes + disciplines_nodes, group_names
 
@@ -450,14 +451,14 @@ class N2JSON:
         variable_sizes = {}
         for discipline in self.__disciplines:
             for name in discipline.io.input_grammar:
-                if name not in variable_sizes or variable_sizes[name] == self.__NA:
+                if name not in variable_sizes or variable_sizes[name] == self.__na:
                     default_value = discipline.io.input_grammar.defaults.get(name)
                     if hasattr(default_value, "size"):
                         size = default_value.size
                     elif isinstance(default_value, Sized):
                         size = len(default_value)
                     else:
-                        size = self.__NA
+                        size = self.__na
                     variable_sizes[name] = size
 
         return variable_sizes

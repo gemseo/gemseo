@@ -45,7 +45,7 @@ class BaseClustererQuality(BaseMLModelQuality):
     def __init__(
         self,
         model: BaseClusterer,
-        fit_transformers: bool = BaseMLModelQuality._FIT_TRANSFORMERS,
+        fit_transformers: bool = BaseMLModelQuality._default_fit_transformers,
     ) -> None:
         """
         Args:

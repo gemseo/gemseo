@@ -27,4 +27,4 @@ from gemseo.machine_learning._basis.base_ot_iso_basis import BaseOTIsoBasis
 class Haar(BaseOTIsoBasis):  # noqa: F821
     """The Haar multivariate basis."""
 
-    _FACTORY: ClassVar[type[HaarWaveletFactory]] = HaarWaveletFactory
+    _factory: ClassVar[type[HaarWaveletFactory]] = HaarWaveletFactory

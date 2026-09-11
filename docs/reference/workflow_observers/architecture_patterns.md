@@ -47,6 +47,7 @@ Module-level decorator functions in `injector.py` wrap existing methods:
 def execute(self):
     return self._run()
 
+
 # After decoration with _decorate_with_both
 def execute(self):
     observer.start(CallSpec(...))
@@ -70,6 +71,7 @@ def execute(self):
 ```python
 class MyClass(metaclass=WorkflowObserverMeta):
     pass
+
 
 # First instantiation:
 # 1. Metaclass.__call__ invoked
@@ -262,6 +264,7 @@ class CustomWorkflowObserver(BaseWorkflowObserver):
         base_class="mypackage.MyClass",
         method_names_for_both={"execute"},
     )
+
 
 # 2. Register in src/gemseo/util/_workflow_observer/injector.py
 _WorkflowObserverInjector.register(CustomWorkflowObserver)

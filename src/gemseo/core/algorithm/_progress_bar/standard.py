@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING
 from gemseo.core.algorithm._progress_bar.base import BaseProgressBar
 from gemseo.core.algorithm._progress_bar.custom import CustomTqdmProgressBar
 from gemseo.core.algorithm.progress_bar_data.data import ProgressBarData
-from gemseo.core.algorithm.progress_bar_data.factory import PROGRESS_BAR_DATA_FACTORY
+from gemseo.core.algorithm.progress_bar_data.factory import progress_bar_data_factory
 
 if TYPE_CHECKING:
     from gemseo.core.algorithm.progress_bar_data.base import BaseProgressBarData
@@ -71,7 +71,7 @@ class ProgressBar(BaseProgressBar):
         )
         self._tqdm_progress_bar.n = problem.evaluation_counter.current
         if problem._is_optimization:
-            self.__data = PROGRESS_BAR_DATA_FACTORY.create(
+            self.__data = progress_bar_data_factory.create(
                 progress_bar_data_name, self._problem
             )
         else:

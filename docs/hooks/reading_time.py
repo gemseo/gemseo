@@ -41,11 +41,11 @@ if TYPE_CHECKING:
 # The estimation is deliberately simple and self-contained so it is easy to
 # tune: change WORDS_PER_MINUTE, or adjust what estimate_reading_time counts.
 
-WORDS_PER_MINUTE = 200
+words_per_minute = 200
 """The average reading speed used to convert a word count into minutes."""
 
-_FENCED_CODE = re.compile(r"```.*?```", re.DOTALL)
-_HTML_TAG = re.compile(r"<[^>]+>")
+_fenced_code = re.compile(r"```.*?```", re.DOTALL)
+_html_tag = re.compile(r"<[^>]+>")
 
 
 def estimate_reading_time(markdown: str) -> int:
@@ -59,15 +59,15 @@ def estimate_reading_time(markdown: str) -> int:
     Returns:
         The estimated reading time in minutes (at least one).
     """
-    text = _FENCED_CODE.sub(" ", markdown)
-    text = _HTML_TAG.sub(" ", text)
+    text = _fenced_code.sub(" ", markdown)
+    text = _html_tag.sub(" ", text)
     word_count = len(text.split())
-    return max(1, math.ceil(word_count / WORDS_PER_MINUTE))
+    return max(1, math.ceil(word_count / words_per_minute))
 
 
 # --- mkdocs hook -------------------------------------------------------------
 
-_HEADING = re.compile(r"^(#{1,6} .*)$", re.MULTILINE)
+_heading = re.compile(r"^(#{1,6} .*)$", re.MULTILINE)
 
 # Maps ``page.url`` to the estimated reading time in minutes, filled while the
 # pages are rendered and dumped once the build is complete.
@@ -108,8 +108,8 @@ def on_page_markdown(markdown: str, page: Page, **kwargs: Any) -> str:
     # (keeping the character offsets aligned)
     # so a `#` line inside a leading code block
     # is not mistaken for the first heading.
-    masked = _FENCED_CODE.sub(lambda m: " " * len(m.group()), markdown)
-    match = _HEADING.search(masked)
+    masked = _fenced_code.sub(lambda m: " " * len(m.group()), markdown)
+    match = _heading.search(masked)
     if match is None:
         return f"{badge}\n\n{markdown}"
 

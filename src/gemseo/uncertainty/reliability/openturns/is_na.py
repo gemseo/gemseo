@@ -29,4 +29,4 @@ class OT_IS_NA(BaseOTImportanceSampling):  # noqa: N801
 
     settings_class: ClassVar[type[OT_IS_NA_Settings]] = OT_IS_NA_Settings
 
-    _ALGO_CLASS: ClassVar[type[NAIS]] = NAIS
+    _algo_class: ClassVar[type[NAIS]] = NAIS

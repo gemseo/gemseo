@@ -70,7 +70,7 @@ def test__repr_html_(xdsm) -> None:
     """Check the HTML representation."""
     html = xdsm._repr_html_()
     expected = (
-        xdsm._XDSM__XDSM_TEMPLATE.format(xdsm.json_schema)
+        xdsm._XDSM__xdsm_template.format(xdsm.json_schema)
         + "<div class='xdsm-toolbar'></div><div class='xdsm2'></div>"
     )
     assert html == expected

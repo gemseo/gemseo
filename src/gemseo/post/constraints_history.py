@@ -42,7 +42,7 @@ from numpy import linspace
 from numpy import max as np_max
 from numpy import sign
 
-from gemseo.post._engine.colormap import RG_SEISMIC
+from gemseo.post._engine.colormap import rg_seismic
 from gemseo.post.constraints_history_settings import ConstraintsHistory_Settings
 from gemseo.post.core.base_post import BasePost
 
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
     from matplotlib.colors import Colormap
 
 
-_BAND_OPACITY: Final[float] = 0.6
+_band_opacity: Final[float] = 0.6
 """The opacity of the background color bands."""
 
 
@@ -66,16 +66,16 @@ def _fade(colormap: Colormap) -> ListedColormap:
 
     Returns:
         The colormap blended with white, as if drawn with an opacity of
-        [_BAND_OPACITY][gemseo.post.constraints_history._BAND_OPACITY].
+        [_band_opacity][gemseo.post.constraints_history._band_opacity].
     """
     colors = colormap(linspace(0.0, 1.0, colormap.N))
-    return ListedColormap(_BAND_OPACITY * colors + 1.0 - _BAND_OPACITY)
+    return ListedColormap(_band_opacity * colors + 1.0 - _band_opacity)
 
 
-_EQUALITY_COLORMAP: Final[ListedColormap] = _fade(colormaps["seismic"])
+_equality_colormap: Final[ListedColormap] = _fade(colormaps["seismic"])
 """The colormap of the background color bands of the equality constraints."""
 
-_INEQUALITY_COLORMAP: Final[ListedColormap] = _fade(RG_SEISMIC)
+_inequality_colormap: Final[ListedColormap] = _fade(rg_seismic)
 """The colormap of the background color bands of the inequality constraints."""
 
 
@@ -169,11 +169,11 @@ class ConstraintsHistory(BasePost[ConstraintsHistory_Settings]):
             f_name = constraint_name.split("[")[0]
             is_eq_constraint = f_name in eq_constraint_names
             if is_eq_constraint:
-                cmap = _EQUALITY_COLORMAP
+                cmap = _equality_colormap
                 constraint_type = "equality"
                 tolerance = self._optimization_metadata.tolerances.equality
             else:
-                cmap = _INEQUALITY_COLORMAP
+                cmap = _inequality_colormap
                 constraint_type = "inequality"
                 tolerance = self._optimization_metadata.tolerances.inequality
 

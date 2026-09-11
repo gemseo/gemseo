@@ -36,7 +36,7 @@ from typing import NamedTuple
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-SRC_ROOT = Path(__file__).resolve().parent.parent / "src" / "gemseo"
+src_root = Path(__file__).resolve().parent.parent / "src" / "gemseo"
 
 
 class _Finding(NamedTuple):
@@ -58,7 +58,7 @@ def _is_type_checking(test: ast.expr) -> bool:
 
 def _module_dotted_name(path: Path) -> tuple[str, bool]:
     """Return the dotted module name of ``path`` and whether it is a package."""
-    parts = list(path.relative_to(SRC_ROOT.parent).with_suffix("").parts)
+    parts = list(path.relative_to(src_root.parent).with_suffix("").parts)
     is_package = parts[-1] == "__init__"
     if is_package:
         parts = parts[:-1]
@@ -153,18 +153,18 @@ def _second_segment(dotted_module_name: str) -> str:
 
 def _file_package(path: Path) -> str:
     """Return the top-level package of ``path``, or ``<root>`` for direct children."""
-    parts = path.relative_to(SRC_ROOT).parts
+    parts = path.relative_to(src_root).parts
     return parts[0] if len(parts) > 1 else "<root>"
 
 
 def _scan_gemseo_imports() -> tuple[_Finding, ...]:
     """AST-scan every ``*.py`` file under ``src/gemseo`` for module-level imports."""
     findings = []
-    for path in sorted(SRC_ROOT.rglob("*.py")):
+    for path in sorted(src_root.rglob("*.py")):
         source = path.read_text(encoding="utf-8")
         tree = ast.parse(source, filename=str(path))
         module_dotted_name, is_package = _module_dotted_name(path)
-        file_display = path.relative_to(SRC_ROOT.parent).as_posix()
+        file_display = path.relative_to(src_root.parent).as_posix()
         package = _file_package(path)
         for lineno, imported_module in _collect_module_level_imports(
             tree.body, module_dotted_name, is_package
@@ -177,7 +177,7 @@ def _scan_gemseo_imports() -> tuple[_Finding, ...]:
     return tuple(findings)
 
 
-ALL_IMPORTS = _scan_gemseo_imports()
+all_imports = _scan_gemseo_imports()
 
 
 def test_core_imports_no_domain() -> None:
@@ -187,7 +187,7 @@ def test_core_imports_no_domain() -> None:
     allowed_segments = {"core", "util", "space", "dataset"}
     violations = [
         (finding.file, finding.lineno, finding.module)
-        for finding in ALL_IMPORTS
+        for finding in all_imports
         if finding.package == "core" and finding.segment not in allowed_segments
     ]
     assert not violations, (
@@ -200,7 +200,7 @@ def test_core_imports_no_domain() -> None:
 # (their "own domain"; for domains nested under another one, e.g.
 # uncertainty.sensitivity.core, the own domain and the parent domain are the
 # same second-segment: "uncertainty").
-DOMAIN_CORE_PACKAGES: dict[str, str] = {
+domain_core_packages: dict[str, str] = {
     "doe.core": "doe",
     "linear.core": "linear",
     "ode.core": "ode",
@@ -224,7 +224,7 @@ DOMAIN_CORE_PACKAGES: dict[str, str] = {
 # Measured, explicit exceptions: a domain-core SPI package that genuinely needs
 # a sibling top-level domain. Do not widen a rule silently; add a commented,
 # measured entry instead.
-DOMAIN_CORE_EXCEPTIONS: dict[str, set[str]] = {
+domain_core_exceptions: dict[str, set[str]] = {
     # BaseDOELibrary exposes gemseo.optimization.result.OptimizationResult as
     # its default result class.
     "doe.core": {"optimization"},
@@ -253,16 +253,16 @@ def test_domain_core_imports_no_sibling_domain() -> None:
     """Domain-core SPI packages must not depend on sibling top-level domains."""
     base_allowed_segments = {"core", "util", "space", "dataset"}
     violations = []
-    for package, own_domain in DOMAIN_CORE_PACKAGES.items():
+    for package, own_domain in domain_core_packages.items():
         allowed_segments = (
             base_allowed_segments
             | {own_domain}
-            | DOMAIN_CORE_EXCEPTIONS.get(package, set())
+            | domain_core_exceptions.get(package, set())
         )
         prefix = f"gemseo/{package.replace('.', '/')}/"
         violations.extend(
             (finding.file, finding.lineno, finding.module)
-            for finding in ALL_IMPORTS
+            for finding in all_imports
             if finding.file.startswith(prefix)
             and finding.segment not in allowed_segments
         )
@@ -276,7 +276,7 @@ def test_domain_core_imports_no_sibling_domain() -> None:
 # each top-level package is allowed to import from, as measured on the
 # current tree with the scanner above.
 # TODO: shrink these edges in follow-up MRs.
-PACKAGE_DEPENDENCY_ALLOWLIST: dict[str, frozenset[str]] = {
+package_dependency_allowlist: dict[str, frozenset[str]] = {
     "<root>": frozenset({
         "_deprecation",
         "core",
@@ -397,18 +397,18 @@ PACKAGE_DEPENDENCY_ALLOWLIST: dict[str, frozenset[str]] = {
 def test_package_dependency_allowlist() -> None:
     """The measured package-dependency graph must stay within the frozen allowlist."""
     measured_segments: dict[str, set[str]] = {}
-    for finding in ALL_IMPORTS:
+    for finding in all_imports:
         measured_segments.setdefault(finding.package, set()).add(finding.segment)
 
     violations = []
     for package, segments in measured_segments.items():
-        extra_segments = segments - PACKAGE_DEPENDENCY_ALLOWLIST.get(
+        extra_segments = segments - package_dependency_allowlist.get(
             package, frozenset()
         )
         if extra_segments:
             violations.extend(
                 (finding.file, finding.lineno, finding.module)
-                for finding in ALL_IMPORTS
+                for finding in all_imports
                 if finding.package == package and finding.segment in extra_segments
             )
     assert not violations, (

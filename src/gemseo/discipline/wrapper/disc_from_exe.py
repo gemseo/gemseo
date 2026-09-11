@@ -31,6 +31,7 @@ from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import array
 from numpy import ndarray
@@ -45,11 +46,11 @@ from gemseo.util.typing import StrPath
 if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-NUMERICS = [str(j) for j in range(10)]
-INPUT_REGEX = r"GEMSEO_INPUT\{(.*)\}"
-OUTPUT_REGEX = r"GEMSEO_OUTPUT\{(.*)\}"
+numerics: Final[tuple[str, ...]] = tuple(str(j) for j in range(10))
+input_regex: Final[str] = r"GEMSEO_INPUT\{(.*)\}"
+output_regex: Final[str] = r"GEMSEO_OUTPUT\{(.*)\}"
 
 
 class Parser(StrEnum):
@@ -263,10 +264,10 @@ class DiscFromExe(_BaseDiscFromExe):
         name_to_value, self._out_pos = parse_template(self._out_lines, False)
         output_names = name_to_value.keys()
         self.io.output_grammar.update_from_names(output_names)
-        LOGGER.debug(
+        logger.debug(
             "Initialize discipline from template. Input grammar: %s", input_names
         )
-        LOGGER.debug(
+        logger.debug(
             "Initialize discipline from template. Output grammar: %s", output_names
         )
         self.io.input_grammar.defaults = {
@@ -327,7 +328,7 @@ def parse_template(
     Returns:
         A data structure containing the parsed input or output template.
     """
-    regex = re.compile(INPUT_REGEX if grammar_is_input else OUTPUT_REGEX)
+    regex = re.compile(input_regex if grammar_is_input else output_regex)
     # , re.MULTILINE
     name_to_value = {}
     name_to_positions = {}
@@ -466,13 +467,13 @@ def parse_outfile(
                 found_e = True
                 continue
             # Check that we have not reached EOL or space or whatever
-            if char not in NUMERICS:
+            if char not in numerics:
                 break
             if i == maxi - 1:
                 break
 
         output_value = out_text[start:i]
-        LOGGER.info("Parsed %s got output %s", output_name, output_value)
+        logger.info("Parsed %s got output %s", output_name, output_value)
         values[output_name] = array([float(output_value)])
 
     return values

@@ -52,7 +52,7 @@ from scipy.optimize import linprog
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.array_function import NotImplementedCallable
 from gemseo.core.problem.database import Database
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.optimization.core.base_optimization_library import BaseOptimizationLibrary
 from gemseo.optimization.core.base_optimization_library import (
     OptimizationAlgorithmDescription,
@@ -78,7 +78,7 @@ if TYPE_CHECKING:
     from gemseo.optimization.problem import OptimizationResult
     from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class IndividualSubOptimOutput(NamedTuple):
@@ -193,7 +193,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
     _debug_results: Database = Database()
     """The results of the sub-optimizations in debug mode."""
 
-    _RESULT_CLASS: ClassVar[type[OptimizationResult]] = MultiObjectiveOptimizationResult
+    _result_class: ClassVar[type[OptimizationResult]] = MultiObjectiveOptimizationResult
     """The class used to present the result of the optimization."""
 
     __beta_sub_optim: OptimizationProblem | None = None
@@ -234,7 +234,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
     It has the shape `(n_obj, 1)` and it is the diagonal of `__phi`.
     """
 
-    __SUB_OPTIM_CONSTRAINT_NAME: Final[str] = "beta_sub_optim_constraint"
+    __sub_optim_constraint_name: Final[str] = "beta_sub_optim_constraint"
 
     ALGORITHM_INFOS: ClassVar[dict[str, MNBIAlgorithmDescription]] = {
         "MNBI": MNBIAlgorithmDescription(
@@ -253,7 +253,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
 
         The results are used to create the __phi and __utopia arrays.
         """
-        LOGGER.info("Searching for the individual optimum of each objective")
+        logger.info("Searching for the individual optimum of each objective")
         optima = execute(
             self._minimize_objective_component,
             [self.__copy_database_save_minimum],
@@ -424,14 +424,14 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
 
         # Check if phi_beta is in the skippable domains.
         if self._settings.skip_betas and self.__is_skippable(phi_beta):
-            LOGGER.info(
+            logger.info(
                 "Skipping sub-optimization for phi_beta = %s "
                 "because the resulting solution is already known.",
                 phi_beta,
             )
             return ()
 
-        LOGGER.info("Solving mNBI sub-problem for phi_beta = %s", phi_beta)
+        logger.info("Solving mNBI sub-problem for phi_beta = %s", phi_beta)
         beta_sub_optim_constraint = SubOptimConstraint(phi_beta, self.__n_vect, f)
         jac = (
             beta_sub_optim_constraint.compute_jacobian
@@ -440,7 +440,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         )
         beta_sub_cstr = ArrayFunction(
             beta_sub_optim_constraint.compute_output,
-            name=self.__SUB_OPTIM_CONSTRAINT_NAME,
+            name=self.__sub_optim_constraint_name,
             jac=jac,
         )
 
@@ -470,7 +470,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             self.__beta_sub_optim, settings=self._settings.sub_optim_algo_settings
         )
         if not opt_res.is_feasible:
-            LOGGER.warning(
+            logger.warning(
                 "No feasible optimum has been found for phi_beta = %s", phi_beta
             )
         x_min = opt_res.x_opt[:-1]
@@ -598,7 +598,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         try:
             z = solve(lhs, rhs)[m : 2 * m, [0]]
         except LinAlgError:
-            LOGGER.warning(
+            logger.warning(
                 "Could not solve the projection system, projection on the phi simplex "
                 "failed."
             )
@@ -688,9 +688,9 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             )
             raise ValueError(msg)
 
-        if any(c.name == self.__SUB_OPTIM_CONSTRAINT_NAME for c in problem.constraints):
+        if any(c.name == self.__sub_optim_constraint_name for c in problem.constraints):
             msg = (
-                f"The constraint name {self.__SUB_OPTIM_CONSTRAINT_NAME} is protected "
+                f"The constraint name {self.__sub_optim_constraint_name} is protected "
                 f"when using MNBI optimizer."
             )
             raise ValueError(msg)
@@ -730,7 +730,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
                 )
                 raise ValueError(msg)
 
-            LOGGER.warning(
+            logger.warning(
                 "Option `custom_anchor_points` was set. "
                 "The resulting Pareto front might be incomplete."
             )
@@ -740,7 +740,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
 
         if custom_phi_betas:
             if len(custom_phi_betas) != self.__n_sub_optim:
-                LOGGER.warning(
+                logger.warning(
                     "The requested number of sub-optimizations "
                     "does not match the number of custom phi_beta values; "
                     "keeping the latter (%s).",
@@ -764,7 +764,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
                     f"got {custom_phi_beta_sizes}"
                 )
                 raise ValueError(msg)
-            LOGGER.warning(
+            logger.warning(
                 "Option `custom_phi_betas` was set. "
                 "The resulting Pareto front might be incomplete."
             )
@@ -782,7 +782,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             self._debug_results.clear()
 
         if self._settings.n_processes > 1:
-            LOGGER.info("Running mNBI on %s processes", self._settings.n_processes)
+            logger.info("Running mNBI on %s processes", self._settings.n_processes)
 
         # Find the individual optimum phi of each objective function and the utopia
         self.__minimize_objective_components_separately()
@@ -825,7 +825,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
                     "beta", size=self.__n_obj - 1, lower_bound=0.0, upper_bound=1.0
                 )
                 self._settings.doe_algo_settings.n_samples = n_samples
-                lib = DOE_LIBRARY_FACTORY.create(
+                lib = doe_library_factory.create(
                     self._settings.doe_algo_settings.target_class_name
                 )
                 betas = lib.sample_unit_hypercube(
@@ -849,4 +849,4 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
     def _log_result(
         self, problem: OptimizationProblem, max_design_space_dimension_to_log: int
     ) -> None:
-        LOGGER.info("%s", problem.solution)
+        logger.info("%s", problem.solution)

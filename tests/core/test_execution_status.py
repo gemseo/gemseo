@@ -41,7 +41,7 @@ def test_initial_status(execution_status: ExecutionStatus):
     assert execution_status.value == Status.DONE
 
 
-INITIAL_TO_NEW_STATUSES_WITH_ERRORS = {
+initial_to_new_statuses_with_errors = {
     Status.LINEARIZING: {Status.RUNNING, Status.LINEARIZING},
     Status.FAILED: {Status.RUNNING, Status.LINEARIZING},
     Status.RUNNING: {Status.RUNNING, Status.LINEARIZING},
@@ -55,15 +55,15 @@ INITIAL_TO_NEW_STATUSES_WITH_ERRORS = {
         (Status.DONE, Status),
         (
             Status.LINEARIZING,
-            set(Status) - INITIAL_TO_NEW_STATUSES_WITH_ERRORS[Status.LINEARIZING],
+            set(Status) - initial_to_new_statuses_with_errors[Status.LINEARIZING],
         ),
         (
             Status.FAILED,
-            set(Status) - INITIAL_TO_NEW_STATUSES_WITH_ERRORS[Status.FAILED],
+            set(Status) - initial_to_new_statuses_with_errors[Status.FAILED],
         ),
         (
             Status.RUNNING,
-            set(Status) - INITIAL_TO_NEW_STATUSES_WITH_ERRORS[Status.RUNNING],
+            set(Status) - initial_to_new_statuses_with_errors[Status.RUNNING],
         ),
     ],
 )
@@ -78,7 +78,7 @@ def test_value_getter_setter(initial_status: Status, new_statuses: Iterable[Stat
 
 
 @pytest.mark.parametrize(
-    ("initial_status", "new_statuses"), INITIAL_TO_NEW_STATUSES_WITH_ERRORS.items()
+    ("initial_status", "new_statuses"), initial_to_new_statuses_with_errors.items()
 )
 def test_value_setter_errors(
     initial_status: Status, new_statuses: Iterable[Status], snapshot

@@ -47,10 +47,10 @@ from gemseo.dataset.io_dataset import IODataset
 from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
 from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.problem.mdo.sellar.sellar_design_space import SellarDesignSpace
-from gemseo.util._numpy import INT32_DTYPE
-from gemseo.util._numpy import INT64_DTYPE
-from gemseo.util._numpy import UINT32_DTYPE
-from gemseo.util._numpy import UINT64_DTYPE
+from gemseo.util._numpy import int32_dtype
+from gemseo.util._numpy import int64_dtype
+from gemseo.util._numpy import uint32_dtype
+from gemseo.util._numpy import uint64_dtype
 from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.testing.helper import assert_exception
 
@@ -59,29 +59,29 @@ if TYPE_CHECKING:
 
     from gemseo.core.cache.memory_full import MemoryFullCache
 
-DIR_PATH = Path(__file__).parent
+dir_path = Path(__file__).parent
 
-FACTORY = CacheFactory()
+factory = CacheFactory()
 
 
 @pytest.fixture
 def simple_cache():
-    return FACTORY.create("SimpleCache")
+    return factory.create("SimpleCache")
 
 
 @pytest.fixture
 def memory_full_cache():
-    return FACTORY.create("MemoryFullCache")
+    return factory.create("MemoryFullCache")
 
 
 @pytest.fixture
 def memory_full_cache_loc():
-    return FACTORY.create("MemoryFullCache", is_memory_shared=False)
+    return factory.create("MemoryFullCache", is_memory_shared=False)
 
 
 @pytest.fixture
 def hdf5_cache(tmp_wd):
-    return FACTORY.create(
+    return factory.create(
         "HDF5Cache", hdf_file_path="dummy.h5", hdf_node_path="DummyCache"
     )
 
@@ -103,7 +103,7 @@ def test_io_names(simple_cache):
     assert simple_cache.output_names == ["c", "d"]
 
 
-@pytest.mark.parametrize("cache", map(FACTORY.create, FACTORY.class_names))
+@pytest.mark.parametrize("cache", map(factory.create, factory.class_names))
 def test_tolerance(cache, snapshot):
     """Verify tolerance property."""
     assert cache.tolerance == 0.0
@@ -261,7 +261,7 @@ def test_hash_data_dict() -> None:
 
 
 @pytest.mark.parametrize(
-    ("dtype_32", "dtype_64"), [(INT32_DTYPE, INT64_DTYPE), (UINT32_DTYPE, UINT64_DTYPE)]
+    ("dtype_32", "dtype_64"), [(int32_dtype, int64_dtype), (uint32_dtype, uint64_dtype)]
 )
 def test_hash_data_32_bit_integers(dtype_32, dtype_64) -> None:
     """Check that a 32-bit integer array is hashed as its 64-bit equivalent."""
@@ -316,7 +316,7 @@ def test_det_hash(
         tmp_wd: Fixture to move into a temporary directory.
     """
     # Use a temporary copy of the file in case the test fails.
-    shutil.copy(str(DIR_PATH / hdf_name), tmp_wd)
+    shutil.copy(str(dir_path / hdf_name), tmp_wd)
     disc = create_discipline("AutoPyDiscipline", py_func=func)
     disc.set_cache("HDF5Cache", hdf_file_path=hdf_name)
     out = disc.execute({"x": inputs})
@@ -513,13 +513,13 @@ def test_hash_data_dict_keys() -> None:
     assert hash_data(data) != hash_data({"a": array([1]), "c": array([1])})
 
 
-CACHE_FILE_NAME = "cache.h5"
+cache_file_name = "cache.h5"
 
 
 @pytest.fixture
 def h5_file(tmp_wd) -> Iterator[h5py.File]:
     """Provide an empty h5 file object and close it afterward."""
-    h5_file = h5py.File(CACHE_FILE_NAME, mode="a")
+    h5_file = h5py.File(cache_file_name, mode="a")
     yield h5_file
     h5_file.close()
 
@@ -531,7 +531,7 @@ def test_check_version_new_file() -> None:
 
 def test_check_version_empty_file(h5_file) -> None:
     """Verify that an empty file passes the file format version check."""
-    HDF5FileSingleton(CACHE_FILE_NAME)
+    HDF5FileSingleton(cache_file_name)
 
 
 def test_check_version_missing(h5_file, snapshot) -> None:
@@ -539,21 +539,21 @@ def test_check_version_missing(h5_file, snapshot) -> None:
     h5_file["foo"] = "bar"
 
     with assert_exception(ValueError, snapshot):
-        HDF5FileSingleton(CACHE_FILE_NAME)
+        HDF5FileSingleton(cache_file_name)
 
 
 def test_check_version_greater(h5_file, snapshot) -> None:
     """Verify that a non-empty file with greater file format version raises."""
     h5_file["foo"] = "bar"
-    h5_file.attrs["version"] = HDF5FileSingleton.FILE_FORMAT_VERSION + 1
+    h5_file.attrs["version"] = HDF5FileSingleton.file_format_version + 1
 
     with assert_exception(ValueError, snapshot):
-        HDF5FileSingleton(CACHE_FILE_NAME)
+        HDF5FileSingleton(cache_file_name)
 
 
 def test_update_file_format(tmp_wd) -> None:
     """Check that updating format changes both hashes and version tag."""
-    singleton = HDF5FileSingleton(CACHE_FILE_NAME)
+    singleton = HDF5FileSingleton(cache_file_name)
     singleton.write_data(
         {"x": array([1.0]), "y": array([2.0, 3.0])},
         HDF5Cache.Group.INPUTS,
@@ -566,17 +566,17 @@ def test_update_file_format(tmp_wd) -> None:
         2,
         "foo",
     )
-    with h5py.File(CACHE_FILE_NAME, mode="r+") as h5_file:
+    with h5py.File(cache_file_name, mode="r+") as h5_file:
         old_hash_1 = array([1], dtype="bytes")
         old_hash_2 = array([2], dtype="bytes")
-        h5_file["foo"]["1"][HDF5FileSingleton.HASH_TAG][0] = old_hash_1
-        h5_file["foo"]["2"][HDF5FileSingleton.HASH_TAG][0] = old_hash_2
+        h5_file["foo"]["1"][HDF5FileSingleton.hash_tag][0] = old_hash_1
+        h5_file["foo"]["2"][HDF5FileSingleton.hash_tag][0] = old_hash_2
 
-    HDF5Cache.update_file_format(CACHE_FILE_NAME)
-    with h5py.File(CACHE_FILE_NAME, mode="a") as h5_file:
-        assert h5_file.attrs["version"] == HDF5FileSingleton.FILE_FORMAT_VERSION
-        assert h5_file["foo"]["1"][HDF5FileSingleton.HASH_TAG][0] != old_hash_1
-        assert h5_file["foo"]["2"][HDF5FileSingleton.HASH_TAG][0] != old_hash_2
+    HDF5Cache.update_file_format(cache_file_name)
+    with h5py.File(cache_file_name, mode="a") as h5_file:
+        assert h5_file.attrs["version"] == HDF5FileSingleton.file_format_version
+        assert h5_file["foo"]["1"][HDF5FileSingleton.hash_tag][0] != old_hash_1
+        assert h5_file["foo"]["2"][HDF5FileSingleton.hash_tag][0] != old_hash_2
 
 
 def test_update_file_format_from_deprecated_file(tmp_wd) -> None:
@@ -586,15 +586,15 @@ def test_update_file_format_from_deprecated_file(tmp_wd) -> None:
     #     cache = HDF5Cache("cache_with_deprecated_format.h5", "node")
     #     cache.cache_outputs({'x': array([1.])}, ['x'], {'y': array([2.])}, ['y'])
 
-    shutil.copy(str(DIR_PATH / deprecated_cache_path), deprecated_cache_path)
+    shutil.copy(str(dir_path / deprecated_cache_path), deprecated_cache_path)
     HDF5Cache.update_file_format(deprecated_cache_path)
 
     cache_path = Path("cache.h5")
     cache = HDF5Cache(hdf_file_path=cache_path)
     cache.cache_outputs({"x": array([1.0])}, {"y": array([2.0])})
 
-    file_format_version = HDF5FileSingleton.FILE_FORMAT_VERSION
-    hash_tag = HDF5FileSingleton.HASH_TAG
+    file_format_version = HDF5FileSingleton.file_format_version
+    hash_tag = HDF5FileSingleton.hash_tag
     inputs_group = HDF5Cache.Group.INPUTS
     outputs_group = HDF5Cache.Group.OUTPUTS
     with h5py.File(str(cache_path), mode="a") as h5_file:  # noqa: SIM117
@@ -674,7 +674,7 @@ def test_export_to_dataset_and_entries(
         assert "x" in dataset.input_names
         assert "y" in dataset.output_names
     else:
-        assert dataset.group_names == [dataset.PARAMETER_GROUP]
+        assert dataset.group_names == [dataset.parameter_group]
 
     assert dataset.get_view(variable_names="x").to_numpy()[0, 0] == 1.0
     assert dataset.get_view(variable_names="y").to_numpy()[0, 0] == 2.0

@@ -34,7 +34,7 @@ from __future__ import annotations
 
 from gemseo import execute_post
 from gemseo.doe import OT_OPT_LHS_Settings
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.post import ParetoFront_Settings
 from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 
@@ -45,7 +45,7 @@ from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 # (see [BinhKorn][gemseo.problem.multiobjective_optimization.binh_korn.BinhKorn])
 # and sample it with an optimized LHS:
 problem = BinhKorn()
-DOE_LIBRARY_FACTORY.execute(problem, OT_OPT_LHS_Settings(n_samples=100))
+doe_library_factory.execute(problem, OT_OPT_LHS_Settings(n_samples=100))
 
 # %%
 # ### 2. Plot the Pareto front without non-feasible points

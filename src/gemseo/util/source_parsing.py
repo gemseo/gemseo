@@ -27,11 +27,12 @@ import re
 from inspect import getfullargspec
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_options_doc(
@@ -79,16 +80,16 @@ def get_callable_argument_defaults(
 
 # regex pattern for finding the arguments section of a Google docstring
 # docstring-inheritance replaces the section title "Args" with "Parameters"
-RE_PATTERN_ARGS_SECTION = re.compile(
+re_pattern_args_section: Final[re.Pattern[str]] = re.compile(
     r"(?:Args)\s*:\s*\n(.*?)(?:\n\n\S|$)", flags=re.DOTALL
 )
 
 # regex pattern for finding the arguments names and description of a Google docstring
-RE_PATTERN_ARGS = re.compile(
+re_pattern_args: Final[re.Pattern[str]] = re.compile(
     r"\**(\w+)\s*:\s*(.*?)(?:$|(?=\n\**\w+\s*:))", flags=re.DOTALL
 )
 
-RE_PATTERN_RETURN = re.compile(r"Returns:\s*(.*)", re.DOTALL)
+re_pattern_return: Final[re.Pattern[str]] = re.compile(r"Returns:\s*(.*)", re.DOTALL)
 
 
 def get_return_description(f: Callable[[Any], Any]) -> str | list[str]:
@@ -101,7 +102,7 @@ def get_return_description(f: Callable[[Any], Any]) -> str | list[str]:
         The description.
     """
     try:
-        return RE_PATTERN_RETURN.findall(f.__doc__)[0].strip()
+        return re_pattern_return.findall(f.__doc__)[0].strip()
     except TypeError:
         return ""
 
@@ -117,11 +118,11 @@ def parse_google(docstring: str, n_arguments: int = 0) -> dict[str, str]:
         The parsed docstring with the function arguments names bound to their
         descriptions.
     """
-    args_sections = RE_PATTERN_ARGS_SECTION.findall(docstring)
+    args_sections = re_pattern_args_section.findall(docstring)
 
     if len(args_sections) != 1:
         if n_arguments:
-            LOGGER.warning("The Args section is missing.")
+            logger.warning("The Args section is missing.")
         return {}
 
     # remove leading common blank spaces
@@ -129,7 +130,7 @@ def parse_google(docstring: str, n_arguments: int = 0) -> dict[str, str]:
 
     parsed_doc = {}
 
-    for name, desc in RE_PATTERN_ARGS.findall(args_section):
+    for name, desc in re_pattern_args.findall(args_section):
         # remove multiple blank spaces
         parsed_doc[name] = re.sub(
             r"\n ", "\n", re.sub(r"[\r\t\f\v ]+", " ", desc).strip()

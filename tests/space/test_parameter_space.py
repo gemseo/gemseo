@@ -504,11 +504,11 @@ def test_str_and_tabular_view() -> None:
     assert "Parameter space" in str(space)
     tabular_view = space.get_tabular_view()
     assert "Parameter space" in tabular_view
-    assert space._TRANSFORMATION in tabular_view
-    assert space._SUPPORT in tabular_view
-    assert space._MEAN in tabular_view
-    assert space._STANDARD_DEVIATION in tabular_view
-    assert space._RANGE in tabular_view
+    assert space._transformation in tabular_view
+    assert space._support in tabular_view
+    assert space._mean in tabular_view
+    assert space._standard_deviation in tabular_view
+    assert space._range in tabular_view
 
 
 def test_denormalize_vect() -> None:
@@ -627,14 +627,14 @@ def test_init_from_dataset_group(io_dataset) -> None:
         io_dataset (Dataset): An input-output dataset.
     """
     parameter_space = ParameterSpace.init_from_dataset(
-        io_dataset, groups=[io_dataset.INPUT_GROUP]
+        io_dataset, groups=[io_dataset.input_group]
     )
     for name in ["in_1", "in_2"]:
         assert name in parameter_space
     assert "out_1" not in parameter_space
 
     parameter_space = ParameterSpace.init_from_dataset(
-        io_dataset, groups=[io_dataset.OUTPUT_GROUP]
+        io_dataset, groups=[io_dataset.output_group]
     )
     for name in ["in_1", "in_2"]:
         assert name not in parameter_space

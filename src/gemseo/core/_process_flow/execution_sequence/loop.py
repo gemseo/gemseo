@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.core._process_flow.execution_sequence.base_composite import (
     BaseCompositeExecSequence,
@@ -35,8 +36,8 @@ _Status = ExecutionStatus.Status
 class LoopExecSequence(BaseCompositeExecSequence):
     """A loop with a controller discipline and an execution_sequence as iterate."""
 
-    _PREFIX = "{"
-    _SUFFIX = "}"
+    _prefix: ClassVar[str] = "{"
+    _suffix: ClassVar[str] = "}"
 
     def __init__(
         self,

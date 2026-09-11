@@ -71,7 +71,7 @@ training_dataset = sample_disciplines(
 
 regressor = RBFRegressor(
     training_dataset,
-    settings=RBFRegressor_Settings(transformer=RBFRegressor.DEFAULT_TRANSFORMER),
+    settings=RBFRegressor_Settings(transformer=RBFRegressor.default_transformer),
 )
 regressor.learn()
 

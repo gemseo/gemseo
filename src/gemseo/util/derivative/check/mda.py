@@ -47,8 +47,8 @@ class MDAJacobianChecker(DisciplineJacobianChecker):
         couplings = set(mda.coupling_structure.all_couplings)
         input_names = [n for n in input_names if n not in couplings]
         output_names = [n for n in output_names if n not in couplings]
-        if mda.NORMALIZED_RESIDUAL_NORM in output_names:
-            output_names.remove(mda.NORMALIZED_RESIDUAL_NORM)
+        if mda.normalized_residual_norm_name in output_names:
+            output_names.remove(mda.normalized_residual_norm_name)
         input_names = [
             n for n in input_names if mda.io.input_grammar.data_converter.is_numeric(n)
         ]

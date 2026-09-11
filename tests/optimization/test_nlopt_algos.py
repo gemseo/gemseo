@@ -31,7 +31,7 @@ from scipy.optimize import rosen_der
 
 from gemseo import execute_algo
 from gemseo.core.function.array_function import ArrayFunction
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.nlopt.nlopt import Nlopt
 from gemseo.optimization.nlopt.nlopt import nlopt
 from gemseo.optimization.nlopt.settings.nlopt_bfgs_settings import NLOPT_BFGS_Settings
@@ -42,7 +42,7 @@ from gemseo.optimization.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.space.design import DesignSpace
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 from gemseo.util.testing.opt_lib_test_base import OptLibraryTestBase
 
 from .problem.x2 import X2
@@ -53,7 +53,7 @@ class TestNLOPT(TestCase):
 
     def _test_init(self) -> None:
         """Tests the initialization of the problem."""
-        factory = OPTIMIZATION_LIBRARY_FACTORY
+        factory = optimization_library_factory
         if factory.is_available(self.OPT_LIB_NAME):
             factory.create(self.OPT_LIB_NAME)
 
@@ -76,7 +76,7 @@ class TestNLOPT(TestCase):
 
         problem.objective.jac = obj_grad
         problem.constraints.clear()
-        opt_library = OPTIMIZATION_LIBRARY_FACTORY.create("NLOPT_BFGS")
+        opt_library = optimization_library_factory.create("NLOPT_BFGS")
         opt_library.execute(problem, settings=NLOPT_BFGS_Settings(max_iter=10))
 
     def test_normalization(self) -> None:
@@ -98,7 +98,7 @@ class TestNLOPT(TestCase):
         problem.objective = ArrayFunction(
             rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
         )
-        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=NLOPT_COBYLA_Settings())
+        optimization_library_factory.execute(problem, settings=NLOPT_COBYLA_Settings())
 
     def test_tolerance_activation(self) -> None:
         def run_pb(algo_options):
@@ -110,7 +110,7 @@ class TestNLOPT(TestCase):
             problem.objective = ArrayFunction(
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
             )
-            res = OPTIMIZATION_LIBRARY_FACTORY.execute(
+            res = optimization_library_factory.execute(
                 problem, NLOPT_SLSQP_Settings(**algo_options)
             )
             return res, problem
@@ -143,7 +143,7 @@ def test_cast_to_float() -> None:
     problem.objective = ArrayFunction(
         lambda x: x, name="my_function", jac=lambda x: array([[1.0]])
     )
-    res = OPTIMIZATION_LIBRARY_FACTORY.execute(
+    res = optimization_library_factory.execute(
         problem, settings=NLOPT_SLSQP_Settings(max_iter=100)
     )
     assert res.x_opt == array([0.0])
@@ -259,7 +259,7 @@ def test_bobyqa_stopped_due_to_small_crit_n_x(
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "seed"), [({}, SEED), ({"seed": None}, None), ({"seed": 123}, 123)]
+    ("kwargs", "seed"), [({}, seed), ({"seed": None}, None), ({"seed": 123}, 123)]
 )
 def test_seed(kwargs, seed):
     """Check the seed for pseudo-randomization."""

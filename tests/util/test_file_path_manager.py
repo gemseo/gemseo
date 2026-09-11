@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 from gemseo.util.file_path_manager import FilePathManager
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 
 
 def test_repr() -> None:
@@ -39,7 +39,7 @@ def test_repr_html() -> None:
     """Check FileManager._repr_html_."""
     assert FilePathManager(
         FilePathManager.FileType.FIGURE, default_directory="."
-    )._repr_html_() == REPR_HTML_WRAPPER.format(
+    )._repr_html_() == repr_html_wrapper.format(
         "FilePathManager<br/>"
         "<ul>"
         "<li>File type: FIGURE</li>"

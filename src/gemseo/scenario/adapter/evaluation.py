@@ -103,15 +103,17 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
 
     _process_flow_class: ClassVar[type[BaseProcessFlow]] = _ProcessFlow
 
-    LOWER_BND_SUFFIX: ClassVar[str] = "_lower_bnd"
-    UPPER_BND_SUFFIX: ClassVar[str] = "_upper_bnd"
+    lower_bnd_suffix: ClassVar[str] = "_lower_bnd"
+    upper_bnd_suffix: ClassVar[str] = "_upper_bnd"
 
-    DEFAULT_DATABASE_FILE_PREFIX: ClassVar[str] = "database"
+    default_database_file_prefix: ClassVar[str] = "database"
     """The default file prefix for the databases to be exported."""
 
-    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union([
-        "_EvaluationScenarioAdapter__name_generator"
-    ])
+    _attr_not_to_serialize: ClassVar[set[str]] = (
+        Discipline._attr_not_to_serialize.union([
+            "_EvaluationScenarioAdapter__name_generator"
+        ])
+    )
 
     __name_generator: NameGenerator
     """A name generator used to get unique file names when exporting databases."""
@@ -179,7 +181,7 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
                 where `identifier` is replaced by an identifier according to the
                 `naming` convention.
                 If empty, use
-                [DEFAULT_DATABASE_FILE_PREFIX][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter.DEFAULT_DATABASE_FILE_PREFIX].
+                [default_database_file_prefix][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter.default_database_file_prefix].
             scenario_log_level: The level of the root logger
                 during the scenario execution.
                 If `None`, do not change the level of the root logger.
@@ -208,7 +210,7 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
         self.save_databases = save_databases
         self.databases = []
         self.__database_file_prefix = (
-            database_file_prefix or self.DEFAULT_DATABASE_FILE_PREFIX
+            database_file_prefix or self.default_database_file_prefix
         )
         super().__init__((), name=name or f"{scenario.name}_adapter")
 
@@ -227,11 +229,11 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             for bounds, suffix in [
                 (
                     design_space.get_lower_bounds(as_dict=True),
-                    self.LOWER_BND_SUFFIX,
+                    self.lower_bnd_suffix,
                 ),
                 (
                     design_space.get_upper_bounds(as_dict=True),
-                    self.UPPER_BND_SUFFIX,
+                    self.upper_bnd_suffix,
                 ),
             ]:
                 bounds = {name + suffix: val for name, val in bounds.items()}
@@ -292,8 +294,8 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
                 variable_name + suffix: variable_value
                 for variable_name, variable_value in current_value.items()
                 for suffix in {
-                    self.LOWER_BND_SUFFIX,
-                    self.UPPER_BND_SUFFIX,
+                    self.lower_bnd_suffix,
+                    self.upper_bnd_suffix,
                 }
             })
             input_grammar.update(bounds_grammar)
@@ -352,8 +354,8 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
 
         # Set the bounds of the sub-scenario
         if self._set_bounds_before_exec:
-            lower_bound_suffix = self.LOWER_BND_SUFFIX
-            upper_bound_suffix = self.UPPER_BND_SUFFIX
+            lower_bound_suffix = self.lower_bnd_suffix
+            upper_bound_suffix = self.upper_bnd_suffix
             for name in design_space:
                 design_space.set_lower_bound(name, data[f"{name}{lower_bound_suffix}"])
                 design_space.set_upper_bound(name, data[f"{name}{upper_bound_suffix}"])

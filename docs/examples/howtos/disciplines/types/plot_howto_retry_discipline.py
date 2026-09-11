@@ -40,7 +40,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gemseo import LOGGER
+from gemseo import logger
 from gemseo.core.discipline import Discipline
 from gemseo.discipline import RetryDiscipline
 
@@ -66,7 +66,7 @@ class FictiveDiscipline(Discipline):
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping:
         self.attempt += 1
-        LOGGER.info("attempt: %s", self.attempt)
+        logger.info("attempt: %s", self.attempt)
         if self.attempt < 3:
             raise RuntimeError
         return {}

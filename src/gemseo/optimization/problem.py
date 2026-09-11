@@ -76,7 +76,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrPath
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 BestInfeasiblePointType = tuple[
     RealArray | None, RealArray | None, bool, dict[str, RealArray]
@@ -123,20 +123,20 @@ class OptimizationProblem(EvaluationProblem):
     ConstraintType = ArrayFunction.ConstraintType
 
     # HDF5 group names
-    _CONSTRAINTS_GROUP: Final[str] = "constraints"
-    _OBJECTIVE_GROUP: Final[str] = "objective"
-    _OBSERVABLES_GROUP: Final[str] = "observables"
-    _OPT_DESCR_GROUP: Final[str] = "opt_description"
-    _SOLUTION_GROUP: Final[str] = "solution"
-    _OPTIM_DESCRIPTION: ClassVar[str] = [
+    _constraints_group: Final[str] = "constraints"
+    _objective_group: Final[str] = "objective"
+    _observables_group: Final[str] = "observables"
+    _opt_descr_group: Final[str] = "opt_description"
+    _solution_group: Final[str] = "solution"
+    _optim_description: ClassVar[tuple[str, ...]] = (
         "minimize_objective",
         "differentiation_step",
         "differentiation_method",
         "is_linear",
         "ineq_tolerance",
         "eq_tolerance",
-    ]
-    _SLACK_VARIABLE: Final[str] = "slack_variable_{}"
+    )
+    _slack_variable: Final[str] = "slack_variable_{}"
 
     def __init__(
         self,
@@ -398,7 +398,7 @@ class OptimizationProblem(EvaluationProblem):
         # inequality constraint.
         for inequality_constraint in self.constraints.get_inequality_constraints():
             problem.design_space.add_variable(
-                name=self._SLACK_VARIABLE.format(inequality_constraint.name),
+                name=self._slack_variable.format(inequality_constraint.name),
                 size=inequality_constraint.dim,
                 value=0,
                 upper_bound=0,
@@ -433,7 +433,7 @@ class OptimizationProblem(EvaluationProblem):
                 [
                     i
                     in problem.design_space.get_variables_indexes(
-                        self._SLACK_VARIABLE.format(constraint.name)
+                        self._slack_variable.format(constraint.name)
                     )
                     for i in range(problem.design_space.dimension)
                 ],
@@ -650,9 +650,9 @@ class OptimizationProblem(EvaluationProblem):
             if hdf_node_path:
                 h5file = h5file.require_group(hdf_node_path)
 
-            if not append or self._OPT_DESCR_GROUP not in h5file:
-                opt_group = h5file.require_group(self._OPT_DESCR_GROUP)
-                for attr_name in self._OPTIM_DESCRIPTION:
+            if not append or self._opt_descr_group not in h5file:
+                opt_group = h5file.require_group(self._opt_descr_group)
+                for attr_name in self._optim_description:
                     if attr_name == "ineq_tolerance":
                         attr = self.tolerances.inequality
                     elif attr_name == "eq_tolerance":
@@ -665,12 +665,12 @@ class OptimizationProblem(EvaluationProblem):
                     store_h5data(opt_group, attr, attr_name)
 
                 store_attr_h5data(
-                    self._objective, h5file.require_group(self._OBJECTIVE_GROUP)
+                    self._objective, h5file.require_group(self._objective_group)
                 )
 
                 for functions, group in zip(
                     [self.__constraints, self.observables],
-                    [self._CONSTRAINTS_GROUP, self._OBSERVABLES_GROUP],
+                    [self._constraints_group, self._observables_group],
                     strict=False,
                 ):
                     if functions:
@@ -681,7 +681,7 @@ class OptimizationProblem(EvaluationProblem):
                             )
 
                 if self.solution is not None:
-                    sol_group = h5file.require_group(self._SOLUTION_GROUP)
+                    sol_group = h5file.require_group(self._solution_group)
                     store_attr_h5data(self.solution, sol_group)
 
     @classmethod
@@ -706,9 +706,9 @@ class OptimizationProblem(EvaluationProblem):
         msg = "Importing the optimization problem from the file %s"
         if hdf_node_path:
             msg += " at node %s"
-            LOGGER.info(msg, file_path, hdf_node_path)
+            logger.info(msg, file_path, hdf_node_path)
         else:
-            LOGGER.info(msg, file_path)
+            logger.info(msg, file_path)
 
         database = Database.from_hdf(file_path, hdf_node_path=hdf_node_path, log=False)
         design_space = database.input_space
@@ -716,9 +716,9 @@ class OptimizationProblem(EvaluationProblem):
 
         with h5py.File(file_path) as h5file:
             h5file = get_hdf5_group(h5file, hdf_node_path)
-            if problem._SOLUTION_GROUP in h5file:
+            if problem._solution_group in h5file:
                 solution_data = convert_h5_group_to_dict(
-                    h5file, problem._SOLUTION_GROUP
+                    h5file, problem._solution_group
                 )
                 for name in ["x_0_as_dict", "x_opt_as_dict"]:
                     if name in h5file:
@@ -727,7 +727,7 @@ class OptimizationProblem(EvaluationProblem):
                 problem.solution = OptimizationResult.from_dict(solution_data)
 
             objective = ArrayFunction.init_from_dict_repr(
-                **convert_h5_group_to_dict(h5file, problem._OBJECTIVE_GROUP)
+                **convert_h5_group_to_dict(h5file, problem._objective_group)
             )
 
             # The generated functions can be called at the x stored in
@@ -737,7 +737,7 @@ class OptimizationProblem(EvaluationProblem):
             )
             problem.objective = objective
 
-            group = get_hdf5_group(h5file, problem._OPT_DESCR_GROUP)
+            group = get_hdf5_group(h5file, problem._opt_descr_group)
             for attr_name, attr in group.items():
                 val = attr[()]
                 if isinstance(val, bytes):
@@ -755,7 +755,7 @@ class OptimizationProblem(EvaluationProblem):
                 setattr(problem, attr_name, val)
 
             for name, functions in zip(
-                [problem._CONSTRAINTS_GROUP, problem._OBSERVABLES_GROUP],
+                [problem._constraints_group, problem._observables_group],
                 [problem.constraints, problem.observables],
                 strict=False,
             ):
@@ -773,7 +773,7 @@ class OptimizationProblem(EvaluationProblem):
                 # Sometimes the dimension of the problem cannot be determined.
                 is_mono_objective = problem.is_mono_objective
 
-            if not is_mono_objective and problem._SOLUTION_GROUP in h5file:
+            if not is_mono_objective and problem._solution_group in h5file:
                 pareto_front = (
                     ParetoFront.from_optimization_problem(problem)
                     if problem.solution.is_feasible
@@ -820,25 +820,25 @@ class OptimizationProblem(EvaluationProblem):
             opt_naming: Whether to
                 put the design variables
                 in the
-                [DESIGN_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.DESIGN_GROUP]
+                [design_group][gemseo.dataset.optimization_dataset.OptimizationDataset.design_group]
                 and the functions in their specific groups
-                ([OBJECTIVE_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
-                [EQUALITY_CONSTRAINT_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP],
-                [INEQUALITY_CONSTRAINT_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP],
-                [OBSERVABLE_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP]).
+                ([objective_group][gemseo.dataset.optimization_dataset.OptimizationDataset.objective_group],
+                [equality_constraint_group][gemseo.dataset.optimization_dataset.OptimizationDataset.equality_constraint_group],
+                [inequality_constraint_group][gemseo.dataset.optimization_dataset.OptimizationDataset.inequality_constraint_group],
+                [observable_group][gemseo.dataset.optimization_dataset.OptimizationDataset.observable_group]).
                 Otherwise,
                 put the design variables in the
-                [INPUT_GROUP][gemseo.dataset.io_dataset.IODataset.INPUT_GROUP]
+                [input_group][gemseo.dataset.io_dataset.IODataset.input_group]
                 and the functions and their derivatives in the
-                [OUTPUT_GROUP][gemseo.dataset.io_dataset.IODataset.OUTPUT_GROUP].
+                [output_group][gemseo.dataset.io_dataset.IODataset.output_group].
         """  # noqa: D205, D212
         group_to_variables = {}
         if categorize:
-            gradient_group = Dataset.GRADIENT_GROUP
+            gradient_group = Dataset.gradient_group
             if opt_naming:
                 dataset_class = OptimizationDataset
-                input_group = OptimizationDataset.DESIGN_GROUP
-                output_group = OptimizationDataset.OBJECTIVE_GROUP
+                input_group = OptimizationDataset.design_group
+                output_group = OptimizationDataset.objective_group
                 db_names = set(self.database.get_function_names())
                 obj_name = (
                     self.standardized_objective_name
@@ -853,26 +853,26 @@ class OptimizationProblem(EvaluationProblem):
                     o.name for o in self.observables
                 ] + self.database.listener_output_names
                 group_to_variables = {
-                    OptimizationDataset.OBJECTIVE_GROUP: [obj_name]
+                    OptimizationDataset.objective_group: [obj_name]
                     if obj_name in db_names
                     else [],
-                    OptimizationDataset.EQUALITY_CONSTRAINT_GROUP: [
+                    OptimizationDataset.equality_constraint_group: [
                         name for name in eq_names if name in db_names
                     ],
-                    OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP: [
+                    OptimizationDataset.inequality_constraint_group: [
                         name for name in ineq_names if name in db_names
                     ],
-                    OptimizationDataset.OBSERVABLE_GROUP: [
+                    OptimizationDataset.observable_group: [
                         name for name in obs_names if name in db_names
                     ],
                 }
             else:
                 dataset_class = IODataset
-                input_group = IODataset.INPUT_GROUP
-                output_group = IODataset.OUTPUT_GROUP
+                input_group = IODataset.input_group
+                output_group = IODataset.output_group
         else:
             dataset_class = Dataset
-            input_group = output_group = gradient_group = Dataset.DEFAULT_GROUP
+            input_group = output_group = gradient_group = Dataset.default_group
 
         return self.database.to_dataset(
             name=name,

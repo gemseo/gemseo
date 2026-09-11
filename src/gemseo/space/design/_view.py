@@ -22,8 +22,8 @@ from typing import Final
 
 from prettytable import PrettyTable
 
-from gemseo.space.design._constants import _TABLE_NAMES
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.space.design._constants import _table_names
+from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.string import _format_value_in_pretty_table_16
 
 if TYPE_CHECKING:
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from gemseo.space.design import DesignSpace
 
 
-CAMEL_CASE_REGEX: Final[re.Pattern] = re.compile(r"[A-Z][^A-Z]*")
+camel_case_regex: Final[re.Pattern] = re.compile(r"[A-Z][^A-Z]*")
 
 
 def get_pretty_table(
@@ -55,7 +55,7 @@ def get_pretty_table(
         The tabular view of the design space.
     """
     if not fields:
-        fields = _TABLE_NAMES
+        fields = _table_names
 
     if capitalize:
         field_names = [field.capitalize().replace("_", " ") for field in fields]
@@ -108,7 +108,7 @@ def render_string(
     """
     if not title:
         title = " ".join(
-            CAMEL_CASE_REGEX.findall(design_space.__class__.__name__)
+            camel_case_regex.findall(design_space.__class__.__name__)
         ).lower()
     title = title.capitalize()
     post_title = ": " if design_space.name else ":"
@@ -130,4 +130,4 @@ def render_html(design_space: DesignSpace) -> str:
     Returns:
         The HTML representation of the design space.
     """
-    return REPR_HTML_WRAPPER.format(render_string(design_space, use_html=True))
+    return repr_html_wrapper.format(render_string(design_space, use_html=True))

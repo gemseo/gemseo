@@ -25,8 +25,8 @@ from typing import cast
 
 from numpy import ndarray
 
-from gemseo.core.grammar._python_to_json import PYTHON_TO_JSON_TYPES
-from gemseo.core.grammar._util import NOT_IN_THE_GRAMMAR_MESSAGE
+from gemseo.core.grammar._python_to_json import python_to_json_types
+from gemseo.core.grammar._util import not_in_the_grammar_message
 from gemseo.core.grammar.base import BaseGrammar
 
 if TYPE_CHECKING:
@@ -54,7 +54,7 @@ class SimpleGrammar(BaseGrammar):
          This grammar cannot merge elements. Merging will raise an error.
     """
 
-    DATA_CONVERTER_CLASS: ClassVar[str] = "SimpleGrammarDataConverter"
+    data_converter_class: ClassVar[str] = "SimpleGrammarDataConverter"
 
     __name_to_type: dict[str, type | None]
     """The map from an element name to its type."""
@@ -235,7 +235,7 @@ class SimpleGrammar(BaseGrammar):
     def schema(self) -> dict[str, Any]:
         """A JSON-schema-shaped representation of the grammar.
 
-        Types are mapped with `PYTHON_TO_JSON_TYPES`.
+        Types are mapped with `python_to_json_types`.
         Elements whose Python type has no JSON-schema equivalent, including the
         catch-all `None` type, appear without a `type` constraint.
         """
@@ -246,7 +246,7 @@ class SimpleGrammar(BaseGrammar):
             json_type: str | None = (
                 None
                 if element_type is None
-                else PYTHON_TO_JSON_TYPES.get(cast("Any", element_type))
+                else python_to_json_types.get(cast("Any", element_type))
             )
             property_schema: dict[str, Any] = (
                 {} if json_type is None else {"type": json_type}
@@ -281,5 +281,5 @@ class SimpleGrammar(BaseGrammar):
     def _check_name(self, *names: str) -> None:
         for name in names:
             if name not in self.__name_to_type:
-                msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
+                msg = not_in_the_grammar_message.format(name)
                 raise KeyError(msg)

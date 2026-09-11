@@ -22,7 +22,7 @@ from numpy import zeros
 from scipy.sparse import eye
 
 from gemseo.core.discipline import Discipline
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -68,7 +68,7 @@ class LinearCombination(Discipline):
         self,
         input_names: Iterable[str],
         output_name: str,
-        input_coefficients: Mapping[str, float] = READ_ONLY_EMPTY_DICT,
+        input_coefficients: Mapping[str, float] = read_only_empty_dict,
         offset: float = 0.0,
         input_size: int = 1,
         average: bool = False,

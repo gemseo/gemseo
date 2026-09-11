@@ -78,7 +78,7 @@ class CouplingStudyAnalysis:
     - the sheet may contain other data, but these will not be taken into account.
     """  # noqa: E501
 
-    _HAS_SCENARIO: ClassVar[bool] = False
+    _has_scenario: ClassVar[bool] = False
     """Whether the Excel file is supposed to have a scenario sheet."""
 
     study: XLSStudyParser
@@ -92,7 +92,7 @@ class CouplingStudyAnalysis:
         Args:
             xls_study_path: The path to the Excel file describing the study.
         """  # noqa: D205 D212 D415
-        self.study = XLSStudyParser(xls_study_path, self._HAS_SCENARIO)
+        self.study = XLSStudyParser(xls_study_path, self._has_scenario)
         self.disciplines = self.study.disciplines
 
     def generate_n2(

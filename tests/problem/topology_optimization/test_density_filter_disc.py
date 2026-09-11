@@ -24,7 +24,7 @@ from numpy import ones
 from gemseo.problem.topology_optimization.density_filter_disc import DensityFilter
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
-THRESHOLD = 1e-10
+threshold = 1e-10
 
 
 @pytest.fixture(scope="module")
@@ -39,7 +39,7 @@ def test_run(density_filter) -> None:
         input_data={"x": ones(density_filter.n_x * density_filter.n_y)}
     )
     assert all(
-        1.0 - THRESHOLD <= item <= 1.0 + THRESHOLD for item in output_data["xPhys"]
+        1.0 - threshold <= item <= 1.0 + threshold for item in output_data["xPhys"]
     )
 
 

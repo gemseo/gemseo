@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.core._process_flow.execution_sequence.base import BaseExecutionSequence
 
@@ -31,8 +32,8 @@ if TYPE_CHECKING:
 class BaseCompositeExecSequence(BaseExecutionSequence):
     """A base class for execution sequence made of other execution sequences."""
 
-    _PREFIX = "'"
-    _SUFFIX = "'"
+    _prefix: ClassVar[str] = "'"
+    _suffix: ClassVar[str] = "'"
 
     sequences: list[BaseExecutionSequence]
     """The inner execution sequences."""
@@ -46,7 +47,7 @@ class BaseCompositeExecSequence(BaseExecutionSequence):
         self.disciplines = []
 
     def __str__(self) -> str:
-        return self._PREFIX + ", ".join(map(str, self.sequences)) + self._SUFFIX
+        return self._prefix + ", ".join(map(str, self.sequences)) + self._suffix
 
     def accept(self, visitor: Visitor) -> None:
         self._accept(visitor)

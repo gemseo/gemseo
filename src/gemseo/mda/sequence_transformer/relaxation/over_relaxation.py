@@ -34,8 +34,8 @@ if TYPE_CHECKING:
 class OverRelaxation(SequenceTransformer):
     """The over relaxation method."""
 
-    _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 2
-    _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 0
+    _minimum_number_of_iterates: ClassVar[int] = 2
+    _minimum_number_of_residuals: ClassVar[int] = 0
 
     def __init__(self, factor: float = 1.0) -> None:
         """

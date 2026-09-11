@@ -18,53 +18,53 @@ from __future__ import annotations
 
 from typing import Final
 
-from gemseo.space.variable.base import _LOWER_BOUND
-from gemseo.space.variable.base import _UPPER_BOUND
-from gemseo.space.variable.discrete import _CHOICES
-from gemseo.util.constant import EPSILON
+from gemseo.space.variable.base import _lower_bound
+from gemseo.space.variable.base import _upper_bound
+from gemseo.space.variable.discrete import _choices
+from gemseo.util.constant import epsilon
 
-BOUND_ATOL: Final[float] = 100.0 * EPSILON
+bound_atol: Final[float] = 100.0 * epsilon
 """The absolute tolerance for a deviation from a bound."""
 
-_DESIGN_SPACE_GROUP: Final[str] = "design_space"
+_design_space_group: Final[str] = "design_space"
 """The name of the HDF group storing a design space."""
 
-_NAMES_GROUP: Final[str] = "names"
+_names_group: Final[str] = "names"
 """The name of the HDF dataset storing the variable names."""
 
-_LB_GROUP: Final[str] = "l_b"
+_lb_group: Final[str] = "l_b"
 """The name of the HDF dataset storing a variable lower bound."""
 
-_UB_GROUP: Final[str] = "u_b"
+_ub_group: Final[str] = "u_b"
 """The name of the HDF dataset storing a variable upper bound."""
 
-_VAR_TYPE_GROUP: Final[str] = "var_type"
+_var_type_group: Final[str] = "var_type"
 """The name of the HDF dataset storing a variable type."""
 
-_VALUE_GROUP: Final[str] = "value"
+_value_group: Final[str] = "value"
 """The name of the HDF dataset storing a variable value."""
 
-_SIZE_GROUP: Final[str] = "size"
+_size_group: Final[str] = "size"
 """The name of the HDF dataset storing a variable size."""
 
-_CHOICES_GROUP: Final[str] = _CHOICES
+_choices_group: Final[str] = _choices
 """The name of the HDF dataset storing the choices of a variable.
 
 This is also the name of the CSV column.
 """
 
-_CHOICES_SEPARATOR: Final[str] = "|"
+_choices_separator: Final[str] = "|"
 """The string separating the choices within a CSV cell.
 
 A CSV file is exported with a space delimiter by default,
 so the separator shall not be a whitespace.
 """
 
-_TABLE_NAMES: Final[list[str]] = [
+_table_names: Final[tuple[str, ...]] = (
     "name",
-    _LOWER_BOUND,
+    _lower_bound,
     "value",
-    _UPPER_BOUND,
+    _upper_bound,
     "type",
-]
+)
 """The fields of the tabular view of a design space."""

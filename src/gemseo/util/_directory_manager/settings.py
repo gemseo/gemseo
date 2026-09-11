@@ -36,17 +36,17 @@ from gemseo.util.base_multiton import BaseMultiton
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-_KEEP_ALL: Final[str] = "KEEP_ALL"
-_KEEP_LAST_ONLY: Final[str] = "KEEP_LAST_ONLY"
+_keep_all: Final[str] = "KEEP_ALL"
+_keep_last_only: Final[str] = "KEEP_LAST_ONLY"
 
 
 class CleanUpPolicy(StrEnum):
     """Cleanup policy for scenario execution directories."""
 
-    KEEP_ALL = _KEEP_ALL
+    KEEP_ALL = _keep_all
     """Keep all generated files and directories."""
 
-    KEEP_LAST_ONLY = _KEEP_LAST_ONLY
+    KEEP_LAST_ONLY = _keep_last_only
     """Keep only the last directory."""
 
     KEEP_SOLUTION_ONLY = "KEEP_SOLUTION_ONLY"
@@ -59,10 +59,10 @@ class CleanUpPolicy(StrEnum):
 class MDACleanUpPolicy(StrEnum):
     """Cleanup policy for MDA solver iteration directories."""
 
-    KEEP_ALL = _KEEP_ALL
+    KEEP_ALL = _keep_all
     """Keep all generated files and directories."""
 
-    KEEP_LAST_ONLY = _KEEP_LAST_ONLY
+    KEEP_LAST_ONLY = _keep_last_only
     """Keep only the last directory."""
 
 

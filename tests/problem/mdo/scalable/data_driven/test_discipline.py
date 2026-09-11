@@ -33,9 +33,9 @@ from gemseo.problem.mdo.scalable.data_driven.discipline import (
 def dataset():
     data = IODataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])
-    data.add_variable("x", (val * 2)[:, newaxis], data.INPUT_GROUP)
-    data.add_variable("y", val[:, newaxis], data.INPUT_GROUP)
-    data.add_variable("z", val[:, newaxis], data.OUTPUT_GROUP, False)
+    data.add_variable("x", (val * 2)[:, newaxis], data.input_group)
+    data.add_variable("y", val[:, newaxis], data.input_group)
+    data.add_variable("z", val[:, newaxis], data.output_group, False)
     return data
 
 

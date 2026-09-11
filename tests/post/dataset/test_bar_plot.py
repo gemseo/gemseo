@@ -33,7 +33,7 @@ def dataset() -> Dataset:
     return dataset
 
 
-TEST_PARAMETERS = {
+test_parameters = {
     "default": ({}, {}, ["BarPlot"]),
     "colormap": ({}, {"colormap": "viridis", "grid": False}, ["BarPlot_colormap"]),
     "properties": (
@@ -61,7 +61,7 @@ TEST_PARAMETERS = {
 
 @pytest.mark.parametrize(
     ("kwargs", "properties"),
-    [v[:2] for v in TEST_PARAMETERS.values()],
+    [v[:2] for v in test_parameters.values()],
 )
 def test_bars_plot(kwargs, properties, dataset, snapshot_matplotlib) -> None:
     """Test that bar plot generates the expected plot."""
@@ -72,8 +72,8 @@ def test_bars_plot(kwargs, properties, dataset, snapshot_matplotlib) -> None:
 
 @pytest.mark.parametrize(
     ("kwargs", "properties"),
-    [v[:2] for v in TEST_PARAMETERS.values()],
-    ids=TEST_PARAMETERS.keys(),
+    [v[:2] for v in test_parameters.values()],
+    ids=test_parameters.keys(),
 )
 def test_bars_plotly(kwargs, properties, snapshot, dataset):
     """Test images created by BarPlot.execute against references for plotly."""

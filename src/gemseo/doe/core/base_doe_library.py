@@ -59,7 +59,7 @@ if TYPE_CHECKING:
     from gemseo.core.problem.evaluation import EvaluationProblem
     from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 CallbackType = Callable[[int, EvaluationType], Any]
@@ -110,10 +110,10 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     _seeder: Seeder
     """A seed generator."""
 
-    _USE_UNIT_HYPERCUBE: ClassVar[bool] = True
+    _use_unit_hypercube: ClassVar[bool] = True
     """Whether the algorithms use a unit hypercube to generate the design samples."""
 
-    _RESULT_CLASS: ClassVar[type[OptimizationResult]] = OptimizationResult
+    _result_class: ClassVar[type[OptimizationResult]] = OptimizationResult
     """The class used to present the result when solving an optimization problem."""
 
     __output_functions: list[ArrayFunction] | None
@@ -122,7 +122,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     __jacobian_functions: list[ArrayFunction] | None
     """The functions to compute the Jacobians, if any."""
 
-    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"_lock"}
+    _attr_not_to_serialize: ClassVar[set[str]] = {"_lock"}
 
     def __init__(self, algo_name: str) -> None:  # noqa:D107
         super().__init__(algo_name)
@@ -164,7 +164,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         self.__check_unnormalization_capability(design_space)
 
         self.unit_samples = self._generate_unit_samples(design_space)
-        LOGGER.debug(
+        logger.debug(
             (
                 "The DOE algorithm %s of %s has generated %s samples "
                 "in the input unit hypercube of dimension %s."
@@ -206,7 +206,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             # We record the integer variables types to later be able to restore the
             # proper data type.
             python_var_types = {
-                name: DesignSpace.VARIABLE_TYPES_TO_DTYPES[type_]
+                name: DesignSpace.variable_types_to_dtypes[type_]
                 for name, type_ in variable_types.items()
                 if type_ != DesignSpace.DesignVariableType.FLOAT
             }
@@ -249,7 +249,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             try:
                 result = self._evaluate_functions(input_value, sample_index=index)
             except ValueError:  # noqa: PERF203
-                LOGGER.exception(
+                logger.exception(
                     "The evaluation of the functions at point %s raised a"
                     " ValueError; skipping to the next point.",
                     input_value,
@@ -299,7 +299,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
 
     def __run_in_parallel_one_at_a_time(self) -> None:
         """Evaluate the functions in parallel, sample by sample."""
-        LOGGER.info(
+        logger.info(
             "Running DOE in parallel on n_processes = %s", self._settings.n_processes
         )
         # Given a ndarray input value,
@@ -425,7 +425,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         Raises:
             ValueError: When some components of the design space are unbounded.
         """
-        if not cls._USE_UNIT_HYPERCUBE or isinstance(design_space, ParameterSpace):
+        if not cls._use_unit_hypercube or isinstance(design_space, ParameterSpace):
             return
 
         components = set(

@@ -30,10 +30,10 @@ if TYPE_CHECKING:
 class IODataset(Dataset):
     """A [Dataset][gemseo.dataset.dataset.Dataset] to store input and output values."""
 
-    INPUT_GROUP: Final[str] = "inputs"
+    input_group: Final[str] = "inputs"
     """The group name for the input variables."""
 
-    OUTPUT_GROUP: Final[str] = "outputs"
+    output_group: Final[str] = "outputs"
     """The group name for the output variables."""
 
     @property
@@ -62,7 +62,7 @@ class IODataset(Dataset):
         self.add_variable(
             variable_name,
             data,
-            group_name=self.INPUT_GROUP,
+            group_name=self.input_group,
             components=components,
         )
 
@@ -88,7 +88,7 @@ class IODataset(Dataset):
         self.add_variable(
             variable_name,
             data,
-            group_name=self.OUTPUT_GROUP,
+            group_name=self.output_group,
             components=components,
         )
 
@@ -104,7 +104,7 @@ class IODataset(Dataset):
             data: The data.
             variable_names: The names of the variables.
                 If empty, use
-                [DEFAULT_VARIABLE_NAME][gemseo.dataset.dataset.Dataset.DEFAULT_VARIABLE_NAME].
+                [default_variable_name][gemseo.dataset.dataset.Dataset.default_variable_name].
             variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
@@ -112,7 +112,7 @@ class IODataset(Dataset):
                 assume that all the variables have a single component.
         """
         self.add_group(
-            self.INPUT_GROUP,
+            self.input_group,
             data,
             variable_names=variable_names,
             variable_name_to_n_components=variable_name_to_n_components,
@@ -130,7 +130,7 @@ class IODataset(Dataset):
             data: The data.
             variable_names: The names of the variables.
                 If empty, use
-                [DEFAULT_VARIABLE_NAME][gemseo.dataset.dataset.Dataset.DEFAULT_VARIABLE_NAME].
+                [default_variable_name][gemseo.dataset.dataset.Dataset.default_variable_name].
             variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
@@ -138,7 +138,7 @@ class IODataset(Dataset):
                 assume that all the variables have a single component.
         """
         self.add_group(
-            self.OUTPUT_GROUP,
+            self.output_group,
             data,
             variable_names=variable_names,
             variable_name_to_n_components=variable_name_to_n_components,
@@ -147,22 +147,22 @@ class IODataset(Dataset):
     @property
     def input_names(self) -> list[str]:
         """The names of the inputs."""
-        return self.get_variable_names(self.INPUT_GROUP)
+        return self.get_variable_names(self.input_group)
 
     @property
     def output_names(self) -> list[str]:
         """The names of the outputs."""
-        return self.get_variable_names(self.OUTPUT_GROUP)
+        return self.get_variable_names(self.output_group)
 
     @property
     def input_dataset(self) -> IODataset:
         """The view of the input dataset."""
-        return self.get_view(group_names=self.INPUT_GROUP)
+        return self.get_view(group_names=self.input_group)
 
     @property
     def output_dataset(self) -> IODataset:
         """The view of the output dataset."""
-        return self.get_view(group_names=self.OUTPUT_GROUP)
+        return self.get_view(group_names=self.output_group)
 
     @property
     def n_samples(self) -> int:

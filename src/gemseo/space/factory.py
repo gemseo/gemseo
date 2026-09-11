@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
@@ -27,19 +28,19 @@ from gemseo.space.parameter import ParameterSpace
 class DesignSpaceFactory(BaseFactory[DesignSpace]):
     """A factory of design spaces."""
 
-    _CLASS = DesignSpace
-    _PACKAGE_NAMES = ("gemseo.problem",)
+    _class: ClassVar[type[DesignSpace]] = DesignSpace
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.problem",)
 
 
 class ParameterSpaceFactory(BaseFactory[ParameterSpace]):
     """A factory of parameter spaces."""
 
-    _CLASS = ParameterSpace
-    _PACKAGE_NAMES = ("gemseo.problem.uncertainty",)
+    _class: ClassVar[type[ParameterSpace]] = ParameterSpace
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.problem.uncertainty",)
 
 
-DESIGN_SPACE_FACTORY: Final[DesignSpaceFactory] = DesignSpaceFactory()
+design_space_factory: Final[DesignSpaceFactory] = DesignSpaceFactory()
 """The factory for `DesignSpace` objects."""
 
-PARAMETER_SPACE_FACTORY: Final[ParameterSpaceFactory] = ParameterSpaceFactory()
+parameter_space_factory: Final[ParameterSpaceFactory] = ParameterSpaceFactory()
 """The factory for `ParameterSpace` objects."""

@@ -49,7 +49,7 @@ a subclass overriding one of them under its old name silently stops being called
 - `MDOScenario._execute_plot_callback` renamed to `MDOScenario._plot_history`.
 - `ScipyGlobalOpt._iter_callback` renamed to `ScipyGlobalOpt._evaluate_objective_and_constraints`.
 - `BaseMDASolver._execute_iteration_callbacks` renamed to `BaseMDASolver._execute_iteration_listeners`.
-- `MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS` renamed to `MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS`.
+- `MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS` renamed to `MDAQuasiNewton._methods_supporting_listeners`.
 
 ### Scenario adapters
 

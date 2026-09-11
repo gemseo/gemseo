@@ -44,17 +44,17 @@ from .sum_data import execute as exec_sum
 if TYPE_CHECKING:
     from gemseo.discipline.wrapper.disc_from_exe import DiscFromExe
 
-DIRNAME = dirname(__file__)
+directory_path = dirname(__file__)
 
 
 def test_disc_from_exe_json(tmp_wd) -> None:
-    sum_path = join(DIRNAME, "sum_data.py")
+    sum_path = join(directory_path, "sum_data.py")
     exec_cmd = f"python {sum_path} -i input.json -o output.json"
 
     disc: DiscFromExe = create_discipline(
         "DiscFromExe",
-        input_template=join(DIRNAME, "input.json.template"),
-        output_template=join(DIRNAME, "output.json.template"),
+        input_template=join(directory_path, "input.json.template"),
+        output_template=join(directory_path, "output.json.template"),
         root_directory=tmp_wd,
         command_line=exec_cmd,
         input_filename="input.json",
@@ -78,13 +78,13 @@ def test_disc_from_exe_json(tmp_wd) -> None:
 
 
 def test_disc_from_exe_cfgobj(tmp_wd) -> None:
-    sum_path = join(DIRNAME, "cfgobj_exe.py")
+    sum_path = join(directory_path, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
     disc = create_discipline(
         "DiscFromExe",
-        input_template=join(DIRNAME, "input_template.cfg"),
-        output_template=join(DIRNAME, "output_template.cfg"),
+        input_template=join(directory_path, "input_template.cfg"),
+        output_template=join(directory_path, "output_template.cfg"),
         root_directory=tmp_wd,
         command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,
@@ -109,8 +109,8 @@ def test_disc_from_exe_cfgobj(tmp_wd) -> None:
 
     disc = create_discipline(
         "DiscFromExe",
-        input_template=join(DIRNAME, "input_template.cfg"),
-        output_template=join(DIRNAME, "output_template.cfg"),
+        input_template=join(directory_path, "input_template.cfg"),
+        output_template=join(directory_path, "output_template.cfg"),
         root_directory=tmp_wd,
         command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,
@@ -132,13 +132,13 @@ def test_disc_from_exe_cfgobj(tmp_wd) -> None:
 )
 def test_disc_from_exe_cfgobj_parser_str(tmp_wd, parser) -> None:
     """Test the instantiation of the discipline with built-in and custom parsers."""
-    sum_path = join(DIRNAME, "cfgobj_exe.py")
+    sum_path = join(directory_path, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
     create_discipline(
         "DiscFromExe",
-        input_template=join(DIRNAME, "input_template.cfg"),
-        output_template=join(DIRNAME, "output_template.cfg"),
+        input_template=join(directory_path, "input_template.cfg"),
+        output_template=join(directory_path, "output_template.cfg"),
         root_directory=tmp_wd,
         command_line=exec_cmd,
         parse_outfile_method=parser,
@@ -150,23 +150,23 @@ def test_disc_from_exe_cfgobj_parser_str(tmp_wd, parser) -> None:
 
 def test_exec_cfg(tmp_wd) -> None:
     outfile = "out_dummy.cfg"
-    infile = join(DIRNAME, "input.cfg")
+    infile = join(directory_path, "input.cfg")
     exec_cfg(infile, outfile)
 
 
 def test_exec_json(tmp_wd) -> None:
     outfile = "out_dummy.json"
-    infile = join(DIRNAME, "input.json")
+    infile = join(directory_path, "input.json")
     exec_sum(infile, outfile)
 
 
 def test_disc_from_exe_fail_exe(tmp_wd) -> None:
-    sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
+    sum_path = join(directory_path, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
     disc: DiscFromExe = create_discipline(
         "DiscFromExe",
-        input_template=join(DIRNAME, "input_template.cfg"),
-        output_template=join(DIRNAME, "output_template.cfg"),
+        input_template=join(directory_path, "input_template.cfg"),
+        output_template=join(directory_path, "output_template.cfg"),
         root_directory=tmp_wd,
         command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,
@@ -208,11 +208,11 @@ def test_parse_key_value_file() -> None:
 
 
 def test_parse_outfile() -> None:
-    with open(join(DIRNAME, "output_template.cfg")) as infile:
+    with open(join(directory_path, "output_template.cfg")) as infile:
         out_template = infile.readlines()
 
     _, out_pos = parse_template(out_template, False)
-    with open(join(DIRNAME, "output.cfg")) as infile:
+    with open(join(directory_path, "output.cfg")) as infile:
         output = infile.readlines()
     values = parse_outfile(out_pos, output)
 
@@ -244,12 +244,12 @@ def test_parse_outfile() -> None:
 
 def test_command_line(tmp_wd) -> None:
     """Test the property: `command_line`."""
-    sum_path = join(DIRNAME, "cfgobj_exe_fails.py")
+    sum_path = join(directory_path, "cfgobj_exe_fails.py")
     exec_cmd = "python " + sum_path + " -i input.cfg -o output.cfg -f wrong_len"
     disc: DiscFromExe = create_discipline(
         "DiscFromExe",
-        input_template=join(DIRNAME, "input_template.cfg"),
-        output_template=join(DIRNAME, "output_template.cfg"),
+        input_template=join(directory_path, "input_template.cfg"),
+        output_template=join(directory_path, "output_template.cfg"),
         root_directory=tmp_wd,
         command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,
@@ -267,13 +267,13 @@ def test_parallel_execution(tmp_wd) -> None:
     DiscFromExe are used there.
     """
     nb_process = 2
-    sum_path = join(DIRNAME, "sum_data.py")
+    sum_path = join(directory_path, "sum_data.py")
     exec_cmd = f"python {sum_path} -i input.json -o output.json"
 
     disc = create_discipline(
         "DiscFromExe",
-        input_template=join(DIRNAME, "input.json.template"),
-        output_template=join(DIRNAME, "output.json.template"),
+        input_template=join(directory_path, "input.json.template"),
+        output_template=join(directory_path, "output.json.template"),
         root_directory=tmp_wd,
         command_line=exec_cmd,
         input_filename="input.json",
@@ -299,13 +299,13 @@ def test_parallel_execution(tmp_wd) -> None:
 @pytest.mark.parametrize("clean_after_execution", [True, False])
 def test_working_directory(tmp_wd, clean_after_execution: bool) -> None:
     """Test the property: `working_directory`."""
-    sum_path = join(DIRNAME, "cfgobj_exe.py")
+    sum_path = join(directory_path, "cfgobj_exe.py")
     exec_cmd = f"python {sum_path} -i input.cfg -o output.cfg"
 
     disc: DiscFromExe = create_discipline(
         "DiscFromExe",
-        input_template=join(DIRNAME, "input_template.cfg"),
-        output_template=join(DIRNAME, "output_template.cfg"),
+        input_template=join(directory_path, "input_template.cfg"),
+        output_template=join(directory_path, "output_template.cfg"),
         root_directory=tmp_wd,
         command_line=exec_cmd,
         parse_outfile_method=Parser.KEY_VALUE,

@@ -47,8 +47,8 @@ class OTExponentialDistribution(OTDistribution):
                 interfaced_distribution="Exponential",
                 parameters=(settings.rate, settings.loc),
                 standard_parameters={
-                    self._RATE: settings.rate,
-                    self._LOC: settings.loc,
+                    self._rate: settings.rate,
+                    self._loc: settings.loc,
                 },
                 transformation=settings.transformation,
                 lower_bound=settings.lower_bound,

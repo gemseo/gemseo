@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.util.metric.base import BaseMetric
@@ -27,7 +28,7 @@ class MetricFactory(BaseFactory[BaseMetric[Any, Any]]):
     """A factory of metrics."""
 
     if TYPE_CHECKING:
-        _CLASS = BaseMetric[Any, Any]
+        _class = BaseMetric[Any, Any]
     else:
-        _CLASS = BaseMetric
-    _PACKAGE_NAMES = ("gemseo.util.metric",)
+        _class = BaseMetric
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.util.metric",)

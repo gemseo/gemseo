@@ -54,10 +54,10 @@ if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
 
 
-_LOWER_BOUND: Final[str] = "lower_bound"
+_lower_bound: Final[str] = "lower_bound"
 """The tag for the lower bound."""
 
-_UPPER_BOUND: Final[str] = "upper_bound"
+_upper_bound: Final[str] = "upper_bound"
 """The tag for the upper bound."""
 
 ScalarBoundType = int | float
@@ -128,7 +128,7 @@ class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):
         Returns:
             The instance.
         """
-        for name in (_LOWER_BOUND, _UPPER_BOUND):
+        for name in (_lower_bound, _upper_bound):
             self.__convert_bound(name)
             self.__check_bound(name)
 
@@ -396,7 +396,7 @@ class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):
         payload = {
             name: value
             for name, value in self.__dict__.items()
-            if name not in (_LOWER_BOUND, _UPPER_BOUND) or name in fields_set
+            if name not in (_lower_bound, _upper_bound) or name in fields_set
         }
         payload.update(update)
         return self.model_validate(payload)
@@ -406,7 +406,7 @@ class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):
         # NumPy preserves neither the writeable flag nor the base across pickling,
         # and pydantic restores the model without re-validating it,
         # so refreeze the bound arrays here and store read-only views of them again.
-        for name in (_LOWER_BOUND, _UPPER_BOUND):
+        for name in (_lower_bound, _upper_bound):
             bound = self.__dict__[name]
             bound.setflags(write=False)
             self.__dict__[name] = bound.view()

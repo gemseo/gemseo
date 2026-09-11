@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.util._directory_manager.processor.factory import DM_PROCESSOR_FACTORY
+from gemseo.util._directory_manager.processor.factory import dm_processor_factory
 from gemseo.util._directory_manager.processor.mda import MDAExecutionDMProcessor
 from gemseo.util._directory_manager.processor.optimizer import OptimizerDMProcessor
 from gemseo.util._directory_manager.processor.scenario import ScenarioDMProcessor
@@ -32,7 +32,7 @@ from gemseo.util.testing.helper import assert_exception
 
 def test_create_raises_for_unknown_observer(snapshot):
     with assert_exception(ValueError, snapshot):
-        DM_PROCESSOR_FACTORY.create(object(), CallArguments(args=(), kwargs={}))
+        dm_processor_factory.create(object(), CallArguments(args=(), kwargs={}))
 
 
 @pytest.mark.parametrize(
@@ -49,5 +49,5 @@ def test_create_returns_processor_matching_observer_type(
     expected_processor_class,
 ):
     observer = observer_class.__new__(observer_class)
-    processor = DM_PROCESSOR_FACTORY.create(observer, CallArguments(args=(), kwargs={}))
+    processor = dm_processor_factory.create(observer, CallArguments(args=(), kwargs={}))
     assert isinstance(processor, expected_processor_class)

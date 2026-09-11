@@ -56,7 +56,7 @@ if TYPE_CHECKING:
     from gemseo.core.problem.database import Database
     from gemseo.space.design import DesignSpace
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 OutputType = NumberArray | complex
 """The type of value returned by an output function."""
@@ -180,7 +180,7 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
     ApproximationMode = ApproximationMode
     """Enumeration of approximation derivation modes."""
 
-    DICT_REPR_ATTR: ClassVar[list[str]] = [
+    dict_repr_attr: ClassVar[list[str]] = [
         "name",
         "f_type",
         "expr",
@@ -191,14 +191,14 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
     ]
     """The names of the attributes to be serialized."""
 
-    DEFAULT_BASE_INPUT_NAME: ClassVar[str] = "x"
+    default_base_input_name: ClassVar[str] = "x"
     """The default base name for the inputs."""
 
-    COEFF_FORMAT_1D: ClassVar[str] = "{:.2e}"
+    coeff_format_1d: ClassVar[str] = "{:.2e}"
     """The format to be applied to a number when represented in a vector."""
     # ensure that coefficients strings have same length
 
-    COEFF_FORMAT_ND: ClassVar[str] = "{: .2e}"
+    coeff_format_nd: ClassVar[str] = "{: .2e}"
     """The format to be applied to a number when represented in a matrix."""
     # ensure that coefficients strings have same length
 
@@ -248,7 +248,7 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
     `original_name` stores its former value.
     """
 
-    __INPUT_NAME_PATTERN: Final[str] = "x"
+    __input_name_pattern: Final[str] = "x"
     """The pattern to define a variable name, as `"x[1]"`."""
 
     def __init__(
@@ -612,10 +612,10 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             Some attributes of the function indexed by their names.
             See
-            [DICT_REPR_ATTR][gemseo.core.function.array_function.ArrayFunction.DICT_REPR_ATTR].
+            [dict_repr_attr][gemseo.core.function.array_function.ArrayFunction.dict_repr_attr].
         """
         repr_dict = {}
-        for attr_name in self.DICT_REPR_ATTR:
+        for attr_name in self.dict_repr_attr:
             attr = getattr(self, attr_name)
             if attr is not None:
                 repr_dict[attr_name] = attr
@@ -630,16 +630,16 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
         Args:
             **attributes: The values of the serializable attributes
                 listed in
-                [DICT_REPR_ATTR][gemseo.core.function.array_function.ArrayFunction.DICT_REPR_ATTR].
+                [dict_repr_attr][gemseo.core.function.array_function.ArrayFunction.dict_repr_attr].
 
         Returns:
             An function initialized from the provided data.
 
         Raises:
             ValueError: If the name of an argument is not in
-                [DICT_REPR_ATTR][gemseo.core.function.array_function.ArrayFunction.DICT_REPR_ATTR].
+                [dict_repr_attr][gemseo.core.function.array_function.ArrayFunction.dict_repr_attr].
         """
-        serializable_attributes = ArrayFunction.DICT_REPR_ATTR
+        serializable_attributes = ArrayFunction.dict_repr_attr
         args = attributes.pop("args", None)
         if args is not None:
             attributes["input_names"] = args
@@ -708,7 +708,7 @@ class ArrayFunction(metaclass=GoogleDocstringInheritanceMeta):
         if n_input_names == input_dim:
             return input_names
 
-        name = input_names[0] if n_input_names == 1 else cls.__INPUT_NAME_PATTERN
+        name = input_names[0] if n_input_names == 1 else cls.__input_name_pattern
         return [repr_variable(name, i, input_dim) for i in range(input_dim)]
 
     @property

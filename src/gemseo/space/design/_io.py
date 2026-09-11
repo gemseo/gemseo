@@ -27,19 +27,19 @@ from numpy import float64
 from numpy import genfromtxt
 from pandas import DataFrame
 
-from gemseo.space.design._constants import _CHOICES_GROUP
-from gemseo.space.design._constants import _CHOICES_SEPARATOR
-from gemseo.space.design._constants import _DESIGN_SPACE_GROUP
-from gemseo.space.design._constants import _LB_GROUP
-from gemseo.space.design._constants import _NAMES_GROUP
-from gemseo.space.design._constants import _SIZE_GROUP
-from gemseo.space.design._constants import _TABLE_NAMES
-from gemseo.space.design._constants import _UB_GROUP
-from gemseo.space.design._constants import _VALUE_GROUP
-from gemseo.space.design._constants import _VAR_TYPE_GROUP
+from gemseo.space.design._constants import _choices_group
+from gemseo.space.design._constants import _choices_separator
+from gemseo.space.design._constants import _design_space_group
+from gemseo.space.design._constants import _lb_group
+from gemseo.space.design._constants import _names_group
+from gemseo.space.design._constants import _size_group
+from gemseo.space.design._constants import _table_names
+from gemseo.space.design._constants import _ub_group
+from gemseo.space.design._constants import _value_group
+from gemseo.space.design._constants import _var_type_group
 from gemseo.space.variable import DiscreteVariable
-from gemseo.space.variable.factory import VARIABLE_FACTORY
-from gemseo.util._numpy import INT64_DTYPE
+from gemseo.space.variable.factory import variable_factory
+from gemseo.util._numpy import int64_dtype
 from gemseo.util.hdf5 import get_hdf5_group
 
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from gemseo.space.variable import BaseVariable
     from gemseo.util.typing import NumberArray
 
-_MINIMAL_FIELDS: Final[list[str]] = ["name", "lower_bound", "upper_bound"]
+_minimal_fields: Final[tuple[str, ...]] = ("name", "lower_bound", "upper_bound")
 """The minimal fields required in a design space CSV file."""
 
 
@@ -101,7 +101,7 @@ def _check_structure_is_unchanged(
         ValueError: If the design spaces are not consistent.
     """
     error_messages = []
-    stored_names = [name.decode() for name in get_hdf5_group(space_group, _NAMES_GROUP)]
+    stored_names = [name.decode() for name in get_hdf5_group(space_group, _names_group)]
     if design_space.variable_names != stored_names:
         # The variables are compared one by one only when they match,
         # otherwise a variable may be missing from the HDF file.
@@ -112,14 +112,14 @@ def _check_structure_is_unchanged(
     else:
         for name, variable in design_space.variables.items():
             variable_group = get_hdf5_group(space_group, name)
-            stored_size = get_hdf5_group(variable_group, _SIZE_GROUP)[()]
+            stored_size = get_hdf5_group(variable_group, _size_group)[()]
             if stored_size != variable.size:
                 error_messages.append(
                     f"The size of the design variable {name!r} is {stored_size}; "
                     f"got {variable.size}."
                 )
 
-            stored_type = get_hdf5_group(variable_group, _VAR_TYPE_GROUP)[0].decode()
+            stored_type = get_hdf5_group(variable_group, _var_type_group)[0].decode()
             if stored_type != variable.type:
                 error_messages.append(
                     f"The type of the design variable {name!r} is {stored_type!r}; "
@@ -194,11 +194,11 @@ def to_hdf(
         if hdf_node_path:
             h5file = h5file.require_group(hdf_node_path)
 
-        space_group = h5file.get(_DESIGN_SPACE_GROUP)
+        space_group = h5file.get(_design_space_group)
         if space_group is None:
-            space_group = h5file.create_group(_DESIGN_SPACE_GROUP)
+            space_group = h5file.create_group(_design_space_group)
             space_group.create_dataset(
-                _NAMES_GROUP, data=array(design_space.variable_names, dtype=bytes_)
+                _names_group, data=array(design_space.variable_names, dtype=bytes_)
             )
         else:
             _check_structure_is_unchanged(design_space, space_group, file_path)
@@ -211,31 +211,31 @@ def to_hdf(
                 # _check_structure_is_unchanged() rejects a change of type.
                 _write_dataset(
                     variable_group,
-                    _CHOICES_GROUP,
+                    _choices_group,
                     array(variable.choices, copy=False),
                 )
 
             _write_dataset(
-                variable_group, _SIZE_GROUP, array(variable.size, dtype=INT64_DTYPE)
+                variable_group, _size_group, array(variable.size, dtype=int64_dtype)
             )
             _write_dataset(
-                variable_group, _LB_GROUP, array(variable.lower_bound, copy=False)
+                variable_group, _lb_group, array(variable.lower_bound, copy=False)
             )
             _write_dataset(
-                variable_group, _UB_GROUP, array(variable.upper_bound, copy=False)
+                variable_group, _ub_group, array(variable.upper_bound, copy=False)
             )
             _write_dataset(
                 variable_group,
-                _VAR_TYPE_GROUP,
+                _var_type_group,
                 array([variable.type] * variable.size, dtype="bytes"),
             )
 
             value = design_space._current_value.get(name)
             if value is None:
-                if _VALUE_GROUP in variable_group:
-                    del variable_group[_VALUE_GROUP]
+                if _value_group in variable_group:
+                    del variable_group[_value_group]
             else:
-                _write_dataset(variable_group, _VALUE_GROUP, _to_real(value))
+                _write_dataset(variable_group, _value_group, _to_real(value))
 
 
 def from_hdf(
@@ -255,17 +255,17 @@ def from_hdf(
     design_space = cls()
     with h5py.File(file_path) as h5file:
         h5file = get_hdf5_group(h5file, hdf_node_path)
-        space_group = get_hdf5_group(h5file, _DESIGN_SPACE_GROUP)
-        variable_names = get_hdf5_group(space_group, _NAMES_GROUP)
+        space_group = get_hdf5_group(h5file, _design_space_group)
+        variable_names = get_hdf5_group(space_group, _names_group)
         for name in variable_names:
             name = name.decode()
             variable_group = get_hdf5_group(space_group, name)
-            l_b = _get_dataset(variable_group, _LB_GROUP)
-            u_b = _get_dataset(variable_group, _UB_GROUP)
-            var_type = _get_dataset(variable_group, _VAR_TYPE_GROUP)[0]
-            value = _get_dataset(variable_group, _VALUE_GROUP)
-            size = get_hdf5_group(variable_group, _SIZE_GROUP)[()]
-            choices = _get_dataset(variable_group, _CHOICES_GROUP)
+            l_b = _get_dataset(variable_group, _lb_group)
+            u_b = _get_dataset(variable_group, _ub_group)
+            var_type = _get_dataset(variable_group, _var_type_group)[0]
+            value = _get_dataset(variable_group, _value_group)
+            size = get_hdf5_group(variable_group, _size_group)[()]
+            choices = _get_dataset(variable_group, _choices_group)
             decoded_var_type = (
                 var_type.decode() if isinstance(var_type, bytes) else var_type
             )
@@ -301,7 +301,7 @@ def from_hdf(
                 design_space.add_variable(
                     name,
                     value=value,
-                    variable=VARIABLE_FACTORY.create(var_type, choices=choices),
+                    variable=variable_factory.create(var_type, choices=choices),
                 )
     design_space.check()
     return design_space
@@ -314,14 +314,14 @@ def _format_choices_cell(variable: BaseVariable) -> str:
         variable: The variable.
 
     Returns:
-        The choices separated by `_CHOICES_SEPARATOR`,
+        The choices separated by `_choices_separator`,
         or `"None"` when the variable is not discrete.
     """
     if not isinstance(variable, DiscreteVariable):
         # An empty cell would make a whitespace-delimited file unreadable.
         return "None"
 
-    return _CHOICES_SEPARATOR.join(str(value) for value in variable.choices)
+    return _choices_separator.join(str(value) for value in variable.choices)
 
 
 def _to_dataframe(design_space: DesignSpace) -> DataFrame:
@@ -360,7 +360,7 @@ def _to_dataframe(design_space: DesignSpace) -> DataFrame:
     }
     if design_space.variables.has_discrete_variables:
         # Do not add a column that every variable would leave empty.
-        data[_CHOICES_GROUP] = choices
+        data[_choices_group] = choices
     return DataFrame(data)
 
 
@@ -379,29 +379,29 @@ def to_csv(
         delimiter: The string used to separate values.
     """
     separator = delimiter or " "
-    columns = list(fields) if fields else list(_TABLE_NAMES)
+    columns = list(fields) if fields else list(_table_names)
     if design_space.variables.has_discrete_variables:
-        if separator == _CHOICES_SEPARATOR:
+        if separator == _choices_separator:
             msg = (
                 "A design space holding a discrete variable cannot be exported "
-                f"with {_CHOICES_SEPARATOR!r} as delimiter, "
+                f"with {_choices_separator!r} as delimiter, "
                 "which separates the choices within a cell."
             )
             raise ValueError(msg)
 
         # A file written by to_csv must always be readable back by from_csv,
         # whichever way fields was supplied.
-        if _CHOICES_GROUP not in columns:
-            columns.append(_CHOICES_GROUP)
+        if _choices_group not in columns:
+            columns.append(_choices_group)
 
-        type_field = _TABLE_NAMES[-1]
+        type_field = _table_names[-1]
         if type_field not in columns:
             columns.append(type_field)
-    elif _CHOICES_GROUP in columns:
+    elif _choices_group in columns:
         # _to_dataframe() below does not emit this column when there is no
         # discrete variable; drop it here instead of letting DataFrame.to_csv()
         # raise a bare pandas KeyError for an explicitly requested column.
-        columns = [column for column in columns if column != _CHOICES_GROUP]
+        columns = [column for column in columns if column != _choices_group]
 
     dataframe = _to_dataframe(design_space)
     dataframe.to_csv(
@@ -428,7 +428,7 @@ def _read_choices_cell(
         or `None` when the file has no such column
         or the variable is not discrete.
     """
-    index = col_map.get(_CHOICES_GROUP)
+    index = col_map.get(_choices_group)
     if index is None:
         return None
 
@@ -436,7 +436,7 @@ def _read_choices_cell(
     if not cell or cell == "None":
         return None
 
-    return [float(value) for value in cell.split(_CHOICES_SEPARATOR)]
+    return [float(value) for value in cell.split(_choices_separator)]
 
 
 def from_csv(
@@ -469,14 +469,14 @@ def from_csv(
     else:
         header = str_data[0, :].tolist()
         start_read = 1
-    if not set(_MINIMAL_FIELDS).issubset(set(header)):
+    if not set(_minimal_fields).issubset(set(header)):
         msg = (
             f"Malformed DesignSpace input file {file_path} does not contain "
-            f"minimal variables in header:{_MINIMAL_FIELDS}; got instead: {header}."
+            f"minimal variables in header:{_minimal_fields}; got instead: {header}."
         )
         raise ValueError(msg)
     col_map = {field: i for i, field in enumerate(header)}
-    name_field = _MINIMAL_FIELDS[0]
+    name_field = _minimal_fields[0]
     var_names = str_data[start_read:, col_map[name_field]].tolist()
     unique_names: list[str] = []
     prev_name: str | None = None
@@ -492,10 +492,10 @@ def from_csv(
             raise ValueError(msg)
 
     k = start_read
-    lower_bounds_field = _MINIMAL_FIELDS[1]
-    upper_bounds_field = _MINIMAL_FIELDS[2]
-    value_field = _TABLE_NAMES[2]
-    var_type_field = _TABLE_NAMES[-1]
+    lower_bounds_field = _minimal_fields[1]
+    upper_bounds_field = _minimal_fields[2]
+    value_field = _table_names[2]
+    var_type_field = _table_names[-1]
     for name in unique_names:
         size = var_names.count(name)
         l_b = float_data[k : k + size, col_map[lower_bounds_field]]
@@ -535,7 +535,7 @@ def from_csv(
             design_space.add_variable(
                 name,
                 value=value,
-                variable=VARIABLE_FACTORY.create(var_type, choices=choices),
+                variable=variable_factory.create(var_type, choices=choices),
             )
         k += size
     design_space.check()

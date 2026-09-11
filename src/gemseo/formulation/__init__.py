@@ -16,12 +16,15 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.formulation.bilevel_bcd_settings import BiLevelBCD_Settings  # noqa: F401
     from gemseo.formulation.bilevel_settings import BiLevel_Settings  # noqa: F401
@@ -30,12 +33,12 @@ if TYPE_CHECKING:
     from gemseo.formulation.mdf_settings import MDF_Settings  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "BiLevelBCD_Settings": "bilevel_bcd_settings",
     "BiLevel_Settings": "bilevel_settings",
     "DisciplinaryOpt_Settings": "disciplinary_opt_settings",
     "IDF_Settings": "idf_settings",
     "MDF_Settings": "mdf_settings",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

@@ -33,7 +33,7 @@ class OT_SORM(OT_FORM):  # noqa: N801
 
     settings_class: ClassVar[type[OT_SORM_Settings]] = OT_SORM_Settings
 
-    _ALGO_CLASS: ClassVar[type[SORM]] = SORM
+    _algo_class: ClassVar[type[SORM]] = SORM
 
     @staticmethod
     def _extract_probability(result: SORMResult, settings: OT_SORM_Settings) -> float:

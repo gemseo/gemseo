@@ -69,7 +69,7 @@ from pandas import DataFrame
 from pandas import MultiIndex
 from pandas import read_csv
 
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.string import MultiLineString
 from gemseo.util.string import pretty_str
 from gemseo.util.string import repr_variable
@@ -99,7 +99,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     `"a"`, `"b"`, `"c"` and `"d"`.
 
     A variable belongs to a group of variables (default:
-    [DEFAULT_GROUP][gemseo.dataset.dataset.Dataset.DEFAULT_GROUP]).
+    [default_group][gemseo.dataset.dataset.Dataset.default_group]).
     Two variables can have the same name;
     only the tuple `(group_name, variable_name)` is unique
     and is therefore called a *variable identifier*.
@@ -149,32 +149,32 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     misc: dict[str, Any]
     """Miscellaneous information specific to the dataset, and not to an entry."""
 
-    COLUMN_LEVEL_NAMES: Final[tuple[str, str, str]] = (
+    column_level_names: Final[tuple[str, str, str]] = (
         "GROUP",
         "VARIABLE",
         "COMPONENT",
     )
     """The names of the column levels of the multi-index DataFrame."""
 
-    __GROUP_LEVEL: Final[int] = 0
+    __group_level: Final[int] = 0
     """The group level in the multi-index column."""
 
-    __VARIABLE_LEVEL: Final[int] = 1
+    __variable_level: Final[int] = 1
     """The variable level in the multi-index column."""
 
-    __COMPONENT_LEVEL: Final[int] = 2
+    __component_level: Final[int] = 2
     """The component level in the multi-index column."""
 
-    PARAMETER_GROUP: Final[str] = "parameters"
+    parameter_group: Final[str] = "parameters"
     """The group name for the parameters."""
 
-    GRADIENT_GROUP: Final[str] = "gradients"
+    gradient_group: Final[str] = "gradients"
     """The group name for the gradients."""
 
-    DEFAULT_GROUP: ClassVar[str] = PARAMETER_GROUP
+    default_group: ClassVar[str] = parameter_group
     """The default group name for the variables."""
 
-    DEFAULT_VARIABLE_NAME: ClassVar[str] = "x"
+    default_variable_name: ClassVar[str] = "x"
     """The default name for the variable set with [add_group()][gemseo.dataset.dataset.Dataset.add_group]."""  # noqa: E501
 
     # DataFrame._metadata lists the normal properties
@@ -206,7 +206,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             columns = MultiIndex(
                 levels=[[], [], []],
                 codes=[[], [], []],
-                names=self.COLUMN_LEVEL_NAMES,
+                names=self.column_level_names,
             )
         super().__init__(
             data=data, index=index, columns=columns, dtype=dtype, copy=copy
@@ -222,12 +222,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     @property
     def group_names(self) -> list[str]:
         """The names of the groups of variables."""
-        return list(self.columns.get_level_values(self.__GROUP_LEVEL).unique())
+        return list(self.columns.get_level_values(self.__group_level).unique())
 
     @property
     def variable_names(self) -> list[str]:
         """The names of the variables."""
-        return list(self.columns.get_level_values(self.__VARIABLE_LEVEL).unique())
+        return list(self.columns.get_level_values(self.__variable_level).unique())
 
     @property
     def variable_identifiers(self) -> list[tuple[str, str]]:
@@ -240,7 +240,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             while a variable identifier is unique
             as a group name is unique.
         """
-        return list(self.columns.droplevel(self.__COMPONENT_LEVEL).unique())
+        return list(self.columns.droplevel(self.__component_level).unique())
 
     @property
     def variable_name_to_n_components(self) -> dict[str, int]:
@@ -248,7 +248,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         return {
             variable_name: self.get_view(variable_names=variable_name).shape[1]
             for variable_name in self.columns.get_level_values(
-                self.__VARIABLE_LEVEL
+                self.__variable_level
             ).unique()
         }
 
@@ -273,7 +273,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             return list(
                 self
                 .get_view(variable_names=variable_name)
-                .columns.get_level_values(self.__GROUP_LEVEL)
+                .columns.get_level_values(self.__group_level)
                 .unique()
             )
         except KeyError:
@@ -292,7 +292,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             return list(
                 self
                 .get_view(group_names=group_name)
-                .columns.get_level_values(self.__VARIABLE_LEVEL)
+                .columns.get_level_values(self.__variable_level)
                 .unique()
             )
         except KeyError:
@@ -312,7 +312,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             return (
                 self
                 .get_view(group_name, variable_name)
-                .columns.get_level_values(self.__COMPONENT_LEVEL)
+                .columns.get_level_values(self.__component_level)
                 .tolist()
             )
         except KeyError:
@@ -343,7 +343,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         """
         output_dataset = self.copy()
         variables_to_normalize = setdiff1d(
-            list(self.columns.levels[self.__VARIABLE_LEVEL].unique()),
+            list(self.columns.levels[self.__variable_level].unique()),
             excluded_variable_names,
         )
         groups_to_normalize = setdiff1d(self.group_names, excluded_group_names)
@@ -418,7 +418,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         self,
         variable_name: str,
         data: DataType,
-        group_name: str = DEFAULT_GROUP,
+        group_name: str = default_group,
         components: ComponentType = (),
     ) -> None:
         """Add the data related to a variable.
@@ -534,7 +534,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             data: The data.
             variable_names: The names of the variables.
                 If empty, use
-                [DEFAULT_VARIABLE_NAME][gemseo.dataset.dataset.Dataset.DEFAULT_VARIABLE_NAME].
+                [default_variable_name][gemseo.dataset.dataset.Dataset.default_variable_name].
             variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
@@ -561,7 +561,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                     n_components = variable_name_to_n_components.get(variable_name, 1)
                     variables.extend([(variable_name, i) for i in range(n_components)])
         else:
-            variables = [(self.DEFAULT_VARIABLE_NAME, i) for i in range(n_columns)]
+            variables = [(self.default_variable_name, i) for i in range(n_columns)]
 
         self.__check_data_shape_consistency(data, n_rows, len(variables))
         for (variable_name, component), data_column in zip(
@@ -700,7 +700,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         else:
             self.rename(
                 columns={variable_name: new_variable_name},
-                level=self.__VARIABLE_LEVEL,
+                level=self.__variable_level,
                 inplace=True,
             )
 
@@ -711,7 +711,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
     def __transform_single_index_column_to_multi_index_column(self) -> None:
         """Transform the tuple columns into multi-index columns."""
         self.columns = MultiIndex.from_tuples(
-            self.columns, names=self.COLUMN_LEVEL_NAMES
+            self.columns, names=self.column_level_names
         )
 
     @classmethod
@@ -724,12 +724,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 or a sequence of 3-length tuples and strings.
                 The items of the 3-length tuples and 3-depth `pandas.MultiIndex`
                 correspond to
-                [COLUMN_LEVEL_NAMES][gemseo.dataset.dataset.Dataset.COLUMN_LEVEL_NAMES]
+                [column_level_names][gemseo.dataset.dataset.Dataset.column_level_names]
                 in this order.
                 In the case of a string,
                 it corresponds to the variable name
                 and the
-                [DEFAULT_GROUP][gemseo.dataset.dataset.Dataset.DEFAULT_GROUP]
+                [default_group][gemseo.dataset.dataset.Dataset.default_group]
                 is used.
 
         Returns:
@@ -740,10 +740,10 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
                 neither a 3-depth `~pandas.MultiIndex`,
                 nor a sequence of 3-length tuples and strings.
         """
-        dataset_multi_index_depth = len(cls.COLUMN_LEVEL_NAMES)
+        dataset_multi_index_depth = len(cls.column_level_names)
         if isinstance(dataframe.columns, MultiIndex):
             if dataframe.columns.nlevels == dataset_multi_index_depth:
-                dataframe.columns.names = cls.COLUMN_LEVEL_NAMES
+                dataframe.columns.names = cls.column_level_names
                 return cls(dataframe)
 
             msg = (
@@ -755,7 +755,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         columns = []
         for column in dataframe.columns:
             if isinstance(column, str):
-                columns.append((cls.DEFAULT_GROUP, column, 0))
+                columns.append((cls.default_group, column, 0))
             elif len(column) == dataset_multi_index_depth:
                 columns.append(column)
             else:
@@ -767,7 +767,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         return cls(
             dataframe.to_numpy(),
-            columns=MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES),
+            columns=MultiIndex.from_tuples(columns, names=cls.column_level_names),
         )
 
     @classmethod
@@ -775,8 +775,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         cls,
         data: DataType,
         variable_names: StrColumnType = (),
-        variable_name_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
-        variable_name_to_group_name: dict[str, str] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_n_components: dict[str, int] = read_only_empty_dict,
+        variable_name_to_group_name: dict[str, str] = read_only_empty_dict,
     ) -> Dataset:
         """Create a dataset from a NumPy array.
 
@@ -791,7 +791,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_name_to_group_name: The groups of the variables.
                 If empty,
                 use
-                [DEFAULT_GROUP][gemseo.dataset.dataset.Dataset.DEFAULT_GROUP]
+                [default_group][gemseo.dataset.dataset.Dataset.default_group]
                 for all the variables.
                 Ignored if `variable_names` is empty.
 
@@ -804,7 +804,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         else:
             _, n_total_components = data.shape
             variable_names = [
-                "_".join([cls.DEFAULT_VARIABLE_NAME, str(component)])
+                "_".join([cls.default_variable_name, str(component)])
                 for component in arange(n_total_components)
             ]
 
@@ -814,7 +814,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         columns = []
         for variable in variable_names:
-            group = variable_to_group.get(variable, cls.DEFAULT_GROUP)
+            group = variable_to_group.get(variable, cls.default_group)
             n_components = variable_to_n_component.get(variable, 1)
             columns.extend([
                 (group, variable, component)
@@ -822,7 +822,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             ])
 
         return cls(
-            data, columns=MultiIndex.from_tuples(columns, names=cls.COLUMN_LEVEL_NAMES)
+            data, columns=MultiIndex.from_tuples(columns, names=cls.column_level_names)
         )
 
     @classmethod
@@ -830,8 +830,8 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
         cls,
         file_path: StrPath,
         variable_names: Iterable[str] = (),
-        variable_name_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
-        variable_name_to_group_name: dict[str, str] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_n_components: dict[str, int] = read_only_empty_dict,
+        variable_name_to_group_name: dict[str, str] = read_only_empty_dict,
         delimiter: str = ",",
         header: bool = True,
     ) -> Dataset:
@@ -856,7 +856,7 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             variable_name_to_group_name: The groups of the variables.
                 If empty,
                 use
-                [DEFAULT_GROUP][gemseo.dataset.dataset.Dataset.DEFAULT_GROUP]
+                [default_group][gemseo.dataset.dataset.Dataset.default_group]
                 for all the variables.
             delimiter: The field delimiter.
             header: Whether to read the names of the variables
@@ -927,12 +927,12 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
             file_path, delimiter=delimiter, header=[0, 1, 2], index_col=index_col
         )
         dataframe.columns = dataframe.columns.set_levels(
-            dataframe.columns.levels[cls.__COMPONENT_LEVEL].astype(np_int64),
-            level=cls.__COMPONENT_LEVEL,
+            dataframe.columns.levels[cls.__component_level].astype(np_int64),
+            level=cls.__component_level,
         )
 
         dataset = cls(dataframe)
-        dataset.columns = dataset.columns.set_names(cls.COLUMN_LEVEL_NAMES)
+        dataset.columns = dataset.columns.set_names(cls.column_level_names)
         return dataset
 
     @overload
@@ -973,11 +973,11 @@ class Dataset(DataFrame, metaclass=GoogleDocstringInheritanceMeta):
 
         return [
             repr_variable(
-                column[self.__VARIABLE_LEVEL],
-                column[self.__COMPONENT_LEVEL],
+                column[self.__variable_level],
+                column[self.__component_level],
                 size=len(
                     self.get_variable_components(
-                        column[self.__GROUP_LEVEL], column[self.__VARIABLE_LEVEL]
+                        column[self.__group_level], column[self.__variable_level]
                     )
                 ),
             )

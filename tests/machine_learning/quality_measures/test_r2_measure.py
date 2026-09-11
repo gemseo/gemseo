@@ -42,37 +42,37 @@ from ..core.test_base_ml_model import DummyMLModel
 if TYPE_CHECKING:
     from gemseo.dataset.io_dataset import IODataset
 
-MODEL = AnalyticDiscipline({"y": "1+x+x**2"})
-MODEL.set_cache(MODEL.CacheType.MEMORY_FULL)
+model = AnalyticDiscipline({"y": "1+x+x**2"})
+model.set_cache(model.CacheType.MEMORY_FULL)
 
-TOL_DEG_1 = 0.1
-TOL_DEG_2 = 0.001
-TOL_DEG_3 = 0.01
-ATOL = 1e-12
+tol_deg_1 = 0.1
+tol_deg_2 = 0.001
+tol_deg_3 = 0.01
+atol = 1e-12
 
 
 @pytest.fixture
 def dataset() -> IODataset:
     """The dataset used to train the regression models."""
-    MODEL.cache.clear()
+    model.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = MDOScenario([MODEL], design_space)
+    scenario = MDOScenario([model], design_space)
     scenario.add_objective("y")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=20))
-    return MODEL.cache.to_dataset()
+    return model.cache.to_dataset()
 
 
 @pytest.fixture
 def dataset_test() -> IODataset:
     """The dataset used to test the performance of the regression models."""
-    MODEL.cache.clear()
+    model.cache.clear()
     design_space = DesignSpace()
     design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
-    scenario = MDOScenario([MODEL], design_space)
+    scenario = MDOScenario([model], design_space)
     scenario.add_objective("y")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=5))
-    return MODEL.cache.to_dataset()
+    return model.cache.to_dataset()
 
 
 def test_constructor(dataset) -> None:
@@ -90,12 +90,12 @@ def test_compute_learning_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = R2Measure(model)
     r2_train = measure.compute_learning_measure()
-    assert r2_train > 1 - TOL_DEG_2
+    assert r2_train > 1 - tol_deg_2
 
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = R2Measure(model)
     r2_train = measure.compute_learning_measure()
-    assert r2_train > 1 - TOL_DEG_1
+    assert r2_train > 1 - tol_deg_1
 
     model = PolynomialRegressor(
         dataset,
@@ -105,7 +105,7 @@ def test_compute_learning_measure(dataset) -> None:
     )
     measure = R2Measure(model)
     r2_train = measure.compute_learning_measure()
-    assert r2_train > 1 - TOL_DEG_2
+    assert r2_train > 1 - tol_deg_2
 
 
 def test_compute_test_measure(dataset, dataset_test) -> None:
@@ -113,12 +113,12 @@ def test_compute_test_measure(dataset, dataset_test) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = R2Measure(model)
     r2_test = measure.compute_test_measure(dataset_test)
-    assert r2_test > 1 - TOL_DEG_2
+    assert r2_test > 1 - tol_deg_2
 
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = R2Measure(model)
     r2_test = measure.compute_test_measure(dataset_test)
-    assert r2_test > 1 - TOL_DEG_1
+    assert r2_test > 1 - tol_deg_1
 
     model = PolynomialRegressor(
         dataset,
@@ -128,7 +128,7 @@ def test_compute_test_measure(dataset, dataset_test) -> None:
     )
     measure = R2Measure(model)
     r2_test = measure.compute_test_measure(dataset_test)
-    assert r2_test > 1 - TOL_DEG_2
+    assert r2_test > 1 - tol_deg_2
 
 
 def test_compute_leave_one_out_measure(dataset) -> None:
@@ -136,12 +136,12 @@ def test_compute_leave_one_out_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = R2Measure(model)
     r2_loo = measure.compute_leave_one_out_measure()
-    assert r2_loo > 1 - TOL_DEG_2
+    assert r2_loo > 1 - tol_deg_2
 
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = R2Measure(model)
     r2_loo = measure.compute_leave_one_out_measure()
-    assert r2_loo < 1 - TOL_DEG_3
+    assert r2_loo < 1 - tol_deg_3
 
 
 def test_compute_cross_validation_measure(dataset) -> None:
@@ -149,12 +149,12 @@ def test_compute_cross_validation_measure(dataset) -> None:
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=2))
     measure = R2Measure(model)
     r2_kfolds = measure.compute_cross_validation_measure()
-    assert r2_kfolds > 1 - TOL_DEG_2
+    assert r2_kfolds > 1 - tol_deg_2
 
     model = PolynomialRegressor(dataset, PolynomialRegressor_Settings(degree=1))
     measure = R2Measure(model)
     r2_kfolds = measure.compute_cross_validation_measure()
-    assert r2_kfolds < 1 - TOL_DEG_3
+    assert r2_kfolds < 1 - tol_deg_3
 
     model = PolynomialRegressor(
         dataset,
@@ -164,7 +164,7 @@ def test_compute_cross_validation_measure(dataset) -> None:
     )
     measure = R2Measure(model)
     r2_kfolds = measure.compute_cross_validation_measure()
-    assert r2_kfolds > 1 - TOL_DEG_2
+    assert r2_kfolds > 1 - tol_deg_2
 
 
 def test_compute_bootstrap_measure(dataset) -> None:

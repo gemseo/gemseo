@@ -24,7 +24,7 @@ from openturns import Axial
 
 from gemseo.doe.openturns._algorithm.base_ot_stratified_doe import BaseOTStratifiedDOE
 
-LOGGER: Final[logging.Logger] = logging.getLogger(__name__)
+logger: Final[logging.Logger] = logging.getLogger(__name__)
 
 
 class OTAxialDOE(BaseOTStratifiedDOE):
@@ -34,7 +34,7 @@ class OTAxialDOE(BaseOTStratifiedDOE):
          This class is a singleton.
     """
 
-    _ALGO_CLASS: ClassVar[type[Axial]] = Axial
+    _algo_class: ClassVar[type[Axial]] = Axial
 
     @staticmethod
     def _compute_n_levels(n_samples: int, dimension: int) -> int:
@@ -52,7 +52,7 @@ class OTAxialDOE(BaseOTStratifiedDOE):
 
         final_n_samples = 1 + 2 * dimension * n_levels
         if n_samples > final_n_samples:
-            LOGGER.warning(
+            logger.warning(
                 (
                     "An axial DOE of %s samples in dimension %s does not exist; "
                     "use %s samples instead."

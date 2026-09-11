@@ -25,8 +25,8 @@ from pydantic import PositiveInt
 from gemseo.optimization.scipy_global.settings.base_scipy_global_settings import (
     BaseSciPyGlobalSettings,
 )
+from gemseo.util import seeder
 from gemseo.util.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
-from gemseo.util.seeder import SEED
 
 
 class DIFFERENTIAL_EVOLUTION_Settings(BaseSciPyGlobalSettings):  # noqa: N801
@@ -62,7 +62,7 @@ tuple(min, max) dithering is employed.""",
     )
 
     seed: int = Field(
-        default=SEED,
+        default=seeder.seed,
         description="""The random seed.""",
     )
 

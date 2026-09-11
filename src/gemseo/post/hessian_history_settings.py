@@ -27,7 +27,7 @@ from gemseo.util.typing import StrKeyMapping
 
 
 class HessianHistory_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
-    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (11.0, 6.0)}
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (11.0, 6.0)}
     variable_names: Sequence[str] = Field(
         default=(),
         description="The names of the variables.",

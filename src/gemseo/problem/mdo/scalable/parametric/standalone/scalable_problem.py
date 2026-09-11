@@ -38,7 +38,7 @@ from numpy.linalg import inv
 from numpy.random import default_rng
 
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_D_0,
+    default_d_0,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.discipline.main_discipline import (  # noqa: E501
     MainDiscipline,
@@ -53,10 +53,7 @@ from gemseo.problem.mdo.scalable.parametric.standalone.scalable_design_space imp
     ScalableDesignSpace,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings import (  # noqa: E501
-    DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    SHARED_DESIGN_VARIABLE_NAME,
+    default_scalable_discipline_settings,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_constraint_name,
@@ -70,7 +67,10 @@ from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_x_local_name,
 )
-from gemseo.util.seeder import SEED
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    shared_design_variable_name,
+)
+from gemseo.util.seeder import seed
 from gemseo.util.string import MultiLineString
 
 if TYPE_CHECKING:
@@ -92,25 +92,25 @@ class ScalableProblem:
     to $[0, 1]$.
     """
 
-    _MAIN_DISCIPLINE_CLASS: ClassVar[type] = MainDiscipline
+    _main_discipline_class: ClassVar[type] = MainDiscipline
     """The class of the main discipline."""
 
-    _SCALABLE_DISCIPLINE_CLASS: ClassVar[type] = ScalableDiscipline
+    _scalable_discipline_class: ClassVar[type] = ScalableDiscipline
     """The class of the scalable discipline."""
 
-    _DESIGN_SPACE_CLASS: ClassVar[type] = ScalableDesignSpace
+    _design_space_class: ClassVar[type] = ScalableDesignSpace
     """The class of the design space."""
 
-    disciplines: list[_MAIN_DISCIPLINE_CLASS | _SCALABLE_DISCIPLINE_CLASS]
+    disciplines: list[_main_discipline_class | _scalable_discipline_class]
     """The disciplines."""
 
-    design_space: _DESIGN_SPACE_CLASS
+    design_space: _design_space_class
     """The design space."""
 
     qp_problem: QuadraticProgrammingProblem
     """The quadratic programming problem."""
 
-    __N_SAMPLES: Final[int] = 100000
+    __n_samples: Final[int] = 100000
     """The number of samples to estimate the quantile-based constraint threshold."""
 
     __alpha: RealArray
@@ -123,11 +123,11 @@ class ScalableProblem:
         self,
         discipline_settings: Sequence[
             ScalableDisciplineSettings
-        ] = DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
-        d_0: int = DEFAULT_D_0,
+        ] = default_scalable_discipline_settings,
+        d_0: int = default_d_0,
         add_random_variables: bool = False,
         alpha: float = 0.50,
-        seed: int = SEED,
+        seed: int = seed,
     ) -> None:
         r"""
         Args:
@@ -208,7 +208,7 @@ class ScalableProblem:
         q = quantile(
             [
                 self.compute_y(x).min()
-                for x in rng.random((self.__N_SAMPLES, sum(d_i) + d_0))
+                for x in rng.random((self.__n_samples, sum(d_i) + d_0))
             ],
             1 - alpha,
         )
@@ -230,7 +230,7 @@ class ScalableProblem:
         )
 
         # Define the default values of the input variables.
-        default_input_values = {SHARED_DESIGN_VARIABLE_NAME: zeros(d_0) + 0.5}
+        default_input_values = {shared_design_variable_name: zeros(d_0) + 0.5}
         for index, discipline_settings_ in enumerate(discipline_settings):
             discipline_index = index + 1
             d_i = discipline_settings_.d_i
@@ -241,10 +241,10 @@ class ScalableProblem:
             default_input_values[get_u_local_name(discipline_index)] = zeros(p_i)
 
         # Instantiate the main discipline
-        names = [SHARED_DESIGN_VARIABLE_NAME]
+        names = [shared_design_variable_name]
         names.extend([get_coupling_name(index) for index in range(1, N + 1)])
         self.disciplines = [
-            self._MAIN_DISCIPLINE_CLASS(
+            self._main_discipline_class(
                 *t_i,
                 **{k: v.copy() for k, v in default_input_values.items() if k in names},
             )
@@ -252,7 +252,7 @@ class ScalableProblem:
 
         # Instantiate the scalable disciplines
         for discipline_index in range(1, N + 1):
-            names = [SHARED_DESIGN_VARIABLE_NAME, get_x_local_name(discipline_index)]
+            names = [shared_design_variable_name, get_x_local_name(discipline_index)]
             names.extend([
                 get_coupling_name(other_discipline_index)
                 for other_discipline_index in range(1, N + 1)
@@ -262,7 +262,7 @@ class ScalableProblem:
                 names.append(get_u_local_name(discipline_index))
 
             self.disciplines.append(
-                self._SCALABLE_DISCIPLINE_CLASS(
+                self._scalable_discipline_class(
                     discipline_index,
                     a_i[discipline_index - 1],
                     D_i0[discipline_index - 1],
@@ -276,7 +276,7 @@ class ScalableProblem:
                 )
             )
 
-        self.design_space = self._DESIGN_SPACE_CLASS(discipline_settings, d_0)
+        self.design_space = self._design_space_class(discipline_settings, d_0)
 
     def differentiate_y(self, x: RealArray, u: RealArray | None = None) -> RealArray:
         r"""Compute the derivatives of the coupling output $y$.
@@ -308,12 +308,12 @@ class ScalableProblem:
         return y
 
     @property
-    def main_discipline(self) -> _MAIN_DISCIPLINE_CLASS:
+    def main_discipline(self) -> _main_discipline_class:
         """The main discipline."""
         return self.disciplines[0]
 
     @property
-    def scalable_disciplines(self) -> list[_SCALABLE_DISCIPLINE_CLASS]:
+    def scalable_disciplines(self) -> list[_scalable_discipline_class]:
         """The scalable disciplines."""
         return self.disciplines[1:]
 

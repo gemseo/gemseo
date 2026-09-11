@@ -33,7 +33,7 @@ class SPDistribution_Settings(  # noqa: N801
 ):
     """The settings of an OpenTURNS-based distribution."""
 
-    _LIBRARY_NAME: ClassVar[str] = "SciPy"
+    _library_name: ClassVar[str] = "SciPy"
 
     interfaced_distribution: str = Field(
         default="uniform", description="The name of the probability distribution."

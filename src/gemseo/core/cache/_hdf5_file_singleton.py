@@ -72,10 +72,10 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     _lock: RLockType
     """The lock used for multiprocessing."""
 
-    HASH_TAG: ClassVar[str] = "hash"
+    hash_tag: ClassVar[str] = "hash"
     """The label for the hash."""
 
-    FILE_FORMAT_VERSION: ClassVar[int] = 2
+    file_format_version: ClassVar[int] = 2
     """The version of the file format."""
 
     __keep_open: bool
@@ -139,9 +139,9 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
             try:
                 # Write hash if needed
-                if entry.get(self.HASH_TAG) is None:
+                if entry.get(self.hash_tag) is None:
                     data_hash = array([hash_data(data)], dtype="bytes")
-                    entry.create_dataset(self.HASH_TAG, data=data_hash)
+                    entry.create_dataset(self.hash_tag, data=data_hash)
 
                 for name, value in data.items():
                     if value.dtype.type is str_:
@@ -317,7 +317,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
 
             for index, entry in root.items():
                 index = int(index)
-                hash_ = int(array(entry[self.HASH_TAG])[0])
+                hash_ = int(array(entry[self.hash_tag])[0])
                 indices = hash_to_indices.get(hash_)
 
                 if indices is None:
@@ -366,11 +366,11 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
             )
             raise ValueError(msg)
 
-        if version > self.FILE_FORMAT_VERSION:
+        if version > self.file_format_version:
             msg = (
                 f"The file {self.hdf_file_path} cannot be used because its file "
                 f"format version is {version}"
-                f"while the expected version is {self.FILE_FORMAT_VERSION}: "
+                f"while the expected version is {self.file_format_version}: "
                 "see HDFCache.update_file_format to convert it."
             )
             raise ValueError(msg)
@@ -380,12 +380,12 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
         cls,
         h5_file: h5py.File,
     ) -> None:
-        """Change the version of an HDF5 file to `FILE_FORMAT_VERSION`.
+        """Change the version of an HDF5 file to `file_format_version`.
 
         Args:
             h5_file: A HDF5 file object.
         """
-        h5_file.attrs["version"] = cls.FILE_FORMAT_VERSION
+        h5_file.attrs["version"] = cls.file_format_version
 
     @classmethod
     def update_file_format(
@@ -394,7 +394,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
     ) -> None:
         """Update the format of a HDF5 file.
 
-        GEMSEO 3.2.0 added a `HDF5FileSingleton.FILE_FORMAT_VERSION`
+        GEMSEO 3.2.0 added a `HDF5FileSingleton.file_format_version`
         to the HDF5 files,
         to allow handling its maintenance and evolutions.
         In particular,
@@ -411,7 +411,7 @@ class HDF5FileSingleton(metaclass=SingleInstancePerFileAttribute):
                         data = sample_value[BaseCache.Group.INPUTS]
                         data = {key: array(val) for key, val in data.items()}
                         data_hash = array([hash_data(data)], dtype="bytes")
-                        sample_value[cls.HASH_TAG][0] = data_hash
+                        sample_value[cls.hash_tag][0] = data_hash
 
     @contextmanager
     def __open(self, mode: str = "r") -> Iterator[None]:

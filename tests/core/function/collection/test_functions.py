@@ -111,8 +111,8 @@ def test_dimension(functions: Functions, mdo_functions: list[ArrayFunction], sna
 
 
 def test_f_types(functions: Functions, snapshot):
-    """Check _F_TYPES."""
-    f_types = functions._F_TYPES = (ArrayFunction.FunctionType.OBJ,)
+    """Check _f_types."""
+    f_types = functions._f_types = (ArrayFunction.FunctionType.OBJ,)
     with assert_exception(ValueError, snapshot):
         functions.append(
             ArrayFunction(
@@ -120,7 +120,7 @@ def test_f_types(functions: Functions, snapshot):
             )
         )
 
-    functions._F_TYPES = f_types
+    functions._f_types = f_types
 
 
 def test_f_names(functions: Functions, snapshot):

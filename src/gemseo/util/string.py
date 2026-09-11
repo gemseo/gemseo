@@ -33,9 +33,10 @@ from itertools import chain
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 from typing import NamedTuple
 
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -58,10 +59,10 @@ class MessageLine(NamedTuple):
     """The keyword arguments passed to the `format()` method."""
 
 
-DEFAULT_DELIMITER = ", "
+default_delimiter: Final[str] = ", "
 """A string to separate string fields."""
 
-DEFAULT_KEY_VALUE_SEPARATOR = "="
+default_key_value_separator: Final[str] = "="
 """A string to separate key and value in a key-value pair of a mapping."""
 
 VariableType = str | tuple[str, int]
@@ -109,8 +110,8 @@ def __stringify(
 
 def pretty_repr(
     obj: Any,
-    delimiter: str = DEFAULT_DELIMITER,
-    key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
+    delimiter: str = default_delimiter,
+    key_value_separator: str = default_key_value_separator,
     sort: bool = True,
     use_and: bool = True,
 ) -> str:
@@ -132,8 +133,8 @@ def pretty_repr(
 
 def pretty_str(
     obj: Any,
-    delimiter: str = DEFAULT_DELIMITER,
-    key_value_separator: str = DEFAULT_KEY_VALUE_SEPARATOR,
+    delimiter: str = default_delimiter,
+    key_value_separator: str = default_key_value_separator,
     sort: bool = True,
     use_and: bool = True,
 ) -> str:
@@ -198,10 +199,12 @@ def convert_strings_to_iterable(str_or_strs: str | Iterable[str]) -> Iterable[st
 
 
 # regex pattern for finding a camel case word preceded by another character
-_RE_PATTERN_CAMEL_CASE_WORD = re.compile(r"(.)([A-Z][a-z]+)")
+_re_pattern_camel_case_word: Final[re.Pattern[str]] = re.compile(r"(.)([A-Z][a-z]+)")
 
 # regex pattern for finding a lower case or digit followed by an upper case
-_RE_PATTERN_CAMEL_CASE_BOUNDARY = re.compile(r"([a-z0-9])([A-Z])")
+_re_pattern_camel_case_boundary: Final[re.Pattern[str]] = re.compile(
+    r"([a-z0-9])([A-Z])"
+)
 
 
 def convert_camel_case_to_screaming_snake_case(name: str) -> str:
@@ -216,8 +219,8 @@ def convert_camel_case_to_screaming_snake_case(name: str) -> str:
     Returns:
         The screaming snake case string.
     """
-    name = _RE_PATTERN_CAMEL_CASE_WORD.sub(r"\1_\2", name)
-    return _RE_PATTERN_CAMEL_CASE_BOUNDARY.sub(r"\1_\2", name).upper()
+    name = _re_pattern_camel_case_word.sub(r"\1_\2", name)
+    return _re_pattern_camel_case_boundary.sub(r"\1_\2", name).upper()
 
 
 def filter_names(
@@ -286,10 +289,10 @@ class MultiLineString:
     added as a new line in the result.
     """
 
-    INDENTATION: ClassVar[str] = " " * 3
+    indentation: ClassVar[str] = " " * 3
     """The indentation increment of each indentation level."""
 
-    DEFAULT_LEVEL: ClassVar[int] = 0
+    default_level: ClassVar[int] = 0
     """The default indentation level."""
 
     __level: int
@@ -328,22 +331,28 @@ class MultiLineString:
 
     def reset(self) -> None:
         """Reset the indentation."""
-        self.__level = self.DEFAULT_LEVEL
+        self.__level = self.default_level
 
     def _repr_html_(self) -> str:
         multiline_string_repr = ""
-        current_level = self.DEFAULT_LEVEL
+        current_level = self.default_level
         for line in self.__lines:
             if line.level > current_level:
                 # Start a new list (in the last item of the current list if any).
+                # A jump of several levels at once opens as many nested lists,
+                # each one nested in an item of its parent list.
                 multiline_string_repr = multiline_string_repr.removesuffix("</li>")
-                multiline_string_repr += "<ul>"
+                multiline_string_repr += "<ul>" + "<li><ul>" * (
+                    line.level - current_level - 1
+                )
             elif line.level < current_level:
                 # End nested lists.
-                for _ in range(current_level - line.level):
+                # Iterate over the levels the string returns to, from the
+                # innermost to the outermost, rather than over a bare count.
+                for level in range(current_level - 1, line.level - 1, -1):
                     # Close the list.
                     multiline_string_repr += "</ul>"
-                    if line.level != self.DEFAULT_LEVEL:
+                    if level != self.default_level:
                         # Close the item containing this list.
                         multiline_string_repr += "</li>"
 
@@ -356,17 +365,17 @@ class MultiLineString:
 
             # Update the level of the current
             current_level = line.level
-            if current_level == self.DEFAULT_LEVEL:
+            if current_level == self.default_level:
                 multiline_string_repr += f"{line_string_repr}<br/>"
             else:
                 multiline_string_repr += f"<li>{line_string_repr}</li>"
 
-        if current_level > self.DEFAULT_LEVEL:
+        if current_level > self.default_level:
             # Close the lists that are still open.
-            multiline_string_repr += "</ul></li>" * (current_level - self.DEFAULT_LEVEL)
+            multiline_string_repr += "</ul></li>" * (current_level - self.default_level)
             multiline_string_repr = multiline_string_repr.removesuffix("</li>")
 
-        return REPR_HTML_WRAPPER.format(multiline_string_repr)
+        return repr_html_wrapper.format(multiline_string_repr)
 
     def indent(self) -> None:
         """Increase the indentation."""
@@ -400,7 +409,7 @@ class MultiLineString:
     def __repr__(self) -> str:
         lines = []
         for line in self.__lines:
-            str_format = self.INDENTATION * line.level + line.str_format
+            str_format = self.indentation * line.level + line.str_format
             if line.args or line.kwargs:
                 str_format = str_format.format(*line.args, **line.kwargs)
             lines.append(str_format)
@@ -417,11 +426,11 @@ class MultiLineString:
     @contextmanager
     def offset(cls) -> Iterator[None]:
         """Create a temporary offset with a context manager."""
-        cls.DEFAULT_LEVEL += 1
+        cls.default_level += 1
         try:
             yield
         finally:
-            cls.DEFAULT_LEVEL -= 1
+            cls.default_level -= 1
 
 
 def _format_value_in_pretty_table(n_decimals: int, field_name: str, value: Any) -> str:

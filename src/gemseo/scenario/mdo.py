@@ -31,11 +31,11 @@ from gemseo.core.algorithm.factory import DriverLibraryFactory
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.concatenate import Concatenate
 from gemseo.optimization.problem import OptimizationProblem
-from gemseo.post.factory import POST_FACTORY
+from gemseo.post.factory import post_factory as default_post_factory
 from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
 from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.scenario.scenario_result.factory import ScenarioResultFactory
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.string import convert_strings_to_iterable
 
 if TYPE_CHECKING:
@@ -90,17 +90,17 @@ class MDOScenario(EvaluationScenario):
     [MDOScenario.posts][gemseo.scenario.mdo.MDOScenario.posts].
     """
 
-    _ALGO_FACTORY_CLASS: ClassVar[type[DriverLibraryFactory]] = DriverLibraryFactory
+    _algo_factory_class: ClassVar[type[DriverLibraryFactory]] = DriverLibraryFactory
 
     _evaluation_problem_class: type[OptimizationProblem] = OptimizationProblem
 
     __objectives_to_minimize: dict[ArrayFunction, bool]
     """The objectives and if it must be minimized."""
 
-    post_factory: ClassVar[PostFactory] = POST_FACTORY
+    post_factory: ClassVar[PostFactory] = default_post_factory
     """The factory of post-processors."""
 
-    posts: ClassVar[list[str]] = post_factory.class_names
+    posts: ClassVar[list[str]] = default_post_factory.class_names
     """The names of the post-processors."""
 
     ConstraintType = ArrayFunction.ConstraintType
@@ -111,7 +111,7 @@ class MDOScenario(EvaluationScenario):
         design_space: DesignSpace,
         name: str = "",
         formulation_settings: BaseFormulationSettings | None = None,
-        default_input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        default_input_data: StrKeyMapping = read_only_empty_dict,
     ) -> None:
         super().__init__(
             disciplines,
@@ -327,16 +327,16 @@ class MDOScenario(EvaluationScenario):
         """
         Args:
             opt_naming: Whether to use
-                [DESIGN_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.DESIGN_GROUP]
+                [design_group][gemseo.dataset.optimization_dataset.OptimizationDataset.design_group]
                 and the function-specific groups
-                ([OBJECTIVE_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.OBJECTIVE_GROUP],
-                [EQUALITY_CONSTRAINT_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.EQUALITY_CONSTRAINT_GROUP],
-                [INEQUALITY_CONSTRAINT_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP],
-                [OBSERVABLE_GROUP][gemseo.dataset.optimization_dataset.OptimizationDataset.OBSERVABLE_GROUP]).
+                ([objective_group][gemseo.dataset.optimization_dataset.OptimizationDataset.objective_group],
+                [equality_constraint_group][gemseo.dataset.optimization_dataset.OptimizationDataset.equality_constraint_group],
+                [inequality_constraint_group][gemseo.dataset.optimization_dataset.OptimizationDataset.inequality_constraint_group],
+                [observable_group][gemseo.dataset.optimization_dataset.OptimizationDataset.observable_group]).
                 Otherwise,
-                [INPUT_GROUP][gemseo.dataset.io_dataset.IODataset.INPUT_GROUP]
+                [input_group][gemseo.dataset.io_dataset.IODataset.input_group]
                 and
-                [OUTPUT_GROUP][gemseo.dataset.io_dataset.IODataset.OUTPUT_GROUP].
+                [output_group][gemseo.dataset.io_dataset.IODataset.output_group].
         """  # noqa: D205, D212
         return self.formulation.problem.to_dataset(
             name=name,
@@ -371,7 +371,7 @@ class MDOScenario(EvaluationScenario):
             return None
 
         return ScenarioResultFactory().create(
-            name or self.formulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME,
+            name or self.formulation.default_scenario_result_class_name,
             scenario=self,
             **options,
         )

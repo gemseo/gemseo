@@ -54,10 +54,10 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
     numerical stability.
     """
 
-    _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int]
+    _minimum_number_of_iterates: ClassVar[int]
     """The minimum number of $G(x_i)$ required to compute the transformation."""
 
-    _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int]
+    _minimum_number_of_residuals: ClassVar[int]
     """The minimum number of residuals $G(x_i) - x_i$ required to compute the
     transformation."""
 
@@ -75,8 +75,8 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(self) -> None:  # noqa:D107
         # Instantiate double-ended queues to store the relevant quantities
-        self._iterates = deque(maxlen=self._MINIMUM_NUMBER_OF_ITERATES)
-        self._residuals = deque(maxlen=self._MINIMUM_NUMBER_OF_RESIDUALS)
+        self._iterates = deque(maxlen=self._minimum_number_of_iterates)
+        self._residuals = deque(maxlen=self._minimum_number_of_residuals)
 
         self.lower_bound = None
         self.upper_bound = None
@@ -106,8 +106,8 @@ class SequenceTransformer(metaclass=ABCGoogleDocstringInheritanceMeta):
 
         # Compute the transformed iterate only if sufficient material at hand
         if (
-            len(self._iterates) >= self._MINIMUM_NUMBER_OF_ITERATES
-            and len(self._residuals) >= self._MINIMUM_NUMBER_OF_RESIDUALS
+            len(self._iterates) >= self._minimum_number_of_iterates
+            and len(self._residuals) >= self._minimum_number_of_residuals
         ):
             transformed_iterate = self._compute_transformed_iterate()
         else:

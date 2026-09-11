@@ -21,6 +21,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 import pytest
 from numpy import array
 
@@ -63,10 +65,10 @@ def test_constructor(fit_transformers, dataset) -> None:
 
 def test_is_better() -> None:
     class MLQualityMeasureToMinimize(BaseMLModelQuality):
-        SMALLER_IS_BETTER = True
+        smaller_is_better: ClassVar[bool] = True
 
     class MLQualityMeasureToMaximize(BaseMLModelQuality):
-        SMALLER_IS_BETTER = False
+        smaller_is_better: ClassVar[bool] = False
 
     assert MLQualityMeasureToMinimize.is_better(1, 2)
     assert MLQualityMeasureToMaximize.is_better(2, 1)

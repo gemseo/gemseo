@@ -22,9 +22,9 @@ import pytest
 
 from gemseo.util.global_configuration import _configuration
 
-_DIRECTORY_MANAGER_EXAMPLE = "plot_howto_directory_manager.py"
+_directory_manager_example = "plot_howto_directory_manager.py"
 
-EXAMPLE_PATHS = sorted(
+example_paths = sorted(
     (
         path
         for path in Path(__file__, "..", "..", "docs", "examples")
@@ -32,7 +32,7 @@ EXAMPLE_PATHS = sorted(
         .rglob("*.py")
         if path.name.startswith("plot_")
     ),
-    key=lambda path: (path.name == _DIRECTORY_MANAGER_EXAMPLE, path.name),
+    key=lambda path: (path.name == _directory_manager_example, path.name),
 )
 """The directory manager example is sorted last because it leaks global state."""
 
@@ -45,7 +45,7 @@ def reset_global_configuration() -> None:
 
 @pytest.mark.doc_examples
 @pytest.mark.parametrize(
-    "example_path", EXAMPLE_PATHS, ids=(path.name for path in EXAMPLE_PATHS)
+    "example_path", example_paths, ids=(path.name for path in example_paths)
 )
 def test_script_execution(
     example_path: Path,

@@ -39,10 +39,10 @@ if TYPE_CHECKING:
 
 # The complexity levels accepted in the frontmatter, matching the vocabulary
 # already used by docs/_scripts/learning_paths.py for the learning paths.
-_LEVELS = ("beginner", "intermediate", "advanced")
+_levels = ("beginner", "intermediate", "advanced")
 
-_FENCED_CODE = re.compile(r"```.*?```", re.DOTALL)
-_HEADING = re.compile(r"^(#{1,6} .*)$", re.MULTILINE)
+_fenced_code = re.compile(r"```.*?```", re.DOTALL)
+_heading = re.compile(r"^(#{1,6} .*)$", re.MULTILINE)
 
 # Maps ``page.url`` to the declared complexity level, filled while the pages are
 # rendered and dumped once the build is complete. The documentation home page
@@ -54,7 +54,7 @@ def _badge(level: str) -> str:
     """Build the markdown snippet displaying the complexity level.
 
     Args:
-        level: The complexity level, one of ``_LEVELS``.
+        level: The complexity level, one of ``_levels``.
 
     Returns:
         The markdown snippet to insert into the page.
@@ -76,7 +76,7 @@ def on_page_markdown(markdown: str, page: Page, **kwargs: Any) -> str:
         The markdown content, with a complexity badge when a valid level is set.
     """
     level = str(page.meta.get("complexity", "")).strip().lower()
-    if level not in _LEVELS:
+    if level not in _levels:
         return markdown
 
     _registry[page.url] = level
@@ -86,8 +86,8 @@ def on_page_markdown(markdown: str, page: Page, **kwargs: Any) -> str:
     # (keeping the character offsets aligned)
     # so a `#` line inside a leading code block
     # is not mistaken for the first heading.
-    masked = _FENCED_CODE.sub(lambda m: " " * len(m.group()), markdown)
-    match = _HEADING.search(masked)
+    masked = _fenced_code.sub(lambda m: " " * len(m.group()), markdown)
+    match = _heading.search(masked)
     if match is None:
         return f"{badge}\n\n{markdown}"
 

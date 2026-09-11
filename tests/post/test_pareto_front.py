@@ -20,16 +20,16 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.post.factory import POST_FACTORY
+from gemseo.post.factory import post_factory
 from gemseo.post.pareto_front_settings import ParetoFront_Settings
 from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.util.testing.helper import assert_exception
 
 pytestmark = pytest.mark.skipif(
-    not POST_FACTORY.is_available("ScatterPlotMatrix"),
+    not post_factory.is_available("ScatterPlotMatrix"),
     reason="ScatterPlotMatrix plot is not available.",
 )
 
@@ -48,8 +48,8 @@ def test_pareto(kwargs, snapshot_matplotlib) -> None:
         kwargs: The parametrized keyword arguments.
     """
     problem = Power2()
-    DOE_LIBRARY_FACTORY.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
-    POST_FACTORY.execute(
+    doe_library_factory.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
+    post_factory.execute(
         problem,
         ParetoFront_Settings(
             save=False, file_path="power", objectives=problem.function_names, **kwargs
@@ -67,8 +67,8 @@ def test_pareto_minimize(
     """
     problem = Power2()
     problem.minimize_objective = False
-    DOE_LIBRARY_FACTORY.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
-    POST_FACTORY.execute(
+    doe_library_factory.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
+    post_factory.execute(
         problem, ParetoFront_Settings(file_path="power", objectives=["pow2", "ineq1"])
     )
 
@@ -76,9 +76,9 @@ def test_pareto_minimize(
 def test_pareto_incorrect_objective_list(snapshot) -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
-    DOE_LIBRARY_FACTORY.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
+    doe_library_factory.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
     with assert_exception(ValueError, snapshot):
-        POST_FACTORY.execute(
+        post_factory.execute(
             problem,
             ParetoFront_Settings(
                 save=False,
@@ -92,9 +92,9 @@ def test_pareto_incorrect_objective_list(snapshot) -> None:
 def test_pareto_incorrect_objective_names(snapshot) -> None:
     """Test that an error is raised if the objective labels len is not consistent."""
     problem = Power2()
-    DOE_LIBRARY_FACTORY.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
+    doe_library_factory.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=50))
     with assert_exception(ValueError, snapshot):
-        POST_FACTORY.execute(
+        post_factory.execute(
             problem,
             ParetoFront_Settings(
                 save=False, objectives=["fake_obj"], file_path="power"
@@ -117,10 +117,10 @@ def test_pareto_binhkorn(tmp_wd, kwargs, snapshot_matplotlib) -> None:
         kwargs: The parametrized keyword arguments.
     """
     problem = BinhKorn()
-    DOE_LIBRARY_FACTORY.execute(
+    doe_library_factory.execute(
         problem, settings=PYDOE_FULLFACT_Settings(n_samples=100)
     )
-    POST_FACTORY.execute(
+    post_factory.execute(
         problem,
         ParetoFront_Settings(
             save=False, file_path="binh_korn", objectives=["compute_binhkorn"], **kwargs
@@ -131,10 +131,10 @@ def test_pareto_binhkorn(tmp_wd, kwargs, snapshot_matplotlib) -> None:
 def test_pareto_binhkorn_design_variable(snapshot_matplotlib) -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
-    DOE_LIBRARY_FACTORY.execute(
+    doe_library_factory.execute(
         problem, settings=PYDOE_FULLFACT_Settings(n_samples=100)
     )
-    POST_FACTORY.execute(
+    post_factory.execute(
         problem,
         ParetoFront_Settings(
             save=False,
@@ -148,10 +148,10 @@ def test_pareto_binhkorn_design_variable(snapshot_matplotlib) -> None:
 def test_pareto_binhkorn_no_obj(snapshot_matplotlib) -> None:
     """Test the generation of Pareto front plots using the Binh-Korn problem."""
     problem = BinhKorn()
-    DOE_LIBRARY_FACTORY.execute(
+    doe_library_factory.execute(
         problem, settings=PYDOE_FULLFACT_Settings(n_samples=100)
     )
-    POST_FACTORY.execute(
+    post_factory.execute(
         problem,
         ParetoFront_Settings(save=False, file_path="binh_korn_no_obj"),
     )

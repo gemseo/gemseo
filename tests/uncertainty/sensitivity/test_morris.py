@@ -36,7 +36,7 @@ from numpy.testing import assert_equal
 from gemseo import create_discipline
 from gemseo.core.discipline import Discipline
 from gemseo.discipline.analytic import AnalyticDiscipline
-from gemseo.doe.oat_doe.settings.oat_doe_settings import DEFAULT_STEP
+from gemseo.doe.oat_doe.settings.oat_doe_settings import default_step
 from gemseo.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.doe.scipy.settings.mc import MC_Settings
 from gemseo.space.parameter import ParameterSpace
@@ -55,7 +55,7 @@ from gemseo.uncertainty.distribution.scipy.uniform_settings import (
 from gemseo.uncertainty.sensitivity.morris import MorrisAnalysis
 from gemseo.util.testing.helper import assert_exception
 
-FUNCTION = {
+function = {
     "name": "my_function",
     "expression": {"y1": "x1+100*x2+10*x3", "y2": "x1+10*x2+100*x3"},
     "variables": ["x1", "x2", "x3"],
@@ -77,8 +77,8 @@ def discipline() -> AnalyticDiscipline:
     """The discipline used by the main Morris analysis."""
     return create_discipline(
         "AnalyticDiscipline",
-        FUNCTION["expression"],
-        name=FUNCTION["name"],
+        function["expression"],
+        name=function["name"],
     )
 
 
@@ -86,8 +86,8 @@ def discipline() -> AnalyticDiscipline:
 def parameter_space() -> ParameterSpace:
     """The parameter space used by the main Morris analysis."""
     space = ParameterSpace()
-    for variable in FUNCTION["variables"]:
-        space.add_random_variable(**FUNCTION["distributions"][variable])
+    for variable in function["variables"]:
+        space.add_random_variable(**function["distributions"][variable])
     return space
 
 
@@ -125,11 +125,11 @@ def test_morris_main_indices_outputs(morris) -> None:
     assert {"y1", "y2"} == morris.main_indices.keys()
 
 
-@pytest.mark.parametrize("output", FUNCTION["outputs"])
+@pytest.mark.parametrize("output", function["outputs"])
 def test_morris_main_indices_outputs_content(morris, output) -> None:
     """Check that the main indices are well-formed."""
     assert len(morris.main_indices[output]) == 1
-    assert list(morris.main_indices[output][0]) == FUNCTION["variables"]
+    assert list(morris.main_indices[output][0]) == function["variables"]
 
 
 def test_morris_main_indices(morris) -> None:
@@ -150,23 +150,23 @@ def test_morris_indices_outputs(morris, name) -> None:
     "name",
     ["MU", "MU_STAR", "SIGMA", "RELATIVE_SIGMA", "MIN", "MAX"],
 )
-@pytest.mark.parametrize("output", FUNCTION["outputs"])
+@pytest.mark.parametrize("output", function["outputs"])
 def test_morris_indices_outputs_content(morris, name, output) -> None:
     """Check that all the outputs' indices are well-formed."""
     output_data = getattr(morris.indices, name.lower())[output]
     assert len(output_data) == 1
-    assert list(output_data[0]) == FUNCTION["variables"]
+    assert list(output_data[0]) == function["variables"]
 
 
-@pytest.mark.parametrize("variable", FUNCTION["variables"])
-@pytest.mark.parametrize("output", FUNCTION["outputs"])
+@pytest.mark.parametrize("variable", function["variables"])
+@pytest.mark.parametrize("output", function["outputs"])
 def test_morris_sigma(morris, output, variable) -> None:
     """Check that sigma is positive."""
     assert morris.indices.sigma[output][0][variable] >= 0
 
 
-@pytest.mark.parametrize("variable", FUNCTION["variables"])
-@pytest.mark.parametrize("output", FUNCTION["outputs"])
+@pytest.mark.parametrize("variable", function["variables"])
+@pytest.mark.parametrize("output", function["outputs"])
 def test_morris_mu(morris, output, variable) -> None:
     """Check that mu_star is greater or equal to mu."""
     assert (
@@ -175,8 +175,8 @@ def test_morris_mu(morris, output, variable) -> None:
     )
 
 
-@pytest.mark.parametrize("variable", FUNCTION["variables"])
-@pytest.mark.parametrize("output", FUNCTION["outputs"])
+@pytest.mark.parametrize("variable", function["variables"])
+@pytest.mark.parametrize("output", function["outputs"])
 def test_morris_min_max(morris, output, variable) -> None:
     """Check that the maximum is greater or equal to the minimum."""
     assert (
@@ -187,8 +187,8 @@ def test_morris_min_max(morris, output, variable) -> None:
 
 @pytest.mark.parametrize("use_elementary_effects", [False, True])
 @pytest.mark.parametrize("normalize", [False, True])
-@pytest.mark.parametrize("variable", FUNCTION["variables"])
-@pytest.mark.parametrize("output", FUNCTION["outputs"])
+@pytest.mark.parametrize("variable", function["variables"])
+@pytest.mark.parametrize("output", function["outputs"])
 def test_morris_relative_sigma(
     discipline, parameter_space, output, variable, normalize, use_elementary_effects
 ) -> None:
@@ -372,7 +372,7 @@ def test_sort_input_variables_with_nan_indices(morris_with_nan_indices) -> None:
 def test_morris_sort_parameters(morris, output, expected) -> None:
     """Verify that the parameters are correctly sorted."""
     assert isinstance(morris.sort_input_variables(output), list)
-    assert set(morris.sort_input_variables(output)) == set(FUNCTION["variables"])
+    assert set(morris.sort_input_variables(output)) == set(function["variables"])
     assert morris.sort_input_variables(output) == expected
 
 
@@ -392,7 +392,7 @@ def test_morris_with_nsamples() -> None:
     assert morris.n_replicates == 2
 
 
-@pytest.mark.parametrize("output", FUNCTION["outputs"])
+@pytest.mark.parametrize("output", function["outputs"])
 def test_morris_outputs_bounds(morris, output) -> None:
     assert morris.outputs_bounds[output][0] < morris.outputs_bounds[output][1]
 
@@ -400,13 +400,13 @@ def test_morris_outputs_bounds(morris, output) -> None:
 def test_normalize(morris) -> None:
     discipline = create_discipline(
         "AnalyticDiscipline",
-        FUNCTION["expression"],
-        name=FUNCTION["name"],
+        function["expression"],
+        name=function["name"],
     )
 
     space = ParameterSpace()
-    for variable in FUNCTION["variables"]:
-        space.add_random_variable(**FUNCTION["distributions"][variable])
+    for variable in function["variables"]:
+        space.add_random_variable(**function["distributions"][variable])
 
     analysis = MorrisAnalysis()
     analysis.compute_samples([discipline], space, n_samples=0)
@@ -627,7 +627,7 @@ def test_morris_all_replicates() -> None:
     indices = analysis.compute_indices()
 
     dataset = analysis.dataset
-    output_data = dataset.get_view(group_names=dataset.OUTPUT_GROUP).to_numpy()
+    output_data = dataset.get_view(group_names=dataset.output_group).to_numpy()
     stride = space.dimension + 1
     for index, name in enumerate(space):
         differences = output_data[index + 1 :: stride] - output_data[index::stride]
@@ -664,7 +664,7 @@ def test_morris_sigma_unbiased() -> None:
     analysis.compute_samples([discipline], space, 0, n_replicates=4)
     indices = analysis.compute_indices()
     dataset = analysis.dataset
-    output_data = dataset.get_view(group_names=dataset.OUTPUT_GROUP).to_numpy()
+    output_data = dataset.get_view(group_names=dataset.output_group).to_numpy()
     stride = space.dimension + 1
     differences = output_data[1::stride] - output_data[0::stride]
     sigma = indices.sigma["y"][0]["x1"]
@@ -672,7 +672,7 @@ def test_morris_sigma_unbiased() -> None:
     assert not allclose(sigma, differences.var(0, ddof=0) ** 0.5)
 
 
-@pytest.mark.parametrize("step", [DEFAULT_STEP, 0.1])
+@pytest.mark.parametrize("step", [default_step, 0.1])
 def test_morris_elementary_effects(step) -> None:
     """Check the indices computed from the elementary effects.
 
@@ -729,9 +729,9 @@ def test_morris_elementary_effects_downward_step() -> None:
         [AnalyticDiscipline({"y": "3*x1+5*x2"})],
         space,
         0,
-        n_replicates=round(1 / DEFAULT_STEP),
+        n_replicates=round(1 / default_step),
     )
-    # The LHS puts a single initial point in the last stratum [1-DEFAULT_STEP, 1).
+    # The LHS puts a single initial point in the last stratum [1-default_step, 1).
     assert (analysis._steps[0] < 0.0).sum() == 1
 
     indices = analysis.compute_indices(use_elementary_effects=True)
@@ -762,7 +762,7 @@ def test_morris_elementary_effects_at_the_unit_upper_bound() -> None:
         [AnalyticDiscipline({"y": "3*x1+5*x2"})],
         space,
         0,
-        n_replicates=round(1 / DEFAULT_STEP / 2),
+        n_replicates=round(1 / default_step / 2),
         algo_settings=PYDOE_LHS_Settings(criterion="center", seed=1),
     )
     steps = analysis._steps
@@ -813,7 +813,7 @@ def test_morris_elementary_effects_zero_step(caplog) -> None:
 
     A centred LHS puts the initial coordinates at the centres of the strata,
     which pins the number of surviving replicates whatever the seed:
-    with `R` strata of width `1/R = DEFAULT_STEP`
+    with `R` strata of width `1/R = default_step`
     and a quantile function jumping at 0.25, 0.5 and 0.75,
     exactly three of these centres are followed by a jump.
     """
@@ -828,7 +828,7 @@ def test_morris_elementary_effects_zero_step(caplog) -> None:
         "x2", OTUniformDistribution_Settings(minimum=0.0, maximum=1.0)
     )
 
-    n_replicates = round(1 / DEFAULT_STEP)
+    n_replicates = round(1 / default_step)
     analysis = MorrisAnalysis()
     analysis.compute_samples(
         [AnalyticDiscipline({"y": "x1+2*x2"})],
@@ -954,7 +954,7 @@ def test_morris_sigma_of_signed_differences() -> None:
     indices = analysis.compute_indices()
 
     dataset = analysis.dataset
-    output_data = dataset.get_view(group_names=dataset.OUTPUT_GROUP).to_numpy()
+    output_data = dataset.get_view(group_names=dataset.output_group).to_numpy()
     stride = space.dimension + 1
     differences = output_data[1::stride] - output_data[0::stride]
     absolute_differences = np_abs(differences)

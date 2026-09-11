@@ -28,9 +28,9 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
 
 
-_APPROXIMATION_MODE = "complex_step"
-_APPROXIMATION_STEP = 1e-30
-_CHECK_JACOBIAN_KWARGS = {"atol": 1e-6, "rtol": 1e-6}
+_approximation_mode = "complex_step"
+_approximation_step = 1e-30
+_check_jacobian_kwargs = {"atol": 1e-6, "rtol": 1e-6}
 
 
 @pytest.mark.parametrize("use_deep_copy", [True, False])
@@ -47,9 +47,9 @@ def test_parallel_chain_combinatorial_thread(
     checker = DisciplineJacobianChecker(chain)
     assert checker.check(
         chain.io.input_grammar.defaults,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 
@@ -62,9 +62,9 @@ def test_parallel_chain_combinatorial_mprocess(sobieski_disciplines, perm) -> No
     checker = DisciplineJacobianChecker(chain)
     assert checker.check(
         chain.io.input_grammar.defaults,
-        approximation_mode=_APPROXIMATION_MODE,
-        step=_APPROXIMATION_STEP,
-        **_CHECK_JACOBIAN_KWARGS,
+        approximation_mode=_approximation_mode,
+        step=_approximation_step,
+        **_check_jacobian_kwargs,
     )
 
 

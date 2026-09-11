@@ -29,7 +29,7 @@ from gemseo.util.typing import StrKeyMapping
 class BaseDistributionSettings(BaseSettings):  # noqa: N801
     """The base class for the settings of a probability distribution."""
 
-    _LIBRARY_NAME: ClassVar[str]
+    _library_name: ClassVar[str]
     """The name of the library implementing the probability distribution."""
 
 

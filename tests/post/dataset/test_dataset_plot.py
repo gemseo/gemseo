@@ -177,12 +177,12 @@ def test_save_from_file_path_extension(lines, extension, cls, tmp_wd) -> None:
 
 def test_save_plotly_as_image(lines, tmp_wd) -> None:
     """Check that a plotly-based plot can be saved as an image."""
-    lines.DEFAULT_PLOT_ENGINE = lines.PlotEngine.PLOTLY
+    lines.default_plot_engine = lines.PlotEngine.PLOTLY
     with mock.patch.object(PlotlyFigure, "write_image") as write_image:
         lines.execute()
 
     assert write_image.called
-    lines.DEFAULT_PLOT_ENGINE = lines.PlotEngine.MATPLOTLIB
+    lines.default_plot_engine = lines.PlotEngine.MATPLOTLIB
     assert write_image.call_args.kwargs == {
         "file": tmp_wd / "lines.png",
         "format": "png",

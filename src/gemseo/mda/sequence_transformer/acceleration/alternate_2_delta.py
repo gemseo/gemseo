@@ -44,8 +44,8 @@ class Alternate2Delta(SequenceTransformer):
     collinear.
     """
 
-    _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 3
-    _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 3
+    _minimum_number_of_iterates: ClassVar[int] = 3
+    _minimum_number_of_residuals: ClassVar[int] = 3
 
     def _compute_transformed_iterate(self) -> NumberArray:
         dxn_2, dxn_1, dxn = self._residuals

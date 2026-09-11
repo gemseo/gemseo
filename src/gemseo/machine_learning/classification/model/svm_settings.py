@@ -27,7 +27,7 @@ from pydantic import WithJsonSchema
 from gemseo.machine_learning.classification.core.base_classifier_settings import (
     BaseClassifierSettings,
 )
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 
 class SVMClassifier_Settings(BaseClassifierSettings):  # noqa: N801
@@ -58,7 +58,7 @@ If `None`, use 5 folds.""",
     )
 
     random_state: NonNegativeInt | None = Field(
-        default=SEED,
+        default=seed,
         description="""The random state parameter.
 
 If `None`, use the global random state instance from `numpy.random`.

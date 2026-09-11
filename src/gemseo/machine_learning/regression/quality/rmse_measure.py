@@ -48,7 +48,7 @@ class RMSEMeasure(MSEMeasure):
     def __init__(
         self,
         model: BaseRegressor,
-        fit_transformers: bool = MSEMeasure._FIT_TRANSFORMERS,
+        fit_transformers: bool = MSEMeasure._default_fit_transformers,
     ) -> None:
         """
         Args:
@@ -86,7 +86,7 @@ class RMSEMeasure(MSEMeasure):
         n_folds: int = 5,
         samples: Sequence[int] = (),
         multioutput: bool = True,
-        randomize: bool = MSEMeasure._RANDOMIZE,
+        randomize: bool = MSEMeasure._randomize,
         seed: int | None = None,
         as_dict: bool = False,
         store_resampling_result: bool = False,

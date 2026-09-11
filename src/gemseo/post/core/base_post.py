@@ -89,7 +89,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     __figures: dict[str, Figure | BaseDatasetPlot]
     """The mapping from figure names or nameless figure counters to figures."""
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = False
+    _use_jacobian_data: ClassVar[bool] = False
     """Whether to export the jacobian data to the dataset if an `OptimizationProblem`
     is passed as an input."""
 
@@ -108,7 +108,7 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             and len(opt_problem.database) > 0
         ):
             self._dataset = opt_problem.to_dataset(
-                export_gradients=self._USE_JACOBIAN_DATA
+                export_gradients=self._use_jacobian_data
             )
             self.database = opt_problem.database
         elif isinstance(opt_problem, OptimizationDataset):

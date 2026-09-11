@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 from openturns import HaltonSequence
 
@@ -32,4 +32,4 @@ class OTHaltonSequence(BaseOTLowDiscrepancySequence):
          This class is a singleton.
     """
 
-    _ALGO_CLASS: Final[type[HaltonSequence]] = HaltonSequence
+    _algo_class: ClassVar[type[HaltonSequence]] = HaltonSequence

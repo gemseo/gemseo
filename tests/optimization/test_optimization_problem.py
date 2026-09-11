@@ -60,10 +60,10 @@ from gemseo.dataset.optimization_dataset import OptimizationDataset
 from gemseo.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
@@ -84,14 +84,14 @@ from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
 from gemseo.util.comparison import compare_dict_of_arrays
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-DIRNAME = Path(__file__).parent
-FAIL_HDF = DIRNAME / "fail2.hdf5"
+dirname = Path(__file__).parent
+fail_hdf = dirname / "fail2.hdf5"
 
 
 @pytest.fixture(autouse=True)
@@ -482,7 +482,7 @@ def test_invalid_differentiation_method(pow2_problem, snapshot) -> None:
 
 def test_get_dv_names() -> None:
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
+    optimization_library_factory.execute(problem, settings=SLSQP_Settings())
     assert problem.design_space.variable_names == ["x"]
 
 
@@ -532,7 +532,7 @@ def test_no_points_in_database(snapshot):
 def test_feasible_optimum_points() -> None:
     problem = Power2()
 
-    OPTIMIZATION_LIBRARY_FACTORY.execute(
+    optimization_library_factory.execute(
         problem, settings=SLSQP_Settings(eq_tolerance=1e-6, ineq_tolerance=1e-6)
     )
     feasible_x = problem.history.feasible_points[0]
@@ -619,7 +619,7 @@ def test_normalize_linear_function() -> None:
 def test_export_hdf(tmp_wd) -> None:
     file_path = Path("power2.h5")
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
+    optimization_library_factory.execute(problem, settings=SLSQP_Settings())
     problem.to_hdf(file_path, append=True)  # Shall still work now
 
     def check_pb(imp_pb) -> None:
@@ -882,7 +882,7 @@ def test_evaluate_jacobians_alone(constrained_problem, jacobian_names, keys) -> 
 
 def test_no_normalization() -> None:
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(
+    optimization_library_factory.execute(
         problem, settings=SLSQP_Settings(normalize_design_space=False)
     )
     f_opt, _, is_feas, _, _ = problem.optimum
@@ -904,7 +904,7 @@ def test_nan_func() -> None:
 
 def test_fail_import() -> None:
     with pytest.raises(KeyError):
-        OptimizationProblem.from_hdf(FAIL_HDF)
+        OptimizationProblem.from_hdf(fail_hdf)
 
 
 def test_append_export(tmp_wd) -> None:
@@ -979,7 +979,7 @@ def test_observable(pow2_problem) -> None:
         problem.observables.get_from_name("toto")
 
     # Check that the observable is stored in the database
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
+    optimization_library_factory.execute(problem, settings=SLSQP_Settings())
     database = problem.database
     iter_norms = [norm(key.unwrap()) for key in database]
     iter_obs = [value[design_norm] for value in database.values()]
@@ -987,7 +987,7 @@ def test_observable(pow2_problem) -> None:
 
     # Check that the observable is exported
     dataset = problem.to_dataset("dataset")
-    obs_group = dataset.OBSERVABLE_GROUP
+    obs_group = dataset.observable_group
     obs_data = dataset.get_view(group_names=obs_group).to_dict()
     design_norm_levels = (obs_group, design_norm, 0)
     assert obs_data.get(design_norm_levels) is not None
@@ -998,9 +998,9 @@ def test_observable(pow2_problem) -> None:
         .to_numpy()
         .T
     ).all()
-    assert dataset.GRADIENT_GROUP not in dataset.group_names
+    assert dataset.gradient_group not in dataset.group_names
     dataset = problem.to_dataset("dataset", export_gradients=True)
-    assert dataset.GRADIENT_GROUP in dataset.group_names
+    assert dataset.gradient_group in dataset.group_names
     name = Database.get_gradient_name("pow2")
     n_iter = len(database)
     n_var = problem.design_space.dimension
@@ -1168,7 +1168,7 @@ def test_parallel_differentiation_setting_after_functions_preprocessing(
 
 def test_database_name(problem) -> None:
     """Check the name of the database."""
-    DOE_LIBRARY_FACTORY.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=1))
+    doe_library_factory.execute(problem, settings=PYDOE_FULLFACT_Settings(n_samples=1))
     problem.database.name = "my_database"
     dataset = problem.to_dataset()
     assert dataset.name == problem.database.name
@@ -1217,7 +1217,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog, snapshot) -> 
     problem.objective = -f_1
 
     if skip_int_check:
-        OPTIMIZATION_LIBRARY_FACTORY.execute(
+        optimization_library_factory.execute(
             problem,
             settings=L_BFGS_B_Settings(
                 normalize_design_space=True,
@@ -1228,7 +1228,7 @@ def test_int_opt_problem(skip_int_check, expected_message, caplog, snapshot) -> 
         assert problem.optimum[1] == array([2.0])
     else:
         with assert_exception(ValueError, snapshot):
-            OPTIMIZATION_LIBRARY_FACTORY.execute(
+            optimization_library_factory.execute(
                 problem,
                 settings=L_BFGS_B_Settings(
                     normalize_design_space=True,
@@ -1482,7 +1482,7 @@ def test_function_string_representation_from_hdf() -> None:
     # )
     # problem.to_hdf("opt_problem_to_check_string_representation.hdf5")
     new_problem = OptimizationProblem.from_hdf(
-        DIRNAME / "opt_problem_to_check_string_representation.hdf5"
+        dirname / "opt_problem_to_check_string_representation.hdf5"
     )
     assert str(new_problem.objective) == "f(x0, x1)"
     assert str(new_problem.constraints[0]) == "g(x0, x1) <= 0.0"
@@ -1590,7 +1590,7 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
         if export_gradients:
             assert (
                 dataset.get_view(
-                    group_names=dataset.OBJECTIVE_GROUP, indices=4
+                    group_names=dataset.objective_group, indices=4
                 ).to_numpy()
                 == np.array([[0.0]])
             ).all()
@@ -1605,7 +1605,7 @@ def test_dataset_missing_values(categorize, export_gradients) -> None:
         else:
             assert (
                 dataset
-                .get_view(group_names=dataset.OBJECTIVE_GROUP, indices=2)
+                .get_view(group_names=dataset.objective_group, indices=2)
                 .isnull()
                 .to_numpy()
                 .all()
@@ -1690,7 +1690,7 @@ def test_presence_observables_hdf_file(pow2_problem, tmp_wd) -> None:
     obs2 = ArrayFunction(sum, name="sum")
     pow2_problem.add_observable(obs2)
 
-    OPTIMIZATION_LIBRARY_FACTORY.execute(pow2_problem, settings=SLSQP_Settings())
+    optimization_library_factory.execute(pow2_problem, settings=SLSQP_Settings())
 
     # Export and import the optimization problem.
     file_path = "power2.h5"
@@ -1742,29 +1742,29 @@ def test_export_to_dataset(input_values, expected) -> None:
 def test_export_to_dataset_with_grouped_functions():
     """Check that functions are properly grouped."""
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
+    optimization_library_factory.execute(problem, settings=SLSQP_Settings())
     dataset = problem.to_dataset()
 
     groups = [
-        OptimizationDataset.EQUALITY_CONSTRAINT_GROUP,
-        OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP,
-        OptimizationDataset.OBJECTIVE_GROUP,
-        OptimizationDataset.DESIGN_GROUP,
+        OptimizationDataset.equality_constraint_group,
+        OptimizationDataset.inequality_constraint_group,
+        OptimizationDataset.objective_group,
+        OptimizationDataset.design_group,
     ]
 
     assert groups.sort() == dataset.group_names.sort()
 
     assert "ineq1" in dataset.get_variable_names(
-        group_name=OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP
+        group_name=OptimizationDataset.inequality_constraint_group
     )
     assert "ineq2" in dataset.get_variable_names(
-        group_name=OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP
+        group_name=OptimizationDataset.inequality_constraint_group
     )
     assert "eq" in dataset.get_variable_names(
-        group_name=OptimizationDataset.EQUALITY_CONSTRAINT_GROUP
+        group_name=OptimizationDataset.equality_constraint_group
     )
     assert "pow2" in dataset.get_variable_names(
-        group_name=OptimizationDataset.OBJECTIVE_GROUP
+        group_name=OptimizationDataset.objective_group
     )
 
 
@@ -2159,7 +2159,7 @@ def test_repr_html():
       ineq1(x): 0.5 - x[0]**3 <= 0.0
       ineq2(x): 0.5 - x[1]**3 <= 0.0"""
     )
-    assert problem._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert problem._repr_html_() == repr_html_wrapper.format(
         "Optimization problem:<br/>"
         "<ul>"
         "<li>minimize pow2(x) = x[0]**2 + x[1]**2 + x[2]**2</li>"

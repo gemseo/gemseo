@@ -40,7 +40,7 @@ def test_scenario_result(scenario) -> None:
     optimization_results = scenario_result.optimization_problem_to_result
     optimum_design = scenario_result.design_variable_name_to_value
     first_optimization_result = optimization_results[
-        scenario_result._MAIN_PROBLEM_LABEL
+        scenario_result._main_problem_label
     ]
     assert len(optimization_results) == 1
     assert scenario_result.optimization_result is first_optimization_result

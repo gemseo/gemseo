@@ -39,7 +39,7 @@ from numpy import sqrt
 from numpy.linalg import norm
 
 from gemseo.machine_learning.regression.model.rbf_settings import RBF
-from gemseo.util.constant import EPSILON
+from gemseo.util.constant import epsilon
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 
 if TYPE_CHECKING:
@@ -92,10 +92,10 @@ class LinearDerivative(BaseKernelDerivative):
 
     def compute(self, input_data: RealArray, norm_input_data: RealArray) -> RealArray:  # noqa: D102
         return (
-            (norm_input_data > EPSILON)
+            (norm_input_data > epsilon)
             * -self._epsilon
             * input_data
-            / (norm_input_data + EPSILON)
+            / (norm_input_data + epsilon)
         )
 
 
@@ -107,10 +107,10 @@ class ThinPlateSplineDerivative(BaseKernelDerivative):
 
     def compute(self, input_data: RealArray, norm_input_data: RealArray) -> RealArray:  # noqa: D102
         return (
-            (norm_input_data > EPSILON)
+            (norm_input_data > epsilon)
             * self._epsilon**2
             * input_data
-            * (2 * log(self._epsilon * norm_input_data + EPSILON) + 1)
+            * (2 * log(self._epsilon * norm_input_data + epsilon) + 1)
         )
 
 
@@ -174,7 +174,7 @@ class GaussianDerivative(BaseKernelDerivative):
         )
 
 
-KERNEL_DERIVATIVES: Final[Mapping[RBF, type[BaseKernelDerivative]]] = MappingProxyType({
+kernel_derivatives: Final[Mapping[RBF, type[BaseKernelDerivative]]] = MappingProxyType({
     RBF.LINEAR: LinearDerivative,
     RBF.THIN_PLATE_SPLINE: ThinPlateSplineDerivative,
     RBF.CUBIC: CubicDerivative,
@@ -218,7 +218,7 @@ class RBFDerivatives:
         """  # noqa: D205 D212
         self.__centers = interpolator.y
         self.__powers = interpolator.powers
-        kernel_derivative_class = KERNEL_DERIVATIVES[interpolator.kernel]
+        kernel_derivative_class = kernel_derivatives[interpolator.kernel]
         self.__kernel_derivative = kernel_derivative_class(interpolator.epsilon)
         # These SciPy attributes are private but stable since scipy 1.7;
         # the numerical Jacobian tests guard against upstream changes.

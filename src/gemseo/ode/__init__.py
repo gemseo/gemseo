@@ -24,12 +24,15 @@ Together with the problem they solve
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.ode.problem import ODEProblem  # noqa: F401
     from gemseo.ode.scipy_ode.settings.bdf import BDF_Settings  # noqa: F401
@@ -41,7 +44,7 @@ if TYPE_CHECKING:
 
 # Exported name -> "module.path:Attr" (lazy-loaded on attribute access).
 # The module path is relative to this package.
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "BDF_Settings": "scipy_ode.settings.bdf:BDF_Settings",
     "DOP853_Settings": "scipy_ode.settings.dop853:DOP853_Settings",
     "LSODA_Settings": "scipy_ode.settings.lsoda:LSODA_Settings",
@@ -49,6 +52,6 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "RK23_Settings": "scipy_ode.settings.rk23:RK23_Settings",
     "RK45_Settings": "scipy_ode.settings.rk45:RK45_Settings",
     "Radau_Settings": "scipy_ode.settings.radau:Radau_Settings",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

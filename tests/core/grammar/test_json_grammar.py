@@ -34,7 +34,7 @@ from gemseo.core.grammar.error import InvalidDataError
 from gemseo.core.grammar.json import JSONGrammar
 from gemseo.util.testing.helper import assert_exception
 
-DATA_PATH = Path(__file__).parent / "data"
+data_path = Path(__file__).parent / "data"
 
 
 def new_grammar(file_path: Path | None) -> JSONGrammar:
@@ -151,7 +151,7 @@ def test_update_from_file_with_non_ascii(tmp_wd) -> None:
 
 def test_init_with_file() -> None:
     """Verify initializing with a file."""
-    grammar = new_grammar(DATA_PATH / "grammar_2.json")
+    grammar = new_grammar(data_path / "grammar_2.json")
     assert grammar
     assert grammar.keys() == {"name1", "name2"}
     assert grammar.required_names == {"name1"}
@@ -163,7 +163,7 @@ def test_init_with_file_and_descriptions() -> None:
     descriptions = {"name1": "name1 description", "name2": "name2 description"}
     grammar = JSONGrammar(
         "g",
-        file_path=DATA_PATH / "grammar_3.json",
+        file_path=data_path / "grammar_3.json",
         descriptions=descriptions,
     )
     assert grammar.descriptions == descriptions
@@ -179,7 +179,7 @@ def test_init_with_file_and_descriptions() -> None:
 
 def test_getitem() -> None:
     """Verify getting an item."""
-    grammar = new_grammar(DATA_PATH / "grammar_2.json")
+    grammar = new_grammar(data_path / "grammar_2.json")
     assert (int, float, float64, int64) == grammar["name1"]._active_strategies[
         0
     ].PYTHON_TYPES
@@ -189,15 +189,15 @@ def test_getitem() -> None:
     "file_path1",
     [
         None,
-        DATA_PATH / "grammar_2.json",
-        DATA_PATH / "grammar_3.json",
+        data_path / "grammar_2.json",
+        data_path / "grammar_3.json",
     ],
 )
 @pytest.mark.parametrize(
     "file_path2",
     [
-        DATA_PATH / "grammar_2.json",
-        DATA_PATH / "grammar_3.json",
+        data_path / "grammar_2.json",
+        data_path / "grammar_3.json",
     ],
 )
 def test_update_and_update_from_file(file_path1, file_path2) -> None:
@@ -255,7 +255,7 @@ def test_update_excludes_name_absent_from_source() -> None:
 )
 def test_validate(data) -> None:
     """Verify validate."""
-    grammar = new_grammar(file_path=DATA_PATH / "grammar_5.json")
+    grammar = new_grammar(file_path=data_path / "grammar_5.json")
     data["mandatory"] = True
     grammar.validate(data)
 
@@ -263,7 +263,7 @@ def test_validate(data) -> None:
 @pytest.mark.parametrize("raise_exception", [True, False])
 def test_validate_error(raise_exception, caplog, snapshot) -> None:
     """Verify that validate raises the expected errors."""
-    grammar = new_grammar(DATA_PATH / "grammar_2.json")
+    grammar = new_grammar(data_path / "grammar_2.json")
     data = {"name1": 0, "name2": ""}
 
     if raise_exception:
@@ -311,7 +311,7 @@ def test_validate_error_required_at_root(raise_exception, caplog, snapshot) -> N
 
 def test_convert_to_simple_grammar_not_convertible_type() -> None:
     """Verify grammar conversion with non-convertible type."""
-    g1 = new_grammar(DATA_PATH / "grammar_1.json")
+    g1 = new_grammar(data_path / "grammar_1.json")
     g2 = g1.to_simple_grammar()
     assert g2["name"] is None
 
@@ -328,7 +328,7 @@ def test_set_descriptions(descriptions) -> None:
     """Verify setting descriptions."""
     grammar = JSONGrammar(
         "g",
-        file_path=DATA_PATH / "grammar_3.json",
+        file_path=data_path / "grammar_3.json",
     )
     grammar.set_descriptions(descriptions)
 
@@ -352,7 +352,7 @@ def test_set_descriptions(descriptions) -> None:
     [
         (None, {"$schema": "http://json-schema.org/schema#"}),
         (
-            DATA_PATH / "grammar_3.json",
+            data_path / "grammar_3.json",
             {
                 "$schema": "http://json-schema.org/draft-04/schema",
                 "additionalProperties": False,
@@ -383,7 +383,7 @@ def test_schema(file_path, schema) -> None:
     assert grammar.schema == schema
 
 
-EXPECTED_JSON = """
+expected_json = """
 {
   "$schema": "http://json-schema.org/draft-04/schema",
   "additionalProperties": false,
@@ -403,15 +403,15 @@ EXPECTED_JSON = """
 @pytest.mark.parametrize("path", [None, "g.json"])
 def test_write(path, tmp_wd) -> None:
     """Verify write."""
-    grammar = JSONGrammar("g", file_path=DATA_PATH / "grammar_1.json")
+    grammar = JSONGrammar("g", file_path=data_path / "grammar_1.json")
     grammar.to_file(path)
-    assert Path("g.json").read_text() == EXPECTED_JSON
+    assert Path("g.json").read_text() == expected_json
 
 
 def test_to_json(tmp_wd) -> None:
     """Verify to_json."""
-    grammar = JSONGrammar("g", file_path=DATA_PATH / "grammar_1.json")
-    assert grammar.to_json(indent=2) == EXPECTED_JSON
+    grammar = JSONGrammar("g", file_path=data_path / "grammar_1.json")
+    assert grammar.to_json(indent=2) == expected_json
 
 
 def test_to_json_error_does_not_leak_required_names() -> None:

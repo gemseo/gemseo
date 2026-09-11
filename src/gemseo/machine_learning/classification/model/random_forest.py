@@ -51,8 +51,8 @@ if TYPE_CHECKING:
 class RandomForestClassifier(BaseClassifier):
     """The random forest classification model."""
 
-    SHORT_NAME: ClassVar[str] = "RF"
-    LIBRARY: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "RF"
+    library: ClassVar[str] = "scikit-learn"
 
     settings_class: ClassVar[type[RandomForestClassifier_Settings]] = (
         RandomForestClassifier_Settings

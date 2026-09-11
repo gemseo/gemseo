@@ -86,12 +86,15 @@ and the covariance matrix of $U_i$ is denoted $\Sigma_i$.
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.problem.mdo.scalable.parametric.discipline.main_discipline import (
         MainDiscipline,  # noqa: F401
@@ -105,11 +108,11 @@ if TYPE_CHECKING:
     from gemseo.problem.mdo.scalable.parametric.scalable_problem import ScalableProblem  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "MainDiscipline": "discipline.main_discipline",
     "ScalableDesignSpace": "scalable_design_space",
     "ScalableDiscipline": "discipline.scalable_discipline",
     "ScalableProblem": "scalable_problem",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

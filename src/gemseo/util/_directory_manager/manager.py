@@ -31,9 +31,9 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.util._directory_manager.settings import _KEEP_ALL
-from gemseo.util._directory_manager.settings import _KEEP_LAST_ONLY
 from gemseo.util._directory_manager.settings import CleanUpPolicy
+from gemseo.util._directory_manager.settings import _keep_all
+from gemseo.util._directory_manager.settings import _keep_last_only
 from gemseo.util._filename_sanitizer import secure_filename
 from gemseo.util._workflow_observer.mda import MDAExecutionWorkflowObserver
 from gemseo.util._workflow_observer.scenario import ScenarioWorkflowObserver
@@ -64,7 +64,7 @@ class DirectoryManager(metaclass=BaseMultiton):
     suffix_separator: ClassVar[str] = "#"
     """The separator used when suffixing homonymic directories."""
 
-    _MARKER_FILE_NAME: ClassVar[str] = ".gemseo_directory_manager"
+    _marker_file_name: ClassVar[str] = ".gemseo_directory_manager"
     """The name of the marker file identifying directories created by the manager.
 
     The marker allows recognizing managed directories across processes,
@@ -151,7 +151,7 @@ class DirectoryManager(metaclass=BaseMultiton):
             self.__main_scenario_observer = observer
 
         directory_path.mkdir()
-        (directory_path / self._MARKER_FILE_NAME).touch()
+        (directory_path / self._marker_file_name).touch()
         self.__set_cwd(directory_path)
 
         if (
@@ -347,10 +347,10 @@ class DirectoryManager(metaclass=BaseMultiton):
             if path.is_dir() and self.__is_managed(path)
         }
 
-        if policy == _KEEP_ALL:
+        if policy == _keep_all:
             return self.__get_removals_keep_all(observer_is_mda, sub_dir_paths)
 
-        if policy == _KEEP_LAST_ONLY:
+        if policy == _keep_last_only:
             return self.__get_removals_keep_last(sub_dir_paths)
 
         return self.__get_removals_solution(
@@ -466,7 +466,7 @@ class DirectoryManager(metaclass=BaseMultiton):
         Returns:
             Whether the directory was created by the manager.
         """
-        return (path / cls._MARKER_FILE_NAME).exists()
+        return (path / cls._marker_file_name).exists()
 
     @classmethod
     def __filter_paths_with_managed_subdirs(cls, paths: Iterable[Path]) -> set[Path]:

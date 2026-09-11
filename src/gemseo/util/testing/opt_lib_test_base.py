@@ -26,7 +26,7 @@ from typing import Any
 
 import numpy as np
 
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.problem.optimization.rastrigin import Rastrigin
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
@@ -90,8 +90,8 @@ class OptLibraryTestBase:
             An optimization library after the resolution of the Power 2 problem.
         """
         problem = OptLibraryTestBase().get_pb_instance("Power2")
-        opt_library = OPTIMIZATION_LIBRARY_FACTORY.create(algo_name)
-        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, **settings)
+        opt_library = optimization_library_factory.create(algo_name)
+        settings = optimization_library_factory.create_settings(algo_name, **settings)
         opt_library.execute(problem, settings=settings)
         return opt_library, problem
 
@@ -112,8 +112,8 @@ class OptLibraryTestBase:
             An optimization library after the resolution of the Rosenbrock problem.
         """
         problem = OptLibraryTestBase().get_pb_instance("Rosenbrock")
-        opt_library = OPTIMIZATION_LIBRARY_FACTORY.create(algo_name)
-        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, **settings)
+        opt_library = optimization_library_factory.create(algo_name)
+        settings = optimization_library_factory.create_settings(algo_name, **settings)
         opt_library.execute(problem, settings=settings)
         return problem
 
@@ -136,8 +136,8 @@ class OptLibraryTestBase:
             An optimization library after the resolution of the Rosenbrock problem.
         """
         problem = Power2(exception_error=True)
-        opt_library = OPTIMIZATION_LIBRARY_FACTORY.create(algo_name)
-        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, **settings)
+        opt_library = optimization_library_factory.create(algo_name)
+        settings = optimization_library_factory.create_settings(algo_name, **settings)
         opt_library.execute(problem, settings=settings)
         return opt_library
 
@@ -156,8 +156,8 @@ class OptLibraryTestBase:
             The error message if the optimizer cannot find the solution,
             otherwise `None`.
         """
-        settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(algo_name, **settings)
-        opt = OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=settings)
+        settings = optimization_library_factory.create_settings(algo_name, **settings)
+        opt = optimization_library_factory.execute(problem, settings=settings)
         x_opt, f_opt = problem.get_solution()
         x_err = OptLibraryTestBase.relative_norm(opt.x_opt, x_opt)
         f_err = OptLibraryTestBase.relative_norm(opt.f_opt, f_opt)
@@ -247,8 +247,8 @@ class OptLibraryTestBase:
             The test methods to be attached to an unitest class.
         """
         tests = []
-        if OPTIMIZATION_LIBRARY_FACTORY.is_available(opt_lib_name):
-            cls = OPTIMIZATION_LIBRARY_FACTORY.get_class(opt_lib_name)
+        if optimization_library_factory.is_available(opt_lib_name):
+            cls = optimization_library_factory.get_class(opt_lib_name)
             for pb_name in ["Rosenbrock", "Power2", "Rastrigin"]:
                 if get_problem_options is not None:
                     pb_options = get_problem_options(pb_name)

@@ -41,7 +41,7 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
 
     settings_class: ClassVar[type[BasicHistory_Settings]] = BasicHistory_Settings
 
-    __ITERATION_NAME: Final[str] = ",;:!"
+    __iteration_name: Final[str] = ",;:!"
     """The name for the variable iteration in the dataset.
 
     A name that a user cannot chose for its own variables. Only used in the background.
@@ -51,7 +51,7 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
         optimization_metadata = self._optimization_metadata
         dataset = self._dataset.copy()
         dataset.add_variable(
-            self.__ITERATION_NAME, arange(1, len(dataset) + 1)[:, newaxis]
+            self.__iteration_name, arange(1, len(dataset) + 1)[:, newaxis]
         )
 
         variable_names = list(settings.variable_names)
@@ -79,7 +79,7 @@ class BasicHistory(BasePost[BasicHistory_Settings]):
             dataset = dataset.get_normalized()
 
         settings = Lines_Settings(
-            abscissa_variable=self.__ITERATION_NAME,
+            abscissa_variable=self.__iteration_name,
             variables=tuple(
                 names
                 for variable_name in variable_names

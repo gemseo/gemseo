@@ -32,8 +32,8 @@ def me() -> MEMeasure:
     return MEMeasure("mocked_model", fit_transformers="mocked_fit_transformers")
 
 
-OUTPUTS = array([[0, 1, 0], [1, 0, 2]])
-PREDICTIONS = array([[0, 1, 0], [1, 1, 0]])
+outputs = array([[0, 1, 0], [1, 0, 2]])
+predictions = array([[0, 1, 0], [1, 1, 0]])
 
 
 def test_init(me):
@@ -44,7 +44,7 @@ def test_init(me):
 
 def test_compute_measure(me):
     """Check _compute with default value for multioutput."""
-    assert_equal(me._compute_measure(OUTPUTS, PREDICTIONS), array([0.0, 1.0, 2.0]))
+    assert_equal(me._compute_measure(outputs, predictions), array([0.0, 1.0, 2.0]))
 
 
 @pytest.mark.parametrize(
@@ -53,5 +53,5 @@ def test_compute_measure(me):
 def test_compute_measure_with_multioutput(me, multioutput, expected):
     """Check _compute with multioutput."""
     assert_equal(
-        me._compute_measure(OUTPUTS, PREDICTIONS, multioutput=multioutput), expected
+        me._compute_measure(outputs, predictions, multioutput=multioutput), expected
     )

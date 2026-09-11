@@ -59,7 +59,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrPath
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class _BaseMDAProcessFlow(BaseProcessFlow):
@@ -102,7 +102,7 @@ class _BaseMDAProcessFlow(BaseProcessFlow):
 class BaseMDA(ProcessDiscipline):
     """A base class for multidisciplinary analysis (MDA)."""
 
-    NORMALIZED_RESIDUAL_NORM: Final[str] = "MDA residuals norm"
+    normalized_residual_norm_name: Final[str] = "MDA residuals norm"
     """The variable name for the MDA residual norm."""
 
     default_cache_type: ClassVar[_CacheType] = ProcessDiscipline.CacheType.SIMPLE
@@ -238,7 +238,7 @@ class BaseMDA(ProcessDiscipline):
         self.lin_cache_tol_fact = 0.0
 
         self._initialize_grammars()
-        self.io.output_grammar.update_from_names([self.NORMALIZED_RESIDUAL_NORM])
+        self.io.output_grammar.update_from_names([self.normalized_residual_norm_name])
         self._check_consistency()
         self._check_coupling_types()
 
@@ -286,14 +286,14 @@ class BaseMDA(ProcessDiscipline):
                 in_outs = sorted(
                     set(disc.io.input_grammar) & set(disc.io.output_grammar)
                 )
-                LOGGER.warning(
+                logger.warning(
                     "Self coupling variables in discipline %s are: %s.",
                     disc.name,
                     in_outs,
                 )
 
             also_strong_n = sorted(disc.name for disc in also_strong)
-            LOGGER.warning(
+            logger.warning(
                 "The following disciplines contain self-couplings and strong couplings:"
                 " %s. This is not a problem as long as their self-coupling variables "
                 "are not strongly coupled to another discipline.",
@@ -309,7 +309,7 @@ class BaseMDA(ProcessDiscipline):
                 all_outs[out] = disc
 
         if multiple_outs:
-            LOGGER.warning(
+            logger.warning(
                 "The following outputs are defined multiple times: %s.",
                 sorted(multiple_outs),
             )
@@ -338,9 +338,9 @@ class BaseMDA(ProcessDiscipline):
         else:
             inputs, outputs = Discipline._get_differentiated_io(self)
 
-        if self.NORMALIZED_RESIDUAL_NORM in outputs:
+        if self.normalized_residual_norm_name in outputs:
             outputs = list(outputs)
-            outputs.remove(self.NORMALIZED_RESIDUAL_NORM)
+            outputs.remove(self.normalized_residual_norm_name)
 
         # Filter the non-numeric arrays
         inputs = [
@@ -380,7 +380,7 @@ class BaseMDA(ProcessDiscipline):
 
         self._non_numeric_array_variables = not_arrays
         if not_arrays:
-            LOGGER.debug(
+            logger.debug(
                 "The coupling variable(s) %s is/are not an array of numeric values.",
                 not_arrays,
             )
@@ -466,7 +466,7 @@ class BaseMDA(ProcessDiscipline):
                 "Requested %s iterations but the residual history contains only %s, "
                 "plotting all the residual history."
             )
-            LOGGER.info(msg, n_iterations, history_length)
+            logger.info(msg, n_iterations, history_length)
             n_iterations = history_length
 
         # red dot for first iteration
