@@ -23,6 +23,7 @@ from pathlib import Path
 
 import pytest
 from numpy import array
+from numpy import nan
 from numpy.testing import assert_equal
 
 from gemseo import execute_algo
@@ -158,6 +159,43 @@ def test_no_gradient_history(caplog) -> None:
         problem, post_name="OptHistoryView", save=False, show=False
     )
     assert set(post_processor.figures.keys()) == {"variables", "objective", "x_xstar"}
+
+
+def test_no_optimum() -> None:
+    """Check that OptHistoryView does not mark a best design that does not exist."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-1, upper_bound=1.0, value=0.5)
+
+    problem = OptimizationProblem(design_space)
+    problem.objective = ArrayFunction(lambda x: x**2, name="f")
+    problem.add_constraint(ArrayFunction(lambda x: x, name="g"), constraint_type="ineq")
+    # The only feasible designs are the last two, whose objective is NaN,
+    # so the problem has no optimum solution.
+    for x, f, g in [
+        (-1.0, 1.0, 1.0),
+        (-0.5, 0.25, 0.5),
+        (0.5, nan, -0.5),
+        (1.0, nan, -1.0),
+    ]:
+        problem.database.store(array([x]), {"f": array([f]), "g": array([g])})
+
+    post_processor = execute_post(
+        problem, post_name="OptHistoryView", save=False, show=False
+    )
+    assert post_processor._optimization_metadata.optimum_iteration is None
+    # The figure of the distance to the best design is not drawn.
+    assert set(post_processor.figures) == {"variables", "objective", "ineq_constraints"}
+    # Neither the mark of the best iteration nor its mention is drawn.
+    assert not post_processor.figures["variables"].axes[0].lines
+    assert not post_processor.figures["ineq_constraints"].axes[0].lines
+    assert post_processor.figures["variables"].axes[0].get_xlabel() == "Iterations"
+    assert (
+        post_processor.figures["objective"].axes[0].get_xlabel()
+        == r"Iterations (NaN: $\times$)"
+    )
+    assert (
+        post_processor.figures["ineq_constraints"].axes[0].get_xlabel() == "Iterations"
+    )
 
 
 def test_get_history_design_variable_is_function():

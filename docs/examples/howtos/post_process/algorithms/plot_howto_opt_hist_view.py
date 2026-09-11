@@ -30,9 +30,32 @@ which produces a series of plots:
   components across iterations, represented as a color map.
 - **Objective function history**: evolution of the objective value across iterations.
 - **Distance to best design**: Euclidean distance $||x - x^*||_2$ between each
-  iterate and the best point found, in log scale.
+  iterate and the best design, in log scale.
 - **Inequality constraint history**: evolution of constraint values, color-coded
   as red (violated), white (active), or green (satisfied).
+
+## Reading the marks
+
+The *best design* is
+the design satisfying the constraints with the best objective value,
+or the least infeasible design when no design satisfies the constraints.
+
+Every figure marks the iteration of the best design
+with a star on the x-axis and a dashed vertical line.
+A problem without an optimum solution has no best design:
+its figures carry no such mark
+and the plot of the distance to the best design is not drawn.
+The figures of the objective and of the constraints also mark the iterations
+whose values are `NaN` with a cross on the x-axis
+and a dashed vertical line.
+The label of the x-axis mentions the marks that the figure draws,
+so a figure of a problem with a best design and without `NaN` values
+mentions only the star.
+
+Beware that
+the objective curve joins the two sides of a `NaN` iteration with a straight segment,
+and that the constraint plots draw a `NaN` value with the color of an active constraint:
+the crosses are the only way to tell these iterations apart.
 
 ## Step-by-step guide
 """

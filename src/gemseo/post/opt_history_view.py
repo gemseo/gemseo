@@ -28,7 +28,6 @@ from typing import ClassVar
 from typing import Final
 
 from matplotlib import pyplot as plt
-from matplotlib import rcParams
 from matplotlib.colors import SymLogNorm
 from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import MaxNLocator
@@ -72,10 +71,29 @@ LOGGER = logging.getLogger(__name__)
 class OptHistoryView(BasePost[OptHistoryView_Settings]):
     """Plot the history of the design variables, objective and constraints.
 
-    This post-processing generates one plot for the design variables, one plot for the
-    Euclidean distance to the optimal design vector, one plot for the objective, one
-    plot for the equality constraints (if any) and one plot for the inequality
-    constraints (if any).
+    This post-processing generates one plot for the design variables,
+    one plot for the Euclidean distance to the best design,
+    one plot for the objective,
+    one plot for the equality constraints (if any)
+    and one plot for the inequality constraints (if any).
+
+    The best design is the design satisfying the constraints
+    with the best objective value,
+    or the least infeasible design when no design satisfies the constraints.
+    This is [the optimum][gemseo.optimization.problem.OptimizationProblem.optimum]
+    of the optimization problem.
+
+    Every figure marks the iteration of the best design
+    with a star on the x-axis and a dashed vertical line.
+    A problem without an optimum solution,
+    e.g. when every feasible design has a `NaN` objective,
+    has no best design:
+    its figures carry no such mark
+    and the plot of the distance to the best design is not drawn.
+    The figures of the objective and of the constraints
+    also mark the iterations whose values are `NaN` with a cross on the x-axis
+    and a dashed vertical line.
+    The label of the x-axis mentions the marks that the figure draws.
     """
 
     settings_class: ClassVar[type[OptHistoryView_Settings]] = OptHistoryView_Settings
@@ -83,16 +101,21 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""
 
-    __OPTIMUM_MARKER: Final[str] = "*"
-    """The marker of the optimal iteration, drawn on the x-axis."""
+    __BEST_ITERATION_MARKER: Final[str] = "*"
+    """The marker of the best iteration, drawn on the x-axis.
+
+    The best iteration is that of the best design,
+    i.e. the design satisfying the constraints with the best objective value,
+    or the least infeasible design when no design satisfies the constraints.
+    """
 
     __NAN_MARKER: Final[str] = "x"
     """The marker of the iterations whose values are `NaN`, drawn on the x-axis."""
 
-    __OPTIMUM_MENTION: Final[str] = r"optimum: $\bigstar$"
-    """The mention of the mark of the optimum, in the label of the x-axis.
+    __BEST_ITERATION_MENTION: Final[str] = r"best iteration: $\bigstar$"
+    """The mention of the mark of the best iteration, in the label of the x-axis.
 
-    The glyph is the one of `__OPTIMUM_MARKER`,
+    The glyph is the one of `__BEST_ITERATION_MARKER`,
     so that the mention need not name a color.
     """
 
@@ -106,8 +129,8 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     __MARK_SIZE: Final[int] = 10
     """The size of the markers of the iterations."""
 
-    __MARK_LINE_OPACITY: Final[float] = 0.4
-    """The opacity of the vertical lines marking the iterations."""
+    __MARK_COLOR: Final[str] = "#e028c0"
+    """The magenta color of the marks of the iterations."""
 
     __TICK_LABEL_SIZE: Final[int] = 9
     """The font size of the tick labels."""
@@ -125,18 +148,26 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     __INEQ_CSTR_CMAP: Final[ListedColormap] = RG_SEISMIC
     __EQ_CSTR_CMAP: Final[str] = "seismic"
 
-    def __get_x_axis_label(self, has_nan: bool = False) -> str:
+    def __get_x_axis_label(
+        self, has_best_iteration: bool = True, has_nan: bool = False
+    ) -> str:
         """Return the label of the x-axis, mentioning the marks of the figure.
 
         Args:
+            has_best_iteration: Whether the figure marks the best iteration.
             has_nan: Whether the figure marks iterations whose values are `NaN`.
 
         Returns:
             The label of the x-axis.
         """
-        mentions = [self.__OPTIMUM_MENTION]
+        mentions: list[str] = []
+        if has_best_iteration:
+            mentions.append(self.__BEST_ITERATION_MENTION)
         if has_nan:
             mentions.append(self.__NAN_MENTION)
+        if not mentions:
+            return self.x_label
+
         return f"{self.x_label} ({', '.join(mentions)})"
 
     def __mark_iterations(
@@ -144,24 +175,22 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     ) -> None:
         """Mark iterations with a marker on the x-axis and a dashed vertical line.
 
-        The marks are told apart by their marker, not by their color: in these
-        figures, red is the color of a violated constraint, and the color of the axes is
-        the only one readable on every background a figure saved with a transparent one
-        is read on.
+        All the marks share the color `__MARK_COLOR`
+        and are told apart by their marker,
+        as the label of the x-axis mentions.
+        This color reads on both the light and the dark background,
+        is not the red of a violated constraint
+        and belongs to none of the colormaps of these figures,
+        so that a mark is never taken for a value of the figure it is drawn on.
 
         Args:
             ax: The axes of the figure.
             iterations: The abscissas of the iterations to mark.
             marker: The marker drawn on the x-axis.
         """
-        color = rcParams["axes.edgecolor"]
+        color = self.__MARK_COLOR
         for iteration in iterations:
-            ax.axvline(
-                x=iteration,
-                color=color,
-                linestyle="--",
-                alpha=self.__MARK_LINE_OPACITY,
-            )
+            ax.axvline(x=iteration, color=color, linestyle="--")
             ax.plot(
                 iteration,
                 0.0,
@@ -180,28 +209,38 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         obj_history, x_history, n_iter, x_history_to_display = self._get_history(
             self._optimization_metadata.standardized_objective_name, variable_names
         )
-        normalize = self._dataset.misc["input_space"].normalize_vect
-        opt_design = self._dataset.design_dataset.loc[
-            self._optimization_metadata.optimum_iteration or 1
-        ].to_numpy()
-        x_xstar = norm(normalize(x_history) - normalize(opt_design), axis=1)
+        optimum_iteration = self._optimization_metadata.optimum_iteration
+        if optimum_iteration is None:
+            # The problem has no best design,
+            # hence no iteration to mark and no distance to draw.
+            x_xstar = None
+            best_iteration = None
+        else:
+            normalize = self._dataset.misc["input_space"].normalize_vect
+            opt_design = self._dataset.design_dataset.loc[optimum_iteration].to_numpy(
+                dtype=float
+            )
+            x_xstar = norm(normalize(x_history) - normalize(opt_design), axis=1)
+            # The mark of the best iteration is placed where this distance vanishes.
+            best_iteration = int(argmin(x_xstar))
 
         self._create_variables_plot(
-            x_history_to_display, variable_names, settings.fig_size, x_xstar
+            x_history_to_display, variable_names, settings.fig_size, best_iteration
         )
 
         self._create_obj_plot(
             atleast_1d(obj_history),
             n_iter,
             settings.fig_size,
-            x_xstar,
+            best_iteration,
             obj_min=settings.obj_min,
             obj_max=settings.obj_max,
             obj_relative=settings.obj_relative,
             use_standardized_objective=settings.use_standardized_objective,
         )
 
-        self._create_x_star_plot(x_history, n_iter, settings.fig_size)
+        if x_xstar is not None:
+            self._create_x_star_plot(n_iter, settings.fig_size, x_xstar, best_iteration)
 
         for constraints, constraint_type in [
             (
@@ -220,7 +259,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
                     constraint_type,
                     constraint_names,
                     settings.fig_size,
-                    x_xstar,
+                    best_iteration,
                 )
 
     def _get_history(
@@ -296,7 +335,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         x_history: RealArray,
         variable_names: Iterable[str],
         fig_size: tuple[float, float],
-        x_xstar: RealArray,
+        best_iteration: int | None,
     ) -> None:
         """Create the design variables plot.
 
@@ -304,7 +343,8 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             x_history: The history for the design variables.
             variable_names: The names of the variables to display.
                 If empty, use all design variables.
-            x_xstar: The distance between the designs and the optimum design.
+            best_iteration: The iteration of the best design.
+                If `None`, the problem has no best design and the figure marks none.
         """
         n_iterations = len(x_history)
         if n_iterations < 2:
@@ -326,10 +366,15 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             vmax=1.0,
             aspect="auto",
         )
-        self.__mark_iterations(ax1, (argmin(x_xstar),), self.__OPTIMUM_MARKER)
+        if best_iteration is not None:
+            self.__mark_iterations(ax1, (best_iteration,), self.__BEST_ITERATION_MARKER)
+
         ax1.set_yticks(arange(x_history.shape[1]))
         ax1.set_yticklabels(self._get_design_variable_names(variable_names, True))
-        ax1.set_xlabel(self.__get_x_axis_label(), fontsize=self.__AXIS_LABEL_SIZE)
+        ax1.set_xlabel(
+            self.__get_x_axis_label(best_iteration is not None),
+            fontsize=self.__AXIS_LABEL_SIZE,
+        )
         # ax1.invert_yaxis()
 
         ax1.set_title("Evolution of the optimization variables")
@@ -352,7 +397,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         obj_history: RealArray,
         n_iter: int,
         fig_size: tuple[float, float],
-        x_xstar: RealArray,
+        best_iteration: int | None,
         obj_min: float | None,
         obj_max: float | None,
         obj_relative: bool,
@@ -369,7 +414,8 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
                 If `None`, use the minimum value of the objective history.
             obj_relative: If `True`, plot the objective value difference
                 with the initial value.
-            x_xstar: The distance between the designs and the optimum design.
+            best_iteration: The iteration of the best design.
+                If `None`, the problem has no best design and the figure marks none.
             use_standardized_objective: Whether to use the standardized objective.
         """
         if self._change_objective(use_standardized_objective):
@@ -385,7 +431,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             obj_history -= obj_history[0]
 
         # Remove the NaN values. `idx_nan` is a mask, hence always non-empty: only
-        # `any` tells whether the history holds NaN values.
+        # `any` tells whether the history holds NaN values. The curve is drawn on the
+        # remaining iterations only, hence bridges the NaN ones with a straight segment
+        # that no value supports; the crosses on the x-axis mark those iterations.
         x_absc = arange(len(obj_history))
         idx_nan = isnan(obj_history)
         has_nan = bool(idx_nan.any())
@@ -398,10 +446,17 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
 
         fig = plt.figure(figsize=fig_size)
         # objective function
-        plt.xlabel(self.__get_x_axis_label(has_nan), fontsize=self.__AXIS_LABEL_SIZE)
+        plt.xlabel(
+            self.__get_x_axis_label(best_iteration is not None, has_nan),
+            fontsize=self.__AXIS_LABEL_SIZE,
+        )
         plt.ylabel("Objective value", fontsize=self.__AXIS_LABEL_SIZE)
         plt.plot(x_absc_not_nan, obj_history)
-        self.__mark_iterations(plt.gca(), (argmin(x_xstar),), self.__OPTIMUM_MARKER)
+        if best_iteration is not None:
+            self.__mark_iterations(
+                plt.gca(), (best_iteration,), self.__BEST_ITERATION_MARKER
+            )
+
         if has_nan:
             self.__mark_iterations(plt.gca(), x_absc_nan, self.__NAN_MARKER)
 
@@ -429,34 +484,27 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
 
     def _create_x_star_plot(
         self,
-        x_history: RealArray,
         n_iter: int,
         fig_size: tuple[float, float],
+        x_xstar: RealArray,
+        best_iteration: int,
     ) -> None:
-        """Create the design variables plot.
+        """Create the plot of the distance to the best design.
 
         Args:
-            x_history: The history of the design variables.
             n_iter: The number of iterations.
+            fig_size: The size of the figure.
+            x_xstar: The distance between the designs and the best design.
+            best_iteration: The iteration of the best design.
         """
         fig = plt.figure(figsize=fig_size)
         plt.xlabel(self.__get_x_axis_label(), fontsize=self.__AXIS_LABEL_SIZE)
         plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
-        normalize = self._dataset.misc["input_space"].normalize_vect
-        opt_design = self._dataset.design_dataset.loc[
-            self._optimization_metadata.optimum_iteration or 1
-        ].to_numpy(dtype=float)
-        x_xstar = norm(
-            normalize(x_history) - normalize(opt_design),
-            axis=1,
-        )
 
-        # Draw a vertical line at the optimum
-        n_iterations = len(x_history)
         self.__mark_iterations(
-            plt.gca(), (float(argmin(x_xstar)),), self.__OPTIMUM_MARKER
+            plt.gca(), (float(best_iteration),), self.__BEST_ITERATION_MARKER
         )
-        plt.semilogy(arange(n_iterations), x_xstar)
+        plt.semilogy(arange(n_iter), x_xstar)
         # ======================================================================
         # try:
         #     plt.semilogy(np.arange(len(x_xstar)), x_xstar)
@@ -465,11 +513,11 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         #                    "all values are not positive !")
         # ======================================================================
         ax1 = fig.gca()
-        ax1.set_xticks(range(n_iterations))
-        ax1.set_xticklabels(map(str, range(1, n_iterations + 1)))
+        ax1.set_xticks(range(n_iter))
+        ax1.set_xticklabels(map(str, range(1, n_iter + 1)))
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         plt.grid(True)
-        plt.title("Evolution of the distance to the optimum")
+        plt.title("Evolution of the distance to the best design")
         plt.xlim([0 - self.__X_MARGIN, n_iter - 1 + self.__X_MARGIN])
 
         # Set window size
@@ -504,7 +552,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         cstr_type: ArrayFunction.ConstraintType,
         cstr_names: Sequence[str],
         fig_size: tuple[float, float],
-        x_xstar: RealArray,
+        best_iteration: int | None,
     ) -> None:
         """Create the constraints plot: 1 line per constraint component.
 
@@ -512,7 +560,8 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             cstr_history: The history of the constraints.
             cstr_type: The type of the constraints.
             cstr_names: The names of the constraints.
-            x_xstar: The distance between the designs and the optimum design.
+            best_iteration: The iteration of the best design.
+                If `None`, the problem has no best design and the figure marks none.
         """
         n_cstr = self._cstr_number(cstr_history)
         if n_cstr == 0:
@@ -562,7 +611,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
                         cstr_matrix = vstack((cstr_matrix, history_i_j))
 
         fig = self._build_cstr_fig(
-            cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels, fig_size, x_xstar
+            cstr_matrix, cstr_type, vmax, n_cstr, cstr_labels, fig_size, best_iteration
         )
 
         self._add_figure(fig, f"{cstr_type}_constraints")
@@ -575,7 +624,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         n_cstr: int,
         cstr_labels: Sequence[str],
         fig_size: tuple[float, float],
-        x_xstar: RealArray,
+        best_iteration: int | None,
     ) -> Figure:
         """Build the constraints figure.
 
@@ -586,12 +635,13 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             vmax: The maximum constraint absolute value.
             n_cstr: The number of constraints.
             cstr_labels: The labels of constraints names.
-            x_xstar: The distance between the designs and the optimum design.
+            best_iteration: The iteration of the best design.
+                If `None`, the problem has no best design and the figure marks none.
 
         Returns:
             The constraints figure.
         """
-        if cstr_matrix.shape[0] == len(x_xstar):
+        if cstr_matrix.shape[0] == len(self._dataset):
             cstr_matrix = cstr_matrix.T
         cmap: str | ListedColormap
         if cstr_type == ArrayFunction.ConstraintType.EQ:
@@ -604,6 +654,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         idx_nan = isnan(cstr_matrix)
         has_nan = bool(idx_nan.any())
         if has_nan:
+            # The colormaps draw a zero as an active constraint,
+            # so a NaN value cannot be told from a value at the limit of feasibility
+            # except by the cross that marks its iteration on the x-axis.
             cstr_matrix[idx_nan] = 0.0
 
         # generation of the image
@@ -615,7 +668,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             aspect="auto",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0),
         )
-        self.__mark_iterations(ax1, (argmin(x_xstar),), self.__OPTIMUM_MARKER)
+        if best_iteration is not None:
+            self.__mark_iterations(ax1, (best_iteration,), self.__BEST_ITERATION_MARKER)
+
         if has_nan:
             self.__mark_iterations(
                 ax1, idx_nan.any(axis=0).nonzero()[0], self.__NAN_MARKER
@@ -626,7 +681,8 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         ax1.set_yticklabels(cstr_labels)
 
         ax1.set_xlabel(
-            self.__get_x_axis_label(has_nan), fontsize=self.__AXIS_LABEL_SIZE
+            self.__get_x_axis_label(best_iteration is not None, has_nan),
+            fontsize=self.__AXIS_LABEL_SIZE,
         )
         ax1.set_title(f"Evolution of the {constraint_type} constraints")
         n_iterations = len(self._dataset)

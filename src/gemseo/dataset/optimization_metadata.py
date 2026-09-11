@@ -48,5 +48,9 @@ class OptimizationMetadata:
     feasible_iterations: list[int]
     """The iterations of the feasible points."""
 
-    optimum_iteration: int
-    """The iteration of the optimum solution, if any."""
+    optimum_iteration: int | None
+    """The iteration of the optimum solution.
+
+    `None` when the problem has no optimum solution,
+    e.g. when every feasible design has a `NaN` objective.
+    """
