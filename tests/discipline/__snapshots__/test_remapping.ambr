@@ -5,3 +5,12 @@
 # name: test_component_mapping_wo_default_values[True]
   "The input variables of the original discipline mapped component-wise must have default values; the following ones have no default value: 'y'."
 # ---
+# name: test_duplicated_whole_mapping
+  "An original variable cannot be renamed as a whole more than once; the following ones are: 'x'."
+# ---
+# name: test_unknown_original_name[input]
+  "The names of a mapping must be variables of the original discipline; the following ones are unknown: 'aa'."
+# ---
+# name: test_unknown_original_name[output]
+  "The names of a mapping must be variables of the original discipline; the following ones are unknown: 'aa'."
+# ---

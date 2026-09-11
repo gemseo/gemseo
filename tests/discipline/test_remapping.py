@@ -178,6 +178,25 @@ def test_component_mapping_wo_array_default_values() -> None:
         RemappingDiscipline(discipline, {"new_x": ("x", 0), "new_y": ("y", 0)}, {})
 
 
+@pytest.mark.parametrize("input_or_output", ["input", "output"])
+def test_unknown_original_name(input_or_output, snapshot) -> None:
+    """Check that a mapping to an unknown original variable is rejected."""
+    discipline = DummyDiscipline(input_names=["x"], output_names=["y"])
+    if input_or_output == "input":
+        with assert_exception(ValueError, snapshot):
+            RemappingDiscipline(discipline, input_mapping={"new_x": "aa"})
+    else:
+        with assert_exception(ValueError, snapshot):
+            RemappingDiscipline(discipline, output_mapping={"new_y": "aa"})
+
+
+def test_duplicated_whole_mapping(snapshot) -> None:
+    """Check that an original variable cannot be renamed as a whole twice."""
+    discipline = DummyDiscipline(input_names=["x", "y"])
+    with assert_exception(ValueError, snapshot):
+        RemappingDiscipline(discipline, {"new_x": "x", "new_y": "x"}, {})
+
+
 def test_discipline_name(discipline) -> None:
     """Check that the discipline name is the name of the original discipline."""
     assert discipline.name == "foo"
@@ -430,6 +449,38 @@ def test_unmapped_input_keeps_its_default_value():
     discipline.execute({"x": array([1.0])})
     assert_equal(original_discipline.io.input_data["b"], array([100.0]))
     assert_equal(discipline.io.output_data["z"], array([101.0]))
+
+
+def test_partially_mapped_input_keeps_its_default_value():
+    """Check the components of a partially mapped input keep their default values."""
+    discipline = RemappingDiscipline(
+        NewDiscipline(),
+        input_mapping={"new_in_2": ("in_2", 0)},
+        output_mapping={"new_out_2": "out_2"},
+    )
+    discipline.execute({"new_in_2": array([10.0])})
+    assert_equal(
+        discipline.original_discipline.io.input_data["in_2"], array([10.0, 3.0])
+    )
+    assert_equal(discipline.io.output_data["new_out_2"], array([9.0, 2.0]))
+
+
+def test_component_mapped_defaults_are_not_mutated():
+    """Check executions do not mutate the default values of the original discipline."""
+    original_discipline = NewDiscipline()
+    discipline = RemappingDiscipline(
+        original_discipline,
+        input_mapping={"new_in_2": ("in_2", 0)},
+        output_mapping={"new_out_2": "out_2"},
+    )
+    discipline.execute({"new_in_2": array([10.0])})
+    assert_equal(
+        original_discipline.io.input_grammar.defaults["in_2"], array([2.0, 3.0])
+    )
+    discipline.execute({"new_in_2": array([20.0])})
+    assert_equal(
+        discipline.original_discipline.io.input_data["in_2"], array([20.0, 3.0])
+    )
 
 
 def test_numpy_array_components():

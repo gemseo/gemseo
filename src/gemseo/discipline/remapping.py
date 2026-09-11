@@ -24,7 +24,6 @@ from typing import TYPE_CHECKING
 from typing import Final
 from typing import NoReturn
 
-from numpy import empty
 from numpy import ndarray
 
 from gemseo.core.discipline import Discipline
@@ -73,17 +72,16 @@ class RemappingDiscipline(Discipline):
     default_grammar_type = Discipline.GrammarType.SIMPLER
 
     _input_mapping: FormattedNameMapping
-    """The map from a name of this discipline to one of the original discipline."""
+    """The map from an input name of this discipline
+    to an input name of the original discipline."""
 
     _output_mapping: FormattedNameMapping
-    """The map from a name of this discipline to one of the original discipline."""
+    """The map from an output name of this discipline
+    to an output name of the original discipline."""
 
-    _empty_original_input_data: dict[str, ndarray]
-    """The empty arrays to fill component-wise with the input data of this discipline.
-
-    These templates are required for the input variables of the original discipline
-    that are mapped component-wise only.
-    """
+    _original_input_default_data: dict[str, ndarray]
+    """The default values of the input variables of the original discipline
+    that are mapped component-wise, used as templates to be filled component-wise."""
 
     def __init__(
         self,
@@ -97,12 +95,14 @@ class RemappingDiscipline(Discipline):
                 for which each input variable mapped component-wise
                 must have a default value as a NumPy array.
             input_mapping: The map from an input name of this discipline
-                to an input name the original discipline
+                to an input name of the original discipline.
             output_mapping: The map from an output name of this discipline
-                to an output name the original discipline
+                to an output name of the original discipline.
 
         Raises:
-            ValueError: When an input variable of the original discipline
+            ValueError: When a name mapping refers to an original variable
+                that does not exist or is renamed as a whole more than once,
+                or when an input variable of the original discipline
                 is mapped component-wise but has no default value
                 or has a default value which is not a NumPy array.
         """  # noqa: D205, D212, D415
@@ -149,11 +149,8 @@ class RemappingDiscipline(Discipline):
             )
             raise ValueError(msg)
 
-        self._empty_original_input_data = {
-            name: empty(
-                original_defaults[name].shape, dtype=original_defaults[name].dtype
-            )
-            for name in component_mapped_names
+        self._original_input_default_data = {
+            name: original_defaults[name] for name in component_mapped_names
         }
         super().__init__(name=self._discipline.name)
         self.io.input_grammar.update_from_names(input_mapping.keys())
@@ -230,8 +227,34 @@ class RemappingDiscipline(Discipline):
 
         Returns:
             The formatted mapping.
+
+        Raises:
+            ValueError: When an original name is not a variable of the grammar
+                or is mapped as a whole by more than one current name.
         """
-        return {k: cls.__cast_mapping_value(v) for k, v in mapping.items()}
+        formatted = {k: cls.__cast_mapping_value(v) for k, v in mapping.items()}
+        unknown_names = {name for name, _ in formatted.values()} - grammar.keys()
+        if unknown_names:
+            msg = (
+                "The names of a mapping must be variables of the original discipline; "
+                f"the following ones are unknown: {pretty_repr(unknown_names)}."
+            )
+            raise ValueError(msg)
+
+        full_mapped_names = [
+            name for name, args in formatted.values() if _is_full_slice(args)
+        ]
+        duplicated_names = {
+            name for name in full_mapped_names if full_mapped_names.count(name) > 1
+        }
+        if duplicated_names:
+            msg = (
+                "An original variable cannot be renamed as a whole more than once; "
+                f"the following ones are: {pretty_repr(duplicated_names)}."
+            )
+            raise ValueError(msg)
+
+        return formatted
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         self._discipline.execute(self.__convert_to_origin(self.io.get_input_data()))
@@ -292,7 +315,10 @@ class RemappingDiscipline(Discipline):
             The original input data
             mapping the original input names to the corresponding values.
         """
-        original_input_data = self._empty_original_input_data.copy()
+        original_input_data = {
+            name: value.copy()
+            for name, value in self._original_input_default_data.items()
+        }
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
             if _is_full_slice(args):
