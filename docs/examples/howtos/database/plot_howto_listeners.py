@@ -25,9 +25,9 @@ without modifying the discipline or the algorithm.
 
 Use
 [EvaluationProblem.add_listener()][gemseo.core.problem.evaluation.EvaluationProblem.add_listener]
-to register a callback that is called automatically by the
+to register a listener that is called automatically by the
 [Database][gemseo.core.problem.database.Database]
-whenever new values are stored during the run.
+whenever a selected event occurs during the run.
 
 ## Step-by-step guide
 """
@@ -92,7 +92,7 @@ def track_objective(x_vect):
 # %%
 # ### 3. Register the listener
 #
-# Pass the callback to
+# Pass the listener to
 # [add_listener()][gemseo.core.problem.evaluation.EvaluationProblem.add_listener].
 # The default `at_each_iteration=True` fires it once per complete design point
 # — the right choice for convergence tracking.
@@ -116,8 +116,8 @@ for i, val in enumerate(obj_history, 1):
 # ## Summary
 #
 # [EvaluationProblem.add_listener()][gemseo.core.problem.evaluation.EvaluationProblem.add_listener]
-# attaches a callback to the [Database][gemseo.core.problem.database.Database].
-# The callback receives the design vector and can query the database for output values.
+# attaches a listener to the [Database][gemseo.core.problem.database.Database].
+# The listener receives the design vector and can query the database for output values.
 #
 # ## One step further
 #
@@ -127,4 +127,4 @@ for i, val in enumerate(obj_history, 1):
 # [Database.add_new_iter_listener][gemseo.core.problem.database.Database.add_new_iter_listener]
 # are available directly on the database.
 # Use [Database.clear_listeners][gemseo.core.problem.database.Database.clear_listeners]
-# to remove callbacks when they are no longer needed.
+# to remove listeners when they are no longer needed.

@@ -437,15 +437,15 @@ class EvaluationScenario(BaseMonitoredProcess):
 
         self._execute_monitored()
 
-        # The last call to the functions may not trigger the callback
+        # The last call to the functions may not trigger the listener
         # so some values may be missing in the database.
-        # This ensures that the callback is called after the last iteration.
+        # This ensures that the listener is called after the last iteration.
         if self._backup_evaluations:
             database = self.formulation.problem.database
             n_x_a = len(database)
             if 0 < n_x < n_x_a:
                 x_vect = database.get_x_vect(n_x_a)
-                self._execute_backup_callback(x_vect)
+                self._write_backup_file(x_vect)
 
         execution_statistics = self.execution_statistics
         if execution_statistics.is_enabled:
@@ -525,13 +525,13 @@ class EvaluationScenario(BaseMonitoredProcess):
                     problem.evaluation_counter.current = max_iteration
 
         problem.add_listener(
-            self._execute_backup_callback,
+            self._write_backup_file,
             at_each_iteration=at_each_iteration,
             at_each_function_call=at_each_function_call,
         )
 
-    def _execute_backup_callback(self, x_vect: ndarray) -> None:
-        """A callback function to back up the evaluations.
+    def _write_backup_file(self, x_vect: ndarray) -> None:
+        """A listener writing the evaluations to the backup file.
 
         Args:
             x_vect: The input value.

@@ -79,11 +79,17 @@ A [Database][gemseo.core.problem.database.Database] plays two roles:
 
 ## Listeners { #concept-database-listeners }
 
-User-defined callbacks, also called *listeners*,
-can be triggered when storing a new entry in the database.
+User-defined *listeners* can be triggered when storing a new entry in the database.
 Typical use cases include live progress logging,
 external monitoring
 and custom convergence criteria.
+
+A listener is a function registered on an object,
+which the object calls every time the event it listens to occurs,
+until the listeners are cleared.
+This is not to be confused with a *callback*,
+which is a function passed as an argument for a single execution,
+such as the `callbacks` setting of the DOE algorithms.
 
 !!! how-to
     - [Observe evaluations using listeners][observe-evaluations-using-listeners]

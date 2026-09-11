@@ -60,7 +60,8 @@ as finite differences or complex step.
 
 A [Database][gemseo.core.problem.database.Database] ([read more][concept-database]) can be passed at instantiation.
 It will store the output values and the Jacobians to avoid re-evaluating functions at the same point.
-User-defined callbacks can also be triggered when storing a new entry in the database.
+User-defined listeners can also be triggered when storing a new entry in the database
+([read more][concept-database-listeners]).
 
 Before being evaluated,
 the functions are wrapped into a [PreprocessedFunction][gemseo.core.function.preprocessed_function.PreprocessedFunction] by

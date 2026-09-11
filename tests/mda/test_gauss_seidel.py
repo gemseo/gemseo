@@ -40,8 +40,8 @@ from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
 from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.util.discipline import DummyDiscipline
-from tests.mda import check_iteration_callbacks_clearing
-from tests.mda import check_iteration_callbacks_execution
+from tests.mda import check_iteration_listeners_clearing
+from tests.mda import check_iteration_listeners_execution
 
 from .mda_gauss_seidel import SobieskiMDAGaussSeidel
 from .utils import generate_parallel_doe
@@ -317,11 +317,11 @@ def test_max_mda_iter_0(enable_discipline_statistics):
         assert_almost_equal(output_value, expected_output_data[output_name])
 
 
-def test_iteration_callbacks_execution() -> None:
-    """Check the execution of iteration callbacks."""
-    check_iteration_callbacks_execution(SobieskiMDAGaussSeidel())
+def test_iteration_listeners_execution() -> None:
+    """Check the execution of iteration listeners."""
+    check_iteration_listeners_execution(SobieskiMDAGaussSeidel())
 
 
-def test_iteration_callbacks_clearing() -> None:
-    """Check the clearing of iteration callbacks."""
-    check_iteration_callbacks_clearing(SobieskiMDAGaussSeidel())
+def test_iteration_listeners_clearing() -> None:
+    """Check the clearing of iteration listeners."""
+    check_iteration_listeners_clearing(SobieskiMDAGaussSeidel())

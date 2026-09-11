@@ -565,7 +565,7 @@ class Database(Mapping):
             self.notify_store_listeners(x_vect)
 
         # Notify the new iteration after storing x
-        # because callbacks may need an updated x
+        # because listeners may need an updated x
         if self.__new_iter_listeners and outputs and current_outputs_is_empty:
             self.notify_new_iter_listeners(x_vect)
 

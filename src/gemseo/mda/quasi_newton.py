@@ -71,11 +71,11 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
     settings_class: ClassVar[type[MDAQuasiNewton_Settings]] = MDAQuasiNewton_Settings
     """The pydantic model for the settings."""
 
-    _METHODS_SUPPORTING_CALLBACKS: ClassVar[tuple[QuasiNewtonMethod, ...]] = (
+    _METHODS_SUPPORTING_LISTENERS: ClassVar[tuple[QuasiNewtonMethod, ...]] = (
         QuasiNewtonMethod.BROYDEN1,
         QuasiNewtonMethod.BROYDEN2,
     )
-    """The methods supporting callback functions."""
+    """The methods supporting iteration listeners."""
 
     disciplines: tuple[Discipline, ...]
     """The disciplines."""
@@ -95,7 +95,7 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
         super().__init__(disciplines, settings=settings)
         self._set_resolved_variables(self.coupling_structure.strong_couplings)
 
-        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
+        if self.settings.method not in self._METHODS_SUPPORTING_LISTENERS:
             del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
 
     def __get_options(self) -> dict[str, float | int]:
@@ -170,11 +170,16 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
         return compute_jacobian
 
     def __get_iteration_callback(self) -> Callable[[ndarray, Any], None] | None:
-        """Return the callback function to be called after each iteration.
+        """Return the callback passed to the SciPy solver.
 
-        This callback function computes and stores the residual of the iteration.
+        This callback computes and stores the residual of the iteration,
+        then executes the iteration listeners.
+
+        Returns:
+            The callback,
+            or `None` if the method does not support iteration listeners.
         """
-        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
+        if self.settings.method not in self._METHODS_SUPPORTING_LISTENERS:
             return None
 
         def callback(iterate: ndarray, residual: ndarray) -> None:
@@ -233,32 +238,32 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
             options=self.__get_options(),
         )
 
-        if self.settings.method not in self._METHODS_SUPPORTING_CALLBACKS:
+        if self.settings.method not in self._METHODS_SUPPORTING_LISTENERS:
             self._check_termination_criteria()
 
         self._update_local_data_from_array(y_opt.x)
 
-        if self.settings.method in self._METHODS_SUPPORTING_CALLBACKS:
+        if self.settings.method in self._METHODS_SUPPORTING_LISTENERS:
             self.io.update_output_data({
                 self.NORMALIZED_RESIDUAL_NORM: array([self.normalized_residual_norm]),
             })
 
         return False
 
-    def add_iteration_callback(
-        self, iteration_callback: Callable[[MDAQuasiNewton], None]
+    def add_iteration_listener(
+        self, iteration_listener: Callable[[MDAQuasiNewton], None]
     ) -> None:
         """
         Raises:
             RuntimeError: If the quasi-Newton method
-                does not support iteration callbacks.
+                does not support iteration listeners.
         """  # noqa: D205, D212
         method = self.settings.method
-        if method not in self._METHODS_SUPPORTING_CALLBACKS:
+        if method not in self._METHODS_SUPPORTING_LISTENERS:
             msg = (
-                "Iteration callbacks are only supported for the methods: "
-                f"{self._METHODS_SUPPORTING_CALLBACKS}, not for {method}."
+                "Iteration listeners are only supported for the methods: "
+                f"{self._METHODS_SUPPORTING_LISTENERS}, not for {method}."
             )
             raise RuntimeError(msg)
 
-        super().add_iteration_callback(iteration_callback)
+        super().add_iteration_listener(iteration_listener)

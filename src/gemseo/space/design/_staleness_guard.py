@@ -29,7 +29,7 @@ class StalenessGuard:
     """A staleness guard keyed by an arbitrary comparable version key."""
 
     rebuild: Callable[[], None]
-    """The callback rebuilding the values."""
+    """The function rebuilding the values."""
 
     __key: object = field(default=None, init=False, repr=False)
     """The version key at the last refresh (`None` until the first refresh)."""

@@ -1083,11 +1083,11 @@ def test_listener_dataset():
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y")
 
-    def callback(x):
+    def listener(x):
         scenario.formulation.problem.database.store(x, {"z": 3 * x})
 
     scenario.formulation.problem.database.add_new_iter_listener(
-        callback, output_names=["z"]
+        listener, output_names=["z"]
     )
     scenario.execute(CustomDOE_Settings(samples=array([[1.0]])))
 

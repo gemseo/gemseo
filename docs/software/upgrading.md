@@ -36,6 +36,21 @@ into two independent stores, one for input data and one for output data.
     - After: `discipline.execute(...); x = discipline.input_data["some_input"]`.
 - Auto-coupled variables (names present in both input and output grammars) live in `_output_data` only after `_run`. MDA solvers explicitly propagate them back to `_input_data` between iterations; user-level code that reuses the output value as an input for the next discipline call must do the same (or use the union view).
 
+### Listener nomenclature
+
+A callable registered on an object and removable is now called a *listener*,
+whereas a *callback* is a callable passed as an argument for a single execution.
+The public renames are handled by
+[bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo)
+but the protected members below are not;
+a subclass overriding one of them under its old name silently stops being called:
+
+- `EvaluationScenario._execute_backup_callback` renamed to `EvaluationScenario._write_backup_file`.
+- `MDOScenario._execute_plot_callback` renamed to `MDOScenario._plot_history`.
+- `ScipyGlobalOpt._iter_callback` renamed to `ScipyGlobalOpt._evaluate_objective_and_constraints`.
+- `BaseMDASolver._execute_iteration_callbacks` renamed to `BaseMDASolver._execute_iteration_listeners`.
+- `MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS` renamed to `MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS`.
+
 ## 6.0.0
 
 The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to help converting your code to GEMSEO 6.

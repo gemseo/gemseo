@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 class RegistryDerivedData(metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base managing staleness guards over data derived from versioned variables.
 
-    Subclasses register one or more named guards, each with a callback that
+    Subclasses register one or more named guards, each with a function that
     reconciles a piece of derived data with the registry (by rebuilding it
     eagerly or invalidating it for lazy rebuild). A guard fires only when the
     version key changed since its last refresh.
@@ -60,7 +60,7 @@ class RegistryDerivedData(metaclass=ABCGoogleDocstringInheritanceMeta):
         """Register a staleness guard reconciling a piece of derived data.
 
         Args:
-            rebuild: The callback reconciling the derived data with the registry.
+            rebuild: The function reconciling the derived data with the registry.
             name: The name identifying the guard.
                 Leave empty for a single-guard subclass.
         """

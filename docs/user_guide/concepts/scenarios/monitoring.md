@@ -82,7 +82,7 @@ This is achieved via the observer design pattern.
 An observer class must implement an `update` method receiving the atom (the node whose status changed).
 The high-level function [monitor_scenario()][gemseo.monitor_scenario]
 creates a [Monitoring][gemseo.core.monitoring.Monitoring] instance
-and registers the observer as a listener notified by the GEMSEO monitoring system.
+and registers the observer with the GEMSEO monitoring system.
 
 The scenario execution then generates the following output log:
 

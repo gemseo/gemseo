@@ -32,8 +32,8 @@ from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problem.mdo.sellar.util import get_y_opt
 from gemseo.problem.mdo.sellar.variable import X_SHARED
 from gemseo.util.testing.helper import assert_exception
-from tests.mda import check_iteration_callbacks_clearing
-from tests.mda import check_iteration_callbacks_execution
+from tests.mda import check_iteration_listeners_clearing
+from tests.mda import check_iteration_listeners_execution
 
 from .test_gauss_seidel import SelfCoupledDisc
 
@@ -121,20 +121,20 @@ def test_self_coupled() -> None:
 
 
 @pytest.mark.parametrize("method", QuasiNewtonMethod)
-def test_methods_supporting_callbacks(method):
-    """Test MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS."""
+def test_methods_supporting_listeners(method):
+    """Test MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS."""
     mda = MDAQuasiNewton(
         [Sellar1(), SellarSystem()], settings=MDAQuasiNewton_Settings(method=method)
     )
-    method_supports_callbacks = method in MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS
+    method_supports_listeners = method in MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS
     assert (
         mda.NORMALIZED_RESIDUAL_NORM in mda.io.output_grammar
-    ) is method_supports_callbacks
+    ) is method_supports_listeners
 
 
-@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS)
+@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS)
 def test_residual_history(sellar_disciplines, method):
-    """Test that method supporting callbacks update convergence metrics."""
+    """Test that method supporting listeners update convergence metrics."""
     mda = MDAQuasiNewton(
         sellar_disciplines, settings=MDAQuasiNewton_Settings(method=method)
     )
@@ -145,20 +145,20 @@ def test_residual_history(sellar_disciplines, method):
     assert mda.residual_history[-1] <= mda.settings.tolerance
 
 
-@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS)
-def test_iteration_callbacks_execution(method) -> None:
-    """Check the execution of iteration callbacks."""
-    check_iteration_callbacks_execution(
+@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS)
+def test_iteration_listeners_execution(method) -> None:
+    """Check the execution of iteration listeners."""
+    check_iteration_listeners_execution(
         MDAQuasiNewton(
             [Sellar1(), Sellar2()], settings=MDAQuasiNewton_Settings(method=method)
         )
     )
 
 
-@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS)
-def test_iteration_callbacks_clearing(method) -> None:
-    """Check the clearing of iteration callbacks."""
-    check_iteration_callbacks_clearing(
+@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS)
+def test_iteration_listeners_clearing(method) -> None:
+    """Check the clearing of iteration listeners."""
+    check_iteration_listeners_clearing(
         MDAQuasiNewton(
             [Sellar1(), Sellar2()], settings=MDAQuasiNewton_Settings(method=method)
         )
@@ -168,13 +168,13 @@ def test_iteration_callbacks_clearing(method) -> None:
 @pytest.mark.parametrize(
     "method",
     sorted(
-        set(QuasiNewtonMethod).difference(MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS)
+        set(QuasiNewtonMethod).difference(MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS)
     ),
 )
-def test_iteration_callbacks_unsupported(method, snapshot) -> None:
-    """Check the iteration callbacks for unsupported methods."""
+def test_iteration_listeners_unsupported(method, snapshot) -> None:
+    """Check the iteration listeners for unsupported methods."""
     mda = MDAQuasiNewton(
         [Sellar1(), Sellar2()], settings=MDAQuasiNewton_Settings(method=method)
     )
     with assert_exception(RuntimeError, snapshot):
-        mda.add_iteration_callback(lambda mda: None)
+        mda.add_iteration_listener(lambda mda: None)

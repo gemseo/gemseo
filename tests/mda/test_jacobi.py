@@ -40,8 +40,8 @@ from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
 from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter
 from gemseo.util.discipline import DummyDiscipline
-from tests.mda import check_iteration_callbacks_clearing
-from tests.mda import check_iteration_callbacks_execution
+from tests.mda import check_iteration_listeners_clearing
+from tests.mda import check_iteration_listeners_execution
 
 from .mda_jacobi import SobieskiMDAJacobi
 from .test_gauss_seidel import SelfCoupledDisc
@@ -247,14 +247,14 @@ def test_log_convergence(sellar_with_2d_array, sellar_disciplines) -> None:
     assert mda.settings.log_convergence
 
 
-def test_iteration_callbacks_execution(sellar_disciplines) -> None:
-    """Check the execution of iteration callbacks."""
-    check_iteration_callbacks_execution(MDAJacobi(sellar_disciplines))
+def test_iteration_listeners_execution(sellar_disciplines) -> None:
+    """Check the execution of iteration listeners."""
+    check_iteration_listeners_execution(MDAJacobi(sellar_disciplines))
 
 
-def test_iteration_callbacks_clearing(sellar_disciplines) -> None:
-    """Check the clearing of iteration callbacks."""
-    check_iteration_callbacks_clearing(MDAJacobi(sellar_disciplines))
+def test_iteration_listeners_clearing(sellar_disciplines) -> None:
+    """Check the clearing of iteration listeners."""
+    check_iteration_listeners_clearing(MDAJacobi(sellar_disciplines))
 
 
 def test_parallel_doe() -> None:

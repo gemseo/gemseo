@@ -121,8 +121,8 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
         ),
     }
 
-    def _iter_callback(self, x_vect: InputType) -> None:
-        """Call the objective and constraints functions.
+    def _evaluate_objective_and_constraints(self, x_vect: InputType) -> None:
+        """Evaluate the objective and constraint functions.
 
         Args:
             x_vect: The input data with which to call the functions.
@@ -159,7 +159,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
         # is very constrained (Power2) and OptProblem may fail
         # to detect the optimum.
         if problem.constraints:
-            problem.add_listener(self._iter_callback)
+            problem.add_listener(self._evaluate_objective_and_constraints)
 
         filtered_settings = self._filter_settings()
         if self._algo_name == "SHGO":

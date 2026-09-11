@@ -616,6 +616,13 @@ classes:
     __init__:
       linear_solver: linear_solver_settings=_Settings(**linear_solver_settings)
       linear_solver_settings: null
+  BaseMDASolver:
+    add_iteration_callback:
+      __name__: add_iteration_listener
+      iteration_callback: iteration_listener
+    clear_iteration_callbacks: clear_iteration_listeners
+    set_bounds:
+      variable_names_to_bounds: variable_name_to_bounds
   MDAChain:
     mdo_chain: discipline_chain
     set_bounds:
@@ -637,6 +644,10 @@ classes:
     __init__:
       newton_linear_solver_name: null
       newton_linear_solver_settings: convert from dict to _Settings(**arg_value)
+  MDAQuasiNewton:
+    add_iteration_callback:
+      __name__: add_iteration_listener
+      iteration_callback: iteration_listener
 
   #  Monitoring:
   #    __init__:
@@ -763,9 +774,6 @@ classes:
   BaseGrammar:
     update_from_types:
       names_to_types: name_to_type
-  BaseMDASolver:
-    set_bounds:
-      variable_names_to_bounds: variable_name_to_bounds
   MDASequential:
     set_bounds:
       variable_names_to_bounds: variable_name_to_bounds

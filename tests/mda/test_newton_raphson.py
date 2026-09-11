@@ -50,8 +50,8 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.util.derivative.check.mda import MDAJacobianChecker
 from gemseo.util.testing.helper import assert_exception
-from tests.mda import check_iteration_callbacks_clearing
-from tests.mda import check_iteration_callbacks_execution
+from tests.mda import check_iteration_listeners_clearing
+from tests.mda import check_iteration_listeners_execution
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -441,11 +441,11 @@ def test_linear_solver_not_converged(caplog) -> None:
     assert expected_log in caplog.text
 
 
-def test_iteration_callbacks_execution() -> None:
-    """Check the execution of iteration callbacks."""
-    check_iteration_callbacks_execution(MDANewtonRaphson([Sellar1(), Sellar2()]))
+def test_iteration_listeners_execution() -> None:
+    """Check the execution of iteration listeners."""
+    check_iteration_listeners_execution(MDANewtonRaphson([Sellar1(), Sellar2()]))
 
 
-def test_iteration_callbacks_clearing() -> None:
-    """Check the clearing of iteration callbacks."""
-    check_iteration_callbacks_clearing(MDANewtonRaphson([Sellar1(), Sellar2()]))
+def test_iteration_listeners_clearing() -> None:
+    """Check the clearing of iteration listeners."""
+    check_iteration_listeners_clearing(MDANewtonRaphson([Sellar1(), Sellar2()]))
