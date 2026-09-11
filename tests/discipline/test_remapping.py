@@ -155,6 +155,15 @@ def test_component_mapping_wo_default_values(use_default, snapshot) -> None:
         RemappingDiscipline(discipline, {"new_x": ("x", 0), "new_y": ("y", 0)}, {})
 
 
+def test_component_mapping_wo_array_default_values() -> None:
+    """Check that an input mapped component-wise must have an array default value."""
+    discipline = DummyDiscipline(input_names=["x", "y"])
+    discipline.io.input_grammar.defaults["x"] = array([0.0, 1.0])
+    discipline.io.input_grammar.defaults["y"] = 2.0
+    with pytest.raises(ValueError):
+        RemappingDiscipline(discipline, {"new_x": ("x", 0), "new_y": ("y", 0)}, {})
+
+
 def test_discipline_name(discipline) -> None:
     """Check that the discipline name is the name of the original discipline."""
     assert discipline.name == "foo"

@@ -25,14 +25,13 @@ from typing import Final
 from typing import NoReturn
 
 from numpy import empty
+from numpy import ndarray
 
 from gemseo.core.discipline import Discipline
 from gemseo.util.constant import READ_ONLY_EMPTY_DICT
 from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
-    from numpy import ndarray
-
     from gemseo.core.grammar.base import BaseGrammar
     from gemseo.util.typing import StrKeyMapping
 
@@ -92,7 +91,8 @@ class RemappingDiscipline(Discipline):
 
         Raises:
             ValueError: When an input variable of the original discipline
-                is mapped component-wise but has no default value.
+                is mapped component-wise but has no default value
+                or has a default value which is not a NumPy array.
         """  # noqa: D205, D212, D415
         self._discipline = discipline
         original_input_grammar = discipline.io.input_grammar
@@ -120,6 +120,20 @@ class RemappingDiscipline(Discipline):
                 "mapped component-wise must have default values; "
                 f"the following ones have no default value: "
                 f"{pretty_repr(names_wo_default)}."
+            )
+            raise ValueError(msg)
+
+        names_wo_array_default = {
+            name
+            for name in component_mapped_names
+            if not isinstance(original_defaults[name], ndarray)
+        }
+        if names_wo_array_default:
+            msg = (
+                "The input variables of the original discipline "
+                "mapped component-wise must have default values as NumPy arrays; "
+                "the following ones have non-array default values: "
+                f"{pretty_repr(names_wo_array_default)}."
             )
             raise ValueError(msg)
 
