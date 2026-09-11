@@ -43,6 +43,18 @@ _FULL_SLICE: Final[slice] = slice(None)
 """The indices of a variable mapped as a whole."""
 
 
+def _is_full_slice(args: slice | Iterable[int]) -> bool:
+    """Whether the args of a variable mapping indicate a whole-variable mapping.
+
+    Args:
+        args: The args of a variable mapping.
+
+    Returns:
+        Whether the args indicate that the variable is mapped as a whole.
+    """
+    return type(args) is slice and args == _FULL_SLICE
+
+
 class RemappingDiscipline(Discipline):
     """A discipline whose inputs and outputs map to those of another.
 
@@ -61,10 +73,10 @@ class RemappingDiscipline(Discipline):
     default_grammar_type = Discipline.GrammarType.SIMPLER
 
     _input_mapping: FormattedNameMapping
-    """The map from an input name of this discipline to an input name the original discipline."""
+    """The map from a name of this discipline to one of the original discipline."""
 
     _output_mapping: FormattedNameMapping
-    """The map from an output name of this discipline to an output name the original discipline."""
+    """The map from a name of this discipline to one of the original discipline."""
 
     _empty_original_input_data: dict[str, ndarray]
     """The empty arrays to fill component-wise with the input data of this discipline.
@@ -111,7 +123,7 @@ class RemappingDiscipline(Discipline):
         component_mapped_names = {
             name
             for name, indices in self._input_mapping.values()
-            if indices != _FULL_SLICE
+            if not _is_full_slice(indices)
         }
         names_wo_default = component_mapped_names - original_defaults.keys()
         if names_wo_default:
@@ -264,7 +276,7 @@ class RemappingDiscipline(Discipline):
         """
         return {
             new_name: original_data[original_name]
-            if args == _FULL_SLICE
+            if _is_full_slice(args)
             else original_data[original_name][args]
             for new_name, (original_name, args) in name_mapping.items()
         }
@@ -283,7 +295,7 @@ class RemappingDiscipline(Discipline):
         original_input_data = self._empty_original_input_data.copy()
         for new_name, value in input_data.items():
             original_name, args = self._input_mapping[new_name]
-            if args == _FULL_SLICE:
+            if _is_full_slice(args):
                 original_input_data[original_name] = value
             else:
                 original_input_data[original_name][args] = value

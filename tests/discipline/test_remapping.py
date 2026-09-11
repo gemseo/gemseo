@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import ndarray
 from numpy import zeros
 from numpy.testing import assert_equal
 
@@ -60,6 +61,19 @@ class NoOutputsDiscipline(Discipline):
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         return {}
+
+
+class TripleDiscipline(Discipline):
+    """A discipline computing y = 3 * x on size-3 arrays."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.io.input_grammar.update_from_names(["x"])
+        self.io.output_grammar.update_from_names(["y"])
+        self.io.input_grammar.defaults["x"] = array([1.0, 2.0, 3.0])
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        self.io.output_data["y"] = 3 * input_data["x"]
 
 
 class NewDiscipline(Discipline):
@@ -416,3 +430,24 @@ def test_unmapped_input_keeps_its_default_value():
     discipline.execute({"x": array([1.0])})
     assert_equal(original_discipline.io.input_data["b"], array([100.0]))
     assert_equal(discipline.io.output_data["z"], array([101.0]))
+
+
+def test_numpy_array_components():
+    """Check that a mapping whose components are a NumPy integer array works."""
+    list_discipline = RemappingDiscipline(
+        TripleDiscipline(),
+        input_mapping={"new_x": ("x", [0, 2])},
+        output_mapping={"new_y": ("y", [0, 2])},
+    )
+    array_discipline = RemappingDiscipline(
+        TripleDiscipline(),
+        input_mapping={"new_x": ("x", array([0, 2]))},
+        output_mapping={"new_y": ("y", array([0, 2]))},
+    )
+    list_discipline.execute({"new_x": array([4.0, 5.0])})
+    array_discipline.execute({"new_x": array([4.0, 5.0])})
+    assert_equal(array_discipline.io.output_data["new_y"], array([12.0, 15.0]))
+    assert_equal(
+        array_discipline.io.output_data["new_y"],
+        list_discipline.io.output_data["new_y"],
+    )
