@@ -126,7 +126,7 @@ sc_str.set_algorithm(slsqp_settings)
 #     An [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 #     can be transformed into a
 #     [Discipline][gemseo.core.discipline.discipline.Discipline] thanks to the
-#     [ScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter].
+#     [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter].
 
 system_scenario = MDOScenario(
     (sc_prop, sc_aero, sc_str, mission),

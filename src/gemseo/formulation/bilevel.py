@@ -33,7 +33,7 @@ from gemseo.formulation.bilevel_settings import BiLevel_Settings
 from gemseo.formulation.core.base_mdo import BaseMDOFormulation
 from gemseo.mda.core.base import BaseMDA
 from gemseo.mda.factory import MDA_FACTORY
-from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.scenario.adapter.mdo import MDOScenarioAdapter
 from gemseo.scenario.scenario_result.bilevel_scenario_result import (
     BiLevelScenarioResult,
 )
@@ -128,10 +128,10 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         self._mda1, self._mda2 = self._create_mdas()
 
         self._create_scenario_adapters(
-            reset_x0_before_opt=self._settings.reset_x0_before_opt,
-            set_x0_before_opt=self._settings.set_x0_before_opt,
-            keep_opt_history=self._settings.keep_opt_history,
-            save_opt_history=self._settings.save_opt_history,
+            reset_x0_before_exec=self._settings.reset_x0_before_opt,
+            set_x0_before_exec=self._settings.set_x0_before_opt,
+            keep_databases=self._settings.keep_opt_history,
+            save_databases=self._settings.save_opt_history,
             scenario_log_level=self._settings.sub_scenarios_log_level,
             naming=self._settings.naming,
         )
@@ -178,7 +178,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 scenario,
                 input_names,
                 output_names,
-                opt_history_file_prefix=scenario.name,
+                database_file_prefix=scenario.name,
                 **adapter_options,
             )
             self._scenario_adapters.append(adapter)

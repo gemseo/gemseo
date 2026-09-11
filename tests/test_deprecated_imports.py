@@ -503,8 +503,13 @@ def test_dissolved_package_unknown_attribute(snapshot):
 
 
 def test_every_rename_entry_is_reachable():
-    """Every rename-table entry redirects to an importable target."""
+    """Every rename-table entry redirects to an importable target.
+
+    The names whose migration cannot be automated are excluded:
+    importing one raises instead of resolving.
+    """
     from gemseo._deprecation.aliases import ATTRIBUTE_RENAMES
+    from gemseo._deprecation.aliases import MANUAL_MIGRATIONS
     from gemseo._deprecation.aliases import MODULE_RENAMES
 
     with warnings.catch_warnings():
@@ -513,8 +518,62 @@ def test_every_rename_entry_is_reachable():
             importlib.import_module(old_module)
         for old_module, renames in ATTRIBUTE_RENAMES.items():
             module = importlib.import_module(old_module)
+            manual_names = MANUAL_MIGRATIONS.get(old_module, {})
             for old_name in renames:
-                getattr(module, old_name)
+                if old_name not in manual_names:
+                    getattr(module, old_name)
+
+
+def test_manual_migration_raises(snapshot):
+    """A name whose migration cannot be automated raises instead of being aliased.
+
+    An `ImportError` is raised rather than an `AttributeError`, so that a
+    `from ... import ...` of the name reports this message instead of the generic
+    one that the import machinery builds from an `AttributeError`.
+
+    Args:
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        module = importlib.import_module(
+            "gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter"
+        )
+        with assert_exception(ImportError, snapshot):
+            module.MDOObjectiveScenarioAdapter  # noqa: B018
+
+
+def test_every_manual_migration_entry_raises():
+    """Every entry of the manual-migration table raises instead of being aliased."""
+    from gemseo._deprecation.aliases import MANUAL_MIGRATIONS
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        for old_module, migrations in MANUAL_MIGRATIONS.items():
+            module = importlib.import_module(old_module)
+            for old_name in migrations:
+                with pytest.raises(ImportError):
+                    getattr(module, old_name)
+
+
+def test_manual_migration_raises_for_dissolved_package(monkeypatch, snapshot):
+    """A manual migration is refused on a dissolved package too.
+
+    Args:
+        monkeypatch: Fixture to patch the manual-migration table.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    from gemseo._deprecation.aliases import MANUAL_MIGRATIONS
+
+    monkeypatch.setitem(
+        MANUAL_MIGRATIONS, "gemseo.settings", {"Animation": "gemseo.post.Animation"}
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        settings = importlib.import_module("gemseo.settings")
+
+    with assert_exception(ImportError, snapshot):
+        settings.Animation  # noqa: B018
 
 
 @pytest.mark.parametrize(

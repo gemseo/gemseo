@@ -38,7 +38,7 @@ from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
-from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.scenario.adapter.mdo import MDOScenarioAdapter
 from gemseo.util.discipline import DummyDiscipline
 from tests.mda import check_iteration_listeners_clearing
 from tests.mda import check_iteration_listeners_execution

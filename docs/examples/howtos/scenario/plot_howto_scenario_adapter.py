@@ -18,8 +18,8 @@ r"""# Transform a scenario into a discipline
 ## Problem
 
 In GEMSEO,
-a scenario orchestrates the execution of a set of disciplines to solve an optimization
-or DOE problem.
+a scenario orchestrates the execution of a set of disciplines
+to solve an optimization or evaluation problem.
 However,
 a scenario is not itself a discipline
 since it cannot be directly plugged into another scenario as one of its components.
@@ -30,9 +30,33 @@ as just another discipline in its workflow.
 ## Solution
 
 You have to transform your scenario into a [Discipline][gemseo.core.discipline.discipline.Discipline],
-using the
-[MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
-class.
+using a scenario adapter.
+
+GEMSEO provides two of them:
+
+- [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter]
+  wraps a scenario solving an
+  [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem],
+  e.g. an [MDOScenario][gemseo.scenario.mdo.MDOScenario];
+  its outputs are those of the optimum.
+- [EvaluationScenarioAdapter][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter]
+  wraps any [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario];
+  its outputs are those of the last design point evaluated by the scenario,
+  e.g. the last sample of a DOE algorithm.
+
+[MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter]
+derives from
+[EvaluationScenarioAdapter][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter]
+and adds the features requiring an optimum,
+namely the Lagrange multipliers as extra outputs (`output_multipliers=True`),
+the optimal objective value recorded by the scenario (`output_optimal_objective=True`)
+and the linearization by post-optimal analysis.
+It raises a `TypeError` at instantiation
+when the scenario does not solve an
+[OptimizationProblem][gemseo.optimization.problem.OptimizationProblem];
+use
+[EvaluationScenarioAdapter][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter]
+in that case.
 
 ## Step-by-step guide
 
@@ -41,6 +65,7 @@ the simple function $y = (x+1)^2 + n$ is minimized,
 where $x \in \mathbb{R}$ and $n \in \mathbb{N}$.
 First, a scenario is created to minimize $y$ w.r.t $x$.
 Then, an upper-scenario is made to execute the first scenario as a sub-scenario.
+Lastly, a scenario merely sampling $y$ w.r.t $x$ is transformed the same way.
 """
 
 from __future__ import annotations
@@ -51,6 +76,8 @@ from numpy import ones
 from gemseo.discipline import AnalyticDiscipline
 from gemseo.doe import PYDOE_FULLFACT_Settings
 from gemseo.optimization import NLOPT_COBYLA_Settings
+from gemseo.scenario import EvaluationScenario
+from gemseo.scenario import EvaluationScenarioAdapter
 from gemseo.scenario import MDOScenario
 from gemseo.scenario import MDOScenarioAdapter
 from gemseo.space import DesignSpace
@@ -91,9 +118,9 @@ scenario_adapter = MDOScenarioAdapter(
 scenario_adapter.execute({"n": array([4])})
 
 # !!! note
-#     The execution an
-#     [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
-#     relies on the optimization of the inner scenario.
+#     The execution of an
+#     [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter]
+#     relies on the execution of the inner scenario.
 #     This can been observed through log messages.
 #
 # or use another scenario to create a bi-level scenario:
@@ -110,12 +137,54 @@ upper_scenario.add_objective("y")
 upper_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=6))
 upper_scenario.to_dataset()
 # %%
+# ### 5. Transform a scenario that does not optimize
+#
+# A scenario sampling $y$ w.r.t. $x$ does not solve an optimization problem,
+# so it has no optimum to report
+# and an
+# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter]
+# would raise a `TypeError` at instantiation.
+# Use an
+# [EvaluationScenarioAdapter][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter]
+# instead:
+sampling_design_space = DesignSpace()
+sampling_design_space.add_variable("x", lower_bound=-5, upper_bound=5.0, value=ones(1))
+sampling_scenario = EvaluationScenario(
+    (AnalyticDiscipline({"y": "(x+1)**2 + n"}),), sampling_design_space
+)
+sampling_scenario.add_observable("y")
+sampling_scenario.set_algorithm(PYDOE_FULLFACT_Settings(n_samples=5))
+
+sampling_scenario_adapter = EvaluationScenarioAdapter(
+    sampling_scenario, input_names=["n"], output_names=["x", "y"]
+)
+sampling_scenario_adapter.execute({"n": array([4])})
+
+# %%
+# Its output data are those of the last design point evaluated by the scenario,
+# here the last sample of the full-factorial DOE,
+# namely $x=5$ and so $y=(5+1)^2+4=40$:
+sampling_scenario_adapter.output_data
+
+# %%
+# !!! note
+#     The optimum-only features of the
+#     [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter],
+#     namely `output_multipliers`, `output_optimal_objective`
+#     and the linearization by post-optimal analysis,
+#     are not available for an
+#     [EvaluationScenarioAdapter][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter].
+
+# %%
 # ## Summary
 #
 # You can transform an existing [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # into a
 # [Discipline][gemseo.core.discipline.discipline.Discipline]
 # with the
-# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter].
+# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter],
+# and any [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]
+# with the
+# [EvaluationScenarioAdapter][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter].
 #
 # That way, you can simply create multi-level optimization processes.

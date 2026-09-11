@@ -1,6 +1,6 @@
 # serializer version: 1
 # name: test_adapter_set_and_reset_x0
-  'The options reset_x0_before_opt and set_x0_before_opt of MDOScenarioAdapter cannot both be True.'
+  'The options reset_x0_before_exec and set_x0_before_exec of MDOScenarioAdapter cannot both be True.'
 # ---
 # name: test_compute_jacobian_exceptions
   "The following are not inputs of the adapter: 'bar' and 'foo'."
@@ -12,5 +12,14 @@
   "The post-optimal Jacobians of 'g_1' and 'g_2' cannot be computed."
 # ---
 # name: test_compute_jacobian_exceptions.3
+  'The objective must be single-valued.'
+# ---
+# name: test_mdo_adapter_of_evaluation_scenario
+  'The scenario EvaluationScenario defines a problem of type EvaluationProblem; an OptimizationProblem is required, e.g. that of an MDOScenario.'
+# ---
+# name: test_multi_objective_exception
+  'The objective must be single-valued.'
+# ---
+# name: test_retrieve_top_level_outputs_multi_objective_exception
   'The objective must be single-valued.'
 # ---

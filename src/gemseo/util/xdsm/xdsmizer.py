@@ -57,7 +57,7 @@ from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.monitoring import Monitoring
 from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.mda.core.base import BaseMDA
-from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.scenario.adapter.evaluation import EvaluationScenarioAdapter
 from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
@@ -564,7 +564,7 @@ class XDSMizer:
             ValueError: If the atomic sequence is not found.
         """
         atom = None
-        if isinstance(process, MDOScenarioAdapter):
+        if isinstance(process, EvaluationScenarioAdapter):
             atom = self._find_atom(process.scenario)
         else:
             for atom_i in self.atoms:
