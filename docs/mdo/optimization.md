@@ -100,7 +100,7 @@ from gemseo.optimization.factory import OptimizationLibraryFactory
 from gemseo.optimization import L_BFGS_B_Settings
 
 opt = OptimizationLibraryFactory().execute(
-    problem, L_BFGS_B(normalize_design_space=True)
+    problem, L_BFGS_B_Settings(normalize_design_space=True)
 )
 print(f"Optimum = {opt.f_opt}")
 ```
