@@ -103,8 +103,8 @@ class BaseMDASolver(BaseMDA):
     __n_consecutive_unsuccessful_iterations: int
     """The number of consecutive unsuccessful iterations."""
 
-    __iteration_callbacks: list[Callable[[BaseMDASolver], None]]
-    """The callback functions to be called after each iteration."""
+    __iteration_listeners: list[Callable[[BaseMDASolver], None]]
+    """The listeners to be called after each iteration."""
 
     def __init__(  # noqa: D107
         self,
@@ -130,7 +130,7 @@ class BaseMDASolver(BaseMDA):
         self.__upper_bound_vector = None
         self.__resolved_variable_name_to_bounds = {}
 
-        self.__iteration_callbacks = []
+        self.__iteration_listeners = []
 
     @property
     def acceleration_method(self) -> AccelerationMethod:
@@ -222,7 +222,7 @@ class BaseMDASolver(BaseMDA):
         if update_iteration_metrics:
             self.__update_iteration_metrics()
 
-        self._execute_iteration_callbacks()
+        self._execute_iteration_listeners()
         if self.normalized_residual_norm <= self.settings.tolerance:
             return True
 
@@ -500,21 +500,28 @@ class BaseMDASolver(BaseMDA):
                 )
             )
 
-    def add_iteration_callback(
-        self, iteration_callback: Callable[[BaseMDASolver], None]
+    def add_iteration_listener(
+        self, iteration_listener: Callable[[BaseMDASolver], None]
     ) -> None:
-        """Add a callback function to be called after each iteration.
+        """Add a listener to be called after each iteration.
+
+        Unlike
+        [Database.add_store_listener][gemseo.core.problem.database.Database.add_store_listener],
+        this method does not check for duplicates;
+        adding the same listener twice makes it called twice per iteration.
+        Moreover, the iteration listeners can only be removed all at once, with
+        [clear_iteration_listeners][gemseo.mda.core.base_solver.BaseMDASolver.clear_iteration_listeners].
 
         Args:
-            iteration_callback: The callback function.
+            iteration_listener: The listener.
         """
-        self.__iteration_callbacks.append(iteration_callback)
+        self.__iteration_listeners.append(iteration_listener)
 
-    def _execute_iteration_callbacks(self) -> None:
-        """Execute the iteration callbacks."""
-        for iteration_callback in self.__iteration_callbacks:
-            iteration_callback(self)
+    def _execute_iteration_listeners(self) -> None:
+        """Execute the iteration listeners."""
+        for iteration_listener in self.__iteration_listeners:
+            iteration_listener(self)
 
-    def clear_iteration_callbacks(self) -> None:
-        """Clear the iteration callbacks."""
-        self.__iteration_callbacks.clear()
+    def clear_iteration_listeners(self) -> None:
+        """Clear the iteration listeners."""
+        self.__iteration_listeners.clear()

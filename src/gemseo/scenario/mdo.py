@@ -279,13 +279,13 @@ class MDOScenario(EvaluationScenario):
         )
         if plot:
             self.formulation.problem.add_listener(
-                self._execute_plot_callback,
+                self._plot_history,
                 at_each_iteration=True,
                 at_each_function_call=False,
             )
 
-    def _execute_plot_callback(self, x_vect: ndarray) -> None:
-        """A callback function to plot the OptHistoryView of the current database.
+    def _plot_history(self, x_vect: ndarray) -> None:
+        """A listener plotting the OptHistoryView of the current database.
 
         Args:
             x_vect: The input value.

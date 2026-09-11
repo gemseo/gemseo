@@ -171,8 +171,8 @@ def test_checks() -> None:
     problem.check()
 
 
-def test_callback() -> None:
-    """Test the execution of a callback."""
+def test_listener() -> None:
+    """Test the execution of a listener."""
     n = 3
     design_space = DesignSpace()
     design_space.add_variable("x", n, lower_bound=-1.0, upper_bound=1.0)
@@ -1307,8 +1307,8 @@ def test_scalar_constraint_names(constrained_problem) -> None:
     }
 
 
-def test_observables_callback() -> None:
-    """Test that the observables are called properly."""
+def test_observables_evaluation() -> None:
+    """Test that the observables are evaluated properly."""
     problem = Power2()
     obs1 = ArrayFunction(norm, name="design_norm")
     problem.add_observable(obs1)

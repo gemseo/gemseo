@@ -126,8 +126,8 @@ def test_progress_bar(enable_progress_bar, enable_logging, caplog) -> None:
 @pytest.mark.parametrize(
     ("kwargs", "expected"), [({}, "    50%|"), ({"message": "foo"}, "foo  50%|")]
 )
-def test_new_iteration_callback_xvect(caplog, kwargs, expected) -> None:
-    """Test the new iteration callback."""
+def test_progress_bar_update(caplog, kwargs, expected) -> None:
+    """Check the update of the progress bar when finalizing an iteration."""
     power_2 = Power2()
     test_driver = ScipyOpt("SLSQP")
     test_driver._problem = power_2

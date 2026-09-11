@@ -256,13 +256,13 @@ def test_append_export(tmp_wd, each_iter, node) -> None:
         {"y4": 50.0},
     ]
 
-    def callback(x):
+    def listener(x):
         return database.to_hdf(file_path_db, append=True, hdf_node_path=node)
 
     if each_iter:
-        database.add_new_iter_listener(callback)
+        database.add_new_iter_listener(listener)
     else:
-        database.add_store_listener(callback)
+        database.add_store_listener(listener)
 
     for i in range(n_calls):
         for output in outputs:

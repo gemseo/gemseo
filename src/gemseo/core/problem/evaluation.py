@@ -355,8 +355,9 @@ class EvaluationProblem(BaseProblem):
     ) -> None:
         """Add a listener for some events.
 
-        Listeners are callback functions attached to the database
-        which are triggered when new values are stored within the database.
+        A listener is a function registered on the database
+        and called every time one of the events it is registered for occurs,
+        until the listeners are cleared.
 
         Args:
             listener: A function to be called after some events,
