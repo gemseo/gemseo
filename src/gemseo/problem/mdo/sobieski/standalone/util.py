@@ -28,7 +28,9 @@ from __future__ import annotations
 
 import cmath
 import math
+from types import MappingProxyType
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import array
 from numpy import atleast_2d
@@ -41,28 +43,44 @@ from strenum import StrEnum
 from gemseo.util.string import convert_strings_to_iterable
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from collections.abc import Sequence
     from types import ModuleType
 
     from numpy import ndarray
 
+    from gemseo.util.typing import RealArray
 
-DEG_TO_RAD = math.pi / 180.0
+
+deg_to_rad: Final[float] = math.pi / 180.0
 # DO NOT CHANGE THE DEFAULT DESIGN VALUE: IT IS USED FOR POLYNOMIAL APPROXIMATION
-_DEFAULT_DESIGN = array([0.25, 1.0, 1.0, 0.5, 0.05, 45000.0, 1.6, 5.5, 55.0, 1000.0])
-_MINIMUM_FUEL_WEIGHT = 2000.0
-_MISC_WEIGHT = 25000.0
-_MAXIMUM_LOAD_FACTOR = 6.0
-_REFERENCE_ENGINE_WEIGHT = 4360.0
-_MINIMUM_DRAG_COEFFICIENT = 0.01375
-_CONSTANTS = array([
-    _MINIMUM_FUEL_WEIGHT,
-    _MISC_WEIGHT,
-    _MAXIMUM_LOAD_FACTOR,
-    _REFERENCE_ENGINE_WEIGHT,
-    _MINIMUM_DRAG_COEFFICIENT,
+_default_design: Final[RealArray] = array([
+    0.25,
+    1.0,
+    1.0,
+    0.5,
+    0.05,
+    45000.0,
+    1.6,
+    5.5,
+    55.0,
+    1000.0,
 ])
-_DESIGN_BOUNDS = array([
+_default_design.setflags(write=False)
+_minimum_fuel_weight: Final[float] = 2000.0
+_misc_weight: Final[float] = 25000.0
+_maximum_load_factor: Final[float] = 6.0
+_reference_engine_weight: Final[float] = 4360.0
+_minimum_drag_coefficient: Final[float] = 0.01375
+_constants: Final[RealArray] = array([
+    _minimum_fuel_weight,
+    _misc_weight,
+    _maximum_load_factor,
+    _reference_engine_weight,
+    _minimum_drag_coefficient,
+])
+_constants.setflags(write=False)
+_design_bounds: Final[RealArray] = array([
     (0.1, 0.4),
     (0.75, 1.25),
     (0.75, 1.25),
@@ -74,11 +92,12 @@ _DESIGN_BOUNDS = array([
     (40.0, 70.0),
     (500.0, 1500.0),
 ])
-_NAME_TO_BOUNDS = {
-    "x_1": _DESIGN_BOUNDS[0:2],
-    "x_2": _DESIGN_BOUNDS[2],
-    "x_3": _DESIGN_BOUNDS[3],
-    "x_shared": _DESIGN_BOUNDS[4:10],
+_design_bounds.setflags(write=False)
+_name_to_bounds: Final[Mapping[str, RealArray]] = MappingProxyType({
+    "x_1": _design_bounds[0:2],
+    "x_2": _design_bounds[2],
+    "x_3": _design_bounds[3],
+    "x_shared": _design_bounds[4:10],
     "y_14": array([(4.97e04 * 0.5, 5.14e04 * 1.5), (-1.54e04 * 0.5, 3.0e04 * 1.5)]),
     "y_12": array([(4.97e04 * 0.5, 5.15e04 * 1.5), (0.9 * 0.5, 1.00)]),
     "y_21": array([(4.97e04 * 0.5, 5.15e04 * 1.5)]),
@@ -87,7 +106,7 @@ _NAME_TO_BOUNDS = {
     "y_31": array([(5.92e03 * 0.5, 6.79e03 * 1.5)]),
     "y_32": array([(0.47 * 0.5, 0.53 * 1.5)]),
     "y_34": array([(0.88 * 0.5, 1.32 * 1.5)]),
-}
+})
 
 
 class SobieskiBase:
@@ -123,7 +142,7 @@ class SobieskiBase:
             msg = f"Unknown dtype: {dtype}."
             raise ValueError(msg)
 
-        self.__constants = _CONSTANTS.astype(self.dtype)
+        self.__constants = _constants.astype(self.dtype)
         self.__coeff_mtrix = array(
             [
                 [0.2736, 0.3970, 0.8152, 0.9230, 0.1108],
@@ -147,7 +166,7 @@ class SobieskiBase:
             dtype=self.dtype,
         )
 
-        self.__initial_design = _DEFAULT_DESIGN.astype(self.dtype)
+        self.__initial_design = _default_design.astype(self.dtype)
 
     @property
     def initial_design(self) -> ndarray:
@@ -162,7 +181,7 @@ class SobieskiBase:
     @property
     def design_bounds(self) -> tuple[ndarray, ndarray]:
         """The lower and upper bounds of the design variables."""
-        return _DESIGN_BOUNDS[:, 0], _DESIGN_BOUNDS[:, 1]
+        return _design_bounds[:, 0], _design_bounds[:, 1]
 
     @classmethod
     def get_bounds_by_name(
@@ -180,7 +199,7 @@ class SobieskiBase:
         bounds = atleast_2d(
             concatenate(
                 [
-                    _NAME_TO_BOUNDS[variable_name]
+                    _name_to_bounds[variable_name]
                     for variable_name in convert_strings_to_iterable(variable_names)
                 ],
                 axis=0,

@@ -65,7 +65,7 @@ class BaseClassifier(BaseMLSupervisedModel):
         fit_transformers: bool,
     ) -> None:
         output_data = self.learning_set.get_view(
-            group_names=self.learning_set.OUTPUT_GROUP,
+            group_names=self.learning_set.output_group,
             variable_names=self.output_names,
         ).to_numpy()
         self.n_classes = unique(output_data).shape[0]

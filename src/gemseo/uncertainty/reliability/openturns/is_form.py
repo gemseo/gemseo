@@ -23,7 +23,7 @@ from openturns import Null
 from openturns import PostAnalyticalControlledImportanceSampling
 from openturns import PostAnalyticalImportanceSampling
 
-from gemseo.uncertainty.reliability.factory import RELIABILITY_ALGORITHM_FACTORY
+from gemseo.uncertainty.reliability.factory import reliability_algorithm_factory
 from gemseo.uncertainty.reliability.openturns.base import BaseOTReliabilityAlgorithm
 from gemseo.uncertainty.reliability.openturns.is_form_settings import (
     OT_IS_FORM_Settings,
@@ -48,7 +48,7 @@ class OT_IS_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
         self._set_seed(settings.seed)
 
         form_settings = settings.form_settings
-        form = RELIABILITY_ALGORITHM_FACTORY.create(form_settings.target_class_name)
+        form = reliability_algorithm_factory.create(form_settings.target_class_name)
         form_result = form._execute(event_name, problem, form_settings).raw_result
 
         if settings.control:

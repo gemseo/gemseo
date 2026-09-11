@@ -38,7 +38,7 @@ from gemseo.uncertainty.statistic.tolerance_interval.base import BaseToleranceIn
 from gemseo.util.testing.helper import assert_exception
 from gemseo.util.testing.helper import concretize_classes
 
-RNG = RandomState(0)
+rng = RandomState(0)
 
 
 @pytest.fixture(scope="module")
@@ -61,7 +61,7 @@ def statistics(dataset):
 def full_statistics():
     """Statictics for both x_1 and x_2 with a large dataset."""
     dataset = Dataset.from_array(
-        RNG.exponential(1, 100),
+        rng.exponential(1, 100),
         ["x_0"],
         {"x_0": 1},
     )

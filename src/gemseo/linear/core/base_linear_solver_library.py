@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from gemseo.linear.problem import LinearProblem
     from gemseo.util.typing import SparseOrDenseRealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseLinearSolverSettings)
 
@@ -75,7 +75,7 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary[T]):
     _problem: LinearProblem
     """The linear problem to solve."""
 
-    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BaseLinearSolverSettings]] = (
+    _settings_class_to_exclude: ClassVar[type[BaseLinearSolverSettings]] = (
         BaseLinearSolverSettings
     )
 
@@ -137,7 +137,7 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary[T]):
         result: ndarray,
     ) -> None:
         if not problem.is_converged:
-            LOGGER.warning(
+            logger.warning(
                 "The linear solver %s did not converge.", problem.solver_name
             )
 
@@ -149,7 +149,7 @@ class BaseLinearSolverLibrary(BaseAlgorithmLibrary[T]):
             with file_path.open("wb") as stream:
                 pickle.dump(problem, stream)
 
-            LOGGER.warning(
+            logger.warning(
                 "Linear solver failed, saving problem to file: %s", file_path
             )
 

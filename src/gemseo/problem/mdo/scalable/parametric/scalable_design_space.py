@@ -24,13 +24,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_D_0,
+    default_d_0,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.scalable_design_space import (
     ScalableDesignSpace as _ScalableDesignSpace,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings import (  # noqa: E501
-    DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
+    default_scalable_discipline_settings,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_u_local_name,
@@ -39,7 +39,7 @@ from gemseo.space.parameter import ParameterSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -62,9 +62,9 @@ class ScalableDesignSpace(ParameterSpace):
         self,
         discipline_settings: Iterable[
             ScalableDisciplineSettings
-        ] = DEFAULT_SCALABLE_DISCIPLINE_SETTINGS,
-        d_0: int = DEFAULT_D_0,
-        name_to_default_value: Mapping[str, RealArray] = READ_ONLY_EMPTY_DICT,
+        ] = default_scalable_discipline_settings,
+        d_0: int = default_d_0,
+        name_to_default_value: Mapping[str, RealArray] = read_only_empty_dict,
         add_uncertain_variables: bool = False,
     ) -> None:
         r"""Args:

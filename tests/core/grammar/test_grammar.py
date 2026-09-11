@@ -27,13 +27,13 @@ from pydantic import BaseModel
 
 from gemseo.core.data_converter.base import BaseDataConverter
 from gemseo.core.grammar.error import InvalidDataError
-from gemseo.core.grammar.factory import GRAMMAR_FACTORY
+from gemseo.core.grammar.factory import grammar_factory
 from gemseo.core.grammar.json import JSONGrammar
 from gemseo.core.grammar.properties import GrammarProperties
 from gemseo.core.grammar.pydantic import PydanticGrammar
 from gemseo.core.grammar.simple import SimpleGrammar
 from gemseo.core.grammar.simpler import SimplerGrammar
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
 from gemseo.util.testing.helper import do_not_raise
 
@@ -44,10 +44,10 @@ if TYPE_CHECKING:
     from gemseo.core.grammar.base import BaseGrammar
 
 
-@pytest.fixture(params=GRAMMAR_FACTORY.class_names)
+@pytest.fixture(params=grammar_factory.class_names)
 def grammar_class(request) -> type[BaseGrammar]:
     """Iterate over the grammar classes."""
-    return GRAMMAR_FACTORY.get_class(request.param)
+    return grammar_factory.get_class(request.param)
 
 
 @pytest.fixture
@@ -185,15 +185,15 @@ def test_clear(grammar, name_to_type) -> None:
     assert not grammar.descriptions
 
 
-NAMES = [
+names = [
     set(),
     {"name1"},
     {"name1", "name2"},
 ]
 
 
-@pytest.mark.parametrize("names", NAMES)
-@pytest.mark.parametrize("required_names", [None, *NAMES])
+@pytest.mark.parametrize("names", names)
+@pytest.mark.parametrize("required_names", [None, *names])
 def test_restrict_to(grammar, names, required_names) -> None:
     """Verify restrict_to."""
     name_to_type = {"name1": int, "name2": int}
@@ -406,7 +406,7 @@ Grammar name: g
             "name2": "&lt;class &#x27;str&#x27;&gt;",
         }
 
-    assert grammar._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert grammar._repr_html_() == repr_html_wrapper.format(
         "Grammar name: g<br/>"
         "<ul>"
         "<li>Required elements:"
@@ -433,24 +433,24 @@ Grammar name: g
     )
 
 
-ARRAY = zeros((1,))
-MERGE_TO_VALID_DATA = {
+array = zeros((1,))
+merge_to_valid_data = {
     # Without merged update.
     False: {
         "required_name1": 0,
-        "required_name2": ARRAY,
-        "optional_name2": ARRAY,
-        "new_name": ARRAY,
+        "required_name2": array,
+        "optional_name2": array,
+        "new_name": array,
     },
     # With merged update.
     True: {
         "required_name1": 0,
         "required_name2": 0,
         "optional_name2": 0,
-        "new_name": ARRAY,
+        "new_name": array,
     },
 }
-INVALID_DATA = {
+invalid_data = {
     "optional_name1": 0.0,
 }
 
@@ -490,11 +490,11 @@ def assert_updated(
     } - (excluded_names & {"new_name", "optional_name2"})
 
     data = {}
-    for name, value in MERGE_TO_VALID_DATA[True].items():
+    for name, value in merge_to_valid_data[True].items():
         if name in excluded_names:
             data[name] = value
         else:
-            data[name] = MERGE_TO_VALID_DATA[False][name]
+            data[name] = merge_to_valid_data[False][name]
 
     grammar.validate(data)
 
@@ -502,9 +502,9 @@ def assert_updated(
         # The elements that have been merged shall also validate the types existing
         # before the merge (if they were not excluded).
         data = {}
-        for name, value in MERGE_TO_VALID_DATA[False].items():
+        for name, value in merge_to_valid_data[False].items():
             if name in excluded_names:
-                data[name] = MERGE_TO_VALID_DATA[True][name]
+                data[name] = merge_to_valid_data[True][name]
             else:
                 data[name] = value
 
@@ -514,7 +514,7 @@ def assert_updated(
         grammar.validate({})
 
     if not isinstance(grammar, SimplerGrammar):
-        for name, value in INVALID_DATA.items():
+        for name, value in invalid_data.items():
             with pytest.raises(InvalidDataError):
                 grammar.validate({name: value})
 
@@ -569,10 +569,10 @@ def check_update_raise(grammar: BaseGrammar, merge: bool):
     return do_not_raise()
 
 
-UPDATE_DATA = {
-    "required_name2": ARRAY,
-    "optional_name2": ARRAY,
-    "new_name": ARRAY,
+update_data = {
+    "required_name2": array,
+    "optional_name2": array,
+    "new_name": array,
 }
 
 
@@ -592,7 +592,7 @@ def iter_powerset(iterable) -> Iterator[tuple[Any, ...]]:
 
 
 @parametrized_merge
-@pytest.mark.parametrize("excluded_names", iter_powerset(UPDATE_DATA))
+@pytest.mark.parametrize("excluded_names", iter_powerset(update_data))
 def test_update(grammar, merge, excluded_names) -> None:
     """Verify update."""
     prepare_grammar(grammar)
@@ -604,7 +604,7 @@ def test_update(grammar, merge, excluded_names) -> None:
 
     # Update from non-empty.
     other_grammar = grammar.__class__("g")
-    other_grammar.update_from_names(UPDATE_DATA.keys())
+    other_grammar.update_from_names(update_data.keys())
     with check_update_raise(grammar, merge):
         grammar.update(other_grammar, merge=merge, excluded_names=excluded_names)
         assert_updated(grammar, merge=merge, excluded_names=set(excluded_names))
@@ -639,7 +639,7 @@ def test_update_from_names(grammar, merge) -> None:
 
     # Update from non-empty.
     with check_update_raise(grammar, merge):
-        grammar.update_from_names(UPDATE_DATA.keys(), merge=merge)
+        grammar.update_from_names(update_data.keys(), merge=merge)
         assert_updated(grammar, merge=merge)
 
 
@@ -653,7 +653,7 @@ def test_update_from_types(grammar, merge) -> None:
     grammar.update_from_types({}, merge=merge)
     assert grammar.names == names_before
 
-    update_types = {name: type(value) for name, value in UPDATE_DATA.items()}
+    update_types = {name: type(value) for name, value in update_data.items()}
 
     # Update from non-empty.
     with check_update_raise(grammar, merge):
@@ -673,7 +673,7 @@ def test_update_from_data(grammar, merge) -> None:
 
     # Update from non-empty.
     with check_update_raise(grammar, merge):
-        grammar.update_from_data(UPDATE_DATA, merge=merge)
+        grammar.update_from_data(update_data, merge=merge)
         assert_updated(grammar, merge=merge)
 
 

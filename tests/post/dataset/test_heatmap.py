@@ -55,7 +55,7 @@ def symmetric_dataset() -> Dataset:
     return dataset
 
 
-RECTANGULAR_SETTINGS = [
+rectangular_settings = [
     Heatmap_Settings(),
     Heatmap_Settings(variables=("x1", "x3")),
     Heatmap_Settings(
@@ -67,9 +67,9 @@ RECTANGULAR_SETTINGS = [
         title="The title",
     ),
 ]
-RECTANGULAR_SETTINGS_IDS = ["default", "variables", "use_log_opacity_and_properties"]
+rectangular_settings_ids = ["default", "variables", "use_log_opacity_and_properties"]
 
-SYMMETRIC_SETTINGS = [
+symmetric_settings = [
     Heatmap_Settings(symmetric=True),
     Heatmap_Settings(symmetric=True, variables=("x1", "x3")),
     Heatmap_Settings(
@@ -85,17 +85,17 @@ SYMMETRIC_SETTINGS = [
         title="The title",
     ),
 ]
-SYMMETRIC_SETTINGS_IDS = ["default", "variables", "use_log_precedence_properties"]
+symmetric_settings_ids = ["default", "variables", "use_log_precedence_properties"]
 
 
-@pytest.mark.parametrize("settings", RECTANGULAR_SETTINGS, ids=RECTANGULAR_SETTINGS_IDS)
+@pytest.mark.parametrize("settings", rectangular_settings, ids=rectangular_settings_ids)
 def test_plot_rectangular(settings, rectangular_dataset, snapshot_matplotlib) -> None:
     """Test images created by Heatmap._plot with symmetric=False against references."""
     plot = Heatmap(rectangular_dataset, settings)
     plot.execute(save=False)
 
 
-@pytest.mark.parametrize("settings", SYMMETRIC_SETTINGS, ids=SYMMETRIC_SETTINGS_IDS)
+@pytest.mark.parametrize("settings", symmetric_settings, ids=symmetric_settings_ids)
 def test_plot_symmetric(settings, symmetric_dataset, snapshot_matplotlib) -> None:
     """Test images created by Heatmap._plot with symmetric=True against references."""
     plot = Heatmap(symmetric_dataset, settings)
@@ -136,7 +136,7 @@ def test_compute_centered_bounds(data, center, expected) -> None:
     assert compute_centered_bounds(data, center) == expected
 
 
-PLOTLY_RECTANGULAR_SETTINGS = [
+plotly_rectangular_settings = [
     Heatmap_Settings(),
     Heatmap_Settings(variables=("x1", "x3")),
     Heatmap_Settings(
@@ -150,7 +150,7 @@ PLOTLY_RECTANGULAR_SETTINGS = [
     ),
 ]
 
-PLOTLY_SYMMETRIC_SETTINGS = [
+plotly_symmetric_settings = [
     Heatmap_Settings(symmetric=True),
     Heatmap_Settings(symmetric=True, variables=("x1", "x3")),
     Heatmap_Settings(
@@ -169,7 +169,7 @@ PLOTLY_SYMMETRIC_SETTINGS = [
 
 
 @pytest.mark.parametrize(
-    "settings", PLOTLY_RECTANGULAR_SETTINGS, ids=RECTANGULAR_SETTINGS_IDS
+    "settings", plotly_rectangular_settings, ids=rectangular_settings_ids
 )
 def test_plot_plotly_rectangular(
     settings, rectangular_dataset, snapshot_allclose
@@ -182,7 +182,7 @@ def test_plot_plotly_rectangular(
 
 
 @pytest.mark.parametrize(
-    "settings", PLOTLY_SYMMETRIC_SETTINGS, ids=SYMMETRIC_SETTINGS_IDS
+    "settings", plotly_symmetric_settings, ids=symmetric_settings_ids
 )
 def test_plot_plotly_symmetric(settings, symmetric_dataset, snapshot_allclose) -> None:
     """Test the figure created by Heatmap.execute with symmetric=True."""

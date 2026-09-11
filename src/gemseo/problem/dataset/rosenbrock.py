@@ -71,12 +71,12 @@ def create_rosenbrock_dataset(
     if categorize:
         if opt_naming:
             groups = {
-                "x": OptimizationDataset.DESIGN_GROUP,
-                "rosen": OptimizationDataset.OBJECTIVE_GROUP,
+                "x": OptimizationDataset.design_group,
+                "rosen": OptimizationDataset.objective_group,
             }
             cls = OptimizationDataset
         else:
-            groups = {"x": IODataset.INPUT_GROUP, "rosen": IODataset.OUTPUT_GROUP}
+            groups = {"x": IODataset.input_group, "rosen": IODataset.output_group}
             cls = IODataset
     else:
         groups = None

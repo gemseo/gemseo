@@ -24,6 +24,7 @@ from sys import modules
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 from typing import cast
 from typing import get_origin
 
@@ -35,7 +36,7 @@ from pydantic import ValidationError
 from pydantic import create_model
 from pydantic.fields import FieldInfo
 
-from gemseo.core.grammar._util import NOT_IN_THE_GRAMMAR_MESSAGE
+from gemseo.core.grammar._util import not_in_the_grammar_message
 from gemseo.core.grammar.base import BaseGrammar
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
 from gemseo.util.pydantic_ndarray import _NDArrayPydantic
@@ -54,7 +55,7 @@ if TYPE_CHECKING:
 
 ModelType = type[BaseModel]
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 # Pydantic model validation shall be strict to avoid
 # situations where for instance a string is cast to an int.
@@ -66,7 +67,7 @@ LOGGER = logging.getLogger(__name__)
 # The core schema construction is deferred because the grammar rebuilds the
 # model lazily via __rebuild_model before any validation or schema read,
 # so building it eagerly at class-creation time would be wasted work.
-_CONFIG_DICT: ConfigDict = {"strict": True, "defer_build": True}
+_config_dict: Final[ConfigDict] = {"strict": True, "defer_build": True}
 
 
 class PydanticGrammar(BaseGrammar):
@@ -82,7 +83,7 @@ class PydanticGrammar(BaseGrammar):
     because this would prevent a safe and natural usage such fields.
     """
 
-    DATA_CONVERTER_CLASS: ClassVar[str] = "PydanticGrammarDataConverter"
+    data_converter_class: ClassVar[str] = "PydanticGrammarDataConverter"
 
     __model: ModelType
     """The Pydantic model."""
@@ -98,7 +99,7 @@ class PydanticGrammar(BaseGrammar):
     __schema: Schema | None
     """The cached JSON-schema representation, or `None` when it must be recomputed."""
 
-    __SIMPLE_TYPES: ClassVar[set[type]] = {
+    __simple_types: ClassVar[frozenset[type]] = frozenset({
         _NDArrayPydantic,
         list,
         tuple,
@@ -108,7 +109,7 @@ class PydanticGrammar(BaseGrammar):
         complex,
         str,
         bool,
-    }
+    })
     """The types that can be converted for simple grammars."""
 
     def __init__(
@@ -367,12 +368,12 @@ class PydanticGrammar(BaseGrammar):
             annotation = field.annotation
             origin = get_origin(annotation)
             pydantic_type = annotation if origin is None else origin
-            if pydantic_type not in self.__SIMPLE_TYPES:
+            if pydantic_type not in self.__simple_types:
                 message = (
                     "Unsupported type '%s' in PydanticGrammar '%s' "
                     "for field '%s' in conversion to SimpleGrammar."
                 )
-                LOGGER.warning(message, pydantic_type, self.name, name)
+                logger.warning(message, pydantic_type, self.name, name)
                 # This type cannot be converted, use the catch-all type.
                 pydantic_type = None
 
@@ -413,7 +414,7 @@ class PydanticGrammar(BaseGrammar):
         fields = self.__model.__pydantic_fields__
         for name in names:
             if name not in fields:
-                msg = NOT_IN_THE_GRAMMAR_MESSAGE.format(name)
+                msg = not_in_the_grammar_message.format(name)
                 raise KeyError(msg)
 
     def __rebuild_model(self) -> None:
@@ -544,7 +545,7 @@ def _create_model(model: ModelType, internal: bool = False) -> ModelType:
     derived_model = create_model(
         class_name,
         # title is used when creating the json schema of the model.
-        __config__={"title": schema_title, **_CONFIG_DICT},
+        __config__={"title": schema_title, **_config_dict},
         # The model copy is made as if it was a derived class from the original model.
         __base__=(model,),
         # Pretend that the copy model is located in the current module,

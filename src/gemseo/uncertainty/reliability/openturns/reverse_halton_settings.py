@@ -26,4 +26,4 @@ from gemseo.uncertainty.reliability.openturns.base_qmc_settings import BaseOTQMC
 class OT_Reverse_Halton_Settings(BaseOTQMCSettings):  # noqa: N801
     """The settings of the QMC algorithm using the reverse Halton sequence."""
 
-    _SEQUENCE_CLASS: ClassVar[type[ReverseHaltonSequence]] = ReverseHaltonSequence
+    _sequence_class: ClassVar[type[ReverseHaltonSequence]] = ReverseHaltonSequence

@@ -23,7 +23,7 @@ from typing import ClassVar
 from strenum import StrEnum
 
 from gemseo.core.serializable import Serializable
-from gemseo.util.constant import _ENABLE_DISCIPLINE_STATUS
+from gemseo.util.constant import _enable_discipline_status
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -70,10 +70,10 @@ class ExecutionStatus(Serializable):
         FAILED = "FAILED"
         DONE = "DONE"
 
-    is_enabled: ClassVar[bool] = _ENABLE_DISCIPLINE_STATUS
+    is_enabled: ClassVar[bool] = _enable_discipline_status
     """Whether to handle statuses when calling [handle()][gemseo.core.discipline.execution_status.ExecutionStatus.handle]."""  # noqa: E501
 
-    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {"__observers"}
+    _attr_not_to_serialize: ClassVar[set[str]] = {"__observers"}
 
     __process_name: str
     """The name of the process that has an execution status."""

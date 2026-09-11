@@ -54,7 +54,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 
 from gemseo.machine_learning.calibration import MLModelCalibration
-from gemseo.machine_learning.core.model.factory import ML_MODEL_FACTORY
+from gemseo.machine_learning.core.model.factory import ml_model_factory
 from gemseo.machine_learning.core.quality.base_ml_model_quality import (
     BaseMLModelQuality,
 )
@@ -130,7 +130,7 @@ class MLModelSelection:
 
         self.__measure_evaluation_method_name = measure_evaluation_method_name
         self.measure_options = dict(samples=samples, **measure_options)
-        self.factory = ML_MODEL_FACTORY
+        self.factory = ml_model_factory
 
         self.candidates = []
 
@@ -162,7 +162,7 @@ class MLModelSelection:
         keys, values = settings_catalogs.keys(), settings_catalogs.values()
 
         # Set initial quality to the worst possible value
-        quality = float("inf") if self.measure.SMALLER_IS_BETTER else -float("inf")
+        quality = float("inf") if self.measure.smaller_is_better else -float("inf")
 
         for prodvalues in product(*values):
             params = dict(zip(keys, prodvalues, strict=False))

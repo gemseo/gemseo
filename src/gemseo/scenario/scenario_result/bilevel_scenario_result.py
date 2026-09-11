@@ -30,10 +30,10 @@ if TYPE_CHECKING:
 class BiLevelScenarioResult(ScenarioResult):
     """The result of an [MDOScenario][gemseo.scenario.mdo.MDOScenario] using a [BiLevel][gemseo.formulation.bilevel.BiLevel] formulation."""  # noqa: E501
 
-    __SUB_LABEL_FORMATTER: Final[str] = "sub_{}"
+    __sub_label_formatter: Final[str] = "sub_{}"
     """The formatter to get the name of the key of a sub-problem from its index.
 
-    To be used as `__SUB_LABEL_FORMATTER.format(i)` where `i` is an integer.
+    To be used as `__sub_label_formatter.format(i)` where `i` is an integer.
     """
 
     __n_sub_problems: int
@@ -62,7 +62,7 @@ class BiLevelScenarioResult(ScenarioResult):
             try:
                 sub_problem.database = scenario_adapter.databases[i_opt]
                 result = OptimizationResult.from_optimization_problem(sub_problem)
-                label = self.__SUB_LABEL_FORMATTER.format(index)
+                label = self.__sub_label_formatter.format(index)
                 self.optimization_problem_to_result[label] = result
             finally:
                 sub_problem.database = database
@@ -92,5 +92,5 @@ class BiLevelScenarioResult(ScenarioResult):
             )
             raise ValueError(msg)
         return self.optimization_problem_to_result.get(
-            self.__SUB_LABEL_FORMATTER.format(index)
+            self.__sub_label_formatter.format(index)
         )

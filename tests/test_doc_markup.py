@@ -19,16 +19,16 @@ from pathlib import Path
 
 import pytest
 
-_ROOT_PATH = Path(__file__, "..", "..").resolve()
+_root_path = Path(__file__, "..", "..").resolve()
 
-_DOC_PATH = _ROOT_PATH / "docs"
+_doc_path = _root_path / "docs"
 
-_SRC_PATH = _ROOT_PATH / "src"
+_src_path = _root_path / "src"
 
-_GENERATED_PATH = _DOC_PATH / "generated"
+_generated_path = _doc_path / "generated"
 """The mkdocs-gallery build directory, mirroring the sources in ``docs/examples``."""
 
-MARKUP_TO_REGEX = {
+markup_to_regex = {
     "malformed admonition, e.g. '!!!note' instead of '!!! note'": re.compile(
         r"^\s*#?\s*!!!\w", re.MULTILINE
     ),
@@ -60,13 +60,13 @@ in the case of a docstring.
 """
 
 
-_ADMONITION_REGEX = re.compile(r"^\s*(?:#\s*)?!!!\s")
+_admonition_regex = re.compile(r"^\s*(?:#\s*)?!!!\s")
 """The regular expression to find the first line of an admonition."""
 
-_BLANK_LINE_REGEX = re.compile(r"\s*#?\s*")
+_blank_line_regex = re.compile(r"\s*#?\s*")
 """The regular expression that a blank line matches, in Markdown or in a comment."""
 
-_CELL_SEPARATOR = "# %%"
+_cell_separator = "# %%"
 """The separator between two cells of a gallery script, starting a new block."""
 
 
@@ -79,27 +79,27 @@ def get_file_paths() -> list[Path]:
     paths = [
         path
         for pattern in ("*.md", "*.py")
-        for path in _DOC_PATH.rglob(pattern)
-        if _GENERATED_PATH not in path.parents
+        for path in _doc_path.rglob(pattern)
+        if _generated_path not in path.parents
     ]
-    paths.extend(_SRC_PATH.rglob("*.py"))
+    paths.extend(_src_path.rglob("*.py"))
     return sorted(paths)
 
 
-FILE_PATHS = get_file_paths()
+file_paths = get_file_paths()
 
 
-@pytest.mark.parametrize("markup", MARKUP_TO_REGEX)
+@pytest.mark.parametrize("markup", markup_to_regex)
 def test_markup_is_not_used(markup: str) -> None:
     """Check that a markup that the documentation cannot render is not used.
 
     Args:
         markup: The description of the markup.
     """
-    regex = MARKUP_TO_REGEX[markup]
+    regex = markup_to_regex[markup]
     paths = [
-        str(path.relative_to(_ROOT_PATH))
-        for path in FILE_PATHS
+        str(path.relative_to(_root_path))
+        for path in file_paths
         if regex.search(path.read_text(encoding="utf-8"))
     ]
     assert not paths, f"{markup} in {paths}"
@@ -112,14 +112,14 @@ def test_admonition_is_preceded_by_a_blank_line() -> None:
     and renders its marker verbatim.
     """
     locations = []
-    for path in FILE_PATHS:
+    for path in file_paths:
         lines = path.read_text(encoding="utf-8").splitlines()
         locations.extend(
-            f"{path.relative_to(_ROOT_PATH)}:{index + 1}"
+            f"{path.relative_to(_root_path)}:{index + 1}"
             for index, line in enumerate(lines)
             if index
-            and _ADMONITION_REGEX.match(line)
-            and not _BLANK_LINE_REGEX.fullmatch(lines[index - 1])
-            and lines[index - 1].strip() != _CELL_SEPARATOR
+            and _admonition_regex.match(line)
+            and not _blank_line_regex.fullmatch(lines[index - 1])
+            and lines[index - 1].strip() != _cell_separator
         )
     assert not locations, f"admonition without a preceding blank line in {locations}"

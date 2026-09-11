@@ -31,7 +31,7 @@ from pydantic import PositiveInt
 class BaseOTSolver(BaseModel):
     """The base class for OpenTURNS solvers for 1D non-linear equations."""
 
-    ALGO_CLASS: ClassVar[type[SolverImplementation]]
+    algo_class: ClassVar[type[SolverImplementation]]
     """The type of solver."""
 
     absolute_error: NonNegativeFloat = Field(
@@ -60,16 +60,16 @@ class BaseOTSolver(BaseModel):
 class OTBisection(BaseOTSolver):
     """The bisection algorithm."""
 
-    ALGO_CLASS: ClassVar[type[Bisection]] = Bisection
+    algo_class: ClassVar[type[Bisection]] = Bisection
 
 
 class OTBrent(BaseOTSolver):
     """The Brent algorithm."""
 
-    ALGO_CLASS: ClassVar[type[Brent]] = Brent
+    algo_class: ClassVar[type[Brent]] = Brent
 
 
 class OTSecant(BaseOTSolver):
     """The secant algorithm."""
 
-    ALGO_CLASS: ClassVar[type[Secant]] = Secant
+    algo_class: ClassVar[type[Secant]] = Secant

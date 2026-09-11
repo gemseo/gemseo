@@ -170,9 +170,9 @@ class BaseMLSupervisedModel(BaseMLModel):
     _transformed_variable_sizes: dict[str, int]
     """The sizes of the variables in the transformed spaces."""
 
-    SHORT_NAME: ClassVar[str] = "BaseMLSupervisedModel"
-    DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType({
-        IODataset.INPUT_GROUP: MinMaxScaler()
+    short_name: ClassVar[str] = "BaseMLSupervisedModel"
+    default_transformer: DefaultTransformerType = MappingProxyType({
+        IODataset.input_group: MinMaxScaler()
     })
 
     DataFormatters = SupervisedDataFormatters
@@ -185,14 +185,14 @@ class BaseMLSupervisedModel(BaseMLModel):
         super()._post_init()
         data = self.learning_set
         self.input_names = list(self._settings.input_names) or data.get_variable_names(
-            data.INPUT_GROUP
+            data.input_group
         )
         self.output_names = list(
             self._settings.output_names
-        ) or data.get_variable_names(data.OUTPUT_GROUP)
+        ) or data.get_variable_names(data.output_group)
         self.__group_to_names = {
-            data.INPUT_GROUP: self.input_names,
-            data.OUTPUT_GROUP: self.output_names,
+            data.input_group: self.input_names,
+            data.output_group: self.output_names,
         }
         self.input_space_center = {}
         self.__input_dimension = 0
@@ -205,17 +205,17 @@ class BaseMLSupervisedModel(BaseMLModel):
         self._input_variables_to_transform = [
             key for key in self.transformer if key in self.input_names
         ]
-        self._transform_input_group = self.learning_set.INPUT_GROUP in self.transformer
+        self._transform_input_group = self.learning_set.input_group in self.transformer
         self._output_variables_to_transform = [
             key for key in self.transformer if key in self.output_names
         ]
         self._transform_output_group = (
-            self.learning_set.OUTPUT_GROUP in self.transformer
+            self.learning_set.output_group in self.transformer
         )
         self.validity_domain = DesignSpace()
         for input_name in self.input_names:
             data = self.learning_set.get_view(
-                variable_names=input_name, group_names=self.learning_set.INPUT_GROUP
+                variable_names=input_name, group_names=self.learning_set.input_group
             ).to_numpy()
             self.validity_domain.add_variable(
                 input_name,
@@ -322,10 +322,10 @@ class BaseMLSupervisedModel(BaseMLModel):
             indices = Ellipsis
 
         input_data = dataset.get_view(
-            group_names=dataset.INPUT_GROUP, variable_names=self.input_names
+            group_names=dataset.input_group, variable_names=self.input_names
         ).to_numpy()[indices]
         output_data = dataset.get_view(
-            group_names=dataset.OUTPUT_GROUP, variable_names=self.output_names
+            group_names=dataset.output_group, variable_names=self.output_names
         ).to_numpy()[indices]
         self.input_space_center = split_array_to_dict_of_arrays(
             input_data.mean(0),
@@ -434,8 +434,8 @@ class BaseMLSupervisedModel(BaseMLModel):
             The name of the group.
         """
         if input_group:
-            return self.learning_set.INPUT_GROUP
-        return self.learning_set.OUTPUT_GROUP
+            return self.learning_set.input_group
+        return self.learning_set.output_group
 
     def __transform_data_from_group(
         self,
@@ -499,7 +499,7 @@ class BaseMLSupervisedModel(BaseMLModel):
         """
         if data is None:
             data = self.learning_set.get_view(variable_names=names).to_numpy()[indices]
-        if not transformer.CROSSED:
+        if not transformer.crossed:
             if fit:
                 return transformer.fit_transform(data)
 
@@ -583,8 +583,8 @@ class BaseMLSupervisedModel(BaseMLModel):
         """Set the input and output dimensions after transformations."""
         input_dimension = 0
         output_dimension = 0
-        input_names = (IODataset.INPUT_GROUP, *self.input_names)
-        output_names = (IODataset.OUTPUT_GROUP, *self.output_names)
+        input_names = (IODataset.input_group, *self.input_names)
+        output_names = (IODataset.output_group, *self.output_names)
 
         in_data = self.learning_set.input_dataset
         out_data = self.learning_set.output_dataset
@@ -592,20 +592,20 @@ class BaseMLSupervisedModel(BaseMLModel):
             transformer = self.transformer.get(name)
             if isinstance(transformer, BaseDimensionReduction):
                 input_dimension += transformer.n_components
-            elif name != IODataset.INPUT_GROUP:
+            elif name != IODataset.input_group:
                 input_dimension += in_data.get_view(variable_names=name).shape[1]
 
-            if name == IODataset.INPUT_GROUP and input_dimension:
+            if name == IODataset.input_group and input_dimension:
                 break
 
         for name in output_names:
             transformer = self.transformer.get(name)
             if isinstance(transformer, BaseDimensionReduction):
                 output_dimension += transformer.n_components
-            elif name != IODataset.OUTPUT_GROUP:
+            elif name != IODataset.output_group:
                 output_dimension += out_data.get_view(variable_names=name).shape[1]
 
-            if name == IODataset.OUTPUT_GROUP and output_dimension:
+            if name == IODataset.output_group and output_dimension:
                 break
 
         self.__reduced_input_dimension = input_dimension or self.input_dimension
@@ -642,7 +642,7 @@ class BaseMLSupervisedModel(BaseMLModel):
     def input_data(self) -> RealArray:
         """The input data matrix."""
         return self.learning_set.get_view(
-            group_names=self.learning_set.INPUT_GROUP,
+            group_names=self.learning_set.input_group,
             variable_names=self.input_names,
             indices=self._learning_samples_indices,
         ).to_numpy()
@@ -651,7 +651,7 @@ class BaseMLSupervisedModel(BaseMLModel):
     def output_data(self) -> ndarray:
         """The output data matrix."""
         return self.learning_set.get_view(
-            group_names=self.learning_set.OUTPUT_GROUP,
+            group_names=self.learning_set.output_group,
             variable_names=self.output_names,
             indices=self._learning_samples_indices,
         ).to_numpy()

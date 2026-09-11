@@ -33,7 +33,7 @@ from numpy.testing import assert_almost_equal
 from numpy.testing import assert_equal
 
 from gemseo.uncertainty.distribution._log_normal_util import compute_mu_l_and_sigma_l
-from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY
+from gemseo.uncertainty.distribution.factory import distribution_factory
 from gemseo.uncertainty.distribution.scipy.bernoulli_settings import (
     SPBernoulliDistribution_Settings,
 )
@@ -80,7 +80,7 @@ def distribution() -> SPDistribution:
 
 def test_joint_distribution() -> None:
     """Check the joint probability distribution associated with a SPDistribution."""
-    assert SPJointDistribution == SPDistribution.JOINT_DISTRIBUTION_CLASS
+    assert SPJointDistribution == SPDistribution.joint_distribution_class
 
 
 def test_constructor() -> None:
@@ -295,7 +295,7 @@ def test_specific_sp_distributions(sp_dist_name, settings, sp_kwargs, str_) -> N
         sp_kwargs: The keyword arguments to instantiate the SciPy class.
         str_: The expected string representation of the distribution.
     """
-    sp_distribution = DISTRIBUTION_FACTORY.create_from_settings(settings)
+    sp_distribution = distribution_factory.create_from_settings(settings)
     distribution = sp_distribution.distribution
     expected_distribution = getattr(scipy_stats, sp_dist_name)(**sp_kwargs)
     assert distribution.dist.name == expected_distribution.dist.name
@@ -318,7 +318,7 @@ def test_specific_sp_distributions(sp_dist_name, settings, sp_kwargs, str_) -> N
 )
 def test_specific_sp_distributions_default(class_name, expected):
     """Check the SciPy-based distributions using default settings."""
-    distribution = DISTRIBUTION_FACTORY.create(class_name)
+    distribution = distribution_factory.create(class_name)
     assert str(distribution) == expected
 
 

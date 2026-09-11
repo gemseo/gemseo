@@ -38,8 +38,8 @@ class Aitken(SequenceTransformer):
     where it is attributed to Irons and Tuck.
     """
 
-    _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 1
-    _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 2
+    _minimum_number_of_iterates: ClassVar[int] = 1
+    _minimum_number_of_residuals: ClassVar[int] = 2
 
     def _compute_transformed_iterate(self) -> NumberArray:
         dxn_1, dxn = self._residuals

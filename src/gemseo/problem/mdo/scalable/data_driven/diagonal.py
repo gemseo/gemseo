@@ -46,6 +46,7 @@ from __future__ import annotations
 from numbers import Number
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import matplotlib.pyplot as plt
 from numpy import arange
@@ -67,11 +68,11 @@ from numpy.random import default_rng
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from gemseo.problem.mdo.scalable.data_driven.model import ScalableModel
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.util.matplotlib_figure import save_show_figure
 from gemseo.util.matplotlib_figure import show_close_figures
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -88,7 +89,7 @@ if TYPE_CHECKING:
 class ScalableDiagonalModel(ScalableModel):
     """Scalable diagonal model."""
 
-    ABBR = "sdm"
+    abbr: ClassVar[str] = "sdm"
 
     __rng: Generator
     """The random number generator."""
@@ -96,14 +97,14 @@ class ScalableDiagonalModel(ScalableModel):
     def __init__(
         self,
         data: IODataset,
-        sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        sizes: Mapping[str, int] = read_only_empty_dict,
         fill_factor: float = -1,
         comp_dep: NDArray[float] | None = None,
         inpt_dep: NDArray[float] | None = None,
         force_input_dependency: bool = False,
         allow_unused_inputs: bool = True,
-        seed: int = SEED,
-        group_dep: Mapping[str, Iterable[str]] = READ_ONLY_EMPTY_DICT,
+        seed: int = seed,
+        group_dep: Mapping[str, Iterable[str]] = read_only_empty_dict,
     ) -> None:
         """
         Args:
@@ -124,7 +125,7 @@ class ScalableDiagonalModel(ScalableModel):
         """  # noqa: D205, D212, D415
         if isinstance(fill_factor, Number):
             fill_factor = dict.fromkeys(
-                data.get_variable_names(data.OUTPUT_GROUP), fill_factor
+                data.get_variable_names(data.output_group), fill_factor
             )
         elif not isinstance(fill_factor, dict):
             msg = (
@@ -581,7 +582,7 @@ class ScalableDiagonalApproximation:
             The input and output samples scaled in [0, 1].
         """
         x2_scaled = nan_to_num(
-            dataset.get_view(group_names=dataset.INPUT_GROUP).to_numpy() ** 2
+            dataset.get_view(group_names=dataset.input_group).to_numpy() ** 2
         )
         t_scaled = [atleast_1d(sqrt(mean(val.real))) for val in x2_scaled]
         f_scaled = dataset.get_view(variable_names=function_name).to_numpy().real

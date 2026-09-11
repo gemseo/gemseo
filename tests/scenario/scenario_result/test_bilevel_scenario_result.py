@@ -65,7 +65,7 @@ def test_bilevel_scenario_result_after_execution(scenario) -> None:
     optimization_results = scenario_result.optimization_problem_to_result
     optimum_design = scenario_result.design_variable_name_to_value
     assert len(optimization_results) == 2
-    label = BiLevelScenarioResult._MAIN_PROBLEM_LABEL
+    label = BiLevelScenarioResult._main_problem_label
     assert optimization_results[label].x_opt == array([0.0])
     assert optimization_results["sub_0"].x_opt == array([0.0])
     assert optimum_design == {"x": array([0.0]), "y": array([0.0])}

@@ -54,7 +54,7 @@ def test_fit(data) -> None:
     transformer = YeoJohnson()
     transformer.fit(data)
 
-    sk_transformer = PowerTransformer(method=transformer._TRANSFORMER_NAME).fit(data)
+    sk_transformer = PowerTransformer(method=transformer._transformer_name).fit(data)
 
     assert allclose(transformer.lambdas_, sk_transformer.lambdas_)
 
@@ -70,7 +70,7 @@ def test_transform(data) -> None:
     transformed_data = transformer.transform(data)
 
     sk_transformed_data = PowerTransformer(
-        method=transformer._TRANSFORMER_NAME
+        method=transformer._transformer_name
     ).fit_transform(data)
 
     assert allclose(transformed_data, sk_transformed_data)

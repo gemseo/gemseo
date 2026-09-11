@@ -32,7 +32,7 @@ from scipy.sparse import csr_array
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.linear_function import LinearFunction
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.scipy_local import ScipyOpt
 from gemseo.optimization.scipy_local.settings.cobyla import COBYLA_Settings
@@ -43,7 +43,7 @@ from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.tnc import TNC_Settings
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
-from gemseo.util._compatibility.scipy import SCIPY_GREATER_THAN_1_16
+from gemseo.util._compatibility.scipy import scipy_greater_than_1_16
 from gemseo.util.pydantic import create_model
 from gemseo.util.testing.helper import assert_exception
 from gemseo.util.testing.opt_lib_test_base import OptLibraryTestBase
@@ -106,7 +106,7 @@ class TestScipy(TestCase):
 
         problem.objective = ArrayFunction(i_fail, name="rosen")
         self.assertRaises(
-            AttributeError, OPTIMIZATION_LIBRARY_FACTORY.execute, problem, algo_name
+            AttributeError, optimization_library_factory.execute, problem, algo_name
         )
 
     def test_tnc_options(self) -> None:
@@ -185,10 +185,10 @@ class TestScipy(TestCase):
         problem.objective = ArrayFunction(
             rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
         )
-        OPTIMIZATION_LIBRARY_FACTORY.execute(
+        optimization_library_factory.execute(
             problem, settings=L_BFGS_B_Settings(normalize_design_space=True)
         )
-        OPTIMIZATION_LIBRARY_FACTORY.execute(
+        optimization_library_factory.execute(
             problem, settings=L_BFGS_B_Settings(normalize_design_space=False)
         )
 
@@ -202,7 +202,7 @@ class TestScipy(TestCase):
             problem.objective = ArrayFunction(
                 rosen, name="Rosenbrock", f_type="obj", jac=rosen_der
             )
-            res = OPTIMIZATION_LIBRARY_FACTORY.execute(
+            res = optimization_library_factory.execute(
                 problem, settings=L_BFGS_B_Settings(**algo_options)
             )
             return res, problem
@@ -283,7 +283,7 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
     optimizer can be executed and converges implies that the mdo_functions' Jacobians
     are indeed recast as dense NumPy arrays before being sent to SciPy.
     """
-    optimization_result = OPTIMIZATION_LIBRARY_FACTORY.execute(
+    optimization_result = optimization_library_factory.execute(
         opt_problem, settings=SLSQP_Settings(ftol_abs=1e-10)
     )
     assert allclose(optimization_result.f_opt, -0.001, atol=1e-10)
@@ -295,7 +295,7 @@ def test_recasting_sparse_jacobians(opt_problem) -> None:
 def test_nelder_mead(initial_simplex) -> None:
     """Test the Nelder-Mead algorithm on the Rosenbrock problem."""
     problem = Rosenbrock()
-    opt = OPTIMIZATION_LIBRARY_FACTORY.execute(
+    opt = optimization_library_factory.execute(
         problem,
         settings=NELDER_MEAD_Settings(max_iter=800, initial_simplex=initial_simplex),
     )
@@ -308,7 +308,7 @@ def test_tnc_maxiter(caplog):
     """Check that TNC no longer receives the unknown maxiter option."""
     problem = Rosenbrock()
     with pytest.warns(UserWarning, match="foo") as record:  # noqa: B028, PT031
-        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=TNC_Settings(max_iter=2))
+        optimization_library_factory.execute(problem, settings=TNC_Settings(max_iter=2))
         warn("foo", UserWarning, stacklevel=2)
 
     assert len(record) == 1
@@ -328,7 +328,7 @@ def test_stop_crit_n_x(algorithm_name) -> None:
 def test_cobyqa() -> None:
     """Test the COBYQA algorithm on the Rosenbrock problem."""
     problem = Rosenbrock()
-    opt = OPTIMIZATION_LIBRARY_FACTORY.execute(
+    opt = optimization_library_factory.execute(
         problem, settings=COBYQA_Settings(max_iter=100)
     )
     x_opt, f_opt = problem.get_solution()
@@ -355,8 +355,8 @@ def test_cobyla() -> None:
         problem, settings=COBYLA_Settings(max_iter=500, enable_progress_bar=False)
     )
     x_opt, f_opt = problem.get_solution()
-    xtol = 2.0e-1 if SCIPY_GREATER_THAN_1_16 else 6.0e-1
-    ftol = 1.0e-2 if SCIPY_GREATER_THAN_1_16 else 1.1e-1
+    xtol = 2.0e-1 if scipy_greater_than_1_16 else 6.0e-1
+    ftol = 1.0e-2 if scipy_greater_than_1_16 else 1.1e-1
     assert opt.x_opt == pytest.approx(x_opt, abs=xtol)
     assert opt.f_opt == pytest.approx(f_opt, abs=ftol)
 
@@ -401,4 +401,4 @@ def test_cannot_handle_inequality_constraints(snapshot):
         constraint_type=ArrayFunction.ConstraintType.INEQ,
     )
     with assert_exception(ValueError, snapshot):
-        OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=TNC_Settings())
+        optimization_library_factory.execute(problem, settings=TNC_Settings())

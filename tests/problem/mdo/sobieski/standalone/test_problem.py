@@ -553,7 +553,7 @@ def test_original_design_variables_order(
 ) -> None:
     """Check the design space with original variables order."""
     problem = SobieskiProblem()
-    problem.USE_ORIGINAL_DESIGN_VARIABLES_ORDER = use_original_order
+    problem.use_original_design_variables_order = use_original_order
     variable_names = [
         *design_variables,
         "y_14",

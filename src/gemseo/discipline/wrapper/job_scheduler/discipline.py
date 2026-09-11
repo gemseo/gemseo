@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
-LOGGER = getLogger(__name__)
+logger = getLogger(__name__)
 
 
 class JobSchedulerDiscipline(BaseWrapperDiscipline):
@@ -58,16 +58,16 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
         See [Handling paths for cross-platforms][handling-paths-for-different-oses].
     """
 
-    DISC_PICKLE_FILE_NAME: ClassVar[str] = "discipline.pckl"
+    disc_pickle_file_name: ClassVar[str] = "discipline.pckl"
     """The name of the pickle file for the discipline."""
 
-    DISC_INPUT_FILE_NAME: ClassVar[str] = "input_data.pckl"
+    disc_input_file_name: ClassVar[str] = "input_data.pckl"
     """The name of the pickle file for the discipline inputs."""
 
-    DISC_OUTPUT_FILE_NAME: ClassVar[str] = "output_data.pckl"
+    disc_output_file_name: ClassVar[str] = "output_data.pckl"
     """The name of the pickle file for the discipline outputs."""
 
-    JOB_TEMPLATES_DIR_PATH: ClassVar[Path] = Path(__file__).parent / "templates"
+    job_templates_dir_path: ClassVar[Path] = Path(__file__).parent / "templates"
     """The path to the directory with the job templates."""
 
     _job_template_path: Path
@@ -127,7 +127,7 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
                 self._job_template_path = Path(job_template_path)
             else:
                 self._job_template_path = (
-                    self.JOB_TEMPLATES_DIR_PATH / self.__class__.__name__
+                    self.job_templates_dir_path / self.__class__.__name__
                 )
 
         self._scheduler_run_command = scheduler_run_command
@@ -244,7 +244,7 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
             CalledProcessError: When the command failed.
         """
         cmd = self._create_run_command(current_workdir, dest_job_file_path)
-        LOGGER.debug("Submitting the job command: %s", cmd)
+        logger.debug("Submitting the job command: %s", cmd)
         completed = subprocess_run(
             cmd.split(),
             capture_output=True,
@@ -252,7 +252,7 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
         )
 
         if completed.returncode != 0:
-            LOGGER.error(
+            logger.error(
                 "Failed to submit the job command %s, for discipline %s "
                 "in the working directory %s",
                 cmd,
@@ -262,7 +262,7 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
 
         completed.check_returncode()
 
-        LOGGER.debug("Job execution ended in %s", current_workdir)
+        logger.debug("Job execution ended in %s", current_workdir)
         return completed
 
     def _handle_outputs(
@@ -297,16 +297,16 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
 
         if isinstance(output[0], BaseException):
             error, trace = output
-            LOGGER.error(
+            logger.error(
                 "Discipline %s execution failed in %s",
                 self._discipline.name,
                 current_workdir,
             )
 
-            LOGGER.error(trace)
+            logger.error(trace)
             raise error
 
-        LOGGER.debug(
+        logger.debug(
             "Discipline %s execution succeeded in %s",
             self._discipline.name,
             current_workdir,
@@ -337,9 +337,9 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
         Returns:
             The path to the serialized discipline and inputs.
         """
-        discipline_path = current_workdir / self.DISC_PICKLE_FILE_NAME
+        discipline_path = current_workdir / self.disc_pickle_file_name
         discipline_path.write_bytes(self.pickled_discipline)
-        inputs_path = current_workdir / self.DISC_INPUT_FILE_NAME
+        inputs_path = current_workdir / self.disc_input_file_name
         serialized_data = pickle.dumps((
             self.io.get_merged_data(),
             differentiated_inputs,
@@ -376,7 +376,7 @@ class JobSchedulerDiscipline(BaseWrapperDiscipline):
             The output data.
         """
         current_workdir = self.__directory_creator.create()
-        outputs_path = current_workdir / self.DISC_OUTPUT_FILE_NAME
+        outputs_path = current_workdir / self.disc_output_file_name
         log_path = current_workdir / f"{self._discipline.name}.log"
         discipline_path, inputs_path = self._write_inputs_to_disk(
             current_workdir, differentiated_inputs, differentiated_outputs

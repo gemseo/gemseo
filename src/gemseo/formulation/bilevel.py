@@ -32,7 +32,7 @@ from gemseo.discipline.chain.warm_started_chain import WarmStartedDisciplineChai
 from gemseo.formulation.bilevel_settings import BiLevel_Settings
 from gemseo.formulation.core.base_mdo import BaseMDOFormulation
 from gemseo.mda.core.base import BaseMDA
-from gemseo.mda.factory import MDA_FACTORY
+from gemseo.mda.factory import mda_factory
 from gemseo.scenario.adapter.mdo import MDOScenarioAdapter
 from gemseo.scenario.scenario_result.bilevel_scenario_result import (
     BiLevelScenarioResult,
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from gemseo.scenario.mdo import MDOScenario
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
@@ -70,23 +70,23 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
     The residual norm of MDA1 and MDA2 can be captured into scenario
     observables thanks to different namespaces
-    [MDA1_RESIDUAL_NAMESPACE][gemseo.formulation.bilevel.BiLevel.MDA1_RESIDUAL_NAMESPACE]
+    [mda1_residual_namespace][gemseo.formulation.bilevel.BiLevel.mda1_residual_namespace]
     and
-    [MDA2_RESIDUAL_NAMESPACE][gemseo.formulation.bilevel.BiLevel.MDA2_RESIDUAL_NAMESPACE].
+    [mda2_residual_namespace][gemseo.formulation.bilevel.BiLevel.mda2_residual_namespace].
 
     Both MDAs are optional.
     """
 
-    DEFAULT_SCENARIO_RESULT_CLASS_NAME: ClassVar[str] = BiLevelScenarioResult.__name__
+    default_scenario_result_class_name: ClassVar[str] = BiLevelScenarioResult.__name__
     """The default name of the scenario results."""
 
-    CHAIN_NAME: ClassVar[str] = "bilevel_chain"
+    chain_name: ClassVar[str] = "bilevel_chain"
     """The name of the internal chain."""
 
-    MDA1_RESIDUAL_NAMESPACE: ClassVar[str] = "MDA1"
+    mda1_residual_namespace: ClassVar[str] = "MDA1"
     """The name of the namespace for the MDA1 residuals."""
 
-    MDA2_RESIDUAL_NAMESPACE: ClassVar[str] = "MDA2"
+    mda2_residual_namespace: ClassVar[str] = "MDA2"
     """The name of the namespace for the MDA2 residuals."""
 
     settings_class: ClassVar[type[BiLevel_Settings]] = BiLevel_Settings
@@ -115,7 +115,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
 
     def _create_multidisciplinary_process(self) -> None:
         if not self._settings.use_mda1:
-            LOGGER.warning(
+            logger.warning(
                 "The first MDA has been deactivated in the Bilevel formulation. "
                 "This may lead to premature convergence or "
                 "an inconsistent solution. This setting should be "
@@ -281,7 +281,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 "sub options of BiLevel."
             )
             raise ValueError(msg)
-        return MDA_FACTORY.get_options_grammar(main_mda_name)
+        return mda_factory.get_options_grammar(main_mda_name)
 
     @classmethod
     def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:
@@ -296,7 +296,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
                 "sub options of BiLevel."
             )
             raise ValueError(msg)
-        return MDA_FACTORY.get_default_option_values(main_mda_name)
+        return mda_factory.get_default_option_values(main_mda_name)
 
     def _create_mdas(self) -> tuple[BaseMDA | None, BaseMDA]:
         """Build the chain on top of which all functions are built.
@@ -316,30 +316,30 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         if self._settings.use_mda1:
             if (mda1 := self._settings.mda1_instance) is None:
                 if len(strongly_coupled_disciplines) > 0:
-                    mda1 = MDA_FACTORY.create(
+                    mda1 = mda_factory.create(
                         self._settings.main_mda_settings.target_class_name,
                         strongly_coupled_disciplines,
                         settings=self._settings.main_mda_settings,
                     )
                     mda1.settings.warm_start = True
                 else:
-                    LOGGER.warning(
+                    logger.warning(
                         "No strongly coupled disciplines detected, "
                         "MDA1 is disabled in the BiLevel formulation"
                     )
             else:
-                LOGGER.info("Using the provided MDA1 instance.")
+                logger.info("Using the provided MDA1 instance.")
 
         if self._settings.use_mda2:
             if (mda2 := self._settings.mda2_instance) is None:
-                mda2 = MDA_FACTORY.create(
+                mda2 = mda_factory.create(
                     self._settings.main_mda_settings.target_class_name,
                     flatten_processes(self.disciplines),
                     settings=self._settings.main_mda_settings,
                 )
                 mda2.settings.warm_start = False
             else:
-                LOGGER.info("Using the provided MDA2 instance.")
+                logger.info("Using the provided MDA2 instance.")
 
         return mda1, mda2
 
@@ -359,11 +359,11 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             chain_dis += [self._mda2]
 
         if self._settings.reset_x0_before_opt:
-            return DisciplineChain(chain_dis, name=self.CHAIN_NAME)
+            return DisciplineChain(chain_dis, name=self.chain_name)
 
         return WarmStartedDisciplineChain(
             chain_dis,
-            name=self.CHAIN_NAME,
+            name=self.chain_name,
             variable_names_to_warm_start=self._get_variable_names_to_warm_start(),
         )
 
@@ -427,7 +427,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             design_space = self.problem.design_space
             for coupling in couplings:
                 if coupling in design_space:
-                    LOGGER.warning(
+                    logger.warning(
                         "The coupling variable %s was removed from the design space.",
                         coupling,
                     )

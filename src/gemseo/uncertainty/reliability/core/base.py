@@ -46,7 +46,7 @@ class BaseReliabilityAlgorithm(metaclass=ABCGoogleDocstringInheritanceMeta):
     settings_class: ClassVar[type[BaseReliabilityAlgorithmSettings]]
     """The type of settings for the reliability analysis algorithm."""
 
-    SUPPORT_ELEMENTARY_EVENT_COMBINATIONS: ClassVar[bool] = False
+    support_elementary_event_combinations: ClassVar[bool] = False
     """Whether the reliability analysis algorithm supports combinations of elementary events."""  # noqa: E501
 
     def execute(
@@ -80,7 +80,7 @@ class BaseReliabilityAlgorithm(metaclass=ABCGoogleDocstringInheritanceMeta):
             raise ValueError(msg)
 
         for event in name_to_event.values():
-            if event.is_combination and not self.SUPPORT_ELEMENTARY_EVENT_COMBINATIONS:
+            if event.is_combination and not self.support_elementary_event_combinations:
                 msg = f"{algo_name} does not support combinations of elementary events."
                 raise TypeError(msg)
 

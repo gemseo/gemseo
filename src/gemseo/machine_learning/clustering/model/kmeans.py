@@ -83,7 +83,7 @@ from gemseo.machine_learning.clustering.core.base_predictive_clusterer import (
     BasePredictiveClusterer,
 )
 from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Settings
-from gemseo.util.constant import EPSILON
+from gemseo.util.constant import epsilon
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -94,8 +94,8 @@ if TYPE_CHECKING:
 class KMeans(BasePredictiveClusterer):
     """The k-means clustering model."""
 
-    SHORT_NAME: ClassVar[str] = "KMeans"
-    LIBRARY: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "KMeans"
+    library: ClassVar[str] = "scikit-learn"
 
     settings_class: ClassVar[type[KMeans_Settings]] = KMeans_Settings
 
@@ -125,6 +125,6 @@ class KMeans(BasePredictiveClusterer):
         data: RealArray,
     ) -> RealArray:
         inverse_distances = 1 / (
-            norm(data[:, newaxis] - self.algo.cluster_centers_, axis=2) + EPSILON
+            norm(data[:, newaxis] - self.algo.cluster_centers_, axis=2) + epsilon
         )
         return inverse_distances / inverse_distances.sum(axis=1)[:, newaxis]

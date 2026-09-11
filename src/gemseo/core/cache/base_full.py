@@ -62,7 +62,7 @@ class BaseFullCache(BaseCache):
         store all the data in an HDF5 file.
     """
 
-    _JACOBIAN_SEPARATOR: ClassVar[str] = "!d$_$d!"
+    _jacobian_separator: ClassVar[str] = "!d$_$d!"
     """The string separating the input and output names in a derivative name.
 
     E.g. `"output!d$_$d!input"`.
@@ -243,7 +243,7 @@ class BaseFullCache(BaseCache):
             return
 
         flat_jacobian_data = flatten_nested_bilevel_dict(
-            jacobian_data, separator=self._JACOBIAN_SEPARATOR
+            jacobian_data, separator=self._jacobian_separator
         )
 
         self._write_data(

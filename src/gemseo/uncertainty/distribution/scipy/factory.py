@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.uncertainty.distribution.factory import DistributionFactory
 from gemseo.uncertainty.distribution.scipy.distribution import SPDistribution
 
@@ -23,5 +25,7 @@ from gemseo.uncertainty.distribution.scipy.distribution import SPDistribution
 class SPDistributionFactory(DistributionFactory):
     """A factory of probability distributions based on SciPy."""
 
-    _CLASS = SPDistribution
-    _PACKAGE_NAMES = ("gemseo.uncertainty.distribution.scipy",)
+    _class: ClassVar[type[SPDistribution]] = SPDistribution
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.uncertainty.distribution.scipy",
+    )

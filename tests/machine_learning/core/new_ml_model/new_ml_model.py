@@ -14,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.machine_learning.core.model.base_ml_model import BaseMLModel
 from gemseo.machine_learning.core.model.base_ml_model_settings import (
     BaseMLModelSettings,
@@ -23,7 +25,7 @@ from gemseo.machine_learning.core.model.base_ml_model_settings import (
 class NewMLModel(BaseMLModel):
     """New machine learning model class."""
 
-    LIBRARY = "NewLibrary"
+    library: ClassVar[str] = "NewLibrary"
     settings_class = BaseMLModelSettings
 
     def learn(self, samples=()) -> None:

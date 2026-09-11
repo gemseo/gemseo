@@ -252,7 +252,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
                 if transform_inputs:
                     if model._transform_input_group:
                         input_data = model._transform_data(
-                            input_data, model.learning_set.INPUT_GROUP, False
+                            input_data, model.learning_set.input_group, False
                         )
 
                     if model._input_variables_to_transform:
@@ -274,7 +274,7 @@ class SupervisedDataFormatters(BaseDataFormatters):
 
                 if model._transform_output_group:
                     output_data = model._transform_data(
-                        output_data, model.learning_set.OUTPUT_GROUP, True
+                        output_data, model.learning_set.output_group, True
                     )
 
                 return model._transform_data_from_variable_names(

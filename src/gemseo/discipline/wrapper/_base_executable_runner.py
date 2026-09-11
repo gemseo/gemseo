@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class _BaseExecutableRunner(Serializable):
@@ -164,7 +164,7 @@ class _BaseExecutableRunner(Serializable):
                     f"Can't copy {path} into {destination_directory} "
                     "since it is neither a file nor a directory."
                 )
-                LOGGER.warning(msg)
+                logger.warning(msg)
 
     @property
     def execution_directory(self) -> Path | None:
@@ -208,7 +208,7 @@ class _BaseExecutableRunner(Serializable):
         )
 
         if completed.returncode != 0:
-            LOGGER.error(
+            logger.error(
                 "Failed to execute the command %s, "
                 "from the execution directory %s, "
                 "with the data directory %s.",

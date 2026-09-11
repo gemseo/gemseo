@@ -16,16 +16,19 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from strenum import StrEnum
 
-from gemseo.dataset.factory import DATASET_FACTORY
+from gemseo.dataset.factory import dataset_factory
 from gemseo.util.package_import import install_lazy_reexport
 from gemseo.util.string import convert_camel_case_to_screaming_snake_case
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.dataset.dataset import Dataset  # noqa: F401
     from gemseo.dataset.io_dataset import IODataset  # noqa: F401
@@ -35,18 +38,18 @@ DatasetClassName = StrEnum(
     "DatasetClassName",
     {
         convert_camel_case_to_screaming_snake_case(name): name
-        for name in DATASET_FACTORY.class_names
+        for name in dataset_factory.class_names
     },
 )
 """The enumeration of [Dataset][gemseo.dataset.dataset.Dataset] class names."""
 
 # Exported name -> location (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "Dataset": "dataset",
     "IODataset": "io_dataset",
     "OptimizationDataset": "optimization_dataset",
-}
+})
 
 install_lazy_reexport(
-    globals(), _NAME_TO_LOCATION, extra_all=("DatasetClassName", "DATASET_FACTORY")
+    globals(), _name_to_location, extra_all=("DatasetClassName", "dataset_factory")
 )

@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
     """The base class for the OpenTURNS-based reliability analysis algorithms."""
 
-    _ALGO_CLASS: ClassVar[type[PersistentObject]]
+    _algo_class: ClassVar[type[PersistentObject]]
     """The OpenTURNS class to instantiate the reliability analysis algorithm."""
 
     @staticmethod

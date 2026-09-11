@@ -67,7 +67,7 @@ def test_get_options_doc() -> None:
     }
 
 
-DOCSTRING = """
+docstring = """
 Args:
     arg1: A one-line description: with colon.
     arg2: A multi-line
@@ -84,7 +84,7 @@ Section title:
 
 def test_google() -> None:
     """Test that the Google docstrings are correctly parsed."""
-    parsed_docstring = parse_google(DOCSTRING)
+    parsed_docstring = parse_google(docstring)
     assert parsed_docstring == {
         "arg1": "A one-line description: with colon.",
         "arg2": "A multi-line\ndescription.",

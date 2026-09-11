@@ -53,8 +53,8 @@ if TYPE_CHECKING:
 class SVMClassifier(BaseClassifier):
     """The Support Vector Machine model for classification."""
 
-    SHORT_NAME: ClassVar[str] = "SVM"
-    LIBRARY: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "SVM"
+    library: ClassVar[str] = "scikit-learn"
 
     settings_class: ClassVar[type[SVMClassifier_Settings]] = SVMClassifier_Settings
 

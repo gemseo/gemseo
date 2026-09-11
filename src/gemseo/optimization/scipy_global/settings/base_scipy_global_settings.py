@@ -26,7 +26,7 @@ from gemseo.util.typing import StrKeyMapping
 class BaseSciPyGlobalSettings(BaseOptimizerSettings):
     """The SciPy global optimization library setting."""
 
-    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {
         "eq_tolerance": 1e-6,
         "ftol_rel": 1e-9,
         "ftol_abs": 1e-9,

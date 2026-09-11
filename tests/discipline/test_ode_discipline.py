@@ -42,7 +42,7 @@ from numpy.testing import assert_allclose
 from gemseo.core.discipline.base_discipline import CacheType
 from gemseo.discipline.auto_py import AutoPyDiscipline
 from gemseo.discipline.ode.ode_discipline import ODEDiscipline
-from gemseo.ode.factory import ODE_SOLVER_LIBRARY_FACTORY
+from gemseo.ode.factory import ode_solver_library_factory
 from gemseo.ode.scipy_ode.settings.dop853 import DOP853_Settings
 from gemseo.ode.scipy_ode.settings.radau import Radau_Settings
 from gemseo.ode.scipy_ode.settings.rk45 import RK45_Settings
@@ -612,7 +612,7 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
                 discipline,
                 state_names=["x", "y"],
                 times=times,
-                ode_solver_settings=ODE_SOLVER_LIBRARY_FACTORY.create_settings(
+                ode_solver_settings=ode_solver_library_factory.create_settings(
                     name_of_algorithm, rtol=1e-13, atol=1e-12
                 ),
             )
@@ -624,7 +624,7 @@ def test_all_ode_integration_algorithms(name_of_algorithm):
             discipline,
             state_names=["x", "y"],
             times=times,
-            ode_solver_settings=ODE_SOLVER_LIBRARY_FACTORY.create_settings(
+            ode_solver_settings=ode_solver_library_factory.create_settings(
                 name_of_algorithm, rtol=1e-13, atol=1e-12
             ),
         )

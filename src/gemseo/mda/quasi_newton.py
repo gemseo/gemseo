@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class MDAQuasiNewton(BaseMDAParallelSolver):
@@ -71,7 +71,7 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
     settings_class: ClassVar[type[MDAQuasiNewton_Settings]] = MDAQuasiNewton_Settings
     """The pydantic model for the settings."""
 
-    _METHODS_SUPPORTING_LISTENERS: ClassVar[tuple[QuasiNewtonMethod, ...]] = (
+    _methods_supporting_listeners: ClassVar[tuple[QuasiNewtonMethod, ...]] = (
         QuasiNewtonMethod.BROYDEN1,
         QuasiNewtonMethod.BROYDEN2,
     )
@@ -95,8 +95,8 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
         super().__init__(disciplines, settings=settings)
         self._set_resolved_variables(self.coupling_structure.strong_couplings)
 
-        if self.settings.method not in self._METHODS_SUPPORTING_LISTENERS:
-            del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
+        if self.settings.method not in self._methods_supporting_listeners:
+            del self.io.output_grammar[self.normalized_residual_norm_name]
 
     def __get_options(self) -> dict[str, float | int]:
         """Get the options adapted to the resolution method."""
@@ -179,7 +179,7 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
             The callback,
             or `None` if the method does not support iteration listeners.
         """
-        if self.settings.method not in self._METHODS_SUPPORTING_LISTENERS:
+        if self.settings.method not in self._methods_supporting_listeners:
             return None
 
         def callback(iterate: ndarray, residual: ndarray) -> None:
@@ -218,8 +218,8 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
                 "MDAQuasiNewton found no strong couplings. Executed all"
                 "disciplines once."
             )
-            LOGGER.warning(msg)
-            self.io.output_data[self.NORMALIZED_RESIDUAL_NORM] = array([0.0])
+            logger.warning(msg)
+            self.io.output_data[self.normalized_residual_norm_name] = array([0.0])
             return False
 
         self._current_iter = 0
@@ -238,14 +238,16 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
             options=self.__get_options(),
         )
 
-        if self.settings.method not in self._METHODS_SUPPORTING_LISTENERS:
+        if self.settings.method not in self._methods_supporting_listeners:
             self._check_termination_criteria()
 
         self._update_local_data_from_array(y_opt.x)
 
-        if self.settings.method in self._METHODS_SUPPORTING_LISTENERS:
+        if self.settings.method in self._methods_supporting_listeners:
             self.io.update_output_data({
-                self.NORMALIZED_RESIDUAL_NORM: array([self.normalized_residual_norm]),
+                self.normalized_residual_norm_name: array([
+                    self.normalized_residual_norm
+                ]),
             })
 
         return False
@@ -259,10 +261,10 @@ class MDAQuasiNewton(BaseMDAParallelSolver):
                 does not support iteration listeners.
         """  # noqa: D205, D212
         method = self.settings.method
-        if method not in self._METHODS_SUPPORTING_LISTENERS:
+        if method not in self._methods_supporting_listeners:
             msg = (
                 "Iteration listeners are only supported for the methods: "
-                f"{self._METHODS_SUPPORTING_LISTENERS}, not for {method}."
+                f"{self._methods_supporting_listeners}, not for {method}."
             )
             raise RuntimeError(msg)
 

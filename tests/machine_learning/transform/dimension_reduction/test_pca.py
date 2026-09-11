@@ -38,41 +38,41 @@ from gemseo.util.derivative.check.function import FunctionJacobianChecker
 if TYPE_CHECKING:
     from numpy import ndarray
 
-N_SAMPLES = 10
-N_FEATURES = 8
-N_COMPONENTS = 3
+n_samples = 10
+n_features = 8
+n_components = 3
 
 
 @pytest.fixture(scope="module")
 def data() -> ndarray:
     """The dataset used to build the transformer, based on a 1D-mesh."""
-    return arange(N_SAMPLES * N_FEATURES).reshape(N_SAMPLES, N_FEATURES)
+    return arange(n_samples * n_features).reshape(n_samples, n_features)
 
 
 @pytest.fixture(scope="module", params=[False, True])
 def pca(request, data) -> PCA:
     """A PCA with or without data scaling."""
     if request.param:
-        pca = PCA(n_components=N_COMPONENTS, scale=True)
+        pca = PCA(n_components=n_components, scale=True)
     else:
-        pca = PCA(n_components=N_COMPONENTS)
+        pca = PCA(n_components=n_components)
     pca.fit(data)
     return pca
 
 
 def test_constructor() -> None:
     """Test constructor."""
-    pca = PCA(n_components=N_COMPONENTS)
+    pca = PCA(n_components=n_components)
     assert pca.name == "PCA"
     assert pca.algo is not None
-    assert pca.n_components == N_COMPONENTS
+    assert pca.n_components == n_components
     assert not pca.data_is_scaled
     assert pca._PCA__scaler.__class__.__name__ == "Scaler"
 
 
 def test_scales_data() -> None:
     """Test data_is_scaled."""
-    pca = PCA(n_components=N_COMPONENTS, scale=True)
+    pca = PCA(n_components=n_components, scale=True)
     assert pca.data_is_scaled
     assert pca._PCA__scaler.__class__.__name__ == "StandardScaler"
 
@@ -84,28 +84,28 @@ def test_learn(pca) -> None:
 
 def test_learn_custom(pca) -> None:
     """Test learn with a custom number of components."""
-    assert pca.n_components == N_COMPONENTS
+    assert pca.n_components == n_components
 
 
 def test_transform(data, pca) -> None:
     """Test transform."""
     reduced_data = pca.transform(data)
     assert reduced_data.shape[0] == data.shape[0]
-    assert reduced_data.shape[1] == N_COMPONENTS
+    assert reduced_data.shape[1] == n_components
 
 
 def test_inverse_transform(pca) -> None:
     """Test inverse transform."""
-    data = arange(N_SAMPLES * N_COMPONENTS).reshape((N_SAMPLES, N_COMPONENTS))
+    data = arange(n_samples * n_components).reshape((n_samples, n_components))
     restored_data = pca.inverse_transform(data)
     assert restored_data.shape[0] == data.shape[0]
-    assert restored_data.shape[1] == N_FEATURES
+    assert restored_data.shape[1] == n_features
 
 
 def test_compute_jacobian(data, pca) -> None:
     """Test compute_jacobian method."""
     jac = pca.compute_jacobian(data)
-    assert jac.shape == (data.shape[0], N_COMPONENTS, data.shape[1])
+    assert jac.shape == (data.shape[0], n_components, data.shape[1])
     shape = (len(data), 1, 1)
     expectation = tile(pca.algo.components_, shape)
     if pca.data_is_scaled:
@@ -118,7 +118,7 @@ def test_compute_jacobian_inverse(data, pca) -> None:
     """Test compute_jacobian_inverse method."""
     transformed_data = pca.transform(data)
     jac_inv = pca.compute_jacobian_inverse(transformed_data)
-    assert jac_inv.shape == (data.shape[0], data.shape[1], N_COMPONENTS)
+    assert jac_inv.shape == (data.shape[0], data.shape[1], n_components)
     shape = (len(data), 1, 1)
     expectation = tile(pca.algo.components_.T, shape)
     if pca.data_is_scaled:
@@ -130,15 +130,15 @@ def test_compute_jacobian_inverse(data, pca) -> None:
 
 def test_components(pca) -> None:
     """Test transform."""
-    assert pca.components.shape[0] == N_FEATURES
-    assert pca.components.shape[1] == N_COMPONENTS
+    assert pca.components.shape[0] == n_features
+    assert pca.components.shape[1] == n_components
 
 
 def test_shape(data, pca) -> None:
     """Check the shapes of the data."""
-    n = N_SAMPLES
-    p = N_FEATURES
-    q = N_COMPONENTS
+    n = n_samples
+    p = n_features
+    q = n_components
     transformed_data = pca.transform(data)
     assert transformed_data.shape == (n, q)
     assert pca.inverse_transform(transformed_data).shape == (n, p)

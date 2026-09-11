@@ -136,7 +136,7 @@ class SobieskiProblem:
     - $c_4$: the minimum drag coefficient.
     """
 
-    CONTRAINTS_NAMES_INEQUALITY = (
+    contraints_names_inequality: Final[tuple[str, ...]] = (
         "c_Stress_x1",
         "c_Stress_x2",
         "c_Stress_x3",
@@ -150,7 +150,7 @@ class SobieskiProblem:
         "c_Throttle",
         "c_Temperature",
     )
-    CONTRAINTS_NAMES = (
+    contraints_names: Final[tuple[str, ...]] = (
         "Stress_x1",
         "Stress_x2",
         "Stress_x3",
@@ -163,7 +163,7 @@ class SobieskiProblem:
         "Throttle",
     )
 
-    DV_NAMES_NORMALIZED = (
+    dv_names_normalized: Final[tuple[str, ...]] = (
         "x_TaperRatio",
         "x_SectionalArea",
         "x_Cf",
@@ -176,7 +176,7 @@ class SobieskiProblem:
         "x_sref",
     )
 
-    DV_NAMES = (
+    dv_names: Final[tuple[str, ...]] = (
         "TaperRatio",
         "SectionalArea",
         "Cf",
@@ -189,7 +189,7 @@ class SobieskiProblem:
         "sref",
     )
 
-    COUPLING_VARIABLES_NAMES = (
+    coupling_variables_names: Final[tuple[str, ...]] = (
         "Total weight",
         "Fuel weight",
         "Wing twist",
@@ -200,22 +200,27 @@ class SobieskiProblem:
         "Engine weight",
     )
 
-    __DESIGN_VARIABLE_NAMES: Final[tuple[str]] = ("x_1", "x_2", "x_3", "x_shared")
+    __design_variable_names: Final[tuple[str, str, str, str]] = (
+        "x_1",
+        "x_2",
+        "x_3",
+        "x_shared",
+    )
 
-    USE_ORIGINAL_DESIGN_VARIABLES_ORDER: ClassVar[bool] = False
+    use_original_design_variables_order: ClassVar[bool] = False
     """Whether to sort the design space as in the original paper.
 
     If so, the order of the design variables will be `"x_1"`, `"x_2"`, `"x_3"` and
     `"x_shared"`. Otherwise, `"x_shared"`, `"x_1"`, `"x_2"` and `"x_3"`.
     """
 
-    STRESS_LIMIT = SobieskiStructure.STRESS_LIMIT
-    TWIST_UPPER_LIMIT = SobieskiStructure.TWIST_UPPER_LIMIT
-    TWIST_LOWER_LIMIT = SobieskiStructure.TWIST_LOWER_LIMIT
-    PRESSURE_GRADIENT_LIMIT = SobieskiAerodynamics.PRESSURE_GRADIENT_LIMIT
-    ESF_UPPER_LIMIT = SobieskiPropulsion.ESF_UPPER_LIMIT
-    ESF_LOWER_LIMIT = SobieskiPropulsion.ESF_LOWER_LIMIT
-    TEMPERATURE_LIMIT = SobieskiPropulsion.TEMPERATURE_LIMIT
+    stress_limit: Final[float] = SobieskiStructure.stress_limit
+    twist_upper_limit: Final[float] = SobieskiStructure.twist_upper_limit
+    twist_lower_limit: Final[float] = SobieskiStructure.twist_lower_limit
+    pressure_gradient_limit: Final[float] = SobieskiAerodynamics.pressure_gradient_limit
+    esf_upper_limit: Final[float] = SobieskiPropulsion.esf_upper_limit
+    esf_lower_limit: Final[float] = SobieskiPropulsion.esf_lower_limit
+    temperature_limit: Final[float] = SobieskiPropulsion.temperature_limit
 
     __design_space: SobieskiDesignSpace | None
     """The design space if created."""
@@ -515,7 +520,7 @@ class SobieskiProblem:
         if names:
             names = convert_strings_to_iterable(names)
         else:
-            names = self.__DESIGN_VARIABLE_NAMES
+            names = self.__design_variable_names
 
         return concatenate([self.__name_to_feasible_value[name] for name in names])
 
@@ -571,15 +576,15 @@ class SobieskiProblem:
             ))
 
         return concatenate((
-            g_1[0:5] - self.STRESS_LIMIT,
+            g_1[0:5] - self.stress_limit,
             array((
-                g_1[5] - self.TWIST_UPPER_LIMIT,
-                self.TWIST_LOWER_LIMIT - g_1[5],
-                g_2[0] - self.PRESSURE_GRADIENT_LIMIT,
-                g_3[0] - self.ESF_UPPER_LIMIT,
-                self.ESF_LOWER_LIMIT - g_3[0],
+                g_1[5] - self.twist_upper_limit,
+                self.twist_lower_limit - g_1[5],
+                g_2[0] - self.pressure_gradient_limit,
+                g_3[0] - self.esf_upper_limit,
+                self.esf_lower_limit - g_3[0],
                 g_3[2],
-                g_3[1] - self.TEMPERATURE_LIMIT,
+                g_3[1] - self.temperature_limit,
             )),
         ))
 
@@ -744,7 +749,7 @@ class SobieskiProblem:
         """The design space."""
         if not self.__design_space:
             self.__design_space = SobieskiDesignSpace(
-                True, self.__dtype, self.USE_ORIGINAL_DESIGN_VARIABLES_ORDER
+                True, self.__dtype, self.use_original_design_variables_order
             )
 
         return self.__design_space
@@ -754,7 +759,7 @@ class SobieskiProblem:
         """The design space with physical naming."""
         if not self.__design_space_with_physical_naming:
             self.__design_space_with_physical_naming = SobieskiDesignSpace(
-                False, self.__dtype, self.USE_ORIGINAL_DESIGN_VARIABLES_ORDER
+                False, self.__dtype, self.use_original_design_variables_order
             )
 
         return self.__design_space_with_physical_naming

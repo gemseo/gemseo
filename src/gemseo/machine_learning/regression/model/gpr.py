@@ -120,9 +120,9 @@ __Bounds = tuple[float, float]
 class GaussianProcessRegressor(BaseRandomProcessRegressor):
     """Gaussian process regression model."""
 
-    SHORT_NAME: ClassVar[str] = "GPR"
-    LIBRARY: ClassVar[str] = "scikit-learn"
-    __DEFAULT_BOUNDS: Final[tuple[float, float]] = (0.01, 100.0)
+    short_name: ClassVar[str] = "GPR"
+    library: ClassVar[str] = "scikit-learn"
+    __default_bounds: Final[tuple[float, float]] = (0.01, 100.0)
 
     settings_class: ClassVar[type[GaussianProcessRegressor_Settings]] = (
         GaussianProcessRegressor_Settings
@@ -179,7 +179,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
         """
         dimension = self._reduced_input_dimension
         if not bounds:
-            return [self.__DEFAULT_BOUNDS] * dimension
+            return [self.__default_bounds] * dimension
 
         if isinstance(bounds, tuple):
             bounds: tuple[float, float]
@@ -187,7 +187,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
 
         bounds_ = []
         for name in self.input_names:
-            name_bounds = bounds.get(name, self.__DEFAULT_BOUNDS)
+            name_bounds = bounds.get(name, self.__default_bounds)
             bounds_.extend([name_bounds] * self.sizes[name])
 
         return bounds_
@@ -212,7 +212,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
             )
 
         input_data = atleast_2d(input_data)
-        transformer = self.transformer.get(self.learning_set.INPUT_GROUP)
+        transformer = self.transformer.get(self.learning_set.input_group)
         if transformer:
             input_data = transformer.transform(input_data)
 
@@ -241,7 +241,7 @@ class GaussianProcessRegressor(BaseRandomProcessRegressor):
         return swapaxes(swapaxes(samples, 0, 2), 1, 2)
 
     def predict_covariance(self, input_data: RealArray) -> RealArray:  # noqa: D102
-        transformer = self.transformer.get(self.learning_set.INPUT_GROUP)
+        transformer = self.transformer.get(self.learning_set.input_group)
         if transformer:
             input_data = transformer.transform(input_data)
 

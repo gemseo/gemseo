@@ -25,7 +25,7 @@ import pytest
 
 from gemseo import create_discipline
 from gemseo.discipline.wrapper.job_scheduler.lsf import LSF
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.platform import platform_is_windows
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -61,7 +61,7 @@ def test_wrap_discipline_in_job_scheduler(tmpdir, snapshot) -> None:
 
     wrapped = LSF(disc, workdir_path=tmpdir, queue_name="all")
 
-    if PLATFORM_IS_WINDOWS:
+    if platform_is_windows:
         pass
     else:
         re.escape("[Errno 2] No such file or directory: 'bsub'")

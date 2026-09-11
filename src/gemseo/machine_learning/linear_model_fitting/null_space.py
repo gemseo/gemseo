@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from numpy import vstack
 from scipy.linalg import lstsq
@@ -98,7 +99,7 @@ class NullSpace(BaseLinearModelFitter[_NullSpaceFittingFunction, NullSpace_Setti
 
     settings_class = NullSpace_Settings
 
-    _FITTER_CLASS = _NullSpaceFittingFunction
+    _fitter_class: ClassVar[type[_NullSpaceFittingFunction]] = _NullSpaceFittingFunction
 
     def _fit(
         self,

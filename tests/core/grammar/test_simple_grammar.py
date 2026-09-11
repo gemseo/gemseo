@@ -15,6 +15,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import TYPE_CHECKING
+from typing import ClassVar
 
 import pytest
 
@@ -23,6 +25,9 @@ from gemseo.core.grammar.error import InvalidDataError
 from gemseo.core.grammar.simple import SimpleGrammar
 from gemseo.core.grammar.simpler import SimplerGrammar
 from gemseo.util.testing.helper import assert_exception
+
+if TYPE_CHECKING:
+    from gemseo.core.data_converter.base import BaseDataConverter
 
 
 @pytest.fixture(params=(SimpleGrammar, SimplerGrammar))
@@ -34,7 +39,9 @@ def grammar_class(request):
 class _ClassConverterGrammar(SimpleGrammar):
     """A SimpleGrammar subclass whose converter is set as a class, not a name."""
 
-    DATA_CONVERTER_CLASS = SimpleGrammarDataConverter
+    data_converter_class: ClassVar[str | type[BaseDataConverter]] = (
+        SimpleGrammarDataConverter
+    )
 
 
 @pytest.mark.parametrize("required_names", [[], ["name"]])
@@ -166,7 +173,7 @@ def test_update_with_merge_error(grammar_class, snapshot):
 
 
 def test_data_converter_class_not_a_string() -> None:
-    """Verify that DATA_CONVERTER_CLASS may be set to a class instead of a name."""
+    """Verify that data_converter_class may be set to a class instead of a name."""
     grammar = _ClassConverterGrammar("g")
     assert isinstance(grammar.data_converter, SimpleGrammarDataConverter)
 

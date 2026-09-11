@@ -26,4 +26,4 @@ from gemseo.uncertainty.reliability.openturns.base_qmc_settings import BaseOTQMC
 class OT_Faure_Settings(BaseOTQMCSettings):  # noqa: N801
     """The settings of the QMC algorithm using the Faure sequence."""
 
-    _SEQUENCE_CLASS: ClassVar[type[FaureSequence]] = FaureSequence
+    _sequence_class: ClassVar[type[FaureSequence]] = FaureSequence

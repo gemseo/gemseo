@@ -25,7 +25,7 @@ from scipy.sparse import csr_array
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.linear_function import LinearFunction
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_linprog.scipy_linprog import ScipyLinprog
 from gemseo.optimization.scipy_linprog.settings.highs_dual_simplex import (
@@ -39,7 +39,7 @@ from gemseo.util.testing.helper import assert_exception
 @pytest.fixture(scope="module")
 def library_cls() -> type[ScipyLinprog]:
     """The SciPyLinprog library."""
-    return OPTIMIZATION_LIBRARY_FACTORY.get_class("ScipyLinprog")
+    return optimization_library_factory.get_class("ScipyLinprog")
 
 
 def test_factory(library_cls) -> None:

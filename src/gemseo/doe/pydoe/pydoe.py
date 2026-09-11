@@ -21,7 +21,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from collections.abc import Sequence
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -75,23 +77,23 @@ class PyDOEAlgorithmDescription(DOEAlgorithmDescription):
 class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
     """The PyDOE DOE algorithms library."""
 
-    __NAMES_TO_FUNCTIONS: ClassVar[dict[str, Callable]] = {
+    __names_to_functions: ClassVar[Mapping[str, Callable]] = MappingProxyType({
         "PYDOE_BBDESIGN": bbdesign,
         "PYDOE_CCDESIGN": ccdesign,
         "PYDOE_FF2N": ff2n,
         "PYDOE_LHS": lhs,
         "PYDOE_PBDESIGN": pbdesign,
-    }
+    })
     """The algorithm names bound to the corresponding pyDOE function."""
 
-    __DOC: Final[str] = "https://pydoe.github.io/pydoe/reference/"
+    __doc: Final[str] = "https://pydoe.github.io/pydoe/reference/"
 
     ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
         "PYDOE_BBDESIGN": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_BBDESIGN",
             description="Box-Behnken design",
             internal_algorithm_name="bbdesign",
-            website=f"{__DOC}response_surface/#box_behnken",
+            website=f"{__doc}response_surface/#box_behnken",
             settings_class=PYDOE_BBDESIGN_Settings,
             minimum_dimension=3,
         ),
@@ -99,7 +101,7 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
             algorithm_name="PYDOE_CCDESIGN",
             description="Central Composite",
             internal_algorithm_name="ccdesign",
-            website=f"{__DOC}response_surface/#central_composite",
+            website=f"{__doc}response_surface/#central_composite",
             settings_class=PYDOE_CCDESIGN_Settings,
             minimum_dimension=2,
         ),
@@ -107,33 +109,33 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
             algorithm_name="PYDOE_FF2N",
             description="2-Level Full-Factorial",
             internal_algorithm_name="ff2n",
-            website=f"{__DOC}factorial/#2-level-full-factorial-ff2n",
+            website=f"{__doc}factorial/#2-level-full-factorial-ff2n",
             settings_class=PYDOE_FF2N_Settings,
         ),
         "PYDOE_FULLFACT": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_FULLFACT",
             description="Full-Factorial",
             internal_algorithm_name="fullfact",
-            website=f"{__DOC}factorial/#general-full-factorial-fullfact",
+            website=f"{__doc}factorial/#general-full-factorial-fullfact",
             settings_class=PYDOE_FULLFACT_Settings,
         ),
         "PYDOE_LHS": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_LHS",
             description="Latin Hypercube Sampling",
             internal_algorithm_name="lhs",
-            website=f"{__DOC}randomized/#latin-hypercube",
+            website=f"{__doc}randomized/#latin-hypercube",
             settings_class=PYDOE_LHS_Settings,
         ),
         "PYDOE_PBDESIGN": PyDOEAlgorithmDescription(
             algorithm_name="PYDOE_PBDESIGN",
             description="Plackett-Burman design",
             internal_algorithm_name="pbdesign",
-            website=f"{__DOC}factorial/#plackett-burman",
+            website=f"{__doc}factorial/#plackett-burman",
             settings_class=PYDOE_PBDESIGN_Settings,
         ),
     }
 
-    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BasePyDOESettings]] = BasePyDOESettings
+    _settings_class_to_exclude: ClassVar[type[BasePyDOESettings]] = BasePyDOESettings
 
     def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
         if self._algo_name == "PYDOE_FULLFACT":
@@ -142,7 +144,7 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
             )
 
         filtered_settings = self._filter_settings()
-        doe_algorithm = self.__NAMES_TO_FUNCTIONS[self._algo_name]
+        doe_algorithm = self.__names_to_functions[self._algo_name]
         if self._algo_name == "PYDOE_LHS":
             filtered_settings["seed"] = self._seeder.get_seed(self._settings.seed)
             filtered_settings["samples"] = filtered_settings.pop("n_samples")

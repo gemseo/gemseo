@@ -33,7 +33,7 @@ from gemseo.util.typing import StrKeyMapping  # noqa:TC001
 class BaseAugmentedLagrangianSettings(BaseOptimizerSettings):
     """The base augmented lagrangian settings."""
 
-    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {
         "ftol_rel": 1e-9,
         "ftol_abs": 1e-9,
         "xtol_rel": 1e-9,

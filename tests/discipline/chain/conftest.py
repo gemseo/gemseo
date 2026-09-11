@@ -22,15 +22,15 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.problem.mdo.sobieski.standalone.util import SobieskiBase
 
-DTYPE = SobieskiBase.DataType.COMPLEX
+dtype = SobieskiBase.DataType.COMPLEX
 
 
 @pytest.fixture
 def sobieski_disciplines():
     """The four Sobieski disciplines in natural order with complex dtype."""
     return [
-        SobieskiStructure(DTYPE),
-        SobieskiAerodynamics(DTYPE),
-        SobieskiPropulsion(DTYPE),
-        SobieskiMission(DTYPE),
+        SobieskiStructure(dtype),
+        SobieskiAerodynamics(dtype),
+        SobieskiPropulsion(dtype),
+        SobieskiMission(dtype),
     ]

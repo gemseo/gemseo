@@ -19,6 +19,8 @@ from __future__ import annotations
 
 from types import MappingProxyType
 from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
 from typing import TypeVar
 
 from numpy import newaxis
@@ -32,6 +34,8 @@ from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter 
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.util.typing import RealArray
 
 SKLearnLinearModelType = TypeVar("SKLearnLinearModel", bound=LinearModel)
@@ -42,7 +46,9 @@ class BaseSKLearnLinearModelFitter(
 ):
     """Base class for scikit-learn linear model fitting algorithms."""
 
-    _PRIORITARY_FITTER_KWARGS = MappingProxyType({"fit_intercept": False})
+    _prioritary_fitter_kwargs: ClassVar[Mapping[str, Any]] = MappingProxyType({
+        "fit_intercept": False
+    })
 
     def _fit(
         self,

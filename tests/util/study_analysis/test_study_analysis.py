@@ -31,7 +31,7 @@ from gemseo.util.study_analysis.mdo_study_analysis import MDOStudyAnalysis
 from gemseo.util.study_analysis.xls_study_parser import XLSStudyParser
 from gemseo.util.testing.helper import assert_exception
 
-INPUT_DIR = Path(__file__).parent / "study_inputs"
+input_dir = Path(__file__).parent / "study_inputs"
 
 try:
     skip_condition = shutil.which("pdflatex") is None
@@ -48,11 +48,11 @@ has_no_pdflatex = {
 @pytest.fixture(scope="module")
 def study_analysis() -> CouplingStudyAnalysis:
     """A coupling study analysis."""
-    return CouplingStudyAnalysis(INPUT_DIR / "disciplines_spec_without_scenario.xlsx")
+    return CouplingStudyAnalysis(input_dir / "disciplines_spec_without_scenario.xlsx")
 
 
 def test_generate_n2(tmp_wd) -> None:
-    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
+    analysis = MDOStudyAnalysis(input_dir / "disciplines_spec.xlsx")
     fpath = Path("xls_n2.pdf")
     analysis.generate_n2(fpath, fig_size=(5, 5))
     assert fpath.exists()
@@ -60,7 +60,7 @@ def test_generate_n2(tmp_wd) -> None:
 
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_mdf(tmp_wd) -> None:
-    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec.xlsx")
+    analysis = MDOStudyAnalysis(input_dir / "disciplines_spec.xlsx")
     analysis.generate_xdsm(".", save_pdf=True)
 
 
@@ -70,7 +70,7 @@ def test_discipline_self_coupled_two_disciplines(tmp_wd) -> None:
     In this test, two disciplines with one self-coupled discipline are present in the
     MDO process.
     """
-    analysis = MDOStudyAnalysis(INPUT_DIR / "discipline_self_coupled.xlsx")
+    analysis = MDOStudyAnalysis(input_dir / "discipline_self_coupled.xlsx")
     fpath = Path("xls_n2.pdf")
     analysis.generate_n2(fpath, fig_size=(5, 5))
     analysis.generate_xdsm(".")
@@ -82,7 +82,7 @@ def test_discipline_self_coupled_one_disc(tmp_wd, snapshot) -> None:
 
     In this test, only one self-coupled discipline is present in the MDO process.
     """
-    analysis = MDOStudyAnalysis(INPUT_DIR / "discipline_self_coupled_one_disc.xlsx")
+    analysis = MDOStudyAnalysis(input_dir / "discipline_self_coupled_one_disc.xlsx")
     with assert_exception(ValueError, snapshot):
         analysis.generate_n2("xls_n2.pdf", fig_size=(5, 5))
 
@@ -92,13 +92,13 @@ def test_discipline_self_coupled_one_disc(tmp_wd, snapshot) -> None:
 
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_mdf_special_characters(tmp_wd) -> None:
-    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec_special_characters.xlsx")
+    analysis = MDOStudyAnalysis(input_dir / "disciplines_spec_special_characters.xlsx")
     analysis.generate_xdsm(".", save_pdf=True)
 
 
 @pytest.mark.skipif(**has_no_pdflatex)
 def test_xdsm_idf(tmp_wd) -> None:
-    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec2.xlsx")
+    analysis = MDOStudyAnalysis(input_dir / "disciplines_spec2.xlsx")
     dnames = ["Discipline1", "Discipline2"]
     assert list(analysis.study.disciplines) == dnames
 
@@ -108,7 +108,7 @@ def test_xdsm_idf(tmp_wd) -> None:
 
 
 def test_xdsm_bilevel(tmp_wd) -> None:
-    analysis = MDOStudyAnalysis(INPUT_DIR / "study_bilevel_sobieski.xlsx")
+    analysis = MDOStudyAnalysis(input_dir / "study_bilevel_sobieski.xlsx")
     dnames = [
         "SobieskiAerodynamics",
         "SobieskiStructure",
@@ -124,21 +124,21 @@ def test_xdsm_bilevel(tmp_wd) -> None:
 
 
 def test_xdsm_bilevel_d(tmp_wd) -> None:
-    analysis = MDOStudyAnalysis(INPUT_DIR / "bilevel_d.xlsx")
+    analysis = MDOStudyAnalysis(input_dir / "bilevel_d.xlsx")
     analysis.generate_n2("n2_d.pdf")
     analysis.generate_xdsm(".")
 
 
 def test_none_inputs() -> None:
     with pytest.raises(IOError):
-        MDOStudyAnalysis(INPUT_DIR / "None.xlsx")
+        MDOStudyAnalysis(input_dir / "None.xlsx")
 
 
 @pytest.mark.parametrize("file_index", range(1, 19))
 def test_wrong_inputs(tmp_wd, file_index) -> None:
     fname = f"disciplines_spec_fail{file_index}.xlsx"
     with pytest.raises(ValueError):
-        MDOStudyAnalysis(INPUT_DIR / fname)
+        MDOStudyAnalysis(input_dir / fname)
 
 
 def test_options() -> None:
@@ -147,7 +147,7 @@ def test_options() -> None:
     This test also enables to make sure that there is no need to put '' when prescribing
     a string in option values.
     """
-    analysis = MDOStudyAnalysis(INPUT_DIR / "disciplines_spec_options.xlsx")
+    analysis = MDOStudyAnalysis(input_dir / "disciplines_spec_options.xlsx")
 
     mda = analysis.scenarios["Scenario"].formulation.mda
 
@@ -161,7 +161,7 @@ def test_options() -> None:
 
 def test_xls_study_parser(tmp_wd, caplog) -> None:
     """Check the log of the XLSStudyParser."""
-    XLSStudyParser(INPUT_DIR / "disciplines_spec.xlsx")
+    XLSStudyParser(input_dir / "disciplines_spec.xlsx")
     expected_lines = [
         "2 disciplines detected",
         "   Discipline1",

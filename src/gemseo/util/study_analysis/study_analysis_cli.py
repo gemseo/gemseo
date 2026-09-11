@@ -22,15 +22,22 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.study_analysis.coupling_study_analysis import CouplingStudyAnalysis
 from gemseo.util.study_analysis.mdo_study_analysis import MDOStudyAnalysis
 
-STUDY_ANALYSIS_TYPES: Final[dict[str, CouplingStudyAnalysis]] = {
-    "coupling": CouplingStudyAnalysis,
-    "mdo": MDOStudyAnalysis,
-}
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+_study_analysis_types: Final[Mapping[str, type[CouplingStudyAnalysis]]] = (
+    MappingProxyType({
+        "coupling": CouplingStudyAnalysis,
+        "mdo": MDOStudyAnalysis,
+    })
+)
 """The types of study analyses."""
 
 
@@ -51,7 +58,7 @@ def parse_args() -> argparse.Namespace:
         "-t",
         "--study-type",
         help="The type of the study.",
-        choices=STUDY_ANALYSIS_TYPES.keys(),
+        choices=_study_analysis_types.keys(),
         default="mdo",
     )
     parser.add_argument(
@@ -93,7 +100,7 @@ def main() -> None:
     args = parse_args()
     directory_path = Path(args.out_dir)
     directory_path.mkdir(exist_ok=True)
-    study = STUDY_ANALYSIS_TYPES[args.study_type](args.study_file)
+    study = _study_analysis_types[args.study_type](args.study_file)
     study.generate_n2(directory_path / "n2.pdf", fig_size=(args.height, args.width))
     file_name = "{}_coupling_graph.pdf"
     study.generate_coupling_graph(directory_path / file_name.format("full"))

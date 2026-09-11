@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from numpy import full
 from numpy import ndarray
@@ -43,7 +44,9 @@ class ForwardDifferences(BaseFiniteDifferences):
     $$\frac{df(x)}{dx}\approx\frac{f(x+\delta x)-f(x)}{\delta x}$$
     """
 
-    _APPROXIMATION_MODE = ApproximationMode.FINITE_DIFFERENCES
+    _approximation_mode: ClassVar[ApproximationMode] = (
+        ApproximationMode.FINITE_DIFFERENCES
+    )
 
     def _compute_parallel_grad(
         self,

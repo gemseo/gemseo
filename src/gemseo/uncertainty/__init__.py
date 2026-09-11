@@ -94,9 +94,9 @@ def get_available_distributions(base_class_name: str = "BaseDistribution") -> li
     Returns:
         The names of the available probability distributions.
     """
-    from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY
+    from gemseo.uncertainty.distribution.factory import distribution_factory
 
-    class_names = DISTRIBUTION_FACTORY.class_names
+    class_names = distribution_factory.class_names
     if base_class_name == "BaseDistribution":
         return class_names
 
@@ -104,7 +104,7 @@ def get_available_distributions(base_class_name: str = "BaseDistribution") -> li
         class_name
         for class_name in class_names
         if base_class_name
-        in [cls.__name__ for cls in DISTRIBUTION_FACTORY.get_class(class_name).mro()]
+        in [cls.__name__ for cls in distribution_factory.get_class(class_name).mro()]
     ]
 
 
@@ -120,16 +120,16 @@ def create_distribution(
             e.g. 'OTUniformDistribution' or 'SPDistribution'.
         **options: The distribution options.
     """
-    from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY
+    from gemseo.uncertainty.distribution.factory import distribution_factory
 
-    return DISTRIBUTION_FACTORY.create(distribution_name, **options)
+    return distribution_factory.create(distribution_name, **options)
 
 
 def get_available_sensitivity_analyses() -> list[str]:
     """Get the available sensitivity analyses."""
-    from gemseo.uncertainty.sensitivity.factory import SENSITIVITY_ANALYSIS_FACTORY
+    from gemseo.uncertainty.sensitivity.factory import sensitivity_analysis_factory
 
-    return SENSITIVITY_ANALYSIS_FACTORY.class_names
+    return sensitivity_analysis_factory.class_names
 
 
 def create_statistics(
@@ -223,9 +223,9 @@ def create_sensitivity_analysis(
     Returns:
         The sensitivity analysis.
     """
-    from gemseo.uncertainty.sensitivity.factory import SENSITIVITY_ANALYSIS_FACTORY
+    from gemseo.uncertainty.sensitivity.factory import sensitivity_analysis_factory
 
-    factory = SENSITIVITY_ANALYSIS_FACTORY
+    factory = sensitivity_analysis_factory
 
     name = analysis
     if "Analysis" not in name:

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -42,6 +43,7 @@ from gemseo.util.string import repr_variable
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Mapping
 
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
     from gemseo.uncertainty.sensitivity.core.base import OutputsType
@@ -110,23 +112,25 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
 
     _indices: SensitivityIndices
 
-    __METHODS_TO_OT_METHOD_NAMES: Final[dict[CorrelationAnalysisMethod, str]] = {
-        CorrelationAnalysisMethod.KENDALL: "computeKendallTau",
-        CorrelationAnalysisMethod.PCC: "computePCC",
-        CorrelationAnalysisMethod.PEARSON: "computeLinearCorrelation",
-        CorrelationAnalysisMethod.PRCC: "computePRCC",
-        CorrelationAnalysisMethod.SPEARMAN: "computeSpearmanCorrelation",
-        CorrelationAnalysisMethod.SRC: "computeSRC",
-        CorrelationAnalysisMethod.SRRC: "computeSRRC",
-        CorrelationAnalysisMethod.SSRC: "computeSquaredSRC",
-    }
+    __methods_to_ot_method_names: Final[Mapping[CorrelationAnalysisMethod, str]] = (
+        MappingProxyType({
+            CorrelationAnalysisMethod.KENDALL: "computeKendallTau",
+            CorrelationAnalysisMethod.PCC: "computePCC",
+            CorrelationAnalysisMethod.PEARSON: "computeLinearCorrelation",
+            CorrelationAnalysisMethod.PRCC: "computePRCC",
+            CorrelationAnalysisMethod.SPEARMAN: "computeSpearmanCorrelation",
+            CorrelationAnalysisMethod.SRC: "computeSRC",
+            CorrelationAnalysisMethod.SRRC: "computeSRRC",
+            CorrelationAnalysisMethod.SSRC: "computeSquaredSRC",
+        })
+    )
     """The mapping from the sensitivity method names to the OpenTURNS method names."""
 
-    _DEFAULT_MAIN_METHOD: ClassVar[CorrelationAnalysisMethod] = (
+    _default_main_method: ClassVar[CorrelationAnalysisMethod] = (
         CorrelationAnalysisMethod.SPEARMAN
     )
 
-    DEFAULT_DRIVER: ClassVar[str] = "OT_MONTE_CARLO"
+    default_driver: ClassVar[str] = "OT_MONTE_CARLO"
 
     def compute_indices(  # noqa: D102
         self, output_names: str | Iterable[str] = ()
@@ -146,7 +150,7 @@ class CorrelationAnalysis(BaseSensitivityAnalysis[CorrelationAnalysisMethod]):
         indices = {}
         # The same analysis objects are reused to extract every correlation method.
         for method in CorrelationAnalysisMethod:
-            method_name = self.__METHODS_TO_OT_METHOD_NAMES[method]
+            method_name = self.__methods_to_ot_method_names[method]
             indices[self._get_index_field_name(method)] = {
                 output_name: [
                     None

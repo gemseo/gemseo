@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core._process_flow.execution_sequence.base_extendable import (
     BaseExtendableExecSequence,
 )
@@ -27,8 +29,8 @@ _Status = ExecutionStatus.Status
 class ParallelExecSequence(BaseExtendableExecSequence):
     """A parallel execution sequence of disciplines."""
 
-    _PREFIX = "("
-    _SUFFIX = ")"
+    _prefix: ClassVar[str] = "("
+    _suffix: ClassVar[str] = ")"
 
     def _accept(self, visitor) -> None:
         visitor.visit_parallel(self)

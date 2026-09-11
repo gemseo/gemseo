@@ -52,9 +52,9 @@ class SPTriangularDistribution(SPDistribution):
                     / float(settings.maximum - settings.minimum),
                 },
                 standard_parameters={
-                    self._LOWER: settings.minimum,
-                    self._MODE: settings.mode,
-                    self._UPPER: settings.maximum,
+                    self._lower: settings.minimum,
+                    self._mode: settings.mode,
+                    self._upper: settings.maximum,
                 },
             )
         )

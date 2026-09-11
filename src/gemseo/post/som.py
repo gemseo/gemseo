@@ -34,7 +34,7 @@ from numpy import nanmax
 from numpy import nanmin
 from numpy import unique
 
-from gemseo.post._engine.colormap import PARULA
+from gemseo.post._engine.colormap import parula
 from gemseo.post.core.base_post import BasePost
 from gemseo.post.som_settings import SOM_Settings
 from gemseo.util.string import repr_variable
@@ -57,7 +57,7 @@ class SOM(BasePost[SOM_Settings]):
     """
 
     settings_class: ClassVar[type[SOM_Settings]] = SOM_Settings
-    __CMAP: Final[tuple[str, tuple[tuple[float, float, float], ...]]] = PARULA
+    __cmap: Final[tuple[str, tuple[tuple[float, float, float], ...]]] = parula
 
     @staticmethod
     def __train_som(data: RealArray, n_x: int = 5, n_y: int = 5) -> minisom.MiniSom:
@@ -170,7 +170,7 @@ class SOM(BasePost[SOM_Settings]):
             xy_to_average,
             vmin=minimum_average_output - 0.01 * abs(minimum_average_output),
             vmax=maximum_average_output + 0.01 * abs(maximum_average_output),
-            cmap=self.__CMAP,
+            cmap=self.__cmap,
             interpolation="nearest",
             aspect="auto",
         )
@@ -222,17 +222,17 @@ class SOM(BasePost[SOM_Settings]):
         self._dataset.add_variable(
             variable_name="SOM_indx",
             data=cluster_indices,
-            group_name=self._dataset.OBSERVABLE_GROUP,
+            group_name=self._dataset.observable_group,
         )
         self._dataset.add_variable(
             variable_name="SOM_i",
             data=x,
-            group_name=self._dataset.OBSERVABLE_GROUP,
+            group_name=self._dataset.observable_group,
         )
         self._dataset.add_variable(
             variable_name="SOM_j",
             data=y,
-            group_name=self._dataset.OBSERVABLE_GROUP,
+            group_name=self._dataset.observable_group,
         )
         return x, y, cluster_indices
 

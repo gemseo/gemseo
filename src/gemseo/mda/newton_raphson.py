@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):
@@ -153,7 +153,7 @@ class MDANewtonRaphson(BaseMDAParallelSolver):
         )
 
         if not is_converged:
-            LOGGER.warning(
+            logger.warning(
                 "The linear solver %s failed "
                 "to converge during the Newton's step computation.",
                 self.settings.newton_linear_solver_settings.target_class_name,

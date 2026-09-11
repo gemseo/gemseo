@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 class ConsistencyConstraint(ArrayFunction):
     """An [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] object to compute the consistency constraints."""  # noqa: E501
 
-    __CONSISTENCY_CONSTRAINT_NAME: Final[str] = "consistency_{}"
+    __consistency_constraint_name: Final[str] = "consistency_{}"
     """The name template for consistency constraints."""
 
     def __init__(
@@ -80,7 +80,7 @@ class ConsistencyConstraint(ArrayFunction):
 
         super().__init__(
             self._func_to_wrap,
-            self.__CONSISTENCY_CONSTRAINT_NAME.format(self.__coupl_func.name),
+            self.__consistency_constraint_name.format(self.__coupl_func.name),
             input_names=self.__dv_names_of_disc,
             expr=expr,
             jac=self._jac_to_wrap,

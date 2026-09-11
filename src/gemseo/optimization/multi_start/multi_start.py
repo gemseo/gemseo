@@ -20,7 +20,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.optimization.core.base_optimization_library import BaseOptimizationLibrary
 from gemseo.optimization.core.base_optimization_library import (
     OptimizationAlgorithmDescription,
@@ -111,7 +111,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
             for i in range(max_iter - n * n_start):
                 opt_algo_max_iter[i] += 1
 
-        doe_algo = DOE_LIBRARY_FACTORY.create(
+        doe_algo = doe_library_factory.create(
             self._settings.doe_algo_settings.target_class_name
         )
         samples = doe_algo.sample_space(

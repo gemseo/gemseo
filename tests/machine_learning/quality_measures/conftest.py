@@ -37,7 +37,7 @@ def model_for_transformer() -> GaussianProcessRegressor:
     model = GaussianProcessRegressor(
         dataset,
         GaussianProcessRegressor_Settings(
-            transformer=GaussianProcessRegressor.DEFAULT_TRANSFORMER,
+            transformer=GaussianProcessRegressor.default_transformer,
             n_restarts_optimizer=0,
         ),
     )

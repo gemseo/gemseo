@@ -32,7 +32,7 @@ This rule holds only for the reads the tracker intercepts: item access,
 iteration, `len`, membership, equality, the operations that reach
 `__array_ufunc__` (`+` and the reductions built on it, such as `sum`,
 `mean` and `max`), and the sequence methods named in
-`_SequenceTracker._READER_NAMES` and `_READING_WRITER_NAMES`. Reads that
+`_SequenceTracker._reader_names` and `_reading_writer_names`. Reads that
 never reach the tracker, such as `numpy.asarray(model.y)`, `numpy.dot`,
 or the array methods that are not ufunc-backed (`tolist`, `item`,
 `tobytes`, `argmax`), go unrecorded. A field written element-wise and
@@ -87,9 +87,9 @@ if TYPE_CHECKING:
     from pydantic.fields import FieldInfo
     from typing_extensions import Self
 
-FLATTEN_SEPARATOR: Final[str] = "."
+flatten_separator: Final[str] = "."
 
-_STATE_KEY: Final[str] = "__tracking_state__"
+_state_key: Final[str] = "__tracking_state__"
 """The instance dictionary key holding the tracking state of a tracked model.
 
 The instance dictionary of a Pydantic model holds the field values:
@@ -97,7 +97,7 @@ this key shall not collide with a field name and is ignored by the
 Pydantic machinery (validation, serialization, copy).
 """
 
-_MISSING: Final[object] = object()
+_missing: Final[object] = object()
 """A sentinel for missing instance dictionary entries."""
 
 
@@ -154,9 +154,9 @@ class _ModelTrackerMixin:
         """
         if name in type(self).model_fields:
             instance_dict = object.__getattribute__(self, "__dict__")
-            state = instance_dict.get(_STATE_KEY)
-            value = instance_dict.get(name, _MISSING)
-            if state is not None and value is not _MISSING:
+            state = instance_dict.get(_state_key)
+            value = instance_dict.get(name, _missing)
+            if state is not None and value is not _missing:
                 if name not in state.attrs_assigned:
                     state.attrs_read.add(name)
                 wrapped_value = _wrap_value(value, name, state)
@@ -179,7 +179,7 @@ class _ModelTrackerMixin:
             # The instance dictionary is read back since Pydantic rebinds it
             # when the model validates its assignments.
             instance_dict = object.__getattribute__(self, "__dict__")
-            state = instance_dict.get(_STATE_KEY)
+            state = instance_dict.get(_state_key)
             if state is not None:
                 state.attrs_written.add(name)
                 # Only the sub-model replaced by the first assignment can hold
@@ -199,7 +199,7 @@ class _ModelTrackerMixin:
                 if (
                     is_first_assignment
                     and isinstance(old_value, BaseModel)
-                    and _STATE_KEY in old_value.__dict__
+                    and _state_key in old_value.__dict__
                 ):
                     # Keep the accesses recorded on the replaced sub-model.
                     state.replaced_models[name] = old_value
@@ -207,12 +207,12 @@ class _ModelTrackerMixin:
     @property
     def attrs_read(self) -> set[str]:
         """The names of the fields read before having been assigned as a whole."""
-        return self.__dict__[_STATE_KEY].attrs_read
+        return self.__dict__[_state_key].attrs_read
 
     @property
     def attrs_written(self) -> set[str]:
         """The written field names."""
-        return self.__dict__[_STATE_KEY].attrs_written
+        return self.__dict__[_state_key].attrs_written
 
     def get_input_model(self) -> type[BaseModel]:
         """Return a model whose fields were read during the tracked execution.
@@ -253,7 +253,7 @@ class _ModelTrackerMixin:
             for n, i in sorted(
                 flatten_nested_dict(
                     _get_tracker_data(self, is_written),
-                    separator=FLATTEN_SEPARATOR,
+                    separator=flatten_separator,
                 ).items()
             )
         }
@@ -307,16 +307,16 @@ class _SequenceTracker(_BaseTracker):
     inferred grammar.
 
     The same goes for aggregate reads (iteration, `len`, `in`, equality, and
-    the reading methods listed in `_READER_NAMES`) and for the mutating
-    methods listed in `_WRITER_NAMES`, which all operate on the wrapped
+    the reading methods listed in `_reader_names`) and for the mutating
+    methods listed in `_writer_names`, which all operate on the wrapped
     object.  After a mutation, the contents copied into the tracker itself
     at creation time are re-synchronized so that the operations that are not
     intercepted (e.g. `repr`) remain consistent.
     """
 
-    SEQUENCE_MARKER: Final[str] = ""
+    sequence_marker: Final[str] = ""
 
-    _READER_NAMES: Final[tuple[str, ...]] = (
+    _reader_names: Final[tuple[str, ...]] = (
         "index",
         "count",
         "get",
@@ -327,7 +327,7 @@ class _SequenceTracker(_BaseTracker):
     )
     """The names of the reading methods notifying the trackers."""
 
-    _WRITER_NAMES: Final[tuple[str, ...]] = (
+    _writer_names: Final[tuple[str, ...]] = (
         "append",
         "extend",
         "insert",
@@ -339,7 +339,7 @@ class _SequenceTracker(_BaseTracker):
     )
     """The names of the mutating methods notifying the trackers."""
 
-    _READING_WRITER_NAMES: Final[tuple[str, ...]] = (
+    _reading_writer_names: Final[tuple[str, ...]] = (
         "pop",
         "popitem",
         "setdefault",
@@ -395,12 +395,12 @@ class _SequenceTracker(_BaseTracker):
         if self.parent_attr_name in self.parent_tracker.attrs_assigned:
             return
         self.parent_tracker.attrs_read.add(self.parent_attr_name)
-        self.attrs_read.add(self.SEQUENCE_MARKER)
+        self.attrs_read.add(self.sequence_marker)
 
     def _record_write(self) -> None:
         """Notify the trackers of a write access."""
         self.parent_tracker.attrs_written.add(self.parent_attr_name)
-        self.attrs_written.add(self.SEQUENCE_MARKER)
+        self.attrs_written.add(self.sequence_marker)
 
     def _resync_contents(self) -> None:
         """Re-synchronize the contents copied at creation from the wrapped object."""
@@ -499,11 +499,11 @@ def _make_tracking_method(name: str, read: bool, write: bool) -> Any:
     return method
 
 
-for _name in _SequenceTracker._READER_NAMES:
+for _name in _SequenceTracker._reader_names:
     setattr(_SequenceTracker, _name, _make_tracking_method(_name, True, False))
-for _name in _SequenceTracker._WRITER_NAMES:
+for _name in _SequenceTracker._writer_names:
     setattr(_SequenceTracker, _name, _make_tracking_method(_name, False, True))
-for _name in _SequenceTracker._READING_WRITER_NAMES:
+for _name in _SequenceTracker._reading_writer_names:
     setattr(_SequenceTracker, _name, _make_tracking_method(_name, True, True))
 
 
@@ -611,7 +611,7 @@ def track_model(model: BaseModel) -> BaseModel:
     """
     _check_model_type(model)
     model.__class__ = _create_tracker_class(_ModelTrackerMixin, type(model))  # type: ignore[assignment]
-    model.__dict__[_STATE_KEY] = _TrackingState()
+    model.__dict__[_state_key] = _TrackingState()
     return model
 
 
@@ -656,7 +656,7 @@ def _wrap_value(
         # Already wrapped on a previous read.
         return value
     if isinstance(value, BaseModel):
-        if _STATE_KEY not in value.__dict__:
+        if _state_key not in value.__dict__:
             track_model(value)
         return value
     if isinstance(value, ndarray):
@@ -721,7 +721,7 @@ def _get_tracker_data(model: BaseModel, is_written: bool) -> dict[str, Any]:
         A possibly nested mapping of `{field_name: FieldInfo | dict}`,
         where nested dicts correspond to sub-models.
     """
-    state = model.__dict__[_STATE_KEY]
+    state = model.__dict__[_state_key]
     items = {}
 
     if is_written:
@@ -743,7 +743,7 @@ def _get_tracker_data(model: BaseModel, is_written: bool) -> dict[str, Any]:
                 continue
         elif (
             is_submodel
-            and _STATE_KEY in attr_value.__dict__
+            and _state_key in attr_value.__dict__
             and attr_name not in state.attrs_assigned
         ):
             tracker_data = _get_tracker_data(attr_value, is_written)

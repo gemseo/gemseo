@@ -44,7 +44,7 @@ def dataset():
     )
 
 
-TEST_PARAMETERS = {
+test_parameters = {
     "default": ({}, {}, ["Lines"]),
     "xticks": ({"set_xticks_from_data": True}, {}, ["Lines_xticks"]),
     "markers": ({"add_markers": True}, {}, ["Lines_markers"]),
@@ -93,7 +93,7 @@ TEST_PARAMETERS = {
 
 @pytest.mark.parametrize(
     ("kwargs", "properties"),
-    [v[:2] for v in TEST_PARAMETERS.values()],
+    [v[:2] for v in test_parameters.values()],
 )
 @pytest.mark.parametrize("fig_and_ax", [False, True])
 def test_plot_matplotlib(
@@ -110,8 +110,8 @@ def test_plot_matplotlib(
 
 @pytest.mark.parametrize(
     ("kwargs", "properties"),
-    [v[:2] for v in TEST_PARAMETERS.values()],
-    ids=TEST_PARAMETERS.keys(),
+    [v[:2] for v in test_parameters.values()],
+    ids=test_parameters.keys(),
 )
 def test_plot_plotly(kwargs, properties, snapshot, dataset) -> None:
     """Test images created by Lines.execute against references for plotly."""

@@ -56,24 +56,24 @@ from gemseo.dataset import DatasetClassName
 from gemseo.dataset.optimization_dataset import OptimizationDataset
 from gemseo.doe.factory import DOELibraryFactory
 from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
-from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+from gemseo.machine_learning.regression.model.factory import regressor_factory
 from gemseo.problem.dataset import DatasetType
 from gemseo.scenario.mdo import MDOScenario
-from gemseo.util.constant import _CHECK_DESVARS_BOUNDS
-from gemseo.util.constant import _ENABLE_DISCIPLINE_CACHE
-from gemseo.util.constant import _ENABLE_DISCIPLINE_STATISTICS
-from gemseo.util.constant import _ENABLE_DISCIPLINE_STATUS
-from gemseo.util.constant import _ENABLE_FUNCTION_STATISTICS
-from gemseo.util.constant import _ENABLE_PARALLEL_EXECUTION
-from gemseo.util.constant import _ENABLE_PROGRESS_BAR
-from gemseo.util.constant import _LOGGING_DATE_FORMAT
-from gemseo.util.constant import _LOGGING_FILE_MODE
-from gemseo.util.constant import _LOGGING_FILE_PATH
-from gemseo.util.constant import _LOGGING_LEVEL
-from gemseo.util.constant import _LOGGING_MESSAGE_FORMAT
-from gemseo.util.constant import _VALIDATE_INPUT_DATA
-from gemseo.util.constant import _VALIDATE_OUTPUT_DATA
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import _check_desvars_bounds
+from gemseo.util.constant import _enable_discipline_cache
+from gemseo.util.constant import _enable_discipline_statistics
+from gemseo.util.constant import _enable_discipline_status
+from gemseo.util.constant import _enable_function_statistics
+from gemseo.util.constant import _enable_parallel_execution
+from gemseo.util.constant import _enable_progress_bar
+from gemseo.util.constant import _logging_date_format
+from gemseo.util.constant import _logging_file_mode
+from gemseo.util.constant import _logging_file_path
+from gemseo.util.constant import _logging_level
+from gemseo.util.constant import _logging_message_format
+from gemseo.util.constant import _validate_input_data
+from gemseo.util.constant import _validate_output_data
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.global_configuration import _configuration as configuration
 from gemseo.util.logging import _configure_logger
@@ -144,9 +144,9 @@ if TYPE_CHECKING:
 # All factories are Singletons which means that the scan for
 # plugins is done once only
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 # By default, no logging is produced.
-LOGGER.addHandler(logging.NullHandler())
+logger.addHandler(logging.NullHandler())
 
 
 def generate_n2_plot(
@@ -227,9 +227,9 @@ def get_available_formulations() -> list[str]:
     Returns:
         The names of the available MDO formulations.
     """
-    from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    return MDO_FORMULATION_FACTORY.class_names
+    return mdo_formulation_factory.class_names
 
 
 def get_available_opt_algorithms() -> list[str]:
@@ -238,9 +238,9 @@ def get_available_opt_algorithms() -> list[str]:
     Returns:
         The names of the available optimization algorithms.
     """
-    from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+    from gemseo.optimization.factory import optimization_library_factory
 
-    return OPTIMIZATION_LIBRARY_FACTORY.algorithms
+    return optimization_library_factory.algorithms
 
 
 def get_available_doe_algorithms() -> list[str]:
@@ -253,9 +253,9 @@ def get_available_doe_algorithms() -> list[str]:
         >>> from gemseo import get_available_doe_algorithms
         >>> get_available_doe_algorithms()
     """
-    from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+    from gemseo.doe.factory import doe_library_factory
 
-    return DOE_LIBRARY_FACTORY.algorithms
+    return doe_library_factory.algorithms
 
 
 def get_available_surrogates() -> list[str]:
@@ -275,9 +275,9 @@ def get_available_disciplines() -> list[str]:
     Returns:
         The names of the available disciplines.
     """
-    from gemseo.discipline.factory import DISCIPLINE_FACTORY
+    from gemseo.discipline.factory import discipline_factory
 
-    return DISCIPLINE_FACTORY.class_names
+    return discipline_factory.class_names
 
 
 def get_surrogate_options_schema(
@@ -318,10 +318,10 @@ def get_algorithm_options_schema(
     Raises:
         ValueError: When the algorithm is not available.
     """
-    from gemseo.doe.factory import DOE_LIBRARY_FACTORY
-    from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+    from gemseo.doe.factory import doe_library_factory
+    from gemseo.optimization.factory import optimization_library_factory
 
-    for factory in (DOE_LIBRARY_FACTORY, OPTIMIZATION_LIBRARY_FACTORY):
+    for factory in (doe_library_factory, optimization_library_factory):
         if factory.is_available(algorithm_name):
             settings_class = factory.get_settings_class(algorithm_name)
             return _get_json_schema_from_settings(
@@ -400,9 +400,9 @@ def get_available_post_processings() -> list[str]:
     Returns:
         The names of the available post-processings.
     """
-    from gemseo.post.factory import POST_FACTORY
+    from gemseo.post.factory import post_factory
 
-    return POST_FACTORY.class_names
+    return post_factory.class_names
 
 
 def get_post_processing_options_schema(
@@ -420,9 +420,9 @@ def get_post_processing_options_schema(
     Returns:
         The schema of the options of the post-processing.
     """
-    from gemseo.post.factory import POST_FACTORY
+    from gemseo.post.factory import post_factory
 
-    cls = POST_FACTORY.get_class(post_proc_name)
+    cls = post_factory.get_class(post_proc_name)
     return _get_json_schema_from_settings(cls.settings_class, output_json, pretty_print)
 
 
@@ -441,9 +441,9 @@ def get_formulation_options_schema(
     Returns:
         The schema of the options of the formulation.
     """
-    from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    grammar = MDO_FORMULATION_FACTORY.get_options_grammar(formulation_name)
+    grammar = mdo_formulation_factory.get_options_grammar(formulation_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -465,9 +465,9 @@ def get_formulation_sub_options_schema(
     Returns:
         The schema of the sub-options of the formulation, if any.
     """
-    from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    grammar = MDO_FORMULATION_FACTORY.get_sub_options_grammar(
+    grammar = mdo_formulation_factory.get_sub_options_grammar(
         formulation_name, **formulation_settings
     )
     return _get_schema(grammar, output_json, pretty_print)
@@ -487,9 +487,9 @@ def get_formulations_sub_options_defaults(
     Returns:
         The default values of the sub-options of the formulation.
     """
-    from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    return MDO_FORMULATION_FACTORY.get_default_sub_option_values(
+    return mdo_formulation_factory.get_default_sub_option_values(
         formulation_name, **formulation_settings
     )
 
@@ -505,9 +505,9 @@ def get_formulations_options_defaults(
     Returns:
         The default values of the options of the formulation.
     """
-    from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
 
-    return MDO_FORMULATION_FACTORY.get_default_option_values(formulation_name)
+    return mdo_formulation_factory.get_default_option_values(formulation_name)
 
 
 def get_discipline_options_schema(
@@ -525,9 +525,9 @@ def get_discipline_options_schema(
     Returns:
         The schema of the discipline.
     """
-    from gemseo.discipline.factory import DISCIPLINE_FACTORY
+    from gemseo.discipline.factory import discipline_factory
 
-    grammar = DISCIPLINE_FACTORY.get_options_grammar(discipline_name)
+    grammar = discipline_factory.get_options_grammar(discipline_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -546,12 +546,12 @@ def get_scenario_options_schema(
     Returns:
         The schema of the options of the scenario.
     """
-    from gemseo.scenario.factory import SCENARIO_FACTORY
+    from gemseo.scenario.factory import scenario_factory
 
     if scenario_type not in get_available_scenario_types():
         msg = f"Unknown scenario type {scenario_type}"
         raise ValueError(msg)
-    grammar = SCENARIO_FACTORY.get_options_grammar(f"{scenario_type}Scenario")
+    grammar = scenario_factory.get_options_grammar(f"{scenario_type}Scenario")
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -591,9 +591,9 @@ def get_discipline_options_defaults(
     Returns:
         The default values of the options of the discipline.
     """
-    from gemseo.discipline.factory import DISCIPLINE_FACTORY
+    from gemseo.discipline.factory import discipline_factory
 
-    return DISCIPLINE_FACTORY.get_default_option_values(discipline_name)
+    return discipline_factory.get_default_option_values(discipline_name)
 
 
 def get_scenario_differentiation_modes() -> tuple[
@@ -615,9 +615,9 @@ def get_available_scenario_types() -> list[str]:
     Returns:
         The names of the available scenario types.
     """
-    from gemseo.scenario.factory import SCENARIO_FACTORY
+    from gemseo.scenario.factory import scenario_factory
 
-    return sorted(n.removesuffix("Scenario") for n in SCENARIO_FACTORY.class_names)
+    return sorted(n.removesuffix("Scenario") for n in scenario_factory.class_names)
 
 
 def _get_schema(
@@ -676,7 +676,7 @@ def _pretty_print_schema(schema: dict[str, Any]):
     table.sortby = "Name"
     table.min_width = 25
     print(table)  # noqa: T201
-    LOGGER.info("%s", table)
+    logger.info("%s", table)
 
 
 def get_available_mdas() -> list[str]:
@@ -685,9 +685,9 @@ def get_available_mdas() -> list[str]:
     Returns:
         The names of the available MDAs.
     """
-    from gemseo.mda.factory import MDA_FACTORY
+    from gemseo.mda.factory import mda_factory
 
-    return MDA_FACTORY.class_names
+    return mda_factory.class_names
 
 
 def get_mda_options_schema(
@@ -705,9 +705,9 @@ def get_mda_options_schema(
     Returns:
         The schema of the options of the MDA.
     """
-    from gemseo.mda.factory import MDA_FACTORY
+    from gemseo.mda.factory import mda_factory
 
-    grammar = MDA_FACTORY.get_options_grammar(mda_name)
+    grammar = mda_factory.get_options_grammar(mda_name)
     return _get_schema(grammar, output_json, pretty_print)
 
 
@@ -742,7 +742,7 @@ def create_scenario(
         **formulation_settings: The formulation settings.
             These arguments are ignored when `settings_model` is not `None`.
     """
-    from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
     from gemseo.scenario.mdo import MDOScenario
 
     if not isinstance(disciplines, Collection):
@@ -759,7 +759,7 @@ def create_scenario(
 
     if formulation_settings_model is None:
         formulation_name = formulation_settings.pop("formulation_name")
-        settings = MDO_FORMULATION_FACTORY.get_class(formulation_name).settings_class(
+        settings = mdo_formulation_factory.get_class(formulation_name).settings_class(
             **formulation_settings
         )
     else:
@@ -772,11 +772,11 @@ def create_scenario(
 
 def configure_logger(
     logger_name: str = "",
-    level: str | int = _LOGGING_LEVEL,
-    date_format: str = _LOGGING_DATE_FORMAT,
-    message_format: str = _LOGGING_MESSAGE_FORMAT,
-    filename: StrPath = _LOGGING_FILE_PATH,
-    filemode: str = _LOGGING_FILE_MODE,
+    level: str | int = _logging_level,
+    date_format: str = _logging_date_format,
+    message_format: str = _logging_message_format,
+    filename: StrPath = _logging_file_path,
+    filemode: str = _logging_file_mode,
 ) -> Logger:
     """Configure GEMSEO logging.
 
@@ -850,9 +850,9 @@ def create_discipline(
     Returns:
         The disciplines.
     """
-    from gemseo.discipline.factory import DISCIPLINE_FACTORY
+    from gemseo.discipline.factory import discipline_factory
 
-    factory = DISCIPLINE_FACTORY
+    factory = discipline_factory
     if isinstance(discipline_name, str):
         return factory.create(discipline_name, *args, **kwargs)
 
@@ -880,7 +880,7 @@ def import_discipline(
 def create_scalable(
     name: str,
     data: Dataset,
-    sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+    sizes: Mapping[str, int] = read_only_empty_dict,
     **parameters: Any,
 ) -> DataDrivenScalableDiscipline:
     """Create a scalable discipline from a dataset.
@@ -904,7 +904,7 @@ def create_scalable(
 def create_surrogate(
     regressor: str | BaseRegressor | BaseRegressorSettings,
     data: IODataset | None = None,
-    transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
+    transformer: TransformerType = BaseRegressor.default_transformer,
     name: str = "",
 ) -> SurrogateDiscipline:
     """Create a surrogate model.
@@ -943,7 +943,7 @@ def create_surrogate(
         return SurrogateDiscipline(regressor, name=name)
 
     if isinstance(regressor, str):
-        settings = REGRESSOR_FACTORY.get_class(regressor).settings_class()
+        settings = regressor_factory.get_class(regressor).settings_class()
     else:
         settings = regressor
 
@@ -976,9 +976,9 @@ def create_mda(
     Returns:
         The MDA.
     """
-    from gemseo.mda.factory import MDA_FACTORY
+    from gemseo.mda.factory import mda_factory
 
-    settings_class = MDA_FACTORY.get_class(mda_name).settings_class
+    settings_class = mda_factory.get_class(mda_name).settings_class
     settings = {
         name: value
         for name, value in kwargs.items()
@@ -989,7 +989,7 @@ def create_mda(
         for name, value in kwargs.items()
         if name not in settings_class.model_fields
     }
-    return MDA_FACTORY.create(
+    return mda_factory.create(
         mda_name,
         disciplines,
         settings=create_model(
@@ -1023,7 +1023,7 @@ def execute_post(
         The post-processor.
     """
     from gemseo.optimization.problem import OptimizationProblem
-    from gemseo.post.factory import POST_FACTORY
+    from gemseo.post.factory import post_factory
 
     if isinstance(to_post_proc, MDOScenario):
         opt_problem = to_post_proc.formulation.problem
@@ -1039,10 +1039,10 @@ def execute_post(
 
     if settings_model is None:
         post_name = settings.pop("post_name")
-        settings = POST_FACTORY.get_class(post_name).settings_class(**settings)
+        settings = post_factory.get_class(post_name).settings_class(**settings)
     else:
         settings = settings_model
-    return POST_FACTORY.execute(opt_problem, settings)
+    return post_factory.execute(opt_problem, settings)
 
 
 def execute_algo(
@@ -1065,14 +1065,14 @@ def execute_algo(
             These arguments are ignored when `settings_model` is not `None`.
     """
     if algo_type == "opt":
-        from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+        from gemseo.optimization.factory import optimization_library_factory
 
-        factory = OPTIMIZATION_LIBRARY_FACTORY
+        factory = optimization_library_factory
 
     elif algo_type == "doe":
-        from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+        from gemseo.doe.factory import doe_library_factory
 
-        factory = DOE_LIBRARY_FACTORY
+        factory = doe_library_factory
     else:
         msg = f"Unknown algo type: {algo_type}, please use 'doe' or 'opt' !"
         raise ValueError(msg)
@@ -1108,7 +1108,7 @@ def monitor_scenario(
 
 def check_jacobian(
     discipline: Discipline,
-    input_value: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+    input_value: StrKeyMapping = read_only_empty_dict,
     atol: float = 1e-8,
     rtol: float = 1e-8,
     inputs: Iterable[str] = (),
@@ -1128,7 +1128,7 @@ def check_jacobian(
     fig_size_y: float = 10,
     indices: Mapping[
         str, int | Sequence[int] | Ellipsis | slice
-    ] = READ_ONLY_EMPTY_DICT,
+    ] = read_only_empty_dict,
 ) -> bool:
     """Check the analytical Jacobian of a discipline against an approximation.
 
@@ -1226,7 +1226,7 @@ def print_configuration() -> None:
     from gemseo.post.factory import PostFactory
 
     settings = _log_settings()
-    LOGGER.info("%s", settings)
+    logger.info("%s", settings)
     print(settings)  # noqa: T201
     for factory in (
         DisciplineFactory,
@@ -1238,7 +1238,7 @@ def print_configuration() -> None:
         PostFactory,
     ):
         factory_repr = repr(factory())
-        LOGGER.info("%s", factory_repr)
+        logger.info("%s", factory_repr)
         print(factory_repr)  # noqa: T201
 
 
@@ -1368,8 +1368,8 @@ def create_dataset(
     name: str = "",
     data: ndarray | StrPath = "",
     variable_names: str | Iterable[str] = (),
-    variable_names_to_n_components: dict[str, int] = READ_ONLY_EMPTY_DICT,
-    variable_names_to_group_names: dict[str, str] = READ_ONLY_EMPTY_DICT,
+    variable_names_to_n_components: dict[str, int] = read_only_empty_dict,
+    variable_names_to_group_names: dict[str, str] = read_only_empty_dict,
     delimiter: str = ",",
     header: bool = True,
     class_name: DatasetClassName = DatasetClassName.DATASET,
@@ -1388,7 +1388,7 @@ def create_dataset(
             assume that all the variables have a single component.
         variable_names_to_group_names: The groups of the variables.
             If empty, use
-            [Dataset.DEFAULT_GROUP][gemseo.dataset.dataset.Dataset.DEFAULT_GROUP]
+            [Dataset.default_group][gemseo.dataset.dataset.Dataset.default_group]
             for all the variables.
         delimiter: The field delimiter.
         header: If `True` and `data` is a string,
@@ -1401,9 +1401,9 @@ def create_dataset(
     Raises:
         ValueError: If `data` is neither a file nor an array.
     """
-    from gemseo.dataset.factory import DATASET_FACTORY
+    from gemseo.dataset.factory import dataset_factory
 
-    dataset_class = DATASET_FACTORY.get_class(class_name)
+    dataset_class = dataset_factory.get_class(class_name)
 
     if isinstance(data, ndarray):
         dataset = dataset_class.from_array(
@@ -1529,11 +1529,11 @@ def compute_doe(
           The design of experiments
           whose rows are the samples and columns the variables.
     """
-    from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+    from gemseo.doe.factory import doe_library_factory
     from gemseo.util.pydantic import get_algo_name
 
     algo_name = get_algo_name(settings_model, settings)
-    library = DOE_LIBRARY_FACTORY.create(algo_name)
+    library = doe_library_factory.create(algo_name)
     settings = create_model(
         library.ALGORITHM_INFOS[algo_name].settings_class,
         settings_model=settings_model,
@@ -1593,15 +1593,15 @@ def _log_settings() -> str:
 
 
 def configure(
-    enable_discipline_statistics: bool = _ENABLE_DISCIPLINE_STATISTICS,
-    enable_function_statistics: bool = _ENABLE_FUNCTION_STATISTICS,
-    enable_progress_bar: bool = _ENABLE_PROGRESS_BAR,
-    enable_discipline_cache: bool = _ENABLE_DISCIPLINE_CACHE,
-    validate_input_data: bool = _VALIDATE_INPUT_DATA,
-    validate_output_data: bool = _VALIDATE_OUTPUT_DATA,
-    check_desvars_bounds: bool = _CHECK_DESVARS_BOUNDS,
-    enable_parallel_execution: bool = _ENABLE_PARALLEL_EXECUTION,
-    enable_discipline_status: bool = _ENABLE_DISCIPLINE_STATUS,
+    enable_discipline_statistics: bool = _enable_discipline_statistics,
+    enable_function_statistics: bool = _enable_function_statistics,
+    enable_progress_bar: bool = _enable_progress_bar,
+    enable_discipline_cache: bool = _enable_discipline_cache,
+    validate_input_data: bool = _validate_input_data,
+    validate_output_data: bool = _validate_output_data,
+    check_desvars_bounds: bool = _check_desvars_bounds,
+    enable_parallel_execution: bool = _enable_parallel_execution,
+    enable_discipline_status: bool = _enable_discipline_status,
 ) -> None:
     """Set the configuration of GEMSEO.
 
@@ -1710,7 +1710,7 @@ def create_scenario_result(
             [ScenarioResult][gemseo.scenario.scenario_result.scenario_result.ScenarioResult].
             If empty,
             use the
-            [DEFAULT_SCENARIO_RESULT_CLASS_NAME][gemseo.formulation.core.base.BaseFormulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME]
+            [default_scenario_result_class_name][gemseo.formulation.core.base.BaseFormulation.default_scenario_result_class_name]
             of the
             [BaseMDOFormulation][gemseo.formulation.core.base_mdo.BaseMDOFormulation]
             attached to the [MDOScenario][gemseo.scenario.mdo.MDOScenario].
@@ -1727,7 +1727,7 @@ def create_scenario_result(
     from gemseo.scenario.scenario_result.factory import ScenarioResultFactory
 
     return ScenarioResultFactory().create(
-        name or scenario.formulation.DEFAULT_SCENARIO_RESULT_CLASS_NAME,
+        name or scenario.formulation.default_scenario_result_class_name,
         scenario=scenario,
         **options,
     )
@@ -1738,7 +1738,7 @@ def sample_disciplines(
     input_space: DesignSpace,
     output_names: str | Iterable[str],
     formulation_name: str = "MDF",
-    formulation_settings: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+    formulation_settings: StrKeyMapping = read_only_empty_dict,
     name: str = "Sampling",
     backup_settings: BackupSettings | None = None,
     algo_settings_model: BaseDOESettings | None = None,
@@ -1766,11 +1766,11 @@ def sample_disciplines(
         The input-output samples of the disciplines.
     """
     settings = dict(formulation_settings)
-    from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+    from gemseo.formulation.factory import mdo_formulation_factory
     from gemseo.scenario.evaluation import EvaluationScenario
     from gemseo.util.string import convert_strings_to_iterable
 
-    formulation_class = MDO_FORMULATION_FACTORY.get_class(formulation_name)
+    formulation_class = mdo_formulation_factory.get_class(formulation_name)
     formulation_settings = formulation_class.settings_class(**settings)
     scenario = EvaluationScenario(
         disciplines,

@@ -21,6 +21,7 @@ import logging
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from typing import Final
 from typing import NamedTuple
 
 from pandas import read_csv
@@ -29,7 +30,7 @@ from prettytable import PrettyTable
 
 from gemseo.core.discipline.data_processor import NameMapping
 from gemseo.core.discipline.discipline import Discipline
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -45,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class DummyDiscipline(Discipline):
@@ -197,7 +198,7 @@ def flatten_processes(
     return list(dict.fromkeys(flattened_processes))
 
 
-_MESSAGE = "Two disciplines, among which {}, compute the same outputs: {}"
+_message: Final[str] = "Two disciplines, among which {}, compute the same outputs: {}"
 
 
 def check_disciplines_consistency(
@@ -229,12 +230,12 @@ def check_disciplines_consistency(
         if already_existing_output_names:
             if raise_error:
                 raise ValueError(
-                    _MESSAGE.format(discipline.name, already_existing_output_names)
+                    _message.format(discipline.name, already_existing_output_names)
                 )
 
             if log_message:
-                LOGGER.warning(
-                    _MESSAGE.replace("{}", "%s"),
+                logger.warning(
+                    _message.replace("{}", "%s"),
                     discipline.name,
                     already_existing_output_names,
                 )
@@ -284,7 +285,7 @@ class VariableRenamer:
         return str(self.__get_pretty_table())
 
     def _repr_html_(self) -> str:
-        return REPR_HTML_WRAPPER.format(self.__get_pretty_table().get_html_string())
+        return repr_html_wrapper.format(self.__get_pretty_table().get_html_string())
 
     @property
     def translations(self) -> tuple[VariableTranslation, ...]:
@@ -428,7 +429,7 @@ class VariableRenamer:
                 f"because it has already been renamed to {new_variable_name!r}."
             )
             if new_variable_name == translation.new_variable_name:
-                LOGGER.warning(msg)
+                logger.warning(msg)
             else:
                 raise ValueError(msg)
 
@@ -519,7 +520,7 @@ def rename_discipline_variables(
     for discipline in disciplines:
         translator = translators.get(discipline_name := discipline.name)
         if translator is None:
-            LOGGER.warning("The discipline '%s' has no translator.", discipline_name)
+            logger.warning("The discipline '%s' has no translator.", discipline_name)
             continue
 
         grammars = [discipline.io.input_grammar, discipline.io.output_grammar]

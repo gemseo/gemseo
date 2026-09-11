@@ -46,12 +46,12 @@ from gemseo.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problem.mdo.sellar.util import WITH_2D_ARRAY
 from gemseo.problem.mdo.sellar.util import get_initial_data
-from gemseo.problem.mdo.sellar.variable import X_SHARED
-from gemseo.problem.mdo.sellar.variable import Y_1
+from gemseo.problem.mdo.sellar.util import with_2d_array
+from gemseo.problem.mdo.sellar.variable import x_shared
+from gemseo.problem.mdo.sellar.variable import y_1
 from gemseo.util.multiprocessing import start_method
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.platform import platform_is_windows
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -132,12 +132,12 @@ def test_disc_parallel_doe_scenario() -> None:
     design_space = create_design_space()
     design_space.add_variable("x_1", lower_bound=0.0, value=1.0, upper_bound=10.0)
     scenario = create_scenario(
-        s_1, Y_1, design_space, formulation_name="DisciplinaryOpt"
+        s_1, y_1, design_space, formulation_name="DisciplinaryOpt"
     )
     n_samples = 20
     scenario.execute(LHS_Settings(n_samples=n_samples, eval_jac=True, n_processes=2))
     assert (
-        len(scenario.formulation.problem.database.get_function_history(Y_1))
+        len(scenario.formulation.problem.database.get_function_history(y_1))
         == n_samples
     )
 
@@ -155,10 +155,10 @@ def test_disc_parallel_doe(
     input_list = []
     for i in range(n):
         inputs = get_initial_data()
-        if WITH_2D_ARRAY:  # pragma: no cover
-            inputs[X_SHARED][0][0] = i
+        if with_2d_array:  # pragma: no cover
+            inputs[x_shared][0][0] = i
         else:
-            inputs[X_SHARED][0] = i
+            inputs[x_shared][0] = i
         input_list.append(inputs)
 
     t_0 = timer()
@@ -171,7 +171,7 @@ def test_disc_parallel_doe(
     assert s_1.execution_statistics.n_executions == n
 
     func_gen = DisciplineAdapterGenerator(s_1)
-    y_0_func = func_gen.get_function([X_SHARED], [Y_1])
+    y_0_func = func_gen.get_function([x_shared], [y_1])
 
     parallel_execution = CallableParallelExecution([y_0_func.evaluate])
     input_list = [array([i, 0], dtype=complex128) for i in range(n)]
@@ -179,13 +179,13 @@ def test_disc_parallel_doe(
 
     for i in range(n):
         inputs = get_initial_data()
-        if WITH_2D_ARRAY:
-            inputs[X_SHARED][0][0] = i
+        if with_2d_array:
+            inputs[x_shared][0][0] = i
         else:
-            inputs[X_SHARED][0] = i
+            inputs[x_shared][0] = i
         s_1.execute(inputs)
-        assert s_1.io.output_data[Y_1] == outs[i][Y_1]
-        assert s_1.io.output_data[Y_1] == output_list[i]
+        assert s_1.io.output_data[y_1] == outs[i][y_1]
+        assert s_1.io.output_data[y_1] == output_list[i]
 
 
 def test_parallel_lin() -> None:
@@ -195,7 +195,7 @@ def test_parallel_lin() -> None:
     input_list = []
     for i in range(3):
         inpts = get_initial_data()
-        inpts[X_SHARED][0] = i + 1
+        inpts[x_shared][0] = i + 1
         input_list.append(inpts)
     outs = parallel_execution.execute(input_list)
 
@@ -203,7 +203,7 @@ def test_parallel_lin() -> None:
 
     for i, disc in enumerate(disciplines):
         inpts = get_initial_data()
-        inpts[X_SHARED][0] = i + 1
+        inpts[x_shared][0] = i + 1
 
         j_ref = disciplines2[i].linearize(inpts)
 
@@ -306,8 +306,8 @@ def test_re_raise_exceptions(exceptions, raises_exception, snapshot) -> None:
 def reset_default_multiproc_method():
     """Restore the default multiprocessing start method."""
     yield
-    CallableParallelExecution.MULTI_PROCESSING_START_METHOD = (
-        start_method.MULTI_PROCESSING_START_METHOD
+    CallableParallelExecution.multi_processing_start_method = (
+        start_method.multi_processing_start_method
     )
 
 
@@ -326,7 +326,7 @@ def reset_default_multiproc_method():
         "threading",
         *(
             ()
-            if PLATFORM_IS_WINDOWS
+            if platform_is_windows
             else (CallableParallelExecution.MultiProcessingStartMethod.FORK,)
         ),
     ],
@@ -349,7 +349,7 @@ def test_multiprocessing_context(
     # and set the boolean `use_threading` from this.
     use_threading = mp_start_method == "threading"
     if not use_threading:
-        CallableParallelExecution.MULTI_PROCESSING_START_METHOD = mp_start_method
+        CallableParallelExecution.multi_processing_start_method = mp_start_method
 
     sellar = Sellar1()
     if add_diff:
@@ -360,7 +360,7 @@ def test_multiprocessing_context(
     parallel_execution = parallel_class(workers, use_threading=use_threading)
 
     atom_inputs = get_initial_data()
-    del atom_inputs[Y_1]
+    del atom_inputs[y_1]
     atom_inputs_half = atom_inputs.copy()
     for name, value in atom_inputs_half.items():
         atom_inputs_half[name] = value / 2
@@ -468,11 +468,11 @@ def test_init_worker_stashes_callables(monkeypatch) -> None:
     from gemseo.core.parallel_execution import callable_parallel_execution as module
 
     monkeypatch.setattr(
-        module, "_WORKER_TASK_CALLABLES", module._uninitialized_worker_task_callables
+        module, "_worker_task_callables", module._uninitialized_worker_task_callables
     )
     task_callables = _TaskCallables([_double], ())
     _init_worker(task_callables)
-    assert module._WORKER_TASK_CALLABLES is task_callables
+    assert module._worker_task_callables is task_callables
     assert _run_task(0, 5) == 10
 
 
@@ -493,10 +493,10 @@ def test_check_method_in_init(monkeypatch, snapshot) -> None:
     """The Windows-only start-method check runs at construction time."""
     from gemseo.core.parallel_execution import callable_parallel_execution as module
 
-    monkeypatch.setattr(module, "PLATFORM_IS_WINDOWS", True)
+    monkeypatch.setattr(module, "platform_is_windows", True)
     monkeypatch.setattr(
         CallableParallelExecution,
-        "MULTI_PROCESSING_START_METHOD",
+        "multi_processing_start_method",
         CallableParallelExecution.MultiProcessingStartMethod.FORK,
     )
     with assert_exception(ValueError, snapshot):

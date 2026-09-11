@@ -136,7 +136,7 @@ class MDAGaussSeidel(BaseMDASolver):
         self._compute_input_coupling_names()
         self._set_resolved_variables(self.coupling_structure.strong_couplings)
         if self.settings.max_mda_iter == 0:
-            del self.io.output_grammar[self.NORMALIZED_RESIDUAL_NORM]
+            del self.io.output_grammar[self.normalized_residual_norm_name]
 
     def _initialize_grammars(self) -> None:
         """Define the input and output grammars from the disciplines' ones."""

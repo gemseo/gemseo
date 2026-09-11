@@ -61,9 +61,9 @@ class OTDistribution(
 
     settings_class = OTDistribution_Settings
 
-    JOINT_DISTRIBUTION_CLASS: ClassVar[type[OTJointDistribution]] = OTJointDistribution
+    joint_distribution_class: ClassVar[type[OTJointDistribution]] = OTJointDistribution
 
-    _WEBSITE: ClassVar[str] = (
+    _website: ClassVar[str] = (
         "http://openturns.github.io/openturns/latest/user_manual/probabilistic_modeling.html"
     )
 
@@ -122,10 +122,10 @@ class OTDistribution(
         """
         transformation = settings.transformation.replace(" ", "")
         symbolic_function = SymbolicFunction(
-            [self.DEFAULT_VARIABLE_NAME], [transformation]
+            [self.default_variable_name], [transformation]
         )
         self._transformation = transformation.replace(
-            self.DEFAULT_VARIABLE_NAME, f"({self._transformation})"
+            self.default_variable_name, f"({self._transformation})"
         )
         return CompositeDistribution(symbolic_function, distribution)
 

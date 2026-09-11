@@ -110,14 +110,14 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T]):
     ALGORITHM_INFOS: ClassVar[dict[str, OptimizationAlgorithmDescription]] = {}
     """The description of the algorithms contained in the library."""
 
-    _RESULT_CLASS: ClassVar[type[OptimizationResult]] = OptimizationResult
+    _result_class: ClassVar[type[OptimizationResult]] = OptimizationResult
     """The class used to present the result of the optimization."""
 
-    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BaseOptimizerSettings]] = (
+    _settings_class_to_exclude: ClassVar[type[BaseOptimizerSettings]] = (
         BaseOptimizerSettings
     )
 
-    _ADDITIONAL_SETTINGS_CLASSES_TO_EXCLUDE: ClassVar[
+    _additional_settings_classes_to_exclude: ClassVar[
         tuple[type[BaseGradientBasedAlgorithmSettings]]
     ] = (BaseGradientBasedAlgorithmSettings,)
 

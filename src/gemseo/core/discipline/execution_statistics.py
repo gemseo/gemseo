@@ -24,7 +24,7 @@ from typing import ClassVar
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
 from gemseo.core.serializable import Serializable
-from gemseo.util.constant import _ENABLE_DISCIPLINE_STATISTICS
+from gemseo.util.constant import _enable_discipline_statistics
 from gemseo.util.multiprocessing.manager import get_multi_processing_manager
 from gemseo.util.timer import Timer
 
@@ -113,7 +113,7 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
 
     """
 
-    is_enabled: ClassVar[bool] = _ENABLE_DISCIPLINE_STATISTICS
+    is_enabled: ClassVar[bool] = _enable_discipline_statistics
     """Whether to record all the statistics."""
 
     is_time_stamps_enabled: ClassVar[bool]
@@ -131,7 +131,7 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
     __name: str
     """The name of the measured object."""
 
-    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = {
+    _attr_not_to_serialize: ClassVar[set[str]] = {
         "__duration",
         "__n_executions",
         "__n_linearizations",

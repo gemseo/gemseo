@@ -26,8 +26,8 @@ from numpy import vstack
 from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.scatter import Scatter
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
+from gemseo.util import seeder
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
-from gemseo.util.seeder import SEED
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -71,7 +71,7 @@ class BaseResampler(metaclass=ABCGoogleDocstringInheritanceMeta):
         self,
         sample_indices: IntegerArray,
         n_splits: int,
-        seed: int | None = SEED,
+        seed: int | None = seeder.seed,
     ) -> None:
         """
         Args:

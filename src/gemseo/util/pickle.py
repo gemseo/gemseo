@@ -23,7 +23,7 @@ from pickle import Unpickler
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.util._compatibility.numpy import NUMPY_GREATER_THAN_2
+from gemseo.util._compatibility.numpy import numpy_greater_than_2
 
 if TYPE_CHECKING:
     from gemseo.util.typing import StrPath
@@ -49,7 +49,7 @@ class _NumpyCompatUnpickler(Unpickler):
         Returns:
             The class.
         """
-        if NUMPY_GREATER_THAN_2 and (
+        if numpy_greater_than_2 and (
             module == "numpy.core" or module.startswith("numpy.core.")
         ):
             module = module.replace("numpy.core", "numpy._core", 1)

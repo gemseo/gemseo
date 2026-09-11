@@ -24,7 +24,7 @@ from numpy import load as np_load
 from numpy import save as np_save
 
 from gemseo.util._compatibility.scipy import sparse_classes
-from gemseo.util.constant import N_CPUS
+from gemseo.util.constant import n_cpus
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.derivative.approximator.factory import GradientApproximatorFactory
 from gemseo.util.derivative.check.base import BaseJacobianChecker
@@ -95,7 +95,7 @@ class FunctionJacobianChecker(BaseJacobianChecker[int]):
             self.__function.evaluate,
             step=step,
             parallel=n_processes != 1,
-            n_processes=N_CPUS if n_processes == 0 else n_processes,
+            n_processes=n_cpus if n_processes == 0 else n_processes,
             use_threading=use_threading,
             wait_time_between_fork=wait_time_between_fork,
         )

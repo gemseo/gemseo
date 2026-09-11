@@ -80,7 +80,7 @@ def test_add_design_variable() -> None:
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
     dataset.add_variable(
-        "x", [[1.0], [2.0]], group_name=OptimizationDataset.DESIGN_GROUP
+        "x", [[1.0], [2.0]], group_name=OptimizationDataset.design_group
     )
     dataset.index = arange(1, len(dataset) + 1)
 
@@ -95,7 +95,7 @@ def test_add_observable_variable() -> None:
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
     dataset.add_variable(
-        "x", [[1.0], [2.0]], group_name=OptimizationDataset.OBSERVABLE_GROUP
+        "x", [[1.0], [2.0]], group_name=OptimizationDataset.observable_group
     )
     dataset.index = arange(1, len(dataset) + 1)
 
@@ -110,7 +110,7 @@ def test_add_objective_variable() -> None:
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
     dataset.add_variable(
-        "x", [[1.0], [2.0]], group_name=OptimizationDataset.OBJECTIVE_GROUP
+        "x", [[1.0], [2.0]], group_name=OptimizationDataset.objective_group
     )
     dataset.index = arange(1, len(dataset) + 1)
 
@@ -125,7 +125,7 @@ def test_add_equality_constraint_variable() -> None:
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
     dataset.add_variable(
-        "x", [[1.0], [2.0]], group_name=OptimizationDataset.EQUALITY_CONSTRAINT_GROUP
+        "x", [[1.0], [2.0]], group_name=OptimizationDataset.equality_constraint_group
     )
     dataset.index = arange(1, len(dataset) + 1)
 
@@ -140,7 +140,7 @@ def test_add_inequality_constraint_variable() -> None:
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
     dataset.add_variable(
-        "x", [[1.0], [2.0]], group_name=OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP
+        "x", [[1.0], [2.0]], group_name=OptimizationDataset.inequality_constraint_group
     )
     dataset.index = arange(1, len(dataset) + 1)
 
@@ -154,7 +154,7 @@ def test_add_design_group() -> None:
 
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
-    dataset.add_group(OptimizationDataset.DESIGN_GROUP, [[1.0], [2.0]], ["x"])
+    dataset.add_group(OptimizationDataset.design_group, [[1.0], [2.0]], ["x"])
     dataset.index = arange(1, len(dataset) + 1)
 
     assert_frame_equal(o_dataset, dataset)
@@ -167,7 +167,7 @@ def test_add_objective_group() -> None:
 
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
-    dataset.add_group(OptimizationDataset.OBJECTIVE_GROUP, [[1.0], [2.0]], ["x"])
+    dataset.add_group(OptimizationDataset.objective_group, [[1.0], [2.0]], ["x"])
     dataset.index = arange(1, len(dataset) + 1)
 
     assert_frame_equal(o_dataset, dataset)
@@ -180,7 +180,7 @@ def test_add_observable_group() -> None:
 
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
-    dataset.add_group(OptimizationDataset.OBSERVABLE_GROUP, [[1.0], [2.0]], ["x"])
+    dataset.add_group(OptimizationDataset.observable_group, [[1.0], [2.0]], ["x"])
     dataset.index = arange(1, len(dataset) + 1)
 
     assert_frame_equal(o_dataset, dataset)
@@ -194,7 +194,7 @@ def test_add_equality_constraint_group() -> None:
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
     dataset.add_group(
-        OptimizationDataset.EQUALITY_CONSTRAINT_GROUP, [[1.0], [2.0]], ["x"]
+        OptimizationDataset.equality_constraint_group, [[1.0], [2.0]], ["x"]
     )
     dataset.index = arange(1, len(dataset) + 1)
 
@@ -209,7 +209,7 @@ def test_add_inequality_constraint_group() -> None:
     dataset = Dataset()
     dataset.name = o_dataset.__class__.__name__
     dataset.add_group(
-        OptimizationDataset.INEQUALITY_CONSTRAINT_GROUP, [[1.0], [2.0]], ["x"]
+        OptimizationDataset.inequality_constraint_group, [[1.0], [2.0]], ["x"]
     )
     dataset.index = arange(1, len(dataset) + 1)
 
@@ -218,26 +218,26 @@ def test_add_inequality_constraint_group() -> None:
 
 def test_design_dataset(dataset) -> None:
     """Test the property design_dataset."""
-    design_dataset = dataset.get_view(group_names=dataset.DESIGN_GROUP)
+    design_dataset = dataset.get_view(group_names=dataset.design_group)
     assert_frame_equal(dataset.design_dataset, design_dataset)
 
 
 def test_objective_dataset(dataset) -> None:
     """Test the property objective_dataset."""
-    objective_dataset = dataset.get_view(group_names=dataset.OBJECTIVE_GROUP)
+    objective_dataset = dataset.get_view(group_names=dataset.objective_group)
     assert_frame_equal(dataset.objective_dataset, objective_dataset)
 
 
 def test_observable_dataset(dataset) -> None:
     """Test the property observable_dataset."""
-    observable_dataset = dataset.get_view(group_names=dataset.OBSERVABLE_GROUP)
+    observable_dataset = dataset.get_view(group_names=dataset.observable_group)
     assert_frame_equal(dataset.observable_dataset, observable_dataset)
 
 
 def test_equality_constraint_dataset(dataset) -> None:
     """Test the property equality_constraint_dataset."""
     equality_constraint_dataset = dataset.get_view(
-        group_names=dataset.EQUALITY_CONSTRAINT_GROUP
+        group_names=dataset.equality_constraint_group
     )
     assert_frame_equal(dataset.equality_constraint_dataset, equality_constraint_dataset)
 
@@ -245,7 +245,7 @@ def test_equality_constraint_dataset(dataset) -> None:
 def test_inequality_constraint_dataset(dataset) -> None:
     """Test the property inequality_constraint_dataset."""
     inequality_constraint_dataset = dataset.get_view(
-        group_names=dataset.INEQUALITY_CONSTRAINT_GROUP
+        group_names=dataset.inequality_constraint_group
     )
     assert_frame_equal(
         dataset.inequality_constraint_dataset, inequality_constraint_dataset
@@ -288,9 +288,9 @@ def test_get_best_iter_history(optim_data) -> None:
 
     dataset_2 = dataset.get_view(
         group_names=(
-            dataset.DESIGN_GROUP,
-            dataset.OBJECTIVE_GROUP,
-            dataset.INEQUALITY_CONSTRAINT_GROUP,
+            dataset.design_group,
+            dataset.objective_group,
+            dataset.inequality_constraint_group,
         )
     )
 

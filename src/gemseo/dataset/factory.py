@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
@@ -25,9 +26,9 @@ from gemseo.dataset.dataset import Dataset
 class DatasetFactory(BaseFactory):
     """A factory of datasets."""
 
-    _CLASS = Dataset
-    _PACKAGE_NAMES = ("gemseo.dataset",)
+    _class: ClassVar[type[Dataset]] = Dataset
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.dataset",)
 
 
-DATASET_FACTORY: Final[DatasetFactory] = DatasetFactory()
+dataset_factory: Final[DatasetFactory] = DatasetFactory()
 """The factory for `Dataset` objects."""

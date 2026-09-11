@@ -28,7 +28,7 @@ from gemseo.linear.scipy_linalg import LGMRES_Settings
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.gauss_seidel import MDAGaussSeidel
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
@@ -77,7 +77,7 @@ class TestMDFFormulation(FormulationsBaseTest):
         )
         xdsmjson = XDSMizer(scenario).xdsmize()
         assert len(xdsmjson) > 0
-        factory = OPTIMIZATION_LIBRARY_FACTORY
+        factory = optimization_library_factory
         cls = factory.get_class(factory.algo_name_to_library[algo])
         settings = cls.ALGORITHM_INFOS[algo].settings_class(
             max_iter=100,

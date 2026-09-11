@@ -18,10 +18,16 @@
 from __future__ import annotations
 
 from numbers import Complex
+from types import MappingProxyType
+from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import ndarray
 
-PYTHON_TO_JSON_TYPES = {
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+python_to_json_types: Final[Mapping[type, str]] = MappingProxyType({
     ndarray: "array",
     list: "array",
     tuple: "array",
@@ -31,4 +37,4 @@ PYTHON_TO_JSON_TYPES = {
     complex: "number",
     Complex: "number",
     float: "number",
-}
+})

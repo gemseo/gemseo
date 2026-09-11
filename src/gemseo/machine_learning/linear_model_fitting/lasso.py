@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from sklearn.linear_model import Lasso as SKLearnLasso
 
 from gemseo.machine_learning.linear_model_fitting.core.base_sklearn_linear_model_fitter import (  # noqa: E501
@@ -40,4 +42,4 @@ class Lasso(BaseSKLearnLinearModelFitter[SKLearnLasso, Lasso_Settings]):
 
     settings_class = Lasso_Settings
 
-    _FITTER_CLASS = SKLearnLasso
+    _fitter_class: ClassVar[type[SKLearnLasso]] = SKLearnLasso

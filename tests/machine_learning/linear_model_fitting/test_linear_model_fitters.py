@@ -22,33 +22,33 @@ from gemseo.machine_learning.linear_model_fitting.factory import (
 )
 from gemseo.machine_learning.linear_model_fitting.null_space import NullSpace
 
-MONO_OUTPUT_ALGORITHMS = {
+mono_output_algorithms = {
     "ElasticNetCV",
     "LARSCV",
     "LassoCV",
     "OrthogonalMatchingPursuitCV",
 }
 
-CLASS_NAMES = sorted(set(LinearModelFitterFactory().class_names) - {NullSpace.__name__})
+class_names = sorted(set(LinearModelFitterFactory().class_names) - {NullSpace.__name__})
 
 
-@pytest.mark.parametrize("class_name", CLASS_NAMES)
+@pytest.mark.parametrize("class_name", class_names)
 def test_default_settings(input_data, output_data, class_name, multioutput):
     """Check the linear model fitting algorithms with default settings."""
-    if multioutput and class_name in MONO_OUTPUT_ALGORITHMS:
+    if multioutput and class_name in mono_output_algorithms:
         return
     cls = LinearModelFitterFactory().get_class(class_name)
     coefficients = cls().fit(input_data, output_data)
     assert coefficients.shape == (4 if multioutput else 1, 3)
 
 
-@pytest.mark.parametrize("class_name", CLASS_NAMES)
+@pytest.mark.parametrize("class_name", class_names)
 @pytest.mark.parametrize("fit_intercept", [False, True])
 def test_custom_settings(
     input_data, output_data, class_name, multioutput, fit_intercept
 ):
     """Check the linear model fitting algorithms with custom settings."""
-    if multioutput and class_name in MONO_OUTPUT_ALGORITHMS:
+    if multioutput and class_name in mono_output_algorithms:
         return
     cls = LinearModelFitterFactory().get_class(class_name)
     settings = cls.settings_class(fit_intercept=fit_intercept)

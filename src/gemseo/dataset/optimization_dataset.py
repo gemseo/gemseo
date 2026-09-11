@@ -24,7 +24,7 @@ from numpy import inf
 from numpy import maximum
 
 from gemseo.dataset.dataset import Dataset
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -38,19 +38,19 @@ if TYPE_CHECKING:
 class OptimizationDataset(Dataset):
     """A [Dataset][gemseo.dataset.dataset.Dataset] to store optimization histories."""
 
-    DESIGN_GROUP: Final[str] = "designs"
+    design_group: Final[str] = "designs"
     """The group name for the design variables."""
 
-    OBJECTIVE_GROUP: Final[str] = "objectives"
+    objective_group: Final[str] = "objectives"
     """The group name for the objectives."""
 
-    INEQUALITY_CONSTRAINT_GROUP: Final[str] = "inequality_constraints"
+    inequality_constraint_group: Final[str] = "inequality_constraints"
     """The group name for the inequality constraints."""
 
-    EQUALITY_CONSTRAINT_GROUP: Final[str] = "equality_constraints"
+    equality_constraint_group: Final[str] = "equality_constraints"
     """The group name for the equality constraints."""
 
-    OBSERVABLE_GROUP: Final[str] = "observables"
+    observable_group: Final[str] = "observables"
     """The group name for the observables."""
 
     @property
@@ -70,52 +70,52 @@ class OptimizationDataset(Dataset):
     @property
     def design_variable_names(self) -> list[str]:
         """The names of the design variables."""
-        return self.get_variable_names(self.DESIGN_GROUP)
+        return self.get_variable_names(self.design_group)
 
     @property
     def equality_constraint_names(self) -> list[str]:
         """The names of the equality constraints."""
-        return self.get_variable_names(self.EQUALITY_CONSTRAINT_GROUP)
+        return self.get_variable_names(self.equality_constraint_group)
 
     @property
     def inequality_constraint_names(self) -> list[str]:
         """The names of the inequality constraints."""
-        return self.get_variable_names(self.INEQUALITY_CONSTRAINT_GROUP)
+        return self.get_variable_names(self.inequality_constraint_group)
 
     @property
     def objective_names(self) -> list[str]:
         """The names of the objectives."""
-        return self.get_variable_names(self.OBJECTIVE_GROUP)
+        return self.get_variable_names(self.objective_group)
 
     @property
     def observable_names(self) -> list[str]:
         """The names of the observables."""
-        return self.get_variable_names(self.OBSERVABLE_GROUP)
+        return self.get_variable_names(self.observable_group)
 
     @property
     def design_dataset(self) -> OptimizationDataset:
         """The view of the design dataset."""
-        return self.get_view(group_names=self.DESIGN_GROUP)
+        return self.get_view(group_names=self.design_group)
 
     @property
     def equality_constraint_dataset(self) -> OptimizationDataset:
         """The view of the equality constraint dataset."""
-        return self.get_view(group_names=self.EQUALITY_CONSTRAINT_GROUP)
+        return self.get_view(group_names=self.equality_constraint_group)
 
     @property
     def inequality_constraint_dataset(self) -> OptimizationDataset:
         """The view of the inequality constraint dataset."""
-        return self.get_view(group_names=self.INEQUALITY_CONSTRAINT_GROUP)
+        return self.get_view(group_names=self.inequality_constraint_group)
 
     @property
     def objective_dataset(self) -> OptimizationDataset:
         """The view of the objective dataset."""
-        return self.get_view(group_names=self.OBJECTIVE_GROUP)
+        return self.get_view(group_names=self.objective_group)
 
     @property
     def observable_dataset(self) -> OptimizationDataset:
         """The view of the observable dataset."""
-        return self.get_view(group_names=self.OBSERVABLE_GROUP)
+        return self.get_view(group_names=self.observable_group)
 
     def add_equality_constraint_variable(
         self,
@@ -139,7 +139,7 @@ class OptimizationDataset(Dataset):
         self.add_variable(
             variable_name,
             data,
-            group_name=self.EQUALITY_CONSTRAINT_GROUP,
+            group_name=self.equality_constraint_group,
             components=components,
         )
 
@@ -165,7 +165,7 @@ class OptimizationDataset(Dataset):
         self.add_variable(
             variable_name,
             data,
-            group_name=self.INEQUALITY_CONSTRAINT_GROUP,
+            group_name=self.inequality_constraint_group,
             components=components,
         )
 
@@ -191,7 +191,7 @@ class OptimizationDataset(Dataset):
         self.add_variable(
             variable_name,
             data,
-            group_name=self.DESIGN_GROUP,
+            group_name=self.design_group,
             components=components,
         )
 
@@ -217,7 +217,7 @@ class OptimizationDataset(Dataset):
         self.add_variable(
             variable_name,
             data,
-            group_name=self.OBJECTIVE_GROUP,
+            group_name=self.objective_group,
             components=components,
         )
 
@@ -243,7 +243,7 @@ class OptimizationDataset(Dataset):
         self.add_variable(
             variable_name,
             data,
-            group_name=self.OBSERVABLE_GROUP,
+            group_name=self.observable_group,
             components=components,
         )
 
@@ -251,7 +251,7 @@ class OptimizationDataset(Dataset):
         self,
         data: DataType,
         variable_names: StrColumnType = "c",
-        variable_name_to_n_components: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_n_components: Mapping[str, int] = read_only_empty_dict,
     ) -> None:
         """Add the data related to the equality constraint group.
 
@@ -259,7 +259,7 @@ class OptimizationDataset(Dataset):
             data: The data.
             variable_names: The names of the variables.
                 If empty, use
-                [DEFAULT_VARIABLE_NAME][gemseo.dataset.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
+                [default_variable_name][gemseo.dataset.optimization_dataset.OptimizationDataset.default_variable_name].
             variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
@@ -267,7 +267,7 @@ class OptimizationDataset(Dataset):
                 assume that all the variables have a single component.
         """
         self.add_group(
-            self.EQUALITY_CONSTRAINT_GROUP,
+            self.equality_constraint_group,
             data,
             variable_names=variable_names,
             variable_name_to_n_components=variable_name_to_n_components,
@@ -277,7 +277,7 @@ class OptimizationDataset(Dataset):
         self,
         data: DataType,
         variable_names: StrColumnType = "c",
-        variable_name_to_n_components: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_name_to_n_components: Mapping[str, int] = read_only_empty_dict,
     ) -> None:
         """Add the data related to the inequality constraint group.
 
@@ -285,7 +285,7 @@ class OptimizationDataset(Dataset):
             data: The data.
             variable_names: The names of the variables.
                 If empty, use
-                [DEFAULT_VARIABLE_NAME][gemseo.dataset.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
+                [default_variable_name][gemseo.dataset.optimization_dataset.OptimizationDataset.default_variable_name].
             variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
@@ -293,7 +293,7 @@ class OptimizationDataset(Dataset):
                 assume that all the variables have a single component.
         """
         self.add_group(
-            self.INEQUALITY_CONSTRAINT_GROUP,
+            self.inequality_constraint_group,
             data,
             variable_names=variable_names,
             variable_name_to_n_components=variable_name_to_n_components,
@@ -311,7 +311,7 @@ class OptimizationDataset(Dataset):
             data: The data.
             variable_names: The names of the variables.
                 If empty, use
-                [DEFAULT_VARIABLE_NAME][gemseo.dataset.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
+                [default_variable_name][gemseo.dataset.optimization_dataset.OptimizationDataset.default_variable_name].
             variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
@@ -319,7 +319,7 @@ class OptimizationDataset(Dataset):
                 assume that all the variables have a single component.
         """
         self.add_group(
-            self.DESIGN_GROUP,
+            self.design_group,
             data,
             variable_names=variable_names,
             variable_name_to_n_components=variable_name_to_n_components,
@@ -337,7 +337,7 @@ class OptimizationDataset(Dataset):
             data: The data.
             variable_names: The names of the variables.
                 If empty, use
-                [DEFAULT_VARIABLE_NAME][gemseo.dataset.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
+                [default_variable_name][gemseo.dataset.optimization_dataset.OptimizationDataset.default_variable_name].
             variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
@@ -345,7 +345,7 @@ class OptimizationDataset(Dataset):
                 assume that all the variables have a single component.
         """
         self.add_group(
-            self.OBJECTIVE_GROUP,
+            self.objective_group,
             data,
             variable_names=variable_names,
             variable_name_to_n_components=variable_name_to_n_components,
@@ -363,7 +363,7 @@ class OptimizationDataset(Dataset):
             data: The data.
             variable_names: The names of the variables.
                 If empty, use
-                [DEFAULT_VARIABLE_NAME][gemseo.dataset.optimization_dataset.OptimizationDataset.DEFAULT_VARIABLE_NAME].
+                [default_variable_name][gemseo.dataset.optimization_dataset.OptimizationDataset.default_variable_name].
             variable_name_to_n_components: The number of components of the variables.
                 If `variable_names` is empty,
                 this argument is not considered.
@@ -371,7 +371,7 @@ class OptimizationDataset(Dataset):
                 assume that all the variables have a single component.
         """
         self.add_group(
-            self.OBSERVABLE_GROUP,
+            self.observable_group,
             data,
             variable_names=variable_names,
             variable_name_to_n_components=variable_name_to_n_components,
@@ -405,19 +405,19 @@ class OptimizationDataset(Dataset):
             ineq_tolerance = metadata.tolerances.inequality
             eq_tolerance = metadata.tolerances.equality
 
-        objective_history = self.get_view(group_names=self.OBJECTIVE_GROUP)
+        objective_history = self.get_view(group_names=self.objective_group)
         best_objective = inf
         best_iteration_history = []
-        there_are_equality_constraints = self.EQUALITY_CONSTRAINT_GROUP in self
-        there_are_inequality_constraints = self.INEQUALITY_CONSTRAINT_GROUP in self
+        there_are_equality_constraints = self.equality_constraint_group in self
+        there_are_inequality_constraints = self.inequality_constraint_group in self
         if there_are_equality_constraints or there_are_inequality_constraints:
             best_unfeasible_constraint = inf
             max_constraint = []
             if there_are_equality_constraints:
-                eq = self.get_view(group_names=self.EQUALITY_CONSTRAINT_GROUP)
+                eq = self.get_view(group_names=self.equality_constraint_group)
                 max_constraint.append((eq.abs() - eq_tolerance).max(axis=1))
             if there_are_inequality_constraints:
-                ineq = self.get_view(group_names=self.INEQUALITY_CONSTRAINT_GROUP)
+                ineq = self.get_view(group_names=self.inequality_constraint_group)
                 max_constraint.append((ineq - ineq_tolerance).max(axis=1))
 
             if len(max_constraint) == 1:

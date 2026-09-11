@@ -43,8 +43,8 @@ class SPNormalDistribution(SPDistribution):
                 interfaced_distribution="norm",
                 parameters={"loc": settings.mu, "scale": settings.sigma},
                 standard_parameters={
-                    self._MU: settings.mu,
-                    self._SIGMA: settings.sigma,
+                    self._mu: settings.mu,
+                    self._sigma: settings.sigma,
                 },
             )
         )

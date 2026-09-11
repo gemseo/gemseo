@@ -33,7 +33,7 @@ from gemseo.uncertainty.reliability.openturns.solver import OTSecant
 class BaseOTRootStrategy(BaseModel):
     """The base class for OpenTURNS root strategies."""
 
-    ALGO_CLASS: ClassVar[type[RootStrategyImplementation]]
+    algo_class: ClassVar[type[RootStrategyImplementation]]
     """The OpenTURNS algorithm type."""
 
     solver: BaseOTSolver = Field(
@@ -58,16 +58,16 @@ class BaseOTRootStrategy(BaseModel):
 class OTSafeAndSlow(BaseOTRootStrategy):
     """The SafeAndSlow root strategy."""
 
-    ALGO_CLASS: ClassVar[type[SafeAndSlow]] = SafeAndSlow
+    algo_class: ClassVar[type[SafeAndSlow]] = SafeAndSlow
 
 
 class OTRiskyAndFast(BaseOTRootStrategy):
     """The RiskyAndFast root strategy."""
 
-    ALGO_CLASS: ClassVar[type[RiskyAndFast]] = RiskyAndFast
+    algo_class: ClassVar[type[RiskyAndFast]] = RiskyAndFast
 
 
 class OTMediumSafe(BaseOTRootStrategy):
     """The MediumSafe root strategy."""
 
-    ALGO_CLASS: ClassVar[type[MediumSafe]] = MediumSafe
+    algo_class: ClassVar[type[MediumSafe]] = MediumSafe

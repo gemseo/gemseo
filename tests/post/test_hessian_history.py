@@ -33,9 +33,9 @@ from gemseo.post.hessian_history_settings import HessianHistory_Settings
 from gemseo.space.design import DesignSpace
 from gemseo.util.testing.helper import assert_exception
 
-DIR_PATH = Path(__file__).parent
-POWER2_PATH = DIR_PATH / "power2_opt_pb.h5"
-POWER2_NAN_PATH = DIR_PATH / "power2_opt_pb_nan.h5"
+dir_path = Path(__file__).parent
+power2_path = dir_path / "power2_opt_pb.h5"
+power2_nan_path = dir_path / "power2_opt_pb_nan.h5"
 
 
 @pytest.mark.parametrize(
@@ -44,7 +44,7 @@ POWER2_NAN_PATH = DIR_PATH / "power2_opt_pb_nan.h5"
 )
 def test_opt_hist_const(obj_relative, snapshot_matplotlib) -> None:
     """Test that a problem with constraints is properly rendered."""
-    problem = OptimizationProblem.from_hdf(POWER2_PATH)
+    problem = OptimizationProblem.from_hdf(power2_path)
     execute_post(
         problem,
         post_name="HessianHistory",
@@ -56,7 +56,7 @@ def test_opt_hist_const(obj_relative, snapshot_matplotlib) -> None:
 
 @pytest.mark.parametrize(
     "problem_path",
-    [POWER2_PATH],
+    [power2_path],
 )
 def test_opt_hist_from_database(
     problem_path,

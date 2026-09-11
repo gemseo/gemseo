@@ -28,20 +28,20 @@ from numpy import power
 from gemseo import create_design_space
 from gemseo import create_scenario
 from gemseo import execute_post
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
-from gemseo.post.factory import POST_FACTORY
+from gemseo.post.factory import post_factory
 from gemseo.post.scatter_plot_matrix import ScatterPlotMatrix
 from gemseo.post.scatter_plot_matrix_settings import ScatterPlotMatrix_Settings
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.util.testing.helper import assert_exception
 
-CURRENT_DIR = Path(__file__).parent
-POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
+current_dir = Path(__file__).parent
+power2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 pytestmark = pytest.mark.skipif(
-    not POST_FACTORY.is_available("ScatterPlotMatrix"),
+    not post_factory.is_available("ScatterPlotMatrix"),
     reason="ScatterPlotMatrix is not available.",
 )
 
@@ -53,8 +53,8 @@ def test_scatter(tmp_wd) -> None:
         tmp_wd : Fixture to move into a temporary directory.
     """
     problem = Power2()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=SLSQP_Settings())
-    post = POST_FACTORY.execute(
+    optimization_library_factory.execute(problem, settings=SLSQP_Settings())
+    post = post_factory.execute(
         problem,
         ScatterPlotMatrix_Settings(
             file_path="scatter1", variable_names=problem.function_names
@@ -71,8 +71,8 @@ def test_scatter_load(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    problem = OptimizationProblem.from_hdf(POWER2)
-    post = POST_FACTORY.execute(
+    problem = OptimizationProblem.from_hdf(power2)
+    post = post_factory.execute(
         problem,
         ScatterPlotMatrix_Settings(
             file_path="scatter2", variable_names=problem.function_names
@@ -82,7 +82,7 @@ def test_scatter_load(tmp_wd) -> None:
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
-    post = POST_FACTORY.execute(problem, ScatterPlotMatrix_Settings(variable_names=[]))
+    post = post_factory.execute(problem, ScatterPlotMatrix_Settings(variable_names=[]))
     for outf in post.output_file_paths:
         assert Path(outf).exists()
 
@@ -93,9 +93,9 @@ def test_non_existent_var(tmp_wd, snapshot) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    problem = OptimizationProblem.from_hdf(POWER2)
+    problem = OptimizationProblem.from_hdf(power2)
     with assert_exception(ValueError, snapshot):
-        POST_FACTORY.execute(
+        post_factory.execute(
             problem, ScatterPlotMatrix_Settings(variable_names=["foo"])
         )
 
@@ -117,7 +117,7 @@ def test_scatter_plot(variables, infile_stem, snapshot_matplotlib) -> None:
             in each test case.
         infile_stem: The stem of the hdf5 data file to load.
     """
-    infile = CURRENT_DIR / (infile_stem + ".h5")
+    infile = current_dir / (infile_stem + ".h5")
     execute_post(
         infile,
         post_name="ScatterPlotMatrix",
@@ -203,7 +203,7 @@ def test_filter_non_feasible(filter_non_feasible, snapshot_matplotlib) -> None:
         array([0.5, 0.5, 0.5]),
         {"pow2": 0.75, "ineq1": 0.375, "ineq2": 0.375, "eq": 0.775},
     )
-    POST_FACTORY.execute(
+    post_factory.execute(
         problem,
         ScatterPlotMatrix_Settings(
             file_extension="png",
@@ -228,7 +228,7 @@ def test_filter_non_feasible_exception(snapshot) -> None:
     )
 
     with assert_exception(ValueError, snapshot):
-        POST_FACTORY.execute(
+        post_factory.execute(
             problem,
             ScatterPlotMatrix_Settings(filter_non_feasible=True, variable_names=["x"]),
         )

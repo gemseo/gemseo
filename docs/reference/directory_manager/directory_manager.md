@@ -116,7 +116,7 @@ Base processor for directory management:
 | `ScenarioDMProcessor` | `ScenarioWorkflowObserver` | `{scenario}` |
 | `DOEDMProcessor` | `DOEWorkflowObserver` | `DOE_sample_{sample_index}` |
 
-`DMProcessorFactory` (module singleton `DM_PROCESSOR_FACTORY`) matches a processor to an
+`DMProcessorFactory` (module singleton `dm_processor_factory`) matches a processor to an
 observer by testing `isinstance(observer, processor.observer_class)`. The DOE
 `{sample_index}` is one-based and equals the sample's position in the DOE, so the
 directory name is reproducible regardless of the (possibly parallel) evaluation order.

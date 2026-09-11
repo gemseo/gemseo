@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.optimization.multiobjective_result import MultiObjectiveOptimizationResult
 from gemseo.optimization.problem import OptimizationProblem
@@ -37,7 +37,7 @@ from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 def problem() -> OptimizationProblem:
     """The Binh-Korn optimization problem ready to be post-processed."""
     binh_korn = BinhKorn()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(
+    optimization_library_factory.execute(
         binh_korn,
         settings=MNBI_Settings(
             max_iter=100, n_sub_optim=5, sub_optim_algo_settings=SLSQP_Settings()
@@ -61,7 +61,7 @@ def test_export_hdf(problem: OptimizationProblem, tmpdir):
 @pytest.mark.parametrize("solved", [True, False])
 def test_str(problem, solved):
     """Test the string representation of the multi objective result."""
-    opt = OPTIMIZATION_LIBRARY_FACTORY.create("MNBI")
+    opt = optimization_library_factory.create("MNBI")
     opt.problem = problem if solved else BinhKorn()
     result = opt._get_result(opt.problem, None, None)
     if solved:

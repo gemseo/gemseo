@@ -55,13 +55,13 @@ if TYPE_CHECKING:
 class KKTReached(TerminationCriterion):
     """A termination criterion based on the Karush-Kuhn-Tucker (KKT) residual norm."""
 
-    _MESSAGE: ClassVar[str] = (
+    _message: ClassVar[str] = (
         "The KKT residual norm is smaller than the tolerance "
         "kkt_tol_abs or kkt_tol_rel. "
     )
 
 
-KKT_RESIDUAL_NORM: Final[str] = "KKT residual norm"
+kkt_residual_norm: Final[str] = "KKT residual norm"
 """The name to store the KKT residual norm in a database."""
 
 
@@ -228,18 +228,18 @@ def kkt_residual_computation(
         Lecture Notes for the DCAMM course Advanced Topics in Structural Optimization,
         1998.
     """
-    res = opt_problem.database.get_function_value(KKT_RESIDUAL_NORM, x_vect)
+    res = opt_problem.database.get_function_value(kkt_residual_norm, x_vect)
     if res is not None:
         return res
     lagrange = LagrangeMultipliers(opt_problem)
     if opt_problem.constraints:
         lagrange.compute(x_vect, ineq_tolerance=ineq_tolerance)
         res = lagrange.kkt_residual + lagrange.constraint_violation
-        opt_problem.database.store(x_vect, {KKT_RESIDUAL_NORM: res})
+        opt_problem.database.store(x_vect, {kkt_residual_norm: res})
         return res
 
     res = norm(lagrange.get_objective_jacobian(x_vect))
-    opt_problem.database.store(x_vect, {KKT_RESIDUAL_NORM: res})
+    opt_problem.database.store(x_vect, {kkt_residual_norm: res})
     return res
 
 

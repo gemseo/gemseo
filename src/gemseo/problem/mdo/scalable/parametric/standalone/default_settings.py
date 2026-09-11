@@ -23,14 +23,14 @@ from __future__ import annotations
 
 from typing import Final
 
-DEFAULT_N_DISCIPLINES: Final[int] = 2
+default_n_disciplines: Final[int] = 2
 r"""The default number $N$ of scalable disciplines."""
 
-DEFAULT_D_0: Final[int] = 1
+default_d_0: Final[int] = 1
 r"""The default size of the shared design variable $x_0$."""
 
-DEFAULT_D_I: Final[int] = 1
+default_d_i: Final[int] = 1
 r"""The default size of the local design variable $x_i$."""
 
-DEFAULT_P_I: Final[int] = 1
+default_p_i: Final[int] = 1
 r"""The default size of the coupling variable $y_i$."""

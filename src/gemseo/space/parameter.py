@@ -81,10 +81,11 @@ import logging
 import warnings
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from prettytable import PrettyTable
 
-from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY
+from gemseo.uncertainty.distribution.factory import distribution_factory
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -115,7 +116,7 @@ from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.string import _format_value_in_pretty_table_16
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ParameterSpace(DesignSpace):
@@ -133,14 +134,14 @@ class ParameterSpace(DesignSpace):
     distribution: BaseJointDistribution | None
     """The joint probability distribution of the uncertain variables, if any."""
 
-    _INITIAL_DISTRIBUTION = "Initial distribution"
-    _TRANSFORMATION = "Transformation"
-    _SUPPORT = "Support"
-    _MEAN = "Mean"
-    _STANDARD_DEVIATION = "Standard deviation"
-    _RANGE = "Range"
-    _BLANK = ""
-    _PARAMETER_SPACE = "Parameter space"
+    _initial_distribution: ClassVar[str] = "Initial distribution"
+    _transformation: ClassVar[str] = "Transformation"
+    _support: ClassVar[str] = "Support"
+    _mean: ClassVar[str] = "Mean"
+    _standard_deviation: ClassVar[str] = "Standard deviation"
+    _range: ClassVar[str] = "Range"
+    _blank: ClassVar[str] = ""
+    _parameter_space: ClassVar[str] = "Parameter space"
 
     __random_vector_name_to_settings: dict[str, tuple[BaseSettings, ...]]
     """The map from a random vector name
@@ -214,8 +215,8 @@ class ParameterSpace(DesignSpace):
             marginal_settings.extend(settings)
 
         marginal_class_name = marginal_settings[0].target_class_name
-        marginal_class = DISTRIBUTION_FACTORY.get_class(marginal_class_name)
-        joint_class = marginal_class.JOINT_DISTRIBUTION_CLASS
+        marginal_class = distribution_factory.get_class(marginal_class_name)
+        joint_class = marginal_class.joint_distribution_class
         settings_class = joint_class.settings_class
         if self.__copulas:
             new_copulas = []
@@ -297,7 +298,7 @@ class ParameterSpace(DesignSpace):
             msg = f"The variable {name!r} already exists."
             raise ValueError(msg)
 
-        distribution_library_names = {s._LIBRARY_NAME for s in settings}
+        distribution_library_names = {s._library_name for s in settings}
         if self.__distribution_library_name:
             distribution_library_names.add(self.__distribution_library_name)
         if len(distribution_library_names) > 1:
@@ -310,17 +311,17 @@ class ParameterSpace(DesignSpace):
 
         if len(self.__random_vector_name_to_settings) == 0:
             marginal_class_name = settings[0].target_class_name
-            marginal_class = DISTRIBUTION_FACTORY.get_class(marginal_class_name)
-            joint_class = marginal_class.JOINT_DISTRIBUTION_CLASS
+            marginal_class = distribution_factory.get_class(marginal_class_name)
+            joint_class = marginal_class.joint_distribution_class
             settings_class = joint_class.settings_class
             self.__supports_dependency = "copula" in settings_class.__fields__
 
-        marginals = [DISTRIBUTION_FACTORY.create_from_settings(s) for s in settings]
+        marginals = [distribution_factory.create_from_settings(s) for s in settings]
         self.__distribution_library_name = next(iter(distribution_library_names))
         self.__random_vector_name_to_settings[name] = settings
 
         # Define the distribution of the random vector with a joint distribution.
-        cls = marginals[0].JOINT_DISTRIBUTION_CLASS
+        cls = marginals[0].joint_distribution_class
         distribution = cls(cls.settings_class(marginal_settings=settings))
         self.distributions[name] = distribution
 
@@ -516,7 +517,7 @@ class ParameterSpace(DesignSpace):
             raise TypeError(error_msg)
         for variable, value in obj.items():
             if variable not in self.uncertain_variables:
-                LOGGER.debug(
+                logger.debug(
                     "%s is not defined in the probability space; "
                     "available variables are %s; "
                     "use uniform distribution for %s.",
@@ -564,7 +565,7 @@ class ParameterSpace(DesignSpace):
                     distributions.append(repr(marginal))
                     transformations.append(marginal.transformation)
             else:
-                empty = [self._BLANK] * self._variables[variable].size
+                empty = [self._blank] * self._variables[variable].size
                 distributions.extend(empty)
                 transformations.extend(empty)
 
@@ -573,11 +574,11 @@ class ParameterSpace(DesignSpace):
                 self
                 .distributions[self.uncertain_variables[0]]
                 .marginals[0]
-                .DEFAULT_VARIABLE_NAME
+                .default_variable_name
             )
             add_transformation = False
             for transformation in transformations:
-                if transformation not in {default_variable_name, self._BLANK}:
+                if transformation not in {default_variable_name, self._blank}:
                     add_transformation = True
                     break
 
@@ -638,20 +639,20 @@ class ParameterSpace(DesignSpace):
                     support.append(joint_support[i])
             else:
                 for _ in range(self.variable_sizes[variable]):
-                    distribution.append(self._BLANK)
-                    transformation.append(self._BLANK)
-                    mean.append(self._BLANK)
-                    std.append(self._BLANK)
-                    support.append(self._BLANK)
-                    rnge.append(self._BLANK)
+                    distribution.append(self._blank)
+                    transformation.append(self._blank)
+                    mean.append(self._blank)
+                    std.append(self._blank)
+                    support.append(self._blank)
+                    rnge.append(self._blank)
 
-        table.add_column(self._INITIAL_DISTRIBUTION, distribution)
-        table.add_column(self._TRANSFORMATION, transformation)
-        table.add_column(self._SUPPORT, support)
-        table.add_column(self._MEAN, mean)
-        table.add_column(self._STANDARD_DEVIATION, std)
-        table.add_column(self._RANGE, rnge)
-        table.title = self._PARAMETER_SPACE
+        table.add_column(self._initial_distribution, distribution)
+        table.add_column(self._transformation, transformation)
+        table.add_column(self._support, support)
+        table.add_column(self._mean, mean)
+        table.add_column(self._standard_deviation, std)
+        table.add_column(self._range, rnge)
+        table.title = self._parameter_space
         return str(table)
 
     def denormalize_vect(

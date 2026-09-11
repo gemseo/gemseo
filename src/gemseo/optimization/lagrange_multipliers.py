@@ -25,6 +25,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Final
 
 from numpy import abs as np_abs
 from numpy import arange
@@ -47,7 +48,7 @@ from gemseo.util.string import repr_variable
 if TYPE_CHECKING:
     from gemseo.optimization.problem import OptimizationProblem
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class LagrangeMultipliers:
@@ -97,15 +98,15 @@ class LagrangeMultipliers:
     """The maximum constraint violation (taking tolerances into account), `None` if
     not computed."""
 
-    LOWER_BOUNDS = "lower_bounds"
-    UPPER_BOUNDS = "upper_bounds"
-    INEQUALITY = "inequality"
-    EQUALITY = "equality"
-    CSTR_LABELS: ClassVar[list[str]] = [
-        LOWER_BOUNDS,
-        UPPER_BOUNDS,
-        INEQUALITY,
-        EQUALITY,
+    lower_bounds: Final[str] = "lower_bounds"
+    upper_bounds: Final[str] = "upper_bounds"
+    inequality: Final[str] = "inequality"
+    equality: Final[str] = "equality"
+    cstr_labels: ClassVar[list[str]] = [
+        lower_bounds,
+        upper_bounds,
+        inequality,
+        equality,
     ]
 
     def __init__(self, opt_problem: OptimizationProblem) -> None:
@@ -147,7 +148,7 @@ class LagrangeMultipliers:
         Returns:
             The Lagrange multipliers.
         """
-        LOGGER.info("Computation of Lagrange multipliers")
+        logger.info("Computation of Lagrange multipliers")
 
         # Check feasibility
         self._check_feasibility(x_vect)
@@ -189,7 +190,7 @@ class LagrangeMultipliers:
         else:
             mul = self.__compute_bounded_least_squares_solution(lhs, rhs)
 
-        LOGGER.info("Residuals norm = %s", self.kkt_residual)
+        logger.info("Residuals norm = %s", self.kkt_residual)
 
         # stores multipliers in a dictionary
         self._store_multipliers(mul)
@@ -239,7 +240,7 @@ class LagrangeMultipliers:
             jacobian_functions=jacobian_functions or None,
         )
         if not self.optimization_problem.constraints.is_point_feasible(values):
-            LOGGER.warning("Infeasible point, Lagrange multipliers may not exist.")
+            logger.warning("Infeasible point, Lagrange multipliers may not exist.")
 
     def _get_act_bound_jac(self, act_bounds: dict[str, ndarray]):
         """Return the Jacobian of the active bounds.
@@ -447,42 +448,42 @@ class LagrangeMultipliers:
         n_act = len(self.active_lb_names)
         if n_act > 0:
             l_b_mult = multipliers[i_min : i_min + n_act]
-            lag[self.LOWER_BOUNDS] = (self.active_lb_names, l_b_mult)
+            lag[self.lower_bounds] = (self.active_lb_names, l_b_mult)
             i_min += n_act
             wrong_inds = (l_b_mult < 0.0).nonzero()[0]
             if wrong_inds.size > 0:
                 names_neg = array(self.active_lb_names)[wrong_inds]
-                LOGGER.warning(
+                logger.warning(
                     "Negative Lagrange multipliers for lower bounds on variables%s !",
                     names_neg,
                 )
         n_act = len(self.active_ub_names)
         if n_act > 0:
             u_b_mult = multipliers[i_min : i_min + n_act]
-            lag[self.UPPER_BOUNDS] = (self.active_ub_names, u_b_mult)
+            lag[self.upper_bounds] = (self.active_ub_names, u_b_mult)
             i_min += n_act
             wrong_inds = (u_b_mult < 0.0).nonzero()[0]
             if wrong_inds.size > 0:
                 names_neg = array(self.active_ub_names)[wrong_inds]
-                LOGGER.warning(
+                logger.warning(
                     "Negative Lagrange multipliers for upper bounds on variables%s !",
                     names_neg,
                 )
         n_act = len(self.active_ineq_names)
         if n_act > 0:
             ineq_mult = multipliers[i_min : i_min + n_act]
-            lag[self.INEQUALITY] = (self.active_ineq_names, ineq_mult)
+            lag[self.inequality] = (self.active_ineq_names, ineq_mult)
             i_min += n_act
             wrong_inds = (ineq_mult < 0.0).nonzero()[0]
             if wrong_inds.size > 0:
                 names_neg = array(self.active_ineq_names)[wrong_inds]
-                LOGGER.warning(
+                logger.warning(
                     "Negative Lagrange multipliers for inequality constraints%s !",
                     names_neg,
                 )
         n_act = len(self.active_eq_names)
         if n_act > 0:
-            lag[self.EQUALITY] = (
+            lag[self.equality] = (
                 self.active_eq_names,
                 multipliers[i_min : i_min + n_act],
             )
@@ -501,18 +502,18 @@ class LagrangeMultipliers:
 
         # Bound-constraints
         indexed_varnames = problem.design_space.get_indexed_variable_names()
-        multipliers[self.LOWER_BOUNDS] = dict.fromkeys(indexed_varnames, 0.0)
-        multipliers[self.UPPER_BOUNDS] = dict.fromkeys(indexed_varnames, 0.0)
+        multipliers[self.lower_bounds] = dict.fromkeys(indexed_varnames, 0.0)
+        multipliers[self.upper_bounds] = dict.fromkeys(indexed_varnames, 0.0)
 
         # Inequality-constraints
-        multipliers[self.INEQUALITY] = {
+        multipliers[self.inequality] = {
             repr_variable(func.name, i, func.dim): 0.0
             for func in problem.constraints.get_inequality_constraints()
             for i in range(func.dim)
         }
 
         # Equality-constraints
-        multipliers[self.EQUALITY] = {
+        multipliers[self.equality] = {
             repr_variable(func.name, i, func.dim): 0.0
             for func in problem.constraints.get_equality_constraints()
             for i in range(func.dim)
@@ -531,50 +532,50 @@ class LagrangeMultipliers:
 
         # Convert to dictionaries
         multipliers = {}
-        for label in self.CSTR_LABELS:
+        for label in self.cstr_labels:
             names, mults = self.lagrange_multipliers.get(label, ([], array([])))
             multipliers[label] = dict(zip(names, mults, strict=False))
 
         # Add the Lagrange multipliers equal to zero
         multipliers_init = self._initialize_multipliers()
-        for label in self.CSTR_LABELS:
+        for label in self.cstr_labels:
             multipliers_init[label].update(multipliers[label])
 
         # Cast the multipliers as arrays
         mult_arrays = {}
         # Bound-constraints multipliers
-        mult_arrays[self.LOWER_BOUNDS] = {}
-        mult_arrays[self.UPPER_BOUNDS] = {}
+        mult_arrays[self.lower_bounds] = {}
+        mult_arrays[self.upper_bounds] = {}
         for name in design_space:
             indexed_varnames = design_space.get_indexed_variable_names()
             var_low_mult = array([
-                multipliers_init[self.LOWER_BOUNDS][comp_name]
+                multipliers_init[self.lower_bounds][comp_name]
                 for comp_name in indexed_varnames
             ])
-            mult_arrays[self.LOWER_BOUNDS][name] = var_low_mult
+            mult_arrays[self.lower_bounds][name] = var_low_mult
             var_upp_mult = array([
-                multipliers_init[self.UPPER_BOUNDS][comp_name]
+                multipliers_init[self.upper_bounds][comp_name]
                 for comp_name in indexed_varnames
             ])
-            mult_arrays[self.UPPER_BOUNDS][name] = var_upp_mult
+            mult_arrays[self.upper_bounds][name] = var_upp_mult
         # Inequality-constraints multipliers
-        ineq_mult = multipliers_init[self.INEQUALITY]
-        mult_arrays[self.INEQUALITY] = {}
+        ineq_mult = multipliers_init[self.inequality]
+        mult_arrays[self.inequality] = {}
         for func in problem.constraints.get_inequality_constraints():
             func_mult = array([
                 ineq_mult[repr_variable(func.name, index, func.dim)]
                 for index in range(func.dim)
             ])
-            mult_arrays[self.INEQUALITY][func.name] = func_mult
+            mult_arrays[self.inequality][func.name] = func_mult
         # Equality-constraints multipliers
-        eq_mult = multipliers_init[self.EQUALITY]
-        mult_arrays[self.EQUALITY] = {}
+        eq_mult = multipliers_init[self.equality]
+        mult_arrays[self.equality] = {}
         for func in problem.constraints.get_equality_constraints():
             func_mult = array([
                 eq_mult[repr_variable(func.name, index, func.dim)]
                 for index in range(func.dim)
             ])
-            mult_arrays[self.EQUALITY][func.name] = func_mult
+            mult_arrays[self.equality][func.name] = func_mult
 
         return mult_arrays
 

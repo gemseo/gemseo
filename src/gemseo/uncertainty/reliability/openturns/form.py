@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -39,6 +40,8 @@ from gemseo.uncertainty.reliability.openturns.multi_form_result import MultiFORM
 from gemseo.uncertainty.reliability.openturns.optimizer import BaseOTOptimizer
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from openturns import Analytical
     from openturns import FORMResult as OTFORMResult
 
@@ -50,16 +53,18 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
 
     settings_class: ClassVar[type[OT_FORM_Settings]] = OT_FORM_Settings
 
-    _ALGO_CLASS: ClassVar[type[FORM]] = FORM
+    _algo_class: ClassVar[type[FORM]] = FORM
 
-    __NAMES_TO_CLASSES: Final[dict[str, type[OptimizationAlgorithmImplementation]]] = {
+    __names_to_classes: Final[
+        Mapping[str, type[OptimizationAlgorithmImplementation]]
+    ] = MappingProxyType({
         "OTAbdoRackwitz": AbdoRackwitz,
         "OTCobyla": Cobyla,
         "OTNLopt": NLopt,
-    }
+    })
     """The map from the name of an optimization algorithm to its class."""
 
-    _USE_MULTIFORM_RESULT: ClassVar[bool] = False
+    _use_multiform_result: ClassVar[bool] = False
     """Whether the algorithm returns a `MultiFORMResult`."""
 
     def _execute(
@@ -69,7 +74,7 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
         settings: OT_FORM_Settings,
     ) -> FORMResult | MultiFORMResult:
         opt_settings = settings.optimizer
-        opt_class = self.__NAMES_TO_CLASSES[opt_settings.__class__.__name__]
+        opt_class = self.__names_to_classes[opt_settings.__class__.__name__]
         ot_settings = opt_settings.model_dump(exclude=set(BaseOTOptimizer.model_fields))
         opt = opt_class(NearestPointProblem(), *ot_settings.values())
         opt.setMaximumAbsoluteError(opt_settings.maximum_absolute_error)
@@ -83,12 +88,12 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
 
         ot_event = self._create_ot_event(event_name, problem)
 
-        algo = self._ALGO_CLASS(opt, ot_event)
+        algo = self._algo_class(opt, ot_event)
         self._set_algo_options(algo, settings)
         algo.run()
 
         result = algo.getResult()
-        if self._USE_MULTIFORM_RESULT:
+        if self._use_multiform_result:
             return MultiFORMResult(
                 name=event_name,
                 probability=self._extract_probability(result, settings),

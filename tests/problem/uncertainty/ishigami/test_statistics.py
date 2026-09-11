@@ -16,35 +16,35 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.problem.uncertainty.ishigami.statistics import MEAN
-from gemseo.problem.uncertainty.ishigami.statistics import SOBOL_1
-from gemseo.problem.uncertainty.ishigami.statistics import SOBOL_2
-from gemseo.problem.uncertainty.ishigami.statistics import SOBOL_3
-from gemseo.problem.uncertainty.ishigami.statistics import SOBOL_12
-from gemseo.problem.uncertainty.ishigami.statistics import SOBOL_13
-from gemseo.problem.uncertainty.ishigami.statistics import SOBOL_23
-from gemseo.problem.uncertainty.ishigami.statistics import SOBOL_123
-from gemseo.problem.uncertainty.ishigami.statistics import TOTAL_SOBOL_1
-from gemseo.problem.uncertainty.ishigami.statistics import TOTAL_SOBOL_2
-from gemseo.problem.uncertainty.ishigami.statistics import TOTAL_SOBOL_3
-from gemseo.problem.uncertainty.ishigami.statistics import VARIANCE
+from gemseo.problem.uncertainty.ishigami.statistics import mean
+from gemseo.problem.uncertainty.ishigami.statistics import sobol_1
+from gemseo.problem.uncertainty.ishigami.statistics import sobol_2
+from gemseo.problem.uncertainty.ishigami.statistics import sobol_3
+from gemseo.problem.uncertainty.ishigami.statistics import sobol_12
+from gemseo.problem.uncertainty.ishigami.statistics import sobol_13
+from gemseo.problem.uncertainty.ishigami.statistics import sobol_23
+from gemseo.problem.uncertainty.ishigami.statistics import sobol_123
+from gemseo.problem.uncertainty.ishigami.statistics import total_sobol_1
+from gemseo.problem.uncertainty.ishigami.statistics import total_sobol_2
+from gemseo.problem.uncertainty.ishigami.statistics import total_sobol_3
+from gemseo.problem.uncertainty.ishigami.statistics import variance
 
 
 @pytest.mark.parametrize(
     ("statistic", "value"),
     [
-        (MEAN, 3.5),
-        (VARIANCE, 13.84),
-        (SOBOL_1, 0.31),
-        (SOBOL_2, 0.44),
-        (SOBOL_3, 0.0),
-        (SOBOL_12, 0.0),
-        (SOBOL_13, 0.24),
-        (SOBOL_23, 0.0),
-        (SOBOL_123, 0.0),
-        (TOTAL_SOBOL_1, 0.55),
-        (TOTAL_SOBOL_2, 0.44),
-        (TOTAL_SOBOL_3, 0.24),
+        (mean, 3.5),
+        (variance, 13.84),
+        (sobol_1, 0.31),
+        (sobol_2, 0.44),
+        (sobol_3, 0.0),
+        (sobol_12, 0.0),
+        (sobol_13, 0.24),
+        (sobol_23, 0.0),
+        (sobol_123, 0.0),
+        (total_sobol_1, 0.55),
+        (total_sobol_2, 0.44),
+        (total_sobol_3, 0.24),
     ],
 )
 def test_statistics(statistic, value) -> None:

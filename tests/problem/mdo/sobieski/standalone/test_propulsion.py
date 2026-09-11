@@ -24,7 +24,7 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
-THRESHOLD = 1e-12
+threshold = 1e-12
 
 
 @pytest.fixture(scope="module")
@@ -238,8 +238,8 @@ def test_jac_prop(problem) -> None:
     indata = problem.get_default_inputs(names=sr.io.input_grammar)
     assert checker.check(
         indata,
-        atol=THRESHOLD,
-        rtol=THRESHOLD,
+        atol=threshold,
+        rtol=threshold,
         approximation_mode="complex_step",
         step=1e-30,
     )
@@ -249,8 +249,8 @@ def test_jac_prop(problem) -> None:
     indata = problem.get_default_inputs_equilibrium(names=sr.io.input_grammar)
     assert checker.check(
         indata,
-        atol=THRESHOLD,
-        rtol=THRESHOLD,
+        atol=threshold,
+        rtol=threshold,
         approximation_mode="complex_step",
         step=1e-30,
     )
@@ -259,8 +259,8 @@ def test_jac_prop(problem) -> None:
         indata = problem.get_random_input(names=sr.io.input_grammar, seed=1)
         assert checker.check(
             indata,
-            atol=THRESHOLD,
-            rtol=THRESHOLD,
+            atol=threshold,
+            rtol=threshold,
             approximation_mode="complex_step",
             step=1e-30,
         )

@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 from math import inf
+from typing import ClassVar
 
 import pytest
 from pydantic import Field
@@ -68,8 +69,8 @@ def get_setting_classes(
     """
 
     class SettingsFactory(BaseFactory):
-        _CLASS = BaseSettings
-        _PACKAGE_NAMES = (package_name,)
+        _class: ClassVar[type[BaseSettings]] = BaseSettings
+        _package_names: ClassVar[tuple[str, ...]] = (package_name,)
 
         @property
         def classes(self) -> list[str]:

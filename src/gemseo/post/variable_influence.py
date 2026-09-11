@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class VariableInfluence(BasePost[VariableInfluence_Settings]):
@@ -73,7 +73,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         VariableInfluence_Settings
     )
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+    _use_jacobian_data: ClassVar[bool] = True
 
     def _plot(self, settings: VariableInfluence_Settings) -> None:
         level = settings.level
@@ -178,7 +178,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
 
         influential_variables = absolute_sensitivity_indices[:n_variables]
         x_names = self._get_design_variable_names()
-        LOGGER.info(
+        logger.info(
             "   %s; %s",
             func,
             pretty_str([x_names[i] for i in influential_variables], use_and=False),
@@ -244,7 +244,7 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
         # because the problem dimension is not updated when the history is filtered.
         abscissas = range(len(next(iter(name_to_sensitivity.values()))))
 
-        LOGGER.info(
+        logger.info(
             "Output name; "
             "most influential variables to explain %s%% of the output variation ",
             level,

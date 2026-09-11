@@ -52,7 +52,7 @@ from typing import TypeVar
 
 from numpy import ndarray
 
-from gemseo.core.algorithm._progress_bar.custom import LOGGER as TQDM_LOGGER
+from gemseo.core.algorithm._progress_bar.custom import logger as tqdm_logger
 from gemseo.core.algorithm._progress_bar.standard import ProgressBar
 from gemseo.core.algorithm._progress_bar.unsuffixed import UnsuffixedProgressBar
 from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
@@ -66,7 +66,7 @@ from gemseo.core.problem.termination_criterion import MaxIterReachedException
 from gemseo.core.problem.termination_criterion import MaxTimeReached
 from gemseo.core.problem.termination_criterion import TerminationCriterion
 from gemseo.util._workflow_observer.injector import WorkflowObserverMeta
-from gemseo.util.constant import _ENABLE_PROGRESS_BAR
+from gemseo.util.constant import _enable_progress_bar
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.hashable_ndarray import HashableNdarray
 from gemseo.util.logging import OneLineLogging
@@ -91,7 +91,7 @@ DriverSettingType = (
     | Iterable[CallbackType]
     | StrKeyMapping
 )
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseDriverSettings)
 
@@ -117,16 +117,16 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
     ALGORITHM_INFOS: ClassVar[dict[str, DriverDescription]] = {}
     """The description of the algorithms contained in the library."""
 
-    _RESULT_CLASS: ClassVar[type[OptimizationResult] | None] = None
+    _result_class: ClassVar[type[OptimizationResult] | None] = None
     """The class used to present the result of the optimization.
 
     Set by the driver families whose drivers can solve an optimization problem.
     """
 
-    _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = False
+    _support_sparse_jacobian: ClassVar[bool] = False
     """Whether the library support sparse Jacobians."""
 
-    enable_progress_bar: bool = _ENABLE_PROGRESS_BAR
+    enable_progress_bar: bool = _enable_progress_bar
     """Whether to enable the progress bar in the evaluation log."""
 
     _problem: EvaluationProblem | None
@@ -253,13 +253,13 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
         """
         result = problem.solution
         opt_result_str = result._strings
-        LOGGER.info("%s", opt_result_str[0])
+        logger.info("%s", opt_result_str[0])
         if result.constraint_values:
             if result.is_feasible:
-                LOGGER.info("%s", opt_result_str[1])
+                logger.info("%s", opt_result_str[1])
             else:
-                LOGGER.warning("%s", opt_result_str[1])
-        LOGGER.info("%s", opt_result_str[2])
+                logger.warning("%s", opt_result_str[1])
+        logger.info("%s", opt_result_str[2])
         if problem.design_space.dimension <= max_design_space_dimension_to_log:
             log = MultiLineString()
             log.indent()
@@ -269,7 +269,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
             for line in str(problem.design_space).split("\n")[1:]:
                 log.add(line)
             log.dedent()
-            LOGGER.info("%s", log)
+            logger.info("%s", log)
 
     def _check_integer_handling(
         self,
@@ -300,7 +300,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
                 )
                 raise ValueError(msg)
 
-            LOGGER.warning(
+            logger.warning(
                 "Forcing the execution of an algorithm that does not handle "
                 "integer variables."
             )
@@ -346,7 +346,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
             use_database=self._settings.use_database,
             round_ints=self._settings.round_ints,
             eval_obs_jac=self._settings.eval_obs_jac,
-            support_sparse_jacobian=self._SUPPORT_SPARSE_JACOBIAN,
+            support_sparse_jacobian=self._support_sparse_jacobian,
             store_jacobian=self._settings.store_jacobian,
             # Base drivers have no 'vectorize' option,
             # unlike certain specialized drivers, such as DOEs.
@@ -370,7 +370,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
                 problem.new_iter_observables.evaluate
             )
         if self._settings.log_problem:
-            LOGGER.info("%s", problem)
+            logger.info("%s", problem)
             if (
                 problem.design_space.dimension
                 <= self._settings.max_design_space_dimension_to_log
@@ -382,7 +382,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
                 for line in str(problem.design_space).split("\n")[1:]:
                     log.add(line)
                 log.dedent()
-                LOGGER.info("%s", log)
+                logger.info("%s", log)
 
         if self._settings.log_problem and solve_optimization_problem:
             progress_bar_title = "Solving optimization problem with algorithm %s:"
@@ -390,12 +390,12 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
             progress_bar_title = "Running the algorithm %s:"
 
         if self.enable_progress_bar:
-            LOGGER.info(progress_bar_title, self._algo_name)
+            logger.info(progress_bar_title, self._algo_name)
 
         result = None
         try:
             with (
-                OneLineLogging(TQDM_LOGGER)
+                OneLineLogging(tqdm_logger)
                 if self._settings.use_one_line_progress_bar
                 else nullcontext()
             ):
@@ -497,14 +497,14 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
             The result of the resolution of the problem.
 
         Raises:
-            NotImplementedError: When the driver family did not set `_RESULT_CLASS`.
+            NotImplementedError: When the driver family did not set `_result_class`.
         """
-        if self._RESULT_CLASS is None:
+        if self._result_class is None:
             msg = (
                 f"The driver library {type(self).__name__} cannot build a result; "
-                "set its class attribute _RESULT_CLASS."
+                "set its class attribute _result_class."
             )
             raise NotImplementedError(msg)
-        return self._RESULT_CLASS.from_optimization_problem(
+        return self._result_class.from_optimization_problem(
             problem, message=message, status=status, optimizer_name=self._algo_name
         )

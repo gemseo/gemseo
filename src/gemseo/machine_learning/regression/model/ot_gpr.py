@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from inspect import isclass
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -47,7 +48,7 @@ from openturns import SquaredExponential
 from openturns import TensorizedCovarianceModel
 from openturns import UserDefinedCovarianceModel
 
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.machine_learning.data_formatter.regression_data_formatters import (
     RegressionDataFormatters,
 )
@@ -60,9 +61,9 @@ from gemseo.machine_learning.regression.model.ot_gpr_settings import (
 )
 from gemseo.machine_learning.regression.model.ot_gpr_settings import Trend
 from gemseo.space.design import DesignSpace
-from gemseo.util._compatibility.openturns import GPR_ALGO_CLASS
-from gemseo.util._compatibility.openturns import LINEAR_ALGEBRA_RESOURCE_KEY
 from gemseo.util._compatibility.openturns import build_gpr_result
+from gemseo.util._compatibility.openturns import gpr_algo_class
+from gemseo.util._compatibility.openturns import linear_algebra_resource_key
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
 
 if TYPE_CHECKING:
@@ -78,43 +79,43 @@ if TYPE_CHECKING:
 class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
     """Gaussian process regression."""
 
-    LIBRARY: ClassVar[str] = "OpenTURNS"
-    SHORT_NAME: ClassVar[str] = "GPR"
+    library: ClassVar[str] = "OpenTURNS"
+    short_name: ClassVar[str] = "GPR"
 
-    MAX_SIZE_FOR_LAPACK: ClassVar[int] = 100
+    max_size_for_lapack: ClassVar[int] = 100
     """The maximum size of the training dataset to use LAPACK as linear algebra library.
 
     Use HMAT otherwise.
     """
 
-    HMATRIX_ASSEMBLY_EPSILON: ClassVar[float] = 1e-5
+    hmatrix_assembly_epsilon: ClassVar[float] = 1e-5
     """The epsilon for the assembly of the H-matrix.
 
     Used when `use_hmat` is `True`.
     """
 
-    HMATRIX_RECOMPRESSION_EPSILON: ClassVar[float] = 1e-4
+    hmatrix_recompression_epsilon: ClassVar[float] = 1e-4
     """The epsilon for the recompression of the H-matrix.
 
     Used when `use_hmat` is `True`.
     """
 
-    __COVARIANCE_MODEL_TO_CLASS: Final[
-        dict[CovarianceModel, tuple[CovarianceModelImplementation, dict[str, float]]]
-    ] = {
+    __covariance_model_to_class: Final[
+        Mapping[CovarianceModel, tuple[CovarianceModelImplementation, dict[str, float]]]
+    ] = MappingProxyType({
         CovarianceModel.MATERN12: (MaternModel, {"setNu": 0.5}),
         CovarianceModel.MATERN32: (MaternModel, {"setNu": 1.5}),
         CovarianceModel.MATERN52: (MaternModel, {"setNu": 2.5}),
         CovarianceModel.ABSOLUTE_EXPONENTIAL: (AbsoluteExponential, {}),
         CovarianceModel.EXPONENTIAL: (ExponentialModel, {}),
         CovarianceModel.SQUARED_EXPONENTIAL: (SquaredExponential, {}),
-    }
+    })
 
-    __TREND_TO_FACTORY: Final[dict[Trend, type]] = {
+    __trend_to_factory: Final[Mapping[Trend, type]] = MappingProxyType({
         Trend.CONSTANT: ConstantBasisFactory,
         Trend.LINEAR: LinearBasisFactory,
         Trend.QUADRATIC: QuadraticBasisFactory,
-    }
+    })
 
     __covariance_model: CovarianceModelImplementation
     """The covariance model of the Gaussian process."""
@@ -165,7 +166,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         self.__optimizer = self._settings.optimizer
         self.__trend = self._settings.trend
         if self._settings.use_hmat is None:
-            self.use_hmat = len(self.learning_set) > self.MAX_SIZE_FOR_LAPACK
+            self.use_hmat = len(self.learning_set) > self.max_size_for_lapack
         else:
             self.use_hmat = self._settings.use_hmat
 
@@ -201,7 +202,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
             return covariance_model(self.input_dimension)
 
         if isinstance(covariance_model, CovarianceModel):
-            cls, options = self.__COVARIANCE_MODEL_TO_CLASS[covariance_model]
+            cls, options = self.__covariance_model_to_class[covariance_model]
             covariance_model = cls(self.input_dimension)
             for k, v in options.items():
                 getattr(covariance_model, k)(v)
@@ -221,31 +222,31 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
         if use_hmat:
             linear_algebra_method = "HMAT"
             ResourceMap.SetAsScalar(
-                "HMatrix-AssemblyEpsilon", self.HMATRIX_ASSEMBLY_EPSILON
+                "HMatrix-AssemblyEpsilon", self.hmatrix_assembly_epsilon
             )
             ResourceMap.SetAsScalar(
-                "HMatrix-RecompressionEpsilon", self.HMATRIX_RECOMPRESSION_EPSILON
+                "HMatrix-RecompressionEpsilon", self.hmatrix_recompression_epsilon
             )
         else:
             linear_algebra_method = "LAPACK"
-        ResourceMap.SetAsString(LINEAR_ALGEBRA_RESOURCE_KEY, linear_algebra_method)
+        ResourceMap.SetAsString(linear_algebra_resource_key, linear_algebra_method)
 
     def _fit(self, input_data: RealArray, output_data: RealArray) -> None:
         log_flags = Log.Flags()
         Log.Show(Log.NONE)
-        basis = self.__TREND_TO_FACTORY[self.__trend](input_data.shape[1]).build()
+        basis = self.__trend_to_factory[self.__trend](input_data.shape[1]).build()
         multioutput_basis = Basis([
             AggregatedFunction([basis.build(k)] * output_data.shape[1])
             for k in range(basis.getSize())
         ])
-        algo = GPR_ALGO_CLASS(
+        algo = gpr_algo_class(
             input_data, output_data, self.__covariance_model, multioutput_basis
         )
         Log.Show(log_flags)
         if self._settings.multi_start_algo_settings is None:
             optimizer = self.__optimizer
         else:
-            doe_algo = DOE_LIBRARY_FACTORY.create(
+            doe_algo = doe_library_factory.create(
                 self._settings.multi_start_algo_settings.target_class_name
             )
             design_space = DesignSpace()
@@ -286,7 +287,7 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
 
         one_dim = input_data.ndim == 1
         input_data = atleast_2d(input_data)
-        inputs = self.learning_set.INPUT_GROUP
+        inputs = self.learning_set.input_group
         if inputs in self.transformer:
             input_data = self.transformer[inputs].transform(input_data)
 

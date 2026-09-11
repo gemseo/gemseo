@@ -39,7 +39,7 @@ from gemseo.core.function.function_from_discipline import FunctionFromDiscipline
 from gemseo.core.function.taylor_polynomial import compute_linear_approximation
 from gemseo.formulation.core.base_settings import BaseFormulationSettings
 from gemseo.scenario.scenario_result.scenario_result import ScenarioResult
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.discipline import check_disciplines_consistency
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 from gemseo.util.pydantic import create_model
@@ -59,7 +59,7 @@ if TYPE_CHECKING:
     from gemseo.space.design import DesignSpace
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseFormulationSettings)
 
@@ -76,7 +76,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     and *objective* or *constraint* if the evaluation problem is an optimization one.
     """
 
-    DEFAULT_SCENARIO_RESULT_CLASS_NAME: ClassVar[str] = ScenarioResult.__name__
+    default_scenario_result_class_name: ClassVar[str] = ScenarioResult.__name__
     """The name of the [ScenarioResult][gemseo.scenario.scenario_result.scenario_result.ScenarioResult] class to be used for post-processing."""  # noqa: E501
 
     problem: EvaluationProblem
@@ -285,7 +285,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     def _get_dv_indices(
         self,
         names: Iterable[str],
-        variable_sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        variable_sizes: Mapping[str, int] = read_only_empty_dict,
     ) -> dict[str, tuple[int, int, int]]:
         """Return the indices associated with specific variables.
 
@@ -511,7 +511,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         for name in design_space.variable_names:
             if name not in all_inputs:
                 design_space.remove_variable(name)
-                LOGGER.info(
+                logger.info(
                     "Variable %s was removed from the Design Space, it is not an input"
                     " of any discipline.",
                     name,

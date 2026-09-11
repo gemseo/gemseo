@@ -49,16 +49,18 @@ class SobieskiDiscipline(Discipline):
     """The Sobieski's SSBJ use case defining the MDO problem, e.g. disciplines,
     constraints, design space and reference optimum."""
 
-    _ATTR_NOT_TO_SERIALIZE = Discipline._ATTR_NOT_TO_SERIALIZE.union(
-        [
-            "sobieski_problem",
-        ],
+    _attr_not_to_serialize: ClassVar[set[str]] = (
+        Discipline._attr_not_to_serialize.union(
+            [
+                "sobieski_problem",
+            ],
+        )
     )
 
-    _INPUT_NAMES: ClassVar[tuple[str, ...]]
+    _input_names: ClassVar[tuple[str, ...]]
     """The name of the inputs."""
 
-    _OUTPUT_NAMES: ClassVar[tuple[str, ...]]
+    _output_names: ClassVar[tuple[str, ...]]
     """The name of the outputs."""
 
     def __init__(
@@ -72,8 +74,8 @@ class SobieskiDiscipline(Discipline):
         super().__init__()
         self.dtype = dtype
         self.sobieski_problem = SobieskiProblem(dtype=dtype)
-        self.io.input_grammar.update_from_names(self._INPUT_NAMES)
-        self.io.output_grammar.update_from_names(self._OUTPUT_NAMES)
+        self.io.input_grammar.update_from_names(self._input_names)
+        self.io.output_grammar.update_from_names(self._output_names)
         self.io.input_grammar.defaults = self.sobieski_problem.get_default_inputs(
             self.io.input_grammar
         )
@@ -108,9 +110,9 @@ class SobieskiMission(SobieskiDiscipline):
     compute directly.
     """
 
-    _INPUT_NAMES: ClassVar[tuple[str, ...]] = ("y_14", "x_shared", "y_24", "y_34")
+    _input_names: ClassVar[tuple[str, ...]] = ("y_14", "x_shared", "y_24", "y_34")
 
-    _OUTPUT_NAMES: ClassVar[tuple[str, ...]] = ("y_4",)
+    _output_names: ClassVar[tuple[str, ...]] = ("y_4",)
 
     def __init__(
         self,
@@ -189,8 +191,22 @@ class SobieskiMission(SobieskiDiscipline):
 class SobieskiStructure(SobieskiDiscipline):
     """Structure discipline of the Sobieski's SSBJ use case."""
 
-    _INPUT_NAMES = ("y_21", "y_31", "x_1", "x_shared", "c_0", "c_1", "c_2")
-    _OUTPUT_NAMES = ("y_1", "y_11", "y_14", "g_1", "y_12")
+    _input_names: ClassVar[tuple[str, ...]] = (
+        "y_21",
+        "y_31",
+        "x_1",
+        "x_shared",
+        "c_0",
+        "c_1",
+        "c_2",
+    )
+    _output_names: ClassVar[tuple[str, ...]] = (
+        "y_1",
+        "y_11",
+        "y_14",
+        "g_1",
+        "y_12",
+    )
 
     def __init__(  # noqa: D107
         self,
@@ -276,8 +292,8 @@ class SobieskiStructure(SobieskiDiscipline):
 class SobieskiAerodynamics(SobieskiDiscipline):
     """Aerodynamics discipline for the Sobieski's SSBJ use case."""
 
-    _INPUT_NAMES = ("x_2", "y_32", "x_shared", "y_12", "c_4")
-    _OUTPUT_NAMES = ("y_21", "y_23", "y_24", "g_2", "y_2")
+    _input_names: ClassVar[tuple[str, ...]] = ("x_2", "y_32", "x_shared", "y_12", "c_4")
+    _output_names: ClassVar[tuple[str, ...]] = ("y_21", "y_23", "y_24", "g_2", "y_2")
 
     def __init__(  # noqa: D107
         self,
@@ -350,13 +366,13 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 class SobieskiPropulsion(SobieskiDiscipline):
     """Propulsion discipline of the Sobieski's SSBJ use case."""
 
-    _INPUT_NAMES = (
+    _input_names: ClassVar[tuple[str, ...]] = (
         "y_23",
         "x_3",
         "x_shared",
         "c_3",
     )
-    _OUTPUT_NAMES = ("y_32", "y_31", "g_3", "y_3", "y_34")
+    _output_names: ClassVar[tuple[str, ...]] = ("y_32", "y_31", "g_3", "y_3", "y_34")
 
     def __init__(  # noqa: D107
         self,

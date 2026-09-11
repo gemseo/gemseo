@@ -21,30 +21,31 @@
 
 from __future__ import annotations
 
+from typing import Final
 from typing import NamedTuple
 
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_D_I,
+    default_d_i,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_N_DISCIPLINES,
+    default_n_disciplines,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_P_I,
+    default_p_i,
 )
 
 
 class ScalableDisciplineSettings(NamedTuple):
     """The configuration of a scalable discipline."""
 
-    d_i: int = DEFAULT_D_I
+    d_i: int = default_d_i
     r"""The size of local design variable $x_i$ specific to this discipline."""
 
-    p_i: int = DEFAULT_P_I
+    p_i: int = default_p_i
     r"""The size of the coupling variable $y_i$ outputted by this discipline."""
 
 
-DEFAULT_SCALABLE_DISCIPLINE_SETTINGS = tuple(
-    ScalableDisciplineSettings() for _ in range(DEFAULT_N_DISCIPLINES)
+default_scalable_discipline_settings: Final[tuple[ScalableDisciplineSettings, ...]] = (
+    tuple(ScalableDisciplineSettings() for _ in range(default_n_disciplines))
 )
 """The default settings of the scalable disciplines used in a scalable problem."""

@@ -21,6 +21,7 @@ from __future__ import annotations
 import pickle
 from pathlib import Path
 from string import Template
+from subprocess import CalledProcessError
 
 import pytest
 
@@ -127,6 +128,19 @@ def test_run_fail(discipline: JobSchedulerDiscipline, tmp_wd, snapshot) -> None:
     discipline._scheduler_run_command = "IDONTEXIST"
     with assert_exception(FileNotFoundError, snapshot):
         discipline._run_command(tmp_wd, tmp_wd / "output.pckl")
+
+
+@pytest.mark.skip_under_windows
+def test_run_command_non_zero_return_code(
+    discipline: JobSchedulerDiscipline, tmp_wd, caplog
+) -> None:
+    """Test that a non-zero return code from the job submission is logged."""
+    discipline._scheduler_run_command = "false"
+    with pytest.raises(CalledProcessError):
+        discipline._run_command(tmp_wd, tmp_wd / "output.pckl")
+
+    assert caplog.records[0].levelname == "ERROR"
+    assert "Failed to submit the job command" in caplog.records[0].getMessage()
 
 
 def test_handle_outputs_errors(

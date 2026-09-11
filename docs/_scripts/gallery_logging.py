@@ -22,14 +22,14 @@ from logging import root
 from pathlib import Path
 
 from gemseo import _configure_logger
-from gemseo.util.constant import _LOGGING_DATE_FORMAT
-from gemseo.util.constant import _LOGGING_FILE_MODE
-from gemseo.util.constant import _LOGGING_FILE_PATH
-from gemseo.util.constant import _LOGGING_LEVEL
-from gemseo.util.constant import _LOGGING_MESSAGE_FORMAT
+from gemseo.util.constant import _logging_date_format
+from gemseo.util.constant import _logging_file_mode
+from gemseo.util.constant import _logging_file_path
+from gemseo.util.constant import _logging_level
+from gemseo.util.constant import _logging_message_format
 from gemseo.util.logging import _is_gemseo_logger
 
-_INITIAL_CWD = Path.cwd()
+_initial_cwd = Path.cwd()
 """The working directory captured at module import.
 
 Some examples (e.g. the directory manager one) leave the process in a
@@ -60,7 +60,7 @@ def reset_logging(gallery_conf, fname):
     # Restore the working directory before every example so a previous
     # example that chdir'ed into a now-deleted temporary directory cannot
     # corrupt the next one.
-    os.chdir(_INITIAL_CWD)
+    os.chdir(_initial_cwd)
 
     # Route every GEMSEO logger through _WrapStdOut so log records reach the
     # current sys.stdout (mkdocs-gallery's _LoggingTee during example
@@ -71,11 +71,11 @@ def reset_logging(gallery_conf, fname):
         if _is_gemseo_logger(name):
             _configure_logger(
                 name,
-                _LOGGING_LEVEL,
-                _LOGGING_MESSAGE_FORMAT,
-                _LOGGING_DATE_FORMAT,
-                _LOGGING_FILE_PATH,
-                _LOGGING_FILE_MODE,
+                _logging_level,
+                _logging_message_format,
+                _logging_date_format,
+                _logging_file_path,
+                _logging_file_mode,
                 stream,
             )
     # Reapply the deprecation filters in case an example or another plugin

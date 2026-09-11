@@ -35,7 +35,7 @@ from scipy.stats import norm
 
 from gemseo.dataset.io_dataset import IODataset
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.openturns._algorithm.ot_sobol_doe import OTSobolDOE
 from gemseo.doe.openturns.settings.ot_sobol_indices import OT_SOBOL_INDICES_Settings
 from gemseo.scenario.evaluation import EvaluationScenario
@@ -47,7 +47,7 @@ from gemseo.uncertainty.sensitivity._sobol_indices_estimator import (
     SobolIndicesEstimatorMixin,
 )
 from gemseo.uncertainty.sensitivity.base_ro import BaseROSensitivityAnalysis
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -113,7 +113,7 @@ class ISFORMSobolAnalysis(
         form_settings: OT_FORM_Settings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,
         compute_second_order: bool = True,
-        seed: int = SEED,
+        seed: int = seed,
     ) -> IODataset:
         r"""
         Args:
@@ -169,7 +169,7 @@ class ISFORMSobolAnalysis(
              to ensure a better estimation of the first- and total-order indices.
         """  # noqa: D205, D212, D415
         if algo_settings is None:
-            algo_settings = DOE_LIBRARY_FACTORY.create_settings("OT_SOBOL_INDICES")
+            algo_settings = doe_library_factory.create_settings("OT_SOBOL_INDICES")
 
         use_pick_and_freeze = isinstance(algo_settings, OT_SOBOL_INDICES_Settings)
 
@@ -386,7 +386,7 @@ class ISFORMSobolAnalysis(
         output_name_to_values = {}
         for output_name in output_names:
             values = dataset.get_view(
-                group_names=dataset.OUTPUT_GROUP, variable_names=output_name
+                group_names=dataset.output_group, variable_names=output_name
             ).to_numpy()
             if values.shape[1] > 1:
                 msg = (
@@ -488,20 +488,20 @@ class ISFORMSobolAnalysis(
         use_pick_and_freeze = dataset.misc.get("use_pick_and_freeze", False)
         algo = self._select_sobol_algorithm(algo, use_pick_and_freeze)
         output_names = self._get_output_names(output_names)
-        algo_class = self._ALGO_NAME_TO_CLASS[algo]
+        algo_class = self._algo_name_to_class[algo]
         sample_size_per_event = dataset.misc["sample_size"]
         event_slices = dataset.misc["event_slices"]
         # Each event has its own pick-and-freeze design stored in its own row range,
         # so the input and output samples are sliced event by event.
         all_input_data = dataset.get_view(
-            group_names=dataset.INPUT_GROUP, variable_names=self._input_names
+            group_names=dataset.input_group, variable_names=self._input_names
         ).to_numpy()
         self._output_name_to_sobol_algos = {}
         for output_name in output_names:
             algos = self._output_name_to_sobol_algos.setdefault(output_name, [])
             start, stop = event_slices[output_name]
             data = dataset.get_view(
-                group_names=dataset.OUTPUT_GROUP, variable_names=output_name
+                group_names=dataset.output_group, variable_names=output_name
             ).to_numpy()[start:stop]
             if data.var() == 0.0:
                 algos.append(None)
@@ -521,13 +521,13 @@ class ISFORMSobolAnalysis(
 
         if algo == self.Algorithm.RANK:
             self._indices = self.SensitivityIndices(
-                first=self._get_sobol_indices(self._GET_FIRST_ORDER_INDICES)
+                first=self._get_sobol_indices(self._get_first_order_indices)
             )
         else:
             self._indices = self.SensitivityIndices(
-                first=self._get_sobol_indices(self._GET_FIRST_ORDER_INDICES),
-                second=self._get_sobol_indices(self._GET_SECOND_ORDER_INDICES),
-                total=self._get_sobol_indices(self._GET_TOTAL_ORDER_INDICES),
+                first=self._get_sobol_indices(self._get_first_order_indices),
+                second=self._get_sobol_indices(self._get_second_order_indices),
+                total=self._get_sobol_indices(self._get_total_order_indices),
             )
 
         return self._indices

@@ -14,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.formulation.core.base import BaseFormulation
 
@@ -24,5 +26,7 @@ class NotMDOFormulation(BaseFormulation):
 
 
 class NotMDOFormulationFactory(BaseFactory):
-    _CLASS = NotMDOFormulation
-    _PACKAGE_NAMES = ("tests.formulation.not_mdo_formulations",)
+    _class: ClassVar[type[NotMDOFormulation]] = NotMDOFormulation
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "tests.formulation.not_mdo_formulations",
+    )

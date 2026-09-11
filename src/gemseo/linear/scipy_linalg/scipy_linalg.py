@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -53,12 +54,13 @@ from gemseo.linear.scipy_linalg.settings.lgmres import LGMRES_Settings
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Mapping
 
     from gemseo.linear.problem import LinearProblem
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -81,9 +83,9 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
     This will be set only if the option `save_when_fail` is set to `True`.
     """
 
-    __BASE_INFO_MSG: ClassVar[str] = "SciPy linear solver algorithm stop info"
+    __base_info_msg: ClassVar[str] = "SciPy linear solver algorithm stop info"
 
-    __NAMES_TO_FUNCTIONS: ClassVar[dict[str, Callable]] = {
+    __names_to_functions: ClassVar[Mapping[str, Callable]] = MappingProxyType({
         "BICG": bicg,
         "BICGSTAB": bicgstab,
         "CG": cg,
@@ -92,24 +94,24 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
         "LGMRES": lgmres,
         "GCROT": gcrotmk,
         "TFQMR": tfqmr,
-    }
+    })
     """The algorithm name bound to the SciPy function."""
 
-    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
+    __doc: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
 
     ALGORITHM_INFOS: ClassVar[dict[str, LinearSolverDescription]] = {
         "BICG": LinearSolverDescription(
             algorithm_name="BICG",
             description="BI-Conjugate Gradient",
             internal_algorithm_name="bicg",
-            website=f"{__DOC}generated/scipy.sparse.linalg.bicg.html",
+            website=f"{__doc}generated/scipy.sparse.linalg.bicg.html",
             settings_class=BICG_Settings,
         ),
         "BICGSTAB": LinearSolverDescription(
             algorithm_name="BICGSTAB",
             description="Bi-Conjugate Gradient STABilized",
             internal_algorithm_name="bicgstab",
-            website=f"{__DOC}generated/scipy.sparse.linalg.bicgstab.html",
+            website=f"{__doc}generated/scipy.sparse.linalg.bicgstab.html",
             settings_class=BICGSTAB_Settings,
         ),
         "CG": LinearSolverDescription(
@@ -118,42 +120,42 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
             internal_algorithm_name="cg",
             lhs_must_be_symmetric=True,
             lhs_must_be_positive_definite=True,
-            website=f"{__DOC}generated/scipy.sparse.linalg.cg.html",
+            website=f"{__doc}generated/scipy.sparse.linalg.cg.html",
             settings_class=CG_Settings,
         ),
         "CGS": LinearSolverDescription(
             algorithm_name="CGS",
             description="Conjugate Gradient Squared",
             internal_algorithm_name="cgs",
-            website=f"{__DOC}generated/scipy.sparse.linalg.cgs.html",
+            website=f"{__doc}generated/scipy.sparse.linalg.cgs.html",
             settings_class=CGS_Settings,
         ),
         "GCROT": LinearSolverDescription(
             algorithm_name="GCROT",
             description="Generalized Conjugate Residual with Optimal Truncation",
             internal_algorithm_name="gcrotmk",
-            website=f"{__DOC}generated/scipy.sparse.linalg.gcrotmk.html",
+            website=f"{__doc}generated/scipy.sparse.linalg.gcrotmk.html",
             settings_class=GCROT_Settings,
         ),
         "GMRES": LinearSolverDescription(
             algorithm_name="GMRES",
             description="Generalized Minimum RESidual",
             internal_algorithm_name="gmres",
-            website=f"{__DOC}generated/scipy.sparse.linalg.gmres.html",
+            website=f"{__doc}generated/scipy.sparse.linalg.gmres.html",
             settings_class=GMRES_Settings,
         ),
         "LGMRES": LinearSolverDescription(
             algorithm_name="LGMRES",
             description="Loose Generalized Minimum RESidual",
             internal_algorithm_name="lgmres",
-            website=f"{__DOC}generated/scipy.sparse.linalg.lgmres.html",
+            website=f"{__doc}generated/scipy.sparse.linalg.lgmres.html",
             settings_class=LGMRES_Settings,
         ),
         "TFQMR": LinearSolverDescription(
             algorithm_name="TFQMR",
             description="Transpose-Free Quasi-Minimal Residual",
             internal_algorithm_name="tfqmr",
-            website=f"{__DOC}generated/scipy.sparse.linalg.tfqmr.html",
+            website=f"{__doc}generated/scipy.sparse.linalg.tfqmr.html",
             settings_class=BaseSciPyLinalgSettingsBase,
         ),
     }
@@ -184,7 +186,7 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
             self._settings.callback = self.__store_residuals
 
         filtered_settings = self._filter_settings()
-        linear_solver = self.__NAMES_TO_FUNCTIONS[self._algo_name]
+        linear_solver = self.__names_to_functions[self._algo_name]
         problem.solution, info = linear_solver(
             problem.lhs, problem.rhs, **filtered_settings
         )
@@ -224,18 +226,18 @@ class ScipyLinalgAlgos(BaseLinearSolverLibrary[BaseSciPyLinalgSettingsBase]):
 
         if info > 0:
             if self._problem.solution is not None:
-                LOGGER.warning(
+                logger.warning(
                     "%s: residual = %s",
-                    self.__BASE_INFO_MSG,
+                    self.__base_info_msg,
                     self._problem.compute_residuals(True),
                 )
-                LOGGER.warning("info = %s", info)
+                logger.warning("info = %s", info)
             return False
 
         # check the dimensions
         if info < 0:
             msg = (
-                f"{self.__BASE_INFO_MSG}: illegal input or breakdown, "
+                f"{self.__base_info_msg}: illegal input or breakdown, "
                 f"options = {options}."
             )
             raise RuntimeError(msg)

@@ -26,6 +26,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Final
 
 from xdsmjs import bundlejs
 from xdsmjs import css
@@ -33,7 +34,7 @@ from xdsmjs import css
 if TYPE_CHECKING:
     from gemseo.util.typing import StrPath
 
-HTML_TEMPLATE = """
+html_template: Final[str] = """
 <!doctype html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -83,4 +84,4 @@ def generate_xdsm_html(
         file_path: The name of the path to the output HTML file.
     """
     file_path = Path(file_path)
-    file_path.write_text(HTML_TEMPLATE.format(css(), bundlejs(), xdsm))
+    file_path.write_text(html_template.format(css(), bundlejs(), xdsm))

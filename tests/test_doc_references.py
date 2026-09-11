@@ -20,17 +20,17 @@ from pathlib import Path
 
 import pytest
 
-DOC_PATH = Path(__file__, "..", "..", "docs").resolve()
+doc_path = Path(__file__, "..", "..", "docs").resolve()
 
-BIB_PATH = DOC_PATH / "references.bib"
+bib_path = doc_path / "references.bib"
 
-_GENERATED_PATH = DOC_PATH / "generated"
+_generated_path = doc_path / "generated"
 """The mkdocs-gallery build directory, mirroring the sources in ``docs/examples``."""
 
-_ENTRY_REGEX = re.compile(r"^@\w+\{([^,]+),", re.MULTILINE)
+_entry_regex = re.compile(r"^@\w+\{([^,]+),", re.MULTILINE)
 """The regular expression to find the keys of the BibTeX entries."""
 
-_CITATION_BLOCK_REGEX = re.compile(r"\[([^\]\[\n]*@[^\]\[\n]*)\]")
+_citation_block_regex = re.compile(r"\[([^\]\[\n]*@[^\]\[\n]*)\]")
 """The regular expression to find the citation blocks in a documentation page.
 
 A block can cite several references
@@ -40,14 +40,14 @@ as mkdocs-bibtex splits it on the semicolons
 (see ``CITATION_BLOCK_REGEX`` in ``mkdocs_bibtex.citation``).
 """
 
-_EMAIL_REGEX = re.compile(r"[\w.%+-]+@[\w.-]+\.[A-Za-z]{2,}")
+_email_regex = re.compile(r"[\w.%+-]+@[\w.-]+\.[A-Za-z]{2,}")
 """The regular expression that an email address matches.
 
 mkdocs-bibtex ignores the parts of a citation block including an email address,
 e.g. ``[contact@gemseo.org]``.
 """
 
-_CITATION_KEY_REGEX = re.compile(r"@([^\s,;]+)")
+_citation_key_regex = re.compile(r"@([^\s,;]+)")
 """The regular expression to find the key of a citation.
 
 The key pattern is deliberately loose,
@@ -55,7 +55,7 @@ so that a key that mkdocs-bibtex cannot parse is caught by the tests
 instead of being silently ignored.
 """
 
-_KEY_REGEX = re.compile(r"^[\w-]+$")
+_key_regex = re.compile(r"^[\w-]+$")
 """The regular expression that a citation key must match.
 
 mkdocs-bibtex parses the key of a bracketed citation with ``[\\w-]+``
@@ -70,7 +70,7 @@ def get_bib_keys() -> list[str]:
     Returns:
         The keys of the BibTeX entries, in the order of the file.
     """
-    return _ENTRY_REGEX.findall(BIB_PATH.read_text(encoding="utf-8"))
+    return _entry_regex.findall(bib_path.read_text(encoding="utf-8"))
 
 
 def get_citation_keys(text: str) -> set[str]:
@@ -84,10 +84,10 @@ def get_citation_keys(text: str) -> set[str]:
     """
     return {
         key
-        for block in _CITATION_BLOCK_REGEX.findall(text)
+        for block in _citation_block_regex.findall(text)
         for citation in block.split(";")
-        if not _EMAIL_REGEX.search(citation)
-        for key in _CITATION_KEY_REGEX.findall(citation)
+        if not _email_regex.search(citation)
+        for key in _citation_key_regex.findall(citation)
     }
 
 
@@ -100,12 +100,12 @@ def get_page_paths() -> list[Path]:
     return sorted(
         path
         for pattern in ("*.md", "*.py")
-        for path in DOC_PATH.rglob(pattern)
-        if _GENERATED_PATH not in path.parents
+        for path in doc_path.rglob(pattern)
+        if _generated_path not in path.parents
     )
 
 
-PAGE_PATHS = get_page_paths()
+page_paths = get_page_paths()
 
 
 def test_bib_keys_are_unique() -> None:
@@ -123,13 +123,13 @@ def test_bib_key_is_citable(key: str) -> None:
     Args:
         key: The key of a BibTeX entry.
     """
-    assert _KEY_REGEX.match(key)
+    assert _key_regex.match(key)
 
 
 @pytest.mark.parametrize(
     "page_path",
-    PAGE_PATHS,
-    ids=(str(path.relative_to(DOC_PATH)) for path in PAGE_PATHS),
+    page_paths,
+    ids=(str(path.relative_to(doc_path)) for path in page_paths),
 )
 def test_citations_are_defined(page_path: Path) -> None:
     """Check that the citations of a documentation source are defined.

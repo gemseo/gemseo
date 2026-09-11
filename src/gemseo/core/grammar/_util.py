@@ -18,5 +18,5 @@ from __future__ import annotations
 
 from typing import Final
 
-NOT_IN_THE_GRAMMAR_MESSAGE: Final[str] = "The name {!r} is not in the grammar."
+not_in_the_grammar_message: Final[str] = "The name {!r} is not in the grammar."
 """The error message template when a name is not in the grammar."""

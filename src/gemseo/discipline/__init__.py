@@ -16,12 +16,15 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.core.discipline.discipline import Discipline  # noqa: F401
     from gemseo.discipline.analytic import AnalyticDiscipline  # noqa: F401
@@ -36,7 +39,7 @@ if TYPE_CHECKING:
     from gemseo.discipline.chain.warm_started_chain import WarmStartedDisciplineChain  # noqa: F401
     from gemseo.discipline.concatenater import Concatenater  # noqa: F401
     from gemseo.discipline.constraint_aggregation import ConstraintAggregation  # noqa: F401
-    from gemseo.discipline.factory import DISCIPLINE_FACTORY  # noqa: F401
+    from gemseo.discipline.factory import discipline_factory  # noqa: F401
     from gemseo.discipline.linear_combination import LinearCombination  # noqa: F401
     from gemseo.discipline.namespace import propagate_namespace  # noqa: F401
     from gemseo.discipline.ode.ode_discipline import ODEDiscipline  # noqa: F401
@@ -51,7 +54,7 @@ if TYPE_CHECKING:
     from gemseo.discipline.wrapper.retry_discipline import RetryDiscipline  # noqa: F401
 
 # Exported name -> location (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "AdditiveDisciplineChain": "chain.additive_chain",
     "AnalyticDiscipline": "analytic",
     "ArrayBasedFunctionDiscipline": "array_based_function",
@@ -59,7 +62,6 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "Concatenater": "concatenater",
     "ConstraintAggregation": "constraint_aggregation",
     "DiscFromExe": "wrapper.disc_from_exe",
-    "DISCIPLINE_FACTORY": "factory",
     "Discipline": "gemseo.core.discipline.discipline:Discipline",
     "DisciplineChain": "chain.chain",
     "FilteringDiscipline": "wrapper.filtering_discipline",
@@ -75,7 +77,8 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "SurrogateDiscipline": "surrogate",
     "TaylorDiscipline": "taylor",
     "WarmStartedDisciplineChain": "chain.warm_started_chain",
+    "discipline_factory": "factory",
     "propagate_namespace": "namespace",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

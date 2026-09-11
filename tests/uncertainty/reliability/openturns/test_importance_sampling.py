@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 from openturns import ProbabilitySimulationResult
 
-from gemseo.uncertainty.reliability.factory import RELIABILITY_ALGORITHM_FACTORY
+from gemseo.uncertainty.reliability.factory import reliability_algorithm_factory
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 from gemseo.uncertainty.reliability.openturns.is_form_settings import (
     OT_IS_FORM_Settings,
@@ -92,7 +92,7 @@ def test_importance_sampling(
 ):
     """Test for importance sampling algorithms."""
     class_name = "OT_IS_NA" if settings is None else settings.target_class_name
-    algo = RELIABILITY_ALGORITHM_FACTORY.create(class_name)
+    algo = reliability_algorithm_factory.create(class_name)
 
     kwargs = {}
     if settings is not None:

@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
@@ -27,6 +28,7 @@ from gemseo.post.dataset.plot.base import BasePlot
 from gemseo.post.dataset.plot.base import T
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from pathlib import Path
 
     from gemseo.dataset.dataset import Dataset
@@ -35,12 +37,12 @@ if TYPE_CHECKING:
 class PlotlyPlot(BasePlot[T]):
     """A base plot class relying on plotly."""
 
-    _PLOTLY_LINESTYLES: Final[dict[str, str]] = {
+    _plotly_linestyles: Final[Mapping[str, str]] = MappingProxyType({
         "-": "solid",
         ":": "dot",
         "--": "dash",
         "-.": "dashdot",
-    }
+    })
 
     __figure: Figure
     """The plotly figure."""

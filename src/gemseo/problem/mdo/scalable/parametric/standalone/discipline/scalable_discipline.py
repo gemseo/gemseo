@@ -31,9 +31,6 @@ from gemseo.problem.mdo.scalable.parametric.standalone.discipline.base_disciplin
     BaseDiscipline,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    SHARED_DESIGN_VARIABLE_NAME,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_coupling_name,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
@@ -41,6 +38,9 @@ from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_x_local_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    shared_design_variable_name,
 )
 
 if TYPE_CHECKING:
@@ -161,7 +161,7 @@ class ScalableDiscipline(BaseDiscipline):
             Either the value of math:`y_i` or that of its derivatives.
         """
         if x_0 is None:
-            x_0 = self.input_name_to_default_value[SHARED_DESIGN_VARIABLE_NAME]
+            x_0 = self.input_name_to_default_value[shared_design_variable_name]
 
         if x_i is None:
             x_i = self.input_name_to_default_value[self.__x_i_name]
@@ -187,7 +187,7 @@ class ScalableDiscipline(BaseDiscipline):
                 }
             coupling_size = self.name_to_size[self.__y_i_name]
             jac = jacobian[self.__y_i_name]
-            jac[SHARED_DESIGN_VARIABLE_NAME] = -self.coefficients.D_i0
+            jac[shared_design_variable_name] = -self.coefficients.D_i0
             jac[self.__x_i_name] = -self.coefficients.D_ii
             jac[self.__u_i_name] = eye(coupling_size)
             for y_j_name, C_ij in self.coefficients.C_ij.items():  # noqa: N806

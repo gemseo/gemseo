@@ -50,7 +50,7 @@ class BasePredictiveClustererQuality(BaseClustererQuality):
     def __init__(
         self,
         model: BasePredictiveClusterer,
-        fit_transformers: bool = BaseMLModelQuality._FIT_TRANSFORMERS,
+        fit_transformers: bool = BaseMLModelQuality._default_fit_transformers,
     ) -> None:
         """
         Args:
@@ -73,7 +73,7 @@ class BasePredictiveClustererQuality(BaseClustererQuality):
         n_folds: int = 5,
         samples: Sequence[int] = (),
         multioutput: bool = True,
-        randomize: bool = BaseClustererQuality._RANDOMIZE,
+        randomize: bool = BaseClustererQuality._randomize,
         seed: int | None = None,
         store_resampling_result: bool = False,
     ) -> MeasureType:

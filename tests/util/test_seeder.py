@@ -17,12 +17,12 @@ from __future__ import annotations
 import pytest
 
 from gemseo.doe.pydoe.pydoe import PyDOELibrary
-from gemseo.util.seeder import SEED
 from gemseo.util.seeder import Seeder
+from gemseo.util.seeder import seed
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "initial_seed"), [({}, SEED), ({"default_seed": 12}, 12)]
+    ("kwargs", "initial_seed"), [({}, seed), ({"default_seed": 12}, 12)]
 )
 def test_seeder(kwargs, initial_seed):
     """Check Seeder."""

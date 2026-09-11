@@ -32,6 +32,7 @@ import string
 from itertools import islice
 from itertools import permutations
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import arange
 from numpy import array
@@ -42,58 +43,58 @@ from numpy.random import default_rng
 
 from gemseo.core.discipline import Discipline
 from gemseo.problem.mdo.scalable.linear.linear_discipline import LinearDiscipline
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-DESC_5_DISC = [
-    ("A", ["b"], ["a", "c"]),
-    ("B", ["a"], ["b"]),
-    ("C", ["c", "e"], ["d"]),
-    ("D", ["d"], ["e", "f"]),
-    ("E", ["f"], []),
-]
+desc_5_disc: Final[tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...]] = (
+    ("A", ("b",), ("a", "c")),
+    ("B", ("a",), ("b",)),
+    ("C", ("c", "e"), ("d",)),
+    ("D", ("d",), ("e", "f")),
+    ("E", ("f",), ()),
+)
 
-DESC_16_DISC = [
-    ("A", ["a"], ["b"]),
-    ("B", ["c"], ["a", "n"]),
-    ("C", ["b", "d"], ["c", "e"]),
-    ("D", ["f"], ["d", "g"]),
-    ("E", ["e"], ["f", "h", "o"]),
-    ("F", ["g", "j"], ["i"]),
-    ("G", ["i", "h"], ["k", "l"]),
-    ("H", ["k", "m"], ["j"]),
-    ("I", ["l"], ["m", "w"]),
-    ("J", ["n", "o"], ["p", "q"]),
-    ("K", ["y"], ["x"]),
-    ("L", ["w", "x"], ["y", "z"]),
-    ("M", ["p", "s"], ["r"]),
-    ("N", ["r"], ["t", "u"]),
-    ("O", ["q", "t"], ["s", "v"]),
-    ("P", ["u", "v", "z"], ["obj"]),
-]
+desc_16_disc: Final[tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...]] = (
+    ("A", ("a",), ("b",)),
+    ("B", ("c",), ("a", "n")),
+    ("C", ("b", "d"), ("c", "e")),
+    ("D", ("f",), ("d", "g")),
+    ("E", ("e",), ("f", "h", "o")),
+    ("F", ("g", "j"), ("i",)),
+    ("G", ("i", "h"), ("k", "l")),
+    ("H", ("k", "m"), ("j",)),
+    ("I", ("l",), ("m", "w")),
+    ("J", ("n", "o"), ("p", "q")),
+    ("K", ("y",), ("x",)),
+    ("L", ("w", "x"), ("y", "z")),
+    ("M", ("p", "s"), ("r",)),
+    ("N", ("r",), ("t", "u")),
+    ("O", ("q", "t"), ("s", "v")),
+    ("P", ("u", "v", "z"), ("obj",)),
+)
 
-DESC_3_DISC_WEAK = [
-    ("A", ["x"], ["a"]),
-    ("B", ["x", "a"], ["b"]),
-    ("C", ["x", "a"], ["c"]),
-]
+desc_3_disc_weak: Final[tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...]] = (
+    ("A", ("x",), ("a",)),
+    ("B", ("x", "a"), ("b",)),
+    ("C", ("x", "a"), ("c",)),
+)
 
-DESC_4_DISC_WEAK = [
-    ("A", ["x"], ["a"]),
-    ("B", ["x", "a"], ["b"]),
-    ("C", ["x", "a"], ["c"]),
-    ("D", ["b", "c"], ["d"]),
-]
+desc_4_disc_weak: Final[tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...]] = (
+    ("A", ("x",), ("a",)),
+    ("B", ("x", "a"), ("b",)),
+    ("C", ("x", "a"), ("c",)),
+    ("D", ("b", "c"), ("d",)),
+)
 
-DESC_DISC_REPEATED = [
-    ("A", ["a"], ["b"]),
-    ("A", ["a"], ["b"]),
-    ("A", ["c"], ["d"]),
-]
+desc_disc_repeated: Final[tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...]] = (
+    ("A", ("a",), ("b",)),
+    ("A", ("a",), ("b",)),
+    ("A", ("c",), ("d",)),
+)
 
-LETTERS = array(list(string.ascii_uppercase))
+letters: Final[tuple[str, ...]] = tuple(string.ascii_uppercase)
 
 
 def _get_disc_names(
@@ -111,10 +112,10 @@ def _get_disc_names(
     """
     n_letters = 1
 
-    while len(LETTERS) ** n_letters < nb_of_names:
+    while len(letters) ** n_letters < nb_of_names:
         n_letters += 1
 
-    return ["".join(c) for c in islice(permutations(LETTERS, n_letters), nb_of_names)]
+    return ["".join(c) for c in islice(permutations(letters, n_letters), nb_of_names)]
 
 
 def create_disciplines_from_sizes(
@@ -129,7 +130,7 @@ def create_disciplines_from_sizes(
     no_self_coupled: bool = False,
     no_strong_couplings: bool = False,
     matrix_format: LinearDiscipline.MatrixFormat = LinearDiscipline.MatrixFormat.DENSE,
-    matrix_density: float = LinearDiscipline.DEFAULT_MATRIX_DENSITY,
+    matrix_density: float = LinearDiscipline.default_matrix_density,
 ) -> list[LinearDiscipline]:
     """Generate linear disciplines according to a specification.
 
@@ -189,7 +190,7 @@ def create_disciplines_from_sizes(
     used_outputs = []
     used_inputs = []
 
-    rng = default_rng(SEED)
+    rng = default_rng(seed)
     for disc_name in disc_names:
         if no_strong_couplings:
             input_names = setdiff1d(input_names, used_outputs, True)
@@ -247,7 +248,7 @@ def create_disciplines_from_desc(
     outputs_size: int = 1,
     grammar_type: Discipline.GrammarType = Discipline.GrammarType.JSON,
     matrix_format: LinearDiscipline.MatrixFormat = LinearDiscipline.MatrixFormat.DENSE,
-    matrix_density: float = LinearDiscipline.DEFAULT_MATRIX_DENSITY,
+    matrix_density: float = LinearDiscipline.default_matrix_density,
 ) -> list[LinearDiscipline]:
     """Generate linear disciplines according to a specification.
 

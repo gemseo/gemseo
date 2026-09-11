@@ -46,5 +46,5 @@ def test_constructor_parameters() -> None:
     assert dataset.name == "Burgers"
     assert len(dataset) == 50
     assert len(dataset.variable_names) == 2
-    assert dataset.get_view(group_names=dataset.OUTPUT_GROUP).shape == (50, 100)
+    assert dataset.get_view(group_names=dataset.output_group).shape == (50, 100)
     assert allclose(dataset.misc["nu"], nu)

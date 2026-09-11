@@ -64,8 +64,8 @@ if TYPE_CHECKING:
 
     from gemseo.core.discipline import Discipline
 
-TRESHOLD_MDA_TOL = 1e-6
-SELLAR_Y_REF = array([0.80004953, 1.79981434])
+treshold_mda_tol = 1e-6
+sellar_y_ref = array([0.80004953, 1.79981434])
 
 
 def allclose(a, b):
@@ -154,11 +154,11 @@ def test_raphson_sobieski(coupl_scaling) -> None:
     mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
     mda.reset_history_each_run = True
     mda.execute()
-    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < treshold_mda_tol
 
     mda.settings.warm_start = True
     mda.execute({"x_1": mda.io.input_grammar.defaults["x_1"] + 1.0e-2})
-    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < treshold_mda_tol
 
 
 def test_raphson_sobieski_sparse() -> None:
@@ -167,7 +167,7 @@ def test_raphson_sobieski_sparse() -> None:
     mda = MDANewtonRaphson(disciplines)
     mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
     mda.execute()
-    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < treshold_mda_tol
 
 
 def test_raphson_sellar_sparse_complex() -> None:
@@ -177,9 +177,9 @@ def test_raphson_sellar_sparse_complex() -> None:
     mda.matrix_type = JacobianAssembly.JacobianType.MATRIX
     mda.execute()
 
-    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < treshold_mda_tol
 
-    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(sellar_y_ref - get_y_opt(mda)) / linalg.norm(sellar_y_ref) < 1e-4
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
@@ -217,7 +217,7 @@ def test_raphson_sellar(parallel) -> None:
 
     assert (mda.settings.n_processes == 1) is not parallel
     assert mda.residual_history[-1] < 1e-6
-    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(sellar_y_ref - get_y_opt(mda)) / linalg.norm(sellar_y_ref) < 1e-4
 
 
 def test_sellar_linop() -> None:
@@ -226,7 +226,7 @@ def test_sellar_linop() -> None:
     mda = MDANewtonRaphson(disciplines)
     mda.matrix_type = JacobianAssembly.JacobianType.LINEAR_OPERATOR
     mda.execute()
-    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
+    assert mda.residual_history[-1] < treshold_mda_tol
 
 
 def test_log_convergence() -> None:
@@ -258,8 +258,8 @@ def test_weak_and_strong_couplings() -> None:
         "j": array([0.0]),
         "x": array([0.0]),
     })
-    assert mda.inner_mdas[0].residual_history[-1] < TRESHOLD_MDA_TOL
-    assert mda.io.output_data[mda.NORMALIZED_RESIDUAL_NORM][0] < TRESHOLD_MDA_TOL
+    assert mda.inner_mdas[0].residual_history[-1] < treshold_mda_tol
+    assert mda.io.output_data[mda.normalized_residual_norm_name][0] < treshold_mda_tol
     assert mda.io.output_data["obj"] == pytest.approx(array([2.0 / 1.3]))
 
 
@@ -294,13 +294,13 @@ def test_weak_and_strong_couplings_two_cycles() -> None:
     }
     out = mda.execute(mda_input)
     for mda_i in mda.inner_mdas:
-        assert mda_i.residual_history[-1] < TRESHOLD_MDA_TOL
+        assert mda_i.residual_history[-1] < treshold_mda_tol
 
     mda_ref = MDAChain(disciplines)
     out_ref = mda_ref.execute(mda_input)
 
     for output_name in mda.io.output_grammar:
-        if output_name == mda.NORMALIZED_RESIDUAL_NORM:
+        if output_name == mda.normalized_residual_norm_name:
             continue
         assert out[output_name] == pytest.approx(out_ref[output_name], rel=1e-5)
 
@@ -388,8 +388,8 @@ def test_mda_newton_convergence_passing_dedicated_newton_options(
         newton_linear_solver_settings=newton_linear_solver_settings,
     )
     mda.execute()
-    assert mda.residual_history[-1] < TRESHOLD_MDA_TOL
-    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert mda.residual_history[-1] < treshold_mda_tol
+    assert linalg.norm(sellar_y_ref - get_y_opt(mda)) / linalg.norm(sellar_y_ref) < 1e-4
 
 
 def test_mda_newton_serialization(tmp_wd) -> None:

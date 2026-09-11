@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 class BaseOTDistributionSettings(BaseDistributionSettings):  # noqa: N801
     """The base class for the settings of an OpenTURNS-based probability distribution."""  # noqa: E501
 
-    _LIBRARY_NAME: ClassVar[str] = "OpenTURNS"
+    _library_name: ClassVar[str] = "OpenTURNS"
 
 
 class BaseOTMarginalDistributionSettings(BaseOTDistributionSettings):  # noqa: N801

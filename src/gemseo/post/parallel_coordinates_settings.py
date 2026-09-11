@@ -24,4 +24,4 @@ from gemseo.util.typing import StrKeyMapping
 
 
 class ParallelCoordinates_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
-    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 5.0)}
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (10.0, 5.0)}

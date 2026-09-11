@@ -35,7 +35,7 @@ from typing import ClassVar
 from typing import NamedTuple
 
 from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
-from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+from gemseo.machine_learning.regression.model.factory import regressor_factory
 from gemseo.machine_learning.regression.model.regressor_chain_settings import (
     RegressorChain_Settings,
 )
@@ -57,7 +57,7 @@ class _AlgoDefinition(NamedTuple):
 class RegressorChain(BaseRegressor):
     """Chain regression."""
 
-    SHORT_NAME: ClassVar[str] = "RegressorChain"
+    short_name: ClassVar[str] = "RegressorChain"
 
     settings_class: ClassVar[type[RegressorChain_Settings]] = RegressorChain_Settings
 
@@ -72,7 +72,7 @@ class RegressorChain(BaseRegressor):
             settings: The settings of the regression model.
         """
         self.__regressors.append(
-            REGRESSOR_FACTORY.create_from_settings(settings, self.learning_set)
+            regressor_factory.create_from_settings(settings, self.learning_set)
         )
 
     def _fit(

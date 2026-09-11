@@ -82,10 +82,10 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
     See BaseOptimizationLibrary.
     """
 
-    _SUPPORT_SPARSE_JACOBIAN: ClassVar[bool] = True
+    _support_sparse_jacobian: ClassVar[bool] = True
     """Whether the library supports sparse Jacobians."""
 
-    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
+    __doc: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
 
     # TODO: Remove legacy methods "interior-point", "revised simplex" and "simplex".
     ALGORITHM_INFOS: ClassVar[dict[str, ScipyLinProgAlgorithmDescription]] = {
@@ -93,14 +93,14 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
             algorithm_name="Interior point method",
             description=("Linear programming using the HiGHS interior point solver."),
             internal_algorithm_name="highs-ipm",
-            website=f"{__DOC}optimize.linprog-highs-ipm.html",
+            website=f"{__doc}optimize.linprog-highs-ipm.html",
             settings_class=INTERIOR_POINT_Settings,
         ),
         "DUAL_SIMPLEX": ScipyLinProgAlgorithmDescription(
             algorithm_name="Dual simplex",
             description=("Linear programming using the HiGHS dual simplex solver."),
             internal_algorithm_name="highs-ds",
-            website=f"{__DOC}optimize.linprog-highs-ds.html",
+            website=f"{__doc}optimize.linprog-highs-ds.html",
             settings_class=DUAL_SIMPLEX_Settings,
         ),
     }

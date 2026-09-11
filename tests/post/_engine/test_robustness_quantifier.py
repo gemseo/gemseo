@@ -30,11 +30,11 @@ from numpy.random import default_rng
 from scipy.optimize import rosen
 from scipy.optimize import rosen_der
 
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.post._engine.robustness_quantifier import RobustnessQuantifier
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 if TYPE_CHECKING:
     from gemseo.core.problem.database import Database
@@ -46,7 +46,7 @@ def database() -> Database:
     n = 2
     problem = Rosenbrock(n)
     problem.x_0 = 1.0 - 2 * arange(n) / float(n)
-    OPTIMIZATION_LIBRARY_FACTORY.execute(
+    optimization_library_factory.execute(
         problem, settings=L_BFGS_B_Settings(max_iter=200)
     )
     return problem.database
@@ -127,7 +127,7 @@ def test_compute_expected_value(database) -> None:
     assert var == pytest.approx(0.0050, abs=1e-4)
 
     e_ref, var_ref = rq.montecarlo_average_var(mu, cov, func=rosen, n_samples=300000)
-    input_samples = default_rng(SEED).multivariate_normal(mu, cov, 300000).T
+    input_samples = default_rng(seed).multivariate_normal(mu, cov, 300000).T
     output_samples = rosen(input_samples)
     assert output_samples.mean() == e_ref
     assert output_samples.var() == var_ref

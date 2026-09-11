@@ -44,9 +44,9 @@ class SPWeibullDistribution(SPDistribution):
                     "c": settings.shape,
                 },
                 standard_parameters={
-                    self._LOCATION: settings.location,
-                    self._SCALE: settings.scale,
-                    self._SHAPE: settings.shape,
+                    self._location: settings.location,
+                    self._scale: settings.scale,
+                    self._shape: settings.shape,
                 },
             )
         )

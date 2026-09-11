@@ -28,8 +28,8 @@ from strenum import StrEnum
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
-from gemseo.util.constant import EPSILON
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import epsilon
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.derivative.approximation_mode import HybridApproximationMode
 from gemseo.util.derivative.derivatives_approx import DisciplineJacApprox
@@ -197,7 +197,7 @@ class Discipline(BaseDiscipline):
 
     def linearize(
         self,
-        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        input_data: StrKeyMapping = read_only_empty_dict,
         compute_all_jacobians: bool = False,
         execute: bool = True,
     ) -> JacobianData:
@@ -372,7 +372,7 @@ class Discipline(BaseDiscipline):
         input_names: Iterable[str] = (),
         compute_all_jacobians: bool = False,
         print_errors: bool = False,
-        numerical_error: float = EPSILON,
+        numerical_error: float = epsilon,
     ) -> tuple[ndarray, dict[str, ndarray]]:
         """Compute the optimal finite-difference step.
 

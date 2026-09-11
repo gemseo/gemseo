@@ -22,13 +22,13 @@ from typing import ClassVar
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.collection.functions import Functions
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Observables(Functions):
     """A mutable sequence of observables."""
 
-    _F_TYPES: ClassVar[tuple[ArrayFunction.FunctionType]] = (
+    _f_types: ClassVar[tuple[ArrayFunction.FunctionType]] = (
         ArrayFunction.FunctionType.OBS,
     )
 
@@ -40,7 +40,7 @@ class Observables(Functions):
         """
         name = function.name
         if name in self.get_names():
-            LOGGER.warning('The optimization problem already observes "%s".', name)
+            logger.warning('The optimization problem already observes "%s".', name)
             return None
 
         function.f_type = function.FunctionType.OBS

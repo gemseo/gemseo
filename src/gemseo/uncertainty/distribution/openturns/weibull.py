@@ -40,9 +40,9 @@ class OTWeibullDistribution(OTDistribution):
                 else "WeibullMax",
                 parameters=(settings.scale, settings.shape, settings.location),
                 standard_parameters={
-                    self._LOCATION: settings.location,
-                    self._SCALE: settings.scale,
-                    self._SHAPE: settings.shape,
+                    self._location: settings.location,
+                    self._scale: settings.scale,
+                    self._shape: settings.shape,
                 },
                 transformation=settings.transformation,
                 lower_bound=settings.lower_bound,

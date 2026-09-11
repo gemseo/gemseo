@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.discipline.wrapper.job_scheduler.discipline import JobSchedulerDiscipline
@@ -35,8 +36,10 @@ if TYPE_CHECKING:
 class JobSchedulerDisciplineFactory(BaseFactory):
     """A factory of job scheduler interfaces."""
 
-    _CLASS = JobSchedulerDiscipline
-    _PACKAGE_NAMES = ("gemseo.discipline.wrapper.job_scheduler",)
+    _class: ClassVar[type[JobSchedulerDiscipline]] = JobSchedulerDiscipline
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.discipline.wrapper.job_scheduler",
+    )
 
     def wrap_discipline(
         self,

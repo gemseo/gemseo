@@ -39,25 +39,28 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
     from gemseo.util.typing import StrKeyMapping
 
-POSITION: Final[str] = "position"
+position: Final[str] = "position"
 """The name of the state variable representing the position."""
 
-VELOCITY: Final[str] = "velocity"
+velocity: Final[str] = "velocity"
 """The name of the state variable representing the velocity."""
 
-TIME: Final[str] = "time"
+time: Final[str] = "time"
 """The name of the time variable."""
 
-STATE_NAMES: Final[tuple[str, str]] = (POSITION, VELOCITY)
+state_names: Final[tuple[str, str]] = (position, velocity)
 """The names of the state variables."""
 
-STATE_DOT_NAMES: Final[tuple[str, str]] = (f"{POSITION}_dot", f"{VELOCITY}_dot")
+state_dot_names: Final[tuple[str, str]] = (f"{position}_dot", f"{velocity}_dot")
 """The names of the derivatives of the state variables."""
 
 _times: Final[RealArray] = linspace(0.0, 10, 30)
-INITIAL_TIME: Final[RealArray] = asarray([0.0])
-INITIAL_POSITION: Final[RealArray] = asarray([0.0])
-INITIAL_VELOCITY: Final[RealArray] = asarray([0.0])
+initial_time: Final[RealArray] = asarray([0.0])
+initial_time.setflags(write=False)
+initial_position: Final[RealArray] = asarray([0.0])
+initial_position.setflags(write=False)
+initial_velocity: Final[RealArray] = asarray([0.0])
+initial_velocity.setflags(write=False)
 
 
 class SpringsDynamicsDiscipline(Discipline):
@@ -128,8 +131,8 @@ class SpringsDynamicsDiscipline(Discipline):
         right_position: RealArray | float = 0.0,
         is_left_position_fixed: bool = False,
         is_right_position_fixed: bool = False,
-        state_names: Sequence[str] = STATE_NAMES,
-        state_dot_var_names: Sequence[str] = STATE_DOT_NAMES,
+        state_names: Sequence[str] = state_names,
+        state_dot_var_names: Sequence[str] = state_dot_names,
         left_position_name: str = "",
         right_position_name: str = "",
         name: str = "",
@@ -172,7 +175,7 @@ class SpringsDynamicsDiscipline(Discipline):
             "" if is_right_position_fixed else right_position_name
         )
 
-        input_names = [TIME, *self._state_names]
+        input_names = [time, *self._state_names]
         output_names = state_dot_var_names
 
         super().__init__(name)
@@ -185,9 +188,9 @@ class SpringsDynamicsDiscipline(Discipline):
         self.io.output_grammar.update_from_names(output_names)
 
         self.default_input_data = {
-            TIME: INITIAL_TIME,
-            self._state_names[0]: INITIAL_POSITION,
-            self._state_names[1]: INITIAL_VELOCITY,
+            time: initial_time,
+            self._state_names[0]: initial_position,
+            self._state_names[1]: initial_velocity,
         }
         if not is_left_position_fixed and self._times is not None:
             self.default_input_data[left_position_name] = self._times * 0.0
@@ -205,7 +208,7 @@ class SpringsDynamicsDiscipline(Discipline):
         }
 
         position_dot, velocity_dot = self._compute_generic_mass_rhs_function(
-            time=input_data[TIME],
+            time=input_data[time],
             position=input_data[self._state_names[0]],
             velocity=input_data[self._state_names[1]],
             mass=self._mass,

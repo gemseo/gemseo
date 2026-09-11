@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
@@ -27,11 +28,11 @@ class ReliabilityAlgorithmFactory(BaseFactory):
 
     # TODO: subclass BaseAlgorithmFactory once the MR 2434 has been merged.
 
-    _CLASS = BaseReliabilityAlgorithm
-    _PACKAGE_NAMES = ("gemseo.uncertainty.reliability",)
+    _class: ClassVar[type[BaseReliabilityAlgorithm]] = BaseReliabilityAlgorithm
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.uncertainty.reliability",)
 
 
-RELIABILITY_ALGORITHM_FACTORY: Final[ReliabilityAlgorithmFactory] = (
+reliability_algorithm_factory: Final[ReliabilityAlgorithmFactory] = (
     ReliabilityAlgorithmFactory()
 )
 """The factory of reliability analysis algorithms."""

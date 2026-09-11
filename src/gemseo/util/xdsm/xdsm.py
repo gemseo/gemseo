@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 class XDSM:
     """A XDSM diagram (eXtended Design Structure Matrix)."""
 
-    __XDSM_TEMPLATE: Final[str] = """
+    __xdsm_template: Final[str] = """
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', () => {{
           const mdo = {};
@@ -85,7 +85,7 @@ class XDSM:
 
     def _repr_html_(self) -> str:
         return (
-            f"{self.__XDSM_TEMPLATE.format(self.__json_schema)}"
+            f"{self.__xdsm_template.format(self.__json_schema)}"
             "<div class='xdsm-toolbar'></div>"
             "<div class='xdsm2'></div>"
         )

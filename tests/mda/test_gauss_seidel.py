@@ -295,7 +295,7 @@ def test_virtual_exe_mda(two_virtual_disciplines):  # noqa: F811
 def test_max_mda_iter_0(enable_discipline_statistics):
     """Check that Gauss-Seidel calls the disciplines only once when max_mda_iter=0."""
     mda = SobieskiMDAGaussSeidel(settings=MDAGaussSeidel_Settings(max_mda_iter=0))
-    assert mda.NORMALIZED_RESIDUAL_NORM not in mda.io.output_grammar
+    assert mda.normalized_residual_norm_name not in mda.io.output_grammar
 
     mda.execute()
 

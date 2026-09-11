@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
@@ -25,9 +26,11 @@ from gemseo.uncertainty.statistic.tolerance_interval.base import BaseToleranceIn
 class ToleranceIntervalFactory(BaseFactory[BaseToleranceInterval]):
     """A factory of tolerance intervals."""
 
-    _CLASS = BaseToleranceInterval
-    _PACKAGE_NAMES = ("gemseo.uncertainty.statistic.tolerance_interval",)
+    _class: ClassVar[type[BaseToleranceInterval]] = BaseToleranceInterval
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.uncertainty.statistic.tolerance_interval",
+    )
 
 
-TOLERANCE_INTERVAL_FACTORY: Final[ToleranceIntervalFactory] = ToleranceIntervalFactory()
+tolerance_interval_factory: Final[ToleranceIntervalFactory] = ToleranceIntervalFactory()
 """The factory for `BaseToleranceInterval` objects."""

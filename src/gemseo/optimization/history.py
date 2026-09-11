@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 
 BestInfeasiblePointType = tuple[RealArray, RealArray, bool, dict[str, RealArray]]
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class OptimizationHistory:
@@ -241,7 +241,7 @@ class OptimizationHistory:
                 "Optimization found no feasible point; "
                 "the least infeasible point is selected."
             )
-            LOGGER.warning(msg)
+            logger.warning(msg)
             x_opt, f_opt, _, f_history = self.__get_best_infeasible_point()
             c_opt = {c.name: f_history.get(c.name) for c in constraints}
             func = Database.get_gradient_name

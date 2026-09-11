@@ -20,10 +20,10 @@ from typing import Final
 
 from strenum import StrEnum
 
-_LINEAR_SOLVER_TEMPLATE: Final[str] = "the left-hand side of the problem is not {}"
+_linear_solver_template: Final[str] = "the left-hand side of the problem is not {}"
 """The template of the reason why an algorithm is unsuited for a problem."""
 
-_OPTIMIZER_TEMPLATE: Final[str] = "it does not handle {}"
+_optimizer_template: Final[str] = "it does not handle {}"
 """The template of the reason why an algorithm is unsuited for a problem."""
 
 
@@ -36,14 +36,14 @@ class _UnsuitabilityReason(StrEnum):
     EMPTY_DESIGN_SPACE = "the design space is empty"
 
     # BaseLinearSolverLibrary
-    NOT_SYMMETRIC = _LINEAR_SOLVER_TEMPLATE.format("symmetric")
-    NOT_POSITIVE_DEFINITE = _LINEAR_SOLVER_TEMPLATE.format("positive definite")
-    NOT_LINEAR_OPERATOR = _LINEAR_SOLVER_TEMPLATE.format("a linear operator")
+    NOT_SYMMETRIC = _linear_solver_template.format("symmetric")
+    NOT_POSITIVE_DEFINITE = _linear_solver_template.format("positive definite")
+    NOT_LINEAR_OPERATOR = _linear_solver_template.format("a linear operator")
 
     # BaseOptimizationLibrary
-    NON_LINEAR_PROBLEM = _OPTIMIZER_TEMPLATE.format("non-linear problems")
-    INEQUALITY_CONSTRAINTS = _OPTIMIZER_TEMPLATE.format("inequality constraints")
-    EQUALITY_CONSTRAINTS = _OPTIMIZER_TEMPLATE.format("equality constraints")
+    NON_LINEAR_PROBLEM = _optimizer_template.format("non-linear problems")
+    INEQUALITY_CONSTRAINTS = _optimizer_template.format("inequality constraints")
+    EQUALITY_CONSTRAINTS = _optimizer_template.format("equality constraints")
 
     # PyDOE
     SMALL_DIMENSION = (

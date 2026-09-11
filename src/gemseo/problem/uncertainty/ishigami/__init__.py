@@ -30,12 +30,15 @@ uniformly distributed over $[-\pi,\pi]$.
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.problem.uncertainty.ishigami.ishigami_discipline import (
         IshigamiDiscipline,  # noqa: F401
@@ -45,11 +48,11 @@ if TYPE_CHECKING:
     from gemseo.problem.uncertainty.ishigami.ishigami_space import IshigamiSpace  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "IshigamiDiscipline": "ishigami_discipline",
     "IshigamiFunction": "ishigami_function",
     "IshigamiProblem": "ishigami_problem",
     "IshigamiSpace": "ishigami_space",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

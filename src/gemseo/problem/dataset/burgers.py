@@ -86,7 +86,7 @@ def create_burgers_dataset(
     u_t = -2 * visc / phi * phi_deriv
 
     if categorize:
-        groups = {"t": IODataset.INPUT_GROUP, "u_t": IODataset.OUTPUT_GROUP}
+        groups = {"t": IODataset.input_group, "u_t": IODataset.output_group}
     else:
         groups = None
 

@@ -67,7 +67,7 @@ from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problem.mdo.sellar.util import get_initial_data
 from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.derivative.check.mda import MDAJacobianChecker
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 from gemseo.util.testing.helper import assert_exception
 from gemseo.util.testing.helper import concretize_classes
 
@@ -76,7 +76,7 @@ if TYPE_CHECKING:
 
     from gemseo.util.typing import StrKeyMapping
 
-DIRNAME = os.path.dirname(__file__)
+dirname = os.path.dirname(__file__)
 
 
 @pytest.fixture
@@ -443,7 +443,7 @@ class LinearImplicitDiscipline(Discipline):
         self.io.residual_to_state_variable = {"r": "w"}
 
         self.io.state_equations_are_solved = False
-        self.mat = default_rng(SEED).standard_normal((size, size))
+        self.mat = default_rng(seed).standard_normal((size, size))
 
         self.io.input_grammar.defaults = {k: 0.5 * ones(size) for k in input_names}
 
@@ -667,7 +667,7 @@ def test_scaling_method() -> None:
 
 def test_namespaces(sellar_mda) -> None:
     """Test the well functionning with namespaces."""
-    sellar_mda.add_namespace_to_output(sellar_mda.NORMALIZED_RESIDUAL_NORM, "foo")
+    sellar_mda.add_namespace_to_output(sellar_mda.normalized_residual_norm_name, "foo")
     sellar_mda.execute()
 
 

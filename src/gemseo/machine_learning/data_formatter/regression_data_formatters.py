@@ -161,7 +161,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
                 )
                 raise NotImplementedError(msg)
 
-            inputs = model.learning_set.INPUT_GROUP
+            inputs = model.learning_set.input_group
             if inputs in model.transformer:
                 jac = model.transformer[inputs].compute_jacobian(input_data)
                 input_data = model.transformer[inputs].transform(input_data)
@@ -171,7 +171,7 @@ class RegressionDataFormatters(SupervisedDataFormatters):
             jac = func(model, input_data, *args, **kwargs) @ jac
             output_data = model.predict_raw(input_data)
 
-            outputs = model.learning_set.OUTPUT_GROUP
+            outputs = model.learning_set.output_group
             if outputs in model.transformer:
                 jac = (
                     model.transformer[outputs].compute_jacobian_inverse(output_data)

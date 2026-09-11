@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from gemseo.ode.problem import ODEProblem
     from gemseo.ode.result import ODEResult
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ScipyODESolverDescription(ODESolverDescription):
@@ -63,35 +63,35 @@ class ScipyODEAlgos(BaseODESolverLibrary):
     ODE stands for ordinary differential equation.
     """
 
-    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/generated/"
+    __doc: Final[str] = "https://docs.scipy.org/doc/scipy/reference/generated/"
 
     ALGORITHM_INFOS: ClassVar[dict[str, ScipyODESolverDescription]] = {
         "RK45": ScipyODESolverDescription(
             algorithm_name="RK45",
             internal_algorithm_name="RK45",
             description="Explicit Runge-Kutta method of order 5(4)",
-            website=f"{__DOC}scipy.integrate.RK45.html",
+            website=f"{__doc}scipy.integrate.RK45.html",
             settings_class=RK45_Settings,
         ),
         "RK23": ScipyODESolverDescription(
             algorithm_name="RK23",
             internal_algorithm_name="RK23",
             description="Explicit Runge-Kutta method of order 3(2)",
-            website=f"{__DOC}scipy.integrate.RK23.html",
+            website=f"{__doc}scipy.integrate.RK23.html",
             settings_class=RK23_Settings,
         ),
         "DOP853": ScipyODESolverDescription(
             algorithm_name="DOP853",
             internal_algorithm_name="DOP853",
             description="Explicit Runge-Kutta method of order 8",
-            website=f"{__DOC}scipy.integrate.DOP853.html",
+            website=f"{__doc}scipy.integrate.DOP853.html",
             settings_class=DOP853_Settings,
         ),
         "Radau": ScipyODESolverDescription(
             algorithm_name="Radau",
             internal_algorithm_name="Radau",
             description="Implicit Runge-Kutta method of the Radau IIA type of order 5",
-            website=f"{__DOC}scipy.integrate.Radau.html",
+            website=f"{__doc}scipy.integrate.Radau.html",
             settings_class=Radau_Settings,
         ),
         "BDF": ScipyODESolverDescription(
@@ -101,14 +101,14 @@ class ScipyODEAlgos(BaseODESolverLibrary):
                 "Implicit multi-step variable-order (1 to 5) method based on a backward"
                 " differentiation formula for the derivative approximation"
             ),
-            website=f"{__DOC}scipy.integrate.BDF.html",
+            website=f"{__doc}scipy.integrate.BDF.html",
             settings_class=BDF_Settings,
         ),
         "LSODA": ScipyODESolverDescription(
             algorithm_name="LSODA",
             internal_algorithm_name="LSODA",
             description="Adams/BDF method with automatic stiffness detection/switching",
-            website=f"{__DOC}scipy.integrate.LSODA.html",
+            website=f"{__doc}scipy.integrate.LSODA.html",
             settings_class=LSODA_Settings,
         ),
     }
@@ -142,7 +142,7 @@ class ScipyODEAlgos(BaseODESolverLibrary):
         problem.result.n_jac_evaluations = solution.njev
 
         if not problem.result.algorithm_has_converged:
-            LOGGER.warning(solution.message)
+            logger.warning(solution.message)
 
         index = None
         if solution.t_events:

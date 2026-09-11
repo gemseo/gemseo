@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     _OperandType: TypeAlias = "JacobianOperator | SparseOrDenseRealArray"
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta):  # type: ignore[misc] # missing typing
@@ -105,7 +105,7 @@ class JacobianOperator(LinearOperator, metaclass=GoogleDocstringInheritanceMeta)
         Returns:
             The matrix representation of the Jacobian.
         """
-        LOGGER.info(
+        logger.info(
             "The Jacobian is given as a linear operator. Performing the assembly "
             "required to apply it to the identity which is not performant."
         )

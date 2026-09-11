@@ -110,7 +110,7 @@ class ConstraintRadar(BasePost[ConstraintRadar_Settings]):
         dataset = Dataset(dataset_name="Constraints")
         values = vstack((constraint_values, zeros(len(constraint_values))))
         dataset.add_group(
-            dataset.DEFAULT_GROUP,
+            dataset.default_group,
             values,
             constraint_names,
         )

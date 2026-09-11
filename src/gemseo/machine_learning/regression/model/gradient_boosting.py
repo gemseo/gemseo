@@ -39,8 +39,8 @@ if TYPE_CHECKING:
 class GradientBoostingRegressor(BaseRegressor):
     """Gradient boosting for regression."""
 
-    LIBRARY: ClassVar[str] = "scikit-learn"
-    SHORT_NAME: ClassVar[str] = "GradientBoostingRegressor"
+    library: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "GradientBoostingRegressor"
 
     settings_class: ClassVar[type[GradientBoostingRegressor_Settings]] = (
         GradientBoostingRegressor_Settings

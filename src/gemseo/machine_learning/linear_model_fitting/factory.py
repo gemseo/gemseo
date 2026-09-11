@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter import (
     BaseLinearModelFitter,
@@ -26,5 +28,7 @@ from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter 
 class LinearModelFitterFactory(BaseFactory):
     """A factory of linear model fitting algorithms."""
 
-    _CLASS = BaseLinearModelFitter
-    _PACKAGE_NAMES = ("gemseo.machine_learning.linear_model_fitting",)
+    _class: ClassVar[type[BaseLinearModelFitter]] = BaseLinearModelFitter
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.machine_learning.linear_model_fitting",
+    )

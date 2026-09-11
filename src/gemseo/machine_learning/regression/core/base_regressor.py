@@ -47,9 +47,9 @@ if TYPE_CHECKING:
 class BaseRegressor(BaseMLSupervisedModel):
     """The base class for regression models."""
 
-    DEFAULT_TRANSFORMER: DefaultTransformerType = MappingProxyType({
-        IODataset.INPUT_GROUP: MinMaxScaler(),
-        IODataset.OUTPUT_GROUP: MinMaxScaler(),
+    default_transformer: DefaultTransformerType = MappingProxyType({
+        IODataset.input_group: MinMaxScaler(),
+        IODataset.output_group: MinMaxScaler(),
     })
 
     DataFormatters = RegressionDataFormatters
@@ -61,9 +61,9 @@ class BaseRegressor(BaseMLSupervisedModel):
 
     def _post_init(self):
         super()._post_init()
-        if self.learning_set.GRADIENT_GROUP in self.learning_set.group_names:
+        if self.learning_set.gradient_group in self.learning_set.group_names:
             self._jacobian_data = self.learning_set.get_view(
-                group_names=self.learning_set.GRADIENT_GROUP,
+                group_names=self.learning_set.gradient_group,
                 variable_names=[
                     Database.get_gradient_name(output_name)
                     for output_name in self.output_names

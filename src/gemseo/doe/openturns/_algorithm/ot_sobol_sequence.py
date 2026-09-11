@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 from openturns import SobolSequence
 
@@ -32,4 +32,4 @@ class OTSobolSequence(BaseOTLowDiscrepancySequence):
         This class is a singleton.
     """
 
-    _ALGO_CLASS: Final[type[SobolSequence]] = SobolSequence
+    _algo_class: ClassVar[type[SobolSequence]] = SobolSequence

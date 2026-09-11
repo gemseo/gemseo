@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.scenario.scenario_result.scenario_result import ScenarioResult
 
@@ -23,5 +25,5 @@ from gemseo.scenario.scenario_result.scenario_result import ScenarioResult
 class ScenarioResultFactory(BaseFactory):
     """A factory of scenario results."""
 
-    _CLASS = ScenarioResult
-    _PACKAGE_NAMES = ("gemseo.scenario.scenario_result",)
+    _class: ClassVar[type[ScenarioResult]] = ScenarioResult
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.scenario.scenario_result",)

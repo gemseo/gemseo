@@ -54,18 +54,18 @@ from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable._legacy import Variable
 from gemseo.util.pickle import from_pickle
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
 
-CURRENT_DIR = Path(__file__).parent
-TEST_INFILE = CURRENT_DIR / "design_space.csv"
-FAIL_HDF = CURRENT_DIR / "fail.hdf5"
+current_dir = Path(__file__).parent
+test_infile = current_dir / "design_space.csv"
+fail_hdf = current_dir / "fail.hdf5"
 
 DesignVariableType = DesignSpace.DesignVariableType
 
-FLOAT = DesignSpace.DesignVariableType.FLOAT
-INTEGER = DesignSpace.DesignVariableType.INTEGER
-DISCRETE = DesignSpace.DesignVariableType.DISCRETE
+float_type = DesignSpace.DesignVariableType.FLOAT
+integer = DesignSpace.DesignVariableType.INTEGER
+discrete = DesignSpace.DesignVariableType.DISCRETE
 
 
 @pytest.fixture
@@ -77,23 +77,23 @@ def design_space():
     ds = DesignSpace()
     ds.add_variable("x1", lower_bound=0.0, upper_bound=2.0)
     ds.add_variable("x2", lower_bound=-2.0, upper_bound=2.0)
-    ds.add_variable("x3", type_=INTEGER, lower_bound=0, upper_bound=2)
+    ds.add_variable("x3", type_=integer, lower_bound=0, upper_bound=2)
     ds.add_variable("x4", type_="float", lower_bound=-1.0, upper_bound=0.0, value=-0.5)
     ds.add_variable(
         "x5", size=3, type_="float", lower_bound=-1.0, upper_bound=0.0, value=-0.5
     )
     ds.add_variable("x6", upper_bound=2.0)
     ds.add_variable("x7", lower_bound=0.0)
-    ds.add_variable("x8", type_=INTEGER, lower_bound=1, upper_bound=1)
+    ds.add_variable("x8", type_=integer, lower_bound=1, upper_bound=1)
     ds.add_variable("x9", size=3, lower_bound=-1.0, upper_bound=2.0)
     ds.add_variable("x10", size=3)
     ds.add_variable("x11", size=2)
     ds.add_variable("x12")
     ds.add_variable("x13", value=array([0.5]))
-    ds.add_variable("x14", type_=INTEGER, value=array([2]))
+    ds.add_variable("x14", type_=integer, value=array([2]))
     ds.add_variable("x15")
-    ds.add_variable("x16", size=2, type_=FLOAT, value=array([1.0, 2.0]))
-    ds.add_variable("x17", size=2, type_=INTEGER, value=array([1, 2]))
+    ds.add_variable("x16", size=2, type_=float_type, value=array([1.0, 2.0]))
+    ds.add_variable("x17", size=2, type_=integer, value=array([1, 2]))
     ds.add_variable("x18", lower_bound=-1.0, upper_bound=2.0)
     ds.add_variable("x19", lower_bound=1.0, upper_bound=3.0)
     ds.add_variable("x20", type_=b"float")
@@ -203,7 +203,7 @@ def test_add_variable_with_value_out_of_bounds(
         design_space.add_variable(
             name="varname",
             size=1,
-            type_=FLOAT,
+            type_=float_type,
             lower_bound=l_b,
             upper_bound=u_b,
             value=value,
@@ -238,7 +238,7 @@ def test_add_variable_value(design_space) -> None:
     design_space.add_variable(
         "varname",
         size=3,
-        type_=FLOAT,
+        type_=float_type,
         lower_bound=0.0,
         upper_bound=1.0,
         value=[None, None, None],
@@ -347,7 +347,7 @@ def test_set_current_variable_wrong_size_raises(snapshot) -> None:
 
 def test_read_from_csv() -> None:
     """Check that a variable name is correct when reading a CSV file."""
-    ds = DesignSpace.from_csv(CURRENT_DIR / "design_space_4.csv")
+    ds = DesignSpace.from_csv(current_dir / "design_space_4.csv")
     assert ds.variable_names == ["x_shared"]
 
 
@@ -818,7 +818,7 @@ def test_normalization() -> None:
         upper_bound=array([0.0, inf]),
     )
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=10.0)
-    design_space.add_variable("x_3", type_=INTEGER, lower_bound=0.0, upper_bound=10.0)
+    design_space.add_variable("x_3", type_=integer, lower_bound=0.0, upper_bound=10.0)
     # Test the normalization policies:
     assert not design_space.name_to_normalization_mask["x_1"][0]
     assert not design_space.name_to_normalization_mask["x_1"][1]
@@ -868,8 +868,8 @@ def test_current_x(snapshot) -> None:
     l_b = {"x_1": 0.5, "x_2": (-inf, 2.0)}
     u_b = {"x_1": inf, "x_2": (4.0, 5.0)}
     var_types = {
-        "x_1": FLOAT,
-        "x_2": INTEGER,
+        "x_1": float_type,
+        "x_2": integer,
     }
     x_0 = np.array([0.5, 4.0, 4.0])
     # create the design space
@@ -902,7 +902,7 @@ def test_current_x(snapshot) -> None:
     x_2[1]     integer  2      4        5
     """
 
-    assert design_space.get_type("x_1") == np.array([FLOAT])
+    assert design_space.get_type("x_1") == np.array([float_type])
     with assert_exception(KeyError, snapshot):
         assert design_space.get_type("x_3")
     with assert_exception(KeyError, snapshot):
@@ -968,21 +968,21 @@ def test_read_write(tmp_wd) -> None:
     read_ds.get_lower_bounds()
     check_ds(ref_ds, read_ds, f_path)
 
-    ds = DesignSpace.from_csv(TEST_INFILE)
+    ds = DesignSpace.from_csv(test_infile)
     assert not ds.has_current_value
     for i in range(1, 9):
-        testfile = CURRENT_DIR / f"design_space_fail_{i}.csv"
+        testfile = current_dir / f"design_space_fail_{i}.csv"
         with pytest.raises(ValueError):
             DesignSpace.from_csv(testfile)
 
     for i in range(1, 4):
-        testfile = CURRENT_DIR / f"design_space_{i}.csv"
+        testfile = current_dir / f"design_space_{i}.csv"
         header = None
         if i == 2:
             header = ["name", "value", "lower_bound", "type", "upper_bound"]
         DesignSpace.from_csv(testfile, header=header)
 
-    ds = DesignSpace.from_csv(TEST_INFILE)
+    ds = DesignSpace.from_csv(test_infile)
     ds.set_lower_bound("x_shared", -inf)
     ds.set_upper_bound("x_shared", inf)
 
@@ -994,7 +994,7 @@ def test_read_write(tmp_wd) -> None:
 @pytest.mark.parametrize("index", [1, 2, 3, 4, 5, 6, 7, 8])
 def test_read_write_failure(tmp_wd, index) -> None:
     """Check that from_csv and to_csv work correctly."""
-    testfile = CURRENT_DIR / f"design_space_fail_{index}.csv"
+    testfile = current_dir / f"design_space_fail_{index}.csv"
     with pytest.raises(ValueError):
         DesignSpace.from_csv(testfile)
 
@@ -1172,11 +1172,11 @@ def test_hdf5_append_with_dropped_bound(tmp_wd) -> None:
     """
     file_path = Path("ds.h5")
     design_space = DesignSpace()
-    design_space.add_variable("x", 1, INTEGER, lower_bound=0, upper_bound=10)
+    design_space.add_variable("x", 1, integer, lower_bound=0, upper_bound=10)
     design_space.to_hdf(file_path)
 
     design_space = DesignSpace()
-    design_space.add_variable("x", 1, INTEGER, lower_bound=0)
+    design_space.add_variable("x", 1, integer, lower_bound=0)
     design_space.to_hdf(file_path, append=True)
 
     read_design_space = DesignSpace.from_hdf(file_path)
@@ -1227,15 +1227,15 @@ def test_hdf5_append_with_changed_type(tmp_wd, snapshot) -> None:
     """Check that appending a design space with another type is rejected."""
     file_path = Path("ds.h5")
     design_space = DesignSpace()
-    design_space.add_variable("x", 1, INTEGER, lower_bound=0, upper_bound=10)
+    design_space.add_variable("x", 1, integer, lower_bound=0, upper_bound=10)
     design_space.to_hdf(file_path)
 
     design_space = DesignSpace()
-    design_space.add_variable("x", 1, FLOAT, lower_bound=0.0, upper_bound=10.0)
+    design_space.add_variable("x", 1, float_type, lower_bound=0.0, upper_bound=10.0)
     with assert_exception(ValueError, snapshot):
         design_space.to_hdf(file_path, append=True)
 
-    assert DesignSpace.from_hdf(file_path).variables["x"].type == INTEGER
+    assert DesignSpace.from_hdf(file_path).variables["x"].type == integer
 
 
 def test_hdf5_append_with_changed_variable_names(tmp_wd, snapshot) -> None:
@@ -1277,12 +1277,12 @@ def test_hdf5_append_with_several_changes(tmp_wd, snapshot) -> None:
     """Check that all the structural mismatches are reported at once."""
     file_path = Path("ds.h5")
     design_space = DesignSpace()
-    design_space.add_variable("x", 2, INTEGER, lower_bound=0, upper_bound=10)
+    design_space.add_variable("x", 2, integer, lower_bound=0, upper_bound=10)
     design_space.add_variable("y", 1, lower_bound=0.0, upper_bound=1.0)
     design_space.to_hdf(file_path)
 
     design_space = DesignSpace()
-    design_space.add_variable("x", 3, FLOAT, lower_bound=0.0, upper_bound=10.0)
+    design_space.add_variable("x", 3, float_type, lower_bound=0.0, upper_bound=10.0)
     design_space.add_variable("y", 2, lower_bound=0.0, upper_bound=1.0)
     with assert_exception(ValueError, snapshot):
         design_space.to_hdf(file_path, append=True)
@@ -1347,7 +1347,7 @@ def test_import_error_with_missing_file() -> None:
 def test_fail_import() -> None:
     """Check that a malformed HDF file cannot be imported."""
     with pytest.raises(KeyError):
-        DesignSpace.from_hdf(FAIL_HDF)
+        DesignSpace.from_hdf(fail_hdf)
 
 
 @pytest.fixture(scope="module")
@@ -1533,7 +1533,7 @@ def test_sparse_normalization() -> None:
 
 def test_vartype_passed_as_bytes(design_space) -> None:
     """Check that a variable type passed as bytes is properly decoded."""
-    assert design_space.variable_types["x20"] == FLOAT
+    assert design_space.variable_types["x20"] == float_type
 
 
 @pytest.mark.parametrize(
@@ -1597,9 +1597,11 @@ def test_design_space_name() -> None:
 def design_space_for_normalize_vect() -> DesignSpace:
     """A design space to check normalize_vect."""
     design_space = DesignSpace()
-    design_space.add_variable("x_1", 2, FLOAT, array([-inf, 0.0]), array([0.0, inf]))
-    design_space.add_variable("x_2", 1, FLOAT, 0.0, 10.0)
-    design_space.add_variable("x_3", 1, INTEGER, 0.0, 10.0)
+    design_space.add_variable(
+        "x_1", 2, float_type, array([-inf, 0.0]), array([0.0, inf])
+    )
+    design_space.add_variable("x_2", 1, float_type, 0.0, 10.0)
+    design_space.add_variable("x_3", 1, integer, 0.0, 10.0)
     return design_space
 
 
@@ -1642,12 +1644,12 @@ def test_denormalize_vect(input_vec, ref, out) -> None:
     design_space.add_variable(
         "x_1",
         2,
-        FLOAT,
+        float_type,
         array([-inf, 0.0]),
         array([0.0, inf]),
     )
-    design_space.add_variable("x_2", 1, FLOAT, 0.0, 10.0)
-    design_space.add_variable("x_3", 1, INTEGER, 0.0, 10.0)
+    design_space.add_variable("x_2", 1, float_type, 0.0, 10.0)
+    design_space.add_variable("x_3", 1, integer, 0.0, 10.0)
 
     # Pass a copy of the array because it is reused across the "out" parametrization
     # and denormalize_vect must not mutate it in place (checked below).
@@ -1801,12 +1803,12 @@ def test_normalized_current_value_follows_bound_changes() -> None:
             {
                 "int": {
                     "size": 2,
-                    "var_type": INTEGER,
+                    "var_type": integer,
                     "value": array([1, 2]),
                 },
                 "float": {
                     "size": 1,
-                    "var_type": FLOAT,
+                    "var_type": float_type,
                     "value": array([1.0]),
                 },
             },
@@ -1816,12 +1818,12 @@ def test_normalized_current_value_follows_bound_changes() -> None:
             {
                 "float_1": {
                     "size": 2,
-                    "var_type": FLOAT,
+                    "var_type": float_type,
                     "value": array([1, 2]),
                 },
                 "float_2": {
                     "size": 1,
-                    "var_type": FLOAT,
+                    "var_type": float_type,
                     "value": array([1.0]),
                 },
             },
@@ -1831,12 +1833,12 @@ def test_normalized_current_value_follows_bound_changes() -> None:
             {
                 "int_1": {
                     "size": 2,
-                    "var_type": INTEGER,
+                    "var_type": integer,
                     "value": array([1, 2]),
                 },
                 "int_2": {
                     "size": 1,
-                    "var_type": INTEGER,
+                    "var_type": integer,
                     "value": array([1]),
                 },
             },
@@ -1899,7 +1901,7 @@ def test_normalization_casting(design_space: DesignSpace, normalize: bool) -> No
 def design_space_to_check_membership() -> DesignSpace:
     """A design space to test the method check_membership."""
     design_space = DesignSpace()
-    design_space.add_variable("x", type_=INTEGER, lower_bound=-2, upper_bound=-1)
+    design_space.add_variable("x", type_=integer, lower_bound=-2, upper_bound=-1)
     design_space.add_variable("y", size=2, lower_bound=1.0, upper_bound=2.0)
     return design_space
 
@@ -2024,7 +2026,7 @@ def test_infinity_bounds_for_int(l_b, u_b, expected_lb, expected_ub) -> None:
         expected_lb: The expected lower bounds.
     """
     ds = DesignSpace()
-    ds.add_variable("x", 2, lower_bound=l_b, upper_bound=u_b, type_=INTEGER)
+    ds.add_variable("x", 2, lower_bound=l_b, upper_bound=u_b, type_=integer)
     assert_array_equal(ds._bounds.get_lower_bound("x"), expected_lb)
     assert_array_equal(ds._bounds.get_upper_bound("x"), expected_ub)
 
@@ -2273,7 +2275,7 @@ def test_initialize_missing_current_values(l_b, u_b, value) -> None:
     """Check the initialization of the missing current values."""
     design_space = DesignSpace()
     design_space.add_variable(
-        "x", size=2, type_=INTEGER, lower_bound=l_b, upper_bound=u_b
+        "x", size=2, type_=integer, lower_bound=l_b, upper_bound=u_b
     )
     design_space.initialize_missing_current_values()
     assert_equal(design_space.get_current_value("x"), value)
@@ -2306,7 +2308,7 @@ def test_export_import_with_none_value(tmp_wd) -> None:
 
 def test_repr_html(design_space_2) -> None:
     """Check the HTML representation of a design space."""
-    assert design_space_2._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert design_space_2._repr_html_() == repr_html_wrapper.format(
         """Design space:<br/><table>
     <thead>
         <tr>
@@ -2573,7 +2575,7 @@ def test_unpickle_design_space_of_the_last_release() -> None:
         DeprecationWarning,
         match="The class 'gemseo.space.variable.Variable' is deprecated",
     ):
-        space = from_pickle(CURRENT_DIR / "design_space_6_3_3.pkl")
+        space = from_pickle(current_dir / "design_space_6_3_3.pkl")
 
     assert space.name == "legacy"
     assert space.dimension == 4
@@ -2869,7 +2871,7 @@ def test_has_current_value_tracks_mutations() -> None:
 def test_set_current_variable_rejects_non_integer_value(snapshot) -> None:
     """Check that set_current_variable rejects a non-integer value on an integer."""
     space = DesignSpace()
-    space.add_variable("i", type_=INTEGER, lower_bound=-10, upper_bound=10, value=0)
+    space.add_variable("i", type_=integer, lower_bound=-10, upper_bound=10, value=0)
 
     with assert_exception(ValueError, snapshot):
         space.set_current_variable("i", array([2.7]))
@@ -2880,7 +2882,7 @@ def test_set_current_variable_rejects_non_integer_value(snapshot) -> None:
 def test_set_current_variable_rejects_negative_non_integer_value(snapshot) -> None:
     """Check that a negative non-integer value is rejected, not truncated to zero."""
     space = DesignSpace()
-    space.add_variable("i", type_=INTEGER, lower_bound=-10, upper_bound=10, value=0)
+    space.add_variable("i", type_=integer, lower_bound=-10, upper_bound=10, value=0)
 
     with assert_exception(ValueError, snapshot):
         space.set_current_variable("i", array([-2.7]))
@@ -3107,9 +3109,9 @@ def test_add_with_an_invalid_value_rolls_back(snapshot) -> None:
 def test_add_variable_from_bounds() -> None:
     """Check that add_variable keeps building a variable from its bounds."""
     design_space = DesignSpace()
-    design_space.add_variable("n", 2, INTEGER, 0, 10, 5)
+    design_space.add_variable("n", 2, integer, 0, 10, 5)
 
-    assert design_space.get_type("n") == INTEGER
+    assert design_space.get_type("n") == integer
     assert_array_equal(design_space.get_current_value(["n"]), array([5, 5]))
 
 
@@ -3117,7 +3119,7 @@ def test_add_variable_with_discrete_type_raises(snapshot) -> None:
     """Check that add_variable rejects a discrete request without a variable."""
     design_space = DesignSpace()
     with assert_exception(ValueError, snapshot):
-        design_space.add_variable("t", type_=DISCRETE)
+        design_space.add_variable("t", type_=discrete)
 
 
 def test_discrete_variable_scalar_value_shape(discrete_design_space) -> None:

@@ -24,9 +24,9 @@ from gemseo.util.study_analysis.study_analysis_cli import main
 from gemseo.util.study_analysis.study_analysis_cli import parse_args
 from gemseo.util.testing.helper import assert_exception
 
-INPUT_DIR = Path(__file__).parent / "study_inputs"
-STUDY_FILE = INPUT_DIR / "disciplines_spec.xlsx"
-STUDY_FILE_WITHOUT_SCENARIO = INPUT_DIR / "disciplines_spec_without_scenario.xlsx"
+input_dir = Path(__file__).parent / "study_inputs"
+study_file = input_dir / "disciplines_spec.xlsx"
+study_file_without_scenario = input_dir / "disciplines_spec_without_scenario.xlsx"
 
 
 @pytest.fixture
@@ -46,9 +46,9 @@ def set_argv(monkeypatch):
 
 def test_parse_args_default(set_argv, tmp_wd) -> None:
     """Verify the default CLI arguments."""
-    set_argv(str(STUDY_FILE))
+    set_argv(str(study_file))
     args = parse_args()
-    assert args.study_file == str(STUDY_FILE)
+    assert args.study_file == str(study_file)
     assert args.study_type == "mdo"
     assert Path(args.out_dir) == tmp_wd
     assert args.xdsm is False
@@ -60,7 +60,7 @@ def test_parse_args_default(set_argv, tmp_wd) -> None:
 def test_parse_args_custom(set_argv) -> None:
     """Verify the CLI arguments when all of them are passed."""
     set_argv(
-        str(STUDY_FILE),
+        str(study_file),
         "-t",
         "coupling",
         "-o",
@@ -83,7 +83,7 @@ def test_parse_args_custom(set_argv) -> None:
 
 def test_main(set_argv, tmp_wd) -> None:
     """Verify that the N2 chart and the coupling graphs are generated."""
-    set_argv(str(STUDY_FILE), "-o", "out")
+    set_argv(str(study_file), "-o", "out")
     main()
     out_dir = tmp_wd / "out"
     assert (out_dir / "n2.pdf").exists()
@@ -93,7 +93,7 @@ def test_main(set_argv, tmp_wd) -> None:
 
 def test_main_xdsm(set_argv, tmp_wd) -> None:
     """Verify that the XDSM diagram is generated when the option 'xdsm' is passed."""
-    set_argv(str(STUDY_FILE), "-x", "-p")
+    set_argv(str(study_file), "-x", "-p")
     with mock.patch.object(MDOStudyAnalysis, "generate_xdsm") as generate_xdsm:
         main()
 
@@ -104,6 +104,6 @@ def test_main_xdsm(set_argv, tmp_wd) -> None:
 @pytest.mark.usefixtures("tmp_wd")
 def test_main_xdsm_with_coupling_study(set_argv, snapshot) -> None:
     """Verify that the option 'xdsm' is rejected for a coupling study."""
-    set_argv(str(STUDY_FILE_WITHOUT_SCENARIO), "-t", "coupling", "-x")
+    set_argv(str(study_file_without_scenario), "-t", "coupling", "-x")
     with assert_exception(ValueError, snapshot):
         main()

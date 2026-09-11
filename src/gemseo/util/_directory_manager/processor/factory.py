@@ -26,9 +26,9 @@ from gemseo.util._workflow_observer.base_processor_factory import BaseProcessorF
 class DMProcessorFactory(BaseProcessorFactory[BaseDMProcessor]):
     """Factory to create a directory manager processor."""
 
-    _CLASS: ClassVar[type[BaseDMProcessor]] = BaseDMProcessor
-    _PACKAGE_NAMES: ClassVar[tuple[str, ...]] = ("gemseo.util._directory_manager",)
+    _class: ClassVar[type[BaseDMProcessor]] = BaseDMProcessor
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.util._directory_manager",)
 
 
-DM_PROCESSOR_FACTORY: Final[DMProcessorFactory] = DMProcessorFactory()
+dm_processor_factory: Final[DMProcessorFactory] = DMProcessorFactory()
 """The factory for `BaseDMProcessor` objects."""

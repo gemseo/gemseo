@@ -82,8 +82,8 @@ if TYPE_CHECKING:
 class LinearRegressor(BaseRegressor):
     """Linear regression model."""
 
-    SHORT_NAME: ClassVar[str] = "LinReg"
-    LIBRARY: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "LinReg"
+    library: ClassVar[str] = "scikit-learn"
 
     settings_class: ClassVar[type[LinearRegressor_Settings]] = LinearRegressor_Settings
 
@@ -205,7 +205,7 @@ class LinearRegressor(BaseRegressor):
         if not as_dict:
             return intercept
 
-        if IODataset.OUTPUT_GROUP in self.transformer:
+        if IODataset.output_group in self.transformer:
             msg = (
                 "Intercept is only representable in dictionary "
                 "form if the transformers do not change the "

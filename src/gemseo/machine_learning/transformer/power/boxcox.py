@@ -35,7 +35,7 @@ of
 
 from __future__ import annotations
 
-from typing import Final
+from typing import ClassVar
 
 from gemseo.machine_learning.transformer.power.power import Power
 
@@ -43,4 +43,4 @@ from gemseo.machine_learning.transformer.power.power import Power
 class BoxCox(Power):
     """A Box-Cox power transformation."""
 
-    _TRANSFORMER_NAME: Final[str] = "box-cox"
+    _transformer_name: ClassVar[str] = "box-cox"

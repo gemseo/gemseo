@@ -31,8 +31,8 @@ from strenum import StrEnum
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
-from gemseo.util.seeder import SEED
 from gemseo.util.seeder import Seeder
+from gemseo.util.seeder import seed
 from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
@@ -102,23 +102,19 @@ class BaseMLModelQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         KFOLDS = "compute_cross_validation_measure"
         BOOTSTRAP = "compute_bootstrap_measure"
 
-    SMALLER_IS_BETTER: ClassVar[bool] = True
+    smaller_is_better: ClassVar[bool] = True
     """Whether to minimize or maximize the measure."""
 
-    _FIT_TRANSFORMERS: ClassVar[bool] = True
-    """Whether to re-fit the transformers when using resampling techniques.
+    _default_fit_transformers: ClassVar[bool] = True
+    """The default value of ``fit_transformers``."""
 
-    If `False`, use the transformers of the model fitted from the whole learning
-    dataset.
-    """
-
-    _RANDOMIZE: ClassVar[bool] = True
+    _randomize: ClassVar[bool] = True
     """Whether to shuffle the samples before dividing them in folds."""
 
     def __init__(
         self,
         model: BaseMLModel,
-        fit_transformers: bool = _FIT_TRANSFORMERS,
+        fit_transformers: bool = _default_fit_transformers,
     ) -> None:
         """
         Args:
@@ -208,7 +204,7 @@ class BaseMLModelQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         n_folds: int = 5,
         samples: Sequence[int] = (),
         multioutput: bool = True,
-        randomize: bool = _RANDOMIZE,
+        randomize: bool = _randomize,
         seed: int | None = None,
         store_resampling_result: bool = False,
     ) -> MeasureType:
@@ -286,14 +282,14 @@ class BaseMLModelQuality(metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             Whether the first quality measure is better than the second one.
         """
-        if cls.SMALLER_IS_BETTER:
+        if cls.smaller_is_better:
             return val1 < val2
         return val1 > val2
 
     def _pre_process(
         self,
         samples: Sequence[int] = (),
-        seed: int | None = SEED,
+        seed: int | None = seed,
         update_seed: bool = False,
     ):
         """Pre-process the data required for the evaluation of the quality measure.

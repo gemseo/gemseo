@@ -31,7 +31,7 @@ from matplotlib import rcParams
 from numpy import array
 from numpy import hstack
 
-from gemseo.post._engine.colormap import PARULA
+from gemseo.post._engine.colormap import parula
 from gemseo.post.core.base_post import BasePost
 from gemseo.post.parallel_coordinates_settings import ParallelCoordinates_Settings
 from gemseo.util.string import repr_variable
@@ -68,7 +68,7 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
         variable_history = hstack((variable_history, x_history))
         variable_names = dataset.get_columns(all_function_names)
         x_names = dataset.get_columns(
-            dataset.get_variable_names(group_name=dataset.DESIGN_GROUP)
+            dataset.get_variable_names(group_name=dataset.design_group)
         )
         # x_names should be the actual names of the designs.
         x_names = [f"x_{i + 1}" for i in range(len(x_names))]
@@ -146,12 +146,12 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
         ax = plt.gca()
         c_min, c_max = color_criteria.min(), color_criteria.max()
         s_m = matplotlib.cm.ScalarMappable(
-            cmap=PARULA, norm=mpl.colors.Normalize(vmin=c_min, vmax=c_max)
+            cmap=parula, norm=mpl.colors.Normalize(vmin=c_min, vmax=c_max)
         )
         s_m.set_array([])
         color_criteria = (color_criteria - c_min) / (c_max - c_min)
         for i, y_values in enumerate(y_data):
-            ax.plot(x_values, y_values, c=array(PARULA(color_criteria[i])))
+            ax.plot(x_values, y_values, c=array(parula(color_criteria[i])))
 
         for x_value in x_values:
             ax.axvline(x_value, linewidth=1, color=rcParams["axes.edgecolor"])

@@ -113,10 +113,10 @@ class MockSensitivityAnalysis(BaseSensitivityAnalysis):
         self._input_names = ["x1", "x2"]
         self._output_names = ["y1", "y2"]
         self.dataset.add_group(
-            self.dataset.INPUT_GROUP, data, self._input_names, {"x1": 1, "x2": 2}
+            self.dataset.input_group, data, self._input_names, {"x1": 1, "x2": 2}
         )
         self.dataset.add_group(
-            self.dataset.OUTPUT_GROUP, data, ["y1", "y2"], {"y1": 1, "y2": 2}
+            self.dataset.output_group, data, ["y1", "y2"], {"y1": 1, "y2": 2}
         )
 
     @property
@@ -388,7 +388,7 @@ def test_plot_bar_without_the_components_without_indices(
     dataset = nan_mock_sensitivity_analysis.plot_bar(
         save=False, standardize=standardize
     ).dataset
-    assert dataset.columns.tolist() == [(dataset.PARAMETER_GROUP, "x2", 1)]
+    assert dataset.columns.tolist() == [(dataset.parameter_group, "x2", 1)]
     assert_array_equal(dataset.to_numpy(), array(expected))
 
 
@@ -447,7 +447,7 @@ def test_plot_1d_field(kwargs, output, ishigami, snapshot_matplotlib) -> None:
     ishigami.plot_field(output, save=False, show=False, **kwargs)
 
 
-TWO_D_FIELD_TEST_PARAMETERS_WO_MESH = {
+two_d_field_test_parameters_wo_mesh = {
     "without_option": ({}, ["2d_field_wo_mesh"]),
 }
 

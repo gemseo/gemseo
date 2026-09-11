@@ -95,7 +95,7 @@ class MOEDataFormatters(RegressionDataFormatters):
                 )
             output_data = func(model, input_data, *args, **kwargs)
             if as_dict:
-                output_data = {model.LABELS: output_data}
+                output_data = {model.labels_output_name: output_data}
             return output_data
 
         return wrapper

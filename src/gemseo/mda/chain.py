@@ -39,8 +39,8 @@ from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.core.base import BaseMDA
 from gemseo.mda.core.base import _BaseMDAProcessFlow
-from gemseo.mda.factory import MDA_FACTORY
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.mda.factory import mda_factory
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -61,7 +61,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class _ProcessFlow(_BaseMDAProcessFlow):
@@ -122,11 +122,11 @@ class MDAChain(BaseMDA):
             and not self.settings.chain_linearize
         ):
             if len(disciplines) > 1:
-                LOGGER.warning("No coupling in MDA, switching chain_linearize to True.")
+                logger.warning("No coupling in MDA, switching chain_linearize to True.")
             self.settings.chain_linearize = True
 
         self.inner_mdas = []
-        self.__inner_mda_class = MDA_FACTORY.get_class(
+        self.__inner_mda_class = mda_factory.get_class(
             self.settings.inner_mda_settings.target_class_name
         )
         self.discipline_chain = self._create_discipline_chain()
@@ -275,7 +275,7 @@ class MDAChain(BaseMDA):
                         f"i.e. {getattr(self.settings, name)}."
                     )
 
-                    LOGGER.warning(msg)
+                    logger.warning(msg)
 
                 setattr(inner_mda_settings, name, getattr(self.settings, name))
 
@@ -311,7 +311,7 @@ class MDAChain(BaseMDA):
 
     def execute(  # noqa:D102
         self,
-        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        input_data: StrKeyMapping = read_only_empty_dict,
     ) -> DisciplineData:
         # The initialization is needed for MDA loops.
         if (
@@ -339,12 +339,12 @@ class MDAChain(BaseMDA):
 
         res_sum = 0.0
         for mda in self.inner_mdas:
-            res_local = mda.io.output_data.get(self.NORMALIZED_RESIDUAL_NORM)
+            res_local = mda.io.output_data.get(self.normalized_residual_norm_name)
             if res_local is not None:
                 res_sum += res_local[-1] ** 2
 
         self.io.update_output_data({
-            self.NORMALIZED_RESIDUAL_NORM: array([res_sum**0.5])
+            self.normalized_residual_norm_name: array([res_sum**0.5])
         })
 
     def _compute_jacobian(

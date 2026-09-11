@@ -27,6 +27,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import append
 from numpy import array
@@ -35,7 +36,7 @@ from numpy import ones
 from numpy import zeros
 
 from gemseo.problem.mdo.sobieski.standalone.discipline import SobieskiDiscipline
-from gemseo.problem.mdo.sobieski.standalone.util import DEG_TO_RAD
+from gemseo.problem.mdo.sobieski.standalone.util import deg_to_rad
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -46,9 +47,9 @@ if TYPE_CHECKING:
 class SobieskiStructure(SobieskiDiscipline):
     """Structure discipline for the Sobieski's SSBJ use case."""
 
-    STRESS_LIMIT = 1.09
-    TWIST_UPPER_LIMIT = 1.04
-    TWIST_LOWER_LIMIT = 0.8
+    stress_limit: Final[float] = 1.09
+    twist_upper_limit: Final[float] = 1.04
+    twist_lower_limit: Final[float] = 0.8
 
     def __init__(self, sobieski_base: SobieskiBase) -> None:  # noqa: D107
         super().__init__(sobieski_base)
@@ -176,7 +177,7 @@ class SobieskiStructure(SobieskiDiscipline):
             * (aspect_ratio**0.5)
             * (tc_ratio**-0.4)
             * ((1 + wing_taper_ratio) ** 0.1)
-            * ((self.math.cos(sweep * DEG_TO_RAD)) ** -1.0)
+            * ((self.math.cos(sweep * deg_to_rad)) ** -1.0)
             * ((0.1875 * wing_area) ** 0.1)
         )
         wing_weight = wing_weight_coeff * f_o
@@ -473,8 +474,8 @@ class SobieskiStructure(SobieskiDiscipline):
         y_14[1] = y_1[1]
         if not true_cstr:
             g_1 = append(
-                g_1[0:5] - self.STRESS_LIMIT,
-                (g_1[5] - self.TWIST_UPPER_LIMIT, self.TWIST_LOWER_LIMIT - g_1[5]),
+                g_1[0:5] - self.stress_limit,
+                (g_1[5] - self.twist_upper_limit, self.twist_lower_limit - g_1[5]),
             )
 
         return y_1, y_11, y_12, y_14, g_1
@@ -885,9 +886,9 @@ class SobieskiStructure(SobieskiDiscipline):
         dy11_dz[0, 3] += jacobian["y_1"]["x_shared"][1, 3]
 
         # d1total_weight_dsweep
-        dy11_dz[0, 4] = DEG_TO_RAD
-        dy11_dz[0, 4] *= self.math.sin(sweep * DEG_TO_RAD) * wing_w
-        dy11_dz[0, 4] /= self.math.cos(sweep * DEG_TO_RAD)
+        dy11_dz[0, 4] = deg_to_rad
+        dy11_dz[0, 4] *= self.math.sin(sweep * deg_to_rad) * wing_w
+        dy11_dz[0, 4] /= self.math.cos(sweep * deg_to_rad)
 
         # dtotal_weight_dsref
         dy11_dz[0, 5] = 0.749 * wing_area ** (-1.0) * wing_w

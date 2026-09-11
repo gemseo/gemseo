@@ -39,8 +39,8 @@ def dataset() -> IODataset:
     input_data = 1.0 * arange(63).reshape((21, 3))
     output_data = array([[0], [1], [2]]).repeat(7, axis=0)
     dataset_ = IODataset()
-    dataset_.add_group(dataset_.INPUT_GROUP, input_data)
-    dataset_.add_group(dataset_.OUTPUT_GROUP, output_data)
+    dataset_.add_group(dataset_.input_group, input_data)
+    dataset_.add_group(dataset_.output_group, output_data)
     return dataset_
 
 
@@ -50,8 +50,8 @@ def dataset_test() -> IODataset:
     input_data = 1.0 * arange(18).reshape((6, 3))
     output_data = array([[0], [1], [2]]).repeat(2, axis=0)
     dataset_ = IODataset()
-    dataset_.add_group(dataset_.INPUT_GROUP, input_data)
-    dataset_.add_group(dataset_.OUTPUT_GROUP, output_data)
+    dataset_.add_group(dataset_.input_group, input_data)
+    dataset_.add_group(dataset_.output_group, output_data)
     return dataset_
 
 

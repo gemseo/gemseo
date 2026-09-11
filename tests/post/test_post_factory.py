@@ -23,27 +23,27 @@ from pathlib import Path
 import pytest
 
 from gemseo.optimization.problem import OptimizationProblem
-from gemseo.post.factory import POST_FACTORY
+from gemseo.post.factory import post_factory
 from gemseo.post.opt_history_view import OptHistoryView
 from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
 
-POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
+power2 = Path(__file__).parent / "power2_opt_pb.h5"
 
 
 def test_is_available() -> None:
     """"""
-    assert POST_FACTORY.is_available("OptHistoryView")
-    assert not POST_FACTORY.is_available("TOTO")
+    assert post_factory.is_available("OptHistoryView")
+    assert not post_factory.is_available("TOTO")
     with pytest.raises(ImportError):
-        POST_FACTORY.create(None, "toto")
+        post_factory.create(None, "toto")
 
 
 def test_post() -> None:
-    assert POST_FACTORY.is_available("GradientSensitivity")
-    assert POST_FACTORY.is_available("Correlations")
+    assert post_factory.is_available("GradientSensitivity")
+    assert post_factory.is_available("Correlations")
 
 
 def test_execute_from_hdf() -> None:
-    opt_problem = OptimizationProblem.from_hdf(POWER2)
-    post = POST_FACTORY.execute(opt_problem, OptHistoryView_Settings(save=False))
+    opt_problem = OptimizationProblem.from_hdf(power2)
+    post = post_factory.execute(opt_problem, OptHistoryView_Settings(save=False))
     assert isinstance(post, OptHistoryView)

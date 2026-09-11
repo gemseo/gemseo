@@ -37,8 +37,8 @@ if TYPE_CHECKING:
 class SVMRegressor(BaseRegressor):
     """Support vector machine for regression."""
 
-    LIBRARY: ClassVar[str] = "scikit-learn"
-    SHORT_NAME: ClassVar[str] = "SVMRegression"
+    library: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "SVMRegression"
 
     settings_class: ClassVar[type[SVMRegressor_Settings]] = SVMRegressor_Settings
 

@@ -123,7 +123,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class PCERegressor(BaseFCERegressor):
@@ -133,14 +133,14 @@ class PCERegressor(BaseFCERegressor):
         [FunctionalChaosAlgorithm](https://openturns.github.io/openturns/latest/user_manual/_generated/openturns.FunctionalChaosAlgorithm.html).
     """
 
-    SHORT_NAME: ClassVar[str] = "PCE"
-    LIBRARY: ClassVar[str] = "OpenTURNS"
-    __WEIGHT: Final[str] = "weight"
+    short_name: ClassVar[str] = "PCE"
+    library: ClassVar[str] = "OpenTURNS"
+    __weight: Final[str] = "weight"
 
     settings_class: ClassVar[type[PCERegressor_Settings]] = PCERegressor_Settings
 
-    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = (
-        BaseFCERegressor._ATTR_NOT_TO_SERIALIZE.union({
+    _attr_not_to_serialize: ClassVar[set[str]] = (
+        BaseFCERegressor._attr_not_to_serialize.union({
             "_basis_functions",
             "_coefficients",
             "_isoprobabilistic_transformation",
@@ -217,7 +217,7 @@ class PCERegressor(BaseFCERegressor):
         if [
             key
             for key in self.transformer
-            if key in self.input_names or key == IODataset.INPUT_GROUP
+            if key in self.input_names or key == IODataset.input_group
         ]:
             msg = "PCERegressor does not support input transformers."
             raise ValueError(msg)
@@ -260,10 +260,10 @@ class PCERegressor(BaseFCERegressor):
             else:
                 self.__quadrature_points_with_weights = (
                     self.learning_set.get_view(
-                        group_names=self.learning_set.INPUT_GROUP
+                        group_names=self.learning_set.input_group
                     ).to_numpy(),
                     self.learning_set
-                    .get_view(variable_names=self.__WEIGHT)
+                    .get_view(variable_names=self.__weight)
                     .to_numpy()
                     .ravel(),
                 )
@@ -315,13 +315,13 @@ class PCERegressor(BaseFCERegressor):
         if self.__use_cleaning_truncation_algorithm:
             max_terms = enumerate_function.getMaximumDegreeCardinal(self.__degree)
             if self.__cleaning.max_considered_terms > max_terms:
-                LOGGER.warning(
+                logger.warning(
                     "max_considered_terms is too important; set it to max_terms."
                 )
                 self.__cleaning.max_considered_terms = max_terms
 
             if self.__cleaning.most_significant > self.__cleaning.max_considered_terms:
-                LOGGER.warning(
+                logger.warning(
                     "most_significant is too important; set it to max_considered_terms."
                 )
                 self.__cleaning.most_significant = self.__cleaning.max_considered_terms
@@ -535,20 +535,20 @@ class PCERegressor(BaseFCERegressor):
         )
         quadrature_points, weights = experiment.generateWithWeights()
         quadrature_points, weights = array(quadrature_points), array(weights)
-        input_group = self.learning_set.INPUT_GROUP
+        input_group = self.learning_set.input_group
         self.learning_set.add_group(
             input_group,
             quadrature_points,
             self.input_names,
             self.__variable_sizes,
         )
-        self.learning_set.add_variable(self.__WEIGHT, weights[:, None])
+        self.learning_set.add_variable(self.__weight, weights[:, None])
 
         output_names = list(discipline.io.output_grammar)
         input_names = self.input_names
         outputs = [[] for _ in output_names]
         for input_data in self.learning_set.get_view(
-            group_names=self.learning_set.INPUT_GROUP, variable_names=input_names
+            group_names=self.learning_set.input_group, variable_names=input_names
         ).to_numpy():
             input_data = {
                 input_names[i]: atleast_1d(input_data[i])
@@ -559,7 +559,7 @@ class PCERegressor(BaseFCERegressor):
                 outputs[index].append(output_data[name])
 
         self.learning_set.add_group(
-            self.learning_set.OUTPUT_GROUP,
+            self.learning_set.output_group,
             concatenate(
                 [vstack(outputs[index]) for index, _ in enumerate(output_names)], axis=1
             ),

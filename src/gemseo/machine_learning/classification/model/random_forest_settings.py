@@ -23,7 +23,7 @@ from pydantic import PositiveInt  # noqa:TC002
 from gemseo.machine_learning.classification.core.base_classifier_settings import (
     BaseClassifierSettings,
 )
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 
 class RandomForestClassifier_Settings(BaseClassifierSettings):  # noqa: N801
@@ -34,7 +34,7 @@ class RandomForestClassifier_Settings(BaseClassifierSettings):  # noqa: N801
     )
 
     random_state: NonNegativeInt | None = Field(
-        default=SEED,
+        default=seed,
         description="""The random state parameter.
 
 If `None`, use the global random state instance from `numpy.random`.

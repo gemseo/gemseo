@@ -104,12 +104,15 @@ as well as a design space called
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.problem.mdo.sellar.sellar_1 import Sellar1  # noqa: F401
     from gemseo.problem.mdo.sellar.sellar_2 import Sellar2  # noqa: F401
@@ -117,14 +120,14 @@ if TYPE_CHECKING:
     from gemseo.problem.mdo.sellar.sellar_system import SellarSystem  # noqa: F401
 
 # This allows to test a specific data converter.
-WITH_2D_ARRAY = False
+with_2d_array: Final[bool] = False
 
 # Exported name -> location (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "Sellar1": "sellar_1",
     "Sellar2": "sellar_2",
     "SellarDesignSpace": "sellar_design_space",
     "SellarSystem": "sellar_system",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION, extra_all=("WITH_2D_ARRAY",))
+install_lazy_reexport(globals(), _name_to_location, extra_all=("with_2d_array",))

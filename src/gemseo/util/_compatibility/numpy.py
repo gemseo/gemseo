@@ -25,5 +25,5 @@ from packaging.version import parse as parse_version
 if TYPE_CHECKING:
     from packaging.version import Version
 
-NUMPY_VERSION: Final[Version] = parse_version(version("numpy"))
-NUMPY_GREATER_THAN_2: Final[bool] = parse_version("2") <= NUMPY_VERSION
+numpy_version: Final[Version] = parse_version(version("numpy"))
+numpy_greater_than_2: Final[bool] = parse_version("2") <= numpy_version

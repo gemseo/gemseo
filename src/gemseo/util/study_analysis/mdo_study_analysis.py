@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrPath
     from gemseo.util.xdsm.xdsm import XDSM
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class MDOStudyAnalysis(CouplingStudyAnalysis):
@@ -137,7 +137,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
     (three, four, ..., n, level formulations).
     """  # noqa: E501
 
-    _HAS_SCENARIO: ClassVar[bool] = True
+    _has_scenario: ClassVar[bool] = True
 
     main_scenario: MDOScenario
     """The main scenario."""
@@ -169,14 +169,14 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
             disc for disc in disciplines if isinstance(disc, Discipline)
         )
         coupling_variables = set(CouplingStructure(real_disciplines).all_couplings)
-        design_variables = set(scenario_description[XLSStudyParser.DESIGN_VARIABLES])
+        design_variables = set(scenario_description[XLSStudyParser.design_variables])
         for name in sorted(coupling_variables | design_variables):
             design_space.add_variable(name)
 
-        option_names = scenario_description[XLSStudyParser.OPTIONS]
+        option_names = scenario_description[XLSStudyParser.options]
         options = {}
         if option_names is not None:
-            option_values = scenario_description[XLSStudyParser.OPTION_VALUES]
+            option_values = scenario_description[XLSStudyParser.option_values]
             for option_name, option_value in zip(
                 option_names, option_values, strict=False
             ):
@@ -191,12 +191,12 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
 
         scenario = create_scenario(
             disciplines,
-            scenario_description[XLSStudyParser.OBJECTIVE_FUNCTION],
+            scenario_description[XLSStudyParser.objective_function],
             design_space,
-            formulation_name=scenario_description[XLSStudyParser.FORMULATION],
+            formulation_name=scenario_description[XLSStudyParser.formulation],
             **options,
         )
-        for constraint_name in scenario_description[XLSStudyParser.CONSTRAINTS]:
+        for constraint_name in scenario_description[XLSStudyParser.constraints]:
             scenario.add_constraint(constraint_name)
 
         return scenario
@@ -213,7 +213,7 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
             The disciplines of the scenario.
         """
         disciplines = []
-        for discipline_name in scenario_description[XLSStudyParser.DISCIPLINES]:
+        for discipline_name in scenario_description[XLSStudyParser.disciplines_key]:
             discipline = self.study.disciplines.get(discipline_name)
             if discipline is None:
                 # Not a discipline.
@@ -281,9 +281,9 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
         Returns:
             The XDSM diagram of the main scenario.
         """
-        LOGGER.info("Generated the following Scenario:")
-        LOGGER.info("%s", self.main_scenario)
-        LOGGER.info("%s", self.main_scenario.formulation.problem)
+        logger.info("Generated the following Scenario:")
+        logger.info("%s", self.main_scenario)
+        logger.info("%s", self.main_scenario.formulation.problem)
         return self.main_scenario.xdsmize(
             directory_path=directory_path, save_pdf=save_pdf, show_html=show_html
         )

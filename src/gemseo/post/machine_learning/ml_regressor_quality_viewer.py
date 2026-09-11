@@ -129,7 +129,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             formatted_output_name = output_name
 
         output_observations = observations.get_view(
-            group_names=observations.OUTPUT_GROUP,
+            group_names=observations.output_group,
             variable_names=output_name,
             components=output_components,
         ).to_numpy()
@@ -155,7 +155,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 dataset.add_variable(
                     input_name,
                     observations.get_view(
-                        group_names=observations.INPUT_GROUP,
+                        group_names=observations.input_group,
                         variable_names=input_name,
                     ).to_numpy(),
                 )
@@ -206,9 +206,9 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
         """
         output_predictions = self.__regressor.predict(
             observations.get_view(
-                group_names=observations.INPUT_GROUP,
+                group_names=observations.input_group,
                 variable_names=self.__regressor.input_names,
-            ).to_dict_of_arrays()[observations.INPUT_GROUP]
+            ).to_dict_of_arrays()[observations.input_group]
         )[output_name][:, output_components or Ellipsis]
         if plot_residuals:
             qoi_values = output_predictions - output_observations
@@ -327,7 +327,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
                 If `None`,
-                the seed of the `i`-th execution is `SEED+i`.
+                the seed of the `i`-th execution is `seed+i`.
                 Used only in the case of cross-validation.
 
         Returns:
@@ -379,7 +379,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
                 If `None`,
-                the seed of the `i`-th execution is `SEED+i`.
+                the seed of the `i`-th execution is `seed+i`.
                 Used only in the case of cross-validation.
             **options: The options of the underlying
                 [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].
@@ -442,7 +442,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
                 If `None`,
-                the seed of the i-th execution is SEED+i.
+                the seed of the i-th execution is seed+i.
                 Used only in the case of cross-validation.
             **options: The options of the underlying
                 [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].
@@ -479,7 +479,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
             n_folds: The number of folds.
             seed: The seed of the pseudo-random number generator.
                 If `None`,
-                use the seed of the `i`-th execution is `SEED+i`.
+                use the seed of the `i`-th execution is `seed+i`.
 
         Returns:
             A validation dataset based on cross-validation.
@@ -547,7 +547,7 @@ class MLRegressorQualityViewer(metaclass=GoogleDocstringInheritanceMeta):
                 Used only in the case of cross-validation.
             seed: The seed of the pseudo-random number generator.
                 If `None`,
-                the seed of the i-th execution is SEED+i.
+                the seed of the i-th execution is seed+i.
                 Used only in the case of cross-validation.
             **options: The options of the underlying
                 [DatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot].

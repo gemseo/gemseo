@@ -86,7 +86,7 @@ def test_can_differentiate(converter) -> None:
         assert converter.is_continuous(name)
 
 
-VALUE_TO_ARRAY_DATA = [
+value_to_array_data = [
     ("a_str", "0", array(["0"])),
     ("a_float", 0.0, array([0.0])),
     ("a_int", 0, array([0])),
@@ -95,7 +95,7 @@ VALUE_TO_ARRAY_DATA = [
 ]
 
 
-@pytest.mark.parametrize(("name", "value", "expected"), VALUE_TO_ARRAY_DATA)
+@pytest.mark.parametrize(("name", "value", "expected"), value_to_array_data)
 def test_convert_value_to_array(converter, name, value, expected) -> None:
     """Verify convert_value_to_array."""
     assert_array_equal(converter.convert_value_to_array(name, value), expected)
@@ -104,7 +104,7 @@ def test_convert_value_to_array(converter, name, value, expected) -> None:
 @pytest.mark.parametrize(
     ("name", "value", "expected"),
     [
-        *VALUE_TO_ARRAY_DATA,
+        *value_to_array_data,
         ("a_dict", {"dummy": 1j}, array([1j])),
         ("a_2d_ndarray", array([[0.0]]), array([0.0])),
     ],
@@ -124,7 +124,7 @@ def test_convert_value_to_array_user(
     assert_array_equal(converter.convert_value_to_array(name, value), expected)
 
 
-ARRAY_TO_VALUE_DATA = [
+array_to_value_data = [
     ("a_float", array([0.0]), 0.0),
     ("a_int", array([0]), 0),
     ("a_complex", array([1j]), 1j),
@@ -134,7 +134,7 @@ ARRAY_TO_VALUE_DATA = [
 ]
 
 
-@pytest.mark.parametrize(("name", "value", "expected"), ARRAY_TO_VALUE_DATA)
+@pytest.mark.parametrize(("name", "value", "expected"), array_to_value_data)
 def test_convert_array_to_value(converter, name, value, expected) -> None:
     """Verify convert_array_to_value."""
     value_ = converter.convert_array_to_value(name, value)
@@ -146,7 +146,7 @@ def test_convert_array_to_value(converter, name, value, expected) -> None:
 @pytest.mark.parametrize(
     ("name", "value", "expected"),
     [
-        *ARRAY_TO_VALUE_DATA,
+        *array_to_value_data,
         ("a_dict", array([1j]), {"dummy": 1j}),
         ("a_2d_ndarray", array([0.0]), array([[0.0]])),
     ],
@@ -166,7 +166,7 @@ def test_convert_array_to_value_user(
     assert converter.convert_array_to_value(name, value) == expected
 
 
-VALUE_SIZE_DATA = [
+value_size_data = [
     ("a_str", "0", 1),
     ("a_float", 0.0, 1),
     ("a_int", 0, 1),
@@ -175,7 +175,7 @@ VALUE_SIZE_DATA = [
 ]
 
 
-@pytest.mark.parametrize(("name", "value", "expected"), VALUE_SIZE_DATA)
+@pytest.mark.parametrize(("name", "value", "expected"), value_size_data)
 def test_get_value_size(converter, name, value, expected) -> None:
     """Verify get_value_size."""
     assert converter.get_value_size(name, value) == expected
@@ -184,7 +184,7 @@ def test_get_value_size(converter, name, value, expected) -> None:
 @pytest.mark.parametrize(
     ("name", "value", "expected"),
     [
-        *VALUE_SIZE_DATA,
+        *value_size_data,
         ("a_dict", {"dummy": array(1)}, 1),
     ],
 )
@@ -202,29 +202,31 @@ def test_get_value_sizes_user(
     assert converter.get_value_size(name, value) == expected
 
 
-DATA = {
+reference_data = {
     "a_float": 0.0,
     "a_int": 0,
     "a_complex": 1j,
     "a_ndarray": array([0.0] * 2),
     "a_str": "0",
 }
-NAMES_TO_SLICES = {
+names_to_slices = {
     "a_float": slice(0, 1, None),
     "a_int": slice(1, 2, None),
     "a_complex": slice(2, 3, None),
     "a_ndarray": slice(3, 5, None),
     "a_str": slice(5, 6, None),
 }
-ARRAY = array([0.0, 0, 1.0j, 0.0, 0.0, "0"], dtype=object)
+reference_array = array([0.0, 0, 1.0j, 0.0, 0.0, "0"], dtype=object)
 
 
 def test_compute_name_to_slices(converter) -> None:
     """Verify compute_name_to_slices."""
     # Without name_to_size.
-    name_to_slice, end = converter.compute_name_to_slice(DATA.keys(), DATA)
+    name_to_slice, end = converter.compute_name_to_slice(
+        reference_data.keys(), reference_data
+    )
 
-    assert name_to_slice == NAMES_TO_SLICES
+    assert name_to_slice == names_to_slices
     assert end == 6
 
     # Without name_to_size.
@@ -233,10 +235,10 @@ def test_compute_name_to_slices(converter) -> None:
         "a_ndarray": 2,
     }
     name_to_slice, end = converter.compute_name_to_slice(
-        DATA.keys(), DATA, name_to_size=name_to_size
+        reference_data.keys(), reference_data, name_to_size=name_to_size
     )
 
-    assert name_to_slice == NAMES_TO_SLICES
+    assert name_to_slice == names_to_slices
     assert end == 6
 
 
@@ -250,30 +252,30 @@ def test_compute_name_to_sizes(converter) -> None:
         "a_str": 1,
     }
 
-    name_to_size = converter.compute_name_to_size(DATA.keys(), DATA)
+    name_to_size = converter.compute_name_to_size(reference_data.keys(), reference_data)
 
     assert name_to_size == expected
 
 
 def test_convert_array_to_data(converter) -> None:
     """Verify convert_array_to_data."""
-    data = converter.convert_array_to_data(ARRAY, NAMES_TO_SLICES)
-    assert compare_dict_of_arrays(data, DATA)
+    data = converter.convert_array_to_data(reference_array, names_to_slices)
+    assert compare_dict_of_arrays(data, reference_data)
 
 
 def test_convert_data_to_array(converter) -> None:
     """Verify convert_data_to_array."""
     # Full data.
-    array_ = converter.convert_data_to_array(DATA.keys(), DATA)
+    array_ = converter.convert_data_to_array(reference_data.keys(), reference_data)
     # Cast the reference to the same dtype because numpy.concatenate
     # does too to the dtype that can represent all the data.
-    ref_array = ARRAY.astype(array_.dtype)
+    ref_array = reference_array.astype(array_.dtype)
     assert_array_equal(array_, ref_array)
     # Non full data.
-    array_ = converter.convert_data_to_array(("a_int", "a_ndarray"), DATA)
+    array_ = converter.convert_data_to_array(("a_int", "a_ndarray"), reference_data)
     assert_array_equal(array_, array([0.0] * 3))
     # No data.
-    array_ = converter.convert_data_to_array((), DATA)
+    array_ = converter.convert_data_to_array((), reference_data)
     assert len(array_) == 0
 
 

@@ -20,18 +20,18 @@
 from __future__ import annotations
 
 from gemseo.linear.factory import LinearSolverLibraryFactory
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.util.pydantic import create_model
 from gemseo.util.testing.helper import assert_exception
 
 
 def test_is_available_error() -> None:
-    assert not OPTIMIZATION_LIBRARY_FACTORY.is_available("None")
+    assert not optimization_library_factory.is_available("None")
 
 
 def test_create_ok() -> None:
     """Verify that an existing algorithm can be created."""
-    algo = OPTIMIZATION_LIBRARY_FACTORY.create("L_BFGS_B")
+    algo = optimization_library_factory.create("L_BFGS_B")
     assert algo._algo_name == "L_BFGS_B"
     algo._settings = create_model(algo.ALGORITHM_INFOS[algo.algo_name].settings_class)
     assert algo._settings.max_iter == 1000
@@ -40,12 +40,12 @@ def test_create_ok() -> None:
 def test_create_ko(snapshot) -> None:
     """Verify that an error is raised when trying to create an unknown algorithm."""
     with assert_exception(ValueError, snapshot):
-        OPTIMIZATION_LIBRARY_FACTORY.create("idontexist")
+        optimization_library_factory.create("idontexist")
 
 
 def test_is_scipy_available() -> None:
-    assert OPTIMIZATION_LIBRARY_FACTORY.is_available("ScipyOpt")
-    assert "SLSQP" in OPTIMIZATION_LIBRARY_FACTORY.algorithms
+    assert optimization_library_factory.is_available("ScipyOpt")
+    assert "SLSQP" in optimization_library_factory.algorithms
 
 
 def test_solver_factory_cache() -> None:

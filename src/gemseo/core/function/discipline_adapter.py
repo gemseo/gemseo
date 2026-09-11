@@ -35,7 +35,7 @@ from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.util._compatibility.scipy import get_row
 from gemseo.util._compatibility.scipy import sparse_classes
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
@@ -69,7 +69,7 @@ class DisciplineAdapter(ArrayFunction):
         output_names: Sequence[str],
         default_input_data: StrKeyMapping,
         discipline: Discipline,
-        name_to_size: MutableMapping[str, int] = READ_ONLY_EMPTY_DICT,
+        name_to_size: MutableMapping[str, int] = read_only_empty_dict,
         differentiated_input_names_substitute: Sequence[str] = (),
     ) -> None:
         """

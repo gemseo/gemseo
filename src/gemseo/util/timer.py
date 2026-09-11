@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Timer:
@@ -102,7 +102,7 @@ class Timer:
             seconds=self.__elapsed_time
         )
         if self.__log_level is not None:
-            LOGGER.log(self.__log_level, str(self))
+            logger.log(self.__log_level, str(self))
 
     def __str__(self) -> str:
         return f"Elapsed time: {self.__elapsed_time} s."

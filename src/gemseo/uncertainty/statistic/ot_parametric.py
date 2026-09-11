@@ -51,7 +51,7 @@ class OTParametricStatistics(
     SignificanceTest: ClassVar[OTDistributionFitter.SignificanceTest] = (
         OTDistributionFitter.SignificanceTest
     )
-    _DISTRIBUTION_FITTER: ClassVar[OTDistributionFitter] = OTDistributionFitter
+    _distribution_fitter: ClassVar[OTDistributionFitter] = OTDistributionFitter
 
     def _get_pdf(
         self, distribution: DistributionImplementation

@@ -20,7 +20,7 @@ from scipy.sparse import csr_array
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.linear_function import LinearFunction
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_milp import MILP_Settings
 from gemseo.optimization.scipy_milp.scipy_milp import ScipyMILP
@@ -106,7 +106,7 @@ def milp_problem(
 
 def test_init() -> None:
     """Test solver is correctly initialized."""
-    factory = OPTIMIZATION_LIBRARY_FACTORY
+    factory = optimization_library_factory
     assert factory.is_available("MILP")
     assert isinstance(factory.create("MILP"), ScipyMILP)
 
@@ -125,7 +125,7 @@ def test_init() -> None:
 )
 def test_solve_milp(milp_problem, problem_is_feasible, algo_options) -> None:
     """Test Scipy MILP solver."""
-    optim_result = OPTIMIZATION_LIBRARY_FACTORY.execute(
+    optim_result = optimization_library_factory.execute(
         milp_problem, settings=MILP_Settings(**algo_options)
     )
     time_limit = algo_options.get("time_limit", 1)

@@ -30,11 +30,11 @@ from gemseo.mda.sequence_transformer.factory import SequenceTransformerFactory
 if TYPE_CHECKING:
     from numpy import ndarray
 
-A_TOL: float = 1e-6
-DIMENSION: int = 100
-MEAN_ANOMALY = arange(DIMENSION) + 1
-EXCENTRICITY = 0.95
-INITIAL_VECTOR = ones(DIMENSION)
+a_tol: float = 1e-6
+dimension: int = 100
+mean_anomaly = arange(dimension) + 1
+excentricity = 0.95
+initial_vector = ones(dimension)
 
 factory = SequenceTransformerFactory()
 
@@ -48,12 +48,12 @@ def g(x: ndarray) -> ndarray:
     Returns:
         The image G(x).
     """
-    return MEAN_ANOMALY + EXCENTRICITY * sin(x)
+    return mean_anomaly + excentricity * sin(x)
 
 
 def test_no_acceleration() -> None:
     """Tests the case where no acceleration is applied."""
-    x_0 = INITIAL_VECTOR.copy()
+    x_0 = initial_vector.copy()
     transformer = factory.create(AccelerationMethod.NONE)
 
     x_1 = g(x_0)
@@ -63,7 +63,7 @@ def test_no_acceleration() -> None:
 
 def test_alternate_2_delta() -> None:
     """Tests the alternate 2-δ acceleration method."""
-    x_0 = INITIAL_VECTOR.copy()
+    x_0 = initial_vector.copy()
     transformer = factory.create(AccelerationMethod.ALTERNATE_2_DELTA)
 
     x_1 = g(x_0)
@@ -88,7 +88,7 @@ def test_alternate_2_delta() -> None:
 
 def test_alternate_delta_squared() -> None:
     """Tests the alternate δ² acceleration method."""
-    x_0 = INITIAL_VECTOR.copy()
+    x_0 = initial_vector.copy()
     transformer = factory.create(AccelerationMethod.ALTERNATE_DELTA_SQUARED)
 
     x_1 = g(x_0)
@@ -114,7 +114,7 @@ def test_alternate_delta_squared() -> None:
 
 def test_secant() -> None:
     """Tests the secant method."""
-    x_0 = INITIAL_VECTOR.copy()
+    x_0 = initial_vector.copy()
     transformer = factory.create(AccelerationMethod.SECANT)
 
     x_1 = g(x_0)
@@ -136,7 +136,7 @@ def test_secant() -> None:
 
 def test_aitken() -> None:
     """Tests the Aitken method."""
-    x_0 = INITIAL_VECTOR.copy()
+    x_0 = initial_vector.copy()
     transformer = factory.create(AccelerationMethod.AITKEN)
 
     x_1 = g(x_0)
@@ -179,7 +179,7 @@ def test_degenerated_alternate_2_delta() -> None:
     :math:`G(x_{n+1})`.
     """
     transformer = factory.create(AccelerationMethod.ALTERNATE_2_DELTA)
-    x_0 = INITIAL_VECTOR.copy()
+    x_0 = initial_vector.copy()
 
     x_1 = g(x_0)
     transformer.compute_transformed_iterate(x_1, x_1 - x_0)

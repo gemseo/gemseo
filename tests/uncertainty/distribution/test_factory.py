@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY
+from gemseo.uncertainty.distribution.factory import distribution_factory
 
 
 @pytest.mark.parametrize(
@@ -37,4 +37,4 @@ from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY
 )
 def test_is_available(name) -> None:
     """Check is_available()."""
-    assert DISTRIBUTION_FACTORY.is_available(name)
+    assert distribution_factory.is_available(name)

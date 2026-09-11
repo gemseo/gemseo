@@ -19,7 +19,7 @@ from __future__ import annotations
 import gemseo.machine_learning
 from gemseo.util.testing.package_import import make_lazy_reexport_tests
 
-_EXTRA_ALL = (
+_extra_all = (
     "create_classification_model",
     "create_clustering_model",
     "create_mlearning_model",
@@ -35,5 +35,5 @@ _EXTRA_ALL = (
 )
 
 globals().update(
-    make_lazy_reexport_tests(gemseo.machine_learning, extra_all=_EXTRA_ALL)
+    make_lazy_reexport_tests(gemseo.machine_learning, extra_all=_extra_all)
 )

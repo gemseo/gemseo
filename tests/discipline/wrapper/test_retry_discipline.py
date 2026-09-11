@@ -31,8 +31,8 @@ from gemseo import create_discipline
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.discipline.wrapper.retry_discipline import RetryDiscipline
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.constant import read_only_empty_dict
+from gemseo.util.platform import platform_is_windows
 from gemseo.util.testing.helper import assert_exception
 from gemseo.util.timer import Timer
 
@@ -101,7 +101,7 @@ def test_retry_discipline(an_analytic_discipline, timeout, caplog) -> None:
 class SlowThreadDiscipline(Discipline):
     """A discipline that executes a long-running ."""
 
-    def _run(self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT) -> None:
+    def _run(self, input_data: StrKeyMapping = read_only_empty_dict) -> None:
         # Use sleep instead of a busy-wait loop: sleep releases the GIL, so
         # PyThreadState_SetAsyncExc can deliver SystemExit almost immediately
         # at the next bytecode boundary.  A tight C-level loop (time.time())
@@ -115,7 +115,7 @@ class SlowProcessDiscipline(Discipline):
     pid_path: Path
     """The path to the file to contain the process id."""
 
-    def _run(self, input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT) -> None:
+    def _run(self, input_data: StrKeyMapping = read_only_empty_dict) -> None:
         cmd_line = 'python -c "import time; time.sleep(60.0)"'
 
         # The following is inspired from subprocess.run.
@@ -260,13 +260,13 @@ def test_2fails_then_succeed() -> None:
     assert disc.execution_status.value == ExecutionStatus.Status.DONE
 
 
-THREAD_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 1.0
-PROCESS_TIMEOUT = 10.0 if PLATFORM_IS_WINDOWS else 4.0
+thread_timeout = 10.0 if platform_is_windows else 1.0
+process_timeout = 10.0 if platform_is_windows else 4.0
 
 
 # TODO: Fix this test on windows.
 @pytest.mark.skipif(
-    PLATFORM_IS_WINDOWS,
+    platform_is_windows,
     reason="The windows CI has big troubles with this test.",
 )
 @pytest.mark.parametrize("wait_time", [0.01, 0.1])
@@ -284,7 +284,7 @@ def test_wait_time_and_n_trials(
     wrapped_disc = disc_class()
     wrapped_disc.pid_path = pid_path = tmp_wd / "pid"
 
-    timeout = PROCESS_TIMEOUT if disc_class == SlowProcessDiscipline else THREAD_TIMEOUT
+    timeout = process_timeout if disc_class == SlowProcessDiscipline else thread_timeout
     disc = RetryDiscipline(
         wrapped_disc,
         timeout=timeout,
@@ -342,7 +342,7 @@ def test_per_attempt_warning_logged(caplog) -> None:
 
 # TODO: Fix this test on windows.
 @pytest.mark.skipif(
-    PLATFORM_IS_WINDOWS,
+    platform_is_windows,
     reason="The windows CI has big troubles with this test.",
 )
 def test_timeout_warning_logged(caplog, snapshot) -> None:

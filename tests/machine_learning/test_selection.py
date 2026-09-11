@@ -51,8 +51,8 @@ def dataset() -> IODataset:
     variables = ["x_1", "x_2"]
     variable_name_to_n_components = {"x_1": 1, "x_2": 2}
     variable_name_to_group_name = {
-        "x_1": IODataset.INPUT_GROUP,
-        "x_2": IODataset.OUTPUT_GROUP,
+        "x_1": IODataset.input_group,
+        "x_2": IODataset.output_group,
     }
     return IODataset.from_array(
         data, variables, variable_name_to_n_components, variable_name_to_group_name

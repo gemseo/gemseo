@@ -33,7 +33,7 @@ from numpy.testing import assert_array_equal
 from pandas import DataFrame
 from pandas import MultiIndex
 
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.mnbi.settings.mnbi_settings import MNBI_Settings
 from gemseo.optimization.pareto.pareto_front import ParetoFront
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 def problem_2obj() -> OptimizationProblem:
     """The Binh-Korn optimization problem ready to be post-processed."""
     problem = BinhKorn()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(
+    optimization_library_factory.execute(
         problem,
         settings=MNBI_Settings(
             max_iter=100,

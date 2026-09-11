@@ -25,6 +25,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core import discipline
@@ -39,8 +40,8 @@ if TYPE_CHECKING:
 class DisciplineFactory(BaseFactory):
     """A factory of disciplines."""
 
-    _CLASS = Discipline
-    _PACKAGE_NAMES = (
+    _class: ClassVar[type[Discipline]] = Discipline
+    _package_names: ClassVar[tuple[str, ...]] = (
         "gemseo.problem",
         "gemseo.core",
         "gemseo.discipline",
@@ -145,5 +146,5 @@ class DisciplineFactory(BaseFactory):
         return option_grammar
 
 
-DISCIPLINE_FACTORY: Final[DisciplineFactory] = DisciplineFactory()
+discipline_factory: Final[DisciplineFactory] = DisciplineFactory()
 """The factory for `Discipline` objects."""

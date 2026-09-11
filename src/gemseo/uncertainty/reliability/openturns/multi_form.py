@@ -31,9 +31,9 @@ class OT_MultiFORM(OT_FORM):  # noqa: N801
 
     settings_class: ClassVar[type[OT_MultiFORM_Settings]] = OT_MultiFORM_Settings
 
-    _ALGO_CLASS: ClassVar[type[MultiFORM]] = MultiFORM
+    _algo_class: ClassVar[type[MultiFORM]] = MultiFORM
 
-    _USE_MULTIFORM_RESULT: ClassVar[bool] = True
+    _use_multiform_result: ClassVar[bool] = True
 
     @staticmethod
     def _set_algo_options(algo: MultiFORM, settings: OT_MultiFORM_Settings) -> None:

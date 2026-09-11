@@ -65,8 +65,8 @@ if TYPE_CHECKING:
 class Scaler(BaseTransformer):
     """Data scaler."""
 
-    __OFFSET: Final[str] = "offset"
-    __COEFFICIENT: Final[str] = "coefficient"
+    __offset: Final[str] = "offset"
+    __coefficient: Final[str] = "coefficient"
 
     def __init__(
         self,
@@ -87,30 +87,30 @@ class Scaler(BaseTransformer):
     @property
     def offset(self) -> RealArray:
         """The scaling offset."""
-        return self.parameters[self.__OFFSET]
+        return self.parameters[self.__offset]
 
     @property
     def coefficient(self) -> RealArray:
         """The scaling coefficient."""
-        return self.parameters[self.__COEFFICIENT]
+        return self.parameters[self.__coefficient]
 
     @offset.setter
     def offset(self, value: float | RealArray) -> None:
-        self.parameters[self.__OFFSET] = atleast_1d(value)
+        self.parameters[self.__offset] = atleast_1d(value)
 
     @coefficient.setter
     def coefficient(self, value: float | RealArray) -> None:
-        self.parameters[self.__COEFFICIENT] = atleast_1d(value)
+        self.parameters[self.__coefficient] = atleast_1d(value)
 
     def _fit(self, data: RealArray, *args: TransformerFitOptionType) -> None:
-        if self.parameters[self.__COEFFICIENT].size == 1:
-            self.parameters[self.__COEFFICIENT] = full(
-                data.shape[-1], self.parameters[self.__COEFFICIENT][0]
+        if self.parameters[self.__coefficient].size == 1:
+            self.parameters[self.__coefficient] = full(
+                data.shape[-1], self.parameters[self.__coefficient][0]
             )
 
-        if self.parameters[self.__OFFSET].size == 1:
-            self.parameters[self.__OFFSET] = full(
-                data.shape[-1], self.parameters[self.__OFFSET][0]
+        if self.parameters[self.__offset].size == 1:
+            self.parameters[self.__offset] = full(
+                data.shape[-1], self.parameters[self.__offset][0]
             )
 
     @BaseTransformer._use_2d_array

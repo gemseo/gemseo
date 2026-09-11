@@ -16,7 +16,7 @@
 
 Counterpart to the runtime helper
 [install_lazy_reexport][gemseo.util.package_import.install_lazy_reexport]:
-the mapping under test is read from the package's own ``_NAME_TO_LOCATION``
+the mapping under test is read from the package's own ``_name_to_location``
 and each expected object is resolved with the same shared
 [resolve_lazy_export][gemseo.util.package_import.resolve_lazy_export].
 """
@@ -90,7 +90,7 @@ def make_lazy_reexport_tests(
 ) -> dict[str, object]:
     """Build the standard lazy-re-export test functions for a package.
 
-    The mapping under test is read from ``package._NAME_TO_LOCATION``.
+    The mapping under test is read from ``package._name_to_location``.
 
     Args:
         package: The imported package exposing names lazily via
@@ -105,7 +105,7 @@ def make_lazy_reexport_tests(
         A mapping from test function name to test function,
         meant to be spread into a test module via `globals().update(...)`.
     """
-    name_to_location: dict[str, str] = package._NAME_TO_LOCATION
+    name_to_location: dict[str, str] = package._name_to_location
     names = list(name_to_location)
     extra_all = tuple(extra_all)
 
@@ -139,7 +139,7 @@ def make_lazy_reexport_tests(
         """Check that the `if TYPE_CHECKING:` imports mirror the lazy re-exports.
 
         The `if TYPE_CHECKING:` block of the package gives mypy and IDEs static
-        visibility of the names served at runtime by `_NAME_TO_LOCATION`; the two
+        visibility of the names served at runtime by `_name_to_location`; the two
         must not drift apart.
         """
         static_names, referenced_names = _get_static_import_names(package)

@@ -2,6 +2,9 @@
 # The `modules:`, `attributes:`, `dissolved:` and `manual:` sections below are also
 # read at runtime by gemseo._deprecation to redirect imports of old names to their new
 # location (which is why this file lives inside the package and is shipped with it).
+# The `classes:` section is read at runtime too, but only its scalar entries (a
+# class's own renamed attributes and methods); the nested method-parameter blocks
+# and the entries whose target is `null` remain codemod-only.
 
 # JSON dump of the old API (produced by `griffe dump`), giving old function
 # signatures so parameter configs can use names instead of raw positions.
@@ -376,6 +379,7 @@ attributes:
   gemseo.algos.stop_criteria.MaxTimeReached: gemseo.core.problem.termination_criterion.MaxTimeReached
   gemseo.algos.stop_criteria.FtolReached: gemseo.core.problem.termination_criterion.FtolReached
   gemseo.algos.stop_criteria.XtolReached: gemseo.core.problem.termination_criterion.XtolReached
+  gemseo.algos.progress_bar_data.factory.PROGRESS_BAR_DATA_FACTORY: progress_bar_data_factory
 
   gemseo.core.chains.additive_chain.MDOAdditiveChain: AdditiveDisciplineChain
   gemseo.core.chains.chain.MDOChain: DisciplineChain
@@ -398,6 +402,7 @@ attributes:
   gemseo.disciplines.wrappers.job_schedulers.factory.JobSchedulerDisciplineWrapperFactory: JobSchedulerDisciplineFactory
 
   gemseo.formulations.bilevel_bcd_settings.BiLevel_BCD_Settings: BiLevelBCD_Settings
+  gemseo.formulations.factory.MDO_FORMULATION_FACTORY: mdo_formulation_factory
 
   gemseo.mda.base_parallel_mda_solver.BaseParallelMDASolver: BaseMDAParallelSolver
   gemseo.mda.base_parallel_mda_settings.BaseParallelMDASettings: BaseMDAParallelSolverSettings
@@ -466,13 +471,367 @@ attributes:
 
   gemseo.datasets.DatasetFactory: gemseo.dataset.factory.DatasetFactory
 
-  gemseo.utils.constants.C_LONG_MAX: INFINITE_INT
-  gemseo.utils.derivatives.error_estimators.EPSILON: gemseo.util.constant.EPSILON
+  gemseo.utils.constants.C_LONG_MAX: infinite_int
+  gemseo.utils.derivatives.error_estimators.EPSILON: gemseo.util.constant.epsilon
   gemseo.utils.derivatives.finite_differences.FirstOrderFD: ForwardDifferences
   gemseo.utils.discipline.get_sub_disciplines: flatten_processes
   gemseo.utils.directory_creator.DirectoryNamingMethod: Naming
 
   gemseo.utils.xdsm.XDSM: gemseo.util.xdsm.xdsm.XDSM
+
+  # The per-module loggers, lowercased.
+  gemseo.LOGGER: logger
+  gemseo.algos.base_algorithm_library.LOGGER: logger
+  gemseo.algos.base_driver_library.LOGGER: logger
+  gemseo.algos.database.LOGGER: logger
+  gemseo.algos.design_space.LOGGER: logger
+  gemseo.algos.doe.base_doe_library.LOGGER: logger
+  gemseo.algos.doe.base_doe_settings.LOGGER: logger
+  gemseo.algos.doe.base_full_factorial_doe.LOGGER: logger
+  gemseo.algos.doe.custom_doe.custom_doe.LOGGER: logger
+  gemseo.algos.doe.scipy.scipy_doe.LOGGER: logger
+  gemseo.algos.evaluation_problem.LOGGER: logger
+  gemseo.algos.lagrange_multipliers.LOGGER: logger
+  gemseo.algos.linear_solvers.base_linear_solver_library.LOGGER: logger
+  gemseo.algos.linear_solvers.scipy_linalg.scipy_linalg.LOGGER: logger
+  gemseo.algos.ode.base_ode_solver_library.LOGGER: logger
+  gemseo.algos.ode.scipy_ode.scipy_ode.LOGGER: logger
+  gemseo.algos.opt.augmented_lagrangian.base_augmented_lagrangian.LOGGER: logger
+  gemseo.algos.opt.mnbi.mnbi.LOGGER: logger
+  gemseo.algos.opt.nlopt.nlopt.LOGGER: logger
+  gemseo.algos.optimization_history.LOGGER: logger
+  gemseo.algos.optimization_problem.LOGGER: logger
+  gemseo.algos.parameter_space.LOGGER: logger
+  gemseo.algos.post_optimal_analysis.LOGGER: logger
+  gemseo.caches.base_cache.LOGGER: logger
+  gemseo.caches.hdf5_cache.LOGGER: logger
+  gemseo.core.base_factory.LOGGER: logger
+  gemseo.core.dependency_graph.LOGGER: logger
+  gemseo.core.derivatives.jacobian_assembly.LOGGER: logger
+  gemseo.core.derivatives.jacobian_operator.LOGGER: logger
+  gemseo.core.discipline.base_discipline.LOGGER: logger
+  gemseo.core.grammars.base_grammar.LOGGER: logger
+  gemseo.core.grammars.json_grammar.LOGGER: logger
+  gemseo.core.grammars.pydantic_grammar.LOGGER: logger
+  gemseo.core.mdo_functions.collections.observables.LOGGER: logger
+  gemseo.core.mdo_functions.mdo_function.LOGGER: logger
+  gemseo.core.parallel_execution.callable_parallel_execution.LOGGER: logger
+  gemseo.disciplines.auto_py.LOGGER: logger
+  gemseo.disciplines.surrogate.LOGGER: logger
+  gemseo.disciplines.wrappers.disc_from_exe.LOGGER: logger
+  gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper.LOGGER: logger
+  gemseo.disciplines.wrappers.retry_discipline.LOGGER: logger
+  gemseo.formulations.base_formulation.LOGGER: logger
+  gemseo.formulations.bilevel.LOGGER: logger
+  gemseo.formulations.idf.LOGGER: logger
+  gemseo.mda.base_mda.LOGGER: logger
+  gemseo.mda.base_mda_solver.LOGGER: logger
+  gemseo.mda.mda_chain.LOGGER: logger
+  gemseo.mda.newton_raphson.LOGGER: logger
+  gemseo.mda.quasi_newton.LOGGER: logger
+  gemseo.mlearning.LOGGER: logger
+  gemseo.mlearning.regression.algos.moe.LOGGER: logger
+  gemseo.mlearning.regression.algos.pce.LOGGER: logger
+  gemseo.post.core.hessians.LOGGER: logger
+  gemseo.post.correlations.LOGGER: logger
+  gemseo.post.gradient_sensitivity.LOGGER: logger
+  gemseo.post.opt_history_view.LOGGER: logger
+  gemseo.post.robustness.LOGGER: logger
+  gemseo.post.variable_influence.LOGGER: logger
+  gemseo.problems.mdo.scalable.data_driven.problem.LOGGER: logger
+  gemseo.problems.mdo.scalable.data_driven.study.post.LOGGER: logger
+  gemseo.problems.mdo.scalable.data_driven.study.process.LOGGER: logger
+  gemseo.scenarios.base_scenario.LOGGER: logger
+  gemseo.uncertainty.distributions.base_distribution_fitter.LOGGER: logger
+  gemseo.uncertainty.sensitivity.sobol_analysis.LOGGER: logger
+  gemseo.uncertainty.statistics.base_parametric_statistics.LOGGER: logger
+  gemseo.uncertainty.statistics.tolerance_interval.distribution.LOGGER: logger
+  gemseo.utils.derivatives.base_gradient_approximator.LOGGER: logger
+  gemseo.utils.derivatives.derivatives_approx.LOGGER: logger
+  gemseo.utils.derivatives.error_estimators.LOGGER: logger
+  gemseo.utils.discipline.LOGGER: logger
+  gemseo.utils.source_parsing.LOGGER: logger
+  gemseo.utils.study_analyses.mdo_study_analysis.LOGGER: logger
+  gemseo.utils.study_analyses.xls_study_parser.LOGGER: logger
+  gemseo.utils.timer.LOGGER: logger
+  gemseo.utils.xdsm.xdsmizer.LOGGER: logger
+  gemseo.utils.xdsmizer.LOGGER: logger
+
+  # The other module-level constants, lowercased.
+  gemseo.algos.stop_criteria.KKT_RESIDUAL_NORM: kkt_residual_norm
+  gemseo.core.dependency_graph.GRAPHVIZ_IS_MISSING: graphviz_is_missing
+  gemseo.core.grammars._python_to_json.PYTHON_TO_JSON_TYPES: python_to_json_types
+  gemseo.core.grammars._utils.NOT_IN_THE_GRAMMAR_MESSAGE: not_in_the_grammar_message
+  gemseo.disciplines.wrappers.disc_from_exe.INPUT_REGEX: input_regex
+  gemseo.disciplines.wrappers.disc_from_exe.NUMERICS: numerics
+  gemseo.disciplines.wrappers.disc_from_exe.OUTPUT_REGEX: output_regex
+  gemseo.mlearning.regression.algos.ot_gpr_settings.TNC: tnc
+  gemseo.post.core.colormaps.INFERNO: inferno
+  gemseo.post.core.colormaps.MAGMA: magma
+  gemseo.post.core.colormaps.PARULA: parula
+  gemseo.post.core.colormaps.PLASMA: plasma
+  gemseo.post.core.colormaps.RG_SEISMIC: rg_seismic
+  gemseo.post.core.colormaps.RG_SEISMIC_DATA: rg_seismic_data
+  gemseo.post.core.colormaps.VIRIDIS: viridis
+  gemseo.post.core.gantt_chart.DEFAULT_NAME: default_name
+  gemseo.problems.mdo.scalable.data_driven.study.post.CURRENT_DIRECTORY: current_directory
+  gemseo.problems.mdo.scalable.data_driven.study.post.PLOT_EXTENSION: plot_extension
+  gemseo.problems.mdo.scalable.data_driven.study.post.POSTSTUDY_DIRECTORY: poststudy_directory
+  gemseo.problems.mdo.scalable.data_driven.study.post.POST_DIRECTORY: post_directory
+  gemseo.problems.mdo.scalable.data_driven.study.post.RESULTS_DIRECTORY: results_directory
+  gemseo.problems.mdo.scalable.data_driven.study.process.POSTOPTIM_DIRECTORY: postoptim_directory
+  gemseo.problems.mdo.scalable.data_driven.study.process.POSTSCAL_DIRECTORY: postscal_directory
+  gemseo.problems.mdo.scalable.data_driven.study.process.POSTSTUDY_DIRECTORY: poststudy_directory
+  gemseo.problems.mdo.scalable.data_driven.study.process.POST_DIRECTORY: post_directory
+  gemseo.problems.mdo.scalable.data_driven.study.process.RESULTS_DIRECTORY: results_directory
+  gemseo.problems.mdo.scalable.data_driven.study.result.RESULTS_DIRECTORY: results_directory
+  gemseo.problems.mdo.scalable.linear.disciplines_generator.DESC_16_DISC: desc_16_disc
+  gemseo.problems.mdo.scalable.linear.disciplines_generator.DESC_3_DISC_WEAK: desc_3_disc_weak
+  gemseo.problems.mdo.scalable.linear.disciplines_generator.DESC_4_DISC_WEAK: desc_4_disc_weak
+  gemseo.problems.mdo.scalable.linear.disciplines_generator.DESC_5_DISC: desc_5_disc
+  gemseo.problems.mdo.scalable.linear.disciplines_generator.DESC_DISC_REPEATED: desc_disc_repeated
+  gemseo.problems.mdo.scalable.linear.disciplines_generator.LETTERS: letters
+  gemseo.problems.mdo.scalable.parametric.core.default_settings.DEFAULT_D_0: default_d_0
+  gemseo.problems.mdo.scalable.parametric.core.default_settings.DEFAULT_D_I: default_d_i
+  gemseo.problems.mdo.scalable.parametric.core.default_settings.DEFAULT_N_DISCIPLINES: default_n_disciplines
+  gemseo.problems.mdo.scalable.parametric.core.default_settings.DEFAULT_P_I: default_p_i
+  gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings.DEFAULT_SCALABLE_DISCIPLINE_SETTINGS: default_scalable_discipline_settings
+  gemseo.problems.mdo.scalable.parametric.core.variable_names.CONSTRAINT_VARIABLE_BASE_NAME: constraint_variable_base_name
+  gemseo.problems.mdo.scalable.parametric.core.variable_names.COUPLING_VARIABLE_BASE_NAME: coupling_variable_base_name
+  gemseo.problems.mdo.scalable.parametric.core.variable_names.LOCAL_DESIGN_VARIABLE_BASE_NAME: local_design_variable_base_name
+  gemseo.problems.mdo.scalable.parametric.core.variable_names.OBJECTIVE_NAME: objective_name
+  gemseo.problems.mdo.scalable.parametric.core.variable_names.SHARED_DESIGN_VARIABLE_NAME: shared_design_variable_name
+  gemseo.problems.mdo.scalable.parametric.core.variable_names.UNCERTAIN_VARIABLE_BASE_NAME: uncertain_variable_base_name
+  gemseo.problems.mdo.sellar.WITH_2D_ARRAY: with_2d_array
+  gemseo.problems.mdo.sellar.variables.ALPHA: alpha
+  gemseo.problems.mdo.sellar.variables.BETA: beta
+  gemseo.problems.mdo.sellar.variables.C_1: c_1
+  gemseo.problems.mdo.sellar.variables.C_2: c_2
+  gemseo.problems.mdo.sellar.variables.GAMMA: gamma
+  gemseo.problems.mdo.sellar.variables.OBJ: obj
+  gemseo.problems.mdo.sellar.variables.X_1: x_1
+  gemseo.problems.mdo.sellar.variables.X_2: x_2
+  gemseo.problems.mdo.sellar.variables.X_SHARED: x_shared
+  gemseo.problems.mdo.sellar.variables.Y_1: y_1
+  gemseo.problems.mdo.sellar.variables.Y_2: y_2
+  gemseo.problems.mdo.sobieski.core.utils.DEG_TO_RAD: deg_to_rad
+  gemseo.problems.ode.springs.springs_dynamics_discipline.INITIAL_POSITION: initial_position
+  gemseo.problems.ode.springs.springs_dynamics_discipline.INITIAL_TIME: initial_time
+  gemseo.problems.ode.springs.springs_dynamics_discipline.INITIAL_VELOCITY: initial_velocity
+  gemseo.problems.ode.springs.springs_dynamics_discipline.POSITION: position
+  gemseo.problems.ode.springs.springs_dynamics_discipline.STATE_DOT_NAMES: state_dot_names
+  gemseo.problems.ode.springs.springs_dynamics_discipline.STATE_NAMES: state_names
+  gemseo.problems.ode.springs.springs_dynamics_discipline.TIME: time
+  gemseo.problems.ode.springs.springs_dynamics_discipline.VELOCITY: velocity
+  gemseo.problems.uncertainty.ishigami.statistics.MEAN: mean
+  gemseo.problems.uncertainty.ishigami.statistics.SOBOL_1: sobol_1
+  gemseo.problems.uncertainty.ishigami.statistics.SOBOL_12: sobol_12
+  gemseo.problems.uncertainty.ishigami.statistics.SOBOL_123: sobol_123
+  gemseo.problems.uncertainty.ishigami.statistics.SOBOL_13: sobol_13
+  gemseo.problems.uncertainty.ishigami.statistics.SOBOL_2: sobol_2
+  gemseo.problems.uncertainty.ishigami.statistics.SOBOL_23: sobol_23
+  gemseo.problems.uncertainty.ishigami.statistics.SOBOL_3: sobol_3
+  gemseo.problems.uncertainty.ishigami.statistics.TOTAL_SOBOL_1: total_sobol_1
+  gemseo.problems.uncertainty.ishigami.statistics.TOTAL_SOBOL_2: total_sobol_2
+  gemseo.problems.uncertainty.ishigami.statistics.TOTAL_SOBOL_3: total_sobol_3
+  gemseo.problems.uncertainty.ishigami.statistics.VARIANCE: variance
+  gemseo.utils.constants.N_CPUS: n_cpus
+  gemseo.utils.constants.READ_ONLY_EMPTY_DICT: read_only_empty_dict
+  gemseo.utils.constants.SETTINGS: settings
+  gemseo.utils.data_conversion.STRING_SEPARATOR: string_separator
+  gemseo.utils.platform.PLATFORM_IS_WINDOWS: platform_is_windows
+  gemseo.utils.repr_html.REPR_HTML_WRAPPER: repr_html_wrapper
+  gemseo.utils.seeder.SEED: seed
+  gemseo.utils.show_utils.HTML_TEMPLATE: html_template
+  gemseo.utils.source_parsing.RE_PATTERN_ARGS: re_pattern_args
+  gemseo.utils.source_parsing.RE_PATTERN_ARGS_SECTION: re_pattern_args_section
+  gemseo.utils.source_parsing.RE_PATTERN_RETURN: re_pattern_return
+  gemseo.utils.string_tools.DEFAULT_DELIMITER: default_delimiter
+  gemseo.utils.string_tools.DEFAULT_KEY_VALUE_SEPARATOR: default_key_value_separator
+  gemseo.utils.xdsm.xdsmizer.OPT_ID: opt_id
+  gemseo.utils.xdsm.xdsmizer.OPT_NAME: opt_name
+  gemseo.utils.xdsm.xdsmizer.USER_ID: user_id
+  gemseo.utils.xdsm.xdsmizer.USER_NAME: user_name
+  gemseo.utils.xdsmizer.OPT_ID: opt_id
+  gemseo.utils.xdsmizer.OPT_NAME: opt_name
+  gemseo.utils.xdsmizer.USER_ID: user_id
+  gemseo.utils.xdsmizer.USER_NAME: user_name
+
+  # The 6.3.2 re-export paths of the constants above: a module importing a
+  # constant made it importable from that module too, so each such path needs its
+  # own entry. The target is the fully qualified new name, because the new module
+  # does not necessarily import the constant any more.
+  gemseo.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.algos.base_driver_library.TQDM_LOGGER: gemseo.core.algorithm._progress_bar.custom.logger
+  gemseo.algos.database.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.algos.design_space.REPR_HTML_WRAPPER: gemseo.util.repr_html.repr_html_wrapper
+  gemseo.algos.design_space.TYPE_MAP: gemseo.space.variable.data_type_to_numpy_type
+  gemseo.algos.doe.scipy.scipy_doe.SCIPY_VERSION: gemseo.util._compatibility.scipy.scipy_version
+  gemseo.algos.doe.scipy.scipy_doe.SEED: gemseo.util.seeder.seed
+  gemseo.algos.opt.nlopt.nlopt.C_LONG_MAX: gemseo.util.constant.infinite_int
+  gemseo.algos.opt.nlopt.settings.nlopt_cobyla_settings.SEED: gemseo.util.seeder.seed
+  gemseo.algos.opt.scipy_global.settings.differential_evolution.SEED: gemseo.util.seeder.seed
+  gemseo.algos.opt.scipy_global.settings.dual_annealing.SEED: gemseo.util.seeder.seed
+  gemseo.algos.opt.scipy_local.scipy_local.C_LONG_MAX: gemseo.util.constant.infinite_int
+  gemseo.caches.utils.PLATFORM_IS_WINDOWS: gemseo.util.platform.platform_is_windows
+  gemseo.core.base_factory.REPR_HTML_WRAPPER: gemseo.util.repr_html.repr_html_wrapper
+  gemseo.core.data_converters.base.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.core.data_converters.json.PYTHON_TO_JSON_TYPES: gemseo.core.grammar._python_to_json.python_to_json_types
+  gemseo.core.derivatives.jacobian_assembly.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.core.discipline.base_discipline.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.core.discipline.discipline.EPSILON: gemseo.util.constant.epsilon
+  gemseo.core.discipline.discipline.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.core.grammars.grammar_properties.NOT_IN_THE_GRAMMAR_MESSAGE: gemseo.core.grammar._util.not_in_the_grammar_message
+  gemseo.core.grammars.json_grammar.PYTHON_TO_JSON_TYPES: gemseo.core.grammar._python_to_json.python_to_json_types
+  gemseo.core.grammars.json_grammar.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.core.grammars.json_schema.NOT_IN_THE_GRAMMAR_MESSAGE: gemseo.core.grammar._util.not_in_the_grammar_message
+  gemseo.core.grammars.pydantic_grammar.NOT_IN_THE_GRAMMAR_MESSAGE: gemseo.core.grammar._util.not_in_the_grammar_message
+  gemseo.core.grammars.simple_grammar.NOT_IN_THE_GRAMMAR_MESSAGE: gemseo.core.grammar._util.not_in_the_grammar_message
+  gemseo.core.mdo_functions.collections.constraints.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.core.mdo_functions.discipline_adapter.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.core.mdo_functions.discipline_adapter_generator.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.core.parallel_execution.callable_parallel_execution.N_CPUS: gemseo.util.constant.n_cpus
+  gemseo.core.parallel_execution.callable_parallel_execution.PLATFORM_IS_WINDOWS: gemseo.util.platform.platform_is_windows
+  gemseo.core.parallel_execution.disc_parallel_execution.N_CPUS: gemseo.util.constant.n_cpus
+  gemseo.core.parallel_execution.disc_parallel_linearization.N_CPUS: gemseo.util.constant.n_cpus
+  gemseo.datasets.dataset.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.datasets.optimization_dataset.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.disciplines.linear_combination.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.disciplines.ode.ode_discipline.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.disciplines.remapping.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.disciplines.surrogate.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.disciplines.taylor.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.disciplines.utils.LOGGER: gemseo.util.discipline.logger
+  gemseo.disciplines.utils.REPR_HTML_WRAPPER: gemseo.util.discipline.repr_html_wrapper
+  gemseo.mda.base_mda.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mda.base_parallel_mda_settings.N_CPUS: gemseo.util.constant.n_cpus
+  gemseo.mda.base_parallel_mda_solver.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mda.gauss_seidel.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mda.mda_chain.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mlearning.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mlearning.classification.algos.random_forest_settings.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.classification.algos.svm_settings.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.clustering.algos.base_clusterer_settings.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.core.algos.ml_algo.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mlearning.core.calibration.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mlearning.core.quality.base_ml_algo_quality.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.core.selection.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mlearning.linear_model_fitting.base_linear_model_fitter.READ_ONLY_EMPTY_DICT: gemseo.read_only_empty_dict
+  gemseo.mlearning.regression.algos.gpr_settings.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.regression.algos.linreg_settings.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.regression.algos.mlp_settings.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.regression.algos.moe.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mlearning.regression.algos.random_forest_settings.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.regression.algos.regressor_chain.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.mlearning.resampling.base_resampler.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.resampling.bootstrap.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.resampling.cross_validation.SEED: gemseo.util.seeder.seed
+  gemseo.mlearning.transformers.dimension_reduction.klsvd.OT_VERSION: gemseo.util._compatibility.openturns.ot_version
+  gemseo.post.constraints_history.RG_SEISMIC: gemseo.post._engine.colormap.rg_seismic
+  gemseo.post.core.robustness_quantifier.SEED: gemseo.util.seeder.seed
+  gemseo.post.hessian_history.PARULA: gemseo.post._engine.colormap.parula
+  gemseo.post.obj_constr_hist.RG_SEISMIC: gemseo.post._engine.colormap.rg_seismic
+  gemseo.post.opt_history_view.PARULA: gemseo.post._engine.colormap.parula
+  gemseo.post.opt_history_view.RG_SEISMIC: gemseo.post._engine.colormap.rg_seismic
+  gemseo.post.parallel_coordinates.PARULA: gemseo.post._engine.colormap.parula
+  gemseo.post.quad_approx.PARULA: gemseo.post._engine.colormap.parula
+  gemseo.post.robustness.SEED: gemseo.util.seeder.seed
+  gemseo.post.som.PARULA: gemseo.post._engine.colormap.parula
+  gemseo.problems.mdo.scalable.data_driven.diagonal.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.problems.mdo.scalable.data_driven.diagonal.SEED: gemseo.util.seeder.seed
+  gemseo.problems.mdo.scalable.data_driven.discipline.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.problems.mdo.scalable.data_driven.model.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.problems.mdo.scalable.data_driven.problem.SEED: gemseo.util.seeder.seed
+  gemseo.problems.mdo.scalable.linear.disciplines_generator.SEED: gemseo.util.seeder.seed
+  gemseo.problems.mdo.scalable.linear.linear_discipline.SEED: gemseo.util.seeder.seed
+  gemseo.problems.mdo.scalable.parametric.core.disciplines.main_discipline.OBJECTIVE_NAME: gemseo.problem.mdo.scalable.parametric.standalone.variable_name.objective_name
+  gemseo.problems.mdo.scalable.parametric.core.disciplines.main_discipline.SHARED_DESIGN_VARIABLE_NAME: gemseo.problem.mdo.scalable.parametric.standalone.variable_name.shared_design_variable_name
+  gemseo.problems.mdo.scalable.parametric.core.disciplines.scalable_discipline.SHARED_DESIGN_VARIABLE_NAME: gemseo.problem.mdo.scalable.parametric.standalone.variable_name.shared_design_variable_name
+  gemseo.problems.mdo.scalable.parametric.core.scalable_design_space.DEFAULT_D_0: gemseo.problem.mdo.scalable.parametric.standalone.default_settings.default_d_0
+  gemseo.problems.mdo.scalable.parametric.core.scalable_design_space.DEFAULT_SCALABLE_DISCIPLINE_SETTINGS: gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings.default_scalable_discipline_settings
+  gemseo.problems.mdo.scalable.parametric.core.scalable_design_space.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.problems.mdo.scalable.parametric.core.scalable_design_space.SHARED_DESIGN_VARIABLE_NAME: gemseo.problem.mdo.scalable.parametric.standalone.variable_name.shared_design_variable_name
+  gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings.DEFAULT_D_I: gemseo.problem.mdo.scalable.parametric.standalone.default_settings.default_d_i
+  gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings.DEFAULT_N_DISCIPLINES: gemseo.problem.mdo.scalable.parametric.standalone.default_settings.default_n_disciplines
+  gemseo.problems.mdo.scalable.parametric.core.scalable_discipline_settings.DEFAULT_P_I: gemseo.problem.mdo.scalable.parametric.standalone.default_settings.default_p_i
+  gemseo.problems.mdo.scalable.parametric.core.scalable_problem.DEFAULT_D_0: gemseo.problem.mdo.scalable.parametric.standalone.default_settings.default_d_0
+  gemseo.problems.mdo.scalable.parametric.core.scalable_problem.DEFAULT_SCALABLE_DISCIPLINE_SETTINGS: gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings.default_scalable_discipline_settings
+  gemseo.problems.mdo.scalable.parametric.core.scalable_problem.SEED: gemseo.util.seeder.seed
+  gemseo.problems.mdo.scalable.parametric.core.scalable_problem.SHARED_DESIGN_VARIABLE_NAME: gemseo.problem.mdo.scalable.parametric.standalone.variable_name.shared_design_variable_name
+  gemseo.problems.mdo.scalable.parametric.disciplines.main_discipline.SHARED_DESIGN_VARIABLE_NAME: gemseo.problem.mdo.scalable.parametric.standalone.variable_name.shared_design_variable_name
+  gemseo.problems.mdo.scalable.parametric.disciplines.scalable_discipline.SHARED_DESIGN_VARIABLE_NAME: gemseo.problem.mdo.scalable.parametric.standalone.variable_name.shared_design_variable_name
+  gemseo.problems.mdo.scalable.parametric.scalable_design_space.DEFAULT_D_0: gemseo.problem.mdo.scalable.parametric.standalone.default_settings.default_d_0
+  gemseo.problems.mdo.scalable.parametric.scalable_design_space.DEFAULT_SCALABLE_DISCIPLINE_SETTINGS: gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings.default_scalable_discipline_settings
+  gemseo.problems.mdo.scalable.parametric.scalable_design_space.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.problems.mdo.scalable.parametric.scalable_problem.OBJECTIVE_NAME: gemseo.problem.mdo.scalable.parametric.standalone.variable_name.objective_name
+  gemseo.problems.mdo.sellar.sellar_1.GAMMA: gemseo.problem.mdo.sellar.variable.gamma
+  gemseo.problems.mdo.sellar.sellar_1.WITH_2D_ARRAY: gemseo.problem.mdo.sellar.with_2d_array
+  gemseo.problems.mdo.sellar.sellar_1.X_1: gemseo.problem.mdo.sellar.variable.x_1
+  gemseo.problems.mdo.sellar.sellar_1.X_2: gemseo.problem.mdo.sellar.variable.x_2
+  gemseo.problems.mdo.sellar.sellar_1.X_SHARED: gemseo.problem.mdo.sellar.variable.x_shared
+  gemseo.problems.mdo.sellar.sellar_1.Y_1: gemseo.problem.mdo.sellar.variable.y_1
+  gemseo.problems.mdo.sellar.sellar_1.Y_2: gemseo.problem.mdo.sellar.variable.y_2
+  gemseo.problems.mdo.sellar.sellar_2.WITH_2D_ARRAY: gemseo.problem.mdo.sellar.with_2d_array
+  gemseo.problems.mdo.sellar.sellar_2.X_1: gemseo.problem.mdo.sellar.variable.x_1
+  gemseo.problems.mdo.sellar.sellar_2.X_2: gemseo.problem.mdo.sellar.variable.x_2
+  gemseo.problems.mdo.sellar.sellar_2.X_SHARED: gemseo.problem.mdo.sellar.variable.x_shared
+  gemseo.problems.mdo.sellar.sellar_2.Y_1: gemseo.problem.mdo.sellar.variable.y_1
+  gemseo.problems.mdo.sellar.sellar_2.Y_2: gemseo.problem.mdo.sellar.variable.y_2
+  gemseo.problems.mdo.sellar.sellar_design_space.X_1: gemseo.problem.mdo.sellar.variable.x_1
+  gemseo.problems.mdo.sellar.sellar_design_space.X_2: gemseo.problem.mdo.sellar.variable.x_2
+  gemseo.problems.mdo.sellar.sellar_design_space.X_SHARED: gemseo.problem.mdo.sellar.variable.x_shared
+  gemseo.problems.mdo.sellar.sellar_design_space.Y_1: gemseo.problem.mdo.sellar.variable.y_1
+  gemseo.problems.mdo.sellar.sellar_design_space.Y_2: gemseo.problem.mdo.sellar.variable.y_2
+  gemseo.problems.mdo.sellar.sellar_system.ALPHA: gemseo.problem.mdo.sellar.variable.alpha
+  gemseo.problems.mdo.sellar.sellar_system.BETA: gemseo.problem.mdo.sellar.variable.beta
+  gemseo.problems.mdo.sellar.sellar_system.C_1: gemseo.problem.mdo.sellar.variable.c_1
+  gemseo.problems.mdo.sellar.sellar_system.C_2: gemseo.problem.mdo.sellar.variable.c_2
+  gemseo.problems.mdo.sellar.sellar_system.OBJ: gemseo.problem.mdo.sellar.variable.obj
+  gemseo.problems.mdo.sellar.sellar_system.WITH_2D_ARRAY: gemseo.problem.mdo.sellar.with_2d_array
+  gemseo.problems.mdo.sellar.sellar_system.X_1: gemseo.problem.mdo.sellar.variable.x_1
+  gemseo.problems.mdo.sellar.sellar_system.X_2: gemseo.problem.mdo.sellar.variable.x_2
+  gemseo.problems.mdo.sellar.sellar_system.X_SHARED: gemseo.problem.mdo.sellar.variable.x_shared
+  gemseo.problems.mdo.sellar.sellar_system.Y_1: gemseo.problem.mdo.sellar.variable.y_1
+  gemseo.problems.mdo.sellar.sellar_system.Y_2: gemseo.problem.mdo.sellar.variable.y_2
+  gemseo.problems.mdo.sellar.utils.ALPHA: gemseo.problem.mdo.sellar.variable.alpha
+  gemseo.problems.mdo.sellar.utils.BETA: gemseo.problem.mdo.sellar.variable.beta
+  gemseo.problems.mdo.sellar.utils.GAMMA: gemseo.problem.mdo.sellar.variable.gamma
+  gemseo.problems.mdo.sellar.utils.WITH_2D_ARRAY: gemseo.problem.mdo.sellar.with_2d_array
+  gemseo.problems.mdo.sellar.utils.X_1: gemseo.problem.mdo.sellar.variable.x_1
+  gemseo.problems.mdo.sellar.utils.X_2: gemseo.problem.mdo.sellar.variable.x_2
+  gemseo.problems.mdo.sellar.utils.X_SHARED: gemseo.problem.mdo.sellar.variable.x_shared
+  gemseo.problems.mdo.sellar.utils.Y_1: gemseo.problem.mdo.sellar.variable.y_1
+  gemseo.problems.mdo.sellar.utils.Y_2: gemseo.problem.mdo.sellar.variable.y_2
+  gemseo.problems.mdo.sobieski.core.aerodynamics.DEG_TO_RAD: gemseo.problem.mdo.sobieski.standalone.util.deg_to_rad
+  gemseo.problems.mdo.sobieski.core.structure.DEG_TO_RAD: gemseo.problem.mdo.sobieski.standalone.util.deg_to_rad
+  gemseo.problems.ode.oscillator_discipline.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.problems.ode.springs.spring_ode_discipline.STATE_DOT_NAMES: gemseo.problem.ode.spring.springs_dynamics_discipline.state_dot_names
+  gemseo.problems.ode.springs.spring_ode_discipline.STATE_NAMES: gemseo.problem.ode.spring.springs_dynamics_discipline.state_names
+  gemseo.scenarios.base_scenario.MDO_FORMULATION_FACTORY: gemseo.formulation.factory.mdo_formulation_factory
+  gemseo.uncertainty.distributions.base_distribution.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.uncertainty.distributions.openturns.distribution_settings.READ_ONLY_EMPTY_DICT: gemseo.read_only_empty_dict
+  gemseo.uncertainty.distributions.scipy.distribution_settings.READ_ONLY_EMPTY_DICT: gemseo.read_only_empty_dict
+  gemseo.uncertainty.sensitivity.base_sensitivity_analysis.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.uncertainty.sensitivity.hsic_analysis.SEED: gemseo.util.seeder.seed
+  gemseo.uncertainty.sensitivity.morris_analysis.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.uncertainty.sensitivity.sobol_analysis.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.uncertainty.sensitivity.sobol_analysis.SEED: gemseo.util.seeder.seed
+  gemseo.utils.derivatives.centered_differences.EPSILON: gemseo.util.constant.epsilon
+  gemseo.utils.derivatives.derivatives_approx.EPSILON: gemseo.util.constant.epsilon
+  gemseo.utils.derivatives.derivatives_approx.N_CPUS: gemseo.util.constant.n_cpus
+  gemseo.utils.derivatives.derivatives_approx.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.utils.derivatives.finite_differences.EPSILON: gemseo.util.constant.epsilon
+  gemseo.utils.discipline.REPR_HTML_WRAPPER: gemseo.util.repr_html.repr_html_wrapper
+  gemseo.utils.global_configuration.N_CPUS: gemseo.util.constant.n_cpus
+  gemseo.utils.n2d3.n2_json.READ_ONLY_EMPTY_DICT: gemseo.util.constant.read_only_empty_dict
+  gemseo.utils.portable_path.PLATFORM_IS_WINDOWS: gemseo.util.platform.platform_is_windows
+  gemseo.utils.string_tools.REPR_HTML_WRAPPER: gemseo.util.repr_html.repr_html_wrapper
+
+  # Made private (_study_analysis_types), hence removed from the public API.
+  # A null target cannot be enabled here yet: the runtime alias table is read
+  # from this section, and test_every_rename_entry_is_reachable requires every
+  # entry to resolve with getattr, which a removal cannot do.
+  # gemseo.utils.study_analyses.study_analysis_cli.STUDY_ANALYSIS_TYPES: null
 
 # Old packages that were entirely dissolved into several new packages, i.e. that have
 # no rename of their own but whose submodules are spread over the new locations listed
@@ -496,7 +855,9 @@ manual:
 classes:
   #### Machine learning
   BaseMLAlgo:
-    SHORT_ALGO_NAME: SHORT_NAME
+    SHORT_ALGO_NAME: short_name
+    LIBRARY: library
+    DEFAULT_TRANSFORMER: default_transformer
     __init__:
       settings_model: settings
 
@@ -509,12 +870,14 @@ classes:
 
   #### ML model quality
   BaseMLAlgoQuality:
+    SMALLER_IS_BETTER: smaller_is_better
     algo: model
     __init__:
       algo: model
 
   #### Regression
   MOERegressor:
+    LABELS: labels_output_name
     #    cluster_params: clusterer_settings
     #    classif_params: classifier_settings
     #    regress_params: regressor_settings
@@ -549,6 +912,7 @@ classes:
   RBF:
     THIN_PLATE: THIN_PLATE_SPLINE
   RBFRegressor:
+    LIBRARY: library
     function: kernel
     y_average: null
     der_function: null
@@ -586,14 +950,19 @@ classes:
     __init__:
       settings_model: settings
   FCERegressor:
+    LIBRARY: library
     __init__:
       settings_model: settings
   PCERegressor:
+    LIBRARY: library
     __init__:
       settings_model: settings
 
   #### Model calibration
   MLAlgoAssessor:
+    CRITERION: criterion
+    LEARNING: learning
+    MULTIOUTPUT: multioutput
     algos: models
   #    __init__:
   #      algo: settings
@@ -619,6 +988,7 @@ classes:
 
   #### MDA
   BaseMDA:
+    NORMALIZED_RESIDUAL_NORM: normalized_residual_norm_name
     normed_residual: normalized_residual_norm
     check_jacobian: null
     # use gemseo.util.derivative.check.mda.MDAJacobianChecker instead.
@@ -670,6 +1040,7 @@ classes:
 
   #### DesignSpace
   DesignSpace:
+    VARIABLE_TYPES_TO_DTYPES: variable_types_to_dtypes
     names_to_indices: name_to_indices
     to_csv:
       header_char: null
@@ -713,6 +1084,10 @@ classes:
   MDOScenarioAdapter: &scenario-adapter-class
     keep_opt_history: keep_databases
     save_opt_history: save_databases
+    LOWER_BND_SUFFIX: lower_bnd_suffix
+    UPPER_BND_SUFFIX: upper_bnd_suffix
+    MULTIPLIER_SUFFIX: multiplier_suffix
+    DEFAULT_DATABASE_FILE_PREFIX: default_database_file_prefix
     __init__:
       reset_x0_before_opt: reset_x0_before_exec
       set_x0_before_opt: set_x0_before_exec
@@ -726,14 +1101,20 @@ classes:
   BaseAlgoFactory: &algo-factory
     algo_names_to_libraries: algo_name_to_library
     execute: *settings-model
-  BaseAlgorithmLibrary: *algo-factory
+  BaseAlgorithmLibrary:
+    <<: *algo-factory
+    _ADDITIONAL_SETTINGS_CLASSES_TO_EXCLUDE: _additional_settings_classes_to_exclude
+    _SETTINGS_CLASS_TO_EXCLUDE: _settings_class_to_exclude
   BaseDriverLibrary:
+    _RESULT_CLASS: _result_class
+    _SUPPORT_SPARSE_JACOBIAN: _support_sparse_jacobian
     execute:
       eval_obs_jac: null
       skip_int_check: null
       max_design_space_dimension_to_log: null
       settings_model: settings={settings_model}_Settings
   BaseDOELibrary:
+    _USE_UNIT_HYPERCUBE: _use_unit_hypercube
     compute_doe:
       __name__: sample_space
       variables_space: space
@@ -742,6 +1123,7 @@ classes:
 
   # Formulation
   BaseFormulation:
+    DEFAULT_SCENARIO_RESULT_CLASS_NAME: default_scenario_result_class_name
     optimization_problem: problem
     __init__:
       # TODO: add new argument.
@@ -759,19 +1141,23 @@ classes:
       main_mda_settings: null
 
   # Post-processors
-  BasePost: *algo-factory
+  BasePost:
+    <<: *algo-factory
+    _USE_JACOBIAN_DATA: _use_jacobian_data
   PostFactory:
     execute:
       settings_model: settings={settings_model}_Settings
 
   # Sensitivity analysis
   BaseSensitivityAnalysis:
+    DEFAULT_DRIVER: default_driver
     compute_samples:
       algo: null
       algo_settings: algo_settings={algo_settings}_Settings
       formulation_name: null
 
   LinearDiscipline:
+    DEFAULT_MATRIX_DENSITY: default_matrix_density
     input_names: list(input_grammar)  # TODO: support casting
     output_names: list(output_grammar)  # TODO: support casting
 
@@ -798,6 +1184,7 @@ classes:
     compute_names_to_sizes:
       __name__: compute_name_to_size
   BaseGrammar:
+    DATA_CONVERTER_CLASS: data_converter_class
     update_from_types:
       names_to_types: name_to_type
   MDASequential:
@@ -807,9 +1194,17 @@ classes:
     optimization_problems_to_results: optimization_problem_to_result
     design_variable_names_to_values: design_variable_name_to_value
   Database:
+    DEFAULT_INPUT_NAME: default_input_name
+    MISSING_VALUE_TAG: missing_value_tag
+    GRAD_TAG: grad_tag
     to_dataset:
       groups_to_variables: group_to_variables
   Dataset:
+    COLUMN_LEVEL_NAMES: column_level_names
+    PARAMETER_GROUP: parameter_group
+    GRADIENT_GROUP: gradient_group
+    DEFAULT_GROUP: default_group
+    DEFAULT_VARIABLE_NAME: default_variable_name
     variable_names_to_n_components: variable_name_to_n_components
     group_names_to_n_components: group_name_to_n_components
     from_array:
@@ -831,9 +1226,11 @@ classes:
     __init__:
       names_to_default_values: name_to_default_value
   ScenarioResult:
+    POST_FACTORY: post_factory
     optimization_problems_to_results: optimization_problem_to_result
     design_variable_names_to_values: design_variable_name_to_value
   SimpleGrammar:
+    DATA_CONVERTER_CLASS: data_converter_class
     __init__:
       names_to_types: name_to_type
   Splitter:
@@ -849,6 +1246,7 @@ classes:
       keep_out: use_output_names
 
   CallableParallelExecution:
+    MULTI_PROCESSING_START_METHOD: multi_processing_start_method
     execute:
       exec_callback: exec_callbacks
 
@@ -875,7 +1273,10 @@ classes:
       discipline: process
 
   JobSchedulerDiscipline:
-    TEMPLATES_DIR_PATH: JOB_TEMPLATES_DIR_PATH
+    TEMPLATES_DIR_PATH: job_templates_dir_path
+    DISC_PICKLE_FILE_NAME: disc_pickle_file_name
+    DISC_INPUT_FILE_NAME: disc_input_file_name
+    DISC_OUTPUT_FILE_NAME: disc_output_file_name
 
   CacheEntry:
     inputs: null
@@ -886,6 +1287,11 @@ classes:
     generator_class: null
 
   OptimizationDataset:
+    DESIGN_GROUP: design_group
+    OBJECTIVE_GROUP: objective_group
+    INEQUALITY_CONSTRAINT_GROUP: inequality_constraint_group
+    EQUALITY_CONSTRAINT_GROUP: equality_constraint_group
+    OBSERVABLE_GROUP: observable_group
     FUNCTION_GROUP: null
     # Use `OBJECTIVE_GROUP`, `EQUALITY_CONSTRAINT_GROUP`, `INEQUALITY_CONSTRAINT_GROUP`, or `OBSERVABLE_GROUP` instead.
     CONSTRAINT_GROUP: null
@@ -922,6 +1328,250 @@ classes:
   ODEProblem:
     check_jacobian:
       error_max: atol
+
+  # Lowercased class constants (the ALL_CAPS class-attribute campaign)
+  BaseDiscipline:
+    GRAMMAR_DIRECTORY: grammar_directory
+    # Of the scalable parametric BaseDiscipline of the same name; the entry is
+    # skipped on whichever of the two classes does not declare the new name.
+    _CORE_DISCIPLINE_CLASS: _core_discipline_class
+  BaseDistribution:
+    _ALPHA: _alpha
+    _BETA: _beta
+    _LOC: _loc
+    _LOCATION: _location
+    _LOWER: _lower
+    _MODE: _mode
+    _MU: _mu
+    _RATE: _rate
+    _SCALE: _scale
+    _SHAPE: _shape
+    _SIGMA: _sigma
+    _UPPER: _upper
+    _WEBSITE: _website
+    DEFAULT_VARIABLE_NAME: default_variable_name
+  BaseFactory:
+    _CLASS: _class
+    _PACKAGE_NAMES: _package_names
+    PLUGIN_ENTRY_POINT: plugin_entry_point
+  BaseMLSupervisedAlgo:
+    DEFAULT_TRANSFORMER: default_transformer
+  BaseRegressor:
+    DEFAULT_TRANSFORMER: default_transformer
+  BaseStatistics:
+    SYMBOLS: symbols
+  BaseTransformer:
+    CROSSED: crossed
+  BiLevel:
+    DEFAULT_SCENARIO_RESULT_CLASS_NAME: default_scenario_result_class_name
+    CHAIN_NAME: chain_name
+    MDA1_RESIDUAL_NAMESPACE: mda1_residual_namespace
+    MDA2_RESIDUAL_NAMESPACE: mda2_residual_namespace
+  CorrelationAnalysis:
+    DEFAULT_DRIVER: default_driver
+  Correlations:
+    MAXIMUM_CORRELATION_COEFFICIENT: maximum_correlation_coefficient
+  CoupledSystem:
+    DEFAULT_LINEAR_SOLVER: default_linear_solver
+  DatasetPlot:
+    DEFAULT_PLOT_ENGINE: default_plot_engine
+    FILE_FORMATS_TO_PLOT_ENGINES: file_formats_to_plot_engines
+  DependencyGraph:
+    IO: io
+  F1Measure:
+    SMALLER_IS_BETTER: smaller_is_better
+  GaussianMixture:
+    LIBRARY: library
+  GaussianProcessRegressor:
+    LIBRARY: library
+  GradientBoostingRegressor:
+    LIBRARY: library
+  HSICAnalysis:
+    DEFAULT_DRIVER: default_driver
+  IODataset:
+    INPUT_GROUP: input_group
+    OUTPUT_GROUP: output_group
+  JSONGrammar:
+    DATA_CONVERTER_CLASS: data_converter_class
+  KMeans:
+    LIBRARY: library
+  KNNClassifier:
+    LIBRARY: library
+  LagrangeMultipliers:
+    LOWER_BOUNDS: lower_bounds
+    UPPER_BOUNDS: upper_bounds
+    INEQUALITY: inequality
+    EQUALITY: equality
+    CSTR_LABELS: cstr_labels
+  LinearRegressor:
+    LIBRARY: library
+  MDOFunction:
+    DICT_REPR_ATTR: dict_repr_attr
+    DEFAULT_BASE_INPUT_NAME: default_base_input_name
+    COEFF_FORMAT_1D: coeff_format_1d
+    COEFF_FORMAT_ND: coeff_format_nd
+  MLPRegressor:
+    LIBRARY: library
+  MorrisAnalysis:
+    DEFAULT_DRIVER: default_driver
+  MultiLineString:
+    INDENTATION: indentation
+    DEFAULT_LEVEL: default_level
+  OTDistribution:
+    JOINT_DISTRIBUTION_CLASS: joint_distribution_class
+  OTGaussianProcessRegressor:
+    LIBRARY: library
+    MAX_SIZE_FOR_LAPACK: max_size_for_lapack
+    HMATRIX_ASSEMBLY_EPSILON: hmatrix_assembly_epsilon
+    HMATRIX_RECOMPRESSION_EPSILON: hmatrix_recompression_epsilon
+  PLS:
+    CROSSED: crossed
+  PostOptimalAnalysis:
+    MULT_DOT_CONSTR_JAC: mult_dot_constr_jac
+  PostScalabilityStudy:
+    NOMENCLATURE: nomenclature
+  PydanticGrammar:
+    DATA_CONVERTER_CLASS: data_converter_class
+  R2Measure:
+    SMALLER_IS_BETTER: smaller_is_better
+  RandomForestClassifier:
+    LIBRARY: library
+  RandomForestRegressor:
+    LIBRARY: library
+  Robustness:
+    SR1_APPROX: sr1_approx
+  SPDistribution:
+    JOINT_DISTRIBUTION_CLASS: joint_distribution_class
+  SR1Approx:
+    EPSILON: epsilon
+  SVMClassifier:
+    LIBRARY: library
+  SVMRegressor:
+    LIBRARY: library
+  ScalableDiagonalModel:
+    ABBR: abbr
+  ScalableModel:
+    ABBR: abbr
+  SilhouetteMeasure:
+    SMALLER_IS_BETTER: smaller_is_better
+  SobieskiAerodynamics:
+    PRESSURE_GRADIENT_LIMIT: pressure_gradient_limit
+  SobieskiProblem:
+    CONTRAINTS_NAMES_INEQUALITY: contraints_names_inequality
+    CONTRAINTS_NAMES: contraints_names
+    DV_NAMES_NORMALIZED: dv_names_normalized
+    DV_NAMES: dv_names
+    COUPLING_VARIABLES_NAMES: coupling_variables_names
+    USE_ORIGINAL_DESIGN_VARIABLES_ORDER: use_original_design_variables_order
+    STRESS_LIMIT: stress_limit
+    TWIST_UPPER_LIMIT: twist_upper_limit
+    TWIST_LOWER_LIMIT: twist_lower_limit
+    PRESSURE_GRADIENT_LIMIT: pressure_gradient_limit
+    ESF_UPPER_LIMIT: esf_upper_limit
+    ESF_LOWER_LIMIT: esf_lower_limit
+    TEMPERATURE_LIMIT: temperature_limit
+  SobieskiPropulsion:
+    ESF_UPPER_LIMIT: esf_upper_limit
+    ESF_LOWER_LIMIT: esf_lower_limit
+    TEMPERATURE_LIMIT: temperature_limit
+  SobieskiStructure:
+    STRESS_LIMIT: stress_limit
+    TWIST_UPPER_LIMIT: twist_upper_limit
+    TWIST_LOWER_LIMIT: twist_lower_limit
+  SobolAnalysis:
+    DEFAULT_DRIVER: default_driver
+  XLSStudyParser:
+    SCENARIO_PREFIX: scenario_prefix
+    DISCIPLINE: discipline
+    DISCIPLINES: disciplines_key
+    OBJECTIVE_FUNCTION: objective_function
+    CONSTRAINTS: constraints
+    DESIGN_VARIABLES: design_variables
+    FORMULATION: formulation
+    OPTIONS: options
+    OPTION_VALUES: option_values
+
+  #### Protected class attributes
+  # Renamed on the class introducing them, so the descriptor is inherited by
+  # every subclass and __init_subclass__ remaps a subclass body still assigning
+  # an old name. BaseAlgorithmFactory is keyed by its current name because its
+  # old-name block anchors a mapping shared with other classes.
+  BaseAlgorithmFactory:
+    _CLASS: _class
+    _PACKAGE_NAMES: _package_names
+  BaseClassifierQuality:
+    _CLASS: _class
+    _PACKAGE_NAMES: _package_names
+  BaseDistributionFitter:
+    _CRITERIA_TO_WRAPPED_OBJECTS: _criteria_to_wrapped_objects
+    _FITTING_CRITERIA_TO_MINIMIZE: _fitting_criteria_to_minimize
+  BaseDistributionSettings:
+    _LIBRARY_NAME: _library_name
+  BaseExecutionSequence:
+    _PREFIX: _prefix
+    _SUFFIX: _suffix
+  BaseGenericSensitivityAnalysis:
+    _DEFAULT_MAIN_METHOD: _default_main_method
+    _INTERACTION_METHODS: _interaction_methods
+  BaseGradientApproximator:
+    _APPROXIMATION_MODE: _approximation_mode
+    _DEFAULT_STEP: _default_step
+  BaseLinearModelFitter:
+    _FITTER_CLASS: _fitter_class
+    _PRIORITARY_FITTER_KWARGS: _prioritary_fitter_kwargs
+  BaseOTIsoBasis:
+    _FACTORY: _factory
+  BaseOTLowDiscrepancySequence:
+    _ALGO_CLASS: _algo_class
+  BaseOTQMCSettings:
+    _SEQUENCE_CLASS: _sequence_class
+  BaseOTReliabilityAlgorithm:
+    _ALGO_CLASS: _algo_class
+  BaseOTStratifiedDOE:
+    _ALGO_CLASS: _algo_class
+  BaseParametricStatistics:
+    _DISTRIBUTION_FITTER: _distribution_fitter
+  BaseSellar:
+    _INPUT_NAMES: _input_names
+    _OUTPUT_NAMES: _output_names
+  BaseSettings:
+    _INHERITED_FIELD_DEFAULTS: _inherited_field_defaults
+    _INHERITED_FIELD_TYPES: _inherited_field_types
+  Constraints:
+    _AGGREGATION_FUNCTION_MAP: _aggregation_function_map
+  CouplingStudyAnalysis:
+    _HAS_SCENARIO: _has_scenario
+  EvaluationScenario:
+    _ALGO_FACTORY_CLASS: _algo_factory_class
+  Functions:
+    _F_TYPES: _f_types
+  OTDistributionFitter:
+    _OT_DISTRIBUTION_NAMES_TO_OT_FACTORIES: _ot_distribution_names_to_ot_factories
+  OT_FORM:
+    _USE_MULTIFORM_RESULT: _use_multiform_result
+  Power:
+    _TRANSFORMER_NAME: _transformer_name
+  ScalableProblem:
+    _DESIGN_SPACE_CLASS: _design_space_class
+    _MAIN_DISCIPLINE_CLASS: _main_discipline_class
+    _SCALABLE_DISCIPLINE_CLASS: _scalable_discipline_class
+  SequenceTransformer:
+    _MINIMUM_NUMBER_OF_ITERATES: _minimum_number_of_iterates
+    _MINIMUM_NUMBER_OF_RESIDUALS: _minimum_number_of_residuals
+  Serializable:
+    _ATTR_NOT_TO_SERIALIZE: _attr_not_to_serialize
+  SobieskiDiscipline:
+    _INPUT_NAMES: _input_names
+    _OUTPUT_NAMES: _output_names
+  SobolIndicesEstimatorMixin:
+    _ALGO_NAME_TO_CLASS: _algo_name_to_class
+    _DEFAULT_MAIN_METHOD: _default_main_method
+    _GET_FIRST_ORDER_INDICES: _get_first_order_indices
+    _GET_SECOND_ORDER_INDICES: _get_second_order_indices
+    _GET_TOTAL_ORDER_INDICES: _get_total_order_indices
+    _INTERACTION_METHODS: _interaction_methods
+  TerminationCriterion:
+    _MESSAGE: _message
 
 # Transforms applied to free functions. Keys are old argument names; positions
 # are resolved from the old API signatures in the griffe dump, so a position is

@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import pytest
 
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.string import MultiLineString
 from gemseo.util.string import filter_names
 from gemseo.util.string import get_name_and_component
@@ -55,7 +55,7 @@ def test_message_with_offset() -> None:
     with MultiLineString.offset():
         msg = MultiLineString()
         msg.add("foo")
-    assert str(msg) == MultiLineString.INDENTATION + "foo"
+    assert str(msg) == MultiLineString.indentation + "foo"
     msg = MultiLineString()
     msg.add("bar")
     assert str(msg) == "bar"
@@ -199,7 +199,7 @@ def test_repr_html() -> None:
     mls.add("f")
     mls.indent()
     mls.add("h")
-    assert mls._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert mls._repr_html_() == repr_html_wrapper.format(
         "a<br/>"
         "b<br/>"
         "<ul>"
@@ -215,6 +215,35 @@ def test_repr_html() -> None:
         "</ul>"
         "</li>"
         "</ul>"
+    )
+
+
+def test_repr_html_dedent_by_several_levels_to_default_level() -> None:
+    """Check MultiLineString._repr_html_ when dedenting several levels at once."""
+    mls = MultiLineString()
+    mls.add("a")
+    mls.indent()
+    mls.indent()
+    mls.add("b")
+    mls.dedent()
+    mls.dedent()
+    mls.add("c")
+    assert mls._repr_html_() == repr_html_wrapper.format(
+        "a<br/><ul><li><ul><li>b</li></ul></li></ul>c<br/>"
+    )
+
+
+def test_repr_html_dedent_by_several_levels_to_non_default_level() -> None:
+    """Check MultiLineString._repr_html_ when dedenting to a non-default level."""
+    mls = MultiLineString()
+    mls.add("a")
+    mls.indent()
+    mls.indent()
+    mls.add("b")
+    mls.dedent()
+    mls.add("c")
+    assert mls._repr_html_() == repr_html_wrapper.format(
+        "a<br/><ul><li><ul><li>b</li></ul></li><li>c</li></ul>"
     )
 
 

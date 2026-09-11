@@ -24,7 +24,7 @@ from typing import Any
 
 from gemseo.core.discipline import Discipline
 from gemseo.core.grammar.pydantic import PydanticGrammar
-from gemseo.util.attributes_tracker import FLATTEN_SEPARATOR
+from gemseo.util.attributes_tracker import flatten_separator
 from gemseo.util.attributes_tracker import wrap_with_attributes_tracking
 
 if TYPE_CHECKING:
@@ -135,7 +135,7 @@ class BaseModelDiscipline(Discipline):
         }
         self.__input_setters = {}
         for name in self.io.input_grammar:
-            parent_path, _, leaf_name = name.rpartition(FLATTEN_SEPARATOR)
+            parent_path, _, leaf_name = name.rpartition(flatten_separator)
             self.__input_setters[name] = (
                 attrgetter(parent_path) if parent_path else None,
                 leaf_name,

@@ -34,7 +34,7 @@ from gemseo.post.core.base_post import BasePost
 class Animation(BasePost[Animation_Settings]):
     """Animated GIF maker from a [BasePost][gemseo.post.core.base_post.BasePost]."""
 
-    __FRAME: Final[str] = "frame"
+    __frame: Final[str] = "frame"
     """The prefix for frame images."""
 
     settings_class: ClassVar[type[Animation_Settings]] = Animation_Settings
@@ -83,7 +83,7 @@ class Animation(BasePost[Animation_Settings]):
         output_files_count = 0
         for iteration in range(len(database), 0, -settings.frame_rate):
             opt_problem.database.clear_from_iteration(iteration)
-            settings.post_processing_settings.file_path = f"{self.__FRAME}_{iteration}"
+            settings.post_processing_settings.file_path = f"{self.__frame}_{iteration}"
             settings.post_processing.execute(settings.post_processing_settings)
             step_to_frame_file_paths.append(
                 settings.post_processing.output_file_paths[output_files_count:],
@@ -119,12 +119,12 @@ class Animation(BasePost[Animation_Settings]):
             if len(frame_file_paths) > 1:
                 figure_names = [
                     Path(frame_file_path).stem.replace(
-                        f"{self.__FRAME}_{step + 1}_", ""
+                        f"{self.__frame}_{step + 1}_", ""
                     )
                     for frame_file_path in frame_file_paths
                 ]
             else:
-                figure_names = [self.__FRAME]
+                figure_names = [self.__frame]
             frames = []
             for frame_file_path in frame_file_paths:
                 # Copy the image into memory and close the file handle right away

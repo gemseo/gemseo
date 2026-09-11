@@ -23,7 +23,7 @@ from pydantic import NonNegativeInt  # noqa:TC002
 from gemseo.machine_learning.regression.core.base_regressor_settings import (
     BaseRegressorSettings,
 )
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 
 class LinearRegressor_Settings(BaseRegressorSettings):  # noqa: N801
@@ -50,7 +50,7 @@ Between 0 and 1, use the ElasticNet penalty.""",
     )
 
     random_state: NonNegativeInt | None = Field(
-        default=SEED,
+        default=seed,
         description="""The random state parameter in the case of a penalty.
 
 If `None`, use the global random state instance from `numpy.random`.

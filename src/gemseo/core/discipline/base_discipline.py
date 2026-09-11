@@ -23,6 +23,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 
 from strenum import StrEnum
 
@@ -34,10 +35,10 @@ from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.discipline.io import IO
 from gemseo.core.grammar.factory import GrammarType as _GrammarType
-from gemseo.util.constant import _ENABLE_DISCIPLINE_CACHE
-from gemseo.util.constant import _VALIDATE_INPUT_DATA
-from gemseo.util.constant import _VALIDATE_OUTPUT_DATA
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import _enable_discipline_cache
+from gemseo.util.constant import _validate_input_data
+from gemseo.util.constant import _validate_output_data
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.string import MultiLineString
 from gemseo.util.string import pretty_str
 
@@ -50,9 +51,9 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-_CACHE_FACTORY = CacheFactory()
+_cache_factory: Final[CacheFactory] = CacheFactory()
 
 
 class CacheType(StrEnum):
@@ -127,7 +128,7 @@ class BaseDiscipline(BaseMonitoredProcess):
     GrammarType: ClassVar[type[_GrammarType]] = _GrammarType
     """The types of grammar."""
 
-    GRAMMAR_DIRECTORY: ClassVar[StrPath] = ""
+    grammar_directory: ClassVar[StrPath] = ""
     """The directory in which to search for the grammar files if not the class one."""
 
     default_grammar_type: ClassVar[_GrammarType] = GrammarType.SIMPLE
@@ -136,10 +137,10 @@ class BaseDiscipline(BaseMonitoredProcess):
     auto_detect_grammar_files: ClassVar[bool] = False
     """Whether to find the grammar files automatically."""
 
-    validate_input_data: ClassVar[bool] = _VALIDATE_INPUT_DATA
+    validate_input_data: ClassVar[bool] = _validate_input_data
     """Whether to validate the input data."""
 
-    validate_output_data: ClassVar[bool] = _VALIDATE_OUTPUT_DATA
+    validate_output_data: ClassVar[bool] = _validate_output_data
     """Whether to validate the output data."""
 
     virtual_execution: ClassVar[bool] = False
@@ -153,7 +154,7 @@ class BaseDiscipline(BaseMonitoredProcess):
     """The type of cache."""
 
     default_cache_type: ClassVar[CacheType] = (
-        CacheType.SIMPLE if _ENABLE_DISCIPLINE_CACHE else CacheType.NONE
+        CacheType.SIMPLE if _enable_discipline_cache else CacheType.NONE
     )
     """The default type of cache."""
 
@@ -183,7 +184,7 @@ class BaseDiscipline(BaseMonitoredProcess):
             self.name,
             self.default_grammar_type,
             self.auto_detect_grammar_files,
-            self.GRAMMAR_DIRECTORY,
+            self.grammar_directory,
         )
         self.set_cache(self.default_cache_type)
 
@@ -326,11 +327,11 @@ class BaseDiscipline(BaseMonitoredProcess):
                 kwargs.setdefault("hdf_node_path", self.name)
                 kwargs["input_data_converter"] = self.io.input_grammar.data_converter
                 kwargs["output_data_converter"] = self.io.output_grammar.data_converter
-            self.cache = _CACHE_FACTORY.create(
+            self.cache = _cache_factory.create(
                 cache_type, tolerance=tolerance, **kwargs
             )
         else:
-            LOGGER.warning(
+            logger.warning(
                 (
                     "The cache policy is already set to %s "
                     "with the file path %r and node name %r; "
@@ -343,7 +344,7 @@ class BaseDiscipline(BaseMonitoredProcess):
 
     def execute(
         self,
-        input_data: StrKeyMapping = READ_ONLY_EMPTY_DICT,
+        input_data: StrKeyMapping = read_only_empty_dict,
     ) -> DisciplineData:
         """Execute the discipline, i.e. compute output data from input data.
 

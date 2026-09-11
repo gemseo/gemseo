@@ -27,7 +27,7 @@ import numpy as np
 import pytest
 
 from gemseo.core.coupling_structure import CouplingStructure
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.problem.mdo.scalable.data_driven.discipline import (
     DataDrivenScalableDiscipline,
 )
@@ -43,7 +43,7 @@ from gemseo.util.derivative.check.function import FunctionJacobianChecker
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
 
-N_SAMPLES = 10
+n_samples = 10
 
 
 @pytest.mark.usefixtures("tmp_wd")
@@ -206,7 +206,7 @@ class ScalableProblem(unittest.TestCase):
         scenario = MDOScenario(
             ScalableProblem.scalable_disciplines,
             design_space,
-            formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation_settings=mdo_formulation_factory.get_class(
                 formulation
             ).settings_class(),
         )

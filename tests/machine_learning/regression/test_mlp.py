@@ -28,8 +28,8 @@ def test_init(dataset):
     Check also the default number of neurons per hidden layer.
     """
     mlp = MLPRegressor(dataset)
-    assert mlp.SHORT_NAME == "MLP"
-    assert mlp.LIBRARY == "scikit-learn"
+    assert mlp.short_name == "MLP"
+    assert mlp.library == "scikit-learn"
     algo = mlp.algo
     assert isinstance(algo, sklearn.neural_network.MLPRegressor)
     assert algo.hidden_layer_sizes == (100,)

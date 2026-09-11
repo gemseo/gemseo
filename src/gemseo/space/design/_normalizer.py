@@ -25,12 +25,12 @@ from numpy import where
 from numpy import zeros
 
 from gemseo.space.design._checking import check_out_array
-from gemseo.space.design._constants import BOUND_ATOL
+from gemseo.space.design._constants import bound_atol
 from gemseo.space.design._registry_derived_data import RegistryDerivedData
 from gemseo.util._compatibility.scipy import sparse_classes
-from gemseo.util._numpy import FLOAT64_DTYPE
-from gemseo.util._numpy import INT64_DTYPE
 from gemseo.util._numpy import convert_array_type
+from gemseo.util._numpy import float64_dtype
+from gemseo.util._numpy import int64_dtype
 
 if TYPE_CHECKING:
     from numpy import dtype
@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealOrComplexArrayT
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Normalizer(RegistryDerivedData):
@@ -142,7 +142,7 @@ class Normalizer(RegistryDerivedData):
 
         current_x_dtype = common_dtype
         if current_x_dtype.kind == "i":
-            current_x_dtype = FLOAT64_DTYPE
+            current_x_dtype = float64_dtype
 
         if out is None:
             out = full_value.astype(current_x_dtype)
@@ -199,8 +199,8 @@ class Normalizer(RegistryDerivedData):
 
         if not no_check and normalization_indices is not None:
             value_ = full_value[..., normalization_indices]
-            lower_bounds_violated = value_ < -BOUND_ATOL
-            upper_bounds_violated = value_ > 1 + BOUND_ATOL
+            lower_bounds_violated = value_ < -bound_atol
+            upper_bounds_violated = value_ > 1 + bound_atol
             any_lower = lower_bounds_violated.any()
             any_upper = upper_bounds_violated.any()
             msg = "All components of the normalized vector should be between 0 and 1; "
@@ -212,17 +212,17 @@ class Normalizer(RegistryDerivedData):
 
             if any_lower or any_upper:
                 msg = msg[:-2] + "."
-                LOGGER.warning(msg)
+                logger.warning(msg)
 
         current_dtype = common_dtype
         recast_to_int = current_dtype.kind == "i"
         if recast_to_int:
-            current_dtype = FLOAT64_DTYPE
+            current_dtype = float64_dtype
 
         has_integer = self.__integer_rounder.has_integer
         # The integer recast only occurs when there are integer components to round.
         recast_to_int = recast_to_int and has_integer
-        result_dtype = INT64_DTYPE if recast_to_int else current_dtype
+        result_dtype = int64_dtype if recast_to_int else current_dtype
 
         if out is not None:
             check_out_array(out, result_dtype, full_value.shape)
@@ -259,7 +259,7 @@ class Normalizer(RegistryDerivedData):
             value = self.__integer_rounder.round(value, copy=False)
 
         if out is None:
-            return convert_array_type(value, INT64_DTYPE) if recast_to_int else value
+            return convert_array_type(value, int64_dtype) if recast_to_int else value
 
         if value is not out:
             # The values are already rounded, hence the integer assignment is exact.

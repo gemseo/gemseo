@@ -47,7 +47,7 @@ from gemseo.space import DesignSpace
 # You configure the logger to see the listener's output in the console.
 # In this case you use GEMSEO's default configuration.
 # See [Global configuration][concept-global-configuration] for the scope of the logging configuration.
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 configuration.logging.configure_root_logger = True
 
 
@@ -86,7 +86,7 @@ obj_history = []
 def track_objective(x_vect):
     value = problem.database.get_function_value("obj", x_vect)
     obj_history.append(float(value))
-    LOGGER.info("\t Listener: x_vector = %s, obj = %s", x_vect, float(value))
+    logger.info("\t Listener: x_vector = %s, obj = %s", x_vect, float(value))
 
 
 # %%

@@ -33,9 +33,9 @@ from scipy.sparse import hstack as sparse_hstack
 from gemseo.core.derivative.jacobian_operator import JacobianOperator
 from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
 from gemseo.util._compatibility.scipy import sparse_classes
-from gemseo.util.constant import EPSILON
-from gemseo.util.constant import N_CPUS
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import epsilon
+from gemseo.util.constant import n_cpus
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.derivative.approximator.factory import GradientApproximatorFactory
@@ -65,7 +65,7 @@ from numpy import concatenate
 from numpy import divide
 from numpy import zeros
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def compare_jacobian_matrices(
@@ -92,19 +92,19 @@ def compare_jacobian_matrices(
 
     if allclose(analytical, approximated, atol=atol, rtol=rtol):
         if name:
-            LOGGER.info("Jacobian: %s succeeded.", name)
+            logger.info("Jacobian: %s succeeded.", name)
         return True
 
     err = amax(
         divide(absolute(analytical - approximated), absolute(approximated) + 1.0)
     )
     if name:
-        LOGGER.error("Jacobian: %s is wrong by %s%%.", name, err * 100.0)
+        logger.error("Jacobian: %s is wrong by %s%%.", name, err * 100.0)
     else:
-        LOGGER.error("Jacobian is wrong by %s%%.", err * 100.0)
-    LOGGER.info("Approximate Jacobian =\n%s", approximated)
-    LOGGER.info("Provided analytical Jacobian =\n%s", analytical)
-    LOGGER.info("Difference =\n%s", approximated - analytical)
+        logger.error("Jacobian is wrong by %s%%.", err * 100.0)
+    logger.info("Approximate Jacobian =\n%s", approximated)
+    logger.info("Provided analytical Jacobian =\n%s", analytical)
+    logger.info("Difference =\n%s", approximated - analytical)
     return False
 
 
@@ -121,7 +121,7 @@ class DisciplineJacApprox:
         approx_method: ApproximationMode = ApproximationMode.FINITE_DIFFERENCES,
         step: complex | Iterable[complex] = 1e-7,
         parallel: bool = False,
-        n_processes: int = N_CPUS,
+        n_processes: int = n_cpus,
         use_threading: bool = False,
         wait_time_between_fork: float = 0,
     ) -> None:
@@ -166,7 +166,7 @@ class DisciplineJacApprox:
         self,
         output_names: Sequence[str],
         input_names: Sequence[str],
-        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        input_data: Mapping[str, ndarray] = read_only_empty_dict,
     ) -> None:
         """Create the Jacobian approximation class.
 
@@ -196,7 +196,7 @@ class DisciplineJacApprox:
         output_names: Sequence[str],
         input_names: Sequence[str],
         print_errors: bool = True,
-        numerical_error: float = EPSILON,
+        numerical_error: float = epsilon,
     ) -> tuple[ndarray, dict[str, ndarray]]:
         r"""Compute the optimal step.
 
@@ -237,11 +237,11 @@ class DisciplineJacApprox:
         steps_opt, errors = compute_opt_step(x_vect, numerical_error=numerical_error)
 
         if print_errors:
-            LOGGER.info(
+            logger.info(
                 "Set optimal step for finite differences. "
                 "Estimated approximation errors ="
             )
-            LOGGER.info(errors)
+            logger.info(errors)
 
         data = (
             self.discipline.io.input_grammar.defaults or self.discipline.io.input_data
@@ -275,7 +275,7 @@ class DisciplineJacApprox:
     def _prepare_xvect(
         self,
         input_names: Iterable[str],
-        data: DisciplineData = READ_ONLY_EMPTY_DICT,
+        data: DisciplineData = read_only_empty_dict,
     ) -> ndarray:
         """Convert an input data mapping into an input array.
 
@@ -300,7 +300,7 @@ class DisciplineJacApprox:
         output_names: Iterable[str],
         input_names: Iterable[str],
         x_indices: Sequence[int] = (),
-        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        input_data: Mapping[str, ndarray] = read_only_empty_dict,
     ) -> dict[str, dict[str, ndarray]]:
         """Approximate the Jacobian.
 
@@ -373,7 +373,7 @@ class DisciplineJacApprox:
         self,
         output_names: Iterable[str],
         input_names: Iterable[str],
-        analytic_jacobian: JacobianData = READ_ONLY_EMPTY_DICT,
+        analytic_jacobian: JacobianData = read_only_empty_dict,
         atol: float = 1e-8,
         rtol: float = 1e-8,
         plot_result: bool = False,
@@ -385,8 +385,8 @@ class DisciplineJacApprox:
         save_reference_jacobian: bool = False,
         indices: Mapping[
             str, int | Sequence[int] | Ellipsis | slice
-        ] = READ_ONLY_EMPTY_DICT,
-        input_data: Mapping[str, ndarray] = READ_ONLY_EMPTY_DICT,
+        ] = read_only_empty_dict,
+        input_data: Mapping[str, ndarray] = read_only_empty_dict,
     ) -> bool:
         """Check if the analytical Jacobian is correct with respect to a reference one.
 
@@ -507,7 +507,7 @@ class DisciplineJacApprox:
                         f"{input_name} is of wrong shape; "
                         f"got: {computed_jac.shape} while expected: {approx_jac.shape}."
                     )
-                    LOGGER.error(msg)
+                    logger.error(msg)
                 else:
                     success_loc = compare_jacobian_matrices(
                         computed_jac,
@@ -518,7 +518,7 @@ class DisciplineJacApprox:
                     )
                     succeed = succeed and success_loc
 
-        LOGGER.info(
+        logger.info(
             "Linearization of Discipline: %s is %s.",
             self.discipline.name,
             "correct" if succeed else "wrong",

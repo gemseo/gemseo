@@ -250,13 +250,13 @@ def test_todict_fromdict() -> None:
         dim=1,
     )
     original_function_dict = original_function.to_dict()
-    for name in ArrayFunction.DICT_REPR_ATTR:
+    for name in ArrayFunction.dict_repr_attr:
         if name != "special_repr":
             assert name in original_function_dict
             assert len(str(original_function_dict[name])) > 0
 
     new_function = ArrayFunction.init_from_dict_repr(**original_function_dict)
-    for name in ArrayFunction.DICT_REPR_ATTR:
+    for name in ArrayFunction.dict_repr_attr:
         assert getattr(new_function, name) == getattr(original_function, name)
 
 

@@ -28,6 +28,7 @@ class wraps the `KarhunenLoeveSVDAlgorithm`
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import array
 from openturns import Field
@@ -54,11 +55,13 @@ if TYPE_CHECKING:
 class KLSVD(BaseDimensionReduction):
     """The Karhunen-Loève SVD algorithm based on OpenTURNS."""
 
-    __HALKO2010 = "Halko2010"
-    __HALKO2011 = "Halko2011"
-    __RANDOM_SVD_MAXIMUM_RANK = "KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank"
-    __RANDOM_SVD_VARIANT = "KarhunenLoeveSVDAlgorithm-RandomSVDVariant"
-    __USE_RANDOM_SVD = "KarhunenLoeveSVDAlgorithm-UseRandomSVD"
+    __halko2010: Final[str] = "Halko2010"
+    __halko2011: Final[str] = "Halko2011"
+    __random_svd_maximum_rank: Final[str] = (
+        "KarhunenLoeveSVDAlgorithm-RandomSVDMaximumRank"  # noqa: E501
+    )
+    __random_svd_variant: Final[str] = "KarhunenLoeveSVDAlgorithm-RandomSVDVariant"  # noqa: E501
+    __use_random_svd: Final[str] = "KarhunenLoeveSVDAlgorithm-UseRandomSVD"
 
     def __init__(
         self,
@@ -117,15 +120,15 @@ class KLSVD(BaseDimensionReduction):
     def __update_resource_map(self) -> None:
         """Update OpenTURNS constants by using its ResourceMap."""
         use_random_svd = self.parameters["use_random_svd"]
-        ResourceMap.SetAsBool(self.__USE_RANDOM_SVD, use_random_svd)
+        ResourceMap.SetAsBool(self.__use_random_svd, use_random_svd)
         n_singular_values = self.parameters["n_singular_values"]
         if n_singular_values:
             ResourceMap.SetAsUnsignedInteger(
-                self.__RANDOM_SVD_MAXIMUM_RANK, n_singular_values
+                self.__random_svd_maximum_rank, n_singular_values
             )
         ResourceMap.SetAsString(
-            self.__RANDOM_SVD_VARIANT,
-            self.__HALKO2010 if self.parameters["use_halko2010"] else self.__HALKO2011,
+            self.__random_svd_variant,
+            self.__halko2010 if self.parameters["use_halko2010"] else self.__halko2011,
         )
 
     @BaseDimensionReduction._use_2d_array

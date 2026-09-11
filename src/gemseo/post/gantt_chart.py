@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 import matplotlib.pyplot as plt
 
@@ -35,11 +36,11 @@ if TYPE_CHECKING:
     from gemseo.util.matplotlib_figure import FigSizeType
     from gemseo.util.typing import StrPath
 
-DEFAULT_NAME = "gantt_chart"
+default_name: Final[str] = "gantt_chart"
 
 
 def create_gantt_chart(
-    file_path: StrPath = DEFAULT_NAME,
+    file_path: StrPath = default_name,
     save: bool = True,
     show: bool = False,
     file_extension: str = "",
@@ -120,7 +121,7 @@ def create_gantt_chart(
 
     if save:
         file_path = FilePathManager(
-            FilePathManager.FileType.FIGURE, default_name=DEFAULT_NAME
+            FilePathManager.FileType.FIGURE, default_name=default_name
         ).create_file_path(file_path=file_path, file_extension=file_extension)
     else:
         file_path = ""

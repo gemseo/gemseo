@@ -24,15 +24,15 @@ from numpy import float64
 from numpy import ones
 from numpy import zeros
 
-from gemseo.problem.mdo.sellar import WITH_2D_ARRAY
-from gemseo.problem.mdo.sellar.variable import ALPHA
-from gemseo.problem.mdo.sellar.variable import BETA
-from gemseo.problem.mdo.sellar.variable import GAMMA
-from gemseo.problem.mdo.sellar.variable import X_1
-from gemseo.problem.mdo.sellar.variable import X_2
-from gemseo.problem.mdo.sellar.variable import X_SHARED
-from gemseo.problem.mdo.sellar.variable import Y_1
-from gemseo.problem.mdo.sellar.variable import Y_2
+from gemseo.problem.mdo.sellar import with_2d_array
+from gemseo.problem.mdo.sellar.variable import alpha
+from gemseo.problem.mdo.sellar.variable import beta
+from gemseo.problem.mdo.sellar.variable import gamma
+from gemseo.problem.mdo.sellar.variable import x_1
+from gemseo.problem.mdo.sellar.variable import x_2
+from gemseo.problem.mdo.sellar.variable import x_shared
+from gemseo.problem.mdo.sellar.variable import y_1
+from gemseo.problem.mdo.sellar.variable import y_2
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -54,17 +54,17 @@ def get_initial_data(names: Iterable[str] = (), n: int = 1) -> dict[str, RealArr
         The default values of the discipline inputs.
     """
     inputs = {
-        X_1: zeros(n),
-        X_2: zeros(n),
-        X_SHARED: array([1.0, 0.0], dtype=float64),
-        Y_1: ones(n, dtype=float64),
-        Y_2: ones(n, dtype=float64),
-        ALPHA: array([3.16]),
-        BETA: array([24.0]),
-        GAMMA: array([0.2]),
+        x_1: zeros(n),
+        x_2: zeros(n),
+        x_shared: array([1.0, 0.0], dtype=float64),
+        y_1: ones(n, dtype=float64),
+        y_2: ones(n, dtype=float64),
+        alpha: array([3.16]),
+        beta: array([24.0]),
+        gamma: array([0.2]),
     }
-    if WITH_2D_ARRAY:  # pragma: no cover
-        inputs[X_SHARED] = atleast_2d(inputs[X_SHARED])
+    if with_2d_array:  # pragma: no cover
+        inputs[x_shared] = atleast_2d(inputs[x_shared])
     if not names:
         return inputs
     return {name: inputs[name] for name in names if name in inputs}
@@ -80,6 +80,6 @@ def get_y_opt(mda: BaseMDA) -> ndarray:
         The optimal `y` array.
     """
     return array([
-        mda.io.output_data[Y_1][0].real,
-        mda.io.output_data[Y_2][0].real,
+        mda.io.output_data[y_1][0].real,
+        mda.io.output_data[y_2][0].real,
     ])

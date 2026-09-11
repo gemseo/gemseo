@@ -73,7 +73,7 @@ def test_values(function, value, gradient, request) -> None:
             "quadratic_function",
             "[x]'[{} {}][x] + [{}]'[x] + {}\n[y] [{} {}][y]   [{}] [y]".format(
                 *(
-                    ArrayFunction.COEFF_FORMAT_ND.format(coefficient)
+                    ArrayFunction.coeff_format_nd.format(coefficient)
                     for coefficient in (1, 2, 5, 7, 3, 4, 6)
                 )
             ),
@@ -82,7 +82,7 @@ def test_values(function, value, gradient, request) -> None:
             "quadratic_without_linear_term",
             "[x]'[{} {}][x] + {}\n[y] [{} {}][y]".format(
                 *(
-                    ArrayFunction.COEFF_FORMAT_ND.format(coefficient)
+                    ArrayFunction.coeff_format_nd.format(coefficient)
                     for coefficient in (1, 2, 7, 3, 4)
                 )
             ),

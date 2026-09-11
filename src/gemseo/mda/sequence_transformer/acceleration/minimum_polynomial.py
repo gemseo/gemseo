@@ -45,8 +45,8 @@ class MinimumPolynomial(SequenceTransformer):
         SIAM Journal on Numerical Analysis, 13(5):734-752, 1976.
     """
 
-    _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 2
-    _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 2
+    _minimum_number_of_iterates: ClassVar[int] = 2
+    _minimum_number_of_residuals: ClassVar[int] = 2
 
     def __init__(self, window_size: int = 5) -> None:
         """

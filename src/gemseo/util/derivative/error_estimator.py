@@ -19,12 +19,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from gemseo.util.constant import EPSILON
+from gemseo.util.constant import epsilon
 
 if TYPE_CHECKING:
     from numpy import ndarray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def compute_truncature_error(
@@ -48,7 +48,7 @@ def compute_truncature_error(
 def compute_cancellation_error(
     f_x: ndarray,
     step: float,
-    epsilon_mach: float = EPSILON,
+    epsilon_mach: float = epsilon,
 ) -> ndarray:
     r"""Compute the cancellation error.
 
@@ -91,7 +91,7 @@ def compute_best_step(
     f_x: ndarray,
     f_m: ndarray,
     step: float,
-    epsilon_mach: float = EPSILON,
+    epsilon_mach: float = epsilon,
 ) -> tuple[ndarray | None, ndarray | None, float]:
     r"""Compute the optimal step for finite differentiation.
 
@@ -127,7 +127,7 @@ def compute_best_step(
     hess = compute_hessian_approximation(f_p, f_x, f_m, step)
 
     if abs(hess) < 1e-10:
-        LOGGER.debug("Hessian approximation is too small, can't compute optimal step.")
+        logger.debug("Hessian approximation is too small, can't compute optimal step.")
         return None, None, step
 
     opt_step = 2 * (epsilon_mach * abs(f_x) / abs(hess)) ** 0.5

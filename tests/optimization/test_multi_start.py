@@ -25,7 +25,7 @@ from numpy.testing import assert_almost_equal
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.doe.scipy.settings.mc import MC_Settings
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.multi_start.multi_start import MultiStart
 from gemseo.optimization.multi_start.settings.multi_start_settings import (
     MultiStart_Settings,
@@ -124,7 +124,7 @@ def test_database(n_processes):
 
 def test_factory():
     """Check that the factory of optimization algorithms knows this algorithm."""
-    assert OPTIMIZATION_LIBRARY_FACTORY.is_available("MultiStart")
+    assert optimization_library_factory.is_available("MultiStart")
 
 
 @pytest.fixture(scope="module")

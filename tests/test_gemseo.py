@@ -34,7 +34,6 @@ from numpy import pi as np_pi
 from numpy import sin
 from numpy.testing import assert_equal
 
-from gemseo import LOGGER as GEMSEO_LOGGER
 from gemseo import check_jacobian
 from gemseo import compute_doe
 from gemseo import configuration
@@ -81,6 +80,7 @@ from gemseo import get_scenario_options_schema
 from gemseo import get_surrogate_options_schema
 from gemseo import import_database
 from gemseo import import_discipline
+from gemseo import logger as gemseo_logger
 from gemseo import monitor_scenario
 from gemseo import print_configuration
 from gemseo import read_design_space
@@ -119,9 +119,9 @@ from gemseo.space.design import DesignSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
-from gemseo.util.constant import _LOGGING_DATE_FORMAT
-from gemseo.util.constant import _LOGGING_MESSAGE_FORMAT
-from gemseo.util.constant import N_CPUS
+from gemseo.util.constant import _logging_date_format
+from gemseo.util.constant import _logging_message_format
+from gemseo.util.constant import n_cpus
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.logging import MultiLineStreamHandler
 from gemseo.util.pickle import to_pickle
@@ -613,11 +613,11 @@ def test_create_scalable() -> None:
 
     data = IODataset(dataset_name="sinus")
     x1_val = x2_val = x3_val = linspace(0.0, 1.0, 10)[:, newaxis]
-    data.add_variable("x1", x1_val, data.INPUT_GROUP)
-    data.add_variable("x2", x2_val, data.INPUT_GROUP)
-    data.add_variable("x3", x2_val, data.INPUT_GROUP)
-    data.add_variable("y1", f_1(x1_val, x2_val, x3_val), data.OUTPUT_GROUP)
-    data.add_variable("y2", f_2(x1_val, x2_val, x3_val), data.OUTPUT_GROUP)
+    data.add_variable("x1", x1_val, data.input_group)
+    data.add_variable("x2", x2_val, data.input_group)
+    data.add_variable("x3", x2_val, data.input_group)
+    data.add_variable("y1", f_1(x1_val, x2_val, x3_val), data.output_group)
+    data.add_variable("y2", f_2(x1_val, x2_val, x3_val), data.output_group)
     create_scalable("ScalableDiagonalModel", data, fill_factor=0.7)
 
 
@@ -995,14 +995,14 @@ def test_configure(
     assert BaseDriverLibrary.enable_progress_bar == enable_progress_bar
     assert BaseMDA.default_cache_type == Discipline.CacheType.SIMPLE
     assert BaseMDAParallelSolverSettings().n_processes == (
-        N_CPUS if enable_parallel_execution else 1
+        n_cpus if enable_parallel_execution else 1
     )
     with pytest.warns(
         DeprecationWarning,
         match=re.escape("configure() is deprecated; use gemseo.configuration instead."),
     ):
         configure()
-    BaseMDAParallelSolverSettings.default_n_processes = N_CPUS
+    BaseMDAParallelSolverSettings.default_n_processes = n_cpus
 
 
 def test_configure_default() -> None:
@@ -1019,7 +1019,7 @@ def test_configure_default() -> None:
     assert Discipline.validate_output_data is True
     assert Discipline.default_cache_type == Discipline.CacheType.SIMPLE
     assert BaseDriverLibrary.enable_progress_bar is True
-    assert BaseMDAParallelSolverSettings().n_processes == N_CPUS
+    assert BaseMDAParallelSolverSettings().n_processes == n_cpus
 
 
 def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:
@@ -1080,11 +1080,11 @@ def test_configure_logger() -> None:
 def test_configure_logger_gemseo_logger():
     """Check that configuring the root logger
     changes the configuration of the gemseo logger."""
-    date_format = _LOGGING_DATE_FORMAT + " - "
-    message_format = _LOGGING_MESSAGE_FORMAT + " - "
+    date_format = _logging_date_format + " - "
+    message_format = _logging_message_format + " - "
     file_name = "foo"
     file_mode = "w"
-    handlers = GEMSEO_LOGGER.handlers.copy()
+    handlers = gemseo_logger.handlers.copy()
     with pytest.warns(
         DeprecationWarning,
         match=re.escape(
@@ -1099,21 +1099,21 @@ def test_configure_logger_gemseo_logger():
             filename=file_name,
             filemode=file_mode,
         )
-    assert GEMSEO_LOGGER.level == logging.WARNING
-    assert GEMSEO_LOGGER.handlers[0].formatter.datefmt == date_format
-    assert GEMSEO_LOGGER.handlers[0].formatter._fmt == message_format
-    assert GEMSEO_LOGGER.handlers[1].baseFilename.endswith(file_name)
-    assert GEMSEO_LOGGER.handlers[1].mode == file_mode
+    assert gemseo_logger.level == logging.WARNING
+    assert gemseo_logger.handlers[0].formatter.datefmt == date_format
+    assert gemseo_logger.handlers[0].formatter._fmt == message_format
+    assert gemseo_logger.handlers[1].baseFilename.endswith(file_name)
+    assert gemseo_logger.handlers[1].mode == file_mode
     # Restore the original handlers.
-    GEMSEO_LOGGER.handlers.clear()
-    GEMSEO_LOGGER.handlers.extend(handlers)
+    gemseo_logger.handlers.clear()
+    gemseo_logger.handlers.extend(handlers)
 
 
 def test_configure_logger_no_gemseo_logger() -> None:
     """Check that configuring a logger different from the root logger
     does not change the configuration of the gemseo logger."""
-    date_format = _LOGGING_DATE_FORMAT + " - "
-    message_format = _LOGGING_MESSAGE_FORMAT + " - "
+    date_format = _logging_date_format + " - "
+    message_format = _logging_message_format + " - "
     file_name = "foo"
     file_mode = "w"
     with pytest.warns(
@@ -1137,9 +1137,9 @@ def test_configure_logger_no_gemseo_logger() -> None:
     assert logger.handlers[0].formatter._fmt == message_format
     assert logger.handlers[1].baseFilename.endswith(file_name)
     assert logger.handlers[1].mode == file_mode
-    assert GEMSEO_LOGGER.level == logging.WARNING
-    assert GEMSEO_LOGGER.handlers[0].formatter.datefmt == _LOGGING_DATE_FORMAT
-    assert GEMSEO_LOGGER.handlers[0].formatter._fmt == _LOGGING_MESSAGE_FORMAT
+    assert gemseo_logger.level == logging.WARNING
+    assert gemseo_logger.handlers[0].formatter.datefmt == _logging_date_format
+    assert gemseo_logger.handlers[0].formatter._fmt == _logging_message_format
 
 
 def test_configure_logger_level() -> None:
@@ -1153,7 +1153,7 @@ def test_configure_logger_level() -> None:
     ):
         logger = configure_logger(level=logging.WARNING)
     assert logger.level == logging.WARNING
-    GEMSEO_LOGGER.level = logging.INFO
+    gemseo_logger.level = logging.INFO
 
 
 def test_configure_logger_format(caplog) -> None:

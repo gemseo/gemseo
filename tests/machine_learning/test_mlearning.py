@@ -56,8 +56,8 @@ if TYPE_CHECKING:
 
     from gemseo.dataset.dataset import Dataset
 
-LEARNING_SIZE = 9
-AVAILABLE_REGRESSION_MODELS = [
+learning_size = 9
+available_regression_models = [
     "LinearRegressor",
     "PolynomialRegressor",
     "GaussianProcessRegressor",
@@ -65,8 +65,8 @@ AVAILABLE_REGRESSION_MODELS = [
     "RBFRegressor",
     "MOERegressor",
 ]
-AVAILABLE_CLASSIFICATION_MODELS = ["KNNClassifier", "RandomForestClassifier"]
-AVAILABLE_CLUSTERING_MODELS = ["KMeans", "GaussianMixture"]
+available_classification_models = ["KNNClassifier", "RandomForestClassifier"]
+available_clustering_models = ["KMeans", "GaussianMixture"]
 
 
 @pytest.fixture
@@ -82,7 +82,7 @@ def dataset() -> Dataset:
     )
     scenario = MDOScenario([discipline], probability_space)
     scenario.add_objective("y_1")
-    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=learning_size))
     return scenario.to_dataset(opt_naming=False)
 
 
@@ -126,11 +126,11 @@ def cluster_data() -> tuple[ndarray, list[str]]:
 def test_get_mlearning_models() -> None:
     """Test that available ML models are found."""
     available_models = get_mlearning_models()
-    for regression_model in AVAILABLE_REGRESSION_MODELS:
+    for regression_model in available_regression_models:
         assert regression_model in available_models
-    for classification_model in AVAILABLE_CLASSIFICATION_MODELS:
+    for classification_model in available_classification_models:
         assert classification_model in available_models
-    for clustering_model in AVAILABLE_CLUSTERING_MODELS:
+    for clustering_model in available_clustering_models:
         assert clustering_model in available_models
     assert "Dummy" not in available_models
 
@@ -138,7 +138,7 @@ def test_get_mlearning_models() -> None:
 def test_get_regression_models() -> None:
     """Test that available regression models are found."""
     available_models = get_regression_models()
-    for regression_model in AVAILABLE_REGRESSION_MODELS:
+    for regression_model in available_regression_models:
         assert regression_model in available_models
     assert "Dummy" not in available_models
 
@@ -146,7 +146,7 @@ def test_get_regression_models() -> None:
 def test_get_classification_models() -> None:
     """Test that available classification models are found."""
     available_models = get_classification_models()
-    for classification_model in AVAILABLE_CLASSIFICATION_MODELS:
+    for classification_model in available_classification_models:
         assert classification_model in available_models
     assert "Dummy" not in available_models
 
@@ -154,7 +154,7 @@ def test_get_classification_models() -> None:
 def test_get_clustering_models() -> None:
     """Test that available clustering models are found."""
     available_models = get_clustering_models()
-    for clustering_model in AVAILABLE_CLUSTERING_MODELS:
+    for clustering_model in available_clustering_models:
         assert clustering_model in available_models
     assert "Dummy" not in available_models
 

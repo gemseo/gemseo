@@ -25,11 +25,11 @@ import numpy as np
 
 from gemseo.util.ggobi_export import save_data_arrays_to_xml
 
-DIR_PATH = Path(__file__).parent
+dir_path = Path(__file__).parent
 
-NAME_FILE = "dummy.xml"
-VAR_NAME = np.array(["x_1", "x_2", "x_3", "y_1", "y_2"])
-VAR_VALUE = np.array([[1, 2, 3, 4, 5], [1, 2, 4, 6, 7], [1, 0, 2, 1, 3]])
+name_file = "dummy.xml"
+var_name = np.array(["x_1", "x_2", "x_3", "y_1", "y_2"])
+var_value = np.array([[1, 2, 3, 4, 5], [1, 2, 4, 6, 7], [1, 0, 2, 1, 3]])
 
 
 def get_all_elements(root, tag_name):
@@ -52,38 +52,38 @@ def get_all_elements(root, tag_name):
 
 def test_generate_xml():
     """Test that the generated ggobi XML file exists."""
-    save_data_arrays_to_xml(VAR_NAME, VAR_VALUE, NAME_FILE)
-    exp_ggobi = Path(NAME_FILE)
+    save_data_arrays_to_xml(var_name, var_value, name_file)
+    exp_ggobi = Path(name_file)
     assert exp_ggobi.exists()
     exp_ggobi.unlink()
 
 
 def test_saved_names():
     """Test that the saved names in the ggobi file match the expected names."""
-    save_data_arrays_to_xml(VAR_NAME, VAR_VALUE, NAME_FILE)
+    save_data_arrays_to_xml(var_name, var_value, name_file)
 
-    tree = ET.parse(NAME_FILE)
+    tree = ET.parse(name_file)
     root = tree.getroot()
     list_name = get_all_elements(root, "realvariable")
     variable_list = [node.get("name") for node in list_name]
 
-    assert VAR_NAME.tolist() == variable_list
+    assert var_name.tolist() == variable_list
 
-    exp_ggobi = Path(NAME_FILE)
+    exp_ggobi = Path(name_file)
     exp_ggobi.unlink()
 
 
 def test_saved_values():
     """Test that the saved values in the ggobi file match the expected values."""
-    save_data_arrays_to_xml(VAR_NAME, VAR_VALUE, NAME_FILE)
+    save_data_arrays_to_xml(var_name, var_value, name_file)
 
-    tree = ET.parse(NAME_FILE)
+    tree = ET.parse(name_file)
     root = tree.getroot()
     list_values = get_all_elements(root, "record")
     value_list = [node.text.split(" ") for node in list_values]
 
     array_saved = np.array(value_list).astype(float)
-    assert VAR_VALUE.tolist() == array_saved.tolist()
+    assert var_value.tolist() == array_saved.tolist()
 
-    exp_ggobi = Path(NAME_FILE)
+    exp_ggobi = Path(name_file)
     exp_ggobi.unlink()

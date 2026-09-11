@@ -17,11 +17,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Final
 
 if TYPE_CHECKING:
     from numpy.random import Generator
 
-SEED: int = 0
+seed: Final[int] = 0
 """The default seed for random number generators."""
 
 
@@ -31,7 +32,7 @@ class Seeder:
     default_seed: int
     """The default seed."""
 
-    def __init__(self, default_seed: int = SEED) -> None:
+    def __init__(self, default_seed: int = seed) -> None:
         """
         Args:
             default_seed: The initial default seed.

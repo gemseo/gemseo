@@ -38,13 +38,13 @@ __ABSTRACTMETHODS__: Final[str] = "__abstractmethods__"
 # `https://errors.pydantic.dev/2.13/v/value_error`.
 # Replace the version with a stable placeholder so snapshots survive pydantic
 # upgrades.
-_PYDANTIC_VERSION_IN_URL: Final[Pattern[str]] = re.compile(
+_pydantic_version_in_url: Final[Pattern[str]] = re.compile(
     r"(errors\.pydantic\.dev/)\d+(?:\.\d+)*(/v/)"
 )
 
 # Match the hex memory address in default `object.__repr__` output,
 # e.g. ``<Foo object at 0x7f0a8f3789d0>``, so snapshots stay stable across runs.
-_MEMORY_ADDRESS: Final[Pattern[str]] = re.compile(r"0x[0-9a-fA-F]+")
+_memory_address: Final[Pattern[str]] = re.compile(r"0x[0-9a-fA-F]+")
 
 
 @contextlib.contextmanager
@@ -103,8 +103,8 @@ def assert_exception(
         message = message.removeprefix("float ")
     # The pydantic version in the documentation URLs is normalized for any exception
     # since a validation error message can be nested in another exception message.
-    message = _PYDANTIC_VERSION_IN_URL.sub(r"\1X.Y\2", message)
-    message = _MEMORY_ADDRESS.sub("0xMEM", message)
+    message = _pydantic_version_in_url.sub(r"\1X.Y\2", message)
+    message = _memory_address.sub("0xMEM", message)
 
     assert message == snapshot
 

@@ -63,14 +63,14 @@ from numpy import nonzero
 from numpy import unique
 from numpy import zeros
 
-from gemseo import REGRESSOR_FACTORY
+from gemseo import regressor_factory
 from gemseo.dataset.io_dataset import IODataset
-from gemseo.machine_learning.classification.model.factory import CLASSIFIER_FACTORY
+from gemseo.machine_learning.classification.model.factory import classifier_factory
 from gemseo.machine_learning.classification.model.knn_settings import (
     KNNClassifier_Settings,
 )
 from gemseo.machine_learning.classification.quality.f1_measure import F1Measure
-from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
+from gemseo.machine_learning.clustering.model.factory import clusterer_factory
 from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Settings
 from gemseo.machine_learning.clustering.quality.silhouette_measure import (
     SilhouetteMeasure,
@@ -119,7 +119,7 @@ if TYPE_CHECKING:
     )
     from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 SavedObjectType = _SavedObjectType | str | dict
 
@@ -171,12 +171,12 @@ class MOERegressor(BaseRegressor):
     regressors: list[BaseRegressor]
     """The regression models."""
 
-    SHORT_NAME: ClassVar[str] = "MoE"
+    short_name: ClassVar[str] = "MoE"
 
-    LABELS: Final[str] = "labels"
+    labels_output_name: Final[str] = "labels"
 
-    _LOCAL_INPUT: Final[str] = "input"
-    _LOCAL_OUTPUT: Final[str] = "output"
+    _local_input: Final[str] = "input"
+    _local_output: Final[str] = "output"
 
     DataFormatters = MOEDataFormatters
 
@@ -410,27 +410,29 @@ class MOERegressor(BaseRegressor):
     ) -> None:
         dataset = IODataset(dataset_name="training_set")
         dataset.add_group(
-            dataset.INPUT_GROUP,
+            dataset.input_group,
             input_data,
-            [self._LOCAL_INPUT],
-            {self._LOCAL_INPUT: input_data.shape[1]},
+            [self._local_input],
+            {self._local_input: input_data.shape[1]},
         )
         dataset.add_group(
-            dataset.OUTPUT_GROUP,
+            dataset.output_group,
             output_data,
-            [self._LOCAL_OUTPUT],
-            {self._LOCAL_OUTPUT: output_data.shape[1]},
+            [self._local_output],
+            {self._local_output: output_data.shape[1]},
         )
         self._fit_clusters(dataset)
         dataset_ = IODataset(dataset_name="training_set")
         dataset_.add_group(
-            dataset.INPUT_GROUP,
+            dataset.input_group,
             input_data,
-            [self._LOCAL_INPUT],
-            {self._LOCAL_INPUT: input_data.shape[1]},
+            [self._local_input],
+            {self._local_input: input_data.shape[1]},
         )
         dataset_.add_variable(
-            self.LABELS, self.clusterer.labels[:, newaxis], dataset_.OUTPUT_GROUP
+            self.labels_output_name,
+            self.clusterer.labels[:, newaxis],
+            dataset_.output_group,
         )
         self._fit_classifier(dataset_)
         self._fit_regressors(dataset)
@@ -444,7 +446,7 @@ class MOERegressor(BaseRegressor):
             dataset: The dataset containing input and output data.
         """
         if not self.clustering_candidates:
-            self.clusterer = CLUSTERER_FACTORY.create_from_settings(
+            self.clusterer = clusterer_factory.create_from_settings(
                 self.clusterer_settings, dataset
             )
             self.clusterer.learn()
@@ -457,9 +459,9 @@ class MOERegressor(BaseRegressor):
             for cand in self.clustering_candidates:
                 selector.add_candidate(**cand)
             self.clusterer = selector.select()
-            LOGGER.info("Selected clusterer:")
+            logger.info("Selected clusterer:")
             with MultiLineString.offset():
-                LOGGER.info("%s", self.clusterer)
+                logger.info("%s", self.clusterer)
 
     def _fit_classifier(self, dataset: IODataset) -> None:
         """Train the classification model.
@@ -468,8 +470,8 @@ class MOERegressor(BaseRegressor):
             dataset: The dataset containing labeled input and output data.
         """
         if not self.classification_candidates:
-            self.classifier_settings.output_names = [self.LABELS]
-            self.classifier = CLASSIFIER_FACTORY.create_from_settings(
+            self.classifier_settings.output_names = [self.labels_output_name]
+            self.classifier = classifier_factory.create_from_settings(
                 self.classifier_settings, dataset
             )
             self.classifier.learn()
@@ -480,11 +482,11 @@ class MOERegressor(BaseRegressor):
                 **self.classification_quality["options"],
             )
             for cand in self.classification_candidates:
-                selector.add_candidate(output_names=[[self.LABELS]], **cand)
+                selector.add_candidate(output_names=[[self.labels_output_name]], **cand)
             self.classifier = selector.select()
-            LOGGER.info("Selected classifier:")
+            logger.info("Selected classifier:")
             with MultiLineString.offset():
-                LOGGER.info("%s", self.classifier)
+                logger.info("%s", self.classifier)
 
     def _fit_regressors(self, dataset: IODataset) -> None:
         """Train the local regression models on each cluster separately.
@@ -505,11 +507,11 @@ class MOERegressor(BaseRegressor):
                 for cand in self.regression_candidates:
                     selector.add_candidate(**cand)
                 local_model = selector.select()
-                LOGGER.info("Selected regressor for cluster %s:", index)
+                logger.info("Selected regressor for cluster %s:", index)
                 with MultiLineString.offset():
-                    LOGGER.info("%s", local_model)
+                    logger.info("%s", local_model)
             else:
-                local_model = REGRESSOR_FACTORY.create_from_settings(
+                local_model = regressor_factory.create_from_settings(
                     self.regressor_settings, dataset
                 )
                 local_model.learn(samples=samples)

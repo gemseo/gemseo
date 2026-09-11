@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.machine_learning.clustering.core.base_clusterer import BaseClusterer
@@ -30,9 +31,11 @@ from gemseo.machine_learning.core.model.factory import MLModelFactory
 class ClustererFactory(MLModelFactory):
     """A factory of clustering models."""
 
-    _CLASS = BaseClusterer
-    _PACKAGE_NAMES = ("gemseo.machine_learning.clustering.model",)
+    _class: ClassVar[type[BaseClusterer]] = BaseClusterer
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.machine_learning.clustering.model",
+    )
 
 
-CLUSTERER_FACTORY: Final[ClustererFactory] = ClustererFactory()
+clusterer_factory: Final[ClustererFactory] = ClustererFactory()
 """The factory for `BaseClusterer` objects."""

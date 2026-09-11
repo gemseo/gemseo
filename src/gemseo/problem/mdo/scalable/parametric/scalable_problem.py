@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from statistics import NormalDist
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from numpy import diag
 from numpy import trace
@@ -44,10 +45,10 @@ from gemseo.problem.mdo.scalable.parametric.standalone.scalable_problem import (
     ScalableProblem as _ScalableProblem,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    OBJECTIVE_NAME,
+    get_constraint_name,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    get_constraint_name,
+    objective_name,
 )
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
@@ -69,9 +70,9 @@ class ScalableProblem(_ScalableProblem):
     to $[0, 1]$.
     """
 
-    _MAIN_DISCIPLINE_CLASS = MainDiscipline
-    _SCALABLE_DISCIPLINE_CLASS = ScalableDiscipline
-    _DESIGN_SPACE_CLASS = ScalableDesignSpace
+    _main_discipline_class: ClassVar[type[MainDiscipline]] = MainDiscipline
+    _scalable_discipline_class: ClassVar[type[ScalableDiscipline]] = ScalableDiscipline
+    _design_space_class: ClassVar[type[ScalableDesignSpace]] = ScalableDesignSpace
 
     def create_scenario(
         self, formulation_settings: BaseFormulationSettings | None = None
@@ -93,7 +94,7 @@ class ScalableProblem(_ScalableProblem):
             self.design_space,
             formulation_settings=formulation_settings,
         )
-        scenario.add_objective(OBJECTIVE_NAME)
+        scenario.add_objective(objective_name)
         for index, _ in enumerate(self.scalable_disciplines):
             scenario.add_constraint(
                 get_constraint_name(index + 1),

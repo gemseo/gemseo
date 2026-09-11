@@ -27,7 +27,7 @@ from numpy.testing import assert_equal
 
 from gemseo.core.function.discipline_adapter import DisciplineAdapter
 from gemseo.discipline.auto_py import AutoPyDiscipline
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
@@ -38,12 +38,12 @@ if TYPE_CHECKING:
     from gemseo.core.function.array_function import ArrayFunction
     from gemseo.core.grammar.properties import GrammarProperties
 
-INPUT_VECTOR = array([1.0, 1.0])
+input_vector = array([1.0, 1.0])
 
 
 def create_disciplinary_function(
-    default_input_data: GrammarProperties = READ_ONLY_EMPTY_DICT,
-    name_to_size: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+    default_input_data: GrammarProperties = read_only_empty_dict,
+    name_to_size: Mapping[str, int] = read_only_empty_dict,
 ) -> DisciplineAdapter:
     """Create a disciplinary function.
 
@@ -79,14 +79,14 @@ def disciplinary_function() -> DisciplineAdapter:
 
 def check_func_and_jac_evaluation(mdo_function: ArrayFunction) -> None:
     """Check the evaluation of the function and its Jacobian."""
-    assert_equal(mdo_function.evaluate(INPUT_VECTOR), array([2.0]))
-    assert_equal(mdo_function.jac(INPUT_VECTOR), array([1.0, 1.0]))
+    assert_equal(mdo_function.evaluate(input_vector), array([2.0]))
+    assert_equal(mdo_function.jac(input_vector), array([1.0, 1.0]))
 
 
 def test_error(disciplinary_function, snapshot) -> None:
     """Check that a ValueError is raised when the size of an input cannot be guessed."""
     with assert_exception(ValueError, snapshot):
-        disciplinary_function.func(INPUT_VECTOR)
+        disciplinary_function.func(input_vector)
 
 
 def test_error_several_inputs(snapshot) -> None:
@@ -98,7 +98,7 @@ def test_error_several_inputs(snapshot) -> None:
 
     function = DisciplineAdapter(["x", "y"], ["z"], {}, AutoPyDiscipline(my_func))
     with assert_exception(ValueError, snapshot):
-        function.func(INPUT_VECTOR)
+        function.func(input_vector)
 
 
 def test_discipline_local_data(disciplinary_function) -> None:

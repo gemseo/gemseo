@@ -50,14 +50,17 @@ from data based on OpenTURNS.
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
-    from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY  # noqa: F401
+    from gemseo.uncertainty.distribution.factory import distribution_factory  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.beta import OTBetaDistribution  # noqa: F401
     from gemseo.uncertainty.distribution.openturns.beta_settings import (
         OTBetaDistribution_Settings,  # noqa: F401
@@ -152,8 +155,7 @@ if TYPE_CHECKING:
     )
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
-    "DISTRIBUTION_FACTORY": "factory",
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "OTBetaDistribution": "openturns.beta",
     "OTBetaDistribution_Settings": "openturns.beta_settings",
     "OTDiracDistribution": "openturns.dirac",
@@ -194,6 +196,7 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "SPUniformDistribution_Settings": "scipy.uniform_settings",
     "SPWeibullDistribution": "scipy.weibull",
     "SPWeibullDistribution_Settings": "scipy.weibull_settings",
-}
+    "distribution_factory": "factory",
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

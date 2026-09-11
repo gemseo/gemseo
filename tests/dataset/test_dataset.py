@@ -128,7 +128,7 @@ def file_dataset(
                 [[1, 2], [3, 4]],
                 columns=MultiIndex.from_tuples(
                     [("parameters", "a", 0), ("parameters", "b", 0)],
-                    names=Dataset.COLUMN_LEVEL_NAMES,
+                    names=Dataset.column_level_names,
                 ),
             ),
         ),
@@ -138,7 +138,7 @@ def file_dataset(
                 [[1, 2], [3, 4]],
                 columns=MultiIndex.from_tuples(
                     [("group", "a", 0), ("parameters", "b", 0)],
-                    names=Dataset.COLUMN_LEVEL_NAMES,
+                    names=Dataset.column_level_names,
                 ),
             ),
         ),
@@ -147,14 +147,14 @@ def file_dataset(
                 [[1, 2], [3, 4]],
                 columns=MultiIndex.from_tuples(
                     [("group", "a", 0), ("output", "b", 0)],
-                    names=Dataset.COLUMN_LEVEL_NAMES,
+                    names=Dataset.column_level_names,
                 ),
             ),
             DataFrame(
                 [[1, 2], [3, 4]],
                 columns=MultiIndex.from_tuples(
                     [("group", "a", 0), ("output", "b", 0)],
-                    names=Dataset.COLUMN_LEVEL_NAMES,
+                    names=Dataset.column_level_names,
                 ),
             ),
         ),
@@ -585,7 +585,7 @@ def test_add_groups(
 def test_add_group_error(dataset, snapshot) -> None:
     """Test the method add_group with a group already defined."""
     with assert_exception(ValueError, snapshot):
-        dataset.add_group(dataset.PARAMETER_GROUP, 1)
+        dataset.add_group(dataset.parameter_group, 1)
 
 
 @pytest.mark.parametrize("delimiter", [",", "/"])

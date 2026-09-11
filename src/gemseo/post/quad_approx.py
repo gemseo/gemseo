@@ -34,7 +34,7 @@ from matplotlib.ticker import LogFormatterSciNotation
 from matplotlib.ticker import SymmetricalLogLocator
 from numpy import arange
 
-from gemseo.post._engine.colormap import PARULA
+from gemseo.post._engine.colormap import parula
 from gemseo.post._engine.hessian import SR1Approx
 from gemseo.post.core.base_post import BasePost
 from gemseo.post.quad_approx_settings import QuadApprox_Settings
@@ -55,7 +55,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
 
     settings_class: ClassVar[type[QuadApprox_Settings]] = QuadApprox_Settings
 
-    _USE_JACOBIAN_DATA: ClassVar[bool] = True
+    _use_jacobian_data: ClassVar[bool] = True
 
     def _plot(self, settings: QuadApprox_Settings) -> None:
         function = settings.function
@@ -138,7 +138,7 @@ class QuadApprox(BasePost[QuadApprox_Settings]):
         # SymLog is a symmetric log scale adapted to negative values
         img = ax.imshow(
             hessian,
-            cmap=PARULA,
+            cmap=parula,
             interpolation="nearest",
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=linear_threshold),
         )

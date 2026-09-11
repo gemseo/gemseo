@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
@@ -33,6 +34,8 @@ from strenum import StrEnum
 from gemseo.doe.openturns._algorithm.base_ot_doe import BaseOTDOE
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from openturns import SpaceFillingImplementation
     from openturns import TemperatureProfileImplementation
 
@@ -60,16 +63,20 @@ class OTOptimalLHS(BaseOTDOE):
         PHIP = "PhiP"
         MINDIST = "MinDist"
 
-    __TEMPERATURE_PROFILES: Final[str, TemperatureProfileImplementation] = {
-        TemperatureProfile.GEOMETRIC: GeometricProfile(),
-        TemperatureProfile.LINEAR: LinearProfile(),
-    }
+    __temperature_profiles: Final[Mapping[str, TemperatureProfileImplementation]] = (
+        MappingProxyType({
+            TemperatureProfile.GEOMETRIC: GeometricProfile(),
+            TemperatureProfile.LINEAR: LinearProfile(),
+        })
+    )
 
-    __SPACE_FILLING_CRITERIA: Final[str, SpaceFillingImplementation] = {
-        SpaceFillingCriterion.C2: SpaceFillingC2(),
-        SpaceFillingCriterion.PHIP: SpaceFillingPhiP(),
-        SpaceFillingCriterion.MINDIST: SpaceFillingMinDist(),
-    }
+    __space_filling_criteria: Final[Mapping[str, SpaceFillingImplementation]] = (
+        MappingProxyType({
+            SpaceFillingCriterion.C2: SpaceFillingC2(),
+            SpaceFillingCriterion.PHIP: SpaceFillingPhiP(),
+            SpaceFillingCriterion.MINDIST: SpaceFillingMinDist(),
+        })
+    )
 
     def generate_samples(
         self, dimension: int, settings: OT_OPT_LHS_Settings
@@ -87,8 +94,8 @@ class OTOptimalLHS(BaseOTDOE):
         if annealing:
             lhs_experiment = SimulatedAnnealingLHS(
                 lhs_experiment,
-                self.__SPACE_FILLING_CRITERIA[criterion],
-                self.__TEMPERATURE_PROFILES[temperature],
+                self.__space_filling_criteria[criterion],
+                self.__temperature_profiles[temperature],
             )
         else:
             lhs_experiment = MonteCarloLHS(lhs_experiment, n_replicates)

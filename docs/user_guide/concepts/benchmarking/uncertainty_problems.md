@@ -64,5 +64,5 @@ The Ishigami problem is available in four forms:
 
 The [statistics][gemseo.problem.uncertainty.ishigami.statistics] module
 exports all analytical reference values as constants
-(`MEAN`, `VARIANCE`, `SOBOL_1`, `SOBOL_2`, `SOBOL_3`, `TOTAL_SOBOL_1`, etc.)
+(`mean`, `variance`, `sobol_1`, `sobol_2`, `sobol_3`, `total_sobol_1`, etc.)
 for direct use in test assertions.

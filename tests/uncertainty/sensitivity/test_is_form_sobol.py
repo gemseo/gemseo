@@ -44,7 +44,7 @@ from gemseo.uncertainty.sensitivity.sobol import SobolAnalysis
 from gemseo.uncertainty.sensitivity.sobol import SobolAnalysisMethod
 from gemseo.util.testing.helper import assert_exception
 
-THRESHOLD = 3.0
+threshold = 3.0
 
 
 @pytest.fixture(scope="module")
@@ -68,7 +68,7 @@ def analysis(discipline, parameter_space) -> ISFORMSobolAnalysis:
     analysis = ISFORMSobolAnalysis()
     y = analysis.get_event_variables("y")
     analysis.compute_samples(
-        [discipline], parameter_space, {"y_high": y > THRESHOLD}, n_samples=500
+        [discipline], parameter_space, {"y_high": y > threshold}, n_samples=500
     )
     analysis.compute_indices()
     return analysis
@@ -124,7 +124,7 @@ def test_compute_second_order_false(discipline, parameter_space) -> None:
     dataset = analysis.compute_samples(
         [discipline],
         parameter_space,
-        {"y_high": y > THRESHOLD},
+        {"y_high": y > threshold},
         n_samples=500,
         compute_second_order=False,
     )
@@ -148,7 +148,7 @@ def test_high_dimension_sampling_factor() -> None:
     analysis = ISFORMSobolAnalysis()
     y = analysis.get_event_variables("y")
     dataset = analysis.compute_samples(
-        [discipline], space, {"y_high": y > THRESHOLD}, n_samples=2000
+        [discipline], space, {"y_high": y > threshold}, n_samples=2000
     )
     sample_size = dataset.misc["sample_size"]["y_high"]
     assert len(dataset) == sample_size * (2 + 2 * 3)
@@ -158,7 +158,7 @@ def test_high_dimension_sampling_factor() -> None:
     dataset_no_second_order = analysis_no_second_order.compute_samples(
         [discipline],
         space,
-        {"y_high": y > THRESHOLD},
+        {"y_high": y > threshold},
         n_samples=2000,
         compute_second_order=False,
     )
@@ -172,7 +172,7 @@ def test_too_small_n_samples(discipline, parameter_space, snapshot) -> None:
     y = analysis.get_event_variables("y")
     with assert_exception(ValueError, snapshot):
         analysis.compute_samples(
-            [discipline], parameter_space, {"y_high": y > THRESHOLD}, n_samples=1
+            [discipline], parameter_space, {"y_high": y > threshold}, n_samples=1
         )
 
 
@@ -189,11 +189,11 @@ def test_seed_reproducibility_pick_and_freeze(discipline, parameter_space) -> No
         dataset = analysis.compute_samples(
             [discipline],
             parameter_space,
-            {"y_high": y > THRESHOLD},
+            {"y_high": y > threshold},
             n_samples=100,
             seed=seed,
         )
-        return dataset.get_view(group_names=dataset.INPUT_GROUP).to_numpy()
+        return dataset.get_view(group_names=dataset.input_group).to_numpy()
 
     assert_array_equal(get_input_data(1), get_input_data(1))
     assert not (get_input_data(1) == get_input_data(2)).all()
@@ -209,7 +209,7 @@ def test_small_budget_accepted_by_rank_not_pick_and_freeze(
     """
     scenario = ReliabilityScenario([discipline], parameter_space)
     y = scenario.get_event_variables("y")
-    scenario.add_event(y > THRESHOLD, "y_high")
+    scenario.add_event(y > threshold, "y_high")
     scenario.execute(OT_FORM_Settings())
     result = scenario.event_name_to_reliability_result["y_high"]
     n_form_evaluations = result.raw_result.getOptimizationResult().getCallsNumber()
@@ -222,7 +222,7 @@ def test_small_budget_accepted_by_rank_not_pick_and_freeze(
     dataset = analysis.compute_samples(
         [discipline],
         parameter_space,
-        {"y_high": y > THRESHOLD},
+        {"y_high": y > threshold},
         n_samples=n_samples,
         algo_settings=OT_MC_Settings(),
     )
@@ -234,7 +234,7 @@ def test_small_budget_accepted_by_rank_not_pick_and_freeze(
         analysis.compute_samples(
             [discipline],
             parameter_space,
-            {"y_high": y > THRESHOLD},
+            {"y_high": y > threshold},
             n_samples=n_samples,
         )
 
@@ -271,7 +271,7 @@ def test_vector_valued_event_output_raises(
         analysis.compute_samples(
             [vector_discipline],
             parameter_space,
-            {"y_high": y > THRESHOLD},
+            {"y_high": y > threshold},
             n_samples=100,
         )
 
@@ -302,7 +302,7 @@ def test_x2_more_influential(analysis) -> None:
 
 def test_probability(analysis) -> None:
     """Check that the estimated event probability matches the analytic value."""
-    analytic = norm.sf(THRESHOLD / sqrt(5.0))
+    analytic = norm.sf(threshold / sqrt(5.0))
     probability = analysis.dataset.misc["probability"]["y_high"]
     assert probability == pytest.approx(analytic, rel=0.2)
 
@@ -314,7 +314,7 @@ def test_rank_based(discipline, parameter_space) -> None:
     analysis.compute_samples(
         [discipline],
         parameter_space,
-        {"y_high": y > THRESHOLD},
+        {"y_high": y > threshold},
         n_samples=2000,
         algo_settings=OT_MC_Settings(),
     )
@@ -337,7 +337,7 @@ def test_inconsistent_algorithm_with_iid_samples(
     analysis.compute_samples(
         [discipline],
         parameter_space,
-        {"y_high": y > THRESHOLD},
+        {"y_high": y > threshold},
         n_samples=2000,
         algo_settings=OT_MC_Settings(),
     )
@@ -349,7 +349,7 @@ def test_form_design_point_consistency(discipline, parameter_space, analysis) ->
     """Cross-check the embedded FORM design point against a direct FORM study."""
     scenario = ReliabilityScenario([discipline], parameter_space)
     y = scenario.get_event_variables("y")
-    scenario.add_event(y > THRESHOLD, "y_high")
+    scenario.add_event(y > threshold, "y_high")
     scenario.execute(OT_FORM_Settings())
     result = scenario.event_name_to_reliability_result["y_high"]
     assert_almost_equal(
@@ -365,7 +365,7 @@ def test_several_events(discipline, parameter_space, analysis) -> None:
     multi.compute_samples(
         [discipline],
         parameter_space,
-        {"y_high": y > THRESHOLD, "y_higher": y > 2 * THRESHOLD},
+        {"y_high": y > threshold, "y_higher": y > 2 * threshold},
         n_samples=1000,
     )
     indices = multi.compute_indices()
@@ -405,10 +405,10 @@ def test_zero_variance_event_output_yields_none_indices(
     analysis = ISFORMSobolAnalysis()
     y = analysis.get_event_variables("y")
     dataset = analysis.compute_samples(
-        [discipline], parameter_space, {"y_high": y > THRESHOLD}, n_samples=500
+        [discipline], parameter_space, {"y_high": y > threshold}, n_samples=500
     )
     # Force the event output to a constant so that its variance is zero.
-    output_columns = dataset.get_view(group_names=dataset.OUTPUT_GROUP).columns
+    output_columns = dataset.get_view(group_names=dataset.output_group).columns
     dataset[output_columns] = 0.0
     indices = analysis.compute_indices()
     assert indices.first["y_high"] == [None]
@@ -443,7 +443,7 @@ def test_plot_rank_based(discipline, parameter_space) -> None:
     analysis.compute_samples(
         [discipline],
         parameter_space,
-        {"y_high": y > THRESHOLD},
+        {"y_high": y > threshold},
         n_samples=2000,
         algo_settings=OT_MC_Settings(),
     )

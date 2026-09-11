@@ -16,6 +16,9 @@
 
 from __future__ import annotations
 
+from typing import Any
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.base_factory import T
 from gemseo.post.dataset.plot.factory import PlotFactory
@@ -40,5 +43,5 @@ class PlotFactoryFactory(BaseFactory[PlotFactory[T]]):
     by associating one plot engine per file format.
     """
 
-    _CLASS = PlotFactory
-    _PACKAGE_NAMES = ("gemseo.post.dataset.plot",)
+    _class: ClassVar[type[PlotFactory[Any]]] = PlotFactory  # type: ignore[type-abstract]
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.post.dataset.plot",)

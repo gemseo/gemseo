@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from gemseo.ode.problem import ODEProblem
     from gemseo.ode.result import ODEResult
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ODESolverDescription(AlgorithmDescription):
@@ -45,7 +45,7 @@ class ODESolverDescription(AlgorithmDescription):
 class BaseODESolverLibrary(BaseAlgorithmLibrary[BaseODESolverSettings]):
     """Base class for libraries of ODE solvers."""
 
-    _SETTINGS_CLASS_TO_EXCLUDE: ClassVar[type[BaseODESolverSettings]] = (
+    _settings_class_to_exclude: ClassVar[type[BaseODESolverSettings]] = (
         BaseODESolverSettings
     )
 
@@ -62,6 +62,6 @@ class BaseODESolverLibrary(BaseAlgorithmLibrary[BaseODESolverSettings]):
         result: ODEResult,
     ) -> None:  # noqa: D107
         if not problem.result.algorithm_has_converged:
-            LOGGER.warning(
+            logger.warning(
                 "The ODE solver %s did not converge.", problem.result.solver_name
             )

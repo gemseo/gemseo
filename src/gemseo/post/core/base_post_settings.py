@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import Final
+
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import PositiveFloat
@@ -23,7 +25,7 @@ from pydantic import PositiveFloat
 from gemseo.util.pydantic import BaseSettings
 from gemseo.util.typing import StrPath
 
-_USE_STANDARDIZED_OBJECTIVE_DESCRIPTION = (
+_use_standardized_objective_description: Final[str] = (
     "Whether to use the standardized objective for post-processing. "
     "The standardized objective corresponds to the original one expressed as a "
     "cost function to minimize. "
@@ -43,7 +45,7 @@ class UseStandardizedObjectiveMixin(BaseModel):
 
     use_standardized_objective: bool = Field(
         default=True,
-        description=_USE_STANDARDIZED_OBJECTIVE_DESCRIPTION,
+        description=_use_standardized_objective_description,
     )
 
 

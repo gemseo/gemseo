@@ -33,12 +33,12 @@ example_dir_name = "examples"
 # TODO: find a way to put this into _docs
 examples_dir = file_dir_path / example_dir_name
 
-_LEAKY_EXAMPLES = frozenset({"plot_howto_directory_manager.py"})
+_leaky_examples = frozenset({"plot_howto_directory_manager.py"})
 """Examples that leak global state and must run after every other example."""
 
 
 def _has_leaky_example(subdir: Path) -> bool:
-    return any((subdir / name).is_file() for name in _LEAKY_EXAMPLES)
+    return any((subdir / name).is_file() for name in _leaky_examples)
 
 
 examples_subdirs = []
@@ -346,7 +346,7 @@ class _LeakyLastSortKey(_SortKey):
     """Sort examples by file name, pushing leaky examples to the end."""
 
     def __call__(self, file: Path) -> tuple[bool, str]:
-        return file.name in _LEAKY_EXAMPLES, file.name
+        return file.name in _leaky_examples, file.name
 
 
 conf = {

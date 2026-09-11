@@ -28,7 +28,7 @@ import pytest
 from numpy import array
 from numpy.testing import assert_allclose
 
-from gemseo.machine_learning.classification.model.factory import CLASSIFIER_FACTORY
+from gemseo.machine_learning.classification.model.factory import classifier_factory
 from gemseo.problem.dataset.iris import create_iris_dataset
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
@@ -36,7 +36,7 @@ from gemseo.util.pickle import to_pickle
 if TYPE_CHECKING:
     from gemseo.dataset.dataset import Dataset
 
-INPUT_VALUE = array([1.5, 1.5, 1.5, 1.5])
+input_value = array([1.5, 1.5, 1.5, 1.5])
 
 
 @pytest.fixture(scope="module")
@@ -45,11 +45,11 @@ def dataset() -> Dataset:
     return create_iris_dataset(as_io=True)
 
 
-@pytest.mark.parametrize("class_name", CLASSIFIER_FACTORY.class_names)
+@pytest.mark.parametrize("class_name", classifier_factory.class_names)
 @pytest.mark.parametrize("before_training", [False, True])
 def test_pickle(class_name, dataset, before_training, tmp_wd):
     """Check that classification models are picklable."""
-    reference_model = CLASSIFIER_FACTORY.create(class_name, dataset)
+    reference_model = classifier_factory.create(class_name, dataset)
 
     if before_training:
         to_pickle(reference_model, "model.pkl")
@@ -58,12 +58,12 @@ def test_pickle(class_name, dataset, before_training, tmp_wd):
         reference_model.learn()
         to_pickle(reference_model, "model.pkl")
 
-    reference_prediction = reference_model.predict(INPUT_VALUE)
+    reference_prediction = reference_model.predict(input_value)
 
     model = from_pickle("model.pkl")
     if before_training:
         model.learn()
 
-    output_value = model.predict(INPUT_VALUE)
+    output_value = model.predict(input_value)
 
     assert_allclose(output_value, reference_prediction)

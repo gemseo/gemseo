@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.uncertainty.distribution.factory import DistributionFactory
 from gemseo.uncertainty.distribution.openturns.distribution import OTDistribution
 
@@ -23,5 +25,7 @@ from gemseo.uncertainty.distribution.openturns.distribution import OTDistributio
 class OTDistributionFactory(DistributionFactory):
     """A factory of probability distributions based on OpenTURNS."""
 
-    _CLASS = OTDistribution
-    _PACKAGE_NAMES = ("gemseo.uncertainty.distribution.openturns",)
+    _class: ClassVar[type[OTDistribution]] = OTDistribution
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.uncertainty.distribution.openturns",
+    )

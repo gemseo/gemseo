@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -84,16 +85,17 @@ from gemseo.optimization.nlopt.settings.nlopt_newuoa_settings import (
 )
 from gemseo.optimization.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.space.util import get_value_and_bounds
-from gemseo.util.constant import INFINITE_INT
+from gemseo.util.constant import infinite_int
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Mapping
 
     from numpy import ndarray
 
     from gemseo.optimization.problem import OptimizationProblem
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 NLoptOptionsType = bool | int | float
 
@@ -111,7 +113,7 @@ class NLoptAlgorithmDescription(OptimizationAlgorithmDescription):
 class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
     """The library of NLopt optimization algorithms."""
 
-    __NLOPT_MESSAGES: ClassVar[dict[int, str]] = {
+    __nlopt_messages: ClassVar[Mapping[int, str]] = MappingProxyType({
         1: "NLOPT_SUCCESS: Generic success return value",
         2: (
             "NLOPT_STOPVAL_REACHED: Optimization stopped  "
@@ -153,9 +155,11 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
             " object opt from the user's objective "
             "function or constraints."
         ),
-    }
+    })
 
-    __NLOPT_DOC = "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
+    __nlopt_doc: ClassVar[str] = (
+        "https://nlopt.readthedocs.io/en/latest/NLopt_Algorithms/"
+    )
 
     ALGORITHM_INFOS: ClassVar[dict[str, NLoptAlgorithmDescription]] = {
         "NLOPT_MMA": NLoptAlgorithmDescription(
@@ -166,7 +170,7 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
             handle_inequality_constraints=True,
             internal_algorithm_name=LD_MMA,
             require_gradient=True,
-            website=f"{__NLOPT_DOC}#mma-method-of-moving-asymptotes-and-ccsa",
+            website=f"{__nlopt_doc}#mma-method-of-moving-asymptotes-and-ccsa",
             settings_class=NLOPT_MMA_Settings,
         ),
         "NLOPT_COBYLA": NLoptAlgorithmDescription(
@@ -180,7 +184,7 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
             handle_inequality_constraints=True,
             internal_algorithm_name=LN_COBYLA,
             website=(
-                f"{__NLOPT_DOC}#cobyla-constrained-optimization-by-linear-"
+                f"{__nlopt_doc}#cobyla-constrained-optimization-by-linear-"
                 "approximations"
             ),
             settings_class=NLOPT_COBYLA_Settings,
@@ -196,7 +200,7 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
             handle_inequality_constraints=True,
             internal_algorithm_name=LD_SLSQP,
             require_gradient=True,
-            website=f"{__NLOPT_DOC}#slsqp",
+            website=f"{__nlopt_doc}#slsqp",
             settings_class=NLOPT_SLSQP_Settings,
         ),
         "NLOPT_BOBYQA": NLoptAlgorithmDescription(
@@ -207,7 +211,7 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
                 "in the NLOPT library"
             ),
             internal_algorithm_name=LN_BOBYQA,
-            website=f"{__NLOPT_DOC}#bobyqa",
+            website=f"{__nlopt_doc}#bobyqa",
             settings_class=NLOPT_BOBYQA_Settings,
         ),
         "NLOPT_BFGS": NLoptAlgorithmDescription(
@@ -218,26 +222,26 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
             ),
             internal_algorithm_name=LD_LBFGS,
             require_gradient=True,
-            website=f"{__NLOPT_DOC}#low-storage-bfgs",
+            website=f"{__nlopt_doc}#low-storage-bfgs",
             settings_class=NLOPT_BFGS_Settings,
         ),
         "NLOPT_NEWUOA": NLoptAlgorithmDescription(
             algorithm_name="NEWUOA",
             description=("NEWUOA + bound constraints implemented in the NLOPT library"),
             internal_algorithm_name=LN_NEWUOA_BOUND,
-            website=f"{__NLOPT_DOC}#newuoa-bound-constraints",
+            website=f"{__nlopt_doc}#newuoa-bound-constraints",
             settings_class=NLOPT_NEWUOA_Settings,
         ),
     }
 
-    __EXCEPTION_CLASSES: ClassVar[tuple[type[BaseException], ...]] = (
+    __exception_classes: ClassVar[tuple[type[BaseException], ...]] = (
         RoundoffLimited,
         RuntimeError,
     )
     """The exception classes to be caught by the `NLopt` optimizer."""
 
     if runtime_error is not None:
-        __EXCEPTION_CLASSES = (*__EXCEPTION_CLASSES, runtime_error)
+        __exception_classes = (*__exception_classes, runtime_error)
 
     def __opt_objective_grad_nlopt(
         self,
@@ -335,7 +339,7 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
         nlopt_problem.set_xtol_abs(0.0)
         nlopt_problem.set_xtol_rel(0.0)
 
-        nlopt_problem.set_maxtime(INFINITE_INT)
+        nlopt_problem.set_maxtime(infinite_int)
 
         # Only set an initial step size for derivative-free optimization algorithms.
         if not self.ALGORITHM_INFOS[self.algo_name].require_gradient:
@@ -407,14 +411,14 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
         self.__add_constraints(nlopt_problem)
         try:
             nlopt_problem.optimize(x_0.real)
-        except self.__EXCEPTION_CLASSES as err:
+        except self.__exception_classes as err:
             arg = f"{err.args[0]}, " if err.args else ""
-            LOGGER.exception(
+            logger.exception(
                 "NLopt run failed: %s%s",
                 arg,
                 err.__class__.__name__,
             )
             raise TerminationCriterion from None
-        message = self.__NLOPT_MESSAGES[nlopt_problem.last_optimize_result()]
+        message = self.__nlopt_messages[nlopt_problem.last_optimize_result()]
         status = nlopt_problem.last_optimize_result()
         return message, status

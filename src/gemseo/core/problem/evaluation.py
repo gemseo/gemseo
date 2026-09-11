@@ -42,7 +42,7 @@ from gemseo.core.problem.database import Database
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.io_dataset import IODataset
 from gemseo.util._compatibility.scipy import sparse_classes
-from gemseo.util.constant import _CHECK_DESVARS_BOUNDS
+from gemseo.util.constant import _check_desvars_bounds
 from gemseo.util.derivative.approximation_mode import ApproximationMode
 from gemseo.util.string import MultiLineString
 from gemseo.util.string import pretty_str
@@ -57,7 +57,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrPath
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 EvaluationType = tuple[dict[str, float | RealArray], dict[str, RealArray]]
 """The type of the output value of an evaluation."""
@@ -78,7 +78,7 @@ class EvaluationProblem(BaseProblem):
     __observables: Observables
     """The observables."""
 
-    check_bounds: ClassVar[bool] = _CHECK_DESVARS_BOUNDS
+    check_bounds: ClassVar[bool] = _check_desvars_bounds
     """Whether to check if a point is in the design space before calling functions."""
 
     _is_optimization: ClassVar[bool] = False
@@ -521,7 +521,7 @@ class EvaluationProblem(BaseProblem):
             try:
                 outputs[function.name] = function.evaluate(design_vector)
             except ValueError:  # noqa: PERF203
-                LOGGER.exception("Failed to evaluate function %s", function.name)
+                logger.exception("Failed to evaluate function %s", function.name)
                 raise
 
         if not jacobian_functions:
@@ -532,7 +532,7 @@ class EvaluationProblem(BaseProblem):
             try:
                 jacobians[function.name] = function.jac(design_vector)
             except ValueError:  # noqa: PERF203
-                LOGGER.exception("Failed to evaluate Jacobian of %s.", function.name)
+                logger.exception("Failed to evaluate Jacobian of %s.", function.name)
                 raise
 
         return outputs, jacobians
@@ -836,13 +836,13 @@ class EvaluationProblem(BaseProblem):
                 If so,
                 use an [IODataset][gemseo.dataset.io_dataset.IODataset]
                 with the design variables in the
-                [INPUT_GROUP][gemseo.dataset.io_dataset.IODataset.INPUT_GROUP]
+                [input_group][gemseo.dataset.io_dataset.IODataset.input_group]
                 and the functions and their derivatives
                 in the
-                [OUTPUT_GROUP][gemseo.dataset.io_dataset.IODataset.OUTPUT_GROUP].
+                [output_group][gemseo.dataset.io_dataset.IODataset.output_group].
                 Otherwise,
                 group all the variables in
-                [PARAMETER_GROUP][gemseo.dataset.dataset.Dataset.PARAMETER_GROUP].
+                [parameter_group][gemseo.dataset.dataset.Dataset.parameter_group].
             export_gradients: Whether to export the gradients of the functions
                 if the latter are available in the database of the problem.
             input_values: The input values to be considered.
@@ -853,12 +853,12 @@ class EvaluationProblem(BaseProblem):
         """
         if categorize:
             dataset_class = IODataset
-            input_group = IODataset.INPUT_GROUP
-            output_group = IODataset.OUTPUT_GROUP
-            gradient_group = Dataset.GRADIENT_GROUP
+            input_group = IODataset.input_group
+            output_group = IODataset.output_group
+            gradient_group = Dataset.gradient_group
         else:
             dataset_class = Dataset
-            input_group = output_group = gradient_group = Dataset.DEFAULT_GROUP
+            input_group = output_group = gradient_group = Dataset.default_group
 
         return self.database.to_dataset(
             name=name,
@@ -944,8 +944,8 @@ class EvaluationProblem(BaseProblem):
         """
         msg = "Exporting the evaluation problem to the file %s"
         if hdf_node_path:
-            LOGGER.info(msg + " at node %s", file_path, hdf_node_path)  # noqa: G003
+            logger.info(msg + " at node %s", file_path, hdf_node_path)  # noqa: G003
         else:
-            LOGGER.info(msg, file_path)
+            logger.info(msg, file_path)
 
         self.database.to_hdf(file_path, append=append, hdf_node_path=hdf_node_path)

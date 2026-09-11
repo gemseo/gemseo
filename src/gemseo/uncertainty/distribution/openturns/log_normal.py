@@ -55,9 +55,9 @@ class OTLogNormalDistribution(OTDistribution):
                 interfaced_distribution="LogNormal",
                 parameters=(log_mu, log_sigma, settings.location),
                 standard_parameters={
-                    self._MU: settings.mu,
-                    self._SIGMA: settings.sigma,
-                    self._LOC: settings.location,
+                    self._mu: settings.mu,
+                    self._sigma: settings.sigma,
+                    self._loc: settings.location,
                 },
                 transformation=settings.transformation,
                 lower_bound=settings.lower_bound,

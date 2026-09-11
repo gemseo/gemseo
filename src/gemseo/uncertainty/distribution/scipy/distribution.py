@@ -56,9 +56,9 @@ class SPDistribution(
 
     settings_class = SPDistribution_Settings
 
-    JOINT_DISTRIBUTION_CLASS: ClassVar[type[SPJointDistribution]] = SPJointDistribution
+    joint_distribution_class: ClassVar[type[SPJointDistribution]] = SPJointDistribution
 
-    _WEBSITE: ClassVar[str] = "https://docs.scipy.org/doc/scipy/reference/stats.html"
+    _website: ClassVar[str] = "https://docs.scipy.org/doc/scipy/reference/stats.html"
 
     def _create_distribution(self, settings: SPDistribution_Settings) -> None:
         distribution = self._create_distribution_from_module(scipy_stats, settings)

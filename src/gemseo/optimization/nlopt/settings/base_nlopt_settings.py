@@ -32,14 +32,14 @@ copy_field_opt = partial(copy_field, model=BaseOptimizerSettings)  # pyright: ig
 class BaseNLoptSettings(BaseOptimizerSettings):
     """The NLopt optimization library setting."""
 
-    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {
         "ftol_rel": 1e-8,
         "ftol_abs": 1e-14,
         "stop_crit_n_x": None,
         "xtol_rel": 1e-8,
         "xtol_abs": 1e-14,
     }
-    _INHERITED_FIELD_TYPES: ClassVar[StrKeyMapping] = {"stop_crit_n_x": int | None}
+    _inherited_field_types: ClassVar[StrKeyMapping] = {"stop_crit_n_x": int | None}
 
     stopval: float = Field(
         default=-inf,

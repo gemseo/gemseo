@@ -29,7 +29,7 @@ from gemseo.util.typing import StrKeyMapping  # noqa: TC001
 class MDANewtonRaphson_Settings(BaseMDAParallelSolverSettings):  # noqa: N801
     """The settings for [MDANewtonRaphson][gemseo.mda.newton_raphson.MDANewtonRaphson]."""  # noqa: E501
 
-    _INHERITED_FIELD_DEFAULTS: ClassVar[StrKeyMapping] = {
+    _inherited_field_defaults: ClassVar[StrKeyMapping] = {
         "execute_before_linearizing": False
     }
 

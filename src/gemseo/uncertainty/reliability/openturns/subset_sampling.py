@@ -39,7 +39,7 @@ class OT_SubsetSampling(BaseOTReliabilityAlgorithm):  # noqa: N801
         OT_SubsetSampling_Settings
     )
 
-    _ALGO_CLASS: ClassVar[type[SubsetSampling]] = SubsetSampling
+    _algo_class: ClassVar[type[SubsetSampling]] = SubsetSampling
 
     def _execute(
         self,
@@ -51,7 +51,7 @@ class OT_SubsetSampling(BaseOTReliabilityAlgorithm):  # noqa: N801
 
         ot_event = self._create_ot_event(event_name, problem)
 
-        algo = self._ALGO_CLASS(ot_event)
+        algo = self._algo_class(ot_event)
         if "target_probability" in settings.model_fields_set:
             algo.setConditionalProbability(settings.target_probability)
         algo.setConvergenceStrategy(Null())

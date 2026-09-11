@@ -197,7 +197,7 @@ class QuadraticFunction(ArrayFunction):
             line = quad_coeffs[index, :].tolist()
             expr += f"[{arg}]"
             expr += transpose_str if index == 0 else " "
-            quad_coeffs_str = (cls.COEFF_FORMAT_ND.format(val) for val in line)
+            quad_coeffs_str = (cls.coeff_format_nd.format(val) for val in line)
             expr += "[{}]".format(" ".join(quad_coeffs_str))
             expr += f"[{arg}]"
             # First-order expression
@@ -206,13 +206,13 @@ class QuadraticFunction(ArrayFunction):
                 and (linear_coeffs != zeros_like(linear_coeffs)).any()
             ):
                 expr += " + " if index == 0 else "   "
-                expr += f"[{cls.COEFF_FORMAT_ND.format(linear_coeffs[0, index])}]"
+                expr += f"[{cls.coeff_format_nd.format(linear_coeffs[0, index])}]"
                 expr += transpose_str if index == 0 else " "
                 expr += f"[{arg}]"
             # Zero-order expression
             if value_at_zero != 0.0 and index == 0:
                 sign_str = "+" if value_at_zero > 0.0 else "-"
-                expr += (" {} " + cls.COEFF_FORMAT_ND).format(
+                expr += (" {} " + cls.coeff_format_nd).format(
                     sign_str, abs(value_at_zero)
                 )
             if index < quad_coeffs.shape[0] - 1:

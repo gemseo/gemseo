@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-from typing import Final
+from typing import ClassVar
 
 from numpy import ndarray
 
@@ -43,7 +43,7 @@ class MultiObjectiveOptimizationResult(OptimizationResult):
     pareto_front: ParetoFront | None = None
     """The Pareto front when the solution is feasible."""
 
-    __PARETO_FRONT: Final[str] = "pareto_front"
+    __pareto_front: ClassVar[str] = "pareto_front"
 
     @property
     def _string_representation(self) -> MultiLineString:
@@ -83,18 +83,18 @@ class MultiObjectiveOptimizationResult(OptimizationResult):
 
     def to_dict(self) -> dict[str, Value]:  # noqa: D102
         dict_ = super().to_dict()
-        pareto_front = dict_.pop(self.__PARETO_FRONT)
+        pareto_front = dict_.pop(self.__pareto_front)
         if pareto_front is not None:
             for attr, value in self.pareto_front.__dict__.items():
                 if isinstance(value, (int, float, str, bool, list, tuple, ndarray)):
-                    dict_[f"{self.__PARETO_FRONT}:{attr}"] = value
+                    dict_[f"{self.__pareto_front}:{attr}"] = value
 
         return dict_
 
     @classmethod
     def _get_additional_fields(cls, problem) -> dict[str, None]:
         return {
-            f"{cls.__PARETO_FRONT}": ParetoFront.from_optimization_problem(problem)
+            f"{cls.__pareto_front}": ParetoFront.from_optimization_problem(problem)
             if problem.optimum[2]
             else None
         }

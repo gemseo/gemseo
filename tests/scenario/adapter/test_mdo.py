@@ -210,9 +210,9 @@ def test_adapter_set_bounds(scenario) -> None:
     # Execute the adapter with passed bounds
     input_data = {}
     lower_bounds = ds.convert_array_to_dict(zeros(4))
-    lower_suffix = MDOScenarioAdapter.LOWER_BND_SUFFIX
+    lower_suffix = MDOScenarioAdapter.lower_bnd_suffix
     upper_bounds = ds.convert_array_to_dict(ones(4))
-    upper_suffix = MDOScenarioAdapter.UPPER_BND_SUFFIX
+    upper_suffix = MDOScenarioAdapter.upper_bnd_suffix
     for bounds, suffix in [
         (lower_bounds, lower_suffix),
         (upper_bounds, upper_suffix),
@@ -610,7 +610,7 @@ def test_save_databases(tmp_wd, scenario, save_databases, database_file_prefix) 
     if database_file_prefix:
         prefix = path.name
     else:
-        prefix = MDOScenarioAdapter.DEFAULT_DATABASE_FILE_PREFIX
+        prefix = MDOScenarioAdapter.default_database_file_prefix
 
     assert (path.parent / f"{prefix}_1.h5").exists() is save_databases
     assert (path.parent / f"{prefix}_2.h5").exists() is save_databases
@@ -623,7 +623,7 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_exec) ->
     The focus of this test is to guarantee
     that the loaded DisciplineChain instance can be executed,
     if an AttributeError is raised, it means that the attribute is missing in
-    `MDOScenarioAdapter._ATTR_NOT_TO_SERIALIZE`.
+    `MDOScenarioAdapter._attr_not_to_serialize`.
 
     Args:
         tmp_wd: Fixture to move into a temporary directory.

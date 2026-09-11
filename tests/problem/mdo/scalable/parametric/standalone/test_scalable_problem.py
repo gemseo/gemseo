@@ -26,8 +26,8 @@ from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_setti
 from gemseo.problem.mdo.scalable.parametric.standalone.scalable_problem import (
     ScalableProblem,
 )
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
-from gemseo.util.seeder import SEED
+from gemseo.util.repr_html import repr_html_wrapper
+from gemseo.util.seeder import seed
 
 
 @pytest.fixture(scope="module")
@@ -80,7 +80,7 @@ def test_str(default_scalable_problem) -> None:
 
 def test_repr_html(default_scalable_problem) -> None:
     """Check the string representation of a scalable problem."""
-    assert default_scalable_problem._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert default_scalable_problem._repr_html_() == repr_html_wrapper.format(
         "Scalable problem<br/>"
         "<ul>"
         "<li>MainDiscipline"
@@ -181,7 +181,7 @@ def test_scalable_disciplines(default_scalable_problem) -> None:
 
 def test_scalable_discipline_coefficients(default_scalable_problem) -> None:
     """Check the coefficients of the scalable disciplines."""
-    rng = default_rng(SEED)
+    rng = default_rng(seed)
     for scalable_discipline, coupling_name in zip(
         default_scalable_problem.scalable_disciplines, ["y_2", "y_1"], strict=False
     ):
@@ -200,7 +200,7 @@ def test_main_discipline_coefficients(default_scalable_problem) -> None:
 
 def test_coefficients_custom(custom_scalable_problem) -> None:
     """Check the coefficients."""
-    rng = default_rng(SEED)
+    rng = default_rng(seed)
     for p_i, d_i, scalable_discipline, couplings in zip(
         [3, 2, 1],
         [1, 2, 3],

@@ -34,7 +34,7 @@ from gemseo.core.grammar.error import InvalidDataError
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.scipy.settings.lhs import LHS_Settings
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.formulation.mdf_settings import MDF_Settings
 from gemseo.mda.chain_settings import MDAChain_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
@@ -85,7 +85,7 @@ def build_mdo_scenario(
     scenario = MDOScenario(
         disciplines,
         design_space,
-        formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+        formulation_settings=mdo_formulation_factory.get_class(
             formulation_name
         ).settings_class(),
     )

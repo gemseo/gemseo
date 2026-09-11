@@ -38,7 +38,7 @@ def dataset() -> Dataset:
     """The dataset used to train the regression models."""
     data = arange(60).reshape((20, 3))
     dataset_ = Dataset()
-    dataset_.add_variable("x", data, Dataset.PARAMETER_GROUP)
+    dataset_.add_variable("x", data, Dataset.parameter_group)
     return dataset_
 
 
@@ -47,7 +47,7 @@ def dataset_test() -> Dataset:
     """The dataset used to test the performance of the clustering modelrithms."""
     data = arange(30).reshape((10, 3))
     dataset_ = Dataset()
-    dataset_.add_variable("x", data, Dataset.PARAMETER_GROUP)
+    dataset_.add_variable("x", data, Dataset.parameter_group)
     return dataset_
 
 

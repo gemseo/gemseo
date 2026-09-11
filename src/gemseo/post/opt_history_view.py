@@ -46,8 +46,8 @@ from numpy.linalg import norm
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.dataset.optimization_dataset import OptimizationDataset
-from gemseo.post._engine.colormap import PARULA
-from gemseo.post._engine.colormap import RG_SEISMIC
+from gemseo.post._engine.colormap import parula
+from gemseo.post._engine.colormap import rg_seismic
 from gemseo.post.core.base_post import BasePost
 from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
 from gemseo.util.string import repr_variable
@@ -65,7 +65,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class OptHistoryView(BasePost[OptHistoryView_Settings]):
@@ -101,7 +101,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     x_label: ClassVar[str] = "Iterations"
     """The label for the x-axis."""
 
-    __BEST_ITERATION_MARKER: Final[str] = "*"
+    __best_iteration_marker: Final[str] = "*"
     """The marker of the best iteration, drawn on the x-axis.
 
     The best iteration is that of the best design,
@@ -109,44 +109,44 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     or the least infeasible design when no design satisfies the constraints.
     """
 
-    __NAN_MARKER: Final[str] = "x"
+    __nan_marker: Final[str] = "x"
     """The marker of the iterations whose values are `NaN`, drawn on the x-axis."""
 
-    __BEST_ITERATION_MENTION: Final[str] = r"best iteration: $\bigstar$"
+    __best_iteration_mention: Final[str] = r"best iteration: $\bigstar$"
     """The mention of the mark of the best iteration, in the label of the x-axis.
 
-    The glyph is the one of `__BEST_ITERATION_MARKER`,
+    The glyph is the one of `__best_iteration_marker`,
     so that the mention need not name a color.
     """
 
-    __NAN_MENTION: Final[str] = r"NaN: $\times$"
+    __nan_mention: Final[str] = r"NaN: $\times$"
     """The mention of the mark of the NaN iterations, in the label of the x-axis.
 
-    The glyph is the one of `__NAN_MARKER`.
+    The glyph is the one of `__nan_marker`.
     Only the figures drawing those marks mention them.
     """
 
-    __MARK_SIZE: Final[int] = 10
+    __mark_size: Final[int] = 10
     """The size of the markers of the iterations."""
 
-    __MARK_COLOR: Final[str] = "#e028c0"
+    __mark_color: Final[str] = "#e028c0"
     """The magenta color of the marks of the iterations."""
 
-    __TICK_LABEL_SIZE: Final[int] = 9
+    __tick_label_size: Final[int] = 9
     """The font size of the tick labels."""
 
-    __AXIS_LABEL_SIZE: Final[int] = 12
+    __axis_label_size: Final[int] = 12
     """The font size of the axis labels."""
 
-    __X_MARGIN: Final[float] = 0.1
+    __x_margin: Final[float] = 0.1
     """The left and right margin for the x-axis."""
 
-    __Y_MARGIN: Final[float] = 0.05
+    __y_margin: Final[float] = 0.05
     """The left and right margin for the y-axis."""
 
-    __CMAP: Final[ListedColormap] = PARULA
-    __INEQ_CSTR_CMAP: Final[ListedColormap] = RG_SEISMIC
-    __EQ_CSTR_CMAP: Final[str] = "seismic"
+    __cmap: Final[ListedColormap] = parula
+    __ineq_cstr_cmap: Final[ListedColormap] = rg_seismic
+    __eq_cstr_cmap: Final[str] = "seismic"
 
     def __get_x_axis_label(
         self, has_best_iteration: bool = True, has_nan: bool = False
@@ -162,9 +162,9 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         """
         mentions: list[str] = []
         if has_best_iteration:
-            mentions.append(self.__BEST_ITERATION_MENTION)
+            mentions.append(self.__best_iteration_mention)
         if has_nan:
-            mentions.append(self.__NAN_MENTION)
+            mentions.append(self.__nan_mention)
         if not mentions:
             return self.x_label
 
@@ -175,7 +175,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
     ) -> None:
         """Mark iterations with a marker on the x-axis and a dashed vertical line.
 
-        All the marks share the color `__MARK_COLOR`
+        All the marks share the color `__mark_color`
         and are told apart by their marker,
         as the label of the x-axis mentions.
         This color reads on both the light and the dark background,
@@ -188,14 +188,14 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             iterations: The abscissas of the iterations to mark.
             marker: The marker drawn on the x-axis.
         """
-        color = self.__MARK_COLOR
+        color = self.__mark_color
         for iteration in iterations:
             ax.axvline(x=iteration, color=color, linestyle="--")
             ax.plot(
                 iteration,
                 0.0,
                 marker=marker,
-                markersize=self.__MARK_SIZE,
+                markersize=self.__mark_size,
                 color=color,
                 clip_on=False,
                 # Data coordinates on the x-axis and axes ones on the y-axis, so that
@@ -285,7 +285,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             dataset
             .get_view(
                 variable_names=function_name,
-                group_names=OptimizationDataset.OBJECTIVE_GROUP,
+                group_names=OptimizationDataset.objective_group,
             )
             .to_numpy()
             .squeeze()
@@ -360,20 +360,20 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         # design variables
         im1 = ax1.imshow(
             norm_x_history.T,
-            cmap=self.__CMAP,
+            cmap=self.__cmap,
             interpolation="nearest",
             vmin=0.0,
             vmax=1.0,
             aspect="auto",
         )
         if best_iteration is not None:
-            self.__mark_iterations(ax1, (best_iteration,), self.__BEST_ITERATION_MARKER)
+            self.__mark_iterations(ax1, (best_iteration,), self.__best_iteration_marker)
 
         ax1.set_yticks(arange(x_history.shape[1]))
         ax1.set_yticklabels(self._get_design_variable_names(variable_names, True))
         ax1.set_xlabel(
             self.__get_x_axis_label(best_iteration is not None),
-            fontsize=self.__AXIS_LABEL_SIZE,
+            fontsize=self.__axis_label_size,
         )
         # ax1.invert_yaxis()
 
@@ -422,7 +422,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             obj_history = -obj_history
 
         if obj_relative:
-            LOGGER.info(
+            logger.info(
                 "Plot of optimization history "
                 "with relative variation compared to "
                 "initial point objective value = %s",
@@ -448,26 +448,26 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         # objective function
         plt.xlabel(
             self.__get_x_axis_label(best_iteration is not None, has_nan),
-            fontsize=self.__AXIS_LABEL_SIZE,
+            fontsize=self.__axis_label_size,
         )
-        plt.ylabel("Objective value", fontsize=self.__AXIS_LABEL_SIZE)
+        plt.ylabel("Objective value", fontsize=self.__axis_label_size)
         plt.plot(x_absc_not_nan, obj_history)
         if best_iteration is not None:
             self.__mark_iterations(
-                plt.gca(), (best_iteration,), self.__BEST_ITERATION_MARKER
+                plt.gca(), (best_iteration,), self.__best_iteration_marker
             )
 
         if has_nan:
-            self.__mark_iterations(plt.gca(), x_absc_nan, self.__NAN_MARKER)
+            self.__mark_iterations(plt.gca(), x_absc_nan, self.__nan_marker)
 
         if obj_min is not None and obj_min < fmin:
             fmin = obj_min
         if obj_max is not None and obj_max > fmax:
             fmax = obj_max
 
-        margin = (fmax - fmin) * self.__Y_MARGIN
+        margin = (fmax - fmin) * self.__y_margin
         plt.ylim([fmin - margin, fmax + margin])
-        plt.xlim([0 - self.__X_MARGIN, n_iter - 1 + self.__X_MARGIN])
+        plt.xlim([0 - self.__x_margin, n_iter - 1 + self.__x_margin])
         ax1 = fig.gca()
         ax1.set_xticks(x_absc)
         ax1.set_xticklabels((x_absc + 1).tolist())
@@ -498,18 +498,18 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             best_iteration: The iteration of the best design.
         """
         fig = plt.figure(figsize=fig_size)
-        plt.xlabel(self.__get_x_axis_label(), fontsize=self.__AXIS_LABEL_SIZE)
-        plt.ylabel("||x-x*||", fontsize=self.__AXIS_LABEL_SIZE)
+        plt.xlabel(self.__get_x_axis_label(), fontsize=self.__axis_label_size)
+        plt.ylabel("||x-x*||", fontsize=self.__axis_label_size)
 
         self.__mark_iterations(
-            plt.gca(), (float(best_iteration),), self.__BEST_ITERATION_MARKER
+            plt.gca(), (float(best_iteration),), self.__best_iteration_marker
         )
         plt.semilogy(arange(n_iter), x_xstar)
         # ======================================================================
         # try:
         #     plt.semilogy(np.arange(len(x_xstar)), x_xstar)
         # except ValueError:
-        #     LOGGER.warning("Cannot use log scale for x_star plot since" +
+        #     logger.warning("Cannot use log scale for x_star plot since" +
         #                    "all values are not positive !")
         # ======================================================================
         ax1 = fig.gca()
@@ -518,7 +518,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
         ax1.get_xaxis().set_major_locator(MaxNLocator(integer=True))
         plt.grid(True)
         plt.title("Evolution of the distance to the best design")
-        plt.xlim([0 - self.__X_MARGIN, n_iter - 1 + self.__X_MARGIN])
+        plt.xlim([0 - self.__x_margin, n_iter - 1 + self.__x_margin])
 
         # Set window size
         mng = plt.get_current_fig_manager()
@@ -543,7 +543,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             if c_hist_loc.shape[1] == 1:
                 c_hist_loc = c_hist_loc.T
             n_cstr += c_hist_loc.shape[0]
-        LOGGER.debug("Total constraints number =%s", n_cstr)
+        logger.debug("Total constraints number =%s", n_cstr)
         return n_cstr
 
     def _create_cstr_plot(
@@ -645,10 +645,10 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             cstr_matrix = cstr_matrix.T
         cmap: str | ListedColormap
         if cstr_type == ArrayFunction.ConstraintType.EQ:
-            cmap = self.__EQ_CSTR_CMAP
+            cmap = self.__eq_cstr_cmap
             constraint_type = "equality"
         else:
-            cmap = self.__INEQ_CSTR_CMAP
+            cmap = self.__ineq_cstr_cmap
             constraint_type = "inequality"
 
         idx_nan = isnan(cstr_matrix)
@@ -669,20 +669,20 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             norm=SymLogNorm(vmin=-vmax, vmax=vmax, linthresh=1.0),
         )
         if best_iteration is not None:
-            self.__mark_iterations(ax1, (best_iteration,), self.__BEST_ITERATION_MARKER)
+            self.__mark_iterations(ax1, (best_iteration,), self.__best_iteration_marker)
 
         if has_nan:
             self.__mark_iterations(
-                ax1, idx_nan.any(axis=0).nonzero()[0], self.__NAN_MARKER
+                ax1, idx_nan.any(axis=0).nonzero()[0], self.__nan_marker
             )
 
-        ax1.tick_params(labelsize=self.__TICK_LABEL_SIZE)
+        ax1.tick_params(labelsize=self.__tick_label_size)
         ax1.set_yticks(list(range(n_cstr)))
         ax1.set_yticklabels(cstr_labels)
 
         ax1.set_xlabel(
             self.__get_x_axis_label(best_iteration is not None, has_nan),
-            fontsize=self.__AXIS_LABEL_SIZE,
+            fontsize=self.__axis_label_size,
         )
         ax1.set_title(f"Evolution of the {constraint_type} constraints")
         n_iterations = len(self._dataset)
@@ -703,7 +703,7 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
             ticks=SymmetricalLogLocator(linthresh=1.0, base=10),
             format=LogFormatterSciNotation(),
         )
-        col_bar.ax.tick_params(labelsize=self.__TICK_LABEL_SIZE)
+        col_bar.ax.tick_params(labelsize=self.__tick_label_size)
 
         fig.tight_layout()
         mng = plt.get_current_fig_manager()

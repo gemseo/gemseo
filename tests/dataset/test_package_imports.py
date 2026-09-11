@@ -22,6 +22,6 @@ from gemseo.util.testing.package_import import make_lazy_reexport_tests
 globals().update(
     make_lazy_reexport_tests(
         gemseo.dataset,
-        extra_all=("DatasetClassName", "DATASET_FACTORY"),
+        extra_all=("DatasetClassName", "dataset_factory"),
     )
 )

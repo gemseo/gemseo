@@ -33,9 +33,9 @@ def test_create() -> None:
     factory = ScalableModelFactory()
     dataset = IODataset()
     val = array([0.0, 0.25, 0.5, 0.75, 1.0])
-    dataset.add_variable("x", (val * 2)[:, newaxis], dataset.INPUT_GROUP)
-    dataset.add_variable("y", val[:, newaxis], dataset.INPUT_GROUP)
-    dataset.add_variable("z", val[:, newaxis], dataset.OUTPUT_GROUP, False)
+    dataset.add_variable("x", (val * 2)[:, newaxis], dataset.input_group)
+    dataset.add_variable("y", val[:, newaxis], dataset.input_group)
+    dataset.add_variable("z", val[:, newaxis], dataset.output_group, False)
     factory.create("ScalableDiagonalModel", data=dataset)
 
 

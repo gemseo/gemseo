@@ -27,10 +27,10 @@ from gemseo.optimization.result import OptimizationResult
 from gemseo.space.design import _checking
 from gemseo.space.design._codec import concatenate_values
 from gemseo.space.design._codec import split_full_value
-from gemseo.space.design._constants import BOUND_ATOL
+from gemseo.space.design._constants import bound_atol
 from gemseo.space.design._registry_derived_data import RegistryDerivedData
-from gemseo.util._numpy import COMPLEX128_DTYPE
-from gemseo.util._numpy import FLOAT64_DTYPE
+from gemseo.util._numpy import complex128_dtype
+from gemseo.util._numpy import float64_dtype
 from gemseo.util._numpy import get_common_dtype as _compute_common_dtype
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 from gemseo.util.string import pretty_str
@@ -101,7 +101,7 @@ class Value(RegistryDerivedData):
         self.__has_value = False
         self.__mutation_count = 0
         self.__last_variables_version = variables.version
-        self.__common_dtype = FLOAT64_DTYPE
+        self.__common_dtype = float64_dtype
         self._register_guard(self._refresh_status, name="status")
         self._register_guard(self._refresh_common_dtype, name="common_dtype")
         self._register_guard(self._clear_derived, name="derived_arrays")
@@ -214,7 +214,7 @@ class Value(RegistryDerivedData):
         self.__common_dtype = (
             _compute_common_dtype(self.__name_to_value.values())
             if self.__has_value
-            else FLOAT64_DTYPE
+            else float64_dtype
         )
 
     def set(
@@ -323,13 +323,13 @@ class Value(RegistryDerivedData):
         self.__update_metadata()
 
     def to_complex(self) -> None:
-        """Cast all current variable values to `COMPLEX128_DTYPE`."""
+        """Cast all current variable values to `complex128_dtype`."""
         self.__reconcile_before_write()
         for name, val in self.__name_to_value.items():
             # A variable with no value keeps its None marker: casting it would
             # yield a zero-dimensional NaN array passing for a genuine value.
             if val is not None:
-                self.__name_to_value[name] = array(val, dtype=COMPLEX128_DTYPE)
+                self.__name_to_value[name] = array(val, dtype=complex128_dtype)
 
         self.__mutation_count += 1
         self._clear_derived()
@@ -368,8 +368,8 @@ class Value(RegistryDerivedData):
             return
 
         indices = logical_or(
-            current_value < lower_bound - BOUND_ATOL,
-            current_value > upper_bound + BOUND_ATOL,
+            current_value < lower_bound - bound_atol,
+            current_value > upper_bound + bound_atol,
         ).nonzero()[0]
         for index in indices:
             msg = (

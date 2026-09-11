@@ -41,7 +41,7 @@ class OT_DirectionalSampling(BaseOTReliabilityAlgorithm):  # noqa: N801
         OT_DirectionalSampling_Settings
     )
 
-    _ALGO_CLASS: ClassVar[type[DirectionalSampling]] = DirectionalSampling
+    _algo_class: ClassVar[type[DirectionalSampling]] = DirectionalSampling
 
     def _execute(
         self,
@@ -52,20 +52,20 @@ class OT_DirectionalSampling(BaseOTReliabilityAlgorithm):  # noqa: N801
         self._set_seed(settings.seed)
 
         solver_settings = settings.root_strategy.solver
-        solver = solver_settings.ALGO_CLASS()
+        solver = solver_settings.algo_class()
         solver.setAbsoluteError(solver_settings.absolute_error)
         solver.setRelativeError(solver_settings.relative_error)
         solver.setResidualError(solver_settings.residual_error)
         solver.setMaximumCallsNumber(solver_settings.maximum_calls_number)
 
-        root_strategy = settings.root_strategy.ALGO_CLASS()
+        root_strategy = settings.root_strategy.algo_class()
         root_strategy.setSolver(solver)
         root_strategy.setStepSize(settings.root_strategy.step_size)
         root_strategy.setMaximumDistance(settings.root_strategy.maximum_distance)
 
         ot_event = self._create_ot_event(event_name, problem)
 
-        algo = self._ALGO_CLASS(ot_event)
+        algo = self._algo_class(ot_event)
         algo.setConvergenceStrategy(Null())
         algo.setRootStrategy(root_strategy)
         algo.setSamplingStrategy(

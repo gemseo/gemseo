@@ -66,9 +66,9 @@ from gemseo.space.design._integer_rounder import IntegerRounder
 from gemseo.space.design._normalizer import Normalizer
 from gemseo.space.design._value import Value
 from gemseo.space.design._variables import Variables
-from gemseo.space.variable import TYPE_MAP
 from gemseo.space.variable import DataType
-from gemseo.space.variable.factory import VARIABLE_FACTORY
+from gemseo.space.variable import data_type_to_numpy_type
+from gemseo.space.variable.factory import variable_factory
 from gemseo.space.variables_view import VariablesView
 from gemseo.util.string import convert_strings_to_iterable
 from gemseo.util.string import pretty_str
@@ -91,9 +91,12 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealOrComplexArrayT
     from gemseo.util.typing import StrPath
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-_BOUNDED_TYPES = {DataType.FLOAT, DataType.INTEGER}
+_bounded_types: Final[frozenset[DataType]] = frozenset({
+    DataType.FLOAT,
+    DataType.INTEGER,
+})
 
 
 class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
@@ -131,7 +134,9 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
     DesignVariableType = DataType
 
     # TODO: API: the values are not dtypes but types, either fix the values or the name.
-    VARIABLE_TYPES_TO_DTYPES: Final[dict[str, type[int64 | float64]]] = TYPE_MAP
+    variable_types_to_dtypes: Final[Mapping[str, type[int64 | float64]]] = (
+        data_type_to_numpy_type
+    )
     """One NumPy `dtype` per design variable type."""
 
     def __init__(self, name: str = "") -> None:
@@ -370,14 +375,14 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         """
         if variable is None:
             decoded_type_ = type_.decode() if isinstance(type_, bytes) else type_
-            if decoded_type_ not in _BOUNDED_TYPES:
+            if decoded_type_ not in _bounded_types:
                 msg = (
                     "Only continuous and integer variables may be declared "
                     "through the type_ argument of add_variable; "
                     "use the variable argument instead."
                 )
                 raise ValueError(msg)
-            variable = VARIABLE_FACTORY.create(
+            variable = variable_factory.create(
                 type_,
                 size=size,
                 lower_bound=lower_bound,

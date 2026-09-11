@@ -36,11 +36,11 @@ from gemseo.post._graph_view import GraphView
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
-from gemseo.problem.mdo.sellar.variable import C_1
-from gemseo.problem.mdo.sellar.variable import C_2
-from gemseo.problem.mdo.sellar.variable import OBJ
-from gemseo.problem.mdo.sellar.variable import Y_1
-from gemseo.problem.mdo.sellar.variable import Y_2
+from gemseo.problem.mdo.sellar.variable import c_1
+from gemseo.problem.mdo.sellar.variable import c_2
+from gemseo.problem.mdo.sellar.variable import obj
+from gemseo.problem.mdo.sellar.variable import y_1
+from gemseo.problem.mdo.sellar.variable import y_2
 from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
 from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
@@ -49,7 +49,7 @@ from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
 from gemseo.util.testing.helper import assert_exception
 
-from .test_dependency_graph import DISC_DESCRIPTIONS
+from .test_dependency_graph import disc_descriptions
 
 if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
@@ -62,13 +62,13 @@ def test_couplings_sellar(snapshot) -> None:
 
     strong_couplings = coupling_structure.strong_couplings
     weak_couplings = coupling_structure.weak_couplings
-    assert strong_couplings == [Y_1, Y_2]
-    assert weak_couplings == [C_1, C_2, OBJ]
+    assert strong_couplings == [y_1, y_2]
+    assert weak_couplings == [c_1, c_2, obj]
 
     input_coupl = coupling_structure.get_input_couplings(disciplines[1])
-    assert input_coupl == [Y_1]
+    assert input_coupl == [y_1]
     input_coupl = coupling_structure.get_input_couplings(disciplines[2])
-    assert input_coupl == [Y_1, Y_2]
+    assert input_coupl == [y_1, y_2]
 
     with assert_exception(ValueError, snapshot):
         coupling_structure.find_discipline("foo")
@@ -98,7 +98,7 @@ def test_n2(tmp_wd, snapshot) -> None:
     coupling_structure.plot_n2_chart("n2_2.png")
     assert exists("n2_2.png")
 
-    disc_shuff = list(DISC_DESCRIPTIONS["16"].items())
+    disc_shuff = list(disc_descriptions["16"].items())
     shuffle(disc_shuff)
     disc_shuff = dict(disc_shuff)
     disciplines = create_disciplines_from_desc(disc_shuff)

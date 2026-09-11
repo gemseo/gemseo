@@ -28,7 +28,7 @@ from numpy.random import default_rng
 from gemseo.machine_learning.resampling.core.base_resampler import BaseResampler
 from gemseo.machine_learning.resampling.split import Split
 from gemseo.machine_learning.resampling.splits import Splits
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -51,7 +51,7 @@ class CrossValidation(BaseResampler):
         sample_indices: IntegerArray,
         n_folds: int = 5,
         randomize: bool = False,
-        seed: int | None = SEED,
+        seed: int | None = seed,
     ) -> None:
         """
         Args:

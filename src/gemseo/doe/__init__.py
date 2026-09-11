@@ -20,12 +20,15 @@ solving an [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem]
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.core.problem.evaluation import EvaluationProblem  # noqa: F401
     from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings  # noqa: F401
@@ -63,7 +66,7 @@ if TYPE_CHECKING:
 
 # Exported name -> "module.path:Attr" (lazy-loaded on attribute access).
 # The module path is relative to ``gemseo.doe``.
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "CustomDOE_Settings": "custom_doe.settings.custom_doe_settings:CustomDOE_Settings",
     "DiagonalDOE_Settings": "diagonal_doe.diagonal_doe:DiagonalDOE_Settings",
     "EvaluationProblem": "gemseo.core.problem.evaluation:EvaluationProblem",
@@ -101,6 +104,6 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "PYDOE_PBDESIGN_Settings": "pydoe.settings.pydoe_pbdesign:PYDOE_PBDESIGN_Settings",
     "PoissonDisk_Settings": "scipy.settings.poisson_disk:PoissonDisk_Settings",
     "Sobol_Settings": "scipy.settings.sobol:Sobol_Settings",
-}
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

@@ -124,7 +124,7 @@ def test_system_form(
 ):
     """Test OT_SystemFORM."""
     system_form = OT_SystemFORM()
-    assert system_form._USE_MULTIFORM_RESULT
+    assert system_form._use_multiform_result
     kwargs = {}
     if settings is not None:
         kwargs["settings"] = OT_SystemFORM_Settings(optimizer=settings())

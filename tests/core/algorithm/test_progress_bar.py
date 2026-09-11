@@ -45,7 +45,7 @@ from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
 
-TICK = 0.1
+tick = 0.1
 """The duration in seconds of a call to the function to be evaluated."""
 
 
@@ -74,10 +74,10 @@ class Clock:
         """
         # Multiply instead of accumulating, to avoid the drift of the floating-point
         # additions; the expected times are computed with the very same expression.
-        return TICK * self.n_ticks
+        return tick * self.n_ticks
 
 
-CLOCK = Clock()
+clock = Clock()
 
 
 @pytest.fixture
@@ -143,8 +143,8 @@ def test_progress_bar(
     constraints_before_obj,
     objective_and_problem_for_tests,
 ) -> None:
-    CLOCK.n_ticks = 0
-    monkeypatch.setattr(tqdm_std, "time", CLOCK)
+    clock.n_ticks = 0
+    monkeypatch.setattr(tqdm_std, "time", clock)
     with caplog.at_level(logging.INFO):
         lib = ProgressOpt(offsets, constraints_before_obj, "TestDriver")
         f, problem = objective_and_problem_for_tests
@@ -162,10 +162,10 @@ def test_progress_bar(
                     count[k] += 1
                     assert str(int(f.evaluate(5.0 + offsets[k] * 10))) in record.message
                     elapsed = tqdm.format_interval(
-                        TICK * (n_calls_per_iteration * (k + 1))
+                        tick * (n_calls_per_iteration * (k + 1))
                     )
                     remaining = tqdm.format_interval(
-                        TICK * (n_calls_per_iteration * (len(offsets) - (k + 1)))
+                        tick * (n_calls_per_iteration * (len(offsets) - (k + 1)))
                     )
                     assert f"[{elapsed}<{remaining}," in record.message
         assert max(count) == 1
@@ -217,7 +217,7 @@ def test_parallel_doe(caplog, offsets, objective_and_problem_for_tests) -> None:
 
 
 def dummy_sleep_function(x):
-    CLOCK.tick()
+    clock.tick()
     return -x
 
 

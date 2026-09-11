@@ -30,7 +30,7 @@ from gemseo.util.pydantic import BaseSettings
 class SPJointDistribution_Settings(BaseJointDistributionSettings):  # noqa: N801
     """The settings of a SciPy-based joint probability distribution."""
 
-    _LIBRARY_NAME: ClassVar[str] = "SciPy"
+    _library_name: ClassVar[str] = "SciPy"
 
     marginal_settings: Sequence[BaseSettings] = Field(
         description="The SciPy-based marginal probability distributions."

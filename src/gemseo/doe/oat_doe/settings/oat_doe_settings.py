@@ -24,7 +24,7 @@ from pydantic.types import PositiveFloat  # noqa: TC002
 from gemseo.doe.core.base_doe_settings import BaseDOESettings
 from gemseo.util.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 
-DEFAULT_STEP: Final[float] = 0.05
+default_step: Final[float] = 0.05
 """The default relative step of the OAT method."""
 
 
@@ -36,7 +36,7 @@ class OATDOE_Settings(BaseDOESettings):  # noqa: N801
     )
 
     step: PositiveFloat = Field(
-        default=DEFAULT_STEP,
+        default=default_step,
         lt=0.5,
         description="""The relative step of the OAT DOE.
 

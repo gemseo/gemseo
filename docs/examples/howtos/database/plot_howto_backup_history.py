@@ -44,7 +44,7 @@ from gemseo.optimization import SLSQP_Settings
 from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
 
-BACKUP_FILE = Path("backup.hdf5")
+backup_file = Path("backup.hdf5")
 
 # %%
 # ### 1. Create the scenario
@@ -84,7 +84,7 @@ scenario.add_objective("obj")
 #     Passing both `erase=True` and `load=True` raises a `ValueError`
 #     because they are mutually exclusive:
 #     you cannot erase a file and then load it.
-scenario.set_backup_settings(BACKUP_FILE)
+scenario.set_backup_settings(backup_file)
 
 # %%
 # ### 3. Execute and verify the backup
@@ -98,7 +98,7 @@ scenario.execute(SLSQP_Settings(max_iter=20))
 # %%
 # After execution you confirm that the file was written
 # and check how many unique design points were stored in the database.
-print(f"Backup file exists: {BACKUP_FILE.exists()}")
+print(f"Backup file exists: {backup_file.exists()}")
 print(f"Evaluations stored: {len(scenario.formulation.problem.database)}")
 
 # %%
@@ -119,7 +119,7 @@ design_space.set_current_value(array([4.0, 4.0]))
 # are injected into the database.
 scenario_2 = MDOScenario([discipline], design_space)
 scenario_2.add_objective("obj")
-scenario_2.set_backup_settings(BACKUP_FILE, load=True)
+scenario_2.set_backup_settings(backup_file, load=True)
 
 # %%
 # The pre-loaded count matches the number of evaluations from the first run.
@@ -142,7 +142,7 @@ scenario_2.execute(SLSQP_Settings(max_iter=20))
 #     so no discipline evaluation takes place for those points.
 #
 # You remove the file for documentation purposes:
-BACKUP_FILE.unlink()
+backup_file.unlink()
 
 # %%
 # ## Summary

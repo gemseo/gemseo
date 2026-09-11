@@ -89,7 +89,7 @@ data = iris.get_view(indices=samples)
 
 # %%
 # or only the parameters:
-iris.get_view(group_names=iris.PARAMETER_GROUP, indices=samples)
+iris.get_view(group_names=iris.parameter_group, indices=samples)
 
 # %%
 # or only the labels:

@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 from openturns import ProbabilitySimulationResult
 
-from gemseo.uncertainty.reliability.factory import RELIABILITY_ALGORITHM_FACTORY
+from gemseo.uncertainty.reliability.factory import reliability_algorithm_factory
 from gemseo.uncertainty.reliability.openturns.faure_settings import OT_Faure_Settings
 from gemseo.uncertainty.reliability.openturns.halton_settings import OT_Halton_Settings
 from gemseo.uncertainty.reliability.openturns.haselgrove_settings import (
@@ -76,7 +76,7 @@ def test_sampling(function, uncertain_space, settings, greater, expected):
     sampling = (
         OT_MC()
         if settings is None
-        else RELIABILITY_ALGORITHM_FACTORY.create(settings.target_class_name)
+        else reliability_algorithm_factory.create(settings.target_class_name)
     )
     kwargs = {}
     if settings is not None:

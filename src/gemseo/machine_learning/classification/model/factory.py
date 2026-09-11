@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.machine_learning.classification.core.base_classifier import BaseClassifier
@@ -30,9 +31,11 @@ from gemseo.machine_learning.core.model.factory import MLModelFactory
 class ClassifierFactory(MLModelFactory):
     """A factory of classification models."""
 
-    _CLASS = BaseClassifier
-    _MOODULE_NAMES = ("gemseo.machine_learning.classification.model",)
+    _class: ClassVar[type[BaseClassifier]] = BaseClassifier
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.machine_learning.classification.model",
+    )
 
 
-CLASSIFIER_FACTORY: Final[ClassifierFactory] = ClassifierFactory()
+classifier_factory: Final[ClassifierFactory] = ClassifierFactory()
 """The factory for `BaseClassifier` objects."""

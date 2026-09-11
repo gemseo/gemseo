@@ -25,7 +25,7 @@ from numpy import asfortranarray
 from gemseo.core.problem.database import Database
 from gemseo.util.hashable_ndarray import HashableNdarray
 
-NON_CONTIGUOUS_ARRAYS = {
+non_contiguous_arrays = {
     "strided": arange(10.0)[::3],
     "reversed": arange(5.0)[::-1],
     "transposed": arange(6.0).reshape(2, 3).T,
@@ -76,7 +76,7 @@ def test_hash_special_shapes(array_) -> None:
 
 
 @pytest.mark.parametrize(
-    "array_", NON_CONTIGUOUS_ARRAYS.values(), ids=NON_CONTIGUOUS_ARRAYS.keys()
+    "array_", non_contiguous_arrays.values(), ids=non_contiguous_arrays.keys()
 )
 def test_non_contiguous_array(array_) -> None:
     """Check that a non-contiguous array is hashed as its C-contiguous copy."""

@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
 OptionType = int | float | bool | list[str] | StrPath | TextIO | RealArray | None
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
@@ -59,7 +59,7 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
     does not.
     """
 
-    _USE_UNIT_HYPERCUBE: ClassVar[bool] = False
+    _use_unit_hypercube: ClassVar[bool] = False
 
     ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
         "CustomDOE": DOEAlgorithmDescription(
@@ -107,7 +107,7 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
                 comment=comments,
             ).to_numpy()
         except Exception:
-            LOGGER.exception("Failed to load the DOE file %s", doe_file)
+            logger.exception("Failed to load the DOE file %s", doe_file)
             raise
 
         return samples

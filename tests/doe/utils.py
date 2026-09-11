@@ -23,7 +23,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 
 if TYPE_CHECKING:
@@ -71,7 +71,7 @@ def execute_problem(
         The DOE library after the execution of the DOE algorithm on the problem.
     """
     problem = get_problem(dim)
-    doe_library = DOE_LIBRARY_FACTORY.create(doe_algo_name)
+    doe_library = doe_library_factory.create(doe_algo_name)
     settings = doe_library.ALGORITHM_INFOS[doe_algo_name].settings_class(**options)
     doe_library.execute(problem, settings=settings)
     return doe_library
@@ -95,7 +95,7 @@ def check_problem_execution(
         The error message, if any.
     """
     problem = get_problem(dim)
-    doe_library = DOE_LIBRARY_FACTORY.create(algo_name)
+    doe_library = doe_library_factory.create(algo_name)
     settings = doe_library.ALGORITHM_INFOS[algo_name].settings_class(**options)
     doe_library.execute(problem, settings=settings)
     samples = doe_library.unit_samples
@@ -167,9 +167,9 @@ def generate_test_functions(
         The test functions.
     """
     tests = []
-    if DOE_LIBRARY_FACTORY.is_available(opt_lib_name):
+    if doe_library_factory.is_available(opt_lib_name):
         for dim in [1, 5]:
-            cls = DOE_LIBRARY_FACTORY.get_class(opt_lib_name)
+            cls = doe_library_factory.get_class(opt_lib_name)
             algos = cls.filter_adapted_algorithms(get_problem(dim))
             for algo_name in algos:
                 options = deepcopy(get_options(algo_name, dim))

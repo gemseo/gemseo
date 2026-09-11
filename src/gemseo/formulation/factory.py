@@ -21,18 +21,25 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 
 from gemseo.formulation.core.base_factory import BaseFormulationFactory
 from gemseo.formulation.core.base_mdo import BaseMDOFormulation
 
+if TYPE_CHECKING:
+    from gemseo.formulation.core.base_settings import BaseFormulationSettings
+
 
 class MDOFormulationFactory(BaseFormulationFactory):
     """A factory of MDO formulations."""
 
-    _CLASS = BaseMDOFormulation
-    _PACKAGE_NAMES = ("gemseo.formulation",)
+    _class: ClassVar[type[BaseMDOFormulation[BaseFormulationSettings]]] = (
+        BaseMDOFormulation  # type: ignore[type-abstract]
+    )
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.formulation",)
 
 
-MDO_FORMULATION_FACTORY: Final[MDOFormulationFactory] = MDOFormulationFactory()
+mdo_formulation_factory: Final[MDOFormulationFactory] = MDOFormulationFactory()
 """The factory for `BaseMDOFormulation` objects."""

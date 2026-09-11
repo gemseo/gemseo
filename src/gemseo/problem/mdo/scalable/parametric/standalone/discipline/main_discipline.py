@@ -32,16 +32,16 @@ from gemseo.problem.mdo.scalable.parametric.standalone.discipline.base_disciplin
     BaseDiscipline,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    OBJECTIVE_NAME,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    SHARED_DESIGN_VARIABLE_NAME,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_constraint_name,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_coupling_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    objective_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    shared_design_variable_name,
 )
 
 if TYPE_CHECKING:
@@ -95,7 +95,7 @@ class MainDiscipline(BaseDiscipline):
         }
         self.__t_i = t_i
         self.input_names = sorted(self.input_name_to_default_value.keys())
-        self.output_names = [OBJECTIVE_NAME]
+        self.output_names = [objective_name]
         self.output_names.extend(self.__c_i_names)
         self.name_to_size = {
             input_name: default_value.size
@@ -105,7 +105,7 @@ class MainDiscipline(BaseDiscipline):
             self.__c_i_names, self.__y_i_names, strict=False
         ):
             self.name_to_size[cstr_name] = self.name_to_size[cpl_name]
-        self.name_to_size[OBJECTIVE_NAME] = 1
+        self.name_to_size[objective_name] = 1
 
     def __call__(
         self,
@@ -127,7 +127,7 @@ class MainDiscipline(BaseDiscipline):
             Either the values of the objective and constraints or their derivatives.
         """
         if x_0 is None:
-            x_0 = self.input_name_to_default_value[SHARED_DESIGN_VARIABLE_NAME]
+            x_0 = self.input_name_to_default_value[shared_design_variable_name]
 
         y_i_ = self.__y_i_name_to_default_value.copy()
         y_i_.update(y_i)
@@ -143,17 +143,17 @@ class MainDiscipline(BaseDiscipline):
                     for input_name in self.input_names
                 }
 
-            jacobian[OBJECTIVE_NAME][SHARED_DESIGN_VARIABLE_NAME] = 2 * x_0[newaxis, :]
+            jacobian[objective_name][shared_design_variable_name] = 2 * x_0[newaxis, :]
             for y_i_name, c_i_name in zip(
                 self.__y_i_names, self.__c_i_names, strict=False
             ):
-                jacobian[OBJECTIVE_NAME][y_i_name] = 2 * y_i_[y_i_name][newaxis, :]
+                jacobian[objective_name][y_i_name] = 2 * y_i_[y_i_name][newaxis, :]
                 jacobian[c_i_name][y_i_name] = -eye(self.name_to_size[y_i_name])
 
             return jacobian
 
         output_name_to_value = {
-            OBJECTIVE_NAME: array([
+            objective_name: array([
                 sum((y_i__**2).sum() for y_i__ in y_i_.values()) + (x_0**2).sum()
             ])
         }

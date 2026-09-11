@@ -19,22 +19,10 @@ from __future__ import annotations
 import pytest
 
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    CONSTRAINT_VARIABLE_BASE_NAME,
+    constraint_variable_base_name,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    COUPLING_VARIABLE_BASE_NAME,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    LOCAL_DESIGN_VARIABLE_BASE_NAME,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    OBJECTIVE_NAME,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    SHARED_DESIGN_VARIABLE_NAME,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    UNCERTAIN_VARIABLE_BASE_NAME,
+    coupling_variable_base_name,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_constraint_name,
@@ -47,6 +35,18 @@ from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_x_local_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    local_design_variable_base_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    objective_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    shared_design_variable_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    uncertain_variable_base_name,
 )
 
 
@@ -73,12 +73,12 @@ def test_get_constraint_name() -> None:
 @pytest.mark.parametrize(
     ("variable", "value"),
     [
-        (SHARED_DESIGN_VARIABLE_NAME, "x_0"),
-        (OBJECTIVE_NAME, "f"),
-        (LOCAL_DESIGN_VARIABLE_BASE_NAME, "x"),
-        (UNCERTAIN_VARIABLE_BASE_NAME, "u"),
-        (CONSTRAINT_VARIABLE_BASE_NAME, "c"),
-        (COUPLING_VARIABLE_BASE_NAME, "y"),
+        (shared_design_variable_name, "x_0"),
+        (objective_name, "f"),
+        (local_design_variable_base_name, "x"),
+        (uncertain_variable_base_name, "u"),
+        (constraint_variable_base_name, "c"),
+        (coupling_variable_base_name, "y"),
     ],
 )
 def test_names(variable, value) -> None:

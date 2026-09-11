@@ -158,15 +158,15 @@ def test_io_shape(io_dataset) -> None:
     assert model.output_dimension == 3
 
 
-DICT_1D = {"x_1": array([1.0]), "x_2": array([2.0, 3.0])}
-DICT_2D = {"x_1": array([[1.0]]), "x_2": array([[2.0, 3.0]])}
-DICT_2D_MULTISAMPLES = {
+dict_1d = {"x_1": array([1.0]), "x_2": array([2.0, 3.0])}
+dict_2d = {"x_1": array([[1.0]]), "x_2": array([[2.0, 3.0]])}
+dict_2d_multisamples = {
     "x_1": array([[1.0], [-1.0]]),
     "x_2": array([[2.0, 3.0], [-2.0, -3.0]]),
 }
-INPUT_VALUE_1D = array([1.0, 2.0, 3.0])
-INPUT_VALUE_2D = array([[1.0, 2.0, 3.0]])
-INPUT_VALUES = array([[1.0, 2.0, 3.0], [-1.0, -2.0, -3.0]])
+input_value_1d = array([1.0, 2.0, 3.0])
+input_value_2d = array([[1.0, 2.0, 3.0]])
+input_values = array([[1.0, 2.0, 3.0], [-1.0, -2.0, -3.0]])
 
 
 def test_format_dict(io_dataset) -> None:
@@ -183,21 +183,21 @@ def test_format_dict(io_dataset) -> None:
         partially_transformed[0] = input_data
         return input_data
 
-    out_dict_1d = predict_dict(ml_model, DICT_1D)
-    assert_array_equal(partially_transformed[0], INPUT_VALUE_1D)
-    out_dict_2d = predict_dict(ml_model, DICT_2D)
-    assert_array_equal(partially_transformed[0], INPUT_VALUE_2D)
-    out_dict_2d_multisamples = predict_dict(ml_model, DICT_2D_MULTISAMPLES)
-    assert_array_equal(partially_transformed[0], INPUT_VALUES)
+    out_dict_1d = predict_dict(ml_model, dict_1d)
+    assert_array_equal(partially_transformed[0], input_value_1d)
+    out_dict_2d = predict_dict(ml_model, dict_2d)
+    assert_array_equal(partially_transformed[0], input_value_2d)
+    out_dict_2d_multisamples = predict_dict(ml_model, dict_2d_multisamples)
+    assert_array_equal(partially_transformed[0], input_values)
 
-    out_value_1d = predict_dict(ml_model, INPUT_VALUE_1D)
-    assert_array_equal(partially_transformed[0], INPUT_VALUE_1D)
+    out_value_1d = predict_dict(ml_model, input_value_1d)
+    assert_array_equal(partially_transformed[0], input_value_1d)
     assert_array_equal(partially_transformed[0], out_value_1d)
-    out_value_2d = predict_dict(ml_model, INPUT_VALUE_2D)
-    assert_array_equal(partially_transformed[0], INPUT_VALUE_2D)
+    out_value_2d = predict_dict(ml_model, input_value_2d)
+    assert_array_equal(partially_transformed[0], input_value_2d)
     assert_array_equal(partially_transformed[0], out_value_2d)
-    out_values = predict_dict(ml_model, INPUT_VALUES)
-    assert_array_equal(partially_transformed[0], INPUT_VALUES)
+    out_values = predict_dict(ml_model, input_values)
+    assert_array_equal(partially_transformed[0], input_values)
     assert_array_equal(partially_transformed[0], out_values)
 
     assert isinstance(out_dict_1d, dict)
@@ -225,28 +225,28 @@ def test_format_sample(io_dataset) -> None:
         partially_transformed[0] = input_data
         return input_data
 
-    out_value_1d = predict_sample(ml_model, INPUT_VALUE_1D)
-    assert_array_equal(partially_transformed[0], INPUT_VALUE_1D[None])
+    out_value_1d = predict_sample(ml_model, input_value_1d)
+    assert_array_equal(partially_transformed[0], input_value_1d[None])
 
-    out_value_2d = predict_sample(ml_model, INPUT_VALUE_2D)
-    assert_array_equal(partially_transformed[0], INPUT_VALUE_2D)
+    out_value_2d = predict_sample(ml_model, input_value_2d)
+    assert_array_equal(partially_transformed[0], input_value_2d)
 
-    out_values = predict_sample(ml_model, INPUT_VALUES)
-    assert_array_equal(partially_transformed[0], INPUT_VALUES)
+    out_values = predict_sample(ml_model, input_values)
+    assert_array_equal(partially_transformed[0], input_values)
 
-    assert_array_equal(out_value_1d, INPUT_VALUE_1D)
-    assert_array_equal(out_value_2d, INPUT_VALUE_2D)
-    assert_array_equal(out_values, INPUT_VALUES)
+    assert_array_equal(out_value_1d, input_value_1d)
+    assert_array_equal(out_value_2d, input_value_2d)
+    assert_array_equal(out_values, input_values)
 
 
 @pytest.fixture(scope="module")
 def dataset_for_transform() -> IODataset:
     """A dataset to check that DataFormatter format_transform()."""
     data = IODataset()
-    data.add_variable("x1", array([[0.0], [2.0]]), data.INPUT_GROUP)
-    data.add_variable("x2", array([[0.0], [2.0]]), data.INPUT_GROUP)
-    data.add_variable("y1", array([[0.0], [4.0]]), data.OUTPUT_GROUP)
-    data.add_variable("y2", array([[0.0], [4.0]]), data.OUTPUT_GROUP)
+    data.add_variable("x1", array([[0.0], [2.0]]), data.input_group)
+    data.add_variable("x2", array([[0.0], [2.0]]), data.input_group)
+    data.add_variable("y1", array([[0.0], [4.0]]), data.output_group)
+    data.add_variable("y2", array([[0.0], [4.0]]), data.output_group)
     return data
 
 
@@ -342,13 +342,13 @@ def test_format_transform(
 def dataset() -> Dataset:
     """A learning dataset for the function y=x."""
     data = IODataset()
-    data.add_variable("x", array([[1.0], [2.0]]), data.INPUT_GROUP)
-    data.add_variable("y", array([[1.0], [2.0]]), data.OUTPUT_GROUP)
+    data.add_variable("x", array([[1.0], [2.0]]), data.input_group)
+    data.add_variable("y", array([[1.0], [2.0]]), data.output_group)
     return data
 
 
 @pytest.mark.parametrize(
-    "name", [IODataset.INPUT_GROUP, IODataset.OUTPUT_GROUP, "x", "y"]
+    "name", [IODataset.input_group, IODataset.output_group, "x", "y"]
 )
 @pytest.mark.parametrize("fit_transformers", [False, True])
 def test_fit_transformers_option(dataset, name, fit_transformers) -> None:

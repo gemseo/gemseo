@@ -38,43 +38,43 @@ from pathlib import Path
 import mkdocs_gen_files
 import yaml
 
-_TYPES = frozenset({"explanation", "tutorial", "howto", "reference"})
+_types = frozenset({"explanation", "tutorial", "howto", "reference"})
 
-_REQUIRED_GOAL_KEYS = ("id", "code", "title", "audience", "blurb", "resources")
+_required_goal_keys = ("id", "code", "title", "audience", "blurb", "resources")
 
-_SOURCE_DIR = Path("docs/learning_paths")
-_DOCS_DIR = _SOURCE_DIR.parent
-_OUTPUT_PATH = "assets/learning_paths.json"
+_source_dir = Path("docs/learning_paths")
+_docs_dir = _source_dir.parent
+_output_path = "assets/learning_paths.json"
 
 # The gallery pages are written by the gallery plugin, possibly after this
 # script runs, so a `generated/examples/<rest>/` path is resolved against the
 # example source it is built from instead: the `docs/examples/<rest>.py` script
 # of a single example, or the `README.md` of a gallery section.
-_GALLERY_PREFIX = "generated/examples/"
-_EXAMPLES_DIR = _DOCS_DIR / "examples"
+_gallery_prefix = "generated/examples/"
+_examples_dir = _docs_dir / "examples"
 
 # How many snippet includes [_read_page_title][] follows before giving up.
-_MAX_SNIPPET_DEPTH = 3
+_max_snippet_depth = 3
 
-_FENCED_CODE = re.compile(r"```.*?```", re.DOTALL)
-_HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
+_fenced_code = re.compile(r"```.*?```", re.DOTALL)
+_html_comment = re.compile(r"<!--.*?-->", re.DOTALL)
 # The module docstring of an example script, whose first heading is the title
 # the gallery gives to the generated page.
-_PY_DOCSTRING = re.compile(r'"""(.*?)"""', re.DOTALL)
-_H1 = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
+_py_docstring = re.compile(r'"""(.*?)"""', re.DOTALL)
+_h1 = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
 # The trailing attribute list of a heading, e.g. `# Title { #the-anchor }`.
-_HEADING_ATTRIBUTES = re.compile(r"\s*\{[^}]*\}\s*$")
+_heading_attributes = re.compile(r"\s*\{[^}]*\}\s*$")
 # The type prefix a heading carries for the listing it appears in: the gallery
 # index for an example, the algorithms section for a generated table. The card
 # of the home page is already headed by the type of its group, so the prefix
 # would only be said twice, on a line that has no room for it.
-_TITLE_PREFIX = re.compile(r"^(?:Tutorial\s*-\s*|Available:\s*)")
+_title_prefix = re.compile(r"^(?:Tutorial\s*-\s*|Available:\s*)")
 # A pymdownx.snippets include, resolved from the project root as that extension
 # is configured without a `base_path`. The pages of the `algorithms/` section
 # hold nothing but such an include, so their title lives in the included file,
 # which docs/_scripts/algos/script.py writes before this script runs.
-_SNIPPET = re.compile(r'^--8<--\s+"([^"]+)"\s*$', re.MULTILINE)
-_PROJECT_DIR = _DOCS_DIR.parent
+_snippet = re.compile(r'^--8<--\s+"([^"]+)"\s*$', re.MULTILINE)
+_project_dir = _docs_dir.parent
 
 
 def _load_yaml(path: Path) -> dict:
@@ -123,11 +123,11 @@ def _resolve_source(path: str) -> Path | None:
         return None
 
     stripped = path.strip("/")
-    if stripped.startswith(_GALLERY_PREFIX):
-        rest = stripped[len(_GALLERY_PREFIX) :]
-        candidates = (_EXAMPLES_DIR / f"{rest}.py", _EXAMPLES_DIR / rest / "README.md")
+    if stripped.startswith(_gallery_prefix):
+        rest = stripped[len(_gallery_prefix) :]
+        candidates = (_examples_dir / f"{rest}.py", _examples_dir / rest / "README.md")
     else:
-        candidates = (_DOCS_DIR / f"{stripped}.md", _DOCS_DIR / stripped / "index.md")
+        candidates = (_docs_dir / f"{stripped}.md", _docs_dir / stripped / "index.md")
 
     for candidate in candidates:
         if candidate.is_file():
@@ -181,24 +181,24 @@ def _read_page_title(file: Path, depth: int = 0) -> str | None:
     text = file.read_text(encoding="utf-8")
 
     if file.suffix == ".py":
-        docstring = _PY_DOCSTRING.search(text)
+        docstring = _py_docstring.search(text)
         if docstring is None:
             return None
         text = docstring.group(1)
     else:
-        text = _HTML_COMMENT.sub(" ", text)
+        text = _html_comment.sub(" ", text)
 
-    text = _FENCED_CODE.sub(" ", text)
-    heading = _H1.search(text)
+    text = _fenced_code.sub(" ", text)
+    heading = _h1.search(text)
     if heading is not None:
-        title = _HEADING_ATTRIBUTES.sub("", heading.group(1))
-        return _TITLE_PREFIX.sub("", title).strip() or None
+        title = _heading_attributes.sub("", heading.group(1))
+        return _title_prefix.sub("", title).strip() or None
 
-    if depth >= _MAX_SNIPPET_DEPTH:
+    if depth >= _max_snippet_depth:
         return None
 
-    for match in _SNIPPET.finditer(text):
-        included = _PROJECT_DIR / match.group(1)
+    for match in _snippet.finditer(text):
+        included = _project_dir / match.group(1)
         if not included.is_file():
             continue
         title = _read_page_title(included, depth + 1)
@@ -265,7 +265,7 @@ def _validate_goal(goal: dict, goal_id: str, source: Path) -> None:
             or
             the goal's `id` does not match `goal_id`.
     """
-    for key in _REQUIRED_GOAL_KEYS:
+    for key in _required_goal_keys:
         if key not in goal:
             msg = f"{source}: missing required key '{key}'."
             raise ValueError(msg)
@@ -289,8 +289,8 @@ def _validate_goal(goal: dict, goal_id: str, source: Path) -> None:
             if key not in resource:
                 msg = f"{source}: resource missing required key '{key}'."
                 raise ValueError(msg)
-        if resource["type"] not in _TYPES:
-            msg = f"{source}: invalid type '{resource['type']}' (expected {sorted(_TYPES)})."
+        if resource["type"] not in _types:
+            msg = f"{source}: invalid type '{resource['type']}' (expected {sorted(_types)})."
             raise ValueError(msg)
         file = _check_path(resource["path"], source)
         _fill_title(resource, source, file)
@@ -307,13 +307,13 @@ def _build_payload() -> dict:
         TypeError: When a YAML file is empty or does not hold a mapping.
         ValueError: When a goal definition is invalid.
     """
-    config = _load_yaml(_SOURCE_DIR / "_config.yml")
+    config = _load_yaml(_source_dir / "_config.yml")
 
     goals = []
     for goal_id in config["order"]:
-        source = _SOURCE_DIR / f"{goal_id}.yml"
+        source = _source_dir / f"{goal_id}.yml"
         if not source.is_file():
-            msg = f"{_SOURCE_DIR}/_config.yml lists '{goal_id}' but {source} does not exist."
+            msg = f"{_source_dir}/_config.yml lists '{goal_id}' but {source} does not exist."
             raise FileNotFoundError(msg)
         goal = _load_yaml(source)
         _validate_goal(goal, goal_id, source)
@@ -322,5 +322,5 @@ def _build_payload() -> dict:
     return {"goals": goals}
 
 
-with mkdocs_gen_files.open(_OUTPUT_PATH, "w") as output_file:
+with mkdocs_gen_files.open(_output_path, "w") as output_file:
     json.dump(_build_payload(), output_file, ensure_ascii=False)

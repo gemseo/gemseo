@@ -77,7 +77,7 @@ if TYPE_CHECKING:
 # with the default `JSONGrammar`,
 # more complex definitions would be required.
 
-DEFAULT_INPUT_DATA = {
+base_input_data = {
     "x": ones(1),
     "z": array([1.0, 0.0]),
     "y_1": {"dummy": ones(1)},
@@ -90,7 +90,7 @@ class SellarSystem(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        default_input_data = DEFAULT_INPUT_DATA.copy()
+        default_input_data = base_input_data.copy()
         self.input_grammar.update_from_data(default_input_data)
         self.output_grammar.update_from_names(["obj", "c_1", "c_2"])
         self.default_input_data = default_input_data
@@ -112,7 +112,7 @@ class Sellar1(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        default_input_data = DEFAULT_INPUT_DATA.copy()
+        default_input_data = base_input_data.copy()
         # Keep the y_1 data for easily defining the output grammar.
         output_grammar_data = {"y_1": default_input_data.pop("y_1")}
         self.input_grammar.update_from_data(default_input_data)
@@ -133,7 +133,7 @@ class Sellar2(Discipline):
 
     def __init__(self) -> None:
         super().__init__()
-        default_input_data = DEFAULT_INPUT_DATA.copy()
+        default_input_data = base_input_data.copy()
         del default_input_data["y_2"]
         del default_input_data["x"]
         self.input_grammar.update_from_data(default_input_data)

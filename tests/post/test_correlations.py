@@ -25,18 +25,18 @@ from pathlib import Path
 import pytest
 from matplotlib import pyplot
 
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.post.correlations import Correlations
 from gemseo.post.correlations_settings import Correlations_Settings
-from gemseo.post.factory import POST_FACTORY
+from gemseo.post.factory import post_factory
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.util.testing.helper import assert_exception
 
-PARENT_PATH = Path(__file__).parent
-POWER_HDF5_PATH = PARENT_PATH / "power2_opt_pb.h5"
-MOD_SELLAR_HDF5_PATH = PARENT_PATH / "modified_sellar_opt_pb.h5"
+parent_path = Path(__file__).parent
+power_hdf5_path = parent_path / "power2_opt_pb.h5"
+mod_sellar_hdf5_path = parent_path / "modified_sellar_opt_pb.h5"
 
 
 def test_correlations(tmp_wd, snapshot_matplotlib) -> None:
@@ -46,9 +46,9 @@ def test_correlations(tmp_wd, snapshot_matplotlib) -> None:
         tmp_wd : Fixture to move into a temporary directory.
     """
     problem = Rosenbrock(20)
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=L_BFGS_B_Settings())
+    optimization_library_factory.execute(problem, settings=L_BFGS_B_Settings())
 
-    post = POST_FACTORY.execute(
+    post = post_factory.execute(
         problem,
         Correlations_Settings(
             save=True,
@@ -71,8 +71,8 @@ def test_correlations_import(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    post = POST_FACTORY.execute(
+    problem = OptimizationProblem.from_hdf(power_hdf5_path)
+    post = post_factory.execute(
         problem,
         Correlations_Settings(
             save=True,
@@ -90,10 +90,10 @@ def test_correlations_import(tmp_wd) -> None:
 def test_correlations_func_name_error(snapshot) -> None:
     """Test ValueError for non-existent function."""
     problem = Rosenbrock(20)
-    OPTIMIZATION_LIBRARY_FACTORY.execute(problem, settings=L_BFGS_B_Settings())
+    optimization_library_factory.execute(problem, settings=L_BFGS_B_Settings())
 
     with assert_exception(ValueError, snapshot):
-        POST_FACTORY.execute(
+        post_factory.execute(
             problem, Correlations_Settings(save=False, show=False, func_names=["toto"])
         )
 
@@ -110,8 +110,8 @@ def test_correlations_func_names(func_names, snapshot_matplotlib) -> None:
         func_names: The function names subset for which the correlations
             are computed. If None, all functions are considered.
     """
-    problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    POST_FACTORY.execute(
+    problem = OptimizationProblem.from_hdf(power_hdf5_path)
+    post_factory.execute(
         problem,
         Correlations_Settings(
             func_names=func_names,
@@ -136,8 +136,8 @@ def test_func_name_sorting(snapshot_matplotlib) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    problem = OptimizationProblem.from_hdf(MOD_SELLAR_HDF5_PATH)
-    POST_FACTORY.execute(
+    problem = OptimizationProblem.from_hdf(mod_sellar_hdf5_path)
+    post_factory.execute(
         problem,
         Correlations_Settings(
             func_names=["obj", "c_1", "obj_constr"],
@@ -251,8 +251,8 @@ def test_common_scenario(
 ) -> None:
     """Check Correlations with objective, standardized or not."""
     opt = Correlations(common_problem)
-    maximum_correlation_coefficient = opt.MAXIMUM_CORRELATION_COEFFICIENT
-    opt.MAXIMUM_CORRELATION_COEFFICIENT = 1.0
+    maximum_correlation_coefficient = opt.maximum_correlation_coefficient
+    opt.maximum_correlation_coefficient = 1.0
     opt.execute(
         Correlations_Settings(
             func_names=["obj", "eq", "neg", "pos"],
@@ -260,4 +260,4 @@ def test_common_scenario(
             use_standardized_objective=use_standardized_objective,
         )
     )
-    opt.MAXIMUM_CORRELATION_COEFFICIENT = maximum_correlation_coefficient
+    opt.maximum_correlation_coefficient = maximum_correlation_coefficient

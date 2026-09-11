@@ -41,7 +41,7 @@ from gemseo.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.scipy.scipy_doe import SciPyDOE
 from gemseo.doe.scipy.settings.mc import MC_Settings
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.scipy_local import ScipyOpt
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
@@ -111,7 +111,7 @@ def test_progress_bar(enable_progress_bar, enable_logging, caplog) -> None:
     BaseDriverLibrary."""
     enable = configuration.logging.enable
     configuration.logging.enable = enable_logging
-    driver = OPTIMIZATION_LIBRARY_FACTORY.create("SLSQP")
+    driver = optimization_library_factory.create("SLSQP")
     driver.execute(
         Power2(), settings=SLSQP_Settings(enable_progress_bar=enable_progress_bar)
     )
@@ -321,3 +321,11 @@ def test_progress_bar_database_n_processes(caplog, use_database, n_processes):
     assert ("obj=11.2" in caplog.text) is use_database
     assert "100%" in caplog.text
     assert ("obj=79.3" in caplog.text) is use_database
+
+
+def test_get_result_without_result_class(snapshot) -> None:
+    """Check that _get_result raises when _result_class is not set."""
+    with concretize_classes(MyDriver):
+        driver = MyDriver()
+    with assert_exception(NotImplementedError, snapshot):
+        driver._get_result(OptimizationProblem(DesignSpace()), "message", None)

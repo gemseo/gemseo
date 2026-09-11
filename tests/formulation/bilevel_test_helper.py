@@ -24,7 +24,7 @@ from gemseo import create_discipline
 from gemseo import create_scenario
 from gemseo.formulation.bilevel_bcd_settings import BiLevelBCD_Settings
 from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings
-from gemseo.formulation.factory import MDO_FORMULATION_FACTORY
+from gemseo.formulation.factory import mdo_formulation_factory
 from gemseo.formulation.mdf_settings import MDF_Settings
 from gemseo.mda.gauss_seidel_settings import MDAGaussSeidel_Settings
 from gemseo.mda.jacobi_settings import MDAJacobi_Settings
@@ -76,7 +76,7 @@ def create_sobieski_bilevel_scenario(
         system = MDOScenario(
             [*sub_scenarios, SobieskiMission()],
             SobieskiProblem().design_space.filter(["x_shared", "y_14"]),
-            formulation_settings=MDO_FORMULATION_FACTORY.get_class(
+            formulation_settings=mdo_formulation_factory.get_class(
                 formulation_name
             ).settings_class(**settings),
         )

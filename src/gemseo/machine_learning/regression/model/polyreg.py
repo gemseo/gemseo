@@ -95,7 +95,7 @@ if TYPE_CHECKING:
 class PolynomialRegressor(LinearRegressor):
     """Polynomial regression model."""
 
-    SHORT_NAME: ClassVar[str] = "PolyReg"
+    short_name: ClassVar[str] = "PolyReg"
 
     settings_class: ClassVar[type[PolynomialRegressor_Settings]] = (
         PolynomialRegressor_Settings

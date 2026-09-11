@@ -48,10 +48,10 @@ class SPBetaDistribution(SPDistribution):
                     "scale": settings.maximum - settings.minimum,
                 },
                 standard_parameters={
-                    self._LOWER: settings.minimum,
-                    self._UPPER: settings.maximum,
-                    self._ALPHA: settings.alpha,
-                    self._BETA: settings.beta,
+                    self._lower: settings.minimum,
+                    self._upper: settings.maximum,
+                    self._alpha: settings.alpha,
+                    self._beta: settings.beta,
                 },
             )
         )

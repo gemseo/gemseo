@@ -25,6 +25,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import Final
 
 from strenum import StrEnum
@@ -40,10 +41,10 @@ if TYPE_CHECKING:
 class GrammarFactory(BaseFactory[BaseGrammar]):
     """A factory of [BaseGrammar][gemseo.core.grammar.base.BaseGrammar]."""
 
-    _CLASS = BaseGrammar
-    _PACKAGE_NAMES = ("gemseo.core.grammar",)
+    _class: ClassVar[type[BaseGrammar]] = BaseGrammar  # type: ignore[type-abstract]
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.core.grammar",)
 
-    __FILE_PATH_STR: Final[str] = "file_path"
+    __file_path_str: Final[str] = "file_path"
 
     def create(
         self,
@@ -82,7 +83,7 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
                 is not `"JSONGrammar"`,
                 or if `search_file` is `True` and `discipline_class` is `None`.
         """
-        if search_file and not options.get(self.__FILE_PATH_STR):
+        if search_file and not options.get(self.__file_path_str):
             if class_name != "JSONGrammar":
                 msg = (
                     "search_file=True is only supported for JSONGrammar; "
@@ -92,13 +93,13 @@ class GrammarFactory(BaseFactory[BaseGrammar]):
             if discipline_class is None:
                 msg = "discipline_class is required when search_file is True."
                 raise ValueError(msg)
-            options[self.__FILE_PATH_STR] = self.__search_file(
+            options[self.__file_path_str] = self.__search_file(
                 discipline_class, file_name_suffix, directory_path
             )
-        if class_name != "JSONGrammar" and not options.get(self.__FILE_PATH_STR):
+        if class_name != "JSONGrammar" and not options.get(self.__file_path_str):
             # `file_path` is JSONGrammar-specific; drop it when callers pass it as the
             # empty default so they can build any grammar type generically.
-            options.pop(self.__FILE_PATH_STR, None)
+            options.pop(self.__file_path_str, None)
         return super().create(class_name, name=name, **options)
 
     @staticmethod
@@ -160,5 +161,5 @@ class GrammarType(StrEnum):
     PYDANTIC = "PydanticGrammar"
 
 
-GRAMMAR_FACTORY: Final[GrammarFactory] = GrammarFactory()
+grammar_factory: Final[GrammarFactory] = GrammarFactory()
 """The factory for `BaseGrammar` objects."""

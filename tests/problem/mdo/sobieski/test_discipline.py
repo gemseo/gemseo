@@ -83,7 +83,7 @@ def test_execute_aerodynamics() -> None:
     )
 
 
-DV_NAMES = ["x_shared", "x_1", "x_2", "x_3"]
+dv_names = ["x_shared", "x_1", "x_2", "x_3"]
 
 
 def test_init_range_sg() -> None:

@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Final
 
 from pydantic import Field
@@ -25,10 +27,13 @@ from pydantic import field_validator
 
 from gemseo.post.dataset.base_cartesian_settings import BaseCartesianDatasetPlotSettings
 
-_DEFAULT_MATPLOTLIB_OPTIONS: Final[dict[str, str]] = {
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+_default_matplotlib_options: Final[Mapping[str, str]] = MappingProxyType({
     "interpolation": "nearest",
     "aspect": "auto",
-}
+})
 
 
 class Heatmap_Settings(BaseCartesianDatasetPlotSettings):  # noqa: N801
@@ -90,4 +95,4 @@ class Heatmap_Settings(BaseCartesianDatasetPlotSettings):  # noqa: N801
     def __validate_matplotlib_options(
         cls, matplotlib_options: dict[str, bool | float | str | None]
     ) -> dict[str, bool | float | str | None]:
-        return _DEFAULT_MATPLOTLIB_OPTIONS | matplotlib_options
+        return _default_matplotlib_options | matplotlib_options

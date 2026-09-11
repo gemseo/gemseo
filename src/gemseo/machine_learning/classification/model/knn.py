@@ -108,8 +108,8 @@ if TYPE_CHECKING:
 class KNNClassifier(BaseClassifier):
     """The k-nearest neighbors classification model."""
 
-    SHORT_NAME: ClassVar[str] = "KNN"
-    LIBRARY: ClassVar[str] = "scikit-learn"
+    short_name: ClassVar[str] = "KNN"
+    library: ClassVar[str] = "scikit-learn"
 
     settings_class: ClassVar[type[KNNClassifier_Settings]] = KNNClassifier_Settings
 

@@ -27,7 +27,7 @@ from gemseo.doe.core.base_doe import BaseDOE
 class BaseOTDOE(BaseDOE):
     """The base DOE algorithm using the OpenTURNS library."""
 
-    _STANDARD_UNIFORM_DISTRIBUTION: Final[Uniform] = Uniform(0, 1)
+    _standard_uniform_distribution: Final[Uniform] = Uniform(0, 1)
     r"""The uniform distribution over the interval $[0,1]$"""
 
     @classmethod
@@ -43,4 +43,4 @@ class BaseOTDOE(BaseDOE):
         Returns:
             The uniform distribution over the unit hypercube.
         """
-        return JointDistribution([cls._STANDARD_UNIFORM_DISTRIBUTION] * dimension)
+        return JointDistribution([cls._standard_uniform_distribution] * dimension)

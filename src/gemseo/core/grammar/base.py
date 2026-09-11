@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
-from gemseo.core.data_converter.factory import DATA_CONVERTER_FACTORY
+from gemseo.core.data_converter.factory import data_converter_factory
 from gemseo.core.discipline.namespace import namespaces_separator
 from gemseo.core.discipline.namespace import split_namespace
 from gemseo.core.discipline.namespace import update_namespaces
@@ -56,7 +56,7 @@ if TYPE_CHECKING:
 
     SimpleGrammarTypes = Mapping[str, type[Any] | None]
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BaseGrammar(
@@ -116,7 +116,7 @@ class BaseGrammar(
     _required_names: RequiredNames
     """The names of the required elements."""
 
-    DATA_CONVERTER_CLASS: ClassVar[str | type[BaseDataConverter[BaseGrammar]]]
+    data_converter_class: ClassVar[str | type[BaseDataConverter[BaseGrammar]]]
     """The class or the class name of the data converter."""
 
     def __init__(
@@ -135,7 +135,7 @@ class BaseGrammar(
             raise ValueError(msg)
         self.name = name
         self.clear()
-        self.__create_data_converter(self.DATA_CONVERTER_CLASS)
+        self.__create_data_converter(self.data_converter_class)
 
     def __str__(self) -> str:
         return f"Grammar name: {self.name}"
@@ -505,7 +505,7 @@ class BaseGrammar(
             data_is_valid = self._validate(data, error_message)
 
         if not data_is_valid:
-            LOGGER.error(error_message)
+            logger.error(error_message)
             if raise_exception:
                 raise InvalidDataError(str(error_message)) from None
 
@@ -730,5 +730,5 @@ class BaseGrammar(
             cls: The class or the class name of the data
         """
         if isinstance(cls, str):
-            cls = DATA_CONVERTER_FACTORY.get_class(cls)
+            cls = data_converter_factory.get_class(cls)
         self._data_converter = cls(grammar=self)

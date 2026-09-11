@@ -41,9 +41,9 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
 
-DATA_PATH = Path(__file__).absolute().parent / "data" / "dependency-graph"
+data_path = Path(__file__).absolute().parent / "data" / "dependency-graph"
 
-DISC_DESCRIPTIONS = {
+disc_descriptions = {
     "3-weak": {
         "A": (["x"], ["a"]),
         "B": (["x", "a"], ["b"]),
@@ -92,7 +92,7 @@ DISC_DESCRIPTIONS = {
 }
 
 
-@pytest.fixture(params=DISC_DESCRIPTIONS.items(), ids=DISC_DESCRIPTIONS.keys())
+@pytest.fixture(params=disc_descriptions.items(), ids=disc_descriptions.keys())
 def name_and_graph(request):
     """Return the name and graph from the full description."""
     name, disc_desc = request.param
@@ -111,7 +111,7 @@ def assert_file(file_path: Path) -> None:
     # strip because some reference files are stripped by our pre-commit hooks
     assert (
         file_path.read_text().strip()
-        == (DATA_PATH / file_path.name).read_text().strip()
+        == (data_path / file_path.name).read_text().strip()
     )
 
 
@@ -181,7 +181,7 @@ def test_couplings(tmp_wd, name_and_graph) -> None:
 
     # read back the just created json and the reference
     couplings = json.load(file_path.open())
-    ref_couplings = json.load((DATA_PATH / file_path).open())
+    ref_couplings = json.load((data_path / file_path).open())
 
     assert couplings == ref_couplings
 
@@ -225,7 +225,7 @@ def test_coupling_structure_plot(
 
 def test_no_graphviz(caplog, graph_with_self_coupling) -> None:
     """Check the message logged when graphviz is missing."""
-    with patch("gemseo.core.dependency_graph.GRAPHVIZ_IS_MISSING", True):
+    with patch("gemseo.core.dependency_graph.graphviz_is_missing", True):
         assert graph_with_self_coupling.render_full_graph("graph.pdf") is None
         _, log_level, log_message = caplog.record_tuples[0]
         assert log_level == logging.WARNING

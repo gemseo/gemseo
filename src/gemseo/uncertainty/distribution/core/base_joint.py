@@ -101,7 +101,7 @@ from numpy import array
 from numpy import column_stack
 
 from gemseo.uncertainty.distribution.core.base import BaseDistribution
-from gemseo.uncertainty.distribution.factory import DISTRIBUTION_FACTORY
+from gemseo.uncertainty.distribution.factory import distribution_factory
 from gemseo.util.typing import RealArray
 from gemseo.util.typing import StrKeyMapping
 
@@ -136,7 +136,7 @@ class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
             settings: The settings of the probability distribution.
         """  # noqa: D205,D212,D415
         self.__marginals = [
-            DISTRIBUTION_FACTORY.create_from_settings(settings)
+            distribution_factory.create_from_settings(settings)
             for settings in settings.marginal_settings
         ]
         super().__init__(settings)

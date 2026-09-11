@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
@@ -30,9 +31,9 @@ from gemseo.uncertainty.distribution.core.base import BaseDistribution
 class DistributionFactory(BaseFactory):
     """A factory of probability distributions."""
 
-    _CLASS = BaseDistribution
-    _PACKAGE_NAMES = ("gemseo.uncertainty.distribution",)
+    _class: ClassVar[type[BaseDistribution]] = BaseDistribution
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.uncertainty.distribution",)
 
 
-DISTRIBUTION_FACTORY: Final[DistributionFactory] = DistributionFactory()
+distribution_factory: Final[DistributionFactory] = DistributionFactory()
 """The factory for `BaseDistribution` objects."""

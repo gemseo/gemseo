@@ -48,7 +48,7 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
     `__getstate__` from the subclasses.
     """
 
-    _ATTR_NOT_TO_SERIALIZE: ClassVar[set[str]] = set()
+    _attr_not_to_serialize: ClassVar[set[str]] = set()
     """The attributes that shall be skipped at serialization.
 
     Private attributes shall be written following name mangling conventions:
@@ -58,7 +58,7 @@ class Serializable(metaclass=GoogleDocstringInheritanceMeta):
 
     def __getstate__(self) -> dict[str, Any]:
         state = {}
-        for attribute_name in self.__dict__.keys() - self._ATTR_NOT_TO_SERIALIZE:
+        for attribute_name in self.__dict__.keys() - self._attr_not_to_serialize:
             attribute_value = self.__dict__[attribute_name]
 
             if isinstance(attribute_value, Synchronized):

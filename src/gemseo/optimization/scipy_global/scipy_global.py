@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from sys import maxsize
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -57,6 +58,7 @@ from gemseo.space.util import get_value_and_bounds
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from collections.abc import Mapping
 
     from gemseo.core.function.array_function import OutputType
     from gemseo.core.function.array_function import WrappedFunctionType
@@ -83,21 +85,21 @@ class SciPyGlobalAlgorithmDescription(OptimizationAlgorithmDescription):
 class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
     """The library of SciPy global optimization algorithms."""
 
-    __NAMES_TO_FUNCTIONS: ClassVar[dict[str, Callable]] = {
+    __names_to_functions: ClassVar[Mapping[str, Callable]] = MappingProxyType({
         "DIFFERENTIAL_EVOLUTION": differential_evolution,
         "DUAL_ANNEALING": dual_annealing,
         "SHGO": shgo,
-    }
+    })
     """The mapping between the algorithm name and the SciPy function."""
 
-    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/generated/"
+    __doc: Final[str] = "https://docs.scipy.org/doc/scipy/reference/generated/"
 
     ALGORITHM_INFOS: ClassVar[dict[str, SciPyGlobalAlgorithmDescription]] = {
         "DUAL_ANNEALING": SciPyGlobalAlgorithmDescription(
             algorithm_name="Dual annealing",
             description="Dual annealing",
             internal_algorithm_name="dual_annealing",
-            website=f"{__DOC}scipy.optimize.dual_annealing.html",
+            website=f"{__doc}scipy.optimize.dual_annealing.html",
             settings_class=DUAL_ANNEALING_Settings,
         ),
         "SHGO": SciPyGlobalAlgorithmDescription(
@@ -107,7 +109,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
             handle_inequality_constraints=True,
             internal_algorithm_name="shgo",
             positive_constraints=True,
-            website=f"{__DOC}scipy.optimize.shgo.html",
+            website=f"{__doc}scipy.optimize.shgo.html",
             settings_class=SHGO_Settings,
         ),
         "DIFFERENTIAL_EVOLUTION": SciPyGlobalAlgorithmDescription(
@@ -116,7 +118,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
             internal_algorithm_name="differential_evolution",
-            website=f"{__DOC}scipy.optimize.differential_evolution.html",
+            website=f"{__doc}scipy.optimize.differential_evolution.html",
             settings_class=DIFFERENTIAL_EVOLUTION_Settings,
         ),
     }
@@ -180,7 +182,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
         else:  # Necessarily the differential evolution algorithm
             filtered_settings["maxiter"] = maxsize
 
-        global_optimizer = self.__NAMES_TO_FUNCTIONS[self._algo_name]
+        global_optimizer = self.__names_to_functions[self._algo_name]
         opt_result = global_optimizer(
             func=self._compute_objective,
             bounds=bounds,

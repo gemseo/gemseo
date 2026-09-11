@@ -88,7 +88,7 @@ dataset
 #
 # Pass an additional dictionary mapping each variable name to its group.
 # Variables not listed fall back to
-# [Dataset.DEFAULT_GROUP][gemseo.dataset.dataset.Dataset.DEFAULT_GROUP]:
+# [Dataset.default_group][gemseo.dataset.dataset.Dataset.default_group]:
 groups = {"x_1": "inputs", "x_2": "inputs", "y_1": "outputs"}
 dataset = Dataset.from_array(data, ["x_1", "x_2", "y_1"], name_to_size, groups)
 dataset

@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.core.algorithm.factory import DriverLibraryFactory
@@ -31,11 +32,11 @@ from gemseo.optimization.core.base_optimization_library import BaseOptimizationL
 class OptimizationLibraryFactory(DriverLibraryFactory):
     """A factory of optimization libraries."""
 
-    _CLASS = BaseOptimizationLibrary
-    _PACKAGE_NAMES = ("gemseo.optimization",)
+    _class: ClassVar[type[BaseOptimizationLibrary]] = BaseOptimizationLibrary
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.optimization",)
 
 
-OPTIMIZATION_LIBRARY_FACTORY: Final[OptimizationLibraryFactory] = (
+optimization_library_factory: Final[OptimizationLibraryFactory] = (
     OptimizationLibraryFactory()
 )
 """The factory for `OptimizationLibrary` objects."""

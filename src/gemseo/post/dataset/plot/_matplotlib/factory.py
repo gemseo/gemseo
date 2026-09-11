@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.post.dataset.plot._matplotlib.plot import MatplotlibPlot
 from gemseo.post.dataset.plot.factory import PlotFactory
 
@@ -23,5 +25,7 @@ from gemseo.post.dataset.plot.factory import PlotFactory
 class MatplotlibPlotFactory(PlotFactory):
     """A factory of plots based on matplotlib."""
 
-    _CLASS = MatplotlibPlot
-    _PACKAGE_NAMES = ("gemseo.post.dataset.plot._matplotlib",)
+    _class: ClassVar[type[MatplotlibPlot]] = MatplotlibPlot
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.post.dataset.plot._matplotlib",
+    )

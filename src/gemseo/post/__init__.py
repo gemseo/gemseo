@@ -16,12 +16,15 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     # static visibility for mypy / IDEs
     from gemseo.post.animation import Animation  # noqa: F401
     from gemseo.post.animation_settings import Animation_Settings  # noqa: F401
@@ -33,7 +36,7 @@ if TYPE_CHECKING:
     from gemseo.post.constraints_history_settings import ConstraintsHistory_Settings  # noqa: F401
     from gemseo.post.correlations import Correlations  # noqa: F401
     from gemseo.post.correlations_settings import Correlations_Settings  # noqa: F401
-    from gemseo.post.factory import POST_FACTORY  # noqa: F401
+    from gemseo.post.factory import post_factory  # noqa: F401
     from gemseo.post.gradient_sensitivity import GradientSensitivity  # noqa: F401
     from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings  # noqa: F401
     from gemseo.post.hessian_history import HessianHistory  # noqa: F401
@@ -60,7 +63,7 @@ if TYPE_CHECKING:
     from gemseo.post.variable_influence_settings import VariableInfluence_Settings  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "Animation": "animation",
     "Animation_Settings": "animation_settings",
     "BasicHistory": "basic_history",
@@ -83,7 +86,6 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "ParallelCoordinates_Settings": "parallel_coordinates_settings",
     "ParetoFront": "pareto_front",
     "ParetoFront_Settings": "pareto_front_settings",
-    "POST_FACTORY": "factory",
     "QuadApprox": "quad_approx",
     "QuadApprox_Settings": "quad_approx_settings",
     "Robustness": "robustness",
@@ -96,6 +98,7 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "TopologyView_Settings": "topology_view_settings",
     "VariableInfluence": "variable_influence",
     "VariableInfluence_Settings": "variable_influence_settings",
-}
+    "post_factory": "factory",
+})
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION)
+install_lazy_reexport(globals(), _name_to_location)

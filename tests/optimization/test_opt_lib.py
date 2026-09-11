@@ -27,7 +27,7 @@ from gemseo.optimization.core.base_optimization_library import BaseOptimizationL
 from gemseo.optimization.core.base_optimization_library import (
     OptimizationAlgorithmDescription,
 )
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.nlopt.settings.nlopt_cobyla_settings import (
     NLOPT_COBYLA_Settings,
 )
@@ -44,7 +44,7 @@ from gemseo.space.design import DesignSpace
 from gemseo.util.pydantic import create_model
 from gemseo.util.testing.helper import assert_exception
 
-OPT_LIB_NAME = "ScipyOpt"
+opt_lib_name = "ScipyOpt"
 
 
 @pytest.fixture
@@ -164,7 +164,7 @@ def test_execute_without_current_value() -> None:
 
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: (x - 1) ** 2, name="obj")
-    driver = OPTIMIZATION_LIBRARY_FACTORY.create("NLOPT_COBYLA")
+    driver = optimization_library_factory.create("NLOPT_COBYLA")
     driver.execute(problem, settings=NLOPT_COBYLA_Settings(max_iter=1))
     assert design_space.get_current_value(["x"]) == 0.0
 

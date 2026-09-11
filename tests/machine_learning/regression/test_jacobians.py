@@ -65,7 +65,7 @@ if TYPE_CHECKING:
     from gemseo.dataset.dataset import Dataset
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
-LEARNING_SIZE = 10
+learning_size = 10
 
 
 def create_dataset(
@@ -73,7 +73,7 @@ def create_dataset(
     expressions: Mapping[str, str],
     design_space_variables: Mapping[str, Mapping[str, str]],
     objective_name: str,
-    n_samples: int = LEARNING_SIZE,
+    n_samples: int = learning_size,
 ) -> IODataset:
     """Return a dataset from a sampled function.
 
@@ -104,7 +104,7 @@ def create_dataset(
 
 
 # the following contains the arguments passed to create_dataset
-DATASETS_DESCRIPTIONS = (
+datasets_descriptions = (
     # Dataset from a R -> R function sampled over [0,1]^2
     ("scalar_scalar", {"y_1": "1+3*x_1"}, {}, "y_1"),
     # Dataset from a R -> R^3 function sampled over [0,1]^2
@@ -144,34 +144,34 @@ DATASETS_DESCRIPTIONS = (
     ),
 )
 
-TRANSFORMERS = (
+transformers = (
     {},
-    {IODataset.INPUT_GROUP: Scaler(offset=5, coefficient=3)},
-    {IODataset.OUTPUT_GROUP: Scaler(offset=-3, coefficient=0.1)},
+    {IODataset.input_group: Scaler(offset=5, coefficient=3)},
+    {IODataset.output_group: Scaler(offset=-3, coefficient=0.1)},
     {
-        IODataset.INPUT_GROUP: Scaler(offset=10, coefficient=4),
-        IODataset.OUTPUT_GROUP: Scaler(offset=-7, coefficient=-8),
+        IODataset.input_group: Scaler(offset=10, coefficient=4),
+        IODataset.output_group: Scaler(offset=-7, coefficient=-8),
     },
     {
-        IODataset.INPUT_GROUP: PCA(n_components=1),
-        IODataset.OUTPUT_GROUP: PCA(n_components=1),
+        IODataset.input_group: PCA(n_components=1),
+        IODataset.output_group: PCA(n_components=1),
     },
 )
 
 
 @pytest.fixture(
     scope="module",
-    params=DATASETS_DESCRIPTIONS,
-    ids=map(itemgetter(0), DATASETS_DESCRIPTIONS),
+    params=datasets_descriptions,
+    ids=map(itemgetter(0), datasets_descriptions),
 )
 def dataset(request) -> Dataset:
-    """Return one dataset by one at runtime from DATASETS_DESCRIPTIONS."""
+    """Return one dataset by one at runtime from datasets_descriptions."""
     return create_dataset(*request.param)
 
 
 def test_regression_model_jacobian(snapshot) -> None:
     """Test that by default the computation of the Jacobian raises an error."""
-    dataset = create_dataset(*DATASETS_DESCRIPTIONS[0])
+    dataset = create_dataset(*datasets_descriptions[0])
     with (
         assert_exception(NotImplementedError, snapshot),
         concretize_classes(BaseRegressor),
@@ -181,7 +181,7 @@ def test_regression_model_jacobian(snapshot) -> None:
 
 def test_regression_model_hessian(snapshot) -> None:
     """Test that by default the computation of the Hessian raises an error."""
-    dataset = create_dataset(*DATASETS_DESCRIPTIONS[0])
+    dataset = create_dataset(*datasets_descriptions[0])
     with (
         assert_exception(NotImplementedError, snapshot),
         concretize_classes(BaseRegressor),
@@ -189,7 +189,7 @@ def test_regression_model_hessian(snapshot) -> None:
         BaseRegressor(dataset).predict_hessian(array([1.0]))
 
 
-@pytest.mark.parametrize("transformer", TRANSFORMERS)
+@pytest.mark.parametrize("transformer", transformers)
 @pytest.mark.parametrize("fit_intercept", [True, False])
 def test_linreg(dataset, transformer, fit_intercept) -> None:
     """Test linear regression Jacobians."""
@@ -201,7 +201,7 @@ def test_linreg(dataset, transformer, fit_intercept) -> None:
     assert DisciplineJacobianChecker(discipline).check(atol=1e-5, rtol=1e-5)
 
 
-@pytest.mark.parametrize("transformer", TRANSFORMERS)
+@pytest.mark.parametrize("transformer", transformers)
 @pytest.mark.parametrize("fit_intercept", [True, False])
 @pytest.mark.parametrize("degree", arange(1, 5))
 def test_polyreg(dataset, transformer, fit_intercept, degree) -> None:
@@ -214,7 +214,7 @@ def test_polyreg(dataset, transformer, fit_intercept, degree) -> None:
     assert DisciplineJacobianChecker(discipline).check(atol=1e-5, rtol=1e-5)
 
 
-@pytest.mark.parametrize("transformer", TRANSFORMERS)
+@pytest.mark.parametrize("transformer", transformers)
 @pytest.mark.parametrize("kernel", RBF)
 def test_rbf(dataset, transformer, kernel) -> None:
     """Test RBF regression Jacobians."""
@@ -226,7 +226,7 @@ def test_rbf(dataset, transformer, kernel) -> None:
     assert DisciplineJacobianChecker(discipline).check(atol=1e-4, rtol=1e-4)
 
 
-@pytest.mark.parametrize("transformer", TRANSFORMERS)
+@pytest.mark.parametrize("transformer", transformers)
 def test_rbf_high_degree(transformer) -> None:
     """Test the RBF Jacobians when the polynomial degree exceeds the kernel minimum.
 
@@ -236,7 +236,7 @@ def test_rbf_high_degree(transformer) -> None:
     """
     # The polynomial of degree 3 has 10 monomials in dimension 2,
     # hence the learning size greater than the default one.
-    dataset = create_dataset(*DATASETS_DESCRIPTIONS[3], n_samples=30)
+    dataset = create_dataset(*datasets_descriptions[3], n_samples=30)
     discipline = SurrogateDiscipline.from_settings(
         RBFRegressor_Settings(degree=3),
         dataset,

@@ -27,8 +27,8 @@ from typing import Any
 
 from gemseo.core.discipline import Discipline
 from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
-from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
-from gemseo.machine_learning.regression.quality.factory import REGRESSOR_QUALITY_FACTORY
+from gemseo.machine_learning.regression.model.factory import regressor_factory
+from gemseo.machine_learning.regression.quality.factory import regressor_quality_factory
 from gemseo.post.machine_learning.ml_regressor_quality_viewer import (
     MLRegressorQualityViewer,
 )
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     )
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class SurrogateDiscipline(Discipline):
@@ -84,7 +84,7 @@ class SurrogateDiscipline(Discipline):
             self.regressor.learn()
 
         if not name:
-            name = f"{self.regressor.SHORT_NAME}_{self.regressor.learning_set.name}"
+            name = f"{self.regressor.short_name}_{self.regressor.learning_set.name}"
 
         super().__init__(name)
         self.io.input_grammar.update_from_names(self.regressor.input_names)
@@ -103,7 +103,7 @@ class SurrogateDiscipline(Discipline):
         cls,
         settings: BaseRegressorSettings,
         data: IODataset | None = None,
-        transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,
+        transformer: TransformerType = BaseRegressor.default_transformer,
         name: str = "",
     ) -> SurrogateDiscipline:
         """Create a surrogate discipline from regressor settings.
@@ -124,7 +124,7 @@ class SurrogateDiscipline(Discipline):
             The surrogate discipline.
         """
         settings.transformer = dict(transformer)
-        regressor = REGRESSOR_FACTORY.create_from_settings(settings, data)
+        regressor = regressor_factory.create_from_settings(settings, data)
         return cls(regressor, name=name)
 
     def _get_string_representation(self) -> MultiLineString:
@@ -166,7 +166,7 @@ class SurrogateDiscipline(Discipline):
         try:
             domain.check_membership(domain.convert_dict_to_array(input_data))
         except ValueError:
-            LOGGER.warning(
+            logger.warning(
                 (
                     "The surrogate discipline %s is used at an input point "
                     "outside its domain of validity: %s."
@@ -198,6 +198,6 @@ class SurrogateDiscipline(Discipline):
         Returns:
             The error measure.
         """
-        return REGRESSOR_QUALITY_FACTORY.create(
+        return regressor_quality_factory.create(
             measure_name, self.regressor, **measure_options
         )

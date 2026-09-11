@@ -29,7 +29,7 @@ from gemseo.core.derivative.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import Discipline
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -46,7 +46,7 @@ class LinearDiscipline(Discipline):
     specified.
     """
 
-    DEFAULT_MATRIX_DENSITY: ClassVar[float] = 0.1
+    default_matrix_density: ClassVar[float] = 0.1
 
     class MatrixFormat(LowercaseStrEnum):
         """The format of the Jacobian matrix.
@@ -72,7 +72,7 @@ class LinearDiscipline(Discipline):
         inputs_size: int = 1,
         outputs_size: int = 1,
         matrix_format: MatrixFormat = MatrixFormat.DENSE,
-        matrix_density: float = DEFAULT_MATRIX_DENSITY,
+        matrix_density: float = default_matrix_density,
         matrix_free_jacobian: bool = False,
         compute_jac_at_run: bool = False,
     ) -> None:
@@ -117,7 +117,7 @@ class LinearDiscipline(Discipline):
 
         if matrix_format == self.MatrixFormat.DENSE:
             self.mat = (
-                default_rng(SEED).random((self.size_out, self.size_in)) / self.size_in
+                default_rng(seed).random((self.size_out, self.size_in)) / self.size_in
             )
         else:
             self.mat = (

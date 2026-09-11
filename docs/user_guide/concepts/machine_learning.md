@@ -276,7 +276,7 @@ The available quality measures are:
             compute_test_measure()
             compute_learning_measure()
             is_better()
-            SMALLER_IS_BETTER
+            smaller_is_better
         }
         class BaseMLModel {
             sampling_results

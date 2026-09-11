@@ -17,34 +17,34 @@
 from __future__ import annotations
 
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_D_0,
+    default_d_0,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_D_I,
+    default_d_i,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_N_DISCIPLINES,
+    default_n_disciplines,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.default_settings import (
-    DEFAULT_P_I,
+    default_p_i,
 )
 
 
 def test_default_n_disciplines() -> None:
-    """Check DEFAULT_N_DISCIPLINES."""
-    assert DEFAULT_N_DISCIPLINES == 2
+    """Check default_n_disciplines."""
+    assert default_n_disciplines == 2
 
 
 def test_default_d_0() -> None:
-    """Check DEFAULT_D_0."""
-    assert DEFAULT_D_0 == 1
+    """Check default_d_0."""
+    assert default_d_0 == 1
 
 
 def test_default_d_i() -> None:
-    """Check DEFAULT_D_I."""
-    assert DEFAULT_D_I == 1
+    """Check default_d_i."""
+    assert default_d_i == 1
 
 
 def test_default_p_i() -> None:
-    """Check DEFAULT_P_I."""
-    assert DEFAULT_P_I == 1
+    """Check default_p_i."""
+    assert default_p_i == 1

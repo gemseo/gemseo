@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.problem.mdo.scalable.parametric.discipline.base_discipline import (
     BaseDiscipline,
@@ -30,13 +31,13 @@ from gemseo.problem.mdo.scalable.parametric.standalone.discipline.scalable_disci
     ScalableDiscipline as _ScalableDiscipline,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    SHARED_DESIGN_VARIABLE_NAME,
-)
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_u_local_name,
 )
 from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
     get_x_local_name,
+)
+from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
+    shared_design_variable_name,
 )
 
 if TYPE_CHECKING:
@@ -56,7 +57,7 @@ class ScalableDiscipline(BaseDiscipline):
     $y_i=a_i-D_{i,0}x_0-D_{i,i}x_i+\sum_{j=1\atop j\neq i}^N C_{i,j}y_j$.
     """
 
-    _CORE_DISCIPLINE_CLASS = _ScalableDiscipline
+    _core_discipline_class: ClassVar[type[_ScalableDiscipline]] = _ScalableDiscipline
 
     __x_i_name: str
     r"""The name of the local design variable $x_i$."""
@@ -97,7 +98,7 @@ class ScalableDiscipline(BaseDiscipline):
         else:
             u_i = 0
         return self._discipline(
-            input_data[SHARED_DESIGN_VARIABLE_NAME],
+            input_data[shared_design_variable_name],
             input_data[self.__x_i_name],
             u_i,
             **{
@@ -113,7 +114,7 @@ class ScalableDiscipline(BaseDiscipline):
     ) -> None:
         self._init_jacobian(input_names, output_names)
         jac = self._discipline(
-            self.io.input_data[SHARED_DESIGN_VARIABLE_NAME],
+            self.io.input_data[shared_design_variable_name],
             self.io.input_data[self.__x_i_name],
             {
                 y_j_name: self.io.input_data[y_j_name]

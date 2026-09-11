@@ -63,7 +63,7 @@ class SPDistributionFitter(BaseDistributionFitter[SPDistribution]):
         FittingCriterion.ANDERSON_DARLING
     )
 
-    _CRITERIA_TO_WRAPPED_OBJECTS: ClassVar[dict[FittingCriterion, str]] = {
+    _criteria_to_wrapped_objects: ClassVar[dict[FittingCriterion, str]] = {
         FittingCriterion.ANDERSON_DARLING: "ad",
         FittingCriterion.CRAMER_VON_MISES: "cvm",
         FittingCriterion.FILLIBEN: "filliben",
@@ -96,7 +96,7 @@ class SPDistributionFitter(BaseDistributionFitter[SPDistribution]):
         return goodness_of_fit(
             getattr(scipy_stats, distribution),
             self._samples,
-            statistic=self._CRITERIA_TO_WRAPPED_OBJECTS[criterion],
+            statistic=self._criteria_to_wrapped_objects[criterion],
             random_state=0,
         )
 

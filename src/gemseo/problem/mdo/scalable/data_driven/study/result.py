@@ -24,6 +24,7 @@ from __future__ import annotations
 import pickle
 from pathlib import Path
 from typing import TYPE_CHECKING
+from typing import Final
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
 
     from gemseo.util.typing import StrKeyMapping
 
-RESULTS_DIRECTORY = Path("results")
+results_directory: Final[Path] = Path("results")
 
 
 class ScalabilityResult:
@@ -130,7 +131,7 @@ class ScalabilityResult:
         """
         return (
             Path(study_directory)
-            / RESULTS_DIRECTORY
+            / results_directory
             / Path(self.name).with_suffix(".pkl")
         )
 
@@ -174,7 +175,7 @@ class ScalabilityResult:
         The file has the same name as the ScalabilityResult instance.
         """
         fname = self.name + ".pkl"
-        fpath = Path(study_directory) / RESULTS_DIRECTORY / fname
+        fpath = Path(study_directory) / results_directory / fname
         with fpath.open("rb") as fin:
             result = pickle.load(fin)
         self.algo = result["algo"]

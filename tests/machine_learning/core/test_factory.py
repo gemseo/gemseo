@@ -25,10 +25,10 @@ import pytest
 from numpy import arange
 
 from gemseo.dataset.io_dataset import IODataset
-from gemseo.machine_learning.core.model.factory import ML_MODEL_FACTORY
+from gemseo.machine_learning.core.model.factory import ml_model_factory
 from gemseo.machine_learning.regression.model.linreg import LinearRegressor
 
-LEARNING_SIZE = 9
+learning_size = 9
 
 
 @pytest.fixture
@@ -36,8 +36,8 @@ def dataset() -> IODataset:
     """The dataset used to train the machine learning models."""
     data = arange(30).reshape((10, 3))
     dataset_ = IODataset()
-    dataset_.add_group(dataset_.INPUT_GROUP, data[:, :2])
-    dataset_.add_group(dataset_.OUTPUT_GROUP, data[:, [2]])
+    dataset_.add_group(dataset_.input_group, data[:, :2])
+    dataset_.add_group(dataset_.output_group, data[:, [2]])
     return dataset_
 
 
@@ -56,22 +56,22 @@ def test_constructor() -> None:
         "RandomForestClassifier",
         "RandomForestRegressor",
         "SVMClassifier",
-    } <= set(ML_MODEL_FACTORY.class_names)
+    } <= set(ml_model_factory.class_names)
 
 
 def test_create(dataset) -> None:
     """Test the creation of a model from data."""
     assert isinstance(
-        ML_MODEL_FACTORY.create("LinearRegressor", data=dataset), LinearRegressor
+        ml_model_factory.create("LinearRegressor", data=dataset), LinearRegressor
     )
 
 
 def test_available_models() -> None:
     """Test the getter of available regression models."""
-    assert ML_MODEL_FACTORY.is_available("KMeans")
+    assert ml_model_factory.is_available("KMeans")
 
 
 def test_is_available() -> None:
     """Test the existence of a regression model."""
-    assert ML_MODEL_FACTORY.is_available("PolynomialRegressor")
-    assert not ML_MODEL_FACTORY.is_available("Dummy")
+    assert ml_model_factory.is_available("PolynomialRegressor")
+    assert not ml_model_factory.is_available("Dummy")

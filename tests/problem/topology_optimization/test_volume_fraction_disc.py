@@ -25,7 +25,7 @@ from numpy import ones
 from gemseo.problem.topology_optimization.volume_fraction_disc import VolumeFraction
 from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 
-THRESHOLD = 1e-10
+threshold = 1e-10
 
 
 @pytest.fixture(scope="module")
@@ -47,7 +47,7 @@ def test_jacobian(volume_fraction) -> None:
     checker = DisciplineJacobianChecker(volume_fraction)
     assert checker.check(
         volume_fraction.io.get_input_data(),
-        atol=THRESHOLD,
-        rtol=THRESHOLD,
+        atol=threshold,
+        rtol=threshold,
         step=1e-5,
     )

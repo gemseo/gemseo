@@ -30,10 +30,10 @@ from numpy import atleast_1d
 
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.discipline.ode.ode_function import ODEFunction
-from gemseo.ode.factory import ODE_SOLVER_LIBRARY_FACTORY
+from gemseo.ode.factory import ode_solver_library_factory
 from gemseo.ode.problem import ODEProblem
 from gemseo.ode.scipy_ode.settings.rk45 import RK45_Settings
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.data_conversion import concatenate_dict_of_arrays_to_array
 from gemseo.util.string import pretty_repr
 
@@ -92,10 +92,10 @@ class ODEDiscipline(Discipline):
     __trajectory_state_names: Iterable[str]
     """The names of the trajectories of the state variables."""
 
-    __TERMINATION_TIME: Final[str] = "termination_time"
+    __termination_time: Final[str] = "termination_time"
     """The string constant for termination time."""
 
-    __TIMES: Final[str] = "times"
+    __times: Final[str] = "times"
     """The string constant for times."""
 
     def __init__(
@@ -104,11 +104,11 @@ class ODEDiscipline(Discipline):
         times: RealArray,
         time_name: str = "time",
         state_names: Iterable[str] | Mapping[str, str] = (),
-        initial_state_names: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
+        initial_state_names: Mapping[str, str] = read_only_empty_dict,
         initial_time_name: str = "",
-        final_state_names: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
+        final_state_names: Mapping[str, str] = read_only_empty_dict,
         final_time_name: str = "",
-        state_trajectory_names: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
+        state_trajectory_names: Mapping[str, str] = read_only_empty_dict,
         return_trajectories: bool = False,
         name: str = "",
         termination_event_disciplines: Iterable[Discipline] = (),
@@ -232,7 +232,7 @@ class ODEDiscipline(Discipline):
         if ode_solver_settings is None:
             ode_solver_settings = RK45_Settings()
         self.__ode_solver_settings = ode_solver_settings
-        self.__ode_solver = ODE_SOLVER_LIBRARY_FACTORY.create(
+        self.__ode_solver = ode_solver_library_factory.create(
             ode_solver_settings.target_class_name
         )
 
@@ -266,7 +266,7 @@ class ODEDiscipline(Discipline):
         }
 
         if self._output_trajectory:
-            mapping_inputs[self.__TIMES] = times
+            mapping_inputs[self.__times] = times
 
         self._rhs_discipline.default_input_data.update(mapping_parameters)
         for termination_discipline in self.termination_event_disciplines:
@@ -306,17 +306,17 @@ class ODEDiscipline(Discipline):
                 for state_name in self.__state_names
             )
         else:
-            self.__trajectory_state_names = READ_ONLY_EMPTY_DICT
+            self.__trajectory_state_names = read_only_empty_dict
 
         # Initialize inputs and outputs
         self.io.input_grammar.update_from_data(mapping_inputs)
         self.default_input_data = mapping_inputs
 
         name_to_type = dict.fromkeys(self.__final_state_names, type(initial_state))
-        name_to_type[self.__TERMINATION_TIME] = float
+        name_to_type[self.__termination_time] = float
 
         if return_trajectories:
-            name_to_type[self.__TIMES] = type(times)
+            name_to_type[self.__times] = type(times)
             name_to_type.update(
                 dict.fromkeys(self.__trajectory_state_names, type(initial_state))
             )
@@ -329,7 +329,7 @@ class ODEDiscipline(Discipline):
         self._ode_problem.update_times(
             initial_time=self.input_data.get(self.__initial_time_name, None),
             final_time=self.input_data.get(self.__final_time_name, None),
-            times=self.input_data.get(self.__TIMES, None),
+            times=self.input_data.get(self.__times, None),
         )
 
         self._rhs_discipline.default_input_data.update(mapping_parameters)
@@ -366,6 +366,6 @@ class ODEDiscipline(Discipline):
                 )
             )
 
-        output_data[self.__TERMINATION_TIME] = result.termination_time
-        output_data[self.__TIMES] = result.times
+        output_data[self.__termination_time] = result.termination_time
+        output_data[self.__times] = result.times
         return output_data

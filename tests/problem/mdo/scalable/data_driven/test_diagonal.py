@@ -42,11 +42,11 @@ def f_2(x_1, x_2, x_3):
 def dataset():
     data = IODataset(dataset_name="sinus")
     x1_val = x2_val = x3_val = np.linspace(0.0, 1.0, 10)[:, newaxis]
-    data.add_variable("x1", x1_val, data.INPUT_GROUP)
-    data.add_variable("x2", x2_val, data.INPUT_GROUP)
-    data.add_variable("x3", x2_val, data.INPUT_GROUP)
-    data.add_variable("y1", f_1(x1_val, x2_val, x3_val), data.OUTPUT_GROUP)
-    data.add_variable("y2", f_2(x1_val, x2_val, x3_val), data.OUTPUT_GROUP)
+    data.add_variable("x1", x1_val, data.input_group)
+    data.add_variable("x2", x2_val, data.input_group)
+    data.add_variable("x3", x2_val, data.input_group)
+    data.add_variable("y1", f_1(x1_val, x2_val, x3_val), data.output_group)
+    data.add_variable("y2", f_2(x1_val, x2_val, x3_val), data.output_group)
     return data
 
 

@@ -43,7 +43,7 @@ class RegistryDerivedData(metaclass=ABCGoogleDocstringInheritanceMeta):
     __guards: dict[str, StalenessGuard]
     """The staleness guards keyed by name."""
 
-    _DEFAULT_GUARD_NAME: ClassVar[str] = ""
+    _default_guard_name: ClassVar[str] = ""
     """The default guard name, for a single-guard subclass."""
 
     def __init__(self, variables: Variables) -> None:
@@ -55,7 +55,7 @@ class RegistryDerivedData(metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__guards = {}
 
     def _register_guard(
-        self, rebuild: Callable[[], None], name: str = _DEFAULT_GUARD_NAME
+        self, rebuild: Callable[[], None], name: str = _default_guard_name
     ) -> None:
         """Register a staleness guard reconciling a piece of derived data.
 
@@ -66,7 +66,7 @@ class RegistryDerivedData(metaclass=ABCGoogleDocstringInheritanceMeta):
         """
         self.__guards[name] = StalenessGuard(rebuild)
 
-    def _refresh(self, name: str = _DEFAULT_GUARD_NAME) -> None:
+    def _refresh(self, name: str = _default_guard_name) -> None:
         """Reconcile the derived data of a guard if the version key changed.
 
         Args:

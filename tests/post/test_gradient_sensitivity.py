@@ -32,7 +32,7 @@ from gemseo import create_scenario
 from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
-from gemseo.post.factory import POST_FACTORY
+from gemseo.post.factory import post_factory
 from gemseo.post.gradient_sensitivity import GradientSensitivity
 from gemseo.post.gradient_sensitivity_settings import GradientSensitivity_Settings
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
@@ -40,15 +40,15 @@ from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSp
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.util.testing.helper import assert_exception
 
-POWER2 = Path(__file__).parent / "power2_opt_pb.h5"
-SOBIESKI_MISSING_GRADIENTS = Path(__file__).parent / "sobieski_missing_gradients.h5"
-SOBIESKI_ALL_GRADIENTS = Path(__file__).parent / "sobieski_all_gradients.h5"
-SOBIESKI_GRADIENT_VALUES = Path(__file__).parent / "sobieski_gradient.pkl"
+power2 = Path(__file__).parent / "power2_opt_pb.h5"
+sobieski_missing_gradients = Path(__file__).parent / "sobieski_missing_gradients.h5"
+sobieski_all_gradients = Path(__file__).parent / "sobieski_all_gradients.h5"
+sobieski_gradient_values = Path(__file__).parent / "sobieski_gradient.pkl"
 
 
 @pytest.fixture(scope="module")
 def factory():
-    return POST_FACTORY
+    return post_factory
 
 
 @pytest.mark.parametrize("scale_gradients", [True, False])
@@ -60,7 +60,7 @@ def test_import_gradient_sensitivity(tmp_wd, factory, scale_gradients) -> None:
         factory: Fixture that returns a post-processing factory.
         scale_gradients: If True, normalize each gradient w.r.t. design variables.
     """
-    problem = OptimizationProblem.from_hdf(POWER2)
+    problem = OptimizationProblem.from_hdf(power2)
     post = factory.execute(
         problem,
         GradientSensitivity_Settings(
@@ -218,10 +218,10 @@ def test_common_scenario(
 @pytest.mark.parametrize(
     ("compute_missing_gradients", "opt_problem"),
     [
-        (True, SOBIESKI_ALL_GRADIENTS),
-        (True, SOBIESKI_MISSING_GRADIENTS),
-        (False, SOBIESKI_ALL_GRADIENTS),
-        (False, SOBIESKI_MISSING_GRADIENTS),
+        (True, sobieski_all_gradients),
+        (True, sobieski_missing_gradients),
+        (False, sobieski_all_gradients),
+        (False, sobieski_missing_gradients),
     ],
 )
 def test_compute_missing_gradients(
@@ -241,7 +241,7 @@ def test_compute_missing_gradients(
     """
     problem = OptimizationProblem.from_hdf(str(opt_problem))
 
-    if opt_problem == SOBIESKI_MISSING_GRADIENTS:
+    if opt_problem == sobieski_missing_gradients:
         with assert_exception(ValueError, snapshot):
             factory.execute(
                 problem,
@@ -274,9 +274,9 @@ def test_compute_missing_gradients_with_eval(factory, snapshot_matplotlib) -> No
     Args:
         factory: Fixture that returns a post-processing factory.
     """
-    problem = OptimizationProblem.from_hdf(str(SOBIESKI_MISSING_GRADIENTS))
+    problem = OptimizationProblem.from_hdf(str(sobieski_missing_gradients))
 
-    with open(SOBIESKI_GRADIENT_VALUES, "rb") as handle:
+    with open(sobieski_gradient_values, "rb") as handle:
         gradients = pickle.load(handle)
 
     with mock.patch.object(problem, "evaluate_functions") as mocked_evaluate_functions:

@@ -138,20 +138,20 @@ class BaseDistribution(
     E.g. `"sin(x)"`.
     """
 
-    _ALPHA: Final[str] = "alpha"
-    _BETA: Final[str] = "beta"
-    _LOC: Final[str] = "loc"
-    _LOWER: Final[str] = "lower"
-    _MODE: Final[str] = "mode"
-    _MU: Final[str] = "mu"
-    _RATE: Final[str] = "rate"
-    _SCALE: Final[str] = "scale"
-    _SHAPE: Final[str] = "shape"
-    _LOCATION: Final[str] = "location"
-    _SIGMA: Final[str] = "sigma"
-    _UPPER: Final[str] = "upper"
+    _alpha: Final[str] = "alpha"
+    _beta: Final[str] = "beta"
+    _loc: Final[str] = "loc"
+    _lower: Final[str] = "lower"
+    _mode: Final[str] = "mode"
+    _mu: Final[str] = "mu"
+    _rate: Final[str] = "rate"
+    _scale: Final[str] = "scale"
+    _shape: Final[str] = "shape"
+    _location: Final[str] = "location"
+    _sigma: Final[str] = "sigma"
+    _upper: Final[str] = "upper"
 
-    DEFAULT_VARIABLE_NAME: Final[str] = "x"
+    default_variable_name: Final[str] = "x"
     """The default name of the variable."""
 
     _file_path_manager: FilePathManager
@@ -160,7 +160,7 @@ class BaseDistribution(
     _settings: BaseDistributionSettings
     """The settings of the probability distribution."""
 
-    _WEBSITE: ClassVar[str]
+    _website: ClassVar[str]
     """The website of the library implementing the probability distributions."""
 
     """The settings of the probability distribution used to create it."""
@@ -175,7 +175,7 @@ class BaseDistribution(
             settings = self.settings_class()
 
         self._settings = settings
-        self._transformation = self.DEFAULT_VARIABLE_NAME
+        self._transformation = self.default_variable_name
         self._file_path_manager = FilePathManager(
             FilePathManager.FileType.FIGURE,
             default_name="distribution",

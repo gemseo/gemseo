@@ -28,7 +28,7 @@ from gemseo.core.function.array_function import ArrayFunction
 from gemseo.doe.diagonal_doe.diagonal_doe import DiagonalDOE
 from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
 from gemseo.optimization.problem import OptimizationProblem
-from gemseo.post.factory import POST_FACTORY
+from gemseo.post.factory import post_factory
 from gemseo.post.variable_influence import VariableInfluence
 from gemseo.post.variable_influence_settings import VariableInfluence_Settings
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
@@ -37,8 +37,8 @@ from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
 from gemseo.util.testing.helper import assert_exception
 
-POWER_HDF5_PATH = Path(__file__).parent / "power2_opt_pb.h5"
-SSBJ_HDF5_PATH = Path(__file__).parent / "mdf_backup.h5"
+power_hdf5_path = Path(__file__).parent / "power2_opt_pb.h5"
+ssbj_hdf5_path = Path(__file__).parent / "mdf_backup.h5"
 
 
 def test_variable_influence(tmp_wd) -> None:
@@ -47,8 +47,8 @@ def test_variable_influence(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    problem = OptimizationProblem.from_hdf(POWER_HDF5_PATH)
-    post = POST_FACTORY.execute(
+    problem = OptimizationProblem.from_hdf(power_hdf5_path)
+    post = post_factory.execute(
         problem, VariableInfluence_Settings(file_path="var_infl")
     )
     assert len(post.output_file_paths) == 1
@@ -95,8 +95,8 @@ def test_variable_influence_ssbj(tmp_wd) -> None:
     Args:
         tmp_wd : Fixture to move into a temporary directory.
     """
-    problem = OptimizationProblem.from_hdf(SSBJ_HDF5_PATH)
-    post = POST_FACTORY.execute(
+    problem = OptimizationProblem.from_hdf(ssbj_hdf5_path)
+    post = post_factory.execute(
         problem,
         VariableInfluence_Settings(
             file_path="ssbj",

@@ -31,13 +31,9 @@ from scipy.sparse import block_diag
 from scipy.sparse import csr_array
 from scipy.sparse import eye
 
-from gemseo.problem.mdo.sellar import WITH_2D_ARRAY
+from gemseo.problem.mdo.sellar import variable
+from gemseo.problem.mdo.sellar import with_2d_array
 from gemseo.problem.mdo.sellar.base_sellar import BaseSellar
-from gemseo.problem.mdo.sellar.variable import X_1
-from gemseo.problem.mdo.sellar.variable import X_2
-from gemseo.problem.mdo.sellar.variable import X_SHARED
-from gemseo.problem.mdo.sellar.variable import Y_1
-from gemseo.problem.mdo.sellar.variable import Y_2
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -50,9 +46,9 @@ if TYPE_CHECKING:
 class Sellar2(BaseSellar):
     """The discipline to compute the coupling variable $y_2$."""
 
-    _INPUT_NAMES: ClassVar[tuple[str]] = (X_2, X_SHARED, Y_1)
+    _input_names: ClassVar[tuple[str]] = (variable.x_2, variable.x_shared, variable.y_1)
 
-    _OUTPUT_NAMES: ClassVar[tuple[str]] = (Y_2,)
+    _output_names: ClassVar[tuple[str]] = (variable.y_2,)
 
     __k: float
     """The shared coefficient controlling the coupling strength."""
@@ -82,16 +78,16 @@ class Sellar2(BaseSellar):
         self.__zeros_n = csr_array((n, n))
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x_shared = input_data[X_SHARED]
-        x_2 = input_data[X_2]
-        y_1 = input_data[Y_1]
-        if WITH_2D_ARRAY:  # pragma: no cover
+        x_shared = input_data[variable.x_shared]
+        x_2 = input_data[variable.x_2]
+        y_1 = input_data[variable.y_1]
+        if with_2d_array:  # pragma: no cover
             x_shared = x_shared[0]
         else:
             defaults = self.io.input_grammar.defaults
-            x_shared = x_shared.reshape((-1, defaults[X_SHARED].size))
-            x_2 = x_2.reshape((-1, defaults[X_2].size))
-            y_1 = y_1.reshape((-1, defaults[Y_1].size))
+            x_shared = x_shared.reshape((-1, defaults[variable.x_shared].size))
+            x_2 = x_2.reshape((-1, defaults[variable.x_2].size))
+            y_1 = y_1.reshape((-1, defaults[variable.y_1].size))
 
         out = x_shared[..., [0]] + x_shared[..., [1]] - x_2
         if out.shape != y_1.shape:
@@ -107,7 +103,7 @@ class Sellar2(BaseSellar):
             # even if they are equal to "out" when considering real numbers.
             where(y_1.real < 0, -self.__k * y_1 + out, out),
         )
-        return {Y_2: y_2.ravel()}
+        return {variable.y_2: y_2.ravel()}
 
     def _compute_jacobian(
         self,
@@ -115,23 +111,25 @@ class Sellar2(BaseSellar):
         output_names: Iterable[str] = (),
     ) -> None:
         input_data = self.io.input_data
-        x_shared = input_data[X_SHARED]
-        x_2 = input_data[X_2]
-        y_1 = input_data[Y_1]
+        x_shared = input_data[variable.x_shared]
+        x_2 = input_data[variable.x_2]
+        y_1 = input_data[variable.y_1]
         n_samples = 1
-        if not WITH_2D_ARRAY:  # pragma: no branch
+        if not with_2d_array:  # pragma: no branch
             defaults = self.io.input_grammar.defaults
-            x_shared = x_shared.reshape((-1, defaults[X_SHARED].size))
-            x_2 = x_2.reshape((-1, defaults[X_2].size))
-            y_1 = y_1.reshape((-1, defaults[Y_1].size))
+            x_shared = x_shared.reshape((-1, defaults[variable.x_shared].size))
+            x_2 = x_2.reshape((-1, defaults[variable.x_2].size))
+            y_1 = y_1.reshape((-1, defaults[variable.y_1].size))
             n_samples = self._get_n_samples(x_shared, x_2, y_1)
 
-        self.jac = {Y_2: {}}
-        jac = self.jac[Y_2]
-        if n_samples > 1 and not WITH_2D_ARRAY:
-            jac[X_1] = csr_array((n_samples * self._n, n_samples * self._n))
-            jac[X_2] = -block_diag([eye(self._n)] * n_samples, format="csr")
-            jac[X_SHARED] = block_diag([ones((self._n, 2))] * n_samples, format="csr")
+        self.jac = {variable.y_2: {}}
+        jac = self.jac[variable.y_2]
+        if n_samples > 1 and not with_2d_array:
+            jac[variable.x_1] = csr_array((n_samples * self._n, n_samples * self._n))
+            jac[variable.x_2] = -block_diag([eye(self._n)] * n_samples, format="csr")
+            jac[variable.x_shared] = block_diag(
+                [ones((self._n, 2))] * n_samples, format="csr"
+            )
             matrices = []
             for y_1_i in y_1:
                 matrix = self.__k * eye(self._n).tocsr()
@@ -139,14 +137,14 @@ class Sellar2(BaseSellar):
                 matrix[y_1_i.real == 0] = 0.0
                 matrices.append(matrix)
 
-            self.jac[Y_2][Y_1] = block_diag(matrices, format="csr")
+            self.jac[variable.y_2][variable.y_1] = block_diag(matrices, format="csr")
         else:
-            jac[X_1] = self.__zeros_n
-            jac[X_2] = -self.__eye_n
-            jac[X_SHARED] = self.__ones_n
+            jac[variable.x_1] = self.__zeros_n
+            jac[variable.x_2] = -self.__eye_n
+            jac[variable.x_shared] = self.__ones_n
             dy_2_dy_1 = self.__k_eye_n.tocsr().copy()
             y_1_real = y_1.real.ravel()
             inds_negative = y_1_real < 0
             dy_2_dy_1[inds_negative] *= -1.0
             dy_2_dy_1[y_1_real == 0] = 0.0
-            self.jac[Y_2][Y_1] = dy_2_dy_1
+            self.jac[variable.y_2][variable.y_1] = dy_2_dy_1

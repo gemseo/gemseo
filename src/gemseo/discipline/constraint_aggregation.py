@@ -20,9 +20,10 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
-from typing import Final
+from typing import ClassVar
 
 from numpy import atleast_1d
 from strenum import StrEnum
@@ -49,6 +50,7 @@ from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Iterable
+    from collections.abc import Mapping
     from collections.abc import Sequence
 
     from gemseo.util.typing import StrKeyMapping
@@ -96,23 +98,27 @@ class ConstraintAggregation(Discipline):
         SUM = "SUM"
         """The sum squared function."""
 
-    _EVALUATION_FUNCTION_MAP: Final[EvaluationFunction, Callable] = {
-        EvaluationFunction.IKS: compute_iks_agg,
-        EvaluationFunction.LOWER_BOUND_KS: compute_lower_bound_ks_agg,
-        EvaluationFunction.UPPER_BOUND_KS: compute_upper_bound_ks_agg,
-        EvaluationFunction.POS_SUM: compute_sum_positive_square_agg,
-        EvaluationFunction.MAX: compute_max_agg,
-        EvaluationFunction.SUM: compute_sum_square_agg,
-    }
+    _evaluation_function_map: ClassVar[Mapping[EvaluationFunction, Callable]] = (
+        MappingProxyType({
+            EvaluationFunction.IKS: compute_iks_agg,
+            EvaluationFunction.LOWER_BOUND_KS: compute_lower_bound_ks_agg,
+            EvaluationFunction.UPPER_BOUND_KS: compute_upper_bound_ks_agg,
+            EvaluationFunction.POS_SUM: compute_sum_positive_square_agg,
+            EvaluationFunction.MAX: compute_max_agg,
+            EvaluationFunction.SUM: compute_sum_square_agg,
+        })
+    )
 
-    _JACOBIAN_EVALUATION_FUNCTION_MAP: Final[EvaluationFunction, Callable] = {
+    _jacobian_evaluation_function_map: ClassVar[
+        Mapping[EvaluationFunction, Callable]
+    ] = MappingProxyType({
         EvaluationFunction.IKS: compute_partial_iks_agg_jac,
         EvaluationFunction.LOWER_BOUND_KS: compute_partial_ks_agg_jac,
         EvaluationFunction.UPPER_BOUND_KS: compute_partial_ks_agg_jac,
         EvaluationFunction.POS_SUM: compute_partial_sum_positive_square_agg_jac,
         EvaluationFunction.MAX: compute_max_agg_jac,
         EvaluationFunction.SUM: compute_partial_sum_square_agg_jac,
-    }
+    })
 
     def __init__(
         self,
@@ -144,7 +150,7 @@ class ConstraintAggregation(Discipline):
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
         input_data = concatenate_dict_of_arrays_to_array(input_data, input_data)
-        evaluation_function = self._EVALUATION_FUNCTION_MAP[self.__method_name]
+        evaluation_function = self._evaluation_function_map[self.__method_name]
         output_data = atleast_1d(evaluation_function(input_data, **self.__meth_options))
         output_names = self.io.output_grammar
         output_name_to_output_value = split_array_to_dict_of_arrays(
@@ -166,7 +172,7 @@ class ConstraintAggregation(Discipline):
         output_names: Iterable[str] = (),
     ) -> None:
         input_names = self.io.input_grammar
-        evaluation_function = self._JACOBIAN_EVALUATION_FUNCTION_MAP[self.__method_name]
+        evaluation_function = self._jacobian_evaluation_function_map[self.__method_name]
         self.jac = split_array_to_dict_of_arrays(
             evaluation_function(
                 concatenate_dict_of_arrays_to_array(self.io.input_data, input_names),

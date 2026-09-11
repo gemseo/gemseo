@@ -32,7 +32,7 @@ from numpy import zeros
 from numpy.testing import assert_allclose
 
 from gemseo.dataset.io_dataset import IODataset
-from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+from gemseo.machine_learning.regression.model.factory import regressor_factory
 from gemseo.machine_learning.regression.model.gpr import GaussianProcessRegressor
 from gemseo.machine_learning.regression.model.linreg import LinearRegressor
 from gemseo.machine_learning.regression.model.linreg_settings import (
@@ -47,7 +47,7 @@ from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
 from gemseo.util.testing.helper import assert_exception
 
-INPUT_VALUE = array([0.4, 1.8])
+input_value = array([0.4, 1.8])
 
 
 @pytest.fixture
@@ -154,27 +154,27 @@ def test_predict_jacobian_failure(dataset_for_jacobian, variable, snapshot) -> N
         ml_model.predict_jacobian({"x_1": zeros(1), "x_2": zeros(2)})
 
 
-CLASS_NAMES = REGRESSOR_FACTORY.class_names
-CLASS_NAMES.remove("OTGaussianProcessRegressor")
+class_names = regressor_factory.class_names
+class_names.remove("OTGaussianProcessRegressor")
 
 
 # test_pickle succeeds with OTGaussianProcessRegressor when run separately
 # but fails when run with the other tests. To be investigated.
 
 
-@pytest.mark.parametrize("class_name", CLASS_NAMES)
+@pytest.mark.parametrize("class_name", class_names)
 @pytest.mark.parametrize("before_training", [False, True])
 def test_pickle(
     class_name, rosenbrock_dataset, before_training, probability_space, tmp_wd
 ):
     """Check that regression models are picklable."""
     # Prevent failure when testing in environments with plugins.
-    if not REGRESSOR_FACTORY.get_class(class_name).__module__.startswith("gemseo."):
+    if not regressor_factory.get_class(class_name).__module__.startswith("gemseo."):
         return
     if class_name in ["PCERegressor", "FCERegressor"]:
         rosenbrock_dataset.misc["input_space"] = probability_space
 
-    reference_model = REGRESSOR_FACTORY.create(class_name, rosenbrock_dataset)
+    reference_model = regressor_factory.create(class_name, rosenbrock_dataset)
     if class_name == "RegressorChain":
         reference_model.add_regressor(LinearRegressor_Settings())
 
@@ -185,12 +185,12 @@ def test_pickle(
         reference_model.learn()
         to_pickle(reference_model, "model.pkl")
 
-    reference_prediction = reference_model.predict(INPUT_VALUE)
+    reference_prediction = reference_model.predict(input_value)
 
     model = from_pickle("model.pkl")
     if before_training:
         model.learn()
 
-    output_value = model.predict(INPUT_VALUE)
+    output_value = model.predict(input_value)
 
     assert_allclose(output_value, reference_prediction)

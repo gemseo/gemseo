@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = getLogger(__name__)
+logger = getLogger(__name__)
 
 
 def _do_nothing() -> None:
@@ -155,7 +155,7 @@ class RetryDiscipline(BaseWrapperDiscipline):
         for n_trial in range(1, self.n_trials + 1):
             self.__n_executions += 1
 
-            LOGGER.debug(
+            logger.debug(
                 "Trying to execute the discipline: attempt %d/%d",
                 n_trial,
                 self.n_trials,
@@ -171,19 +171,19 @@ class RetryDiscipline(BaseWrapperDiscipline):
                     "Timeout reached during the execution of "
                     f"discipline {self._discipline.name}"
                 )
-                LOGGER.warning(msg)
+                logger.warning(msg)
                 current_error = TimeoutError(msg)
 
             except Exception as error:  # noqa: BLE001
                 if isinstance(error, self.fatal_exceptions):
-                    LOGGER.info(
+                    logger.info(
                         "Failed to execute discipline %s, "
                         "aborting retry because of the exception type %s.",
                         self._discipline.name,
                         type(error),
                     )
                     raise
-                LOGGER.warning(
+                logger.warning(
                     "Attempt %d/%d for discipline %s failed with %s: %s",
                     n_trial,
                     self.n_trials,
@@ -199,7 +199,7 @@ class RetryDiscipline(BaseWrapperDiscipline):
             self._run_before_next_trial()
 
         plural_suffix = "s" if self.n_trials > 1 else ""
-        LOGGER.error(
+        logger.error(
             "Failed to execute discipline %s after %d attempt%s.",
             self._discipline.name,
             self.n_trials,
@@ -235,7 +235,7 @@ class RetryDiscipline(BaseWrapperDiscipline):
             # before running the discipline.
             executor: ProcessPoolExecutor | ThreadPoolExecutor = ProcessPoolExecutor(
                 max_workers=1,
-                mp_context=get_context(start_method.MULTI_PROCESSING_START_METHOD),
+                mp_context=get_context(start_method.multi_processing_start_method),
             )
         else:
             executor = ThreadPoolExecutor(max_workers=1)
@@ -296,7 +296,7 @@ class RetryDiscipline(BaseWrapperDiscipline):
         thread_id = c_long(thread.ident)
         res = pythonapi.PyThreadState_SetAsyncExc(thread_id, py_object(SystemExit))
         if res == 0:  # pragma: no cover
-            LOGGER.debug("Invalid thread id %s", thread_id)
+            logger.debug("Invalid thread id %s", thread_id)
         if res != 1:  # pragma: no cover
             # If it returns a number greater than one, you're in trouble,
             # and you should call it again with exc=NULL to revert the effect.

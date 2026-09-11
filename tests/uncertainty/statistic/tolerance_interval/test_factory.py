@@ -17,7 +17,7 @@
 from __future__ import annotations
 
 from gemseo.uncertainty.statistic.tolerance_interval.factory import (
-    TOLERANCE_INTERVAL_FACTORY,
+    tolerance_interval_factory,
 )
 from gemseo.uncertainty.statistic.tolerance_interval.normal import (
     NormalToleranceInterval,
@@ -28,7 +28,7 @@ from gemseo.util.testing.helper import assert_exception
 def test_create() -> None:
     """Check the creation of a BaseToleranceInterval from the
     ToleranceIntervalFactory."""
-    tolerance_interval = TOLERANCE_INTERVAL_FACTORY.create(
+    tolerance_interval = tolerance_interval_factory.create(
         "NormalToleranceInterval", 100000, 0, 1
     )
     assert isinstance(tolerance_interval, NormalToleranceInterval)
@@ -40,7 +40,7 @@ def test_create_fail(snapshot) -> None:
     """Check the creation of a BaseToleranceInterval from the
     ToleranceIntervalFactory."""
     with assert_exception(ImportError, snapshot):
-        TOLERANCE_INTERVAL_FACTORY.create("WrongName", 100000, 0, 1)
+        tolerance_interval_factory.create("WrongName", 100000, 0, 1)
 
     with assert_exception(TypeError, snapshot):
-        TOLERANCE_INTERVAL_FACTORY.create("NormalToleranceInterval", 100000)
+        tolerance_interval_factory.create("NormalToleranceInterval", 100000)

@@ -20,7 +20,7 @@ from functools import cache
 from typing import TYPE_CHECKING
 
 from gemseo.core.data_converter.base import BaseDataConverter
-from gemseo.core.grammar._python_to_json import PYTHON_TO_JSON_TYPES
+from gemseo.core.grammar._python_to_json import python_to_json_types
 
 if TYPE_CHECKING:
     from gemseo.core.grammar.json import JSONGrammar  # noqa: F401
@@ -42,7 +42,7 @@ class JSONGrammarDataConverter(BaseDataConverter["JSONGrammar"]):
         Returns:
             The converted types.
         """
-        return tuple(PYTHON_TO_JSON_TYPES.get(type_, type_) for type_ in types)
+        return tuple(python_to_json_types.get(type_, type_) for type_ in types)
 
     def _has_type(self, name: str, types: tuple[type, ...]) -> bool:
         json_types = self.__convert_types(types)

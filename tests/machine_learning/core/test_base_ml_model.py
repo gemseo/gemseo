@@ -32,7 +32,7 @@ from gemseo.machine_learning.core.model.base_ml_model_settings import (
     BaseMLModelSettings,
 )
 from gemseo.machine_learning.transformer.scaler.scaler import Scaler
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
 from gemseo.util.testing.helper import concretize_classes
 
@@ -109,7 +109,7 @@ def test_repr_str(dataset, samples, trained) -> None:
 
 def test_repr_html(dataset) -> None:
     """Check the HTML representation of an ML model."""
-    assert NewMLModel(dataset)._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert NewMLModel(dataset)._repr_html_() == repr_html_wrapper.format(
         "NewMLModel(parameters={}, transformer={})<br/>"
         "<ul><li>based on the NewLibrary library</li></ul>"
     )

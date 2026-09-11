@@ -37,8 +37,8 @@ class Secant(SequenceTransformer):
     The method corresponds to the equation (45) of Ramière and Helfer (2015).
     """
 
-    _MINIMUM_NUMBER_OF_ITERATES: ClassVar[int] = 2
-    _MINIMUM_NUMBER_OF_RESIDUALS: ClassVar[int] = 2
+    _minimum_number_of_iterates: ClassVar[int] = 2
+    _minimum_number_of_residuals: ClassVar[int] = 2
 
     def _compute_transformed_iterate(self) -> NumberArray:
         dxn_1, dxn = self._residuals

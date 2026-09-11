@@ -25,7 +25,7 @@ from typing import ClassVar
 
 from gemseo.formulation.core.base_mdo import BaseMDOFormulation
 from gemseo.formulation.mdf_settings import MDF_Settings
-from gemseo.mda.factory import MDA_FACTORY
+from gemseo.mda.factory import mda_factory
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
@@ -54,7 +54,7 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
     settings_class: ClassVar[type[MDF_Settings]] = MDF_Settings
 
     def _create_multidisciplinary_process(self) -> None:
-        self.mda = MDA_FACTORY.create(
+        self.mda = mda_factory.create(
             self._settings.main_mda_settings.target_class_name,
             self.disciplines,
             settings=self._settings.main_mda_settings,
@@ -67,11 +67,11 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
 
     @classmethod
     def get_sub_options_grammar(cls, **options: str) -> JSONGrammar:  # noqa:D102
-        return MDA_FACTORY.get_options_grammar(cls.__check_mda(**options))
+        return mda_factory.get_options_grammar(cls.__check_mda(**options))
 
     @classmethod
     def get_default_sub_option_values(cls, **options: str) -> StrKeyMapping:  # noqa:D102
-        return MDA_FACTORY.get_default_option_values(cls.__check_mda(**options))
+        return mda_factory.get_default_option_values(cls.__check_mda(**options))
 
     @staticmethod
     def __check_mda(**options: str) -> str:

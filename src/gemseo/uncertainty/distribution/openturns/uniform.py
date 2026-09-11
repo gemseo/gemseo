@@ -43,8 +43,8 @@ class OTUniformDistribution(OTDistribution):
                 interfaced_distribution="Uniform",
                 parameters=(settings.minimum, settings.maximum),
                 standard_parameters={
-                    self._LOWER: settings.minimum,
-                    self._UPPER: settings.maximum,
+                    self._lower: settings.minimum,
+                    self._upper: settings.maximum,
                 },
                 transformation=settings.transformation,
                 lower_bound=settings.lower_bound,

@@ -55,17 +55,17 @@ from gemseo.core.discipline.data_processor import ComplexDataProcessor
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.grammar.error import InvalidDataError
-from gemseo.core.grammar.factory import GRAMMAR_FACTORY
+from gemseo.core.grammar.factory import grammar_factory
 from gemseo.core.grammar.json import JSONGrammar
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.auto_py import AutoPyDiscipline
 from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.mda.core.base import BaseMDA
-from gemseo.problem.mdo.sellar import WITH_2D_ARRAY
+from gemseo.problem.mdo.sellar import with_2d_array
 from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
-from gemseo.problem.mdo.sellar.variable import X_1
-from gemseo.problem.mdo.sellar.variable import X_SHARED
-from gemseo.problem.mdo.sellar.variable import Y_2
+from gemseo.problem.mdo.sellar.variable import x_1
+from gemseo.problem.mdo.sellar.variable import x_shared
+from gemseo.problem.mdo.sellar.variable import y_2
 from gemseo.problem.mdo.sobieski._disciplines_sg import SobieskiStructureSG
 from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
@@ -76,8 +76,8 @@ from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.discipline import DummyDiscipline
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.platform import platform_is_windows
+from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
@@ -651,15 +651,15 @@ def test_check_jacobian_2() -> None:
 
 def test_check_jacobian_input_data(sellar_with_2d_array) -> None:
     sellar_1 = create_discipline("Sellar1")
-    value = array([[3.0, 3.0]]) if WITH_2D_ARRAY else array([3.0, 3.0])
+    value = array([[3.0, 3.0]]) if with_2d_array else array([3.0, 3.0])
 
     input_data = {
-        X_1: array([3.0]),
-        X_SHARED: value,
-        Y_2: array([3.0]),
+        x_1: array([3.0]),
+        x_shared: value,
+        y_2: array([3.0]),
     }
     checker = DisciplineJacobianChecker(sellar_1)
-    assert checker.check(input_value=input_data, inputs=[Y_2])
+    assert checker.check(input_value=input_data, inputs=[y_2])
 
 
 def test_check_jacobian_parallel_fd() -> None:
@@ -1130,8 +1130,8 @@ def test_add_differentiated_io_non_numeric(
         expected_diff_outputs: The expected differentiated outputs.
     """
     discipline = DummyDiscipline()
-    discipline.io.input_grammar = GRAMMAR_FACTORY.create(grammar_type, name="in")
-    discipline.io.output_grammar = GRAMMAR_FACTORY.create(grammar_type, name="out")
+    discipline.io.input_grammar = grammar_factory.create(grammar_type, name="in")
+    discipline.io.output_grammar = grammar_factory.create(grammar_type, name="out")
     discipline.io.input_grammar.update_from_data(inputs)
     discipline.io.output_grammar.update_from_data(outputs)
     discipline.add_differentiated_inputs()
@@ -1315,7 +1315,7 @@ def __is_path_correct(local_path: Path | PurePosixPath | PureWindowsPath) -> Non
     Raises:
         AssertionError: if the path type is invalid.
     """
-    if PLATFORM_IS_WINDOWS:
+    if platform_is_windows:
         assert isinstance(local_path, PureWindowsPath)
     else:
         assert isinstance(local_path, PurePosixPath)
@@ -1350,7 +1350,7 @@ def test_repr_html() -> None:
     """Check Discipline._repr_html_."""
     assert AnalyticDiscipline(
         {"z": "b+a", "y": "c+d+e"}, name="foo"
-    )._repr_html_() == REPR_HTML_WRAPPER.format(
+    )._repr_html_() == repr_html_wrapper.format(
         "foo<br/><ul><li>Inputs: a, b, c, d, e</li><li>Outputs: y, z</li></ul>"
     )
 
@@ -1575,13 +1575,13 @@ def test_base_discipline_io_accessors() -> None:
     """Verify the BaseDiscipline property accessors delegate to io."""
     discipline = DummyDiscipline()
 
-    new_input_grammar = GRAMMAR_FACTORY.create(
+    new_input_grammar = grammar_factory.create(
         discipline.io.grammar_type, name="new_input"
     )
     discipline.input_grammar = new_input_grammar
     assert discipline.io.input_grammar is new_input_grammar
 
-    new_output_grammar = GRAMMAR_FACTORY.create(
+    new_output_grammar = grammar_factory.create(
         discipline.io.grammar_type, name="new_output"
     )
     discipline.output_grammar = new_output_grammar

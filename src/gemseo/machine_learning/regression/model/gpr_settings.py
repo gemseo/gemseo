@@ -29,7 +29,7 @@ from gemseo.machine_learning.regression.core.base_regressor_settings import (
     BaseRegressorSettings,
 )
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
-from gemseo.util.seeder import SEED
+from gemseo.util.seeder import seed
 
 
 class GaussianProcessRegressor_Settings(BaseRegressorSettings):  # noqa: N801
@@ -68,7 +68,7 @@ This argument is ignored when `kernel` is `None`.""",
     )
 
     random_state: NonNegativeInt | None = Field(
-        default=SEED,
+        default=seed,
         description="""The random state parameter.
 
 If `None`, use the global random state instance from `numpy.random`.

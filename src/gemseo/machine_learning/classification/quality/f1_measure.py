@@ -36,6 +36,7 @@ divided by the total number of *true* positives.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from sklearn.metrics import f1_score
 
@@ -55,14 +56,14 @@ if TYPE_CHECKING:
 class F1Measure(BaseClassifierQuality):
     """The F1 score to assess the quality of a classifier."""
 
-    SMALLER_IS_BETTER = False
+    smaller_is_better: ClassVar[bool] = False
 
     model: BaseClassifier
 
     def __init__(
         self,
         model: BaseClassifier,
-        fit_transformers: bool = BaseClassifierQuality._FIT_TRANSFORMERS,
+        fit_transformers: bool = BaseClassifierQuality._default_fit_transformers,
     ) -> None:
         """
         Args:

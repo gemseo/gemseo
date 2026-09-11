@@ -49,12 +49,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 from numpy import array
 from numpy import full
 
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -68,7 +69,7 @@ if TYPE_CHECKING:
 class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
     """A scalable model."""
 
-    ABBR = "sm"
+    abbr: ClassVar[str] = "sm"
 
     data: IODataset
     """The training dataset."""
@@ -76,7 +77,7 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
     def __init__(
         self,
         data: IODataset,
-        sizes: Mapping[str, int] = READ_ONLY_EMPTY_DICT,
+        sizes: Mapping[str, int] = read_only_empty_dict,
         **parameters: Any,
     ) -> None:
         """
@@ -87,7 +88,7 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
             **parameters: The parameters of the model.
         """  # noqa: D205 D212
         sizes = sizes or {}
-        self.name = self.ABBR + "_" + data.name
+        self.name = self.abbr + "_" + data.name
         self.data = data
         self.sizes = self._set_sizes(sizes)
         self.parameters = parameters
@@ -137,8 +138,8 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
              The lower and upper bounds.
         """
-        inputs = self.data.get_view(group_names=self.data.INPUT_GROUP).to_dict("list")
-        outputs = self.data.get_view(group_names=self.data.OUTPUT_GROUP).to_dict("list")
+        inputs = self.data.get_view(group_names=self.data.input_group).to_dict("list")
+        outputs = self.data.get_view(group_names=self.data.output_group).to_dict("list")
         lower_bounds = {
             column[1]: array(value).min(0) for column, value in inputs.items()
         }
@@ -170,12 +171,12 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
     @property
     def output_names(self) -> list[str]:
         """The output names."""
-        return self.data.get_variable_names(self.data.OUTPUT_GROUP)
+        return self.data.get_variable_names(self.data.output_group)
 
     @property
     def input_names(self) -> list[str]:
         """The input names."""
-        return self.data.get_variable_names(self.data.INPUT_GROUP)
+        return self.data.get_variable_names(self.data.input_group)
 
     def _set_sizes(self, sizes: Mapping[str, int]) -> Mapping[str, int]:
         """Set the new sizes of input and output variables.
@@ -186,7 +187,7 @@ class ScalableModel(metaclass=GoogleDocstringInheritanceMeta):
         Returns:
             The new sizes of all the variables.
         """
-        for group in [self.data.INPUT_GROUP, self.data.OUTPUT_GROUP]:
+        for group in [self.data.input_group, self.data.output_group]:
             for name in self.data.get_variable_names(group):
                 original_size = self.original_sizes.get(name)
                 sizes[name] = sizes.get(name, original_size)

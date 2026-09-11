@@ -22,7 +22,7 @@ from typing import ClassVar
 from typing import Final
 
 from gemseo.optimization.problem import OptimizationProblem
-from gemseo.post.factory import POST_FACTORY
+from gemseo.post.factory import post_factory as default_post_factory
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 class ScenarioResult:
     """The result of an [MDOScenario][gemseo.scenario.mdo.MDOScenario]."""
 
-    _MAIN_PROBLEM_LABEL: Final[str] = "main"
+    _main_problem_label: Final[str] = "main"
     """The default label for the main problem."""
 
     optimization_problem_to_result: dict[str, OptimizationResult]
@@ -50,7 +50,7 @@ class ScenarioResult:
     __obj_to_be_post_processed: MDOScenario | OptimizationProblem
     """The object to be post-processed."""
 
-    POST_FACTORY: ClassVar[PostFactory] = POST_FACTORY
+    post_factory: ClassVar[PostFactory] = default_post_factory
     """The factory of [BasePost][gemseo.post.core.base_post.BasePost], if created."""
 
     def __init__(self, scenario: MDOScenario | StrPath) -> None:
@@ -74,7 +74,7 @@ class ScenarioResult:
 
         self.design_variable_name_to_value = optimization_result.x_opt_as_dict
         self.optimization_problem_to_result = {
-            self._MAIN_PROBLEM_LABEL: optimization_result
+            self._main_problem_label: optimization_result
         }
 
     @property
@@ -88,7 +88,7 @@ class ScenarioResult:
         For scenarios with a single optimization problem, the current optimization
         result corresponds to this unique optimization problem.
         """
-        return self.optimization_problem_to_result[self._MAIN_PROBLEM_LABEL]
+        return self.optimization_problem_to_result[self._main_problem_label]
 
     def plot(self, settings: BasePostSettings) -> BasePost:
         """Visualize the result.
@@ -99,4 +99,4 @@ class ScenarioResult:
         Returns:
             The post-processing of the result.
         """
-        return self.POST_FACTORY.execute(self.__obj_to_be_post_processed, settings)
+        return self.post_factory.execute(self.__obj_to_be_post_processed, settings)

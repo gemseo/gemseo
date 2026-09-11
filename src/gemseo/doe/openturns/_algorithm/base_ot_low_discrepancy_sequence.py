@@ -35,9 +35,9 @@ if TYPE_CHECKING:
 class BaseOTLowDiscrepancySequence(BaseOTDOE):
     """The low-discrepancy sequence algorithm."""
 
-    _ALGO_CLASS: ClassVar[type[LowDiscrepancySequenceImplementation]]
+    _algo_class: ClassVar[type[LowDiscrepancySequenceImplementation]]
 
     def generate_samples(
         self, dimension: int, settings: BaseNSamplesBasedDOESettings
     ) -> RealArray:  # noqa: D102
-        return array(self._ALGO_CLASS(dimension).generate(settings.n_samples))
+        return array(self._algo_class(dimension).generate(settings.n_samples))

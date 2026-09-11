@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from gemseo.formulation.idf_settings import IDF_Settings
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
 from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
 from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
@@ -106,7 +106,7 @@ def build_and_run_idf_scenario_with_constraints(
         scenario.add_constraint(c_name, constraint_type=scenario.ConstraintType.INEQ)
 
     scenario.formulation.problem.objective *= 0.001
-    factory = OPTIMIZATION_LIBRARY_FACTORY
+    factory = optimization_library_factory
     cls = factory.get_class(factory.algo_name_to_library[algo])
     settings = cls.ALGORITHM_INFOS[algo].settings_class(
         max_iter=max_iter, eq_tolerance=eq_tolerance, ineq_tolerance=ineq_tolerance

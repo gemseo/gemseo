@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from uuid import uuid4
 
 from gemseo.core.discipline.execution_status import ExecutionStatus
@@ -40,8 +41,8 @@ class BaseExecutionSequence(metaclass=ABCGoogleDocstringInheritanceMeta):
     that may be run several times at various stages in the given scenario/formulation.
     """
 
-    _PREFIX = "["
-    _SUFFIX = "]"
+    _prefix: ClassVar[str] = "["
+    _suffix: ClassVar[str] = "]"
 
     uuid: str
     """The unique identifier of the sequence."""

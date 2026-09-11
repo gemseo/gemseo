@@ -45,10 +45,10 @@ from gemseo.uncertainty.statistic.ot_parametric import OTParametricStatistics
 from gemseo.uncertainty.statistic.sp_parametric import SPParametricStatistics
 from gemseo.uncertainty.statistic.tolerance_interval.base import BaseToleranceInterval
 from gemseo.util.comparison import compare_dict_of_arrays
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
 
-RNG = RandomState(0)
+rng = RandomState(0)
 
 
 @pytest.fixture(scope="module")
@@ -133,7 +133,7 @@ def test_repr(statistics) -> None:
 
 def test_repr_html_(statistics) -> None:
     """Check _repr_html_."""
-    assert statistics._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert statistics._repr_html_() == repr_html_wrapper.format(
         "OTParametricStatistics(Dataset)<br/>"
         "<ul>"
         "<li>n_samples: 100</li>"
@@ -317,11 +317,11 @@ def test_tolerance_interval_wrong_confidence(statistics, confidence, snapshot) -
 @pytest.mark.parametrize(
     ("distribution", "generate_samples"),
     [
-        ("Exponential", lambda n: RNG.exponential(size=n)),
+        ("Exponential", lambda n: rng.exponential(size=n)),
         ("WeibullMin", lambda n: array(ot.WeibullMin().getSample(n))),
-        ("LogNormal", lambda n: RNG.lognormal(size=n)),
-        ("Uniform", RNG.random),
-        ("Normal", lambda n: RNG.normal(size=n)),
+        ("LogNormal", lambda n: rng.lognormal(size=n)),
+        ("Uniform", rng.random),
+        ("Normal", lambda n: rng.normal(size=n)),
     ],
 )
 def test_tolerance_interval(generate_samples, distribution) -> None:
@@ -355,7 +355,7 @@ def test_tolerance_interval(generate_samples, distribution) -> None:
 
 def test_abvalue_normal() -> None:
     """Check that A-value is lower than B-value."""
-    dataset = Dataset.from_array(RNG.normal(size=(100, 1)))
+    dataset = Dataset.from_array(rng.normal(size=(100, 1)))
     stats = OTParametricStatistics(dataset, ["Normal"])
     assert stats.compute_a_value()["x_0"][0] <= stats.compute_b_value()["x_0"][0]
 
@@ -478,7 +478,7 @@ def test_sp_fitting_criteria(sp_dataset, fitting_criterion):
 
     assert (
         goodness_of_fit.call_args.kwargs["statistic"]
-        == SPDistributionFitter._CRITERIA_TO_WRAPPED_OBJECTS[fitting_criterion]
+        == SPDistributionFitter._criteria_to_wrapped_objects[fitting_criterion]
     )
 
 

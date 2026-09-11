@@ -74,7 +74,7 @@ CovarianceModelType = (
     | CovarianceModel
 )
 
-TNC: Final[TNC] = OT_TNC()
+tnc: Final[OT_TNC] = OT_TNC()
 """The TNC algorithm."""
 
 
@@ -87,13 +87,13 @@ class OTGaussianProcessRegressor_Settings(BaseRegressorSettings):  # noqa: N801
 
 If `None`,
 use HMAT when the learning size is greater than
-[OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK][gemseo.machine_learning.regression.model.ot_gpr.OTGaussianProcessRegressor.MAX_SIZE_FOR_LAPACK].""",
+[OTGaussianProcessRegressor.max_size_for_lapack][gemseo.machine_learning.regression.model.ot_gpr.OTGaussianProcessRegressor.max_size_for_lapack].""",
     )
 
     trend: Trend = Field(default=Trend.CONSTANT, description="The name of the trend.")
 
     optimizer: OptimizationAlgorithmImplementation = Field(
-        default=TNC,
+        default=tnc,
         description="The solver used to optimize the covariance model parameters.",
     )
 

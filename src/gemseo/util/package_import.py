@@ -62,7 +62,7 @@ def install_lazy_reexport(
     """Install ``__all__``, ``__dir__`` and ``__getattr__`` into a package namespace.
 
     Meant to be called from a package ``__init__.py`` as
-    ``install_lazy_reexport(globals(), _NAME_TO_LOCATION)``.
+    ``install_lazy_reexport(globals(), _name_to_location)``.
 
     Args:
         namespace: The ``globals()`` of the calling package ``__init__.py``.

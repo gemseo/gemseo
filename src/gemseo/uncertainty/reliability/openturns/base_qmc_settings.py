@@ -27,11 +27,11 @@ from gemseo.uncertainty.reliability.openturns.mc_settings import OT_MC_Settings
 class BaseOTQMCSettings(OT_MC_Settings):  # noqa: N801
     """The base class for the settings of the quasi-Monte Carlo (QMC) sampling algorithms."""  # noqa: E501
 
-    _SEQUENCE_CLASS: ClassVar[type[LowDiscrepancySequenceImplementation]]
+    _sequence_class: ClassVar[type[LowDiscrepancySequenceImplementation]]
     """The OpenTURNS class to instantiate the low-discrepancy sequence."""
 
     def create_experiment(self) -> OTLowDiscrepancyExperiment:  # noqa: D102
-        sequence = self._SEQUENCE_CLASS()
+        sequence = self._sequence_class()
         experiment = OTLowDiscrepancyExperiment(sequence, 1)
         experiment.setRandomize(True)
         return experiment

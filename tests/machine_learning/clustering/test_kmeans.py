@@ -36,24 +36,24 @@ from gemseo.machine_learning.clustering.model.kmeans_settings import KMeans_Sett
 from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
 
 # Cluster locations
-LOCS = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])
+locs = array([[1.0, 0.0], [0.0, 1.0], [1.5, 1.5]])
 
 # Cluster covariance matrices
-SCALES = array([
+scales = array([
     [[0.10, 0.00], [0.00, 0.05]],
     [[0.05, 0.01], [0.01, 0.10]],
     [[0.10, 0.05], [0.05, 0.10]],
 ])
 
 # Number of samples in each cluster
-N_SAMPLES = [50, 50, 50]
+n_samples = [50, 50, 50]
 
 # Test value
-VALUE = {"x_1": [0], "x_2": [0]}
-ARRAY_VALUE = array([0, 0])
+value = {"x_1": [0], "x_2": [0]}
+array_value = array([0, 0])
 
 # Test values (centers of the clusters)
-VALUES = {"x_1": LOCS[:, [0]], "x_2": LOCS[:, [1]]}
+values = {"x_1": locs[:, [0]], "x_2": locs[:, [1]]}
 
 
 @pytest.fixture
@@ -63,11 +63,11 @@ def samples() -> tuple[ndarray, ndarray, list[int]]:
     It consists of three clusters from normal distributions.
     """
     # Check that the parameters conform
-    assert len(SCALES) == len(LOCS)
-    assert len(N_SAMPLES) == len(LOCS)
-    for i in range(len(LOCS)):
-        assert all(eigvals(SCALES[i]) > 0)  # Positive definite covariance
-    return LOCS, SCALES, N_SAMPLES
+    assert len(scales) == len(locs)
+    assert len(n_samples) == len(locs)
+    for i in range(len(locs)):
+        assert all(eigvals(scales[i]) > 0)  # Positive definite covariance
+    return locs, scales, n_samples
 
 
 @pytest.fixture
@@ -137,8 +137,8 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     model = KMeans(dataset)
     assert model.algo is not None
-    assert model.SHORT_NAME == "KMeans"
-    assert model.LIBRARY == "scikit-learn"
+    assert model.short_name == "KMeans"
+    assert model.library == "scikit-learn"
 
 
 def test_learn(dataset) -> None:
@@ -162,8 +162,8 @@ def test_learn(dataset) -> None:
 
 def test_predict(model) -> None:
     """Test prediction."""
-    prediction = model.predict(VALUE)
-    predictions = model.predict(VALUES)
+    prediction = model.predict(value)
+    predictions = model.predict(values)
     assert isinstance(prediction, (int, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
@@ -174,8 +174,8 @@ def test_predict(model) -> None:
 
 def test_predict_with_transform(model_with_transform) -> None:
     """Test prediction."""
-    prediction = model_with_transform.predict(VALUE)
-    predictions = model_with_transform.predict(VALUES)
+    prediction = model_with_transform.predict(value)
+    predictions = model_with_transform.predict(values)
     assert isinstance(prediction, (int, integer))
     assert isinstance(predictions, ndarray)
     assert len(predictions.shape) == 1
@@ -187,9 +187,9 @@ def test_predict_with_transform(model_with_transform) -> None:
 @pytest.mark.parametrize("hard", [True, False])
 def test_predict_proba(model, hard) -> None:
     """Test prediction."""
-    proba = model.predict_proba(VALUE, hard)
-    probas = model.predict_proba(VALUES, hard)
-    assert (proba == model.predict_proba(ARRAY_VALUE, hard)).all()
+    proba = model.predict_proba(value, hard)
+    probas = model.predict_proba(values, hard)
+    assert (proba == model.predict_proba(array_value, hard)).all()
     assert isinstance(proba, ndarray)
     assert isinstance(probas, ndarray)
     assert len(proba.shape) == 1

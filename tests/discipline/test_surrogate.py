@@ -40,7 +40,7 @@ from gemseo.post.machine_learning.ml_regressor_quality_viewer import (
 from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
-from gemseo.util.repr_html import REPR_HTML_WRAPPER
+from gemseo.util.repr_html import repr_html_wrapper
 
 
 @pytest.fixture(scope="module")
@@ -213,7 +213,7 @@ def test_get_error_measure(linear_discipline) -> None:
 def test_repr_html(dataset) -> None:
     """Check SurrogateDiscipline._repr_html_."""
     discipline = SurrogateDiscipline.from_settings(LinearRegressor_Settings(), dataset)
-    assert discipline._repr_html_() == REPR_HTML_WRAPPER.format(
+    assert discipline._repr_html_() == repr_html_wrapper.format(
         "Surrogate discipline: LinReg_func<br/>"
         "<ul>"
         "<li>Dataset name: func</li>"

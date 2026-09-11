@@ -60,7 +60,7 @@ def core_main_discipline(default_input_values) -> CoreMainDiscipline:
 
 def test_wrapped_discipline(main_discipline) -> None:
     """Check that MainDiscipline is composed of a CoreMainDiscipline."""
-    assert CoreMainDiscipline == main_discipline._CORE_DISCIPLINE_CLASS
+    assert CoreMainDiscipline == main_discipline._core_discipline_class
 
 
 def test_execution(main_discipline, core_main_discipline) -> None:

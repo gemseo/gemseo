@@ -23,73 +23,73 @@ from numpy import pi
 __A: Final[float] = 7
 __B: Final[float] = 0.1
 
-MEAN: Final[float] = __A / 2
+mean: Final[float] = __A / 2
 r"""The expectation of the output.
 
 $$\mathbb{E}[Y] = \frac{a}{2}$$
 """
 
-VARIANCE: Final[float] = 0.5 + __A**2 / 8 + __B**2 * pi**8 / 18 + __B * pi**4 / 5
+variance: Final[float] = 0.5 + __A**2 / 8 + __B**2 * pi**8 / 18 + __B * pi**4 / 5
 r"""The variance of the output.
 
 $$\mathbb{V}[Y] = \frac{1}{2} + \frac{a^2}{8} + \frac{b^2\pi^8}{18} + \frac{b\pi^4}{5}$$
 """
 
-SOBOL_1: Final[float] = 0.5 * (1 + __B * pi**4 / 5) ** 2 / VARIANCE
+sobol_1: Final[float] = 0.5 * (1 + __B * pi**4 / 5) ** 2 / variance
 r"""The first-order Sobol' index of $X_1$.
 
 $$S_1 = \frac{(1+b\frac{pi^4}{5})^2}{2\mathbb{V}[Y]}$$
 """
 
-SOBOL_2: Final[float] = __A**2 / 8 / VARIANCE
+sobol_2: Final[float] = __A**2 / 8 / variance
 r"""The first-order Sobol' index of $X_2$.
 
 $$S_2 = \frac{a^2}{8\mathbb{V}[Y]}$$
 """
 
-SOBOL_3: Final[float] = 0.0
+sobol_3: Final[float] = 0.0
 r"""The first-order Sobol' index of $X_3$.
 
 $$S_3 = 0$$
 """
 
-SOBOL_12: Final[float] = 0.0
+sobol_12: Final[float] = 0.0
 r"""The second-order Sobol' index of $X_1$ and $X_2$.
 
 $$S_{1,2} = 0$$
 """
 
-SOBOL_23: Final[float] = 0.0
+sobol_23: Final[float] = 0.0
 r"""The second-order Sobol' index of $X_2$ and $X_3$.
 
 $$S_{2,3} = 0$$
 """
 
-SOBOL_13: Final[float] = __B**2 * pi**8 * 8 / 225 / VARIANCE
+sobol_13: Final[float] = __B**2 * pi**8 * 8 / 225 / variance
 r"""The second-order Sobol' index of $X_1$ and $X_3$.
 
 $$S_{1,3} = \frac{8b^2\pi^8}{225\mathbb{V}[Y]}$$
 """
 
-SOBOL_123: Final[float] = 0.0
+sobol_123: Final[float] = 0.0
 r"""The second-order Sobol' index of $X_1$, $X_2$ and $X_3$.
 
 $$S_{1,2,3} = 0$$
 """
 
-TOTAL_SOBOL_1: Final[float] = SOBOL_1 + SOBOL_13
+total_sobol_1: Final[float] = sobol_1 + sobol_13
 r"""The total Sobol' index of $X_1$.
 
 $$S_1^T = S_1 + S_{1,3}$$
 """
 
-TOTAL_SOBOL_2: Final[float] = SOBOL_2
+total_sobol_2: Final[float] = sobol_2
 r"""The total Sobol' index of $X_2$.
 
 $$S_2^T = S_2$$
 """
 
-TOTAL_SOBOL_3: Final[float] = SOBOL_13
+total_sobol_3: Final[float] = sobol_13
 r"""The total Sobol' index of $X_3$.
 
 $$S_3^T = S_{1,3}$$

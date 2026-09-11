@@ -46,7 +46,7 @@ from gemseo.optimization.scipy_local.settings.nelder_mead import NELDER_MEAD_Set
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.tnc import TNC_Settings
 from gemseo.space.util import get_value_and_bounds
-from gemseo.util.constant import INFINITE_INT
+from gemseo.util.constant import infinite_int
 
 if TYPE_CHECKING:
     from gemseo.optimization.problem import OptimizationProblem
@@ -66,7 +66,7 @@ class SciPyAlgorithmDescription(OptimizationAlgorithmDescription):
 class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
     """The library of SciPy optimization algorithms."""
 
-    __DOC: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
+    __doc: Final[str] = "https://docs.scipy.org/doc/scipy/reference/"
 
     ALGORITHM_INFOS: ClassVar[dict[str, SciPyAlgorithmDescription]] = {
         "SLSQP": SciPyAlgorithmDescription(
@@ -80,7 +80,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             internal_algorithm_name="SLSQP",
             require_gradient=True,
             positive_constraints=True,
-            website=f"{__DOC}optimize.minimize-slsqp.html",
+            website=f"{__doc}optimize.minimize-slsqp.html",
             settings_class=SLSQP_Settings,
         ),
         "L_BFGS_B": SciPyAlgorithmDescription(
@@ -90,7 +90,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             ),
             internal_algorithm_name="L-BFGS-B",
             require_gradient=True,
-            website=f"{__DOC}optimize.minimize-lbfgsb.html",
+            website=f"{__doc}optimize.minimize-lbfgsb.html",
             settings_class=L_BFGS_B_Settings,
         ),
         "TNC": SciPyAlgorithmDescription(
@@ -100,14 +100,14 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             ),
             internal_algorithm_name="TNC",
             require_gradient=True,
-            website=f"{__DOC}optimize.minimize-tnc.html",
+            website=f"{__doc}optimize.minimize-tnc.html",
             settings_class=TNC_Settings,
         ),
         "NELDER_MEAD": SciPyAlgorithmDescription(
             algorithm_name="NELDER-MEAD",
             description="Nelder-Mead algorithm implemented in the SciPy library",
             internal_algorithm_name="Nelder-Mead",
-            website=f"{__DOC}optimize.minimize-neldermead.html",
+            website=f"{__doc}optimize.minimize-neldermead.html",
             settings_class=NELDER_MEAD_Settings,
         ),
         "COBYLA": SciPyAlgorithmDescription(
@@ -121,7 +121,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             internal_algorithm_name="COBYLA",
             require_gradient=False,
             positive_constraints=True,
-            website=f"{__DOC}optimize.minimize-cobyla.html",
+            website=f"{__doc}optimize.minimize-cobyla.html",
             settings_class=COBYLA_Settings,
         ),
         "COBYQA": SciPyAlgorithmDescription(
@@ -134,7 +134,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
             handle_equality_constraints=True,
             handle_inequality_constraints=True,
             positive_constraints=True,
-            website=f"{__DOC}optimize.minimize-cobyqa.html",
+            website=f"{__doc}optimize.minimize-cobyqa.html",
             settings_class=COBYQA_Settings,
         ),
     }
@@ -164,7 +164,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
         # Deactivate termination criteria which are handled by GEMSEO
         tolerance = 0.0
         if self._algo_name != "TNC":
-            filtered_settings["maxiter"] = INFINITE_INT
+            filtered_settings["maxiter"] = infinite_int
 
         kwargs = {}
         if self.ALGORITHM_INFOS[self._algo_name].require_gradient:

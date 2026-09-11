@@ -34,14 +34,9 @@ from scipy.sparse import block_diag
 from scipy.sparse import csr_array
 from scipy.sparse import diags
 
-from gemseo.problem.mdo.sellar import WITH_2D_ARRAY
+from gemseo.problem.mdo.sellar import variable
+from gemseo.problem.mdo.sellar import with_2d_array
 from gemseo.problem.mdo.sellar.base_sellar import BaseSellar
-from gemseo.problem.mdo.sellar.variable import GAMMA
-from gemseo.problem.mdo.sellar.variable import X_1
-from gemseo.problem.mdo.sellar.variable import X_2
-from gemseo.problem.mdo.sellar.variable import X_SHARED
-from gemseo.problem.mdo.sellar.variable import Y_1
-from gemseo.problem.mdo.sellar.variable import Y_2
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -53,9 +48,14 @@ if TYPE_CHECKING:
 class Sellar1(BaseSellar):
     """The discipline to compute the coupling variable $y_1$."""
 
-    _INPUT_NAMES: ClassVar[tuple[str]] = (X_1, X_SHARED, Y_2, GAMMA)
+    _input_names: ClassVar[tuple[str]] = (
+        variable.x_1,
+        variable.x_shared,
+        variable.y_2,
+        variable.gamma,
+    )
 
-    _OUTPUT_NAMES: ClassVar[tuple[str]] = (Y_1,)
+    _output_names: ClassVar[tuple[str]] = (variable.y_1,)
 
     __k: float
     """The shared coefficient controlling the coupling strength."""
@@ -73,18 +73,18 @@ class Sellar1(BaseSellar):
         self.__zeros_n = csr_array((n, n))
 
     def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
-        x_shared = input_data[X_SHARED]
-        x_1 = input_data[X_1]
-        y_2 = input_data[Y_2]
-        gamma = input_data[GAMMA]
-        if WITH_2D_ARRAY:  # pragma: no cover
+        x_shared = input_data[variable.x_shared]
+        x_1 = input_data[variable.x_1]
+        y_2 = input_data[variable.y_2]
+        gamma = input_data[variable.gamma]
+        if with_2d_array:  # pragma: no cover
             x_shared = x_shared[0]
         else:
             defaults = self.io.input_grammar.defaults
-            x_shared = x_shared.reshape((-1, defaults[X_SHARED].size))
-            x_1 = x_1.reshape((-1, defaults[X_1].size))
-            y_2 = y_2.reshape((-1, defaults[Y_2].size))
-            gamma = gamma.reshape((-1, defaults[GAMMA].size))
+            x_shared = x_shared.reshape((-1, defaults[variable.x_shared].size))
+            x_1 = x_1.reshape((-1, defaults[variable.x_1].size))
+            y_2 = y_2.reshape((-1, defaults[variable.y_2].size))
+            gamma = gamma.reshape((-1, defaults[variable.gamma].size))
 
         y_1_sq = (
             x_shared[..., [0]] ** 2 + x_shared[..., [1]] + x_1 - gamma * self.__k * y_2
@@ -98,20 +98,20 @@ class Sellar1(BaseSellar):
         output_names: Iterable[str] = (),
     ) -> None:
         input_data = self.io.input_data
-        x_shared = input_data[X_SHARED]
-        x_1 = input_data[X_1]
-        y_1 = self.io.output_data[Y_1]
-        y_2 = input_data[Y_2]
-        gamma = input_data[GAMMA]
+        x_shared = input_data[variable.x_shared]
+        x_1 = input_data[variable.x_1]
+        y_1 = self.io.output_data[variable.y_1]
+        y_2 = input_data[variable.y_2]
+        gamma = input_data[variable.gamma]
         n_samples = 1
         defaults = self.io.input_grammar.defaults
-        if WITH_2D_ARRAY:  # pragma: no cover
+        if with_2d_array:  # pragma: no cover
             x_shared = x_shared[0]
         else:
-            x_shared = x_shared.reshape((-1, defaults[X_SHARED].size))
-            x_1 = x_1.reshape((-1, defaults[X_1].size))
-            y_2 = y_2.reshape((-1, defaults[Y_2].size))
-            gamma = gamma.reshape((-1, defaults[GAMMA].size))
+            x_shared = x_shared.reshape((-1, defaults[variable.x_shared].size))
+            x_1 = x_1.reshape((-1, defaults[variable.x_1].size))
+            y_2 = y_2.reshape((-1, defaults[variable.y_2].size))
+            gamma = gamma.reshape((-1, defaults[variable.gamma].size))
             n_samples = self._get_n_samples(x_shared, x_1, y_2, gamma)
             y_1 = y_1.reshape((n_samples, -1))
 
@@ -119,12 +119,14 @@ class Sellar1(BaseSellar):
             x_shared[..., [0]] ** 2 + x_shared[..., [1]] + x_1 - gamma * self.__k * y_2
         )
         inv_denom = y_1_sign / y_1
-        self.jac = {Y_1: {}}
-        jac = self.jac[Y_1]
-        if n_samples > 1 and not WITH_2D_ARRAY:
-            jac[X_1] = block_diag([diag(0.5 * x) for x in inv_denom], format="csr")
-            jac[X_2] = csr_array((n_samples * self._n, n_samples * self._n))
-            jac[X_SHARED] = block_diag(
+        self.jac = {variable.y_1: {}}
+        jac = self.jac[variable.y_1]
+        if n_samples > 1 and not with_2d_array:
+            jac[variable.x_1] = block_diag(
+                [diag(0.5 * x) for x in inv_denom], format="csr"
+            )
+            jac[variable.x_2] = csr_array((n_samples * self._n, n_samples * self._n))
+            jac[variable.x_shared] = block_diag(
                 [
                     array([x_shared_i[0] * inv_denom_i, 0.5 * inv_denom_i]).T
                     for x_shared_i, inv_denom_i in zip(
@@ -133,14 +135,19 @@ class Sellar1(BaseSellar):
                 ],
                 format="csr",
             )
-            jac[Y_2] = block_diag(
+            jac[variable.y_2] = block_diag(
                 [
-                    diags(-0.5 * self.__k * gamma[min(i, defaults[GAMMA].size - 1)] * x)
+                    diags(
+                        -0.5
+                        * self.__k
+                        * gamma[min(i, defaults[variable.gamma].size - 1)]
+                        * x
+                    )
                     for i, x in enumerate(inv_denom)
                 ],
                 format="csr",
             )
-            jac[GAMMA] = block_diag(
+            jac[variable.gamma] = block_diag(
                 [
                     (-0.5 * self.__k * y_2_i * inv_denom_i).reshape((self._n, 1))
                     for y_2_i, inv_denom_i in zip(y_2, inv_denom, strict=False)
@@ -149,9 +156,12 @@ class Sellar1(BaseSellar):
             )
         else:
             inv_denom = inv_denom.ravel()
-            jac[X_1] = diags(0.5 * inv_denom)
-            jac[X_2] = self.__zeros_n
-            jac[X_SHARED] = array([x_shared[0, 0] * inv_denom, 0.5 * inv_denom]).T
+            jac[variable.x_1] = diags(0.5 * inv_denom)
+            jac[variable.x_2] = self.__zeros_n
+            jac[variable.x_shared] = array([
+                x_shared[0, 0] * inv_denom,
+                0.5 * inv_denom,
+            ]).T
             temp = -0.5 * self.__k * inv_denom
-            jac[Y_2] = diags(temp * gamma.ravel())
-            jac[GAMMA] = (temp * y_2.ravel()).reshape((self._n, 1))
+            jac[variable.y_2] = diags(temp * gamma.ravel())
+            jac[variable.gamma] = (temp * y_2.ravel()).reshape((self._n, 1))

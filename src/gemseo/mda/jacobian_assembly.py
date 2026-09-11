@@ -52,7 +52,7 @@ from gemseo.linear.factory import LinearSolverLibraryFactory
 from gemseo.linear.problem import LinearProblem
 from gemseo.linear.scipy_linalg import LGMRES_Settings
 from gemseo.util._compatibility.scipy import sparse_classes
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.matplotlib_figure import save_show_figure
 
 if TYPE_CHECKING:
@@ -72,7 +72,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealOrComplexArrayT
     from gemseo.util.typing import StrKeyMapping
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def none_factory() -> None:
@@ -347,7 +347,7 @@ class JacobianAssembly:
         functions: Iterable[str],
         variables: Iterable[str],
         couplings: Iterable[str],
-        residual_variables: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
+        residual_variables: Mapping[str, str] = read_only_empty_dict,
     ) -> None:
         """Compute the number of scalar functions, variables and couplings.
 
@@ -651,7 +651,7 @@ class JacobianAssembly:
         matrix_type: JacobianType = JacobianType.MATRIX,
         exec_cache_tol: float | None = None,
         execute: bool = True,
-        residual_variables: Mapping[str, str] = READ_ONLY_EMPTY_DICT,
+        residual_variables: Mapping[str, str] = read_only_empty_dict,
     ) -> dict[str, dict[str, RealOrComplexArray]] | dict[Any, dict[Any, None]]:
         """Compute the Jacobian of total derivatives of the coupled system.
 
@@ -1025,7 +1025,7 @@ class CoupledSystem:
     linear_problem: LinearProblem | None
     """The considered linear problem."""
 
-    DEFAULT_LINEAR_SOLVER: ClassVar[str] = "LGMRES"
+    default_linear_solver: ClassVar[str] = "LGMRES"
     """The default linear solver."""
 
     def __init__(self) -> None:  # noqa:D107
@@ -1253,7 +1253,7 @@ class CoupledSystem:
             self.n_linear_resolutions += 1
             res = norm(lhs.dot(sol) - rhs) / norm(rhs)
             if res > tol:
-                LOGGER.warning(
+                logger.warning(
                     "The linear system in _direct_mode_lu used to compute the coupled "
                     "derivatives is not well resolved, "
                     "residuals > tolerance : %s > %s ",
@@ -1304,7 +1304,7 @@ class CoupledSystem:
                 adjoint = solve(rhs)
                 res = norm(dres_dy_t.dot(adjoint) - rhs) / norm(rhs)
                 if res > tol:
-                    LOGGER.warning(
+                    logger.warning(
                         "The linear system in _adjoint_mode_lu used to compute the "
                         "coupled "
                         "derivatives is not well resolved, "

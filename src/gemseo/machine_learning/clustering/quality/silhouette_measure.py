@@ -40,6 +40,7 @@ where
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from sklearn.metrics import silhouette_score
 
@@ -62,12 +63,14 @@ if TYPE_CHECKING:
 class SilhouetteMeasure(BasePredictiveClustererQuality):
     """The silhouette score to assess the quality of a clusterer."""
 
-    SMALLER_IS_BETTER = False
+    smaller_is_better: ClassVar[bool] = False
 
     def __init__(
         self,
         model: BasePredictiveClusterer,
-        fit_transformers: bool = BasePredictiveClustererQuality._FIT_TRANSFORMERS,
+        fit_transformers: bool = (
+            BasePredictiveClustererQuality._default_fit_transformers
+        ),
     ) -> None:
         """
         Args:
@@ -88,7 +91,7 @@ class SilhouetteMeasure(BasePredictiveClustererQuality):
         n_folds: int = 5,
         samples: Sequence[int] = (),
         multioutput: bool = True,
-        randomize: bool = BasePredictiveClustererQuality._RANDOMIZE,
+        randomize: bool = BasePredictiveClustererQuality._randomize,
         seed: int | None = None,
     ) -> MeasureType:
         raise NotImplementedError

@@ -30,14 +30,14 @@ from gemseo.problem.mdo.sellar.sellar_1 import Sellar1
 from gemseo.problem.mdo.sellar.sellar_2 import Sellar2
 from gemseo.problem.mdo.sellar.sellar_system import SellarSystem
 from gemseo.problem.mdo.sellar.util import get_y_opt
-from gemseo.problem.mdo.sellar.variable import X_SHARED
+from gemseo.problem.mdo.sellar.variable import x_shared
 from gemseo.util.testing.helper import assert_exception
 from tests.mda import check_iteration_listeners_clearing
 from tests.mda import check_iteration_listeners_execution
 
 from .test_gauss_seidel import SelfCoupledDisc
 
-SELLAR_Y_REF = array([0.80004953, 1.79981434])
+sellar_y_ref = array([0.80004953, 1.79981434])
 
 
 @pytest.mark.parametrize(
@@ -55,10 +55,10 @@ def test_broyden_sellar(method) -> None:
     mda.reset_history_each_run = True
     mda.execute()
     assert mda.residual_history[-1] < 1e-5
-    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
+    assert linalg.norm(sellar_y_ref - get_y_opt(mda)) / linalg.norm(sellar_y_ref) < 1e-3
 
     mda.settings.warm_start = True
-    mda.execute({X_SHARED: mda.io.input_grammar.defaults[X_SHARED] + 0.1})
+    mda.execute({x_shared: mda.io.input_grammar.defaults[x_shared] + 0.1})
 
 
 def test_hybrid_sellar() -> None:
@@ -70,7 +70,7 @@ def test_hybrid_sellar() -> None:
 
     mda.execute()
 
-    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(sellar_y_ref - get_y_opt(mda)) / linalg.norm(sellar_y_ref) < 1e-4
 
 
 def test_lm_sellar() -> None:
@@ -84,7 +84,7 @@ def test_lm_sellar() -> None:
     )
     mda.execute()
 
-    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-4
+    assert linalg.norm(sellar_y_ref - get_y_opt(mda)) / linalg.norm(sellar_y_ref) < 1e-4
 
 
 def test_dfsane_sellar() -> None:
@@ -95,7 +95,7 @@ def test_dfsane_sellar() -> None:
     )
     mda.execute()
 
-    assert linalg.norm(SELLAR_Y_REF - get_y_opt(mda)) / linalg.norm(SELLAR_Y_REF) < 1e-3
+    assert linalg.norm(sellar_y_ref - get_y_opt(mda)) / linalg.norm(sellar_y_ref) < 1e-3
 
 
 def test_broyden_sellar2() -> None:
@@ -107,7 +107,7 @@ def test_broyden_sellar2() -> None:
     mda.reset_history_each_run = True
     mda.execute()
 
-    assert mda.io.output_data[mda.NORMALIZED_RESIDUAL_NORM][0] < 1e-6
+    assert mda.io.output_data[mda.normalized_residual_norm_name][0] < 1e-6
 
 
 def test_self_coupled() -> None:
@@ -122,17 +122,17 @@ def test_self_coupled() -> None:
 
 @pytest.mark.parametrize("method", QuasiNewtonMethod)
 def test_methods_supporting_listeners(method):
-    """Test MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS."""
+    """Test MDAQuasiNewton._methods_supporting_listeners."""
     mda = MDAQuasiNewton(
         [Sellar1(), SellarSystem()], settings=MDAQuasiNewton_Settings(method=method)
     )
-    method_supports_listeners = method in MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS
+    method_supports_listeners = method in MDAQuasiNewton._methods_supporting_listeners
     assert (
-        mda.NORMALIZED_RESIDUAL_NORM in mda.io.output_grammar
+        mda.normalized_residual_norm_name in mda.io.output_grammar
     ) is method_supports_listeners
 
 
-@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS)
+@pytest.mark.parametrize("method", MDAQuasiNewton._methods_supporting_listeners)
 def test_residual_history(sellar_disciplines, method):
     """Test that method supporting listeners update convergence metrics."""
     mda = MDAQuasiNewton(
@@ -145,7 +145,7 @@ def test_residual_history(sellar_disciplines, method):
     assert mda.residual_history[-1] <= mda.settings.tolerance
 
 
-@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS)
+@pytest.mark.parametrize("method", MDAQuasiNewton._methods_supporting_listeners)
 def test_iteration_listeners_execution(method) -> None:
     """Check the execution of iteration listeners."""
     check_iteration_listeners_execution(
@@ -155,7 +155,7 @@ def test_iteration_listeners_execution(method) -> None:
     )
 
 
-@pytest.mark.parametrize("method", MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS)
+@pytest.mark.parametrize("method", MDAQuasiNewton._methods_supporting_listeners)
 def test_iteration_listeners_clearing(method) -> None:
     """Check the clearing of iteration listeners."""
     check_iteration_listeners_clearing(
@@ -168,7 +168,7 @@ def test_iteration_listeners_clearing(method) -> None:
 @pytest.mark.parametrize(
     "method",
     sorted(
-        set(QuasiNewtonMethod).difference(MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS)
+        set(QuasiNewtonMethod).difference(MDAQuasiNewton._methods_supporting_listeners)
     ),
 )
 def test_iteration_listeners_unsupported(method, snapshot) -> None:

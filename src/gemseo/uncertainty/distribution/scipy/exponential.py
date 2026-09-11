@@ -47,8 +47,8 @@ class SPExponentialDistribution(SPDistribution):
                 interfaced_distribution="expon",
                 parameters={"loc": settings.loc, "scale": 1 / settings.rate},
                 standard_parameters={
-                    self._RATE: settings.rate,
-                    self._LOC: settings.loc,
+                    self._rate: settings.rate,
+                    self._loc: settings.loc,
                 },
             )
         )

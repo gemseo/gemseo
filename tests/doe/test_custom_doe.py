@@ -31,7 +31,7 @@ from pydantic import ValidationError
 
 from gemseo.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.space.design import DesignSpace
 from gemseo.util.testing.helper import assert_exception
 
@@ -39,24 +39,24 @@ from .utils import execute_problem
 from .utils import generate_test_functions
 from .utils import get_problem
 
-DOE_LIB_NAME = "CustomDOE"
-DOE_FILE_PATH = str(Path(__file__).parent / "dim_3_semicolon.csv")
+doe_lib_name = "CustomDOE"
+doe_file_path = str(Path(__file__).parent / "dim_3_semicolon.csv")
 
 
 def test_library_from_factory():
     """Check that the DOELibraryFactory can create the CustomDOE library."""
-    if DOE_LIBRARY_FACTORY.is_available(DOE_LIB_NAME):
-        DOE_LIBRARY_FACTORY.create(DOE_LIB_NAME)
+    if doe_library_factory.is_available(doe_lib_name):
+        doe_library_factory.create(doe_lib_name)
 
 
 def test_check_dimension_inconsistency(snapshot):
     """Check that an error is raised if the dimensions are inconsistent."""
     with assert_exception(ValueError, snapshot):
         execute_problem(
-            DOE_LIB_NAME,
+            doe_lib_name,
             dim=4,
             delimiter=";",
-            doe_file=DOE_FILE_PATH,
+            doe_file=doe_file_path,
         )
 
 
@@ -64,9 +64,9 @@ def test_read_file_error():
     """Check that an error is raised when the separator is wrong."""
     with pytest.raises(ValueError):
         execute_problem(
-            DOE_LIB_NAME,
+            doe_lib_name,
             dim=4,
-            doe_file=DOE_FILE_PATH,
+            doe_file=doe_file_path,
         )
 
 
@@ -83,21 +83,21 @@ def test_read_file_error():
             30,
             {
                 "delimiter": ";",
-                "doe_file": DOE_FILE_PATH,
+                "doe_file": doe_file_path,
             },
         ),
         (
             30,
             {
                 "delimiter": ";",
-                "doe_file": Path(DOE_FILE_PATH),
+                "doe_file": Path(doe_file_path),
             },
         ),
     ],
 )
 def test_samples_shape(n_samples, options):
     """Check that the samples shape is correct."""
-    doe_library = execute_problem(DOE_LIB_NAME, dim=3, **options)
+    doe_library = execute_problem(doe_lib_name, dim=3, **options)
     assert doe_library.unit_samples.shape == (n_samples, 3)
 
 
@@ -114,7 +114,7 @@ def test_samples_shape(n_samples, options):
 def test_wrong_arguments(options, snapshot):
     """Check that an error is raised when arguments are wrong."""
     with assert_exception(ValidationError, snapshot):
-        execute_problem(DOE_LIB_NAME, dim=3, **options)
+        execute_problem(doe_lib_name, dim=3, **options)
 
 
 def get_expected_nsamples(

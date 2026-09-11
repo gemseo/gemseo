@@ -24,7 +24,7 @@ from pathlib import PurePosixPath
 from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING
 
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.platform import platform_is_windows
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -39,6 +39,6 @@ def to_os_specific(path: Path) -> PureWindowsPath | PurePosixPath:
     Returns:
         The cast path.
     """
-    if PLATFORM_IS_WINDOWS:
+    if platform_is_windows:
         return PureWindowsPath(path)
     return PurePosixPath(path)

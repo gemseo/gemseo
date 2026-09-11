@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import ClassVar
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.util.derivative.approximator.base import BaseGradientApproximator
@@ -28,13 +29,13 @@ if TYPE_CHECKING:
 class GradientApproximatorFactory(BaseFactory[BaseGradientApproximator]):
     """A factory of gradient approximators."""
 
-    _CLASS = BaseGradientApproximator
-    _PACKAGE_NAMES = ("gemseo.util.derivative.approximator",)
+    _class: ClassVar[type[BaseGradientApproximator]] = BaseGradientApproximator
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.util.derivative.approximator",)
 
     @property
     def _name_to_class_info(self) -> dict[str, _ClassInfo[BaseGradientApproximator]]:
         name_to_class_info = super()._name_to_class_info
         for class_info in tuple(name_to_class_info.values()):
-            approximation_mode = class_info.class_._APPROXIMATION_MODE
+            approximation_mode = class_info.class_._approximation_mode
             name_to_class_info[approximation_mode] = class_info
         return name_to_class_info

@@ -52,6 +52,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -72,19 +73,19 @@ if TYPE_CHECKING:
 
     from numpy._typing import NDArray
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-CURRENT_DIRECTORY = Path.cwd()
-PLOT_EXTENSION = "png"
-RESULTS_DIRECTORY = Path("results")
-POST_DIRECTORY = Path("visualization")
-POSTSTUDY_DIRECTORY = POST_DIRECTORY / "scalability_study"
+current_directory: Final[Path] = Path.cwd()
+plot_extension: Final[str] = "png"
+results_directory: Final[Path] = Path("results")
+post_directory: Final[Path] = Path("visualization")
+poststudy_directory: Final[Path] = post_directory / "scalability_study"
 
 
 class PostScalabilityStudy:
     """Post-processing of scalability results."""
 
-    NOMENCLATURE: ClassVar[dict[str, str]] = {
+    nomenclature: ClassVar[dict[str, str]] = {
         "exec_time": "Execution time (s)",
         "original_exec_time": "Pseudo-original execution time",
         "n_executions": "Number of discipline evaluations",
@@ -104,11 +105,11 @@ class PostScalabilityStudy:
         msg.add("Post-process for scalability study")
         msg.indent()
         msg.add("Working directory: {}", study_directory)
-        LOGGER.info("%s", msg)
+        logger.info("%s", msg)
         self.study_directory = Path(study_directory)
         self.scalability_results = self.__load_results()
         self.n_results = len(self.scalability_results)
-        self.descriptions = self.NOMENCLATURE
+        self.descriptions = self.nomenclature
         self.cost_function = {}
         self.unit_cost = None
         for result in self.scalability_results:
@@ -198,7 +199,7 @@ class PostScalabilityStudy:
         self._update_descriptions("scaling_strategy", description)
 
     def _update_descriptions(self, keyword: str, description: str) -> None:
-        """Update the description initialized with the NOMENCLATURE class attribute.
+        """Update the description initialized with the nomenclature class attribute.
 
         Args:
             keyword: The keyword of the considered object.
@@ -233,7 +234,7 @@ class PostScalabilityStudy:
         if not self.study_directory.is_dir():
             msg = f'Directory "{self.study_directory}" does not exist.'
             raise ValueError(msg)
-        directory = self.study_directory / RESULTS_DIRECTORY
+        directory = self.study_directory / results_directory
         if not directory.is_dir():
             msg = f'Directory "{directory}" does not exist.'
             raise ValueError(msg)
@@ -284,7 +285,7 @@ class PostScalabilityStudy:
         else:
             msg.add("Type: standard")
             self._plot_lines(legend_loc, xticks, xticks_labels, xmargin, **options)
-        LOGGER.info("%s", msg)
+        logger.info("%s", msg)
 
     def __has_scaling_dimension(self, value: Any) -> None:
         """Assert if a value has the scaling dimension.
@@ -323,8 +324,8 @@ class PostScalabilityStudy:
         for criterion in criteria:
             plt.figure(criterion)
             plt.legend(handles=handles, loc=legend_loc, frameon=False, framealpha=0.5)
-            fname = Path(criterion).with_suffix("." + PLOT_EXTENSION)
-            fpath = self.study_directory / POSTSTUDY_DIRECTORY / fname
+            fname = Path(criterion).with_suffix("." + plot_extension)
+            fpath = self.study_directory / poststudy_directory / fname
             plt.savefig(str(fpath))
 
     def __draw(
@@ -431,10 +432,10 @@ class PostScalabilityStudy:
                 frameon=False,
                 framealpha=0.5,
             )
-            fname = Path(criterion).with_suffix("." + PLOT_EXTENSION)
-            fpath = self.study_directory / POSTSTUDY_DIRECTORY / fname
-            indentation = MultiLineString.INDENTATION
-            LOGGER.info("%sSave %s plot in %s", indentation, criterion, fpath)
+            fname = Path(criterion).with_suffix("." + plot_extension)
+            fpath = self.study_directory / poststudy_directory / fname
+            indentation = MultiLineString.indentation
+            logger.info("%sSave %s plot in %s", indentation, criterion, fpath)
             plt.savefig(str(fpath))
 
     def __drawb(

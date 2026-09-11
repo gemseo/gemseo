@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Mapping
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Final
@@ -32,7 +33,7 @@ from gemseo.machine_learning.clustering.core.base_clusterer import BaseClusterer
 from gemseo.machine_learning.core.model.base_supervised import BaseMLSupervisedModel
 from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
 from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
@@ -98,7 +99,7 @@ if TYPE_CHECKING:
         TPSRegressor_Settings,  # noqa: F401
     )
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_mlearning_models() -> list[str]:
@@ -107,9 +108,9 @@ def get_mlearning_models() -> list[str]:
     Returns:
         The available machine learning models.
     """
-    from gemseo.machine_learning.core.model.factory import ML_MODEL_FACTORY
+    from gemseo.machine_learning.core.model.factory import ml_model_factory
 
-    return ML_MODEL_FACTORY.class_names
+    return ml_model_factory.class_names
 
 
 def get_regression_models() -> list[str]:
@@ -118,9 +119,9 @@ def get_regression_models() -> list[str]:
     Returns:
         The available regression models.
     """
-    from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+    from gemseo.machine_learning.regression.model.factory import regressor_factory
 
-    return REGRESSOR_FACTORY.class_names
+    return regressor_factory.class_names
 
 
 def get_classification_models() -> list[str]:
@@ -129,9 +130,9 @@ def get_classification_models() -> list[str]:
     Returns:
         The available classification models.
     """
-    from gemseo.machine_learning.classification.model.factory import CLASSIFIER_FACTORY
+    from gemseo.machine_learning.classification.model.factory import classifier_factory
 
-    return CLASSIFIER_FACTORY.class_names
+    return classifier_factory.class_names
 
 
 def get_clustering_models() -> list[str]:
@@ -140,15 +141,15 @@ def get_clustering_models() -> list[str]:
     Returns:
         The available clustering models.
     """
-    from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
+    from gemseo.machine_learning.clustering.model.factory import clusterer_factory
 
-    return CLUSTERER_FACTORY.class_names
+    return clusterer_factory.class_names
 
 
 def create_mlearning_model(
     name: str,
     data: Dataset,
-    transformer: TransformerType = READ_ONLY_EMPTY_DICT,
+    transformer: TransformerType = read_only_empty_dict,
     **parameters: Any,
 ) -> BaseMLModel:
     """Create a machine learning model from a training dataset.
@@ -161,27 +162,27 @@ def create_mlearning_model(
             [BaseTransformer][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
             If
-            [DEFAULT_TRANSFORMER][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
+            [default_transformer][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.default_transformer],
             do not transform the variables.
         parameters: The parameters of the machine learning model.
 
     Returns:
         A machine learning model.
     """
-    from gemseo.machine_learning.core.model.factory import ML_MODEL_FACTORY
+    from gemseo.machine_learning.core.model.factory import ml_model_factory
 
-    cls = ML_MODEL_FACTORY.get_class(name)
+    cls = ml_model_factory.get_class(name)
     settings = cls.settings_class(transformer=transformer, **parameters)
-    return ML_MODEL_FACTORY.create(name, data, settings=settings)
+    return ml_model_factory.create(name, data, settings=settings)
 
 
-minmax_inputs = {IODataset.INPUT_GROUP: MinMaxScaler()}
+minmax_inputs: Final[TransformerType] = {IODataset.input_group: MinMaxScaler()}
 
 
 def create_regression_model(
     name: str,
     data: IODataset,
-    transformer: TransformerType = BaseRegressor.DEFAULT_TRANSFORMER,  # noqa: E501
+    transformer: TransformerType = BaseRegressor.default_transformer,  # noqa: E501
     **parameters: Any,
 ) -> BaseRegressor:
     """Create a regression model from a training dataset.
@@ -194,36 +195,36 @@ def create_regression_model(
             [BaseTransformer][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
             If
-            [DEFAULT_TRANSFORMER][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
+            [default_transformer][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.default_transformer],
             do not transform the variables.
         parameters: The parameters of the regression model.
 
     Returns:
         A regression model.
     """
-    from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+    from gemseo.machine_learning.regression.model.factory import regressor_factory
 
     if (
         name == "PCERegressor"
         and isinstance(transformer, Mapping)
-        and IODataset.INPUT_GROUP in transformer
+        and IODataset.input_group in transformer
     ):
-        LOGGER.warning(
+        logger.warning(
             "Remove input data transformation because "
             "PCERegressor does not support transformers."
         )
         transformer = dict(transformer)
-        del transformer[IODataset.INPUT_GROUP]
+        del transformer[IODataset.input_group]
 
-    cls = REGRESSOR_FACTORY.get_class(name)
+    cls = regressor_factory.get_class(name)
     settings = cls.settings_class(transformer=transformer, **parameters)
-    return REGRESSOR_FACTORY.create(name, data, settings=settings)
+    return regressor_factory.create(name, data, settings=settings)
 
 
 def create_classification_model(
     name: str,
     data: IODataset,
-    transformer: TransformerType = BaseMLSupervisedModel.DEFAULT_TRANSFORMER,
+    transformer: TransformerType = BaseMLSupervisedModel.default_transformer,
     # noqa: E501
     **parameters: Any,
 ) -> BaseClassifier:
@@ -237,24 +238,24 @@ def create_classification_model(
             [BaseTransformer][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
             If
-            [DEFAULT_TRANSFORMER][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
+            [default_transformer][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.default_transformer],
             do not transform the variables.
         parameters: The parameters of the classification model.
 
     Returns:
         A classification model.
     """
-    from gemseo.machine_learning.classification.model.factory import CLASSIFIER_FACTORY
+    from gemseo.machine_learning.classification.model.factory import classifier_factory
 
-    cls = CLASSIFIER_FACTORY.get_class(name)
+    cls = classifier_factory.get_class(name)
     settings = cls.settings_class(transformer=transformer, **parameters)
-    return CLASSIFIER_FACTORY.create(name, data, settings=settings)
+    return classifier_factory.create(name, data, settings=settings)
 
 
 def create_clustering_model(
     name: str,
     data: Dataset,
-    transformer: TransformerType = BaseClusterer.DEFAULT_TRANSFORMER,
+    transformer: TransformerType = BaseClusterer.default_transformer,
     **parameters: Any,
 ) -> BaseClusterer:
     """Create a clustering model from a training dataset.
@@ -267,18 +268,18 @@ def create_clustering_model(
             [BaseTransformer][gemseo.machine_learning.transformer.core.base_transformer.BaseTransformer]
             while keys are names of either variables or groups of variables.
             If
-            [DEFAULT_TRANSFORMER][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.DEFAULT_TRANSFORMER],
+            [default_transformer][gemseo.machine_learning.core.model.base_ml_model.BaseMLModel.default_transformer],
             do not transform the variables.
         parameters: The parameters of the clustering model.
 
     Returns:
         A clustering model.
     """
-    from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
+    from gemseo.machine_learning.clustering.model.factory import clusterer_factory
 
-    cls = CLUSTERER_FACTORY.get_class(name)
+    cls = clusterer_factory.get_class(name)
     settings = cls.settings_class(transformer=transformer, **parameters)
-    return CLUSTERER_FACTORY.create(name, data, settings=settings)
+    return clusterer_factory.create(name, data, settings=settings)
 
 
 def get_mlearning_options(
@@ -294,9 +295,9 @@ def get_mlearning_options(
     Returns:
         The options schema of the machine learning model.
     """
-    from gemseo.machine_learning.core.model.factory import ML_MODEL_FACTORY
+    from gemseo.machine_learning.core.model.factory import ml_model_factory
 
-    return _get_options(ML_MODEL_FACTORY, model_name, output_json, pretty_print)
+    return _get_options(ml_model_factory, model_name, output_json, pretty_print)
 
 
 def get_regression_options(
@@ -312,9 +313,9 @@ def get_regression_options(
     Returns:
         The options schema of the regression model.
     """
-    from gemseo.machine_learning.regression.model.factory import REGRESSOR_FACTORY
+    from gemseo.machine_learning.regression.model.factory import regressor_factory
 
-    return _get_options(REGRESSOR_FACTORY, model_name, output_json, pretty_print)
+    return _get_options(regressor_factory, model_name, output_json, pretty_print)
 
 
 def get_classification_options(
@@ -330,9 +331,9 @@ def get_classification_options(
     Returns:
         The options schema of the classification model.
     """
-    from gemseo.machine_learning.classification.model.factory import CLASSIFIER_FACTORY
+    from gemseo.machine_learning.classification.model.factory import classifier_factory
 
-    return _get_options(CLASSIFIER_FACTORY, model_name, output_json, pretty_print)
+    return _get_options(classifier_factory, model_name, output_json, pretty_print)
 
 
 def get_clustering_options(
@@ -348,9 +349,9 @@ def get_clustering_options(
     Returns:
         The options schema of the clustering model.
     """
-    from gemseo.machine_learning.clustering.model.factory import CLUSTERER_FACTORY
+    from gemseo.machine_learning.clustering.model.factory import clusterer_factory
 
-    return _get_options(CLUSTERER_FACTORY, model_name, output_json, pretty_print)
+    return _get_options(clusterer_factory, model_name, output_json, pretty_print)
 
 
 def _get_options(
@@ -379,7 +380,7 @@ def _get_options(
 
 # Exported name -> "module.path:Attr" (lazy-loaded on attribute access).
 # The module path is relative to ``gemseo.machine_learning``.
-_NAME_TO_LOCATION: Final[dict[str, str]] = {
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "FCERegressor_Settings": "regression.model.fce_settings:FCERegressor_Settings",
     "GaussianMixture_Settings": (
         "clustering.model.gaussian_mixture_settings:GaussianMixture_Settings"
@@ -421,9 +422,9 @@ _NAME_TO_LOCATION: Final[dict[str, str]] = {
     ),
     "SVMRegressor_Settings": "regression.model.svm_settings:SVMRegressor_Settings",
     "TPSRegressor_Settings": "regression.model.tps_settings:TPSRegressor_Settings",
-}
+})
 
-_EXTRA_ALL: Final[tuple[str, ...]] = (
+_extra_all: Final[tuple[str, ...]] = (
     "create_classification_model",
     "create_clustering_model",
     "create_mlearning_model",
@@ -438,4 +439,4 @@ _EXTRA_ALL: Final[tuple[str, ...]] = (
     "get_regression_options",
 )
 
-install_lazy_reexport(globals(), _NAME_TO_LOCATION, extra_all=_EXTRA_ALL)
+install_lazy_reexport(globals(), _name_to_location, extra_all=_extra_all)

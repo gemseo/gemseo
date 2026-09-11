@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 class BaseOTStratifiedDOE(BaseOTDOE):
     """The base stratified DOE algorithm using the OpenTURNS library."""
 
-    _ALGO_CLASS: ClassVar[type[StratifiedExperiment]]
+    _algo_class: ClassVar[type[StratifiedExperiment]]
     """The OpenTURNS class implementing the stratified DOE algorithm."""
 
     def generate_samples(
@@ -81,7 +81,7 @@ class BaseOTStratifiedDOE(BaseOTDOE):
         # where center is the center of the unit hypercube
         # and levels have different meanings
         # according to the nature of the stratified experiment.
-        algo = self._ALGO_CLASS(full(dimension, 0.5), array(levels) / 2)
+        algo = self._algo_class(full(dimension, 0.5), array(levels) / 2)
         samples = (array(algo.generate()) - 0.5) * 2
         centers = array(centers)
         return where(

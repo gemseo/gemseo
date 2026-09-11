@@ -25,7 +25,7 @@ from typing import Final
 from typing import Protocol
 from typing import runtime_checkable
 
-from gemseo.util._directory_manager.processor.factory import DM_PROCESSOR_FACTORY
+from gemseo.util._directory_manager.processor.factory import dm_processor_factory
 from gemseo.util._workflow_observer.interface import WorkflowObserverInterface
 from gemseo.util._workflow_observer.tree import ObserverTree
 
@@ -70,7 +70,7 @@ class BaseWorkflowObserver(WorkflowObserverInterface):
     __observer_tree: Final[ObserverTree] = ObserverTree()
     """The global tree of observers."""
 
-    __processor_factory: Final[DMProcessorFactory] = DM_PROCESSOR_FACTORY
+    __processor_factory: Final[DMProcessorFactory] = dm_processor_factory
     """The observation processor factory."""
 
     _object: object

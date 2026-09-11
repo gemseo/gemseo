@@ -28,6 +28,7 @@ from __future__ import annotations
 
 from math import pi
 from typing import TYPE_CHECKING
+from typing import Final
 
 from numpy import array
 from numpy import cos
@@ -36,7 +37,7 @@ from numpy import sqrt
 from numpy import zeros
 
 from gemseo.problem.mdo.sobieski.standalone.discipline import SobieskiDiscipline
-from gemseo.problem.mdo.sobieski.standalone.util import DEG_TO_RAD
+from gemseo.problem.mdo.sobieski.standalone.util import deg_to_rad
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -47,7 +48,7 @@ if TYPE_CHECKING:
 class SobieskiAerodynamics(SobieskiDiscipline):
     """Aerodynamics discipline for the Sobieski's SSBJ use case."""
 
-    PRESSURE_GRADIENT_LIMIT = 1.04
+    pressure_gradient_limit: Final[float] = 1.04
 
     def __init__(self, sobieski_base: SobieskiBase) -> None:  # noqa: D107
         super().__init__(sobieski_base)
@@ -93,7 +94,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         """
         self.__k_aero = (
             (mach**2 - 1)
-            * self.math.cos(sweep * DEG_TO_RAD)
+            * self.math.cos(sweep * deg_to_rad)
             / (4.0 * self.math.sqrt(sweep**2 - 1) - 2)
         )
         return self.__k_aero
@@ -112,8 +113,8 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         Returns:
             The derivative of the induced drag coefficient with respect to the sweep.
         """
-        u_velo = (mach * mach - 1.0) * cos(sweep * DEG_TO_RAD)
-        up_velo = -DEG_TO_RAD * (mach * mach - 1.0) * sin(sweep * DEG_TO_RAD)
+        u_velo = (mach * mach - 1.0) * cos(sweep * deg_to_rad)
+        up_velo = -deg_to_rad * (mach * mach - 1.0) * sin(sweep * deg_to_rad)
         v_velo = 4.0 * sqrt(sweep * sweep - 1.0) - 2.0
         vp_velo = 4.0 * sweep * (sweep * sweep - 1.0) ** -0.5
         return (up_velo * v_velo - u_velo * vp_velo) / v_velo**2
@@ -218,7 +219,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             c_4 * fo1
             + 3.05
             * tc_ratio ** (5.0 / 3.0)
-            * (self.math.cos(sweep * DEG_TO_RAD)) ** 1.5
+            * (self.math.cos(sweep * deg_to_rad)) ** 1.5
         )
 
     @staticmethod
@@ -236,13 +237,13 @@ class SobieskiAerodynamics(SobieskiDiscipline):
             The derivative of the 2D minimum drag coefficient
             with respect to the sweep.
         """
-        ang_rad = sweep * DEG_TO_RAD
+        ang_rad = sweep * deg_to_rad
         return (
             -3.05
             * 1.5
             * tc_ratio ** (5.0 / 3.0)
             * cos(ang_rad) ** 0.5
-            * DEG_TO_RAD
+            * deg_to_rad
             * sin(ang_rad)
         )
 
@@ -717,7 +718,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
         # coeff_dir=(1.04-0.96)/(0.06-0.04)# = 4
         #         g_2[0] = coeff_dir*Z[0]+0.8
         if not true_cstr:
-            g_2[0] -= self.PRESSURE_GRADIENT_LIMIT
+            g_2[0] -= self.pressure_gradient_limit
 
         return y_2, y_21, y_23, y_24, g_2
 
@@ -936,7 +937,7 @@ class SobieskiAerodynamics(SobieskiDiscipline):
 
         # dDrag/d(t/c)
         dy2dxs = dyn_force * fo2 * 3.05 * 5.0 / 3.0 * tc_ratio ** (2.0 / 3.0)
-        dy2dxs *= (self.math.cos(sweep * DEG_TO_RAD)) ** 1.5
+        dy2dxs *= (self.math.cos(sweep * deg_to_rad)) ** 1.5
         jacobian["y_2"]["x_shared"][1, 0] = dy2dxs
 
         # d(Drag)/dh

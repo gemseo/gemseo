@@ -100,7 +100,7 @@ class FORMAnalysis(BaseROSensitivityAnalysis[FORMAnalysisMethod]):
 
     _indices: SensitivityIndices
 
-    _DEFAULT_MAIN_METHOD: ClassVar[FORMAnalysisMethod] = FORMAnalysisMethod.CLASSICAL
+    _default_main_method: ClassVar[FORMAnalysisMethod] = FORMAnalysisMethod.CLASSICAL
 
     def __init__(self, samples: IODataset | str | Path = "") -> None:  # noqa: D107
         super().__init__(samples)

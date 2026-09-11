@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from io import TextIOWrapper
     from numbers import Real
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _log_status(status: str) -> None:
@@ -45,7 +45,7 @@ def _log_status(status: str) -> None:
 
     status = status.rstrip(string.whitespace)
     if status:
-        LOGGER.info("  %s", status)
+        logger.info("  %s", status)
 
 
 class CustomTqdmProgressBar(tqdm.tqdm):
@@ -54,37 +54,37 @@ class CustomTqdmProgressBar(tqdm.tqdm):
     Use minute, hour and day for slower processes.
     """
 
-    _BAR_FORMAT: ClassVar[str] = (
+    _bar_format: ClassVar[str] = (
         "{{desc}} {{percentage:3.0f}}%|{{bar}}| {{n_fmt}}/{{total_fmt}} "
         "[{{elapsed}}<{{remaining}}, {rate}{{postfix}}]"
     )
     """The bar_format used by tqdm.format_meter."""
 
-    _INITIAL_RATE: ClassVar[str] = "? it/sec"
+    _initial_rate: ClassVar[str] = "? it/sec"
 
-    _RATE_TEMPLATE: ClassVar[str] = "{:5.2f} it/{}"
+    _rate_template: ClassVar[str] = "{:5.2f} it/{}"
 
-    __BAR_FORMAT_LABEL: Final[str] = "bar_format"
-    __DAY_LABEL: Final[str] = "day"
-    __HOUR_LABEL: Final[str] = "hour"
-    __MIN_LABEL: Final[str] = "min"
-    __SEC_LABEL: Final[str] = "sec"
+    __bar_format_label: Final[str] = "bar_format"
+    __day_label: Final[str] = "day"
+    __hour_label: Final[str] = "hour"
+    __min_label: Final[str] = "min"
+    __sec_label: Final[str] = "sec"
 
-    __FILE_STREAM_CLASS: Final[type] = StringIO
+    __file_stream_class: Final[type] = StringIO
     """The class used to create the dummy file stream for tqdm."""
 
     def __init__(self, *args, **kwargs) -> None:  # noqa: D102
         # Use a file stream to prevent tqdm from trying to adapt the progress bar
         # to the current terminal because its rendering will vary and because it is
         # not needed since the progress bar goes to a logger.
-        kwargs["file"] = self.__FILE_STREAM_CLASS()
+        kwargs["file"] = self.__file_stream_class()
         super().__init__(*args, **kwargs)
 
     @classmethod
     def format_meter(  # noqa: D102
         cls, n: float, total: float, elapsed: float, **kwargs: Any
     ) -> str:
-        kwargs[cls.__BAR_FORMAT_LABEL] = cls._BAR_FORMAT.format(
+        kwargs[cls.__bar_format_label] = cls._bar_format.format(
             rate=cls.__get_rate_expression(n, elapsed)
         )
         return tqdm.tqdm.format_meter(n, total, elapsed, **kwargs)
@@ -101,21 +101,21 @@ class CustomTqdmProgressBar(tqdm.tqdm):
             The rate string expression.
         """
         if elapsed == 0:
-            return cls._INITIAL_RATE
+            return cls._initial_rate
 
         rate = n / elapsed
         if rate >= 1:
-            return cls._RATE_TEMPLATE.format(rate, cls.__SEC_LABEL)
+            return cls._rate_template.format(rate, cls.__sec_label)
 
         rate *= 60
         if rate >= 1:
-            return cls._RATE_TEMPLATE.format(rate, cls.__MIN_LABEL)
+            return cls._rate_template.format(rate, cls.__min_label)
 
         rate *= 60
         if rate >= 1:
-            return cls._RATE_TEMPLATE.format(rate, cls.__HOUR_LABEL)
+            return cls._rate_template.format(rate, cls.__hour_label)
 
-        return cls._RATE_TEMPLATE.format(rate * 24, cls.__DAY_LABEL)
+        return cls._rate_template.format(rate * 24, cls.__day_label)
 
     @staticmethod
     def status_printer(file: TextIOWrapper | StringIO) -> Callable[[str], None]:
@@ -141,5 +141,5 @@ class CustomTqdmProgressBar(tqdm.tqdm):
         self.__dict__.update(state)
         # Set back the file-like stream to its state as done in tqdm.__init__.
         self.fp = tqdm.utils.DisableOnWriteError(
-            self.__FILE_STREAM_CLASS(), tqdm_instance=self
+            self.__file_stream_class(), tqdm_instance=self
         )

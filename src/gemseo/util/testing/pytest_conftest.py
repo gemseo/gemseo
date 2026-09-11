@@ -27,7 +27,7 @@ from syrupy.matchers import path_type
 
 from gemseo import configuration
 from gemseo.core.base_factory import BaseFactory
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.platform import platform_is_windows
 
 # Rewrite asserts in helpers so syrupy's snapshot diff is shown on mismatch.
 pytest.register_assert_rewrite("gemseo.util.testing.helper")
@@ -94,7 +94,7 @@ def skip_under_windows(request) -> None:
 
     Use it like a usual skip marker.
     """
-    if request.node.get_closest_marker("skip_under_windows") and PLATFORM_IS_WINDOWS:
+    if request.node.get_closest_marker("skip_under_windows") and platform_is_windows:
         pytest.skip("skipped on windows")
 
 

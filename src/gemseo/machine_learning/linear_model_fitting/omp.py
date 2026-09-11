@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from sklearn.linear_model import (
     OrthogonalMatchingPursuit as SKLearnOrthogonalMatchingPursuit,
 )
@@ -53,4 +55,6 @@ class OrthogonalMatchingPursuit(
 
     settings_class = OrthogonalMatchingPursuit_Settings
 
-    _FITTER_CLASS = SKLearnOrthogonalMatchingPursuit
+    _fitter_class: ClassVar[type[SKLearnOrthogonalMatchingPursuit]] = (
+        SKLearnOrthogonalMatchingPursuit
+    )

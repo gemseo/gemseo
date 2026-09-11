@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gemseo.core.grammar.factory import GRAMMAR_FACTORY
+from gemseo.core.grammar.factory import grammar_factory
 from gemseo.core.grammar.required_names import RequiredNames
 from gemseo.util.testing.helper import assert_exception
 
@@ -26,10 +26,10 @@ if TYPE_CHECKING:
     from gemseo.core.grammar.base import BaseGrammar
 
 
-@pytest.fixture(params=tuple(GRAMMAR_FACTORY.class_names))
+@pytest.fixture(params=tuple(grammar_factory.class_names))
 def grammar(request) -> BaseGrammar:
     """Return a grammar with an element named `name`."""
-    grammar = GRAMMAR_FACTORY.create(request.param, name="g")
+    grammar = grammar_factory.create(request.param, name="g")
     grammar.update_from_names(["name"])
     return grammar
 

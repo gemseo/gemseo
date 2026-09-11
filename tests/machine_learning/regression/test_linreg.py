@@ -47,7 +47,7 @@ from gemseo.util.testing.helper import assert_exception
 if TYPE_CHECKING:
     from gemseo.dataset.io_dataset import IODataset
 
-LEARNING_SIZE = 9
+learning_size = 9
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def dataset() -> IODataset:
     design_space.add_variable("x_2", lower_bound=0.0, upper_bound=1.0)
     scenario = MDOScenario([discipline], design_space)
     scenario.add_objective("y_1")
-    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=LEARNING_SIZE))
+    scenario.execute(PYDOE_FULLFACT_Settings(n_samples=learning_size))
     return discipline.cache.to_dataset("dataset_name")
 
 
@@ -89,8 +89,8 @@ def test_constructor(dataset) -> None:
     """Test construction."""
     model_ = LinearRegressor(dataset)
     assert model_.algo is not None
-    assert model_.SHORT_NAME == "LinReg"
-    assert model_.LIBRARY == "scikit-learn"
+    assert model_.short_name == "LinReg"
+    assert model_.library == "scikit-learn"
 
 
 @pytest.mark.parametrize(
@@ -173,7 +173,7 @@ def test_coefficients_with_transform(dataset, model_with_transform, snapshot) ->
     model_with_pca = LinearRegressor(
         dataset,
         LinearRegressor_Settings(
-            transformer={dataset.OUTPUT_GROUP: PCA(n_components=1)}
+            transformer={dataset.output_group: PCA(n_components=1)}
         ),
     )
     model_with_pca.learn()

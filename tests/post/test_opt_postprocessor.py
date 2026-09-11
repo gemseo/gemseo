@@ -27,7 +27,7 @@ import pytest
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.dataset.optimization_dataset import OptimizationDataset
 from gemseo.dataset.optimization_metadata import OptimizationMetadata
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.post.core.base_post import BasePost
@@ -41,7 +41,7 @@ from gemseo.util.testing.helper import assert_exception
 def problem() -> Rosenbrock:
     """The Rosenbrock problem."""
     rosenbrock = Rosenbrock()
-    OPTIMIZATION_LIBRARY_FACTORY.execute(rosenbrock, settings=L_BFGS_B_Settings())
+    optimization_library_factory.execute(rosenbrock, settings=L_BFGS_B_Settings())
     return rosenbrock
 
 

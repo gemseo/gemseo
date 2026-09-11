@@ -28,7 +28,7 @@ from numpy import ones_like
 from gemseo import create_scenario
 from gemseo.core.discipline import Discipline
 from gemseo.core.function.array_function import ArrayFunction
-from gemseo.optimization.factory import OPTIMIZATION_LIBRARY_FACTORY
+from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.space.design import DesignSpace
 
@@ -95,7 +95,7 @@ def test_resolution(algo, n, p, constraint_kind) -> None:
     }:
         pytest.skip("SLSQP is not well suited for non-linear equality constraints")
 
-    settings = OPTIMIZATION_LIBRARY_FACTORY.create_settings(
+    settings = optimization_library_factory.create_settings(
         algo,
         max_iter=100,
         normalize_design_space=True,

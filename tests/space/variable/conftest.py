@@ -20,14 +20,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from tests.space.variable.utils import ALL_KINDS
-from tests.space.variable.utils import KIND_TO_KWARGS
+from tests.space.variable.utils import all_kinds
+from tests.space.variable.utils import kind_to_kwargs
 
 if TYPE_CHECKING:
     from gemseo.space.variable import BaseVariable
 
 
-@pytest.fixture(params=ALL_KINDS)
+@pytest.fixture(params=all_kinds)
 def variable(request) -> BaseVariable:
     """A variable of each kind, of size 1 and with the bounds [0, 1]."""
-    return request.param(**KIND_TO_KWARGS[request.param])
+    return request.param(**kind_to_kwargs[request.param])

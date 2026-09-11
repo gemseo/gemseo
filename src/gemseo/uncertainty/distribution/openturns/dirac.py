@@ -42,7 +42,7 @@ class OTDiracDistribution(OTDistribution):
             OTDistribution_Settings(
                 interfaced_distribution="Dirac",
                 parameters=(settings.variable_value,),
-                standard_parameters={self._LOC: settings.variable_value},
+                standard_parameters={self._loc: settings.variable_value},
                 transformation=settings.transformation,
                 lower_bound=settings.lower_bound,
                 upper_bound=settings.upper_bound,

@@ -29,7 +29,7 @@ from gemseo.uncertainty.reliability.openturns.base_sampling_settings import (
 class BaseOTISSettings(BaseOTSamplingSettings):  # noqa: N801
     """The base class for the settings of importance sampling algorithms."""
 
-    INSTANTIATION_ARGUMENTS: ClassVar[tuple[str, ...]] = ("quantile_level",)
+    instantiation_arguments: ClassVar[tuple[str, ...]] = ("quantile_level",)
     """The arguments used to instantiate the algorithm."""
 
     quantile_level: PositiveFloat = Field(

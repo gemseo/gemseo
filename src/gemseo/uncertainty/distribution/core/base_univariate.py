@@ -57,7 +57,7 @@ class BaseUnivariateDistribution(
 ):
     """The base class for univariate distributions."""
 
-    JOINT_DISTRIBUTION_CLASS: ClassVar[type[BaseJointDistribution]]
+    joint_distribution_class: ClassVar[type[BaseJointDistribution]]
     """The class of the joint distribution associated with this marginal."""
 
     def plot(  # noqa: D102
@@ -103,8 +103,8 @@ class BaseUnivariateDistribution(
             fig = make_subplots(cols=2)
             fig.add_trace(go.Scatter(name="PDF", x=x_values, y=pdf), row=1, col=1)
             fig.add_trace(go.Scatter(name="CDF", x=x_values, y=cdf), row=1, col=2)
-            fig.layout.xaxis.title.text = variable_name or self.DEFAULT_VARIABLE_NAME
-            fig.layout.xaxis2.title.text = variable_name or self.DEFAULT_VARIABLE_NAME
+            fig.layout.xaxis.title.text = variable_name or self.default_variable_name
+            fig.layout.xaxis2.title.text = variable_name or self.default_variable_name
             fig.layout.yaxis.title.text = "Probability density function"
             fig.layout.yaxis2.title.text = "Cumulative distribution function"
             fig.update_layout(title=repr(self))
@@ -120,12 +120,12 @@ class BaseUnivariateDistribution(
             fig.suptitle(repr(self))
             ax1.plot(x_values, pdf)
             ax1.grid()
-            ax1.set_xlabel(variable_name or self.DEFAULT_VARIABLE_NAME)
+            ax1.set_xlabel(variable_name or self.default_variable_name)
             ax1.set_ylabel("Probability density function")
             ax1.set_box_aspect(1)
             ax2.plot(x_values, cdf)
             ax2.grid()
-            ax2.set_xlabel(variable_name or self.DEFAULT_VARIABLE_NAME)
+            ax2.set_xlabel(variable_name or self.default_variable_name)
             ax2.set_ylabel("Cumulative distribution function")
             ax2.yaxis.tick_right()
             ax2.set_box_aspect(1)
@@ -203,7 +203,7 @@ class BaseUnivariateDistribution(
 
             return create_distribution(*parameters)
         except BaseException:  # noqa: BLE001
-            msg = f"The arguments of {self} are wrong; more details on {self._WEBSITE}."
+            msg = f"The arguments of {self} are wrong; more details on {self._website}."
             raise ValueError(msg) from None
 
     def __repr__(self) -> str:

@@ -40,7 +40,7 @@ from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.problem.database import Database
 from gemseo.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
-from gemseo.doe.factory import DOE_LIBRARY_FACTORY
+from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.pydoe.pydoe import PyDOELibrary
 from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
@@ -176,7 +176,7 @@ def test_evaluate_samples_multiproc_with_observables(
     # The start method is the one actually used by GEMSEO,
     # not the interpreter default,
     # which is forkserver since Python 3.14 on Linux.
-    if start_method.MULTI_PROCESSING_START_METHOD == MultiProcessingStartMethod.FORK:
+    if start_method.multi_processing_start_method == MultiProcessingStartMethod.FORK:
         assert disc.execution_statistics.n_executions == 8
     else:
         assert disc.execution_statistics.n_executions == 0
@@ -199,14 +199,14 @@ def test_compute_doe_from_space(fullfact, variables_space) -> None:
     assert (points == array([[0.0, -1.0], [2.0, -1.0], [0.0, 1.0], [2.0, 1.0]])).all()
 
 
-SAMPLES = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
+samples = array([[0.0, 0.2, 0.3], [0.4, 0.5, 0.6]])
 
 
 def test_sample_unit_hypercube(custom_doe):
     """Check BaseDOELibrary.sample_unit_hypercube."""
     assert_equal(
-        custom_doe.sample_unit_hypercube(3, CustomDOE_Settings(samples=SAMPLES)),
-        SAMPLES,
+        custom_doe.sample_unit_hypercube(3, CustomDOE_Settings(samples=samples)),
+        samples,
     )
 
 
@@ -275,7 +275,7 @@ def test_pre_run_debug(lhs, caplog) -> None:
 def test_seed(algo_name) -> None:
     """Check the use of the seed at the BaseDOELibrary level."""
     problem = Power2()
-    library = DOE_LIBRARY_FACTORY.create(algo_name)
+    library = doe_library_factory.create(algo_name)
     settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2)
 
     # The BaseDOELibrary has a seed and increments it
@@ -332,7 +332,7 @@ def test_seed(algo_name) -> None:
 )
 def test_variable_types(var_type1, var_type2) -> None:
     """Verify that input data provided to a discipline match the design space types."""
-    design_variable_type_to_python_type = DesignSpace.VARIABLE_TYPES_TO_DTYPES
+    design_variable_type_to_python_type = DesignSpace.variable_types_to_dtypes
 
     class Disc(DummyDiscipline):
         def __init__(self) -> None:

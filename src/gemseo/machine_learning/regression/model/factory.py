@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
 from typing import Final
 
 from gemseo.machine_learning.core.model.factory import MLModelFactory
@@ -30,9 +31,11 @@ from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
 class RegressorFactory(MLModelFactory):
     """A factory of regressors."""
 
-    _CLASS = BaseRegressor
-    _PACKAGE_NAMES = ("gemseo.machine_learning.regression.model",)
+    _class: ClassVar[type[BaseRegressor]] = BaseRegressor
+    _package_names: ClassVar[tuple[str, ...]] = (
+        "gemseo.machine_learning.regression.model",
+    )
 
 
-REGRESSOR_FACTORY: Final[RegressorFactory] = RegressorFactory()
+regressor_factory: Final[RegressorFactory] = RegressorFactory()
 """The factory for `BaseRegressor` objects."""

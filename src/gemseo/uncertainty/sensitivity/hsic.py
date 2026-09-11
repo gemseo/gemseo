@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -42,8 +43,8 @@ from strenum import StrEnum
 
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
 from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
-from gemseo.util.seeder import SEED
+from gemseo.util.constant import read_only_empty_dict
+from gemseo.util.seeder import seed
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -143,12 +144,14 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
 
         return covariance_models
 
-    __METHODS_TO_OT_METHODS: Final[dict[HSICAnalysisMethod, str]] = {
-        HSICAnalysisMethod.HSIC: "getHSICIndices",
-        HSICAnalysisMethod.P_VALUE_ASYMPTOTIC: "getPValuesAsymptotic",
-        HSICAnalysisMethod.P_VALUE_PERMUTATION: "getPValuesPermutation",
-        HSICAnalysisMethod.R2_HSIC: "getR2HSICIndices",
-    }
+    __methods_to_ot_methods: Final[Mapping[HSICAnalysisMethod, str]] = (
+        MappingProxyType({
+            HSICAnalysisMethod.HSIC: "getHSICIndices",
+            HSICAnalysisMethod.P_VALUE_ASYMPTOTIC: "getPValuesAsymptotic",
+            HSICAnalysisMethod.P_VALUE_PERMUTATION: "getPValuesPermutation",
+            HSICAnalysisMethod.R2_HSIC: "getR2HSICIndices",
+        })
+    )
     """The mapping from the sensitivity indices to the OT classes."""
 
     class AnalysisType(StrEnum):
@@ -168,13 +171,13 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
         [StatisticEstimator.USTAT][gemseo.uncertainty.sensitivity.hsic.HSICAnalysis.StatisticEstimator.USTAT].
         """
 
-    __ANALYSIS_TO_OT_CLASSES: Final[
-        dict[AnalysisType, type[HSICEstimatorImplementation]]
-    ] = {
+    __analysis_to_ot_classes: Final[
+        Mapping[AnalysisType, type[HSICEstimatorImplementation]]
+    ] = MappingProxyType({
         AnalysisType.CONDITIONAL: HSICEstimatorConditionalSensitivity,
         AnalysisType.GLOBAL: HSICEstimatorGlobalSensitivity,
         AnalysisType.TARGET: HSICEstimatorTargetSensitivity,
-    }
+    })
     """The mapping from the analysis types to the OT classes."""
 
     class StatisticEstimator(StrEnum):
@@ -186,12 +189,12 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
         VSTAT = "V-statistic"
         """V-statistic."""
 
-    __STATISTIC_ESTIMATORS_TO_OT_CLASSES: Final[
-        dict[StatisticEstimator, type[HSICStatImplementation]]
-    ] = {
+    __statistic_estimators_to_ot_classes: Final[
+        Mapping[StatisticEstimator, type[HSICStatImplementation]]
+    ] = MappingProxyType({
         StatisticEstimator.USTAT: HSICUStat,
         StatisticEstimator.VSTAT: HSICVStat,
-    }
+    })
     """The mapping from the statistic estimators to the OT classes."""
 
     class CovarianceModel(StrEnum):
@@ -200,28 +203,28 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
         GAUSSIAN = "Gaussian"
         """Squared exponential covariance model."""
 
-    __COVARIANCE_MODELS_TO_OT_CLASSES: Final[
-        dict[CovarianceModel, type[CovarianceModelImplementation]]
-    ] = {
+    __covariance_models_to_ot_classes: Final[
+        Mapping[CovarianceModel, type[CovarianceModelImplementation]]
+    ] = MappingProxyType({
         CovarianceModel.GAUSSIAN: SquaredExponential,
-    }
+    })
     """The mapping from the covariance model names to the OT classes."""
 
-    DEFAULT_DRIVER: ClassVar[str] = "OT_MONTE_CARLO"
+    default_driver: ClassVar[str] = "OT_MONTE_CARLO"
 
-    _DEFAULT_MAIN_METHOD: ClassVar[HSICAnalysisMethod] = HSICAnalysisMethod.R2_HSIC
+    _default_main_method: ClassVar[HSICAnalysisMethod] = HSICAnalysisMethod.R2_HSIC
 
     def compute_indices(
         self,
         output_names: str | Iterable[str] = (),
         output_bounds: Mapping[
             str, tuple[Iterable[float], Iterable[float]]
-        ] = READ_ONLY_EMPTY_DICT,
+        ] = read_only_empty_dict,
         statistic_estimator: StatisticEstimator = StatisticEstimator.USTAT,
         input_covariance_model: CovarianceModel = CovarianceModel.GAUSSIAN,
         output_covariance_model: CovarianceModel = CovarianceModel.GAUSSIAN,
         analysis_type: AnalysisType = AnalysisType.GLOBAL,
-        seed: int | None = SEED,
+        seed: int | None = seed,
         n_permutations: int = 100,
         use_permutations: bool = False,
     ) -> SensitivityIndices:
@@ -269,7 +272,7 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
 
         output_names = self._get_output_names(output_names)
 
-        statistic_estimator_class = self.__STATISTIC_ESTIMATORS_TO_OT_CLASSES[
+        statistic_estimator_class = self.__statistic_estimators_to_ot_classes[
             statistic_estimator
         ]
 
@@ -280,14 +283,14 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
             }
             output_names = output_bounds.keys()
 
-        input_covariance_model_class = self.__COVARIANCE_MODELS_TO_OT_CLASSES[
+        input_covariance_model_class = self.__covariance_models_to_ot_classes[
             input_covariance_model
         ]
-        output_covariance_model_class = self.__COVARIANCE_MODELS_TO_OT_CLASSES[
+        output_covariance_model_class = self.__covariance_models_to_ot_classes[
             output_covariance_model
         ]
         input_samples = Sample(self._get_input_sample_array())
-        hsic_class = self.__ANALYSIS_TO_OT_CLASSES[analysis_type]
+        hsic_class = self.__analysis_to_ot_classes[analysis_type]
         # The input covariance models do not depend on the output: build them once.
         input_covariance_models = self.__compute_covariance_models(
             input_samples, input_covariance_model_class
@@ -347,7 +350,7 @@ class HSICAnalysis(BaseSensitivityAnalysis[HSICAnalysisMethod]):
                 hsic_estimator.setPermutationSize(n_permutations)
                 for method in active_methods:
                     get_indices = getattr(
-                        hsic_estimator, self.__METHODS_TO_OT_METHODS[method]
+                        hsic_estimator, self.__methods_to_ot_methods[method]
                     )
                     method_to_output_indices[self._get_index_field_name(method)].append(
                         self._split_index_array(get_indices())

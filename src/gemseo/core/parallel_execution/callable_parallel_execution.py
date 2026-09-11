@@ -40,10 +40,10 @@ from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
-from gemseo.util.constant import N_CPUS
+from gemseo.util.constant import n_cpus
 from gemseo.util.multiprocessing import start_method
 from gemseo.util.multiprocessing.start_method import MultiProcessingStartMethod
-from gemseo.util.platform import PLATFORM_IS_WINDOWS
+from gemseo.util.platform import platform_is_windows
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from concurrent.futures import Executor
     from concurrent.futures import Future
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 CallbackType = Callable[[int, Any], None]
@@ -112,7 +112,7 @@ def _uninitialized_worker_task_callables(task_index: int, input_: Any) -> Any:
     raise RuntimeError(msg)
 
 
-_WORKER_TASK_CALLABLES: Callable[[int, Any], Any] = _uninitialized_worker_task_callables
+_worker_task_callables: Callable[[int, Any], Any] = _uninitialized_worker_task_callables
 """The task callables stashed in the worker on pool initialization.
 
 This module global is per worker process: each
@@ -136,8 +136,8 @@ going through pickle.
 
 def _init_worker(task_callables: _TaskCallables[Any, Any]) -> None:
     """Stash the task callables into a worker module global."""
-    global _WORKER_TASK_CALLABLES
-    _WORKER_TASK_CALLABLES = task_callables
+    global _worker_task_callables
+    _worker_task_callables = task_callables
 
 
 def _init_process_worker(
@@ -185,7 +185,7 @@ def _init_thread_worker(parent_id: int, parent_path: Path) -> None:
 
 def _run_task(task_index: int, input_: Any) -> Any:
     """Run a task from the worker module global."""
-    return _WORKER_TASK_CALLABLES(task_index, input_)
+    return _worker_task_callables(task_index, input_)
 
 
 class CallableParallelExecution(
@@ -201,8 +201,8 @@ class CallableParallelExecution(
     """An alias of
     [MultiProcessingStartMethod][gemseo.util.multiprocessing.start_method.MultiProcessingStartMethod]."""
 
-    MULTI_PROCESSING_START_METHOD: ClassVar[MultiProcessingStartMethod] = (
-        start_method.MULTI_PROCESSING_START_METHOD
+    multi_processing_start_method: ClassVar[MultiProcessingStartMethod] = (
+        start_method.multi_processing_start_method
     )
     """The start method used for multiprocessing."""
 
@@ -224,7 +224,7 @@ class CallableParallelExecution(
     def __init__(
         self,
         workers: Sequence[CallableType[ArgT, ReturnT]],
-        n_processes: int = N_CPUS,
+        n_processes: int = n_cpus,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
         exceptions_to_re_raise: Sequence[type[Exception]] = (),
@@ -336,7 +336,7 @@ class CallableParallelExecution(
                 try:
                     output = future.result()
                 except Exception as err:
-                    LOGGER.exception("Failed to execute task indexed %s", index)
+                    logger.exception("Failed to execute task indexed %s", index)
                     # Stop the execution only for required exceptions.
                     # Otherwise, keep retrieving the remaining outputs.
                     if isinstance(err, self.__exceptions_to_re_raise):
@@ -382,7 +382,7 @@ class CallableParallelExecution(
             )
         return ProcessPoolExecutor(
             max_workers=max_workers,
-            mp_context=get_context(method=self.MULTI_PROCESSING_START_METHOD),
+            mp_context=get_context(method=self.multi_processing_start_method),
             initializer=_init_process_worker,
             initargs=(task_callables, getpid(), parent_path),
         )
@@ -396,13 +396,13 @@ class CallableParallelExecution(
         """
         if (
             not self.use_threading
-            and PLATFORM_IS_WINDOWS
-            and self.MULTI_PROCESSING_START_METHOD
+            and platform_is_windows
+            and self.multi_processing_start_method
             != self.MultiProcessingStartMethod.SPAWN
         ):  # pragma: win32 cover
             msg = (
                 f"The multiprocessing start method "
-                f"{self.MULTI_PROCESSING_START_METHOD.value} "
+                f"{self.multi_processing_start_method.value} "
                 f"cannot be used on the Windows platform. "
                 f"Only {self.MultiProcessingStartMethod.SPAWN.value} is available."
             )

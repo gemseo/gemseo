@@ -17,6 +17,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from types import MappingProxyType
+from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import poly1d
@@ -25,6 +27,9 @@ from scipy.interpolate import RBFInterpolator
 from strenum import StrEnum
 
 from gemseo.util.typing import RealArray
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 TrendFunctionCreator = Callable[
     [RealArray, RealArray], Callable[[RealArray], RealArray]
@@ -84,9 +89,9 @@ class Trend(StrEnum):
     RBF = "rbf"
 
 
-_TREND_FUNCTIONS: Final[dict[Trend, TrendFunctionCreator]] = {
+_trend_functions: Final[Mapping[Trend, TrendFunctionCreator]] = MappingProxyType({
     Trend.LINEAR: _create_polynomial_trend_function_creator(1),
     Trend.QUADRATIC: _create_polynomial_trend_function_creator(2),
     Trend.CUBIC: _create_polynomial_trend_function_creator(3),
     Trend.RBF: _create_radial_basis_function,
-}
+})

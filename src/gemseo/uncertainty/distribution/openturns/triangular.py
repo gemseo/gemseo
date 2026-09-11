@@ -45,9 +45,9 @@ class OTTriangularDistribution(OTDistribution):
                 interfaced_distribution="Triangular",
                 parameters=(settings.minimum, settings.mode, settings.maximum),
                 standard_parameters={
-                    self._LOWER: settings.minimum,
-                    self._MODE: settings.mode,
-                    self._UPPER: settings.maximum,
+                    self._lower: settings.minimum,
+                    self._mode: settings.mode,
+                    self._upper: settings.maximum,
                 },
                 transformation=settings.transformation,
                 lower_bound=settings.lower_bound,

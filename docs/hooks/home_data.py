@@ -49,15 +49,15 @@ from typing import Any
 if TYPE_CHECKING:
     from mkdocs.config.defaults import MkDocsConfig
 
-_LOGGER = logging.getLogger("mkdocs.hooks.home_data")
+_logger = logging.getLogger("mkdocs.hooks.home_data")
 
 # The identifier of the injected element; `home.js` looks it up by this id.
-_ELEMENT_ID = "gemseo-lp-data"
+_element_id = "gemseo-lp-data"
 
 # The payload is injected right before this tag, the last stable anchor of the
 # page: the `minify` plugin runs on `on_post_page`, i.e. before this hook, and
 # keeps it.
-_ANCHOR = "</body>"
+_anchor = "</body>"
 
 
 def _load_json(path: Path, *, required: bool) -> dict[str, Any]:
@@ -78,7 +78,7 @@ def _load_json(path: Path, *, required: bool) -> dict[str, Any]:
         if required:
             msg = f"{path} does not exist."
             raise FileNotFoundError(msg)
-        _LOGGER.info("%s does not exist; home page data will lack it.", path)
+        _logger.info("%s does not exist; home page data will lack it.", path)
         return {}
 
     with path.open(encoding="utf-8") as file:
@@ -122,18 +122,18 @@ def on_post_build(config: MkDocsConfig) -> None:
 
     home_page = site_dir / "index.html"
     if not home_page.is_file():
-        _LOGGER.info("%s does not exist; home page data not inlined.", home_page)
+        _logger.info("%s does not exist; home page data not inlined.", home_page)
         return
 
     html = home_page.read_text(encoding="utf-8")
-    if _ANCHOR not in html:
-        _LOGGER.info("%s has no %s; home page data not inlined.", home_page, _ANCHOR)
+    if _anchor not in html:
+        _logger.info("%s has no %s; home page data not inlined.", home_page, _anchor)
         return
 
     element = (
-        f'<script type="application/json" id="{_ELEMENT_ID}">'
+        f'<script type="application/json" id="{_element_id}">'
         f"{_serialize(payload)}</script>"
     )
     home_page.write_text(
-        html.replace(_ANCHOR, f"{element}{_ANCHOR}", 1), encoding="utf-8"
+        html.replace(_anchor, f"{element}{_anchor}", 1), encoding="utf-8"
     )

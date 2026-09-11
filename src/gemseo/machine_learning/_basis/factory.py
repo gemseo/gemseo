@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from gemseo.core.base_factory import BaseFactory
 from gemseo.machine_learning._basis.base_basis import BaseBasis
 
@@ -24,5 +26,5 @@ from gemseo.machine_learning._basis.base_basis import BaseBasis
 class BasisFactory(BaseFactory):
     """A factory of orthonormal multivariate bases."""
 
-    _CLASS = BaseBasis
-    _PACKAGE_NAMES = ("gemseo.machine_learning._basis",)
+    _class: ClassVar[type[BaseBasis]] = BaseBasis
+    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.machine_learning._basis",)

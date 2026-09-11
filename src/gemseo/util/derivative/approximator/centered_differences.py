@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 
 from numpy import concatenate
 from numpy import tile
@@ -43,7 +44,9 @@ class CenteredDifferences(BaseFiniteDifferences):
     $$\frac{df(x)}{dx}\approx\frac{f(x+\delta x)-f(x-\delta x)}{2\delta x}$$
     """
 
-    _APPROXIMATION_MODE = ApproximationMode.CENTERED_DIFFERENCES
+    _approximation_mode: ClassVar[ApproximationMode] = (
+        ApproximationMode.CENTERED_DIFFERENCES
+    )
 
     def _compute_parallel_grad(
         self,

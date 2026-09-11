@@ -19,6 +19,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from re import findall
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import NamedTuple
@@ -28,6 +29,8 @@ from strenum import LowercaseStrEnum
 from gemseo.util.string import MultiLineString
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from gemseo.util.typing import StrPath
 
 
@@ -52,12 +55,12 @@ class FilePathManager:
         TEXT = "document"
         WEBPAGE = "page"
 
-    __FILE_TYPE_TO_EXTENSION: ClassVar[dict[FileType, str]] = {
+    __file_type_to_extension: ClassVar[Mapping[FileType, str]] = MappingProxyType({
         FileType.FIGURE: "png",
         FileType.SCHEMA: "json",
         FileType.TEXT: "txt",
         FileType.WEBPAGE: "html",
-    }
+    })
 
     def __init__(
         self,
@@ -91,7 +94,7 @@ class FilePathManager:
         if default_extension:
             self.__default_extension = default_extension
         else:
-            self.__default_extension = self.__FILE_TYPE_TO_EXTENSION[file_type]
+            self.__default_extension = self.__file_type_to_extension[file_type]
 
         self.__file_type = file_type
 

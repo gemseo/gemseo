@@ -69,7 +69,7 @@ class Lines(PlotlyPlot[Lines_Settings]):
                         mode=mode,
                         showlegend=True,
                         line={
-                            "dash": self._PLOTLY_LINESTYLES.get(
+                            "dash": self._plotly_linestyles.get(
                                 settings.linestyle[line_index], "solid"
                             ),
                             "color": self._stringify_color(settings.color[line_index]),

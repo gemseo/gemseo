@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -39,7 +40,7 @@ from gemseo.optimization.aggregation.aggregation_func import (
 )
 from gemseo.optimization.aggregation.aggregation_func import aggregate_sum_square
 from gemseo.optimization.aggregation.aggregation_func import aggregate_upper_bound_ks
-from gemseo.util.constant import READ_ONLY_EMPTY_DICT
+from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -59,16 +60,18 @@ class Constraints(Functions):
 
     AggregationFunction = ConstraintAggregation.EvaluationFunction
 
-    _AGGREGATION_FUNCTION_MAP: Final[Mapping[str, Callable[[RealArray], float]]] = {
-        AggregationFunction.IKS: aggregate_iks,
-        AggregationFunction.LOWER_BOUND_KS: aggregate_lower_bound_ks,
-        AggregationFunction.UPPER_BOUND_KS: aggregate_upper_bound_ks,
-        AggregationFunction.POS_SUM: aggregate_positive_sum_square,
-        AggregationFunction.MAX: aggregate_max,
-        AggregationFunction.SUM: aggregate_sum_square,
-    }
+    _aggregation_function_map: Final[Mapping[str, Callable[[RealArray], float]]] = (
+        MappingProxyType({
+            AggregationFunction.IKS: aggregate_iks,
+            AggregationFunction.LOWER_BOUND_KS: aggregate_lower_bound_ks,
+            AggregationFunction.UPPER_BOUND_KS: aggregate_upper_bound_ks,
+            AggregationFunction.POS_SUM: aggregate_positive_sum_square,
+            AggregationFunction.MAX: aggregate_max,
+            AggregationFunction.SUM: aggregate_sum_square,
+        })
+    )
 
-    _F_TYPES: ClassVar[tuple[str, str]] = (
+    _f_types: ClassVar[tuple[str, str]] = (
         ArrayFunction.ConstraintType.EQ,
         ArrayFunction.ConstraintType.INEQ,
     )
@@ -143,7 +146,7 @@ class Constraints(Functions):
         if callable(method):
             aggregate_constraints = method
         else:
-            aggregate_constraints = self._AGGREGATION_FUNCTION_MAP[method]
+            aggregate_constraints = self._aggregation_function_map[method]
 
         del self[constraint_index]
         if groups:
@@ -377,7 +380,7 @@ class Constraints(Functions):
 
     def get_number_of_unsatisfied_constraints(
         self,
-        values: Mapping[str, float | RealArray] = READ_ONLY_EMPTY_DICT,
+        values: Mapping[str, float | RealArray] = read_only_empty_dict,
     ) -> int:
         """Return the number of scalar constraints not satisfied by design variables.
 

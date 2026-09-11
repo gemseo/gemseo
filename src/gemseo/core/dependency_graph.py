@@ -47,9 +47,9 @@ if TYPE_CHECKING:
 # graphviz is an optional dependency;
 # the gemseo.post._graph_view import happens lazily where GraphView is used
 # so that gemseo.core does not depend on gemseo.post at module level.
-GRAPHVIZ_IS_MISSING = find_spec("graphviz") is None
+graphviz_is_missing: Final[bool] = find_spec("graphviz") is None
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 ExecutionSequence = list[list[tuple[BaseDiscipline, ...]]]
 
@@ -71,7 +71,7 @@ class DependencyGraph:
     The coupled inputs and outputs names are stored as an edge attributes named io.
     """
 
-    IO: Final[str] = "io"
+    io: Final[str] = "io"
     """The argument name for the coupling variables associated with an edge."""
 
     def __init__(self, disciplines: Sequence[BaseDiscipline]) -> None:
@@ -195,7 +195,7 @@ class DependencyGraph:
             variables names.
         """
         couplings = []
-        for from_disc, to_disc, edge_names in self.__graph.edges(data=self.IO):
+        for from_disc, to_disc, edge_names in self.__graph.edges(data=self.io):
             couplings += [(from_disc, to_disc, sorted(edge_names))]
         return couplings
 
@@ -305,8 +305,8 @@ class DependencyGraph:
         Returns:
             Either the graph or `None` when graphviz is not installed.
         """
-        if GRAPHVIZ_IS_MISSING:
-            LOGGER.warning(
+        if graphviz_is_missing:
+            logger.warning(
                 "Cannot render graph: "
                 "GraphView cannot be imported because graphviz is not installed."
             )
@@ -339,7 +339,7 @@ class DependencyGraph:
 
         # 1. Add the edges with different head and tail nodes
         #    (case: some outputs of a discipline are inputs of another one)
-        for tail_node, head_node, coupling_names in graph.edges(data=self.IO):
+        for tail_node, head_node, coupling_names in graph.edges(data=self.io):
             tail_name = self.__get_node_name(graph, tail_node)
             head_name = self.__get_node_name(graph, head_node)
             if not isinstance(head_node, BaseDiscipline):

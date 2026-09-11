@@ -41,7 +41,7 @@ class ReliabilityScenario(EvaluationScenario):
 
     _evaluation_problem_class: type[ReliabilityProblem] = ReliabilityProblem
 
-    _ALGO_FACTORY_CLASS: ClassVar[type[ReliabilityAlgorithmFactory]] = (
+    _algo_factory_class: ClassVar[type[ReliabilityAlgorithmFactory]] = (
         ReliabilityAlgorithmFactory
     )
 

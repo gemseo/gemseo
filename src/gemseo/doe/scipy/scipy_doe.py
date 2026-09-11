@@ -19,6 +19,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import Final
@@ -40,8 +41,8 @@ from gemseo.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.doe.scipy.settings.mc import MC_Settings
 from gemseo.doe.scipy.settings.poisson_disk import PoissonDisk_Settings
 from gemseo.doe.scipy.settings.sobol import Sobol_Settings
-from gemseo.util._compatibility.scipy import SCIPY_VERSION  # noqa: F401
-from gemseo.util.seeder import SEED
+from gemseo.util._compatibility.scipy import scipy_version  # noqa: F401
+from gemseo.util.seeder import seed
 from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
@@ -55,7 +56,7 @@ if TYPE_CHECKING:
 
 OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -70,7 +71,7 @@ class _MonteCarlo(QMCEngine):
     """Monte Carlo sampling."""
 
     def __init__(
-        self, d: int, seed: int | integer | Generator | RandomState | None = SEED
+        self, d: int, seed: int | integer | Generator | RandomState | None = seed
     ) -> None:
         super().__init__(d=d, seed=seed)
 
@@ -82,22 +83,22 @@ class SciPyDOE(BaseDOELibrary[BaseSciPyDOESettings]):
     """The SciPy DOE algorithms library."""
 
     # Algorithm names within GEMSEO
-    __HALTON: Final[str] = "Halton"
-    __LHS: Final[str] = "LHS"
-    __MONTE_CARLO: Final[str] = "MC"
-    __POISSON_DISK: Final[str] = "PoissonDisk"
-    __SOBOL: Final[str] = "Sobol"
+    __halton: Final[str] = "Halton"
+    __lhs: Final[str] = "LHS"
+    __monte_carlo: Final[str] = "MC"
+    __poisson_disk: Final[str] = "PoissonDisk"
+    __sobol: Final[str] = "Sobol"
 
-    __NAMES_TO_CLASSES: Final[Mapping[str, type[QMCEngine]]] = {
-        __HALTON: Halton,
-        __LHS: LatinHypercube,
-        __MONTE_CARLO: _MonteCarlo,
-        __POISSON_DISK: PoissonDisk,
-        __SOBOL: Sobol,
-    }
+    __names_to_classes: Final[Mapping[str, type[QMCEngine]]] = MappingProxyType({
+        __halton: Halton,
+        __lhs: LatinHypercube,
+        __monte_carlo: _MonteCarlo,
+        __poisson_disk: PoissonDisk,
+        __sobol: Sobol,
+    })
     """The algorithm names bound to the SciPy classes."""
 
-    __SCIPY_OPTION_NAMES: Final[list[str]] = [
+    __scipy_option_names: Final[tuple[str, ...]] = (
         "bits",
         "centered",
         "hypersphere",
@@ -106,38 +107,38 @@ class SciPyDOE(BaseDOELibrary[BaseSciPyDOESettings]):
         "radius",
         "scramble",
         "strength",
-    ]
+    )
     """The names of the SciPy options for the quasi Monte Carlo engines."""
 
     ALGORITHM_INFOS: ClassVar[dict[str, DOEAlgorithmDescription]] = {
-        __HALTON: SciPyDOEAlgorithmDescription(
-            algorithm_name=__HALTON,
-            description=__NAMES_TO_CLASSES[__HALTON].__doc__.split("\n")[0][:-1],
-            internal_algorithm_name=__NAMES_TO_CLASSES[__HALTON].__name__,
+        __halton: SciPyDOEAlgorithmDescription(
+            algorithm_name=__halton,
+            description=__names_to_classes[__halton].__doc__.split("\n")[0][:-1],
+            internal_algorithm_name=__names_to_classes[__halton].__name__,
             settings_class=Halton_Settings,
         ),
-        __LHS: SciPyDOEAlgorithmDescription(
-            algorithm_name=__LHS,
-            description=__NAMES_TO_CLASSES[__LHS].__doc__.split("\n")[0][:-1],
-            internal_algorithm_name=__NAMES_TO_CLASSES[__LHS].__name__,
+        __lhs: SciPyDOEAlgorithmDescription(
+            algorithm_name=__lhs,
+            description=__names_to_classes[__lhs].__doc__.split("\n")[0][:-1],
+            internal_algorithm_name=__names_to_classes[__lhs].__name__,
             settings_class=LHS_Settings,
         ),
-        __MONTE_CARLO: SciPyDOEAlgorithmDescription(
-            algorithm_name=__MONTE_CARLO,
-            description=__NAMES_TO_CLASSES[__MONTE_CARLO].__doc__.split("\n")[0][:-1],
-            internal_algorithm_name=__NAMES_TO_CLASSES[__MONTE_CARLO].__name__,
+        __monte_carlo: SciPyDOEAlgorithmDescription(
+            algorithm_name=__monte_carlo,
+            description=__names_to_classes[__monte_carlo].__doc__.split("\n")[0][:-1],
+            internal_algorithm_name=__names_to_classes[__monte_carlo].__name__,
             settings_class=MC_Settings,
         ),
-        __POISSON_DISK: SciPyDOEAlgorithmDescription(
-            algorithm_name=__POISSON_DISK,
-            description=__NAMES_TO_CLASSES[__POISSON_DISK].__doc__.split("\n")[0][:-1],
-            internal_algorithm_name=__NAMES_TO_CLASSES[__POISSON_DISK].__name__,
+        __poisson_disk: SciPyDOEAlgorithmDescription(
+            algorithm_name=__poisson_disk,
+            description=__names_to_classes[__poisson_disk].__doc__.split("\n")[0][:-1],
+            internal_algorithm_name=__names_to_classes[__poisson_disk].__name__,
             settings_class=PoissonDisk_Settings,
         ),
-        __SOBOL: SciPyDOEAlgorithmDescription(
-            algorithm_name=__SOBOL,
-            description=__NAMES_TO_CLASSES[__SOBOL].__doc__.split("\n")[0][:-1],
-            internal_algorithm_name=__NAMES_TO_CLASSES[__SOBOL].__name__,
+        __sobol: SciPyDOEAlgorithmDescription(
+            algorithm_name=__sobol,
+            description=__names_to_classes[__sobol].__doc__.split("\n")[0][:-1],
+            internal_algorithm_name=__names_to_classes[__sobol].__name__,
             settings_class=Sobol_Settings,
         ),
     }
@@ -149,9 +150,9 @@ class SciPyDOE(BaseDOELibrary[BaseSciPyDOESettings]):
     """The optimization scheme to improve the quality of the DOE after sampling."""
 
     def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
-        algo = self.__NAMES_TO_CLASSES[self._algo_name](
+        algo = self.__names_to_classes[self._algo_name](
             design_space.dimension,
             seed=self._seeder.get_seed(self._settings.seed),
-            **self._settings.model_dump(include=self.__SCIPY_OPTION_NAMES),
+            **self._settings.model_dump(include=self.__scipy_option_names),
         )
         return algo.random(self._settings.n_samples)

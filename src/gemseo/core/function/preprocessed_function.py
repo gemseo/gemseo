@@ -30,7 +30,7 @@ from gemseo.core.problem.database import Database
 from gemseo.core.problem.termination_criterion import DesvarIsNan
 from gemseo.core.problem.termination_criterion import FunctionIsNan
 from gemseo.core.serializable import Serializable
-from gemseo.util.constant import _ENABLE_FUNCTION_STATISTICS
+from gemseo.util.constant import _enable_function_statistics
 from gemseo.util.derivative.approximator.factory import GradientApproximatorFactory
 
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ class PreprocessedFunction(ArrayFunction, Serializable):
     This feature was designed for evaluation problems.
     """
 
-    enable_statistics: ClassVar[bool] = _ENABLE_FUNCTION_STATISTICS
+    enable_statistics: ClassVar[bool] = _enable_function_statistics
     """Whether to count the number of function evaluations."""
 
     stop_if_nan: bool
