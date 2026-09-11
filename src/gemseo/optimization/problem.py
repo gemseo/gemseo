@@ -891,18 +891,20 @@ class OptimizationProblem(EvaluationProblem):
         """Whether the optimization problem is mono-objective.
 
         Raises:
-            ValueError: When the dimension of the objective cannot be determined.
+            ValueError: When the dimension of the objective cannot be determined,
+                e.g. when the objective is not set.
         """
-        dimension = self._objective.dim
-        if dimension != 0:
-            return dimension == 1
+        if self._objective is not None:
+            dimension = self._objective.dim
+            if dimension != 0:
+                return dimension == 1
 
-        n_output_names = len(self._objective.output_names)
-        if n_output_names == 0:
-            msg = "Cannot determine the dimension of the objective."
-            raise ValueError(msg)
+            n_output_names = len(self._objective.output_names)
+            if n_output_names != 0:
+                return n_output_names == 1
 
-        return n_output_names == 1
+        msg = "Cannot determine the dimension of the objective."
+        raise ValueError(msg)
 
     def get_functions_dimensions(
         self, names: Iterable[str] | None = None

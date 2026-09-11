@@ -23,10 +23,8 @@ from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     # static visibility for mypy / IDEs
-    from gemseo.scenario.adapter.mdo_objective_scenario_adapter import (
-        MDOObjectiveScenarioAdapter,  # noqa: F401
-    )
-    from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter  # noqa: F401
+    from gemseo.scenario.adapter.evaluation import EvaluationScenarioAdapter  # noqa: F401
+    from gemseo.scenario.adapter.mdo import MDOScenarioAdapter  # noqa: F401
     from gemseo.scenario.evaluation import EvaluationScenario  # noqa: F401
     from gemseo.scenario.factory import SCENARIO_FACTORY  # noqa: F401
     from gemseo.scenario.mdo import MDOScenario  # noqa: F401
@@ -34,9 +32,9 @@ if TYPE_CHECKING:
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _NAME_TO_LOCATION: Final[dict[str, str]] = {
     "EvaluationScenario": "evaluation",
-    "MDOObjectiveScenarioAdapter": "adapter.mdo_objective_scenario_adapter",
+    "EvaluationScenarioAdapter": "adapter.evaluation",
     "MDOScenario": "mdo",
-    "MDOScenarioAdapter": "adapter.mdo_scenario_adapter",
+    "MDOScenarioAdapter": "adapter.mdo",
     "SCENARIO_FACTORY": "factory",
 }
 

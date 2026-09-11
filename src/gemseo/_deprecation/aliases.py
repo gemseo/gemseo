@@ -21,6 +21,9 @@ package; the rename map that also drives the external codemod):
   resolved (ancestor package renames applied), from the `modules:` section.
 - `ATTRIBUTE_RENAMES`: old module fully-qualified name -> {old attribute: new
   attribute}, from the `attributes:` section.
+- `MANUAL_MIGRATIONS`: old module fully-qualified name -> {old attribute: how to
+  migrate}, from the `manual:` section, for the names whose migration cannot be
+  automated.
 - `LIVE_ALIASED_MODULES`: the modules of `ATTRIBUTE_RENAMES` that were not renamed.
 - `DISSOLVED_PACKAGES`: old package name -> the ordered new locations of its former
   submodules, for the packages listed in the `dissolved:` section.
@@ -174,12 +177,18 @@ def _group_by_module(entries: dict[str, str]) -> dict[str, dict[str, str]]:
     return renames
 
 
-def _build() -> tuple[dict[str, str], dict[str, dict[str, str]], tuple[str, ...]]:
+def _build() -> tuple[
+    dict[str, str],
+    dict[str, dict[str, str]],
+    tuple[str, ...],
+    dict[str, dict[str, str]],
+]:
     """Build the alias tables from the configuration.
 
     Returns:
-        The resolved module renames, the attribute renames grouped by old module and
-        the names of the dissolved packages.
+        The resolved module renames, the attribute renames grouped by old module,
+        the names of the dissolved packages and the manual migrations grouped by old
+        module.
     """
     text = _CONFIG_PATH.read_text(encoding="utf-8")
 
@@ -197,18 +206,28 @@ def _build() -> tuple[dict[str, str], dict[str, dict[str, str]], tuple[str, ...]
         module_renames,
         _group_by_module(_parse_section(text, "attributes")),
         tuple(_parse_section(text, "dissolved")),
+        _group_by_module(_parse_section(text, "manual")),
     )
 
 
-_TABLES: Final[tuple[dict[str, str], dict[str, dict[str, str]], tuple[str, ...]]] = (
-    _build()
-)
+_TABLES: Final[
+    tuple[
+        dict[str, str],
+        dict[str, dict[str, str]],
+        tuple[str, ...],
+        dict[str, dict[str, str]],
+    ]
+] = _build()
 
 # Old fully-qualified module name -> new one (fully resolved).
 MODULE_RENAMES: Final[dict[str, str]] = _TABLES[0]
 
 # Old module name -> {old attribute name: new attribute name}.
 ATTRIBUTE_RENAMES: Final[dict[str, dict[str, str]]] = _TABLES[1]
+
+# Old module name -> {old attribute name: how to migrate}, for the names that cannot be
+# aliased to a new one, as the latter does not behave as the old one on its own.
+MANUAL_MIGRATIONS: Final[dict[str, dict[str, str]]] = _TABLES[3]
 
 # The old modules that kept their name: they are loaded by the normal import machinery,
 # so their old attribute names have to be aliased in their own namespace instead of

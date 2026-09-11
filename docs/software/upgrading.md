@@ -51,6 +51,23 @@ a subclass overriding one of them under its old name silently stops being called
 - `BaseMDASolver._execute_iteration_callbacks` renamed to `BaseMDASolver._execute_iteration_listeners`.
 - `MDAQuasiNewton._METHODS_SUPPORTING_CALLBACKS` renamed to `MDAQuasiNewton._METHODS_SUPPORTING_LISTENERS`.
 
+### Scenario adapters
+
+The scenario adapter has been split along the optimization axis.
+
+- The module `gemseo.disciplines.scenario_adapters.mdo_scenario_adapter` is now `gemseo.scenario.adapter.mdo`.
+- `EvaluationScenarioAdapter` (`gemseo.scenario.adapter.evaluation`) is the new base class; it wraps any `EvaluationScenario` and its outputs are those of the last design point evaluated by the scenario, e.g. the last sample of a DOE algorithm.
+- `MDOScenarioAdapter` derives from it, outputs the optimum and owns the features requiring one, namely `output_multipliers`, `output_optimal_objective` and the linearization by post-optimal analysis. It raises a `TypeError` at instantiation when the scenario does not solve an `OptimizationProblem`; use `EvaluationScenarioAdapter` for such a scenario.
+- The arguments of the adapters no longer refer to an optimization:
+    - `reset_x0_before_opt` is now `reset_x0_before_exec`,
+    - `set_x0_before_opt` is now `set_x0_before_exec`,
+    - `set_bounds_before_opt` is now `set_bounds_before_exec`,
+    - `keep_opt_history` is now `keep_databases`,
+    - `save_opt_history` is now `save_databases`,
+    - `opt_history_file_prefix` is now `database_file_prefix`.
+- The attributes `keep_opt_history` and `save_opt_history` were renamed accordingly. The settings of `BiLevel` keep their names.
+- **Manual migration**: `MDOObjectiveScenarioAdapter` no longer exists. Use `MDOScenarioAdapter` with `output_optimal_objective=True`, which reports the optimal value of the objective recorded by the scenario instead of the value computed by its disciplines at the optimal design point. The codemod rewrites the class name but cannot add this argument, so importing `MDOObjectiveScenarioAdapter` from its gemseo 6 module raises an `ImportError` naming the replacement, rather than returning an adapter that reports a different objective value.
+
 ## 6.0.0
 
 The tool [bump-gemseo](https://gitlab.com/gemseo/dev/bump-gemseo) can be used to help converting your code to GEMSEO 6.

@@ -23,7 +23,7 @@ To do so, you will split the problem into a discrete optimization problem
 to enumerate all the combinations
 and a continuous one to solve the associated sub-problem.
 Thus, you will use the
-[MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
+[MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter]
 to wrap an [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 and treat it as a discipline whose inputs are some or all of its design space variables
 and whose outputs are some or all of its functions
@@ -79,11 +79,11 @@ from gemseo.space import DesignSpace
 # ### Problem reformulation
 #
 # The problem can be split using the
-# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter].
+# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter].
 # To do this you will divide the design space in two,
 # a continuous one and a discrete one.
 # The
-# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
+# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter]
 # will wrap the continuous inner scenario as
 # a discipline to be executed taking the inputs from the discrete design space.
 # These inputs are generated
@@ -200,7 +200,7 @@ inner_scenario.set_algorithm(NLOPT_COBYLA_Settings(max_iter=100))
 # %%
 # ## Step 4 - Transforming into a discipline
 #
-# An [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
+# An [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter]
 # wraps an entire [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # as a [Discipline][gemseo.core.discipline.discipline.Discipline],
 # its inputs are all or part of the design space variables
@@ -211,13 +211,13 @@ input_names = ["y"]
 output_names = ["f", "g"]
 
 # %%
-# The argument `set_x0_before_opt` allows you to set the starting point
+# The argument `set_x0_before_exec` allows you to set the starting point
 # of the adapted scenario from the outer DOE scenario values.
 adapted_inner_scenario = MDOScenarioAdapter(
     inner_scenario,
     input_names,
     output_names,
-    set_x0_before_opt=True,
+    set_x0_before_exec=True,
 )
 # %%
 #
@@ -226,20 +226,20 @@ adapted_inner_scenario = MDOScenarioAdapter(
 #     You may be interested in keeping the optimization history of the inner scenario
 #     for each of the executions launched by the outer scenario.
 #     To do this,
-#     set the argument `keep_opt_history` to `True`,
+#     set the argument `keep_databases` to `True`,
 #     this option will store the databases in memory
 #     and make them accessible via the
-#     [databases][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter.databases] attribute.
+#     [databases][gemseo.scenario.adapter.evaluation.EvaluationScenarioAdapter.databases] attribute.
 #     Keep in mind that depending on the size of the database,
 #     storing it in memory may lead to a significant increase in memory usage.
 #     If you prefer to store the databases on disk instead,
-#     set the argument `save_opt_history` to `True`.
+#     set the argument `save_databases` to `True`.
 #     An `hdf5` file will be saved on the disk at each new execution.
 #     You may also choose a prefix for the name of these files
-#     with the argument `opt_history_file_prefix`.
+#     with the argument `database_file_prefix`.
 #     If no prefix is given,
 #     the default prefix is `"database"`.
-#     Both `keep_opt_history` and `save_opt_history` are independent of each-other.
+#     Both `keep_databases` and `save_databases` are independent of each-other.
 
 # %%
 # ## Step 5 - Create the outer DOE scenario
@@ -296,10 +296,10 @@ outer_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=9))
 #     Note that if you are running the outer scenario in parallel
 #     and requesting the databases of the continuous optimizations on the disk,
 #     you will need to instantiate the
-#     [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
+#     [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter]
 #     with the argument `naming="UUID"`,
 #     which is multiprocessing-safe.
-#     Running in parallel also means that the option `keep_opt_history` will not work
+#     Running in parallel also means that the option `keep_databases` will not work
 #     because GEMSEO is unable to copy the databases
 #     from the sub-processes to the main process.
 
@@ -318,7 +318,7 @@ outer_scenario.post_process(OptHistoryView_Settings(save=False, show=True))
 #
 # You've learnt to create a bilevel scenario to tackle your mixed optimization problem.
 # You used the
-# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter]
+# [MDOScenarioAdapter][gemseo.scenario.adapter.mdo.MDOScenarioAdapter]
 # to transform your continuous sub-problem into a discipline,
 # so as to give it to your discrete [MDOScenario][gemseo.scenario.mdo.MDOScenario].
 #

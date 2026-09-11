@@ -2042,6 +2042,18 @@ def test_check_design_point_is_feasible(
     ))
 
 
+def test_is_mono_objective_without_objective(snapshot) -> None:
+    """Check that the dimension of a missing objective cannot be determined.
+
+    Args:
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    design_space = create_design_space()
+    design_space.add_variable("x", 1)
+    with assert_exception(ValueError, snapshot):
+        OptimizationProblem(design_space).is_mono_objective  # noqa: B018
+
+
 def test_is_multi_objective(snapshot) -> None:
     assert not BinhKorn().is_mono_objective
 

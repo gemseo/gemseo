@@ -383,7 +383,7 @@ def test_remove_couplings_from_ds(sobieski_sub_scenarios, caplog) -> None:
     ],
 )
 def test_adapters_inputs_outputs(scenario, subscenario, request) -> None:
-    """Test that the ScenarioAdapters within the BCD loop have the right inputs and
+    """Test that the MDOScenarioAdapters within the BCD loop have the right inputs and
     outputs.
     """
     scenario = request.getfixturevalue(scenario.__name__)()
@@ -616,13 +616,30 @@ def test_bilevel_settings_error(snapshot):
     "kwargs", [{"set_x0_before_opt": False}, {"set_x0_before_opt": True}, {}]
 )
 def test_set_x0_before_opt(generate_sobieski_bilevel_scenario, kwargs):
-    """Verify that set_x0_before_opt is passed to MDOScenarioAdapter"""
+    """Verify that set_x0_before_opt is passed to MDOScenarioAdapter as
+    set_x0_before_exec."""
     set_x0_before_opt = kwargs.get("set_x0_before_opt", False)
     scenario = generate_sobieski_bilevel_scenario(**kwargs)
     scenario_adapters = scenario.formulation._scenario_adapters
-    assert scenario_adapters[0]._set_x0_before_opt is set_x0_before_opt
-    assert scenario_adapters[1]._set_x0_before_opt is set_x0_before_opt
-    assert scenario_adapters[2]._set_x0_before_opt is set_x0_before_opt
+    assert scenario_adapters[0]._set_x0_before_exec is set_x0_before_opt
+    assert scenario_adapters[1]._set_x0_before_exec is set_x0_before_opt
+    assert scenario_adapters[2]._set_x0_before_exec is set_x0_before_opt
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{"reset_x0_before_opt": False}, {"reset_x0_before_opt": True}, {}]
+)
+def test_reset_x0_before_opt(generate_sobieski_bilevel_scenario, kwargs):
+    """Verify that reset_x0_before_opt is passed to MDOScenarioAdapter as
+    reset_x0_before_exec."""
+    reset_x0_before_opt = kwargs.get("reset_x0_before_opt", False)
+    scenario = generate_sobieski_bilevel_scenario(**kwargs)
+    scenario_adapters = scenario.formulation._scenario_adapters
+    assert scenario_adapters[0]._reset_x0_before_exec is reset_x0_before_opt
+    assert scenario_adapters[1]._reset_x0_before_exec is reset_x0_before_opt
+    assert scenario_adapters[2]._reset_x0_before_exec is reset_x0_before_opt
+    is_warm_started = isinstance(scenario.formulation.chain, WarmStartedDisciplineChain)
+    assert is_warm_started is not reset_x0_before_opt
 
 
 def test_optimal_local_design_history(generate_sobieski_bilevel_scenario):

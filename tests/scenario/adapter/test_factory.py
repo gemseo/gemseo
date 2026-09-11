@@ -20,7 +20,8 @@ from gemseo.scenario.adapter.factory import ScenarioAdapterFactory
 
 
 @pytest.mark.parametrize(
-    "class_name", ["MDOScenarioAdapter", "MDOObjectiveScenarioAdapter"]
+    "class_name",
+    ["EvaluationScenarioAdapter", "MDOScenarioAdapter"],
 )
 def test_scenario_adapter_factory(class_name) -> None:
     """Check ScenarioAdapterFactory."""

@@ -38,11 +38,20 @@ from gemseo.core.discipline import Discipline
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.discipline_adapter_generator import DisciplineAdapterGenerator
 from gemseo.core.problem.database import Database
+from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
+from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.doe.scipy.settings.lhs import LHS_Settings
 from gemseo.formulation.mdf_settings import MDF_Settings
+from gemseo.optimization.multi_start.settings.multi_start_settings import (
+    MultiStart_Settings,
+)
 from gemseo.optimization.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
+from gemseo.optimization.scipy_global.settings.differential_evolution import (
+    DIFFERENTIAL_EVOLUTION_Settings,
+)
+from gemseo.optimization.scipy_global.settings.shgo import SHGO_Settings
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
@@ -50,11 +59,9 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
 from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
-from gemseo.scenario.adapter.mdo_objective_scenario_adapter import (
-    MDOObjectiveScenarioAdapter,
-)
-from gemseo.scenario.adapter.mdo_scenario_adapter import MDOScenarioAdapter
+from gemseo.scenario.adapter.mdo import MDOScenarioAdapter
 from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.design import DesignSpace
 from gemseo.util.derivative.derivatives_approx import DisciplineJacApprox
 from gemseo.util.name_generator import NameGenerator
 from gemseo.util.testing.helper import assert_exception
@@ -123,11 +130,11 @@ def test_adapter(scenario) -> None:
     assert f_x3 > 4947.0
 
 
-def test_adapter_set_x0_before_opt(scenario) -> None:
-    """Test the MDOScenarioAdapter with set_x0_before_opt."""
+def test_adapter_set_x0_before_exec(scenario) -> None:
+    """Test the MDOScenarioAdapter with set_x0_before_exec."""
     inputs = ["x_1", "x_2", "x_3", "x_shared"]
     outputs = ["y_4"]
-    adapter = MDOScenarioAdapter(scenario, inputs, outputs, set_x0_before_opt=True)
+    adapter = MDOScenarioAdapter(scenario, inputs, outputs, set_x0_before_exec=True)
     gen = DisciplineAdapterGenerator(adapter)
     x_shared = array([0.25, 1.0, 1.0, 0.5, 0.09, 60000, 1.4, 2.5, 70, 1500])
     func = gen.get_function(inputs, outputs)
@@ -142,7 +149,11 @@ def test_adapter_set_and_reset_x0(scenario, snapshot) -> None:
     outputs = ["y_4"]
     with assert_exception(ValueError, snapshot):
         MDOScenarioAdapter(
-            scenario, inputs, outputs, set_x0_before_opt=True, reset_x0_before_opt=True
+            scenario,
+            inputs,
+            outputs,
+            set_x0_before_exec=True,
+            reset_x0_before_exec=True,
         )
 
 
@@ -153,15 +164,15 @@ def test_adapter_miss_dvs(scenario) -> None:
     MDOScenarioAdapter(scenario, inputs, outputs)
 
 
-def test_adapter_reset_x0_before_opt(scenario) -> None:
-    """Check MDOScenarioAdapter.reset_x0_before_opt()."""
+def test_adapter_reset_x0_before_exec(scenario) -> None:
+    """Check MDOScenarioAdapter.reset_x0_before_exec()."""
     inputs = ["x_shared"]
     outputs = ["y_4"]
     design_space = scenario.design_space
     initial_design = design_space.convert_dict_to_array(
         design_space.get_current_value(as_dict=True)
     )
-    adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_opt=True)
+    adapter = MDOScenarioAdapter(scenario, inputs, outputs, reset_x0_before_exec=True)
     adapter.execute()
     x_shared = adapter.io.input_grammar.defaults["x_shared"] * 1.01
     adapter.io.input_grammar.defaults["x_shared"] = x_shared
@@ -188,7 +199,7 @@ def test_adapter_reset_x0_before_opt(scenario) -> None:
 def test_adapter_set_bounds(scenario) -> None:
     inputs = ["x_shared"]
     outputs = ["y_4"]
-    adapter = MDOScenarioAdapter(scenario, inputs, outputs, set_bounds_before_opt=True)
+    adapter = MDOScenarioAdapter(scenario, inputs, outputs, set_bounds_before_exec=True)
 
     # Execute the adapter with default bounds
     adapter.execute()
@@ -245,7 +256,7 @@ def test_compute_jacobian(scenario) -> None:
 
 def test_compute_jacobian_with_bound_inputs(scenario) -> None:
     adapter = MDOScenarioAdapter(
-        scenario, ["x_shared"], ["y_4"], set_bounds_before_opt=True
+        scenario, ["x_shared"], ["y_4"], set_bounds_before_exec=True
     )
     expected_input_names = ["x_shared", "x_1_lower_bnd"]
     adapter.execute()
@@ -278,6 +289,7 @@ def test_compute_jacobian_exceptions(scenario, snapshot) -> None:
 
     # Pass a multi-valued objective
     scenario.formulation.problem.objective.output_names = ["y_4"] * 2
+    scenario.formulation.problem.objective.dim = 2
     with assert_exception(ValueError, snapshot):
         adapter._compute_jacobian()
 
@@ -341,7 +353,7 @@ def test_adapter_jacobian() -> None:
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     struct_adapter = MDOScenarioAdapter(
-        struct_scenario, ["x_shared"], ["y_11", "g_1"], reset_x0_before_opt=True
+        struct_scenario, ["x_shared"], ["y_11", "g_1"], reset_x0_before_exec=True
     )
     check_adapter_jacobian(
         struct_adapter,
@@ -353,7 +365,7 @@ def test_adapter_jacobian() -> None:
     # Minimization scenario
     prop_scenario = build_prop_scenario()
     prop_adapter = MDOScenarioAdapter(
-        prop_scenario, ["x_shared"], ["y_34", "g_3"], reset_x0_before_opt=True
+        prop_scenario, ["x_shared"], ["y_34", "g_3"], reset_x0_before_exec=True
     )
     check_adapter_jacobian(
         prop_adapter,
@@ -367,7 +379,7 @@ def test_add_outputs() -> None:
     # Maximization scenario
     struct_scenario = build_struct_scenario()
     struct_adapter = MDOScenarioAdapter(
-        struct_scenario, ["x_shared"], ["y_11"], reset_x0_before_opt=True
+        struct_scenario, ["x_shared"], ["y_11"], reset_x0_before_exec=True
     )
     struct_adapter.add_outputs(["g_1"])
     check_adapter_jacobian(
@@ -378,13 +390,21 @@ def test_add_outputs() -> None:
     )
 
 
-def check_obj_scenario_adapter(
-    scenario, outputs, minimize, objective_threshold, lagrangian_threshold
-) -> None:
+def replace_objective_by_constant(scenario) -> str:
+    """Replace the objective of a scenario by the constant 123.456.
+
+    The value of the objective is then decoupled from the output of the discipline
+    that shares its name.
+
+    Args:
+        scenario: The scenario whose objective is to be replaced.
+
+    Returns:
+        The name of the output of the objective.
+    """
     dim = scenario.design_space.dimension
     problem = scenario.formulation.problem
     objective = problem.objective
-    output_names = objective.output_names
     problem.objective = ArrayFunction(
         lambda _: 123.456,
         name=objective.name,
@@ -393,12 +413,30 @@ def check_obj_scenario_adapter(
         expr="123.456",
         input_names=objective.input_names,
         dim=objective.dim,
-        output_names=output_names,
+        output_names=objective.output_names,
     )
-    adapter = MDOObjectiveScenarioAdapter(scenario, ["x_shared"], outputs)
+    return objective.output_names[0]
+
+
+def check_optimal_objective_adapter(
+    scenario, outputs, minimize, objective_threshold, lagrangian_threshold
+) -> None:
+    """Check the optimal objective output of a scenario adapter.
+
+    Args:
+        scenario: The scenario whose objective is to be replaced by a constant.
+        outputs: The names of the outputs of the adapter.
+        minimize: Whether the objective of the scenario is to be minimized.
+        objective_threshold: The tolerance for the Jacobian of the objective.
+        lagrangian_threshold: The tolerance for the Jacobian of the Lagrangian.
+    """
+    output_name = replace_objective_by_constant(scenario)
+    adapter = MDOScenarioAdapter(
+        scenario, ["x_shared"], outputs, output_optimal_objective=True
+    )
 
     adapter.execute()
-    local_value = adapter.io.output_data[output_names[0]]
+    local_value = adapter.io.output_data[output_name]
     assert (minimize and allclose(local_value, array(123.456))) or allclose(
         local_value, array(-123.456)
     )
@@ -408,10 +446,10 @@ def check_obj_scenario_adapter(
     )
 
 
-def test_obj_scenario_adapter() -> None:
+def test_output_optimal_objective() -> None:
     # Maximization scenario
     struct_scenario = build_struct_scenario()
-    check_obj_scenario_adapter(
+    check_optimal_objective_adapter(
         struct_scenario,
         ["y_11", "g_1"],
         minimize=False,
@@ -421,13 +459,85 @@ def test_obj_scenario_adapter() -> None:
 
     # Minimization scenario
     prop_scenario = build_prop_scenario()
-    check_obj_scenario_adapter(
+    check_optimal_objective_adapter(
         prop_scenario,
         ["y_34", "g_3"],
         minimize=True,
         objective_threshold=1e-5,
         lagrangian_threshold=1e-5,
     )
+
+
+def test_output_optimal_objective_is_opt_in() -> None:
+    """Check that the objective output is that of the disciplines by default."""
+    scenario = build_prop_scenario()
+    output_name = replace_objective_by_constant(scenario)
+    adapter = MDOScenarioAdapter(scenario, ["x_shared"], ["y_34", "g_3"])
+
+    adapter.execute()
+    # The objective of the problem is the constant 123.456
+    # but the discipline computing y_34 knows nothing about it.
+    assert not allclose(adapter.io.output_data[output_name], array(123.456))
+
+
+def test_instantiation_before_add_objective() -> None:
+    """Check that the adapter can be built before the objective is set.
+
+    The optimal objective value requires a single-valued objective,
+    whose dimension cannot be determined while the objective is unset.
+    """
+    discipline = AnalyticDiscipline({"y": "x**2 + z"}, name="d")
+    discipline.io.input_grammar.defaults["z"] = array([1.0])
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    scenario = MDOScenario([discipline], design_space)
+    adapter = MDOScenarioAdapter(scenario, ["z"], ["y"], output_optimal_objective=True)
+    scenario.add_objective("y")
+    scenario.set_algorithm(PYDOE_FULLFACT_Settings(n_samples=3))
+
+    # The optimum is x=0, so the optimal objective value is z.
+    assert allclose(adapter.execute({"z": array([2.0])})["y"], array([2.0]))
+
+
+def test_multi_objective_exception(snapshot) -> None:
+    """Check the error raised at instantiation for a multi-objective problem.
+
+    Args:
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    discipline = AnalyticDiscipline({"y": "x**2 + z", "w": "10*x + z"}, name="d")
+    discipline.io.input_grammar.defaults["z"] = array([1.0])
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    scenario = MDOScenario([discipline], design_space)
+    scenario.add_objective(["y", "w"])
+    with assert_exception(ValueError, snapshot):
+        MDOScenarioAdapter(scenario, ["z"], ["y"], output_optimal_objective=True)
+
+
+def test_retrieve_top_level_outputs_multi_objective_exception(
+    scenario, snapshot
+) -> None:
+    """Check the error raised for the optimal objective of a multi-objective problem.
+
+    The dimension of the objective may only be known once it has been evaluated;
+    this residual case is the one this check is left for,
+    as instantiation rejects a problem already known to be multi-objective.
+
+    Args:
+        scenario: A fixture returning an MDO scenario solving the Sobieski problem.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    adapter = MDOScenarioAdapter(
+        scenario, ["x_shared"], ["y_4"], output_optimal_objective=True
+    )
+    adapter.execute()
+
+    # Pass a multi-valued objective
+    scenario.formulation.problem.objective.output_names = ["y_4"] * 2
+    scenario.formulation.problem.objective.dim = 2
+    with assert_exception(ValueError, snapshot):
+        adapter._retrieve_top_level_outputs()
 
 
 def test_lagrange_multipliers_outputs() -> None:
@@ -460,19 +570,19 @@ def test_lagrange_multipliers_outputs() -> None:
     assert allclose(lagr_grad, zeros_like(lagr_grad))
 
 
-@pytest.mark.parametrize("keep_opt_history", [True, False])
-def test_keep_opt_history(tmp_wd, scenario, keep_opt_history) -> None:
+@pytest.mark.parametrize("keep_databases", [True, False])
+def test_keep_databases(tmp_wd, scenario, keep_databases) -> None:
     """Test the option that keeps the local history of sub optimizations."""
     adapter = MDOScenarioAdapter(
         scenario,
         ["x_shared"],
         ["y_4"],
-        keep_opt_history=keep_opt_history,
+        keep_databases=keep_databases,
     )
     adapter.execute()
     adapter.execute({"x_shared": adapter.io.input_grammar.defaults["x_shared"] + 1.0})
 
-    assert len(adapter.databases) == (2 if keep_opt_history else 0)
+    assert len(adapter.databases) == (2 if keep_databases else 0)
 
     for database in adapter.databases:
         assert isinstance(database, Database)
@@ -480,36 +590,34 @@ def test_keep_opt_history(tmp_wd, scenario, keep_opt_history) -> None:
 
 
 @pytest.mark.parametrize(
-    ("save_opt_history", "opt_history_file_prefix"),
+    ("save_databases", "database_file_prefix"),
     [(True, "local_database"), (True, ""), (False, "local_database"), (False, "")],
 )
-def test_save_opt_history(
-    tmp_wd, scenario, save_opt_history, opt_history_file_prefix
-) -> None:
+def test_save_databases(tmp_wd, scenario, save_databases, database_file_prefix) -> None:
     """Test the option that saves the local history of sub optimizations, with and
     without the file prefix."""
     adapter = MDOScenarioAdapter(
         scenario,
         ["x_shared"],
         ["y_4"],
-        save_opt_history=save_opt_history,
-        opt_history_file_prefix=opt_history_file_prefix,
+        save_databases=save_databases,
+        database_file_prefix=database_file_prefix,
     )
     adapter.execute()
     adapter.execute({"x_shared": adapter.io.input_grammar.defaults["x_shared"] + 1.0})
 
-    path = Path(opt_history_file_prefix)
-    if opt_history_file_prefix:
+    path = Path(database_file_prefix)
+    if database_file_prefix:
         prefix = path.name
     else:
         prefix = MDOScenarioAdapter.DEFAULT_DATABASE_FILE_PREFIX
 
-    assert (path.parent / f"{prefix}_1.h5").exists() is save_opt_history
-    assert (path.parent / f"{prefix}_2.h5").exists() is save_opt_history
+    assert (path.parent / f"{prefix}_1.h5").exists() is save_databases
+    assert (path.parent / f"{prefix}_2.h5").exists() is save_databases
 
 
-@pytest.mark.parametrize("set_x0_before_opt", [True, False])
-def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> None:
+@pytest.mark.parametrize("set_x0_before_exec", [True, False])
+def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_exec) -> None:
     """Test that an MDOScenarioAdapter can be serialized, loaded and executed.
 
     The focus of this test is to guarantee
@@ -526,9 +634,9 @@ def test_scenario_adapter_serialization(tmp_wd, scenario, set_x0_before_opt) -> 
         scenario,
         ["x_shared"],
         ["y_4"],
-        set_x0_before_opt=set_x0_before_opt,
-        keep_opt_history=True,
-        opt_history_file_prefix="test",
+        set_x0_before_exec=set_x0_before_exec,
+        keep_databases=True,
+        database_file_prefix="test",
     )
 
     with open("adapter.pkl", "wb") as file:
@@ -547,9 +655,9 @@ def test_parallel_adapter(tmp_wd, scenario):
         scenario,
         ["x_shared"],
         ["y_4"],
-        keep_opt_history=True,
-        save_opt_history=True,
-        opt_history_file_prefix="test",
+        keep_databases=True,
+        save_databases=True,
+        database_file_prefix="test",
         naming=NameGenerator.Naming.UUID,
     )
     design_space = SobieskiDesignSpace()
@@ -558,6 +666,95 @@ def test_parallel_adapter(tmp_wd, scenario):
     mdo_scenario.add_objective("y_4", minimize=False)
     mdo_scenario.execute(LHS_Settings(n_samples=10, n_processes=2))
     assert len(list(tmp_wd.rglob("test_*.h5"))) == 10
+
+
+class SampleWiseDiscipline(Discipline):
+    """A discipline computing y=z-x and w=10x+z for one or more design points."""
+
+    default_grammar_type = Discipline.GrammarType.SIMPLE
+
+    def __init__(self) -> None:
+        super().__init__(name="d")
+        self.io.input_grammar.update_from_names(["x", "z"])
+        self.io.output_grammar.update_from_names(["y", "w"])
+        self.io.input_grammar.defaults["z"] = array([1.0])
+
+    def _run(self, input_data: StrKeyMapping) -> StrKeyMapping | None:
+        x = input_data["x"]
+        z = input_data["z"]
+        return {"y": z - x, "w": 10 * x + z}
+
+
+@pytest.mark.parametrize(
+    "algorithm_settings",
+    [
+        PYDOE_FULLFACT_Settings(n_samples=3),
+        PYDOE_FULLFACT_Settings(n_samples=3, n_processes=2),
+        PYDOE_FULLFACT_Settings(n_samples=3, vectorize=True),
+    ],
+    ids=["serial", "parallel", "vectorized"],
+)
+def test_optimum_evaluated_after_doe(algorithm_settings) -> None:
+    """Check the outputs of the adapter when the optimum is the last sample of a DOE.
+
+    Args:
+        algorithm_settings: The settings of the DOE algorithm of the scenario.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
+    scenario = MDOScenario([SampleWiseDiscipline()], design_space)
+    scenario.add_objective("y")
+    scenario.set_algorithm(algorithm_settings)
+    adapter = MDOScenarioAdapter(scenario, ["z"], ["y", "w"])
+
+    output_data = adapter.execute({"z": array([2.0])})
+    # The optimum is the last sample, i.e. x=1,
+    # but a parallel DOE evaluates the samples in sub-processes
+    # and a vectorized one evaluates the whole sample set at once,
+    # so the disciplines of this process hold no data for that single design point.
+    assert allclose(output_data["y"], array([1.0]))
+    assert allclose(output_data["w"], array([12.0]))
+
+
+@pytest.mark.parametrize(
+    ("algorithm_settings", "expected"),
+    [
+        (PYDOE_FULLFACT_Settings(n_samples=3), False),
+        (PYDOE_FULLFACT_Settings(n_samples=3, n_processes=2), True),
+        (PYDOE_FULLFACT_Settings(n_samples=3, vectorize=True), True),
+        (MultiStart_Settings(n_processes=2), True),
+        (DIFFERENTIAL_EVOLUTION_Settings(), False),
+        (DIFFERENTIAL_EVOLUTION_Settings(workers=2), True),
+        (DIFFERENTIAL_EVOLUTION_Settings(workers=-1), True),
+        (SHGO_Settings(workers=2), True),
+    ],
+    ids=[
+        "doe",
+        "parallel_doe",
+        "vectorized_doe",
+        "parallel_multi_start",
+        "global_optimizer",
+        "parallel_global_optimizer",
+        "global_optimizer_using_every_core",
+        "parallel_shgo",
+    ],
+)
+def test_is_last_evaluation_unusable(algorithm_settings, expected) -> None:
+    """Check the drivers whose last evaluation leaves no data in the disciplines.
+
+    Args:
+        algorithm_settings: The settings of the algorithm of the scenario.
+        expected: Whether the disciplines of this process are expected
+            not to hold the data of the last design point evaluated by the scenario.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.0)
+    scenario = MDOScenario([SampleWiseDiscipline()], design_space)
+    scenario.add_objective("y")
+    scenario.set_algorithm(algorithm_settings)
+    adapter = MDOScenarioAdapter(scenario, ["z"], ["y", "w"])
+
+    assert adapter._MDOScenarioAdapter__is_last_evaluation_unusable() is expected
 
 
 class DisciplineMain(Discipline):
@@ -680,7 +877,7 @@ def scenario_fixture(disciplines_fixture):
         "g", constraint_type=ArrayFunction.ConstraintType.INEQ, value=5
     )
     scenario.set_algorithm(SLSQP_Settings(max_iter=10))
-    return MDOScenarioAdapter(scenario, ["alpha"], ["f"], set_x0_before_opt=True)
+    return MDOScenarioAdapter(scenario, ["alpha"], ["f"], set_x0_before_exec=True)
 
 
 def test_scenario_adapter(scenario_fixture) -> None:
@@ -731,3 +928,14 @@ def test_multiple_linearize() -> None:
     assert "g" in disc2.jac
     assert "alpha" in disc2.jac["g"]
     assert "x" not in disc2.jac["g"]
+
+
+def test_mdo_adapter_of_evaluation_scenario(evaluation_scenario, snapshot) -> None:
+    """Check the error raised by an MDO adapter without an optimization problem.
+
+    Args:
+        evaluation_scenario: Fixture that returns an evaluation scenario.
+        snapshot: Fixture to compare the error message with a snapshot.
+    """
+    with assert_exception(TypeError, snapshot):
+        MDOScenarioAdapter(evaluation_scenario, input_names=["z"], output_names=["y"])

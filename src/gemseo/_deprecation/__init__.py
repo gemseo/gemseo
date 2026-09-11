@@ -26,6 +26,11 @@ When only a class was renamed and its module kept its own name, there is no impo
 intercept; [install][gemseo._deprecation.install] then adds a module-level `__getattr__`
 resolving the old attribute names in that module's own namespace.
 
+The names listed in the `manual:` section are the exception: their migration cannot be
+automated, as the new name does not behave as the old one on its own, so importing one
+raises an `ImportError` telling how to migrate instead of silently resolving to a name
+of a different meaning.
+
 `gemseo/__init__.py` calls [install][gemseo._deprecation.install] on import, so
 `from gemseo.old.path import OldName` keeps working even though the old module no longer
 exists on disk.
@@ -52,6 +57,7 @@ from typing import Final
 from gemseo._deprecation.aliases import ATTRIBUTE_RENAMES
 from gemseo._deprecation.aliases import DISSOLVED_PACKAGES
 from gemseo._deprecation.aliases import LIVE_ALIASED_MODULES
+from gemseo._deprecation.aliases import MANUAL_MIGRATIONS
 from gemseo._deprecation.aliases import MODULE_RENAMES
 from gemseo.util.string import pretty_repr
 
@@ -109,6 +115,27 @@ def _warn_attribute_rename(module_name: str, name: str, new_name: str) -> None:
     )
 
 
+def _raise_for_manual_migration(module_name: str, name: str) -> None:
+    """Raise when the migration of a module-level attribute cannot be automated.
+
+    Args:
+        module_name: The old fully-qualified name of the module defining the attribute.
+        name: The old attribute name.
+
+    Raises:
+        ImportError: When the attribute is listed in the `manual:` section. An
+            `AttributeError` would be turned into a generic `ImportError` by the
+            `from ... import ...` machinery, which would lose the message.
+    """
+    migration = MANUAL_MIGRATIONS.get(module_name, {}).get(name)
+    if migration is not None:
+        msg = (
+            f"The attribute {name!r} of the module {module_name!r} was removed; "
+            f"use {migration} instead."
+        )
+        raise ImportError(msg)
+
+
 def _qualify(holder_name: str, new_name: str) -> str:
     """Return the fully-qualified new name of a renamed attribute.
 
@@ -151,6 +178,7 @@ class _DeprecatedModule(ModuleType):
     def __getattr__(self, name: str) -> Any:
         # Reached only when normal lookup on this module's namespace fails.
         target = self.__dict__["_deprecation_target"]
+        _raise_for_manual_migration(self.__name__, name)
         new_name = ATTRIBUTE_RENAMES.get(self.__name__, {}).get(name)
         if new_name is None:
             new_name = name
@@ -214,6 +242,7 @@ class _DissolvedPackage(ModuleType):
 
     def __getattr__(self, name: str) -> Any:
         # Reached only when normal lookup on this module's namespace fails.
+        _raise_for_manual_migration(self.__name__, name)
         if name == "__all__":
             # Computed on demand so that a star import from the old package binds the
             # names it used to, without importing every new location upfront.
@@ -286,6 +315,7 @@ def _install_attribute_aliases(module: ModuleType) -> None:
     previous_getattr = module.__dict__.get("__getattr__")
 
     def __getattr__(name: str) -> Any:  # noqa: N807
+        _raise_for_manual_migration(module_name, name)
         new_name = renames.get(name)
         if new_name is None:
             if previous_getattr is not None:

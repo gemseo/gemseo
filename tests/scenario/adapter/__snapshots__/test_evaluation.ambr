@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_evaluation_scenario_linearization
+  'EvaluationScenarioAdapter has no analytic Jacobian; use MDOScenarioAdapter to adapt a scenario solving an OptimizationProblem, e.g. an MDOScenario.'
+# ---

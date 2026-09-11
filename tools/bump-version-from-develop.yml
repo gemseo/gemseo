@@ -17,14 +17,29 @@
 #   entry point, take the LONGEST key that is the name itself or a prefix of it on a
 #   segment boundary (`gemseo.algos` is a prefix of `gemseo.algos.doe`, not of
 #   `gemseo.algosx`), and replace that prefix with the value of the entry.
+# * `classes:` — an entry `old.module.OldClass:` maps the members of that class: a
+#   `old_member: new_member` pair renames an attribute, a property or a method, and a
+#   `method_name: {old_arg: new_arg}` block renames the arguments of that method,
+#   `__init__` standing for the constructor. The class itself is renamed by the
+#   `names:` entry matching its key, if any.
 #
 # Apply a single entry to a name: a value is already the final name, never feed it back
 # in. A name matching no entry is unchanged.
 #
-# Apart from `flatten_processes`, no public class attribute, method or signature was
-# renamed between `develop` and this branch, so a rebase needs the names below and
-# little else. Private internals did move though: a branch touching them has to
-# reconcile its design with the one of this branch.
+# Apart from `flatten_processes`, the only public class attributes, methods and
+# signatures renamed between `develop` and this branch are the ones of the scenario
+# adapters, listed under `classes:`, so a rebase needs the names below and little else.
+# Private internals did move though: a branch touching them has to reconcile its design
+# with the one of this branch. The private attributes of the scenario adapters holding
+# the renamed arguments were renamed in step with them (`_reset_x0_before_exec`,
+# `_set_x0_before_exec`, `_set_bounds_before_exec` and
+# `_EvaluationScenarioAdapter__database_file_prefix`).
+#
+# `MDOObjectiveScenarioAdapter` no longer exists: `MDOScenarioAdapter` reports the optimal
+# objective when its new `output_optimal_objective` argument is `True`. The `names:` entries
+# below rewrite the class name, but no codemod can add that argument, so a branch using this
+# adapter has to pass it by hand; on this branch, importing the class from its old module
+# raises an `ImportError` saying so.
 #
 # `flatten_processes` (`get_sub_disciplines` on `develop`) renamed its first argument
 # from `disciplines` to `processes`: a call passing it by keyword needs that rename on
@@ -36,8 +51,8 @@
 # exposed; its modules are listed one by one and the package itself has no counterpart.
 #
 # Every old name below exists on `develop` and every new name exists on this branch,
-# checked against both source trees; 207 modules and packages,
-# 18 module-level names.
+# checked against both source trees; 211 modules and packages,
+# 20 module-level names and the members of 2 classes.
 
 # Renamed and moved modules and packages.
 modules:
@@ -118,6 +133,8 @@ modules:
   gemseo.datasets: gemseo.dataset
   gemseo.disciplines: gemseo.discipline
   gemseo.disciplines.scenario_adapters: gemseo.scenario.adapter
+  gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter: gemseo.scenario.adapter.mdo
+  gemseo.disciplines.scenario_adapters.mdo_scenario_adapter: gemseo.scenario.adapter.mdo
   gemseo.disciplines.wrappers: gemseo.discipline.wrapper
   gemseo.disciplines.wrappers.job_schedulers: gemseo.discipline.wrapper.job_scheduler
   gemseo.enums: gemseo.enum
@@ -192,6 +209,8 @@ modules:
   gemseo.problems.ode.springs: gemseo.problem.ode.spring
   gemseo.problems.uncertainty.ishigami.functions: gemseo.problem.uncertainty.ishigami.function
   gemseo.problems.uncertainty.utils: gemseo.problem.uncertainty.util
+  gemseo.scenario.adapter.mdo_objective_scenario_adapter: gemseo.scenario.adapter.mdo
+  gemseo.scenario.adapter.mdo_scenario_adapter: gemseo.scenario.adapter.mdo
   gemseo.scenarios: gemseo.scenario
   gemseo.scenarios.scenario_results: gemseo.scenario.scenario_result
   gemseo.settings.doe: gemseo.doe
@@ -263,10 +282,28 @@ names:
   gemseo.algos.stop_criteria.TerminationCriterion: gemseo.core.problem.termination_criterion.TerminationCriterion
   gemseo.algos.stop_criteria.XtolReached: gemseo.core.problem.termination_criterion.XtolReached
   gemseo.datasets.DatasetFactory: gemseo.dataset.factory.DatasetFactory
+  gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: gemseo.scenario.adapter.mdo.MDOScenarioAdapter
   gemseo.machine_learning.BaseClassifier: gemseo.machine_learning.classification.core.base_classifier.BaseClassifier
   gemseo.machine_learning.Dataset: gemseo.dataset.dataset.Dataset
+  gemseo.scenario.adapter.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: gemseo.scenario.adapter.mdo.MDOScenarioAdapter
   gemseo.uncertainty.BaseDistribution: gemseo.uncertainty.distribution.core.base.BaseDistribution
   gemseo.uncertainty.BaseStatistics: gemseo.uncertainty.statistic.core.base.BaseStatistics
   gemseo.uncertainty.Dataset: gemseo.dataset.dataset.Dataset
   gemseo.uncertainty.IODataset: gemseo.dataset.io_dataset.IODataset
   gemseo.utils.discipline.get_sub_disciplines: gemseo.util.discipline.flatten_processes
+
+# Renamed members of a class, given with the module defining the class on `develop`.
+classes:
+  gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: &scenario-adapter-class
+    keep_opt_history: keep_databases
+    save_opt_history: save_databases
+    __init__:
+      reset_x0_before_opt: reset_x0_before_exec
+      set_x0_before_opt: set_x0_before_exec
+      set_bounds_before_opt: set_bounds_before_exec
+      keep_opt_history: keep_databases
+      save_opt_history: save_databases
+      opt_history_file_prefix: database_file_prefix
+  gemseo.disciplines.scenario_adapters.mdo_scenario_adapter.MDOScenarioAdapter: *scenario-adapter-class
+  gemseo.scenario.adapter.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: *scenario-adapter-class
+  gemseo.scenario.adapter.mdo_scenario_adapter.MDOScenarioAdapter: *scenario-adapter-class

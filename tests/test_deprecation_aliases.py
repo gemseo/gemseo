@@ -117,12 +117,14 @@ def test_build_from_synthetic_config(tmp_path, monkeypatch):
         "  gemseo.old_pkg.Old: New\n"
         "  gemseo.old_pkg.old_mod.old_func: new_func\n"
         "dissolved:\n"
-        "  - gemseo.old_pkg\n",
+        "  - gemseo.old_pkg\n"
+        "manual:\n"
+        "  gemseo.old_pkg.Manual: New with an extra argument\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(aliases, "_CONFIG_PATH", config)
 
-    module_renames, attribute_renames, dissolved = aliases._build()
+    module_renames, attribute_renames, dissolved, manual = aliases._build()
 
     assert module_renames["gemseo.old_pkg"] == "gemseo.new_pkg"
     assert module_renames["gemseo.old_pkg.old_mod"] == "gemseo.new_pkg.new_mod"
@@ -133,6 +135,7 @@ def test_build_from_synthetic_config(tmp_path, monkeypatch):
         "gemseo.old_pkg.old_mod": {"old_func": "new_func"},
     }
     assert dissolved == ("gemseo.old_pkg",)
+    assert manual == {"gemseo.old_pkg": {"Manual": "New with an extra argument"}}
 
 
 def test_module_renames_target_existing_modules():

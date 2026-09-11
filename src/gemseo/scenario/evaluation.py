@@ -430,7 +430,7 @@ class EvaluationScenario(BaseMonitoredProcess):
 
         if self.clear_database_before_execute:
             # Clear the database when multiple runs are performed,
-            # see MDOScenarioAdapter.
+            # see EvaluationScenarioAdapter.
             self.formulation.problem.database.clear()
 
         n_x = len(self.formulation.problem.database)

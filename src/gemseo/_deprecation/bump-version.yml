@@ -1,6 +1,6 @@
 # Configuration of the external codemod that upgrades user code to the new API.
-# The `modules:`, `attributes:` and `dissolved:` sections below are also read at
-# runtime by gemseo._deprecation to redirect imports of old names to their new
+# The `modules:`, `attributes:`, `dissolved:` and `manual:` sections below are also
+# read at runtime by gemseo._deprecation to redirect imports of old names to their new
 # location (which is why this file lives inside the package and is shipped with it).
 
 # JSON dump of the old API (produced by `griffe dump`), giving old function
@@ -122,6 +122,8 @@ modules:
   gemseo.disciplines.wrappers.job_schedulers: job_scheduler
   gemseo.disciplines.wrappers: wrapper
   gemseo.disciplines.utils: gemseo.util.discipline
+  gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter: mdo
+  gemseo.disciplines.scenario_adapters.mdo_scenario_adapter: mdo
   gemseo.disciplines.scenario_adapters: gemseo.scenario.adapter
   gemseo.disciplines: discipline
 
@@ -389,6 +391,9 @@ attributes:
   gemseo.core.mdo_functions.mdo_quadratic_function.MDOQuadraticFunction: QuadraticFunction
   gemseo.core.mdo_functions.function_restriction.FunctionRestriction: RestrictedFunction
 
+  # Also listed under `manual:`: the runtime refuses this alias, as the new class
+  # only behaves as the old one with an extra argument.
+  gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: MDOScenarioAdapter
   gemseo.disciplines.wrappers.job_schedulers.discipline_wrapper.JobSchedulerDisciplineWrapper: JobSchedulerDiscipline
   gemseo.disciplines.wrappers.job_schedulers.factory.JobSchedulerDisciplineWrapperFactory: JobSchedulerDisciplineFactory
 
@@ -477,6 +482,16 @@ attributes:
 
 dissolved:
   - gemseo.settings
+
+# Old module-level names whose migration cannot be automated, because the new name
+# alone does not preserve the behavior of the old one. Each entry is
+# `old_qualified_name: how to migrate`, the value being free text without any colon.
+# gemseo._deprecation raises an ImportError carrying that text instead of resolving the
+# `attributes:` entry of the same name, which is kept so that the codemod still renames
+# the class; the user then has to complete the migration by hand.
+
+manual:
+  gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: gemseo.scenario.adapter.mdo.MDOScenarioAdapter with output_optimal_objective=True
 
 classes:
   #### Machine learning
@@ -695,6 +710,17 @@ classes:
       settings_model: settings={settings_model}_Settings
   DOEScenario: *scenario-class
   OptAsMDOScenario: *scenario-class
+  MDOScenarioAdapter: &scenario-adapter-class
+    keep_opt_history: keep_databases
+    save_opt_history: save_databases
+    __init__:
+      reset_x0_before_opt: reset_x0_before_exec
+      set_x0_before_opt: set_x0_before_exec
+      set_bounds_before_opt: set_bounds_before_exec
+      keep_opt_history: keep_databases
+      save_opt_history: save_databases
+      opt_history_file_prefix: database_file_prefix
+  MDOObjectiveScenarioAdapter: *scenario-adapter-class
 
   # Algos
   BaseAlgoFactory: &algo-factory
