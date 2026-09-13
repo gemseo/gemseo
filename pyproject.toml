@@ -34,7 +34,7 @@ dependencies = [
     "pandas >=2.2,<=2.3.3",
     "prettytable >=2.3.0,<=3.18.0",
     "pyxdsm >=2.2.1,<=2.3.2",
-    "pydantic >=2.12,<=2.13.4",
+    "pydantic >=2.12,<=2.13.5",
     "pydantic-settings >=2.9.0,<=2.15.0",
     "requests >2,<3",
     "scipy >=1.15,<=1.17.1",
