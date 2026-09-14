@@ -125,6 +125,30 @@ def test_add_variable_with_unkown_type(design_space, snapshot) -> None:
         design_space.add_variable(name="varname", type_="a")
 
 
+@pytest.mark.parametrize(
+    "type_",
+    [
+        ["float", "integer"],
+        array(["integer"]),
+        array(["discrete"]),
+        array("integer"),
+    ],
+    ids=["list", "1d_array", "1d_array_of_unbounded_type", "0d_array"],
+)
+def test_add_variable_with_a_non_string_type(design_space, type_, snapshot) -> None:
+    """Check that a type that is not a string is rejected with a ValueError.
+
+    Non-regression test for the type lookup of add_variable hashing its argument:
+    a list of per-component types raised `TypeError: unhashable type: 'list'`
+    instead of the documented ValueError.
+    Guarding that lookup on a string type let every other non-string reach the
+    variable factory, where a one-element array of type names resolved by an
+    element-wise comparison and silently built a variable.
+    """
+    with assert_exception(ValueError, snapshot):
+        design_space.add_variable(name="varname", type_=type_)
+
+
 def test_add_variable_with_unnumerizable_value(design_space, snapshot) -> None:
     """Check that adding a variable with unnumerizable value raises an error."""
     with assert_exception(ValueError, snapshot):

@@ -350,8 +350,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         Args:
             name: The name of the variable.
             size: The size of the variable; ignored if `variable` is passed.
-            type_: Either the type of the variable
-                or the types of its components;
+            type_: The type of the variable;
                 ignored if `variable` is passed.
             lower_bound: The lower bound of the variable.
                 If `None`, use $-\infty$.
@@ -375,6 +374,16 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
         """
         if variable is None:
             decoded_type_ = type_.decode() if isinstance(type_, bytes) else type_
+            # Only a string names a type;
+            # the variable factory would otherwise resolve
+            # a one-element array of type names by an element-wise comparison.
+            if not isinstance(decoded_type_, str):
+                msg = (
+                    "The type_ argument of add_variable must be a string "
+                    f"naming the type of the whole variable; got {type_!r}."
+                )
+                raise ValueError(msg)
+
             if decoded_type_ not in _bounded_types:
                 msg = (
                     "Only continuous and integer variables may be declared "
@@ -382,6 +391,7 @@ class DesignSpace(metaclass=GoogleDocstringInheritanceMeta):
                     "use the variable argument instead."
                 )
                 raise ValueError(msg)
+
             variable = variable_factory.create(
                 type_,
                 size=size,

@@ -72,6 +72,18 @@
 # name: test_add_variable_with_2d_object[value]
   "The value [[1.]] of variable 'varname' has a dimension greater than 1 while a scalar or a 1D iterable object (array, list, tuple, ...) was expected."
 # ---
+# name: test_add_variable_with_a_non_string_type[0d_array]
+  "The type_ argument of add_variable must be a string naming the type of the whole variable; got array('integer', dtype='<U7')."
+# ---
+# name: test_add_variable_with_a_non_string_type[1d_array]
+  "The type_ argument of add_variable must be a string naming the type of the whole variable; got array(['integer'], dtype='<U7')."
+# ---
+# name: test_add_variable_with_a_non_string_type[1d_array_of_unbounded_type]
+  "The type_ argument of add_variable must be a string naming the type of the whole variable; got array(['discrete'], dtype='<U8')."
+# ---
+# name: test_add_variable_with_a_non_string_type[list]
+  "The type_ argument of add_variable must be a string naming the type of the whole variable; got ['float', 'integer']."
+# ---
 # name: test_add_variable_with_discrete_type_raises
   'Only continuous and integer variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
 # ---
