@@ -515,6 +515,31 @@ def test_rename_variable_same_name_is_noop(space) -> None:
     assert list(space.variables) == ["x", "y"]
 
 
+def test_rename_variable_preserves_the_marginal_distributions() -> None:
+    """Check that renaming a variable does not swap the marginal distributions.
+
+    Renaming a variable other than the last one must not move it
+    in the mapping of the random variables,
+    otherwise the joint probability distribution
+    rebuilt by a subsequent mutation of the random space
+    would give each random variable the marginal distribution of another one.
+    """
+    space = RandomSpace()
+    space.add_variable(
+        "u", OTDistribution_Settings(interfaced_distribution="Dirac", parameters=(1,))
+    )
+    space.add_variable(
+        "v", OTDistribution_Settings(interfaced_distribution="Dirac", parameters=(2,))
+    )
+    space.rename_variable("u", "z")
+    space.add_variable(
+        "w", OTDistribution_Settings(interfaced_distribution="Dirac", parameters=(3,))
+    )
+
+    assert list(space.variables) == ["z", "v", "w"]
+    assert_array_equal(space.compute_samples(2), array([[1, 2, 3]] * 2))
+
+
 def test_filter(space) -> None:
     """Check that filtering keeps a subset of variables."""
     other = space.filter(["y"], copy=True)
