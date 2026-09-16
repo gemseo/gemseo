@@ -23,7 +23,7 @@ from numpy import inf
 from pydantic import BaseModel
 
 from gemseo.space.variable.base import DataType
-from gemseo.space.variable.factory import variable_factory
+from gemseo.space.variable.factory import deterministic_variable_factory
 
 
 class Variable(BaseModel):
@@ -33,7 +33,7 @@ class Variable(BaseModel):
     replaced by one class per data type, namely
     [ContinuousVariable][gemseo.space.variable.ContinuousVariable] and
     [IntegerVariable][gemseo.space.variable.IntegerVariable], built by
-    `VariableFactory`.
+    `DeterministicVariableFactory`.
 
     A pickle refers to a class by name, so loading a design space pickled by such a
     release requires this name to still resolve. This class exists for that sole
@@ -66,7 +66,7 @@ class Variable(BaseModel):
                 hierarchy of variables.
         """
         fields = state.get("__dict__", {})
-        variable = variable_factory.create(
+        variable = deterministic_variable_factory.create(
             fields.get("type", DataType.FLOAT),
             size=fields.get("size", 1),
             lower_bound=fields.get("lower_bound", -inf),

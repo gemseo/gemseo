@@ -39,7 +39,7 @@ from gemseo.machine_learning.regression.model.linreg_settings import (
     LinearRegressor_Settings,
 )
 from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -71,11 +71,11 @@ def rosenbrock_dataset() -> IODataset:
 
 
 @pytest.fixture(scope="module")
-def probability_space() -> ParameterSpace:
+def probability_space() -> RandomSpace:
     """The probability space for the Rosenbrock function."""
-    space = ParameterSpace()
-    space.add_random_variable(
-        "x", OTUniformDistribution_Settings(minimum=-2, maximum=2), size=2
+    space = RandomSpace()
+    space.add_variable(
+        "x", *[OTUniformDistribution_Settings(minimum=-2, maximum=2)] * 2
     )
     return space
 

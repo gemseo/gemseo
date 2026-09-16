@@ -45,20 +45,20 @@ from gemseo.uncertainty.sensitivity import MorrisAnalysis
 #
 # with $X_1, X_2, X_3 \sim \mathcal{U}(-\pi, \pi)$ independently.
 discipline = IshigamiDiscipline()
-uncertain_space = IshigamiSpace()
+random_space = IshigamiSpace()
 
 # %%
 # ### 2. Run two sensitivity analyses
 #
 # [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]:
 correlation = CorrelationAnalysis()
-correlation.compute_samples([discipline], uncertain_space, n_samples=1000)
+correlation.compute_samples([discipline], random_space, n_samples=1000)
 correlation.compute_indices()
 
 # %%
 # [MorrisAnalysis][gemseo.uncertainty.sensitivity.morris.MorrisAnalysis]:
 morris = MorrisAnalysis()
-morris.compute_samples([discipline], uncertain_space, n_samples=0)
+morris.compute_samples([discipline], random_space, n_samples=0)
 morris.compute_indices()
 
 # %%
@@ -76,7 +76,7 @@ morris.plot_comparison(correlation, "y", use_bar_plot=False, save=False, show=Tr
 # %%
 # ## Summary
 #
-# - Run two analyses with matching disciplines and uncertain space;
+# - Run two analyses with matching disciplines and random space;
 # - [plot_comparison()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_comparison]
 #   overlays their main indices normalized between 0 and 1.
 # - Pass `use_bar_plot=True` for bars, `False` for radar.

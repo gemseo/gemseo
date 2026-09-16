@@ -48,6 +48,7 @@ modules:
   gemseo.problems.mdo.scalable.parametric.core.variable_names: variable_name
   gemseo.problems.uncertainty.ishigami.functions: function
   gemseo.problems.uncertainty.utils: util
+  gemseo.problems.uncertainty.wing_weight.uncertain_space: random_space
   gemseo.problems: problem
 
   gemseo.algos.base_algorithm_settings: gemseo.util.pydantic
@@ -155,8 +156,10 @@ modules:
   gemseo.algos.design_space_factory: gemseo.space.factory
   gemseo.algos.design_space_utils: gemseo.space.util
   gemseo.algos.design_space: gemseo.space.design
+  # ParameterSpace was removed; its purely uncertain use is covered by RandomSpace,
+  # which is why the old modules point at the random space and its factory.
   gemseo.algos.parameter_space_factory: gemseo.space.factory
-  gemseo.algos.parameter_space: gemseo.space.parameter
+  gemseo.algos.parameter_space: gemseo.space.random
   gemseo.algos._variable: gemseo.space.variable
   gemseo.algos.linear_solvers: linear_solver
   gemseo.algos.sequence_transformer: gemseo.mda.sequence_transformer
@@ -363,6 +366,8 @@ modules:
 # apart from a renamed module-level function, both being lower-snake-case.
 
 attributes:
+  gemseo.create_parameter_space: create_random_space
+
   gemseo.algos.base_algorithm_settings.BaseAlgorithmSettings: gemseo.util.pydantic.BaseSettings
   gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_0_settings.Augmented_Lagrangian_order_0_Settings: Augmented_Lagrangian_Order_0_Settings
   gemseo.algos.opt.augmented_lagrangian.settings.augmented_lagrangian_order_1_settings.Augmented_Lagrangian_order_1_Settings: Augmented_Lagrangian_Order_1_Settings
@@ -371,6 +376,9 @@ attributes:
   gemseo.algos.opt.augmented_lagrangian.penalty_heuristic.AugmentedLagrangianPenaltyHeuristic: BaseAugmentedLagrangianPenaltyHeuristic
   gemseo.algos.opt.scipy_milp.settings.scipy_milp_settings.SciPyMILP_Settings: MILP_Settings
   gemseo.algos.opt.scipy_milp.SciPyMILP_Settings: MILP_Settings
+  gemseo.algos.parameter_space.ParameterSpace: RandomSpace
+  gemseo.algos.parameter_space_factory.ParameterSpaceFactory: RandomSpaceFactory
+  gemseo.problems.uncertainty.wing_weight.uncertain_space.WingWeightUncertainSpace: WingWeightRandomSpace
   gemseo.algos.problem_function.ProblemFunction: PreprocessedFunction
   gemseo.algos.stop_criteria.TerminationCriterion: gemseo.core.problem.termination_criterion.TerminationCriterion
   gemseo.algos.stop_criteria.FunctionIsNan: gemseo.core.problem.termination_criterion.FunctionIsNan
@@ -851,6 +859,8 @@ dissolved:
 
 manual:
   gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: gemseo.scenario.adapter.mdo.MDOScenarioAdapter with output_optimal_objective=True
+  # gemseo.space.random, which replaces gemseo.algos.parameter_space, defines no logger.
+  gemseo.algos.parameter_space.LOGGER: logging.getLogger("gemseo.space.random")
 
 classes:
   #### Machine learning
@@ -1044,12 +1054,156 @@ classes:
     names_to_indices: name_to_indices
     to_csv:
       header_char: null
+    get_variables_indexes:
+      use_design_space_order: use_space_order
+    convert_dict_to_array:
+      design_values: variable_values
   SellarDesignSpace:
     __init__:
       dtype: null
 
   #### ParameterSpace
-  # TODO
+  # The class is renamed to RandomSpace (see attributes:). A space no longer mixes
+  # deterministic and random variables, so the members below either moved to the
+  # variables view, belong to DesignSpace only, or have no equivalent at all.
+  ParameterSpace:
+    add_random_variable:
+      __name__: add_variable
+      # There is one distribution settings model per component now, so a variable
+      # of size n is added with add_variable(name, *[settings] * n). The old
+      # arguments cannot be rewritten mechanically: distribution was the name of a
+      # distribution and its parameters were passed apart.
+      distribution: null
+      size: null
+      interfaced_distribution: null
+      interfaced_distribution_parameters: null
+    add_random_vector:
+      __name__: add_variable
+      # Same restructuring as add_random_variable.
+      distribution: null
+      size: null
+      interfaced_distribution: null
+      interfaced_distribution_parameters: null
+    distribution: null
+    # use space.variables.distribution instead.
+    distributions: null
+    # use space.variables[name].distribution instead.
+    uncertain_variables: null
+    # use list(space.variables) instead.
+    get_range: null
+    # use space.variables[name].distribution.range instead.
+    get_support: null
+    # use space.variables[name].distribution.support instead.
+    get_tabular_view: null
+    # use get_pretty_table instead.
+    build_joint_distribution: null
+    # use add_copula, and read the joint distribution from space.variables.
+    evaluate_cdf: null
+    # use transform_vect and untransform_vect instead.
+    normalize_vect: null
+    unnormalize_vect: null
+    add_variables_from: null
+    # normalization and extension are DesignSpace notions.
+    deterministic_variables: null
+    is_deterministic: null
+    is_uncertain: null
+    extract_deterministic_space: null
+    extract_uncertain_space: null
+    to_design_space: null
+    init_from_dataset: null
+    # a space is either a DesignSpace or a RandomSpace, so there is nothing to
+    # tell apart, extract or convert.
+
+    # A ParameterSpace also inherited the whole DesignSpace API, which a
+    # RandomSpace does not have. The members below therefore have no successor
+    # either. N.B. add_variable is not listed: it exists on a RandomSpace but
+    # adds a random variable from distribution settings, so a call that used to
+    # add a deterministic variable must be reviewed by hand.
+    to_file: null
+    from_file: null
+    to_hdf: null
+    from_hdf: null
+    to_csv: null
+    from_csv: null
+    # a random space has no file persistence; rebuild it from the settings of
+    # the marginal probability distributions of its random variables.
+    variable_names: null
+    # use list(space.variables) instead.
+    variable_sizes: null
+    # use {n: v.size for n, v in space.variables.items()} instead.
+    variable_types: null
+    # use {n: v.type for n, v in space.variables.items()} instead.
+    names_to_indices: null
+    # use space.variables.name_to_indices instead.
+    get_size: null
+    # use space.variables[name].size instead.
+    get_type: null
+    # use space.variables[name].type instead.
+    has_integer_variables: null
+    # use space.variables.has_integer_variables instead; it is always False,
+    # as a random variable is of float type.
+    has_current_value: null
+    get_current_value: null
+    set_current_value: null
+    set_current_variable: null
+    initialize_missing_current_values: null
+    to_complex: null
+    # a current value is a DesignSpace notion; use nominal_value to read the
+    # reference point of a space, which is the mean of the distributions here.
+    get_lower_bound: null
+    get_upper_bound: null
+    get_lower_bounds: null
+    get_upper_bounds: null
+    set_lower_bound: null
+    set_upper_bound: null
+    get_active_bounds: null
+    check_membership: null
+    project_into_bounds: null
+    # bounds are a DesignSpace notion; the bounds of a random variable are the
+    # limits of the support of its distribution and are read-only, through
+    # space.variables[name].lower_bound and upper_bound.
+    normalize_grad: null
+    unnormalize_grad: null
+    round_vect: null
+    enable_integer_variables_normalization: null
+    extend: null
+    to_scalar_variables: null
+    # normalization, integer rounding and extension are DesignSpace notions.
+    get_variables_indexes:
+      use_design_space_order: use_space_order
+    convert_dict_to_array:
+      design_values: variable_values
+
+  # The argument parameter_space of the sampling methods of the sensitivity
+  # analyses is renamed random_space, as these spaces are purely made of random variables.
+  CorrelationAnalysis:
+    compute_samples:
+      parameter_space: random_space
+    DEFAULT_DRIVER: default_driver
+  FORMAnalysis:
+    compute_samples:
+      parameter_space: random_space
+  HSICAnalysis:
+    compute_samples:
+      parameter_space: random_space
+    DEFAULT_DRIVER: default_driver
+  ISFORMSobolAnalysis:
+    compute_samples:
+      parameter_space: random_space
+  MorrisAnalysis:
+    compute_samples:
+      parameter_space: random_space
+    DEFAULT_DRIVER: default_driver
+  SobolAnalysis:
+    compute_samples:
+      parameter_space: random_space
+    DEFAULT_DRIVER: default_driver
+
+  IshigamiProblem:
+    objective: null
+    # the problem is an EvaluationProblem defined over the IshigamiSpace, which
+    # is a RandomSpace, so the Ishigami function is an observable of the problem;
+    # use problem.observables[0] instead.
 
   #### Distributions
   # TODO
@@ -1096,6 +1250,16 @@ classes:
       save_opt_history: save_databases
       opt_history_file_prefix: database_file_prefix
   MDOObjectiveScenarioAdapter: *scenario-adapter-class
+  # Only the classes that may hold a RandomSpace rename design_space to
+  # input_space. MDOScenario and OptimizationProblem keep design_space, typed
+  # DesignSpace, so they deliberately have no entry for it; a rename inherited
+  # from the blocks below would churn user code that is already correct.
+  # ReliabilityProblem and ReliabilityScenario, which require a RandomSpace,
+  # name this argument random_space and pin it below.
+  BaseScenario:
+    design_space: input_space
+    __init__:
+      design_space: input_space
 
   # Algos
   BaseAlgoFactory: &algo-factory
@@ -1113,6 +1277,8 @@ classes:
       skip_int_check: null
       max_design_space_dimension_to_log: null
       settings_model: settings={settings_model}_Settings
+  BaseDriverSettings:
+    max_design_space_dimension_to_log: max_input_space_dimension_to_log
   BaseDOELibrary:
     _USE_UNIT_HYPERCUBE: _use_unit_hypercube
     compute_doe:
@@ -1120,11 +1286,28 @@ classes:
       variables_space: space
       unit_sampling: use_unit_samples
       settings_model: settings={settings_model}_Settings
+  EvaluationProblem:
+    design_space: input_space
+    __init__:
+      design_space: input_space
+    reset:
+      design_space: input_space
+    evaluate_functions:
+      design_vector: input_value
+      design_vector_is_normalized: input_value_is_normalized
+      preprocess_design_vector: preprocess_input_value
+  ReliabilityProblem:
+    __init__:
+      design_space: random_space
+  ReliabilityScenario:
+    __init__:
+      design_space: random_space
 
   # Formulation
   BaseFormulation:
     DEFAULT_SCENARIO_RESULT_CLASS_NAME: default_scenario_result_class_name
     optimization_problem: problem
+    design_space: input_space
     __init__:
       # TODO: add new argument.
       objective_name: null
@@ -1225,6 +1408,7 @@ classes:
   ScalableDesignSpace:
     __init__:
       names_to_default_values: name_to_default_value
+      add_uncertain_variables: null
   ScenarioResult:
     POST_FACTORY: post_factory
     optimization_problems_to_results: optimization_problem_to_result
@@ -1305,10 +1489,14 @@ classes:
     constraint_dataset: null
     # use `inequality_constraint_dataset` or `equality_constraint_dataset` instead.
 
+  OptimizationHistory:
+    __init__:
+      design_space: null
+      # the history never used it.
+
   OptimizationProblem:
     to_dataset:
       group_functions: null
-
 
   # Jacobian checkers (changelog 747)
   Discipline:
@@ -1367,8 +1555,6 @@ classes:
     CHAIN_NAME: chain_name
     MDA1_RESIDUAL_NAMESPACE: mda1_residual_namespace
     MDA2_RESIDUAL_NAMESPACE: mda2_residual_namespace
-  CorrelationAnalysis:
-    DEFAULT_DRIVER: default_driver
   Correlations:
     MAXIMUM_CORRELATION_COEFFICIENT: maximum_correlation_coefficient
   CoupledSystem:
@@ -1386,8 +1572,6 @@ classes:
     LIBRARY: library
   GradientBoostingRegressor:
     LIBRARY: library
-  HSICAnalysis:
-    DEFAULT_DRIVER: default_driver
   IODataset:
     INPUT_GROUP: input_group
     OUTPUT_GROUP: output_group
@@ -1412,8 +1596,6 @@ classes:
     COEFF_FORMAT_ND: coeff_format_nd
   MLPRegressor:
     LIBRARY: library
-  MorrisAnalysis:
-    DEFAULT_DRIVER: default_driver
   MultiLineString:
     INDENTATION: indentation
     DEFAULT_LEVEL: default_level
@@ -1478,8 +1660,6 @@ classes:
     STRESS_LIMIT: stress_limit
     TWIST_UPPER_LIMIT: twist_upper_limit
     TWIST_LOWER_LIMIT: twist_lower_limit
-  SobolAnalysis:
-    DEFAULT_DRIVER: default_driver
   XLSStudyParser:
     SCENARIO_PREFIX: scenario_prefix
     DISCIPLINE: discipline

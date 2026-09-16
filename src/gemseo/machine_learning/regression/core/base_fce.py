@@ -31,6 +31,7 @@ from gemseo.machine_learning.regression.core.base_fce_settings import (
     BaseFCERegressorSettings,
 )
 from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
+from gemseo.space.random import RandomSpace
 from gemseo.util.pydantic import create_model
 
 if TYPE_CHECKING:
@@ -106,7 +107,7 @@ class BaseFCERegressor(BaseRegressor):
             data: The training dataset
                 whose input space `data.misc["input_space"]`
                 is expected to be a
-                [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+                [RandomSpace][gemseo.space.random.RandomSpace]
                 defining the random input variables.
 
         Raises:
@@ -140,6 +141,24 @@ class BaseFCERegressor(BaseRegressor):
                 "but the training dataset does not contain Jacobian data."
             )
             raise ValueError(msg)
+
+    @property
+    def _input_space(self) -> RandomSpace:
+        """The random space of the training dataset.
+
+        Raises:
+            TypeError: When the input space of the training dataset
+                is not a random space.
+        """
+        input_space = self.learning_set.misc["input_space"]
+        if not isinstance(input_space, RandomSpace):
+            msg = (
+                f"{self.__class__.__name__} requires a random space; "
+                f"got a {input_space.__class__.__name__}."
+            )
+            raise TypeError(msg)
+
+        return input_space
 
     def _fit(
         self,

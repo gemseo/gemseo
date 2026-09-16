@@ -12,26 +12,30 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Tests for the Variables collaborator."""
+"""Tests for the DesignVariables collaborator."""
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
+from copy import deepcopy
+from pickle import dumps
+from pickle import loads
 
 import pytest
+from numpy import bool_
+from numpy import int8
+from numpy import ndarray
 from numpy.testing import assert_array_equal
 
-from gemseo.space.design._variables import Variables
+from gemseo.space._design.variables import DesignVariables
 from gemseo.space.variable import ContinuousVariable
-from gemseo.space.variable import DataType
-from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture
-def variables() -> Variables:
+def variables() -> DesignVariables:
     """A variables with a float and an integer variable."""
-    variables = Variables()
+    variables = DesignVariables()
     variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
     variables["n"] = IntegerVariable(size=1, lower_bound=0, upper_bound=10)
     return variables
@@ -53,181 +57,130 @@ def test_enable_integer_variables_normalization(variables) -> None:
     assert variables.version == version + 1
 
 
+@pytest.mark.parametrize("name", ["x", "n"])
+def test_normalization_mask_is_read_only(variables, name, snapshot) -> None:
+    """Check that a normalization mask cannot be mutated in place."""
+    mask = variables.name_to_normalization_mask[name]
+    assert not mask.flags.writeable
+    with assert_exception(ValueError, snapshot):
+        mask[0] = True
+
+    with assert_exception(ValueError, snapshot):
+        mask.setflags(write=True)
+
+
+@pytest.mark.parametrize("name", ["x", "n"])
+def test_normalization_mask_cannot_be_thawed_through_its_base(variables, name) -> None:
+    """Check that no array reachable from a normalization mask is writeable."""
+    mask = variables.name_to_normalization_mask[name]
+
+    array_ = mask
+    while isinstance(array_, ndarray):
+        with pytest.raises(ValueError, match="cannot set WRITEABLE flag to True"):
+            array_.setflags(write=True)
+
+        array_ = array_.base
+
+    assert isinstance(array_, bytes)
+    assert_array_equal(variables.name_to_normalization_mask[name], mask)
+
+
+@pytest.mark.parametrize("name", ["x", "n"])
 @pytest.mark.parametrize(
-    ("names", "expected"),
-    [((), False), (("x",), False), (("n",), True), (("x", "n"), True)],
+    ("attribute_name", "value"),
+    [("shape", (1, 1)), ("strides", (0,)), ("dtype", int8)],
 )
-def test_has_integer(names, expected) -> None:
-    """Check the detection of integer variables."""
-    variables = Variables()
-    classes = {"x": ContinuousVariable, "n": IntegerVariable}
-    for name in names:
-        variables[name] = classes[name](size=1, lower_bound=0, upper_bound=1)
-    assert variables.has_integer_variables is expected
+def test_reassigning_mask_attributes_leaves_the_registry_alone(
+    variables, name, attribute_name, value
+) -> None:
+    """Check that a normalization mask is handed out as a view of the mask stored.
+
+    NumPy lets a caller reassign the shape, the strides and the data type
+    of a read-only array, so the mapping returns a view of the frozen mask
+    and such a reassignment reaches the view only.
+    """
+    mask = variables.name_to_normalization_mask[name]
+    if attribute_name == "shape":
+        value = (mask.size, 1)
+
+    setattr(mask, attribute_name, value)
+
+    stored_mask = variables.name_to_normalization_mask[name]
+    assert stored_mask.shape == (variables[name].size,)
+    assert stored_mask.strides == (1,)
+    assert stored_mask.dtype == bool_
 
 
-def test_get_integer_components(variables) -> None:
-    """Check the integer-component mask."""
-    assert_array_equal(variables.get_integer_mask(), [False, False, True])
+@pytest.mark.parametrize("copy_", [deepcopy, lambda obj: loads(dumps(obj))])
+@pytest.mark.parametrize("name", ["x", "n"])
+def test_normalization_mask_is_read_only_after_copy(
+    variables, copy_, name, snapshot
+) -> None:
+    """Check that a copy of the registry hands out read-only normalization masks.
+
+    Neither pickling nor copying preserves the writeable flag of an array
+    nor the immutable buffer that a frozen array is a view of,
+    so the registry freezes the masks again when its state is restored.
+    """
+    copied_variables = copy_(variables)
+    mask = copied_variables.name_to_normalization_mask[name]
+
+    assert not mask.flags.writeable
+    with assert_exception(ValueError, snapshot):
+        mask[0] = True
+
+    assert_array_equal(mask, variables.name_to_normalization_mask[name])
 
 
-def test_mapping_interface(variables) -> None:
-    """Check that the variables reads as a name-to-variable mapping."""
-    assert isinstance(variables, MutableMapping)
-    assert list(variables) == ["x", "n"]
-    assert len(variables) == 2
-    assert "x" in variables
-    assert "missing" not in variables
-    assert list(variables.keys()) == ["x", "n"]
-    assert [variable.size for variable in variables.values()] == [2, 1]
-    assert dict(variables.items()).keys() == {"x", "n"}
-    assert variables["x"].type == DataType.FLOAT
-    assert variables.get("missing") is None
-
-
-def test_getitem_unknown_variable(variables) -> None:
-    """Check that indexing an unknown variable raises."""
-    with pytest.raises(KeyError):
-        variables["missing"]
-
-
-def test_setitem_insert(variables) -> None:
-    """Check that setting a new name appends it and allocates its indices."""
+def test_setitem_normalization_mask(variables) -> None:
+    """Check that setting a variable computes its normalization mask."""
     version = variables.version
-    variables["z"] = ContinuousVariable(size=3, lower_bound=0.0, upper_bound=1.0)
-    assert list(variables) == ["x", "n", "z"]
-    assert variables.size == 6
-    assert variables.name_to_indices["z"] == range(3, 6)
+    variables["z"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
+    assert variables.name_to_normalization_mask["z"].all()
     assert variables.version == version + 1
 
 
-def test_setitem_replace_same_size(variables) -> None:
-    """Check that replacing keeps position, size and index ranges."""
-    variables["x"] = ContinuousVariable(size=2, lower_bound=-1.0, upper_bound=2.0)
-    assert list(variables) == ["x", "n"]
-    assert variables.size == 3
-    assert variables.name_to_indices["x"] == range(2)
-    assert variables.name_to_indices["n"] == range(2, 3)
-    assert_array_equal(variables["x"].lower_bound, [-1.0, -1.0])
-
-
-def test_setitem_replace_resize(variables) -> None:
-    """Check that replacing with a different size rebuilds indices and size."""
-    variables["x"] = ContinuousVariable(size=4, lower_bound=0.0, upper_bound=1.0)
-    assert variables.size == 5
-    assert variables.name_to_indices["x"] == range(4)
-    assert variables.name_to_indices["n"] == range(4, 5)
-
-
-def test_delitem(variables) -> None:
-    """Check that deleting a variable removes it and rebuilds indices."""
+def test_delitem_normalization_mask(variables) -> None:
+    """Check that deleting a variable drops its normalization mask."""
     version = variables.version
     del variables["x"]
-    assert list(variables) == ["n"]
-    assert variables.size == 1
-    assert variables.name_to_indices["n"] == range(1)
     assert "x" not in variables.name_to_normalization_mask
     assert variables.version == version + 1
 
 
-def test_delitem_unknown_variable(variables) -> None:
-    """Check that deleting an unknown variable raises."""
-    with pytest.raises(KeyError):
-        del variables["missing"]
-
-
-def test_filter_components(variables) -> None:
-    """Check that filtering the components preserves the kind of the variable."""
+def test_rename_normalization_mask(variables) -> None:
+    """Check that renaming a variable renames its normalization mask."""
     version = variables.version
-    variables["x"] = ContinuousVariable(
-        size=3, lower_bound=[0.0, 1.0, 2.0], upper_bound=[3.0, 4.0, 5.0]
-    )
-    variables.filter_components("x", [0, 2])
-    variable = variables["x"]
-    assert isinstance(variable, ContinuousVariable)
-    assert variable.size == 2
-    assert_array_equal(variable.lower_bound, [0.0, 2.0])
-    assert_array_equal(variable.upper_bound, [3.0, 5.0])
-    assert variables.name_to_indices["n"] == range(2, 3)
-    assert variables.version > version
-
-
-def test_filter_components_custom_variable(variables) -> None:
-    """Check that filtering the components works for a variable class of one's own."""
-
-    class MyVariable(ContinuousVariable):
-        """A variable class that the factory cannot discover."""
-
-    variables["x"] = MyVariable(size=2, lower_bound=0.0, upper_bound=1.0)
-    variables.filter_components("x", [1])
-    assert isinstance(variables["x"], MyVariable)
-    assert variables["x"].size == 1
-
-
-@pytest.mark.parametrize(
-    ("names", "expected"),
-    [((), False), (("x",), False), (("d",), True), (("x", "d"), True)],
-)
-def test_has_discrete(names, expected) -> None:
-    """Check the detection of discrete variables."""
-    variables = Variables()
-    for name in names:
-        if name == "d":
-            variables[name] = DiscreteVariable(choices=[1, 2])
-        else:
-            variables[name] = ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
-
-    assert variables.has_discrete_variables is expected
-
-
-def test_has_discrete_variable_tracks_mutations() -> None:
-    """Check that the cached discrete-variable count stays correct across mutations."""
-    variables = Variables()
-    variables["x"] = ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
-    assert variables.has_discrete_variables is False
-
-    variables["d"] = DiscreteVariable(choices=[1, 2])
-    assert variables.has_discrete_variables is True
-
-    # Overwriting a discrete variable with a continuous one turns it off.
-    variables["d"] = ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
-    assert variables.has_discrete_variables is False
-
-    # Overwriting a continuous variable with a discrete one turns it on.
-    variables["d"] = DiscreteVariable(choices=[1, 2])
-    assert variables.has_discrete_variables is True
-
-    # Removing the last discrete variable turns it off.
-    del variables["d"]
-    assert variables.has_discrete_variables is False
-
-    # filter_components() preserves the kind of the variable (a discrete
-    # variable is always scalar, so only the identity filtering applies),
-    # so it must not flip the flag either way.
-    variables["d"] = DiscreteVariable(choices=[1, 2, 3])
-    variables.filter_components("d", [0])
-    assert variables.has_discrete_variables is True
-
-    del variables["d"]
-    assert variables.has_discrete_variables is False
-
-
-def test_filter_components_keeping_all(variables) -> None:
-    """Check that keeping every component in order shares the variable."""
-    variable = variables["x"]
-    version = variables.version
-    variables.filter_components("x", [0, 1])
-
-    assert variables["x"] is variable
+    variables.rename("x", "y")
+    assert "x" not in variables.name_to_normalization_mask
+    assert variables.name_to_normalization_mask["y"].all()
     assert variables.version == version + 1
 
 
-def test_filter_components_of_a_discrete_variable() -> None:
-    """Check that filtering the only component of a discrete variable is an identity."""
-    variables = Variables()
-    variables["d"] = DiscreteVariable(choices=[2, 4])
-    variable = variables["d"]
-    variables.filter_components("d", [0])
+def test_rename_collision(variables, snapshot) -> None:
+    """Check that renaming to an existing name raises and keeps the mask intact."""
+    version = variables.version
+    with assert_exception(ValueError, snapshot):
+        variables.rename("x", "n")
+    assert list(variables) == ["x", "n"]
+    assert "x" in variables.name_to_normalization_mask
+    assert "n" in variables.name_to_normalization_mask
+    assert variables.version == version
 
-    assert variables["d"] is variable
-    assert_array_equal(variables["d"].choices, [2.0, 4.0])
+
+def test_rename_same_name_is_noop(variables) -> None:
+    """Check that renaming a variable to its own name is a no-op."""
+    version = variables.version
+    mask = variables.name_to_normalization_mask["x"]
+    variables.rename("x", "x")
+    assert list(variables) == ["x", "n"]
+    assert_array_equal(variables.name_to_normalization_mask["x"], mask)
+    assert variables.version == version + 1
+
+
+def test_filter_components_normalization_mask(variables) -> None:
+    """Check that filtering the components updates the normalization mask."""
+    version = variables.version
+    variables.filter_components("x", [1])
+    assert len(variables.name_to_normalization_mask["x"]) == 1
+    assert variables.version == version + 1

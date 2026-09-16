@@ -214,7 +214,7 @@
     },
     "start_at_equilibrium": {
       "type": "boolean",
-      "description": "Whether an MDA is used to initialize the coupling variables.",
+      "description": "Whether an MDA is used to initialize the coupling variables. The input space must be a [DesignSpace][gemseo.space.design.DesignSpace]. The equilibrium computed by this MDA is stored as the current value of this design space.",
       "default": false
     },
     "use_threading": {

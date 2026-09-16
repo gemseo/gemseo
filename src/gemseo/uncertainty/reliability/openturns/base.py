@@ -66,9 +66,9 @@ class BaseOTReliabilityAlgorithm(BaseReliabilityAlgorithm):
         Returns:
             The OpenTURNS event.
         """
-        uncertain_space = problem.design_space
-        input_vector = RandomVector(uncertain_space.distribution.distribution)
-        dimension = uncertain_space.dimension
+        random_space = problem.input_space
+        input_vector = RandomVector(random_space.variables.distribution.distribution)
+        dimension = random_space.dimension
         observables = {function.name: function for function in problem.observables}
         ot_intersection_events = []
         event = problem.name_to_event[event_name]

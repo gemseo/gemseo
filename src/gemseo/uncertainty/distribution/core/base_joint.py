@@ -53,7 +53,7 @@ inherits from the abstract class
 
 The
 [BaseJointDistribution][gemseo.uncertainty.distribution.core.base_joint.BaseJointDistribution]
-of a list of given uncertain variables is built
+of a list of given random variables is built
 from a list of
 [BaseDistribution][gemseo.uncertainty.distribution.core.base.BaseDistribution]
 objects
@@ -151,7 +151,7 @@ class BaseJointDistribution(BaseDistribution[RealArray, StrKeyMapping, Any]):
 
     @property
     def dimension(self) -> int:
-        """The dimension of the uncertain space."""
+        """The dimension of the random space."""
         return len(self.__marginals)
 
     def _set_bounds(

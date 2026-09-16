@@ -23,13 +23,13 @@ given uncertain inputs described by probability distributions.
 ## Solution
 
 [ReliabilityScenario][gemseo.uncertainty.reliability.scenario.ReliabilityScenario]
-wraps a list of disciplines and an uncertain space
+wraps a list of disciplines and a random space
 into a [ReliabilityProblem][gemseo.uncertainty.reliability.problem.ReliabilityProblem].
 The workflow is:
 
 1. Create a
    [ReliabilityScenario][gemseo.uncertainty.reliability.scenario.ReliabilityScenario]
-   from a list of disciplines and an uncertain space.
+   from a list of disciplines and a random space.
 2. Define one or more events using comparison operators on disciplinary outputs.
 3. Execute the scenario with a reliability algorithm settings object,
    e.g. [OT_FORM_Settings][gemseo.uncertainty.reliability.openturns.form_settings.OT_FORM_Settings].
@@ -42,9 +42,7 @@ The workflow is:
 from __future__ import annotations
 
 from gemseo.problem.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
-    WingWeightUncertainSpace,
-)
+from gemseo.problem.uncertainty.wing_weight.random_space import WingWeightRandomSpace
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
 
@@ -55,16 +53,16 @@ from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
 # from 10 structural and aerodynamic parameters,
 # all modelled as independent uniform random variables:
 discipline = WingWeightDiscipline()
-uncertain_space = WingWeightUncertainSpace(
-    WingWeightUncertainSpace.UniformDistribution.OPENTURNS
+random_space = WingWeightRandomSpace(
+    WingWeightRandomSpace.UniformDistribution.OPENTURNS
 )
 
 # %%
 # ### 2. Create a reliability scenario
 #
 # [ReliabilityScenario][gemseo.uncertainty.reliability.scenario.ReliabilityScenario]
-# takes the list of disciplines and the uncertain space:
-scenario = ReliabilityScenario([discipline], uncertain_space)
+# takes the list of disciplines and the random space:
+scenario = ReliabilityScenario([discipline], random_space)
 
 # %%
 # ### 3. Define an event
@@ -111,7 +109,7 @@ event_result.raw_result
 # ## Summary
 #
 # - [ReliabilityScenario][gemseo.uncertainty.reliability.scenario.ReliabilityScenario]
-#   wraps disciplines and an uncertain space;
+#   wraps disciplines and a random space;
 # - [get_event_variables()][gemseo.uncertainty.reliability.scenario.ReliabilityScenario.get_event_variables]
 #   creates symbolic variables bound to disciplinary outputs;
 # - [add_event()][gemseo.uncertainty.reliability.scenario.ReliabilityScenario.add_event]

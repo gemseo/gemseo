@@ -284,7 +284,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         if pb_obj.enable_statistics:
             n_calls_start = pb_obj.n_calls
         design_space = DesignSpace()
-        design_space.extend(self._problem.design_space)
+        design_space.extend(self._problem.input_space)
         opt_problem = OptimizationProblem(design_space)
         for constraint in self._problem.constraints:
             opt_problem.add_constraint(constraint)
@@ -377,7 +377,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
         The goal is to maximize `t`
         w.r.t. the design variables `x` and the real variable `t`.
         """
-        design_space = deepcopy(self._problem.design_space)
+        design_space = deepcopy(self._problem.input_space)
         design_space.add_variable("t", value=0.0)
         self.__beta_sub_optim = OptimizationProblem(design_space)
         self.__beta_sub_optim.objective = ArrayFunction(
@@ -446,7 +446,7 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
 
         # Reset the design space if there are more than two objective, since two
         # successive values of beta are not necessarily close
-        self.__beta_sub_optim.reset(design_space=self.__n_obj != 2)
+        self.__beta_sub_optim.reset(input_space=self.__n_obj != 2)
         self.__beta_sub_optim.constraints.clear()
         for g in self._problem.constraints:
             wrapped_g = ConstraintFunctionWrapper(g)
@@ -847,6 +847,6 @@ class MNBI(BaseOptimizationLibrary[MNBI_Settings]):
             self._debug_results.to_hdf(self._settings.debug_file_path)
 
     def _log_result(
-        self, problem: OptimizationProblem, max_design_space_dimension_to_log: int
+        self, problem: OptimizationProblem, max_input_space_dimension_to_log: int
     ) -> None:
         logger.info("%s", problem.solution)

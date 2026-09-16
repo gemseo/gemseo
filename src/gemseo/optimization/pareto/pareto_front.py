@@ -152,7 +152,7 @@ class ParetoFront:
         # Get design variables group,
         # and reorder the columns to match the design space order.
         desvar_history = full_history.get_view(
-            variable_names=problem.design_space.variable_names
+            variable_names=problem.input_space.variable_names
         )
         ind_anchors = [
             full_history.index[np_all(desvar_history == x_anchor, axis=1)][0]
@@ -241,7 +241,7 @@ class ParetoFront:
         """
         n_iter = len(problem.database)
 
-        dv_history = zeros((n_iter, problem.design_space.dimension))
+        dv_history = zeros((n_iter, problem.input_space.dimension))
         obj_history = zeros((n_iter, problem.objective.dim))
         feasibility = zeros(n_iter)
 
@@ -320,7 +320,7 @@ class ParetoFront:
     def __str__(self) -> str:
         obj_names = [self._problem.standardized_objective_name]
         c_names = self._problem.constraints.get_names()
-        dv_names = self._problem.design_space
+        dv_names = self._problem.input_space
 
         msg = MultiLineString()
         msg.add(
@@ -350,12 +350,17 @@ class ParetoFront:
         msg.indent()
 
         # Prepare DataFrame for design space.
-        ds = self._problem.design_space
+        ds = self._problem.input_space
+        variables = ds.variables
         cols = MultiIndex.from_tuples([
-            (n, str(d + 1)) for n in ds for d in range(ds.get_size(n))
+            (name, str(d + 1))
+            for name, variable in variables.items()
+            for d in range(variable.size)
         ])
 
-        types = np_concat([[ds.get_type(var)] * ds.get_size(var) for var in ds])
+        types = np_concat([
+            [str(variable.type)] * variable.size for variable in variables.values()
+        ])
 
         df_lb = DataFrame(
             ds.get_lower_bounds().reshape(1, -1), columns=cols, index=["lower_bound"]

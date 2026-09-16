@@ -102,7 +102,12 @@ modules:
   gemseo.algos.optimization_history: gemseo.optimization.history
   gemseo.algos.optimization_problem: gemseo.optimization.problem
   gemseo.algos.optimization_result: gemseo.optimization.result
-  gemseo.algos.parameter_space: gemseo.space.parameter
+  # ParameterSpace itself has no direct replacement: it mixed deterministic and
+  # uncertain variables, which are now kept in separate DesignSpace and RandomSpace
+  # instances, so port a use of ParameterSpace by hand. This entry only redirects a
+  # module-level reference lacking a more specific `names:` entry to the package
+  # that plays the closest role, the one of RandomSpace.
+  gemseo.algos.parameter_space: gemseo.space.random
   gemseo.algos.parameter_space_factory: gemseo.space.factory
   gemseo.algos.pareto: gemseo.optimization.pareto
   gemseo.algos.pareto.utils: gemseo.optimization.pareto.util

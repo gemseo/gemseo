@@ -28,9 +28,7 @@ from gemseo.uncertainty.reliability.problem import ReliabilityProblem
 @pytest.mark.parametrize(
     ("greater", "expected"), [(None, 0.25), (True, 0.25), (False, 0.75)]
 )
-def test_sorm(
-    function, uncertain_space, approximation, greater, expected, optimizer_type
-):
+def test_sorm(function, random_space, approximation, greater, expected, optimizer_type):
     """Test OT_SORM."""
     kwargs = {}
     if approximation is not None:
@@ -41,7 +39,7 @@ def test_sorm(
         kwargs = {"settings": OT_SORM_Settings(**kwargs)}
 
     sorm = OT_SORM()
-    problem = ReliabilityProblem(uncertain_space)
+    problem = ReliabilityProblem(random_space)
     f = problem.get_event_variables(function)
     problem.add_event(
         f < 0.75 if greater is False else f > 0.75,

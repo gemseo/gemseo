@@ -83,7 +83,7 @@ def compare_approximations(
         **kwargs: The approximation options.
     """
     database = problem.database
-    n = problem.design_space.dimension
+    n = problem.input_space.dimension
     approx = approx_class(database)
     h_approx, _, _, _ = approx.build_approximation(
         funcname=problem.objective.name, **kwargs
@@ -99,13 +99,13 @@ def test_scaling() -> None:
 
     database = problem.database
     approx = HessianApproximation(database)
-    design_space = problem.design_space
+    design_space = problem.input_space
     _, _, _, _ = approx.build_approximation(
         funcname=problem.objective.name, scaling=True, design_space=design_space
     )
 
     approx = SR1Approx(database)
-    design_space = problem.design_space
+    design_space = problem.input_space
     h_approx_unscaled, _, _, _ = approx.build_approximation(
         funcname=problem.objective.name, scaling=True, design_space=design_space
     )

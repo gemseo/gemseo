@@ -308,6 +308,7 @@ package_dependency_allowlist: dict[str, frozenset[str]] = {
         "mda",
         "optimization",
         "scenario",
+        "space",
         "util",
     }),
     "linear": frozenset({"core", "linear", "util"}),
@@ -366,6 +367,8 @@ package_dependency_allowlist: dict[str, frozenset[str]] = {
         "optimization",
         "post",
         "scenario",
+        # EvaluationScenario imports gemseo.space.design directly.
+        "space",
         "util",
     }),
     "space": frozenset({"core", "optimization", "space", "uncertainty", "util"}),
@@ -376,6 +379,9 @@ package_dependency_allowlist: dict[str, frozenset[str]] = {
         "formulation",
         "post",
         "scenario",
+        # The sensitivity analyses and the reliability problems import
+        # gemseo.space.random directly.
+        "space",
         "uncertainty",
         "util",
     }),

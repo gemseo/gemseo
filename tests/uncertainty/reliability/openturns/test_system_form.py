@@ -20,7 +20,7 @@ import pytest
 from openturns import MultiFORMResult
 
 from gemseo.core.function.array_function import ArrayFunction
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -74,10 +74,10 @@ def function_2() -> ArrayFunction:
 
 
 @pytest.fixture(scope="module")
-def uncertain_space() -> ParameterSpace:
+def random_space() -> RandomSpace:
     """The uncertainty space defined by the random vector u=(u1,u2), ui ~ U([0,1])."""
-    parameter_space = ParameterSpace()
-    parameter_space.add_random_vector(
+    parameter_space = RandomSpace()
+    parameter_space.add_variable(
         "u", OTUniformDistribution_Settings(), OTUniformDistribution_Settings()
     )
     return parameter_space
@@ -116,7 +116,7 @@ def uncertain_space() -> ParameterSpace:
 def test_system_form(
     function_1,
     function_2,
-    uncertain_space,
+    random_space,
     settings,
     greater_1,
     greater_2,
@@ -129,7 +129,7 @@ def test_system_form(
     if settings is not None:
         kwargs["settings"] = OT_SystemFORM_Settings(optimizer=settings())
 
-    problem = ReliabilityProblem(uncertain_space)
+    problem = ReliabilityProblem(random_space)
     f1, f2 = problem.get_event_variables(function_1, function_2)
     e1 = f1 < 0.75 if greater_1 is False else f1 > 0.75
     e2 = f2 < 0.75 if greater_2 is False else f2 > 0.75
@@ -146,9 +146,9 @@ def test_system_form(
     assert raw_result.getGeneralisedReliabilityIndex() == reliability_index
 
 
-def test_type_errors(uncertain_space, f, snapshot):
+def test_type_errors(random_space, f, snapshot):
     """Check the type errors when events are wrong."""
     system_form = OT_SystemFORM()
-    problem = ReliabilityProblem(uncertain_space)
+    problem = ReliabilityProblem(random_space)
     with assert_exception(ValueError, snapshot):
         system_form.execute(problem)

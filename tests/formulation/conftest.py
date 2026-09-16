@@ -29,9 +29,17 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
 from gemseo.scenario.mdo import MDOScenario
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.scipy.uniform_settings import (
+    SPUniformDistribution_Settings,
+)
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from numpy import ndarray
+
+    from gemseo.space.design import DesignSpace
 
 
 def build_and_run_idf_scenario_with_constraints(
@@ -127,3 +135,39 @@ def generate_idf_scenario():
             passed to customize it.
     """
     return partial(build_and_run_idf_scenario_with_constraints)
+
+
+def _to_random_space(design_space: DesignSpace) -> RandomSpace:
+    """Mirror a design space as a random space of uniform variables.
+
+    Args:
+        design_space: The design space.
+
+    Returns:
+        A random space whose variables have the same names and sizes,
+        each component uniformly distributed over its bounds.
+    """
+    random_space = RandomSpace()
+    for name, variable in design_space.variables.items():
+        random_space.add_variable(
+            name,
+            *[
+                SPUniformDistribution_Settings(
+                    minimum=float(lower_bound), maximum=float(upper_bound)
+                )
+                for lower_bound, upper_bound in zip(
+                    variable.lower_bound, variable.upper_bound, strict=True
+                )
+            ],
+        )
+    return random_space
+
+
+@pytest.fixture
+def to_random_space() -> Callable[[DesignSpace], RandomSpace]:
+    """Mirror a design space as a random space of uniform variables.
+
+    Returns:
+        A function mirroring a design space as a random space of uniform variables.
+    """
+    return _to_random_space

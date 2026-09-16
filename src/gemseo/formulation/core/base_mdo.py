@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import TypeVar
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.formulation.core.base import BaseFormulation
@@ -33,9 +34,12 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.core.discipline.discipline import Discipline
+    from gemseo.space.base import BaseVariableSpace
+
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 
 
-class BaseMDOFormulation(BaseFormulation[T]):
+class BaseMDOFormulation(BaseFormulation[T, _SpaceT]):
     """Base class for formulating an MDO problem."""
 
     def create_objective(  # noqa: D102

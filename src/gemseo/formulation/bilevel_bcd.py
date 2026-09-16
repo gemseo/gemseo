@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import TypeVar
 
 from gemseo.formulation.bilevel import BiLevel
 from gemseo.formulation.bilevel_bcd_settings import BiLevelBCD_Settings
@@ -30,9 +31,12 @@ if TYPE_CHECKING:
     from typing import ClassVar
 
     from gemseo.mda.gauss_seidel import MDAGaussSeidel
+    from gemseo.space.base import BaseVariableSpace
+
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 
 
-class BiLevelBCD(BiLevel):
+class BiLevelBCD(BiLevel[_SpaceT]):
     """Block Coordinate Descent bi-level formulation.
 
     This formulation draws an optimization architecture

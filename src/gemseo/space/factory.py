@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-"""Factories of design and parameter spaces."""
+"""Factories of design and random spaces."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.space.design import DesignSpace
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 
 
 class DesignSpaceFactory(BaseFactory[DesignSpace]):
@@ -32,15 +32,15 @@ class DesignSpaceFactory(BaseFactory[DesignSpace]):
     _package_names: ClassVar[tuple[str, ...]] = ("gemseo.problem",)
 
 
-class ParameterSpaceFactory(BaseFactory[ParameterSpace]):
-    """A factory of parameter spaces."""
+class RandomSpaceFactory(BaseFactory[RandomSpace]):
+    """A factory of random spaces."""
 
-    _class: ClassVar[type[ParameterSpace]] = ParameterSpace
+    _class: ClassVar[type[RandomSpace]] = RandomSpace
     _package_names: ClassVar[tuple[str, ...]] = ("gemseo.problem.uncertainty",)
 
 
 design_space_factory: Final[DesignSpaceFactory] = DesignSpaceFactory()
 """The factory for `DesignSpace` objects."""
 
-parameter_space_factory: Final[ParameterSpaceFactory] = ParameterSpaceFactory()
-"""The factory for `ParameterSpace` objects."""
+random_space_factory: Final[RandomSpaceFactory] = RandomSpaceFactory()
+"""The factory for `RandomSpace` objects."""

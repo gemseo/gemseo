@@ -37,7 +37,7 @@ from gemseo.machine_learning import RBFRegressor_Settings
 from gemseo.machine_learning.regression.model import RBFRegressor
 from gemseo.machine_learning.regression.quality import R2Measure
 from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
-from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
+from gemseo.problem.uncertainty.wing_weight import WingWeightRandomSpace
 
 # %%
 # ## Step 1 — Define the reference model
@@ -48,9 +48,9 @@ from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
 # This model computes the weight of an aircraft wing from ten inputs,
 # such as the wing area and the paint weight.
 # You begin by instantiating the discipline and the input space,
-# the latter being an uncertain space comprising independent uniform variables.
+# the latter being a random space comprising independent uniform variables.
 discipline = WingWeightDiscipline()
-input_space = WingWeightUncertainSpace()
+input_space = WingWeightRandomSpace()
 
 # %%
 # ## Step 2 — Build a small training dataset

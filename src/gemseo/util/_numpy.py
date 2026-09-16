@@ -20,13 +20,13 @@ from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import dtype
+from numpy import frombuffer
+from numpy import ndarray
 from numpy import uint8
 from xxhash import xxh3_64_hexdigest
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
-    from numpy import ndarray
 
 complex128_dtype: Final = dtype("complex128")
 """The NumPy complex number type with double-precision imaginary and real parts."""
@@ -59,6 +59,59 @@ def convert_array_type(a: ndarray, dtype_: dtype, copy: bool = True) -> ndarray:
         The array converted to the specific type.
     """
     return (a.real if dtype_.kind == "c" else a).astype(dtype_, copy=copy)
+
+
+def _is_frozen(array: ndarray) -> bool:
+    """Return whether an array is a view of an immutable buffer.
+
+    Args:
+        array: The array.
+
+    Returns:
+        Whether the array is a view of an immutable buffer,
+        e.g. an array frozen by [freeze_array][gemseo.util._numpy.freeze_array].
+    """
+    base = array.base
+    while isinstance(base, ndarray):
+        base = base.base
+
+    return isinstance(base, bytes)
+
+
+def freeze_array(array: ndarray) -> ndarray:
+    """Return a read-only copy of an array, frozen over an immutable buffer.
+
+    Freezing an array in place would not be enough:
+    NumPy re-enables the writeable flag of an array owning its data,
+    so a caller could thaw the array handed out,
+    or any array it aliases through its `base`,
+    and mutate what the owner of the original array reads.
+    The array returned is a view of an immutable `bytes` buffer instead,
+    which owns the data, shares no memory with the original array
+    and refuses the writeable flag to every view of it.
+    An array that is such a view already needs no copy,
+    as its data cannot change,
+    and a view of it is returned,
+    so that the caller keeps no hand on the array object an owner stores.
+
+    NumPy still lets a caller reassign the shape, the strides and the data type
+    of a read-only array, and these belong to the array object itself,
+    so an owner hands out a view of the array it stores, e.g. `array.view()`,
+    rather than the array itself;
+    a reassignment then reaches the view of the caller only.
+
+    Args:
+        array: The array to freeze.
+
+    Returns:
+        The read-only array.
+    """
+    if _is_frozen(array):
+        return array.view()
+
+    # `tobytes` returns the components of the array in C order,
+    # whatever its contiguity, and `reshape` restores its shape.
+    return frombuffer(array.tobytes(), dtype=array.dtype).reshape(array.shape)
 
 
 def get_common_dtype(arrays: Iterable[ndarray]) -> dtype:

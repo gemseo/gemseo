@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.dataset.io_dataset import IODataset
     from gemseo.formulation.core.base_settings import BaseFormulationSettings
-    from gemseo.space.parameter import ParameterSpace
+    from gemseo.space.random import RandomSpace
     from gemseo.uncertainty.reliability.core.base_settings import (
         BaseReliabilityAlgorithmSettings,
     )
@@ -84,7 +84,7 @@ class BaseROSensitivityAnalysis(BaseGenericSensitivityAnalysis[T]):
     def compute_samples(
         self,
         disciplines: Collection[Discipline],
-        parameter_space: ParameterSpace,
+        random_space: RandomSpace,
         events: Mapping[str, Event],
         algo_settings: BaseReliabilityAlgorithmSettings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,

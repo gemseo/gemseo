@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 
 from gemseo.core.function.array_function import ArrayFunction
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
@@ -26,19 +26,19 @@ from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")
-def uncertain_space() -> ParameterSpace:
-    """The uncertain space."""
-    space = ParameterSpace()
-    space.add_random_variable("u", OTNormalDistribution_Settings())
+def random_space() -> RandomSpace:
+    """The random space."""
+    space = RandomSpace()
+    space.add_variable("u", OTNormalDistribution_Settings())
     return space
 
 
-def test_problem(uncertain_space):
+def test_problem(random_space):
     """Test ReliabilityProblem."""
     function_1 = ArrayFunction(sum, name="f1")
     function_2 = ArrayFunction(sum, name="f2")
 
-    problem = ReliabilityProblem(uncertain_space)
+    problem = ReliabilityProblem(random_space)
     f1, f2 = problem.get_event_variables(function_1, function_2)
     problem.add_event(f1 > 0, event_name="a")
     problem.add_event((f2 > 0) & (f1 > 0))
@@ -47,12 +47,20 @@ def test_problem(uncertain_space):
     assert list(problem.observables) == [function_1, function_2]
 
 
-def test_event(uncertain_space):
+def test_problem_from_random_space():
+    """Check that a random space is used as is."""
+    space = RandomSpace()
+    space.add_variable("u", OTNormalDistribution_Settings())
+    problem = ReliabilityProblem(space)
+    assert problem.input_space is space
+
+
+def test_event(random_space):
     """An Event is stored directly when added."""
     function_1 = ArrayFunction(sum, name="f1")
     function_2 = ArrayFunction(sum, name="f2")
 
-    problem = ReliabilityProblem(uncertain_space)
+    problem = ReliabilityProblem(random_space)
     f1, f2 = problem.get_event_variables(function_1, function_2)
     problem.add_event((f1 < 3) & (f2 > 4), event_name="a")
 
@@ -72,20 +80,20 @@ def test_event(uncertain_space):
     assert list(problem.observables) == [function_1, function_2]
 
 
-def test_event_without_function(uncertain_space, snapshot):
+def test_event_without_function(random_space, snapshot):
     """Test ReliabilityProblem raises when function field is None."""
-    problem = ReliabilityProblem(uncertain_space)
+    problem = ReliabilityProblem(random_space)
     f = problem.get_event_variables("f")
     with assert_exception(ValueError, snapshot):
         problem.add_event(f > 0, event_name="a")
 
 
-def test_string_representation(uncertain_space):
+def test_string_representation(random_space):
     """Test ReliabilityProblem._get_string_representation."""
     function_1 = ArrayFunction(sum, name="f1")
     function_2 = ArrayFunction(sum, name="f2")
 
-    problem = ReliabilityProblem(uncertain_space)
+    problem = ReliabilityProblem(random_space)
     f1, f2 = problem.get_event_variables(function_1, function_2)
 
     problem.add_event(f1 > 0, event_name="a")

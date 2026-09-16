@@ -37,7 +37,7 @@ from __future__ import annotations
 
 from gemseo import sample_disciplines
 from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
-from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
+from gemseo.problem.uncertainty.wing_weight import WingWeightRandomSpace
 from gemseo.uncertainty.statistic import EmpiricalStatistics
 
 # %%
@@ -45,12 +45,12 @@ from gemseo.uncertainty.statistic import EmpiricalStatistics
 #
 # Sample the
 # [WingWeightDiscipline][gemseo.problem.uncertainty.wing_weight.discipline.WingWeightDiscipline]
-# discipline over its uncertain space using Monte Carlo sampling:
+# discipline over its random space using Monte Carlo sampling:
 discipline = WingWeightDiscipline()
-parameter_space = WingWeightUncertainSpace()
+random_space = WingWeightRandomSpace()
 dataset = sample_disciplines(
     [discipline],
-    parameter_space,
+    random_space,
     "Ww",
     formulation_name="DisciplinaryOpt",
     algo_name="OT_MONTE_CARLO",

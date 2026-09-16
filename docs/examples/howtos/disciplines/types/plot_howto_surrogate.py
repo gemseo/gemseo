@@ -38,7 +38,7 @@ from gemseo.discipline import SurrogateDiscipline
 from gemseo.doe import OT_OPT_LHS_Settings
 from gemseo.machine_learning import RBFRegressor_Settings
 from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
-from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
+from gemseo.problem.uncertainty.wing_weight import WingWeightRandomSpace
 
 # %%
 # ### 1. Define the reference model.
@@ -48,7 +48,7 @@ from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
 # defined in [this page][gemseo.problem.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
-input_space = WingWeightUncertainSpace()
+input_space = WingWeightRandomSpace()
 
 # %%
 # ### 2. Build a small training dataset

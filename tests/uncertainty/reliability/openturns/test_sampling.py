@@ -71,7 +71,7 @@ from gemseo.uncertainty.reliability.problem import ReliabilityProblem
 @pytest.mark.parametrize(
     ("greater", "expected"), [(None, 0.25), (True, 0.25), (False, 0.75)]
 )
-def test_sampling(function, uncertain_space, settings, greater, expected):
+def test_sampling(function, random_space, settings, greater, expected):
     """Test OT_Sampling."""
     sampling = (
         OT_MC()
@@ -82,7 +82,7 @@ def test_sampling(function, uncertain_space, settings, greater, expected):
     if settings is not None:
         kwargs["settings"] = settings
 
-    problem = ReliabilityProblem(uncertain_space)
+    problem = ReliabilityProblem(random_space)
     f = problem.get_event_variables(function)
     problem.add_event(
         f < 0.75 if greater is False else f > 0.75,

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import pytest
 
+from gemseo.util.string import _convert_camel_case_to_lower_case_words
 from gemseo.util.string import convert_camel_case_to_screaming_snake_case
 
 
@@ -43,3 +44,19 @@ from gemseo.util.string import convert_camel_case_to_screaming_snake_case
 def test_convert_camel_case_to_screaming_snake_case(name: str, expected: str) -> None:
     """Verify the conversion of a camel case string to screaming snake case."""
     assert convert_camel_case_to_screaming_snake_case(name) == expected
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        # The names of the classes of the spaces of variables,
+        # from which the titles and the error messages of a space are deduced.
+        ("DesignSpace", "design space"),
+        ("RandomSpace", "random space"),
+        # Acronym kept together, then split from the following word.
+        ("IODataset", "io dataset"),
+    ],
+)
+def test_convert_camel_case_to_lower_case_words(name: str, expected: str) -> None:
+    """Verify the conversion of a camel case string to lower case words."""
+    assert _convert_camel_case_to_lower_case_words(name) == expected

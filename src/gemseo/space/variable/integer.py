@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import Final
 
 from numpy import array
 from numpy import atleast_1d
@@ -30,14 +31,21 @@ from numpy import logical_and
 from numpy import mod
 
 from gemseo.space.variable._formatting import format_components
-from gemseo.space.variable.base import BaseVariable
-from gemseo.space.variable.base import ComponentDType
 from gemseo.space.variable.base import DataType
+from gemseo.space.variable.interval import BaseIntervalVariable
+from gemseo.space.variable.numeric import ComponentDType
+from gemseo.util._numpy import freeze_array
 
 if TYPE_CHECKING:
-    from gemseo.space.variable.base import BoundArray
+    from gemseo.space.variable.numeric import BoundArray
     from gemseo.util.typing import BooleanArray
     from gemseo.util.typing import NumberArray
+
+_int64_limit: Final[float] = 2.0**63
+"""The magnitude beyond which a number does not fit in a 64-bit integer.
+
+A 64-bit integer ranges from $-2^{63}$ included to $2^{63}$ excluded.
+"""
 
 
 def _get_integer_mask(value: NumberArray | complex) -> BooleanArray:
@@ -69,20 +77,22 @@ def _find_non_integer_indices(value: NumberArray) -> set[int]:
     return set(range(len(value))) - set(_get_integer_mask(value).nonzero()[0])
 
 
-class IntegerVariable(BaseVariable):
+class IntegerVariable(BaseIntervalVariable):
     """A variable whose components are integers."""
 
     component_type: ClassVar[ComponentDType] = int64
 
     type: ClassVar[DataType] = DataType.INTEGER
 
-    def compute_normalization_mask(  # noqa: D102
+    def get_normalization_mask(  # noqa: D102
         self, enable_integer_normalization: bool
     ) -> BooleanArray:
         if enable_integer_normalization:
-            return logical_and(self.lower_bound != -inf, self.upper_bound != inf)
+            return freeze_array(
+                logical_and(self.lower_bound != -inf, self.upper_bound != inf)
+            )
 
-        return full(self.size, False)
+        return freeze_array(full(self.size, False))
 
     def check_finite_bound_components(  # noqa: D102
         self, bound: BoundArray, bound_prefix: str
@@ -96,6 +106,26 @@ class IntegerVariable(BaseVariable):
             msg = (
                 f"The following {bound_prefix} bound component"
                 f"{'s are' if plural else ' is'} neither integer nor infinite "
+                "while the variable is of type integer: "
+                f"{format_components(bound, indices)}."
+            )
+            raise ValueError(msg)
+
+        # An integer array already holds components that fit in a 64-bit integer,
+        # and comparing it with a float would round its extreme components.
+        if bound.dtype.kind == "i":
+            return
+
+        # Check whether the finite components of the bound fit in a 64-bit integer;
+        # NumPy would cast a larger one silently to the smallest 64-bit integer.
+        indices = (
+            ~isinf(bound) & ((bound < -_int64_limit) | (bound >= _int64_limit))
+        ).nonzero()[0]
+        if len(indices):
+            plural = len(indices) > 1
+            msg = (
+                f"The following {bound_prefix} bound component"
+                f"{'s are' if plural else ' is'} outside the range of a 64-bit integer "
                 "while the variable is of type integer: "
                 f"{format_components(bound, indices)}."
             )

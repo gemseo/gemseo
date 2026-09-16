@@ -50,10 +50,10 @@ from gemseo.util.pickle import to_pickle
 # Run the analysis a first time to produce input-output samples,
 # then save them to disk:
 discipline = IshigamiDiscipline()
-uncertain_space = IshigamiSpace()
+random_space = IshigamiSpace()
 
 analysis = MorrisAnalysis()
-samples = analysis.compute_samples([discipline], uncertain_space, n_samples=0)
+samples = analysis.compute_samples([discipline], random_space, n_samples=0)
 analysis.compute_indices()
 
 to_pickle(samples, "morris_samples.p")

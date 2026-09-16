@@ -31,7 +31,7 @@ from matplotlib import pyplot as plt
 from numpy import array
 
 from gemseo import create_discipline
-from gemseo import create_parameter_space
+from gemseo import create_random_space
 from gemseo import sample_disciplines
 from gemseo.machine_learning import create_regression_model
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
@@ -53,15 +53,15 @@ discipline = create_discipline(
     name="f",
 )
 # %%
-# and you seek to approximate it over the input space
-input_space = create_parameter_space()
-input_space.add_random_variable("x", OTUniformDistribution_Settings())
+# and you seek to approximate it over the random space
+random_space = create_random_space()
+random_space.add_variable("x", OTUniformDistribution_Settings())
 
 # %%
 # To do this,
 # you create a training dataset with 6 equispaced points:
 training_dataset = sample_disciplines(
-    [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=10
+    [discipline], random_space, "y", algo_name="PYDOE_FULLFACT", n_samples=10
 )
 
 # %%
@@ -94,7 +94,7 @@ jacobian_value
 # Of course,
 # you can see that the quadratic model is no good at all here:
 test_dataset = sample_disciplines(
-    [discipline], input_space, "y", algo_name="PYDOE_FULLFACT", n_samples=100
+    [discipline], random_space, "y", algo_name="PYDOE_FULLFACT", n_samples=100
 )
 input_data = test_dataset.get_view(variable_names=model.input_names).to_numpy()
 reference_output_data = test_dataset.get_view(variable_names="y").to_numpy().ravel()

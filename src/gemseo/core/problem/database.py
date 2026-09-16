@@ -19,7 +19,7 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 #        :author: Benoit Pauwels - Stacked data management
 #               (e.g. iteration index)
-"""A database of function calls and design variables."""
+"""A database of function calls and input values."""
 
 from __future__ import annotations
 
@@ -57,6 +57,7 @@ from gemseo.core.problem._hdf_database import HDFDatabase
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.optimization_dataset import OptimizationDataset
 from gemseo.space.design import DesignSpace
+from gemseo.space.variable import data_type_to_numpy_type
 from gemseo.util._compatibility.numpy import numpy_greater_than_2
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.ggobi_export import save_data_arrays_to_xml
@@ -70,6 +71,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
     from gemseo.dataset.optimization_metadata import OptimizationMetadata
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealArray
     from gemseo.util.typing import StrPath
@@ -180,13 +182,15 @@ class Database(Mapping):
     __hdf_database: HDFDatabase
     """The handler to export the database to a HDF file."""
 
-    __input_space: DesignSpace
+    __input_space: BaseVariableSpace
     """The input space."""
 
     __listener_output_names: list[str]
     """The names of the output variables whose values are stored by listeners."""
 
-    def __init__(self, name: str = "", input_space: DesignSpace | None = None) -> None:
+    def __init__(
+        self, name: str = "", input_space: BaseVariableSpace | None = None
+    ) -> None:
         """
         Args:
             name: The name to be given to the database.
@@ -209,14 +213,18 @@ class Database(Mapping):
         return self.__listener_output_names
 
     @property
-    def input_space(self) -> DesignSpace:
+    def input_space(self) -> BaseVariableSpace:
         """The input space."""
-        if self and not self.__input_space:
-            self.__input_space.add_variable(
+        input_space = self.__input_space
+        if self and isinstance(input_space, DesignSpace) and not input_space:
+            # The space can only be described from the stored input values
+            # if a variable can be added from its name and size only;
+            # e.g. a RandomSpace also requires a probability distribution.
+            input_space.add_variable(
                 self.default_input_name, size=self.get_last_n_x_vect(1)[0].size
             )
 
-        return self.__input_space
+        return input_space
 
     @property
     def last_item(self) -> DatabaseValueType:
@@ -455,7 +463,7 @@ class Database(Mapping):
             The input value at this iteration.
         """
         iteration_index = self.__get_index(iteration)
-        # The database dictionary uses the input design variables as keys for the
+        # The database dictionary uses the input values as keys for the
         # function values. Here we convert it to an iterator that returns the
         # key located at the required iteration using the islice method from
         # itertools, walking from the nearest end of the dictionary.
@@ -880,7 +888,7 @@ class Database(Mapping):
                 If empty, use all the functions.
             input_names: The names of the input variables to name the columns of the
                 `x_vect` when `with_x_vect` is `True`. These names must match the
-                dimension of the design vector.
+                dimension of the input value.
                 If empty, the i-th column is named `"x_i"`.
             add_missing_tag: If `True`,
                 add the tag specified in `missing_tag`
@@ -898,7 +906,7 @@ class Database(Mapping):
 
         Raises:
             ValueError: If the number of names does not match the dimension of the
-                design vector.
+                input value.
         """
         f_names = function_names
         if not f_names:
@@ -1096,13 +1104,16 @@ class Database(Mapping):
         # Add database inputs
         input_history = array(self.get_x_vect_history())
         input_space = self.input_space
-        name_to_size = input_space.variable_sizes
+        input_variables = input_space.variables
+        name_to_size = {
+            name: variable.size for name, variable in input_variables.items()
+        }
         name_to_type = {
             (input_group, name, component): dtype(
-                input_space.variable_types_to_dtypes[type_]
+                data_type_to_numpy_type[variable.type]
             )
-            for name, type_ in input_space.variable_types.items()
-            for component in range(input_space.get_size(name))
+            for name, variable in input_variables.items()
+            for component in range(variable.size)
         }
         positions = []
         offset = 1 if issubclass(dataset_class, OptimizationDataset) else 0

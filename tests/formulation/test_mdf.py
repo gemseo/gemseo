@@ -135,7 +135,7 @@ def test_reset(sellar_with_2d_array):
     scenario.execute(SLSQP_Settings(max_iter=5))
     final_current_value = design_space.get_current_value()
 
-    scenario.formulation.problem.reset(design_space=True)
+    scenario.formulation.problem.reset(input_space=True)
     assert_allclose(design_space.get_current_value(), initial_current_value)
 
     scenario.execute(SLSQP_Settings(max_iter=5))

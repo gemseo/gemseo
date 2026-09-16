@@ -1,0 +1,132 @@
+# serializer version: 1
+# name: test_bounds_are_read_only
+  'assignment destination is read-only'
+# ---
+# name: test_bounds_are_read_only.1
+  'assignment destination is read-only'
+# ---
+# name: test_bounds_are_read_only.2
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_derived_fields_cannot_be_passed[distribution]
+  '''
+  1 validation error for RandomVariable
+    Value error, distribution is read-only; the input of a RandomVariable is distribution_settings. [type=value_error, input_value={'distribution_settings':...0),), 'distribution': 3}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_derived_fields_cannot_be_passed[foo]
+  '''
+  1 validation error for RandomVariable
+  foo
+    Extra inputs are not permitted [type=extra_forbidden, input_value=3, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/extra_forbidden
+  '''
+# ---
+# name: test_derived_fields_cannot_be_passed[lower_bound]
+  '''
+  1 validation error for RandomVariable
+    Value error, lower_bound is read-only; the input of a RandomVariable is distribution_settings. [type=value_error, input_value={'distribution_settings':....0),), 'lower_bound': 3}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_derived_fields_cannot_be_passed[size]
+  '''
+  1 validation error for RandomVariable
+    Value error, size is read-only; the input of a RandomVariable is distribution_settings. [type=value_error, input_value={'distribution_settings':...sigma=2.0),), 'size': 3}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_derived_fields_cannot_be_passed[type]
+  '''
+  1 validation error for RandomVariable
+    Value error, type is read-only; the input of a RandomVariable is distribution_settings. [type=value_error, input_value={'distribution_settings':...sigma=2.0),), 'type': 3}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_derived_fields_cannot_be_passed[upper_bound]
+  '''
+  1 validation error for RandomVariable
+    Value error, upper_bound is read-only; the input of a RandomVariable is distribution_settings. [type=value_error, input_value={'distribution_settings':....0),), 'upper_bound': 3}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_empty_settings
+  '''
+  1 validation error for RandomVariable
+  distribution_settings
+    Tuple should have at least 1 item after validation, not 0 [type=too_short, input_value=(), input_type=tuple]
+      For further information visit https://errors.pydantic.dev/X.Y/v/too_short
+  '''
+# ---
+# name: test_immutability[distribution]
+  '''
+  1 validation error for RandomVariable
+  distribution
+    Instance is frozen [type=frozen_instance, input_value=3, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_immutability[distribution_settings]
+  '''
+  1 validation error for RandomVariable
+  distribution_settings
+    Instance is frozen [type=frozen_instance, input_value=3, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_immutability[lower_bound]
+  '''
+  1 validation error for RandomVariable
+  lower_bound
+    Instance is frozen [type=frozen_instance, input_value=3, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_immutability[size]
+  '''
+  1 validation error for RandomVariable
+  size
+    Instance is frozen [type=frozen_instance, input_value=3, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_immutability[type]
+  '''
+  1 validation error for RandomVariable
+  type
+    Instance is frozen [type=frozen_instance, input_value=3, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_immutability[upper_bound]
+  '''
+  1 validation error for RandomVariable
+  upper_bound
+    Instance is frozen [type=frozen_instance, input_value=3, input_type=int]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_missing_settings
+  '''
+  1 validation error for RandomVariable
+  distribution_settings
+    Field required [type=missing, input_value={}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/missing
+  '''
+# ---
+# name: test_mixed_libraries
+  '''
+  1 validation error for RandomVariable
+  distribution_settings
+    Value error, A random space cannot mix probability distributions based on different libraries; got 'OpenTURNS' and 'SciPy'. [type=value_error, input_value=(SPNormalDistribution_Set...0.5, mu=0.0, sigma=1.0)), input_type=tuple]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_model_copy_with_derived_field
+  '''
+  1 validation error for RandomVariable
+    Value error, size is read-only; the input of a RandomVariable is distribution_settings. [type=value_error, input_value={'distribution_settings':...aximum=1.0)), 'size': 5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

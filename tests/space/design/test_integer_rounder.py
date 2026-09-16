@@ -20,16 +20,16 @@ import pytest
 from numpy import array
 from numpy.testing import assert_array_equal
 
-from gemseo.space.design._integer_rounder import IntegerRounder
-from gemseo.space.design._variables import Variables
+from gemseo.space._design.integer_rounder import IntegerRounder
+from gemseo.space._design.variables import DesignVariables
 from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import IntegerVariable
 
 
 @pytest.fixture
-def variables() -> Variables:
+def variables() -> DesignVariables:
     """A variables with one float variable and one integer variable."""
-    variables = Variables()
+    variables = DesignVariables()
     variables["x"] = ContinuousVariable(size=1, lower_bound=0.0, upper_bound=2.0)
     variables["y"] = IntegerVariable(size=2, lower_bound=0, upper_bound=10)
     return variables
@@ -42,7 +42,7 @@ def test_has_integer_true(variables) -> None:
 
 def test_has_integer_false() -> None:
     """Check that has_integer is False when there is no integer variable."""
-    variables = Variables()
+    variables = DesignVariables()
     variables["x"] = ContinuousVariable(size=1, lower_bound=0.0, upper_bound=2.0)
     assert not IntegerRounder(variables).has_integer
 
@@ -67,7 +67,7 @@ def test_round_no_copy(variables) -> None:
 
 def test_round_no_integer() -> None:
     """Check that round is a no-op when there is no integer variable."""
-    variables = Variables()
+    variables = DesignVariables()
     variables["x"] = ContinuousVariable(size=1, lower_bound=0.0, upper_bound=2.0)
     integer_rounder = IntegerRounder(variables)
     full_value = array([0.6])

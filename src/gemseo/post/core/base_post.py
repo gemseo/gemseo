@@ -273,14 +273,13 @@ class BasePost(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The names of the components of the design variables.
         """
-        input_space = self._dataset.misc["input_space"]
+        input_variables = self._dataset.misc["input_space"].variables
         if not variables:
-            variables = input_space.variable_names
+            variables = input_variables
 
         design_variable_names = []
-        design_variable_sizes = input_space.variable_sizes
         for variable in variables:
-            design_variable_size = design_variable_sizes[variable]
+            design_variable_size = input_variables[variable].size
             design_variable_names.extend([
                 repr_variable(
                     variable, index, size=design_variable_size, simplify=simplify

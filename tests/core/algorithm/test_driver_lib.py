@@ -47,8 +47,8 @@ from gemseo.optimization.scipy_local.scipy_local import ScipyOpt
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
+from gemseo.space._core.rendering import render_string
 from gemseo.space.design import DesignSpace
-from gemseo.space.design._view import render_string
 from gemseo.space.util import get_value_and_bounds
 from gemseo.util.pydantic import create_model
 from gemseo.util.testing.helper import assert_exception
@@ -83,7 +83,7 @@ def optimization_problem():
     design_space.dimension = 2
     problem = mock.Mock()
     problem.dimension = 2
-    problem.design_space = design_space
+    problem.input_space = design_space
     problem.functions = Functions()
     return problem
 
@@ -143,13 +143,13 @@ def test_progress_bar_update(caplog, kwargs, expected) -> None:
         )
     test_driver._problem.evaluate_functions(
         array([0.0, 0.0, 0.0]),
-        design_vector_is_normalized=False,
-        preprocess_design_vector=False,
+        input_value_is_normalized=False,
+        preprocess_input_value=False,
     )
     test_driver._problem.evaluate_functions(
         array([1.0, 0.0, 0.0]),
-        design_vector_is_normalized=False,
-        preprocess_design_vector=False,
+        input_value_is_normalized=False,
+        preprocess_input_value=False,
     )
     assert expected in caplog.text
 
@@ -182,7 +182,7 @@ def test_get_value_and_bounds_vects_normalized_as_ndarrays(
 ) -> None:
     """Check the getting of the normalized initial values and bounds."""
     assert get_value_and_bounds(
-        driver_library._problem.design_space, True, as_dict=as_dict
+        driver_library._problem.input_space, True, as_dict=as_dict
     ) == (
         pytest.approx(x0),
         lower_bounds,
@@ -199,7 +199,7 @@ def test_get_value_and_bounds_vects_non_normalized(
 ) -> None:
     """Check the getting of the non-normalized initial values and bounds."""
     assert get_value_and_bounds(
-        driver_library._problem.design_space, False, as_dict=as_dict
+        driver_library._problem.input_space, False, as_dict=as_dict
     ) == (
         x0,
         lower_bounds,
@@ -220,17 +220,18 @@ def test_clear_listeners(name):
 
 
 @pytest.mark.parametrize("max_dimension", [1, 3])
-def test_max_design_space_dimension_to_log(max_dimension, caplog):
+def test_max_input_space_dimension_to_log(max_dimension, caplog):
     """Check the cap on the dimension of a design space to log."""
     problem = Power2()
-    initial_space_string = render_string(
-        problem.design_space, use_html=False, title="   over the design space"
-    ).replace("\n", "\n      ")
+    table = render_string(problem.input_space, use_html=False).split("\n", 1)[1]
+    initial_space_string = "   over the design space:\n      " + table.replace(
+        "\n", "\n      "
+    )
     CustomDOE().execute(
         problem,
         settings=CustomDOE_Settings(
             samples=full((1, 3), pow(0.9, 1.0 / 3.0)),
-            max_design_space_dimension_to_log=max_dimension,
+            max_input_space_dimension_to_log=max_dimension,
         ),
     )
 
@@ -249,7 +250,7 @@ def test_max_design_space_dimension_to_log(max_dimension, caplog):
         (
             "gemseo.core.algorithm.base_driver_library",
             logging.INFO,
-            render_string(problem.design_space, use_html=False)
+            render_string(problem.input_space, use_html=False)
             .replace("Design space", "      Design space")
             .replace("\n", "\n         "),
         )

@@ -161,7 +161,7 @@ class ObjectiveToleranceTester(BaseToleranceTester):
 
 @dataclass
 class DesignToleranceTester(BaseToleranceTester):
-    """A tolerance tester for the design_vector."""
+    """A tolerance tester for the input_value."""
 
     termination_criterion: TerminationCriterion = field(default=XtolReached, init=False)
 

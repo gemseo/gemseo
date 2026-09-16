@@ -1,0 +1,179 @@
+# serializer version: 1
+# name: test_add_copula_already_has_copula
+  "The random variable 'y' has already a copula."
+# ---
+# name: test_add_copula_dimension_mismatch
+  '''
+  1 validation error for OTJointDistribution_Settings
+    Value error, The dimension of the block-independent copula at position 0 must be equal to the number of components (1); got 2. [type=value_error, input_value={'marginal_settings': [OT...ns=2 values=[1,0,0,1])]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_add_copula_empty_names
+  'A copula must cover at least one random variable.'
+# ---
+# name: test_add_copula_errors
+  "There is no variable name 'z'."
+# ---
+# name: test_add_copula_without_dependency_support
+  'SPJointDistribution does not support dependent variables.'
+# ---
+# name: test_add_variable_duplicate_name
+  "The variable 'x' already exists."
+# ---
+# name: test_add_variable_mixed_libraries
+  "A random space cannot mix probability distributions based on different libraries; got 'OpenTURNS' and 'SciPy'."
+# ---
+# name: test_add_variable_without_settings
+  'The random variable z is defined by the settings of the marginal probability distribution of each of its components, hence at least one.'
+# ---
+# name: test_empty_space_error[compute_samples]
+  'The random space is empty.'
+# ---
+# name: test_empty_space_error[transform_vect]
+  'The random space is empty.'
+# ---
+# name: test_empty_space_error[untransform_vect]
+  'The random space is empty.'
+# ---
+# name: test_filter_dimensions_error_keeps_copula_and_dimension
+  "Dimension -5 of variable 'x' does not exist."
+# ---
+# name: test_filter_dimensions_errors[x-dimensions0]
+  "Dimension 2 of variable 'x' does not exist."
+# ---
+# name: test_filter_dimensions_errors[x-dimensions1]
+  "Dimensions 2 and 3 of variable 'x' do not exist."
+# ---
+# name: test_filter_dimensions_errors[x-dimensions2]
+  "A variable cannot be empty; got no component for 'x'."
+# ---
+# name: test_filter_dimensions_errors[x-dimensions4]
+  "Dimension -1 of variable 'x' does not exist."
+# ---
+# name: test_filter_dimensions_errors[x-dimensions5]
+  "The dimensions of variable 'x' cannot be repeated."
+# ---
+# name: test_filter_dimensions_errors[z-dimensions3]
+  "No variable named 'z'."
+# ---
+# name: test_get_pretty_table
+  '''
+  +------+-------------------------------+
+  | name |          distribution         |
+  +------+-------------------------------+
+  | x    | Uniform(lower=0.0, upper=1.0) |
+  | x    | Uniform(lower=0.0, upper=1.0) |
+  | y    |   Normal(mu=1.0, sigma=2.0)   |
+  +------+-------------------------------+
+  '''
+# ---
+# name: test_get_pretty_table_of_an_empty_space
+  '''
+  +------+
+  | name |
+  +------+
+  +------+
+  '''
+# ---
+# name: test_get_pretty_table_with_index
+  '''
+  +------+-------------------------------+
+  | name |          distribution         |
+  +------+-------------------------------+
+  | x[0] | Uniform(lower=0.0, upper=1.0) |
+  | x[1] | Uniform(lower=0.0, upper=1.0) |
+  | y    |   Normal(mu=1.0, sigma=2.0)   |
+  +------+-------------------------------+
+  '''
+# ---
+# name: test_get_pretty_table_with_transformation
+  '''
+  +------+---------------------------+--------------------+
+  | name |    initial distribution   | transformation(x)= |
+  +------+---------------------------+--------------------+
+  | x    | Normal(mu=1.0, sigma=2.0) |         x          |
+  | y    | Normal(mu=0.0, sigma=1.0) |       (x)+2        |
+  +------+---------------------------+--------------------+
+  '''
+# ---
+# name: test_remove_all_variables
+  'The random space is empty.'
+# ---
+# name: test_rename_variable_collision
+  "Cannot rename 'x' to 'y': 'y' is already the name of another variable."
+# ---
+# name: test_repr
+  '''
+  Random space: u
+  +------+-------------------------------+
+  | Name |          Distribution         |
+  +------+-------------------------------+
+  | x[0] | Uniform(lower=0.0, upper=1.0) |
+  | x[1] | Uniform(lower=0.0, upper=1.0) |
+  | y    |   Normal(mu=1.0, sigma=2.0)   |
+  +------+-------------------------------+
+  '''
+# ---
+# name: test_str
+  '''
+  Random space: u
+  +------+-------------------------------+
+  | Name |          Distribution         |
+  +------+-------------------------------+
+  | x[0] | Uniform(lower=0.0, upper=1.0) |
+  | x[1] | Uniform(lower=0.0, upper=1.0) |
+  | y    |   Normal(mu=1.0, sigma=2.0)   |
+  +------+-------------------------------+
+  '''
+# ---
+# name: test_str_with_block_independent_copulas
+  '''
+  Random space: u
+  +------+---------------------------+
+  | Name |        Distribution       |
+  +------+---------------------------+
+  | a    | Normal(mu=1.0, sigma=2.0) |
+  | b    | Normal(mu=1.0, sigma=2.0) |
+  | c    | Normal(mu=1.0, sigma=2.0) |
+  | d    | Normal(mu=1.0, sigma=2.0) |
+  +------+---------------------------+
+  Copulas: (a, c) -> NormalCopula, (b, d) -> NormalCopula
+  '''
+# ---
+# name: test_str_with_copula
+  '''
+  Random space: u
+  +------+-------------------------------+
+  | Name |          Distribution         |
+  +------+-------------------------------+
+  | x[0] | Uniform(lower=0.0, upper=1.0) |
+  | x[1] | Uniform(lower=0.0, upper=1.0) |
+  | y    |   Normal(mu=1.0, sigma=2.0)   |
+  +------+-------------------------------+
+  Copulas: (x, y) -> NormalCopula
+  '''
+# ---
+# name: test_str_with_transformation
+  '''
+  Random space:
+  +------+---------------------------+--------------------+
+  | Name |    Initial distribution   | Transformation(x)= |
+  +------+---------------------------+--------------------+
+  | x    | Normal(mu=1.0, sigma=2.0) |         x          |
+  | y    | Normal(mu=0.0, sigma=1.0) |       (x)+2        |
+  +------+---------------------------+--------------------+
+  '''
+# ---
+# name: test_unpickle_parameter_space
+  'This state is the one of a ParameterSpace, a class removed in favor of RandomSpace, which stores its probability distributions differently. Rebuild the random space from the settings of the marginal probability distributions of its random variables.'
+# ---
+# name: test_untransform_vect_0d
+  'Expected an array of shape (..., 3); got ().'
+# ---
+# name: test_untransform_vect_check
+  'The components of x_vect must be in [0, 1].'
+# ---
+# name: test_untransform_vect_wrong_size
+  'Expected an array of shape (..., 3); got (2,).'
+# ---

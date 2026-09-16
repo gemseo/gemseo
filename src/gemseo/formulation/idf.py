@@ -24,9 +24,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import TypeVar
+from typing import cast
 
 from numpy import abs as np_abs
 from numpy import concatenate
+from numpy import isfinite
 from numpy import zeros
 
 from gemseo.core.coupling_structure import CouplingStructure
@@ -37,19 +40,26 @@ from gemseo.formulation._idf_chain import IDFChain
 from gemseo.formulation.core.base_mdo import BaseMDOFormulation
 from gemseo.formulation.idf_settings import IDF_Settings
 from gemseo.mda.chain import MDAChain
+from gemseo.space.design import DesignSpace
+from gemseo.util.pydantic import create_model
 from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from collections.abc import Sequence
 
     from gemseo.core.discipline import Discipline
     from gemseo.core.discipline.process_discipline import ProcessDiscipline
+    from gemseo.core.problem.evaluation import EvaluationProblem
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import RealArray
 
 logger = logging.getLogger(__name__)
 
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 
-class IDF(BaseMDOFormulation[IDF_Settings]):
+
+class IDF(BaseMDOFormulation[IDF_Settings, _SpaceT]):
     r"""The Individual Discipline Feasible (IDF) formulation.
 
     The IDF formulation expresses an MDO problem as
@@ -107,6 +117,38 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
     or when `n_processes > 1`.
     """
 
+    def __init__(
+        self,
+        problem: EvaluationProblem[_SpaceT],
+        disciplines: Sequence[Discipline],
+        settings: IDF_Settings | None = None,
+    ) -> None:
+        """
+        Args:
+            problem: The evaluation problem
+                to which the evaluation functions will be attached.
+            disciplines: The disciplines
+                from which the evaluation functions will be created.
+            settings: The settings of the formulation.
+                If `None`, use the default settings.
+
+        Raises:
+            ValueError: When `start_at_equilibrium` is `True`
+                and the input space is not a `DesignSpace`.
+        """  # noqa: D205 D212
+        settings_ = create_model(self.settings_class, settings_model=settings)
+        input_space = problem.input_space
+        if settings_.start_at_equilibrium and not isinstance(input_space, DesignSpace):
+            msg = (
+                "IDF formulation: "
+                "starting the target coupling variables at equilibrium "
+                "requires a DesignSpace as input space; "
+                f"got a {input_space.__class__.__name__}."
+            )
+            raise ValueError(msg)
+
+        super().__init__(problem, disciplines, settings=settings_)
+
     def _create_multidisciplinary_process(self) -> None:
         self.__coupling_structure = CouplingStructure(self.disciplines)
         if not self._settings.include_weak_coupling_targets:
@@ -133,9 +175,9 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
         if self._settings.start_at_equilibrium:
             self._compute_equilibrium()
 
-    def _update_design_space(self) -> None:
+    def _update_input_space(self) -> None:
         strong_couplings = self.__coupling_structure.strong_couplings
-        design_space = self.problem.design_space
+        design_space = self.problem.input_space
         if not self._settings.include_weak_coupling_targets:
             for coupling in self.__coupling_structure.all_couplings:
                 if coupling in design_space and coupling not in strong_couplings:
@@ -158,7 +200,7 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
 
     def _compute_equilibrium(self) -> None:
         """Perform an MDA to bring the target coupling variables at equilibrium."""
-        design_space = self.problem.design_space
+        design_space = cast("DesignSpace", self.problem.input_space)
 
         # Perform the MDA.
         mda_chain = MDAChain(
@@ -178,23 +220,23 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
         """Update the default input values of the top-level disciplines.
 
         Raises:
-            ValueError: When a coupling variable is not defined in the design space.
+            ValueError: When a coupling variable is not defined in the input space.
         """
         couplings = set(
             self.__coupling_structure.all_couplings
             if self._settings.include_weak_coupling_targets
             else self.__coupling_structure.strong_couplings
         )
-        variable_names = self.problem.design_space
+        variable_names = self.problem.input_space
         if not couplings.issubset(variable_names):
             missing_variables = couplings.difference(variable_names)
             msg = (
                 "IDF formulation: "
                 f"the variables {pretty_repr(missing_variables)} "
-                f"must be added to the design space."
+                "must be added to the input space."
             )
             raise ValueError(msg)
-        self._set_default_input_values_from_design_space()
+        self._set_default_input_values_from_space()
 
     def get_top_level_disciplines(  # noqa:D102
         self, include_sub_formulations: bool = False
@@ -217,13 +259,31 @@ class IDF(BaseMDOFormulation[IDF_Settings]):
 
         Returns:
             The concatenation of the normalization factors for all output couplings.
+
+        Raises:
+            ValueError: When the bound range of a coupling variable is not finite.
         """
-        get_upper_bound = self.problem.design_space.get_upper_bound
-        get_lower_bound = self.problem.design_space.get_lower_bound
-        return concatenate([
-            np_abs(get_upper_bound(name) - get_lower_bound(name))
+        variables = self.problem.input_space.variables
+        name_to_factor = {
+            name: np_abs(variables[name].upper_bound - variables[name].lower_bound)
             for name in output_couplings
-        ])
+        }
+        unbounded_names = [
+            name
+            for name, factor in name_to_factor.items()
+            if not isfinite(factor).all()
+        ]
+        if unbounded_names:
+            msg = (
+                "IDF formulation: "
+                f"the variables {pretty_repr(unbounded_names)} "
+                "have a non-finite bound range, "
+                "so the consistency constraints cannot be scaled; "
+                "use the setting normalize_constraints=False."
+            )
+            raise ValueError(msg)
+
+        return concatenate(list(name_to_factor.values()))
 
     def _build_consistency_constraints(self) -> None:
         """Create the consistency constraints and add them to the optimization problem.

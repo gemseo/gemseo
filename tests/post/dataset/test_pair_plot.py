@@ -30,9 +30,7 @@ from gemseo.post.dataset.pair_plot import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 from gemseo.problem.dataset.iris import create_iris_dataset
 from gemseo.problem.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
-    WingWeightUncertainSpace,
-)
+from gemseo.problem.uncertainty.wing_weight.random_space import WingWeightRandomSpace
 from gemseo.util.testing.helper import assert_exception
 
 from .utils import custom_trend
@@ -140,7 +138,7 @@ def test_trend_surface(snapshot):
 def test_large_number_of_variables(snapshot_matplotlib) -> None:
     """Check that subplots are not shrunk to near-zero
     when n exceeds the default fig size."""
-    space = WingWeightUncertainSpace()
+    space = WingWeightRandomSpace()
     discipline = WingWeightDiscipline()
     dataset = sample_disciplines(
         [discipline], space, ["Ww"], algo_settings_model=MC_Settings(n_samples=100)

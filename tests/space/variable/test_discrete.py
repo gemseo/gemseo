@@ -22,6 +22,7 @@ import pytest
 from numpy import array
 from numpy import float64
 from numpy import inf
+from numpy import int32
 from numpy import nan
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
@@ -80,7 +81,7 @@ def test_with_a_single_choice() -> None:
     """Check a discrete variable with a single choice."""
     variable = DiscreteVariable(choices=[42])
     assert_array_equal(variable.lower_bound, variable.upper_bound)
-    assert_array_equal(variable.compute_default_value(), array([42.0]))
+    assert_array_equal(variable.get_default_value(), array([42.0]))
 
 
 @pytest.mark.parametrize(
@@ -108,8 +109,64 @@ def test_rejections(kwargs, snapshot) -> None:
 def test_normalization_mask() -> None:
     """Check that a discrete variable is never normalized."""
     variable = DiscreteVariable(choices=[1, 2])
-    assert_array_equal(variable.compute_normalization_mask(False), array([False]))
-    assert_array_equal(variable.compute_normalization_mask(True), array([False]))
+    assert_array_equal(variable.get_normalization_mask(False), array([False]))
+    assert_array_equal(variable.get_normalization_mask(True), array([False]))
+
+
+@pytest.mark.parametrize(
+    ("attribute_name", "value"),
+    [("shape", (3, 1)), ("strides", (0,)), ("dtype", int32)],
+)
+def test_choices_are_handed_out_as_views(attribute_name, value) -> None:
+    """Check that the choices are handed out as a view of what the variable stores.
+
+    NumPy lets a caller reassign the shape, the strides and the data type
+    of a read-only array, and these belong to the array object itself,
+    so such a reassignment must reach the array of the caller only.
+    """
+    variable = DiscreteVariable(choices=[1, 2, 3])
+    choices = variable.choices
+    assert choices is not variable.choices
+
+    setattr(choices, attribute_name, value)
+
+    assert variable.choices.shape == (3,)
+    assert variable.choices.strides == (8,)
+    assert variable.choices.dtype == float64
+    assert_array_equal(variable.get_default_value(), array([1.0]))
+    assert_array_equal(variable.lower_bound, array([1.0]))
+    assert_array_equal(variable.upper_bound, array([3.0]))
+
+
+def test_variable_built_from_the_choices_of_another_does_not_share_them() -> None:
+    """Check that a variable built from the choices of another shares no array."""
+    variable = DiscreteVariable(choices=[1, 2, 3])
+    choices = variable.choices
+    other = DiscreteVariable(choices=choices)
+
+    choices.shape = (3, 1)
+
+    assert variable.choices.shape == (3,)
+    assert other.choices.shape == (3,)
+    assert_array_equal(other.choices, array([1.0, 2.0, 3.0]))
+
+
+def test_normalization_mask_is_read_only(snapshot) -> None:
+    """Check that the normalization mask shared by the discrete variables is frozen.
+
+    Every discrete variable hands out a view of the same mask,
+    so a writeable mask would let one caller change the policy of all of them,
+    and so would the reassignment of the shape of the mask stored.
+    """
+    variable = DiscreteVariable(choices=[1, 2])
+    mask = variable.get_normalization_mask(True)
+    assert not mask.flags.writeable
+    with assert_exception(ValueError, snapshot):
+        mask[0] = True
+
+    mask.shape = (1, 1)
+    assert variable.get_normalization_mask(True).shape == (1,)
+    assert DiscreteVariable(choices=[3]).get_normalization_mask(True).shape == (1,)
 
 
 @pytest.mark.parametrize(
@@ -129,8 +186,22 @@ def test_default_value() -> None:
     """Check that the default value of a discrete variable is its first value."""
     variable = DiscreteVariable(choices=[6, 2, 4])
     # Not the center 4.0 of the derived bounds.
-    assert_array_equal(variable.compute_default_value(), array([2.0]))
-    assert variable.compute_default_value().dtype == float64
+    assert_array_equal(variable.get_default_value(), array([2.0]))
+    assert variable.get_default_value().dtype == float64
+
+
+def test_filter_components() -> None:
+    """Check that a discrete variable keeping its only component is an identity."""
+    variable = DiscreteVariable(choices=[2, 4])
+    assert variable.filter_components([0]) is variable
+
+
+@pytest.mark.parametrize("components", [[], [0, 0], [1], [1, 2], [0, 1]])
+def test_filter_components_rejects_other_selections(components, snapshot) -> None:
+    """Check that a discrete variable can only keep its single component."""
+    variable = DiscreteVariable(choices=[2, 4])
+    with assert_exception(ValueError, snapshot):
+        variable.filter_components(components)
 
 
 @pytest.mark.parametrize(

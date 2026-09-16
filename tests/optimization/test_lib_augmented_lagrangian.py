@@ -244,7 +244,7 @@ def test_solve_sub_problem_adds_constraints_with_rosenbrock(
     rosenbrock_opt_problem, optimizer
 ):
     """Test that sub_problem.constraints.append is executed when constraints match."""
-    x_init = rosenbrock_opt_problem.design_space.get_current_value()
+    x_init = rosenbrock_opt_problem.input_space.get_current_value()
     options = {
         "normalize_design_space": True,
         "sub_algorithm_settings": SLSQP_Settings(),
@@ -306,7 +306,7 @@ def test_solve_sub_problem_triggers_update_options_callback(
     _ = optimizer._BaseAugmentedLagrangian__solve_sub_problem(
         lambda0={"c_eq": 0.0},
         mu0={},
-        x_init=rosenbrock_opt_problem.design_space.get_current_value(),
+        x_init=rosenbrock_opt_problem.input_space.get_current_value(),
     )
 
     assert optimizer._settings.sub_algorithm_settings.normalize_design_space is True

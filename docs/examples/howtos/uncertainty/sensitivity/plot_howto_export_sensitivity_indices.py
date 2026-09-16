@@ -48,9 +48,9 @@ from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 # on the Ishigami problem
 # (see [Compute sensitivity indices][] for the detailed workflow):
 discipline = IshigamiDiscipline()
-uncertain_space = IshigamiSpace()
+random_space = IshigamiSpace()
 analysis = CorrelationAnalysis()
-analysis.compute_samples([discipline], uncertain_space, n_samples=1000)
+analysis.compute_samples([discipline], random_space, n_samples=1000)
 analysis.compute_indices()
 
 # %%

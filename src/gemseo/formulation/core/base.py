@@ -56,15 +56,16 @@ if TYPE_CHECKING:
     from gemseo.core.grammar.json import JSONGrammar
     from gemseo.core.problem.evaluation import EvaluationProblem
     from gemseo.scenario.mdo import MDOScenario
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import StrKeyMapping
 
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseFormulationSettings)
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 
 
-class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
+class BaseFormulation(Generic[T, _SpaceT], metaclass=ABCGoogleDocstringInheritanceMeta):
     """Base class for formulating a multidisciplinary evaluation problem.
 
     A formulation is responsible
@@ -79,7 +80,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     default_scenario_result_class_name: ClassVar[str] = ScenarioResult.__name__
     """The name of the [ScenarioResult][gemseo.scenario.scenario_result.scenario_result.ScenarioResult] class to be used for post-processing."""  # noqa: E501
 
-    problem: EvaluationProblem
+    problem: EvaluationProblem[_SpaceT]
     """The evaluation problem."""
 
     extra_constraint_functions: list[ArrayFunction]
@@ -87,7 +88,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
     in addition to those manually created by the user with `create_constraint`."""
 
     variable_sizes: dict[str, int]
-    """The sizes of the design variables and differentiated inputs substitutes."""
+    """The sizes of the input variables and differentiated inputs substitutes."""
 
     __disciplines: tuple[Discipline, ...]
     """The original disciplines."""
@@ -100,7 +101,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
     def __init__(
         self,
-        problem: EvaluationProblem,
+        problem: EvaluationProblem[_SpaceT],
         disciplines: Sequence[Discipline],
         settings: T | None = None,
     ) -> None:
@@ -118,9 +119,12 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         self.__disciplines = tuple(disciplines)
         self.__check_disciplines()
         self.problem = problem
-        self.variable_sizes = problem.design_space.variable_sizes.copy()
+        self.variable_sizes = {
+            name: variable.size
+            for name, variable in problem.input_space.variables.items()
+        }
         self._create_multidisciplinary_process()
-        self._update_design_space()
+        self._update_input_space()
 
     @abstractmethod
     def create_objective(
@@ -143,7 +147,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         discipline: BaseDiscipline | None = None,
         name: str = "",
     ) -> FunctionFromDiscipline:
-        """Create a function mapping from the design space to the output space.
+        """Create a function mapping from the input space to the output space.
 
         Args:
             output_names: The name of the output(s) defining the output space.
@@ -153,7 +157,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
                 If empty, use the default one.
 
         Returns:
-            The function mapping from the design space to the output space.
+            The function mapping from the input space to the output space.
         """
         function = FunctionFromDiscipline(output_names, self, discipline=discipline)
         if function.discipline_adapter.is_linear:
@@ -170,8 +174,8 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         """Create the elements of the multidisciplinary process."""
 
     @abstractmethod
-    def _update_design_space(self) -> None:
-        """Update the design space."""
+    def _update_input_space(self) -> None:
+        """Update the input space."""
 
     @property
     def disciplines(self) -> tuple[Discipline, ...]:
@@ -194,9 +198,9 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             check_disciplines_consistency(disciplines, False, True)
 
     @property
-    def design_space(self) -> DesignSpace:
-        """The design space on which the formulation is applied."""
-        return self.problem.design_space
+    def input_space(self) -> _SpaceT:
+        """The input space on which the formulation is applied."""
+        return self.problem.input_space
 
     @abstractmethod
     def create_constraint(
@@ -265,7 +269,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         into multiple levels of disciplines.
         The top level disciplines map
         from the
-        [design_space][gemseo.formulation.core.base.BaseFormulation.design_space]
+        [input_space][gemseo.formulation.core.base.BaseFormulation.input_space]
         to the objective, constraint and observable spaces.
         They can be composed of
         both user disciplines and process disciplines added by the formulation,
@@ -297,7 +301,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             For each variable,
             a 3-length tuple
-            whose first dimensions are its first and last indices in the design space
+            whose first dimensions are its first and last indices in the input space
             and last dimension is its size.
         """
         start = end = 0
@@ -328,7 +332,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             x_masked: The vector or matrix to unmask.
             all_data_names: The names of the variables
                 whose values the full array will concatenate.
-                If empty, use the names of all the design variables.
+                If empty, use the names of all the input variables.
 
         Returns:
             The vector or matrix related to the input mask.
@@ -337,7 +341,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             ValueError: when the sizes of variables are inconsistent.
         """
         if not all_data_names:
-            all_data_names = self.problem.design_space.variable_names
+            all_data_names = list(self.problem.input_space.variables)
 
         name_to_size = self.variable_sizes
         mask_size = sum(name_to_size[name] for name in masking_data_names)
@@ -446,7 +450,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
             masking_data_names: The names of the kept data.
             x_vect: The vector to mask.
             all_data_names: The set of all names.
-                If empty, use the design variables stored in the design space.
+                If empty, use the variables stored in the input space.
 
         Returns:
             The masked version of the input vector.
@@ -470,7 +474,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         Args:
             masking_data_names: The names of the kept data.
             all_data_names: The set of all names.
-                If empty, use the design variables stored in the design space.
+                If empty, use the variables stored in the input space.
 
         Returns:
             The masked version of the input vector.
@@ -478,11 +482,13 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         Raises:
             ValueError: If the sizes or the sizes of variables are inconsistent.
         """
-        design_space = self.problem.design_space
+        design_space = self.problem.input_space
         if not all_data_names:
             all_data_names = design_space
 
-        variable_sizes = {var: design_space.get_size(var) for var in design_space}
+        variable_sizes = {
+            name: variable.size for name, variable in design_space.variables.items()
+        }
         total_size = sum(variable_sizes[var] for var in masking_data_names)
         indices = self._get_dv_indices(all_data_names, variable_sizes)
         x_mask = empty(total_size, dtype="int")
@@ -504,27 +510,27 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         return x_mask
 
     def _remove_unused_variables(self) -> None:
-        """Remove variables in the design space that are not discipline inputs."""
-        design_space = self.problem.design_space
+        """Remove variables in the input space that are not discipline inputs."""
+        input_space = self.problem.input_space
         disciplines = self.get_top_level_disciplines()
         all_inputs = {var for disc in disciplines for var in disc.io.input_grammar}
-        for name in design_space.variable_names:
+        for name in list(input_space.variables):
             if name not in all_inputs:
-                design_space.remove_variable(name)
+                input_space.remove_variable(name)
                 logger.info(
-                    "Variable %s was removed from the Design Space, it is not an input"
+                    "Variable %s was removed from the input space, it is not an input"
                     " of any discipline.",
                     name,
                 )
 
-    def _remove_sub_scenario_dv_from_ds(self) -> None:
-        """Remove the sub scenarios design variables from the design space."""
+    def _remove_sub_scenario_variables_from_space(self) -> None:
+        """Remove the design variables of the sub-scenarios from the input space."""
         for scenario in self.get_sub_scenarios():
-            for var in scenario.formulation.design_space:
-                if var in self.problem.design_space:
-                    self.problem.design_space.remove_variable(var)
+            for var in scenario.formulation.input_space:
+                if var in self.problem.input_space:
+                    self.problem.input_space.remove_variable(var)
 
-    # TODO: API: remove; use formulation.design_space.variable_names instead.
+    # TODO: API: remove; use list(formulation.input_space.variables) instead.
     def get_optim_variable_names(self) -> list[str]:
         """Get the optimization unknown names to be provided to the optimizer.
 
@@ -535,7 +541,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
             The optimization variable names.
         """
-        return self.problem.design_space.variable_names
+        return list(self.problem.input_space.variables)
 
     def get_x_names_of_disc(
         self,
@@ -549,7 +555,7 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
         Returns:
              The names of the design variables.
         """
-        optim_variable_names = self.problem.design_space.variable_names
+        optim_variable_names = self.problem.input_space.variables
         input_names = discipline.io.input_grammar
         return [name for name in optim_variable_names if name in input_names]
 
@@ -563,12 +569,17 @@ class BaseFormulation(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta):
 
         return [disc for disc in self.disciplines if isinstance(disc, MDOScenario)]
 
-    def _set_default_input_values_from_design_space(self) -> None:
-        """Initialize the top level disciplines from the design space."""
-        if not self.problem.design_space.has_current_value:
-            return
+    def _set_default_input_values_from_space(self) -> None:
+        """Initialize the top level disciplines from the input space.
 
-        current_x = self.problem.design_space.get_current_value(as_dict=True)
+        The default input values are read from the reference value of the input
+        space, so that they need not be set discipline by discipline and follow
+        the definition of the space, e.g. the probability distributions of a
+        random space.
+        """
+        current_x = self.problem.input_space.reference_value
+        if not current_x:
+            return
 
         for discipline in self.get_top_level_disciplines():
             input_names = discipline.io.input_grammar

@@ -363,7 +363,7 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
     def _reset_problem(self) -> None:
         """Reset the problem attached to the scenario."""
         self.scenario.formulation.problem.reset(
-            design_space=self._reset_x0_before_exec, database=False, preprocessing=False
+            input_space=self._reset_x0_before_exec, database=False, preprocessing=False
         )
 
     def _post_run(self) -> None:
@@ -417,8 +417,8 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             no_db_no_norm=True, observable_names=observable_names
         )
         problem.evaluate_functions(
-            design_vector=design_point,
-            design_vector_is_normalized=False,
+            input_value=design_point,
+            input_value_is_normalized=False,
             output_functions=output_functions or None,
             jacobian_functions=jacobian_functions or None,
         )

@@ -109,7 +109,7 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
         self, problem: OptimizationProblem
     ) -> tuple[Any, Any, Any, Any, Any, Any, Any]:
         # Get the starting point and bounds
-        x_0, l_b, u_b = get_value_and_bounds(problem.design_space, False)
+        x_0, l_b, u_b = get_value_and_bounds(problem.input_space, False)
         # Replace infinite bounds with None
         l_b = [val if isfinite(val) else None for val in l_b]
         u_b = [val if isfinite(val) else None for val in u_b]
@@ -142,18 +142,18 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
             bounds=bounds,
             method=self.ALGORITHM_INFOS[self._algo_name].internal_algorithm_name,
             options=filtered_settings,
-            integrality=problem.design_space.get_integer_mask(),
+            integrality=problem.input_space.get_integer_mask(),
         )
 
         # N.B. SciPy tolerance on bounds is higher than the DesignSpace one
-        x_opt = problem.design_space.project_into_bounds(linprog_result.x)
+        x_opt = problem.input_space.project_into_bounds(linprog_result.x)
         output_functions, jacobian_functions = problem.get_functions(
             jacobian_names=(),
             no_db_no_norm=True,
         )
         output_opt, jac_opt = problem.evaluate_functions(
-            design_vector=x_opt,
-            design_vector_is_normalized=False,
+            input_value=x_opt,
+            input_value_is_normalized=False,
             output_functions=output_functions or None,
             jacobian_functions=jacobian_functions or None,
         )
@@ -185,9 +185,9 @@ class ScipyLinprog(BaseOptimizationLibrary[BaseSciPyLinProgSettings]):
         is_feasible = problem.constraints.is_point_feasible(output_opt)
         return OptimizationResult(
             x_0=x_0,
-            x_0_as_dict=problem.design_space.convert_array_to_dict(x_0),
+            x_0_as_dict=problem.input_space.convert_array_to_dict(x_0),
             x_opt=x_opt,
-            x_opt_as_dict=problem.design_space.convert_array_to_dict(x_opt),
+            x_opt_as_dict=problem.input_space.convert_array_to_dict(x_opt),
             f_opt=f_opt,
             objective_name=problem.objective.name,
             status=result.status,

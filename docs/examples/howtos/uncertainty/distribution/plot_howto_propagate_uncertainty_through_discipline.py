@@ -17,57 +17,60 @@
 
 ## Problem
 
-You have a parameter space that mixes deterministic design variables
-and uncertain random variables,
-and you want to evaluate a discipline at many sampled input points
+You have a random space describing the random inputs of a discipline
+and you want to evaluate this discipline at many sampled input points
 to study how uncertainty in the inputs propagates to the outputs.
 
 ## Solution
 
 [sample_disciplines()][gemseo.sample_disciplines]
 runs a Design of Experiments (DOE) over a
-[ParameterSpace][gemseo.space.parameter.ParameterSpace]
+[RandomSpace][gemseo.space.random.RandomSpace]
 and returns an [IODataset][gemseo.dataset.io_dataset.IODataset]
 that you can then visualize or pass to a statistics tool.
-Use
-[extract_uncertain_space()][gemseo.space.parameter.ParameterSpace.extract_uncertain_space]
-to restrict the DOE to the random variables only.
+The DOE is generated in the unit hypercube
+and mapped to the random space by its iso-probabilistic transformation,
+so the samples follow the probability distributions of the random variables.
 
 ## Step-by-step guide
 """
 
 from __future__ import annotations
 
+from gemseo import create_random_space
 from gemseo import sample_disciplines
 from gemseo.discipline import AnalyticDiscipline
+from gemseo.doe import PYDOE_LHS_Settings
 from gemseo.post.dataset import PairPlot
-from gemseo.space import ParameterSpace
 from gemseo.uncertainty.distribution import SPNormalDistribution_Settings
+from gemseo.uncertainty.distribution import SPUniformDistribution_Settings
 
 # %%
-# ### 1. Set up the discipline and parameter space
+# ### 1. Set up the discipline and random space
 #
 # Create a simple analytic discipline:
 discipline = AnalyticDiscipline({"z": "x+y"})
 
 # %%
-# Build a parameter space with one deterministic variable `x`
-# and one uncertain variable `y`:
-parameter_space = ParameterSpace()
-parameter_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0)
-parameter_space.add_random_variable(
-    "y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0)
+# Build a random space with two random variables:
+random_space = create_random_space()
+random_space.add_variable(
+    "x", SPUniformDistribution_Settings(minimum=-2.0, maximum=2.0)
 )
-parameter_space
+random_space.add_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+random_space
 
 # %%
-# ### 2. Sample the discipline over the full parameter space
+# ### 2. Sample the discipline over the random space
 #
-# Run a Latin Hypercube Sampling (LHS) DOE over the mixed parameter space
+# Run a Latin Hypercube Sampling (LHS) DOE over the random space
 # and collect inputs and outputs in an
 # [IODataset][gemseo.dataset.io_dataset.IODataset]:
 dataset = sample_disciplines(
-    [discipline], parameter_space, "z", algo_name="PYDOE_LHS", n_samples=100
+    [discipline],
+    random_space,
+    "z",
+    algo_settings_model=PYDOE_LHS_Settings(n_samples=100),
 )
 dataset.describe()
 
@@ -79,30 +82,14 @@ dataset.describe()
 PairPlot(dataset).execute(save=False, show=True)
 
 # %%
-# ### 4. Restrict propagation to uncertain variables only
-#
-# Extract the uncertain subspace to sample only the random variables,
-# keeping deterministic variables at their nominal values:
-uncertain_space = parameter_space.extract_uncertain_space()
-dataset_uncertain = sample_disciplines(
-    [discipline], uncertain_space, "z", algo_name="PYDOE_LHS", n_samples=100
-)
-dataset_uncertain.describe()
-
-# %%
 # ## Summary
 #
 # - [sample_disciplines()][gemseo.sample_disciplines]
-#   runs a DOE over a [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+#   runs a DOE over a [RandomSpace][gemseo.space.random.RandomSpace]
 #   and returns an [IODataset][gemseo.dataset.io_dataset.IODataset];
-# - pass the full mixed space to sample both deterministic and uncertain variables together,
-#   or pass the uncertain subspace to fix deterministic variables at their nominal values;
-# - [extract_uncertain_space()][gemseo.space.parameter.ParameterSpace.extract_uncertain_space]
-#   restricts the space to its random variables;
+# - the samples follow the probability distributions of the random variables,
+#   because the DOE is mapped from the unit hypercube
+#   by the iso-probabilistic transformation of the space;
 # - [PairPlot][gemseo.post.dataset.pair_plot.PairPlot]
 #   visualizes the joint distribution of inputs and outputs.
 #
-# ## One step further
-#
-# To compute mean, variance, or quantiles from this dataset,
-# see [Compute empirical statistics from a dataset][].

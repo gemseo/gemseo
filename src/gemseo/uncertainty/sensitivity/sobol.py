@@ -67,10 +67,11 @@ if TYPE_CHECKING:
     from gemseo.doe.core.base_doe_settings import BaseDOESettings
     from gemseo.formulation.core.base_settings import BaseFormulationSettings
     from gemseo.scenario.backup_settings import BackupSettings
-    from gemseo.space.parameter import ParameterSpace
+    from gemseo.space.random import RandomSpace
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
     from gemseo.uncertainty.sensitivity.core.base import SecondOrderIndicesType
     from gemseo.util.string import VariableType
+    from gemseo.util.typing import MutableStrKeyMapping
     from gemseo.util.typing import RealArray
     from gemseo.util.typing import StrPath
 
@@ -185,7 +186,7 @@ class SobolAnalysis(
     def compute_samples(
         self,
         disciplines: Collection[Discipline],
-        parameter_space: ParameterSpace,
+        random_space: RandomSpace,
         n_samples: int,
         output_names: str | Iterable[str] = (),
         algo_settings: BaseDOESettings | None = None,
@@ -215,6 +216,11 @@ class SobolAnalysis(
              for a small budget `n_samples`,
              the user can choose to set `compute_second_order` to `False`
              to ensure a better estimation of the first- and total-order indices.
+
+        Note:
+             The random space is stored in `dataset.misc["random_space"]`,
+             unchanged,
+             so that the control-variate path can re-sample it.
         """  # noqa: D205, D212, D415
         if algo_settings is None:
             algo_settings = doe_library_factory.create_settings(self.default_driver)
@@ -232,7 +238,7 @@ class SobolAnalysis(
 
         super().compute_samples(
             disciplines,
-            parameter_space,
+            random_space,
             n_samples,
             output_names=output_names,
             algo_settings=algo_settings,
@@ -242,7 +248,7 @@ class SobolAnalysis(
 
         dataset = self.dataset
         dataset: IODataset
-        n_inputs = parameter_space.dimension
+        n_inputs = random_space.dimension
         dataset.misc["use_pick_and_freeze"] = use_pick_and_freeze
         if use_pick_and_freeze:
             # If eval_second_order is set to False,
@@ -277,11 +283,31 @@ class SobolAnalysis(
         self.__output_standard_deviations = {
             k: v**0.5 for k, v in output_variances.items()
         }
-        dataset.misc["parameter_space"] = parameter_space
+        dataset.misc["random_space"] = random_space
         dataset.misc["n_inputs"] = n_inputs
         dataset.misc["output_variances"] = output_variances
         dataset.misc["output_standard_deviations"] = self.__output_standard_deviations
         return dataset
+
+    @staticmethod
+    def __read_random_space(
+        misc: MutableStrKeyMapping,
+    ) -> RandomSpace:
+        """Read the random space stored in the miscellaneous data of the dataset.
+
+        Args:
+            misc: The miscellaneous data of the dataset.
+
+        Returns:
+            The random space used to generate the samples.
+        """
+        # The random space was stored under "parameter_space" before the
+        # renaming of this key; read it so that a misc mapping populated
+        # against the previous name still works.
+        # A dataset pickled by a previous version is not covered: the
+        # ParameterSpace it holds no longer unpickles, see
+        # RandomSpace.__setstate__.
+        return misc.get("random_space", misc.get("parameter_space"))
 
     @property
     def output_variances(self) -> dict[str, RealArray]:
@@ -341,7 +367,7 @@ class SobolAnalysis(
         cv_analysis = self.__class__()
         cv_analysis.compute_samples(
             [cv.discipline],
-            parameter_space=dataset.misc["parameter_space"],
+            random_space=self.__read_random_space(dataset.misc),
             n_samples=n_samples,
             output_names=self._output_names,
             compute_second_order=False,

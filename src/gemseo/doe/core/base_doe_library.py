@@ -30,12 +30,11 @@ from multiprocessing import parent_process
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Final
 from typing import TypeVar
 
 from numpy import array
 from numpy import dtype
-from numpy import hstack
-from numpy import where
 
 from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 from gemseo.core.algorithm.base_driver_library import DriverDescription
@@ -46,13 +45,13 @@ from gemseo.core.problem.evaluation import EvaluationType
 from gemseo.core.serializable import Serializable
 from gemseo.doe.core.base_doe_settings import BaseDOESettings
 from gemseo.optimization.result import OptimizationResult
+from gemseo.space.base import BaseVariableSpace
 from gemseo.space.design import DesignSpace
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.variable import data_type_to_numpy_type
 from gemseo.util.hashable_ndarray import HashableNdarray
 from gemseo.util.lock import synchronized
 from gemseo.util.pydantic import create_model
 from gemseo.util.seeder import Seeder
-from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.core.function.array_function import ArrayFunction
@@ -82,25 +81,25 @@ class DOEAlgorithmDescription(DriverDescription):
     """The Pydantic model for the DOE library settings."""
 
 
-class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
+class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
     """Base class for libraries of DOEs."""
 
     samples: RealArray
-    """The design vector samples in the design space.
+    """The samples in the input space.
 
-    The design space variable types stored as dtype metadata.
+    The variable types of the input space are stored as dtype metadata.
 
     To access those in the unit hypercube, use
     [unit_samples][gemseo.doe.core.base_doe_library.BaseDOELibrary.unit_samples].
     """
 
     unit_samples: RealArray
-    """The design vector samples projected in the unit hypercube.
+    """The samples projected in the unit hypercube.
 
-    In the case of a design space of dimension $d$,
+    In the case of an input space of dimension $d$,
     the unit hypercube is $[0,1]^d$.
 
-    To access those in the design space,
+    To access those in the input space,
     use [samples][gemseo.doe.core.base_doe_library.BaseDOELibrary.samples].
     """
 
@@ -111,7 +110,7 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     """A seed generator."""
 
     _use_unit_hypercube: ClassVar[bool] = True
-    """Whether the algorithms use a unit hypercube to generate the design samples."""
+    """Whether the algorithms use a unit hypercube to generate the samples."""
 
     _result_class: ClassVar[type[OptimizationResult]] = OptimizationResult
     """The class used to present the result when solving an optimization problem."""
@@ -121,6 +120,13 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
 
     __jacobian_functions: list[ArrayFunction] | None
     """The functions to compute the Jacobians, if any."""
+
+    __UNIT_HYPERCUBE_VARIABLE: Final[str] = "__unit_hypercube"
+    """The name of the variable spanning the unit hypercube sampled by dimension.
+
+    This name is not a valid name for a variable of a caller,
+    so that a setting referring to a variable name cannot match it.
+    """
 
     _attr_not_to_serialize: ClassVar[set[str]] = {"_lock"}
 
@@ -157,26 +163,22 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         super()._pre_run(problem)
         problem.stop_if_nan = False
 
-        design_space = problem.design_space
-        integer_normalization_enabled = self.__enable_integer_variables_normalization(
-            design_space
-        )
-        self.__check_unnormalization_capability(design_space)
+        input_space = problem.input_space
+        # The space configures itself for its own mapping from the unit hypercube,
+        # as in sample_space().
+        with input_space._prepare_untransformation(self._use_unit_hypercube):
+            self.unit_samples = self._generate_unit_samples(input_space)
+            logger.debug(
+                (
+                    "The DOE algorithm %s of %s has generated %s samples "
+                    "in the input unit hypercube of dimension %s."
+                ),
+                self._algo_name,
+                self.__class__.__name__,
+                *self.unit_samples.shape,
+            )
+            self.samples = self.__convert_unit_samples_to_samples(problem)
 
-        self.unit_samples = self._generate_unit_samples(design_space)
-        logger.debug(
-            (
-                "The DOE algorithm %s of %s has generated %s samples "
-                "in the input unit hypercube of dimension %s."
-            ),
-            self._algo_name,
-            self.__class__.__name__,
-            *self.unit_samples.shape,
-        )
-        self.samples = self.__convert_unit_samples_to_samples(problem)
-        self.__reset_integer_variables_normalization(
-            design_space, integer_normalization_enabled
-        )
         self._init_iter_observer(
             problem,
             len(self.unit_samples),
@@ -186,27 +188,29 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
     def __convert_unit_samples_to_samples(
         self, problem: EvaluationProblem
     ) -> RealArray:
-        """Convert the unit design vector samples to design vector samples.
+        """Convert the unit samples to samples of the input space.
 
-        We also set the design variable types as dtype metadata.
+        We also set the variable types as dtype metadata.
 
         Args:
             problem: The problem to be solved.
 
         Returns:
-            The design vector samples.
+            The samples.
         """
-        design_space = problem.design_space
-        samples = design_space.untransform_vect(self.unit_samples, no_check=True)
-        variable_types = design_space.variable_types
+        input_space = problem.input_space
+        samples = input_space.untransform_vect(self.unit_samples, no_check=True)
+        variable_types = {
+            name: variable.type for name, variable in input_space.variables.items()
+        }
         unique_variable_types = set(variable_types.values())
         if len(unique_variable_types) > 1:
-            # When the design space have both float and integer variables,
+            # When the input space has both float and integer variables,
             # the samples array has the float dtype.
             # We record the integer variables types to later be able to restore the
             # proper data type.
             python_var_types = {
-                name: DesignSpace.variable_types_to_dtypes[type_]
+                name: data_type_to_numpy_type[type_]
                 for name, type_ in variable_types.items()
                 if type_ != DesignSpace.DesignVariableType.FLOAT
             }
@@ -215,14 +219,14 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         return samples
 
     @abstractmethod
-    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
-        """Generate the samples of the design vector in the unit hypercube.
+    def _generate_unit_samples(self, input_space: BaseVariableSpace) -> RealArray:
+        """Generate the samples of the input value in the unit hypercube.
 
         Args:
-            design_space: The design space to be sampled.
+            input_space: The input space to be sampled.
 
         Returns:
-            The samples of the design vector in the unit hypercube.
+            The samples of the input value in the unit hypercube.
         """
 
     def _run(self, problem: EvaluationProblem) -> None:
@@ -378,9 +382,9 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             The output value and the Jacobian value.
         """
         return self._problem.evaluate_functions(
-            design_vector=input_value,
-            preprocess_design_vector=False,
-            design_vector_is_normalized=False,
+            input_value=input_value,
+            preprocess_input_value=False,
+            input_value_is_normalized=False,
             output_functions=self.__output_functions,
             jacobian_functions=self.__jacobian_functions,
         )
@@ -415,38 +419,19 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         if self._progress_bar is not None:
             self._progress_bar.update(input_value)
 
-    @classmethod
-    def __check_unnormalization_capability(cls, design_space) -> None:
-        """Check if a point of the unit hypercube can be denormalized.
-
-        Args:
-            design_space: The design space to denormalize the point.
-
-        Raises:
-            ValueError: When some components of the design space are unbounded.
-        """
-        if not cls._use_unit_hypercube or isinstance(design_space, ParameterSpace):
-            return
-
-        components = set(
-            where(hstack(list(design_space.name_to_normalization_mask.values())) == 0)[
-                0
-            ]
-        )
-        if components:
-            msg = (
-                f"The components {pretty_str(components)} "
-                "of the design space are unbounded."
-            )
-            raise ValueError(msg)
-
     def sample_space(
         self,
-        space: DesignSpace | int,
+        space: BaseVariableSpace | int,
         settings: BaseDOESettings | None = None,
         use_unit_samples: bool = False,
     ) -> RealArray:
         """Sample a variable space.
+
+        The space is sampled through its mapping from the unit hypercube,
+        which is geometric for a
+        [DesignSpace][gemseo.space.design.DesignSpace]
+        and iso-probabilistic for a
+        [RandomSpace][gemseo.space.random.RandomSpace].
 
         Args:
             space: The variables space.
@@ -459,25 +444,17 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
             The design of experiments
             whose rows are the samples and columns the variables.
         """
-        if not use_unit_samples:
-            integer_normalization_enabled = (
-                self.__enable_integer_variables_normalization(space)
-            )
-            self.__check_unnormalization_capability(space)
-
         self._settings = create_model(
             self.ALGORITHM_INFOS[self.algo_name].settings_class,
             settings_model=settings,
         )
-        unit_samples = self._generate_unit_samples(space)
         if use_unit_samples:
-            return unit_samples
+            return self._generate_unit_samples(space)
 
-        samples = space.untransform_vect(unit_samples, no_check=True)
-        self.__reset_integer_variables_normalization(
-            space, integer_normalization_enabled
-        )
-        return samples
+        # The space configures itself for its own mapping from the unit hypercube.
+        with space._prepare_untransformation(self._use_unit_hypercube):
+            unit_samples = self._generate_unit_samples(space)
+            return space.untransform_vect(unit_samples, no_check=True)
 
     def sample_unit_hypercube(
         self,
@@ -494,42 +471,27 @@ class BaseDOELibrary(BaseDriverLibrary[T], Serializable):
         Returns:
             The design of experiments
             whose rows are the samples and columns the variables.
+
+        Note:
+            The hypercube has no variable name,
+            so a setting referring to one has no effect here,
+            e.g. the `reverse` setting of
+            [DiagonalDOE][gemseo.doe.diagonal_doe.diagonal_doe.DiagonalDOE]
+            given variable names rather than component indices.
         """
+        # The algorithms sample a space rather than a dimension,
+        # so carry the dimension in a space whose single variable spans it.
+        # Its name cannot be the name of a variable of the caller,
+        # otherwise a setting referring to that name would match this variable.
         space = DesignSpace()
-        space.add_variable("x", size=dimension, lower_bound=0.0, upper_bound=1.0)
+        space.add_variable(
+            self.__UNIT_HYPERCUBE_VARIABLE,
+            size=dimension,
+            lower_bound=0.0,
+            upper_bound=1.0,
+        )
         self._settings = create_model(
             self.ALGORITHM_INFOS[self.algo_name].settings_class,
             settings_model=settings,
         )
         return self._generate_unit_samples(space)
-
-    @staticmethod
-    def __enable_integer_variables_normalization(design_space: DesignSpace) -> bool:
-        """Enable the normalization of the integer variables, if disabled.
-
-        Args:
-            design_space: The design space.
-
-        Returns:
-            Whether the normalization of the integer variables had to be enabled.
-
-        """
-        enabled = not design_space.enable_integer_variables_normalization
-        if enabled:
-            design_space.enable_integer_variables_normalization = True
-
-        return enabled
-
-    @staticmethod
-    def __reset_integer_variables_normalization(
-        design_space: DesignSpace, enabled: bool
-    ) -> None:
-        """Reset the normalization of the integer variables to its initial state.
-
-        Args:
-            design_space: The design space.
-            enabled: Whether the normalization of the integer variables
-                had to be enabled.
-        """
-        if enabled:
-            design_space.enable_integer_variables_normalization = False

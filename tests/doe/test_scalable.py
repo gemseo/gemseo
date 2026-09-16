@@ -76,6 +76,7 @@ def variables_space():
     design_space.dimension = 2
     design_space.variable_names = ["x", "y"]
     design_space.variable_sizes = {"x": 1, "y": 1}
+    design_space.variables = {"x": mock.Mock(size=1), "y": mock.Mock(size=1)}
     design_space.__iter__.return_value = ["x", "y"]
 
     def side_effect(name: str) -> int:
@@ -110,3 +111,28 @@ def test_reverse(variables_space, reverse, samples) -> None:
         variables_space, settings=settings, use_unit_samples=True
     )
     assert_equal(doe, samples)
+
+
+@pytest.mark.parametrize("reverse", [["x"], ["y"]])
+def test_reverse_by_name_when_sampling_by_dimension(reverse) -> None:
+    """Check that a variable name does not reverse a hypercube sampled by dimension.
+
+    The unit hypercube has no variable name,
+    so a name can match neither a component nor the variable spanning it.
+    """
+    library = doe_library_factory.create(doe_lib_name)
+    settings = library.ALGORITHM_INFOS[doe_lib_name].settings_class(
+        n_samples=3, reverse=reverse
+    )
+    doe = library.sample_unit_hypercube(2, settings=settings)
+    assert_equal(doe, array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]))
+
+
+def test_reverse_by_index_when_sampling_by_dimension() -> None:
+    """Check that a component index still reverses a hypercube sampled by dimension."""
+    library = doe_library_factory.create(doe_lib_name)
+    settings = library.ALGORITHM_INFOS[doe_lib_name].settings_class(
+        n_samples=3, reverse=["1"]
+    )
+    doe = library.sample_unit_hypercube(2, settings=settings)
+    assert_equal(doe, array([[0.0, 1.0], [0.5, 0.5], [1.0, 0.0]]))

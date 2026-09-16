@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_frozen_array_cannot_be_unfrozen
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_frozen_array_forbids_item_assignment
+  'assignment destination is read-only'
+# ---

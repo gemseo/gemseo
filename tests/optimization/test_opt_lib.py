@@ -78,7 +78,7 @@ def test_is_algorithm_suited_design_space() -> None:
     assert not BaseOptimizationLibrary.is_algorithm_suited(description, problem)
     assert (
         BaseOptimizationLibrary._get_unsuitability_reason(description, problem)
-        == _UnsuitabilityReason.EMPTY_DESIGN_SPACE
+        == _UnsuitabilityReason.EMPTY_VARIABLE_SPACE
     )
 
 

@@ -25,7 +25,7 @@ from numpy import inf
 from gemseo.space.variable import BaseVariable
 from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable._legacy import Variable
-from gemseo.space.variable.factory import VariableFactory
+from gemseo.space.variable.factory import DeterministicVariableFactory
 from tests.space.variable.utils import kinds
 
 
@@ -46,8 +46,7 @@ def test_unpickle_legacy_variable(kind) -> None:
     assert restored == kind(
         size=2, lower_bound=array([0.0, 0.0]), upper_bound=array([1.0, 2.0])
     )
-    # The restored variable has been validated as a new one:
-    # its bounds are frozen so that they cannot be mutated in place.
+    # The restored variable has been validated as a new one, so its bounds are frozen.
     assert not restored.lower_bound.flags.writeable
     assert not restored.upper_bound.flags.writeable
 
@@ -69,4 +68,4 @@ def test_legacy_variable_is_not_a_kind() -> None:
     Otherwise the factory would find two classes pinning the float data type.
     """
     assert not issubclass(Variable, BaseVariable)
-    assert "Variable" not in VariableFactory().class_names
+    assert "Variable" not in DeterministicVariableFactory().class_names

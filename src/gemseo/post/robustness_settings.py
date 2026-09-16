@@ -29,7 +29,7 @@ class Robustness_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # n
     _inherited_field_defaults: ClassVar[StrKeyMapping] = {"fig_size": (8.0, 5.0)}
     stddev: float = Field(
         default=0.01,
-        description="The standard deviation of the normal uncertain variable to be "
+        description="The standard deviation of the normal random variable to be "
         "added to the optimal design value; expressed as a fraction of "
         "the bounds of the design variables.",
         ge=0.0,

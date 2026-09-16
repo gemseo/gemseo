@@ -224,7 +224,7 @@ def test_methods(test_method) -> None:
 @pytest.fixture(scope="module")
 def variables_space():
     """A variables space."""
-    design_space = mock.Mock()
+    design_space = mock.MagicMock()
     design_space.variable_names = ["x"]
     design_space.variable_sizes = {"x": 2}
     design_space.dimension = 2

@@ -158,7 +158,7 @@ class PCERegressor(BaseFCERegressor):
             data: The training dataset
                 whose input space `data.misc["input_space"]`
                 is expected to be a
-                [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+                [RandomSpace][gemseo.space.random.RandomSpace]
                 defining the random input variables.
                 The training dataset can be empty
                 in the case of quadrature when `discipline` is not `None`.
@@ -200,12 +200,13 @@ class PCERegressor(BaseFCERegressor):
 
         super().__init__(data, settings=settings_)
 
-        probability_space = data.misc["input_space"]
+        probability_space = self._input_space
+        variables = probability_space.variables
         if self._settings.use_quadrature and data.empty:
-            self.input_names = probability_space.variable_names
+            self.input_names = list(variables)
 
         if not data.empty:
-            missing = set(self.input_names) - set(probability_space.uncertain_variables)
+            missing = set(self.input_names) - set(variables)
             if missing:
                 msg = (
                     "The probability space does not contain "
@@ -222,11 +223,10 @@ class PCERegressor(BaseFCERegressor):
             msg = "PCERegressor does not support input transformers."
             raise ValueError(msg)
 
-        distributions = probability_space.distributions
         wrongly_distributed_random_variable_names = [
             input_name
             for input_name in self.input_names
-            if not isinstance(distributions.get(input_name, None), OTJointDistribution)
+            if not isinstance(variables[input_name].distribution, OTJointDistribution)
         ]
         if wrongly_distributed_random_variable_names:
             msg = (
@@ -236,7 +236,9 @@ class PCERegressor(BaseFCERegressor):
             )
             raise ValueError(msg)
 
-        self.__variable_sizes = probability_space.variable_sizes
+        self.__variable_sizes = {
+            name: variable.size for name, variable in variables.items()
+        }
         self.__input_dimension = sum(
             self.__variable_sizes[name] for name in self.input_names
         )
@@ -249,7 +251,7 @@ class PCERegressor(BaseFCERegressor):
         self.__composed_distribution = JointDistribution([
             marginal.distribution
             for input_name in self.input_names
-            for marginal in distributions[input_name].marginals
+            for marginal in variables[input_name].distribution.marginals
         ])
 
         if self._settings.use_quadrature:
@@ -440,7 +442,7 @@ class PCERegressor(BaseFCERegressor):
 
         Args:
             name_to_positions: The input names
-                bound to the positions in the uncertain input vector.
+                bound to the positions in the random input vector.
             ot_sobol_indices: The Sobol' indices.
         """
         self._second_order_sobol_indices = [
@@ -486,7 +488,7 @@ class PCERegressor(BaseFCERegressor):
 
         Args:
             name_to_positions: The input names
-                bound to the positions in the uncertain input vector.
+                bound to the positions in the random input vector.
             ot_sobol_indices: The Sobol' indices.
             use_first: Whether to compute the first-order Sobol' indices.
         """

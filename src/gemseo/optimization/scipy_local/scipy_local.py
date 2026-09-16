@@ -142,7 +142,7 @@ class ScipyOpt(BaseOptimizationLibrary[BaseScipyLocalSettings]):
     def _run(self, problem: OptimizationProblem) -> tuple[str, Any]:
         # Get the normalized bounds:
         x_0, l_b, u_b = get_value_and_bounds(
-            problem.design_space, self._settings.normalize_design_space
+            problem.input_space, self._settings.normalize_design_space
         )
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]

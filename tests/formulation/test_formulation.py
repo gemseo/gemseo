@@ -201,9 +201,9 @@ def test_remove_sub_scenario_dv_from_ds(patch_mdo_formulation) -> None:
     problem = OptimizationProblem(ds2)
     f2 = NewMDOFormulation(problem, [sm, s1])
     problem.objective = f2.create_objective(["y_4"])
-    assert "x" in f2.design_space
-    f2._remove_sub_scenario_dv_from_ds()
-    assert "x" not in f2.design_space
+    assert "x" in f2.input_space
+    f2._remove_sub_scenario_variables_from_space()
+    assert "x" not in f2.input_space
 
 
 def test_remove_unused_variable_logger(patch_mdo_formulation, caplog) -> None:
@@ -225,7 +225,7 @@ def test_remove_unused_variable_logger(patch_mdo_formulation, caplog) -> None:
     problem.objective = formulation.create_objective(["y2"])
     formulation._remove_unused_variables()
     assert (
-        "Variable toto was removed from the Design Space, it is not an input of "
+        "Variable toto was removed from the input space, it is not an input of "
         "any "
         "discipline." in caplog.text
     )

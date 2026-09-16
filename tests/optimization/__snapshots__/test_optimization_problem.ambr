@@ -23,6 +23,9 @@
 # name: test_get_missing_observable
   'missing_observable_name is not among the names of the observables: a and b.'
 # ---
+# name: test_init_with_a_random_space
+  'An OptimizationProblem requires a design space; got a RandomSpace; use an EvaluationProblem to sample a random space.'
+# ---
 # name: test_int_opt_problem[False-Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.\nExecution may be forced setting the 'skip_int_check' argument to 'True'.]
   '''
   Algorithm L_BFGS_B is not adapted to the problem, it does not handle integer variables.

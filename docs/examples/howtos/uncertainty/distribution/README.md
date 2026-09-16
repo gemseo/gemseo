@@ -8,9 +8,9 @@
 -->
 
 <!-- markdownlint-disable-next-line MD041 -->
-## Distributions and uncertain spaces
+## Distributions and random spaces
 
 Define probability distributions backed by OpenTURNS or SciPy,
 fit them to observed data,
 and assemble uncertain variables into a
-[ParameterSpace][gemseo.space.parameter.ParameterSpace].
+[RandomSpace][gemseo.space.random.RandomSpace].

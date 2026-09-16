@@ -25,5 +25,5 @@ from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 class DriverLibraryFactory(BaseAlgorithmFactory):
     """A factory of driver libraries."""
 
-    _class: ClassVar[type[BaseDriverLibrary]] = BaseDriverLibrary
-    _package_names: ClassVar[tuple[str, ...]] = ("gemseo.doe", "gemseo.optimization")
+    _class: ClassVar[type] = BaseDriverLibrary
+    _package_names = ("gemseo.doe", "gemseo.optimization")

@@ -44,7 +44,7 @@ from gemseo.machine_learning.regression.model.gpr_settings import (
 )
 from gemseo.machine_learning.regression.quality import R2Measure
 from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
-from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
+from gemseo.problem.uncertainty.wing_weight import WingWeightRandomSpace
 
 # %%
 # ### 1. Define the reference model
@@ -53,7 +53,7 @@ from gemseo.problem.uncertainty.wing_weight import WingWeightUncertainSpace
 # defined in [this page][gemseo.problem.uncertainty.wing_weight].
 
 discipline = WingWeightDiscipline()
-input_space = WingWeightUncertainSpace()
+input_space = WingWeightRandomSpace()
 
 # %%
 # ### 2. Create the training dataset

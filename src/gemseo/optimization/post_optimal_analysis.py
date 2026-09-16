@@ -118,7 +118,7 @@ class PostOptimalAnalysis:
         # N.B. at creation LagrangeMultipliers checks the optimization problem
         self.optimization_problem = opt_problem
         # Get the optimal solution
-        self.x_opt = self.optimization_problem.design_space.get_current_value()
+        self.x_opt = self.optimization_problem.input_space.get_current_value()
         # Get the objective name
         output_names = self.optimization_problem.objective.output_names
         if len(output_names) != 1:

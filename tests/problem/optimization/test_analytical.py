@@ -49,7 +49,7 @@ def run_and_test_problem(problem, algo_name="SLSQP") -> None:
     assert opt.x_opt == pytest.approx(x_opt, abs=1.0e-3)
     assert opt.f_opt == pytest.approx(f_opt, abs=1.0e-3)
 
-    x_0 = problem.design_space.get_current_value(normalize=True)
+    x_0 = problem.input_space.get_current_value(normalize=True)
     for func in problem.functions:
         with contextlib.suppress(MaxIterReachedException):
             checker = FunctionJacobianChecker(func)
@@ -68,8 +68,8 @@ def test_rosen() -> None:
     run_and_test_problem(problem, "L_BFGS_B")
     Rosenbrock(initial_guess=zeros(2))
     problem = Rosenbrock(scalar_var=True)
-    assert "x1" in problem.design_space
-    assert "x" not in problem.design_space
+    assert "x1" in problem.input_space
+    assert "x" not in problem.input_space
 
 
 def test_power2() -> None:

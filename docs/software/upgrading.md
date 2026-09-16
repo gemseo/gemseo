@@ -21,6 +21,277 @@ This page contains the history of the breaking changes in GEMSEO. The codes usin
 
 ## Unreleased
 
+### RandomSpace, a dedicated space of random variables
+
+The spaces of random variables, previously known as *parameter spaces*,
+are now described by the new class `RandomSpace`,
+deriving from the new abstract base class
+`BaseVariableSpace` shared with `DesignSpace`.
+
+- **Breaking change**: the class `ParameterSpace` was removed, as were
+  `gemseo.create_parameter_space()` and the factory
+  `gemseo.algos.parameter_space_factory.ParameterSpaceFactory` (replaced by
+  `random_space_factory`). A space of
+  variables is either a `DesignSpace`, defined by bounds and used for
+  optimization, or a `RandomSpace`, defined by probability distributions and
+  used for uncertainty analysis;
+  a single space can no longer mix both kinds of variables.
+  Replace a purely uncertain `ParameterSpace` by a `RandomSpace`, and a
+  deterministic one by a `DesignSpace`.
+- New `gemseo.create_random_space()` creates an empty `RandomSpace`.
+- A random variable is added with `add_variable(name, *settings)`, taking the
+  settings of the marginal probability distributions of its components, one per
+  component; an iid random variable of size $d$ is added by repeating its
+  settings, e.g. `space.add_variable("x", *[settings] * 3)`.
+  This replaces `add_random_variable` and `add_random_vector`, whose distribution
+  was named by a string and parameterized by loose arguments:
+
+    ```python
+    # Before
+    space = ParameterSpace()
+    space.add_random_variable("x", "OTNormalDistribution", size=3, mu=0.5, sigma=2.0)
+
+    # After
+    settings = OTNormalDistribution_Settings(mu=0.5, sigma=2.0)
+    space = RandomSpace()
+    space.add_variable("x", *[settings] * 3)
+    ```
+
+    The two adders cannot be rewritten automatically, the settings model
+    replacing both the distribution name and its parameters.
+- Unpickling a `ParameterSpace`, or an object holding one such as a dataset,
+  raises a `TypeError`: the name of the removed class resolves to `RandomSpace`,
+  which stores its probability distributions differently.
+  Rebuild the random space from the settings of the marginal probability
+  distributions of its random variables.
+- A `RandomSpace` deliberately has no bounds setters,
+  no current value, no normalization and no integer management;
+  its only vector mapping is the iso-probabilistic `transform_vect`
+  / `untransform_vect` to and from the unit hypercube.
+  The bounds of a random variable, which are the limits of the support of its
+  probability distribution, are read-only and descriptive:
+  `EvaluationProblem.evaluate_functions` does not check that the input value
+  lies within them, even when `check_bounds` is `True`,
+  and the perturbations of a finite-difference approximation are not bounded
+  by them. A `ParameterSpace` carried these limits as design bounds,
+  so both used to apply to an uncertain space.
+- **Breaking change**: a random space has no file persistence.
+  `to_file`, `from_file`, `to_hdf`, `from_hdf`, `to_csv` and `from_csv`
+  belong to `DesignSpace` only, where a `ParameterSpace` inherited them
+  without ever storing the probabilistic information.
+  Rebuild a `RandomSpace` from the settings of its marginal probability
+  distributions instead.
+  Consequently, when the input space of a `Database` is not a `DesignSpace`,
+  writing the database to an HDF file logs a warning once and omits the input
+  space from the file: the evaluations themselves are written and re-read as
+  usual, but the reloaded database describes its input values with a plain
+  `DesignSpace` instead of the original random space.
+- All the probabilistic data is read through the public registry `variables`:
+    - `space.variables.distribution` for the joint distribution of the space,
+    - `space.variables[name].distribution` for the distribution of a variable,
+    - `space.variables[name].distribution.range` / `.distribution.support`
+      for the range and the support of a variable,
+    - `list(space.variables)` for the names of the random variables.
+- `variables` is the only accessor of a `RandomSpace`,
+  which does not duplicate it with the shortcuts of a `DesignSpace`:
+    - `list(space.variables)` instead of `variable_names`,
+    - `space.variables[name].size` instead of `get_size(name)`
+      and `variable_sizes[name]`,
+    - `space.variables[name].type` instead of `get_type(name)`
+      and `variable_types[name]`,
+    - `space.variables.name_to_indices` instead of `name_to_indices`,
+    - `space.variables.has_integer_variables` instead of the
+      `has_integer_variables` shortcut.
+
+    `space.dimension` is kept,
+    and `DesignSpace` keeps all these shortcuts.
+- `variables` is available on any space of variables, hence on a `DesignSpace`
+  and is read-only: it is a live view forbidding
+  insertion, deletion and update, and the variables it gives access to are
+  immutable.
+  The variables are mutated by the methods of the space, e.g. `add_variable`,
+  `add_copula`, `remove_variable`, `rename_variable`, `filter` and
+  `filter_dimensions`.
+  In particular, a random variable cannot be replaced in place with
+  `space.variables[name] = ...`; remove it and add it again, which moves it to
+  the end of the space.
+- **Breaking change**: in the sampling methods of the sensitivity analyses
+  (`CorrelationAnalysis`, `FORMAnalysis`, `HSICAnalysis`, `ISFORMSobolAnalysis`,
+  `MorrisAnalysis` and `SobolAnalysis`),
+  the argument `parameter_space` of `compute_samples` is renamed
+  `random_space` and takes a `RandomSpace`.
+- **Breaking change**: `SobolAnalysis` stores the random space
+  in `dataset.misc["random_space"]` instead of
+  `dataset.misc["parameter_space"]`; the legacy key is still read,
+  so datasets created with a previous version still load.
+- **Breaking change**: the error raised when mixing probability distributions
+  from different libraries now reads
+  `"A random space cannot mix probability distributions based on different
+  libraries; got ..."` instead of `"A parameter space cannot ..."`.
+- **Breaking change**: `IshigamiSpace` and `WingWeightUncertainSpace`
+  now derive from `RandomSpace`,
+  and the latter has been renamed to `WingWeightRandomSpace`;
+  they are found by the new
+  `random_space_factory` instead of
+  `gemseo.algos.parameter_space_factory.ParameterSpaceFactory`
+  and `design_space_factory`.
+- **Breaking change**: `IshigamiProblem` derives from `EvaluationProblem`
+  instead of `OptimizationProblem`; it is still defined over the
+  `IshigamiSpace` and still takes a `uniform_distribution_name` argument, but
+  the Ishigami function is now an observable of the problem instead of its
+  objective, so `problem.objective` no longer exists.
+- `EvaluationProblem`, `Database` and `EvaluationScenario` operate on any
+  `BaseVariableSpace`, hence on a `DesignSpace` as well as on a `RandomSpace`,
+  and the space passed to an `EvaluationScenario` is the one it uses.
+- The MDO formulations operate on any `BaseVariableSpace` too: the space of
+  variables is a type parameter of `BaseMDOFormulation`, and `DisciplinaryOpt`,
+  `MDF`, `BiLevel`, `BiLevelBCD` and `IDF` are generic in it, so an
+  `EvaluationScenario` can sample a `RandomSpace` through any of them. The
+  sub-scenarios of a `BiLevel` are `MDOScenario` objects, hence defined over
+  design spaces, whatever the system-level space.
+- **Breaking change**: `IDF` raises a `ValueError` when
+  `normalize_constraints=True` and the bound range of a target coupling
+  variable is not finite, instead of silently scaling the consistency
+  constraints by an infinite factor, hence zeroing them; pass
+  `normalize_constraints=False` for such a space. It also raises a `ValueError`
+  when `start_at_equilibrium=True` and the input space is not a
+  `DesignSpace`, since only a design space defines a current value.
+- **Breaking change**: a custom formulation deriving from `BaseMDOFormulation`
+  must supply the space of variables as a second type parameter, e.g.
+  `BaseMDOFormulation[MyFormulation_Settings, DesignSpace]` when it reads bounds
+  or a current value, and a type variable bound to `BaseVariableSpace`
+  otherwise.
+- **Breaking change**: the space of an `EvaluationProblem` and of an
+  `EvaluationScenario` is named `input_space`, as in `Database`, since it is not
+  a design space in general: `problem.design_space` becomes
+  `problem.input_space`, `scenario.design_space` becomes `scenario.input_space`,
+  the first argument of `EvaluationProblem` is renamed `input_space` and the
+  `design_space` argument of `EvaluationProblem.reset` is renamed `input_space`.
+  `BaseFormulation.design_space` is renamed `BaseFormulation.input_space` for the
+  same reason and is typed `BaseVariableSpace`.
+- **Breaking change**: the terms *design space*, *design vector* and *design
+  variable* are replaced by *input space*, *input value* and *input variable*
+  wherever the space is not necessarily a design space:
+  `EvaluationProblem.evaluate_functions` renames its arguments `design_vector`,
+  `design_vector_is_normalized` and `preprocess_design_vector` to `input_value`,
+  `input_value_is_normalized` and `preprocess_input_value`;
+  `BaseVariableSpace.get_variables_indexes` renames `use_design_space_order` to
+  `use_space_order` and `BaseVariableSpace.convert_dict_to_array` renames
+  `design_values` to `variable_values`; the driver setting
+  `max_design_space_dimension_to_log` is renamed
+  `max_input_space_dimension_to_log`; a custom formulation must rename its
+  implementation of the abstract method `BaseFormulation._update_design_space`
+  to `_update_input_space`; and the log of a driver names the input space after
+  its class, e.g. `"over the random space:"` for a `RandomSpace`. The setting
+  `normalize_design_space` keeps its name,
+  since only a design space can be normalized.
+  `OptimizationProblem` and `MDOScenario` keep a read-only `design_space`
+  property, typed `DesignSpace`, since their input space is a design space; the
+  `design_space` argument of their constructors is unchanged.
+- `BaseDOELibrary.sample_space` and `compute_doe()` sample any
+  `BaseVariableSpace` directly, without conversion.
+- `ReliabilityProblem`, `ReliabilityScenario`, `PCERegressor` and `FCERegressor`
+  require a `RandomSpace`, whose probability distributions they read through the
+  `variables` registry.
+- The features specific to a design space are unavailable for a space that
+  defines no current value, a `RandomSpace` for instance: passing
+  `normalize_design_space=True` to a driver raises a `ValueError` reading
+  `"The functions cannot take normalized inputs because a RandomSpace cannot be
+  normalized."`, and writing such a database to an HDF file logs a warning and
+  omits the input space from the file.
+- `get_pretty_table` no longer takes a `simplify` argument: it used to drop the
+  bound, value and type columns from the tabular view of a `ParameterSpace` of
+  uncertain variables only, while the tabular view of a `RandomSpace` has a name
+  column and a distribution column.
+- `BaseVariableSpace` has a new method `check`, which raises a `ValueError` when
+  the space is empty. `DesignSpace` also checks the consistency of its current
+  value. A current value being a notion of the deterministic spaces,
+  `has_current_value` remains specific to a `DesignSpace`.
+- `BaseVariableSpace` has a new property `reference_value`, the reference value of
+  the space: the current value of a `DesignSpace` and the mean of the probability
+  distributions of a `RandomSpace`. The formulation of a scenario seeds the
+  default input values of its top-level disciplines with it, as it did with the
+  current value of a `ParameterSpace`, so a default input value still need not be
+  set discipline by discipline. For a `RandomSpace`, it is recomputed from the
+  probability distributions on every read, so changing their settings changes the
+  default input values without touching any discipline.
+- The sensitivity analyses accept a `RandomSpace`, which they sample through its
+  iso-probabilistic mapping; `ISFORMSobolAnalysis` reads the joint probability
+  distribution of the space through `space.variables.distribution`.
+  `SobolAnalysis.compute_samples` stores in `dataset.misc["random_space"]`
+  the space it was given.
+- `MDOScenario` and `OptimizationProblem` require a `DesignSpace`, as their
+  signatures state: use an `EvaluationScenario` or an `EvaluationProblem` to
+  sample a `RandomSpace`, and define a `DesignSpace` for optimization. Passing
+  another kind of space raises a `TypeError` reading `"An MDOScenario requires a
+  design space; got a RandomSpace; use an EvaluationScenario to sample a random
+  space."`.
+
+#### Migrating a mixed parameter space
+
+A `ParameterSpace` mixing deterministic and uncertain variables has no
+one-to-one replacement, as a space is now either a `DesignSpace` or a
+`RandomSpace`. Such a space was sampled as a whole,
+
+```python
+space = ParameterSpace()
+space.add_variable("x", lower_bound=-2.0, upper_bound=2.0)
+space.add_random_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+dataset = sample_disciplines(
+    [discipline], space, "z", algo_name="PYDOE_LHS", n_samples=5
+)
+```
+
+which mixes two intents that the new spaces separate.
+
+If `"x"` was meant to be **swept**, it was uncertain in effect and becomes a
+random variable with a uniform distribution over its bounds; the space is then a
+plain `RandomSpace` and the sampling is unchanged:
+
+```python
+space = RandomSpace()
+space.add_variable("x", SPUniformDistribution_Settings(minimum=-2.0, maximum=2.0))
+space.add_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+dataset = sample_disciplines(
+    [discipline], space, "z", algo_name="PYDOE_LHS", n_samples=5
+)
+```
+
+If `"x"` was meant to be **held fixed** — the case `extract_uncertain_space`
+served — it leaves the space and becomes an input value of the disciplines,
+pinned with the `default_input_data` argument of the scenario:
+
+```python
+space = RandomSpace()
+space.add_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
+scenario = EvaluationScenario(
+    [discipline], space, default_input_data={"x": array([0.5])}
+)
+scenario.add_observable("z")
+scenario.execute(PYDOE_LHS_Settings(n_samples=5))
+dataset = scenario.to_dataset()
+```
+
+`default_input_data` updates the default input values of the disciplines before
+the formulation seeds the top-level ones from `reference_value`, which covers the
+variables of the input space only, so a pinned deterministic value is never
+overwritten by the space. Setting that value as a default of the
+discipline itself is equivalent, and is the only option when the sampling is
+driven by a helper building its own scenario, e.g. `sample_disciplines` or the
+`compute_samples` method of a sensitivity analysis, as neither forwards
+`default_input_data`.
+
+This is also why `extract_uncertain_space`, `extract_deterministic_space` and
+`to_design_space` have no successor: instead of building a mixed space and
+restricting it afterwards, do not put the deterministic variables in the space
+in the first place.
+
+Optimization under uncertainty is not affected, as it is the purpose of the
+`gemseo-umdo` plugin, whose `UMDOScenario` has always taken the deterministic
+and uncertain variables as two separate spaces: the space of the uncertain
+variables is now a `RandomSpace` instead of a `ParameterSpace`, and the space of
+the optimized variables is still a `DesignSpace`.
+
 ### Discipline local data split
 
 The single merged `Discipline.local_data` / `IO.data` attribute has been split

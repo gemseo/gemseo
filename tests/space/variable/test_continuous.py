@@ -45,6 +45,35 @@ def test_bound_with_non_integer_components(side, bound) -> None:
     assert_array_equal(getattr(my_variable, f"{side}_bound"), bound)
 
 
+@pytest.mark.parametrize(
+    ("size", "bound"),
+    [
+        (1, 1),
+        (1, [1]),
+        (1, (1,)),
+        (2, [1, 2]),
+        (2, array([1, 2])),
+    ],
+)
+def test_integer_bound_is_stored_as_float(size, bound) -> None:
+    """Check that a bound supplied as integers is stored as floating-point numbers."""
+    variable = ContinuousVariable(size=size, lower_bound=bound)
+    assert variable.lower_bound.dtype == float64
+
+
+@pytest.mark.parametrize("enable_integer_normalization", [False, True])
+def test_normalization_mask_is_read_only(
+    enable_integer_normalization, snapshot
+) -> None:
+    """Check that the normalization mask of a continuous variable is frozen."""
+    variable = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
+    mask = variable.get_normalization_mask(enable_integer_normalization)
+    assert_array_equal(mask, array([True, True]))
+    assert not mask.flags.writeable
+    with assert_exception(ValueError, snapshot):
+        mask[0] = False
+
+
 def test_component_type() -> None:
     """Check the NumPy type of the components of a continuous variable."""
     assert ContinuousVariable().component_type is float64
@@ -66,10 +95,10 @@ def test_cast() -> None:
     ("lower_bound", "upper_bound", "expected"),
     [(-inf, inf, 0.0), (-inf, 2.0, 2.0), (1.0, inf, 1.0), (1.0, 3.0, 2.0)],
 )
-def test_compute_default_component_value(lower_bound, upper_bound, expected) -> None:
+def test_get_default_component_value(lower_bound, upper_bound, expected) -> None:
     """Check the default value of a component."""
     assert (
-        ContinuousVariable.compute_default_component_value(lower_bound, upper_bound)
+        ContinuousVariable.get_default_component_value(lower_bound, upper_bound)
         == expected
     )
 
@@ -83,8 +112,6 @@ def test_model_copy_leaves_original_alone(snapshot) -> None:
     assert new_variable is not variable
     assert_array_equal(new_variable.lower_bound, array([-9.0, -9.0]))
     assert not new_variable.lower_bound.flags.writeable
-    # A variable stores read-only views of its bounds,
-    # so the writeable flag cannot be re-enabled.
     with assert_exception(ValueError, snapshot):
         new_variable.lower_bound.setflags(write=True)
 

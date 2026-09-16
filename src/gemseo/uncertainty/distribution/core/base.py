@@ -39,7 +39,7 @@ See Also:
 
 The
 [BaseDistribution][gemseo.uncertainty.distribution.core.base.BaseDistribution]
-of a given uncertain variable is built
+of a given random variable is built
 from a distribution name (e.g. `'Normal'` for OpenTURNS or `'norm'` for SciPy),
 a set of parameters
 and optionally a standard representation of these parameters.

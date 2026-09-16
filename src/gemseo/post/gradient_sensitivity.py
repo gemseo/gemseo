@@ -125,8 +125,8 @@ class GradientSensitivity(BasePost[GradientSensitivity_Settings]):
                     )
                 )
                 _, gradient_values = self.optimization_problem.evaluate_functions(
-                    design_vector=design_value,
-                    design_vector_is_normalized=False,
+                    input_value=design_value,
+                    input_value_is_normalized=False,
                     output_functions=output_functions or None,
                     jacobian_functions=jacobian_functions or None,
                 )

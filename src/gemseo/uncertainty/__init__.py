@@ -24,7 +24,9 @@ for probability distributions, as well as interfaces to the OpenTURNS and SciPy 
 It is also possible to fit a probability distribution from data
 or select the most likely one from a list of candidates.
 These distributions can be used to define random variables
-in a [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+in a [RandomSpace][gemseo.space.random.RandomSpace],
+that can be created with
+[create_random_space()][gemseo.create_random_space],
 before propagating these uncertainties through
 a system of [Discipline][gemseo.core.discipline.discipline.Discipline],
 by means of an

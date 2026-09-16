@@ -25,14 +25,20 @@ import pytest
 from numpy import array
 from numpy import atleast_1d
 from numpy import inf
+from numpy import int32
 from numpy import nan
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
+from gemseo.space.variable import BaseDeterministicVariable
+from gemseo.space.variable import BaseIntervalVariable
+from gemseo.space.variable import BaseNumericVariable
 from gemseo.space.variable import BaseVariable
 from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DataType
+from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable.random import RandomVariable
 from gemseo.util.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 from gemseo.util.testing.helper import assert_exception
 from tests.space.variable.utils import kinds
@@ -41,9 +47,69 @@ from tests.space.variable.utils import kinds
 def test_base_variable_is_abstract() -> None:
     """Check that the base variable cannot be instantiated."""
     assert isabstract(BaseVariable)
-    assert BaseVariable.__abstractmethods__ == frozenset({"compute_normalization_mask"})
+    assert BaseVariable.__abstractmethods__ == frozenset({"filter_components"})
     with pytest.raises(TypeError):
         BaseVariable()
+
+
+@pytest.mark.parametrize(
+    ("cls", "abstract_methods"),
+    [
+        (BaseNumericVariable, {"filter_components"}),
+        (
+            BaseDeterministicVariable,
+            {
+                "get_default_value",
+                "get_normalization_mask",
+                "filter_components",
+            },
+        ),
+        (BaseIntervalVariable, {"get_normalization_mask"}),
+    ],
+)
+def test_intermediate_classes_are_abstract(cls, abstract_methods) -> None:
+    """Check what each layer of the hierarchy leaves to its subclasses."""
+    assert isabstract(cls)
+    assert cls.__abstractmethods__ == frozenset(abstract_methods)
+
+
+@pytest.mark.parametrize(
+    ("cls", "is_deterministic", "is_numeric"),
+    [
+        (ContinuousVariable, True, True),
+        (IntegerVariable, True, True),
+        (DiscreteVariable, True, True),
+        (RandomVariable, False, True),
+    ],
+)
+def test_axes_of_the_hierarchy(cls, is_deterministic, is_numeric) -> None:
+    """Check the two axes along which a kind of variable is placed.
+
+    A kind is either deterministic or random,
+    and its components are numbers or not;
+    only a kind whose components are numbers is bounded.
+    """
+    assert issubclass(cls, BaseVariable)
+    assert issubclass(cls, BaseDeterministicVariable) is is_deterministic
+    assert issubclass(cls, BaseNumericVariable) is is_numeric
+
+
+@pytest.mark.parametrize(
+    ("cls", "field_names"),
+    [
+        (ContinuousVariable, {"size", "lower_bound", "upper_bound"}),
+        (IntegerVariable, {"size", "lower_bound", "upper_bound"}),
+        (DiscreteVariable, {"choices"}),
+        (RandomVariable, {"distribution_settings"}),
+    ],
+)
+def test_fields_are_the_inputs(cls, field_names) -> None:
+    """Check that the fields of a kind are exactly what the caller supplies.
+
+    Whatever derives from these fields, e.g. the size of a scalar variable,
+    is a read-only property, not a field.
+    """
+    assert set(cls.model_fields) == field_names
 
 
 @pytest.mark.parametrize("cls", kinds)
@@ -129,6 +195,68 @@ def test_frozen(variable, bound, snapshot) -> None:
 
 
 @pytest.mark.parametrize("cls", kinds)
+def test_fields_are_inherited_unchanged(cls) -> None:
+    """Check that a kind inherits the fields of the base interval variable as they are.
+
+    The bounds are read through descriptors set on the base class
+    once pydantic has built it,
+    which pydantic must not mistake for the defaults of the fields of a subclass.
+    """
+    for name, field in BaseIntervalVariable.model_fields.items():
+        assert cls.model_fields[name].default == field.default
+        assert cls.model_fields[name].description == field.description
+
+    assert not hasattr(cls, "lower_bound")
+
+
+@pytest.mark.parametrize("cls", kinds)
+@pytest.mark.parametrize("bound", ["lower_bound", "upper_bound"])
+@pytest.mark.parametrize(
+    ("attribute_name", "value"),
+    [("shape", (2, 1)), ("strides", (0,)), ("dtype", int32)],
+)
+def test_bounds_are_handed_out_as_views(cls, bound, attribute_name, value) -> None:
+    """Check that a bound is handed out as a view of what the variable stores.
+
+    NumPy lets a caller reassign the shape, the strides and the data type
+    of a read-only array, and these belong to the array object itself,
+    so such a reassignment must reach the array of the caller only.
+    """
+    variable = cls(size=2, lower_bound=0, upper_bound=2)
+    handed_out = getattr(variable, bound)
+    assert handed_out is not getattr(variable, bound)
+
+    setattr(handed_out, attribute_name, value)
+
+    for name in ("lower_bound", "upper_bound"):
+        assert getattr(variable, name).shape == (2,)
+        assert getattr(variable, name).strides == (8,)
+        assert getattr(variable, name).dtype == variable.component_type
+
+    assert_array_equal(variable.get_default_value(), [1, 1])
+
+
+@pytest.mark.parametrize("cls", kinds)
+@pytest.mark.parametrize("bound", ["lower_bound", "upper_bound"])
+def test_variable_built_from_a_bound_does_not_share_it(cls, bound) -> None:
+    """Check that a variable built from the bound of another shares no array with it.
+
+    A frozen bound is not copied when the variable freezes it,
+    so the array stored must still not be the one the caller holds,
+    which the caller can reshape.
+    """
+    variable = cls(size=2, lower_bound=0, upper_bound=2)
+    supplied = getattr(variable, bound)
+    other = cls(**{"size": 2, "lower_bound": 0, "upper_bound": 2, bound: supplied})
+
+    supplied.shape = (2, 1)
+
+    assert getattr(variable, bound).shape == (2,)
+    assert getattr(other, bound).shape == (2,)
+    assert_array_equal(getattr(other, bound), getattr(variable, bound))
+
+
+@pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize("side", ["lower", "upper"])
 @pytest.mark.parametrize("bound", [array([nan]), array([nan, nan])])
 def test_bound_with_nan_components(cls, side, bound, snapshot) -> None:
@@ -186,8 +314,7 @@ def test_copy_and_pickle_keep_the_kind(variable, snapshot) -> None:
     assert not restored.lower_bound.flags.writeable
     assert not restored.upper_bound.flags.writeable
 
-    # Pickling preserves neither the writeable flag nor the base of an array,
-    # so the restored bounds must have been refrozen and re-viewed.
+    # The restored bounds have been refrozen, so they cannot be thawed.
     with assert_exception(ValueError, snapshot):
         restored.lower_bound.setflags(write=True)
 
@@ -198,12 +325,10 @@ def test_copy_and_pickle_keep_the_kind(variable, snapshot) -> None:
 @pytest.mark.parametrize("enable_integer_normalization", [False, True])
 @pytest.mark.parametrize("upper_bound", [1, inf])
 @pytest.mark.parametrize("cls", kinds)
-def test_compute_normalization_mask(
-    cls, upper_bound, enable_integer_normalization
-) -> None:
+def test_get_normalization_mask(cls, upper_bound, enable_integer_normalization) -> None:
     """Check the per-component normalization policy of a variable."""
     variable = cls(size=2, lower_bound=0, upper_bound=upper_bound)
-    policy = variable.compute_normalization_mask(enable_integer_normalization)
+    policy = variable.get_normalization_mask(enable_integer_normalization)
     expected = upper_bound != inf and (
         cls is ContinuousVariable or enable_integer_normalization
     )

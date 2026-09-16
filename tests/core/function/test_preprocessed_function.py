@@ -58,7 +58,7 @@ def test_unpickle_pre_refactor_denormalize_attributes():
     problem = Power2()
     problem.preprocess_functions()
     function = problem.objective
-    x_normalized = full(problem.design_space.dimension, 0.3)
+    x_normalized = full(problem.input_space.dimension, 0.3)
     expected = function.evaluate(x_normalized)
 
     # Simulate a pre-refactor pickle: the modern state is downgraded to the old

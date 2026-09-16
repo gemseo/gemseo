@@ -42,7 +42,7 @@ from gemseo.util.typing import StrPath
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
 
 OptionType = int | float | bool | list[str] | StrPath | TextIO | RealArray | None
 
@@ -112,7 +112,7 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
 
         return samples
 
-    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+    def _generate_unit_samples(self, input_space: BaseVariableSpace) -> RealArray:
         """
         Raises:
             ValueError: If the dimension of `samples` is different from the
@@ -120,7 +120,7 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
         """  # noqa: D205, D212, D415
         samples = self._settings.samples
         doe_file = self._settings.doe_file
-        dimension = design_space.dimension
+        dimension = input_space.dimension
         if doe_file:
             samples = self.read_file(
                 doe_file,
@@ -130,10 +130,10 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
             )
 
         if isinstance(samples, Mapping):
-            samples = design_space.convert_dict_to_array(samples)
+            samples = input_space.convert_dict_to_array(samples)
         elif not isinstance(samples, ndarray):
             samples = vstack([
-                design_space.convert_dict_to_array(sample) for sample in samples
+                input_space.convert_dict_to_array(sample) for sample in samples
             ])
 
         if samples.shape[1] != dimension:
@@ -143,4 +143,4 @@ class CustomDOE(BaseDOELibrary[CustomDOE_Settings]):
             )
             raise ValueError(msg)
 
-        return apply_along_axis(design_space.transform_vect, axis=1, arr=samples)
+        return apply_along_axis(input_space.transform_vect, axis=1, arr=samples)

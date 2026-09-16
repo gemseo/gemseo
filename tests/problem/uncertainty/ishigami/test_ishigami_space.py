@@ -23,9 +23,9 @@ def test_ishigami_space() -> None:
     """Check the Ishigami space."""
     space = IshigamiSpace()
     assert space.dimension == 3
-    assert space.variable_names == ["x1", "x2", "x3"]
-    for distribution in space.distributions.values():
-        assert len(distribution.marginals) == 1
-        distribution = distribution.marginals[0].distribution
+    assert list(space.variables) == ["x1", "x2", "x3"]
+    for random_variable in space.variables.values():
+        assert len(random_variable.distribution.marginals) == 1
+        distribution = random_variable.distribution.marginals[0].distribution
         assert distribution.kwds == {"loc": -pi, "scale": 2 * pi}
         assert distribution.dist.__class__.__name__ == "uniform_gen"

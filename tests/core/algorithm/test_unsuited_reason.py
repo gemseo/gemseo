@@ -25,7 +25,7 @@ from gemseo.core.algorithm._unsuitability_reason import _UnsuitabilityReason
     ("name", "value"),
     [
         ("NO_REASON", ""),
-        ("EMPTY_DESIGN_SPACE", "the design space is empty"),
+        ("EMPTY_VARIABLE_SPACE", "the variable space is empty"),
         ("NOT_SYMMETRIC", "the left-hand side of the problem is not symmetric"),
         (
             "NOT_POSITIVE_DEFINITE",
@@ -54,7 +54,7 @@ def test_reason_values(name, value) -> None:
 
 def test_str() -> None:
     """Check that the string representation of an _UnsuitabilityReason is its value."""
-    reason = _UnsuitabilityReason.EMPTY_DESIGN_SPACE
+    reason = _UnsuitabilityReason.EMPTY_VARIABLE_SPACE
     assert str(reason) == reason.value
 
 

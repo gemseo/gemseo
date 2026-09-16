@@ -130,8 +130,9 @@ if TYPE_CHECKING:
     from gemseo.scenario.scenario_result.scenario_result import (
         ScenarioResult as ScenarioResult,
     )
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.space.design import DesignSpace
-    from gemseo.space.parameter import ParameterSpace
+    from gemseo.space.random import RandomSpace
     from gemseo.util.matplotlib_figure import FigSizeType
     from gemseo.util.pydantic import BaseSettings
     from gemseo.util.typing import NumberArray
@@ -1320,15 +1321,15 @@ def create_design_space() -> DesignSpace:
     return DesignSpace()
 
 
-def create_parameter_space() -> ParameterSpace:
-    """Create an empty parameter space.
+def create_random_space() -> RandomSpace:
+    """Create an empty random space.
 
     Returns:
-        An empty parameter space.
+        An empty random space.
     """
-    from gemseo.space.parameter import ParameterSpace  # noqa: F811
+    from gemseo.space.random import RandomSpace  # noqa: F811
 
-    return ParameterSpace()
+    return RandomSpace()
 
 
 def get_available_caches() -> list[str]:
@@ -1506,12 +1507,18 @@ def import_database(
 
 
 def compute_doe(
-    variables_space: DesignSpace | int,
+    variables_space: BaseVariableSpace | int,
     unit_sampling: bool = False,
     settings_model: BaseDOESettings | None = None,
     **settings: DriverSettingType,
 ) -> ndarray:
     """Compute a design of experiments (DOE) in a variables space.
+
+    The space is sampled through its mapping from the unit hypercube,
+    which is geometric for a
+    [DesignSpace][gemseo.space.design.DesignSpace]
+    and iso-probabilistic for a
+    [RandomSpace][gemseo.space.random.RandomSpace].
 
     Args:
         variables_space: Either the variables space to be sampled or its dimension.
@@ -1735,7 +1742,7 @@ def create_scenario_result(
 
 def sample_disciplines(
     disciplines: Sequence[Discipline],
-    input_space: DesignSpace,
+    input_space: BaseVariableSpace,
     output_names: str | Iterable[str],
     formulation_name: str = "MDF",
     formulation_settings: StrKeyMapping = read_only_empty_dict,

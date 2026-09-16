@@ -24,7 +24,7 @@ from numpy.testing import assert_almost_equal
 
 from gemseo.dataset.io_dataset import IODataset
 from gemseo.discipline.analytic import AnalyticDiscipline
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty import create_sensitivity_analysis
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
@@ -43,16 +43,16 @@ def discipline() -> AnalyticDiscipline:
 
 
 @pytest.fixture(scope="module")
-def parameter_space() -> ParameterSpace:
-    """The uncertain space of two standard normal variables."""
-    space = ParameterSpace()
-    space.add_random_variable("x1", OTNormalDistribution_Settings())
-    space.add_random_variable("x2", OTNormalDistribution_Settings())
+def random_space() -> RandomSpace:
+    """The random space of two standard normal variables."""
+    space = RandomSpace()
+    space.add_variable("x1", OTNormalDistribution_Settings())
+    space.add_variable("x2", OTNormalDistribution_Settings())
     return space
 
 
 @pytest.fixture(scope="module")
-def events(discipline, parameter_space):
+def events(discipline, random_space):
     """The events of interest, indexed by their names."""
     analysis = FORMAnalysis()
     y = analysis.get_event_variables("y")
@@ -60,10 +60,10 @@ def events(discipline, parameter_space):
 
 
 @pytest.fixture(scope="module")
-def form(discipline, parameter_space, events) -> FORMAnalysis:
+def form(discipline, random_space, events) -> FORMAnalysis:
     """A FORM analysis."""
     analysis = FORMAnalysis()
-    analysis.compute_samples([discipline], parameter_space, events)
+    analysis.compute_samples([discipline], random_space, events)
     analysis.compute_indices()
     return analysis
 
@@ -126,26 +126,24 @@ def test_from_samples(form) -> None:
     assert analysis.indices.elliptical["y_high"] == form.indices.elliptical["y_high"]
 
 
-def test_sorm(discipline, parameter_space, events) -> None:
+def test_sorm(discipline, random_space, events) -> None:
     """Check that a SORM study can be used instead of FORM."""
     analysis = FORMAnalysis()
     analysis.compute_samples(
-        [discipline], parameter_space, events, algo_settings=OT_SORM_Settings()
+        [discipline], random_space, events, algo_settings=OT_SORM_Settings()
     )
     indices = analysis.compute_indices()
     assert set(indices.classical) == {"y_high"}
 
 
 @pytest.mark.parametrize("use_database", [False, True])
-def test_form_database(
-    discipline, parameter_space, events, use_database, caplog
-) -> None:
+def test_form_database(discipline, random_space, events, use_database, caplog) -> None:
     """Check that a FORMAnalysis needs the database."""
     analysis = FORMAnalysis()
     algo_settings = OT_FORM_Settings(use_database=use_database)
     analysis.compute_samples(
         [discipline],
-        parameter_space,
+        random_space,
         events,
         algo_settings=algo_settings,
     )
@@ -156,10 +154,10 @@ def test_form_database(
 
 
 def test_consistency_with_reliability_scenario(
-    discipline, parameter_space, events, form
+    discipline, random_space, events, form
 ) -> None:
     """Cross-check the indices against a direct reliability study."""
-    scenario = ReliabilityScenario([discipline], parameter_space)
+    scenario = ReliabilityScenario([discipline], random_space)
     y = scenario.get_event_variables("y")
     scenario.add_event(y > 1.0, "y_high")
     scenario.execute(OT_FORM_Settings())

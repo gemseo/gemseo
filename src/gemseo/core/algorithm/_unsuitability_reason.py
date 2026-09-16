@@ -33,7 +33,7 @@ class _UnsuitabilityReason(StrEnum):
     NO_REASON = ""
 
     # BaseDriverLibrary
-    EMPTY_DESIGN_SPACE = "the design space is empty"
+    EMPTY_VARIABLE_SPACE = "the variable space is empty"
 
     # BaseLinearSolverLibrary
     NOT_SYMMETRIC = _linear_solver_template.format("symmetric")

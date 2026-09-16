@@ -699,7 +699,7 @@ def test_complex_casting_with_non_float_variables(
     )
 
     assert (
-        scenario_with_non_float_variables.formulation.design_space._current_value[
+        scenario_with_non_float_variables.formulation.input_space._current_value[
             "x"
         ].dtype
         == complex128
@@ -893,7 +893,7 @@ def test_lib_serialization(tmp_wd, mdf_scenario) -> None:
         mdf_scenario: A fixture for the MDOScenario.
     """
     mdf_scenario.execute(SLSQP_Settings(max_iter=1))
-    mdf_scenario.formulation.problem.reset(database=False, design_space=False)
+    mdf_scenario.formulation.problem.reset(database=False, input_space=False)
 
     with open("scenario.pkl", "wb") as file:
         pickle.dump(mdf_scenario, file)

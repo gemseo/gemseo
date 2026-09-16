@@ -59,8 +59,8 @@ The Ishigami problem is available in four forms:
 |-------|------------|----------|
 | [IshigamiDiscipline][gemseo.problem.uncertainty.ishigami.ishigami_discipline.IshigamiDiscipline] | [Discipline][gemseo.core.discipline.discipline.Discipline] | MDO integration, coupling |
 | [IshigamiFunction][gemseo.problem.uncertainty.ishigami.ishigami_function.IshigamiFunction] | [ArrayFunction][gemseo.core.function.array_function.ArrayFunction] | Low-level function evaluation |
-| [IshigamiProblem][gemseo.problem.uncertainty.ishigami.ishigami_problem.IshigamiProblem] | [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem] | Uncertainty-aware optimization |
-| [IshigamiSpace][gemseo.problem.uncertainty.ishigami.ishigami_space.IshigamiSpace] | [ParameterSpace][gemseo.space.parameter.ParameterSpace] | Probabilistic input space |
+| [IshigamiProblem][gemseo.problem.uncertainty.ishigami.ishigami_problem.IshigamiProblem] | [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem] | Uncertainty-aware evaluation |
+| [IshigamiSpace][gemseo.problem.uncertainty.ishigami.ishigami_space.IshigamiSpace] | [RandomSpace][gemseo.space.random.RandomSpace] | Probabilistic input space |
 
 The [statistics][gemseo.problem.uncertainty.ishigami.statistics] module
 exports all analytical reference values as constants

@@ -92,15 +92,15 @@ from gemseo.problem.uncertainty.ishigami import IshigamiSpace
 
 # %%
 # First,
-# you define the Ishigami discipline and its uncertain space:
+# you define the Ishigami discipline and its random space:
 discipline = IshigamiDiscipline()
-uncertain_space = IshigamiSpace(IshigamiSpace.UniformDistribution.OPENTURNS)
+random_space = IshigamiSpace(IshigamiSpace.UniformDistribution.OPENTURNS)
 
 # %%
 # and create a training dataset using an optimized latin hypercube sampling:
 training_dataset = sample_disciplines(
     [discipline],
-    uncertain_space,
+    random_space,
     "y",
     algo_settings_model=OT_OPT_LHS_Settings(n_samples=70, eval_jac=True),
 )
@@ -109,7 +109,7 @@ training_dataset = sample_disciplines(
 # as well as a validation dataset using Monte Carlo sampling:
 validation_dataset = sample_disciplines(
     [discipline],
-    uncertain_space,
+    random_space,
     "y",
     algo_settings_model=MC_Settings(n_samples=1000),
 )

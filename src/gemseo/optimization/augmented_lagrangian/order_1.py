@@ -71,9 +71,9 @@ class AugmentedLagrangianOrder1(
         self,
         problem: OptimizationProblem,
         result: OptimizationResult,
-        max_design_space_dimension_to_log: int,
+        max_input_space_dimension_to_log: int,
     ) -> None:
-        super()._post_run(problem, result, max_design_space_dimension_to_log)
+        super()._post_run(problem, result, max_input_space_dimension_to_log)
         # Reset this cached attribute since an algorithm shall be stateless to take
         # full advantage of the algorithm factory cache.
         self.__lagrange_multiplier_calculator = None

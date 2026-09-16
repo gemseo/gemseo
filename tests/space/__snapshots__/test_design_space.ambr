@@ -85,7 +85,7 @@
   "The type_ argument of add_variable must be a string naming the type of the whole variable; got ['float', 'integer']."
 # ---
 # name: test_add_variable_with_discrete_type_raises
-  'Only continuous and integer variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
+  'Only float and integer variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
 # ---
 # name: test_add_variable_with_inconsistent_bound_size[lower_bound]
   '''
@@ -119,7 +119,7 @@
   "The following value of variable 'varname' is neither None nor a number: nan (index 0)."
 # ---
 # name: test_add_variable_with_unkown_type
-  'Only continuous and integer variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
+  'Only float and integer variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
 # ---
 # name: test_add_variable_with_unnumerizable_value
   "The following value of variable 'varname' is neither None nor complex and cannot be cast to float: <built-in function len> (index 0)."
@@ -247,14 +247,22 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
-# name: test_denormalize_vect_out_with_wrong_dtype
-  'Expected an out array of dtype float64; got complex128.'
-# ---
-# name: test_denormalize_vect_out_with_wrong_shape
-  'Expected an out array of shape (2,); got (3, 2).'
-# ---
 # name: test_dict_to_array_key_error
   "'y'"
+# ---
+# name: test_discrete_variable_bounds_are_not_settable[set_lower_bound]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, lower_bound is read-only; the input of a DiscreteVariable is choices. [type=value_error, input_value={'choices': array([0.45, ...2]), 'lower_bound': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_discrete_variable_bounds_are_not_settable[set_upper_bound]
+  '''
+  1 validation error for DiscreteVariable
+    Value error, upper_bound is read-only; the input of a DiscreteVariable is choices. [type=value_error, input_value={'choices': array([0.45, ...2]), 'upper_bound': 0.5}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
 # ---
 # name: test_discrete_variable_csv_with_the_separator_as_delimiter
   "A design space holding a discrete variable cannot be exported with '|' as delimiter, which separates the choices within a cell."
@@ -338,19 +346,26 @@
   +------+-------------+-------+-------------+----------+
   '''
 # ---
-# name: test_filter_dimensions_duplicated_on_a_discrete_variable
-  '''
-  1 validation error for DiscreteVariable
-  size
-    Value error, A discrete variable is scalar; its size cannot be set to 2. [type=value_error, input_value=2, input_type=int]
-      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
-  '''
-# ---
 # name: test_filter_dimensions_nonexistent[indices0-Dimension 3 of variable 'x5' does not exist.]
   "Dimension 3 of variable 'x5' does not exist."
 # ---
 # name: test_filter_dimensions_nonexistent[indices1-Dimensions 3 and 4 of variable 'x5' do not exist.]
   "Dimensions 3 and 4 of variable 'x5' do not exist."
+# ---
+# name: test_filter_dimensions_nonexistent[indices2-Dimension -1 of variable 'x5' does not exist.]
+  "Dimension -1 of variable 'x5' does not exist."
+# ---
+# name: test_filter_dimensions_nonexistent[indices3-Dimensions -1 and 3 of variable 'x5' do not exist.]
+  "Dimensions -1 and 3 of variable 'x5' do not exist."
+# ---
+# name: test_filter_dimensions_repeated
+  "The dimensions of variable 'x5' cannot be repeated."
+# ---
+# name: test_filter_dimensions_repeated_on_a_discrete_variable
+  "The dimensions of variable 't' cannot be repeated."
+# ---
+# name: test_filter_dimensions_without_dimension
+  "A variable cannot be empty; got no component for 'x5'."
 # ---
 # name: test_filter_with_an_unknown_variable
   "No variable named 'unknown_x'."
@@ -558,8 +573,8 @@
   - The size of the design variable 'y' is 1; got 2.
   '''
 # ---
-# name: test_normalize_vect_out_with_wrong_dtype
-  'Expected an out array of dtype float64; got int64.'
+# name: test_prepare_untransformation_checks_boundedness
+  'The components 0 of the design space are unbounded.'
 # ---
 # name: test_read_only_bound_getters_forbid_item_assignment[get_lower_bound]
   'assignment destination is read-only'
@@ -590,6 +605,9 @@
 # ---
 # name: test_rename_unknown_variable
   "No variable named 'x'."
+# ---
+# name: test_rename_variable_collision
+  "Cannot rename 'x' to 'y': 'y' is already the name of another variable."
 # ---
 # name: test_set_current_value_out_of_bounds_array_or_opt_result_leaves_no_partial_value[current_x0]
   'The component x[0] of the given array (5.0) is greater than the upper bound (1.0) by 4.0e+00.'

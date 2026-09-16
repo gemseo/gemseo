@@ -20,6 +20,7 @@ import warnings
 
 import pytest
 from numpy import array
+from numpy import float64
 from numpy import inf
 from numpy import int64
 from numpy.testing import assert_array_equal
@@ -40,11 +41,69 @@ def test_init_defaults() -> None:
 
 
 @pytest.mark.parametrize("side", ["lower", "upper"])
-@pytest.mark.parametrize("bound", [array([1.5]), array([1.5, 2.5])])
-def test_bound_with_non_integer_components(side, bound, snapshot) -> None:
+@pytest.mark.parametrize(
+    ("size", "bound"),
+    [
+        (1, 1.5),
+        (1, [1.5]),
+        (1, (1.5,)),
+        (1, array([1.5])),
+        (2, array([1.5, 2.5])),
+    ],
+)
+def test_bound_with_non_integer_components(side, size, bound, snapshot) -> None:
     """Check a bound with one or several non-integer components."""
     with assert_exception(ValidationError, snapshot):
-        IntegerVariable(size=bound.size, **{f"{side}_bound": bound})
+        IntegerVariable(size=size, **{f"{side}_bound": bound})
+
+
+@pytest.mark.parametrize("bound", [2, 2.0, [2.0], (2.0,), array([2.0]), array([2])])
+def test_finite_bound_is_stored_as_integer(bound) -> None:
+    """Check that a finite bound is stored as an integer, whatever its type."""
+    variable = IntegerVariable(lower_bound=bound, upper_bound=10)
+    assert variable.lower_bound.dtype == int64
+    assert_array_equal(variable.lower_bound, array([2]))
+
+
+@pytest.mark.parametrize(
+    ("side", "bound"),
+    [
+        ("lower", [-1e30]),
+        ("upper", [1e30]),
+        ("upper", [2.0**63]),
+        ("lower", [-(2.0**63) - 2.0**11]),
+        ("upper", [0.0, 1e30]),
+    ],
+)
+def test_bound_outside_the_range_of_an_integer(side, bound, snapshot) -> None:
+    """Check that a finite bound outside the range of a 64-bit integer is rejected.
+
+    Casting it would overflow silently to the smallest 64-bit integer
+    and give the variable a domain that is not the one asked for,
+    while keeping it as a floating-point number would break
+    the computation of the default value, which is cast to an integer.
+    """
+    with assert_exception(ValidationError, snapshot):
+        IntegerVariable(size=len(bound), **{f"{side}_bound": array(bound)})
+
+
+def test_bound_at_the_edge_of_the_range_of_an_integer() -> None:
+    """Check that the smallest 64-bit integer is an acceptable bound."""
+    variable = IntegerVariable(lower_bound=array([-(2.0**63)]))
+    assert variable.lower_bound.dtype == int64
+    assert_array_equal(variable.lower_bound, array([-(2**63)]))
+    assert_array_equal(variable.get_default_value(), array([-(2**63)]))
+
+
+@pytest.mark.parametrize("side", ["lower", "upper"])
+def test_infinite_bound_is_stored_as_float(side) -> None:
+    """Check that an infinite bound keeps a floating-point type.
+
+    An integer type cannot hold an infinite component.
+    """
+    bound = -inf if side == "lower" else inf
+    variable = IntegerVariable(**{f"{side}_bound": bound})
+    assert getattr(variable, f"{side}_bound").dtype == float64
 
 
 def test_component_type() -> None:
@@ -98,3 +157,16 @@ def test_unbounded_integer_variable(lower_bound, upper_bound, size) -> None:
 
     assert_array_equal(variable.lower_bound, lower_bound[:size])
     assert_array_equal(variable.upper_bound, upper_bound[:size])
+
+
+@pytest.mark.parametrize("enable_integer_normalization", [False, True])
+def test_normalization_mask_is_read_only(
+    enable_integer_normalization, snapshot
+) -> None:
+    """Check that the normalization mask of an integer variable is frozen."""
+    variable = IntegerVariable(size=2, lower_bound=0, upper_bound=1)
+    mask = variable.get_normalization_mask(enable_integer_normalization)
+    assert_array_equal(mask, array([enable_integer_normalization] * 2))
+    assert not mask.flags.writeable
+    with assert_exception(ValueError, snapshot):
+        mask[0] = not enable_integer_normalization

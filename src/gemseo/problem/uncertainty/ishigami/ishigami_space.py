@@ -12,19 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""The uncertain space used in the Ishigami use case."""
+"""The random space used in the Ishigami use case."""
 
 from __future__ import annotations
 
 from numpy import pi
 
 from gemseo.problem.uncertainty.util import UniformDistribution
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.factory import DistributionFactory
 
 
-class IshigamiSpace(ParameterSpace):
-    r"""The uncertain space used in the Ishigami use case."""
+class IshigamiSpace(RandomSpace):
+    r"""The random space used in the Ishigami use case."""
 
     UniformDistribution = UniformDistribution
     """The name of the class implementing the uniform distribution."""
@@ -44,4 +44,4 @@ class IshigamiSpace(ParameterSpace):
             .settings_class(minimum=-pi, maximum=pi)
         )
         for index in range(3):
-            self.add_random_vector(f"x{index + 1}", settings)
+            self.add_variable(f"x{index + 1}", settings)

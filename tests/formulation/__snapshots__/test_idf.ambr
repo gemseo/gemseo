@@ -1,4 +1,10 @@
 # serializer version: 1
 # name: test_fail_idf_no_coupl
-  "IDF formulation: the variables 'y_12', 'y_14', 'y_21', 'y_23', 'y_24', 'y_31', 'y_32' and 'y_34' must be added to the design space."
+  "IDF formulation: the variables 'y_12', 'y_14', 'y_21', 'y_23', 'y_24', 'y_31', 'y_32' and 'y_34' must be added to the input space."
+# ---
+# name: test_idf_normalization_of_an_unbounded_coupling
+  "IDF formulation: the variables 'y_1' have a non-finite bound range, so the consistency constraints cannot be scaled; use the setting normalize_constraints=False."
+# ---
+# name: test_idf_start_at_equilibrium_with_a_non_design_space
+  'IDF formulation: starting the target coupling variables at equilibrium requires a DesignSpace as input space; got a RandomSpace.'
 # ---

@@ -18,7 +18,7 @@ import pytest
 from openturns import MultiFORMResult
 
 from gemseo.discipline.analytic import AnalyticDiscipline
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -30,13 +30,13 @@ from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
 
 def test_scenario():
     """Test ReliabilityScenario."""
-    uncertain_space = ParameterSpace()
-    uncertain_space.add_random_variable("u", OTUniformDistribution_Settings())
-    uncertain_space.add_random_variable("v", OTUniformDistribution_Settings())
+    random_space = RandomSpace()
+    random_space.add_variable("u", OTUniformDistribution_Settings())
+    random_space.add_variable("v", OTUniformDistribution_Settings())
 
     discipline = AnalyticDiscipline({"y": "u", "z": "v"})
 
-    scenario = ReliabilityScenario((discipline,), uncertain_space)
+    scenario = ReliabilityScenario((discipline,), random_space)
     y, z = scenario.get_event_variables("y", "z")
     scenario.add_event(y > 0.5, event_name="a")
     scenario.add_event((y > 0.6) & (z > 0.7), event_name="b")

@@ -45,8 +45,8 @@ from gemseo.machine_learning import get_mlearning_options
 from gemseo.machine_learning import get_regression_models
 from gemseo.machine_learning import get_regression_options
 from gemseo.machine_learning.transformer.scaler.min_max_scaler import MinMaxScaler
-from gemseo.scenario.mdo import MDOScenario
-from gemseo.space.parameter import ParameterSpace
+from gemseo.scenario.evaluation import EvaluationScenario
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -73,17 +73,17 @@ available_clustering_models = ["KMeans", "GaussianMixture"]
 def dataset() -> Dataset:
     """The dataset used to train the machine learning models."""
     discipline = AnalyticDiscipline({"y_1": "1+2*x_1+3*x_2", "y_2": "-1-2*x_1-3*x_2"})
-    probability_space = ParameterSpace()
-    probability_space.add_random_variable(
+    probability_space = RandomSpace()
+    probability_space.add_variable(
         "x_1", OTUniformDistribution_Settings(minimum=0, maximum=1)
     )
-    probability_space.add_random_variable(
+    probability_space.add_variable(
         "x_2", OTUniformDistribution_Settings(minimum=0, maximum=1)
     )
-    scenario = MDOScenario([discipline], probability_space)
-    scenario.add_objective("y_1")
+    scenario = EvaluationScenario([discipline], probability_space)
+    scenario.add_observable("y_1")
     scenario.execute(PYDOE_FULLFACT_Settings(n_samples=learning_size))
-    return scenario.to_dataset(opt_naming=False)
+    return scenario.to_dataset()
 
 
 @pytest.fixture

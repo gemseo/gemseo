@@ -19,33 +19,31 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gemseo.core.problem.evaluation import EvaluationProblem
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.reliability.event import Event
 from gemseo.uncertainty.reliability.event_variable import EventVariable
 from gemseo.util.string import MultiLineString
 
 if TYPE_CHECKING:
     from gemseo.core.function.array_function import ArrayFunction
-    from gemseo.space.parameter import ParameterSpace
 
 
-class ReliabilityProblem(EvaluationProblem):
+class ReliabilityProblem(EvaluationProblem[RandomSpace]):
     """A reliability analysis problem."""
 
     __name_to_event: dict[str, Event]
     """The map from an event name to an event."""
 
-    design_space: ParameterSpace
-
     def __init__(  # noqa: D107
         self,
-        design_space: ParameterSpace,
+        random_space: RandomSpace,
         differentiation_method: EvaluationProblem.DifferentiationMethod = EvaluationProblem.DifferentiationMethod.USER,  # noqa: E501
         differentiation_step: float = 1e-7,
         parallel_differentiation: bool = False,
         **parallel_differentiation_options: int | bool,
     ) -> None:
         super().__init__(
-            design_space,
+            random_space,
             differentiation_method=differentiation_method,
             differentiation_step=differentiation_step,
             parallel_differentiation=parallel_differentiation,

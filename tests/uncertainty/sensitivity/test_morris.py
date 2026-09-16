@@ -39,7 +39,7 @@ from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.oat_doe.settings.oat_doe_settings import default_step
 from gemseo.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 from gemseo.doe.scipy.settings.mc import MC_Settings
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.finite_discrete_settings import (
     OTFiniteDiscreteDistribution_Settings,
 )
@@ -63,9 +63,7 @@ function = {
     "distributions": {
         name: {
             "name": name,
-            "distribution_settings": OTUniformDistribution_Settings(
-                minimum=0.0, maximum=1.0
-            ),
+            "settings": OTUniformDistribution_Settings(minimum=0.0, maximum=1.0),
         }
         for name in ["x1", "x2", "x3"]
     },
@@ -83,11 +81,12 @@ def discipline() -> AnalyticDiscipline:
 
 
 @pytest.fixture(scope="module")
-def parameter_space() -> ParameterSpace:
+def parameter_space() -> RandomSpace:
     """The parameter space used by the main Morris analysis."""
-    space = ParameterSpace()
+    space = RandomSpace()
     for variable in function["variables"]:
-        space.add_random_variable(**function["distributions"][variable])
+        distribution = function["distributions"][variable]
+        space.add_variable(distribution["name"], distribution["settings"])
     return space
 
 
@@ -250,12 +249,12 @@ def morris_with_nan_indices() -> MorrisAnalysis:
     and so no OAT replicate moves it,
     while `x2` and `x3` are uniformly distributed.
     """
-    space = ParameterSpace()
-    space.add_random_variable(
+    space = RandomSpace()
+    space.add_variable(
         "x1", OTFiniteDiscreteDistribution_Settings(value_to_weight={1.0: 1.0})
     )
     for name in ("x2", "x3"):
-        space.add_random_variable(name, OTUniformDistribution_Settings())
+        space.add_variable(name, OTUniformDistribution_Settings())
 
     analysis = MorrisAnalysis()
     analysis.compute_samples([AnalyticDiscipline({"y": "x1+2*x2+3*x3"})], space, 0)
@@ -380,13 +379,9 @@ def test_morris_with_nsamples() -> None:
     """Check the number of replicates when the number of samples is specified."""
     expressions = {"y": "x1+x2"}
     discipline = create_discipline("AnalyticDiscipline", expressions)
-    space = ParameterSpace()
-    space.add_random_variable(
-        "x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
-    )
-    space.add_random_variable(
-        "x2", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
-    )
+    space = RandomSpace()
+    space.add_variable("x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi))
+    space.add_variable("x2", OTUniformDistribution_Settings(minimum=-pi, maximum=pi))
     morris = MorrisAnalysis()
     morris.compute_samples([discipline], space, n_samples=7)
     assert morris.n_replicates == 2
@@ -404,9 +399,10 @@ def test_normalize(morris) -> None:
         name=function["name"],
     )
 
-    space = ParameterSpace()
+    space = RandomSpace()
     for variable in function["variables"]:
-        space.add_random_variable(**function["distributions"][variable])
+        distribution = function["distributions"][variable]
+        space.add_variable(distribution["name"], distribution["settings"])
 
     analysis = MorrisAnalysis()
     analysis.compute_samples([discipline], space, n_samples=0)
@@ -448,10 +444,10 @@ def test_morris_multiple_disciplines() -> None:
     d2 = create_discipline("AnalyticDiscipline", expressions[1])
     d3 = create_discipline("AnalyticDiscipline", expressions[2])
 
-    space = ParameterSpace()
+    space = RandomSpace()
 
     for variable in ["x1", "x2", "x3"]:
-        space.add_random_variable(
+        space.add_variable(
             variable, OTUniformDistribution_Settings(minimum=-10, maximum=10)
         )
 
@@ -517,12 +513,12 @@ def test_output_names() -> None:
     See https://gitlab.com/gemseo/dev/gemseo/-/issues/866
     """
     discipline = AnalyticDiscipline({"y": "x", "z": "x"})
-    parameter_space = ParameterSpace()
-    parameter_space.add_random_variable("x", SPUniformDistribution_Settings())
+    parameter_space = RandomSpace()
+    parameter_space.add_variable("x", SPUniformDistribution_Settings())
     sensitivity_analysis = MorrisAnalysis()
     sensitivity_analysis.compute_samples(
         disciplines=[discipline],
-        parameter_space=parameter_space,
+        random_space=parameter_space,
         n_samples=0,
         output_names=["y"],
     )
@@ -543,13 +539,13 @@ MorrisAnalysisSamplingPhase
    MDO formulation: MDF
 Evaluation problem:
    Evaluate the functions: y1, y2
-   over the design space:
+   over the random space:
       \+------\+-------------------------------\+
       \| Name \|          Distribution         \|
       \+------\+-------------------------------\+
-      \|  x1  \| Uniform\(lower=0\.0, upper=1\.0\) \|
-      \|  x2  \| Uniform\(lower=0\.0, upper=1\.0\) \|
-      \|  x3  \| Uniform\(lower=0\.0, upper=1\.0\) \|
+      \| x1   \| Uniform\(lower=0\.0, upper=1\.0\) \|
+      \| x2   \| Uniform\(lower=0\.0, upper=1\.0\) \|
+      \| x3   \| Uniform\(lower=0\.0, upper=1\.0\) \|
       \+------\+-------------------------------\+
 Running the algorithm MorrisDOE:
     25%\|██▌       \| 1\/4 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
@@ -579,9 +575,9 @@ def test_from_samples(morris, tmp_wd):
 @pytest.mark.parametrize("normalize", [False, True])
 def test_constant_output(discipline_with_constant_output_and_space, normalize):
     """Check that MorrisAnalysis supports constant outputs."""
-    discipline, uncertain_space = discipline_with_constant_output_and_space
+    discipline, random_space = discipline_with_constant_output_and_space
     analysis = MorrisAnalysis()
-    analysis.compute_samples([discipline], uncertain_space, 0)
+    analysis.compute_samples([discipline], random_space, 0)
     indices = analysis.compute_indices(normalize=normalize)
     assert indices.mu["constant"][0] is None
     assert indices.mu["varying"][0] is not None
@@ -601,12 +597,12 @@ def test_morris_vectorial_input(snapshot_matplotlib):
             return {"y1": input_data["x1"]}
 
     discipline = MyDisc()
-    uncertain_space = ParameterSpace()
-    uncertain_space.add_random_variable(
-        "x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi), size=2
+    random_space = RandomSpace()
+    random_space.add_variable(
+        "x1", *[OTUniformDistribution_Settings(minimum=-pi, maximum=pi)] * 2
     )
     analysis = MorrisAnalysis()
-    analysis.compute_samples([discipline], uncertain_space, 0)
+    analysis.compute_samples([discipline], random_space, 0)
     analysis.compute_indices(normalize=True)
     analysis.plot(save=False, output="y1")
 
@@ -616,9 +612,9 @@ def test_morris_all_replicates() -> None:
 
     See https://gitlab.com/gemseo/dev/gemseo/-/work_items/1894
     """
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ("x1", "x2"):
-        space.add_random_variable(
+        space.add_variable(
             name, OTUniformDistribution_Settings(minimum=1.0, maximum=2.0)
         )
 
@@ -647,9 +643,9 @@ def test_morris_sigma_unbiased() -> None:
     The variance is divided by $R-1$, as in Morris (1991),
     and is zero when there is a single OAT replicate.
     """
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ("x1", "x2"):
-        space.add_random_variable(
+        space.add_variable(
             name, OTUniformDistribution_Settings(minimum=1.0, maximum=2.0)
         )
 
@@ -682,13 +678,9 @@ def test_morris_elementary_effects(step) -> None:
     output while the elementary effects are its partial derivatives, whatever the
     relative step.
     """
-    space = ParameterSpace()
-    space.add_random_variable(
-        "x1", OTUniformDistribution_Settings(minimum=1.0, maximum=2.0)
-    )
-    space.add_random_variable(
-        "x2", OTUniformDistribution_Settings(minimum=0.0, maximum=10.0)
-    )
+    space = RandomSpace()
+    space.add_variable("x1", OTUniformDistribution_Settings(minimum=1.0, maximum=2.0))
+    space.add_variable("x2", OTUniformDistribution_Settings(minimum=0.0, maximum=10.0))
 
     analysis = MorrisAnalysis()
     analysis.compute_samples(
@@ -718,9 +710,9 @@ def test_morris_elementary_effects_downward_step() -> None:
     hence the elementary effects are the exact partial derivatives,
     `mu` is equal to `mu_star` and `sigma` is zero.
     """
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ("x1", "x2"):
-        space.add_random_variable(
+        space.add_variable(
             name, OTUniformDistribution_Settings(minimum=0.0, maximum=1.0)
         )
 
@@ -753,9 +745,9 @@ def test_morris_elementary_effects_at_the_unit_upper_bound() -> None:
     and the elementary effects of a linear model
     remain the exact partial derivatives.
     """
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ("x1", "x2"):
-        space.add_random_variable(name, OTNormalDistribution_Settings())
+        space.add_variable(name, OTNormalDistribution_Settings())
 
     analysis = MorrisAnalysis()
     analysis.compute_samples(
@@ -785,9 +777,9 @@ def test_morris_elementary_effects_non_uniform_inputs() -> None:
     hence the elementary effects are the exact partial derivatives
     whatever the replicate.
     """
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ("x1", "x2"):
-        space.add_random_variable(name, OTNormalDistribution_Settings())
+        space.add_variable(name, OTNormalDistribution_Settings())
 
     analysis = MorrisAnalysis()
     analysis.compute_samples(
@@ -817,16 +809,14 @@ def test_morris_elementary_effects_zero_step(caplog) -> None:
     and a quantile function jumping at 0.25, 0.5 and 0.75,
     exactly three of these centres are followed by a jump.
     """
-    space = ParameterSpace()
-    space.add_random_variable(
+    space = RandomSpace()
+    space.add_variable(
         "x1",
         OTFiniteDiscreteDistribution_Settings(
             value_to_weight={0.0: 1.0, 10.0: 1.0, 20.0: 1.0, 30.0: 1.0}
         ),
     )
-    space.add_random_variable(
-        "x2", OTUniformDistribution_Settings(minimum=0.0, maximum=1.0)
-    )
+    space.add_variable("x2", OTUniformDistribution_Settings(minimum=0.0, maximum=1.0))
 
     n_replicates = round(1 / default_step)
     analysis = MorrisAnalysis()
@@ -863,13 +853,11 @@ def test_morris_elementary_effects_zero_step(caplog) -> None:
 
 def test_morris_elementary_effects_without_step(caplog) -> None:
     """Check the elementary effects of an input that no OAT replicate moves."""
-    space = ParameterSpace()
-    space.add_random_variable(
+    space = RandomSpace()
+    space.add_variable(
         "x1", OTFiniteDiscreteDistribution_Settings(value_to_weight={1.0: 1.0})
     )
-    space.add_random_variable(
-        "x2", OTUniformDistribution_Settings(minimum=0.0, maximum=1.0)
-    )
+    space.add_variable("x2", OTUniformDistribution_Settings(minimum=0.0, maximum=1.0))
 
     analysis = MorrisAnalysis()
     analysis.compute_samples([AnalyticDiscipline({"y": "x1+2*x2"})], space, 0)
@@ -892,9 +880,9 @@ def test_uses_elementary_effects_after_a_failed_call() -> None:
     A call to `compute_indices` that raises leaves the previous indices in place,
     and so must leave the convention that produced them in place too.
     """
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ("x1", "x2"):
-        space.add_random_variable(name, OTUniformDistribution_Settings())
+        space.add_variable(name, OTUniformDistribution_Settings())
 
     analysis = MorrisAnalysis()
     analysis.compute_samples([AnalyticDiscipline({"y": "x1+2*x2"})], space, 0)
@@ -920,9 +908,9 @@ def test_morris_input_without_effect() -> None:
 
     See https://gitlab.com/gemseo/dev/gemseo/-/work_items/1895
     """
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ("x1", "x2", "x3"):
-        space.add_random_variable(name, OTUniformDistribution_Settings())
+        space.add_variable(name, OTUniformDistribution_Settings())
 
     analysis = MorrisAnalysis()
     analysis.compute_samples(
@@ -943,9 +931,9 @@ def test_morris_sigma_of_signed_differences() -> None:
 
     See https://gitlab.com/gemseo/dev/gemseo/-/work_items/1896
     """
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ("x1", "x2"):
-        space.add_random_variable(
+        space.add_variable(
             name, OTUniformDistribution_Settings(minimum=1.0, maximum=2.0)
         )
 

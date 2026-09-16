@@ -301,7 +301,7 @@ def test_lib_serialization(tmp_wd, doe_scenario) -> None:
     """
     doe_scenario.execute(CustomDOE_Settings(samples=array([[1.0]])))
 
-    doe_scenario.formulation.problem.reset(database=False, design_space=False)
+    doe_scenario.formulation.problem.reset(database=False, input_space=False)
 
     with open("doe.pkl", "wb") as file:
         pickle.dump(doe_scenario, file)

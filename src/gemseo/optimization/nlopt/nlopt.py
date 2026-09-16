@@ -374,9 +374,9 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
         """
         algo_name = self._algo_name
         if algo_name == "NLOPT_COBYLA" and self._settings.stop_crit_n_x is None:
-            stop_crit_n_x = problem.design_space.dimension + 1
+            stop_crit_n_x = problem.input_space.dimension + 1
         elif algo_name == "NLOPT_BOBYQA" and self._settings.stop_crit_n_x is None:
-            stop_crit_n_x = 2 * problem.design_space.dimension + 1
+            stop_crit_n_x = 2 * problem.input_space.dimension + 1
         else:
             stop_crit_n_x = self._settings.stop_crit_n_x or 3
 
@@ -394,7 +394,7 @@ class Nlopt(BaseOptimizationLibrary[BaseNLoptSettings]):
         """  # noqa: D205, D212
         # Get the bounds anx x0
         x_0, l_b, u_b = get_value_and_bounds(
-            problem.design_space, self._settings.normalize_design_space
+            problem.input_space, self._settings.normalize_design_space
         )
 
         nlopt_problem = opt(

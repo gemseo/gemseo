@@ -117,7 +117,7 @@ class LagrangeMultipliers:
         """  # noqa: D205, D212, D415
         self.optimization_problem = opt_problem
         self.optimization_problem.reset(
-            database=False, design_space=False, preprocessing=False
+            database=False, input_space=False, preprocessing=False
         )
         self.active_lb_names = []
         self.active_ub_names = []
@@ -227,15 +227,15 @@ class LagrangeMultipliers:
             x_vect: The point at which the Lagrange multipliers are to be computed.
         """
         problem = self.optimization_problem
-        problem.design_space.check_membership(x_vect)
+        problem.input_space.check_membership(x_vect)
 
         # Check that the point satisfies other constraints
         output_functions, jacobian_functions = problem.get_functions(
             evaluate_objective=False, observable_names=None
         )
         values, _ = self.optimization_problem.evaluate_functions(
-            design_vector=x_vect,
-            design_vector_is_normalized=False,
+            input_value=x_vect,
+            input_value_is_normalized=False,
             output_functions=output_functions or None,
             jacobian_functions=jacobian_functions or None,
         )
@@ -254,7 +254,7 @@ class LagrangeMultipliers:
             The Jacobian of the active bounds
             and the name of each component of each function.
         """
-        dspace = self.optimization_problem.design_space
+        dspace = self.optimization_problem.input_space
         x_dim = dspace.dimension
         dim_act = sum(len(bnd.nonzero()[0]) for bnd in act_bounds.values())
         if dim_act == 0:
@@ -293,7 +293,7 @@ class LagrangeMultipliers:
         # active
         problem = self.optimization_problem
         act_constraints = problem.constraints.get_active(x_vect, ineq_tolerance)
-        dspace = problem.design_space
+        dspace = problem.input_space
 
         if self.__normalized:
             x_vect = dspace.normalize_vect(x_vect)
@@ -328,7 +328,7 @@ class LagrangeMultipliers:
         """
         self.constraint_violation = 0.0
         if self.__normalized:
-            x_vect = self.optimization_problem.design_space.normalize_vect(x_vect)
+            x_vect = self.optimization_problem.input_space.normalize_vect(x_vect)
         for constraint in self.optimization_problem.constraints:
             value = constraint.evaluate(x_vect)
             if constraint.f_type == constraint.ConstraintType.EQ:
@@ -357,7 +357,7 @@ class LagrangeMultipliers:
         # all functions (on all dimensions) are supposed to be active
         jac = []
         names = []
-        dspace = self.optimization_problem.design_space
+        dspace = self.optimization_problem.input_space
 
         if self.__normalized:
             x_vect = dspace.normalize_vect(x_vect)
@@ -385,7 +385,7 @@ class LagrangeMultipliers:
             The Jacobian of the objective.
         """
         if self.__normalized:
-            x_vect = self.optimization_problem.design_space.normalize_vect(x_vect)
+            x_vect = self.optimization_problem.input_space.normalize_vect(x_vect)
 
         return self.optimization_problem.objective.jac(x_vect)
 
@@ -403,7 +403,7 @@ class LagrangeMultipliers:
             and the name of each component of each function.
         """
         # Bounds jacobian
-        dspace = self.optimization_problem.design_space
+        dspace = self.optimization_problem.input_space
         act_lb, act_ub = dspace.get_active_bounds(x_vect, tol=ineq_tolerance)
         lb_jac_act, self.active_lb_names = self._get_act_bound_jac(act_lb)
         if lb_jac_act is not None:
@@ -501,7 +501,7 @@ class LagrangeMultipliers:
         multipliers = {}
 
         # Bound-constraints
-        indexed_varnames = problem.design_space.get_indexed_variable_names()
+        indexed_varnames = problem.input_space.get_indexed_variable_names()
         multipliers[self.lower_bounds] = dict.fromkeys(indexed_varnames, 0.0)
         multipliers[self.upper_bounds] = dict.fromkeys(indexed_varnames, 0.0)
 
@@ -528,7 +528,7 @@ class LagrangeMultipliers:
             The Lagrange multipliers.
         """
         problem = self.optimization_problem
-        design_space = problem.design_space
+        design_space = problem.input_space
 
         # Convert to dictionaries
         multipliers = {}
