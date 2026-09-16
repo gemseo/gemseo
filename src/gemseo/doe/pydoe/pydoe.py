@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from gemseo.optimization.problem import OptimizationProblem
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
 
 OptionType = (
     str
@@ -137,10 +137,10 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
 
     _settings_class_to_exclude: ClassVar[type[BasePyDOESettings]] = BasePyDOESettings
 
-    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+    def _generate_unit_samples(self, input_space: BaseVariableSpace) -> RealArray:
         if self._algo_name == "PYDOE_FULLFACT":
             return PyDOEFullFactorialDOE().generate_samples(
-                design_space.dimension, self._settings
+                input_space.dimension, self._settings
             )
 
         filtered_settings = self._filter_settings()
@@ -148,9 +148,9 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
         if self._algo_name == "PYDOE_LHS":
             filtered_settings["seed"] = self._seeder.get_seed(self._settings.seed)
             filtered_settings["samples"] = filtered_settings.pop("n_samples")
-            return doe_algorithm(design_space.dimension, **filtered_settings)
+            return doe_algorithm(input_space.dimension, **filtered_settings)
 
-        data = doe_algorithm(design_space.dimension, **filtered_settings)
+        data = doe_algorithm(input_space.dimension, **filtered_settings)
         # Scale data from [-1,1] to [0,1]
         return (data + 1.0) / 2.0
 
@@ -163,7 +163,7 @@ class PyDOELibrary(BaseDOELibrary[BasePyDOESettings]):
         reason = super()._get_unsuitability_reason(algorithm_description, problem)
         if (
             reason
-            or problem.design_space.dimension >= algorithm_description.minimum_dimension
+            or problem.input_space.dimension >= algorithm_description.minimum_dimension
         ):
             return reason
 

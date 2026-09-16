@@ -28,7 +28,7 @@ def test_fon(dim):
     problem = FonsecaFleming(dim)
     checker = FunctionJacobianChecker(problem.objective)
     assert checker.check(
-        problem.design_space.get_current_value(),
+        problem.input_space.get_current_value(),
         atol=2e-7,
         rtol=2e-7,
         step=1e-8,

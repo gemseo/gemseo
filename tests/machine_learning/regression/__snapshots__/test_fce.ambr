@@ -12,3 +12,9 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
+# name: test_input_space_is_not_a_random_space[False]
+  'FCERegressor requires a random space; got a DesignSpace.'
+# ---
+# name: test_input_space_is_not_a_random_space[True]
+  'FCERegressor requires a random space; got a DesignSpace.'
+# ---

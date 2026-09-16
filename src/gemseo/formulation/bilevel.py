@@ -23,6 +23,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import TypeVar
 
 from gemseo.core.coupling_structure import CouplingStructure
 from gemseo.core.function.array_function import ArrayFunction
@@ -47,12 +48,15 @@ if TYPE_CHECKING:
     from gemseo.core.grammar.json import JSONGrammar
     from gemseo.core.problem.database import DatabaseKeyType
     from gemseo.scenario.mdo import MDOScenario
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import StrKeyMapping
 
 logger = logging.getLogger(__name__)
 
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 
-class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
+
+class BiLevel(BaseMDOFormulation[BiLevel_Settings, _SpaceT]):
     """A BiLevel formulation.
 
     This formulation draws an optimization architecture
@@ -197,8 +201,8 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         top_disc = scenario.formulation.get_top_level_disciplines()
         top_outputs = [output for disc in top_disc for output in disc.io.output_grammar]
         sc_out_coupl = list(set(top_outputs) & set(couplings + mda2_inputs))
-        adapter_outputs = (
-            sc_out_coupl + scenario.formulation.design_space.variable_names
+        adapter_outputs = sc_out_coupl + list(
+            scenario.formulation.input_space.variables
         )
         if not self._mda2:
             top_disc = scenario.formulation.get_top_level_disciplines()
@@ -225,7 +229,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             for scn in self.get_sub_scenarios()
             for var in scn.design_space.variable_names
         ]
-        shared_dv = set(self.problem.design_space.variable_names)
+        shared_dv = set(self.problem.input_space.variables)
         couplings = self.coupling_structure.all_couplings
         mda1_outputs = self._get_mda1_outputs()
         top_disc = scenario.formulation.get_top_level_disciplines()
@@ -406,12 +410,12 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
         return [
             variable_name
             for variable_name in variable_names
-            if variable_name not in self.design_space.variable_names
+            if variable_name not in self.input_space.variables
         ]
 
-    def _update_design_space(self) -> None:
-        self._set_default_input_values_from_design_space()
-        self._remove_sub_scenario_dv_from_ds()
+    def _update_input_space(self) -> None:
+        self._set_default_input_values_from_space()
+        self._remove_sub_scenario_variables_from_space()
         self._remove_couplings_from_ds()
         self._remove_unused_variables()
 
@@ -424,14 +428,14 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings]):
             # Otherwise, the MDA2 may be a user provided MDA
             # Which manages the couplings internally
             couplings = self.mda2.coupling_structure.strong_couplings
-            design_space = self.problem.design_space
+            input_space = self.problem.input_space
             for coupling in couplings:
-                if coupling in design_space:
+                if coupling in input_space:
                     logger.warning(
-                        "The coupling variable %s was removed from the design space.",
+                        "The coupling variable %s was removed from the input space.",
                         coupling,
                     )
-                    design_space.remove_variable(coupling)
+                    input_space.remove_variable(coupling)
 
     def get_top_level_disciplines(  # noqa:D102
         self, include_sub_formulations: bool = False

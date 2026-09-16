@@ -118,13 +118,13 @@ def test_create_scenario(scalable_problem, formulation_settings) -> None:
 def test_create_quadratic_optimization_problem(scalable_problem) -> None:
     """Check create_quadratic_optimization_problem."""
     qp_problem = scalable_problem.create_quadratic_programming_problem()
-    assert len(qp_problem.design_space) == 1
-    assert "x" in qp_problem.design_space
-    assert qp_problem.design_space.get_size("x") == 3
-    assert qp_problem.design_space.get_type("x") == "float"
-    assert_equal(qp_problem.design_space.get_lower_bound("x"), [0] * 3)
-    assert_equal(qp_problem.design_space.get_upper_bound("x"), [1] * 3)
-    assert_equal(qp_problem.design_space.get_current_value("x"), [0.5] * 3)
+    assert len(qp_problem.input_space) == 1
+    assert "x" in qp_problem.input_space
+    assert qp_problem.input_space.get_size("x") == 3
+    assert qp_problem.input_space.get_type("x") == "float"
+    assert_equal(qp_problem.input_space.get_lower_bound("x"), [0] * 3)
+    assert_equal(qp_problem.input_space.get_upper_bound("x"), [1] * 3)
+    assert_equal(qp_problem.input_space.get_current_value("x"), [0.5] * 3)
     x = array([1.0, 2.0, 3.0])
     assert_almost_equal(qp_problem.objective.evaluate(x), array(15.784), decimal=3)
     assert_almost_equal(

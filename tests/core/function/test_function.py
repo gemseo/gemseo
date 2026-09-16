@@ -486,10 +486,10 @@ def test_set_pt_from_database(normalize) -> None:
     problem = Power2()
     problem.preprocess_functions(is_function_input_normalized=normalize)
     x = zeros(3)
-    problem.evaluate_functions(design_vector=x, design_vector_is_normalized=normalize)
+    problem.evaluate_functions(input_value=x, input_value_is_normalized=normalize)
     function = ArrayFunction(sum, name=problem.objective.name)
     function.set_pt_from_database(
-        problem.database, problem.design_space, normalize=normalize, jac=False
+        problem.database, problem.input_space, normalize=normalize, jac=False
     )
     function.evaluate(x)
 

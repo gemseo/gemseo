@@ -84,7 +84,7 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
         opt.setMaximumRelativeError(opt_settings.maximum_relative_error)
         opt.setMaximumResidualError(opt_settings.maximum_residual_error)
         opt.setMaximumTimeDuration(opt_settings.maximum_time_duration)
-        opt.setStartingPoint(Point(problem.design_space.distribution.mean))
+        opt.setStartingPoint(Point(problem.input_space.variables.distribution.mean))
 
         ot_event = self._create_ot_event(event_name, problem)
 
@@ -129,7 +129,7 @@ class OT_FORM(BaseOTReliabilityAlgorithm):  # noqa: N801
         """
         physical_mpfp = array(result.getPhysicalSpaceDesignPoint())
         standard_mpfp = array(result.getStandardSpaceDesignPoint())
-        convert_array_to_dict = problem.design_space.convert_array_to_dict
+        convert_array_to_dict = problem.input_space.convert_array_to_dict
         design_point = MPFP(
             physical=physical_mpfp,
             standard=standard_mpfp,

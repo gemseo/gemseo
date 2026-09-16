@@ -35,6 +35,7 @@ from numpy import complex128
 from numpy import float64
 from numpy import inf
 from numpy import int64
+from numpy import isnan
 from numpy import ndarray
 from numpy import ones
 from numpy import zeros
@@ -52,7 +53,7 @@ from gemseo.space.design import DesignSpace
 from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
-from gemseo.space.variable._legacy import Variable
+from gemseo.space.variable import Variable
 from gemseo.util.pickle import from_pickle
 from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
@@ -259,6 +260,7 @@ def test_creation_4(snapshot) -> None:
 
 
 def test_add_variable_value(design_space) -> None:
+    """Check that a value whose components are ``None`` is stored as NaN."""
     design_space.add_variable(
         "varname",
         size=3,
@@ -267,6 +269,10 @@ def test_add_variable_value(design_space) -> None:
         upper_bound=1.0,
         value=[None, None, None],
     )
+
+    value = design_space.get_current_value(["varname"])
+    assert value.dtype == float64
+    assert isnan(value).all()
 
 
 @pytest.mark.parametrize(
@@ -491,6 +497,8 @@ def test_filter_dimensions(current_value) -> None:
     [
         ([0, 3], "Dimension 3 of variable 'x5' does not exist."),
         ([0, 3, 4], "Dimensions 3 and 4 of variable 'x5' do not exist."),
+        ([-1], "Dimension -1 of variable 'x5' does not exist."),
+        ([-1, 3], "Dimensions -1 and 3 of variable 'x5' do not exist."),
     ],
 )
 def test_filter_dimensions_nonexistent(
@@ -501,19 +509,40 @@ def test_filter_dimensions_nonexistent(
         design_space.filter_dimensions("x5", indices)
 
 
-def test_filter_dimensions_duplicated_on_a_discrete_variable(snapshot) -> None:
+def test_filter_dimensions_without_dimension(design_space, snapshot) -> None:
+    """Check that the design space cannot keep no dimension of a variable."""
+    with assert_exception(ValueError, snapshot):
+        design_space.filter_dimensions("x5", [])
+
+    assert design_space.variables["x5"].size == 3
+
+
+def test_filter_dimensions_repeated_on_a_discrete_variable(snapshot) -> None:
     """Check filtering a discrete variable with more components than it has.
 
-    Every requested index exists (0 is the only component of a discrete
-    variable), so the upfront nonexistent-dimension check lets the request
-    through; the rejection must then come from the variable itself, with a
-    clear message rather than a raw pydantic error naming the internal `size`
-    field.
+    Every requested index exists (0 is the only component of a discrete variable),
+    so the nonexistent-dimension check would let the request through
+    and the variable, which is scalar, would reject it
+    with a message naming its size rather than the repetition.
     """
     space = DesignSpace()
     space.add_variable("t", variable=DiscreteVariable(choices=[1, 2, 3]))
-    with assert_exception(ValidationError, snapshot):
+    with assert_exception(ValueError, snapshot):
         space.filter_dimensions("t", [0, 0])
+
+    assert space.variables["t"].size == 1
+
+
+def test_filter_dimensions_repeated(design_space, snapshot) -> None:
+    """Check that the design space cannot keep a dimension twice.
+
+    A variable defined by its bounds used to honor the repetition silently,
+    duplicating the component instead of filtering the variable.
+    """
+    with assert_exception(ValueError, snapshot):
+        design_space.filter_dimensions("x5", [0, 0])
+
+    assert design_space.variables["x5"].size == 3
 
 
 def check_variable(
@@ -1137,6 +1166,8 @@ def test_hdf5_export(tmp_wd) -> None:
     f_path = Path("_sobieski_design_space.h5")
     ref_ds.to_hdf(f_path)
 
+    check_read_ds(ref_ds, f_path)
+
 
 def test_hdf5_append(tmp_wd) -> None:
     """Tests the appending of a Design space in the HDF5 format."""
@@ -1497,12 +1528,12 @@ def test_get_variables_indexes(design_space, names, expected) -> None:
 
 
 @pytest.mark.parametrize(
-    ("use_design_space_order", "expected"),
+    ("use_space_order", "expected"),
     [(True, array([0, 1, 2, 3, 4, 5])), (False, array([3, 4, 0, 1, 2, 5]))],
 )
 def test_get_variables_indexes_in_user_order(
     design_space,
-    use_design_space_order,
+    use_space_order,
     expected,
 ) -> None:
     """Test the variables indexes getter in user order."""
@@ -1510,7 +1541,7 @@ def test_get_variables_indexes_in_user_order(
     assert_equal(
         design_space.get_variables_indexes(
             ["x11", "x10", "x12"],
-            use_design_space_order,
+            use_space_order,
         ),
         expected,
     )
@@ -1629,7 +1660,6 @@ def design_space_for_normalize_vect() -> DesignSpace:
     return design_space
 
 
-@pytest.mark.parametrize("use_out", [False, True])
 @pytest.mark.parametrize(
     ("input_vec", "ref"),
     [
@@ -1637,21 +1667,13 @@ def design_space_for_normalize_vect() -> DesignSpace:
         (np.array([-10.0, -20, 5.0, 5]), np.array([-10, -20, 0.5, 5])),
     ],
 )
-def test_normalize_vect(
-    design_space_for_normalize_vect,
-    input_vec,
-    ref,
-    use_out,
-) -> None:
+def test_normalize_vect(design_space_for_normalize_vect, input_vec, ref) -> None:
     """Test that the normalization is correctly computed whether the input values are
     floats or integers."""
-    out = array([0.0, 0.0, 0.0, 0.0]) if use_out else None
-    result = design_space_for_normalize_vect.normalize_vect(input_vec, out=out)
+    result = design_space_for_normalize_vect.normalize_vect(input_vec)
     assert result == pytest.approx(ref)
-    assert (id(result) == id(out)) is use_out
 
 
-@pytest.mark.parametrize("out", [False, True])
 @pytest.mark.parametrize(
     ("input_vec", "ref"),
     [
@@ -1659,11 +1681,9 @@ def test_normalize_vect(
         (array([-10.0, -20, 0.5, 1]), array([-10, -20, 5, 1])),
     ],
 )
-def test_denormalize_vect(input_vec, ref, out) -> None:
+def test_denormalize_vect(input_vec, ref) -> None:
     """Test that the denormalization is correctly computed whether the input values are
     floats or integers."""
-    out = zeros(4) if out else None
-
     design_space = DesignSpace()
     design_space.add_variable(
         "x_1",
@@ -1675,23 +1695,19 @@ def test_denormalize_vect(input_vec, ref, out) -> None:
     design_space.add_variable("x_2", 1, float_type, 0.0, 10.0)
     design_space.add_variable("x_3", 1, integer, 0.0, 10.0)
 
-    # Pass a copy of the array because it is reused across the "out" parametrization
-    # and denormalize_vect must not mutate it in place (checked below).
+    # Pass a copy of the array because denormalize_vect must not mutate it in place
+    # (checked below).
     x_vect = array(input_vec)
     x_vect_before = x_vect.copy()
 
-    result = design_space.denormalize_vect(x_vect, out=out)
+    result = design_space.denormalize_vect(x_vect)
 
     assert result == pytest.approx(ref)
-    assert (result is out) is (out is not None)
-    if out is not None:
-        assert out == pytest.approx(ref)
     assert x_vect == pytest.approx(x_vect_before)
 
 
-@pytest.mark.parametrize("use_out", [False, True])
 def test_normalize_and_denormalize_vect_with_nd_array(
-    design_space_for_normalize_vect, use_out
+    design_space_for_normalize_vect,
 ) -> None:
     """Check the (de)normalization of an array with more than two dimensions."""
     design_space = design_space_for_normalize_vect
@@ -1700,17 +1716,13 @@ def test_normalize_and_denormalize_vect_with_nd_array(
     x_vect = array([[values] * 3] * 2)
     normalized_x_vect = array([[normalized_values] * 3] * 2)
 
-    out = zeros(x_vect.shape) if use_out else None
-    result = design_space.normalize_vect(x_vect, out=out)
+    result = design_space.normalize_vect(x_vect)
     assert result.shape == x_vect.shape
     assert result == pytest.approx(normalized_x_vect)
-    assert (result is out) is use_out
 
-    out = zeros(x_vect.shape) if use_out else None
-    result = design_space.denormalize_vect(normalized_x_vect, out=out)
+    result = design_space.denormalize_vect(normalized_x_vect)
     assert result.shape == x_vect.shape
     assert result == pytest.approx(x_vect)
-    assert (result is out) is use_out
 
 
 def test_denormalize_vect_logging(caplog) -> None:
@@ -1725,7 +1737,7 @@ def test_denormalize_vect_logging(caplog) -> None:
     msg += f"lower bounds violated: {array([-5.0])}; "
     msg += f"upper bounds violated: {array([6.0])}."
     assert (
-        "gemseo.space.design._normalizer",
+        "gemseo.space._design.normalizer",
         logging.WARNING,
         msg,
     ) in caplog.record_tuples
@@ -1785,6 +1797,25 @@ def test_rename_unknown_variable(snapshot) -> None:
     design_space = DesignSpace()
     with assert_exception(KeyError, snapshot):
         design_space.rename_variable("x", "y")
+
+
+def test_rename_variable_collision(snapshot) -> None:
+    """Check that renaming to an already existing name raises and does not mutate."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    with assert_exception(ValueError, snapshot):
+        design_space.rename_variable("x", "y")
+    assert design_space.variable_names == ["x", "y"]
+    assert design_space.dimension == 2
+
+
+def test_rename_variable_same_name_is_noop() -> None:
+    """Check that renaming a variable to its own name is a no-op."""
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.rename_variable("x", "x")
+    assert design_space.variable_names == ["x"]
 
 
 def test_rename_variable_consistency() -> None:
@@ -1916,7 +1947,7 @@ def test_normalization_casting(design_space: DesignSpace, normalize: bool) -> No
     design_space.filter(["x14"])
     problem = OptimizationProblem(design_space)
     problem.objective = ArrayFunction(lambda x: x, name="f")
-    out = problem.evaluate_functions(design_vector_is_normalized=normalize)
+    out = problem.evaluate_functions(input_value_is_normalized=normalize)
     assert out[0]["f"] == array([2])
     assert out[0]["f"].dtype == int64
 
@@ -2105,6 +2136,38 @@ def test_get_current_value(fbb_design_space, names, cast, normalize, as_dict) ->
         )
 
     assert_equal(result, expected)
+
+
+def test_get_current_value_does_not_hand_out_the_state(fbb_design_space) -> None:
+    """Check that a current value read cannot make the design space inconsistent."""
+    full_value = fbb_design_space.get_current_value()
+    name_to_value = fbb_design_space.get_current_value(as_dict=True)
+    normalized_value = fbb_design_space.get_current_value(normalize=True)
+
+    full_value[0] = 42.0
+    name_to_value["foo"][0] = 42.0
+    name_to_value["new"] = array([42.0])
+    normalized_value[0] = 42.0
+
+    assert_equal(fbb_design_space.get_current_value()[0], array(1.0))
+    assert_equal(fbb_design_space.get_current_value(as_dict=True)["foo"], array([1.0]))
+    assert_equal(fbb_design_space.get_current_value(normalize=True)[0], array(1.0))
+    assert set(fbb_design_space.get_current_value(as_dict=True)) == {
+        "foo",
+        "bar",
+        "baz",
+    }
+
+
+def test_reference_value_does_not_hand_out_the_state(fbb_design_space) -> None:
+    """Check that the reference value read cannot make the design space inconsistent."""
+    reference_value = fbb_design_space.reference_value
+
+    reference_value["foo"][0] = 42.0
+    reference_value["new"] = array([42.0])
+
+    assert_equal(fbb_design_space.reference_value["foo"], array([1.0]))
+    assert set(fbb_design_space.reference_value) == {"foo", "bar", "baz"}
 
 
 @pytest.mark.parametrize("as_dict", [True, False])
@@ -2506,15 +2569,6 @@ def test_eq_after_resize(read_status_first) -> None:
     assert other == space
 
 
-def test_normalize_vect_with_inout_argument() -> None:
-    """Check the normalization with the output array passed as input."""
-    space = DesignSpace()
-    space.add_variable("x", type_="integer", lower_bound=-1, upper_bound=2)
-    inout = array([0])
-    space.normalize_vect(array([0]), out=inout)
-    assert_array_equal(inout, array([0]))
-
-
 def test_remove_variable(design_space) -> None:
     """Check that removing a variable updates names, bounds and normalizer."""
     # x5 has size 3 and sits between the size-1 x4 and x6.
@@ -2698,10 +2752,6 @@ def test_variable_mutation_bypass_is_forbidden() -> None:
 
     Mutating a variable would bypass the version bump
     and let the derived values serve stale bounds.
-    Rebinding a bound attribute is blocked because the variable is frozen,
-    and the validated bound arrays are read-only
-    so that in-place mutation of their components also raises,
-    including through the live array returned by `get_lower_bound`.
     """
     space = DesignSpace()
     space.add_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
@@ -2714,9 +2764,7 @@ def test_variable_mutation_bypass_is_forbidden() -> None:
     with pytest.raises(ValueError, match="read-only"):
         space._variables["x"].lower_bound[0] = 5.0
 
-    # get_lower_bound exposes a read-only view of that array,
-    # so mutating it in place raises too,
-    # and its writeable flag cannot be re-enabled.
+    # get_lower_bound hands out that frozen array, so it cannot be mutated either.
     with pytest.raises(ValueError, match="read-only"):
         space.get_lower_bound("x")[0] = 5.0
 
@@ -2784,11 +2832,9 @@ def test_read_only_bound_getters_forbid_item_assignment(
 def test_bounds_are_read_only_after_duplication(duplicate) -> None:
     """Check that the bounds of a duplicated design space are still read-only.
 
-    NumPy does not preserve the writeable flag across pickling and copying,
-    so without an explicit refreeze
-    the bounds of a duplicate would be mutable in place,
-    letting `get_lower_bounds()[0] = ...` corrupt the cached full bounds
-    for every later reader.
+    Pickling and copying do not preserve the writeable flag,
+    so without an explicit refreeze `get_lower_bounds()[0] = ...`
+    would corrupt the cached full bounds for every later reader.
     """
     space = DesignSpace()
     space.add_variable("x", size=2, lower_bound=0.0, upper_bound=10.0)
@@ -2820,8 +2866,7 @@ def test_copy_of_variable_is_shared() -> None:
     """Check that copying a variable returns the variable itself.
 
     A variable is immutable and its bound arrays are read-only,
-    so there is nothing to copy;
-    sharing it also keeps the bound arrays frozen.
+    so there is nothing to copy.
     """
     variable = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=10.0)
 
@@ -2974,78 +3019,41 @@ def test_to_complex_without_current_value(snapshot) -> None:
         space.get_current_value()
 
 
-def test_denormalize_vect_out_with_complex_dtype() -> None:
-    """Check that denormalize fills an out array of the dtype of the result."""
-    # A float design space with a complex current value and a complex array:
-    # the array is filled and scaled in place, without dtype cast.
+def test_denormalize_vect_with_complex_current_value() -> None:
+    """Check that denormalize keeps the complex dtype of the current value."""
     space = DesignSpace()
     space.add_variable("x", 2, lower_bound=0.0, upper_bound=10.0, value=5.0)
     space.to_complex()
-    buf = zeros(2, dtype=complex128)
-    res = space.denormalize_vect(array([0.5, 0.5]), out=buf)
-    assert res is buf
+    res = space.denormalize_vect(array([0.5, 0.5]))
     assert res.dtype == complex128
     assert res == pytest.approx(array([5.0, 5.0], dtype=complex128))
 
 
-def test_denormalize_vect_out_with_wrong_dtype(snapshot) -> None:
-    """Check the error raised when the out array has not the dtype of the result."""
-    # The current value is real, hence a complex array cannot store the result:
-    # converting the array of the caller is impossible by construction.
-    space = DesignSpace()
-    space.add_variable("x", 2, lower_bound=0.0, upper_bound=10.0, value=5.0)
-    with assert_exception(ValueError, snapshot):
-        space.denormalize_vect(array([0.5, 0.5]), out=zeros(2, dtype=complex128))
-
-
-def test_denormalize_vect_out_with_wrong_shape(snapshot) -> None:
-    """Check the error raised when the out array has not the shape of the result."""
-    # An oversized array would otherwise be filled by broadcasting,
-    # yielding as many duplicates of the result as it has rows.
-    space = DesignSpace()
-    space.add_variable("x", 2, lower_bound=0.0, upper_bound=10.0, value=5.0)
-    with assert_exception(ValueError, snapshot):
-        space.denormalize_vect(array([0.5, 0.5]), out=zeros((3, 2)))
-
-
-def test_denormalize_vect_out_with_integer_dtype() -> None:
-    """Check that denormalize fills an integer out array without truncating.
+def test_denormalize_vect_with_integer_variable() -> None:
+    """Check that denormalize rounds an unnormalized integer variable.
 
     Integer variables are not normalized by default,
-    so the values are only rounded before being stored.
+    so the values are only rounded.
     """
     space = DesignSpace()
     space.add_variable("n", 2, type_="integer", lower_bound=0, upper_bound=10, value=5)
-    buf = zeros(2, dtype=int64)
-    res = space.denormalize_vect(array([0.4, 0.6]), out=buf)
-    assert res is buf
+    res = space.denormalize_vect(array([0.4, 0.6]))
     assert res.dtype == int64
     assert_array_equal(res, array([0, 1]))
 
 
-def test_denormalize_vect_out_with_normalized_integer_variable() -> None:
-    """Check that denormalize scales into an integer out array without truncating.
+def test_denormalize_vect_with_normalized_integer_variable() -> None:
+    """Check that denormalize scales a normalized integer variable before rounding.
 
     The normalized value must be scaled in an intermediate float array,
-    otherwise the integer array truncates it to zero beforehand.
+    otherwise the integer dtype truncates it to zero beforehand.
     """
     space = DesignSpace()
     space.add_variable("n", 2, type_="integer", lower_bound=0, upper_bound=10, value=5)
     space.enable_integer_variables_normalization = True
-    allocated = space.denormalize_vect(array([0.4, 0.6]))
-    buf = zeros(2, dtype=allocated.dtype)
-    res = space.denormalize_vect(array([0.4, 0.6]), out=buf)
-    assert res is buf
+    res = space.denormalize_vect(array([0.4, 0.6]))
+    assert res.dtype == int64
     assert_array_equal(res, array([4, 6]))
-    assert_array_equal(res, allocated)
-
-
-def test_normalize_vect_out_with_wrong_dtype(snapshot) -> None:
-    """Check the error raised when the out array has not the dtype of the result."""
-    space = DesignSpace()
-    space.add_variable("x", 2, lower_bound=0.0, upper_bound=10.0, value=5.0)
-    with assert_exception(ValueError, snapshot):
-        space.normalize_vect(array([4.5, 6.5]), out=zeros(2, dtype=int64))
 
 
 def test_check_membership_with_list() -> None:
@@ -3073,6 +3081,46 @@ def test_enable_integer_variables_normalization_getter() -> None:
     assert not space.enable_integer_variables_normalization
     space.enable_integer_variables_normalization = True
     assert space.enable_integer_variables_normalization
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_prepare_untransformation(enabled) -> None:
+    """Check that the integer variables are normalized for the untransformation."""
+    space = DesignSpace()
+    space.add_variable("n", type_="integer", lower_bound=-1, upper_bound=3)
+    space.enable_integer_variables_normalization = enabled
+
+    with space._prepare_untransformation():
+        assert space.enable_integer_variables_normalization
+        assert space.untransform_vect(array([0.5])) == pytest.approx(1)
+
+    assert space.enable_integer_variables_normalization is enabled
+
+
+def test_prepare_untransformation_restores_on_error() -> None:
+    """Check that the initial normalization setting is restored when the body raises."""
+    space = DesignSpace()
+    space.add_variable("n", type_="integer", lower_bound=-1, upper_bound=3)
+
+    error = ValueError("boom")
+    with pytest.raises(ValueError, match="boom"), space._prepare_untransformation():
+        raise error
+
+    assert not space.enable_integer_variables_normalization
+
+
+def test_prepare_untransformation_checks_boundedness(snapshot) -> None:
+    """Check the boundedness check of the untransformation."""
+    space = DesignSpace()
+    space.add_variable("x", lower_bound=0.0)
+
+    with space._prepare_untransformation():
+        pass
+
+    with assert_exception(ValueError, snapshot), space._prepare_untransformation(True):
+        pass
+
+    assert not space.enable_integer_variables_normalization
 
 
 @pytest.fixture
@@ -3161,10 +3209,10 @@ def test_discrete_variable_derived_bounds(discrete_design_space) -> None:
 
 @pytest.mark.parametrize("setter", ["set_lower_bound", "set_upper_bound"])
 def test_discrete_variable_bounds_are_not_settable(
-    discrete_design_space, setter
+    discrete_design_space, setter, snapshot
 ) -> None:
     """Check that the bounds of a discrete variable cannot be set."""
-    with pytest.raises(ValidationError, match="the bounds are not settable"):
+    with assert_exception(ValidationError, snapshot):
         getattr(discrete_design_space, setter)("t", 0.5)
 
 

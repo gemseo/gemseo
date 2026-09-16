@@ -6,6 +6,7 @@
 /figure-report
 
 *.pyc
+__pycache__/
 .project
 .pydevproject
 .settings

@@ -18,11 +18,15 @@
 #    OTHER AUTHORS   - MACROSCOPIC CHANGES
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
+from numpy import isfinite
 
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.consistency_constraint import ConsistencyConstraint
+from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.formulation.idf import IDF
 from gemseo.formulation.idf_settings import IDF_Settings
 from gemseo.optimization.problem import OptimizationProblem
@@ -33,8 +37,19 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.problem.mdo.sobieski.standalone.design_space import SobieskiDesignSpace
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
 from gemseo.scenario.evaluation import EvaluationScenario
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.scipy.normal_settings import (
+    SPNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distribution.scipy.uniform_settings import (
+    SPUniformDistribution_Settings,
+)
 from gemseo.util.derivative.check.function import FunctionJacobianChecker
+from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
 from gemseo.util.testing.helper import assert_exception
+
+if TYPE_CHECKING:
+    from gemseo.core.discipline import Discipline
 
 
 def test_build_func_from_disc() -> None:
@@ -51,7 +66,7 @@ def test_build_func_from_disc() -> None:
     problem.objective = idf.create_objective(["y_4"])
     assert idf.all_couplings == idf.coupling_structure.all_couplings
 
-    x_names = idf.problem.design_space.variable_names
+    x_names = idf.problem.input_space.variable_names
     x_dict = pb.get_default_inputs(x_names)
     x_vect = np.concatenate([x_dict[k] for k in x_names])
 
@@ -261,7 +276,7 @@ def test_idf_start_equilibrium() -> None:
         "y_32",
         "y_34",
     ]
-    current_couplings = idf.design_space.get_current_value(as_dict=True)
+    current_couplings = idf.input_space.get_current_value(as_dict=True)
     ref_couplings = SobieskiProblem().get_default_inputs_equilibrium()
     for coupling_name in coupling_names:
         residual = np.linalg.norm(
@@ -290,3 +305,78 @@ def test_idf_evaluation_problem() -> None:
     ]
     assert scenario.formulation.problem.observables.get_names() == names
     assert scenario.formulation.problem.function_names == names
+
+
+def _create_coupled_disciplines() -> list[Discipline]:
+    """Create two strongly coupled disciplines.
+
+    Returns:
+        The disciplines, whose strong couplings are ``"y_1"`` and ``"y_2"``.
+    """
+    return create_disciplines_from_desc({
+        "disc_1": (["x", "y_2"], ["y_1"]),
+        "disc_2": (["y_1"], ["y_2"]),
+    })
+
+
+def test_idf_on_a_random_space(to_random_space) -> None:
+    """Check that an IDF process samples a random space."""
+    disciplines = [
+        SobieskiStructure(),
+        SobieskiPropulsion(),
+        SobieskiAerodynamics(),
+        SobieskiMission(),
+    ]
+    input_space = to_random_space(SobieskiDesignSpace())
+    scenario = EvaluationScenario(
+        disciplines, input_space, formulation_settings=IDF_Settings()
+    )
+    scenario.add_observable("y_4")
+
+    assert scenario.input_space is input_space
+    assert scenario.formulation.problem.observables.get_names() == [
+        "consistency_y_12_y_14",
+        "consistency_y_31_y_32_y_34",
+        "consistency_y_21_y_23_y_24",
+        "y_4",
+    ]
+
+    samples = input_space.convert_dict_to_array(input_space.reference_value)
+    scenario.execute(CustomDOE_Settings(samples=samples[np.newaxis]))
+
+    dataset = scenario.to_dataset()
+    assert len(dataset) == 1
+    assert isfinite(dataset.get_view(variable_names="y_4").to_numpy()).all()
+
+
+def test_idf_normalization_of_an_unbounded_coupling(snapshot) -> None:
+    """Check the error raised when a coupling target has a non-finite bound range."""
+    input_space = RandomSpace()
+    input_space.add_variable(
+        "x", SPUniformDistribution_Settings(minimum=0.0, maximum=1.0)
+    )
+    for name in ["y_1", "y_2"]:
+        input_space.add_variable(name, SPNormalDistribution_Settings())
+
+    with assert_exception(ValueError, snapshot):
+        EvaluationScenario(
+            _create_coupled_disciplines(),
+            input_space,
+            formulation_settings=IDF_Settings(),
+        )
+
+
+def test_idf_start_at_equilibrium_with_a_non_design_space(snapshot) -> None:
+    """Check the error raised when starting at equilibrium without a design space."""
+    input_space = RandomSpace()
+    for name in ["x", "y_1", "y_2"]:
+        input_space.add_variable(
+            name, SPUniformDistribution_Settings(minimum=0.0, maximum=1.0)
+        )
+
+    with assert_exception(ValueError, snapshot):
+        EvaluationScenario(
+            _create_coupled_disciplines(),
+            input_space,
+            formulation_settings=IDF_Settings(start_at_equilibrium=True),
+        )

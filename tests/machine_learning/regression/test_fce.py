@@ -36,6 +36,7 @@ from gemseo.machine_learning.regression.model.fce_settings import (
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
 from gemseo.problem.uncertainty.ishigami.ishigami_space import IshigamiSpace
 from gemseo.problem.uncertainty.util import UniformDistribution
+from gemseo.space.design import DesignSpace
 from gemseo.util.comparison import compare_dict_of_arrays
 from gemseo.util.testing.helper import assert_exception
 
@@ -58,17 +59,17 @@ def discipline() -> AnalyticDiscipline:
 
 
 @pytest.fixture(scope="module")
-def uncertain_space() -> IshigamiSpace:
-    """The Ishigami uncertain space."""
+def random_space() -> IshigamiSpace:
+    """The Ishigami random space."""
     return IshigamiSpace(uniform_distribution_name=UniformDistribution.OPENTURNS)
 
 
 @pytest.fixture(scope="module")
-def dataset(multioutput, discipline, uncertain_space) -> IODataset:
+def dataset(multioutput, discipline, random_space) -> IODataset:
     """An Ishigami training dataset containing special Jacobian data.."""
     return sample_disciplines(
         [discipline],
-        uncertain_space,
+        random_space,
         ["y", "z"] if multioutput else "y",
         algo_settings_model=OT_OPT_LHS_Settings(n_samples=100, eval_jac=True),
         formulation_settings={"differentiated_input_names_substitute": ("a",)},
@@ -76,22 +77,22 @@ def dataset(multioutput, discipline, uncertain_space) -> IODataset:
 
 
 @pytest.fixture(scope="module")
-def dataset2(multioutput, discipline, uncertain_space) -> IODataset:
+def dataset2(multioutput, discipline, random_space) -> IODataset:
     """An Ishigami training dataset containing Jacobian data."""
     return sample_disciplines(
         [discipline],
-        uncertain_space,
+        random_space,
         ["y", "z"] if multioutput else "y",
         algo_settings_model=OT_OPT_LHS_Settings(n_samples=50, eval_jac=True),
     )
 
 
 @pytest.fixture(scope="module")
-def validation_dataset(multioutput, discipline, uncertain_space) -> IODataset:
+def validation_dataset(multioutput, discipline, random_space) -> IODataset:
     """An Ishigami validation dataset."""
     return sample_disciplines(
         [discipline],
-        uncertain_space,
+        random_space,
         ["y", "z"] if multioutput else "y",
         algo_settings_model=OT_OPT_LHS_Settings(n_samples=1000),
     )
@@ -172,6 +173,19 @@ def test_predict_jacobian(regressor, input_data, jacobian_data, multioutput):
             ])
 
     assert_allclose(regressor.predict_jacobian(input_data), jacobian_data, atol=1e-6)
+
+
+def test_input_space_is_not_a_random_space(dataset, snapshot):
+    """Check the error when `misc["input_space"]` is not a RandomSpace."""
+    input_space = dataset.misc["input_space"]
+    dataset.misc["input_space"] = DesignSpace()
+    try:
+        with assert_exception(TypeError, snapshot):
+            FCERegressor(
+                dataset, FCERegressor_Settings(use_special_jacobian_data=True)
+            ).learn()
+    finally:
+        dataset.misc["input_space"] = input_space
 
 
 def test_first_sobol_indices(regressor, multioutput):

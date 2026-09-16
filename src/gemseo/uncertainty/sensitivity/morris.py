@@ -63,7 +63,7 @@ if TYPE_CHECKING:
     from gemseo.doe.core.base_doe_settings import BaseDOESettings
     from gemseo.formulation.core.base_settings import BaseFormulationSettings
     from gemseo.scenario.backup_settings import BackupSettings
-    from gemseo.space.parameter import ParameterSpace
+    from gemseo.space.random import RandomSpace
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
     from gemseo.util.string import VariableType
     from gemseo.util.typing import RealArray
@@ -239,7 +239,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
     def compute_samples(
         self,
         disciplines: Collection[Discipline],
-        parameter_space: ParameterSpace,
+        random_space: RandomSpace,
         n_samples: int,
         output_names: str | Iterable[str] = (),
         algo_settings: BaseDOESettings | None = None,
@@ -288,7 +288,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
         algo_settings.n_samples = n_replicates
         super().compute_samples(
             disciplines,
-            parameter_space,
+            random_space,
             n_samples,
             output_names=output_names,
             algo_settings=MorrisDOE_Settings(
@@ -303,7 +303,7 @@ class MorrisAnalysis(BaseSensitivityAnalysis[MorrisAnalysisMethod]):
             data = output_dataset.get_view(variable_names=output_name).to_numpy()
             outputs_bounds[output_name] = (data.min(0), data.max(0))
 
-        n_replicates = len(self.dataset) // (1 + parameter_space.dimension)
+        n_replicates = len(self.dataset) // (1 + random_space.dimension)
         self.__inner_doe_algo_name = algo_settings.target_class_name
         self.dataset.misc["step"] = step
         self.dataset.misc["n_replicates"] = n_replicates

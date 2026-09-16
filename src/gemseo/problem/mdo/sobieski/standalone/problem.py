@@ -327,13 +327,13 @@ class SobieskiProblem:
 
     def __set_indata(
         self,
-        design_vector: ndarray,
+        input_value: ndarray,
         names: str | Iterable[str],
     ) -> dict[str, ndarray]:
         """Return the default values of some variables of the problem.
 
         Args:
-            design_vector: The design vector to be used.
+            input_value: The design vector to be used.
             names: The names of the variables of interest.
                 If empty, use all the variables of the problem.
 
@@ -343,7 +343,7 @@ class SobieskiProblem:
         dtype = self.__dtype
         constants = self.__base.constants
         name_to_default_value = {
-            "x_shared": design_vector[4:10],
+            "x_shared": input_value[4:10],
             "y_12": array([50606.9742, 0.95], dtype=dtype),
             "y_14": array((50606.9741711, 7306.20262124), dtype=dtype),
             "y_21": array([50606.9741711], dtype=dtype),
@@ -358,9 +358,9 @@ class SobieskiProblem:
             "g_1": ones(6, dtype=dtype),
             "g_2": ones(1, dtype=dtype),
             "g_3": ones(3, dtype=dtype),
-            "x_1": design_vector[:2],
-            "x_2": array([design_vector[2]], dtype=dtype),
-            "x_3": array([design_vector[3]], dtype=dtype),
+            "x_1": input_value[:2],
+            "x_2": array([input_value[2]], dtype=dtype),
+            "x_3": array([input_value[3]], dtype=dtype),
             "c_0": array([constants[0]], dtype=dtype),
             "c_1": array([constants[1]], dtype=dtype),
             "c_2": array([constants[2]], dtype=dtype),
@@ -423,11 +423,11 @@ class SobieskiProblem:
         Returns:
             The default values of some variables at a multidisciplinary feasible point.
         """
-        design_vector = self.initial_design
+        input_value = self.initial_design
         dtype = self.__dtype
         constants = self.__base.constants
         name_to_default_value = {
-            "x_shared": array(design_vector[4:], dtype=dtype),
+            "x_shared": array(input_value[4:], dtype=dtype),
             "y_34": array([1.10754577], dtype=dtype),
             "y_32": array([0.50279625], dtype=dtype),
             "y_21": array([50606.97417114], dtype=dtype),
@@ -446,9 +446,9 @@ class SobieskiProblem:
             "y_12": array([5.06069742e04, 9.5e-01], dtype=dtype),
             "y_4": array([535.78844818], dtype=dtype),
             "y_2": array([5.06069742e04, 1.21942672e04, 4.15006276e00], dtype=dtype),
-            "x_1": array(design_vector[:2], dtype=dtype),
-            "x_2": array([design_vector[2]], dtype=dtype),
-            "x_3": array([design_vector[3]], dtype=dtype),
+            "x_1": array(input_value[:2], dtype=dtype),
+            "x_2": array([input_value[2]], dtype=dtype),
+            "x_3": array([input_value[3]], dtype=dtype),
             "c_0": array([constants[0]], dtype=dtype),
             "c_1": array([constants[1]], dtype=dtype),
             "c_2": array([constants[2]], dtype=dtype),
@@ -620,14 +620,14 @@ class SobieskiProblem:
 
     def __compute_mda(
         self,
-        design_vector: tuple[ndarray],
+        input_value: tuple[ndarray],
         true_cstr: bool = False,
         accuracy: float = 1e-3,
     ) -> tuple[ndarray]:
         """Compute the output variables at equilibrium with the Gauss-Seidel algorithm.
 
         Args:
-            design_vector: The design vector.
+            input_value: The design vector.
             true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
@@ -672,10 +672,10 @@ class SobieskiProblem:
                 and `g_3[2]` is the throttle setting constraint.
         """
         dtype = self.__dtype
-        x_1 = design_vector[:2]
-        x_2 = array([design_vector[2]], dtype=dtype)
-        x_3 = array([design_vector[3]], dtype=dtype)
-        x_shared = design_vector[4:]
+        x_1 = input_value[:2]
+        x_2 = array([input_value[2]], dtype=dtype)
+        x_3 = array([input_value[3]], dtype=dtype)
+        x_shared = input_value[4:]
 
         y_12 = ones(2, dtype=dtype)
         y_21 = ones(1, dtype=dtype)
@@ -726,13 +726,13 @@ class SobieskiProblem:
 
     def get_constraints(
         self,
-        design_vector: ndarray,
+        input_value: ndarray,
         true_cstr: bool = False,
     ) -> tuple[ndarray, ndarray, ndarray]:
         """Compute all the constraints.
 
         Args:
-            design_vector: The design vector.
+            input_value: The design vector.
             true_cstr: If `True`,
                 return the value of the constraint outputs.
                 Otherwise,
@@ -741,7 +741,7 @@ class SobieskiProblem:
         Returns:
             The value of the constraints $g_1$, $g_2$ and $g_3$.
         """
-        outputs = self.__compute_mda(design_vector, true_cstr=true_cstr)
+        outputs = self.__compute_mda(input_value, true_cstr=true_cstr)
         return outputs[-3], outputs[-2], outputs[-1]
 
     @property

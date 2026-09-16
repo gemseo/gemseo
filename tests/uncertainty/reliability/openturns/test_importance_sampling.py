@@ -88,7 +88,7 @@ from gemseo.uncertainty.reliability.problem import ReliabilityProblem
     ("greater", "expected"), [(None, 0.25), (True, 0.25), (False, 0.75)]
 )
 def test_importance_sampling(
-    function, unbounded_uncertain_space, settings, greater, expected
+    function, unbounded_random_space, settings, greater, expected
 ):
     """Test for importance sampling algorithms."""
     class_name = "OT_IS_NA" if settings is None else settings.target_class_name
@@ -98,7 +98,7 @@ def test_importance_sampling(
     if settings is not None:
         kwargs["settings"] = settings
 
-    problem = ReliabilityProblem(unbounded_uncertain_space)
+    problem = ReliabilityProblem(unbounded_random_space)
     f = problem.get_event_variables(function)
     problem.add_event(
         f < 0.75 if greater is False else f > 0.75,

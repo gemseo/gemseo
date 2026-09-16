@@ -21,15 +21,11 @@ from math import nan
 
 import pytest
 from numpy import array
-from numpy import dtype
-from numpy import zeros
 
-from gemseo.space.design._bounds import Bounds
-from gemseo.space.design._checking import check
-from gemseo.space.design._checking import check_addable_value
-from gemseo.space.design._checking import check_membership
-from gemseo.space.design._checking import check_out_array
-from gemseo.space.design._variables import Variables
+from gemseo.space._design.bounds import Bounds
+from gemseo.space._design.checking import check_addable_value
+from gemseo.space._design.checking import check_membership
+from gemseo.space._design.variables import DesignVariables
 from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
@@ -37,64 +33,64 @@ from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture
-def variables() -> Variables:
+def variables() -> DesignVariables:
     """A variables with a float variable and an integer variable."""
-    variables = Variables()
+    variables = DesignVariables()
     variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=10.0)
     variables["y"] = IntegerVariable(size=1, lower_bound=0, upper_bound=5)
     return variables
 
 
 @pytest.fixture
-def bounds(variables: Variables) -> Bounds:
+def bounds(variables: DesignVariables) -> Bounds:
     """The bounds of the variables."""
     return Bounds(variables)
 
 
-def test_check_addable_value_valid(variables: Variables) -> None:
+def test_check_addable_value_valid(variables: DesignVariables) -> None:
     """Check that a valid value is accepted."""
     assert check_addable_value(variables, array([1.0, 2.0]), "x")
 
 
-def test_check_addable_value_all_none(variables: Variables) -> None:
+def test_check_addable_value_all_none(variables: DesignVariables) -> None:
     """Check that an all-`None` value is accepted."""
     assert check_addable_value(variables, array([None, None]), "x")
 
 
-def test_check_addable_value_2d_raises(variables: Variables, snapshot) -> None:
+def test_check_addable_value_2d_raises(variables: DesignVariables, snapshot) -> None:
     """Check that a value with more than one dimension raises."""
     with assert_exception(ValueError, snapshot):
         check_addable_value(variables, array([[1.0]]), "x")
 
 
-def test_check_addable_value_non_numeric(variables: Variables, snapshot) -> None:
+def test_check_addable_value_non_numeric(variables: DesignVariables, snapshot) -> None:
     """Check that a non-numeric component raises."""
     with assert_exception(ValueError, snapshot):
         check_addable_value(variables, array(["a", 1.0], dtype=object), "x")
 
 
 def test_check_addable_value_several_non_numeric(
-    variables: Variables, snapshot
+    variables: DesignVariables, snapshot
 ) -> None:
     """Check that several non-numeric components raise."""
     with assert_exception(ValueError, snapshot):
         check_addable_value(variables, array(["a", "b"], dtype=object), "x")
 
 
-def test_check_addable_value_nan(variables: Variables, snapshot) -> None:
+def test_check_addable_value_nan(variables: DesignVariables, snapshot) -> None:
     """Check that a nan component raises."""
     with assert_exception(ValueError, snapshot):
         check_addable_value(variables, array([nan, 1.0]), "x")
 
 
-def test_check_addable_value_several_nan(variables: Variables, snapshot) -> None:
+def test_check_addable_value_several_nan(variables: DesignVariables, snapshot) -> None:
     """Check that several nan components raise."""
     with assert_exception(ValueError, snapshot):
         check_addable_value(variables, array([nan, nan]), "x")
 
 
 def test_check_addable_value_non_integer_for_integer_variable(
-    variables: Variables, snapshot
+    variables: DesignVariables, snapshot
 ) -> None:
     """Check that a non-integer component raises for an integer variable."""
     with assert_exception(ValueError, snapshot):
@@ -105,21 +101,21 @@ def test_check_addable_value_several_non_integer_for_integer_variable(
     snapshot,
 ) -> None:
     """Check that several non-integer components raise for an integer variable."""
-    variables = Variables()
+    variables = DesignVariables()
     variables["z"] = IntegerVariable(size=2, lower_bound=0, upper_bound=5)
     with assert_exception(ValueError, snapshot):
         check_addable_value(variables, array([1.5, 2.5]), "z")
 
 
 def test_check_addable_value_infinite_for_integer_variable(
-    variables: Variables,
+    variables: DesignVariables,
 ) -> None:
     """Check that an infinite component is accepted for an integer variable."""
     assert check_addable_value(variables, array([inf]), "y")
 
 
 def test_check_membership_wrong_type(
-    variables: Variables, bounds: Bounds, snapshot
+    variables: DesignVariables, bounds: Bounds, snapshot
 ) -> None:
     """Check that a value that is neither an array nor a mapping raises."""
     with assert_exception(TypeError, snapshot):
@@ -127,7 +123,7 @@ def test_check_membership_wrong_type(
 
 
 def test_check_membership_wrong_shape(
-    variables: Variables, bounds: Bounds, snapshot
+    variables: DesignVariables, bounds: Bounds, snapshot
 ) -> None:
     """Check that an array whose last dimension mismatches the full size raises."""
     with assert_exception(ValueError, snapshot):
@@ -135,14 +131,14 @@ def test_check_membership_wrong_shape(
 
 
 def test_check_membership_array_within_bounds(
-    variables: Variables, bounds: Bounds
+    variables: DesignVariables, bounds: Bounds
 ) -> None:
     """Check that a valid full array raises nothing."""
     check_membership(variables, bounds, array([5.0, 5.0, 3.0]))
 
 
 def test_check_membership_array_lower_violation(
-    variables: Variables, bounds: Bounds, snapshot
+    variables: DesignVariables, bounds: Bounds, snapshot
 ) -> None:
     """Check that a full array violating a lower bound raises."""
     with assert_exception(ValueError, snapshot):
@@ -150,7 +146,7 @@ def test_check_membership_array_lower_violation(
 
 
 def test_check_membership_array_upper_violation(
-    variables: Variables, bounds: Bounds, snapshot
+    variables: DesignVariables, bounds: Bounds, snapshot
 ) -> None:
     """Check that a full array violating an upper bound raises."""
     with assert_exception(ValueError, snapshot):
@@ -158,7 +154,7 @@ def test_check_membership_array_upper_violation(
 
 
 def test_check_membership_array_2d_recursion(
-    variables: Variables, bounds: Bounds, snapshot
+    variables: DesignVariables, bounds: Bounds, snapshot
 ) -> None:
     """Check that each row of a stacked array is checked, recursively."""
     full_value = array([[5.0, 5.0, 3.0], [-1.0, 5.0, 3.0]])
@@ -167,14 +163,16 @@ def test_check_membership_array_2d_recursion(
 
 
 def test_check_membership_array_with_reordered_names(
-    variables: Variables, bounds: Bounds
+    variables: DesignVariables, bounds: Bounds
 ) -> None:
     """Check that an array with explicit, reordered names is dispatched by name."""
     # The full value is ordered as (y, x), matching `names`.
     check_membership(variables, bounds, array([3.0, 5.0, 5.0]), names=("y", "x"))
 
 
-def test_check_membership_dict_valid(variables: Variables, bounds: Bounds) -> None:
+def test_check_membership_dict_valid(
+    variables: DesignVariables, bounds: Bounds
+) -> None:
     """Check that a valid mapping raises nothing."""
     check_membership(
         variables,
@@ -184,7 +182,7 @@ def test_check_membership_dict_valid(variables: Variables, bounds: Bounds) -> No
 
 
 def test_check_membership_dict_wrong_size(
-    variables: Variables, bounds: Bounds, snapshot
+    variables: DesignVariables, bounds: Bounds, snapshot
 ) -> None:
     """Check that a mapping value of the wrong size raises."""
     with assert_exception(ValueError, snapshot):
@@ -196,7 +194,7 @@ def test_check_membership_dict_wrong_size(
 
 
 def test_check_membership_dict_lower_bound_violation(
-    variables: Variables, bounds: Bounds, snapshot
+    variables: DesignVariables, bounds: Bounds, snapshot
 ) -> None:
     """Check that a mapping component violating a lower bound raises."""
     with assert_exception(ValueError, snapshot):
@@ -208,7 +206,7 @@ def test_check_membership_dict_lower_bound_violation(
 
 
 def test_check_membership_dict_upper_bound_violation(
-    variables: Variables, bounds: Bounds, snapshot
+    variables: DesignVariables, bounds: Bounds, snapshot
 ) -> None:
     """Check that a mapping component violating an upper bound raises."""
     with assert_exception(ValueError, snapshot):
@@ -220,7 +218,7 @@ def test_check_membership_dict_upper_bound_violation(
 
 
 def test_check_membership_dict_integer_violation(
-    variables: Variables, bounds: Bounds, snapshot
+    variables: DesignVariables, bounds: Bounds, snapshot
 ) -> None:
     """Check that a non-integer mapping component raises for an integer variable."""
     with assert_exception(ValueError, snapshot):
@@ -232,7 +230,7 @@ def test_check_membership_dict_integer_violation(
 
 
 def test_check_membership_dict_with_none_value(
-    variables: Variables, bounds: Bounds
+    variables: DesignVariables, bounds: Bounds
 ) -> None:
     """Check that a `None` mapping value is skipped without error."""
     check_membership(
@@ -242,68 +240,23 @@ def test_check_membership_dict_with_none_value(
     )
 
 
-def test_check_empty_variables(snapshot) -> None:
-    """Check that an empty variables raises, without calling the checker."""
-    calls = []
-    with assert_exception(ValueError, snapshot):
-        check(Variables(), lambda: calls.append(1))
-    assert calls == []
-
-
-def test_check_calls_current_value_checker(variables: Variables) -> None:
-    """Check that a non-empty variables calls the current-value checker once."""
-    calls = []
-    check(variables, lambda: calls.append(1))
-    assert calls == [1]
-
-
-def test_check_propagates_current_value_checker_error(
-    variables: Variables,
-) -> None:
-    """Check that an error raised by the current-value checker propagates."""
-
-    def _raise() -> None:
-        msg = "boom"
-        raise ValueError(msg)
-
-    with pytest.raises(ValueError, match="boom"):
-        check(variables, _raise)
-
-
-def test_check_out_array_valid() -> None:
-    """Check that an array of the dtype and the shape of the result is accepted."""
-    assert check_out_array(zeros(3), dtype("float64"), (3,)) is None
-
-
-def test_check_out_array_wrong_shape(snapshot) -> None:
-    """Check the error raised when the array has not the shape of the result."""
-    with assert_exception(ValueError, snapshot):
-        check_out_array(zeros((3, 2)), dtype("float64"), (2,))
-
-
-def test_check_out_array_wrong_dtype(snapshot) -> None:
-    """Check the error raised when the array has not the dtype of the result."""
-    with assert_exception(ValueError, snapshot):
-        check_out_array(zeros(3), dtype("complex128"), (3,))
-
-
 @pytest.fixture
-def discrete_variables() -> Variables:
+def discrete_variables() -> DesignVariables:
     """A variables with a float variable and a discrete variable."""
-    variables = Variables()
+    variables = DesignVariables()
     variables["x"] = ContinuousVariable(lower_bound=0.0, upper_bound=10.0)
     variables["d"] = DiscreteVariable(choices=[2.0, 5.0])
     return variables
 
 
 @pytest.fixture
-def discrete_bounds(discrete_variables: Variables) -> Bounds:
+def discrete_bounds(discrete_variables: DesignVariables) -> Bounds:
     """The bounds of the variables including a discrete one."""
     return Bounds(discrete_variables)
 
 
 def test_check_addable_value_outside_a_discrete_domain(
-    discrete_variables: Variables, snapshot
+    discrete_variables: DesignVariables, snapshot
 ) -> None:
     """Check that a value that is not a choice raises."""
     with assert_exception(ValueError, snapshot):
@@ -312,7 +265,7 @@ def test_check_addable_value_outside_a_discrete_domain(
 
 @pytest.mark.parametrize("value", [{"x": array([1.0]), "d": array([3.0])}])
 def test_check_membership_dict_outside_a_discrete_domain(
-    discrete_variables: Variables, discrete_bounds: Bounds, value, snapshot
+    discrete_variables: DesignVariables, discrete_bounds: Bounds, value, snapshot
 ) -> None:
     """Check that the mapping path rejects a value that is not a choice."""
     with assert_exception(ValueError, snapshot):
@@ -320,7 +273,7 @@ def test_check_membership_dict_outside_a_discrete_domain(
 
 
 def test_check_membership_array_outside_a_discrete_domain(
-    discrete_variables: Variables, discrete_bounds: Bounds, snapshot
+    discrete_variables: DesignVariables, discrete_bounds: Bounds, snapshot
 ) -> None:
     """Check that the array path rejects a value that is not a choice.
 
@@ -331,14 +284,14 @@ def test_check_membership_array_outside_a_discrete_domain(
 
 
 def test_check_membership_array_within_a_discrete_domain(
-    discrete_variables: Variables, discrete_bounds: Bounds
+    discrete_variables: DesignVariables, discrete_bounds: Bounds
 ) -> None:
     """Check that the array path accepts the choices."""
     check_membership(discrete_variables, discrete_bounds, array([1.0, 5.0]))
 
 
 def test_check_membership_2d_array_with_a_discrete_variable(
-    discrete_variables: Variables, discrete_bounds: Bounds, snapshot
+    discrete_variables: DesignVariables, discrete_bounds: Bounds, snapshot
 ) -> None:
     """Check that the array path handles several values at once."""
     check_membership(

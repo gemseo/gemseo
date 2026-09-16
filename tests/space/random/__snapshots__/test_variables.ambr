@@ -1,0 +1,39 @@
+# serializer version: 1
+# name: test_add_copula_already_has_copula
+  "The random variable 'x' has already a copula."
+# ---
+# name: test_add_copula_dimension_mismatch
+  '''
+  1 validation error for OTJointDistribution_Settings
+    Value error, The dimension of the block-independent copula at position 0 must be equal to the number of components (1); got 2. [type=value_error, input_value={'marginal_settings': [OT...ns=2 values=[1,0,0,1])]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_add_copula_empty_names
+  'A copula must cover at least one random variable.'
+# ---
+# name: test_add_copula_unknown_name
+  "There is no variable name 'z'."
+# ---
+# name: test_add_copula_without_dependency_support
+  'SPJointDistribution does not support dependent variables.'
+# ---
+# name: test_filter_components_empty
+  "A variable cannot be empty; got no component for 'x'."
+# ---
+# name: test_filter_components_unknown_name
+  "No variable named 'z'."
+# ---
+# name: test_mixed_libraries
+  "A random space cannot mix probability distributions based on different libraries; got 'OpenTURNS' and 'SciPy'."
+# ---
+# name: test_rename_collision
+  "Cannot rename 'x' to 'y': 'y' is already the name of another variable."
+# ---
+# name: test_setitem_failure_leaves_registry_unchanged
+  '''
+  1 validation error for OTJointDistribution_Settings
+    Value error, The dimension of the block-independent copula at position 0 must be equal to the number of components (4); got 3. [type=value_error, input_value={'marginal_settings': [OT...s=[1,0,0,0,1,0,0,0,1])]}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

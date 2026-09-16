@@ -12,18 +12,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""A problem connecting the Ishigami function with its uncertain space."""
+"""A problem connecting the Ishigami function with its random space."""
 
 from __future__ import annotations
 
-from gemseo.optimization.problem import OptimizationProblem
+from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.problem.uncertainty.ishigami.ishigami_function import IshigamiFunction
 from gemseo.problem.uncertainty.ishigami.ishigami_space import IshigamiSpace
 from gemseo.problem.uncertainty.util import UniformDistribution
 
 
-class IshigamiProblem(OptimizationProblem):
-    """A problem connecting the Ishigami function with its uncertain space."""
+class IshigamiProblem(EvaluationProblem[IshigamiSpace]):
+    """A problem connecting the Ishigami function with its random space."""
 
     def __init__(
         self,
@@ -35,4 +35,4 @@ class IshigamiProblem(OptimizationProblem):
                 implementing the uniform distribution.
         """  # noqa: D205, D212
         super().__init__(IshigamiSpace(uniform_distribution_name))
-        self.objective = IshigamiFunction()
+        self.add_observable(IshigamiFunction())

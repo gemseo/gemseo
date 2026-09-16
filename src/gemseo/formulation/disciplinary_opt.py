@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import TypeVar
 
 from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.formulation.core.base_mdo import BaseMDOFormulation
@@ -30,9 +31,12 @@ from gemseo.util.discipline import get_all_inputs
 
 if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
+    from gemseo.space.base import BaseVariableSpace
+
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 
 
-class DisciplinaryOpt(BaseMDOFormulation[DisciplinaryOpt_Settings]):
+class DisciplinaryOpt(BaseMDOFormulation[DisciplinaryOpt_Settings, _SpaceT]):
     """The disciplinary optimization.
 
     This formulation draws the architecture of a mono-disciplinary optimization process
@@ -55,9 +59,9 @@ class DisciplinaryOpt(BaseMDOFormulation[DisciplinaryOpt_Settings]):
     ) -> tuple[Discipline]:
         return self.__top_level_disciplines
 
-    def _update_design_space(self) -> None:
+    def _update_input_space(self) -> None:
         all_input_names = get_all_inputs(self.get_top_level_disciplines())
-        design_space = self.problem.design_space
+        design_space = self.problem.input_space
         kept_variable_names = set(all_input_names).intersection(design_space)
         design_space.filter(kept_variable_names)
-        self._set_default_input_values_from_design_space()
+        self._set_default_input_values_from_space()

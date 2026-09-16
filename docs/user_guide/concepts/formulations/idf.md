@@ -53,8 +53,8 @@ with the guarantee of a multidisciplinary feasible solution, unlike MDF.
 Note that the targets can include either all the couplings or the strong couplings only.
 If all couplings are considered,
 then all disciplines are executed in parallel,
-and all couplings (weak and strong) are set as target variables in the design space.
-This maximizes the exploitation of the parallelism but leads to a larger design space,
+and all couplings (weak and strong) are set as target variables in the input space.
+This maximizes the exploitation of the parallelism but leads to a larger input space,
 so usually more iterations are done by the optimizer.
 
 ![The XDSM of the IDF formulation for the Sobieski's SSBJ problem, considering all the coupling targets.](../../../assets/images/mdo_formulations/xdsm_sobieski_idf_all.png)

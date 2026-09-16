@@ -458,6 +458,50 @@ def test_derivatives_on_design_boundaries(
     assert "All components of the normalized vector " not in caplog.text
 
 
+@pytest.mark.parametrize(
+    ("cls", "unbounded_step_is_symmetric"),
+    [(ForwardDifferences, False), (CenteredDifferences, True)],
+)
+def test_derivatives_on_boundaries_without_design_space(
+    cls, unbounded_step_is_symmetric
+) -> None:
+    """Check the perturbations of an approximator without a design space.
+
+    Without a design space, the input variables are considered unbounded, so the
+    perturbation of a forward difference stays forward and the stencil of a centered
+    difference stays symmetric. With a design space, a component at its upper bound
+    takes a backward step instead, and a centered difference drops the half-step
+    crossing that bound, which makes it one-sided.
+
+    This is the counterpart of test_derivatives_on_design_boundaries, for the branch
+    taken by a space that is not a design space, e.g. a random space.
+    """
+    step = 1e-3
+    input_value = array([2.0])
+
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=-2.0, upper_bound=2.0, value=2.0)
+
+    def square(x: ndarray) -> ndarray:
+        return x**2
+
+    bounded_gradient = cls(
+        square, step=step, design_space=design_space, normalize=False
+    ).f_gradient(input_value)[0][0]
+    unbounded_gradient = cls(square, step=step).f_gradient(input_value)[0][0]
+
+    # The exact derivative is 4.0; a backward or one-sided step undershoots it.
+    assert bounded_gradient < 4.0
+    if unbounded_step_is_symmetric:
+        # A centered difference of a quadratic function is exact.
+        assert unbounded_gradient == pytest.approx(4.0, abs=1e-12)
+    else:
+        assert unbounded_gradient > 4.0
+
+    assert bounded_gradient == pytest.approx(4.0, abs=1e-2)
+    assert unbounded_gradient == pytest.approx(4.0, abs=1e-2)
+
+
 @pytest.mark.parametrize("output_size", [1, 10])
 def test_derivatives_with_sparse_jacobians(tmp_wd, output_size) -> None:
     """Test check Jacobians with sparse Jacobians."""

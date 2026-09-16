@@ -123,7 +123,7 @@ class ProgressOpt(BaseOptimizationLibrary):
         return options
 
     def _run(self, problem: OptimizationProblem) -> None:
-        x_0 = problem.design_space.get_current_value(
+        x_0 = problem.input_space.get_current_value(
             complex_to_real=True, normalize=True
         )
         for off in self.offsets:

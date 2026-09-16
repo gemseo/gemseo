@@ -1,0 +1,1298 @@
+# Copyright 2021 IRT Saint Exupéry, https://www.irt-saintexupery.com
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License version 3 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Contributors:
+#    INITIAL AUTHORS - initial API and implementation and/or initial
+#                           documentation
+#        :author: Charlie Vanaret, Benoit Pauwels, Francois Gallard
+#    OTHER AUTHORS   - MACROSCOPIC CHANGES
+"""Design space."""
+
+from __future__ import annotations
+
+import logging
+import warnings
+from collections.abc import Mapping
+from contextlib import contextmanager
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
+from typing import Final
+from typing import Literal
+from typing import overload
+
+from numpy import array_equal
+from numpy import atleast_1d
+from numpy import full
+from numpy import hstack
+from numpy import inf
+from numpy import ndarray
+from numpy import where
+
+from gemseo.optimization.result import OptimizationResult
+from gemseo.space._core.accessors import VariableAccessorsMixin
+from gemseo.space._design import checking
+from gemseo.space._design import io as _design_space_io
+from gemseo.space._design import view
+from gemseo.space._design.bounds import Bounds
+from gemseo.space._design.integer_rounder import IntegerRounder
+from gemseo.space._design.normalizer import Normalizer
+from gemseo.space._design.value import Value
+from gemseo.space._design.variables import DesignVariables
+from gemseo.space.base import BaseVariableSpace
+from gemseo.space.variable import BaseDeterministicVariable
+from gemseo.space.variable import BaseIntervalVariable
+from gemseo.space.variable import DataType
+from gemseo.space.variable import data_type_to_numpy_type
+from gemseo.space.variable.factory import deterministic_variable_factory
+from gemseo.space.variables_view import VariablesView
+from gemseo.util.string import pretty_str
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Iterator
+    from collections.abc import Sequence
+
+    from numpy import float64
+    from numpy import int64
+    from prettytable import PrettyTable
+
+    from gemseo.util.read_only_mapping import ReadOnlyMapping
+    from gemseo.util.typing import BooleanArray
+    from gemseo.util.typing import NumberArray
+    from gemseo.util.typing import RealOrComplexArrayT
+    from gemseo.util.typing import StrPath
+logger = logging.getLogger(__name__)
+
+
+def _get_interval_data_types() -> tuple[DataType, ...]:
+    """Return the data types of the variables whose domain is an interval.
+
+    These are the only variables that a caller can declare
+    from a data type, a size and bounds;
+    a variable of another kind, e.g. a discrete one,
+    is defined by what its own kind takes as input
+    and so must be passed already built.
+
+    Returns:
+        The data types of the variables whose domain is an interval.
+    """
+    factory = deterministic_variable_factory
+    return tuple(
+        data_type
+        for data_type in factory.data_types
+        if issubclass(factory.get_class_from_data_type(data_type), BaseIntervalVariable)
+    )
+
+
+class DesignSpace(
+    VariableAccessorsMixin[DesignVariables],
+    BaseVariableSpace[DesignVariables, VariablesView[BaseDeterministicVariable]],
+):
+    """A space of design variables.
+
+    A design space stores design variables,
+    together with their names, sizes, types, bounds and current values,
+    and provides the operations to manipulate them.
+
+    The design variables are defined
+    from their sizes, types, bounds and current values.
+
+    Its [reference_value][gemseo.space.design.DesignSpace.reference_value],
+    namely the single representative value per variable
+    that a consumer of the space uses when it needs one,
+    is the current value of the space,
+    empty unless every design variable has a current value.
+    """
+
+    _bounds: Bounds
+    """The bounds of the variables."""
+
+    _integer_rounder: IntegerRounder
+    """The rounder of the integer components of the variables."""
+
+    _normalizer: Normalizer
+    """The normalizer of the values of the variables."""
+
+    _current: Value
+    """The current value of the variables."""
+
+    _variables_class: ClassVar[type[DesignVariables]] = DesignVariables
+
+    DesignVariableType = DataType
+
+    # TODO: API: the values are not dtypes but types, either fix the values or the name.
+    variable_types_to_dtypes: Final[Mapping[str, type[int64 | float64]]] = (
+        data_type_to_numpy_type
+    )
+    """One NumPy `dtype` per design variable type."""
+
+    def __init__(self, name: str = "") -> None:  # noqa: D107
+        super().__init__(name=name)
+        self._bounds = Bounds(self._variables)
+        self._integer_rounder = IntegerRounder(self._variables)
+        self._normalizer = Normalizer(
+            self._variables, self._bounds, self._integer_rounder
+        )
+        self._current = Value(self._variables, self._bounds, self._normalizer)
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restore the design space from a pickled state.
+
+        Supports both the current component-based layout and the flat
+        attribute layout of design spaces pickled before the refactoring
+        into components.
+        """
+        if "_bounds" in state:
+            self.__dict__.update(state)
+            return
+        # Pre-refactor pickle: replay the flat layout through the components,
+        # recomputing the derived data (indices, normalization policies).
+        self.__init__(state.get("name", ""))
+        # Seed the flag through the public setter:
+        # the _variables attribute is still empty,
+        # so there is no normalization policy to recompute.
+        self._variables.enable_integer_variables_normalization = bool(
+            state.get("_DesignSpace__normalize_integer_variables")
+        )
+        for name, variable in state.get("_variables", {}).items():
+            self._variables[name] = variable
+        # Seed a current-value entry for every variable, using the saved value
+        # or None (no value), so that each variable always has an entry.
+        saved_current_value = state.get("_DesignSpace__current_value", {})
+        for name in self._variables:
+            self._current.set_variable(name, saved_current_value.get(name))
+        # The flat DesignSpace attributes have been replayed through the
+        # components above; restore whatever is left so that a subclass state
+        # is not silently dropped.
+        # Skip the obsolete flat DesignSpace layout: its private
+        # "_DesignSpace__*" internals and these public/protected attributes.
+        obsolete_keys = {
+            "dimension",
+            "name",
+            "normalize",
+            "_variables",
+            "_norm_factor",
+            "_norm_factor_inv",
+        }
+        for key, value in state.items():
+            if key not in obsolete_keys and not key.startswith("_DesignSpace__"):
+                self.__dict__[key] = value
+
+    @property
+    def _current_value(self) -> Mapping[str, NumberArray | None]:
+        """The current design value.
+
+        Maps every variable to its current value,
+        or to `None` when the variable has no value.
+        """
+        return self._current.name_to_value
+
+    @_current_value.setter
+    def _current_value(self, value: Mapping[str, ndarray | None]) -> None:
+        self.set_current_value(value)
+
+    @property
+    def name_to_normalization_mask(self) -> ReadOnlyMapping[str, BooleanArray]:
+        """The map from a variable name to a normalization mask."""
+        return self._variables.name_to_normalization_mask
+
+    @property
+    def normalize(self) -> ReadOnlyMapping[str, BooleanArray]:
+        """The map from a variable name to a normalization mask.
+
+        Deprecated:
+            Use
+            [name_to_normalization_mask][gemseo.space.design.DesignSpace.name_to_normalization_mask]
+            instead.
+        """
+        warnings.warn(
+            "DesignSpace.normalize is deprecated; "
+            "use DesignSpace.name_to_normalization_mask instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.name_to_normalization_mask
+
+    def remove_variable(self, name: str) -> None:  # noqa: D102
+        super().remove_variable(name)
+        self._current.pop(name)
+
+    def _filter_dimensions(self, name: str, dimensions: Sequence[int]) -> None:  # noqa: D102
+        had_current_value = self._current_value.get(name) is not None
+        if had_current_value:
+            sliced_current_value = self.get_current_value([name])[list(dimensions)]
+        super()._filter_dimensions(name, dimensions)
+        if had_current_value:
+            self.set_current_variable(name, sliced_current_value)
+
+    def add_variable(
+        self,
+        name: str,
+        size: int = 1,
+        type_: DataType = DesignVariableType.FLOAT,
+        lower_bound: complex | Iterable[complex] = -inf,
+        upper_bound: complex | Iterable[complex] = inf,
+        value: complex | Iterable[complex] | None = None,
+        variable: BaseDeterministicVariable | None = None,
+    ) -> None:
+        r"""Add a variable to the design space.
+
+        To add a variable whose domain is defined by its bounds,
+        you can use
+        either all the arguments except `variable`,
+        or the arguments `name` and `variable` only.
+        To add a variable whose domain is not defined by its bounds,
+        you must use the `name` and `variable` arguments only.
+        In both cases, you can also specify its default value
+        using the `value` argument.
+
+        Args:
+            name: The name of the variable.
+            size: The size of the variable; ignored if `variable` is passed.
+            type_: The type of the variable;
+                ignored if `variable` is passed.
+            lower_bound: The lower bound of the variable.
+                If `None`, use $-\infty$.
+                Ignored if `variable` is passed.
+            upper_bound: The upper bound of the variable.
+                If `None`, use $+\infty$.
+                Ignored if `variable` is passed.
+            value: The default value of the variable.
+                If `None`, do not use a default value.
+            variable: A variable of any kind.
+                If `None`,
+                    build a continuous or integer variable
+                    from `size`, `type_`, `lower_bound` and `upper_bound`.
+
+        Raises:
+            ValueError: Either if the variable already exists,
+                if the type is neither continuous nor integer
+                and no `variable` is passed,
+                if a size, type or bound is wrong,
+                or if the value is not within the bounds.
+        """
+        if variable is None:
+            decoded_type_ = type_.decode() if isinstance(type_, bytes) else type_
+            # Only a string names a type;
+            # the variable factory would otherwise resolve
+            # a one-element array of type names by an element-wise comparison.
+            if not isinstance(decoded_type_, str):
+                msg = (
+                    "The type_ argument of add_variable must be a string "
+                    f"naming the type of the whole variable; got {type_!r}."
+                )
+                raise ValueError(msg)
+
+            interval_data_types = _get_interval_data_types()
+            if decoded_type_ not in interval_data_types:
+                msg = (
+                    f"Only {pretty_str(interval_data_types, use_and=True)} variables "
+                    "may be declared "
+                    "through the type_ argument of add_variable; "
+                    "use the variable argument instead."
+                )
+                raise ValueError(msg)
+
+            variable = deterministic_variable_factory.create(
+                type_,
+                size=size,
+                lower_bound=lower_bound,
+                upper_bound=upper_bound,
+            )
+
+        size = variable.size
+        self._add_variable(name, variable)
+        if value is None:
+            # Register the variable with no value so that every variable of the
+            # design space always has an entry in the current value.
+            self._current.set_variable(name, None)
+        else:
+            try:
+                array_value = atleast_1d(value)
+                checking.check_addable_value(self._variables, array_value, name)
+                if len(array_value) == 1 and size > 1:
+                    array_value = full(size, value)
+                self._current.set_variable(
+                    name,
+                    array_value.astype(variable.component_type, copy=False),
+                )
+                self._current.check_value(name)
+            except ValueError:
+                # If a ValueError is raised,
+                # we must remove the variable from the design space.
+                # When using a python script, this has no interest.
+                # When using a notebook, a cell can raise a ValueError,
+                # but we can continue to the next cell,
+                # and use a design space which contains variables that leads to error.
+                self.remove_variable(name)
+                raise
+
+    @property
+    def has_current_value(self) -> bool:
+        """Check if each variable has a current value.
+
+        Returns:
+            Whether the current design value is defined for all variables.
+        """
+        return self._current.has_value
+
+    @property
+    def reference_value(self) -> dict[str, ndarray]:
+        """The reference value of the design space, i.e. its current value.
+
+        It is empty unless every variable has a current value,
+        so that a partially valued design space is not seen
+        as defining a reference value.
+        """
+        if not self.has_current_value:
+            return {}
+
+        return self.get_current_value(as_dict=True)
+
+    def get_integer_mask(self) -> BooleanArray:
+        """Return whether the components of the design vector are integer.
+
+        Returns:
+            Whether the components of the design vector are integer
+            (one result per component).
+        """
+        return self._variables.get_integer_mask()
+
+    def check(self) -> None:
+        """Check the state of the design space.
+
+        Raises:
+            ValueError: If the design space is empty
+                or if its current value is inconsistent.
+        """
+        super().check()
+        if self.has_current_value:
+            self.__check_current_names()
+
+    def check_membership(
+        self,
+        x_vect: Mapping[str, NumberArray | None] | NumberArray,
+        variable_names: Sequence[str] = (),
+    ) -> None:
+        """Check whether the variables satisfy the design space requirements.
+
+        Args:
+            x_vect: The values of the variables.
+            variable_names: The names of the variables.
+                If empty, use the names of the variables of the design space.
+
+        Raises:
+            ValueError: Either if the dimension of the values vector is wrong,
+                if the values are not specified as an array or a dictionary,
+                if the values are outside the bounds of the variables or
+                if the component of an integer variable is not an integer.
+        """
+        checking.check_membership(self._variables, self._bounds, x_vect, variable_names)
+
+    def get_active_bounds(
+        self, x_vect: NumberArray | None = None, tol: float = 1e-8
+    ) -> tuple[dict[str, BooleanArray], dict[str, BooleanArray]]:
+        """Determine which bound constraints of a design value are active.
+
+        Args:
+            x_vect: The design value at which to check the bounds.
+                If `None`, use the current design value.
+            tol: The tolerance of comparison of a scalar with a bound.
+
+        Returns:
+            Whether the components of the lower and upper bound constraints are active,
+            the first returned value representing the lower bounds
+            and the second one the upper bounds, e.g.
+
+            ```python
+                   (
+                       {
+                           "x": array(are_x_lower_bounds_active),
+                           "y": array(are_y_lower_bounds_active),
+                       },
+                       {
+                           "x": array(are_x_upper_bounds_active),
+                           "y": array(are_y_upper_bounds_active),
+                       },
+                   )
+            ```
+
+            where:
+
+            ```python
+                are_x_lower_bounds_active = [True, False]
+                are_x_upper_bounds_active = [False, False]
+                are_y_lower_bounds_active = [False]
+                are_y_upper_bounds_active = [True]
+            ```
+        """
+        if x_vect is None:
+            current_x = self._current_value
+            self.check_membership(self.get_current_value())
+        elif isinstance(x_vect, ndarray):
+            current_x = self.convert_array_to_dict(x_vect)
+        elif isinstance(x_vect, dict):
+            current_x = x_vect
+        else:
+            msg = f"Expected dict or array for x_vect argument; got {type(x_vect)}."
+            raise TypeError(msg)
+
+        return self._bounds.get_active_bounds_masks(current_x, atol=tol)
+
+    def __check_current_names(self, variable_names: Iterable[str] = ()) -> None:
+        """Check that the current design value satisfies the space requirements.
+
+        The completeness of a current value passed as a mapping is validated
+        upstream in
+        [set_current_value][gemseo.space.design.DesignSpace.set_current_value],
+        and a current value passed as an array always covers every variable,
+        so only the membership to the bounds is checked here.
+
+        Args:
+            variable_names: The names of the variables.
+                If empty, use the names of the variables of the design space.
+
+        Raises:
+            ValueError: If the current design value is outside the bounds.
+        """
+        self.check_membership(self._current.name_to_value, variable_names)
+
+    def get_current_value(
+        self,
+        variable_names: Sequence[str] | None = None,
+        complex_to_real: bool = False,
+        as_dict: bool = False,
+        normalize: bool = False,
+    ) -> NumberArray | dict[str, NumberArray]:
+        """Return the current design value.
+
+        If the names of the variables are empty then an empty data is returned.
+
+        Args:
+            variable_names: The names of the design variables.
+                If `None`, use all the design variables.
+            complex_to_real: Whether to cast complex numbers to real ones.
+            as_dict: Whether to return the current design value
+                as a dictionary of the form `{variable_name: variable_value}`.
+            normalize: Whether to normalize the design values in $[0,1]$
+                with the bounds of the variables.
+                N.B. Normalization is possible if and only if
+                *all* the current design values are set.
+
+        Returns:
+            The current design value.
+
+        Raises:
+            KeyError: If one of the required design variables has no current value.
+
+        Note:
+            The arrays returned, and the dictionary holding them,
+            are copies of the state of the space,
+            so mutating them leaves the space unchanged.
+
+        See Also:
+            To modify the current value,
+            please use
+            [DesignSpace.set_current_value()][gemseo.space.design.DesignSpace.set_current_value]
+            or
+            [DesignSpace.set_current_variable()][gemseo.space.design.DesignSpace.set_current_variable].
+        """
+        return self._current.get(
+            names=variable_names,
+            complex_to_real=complex_to_real,
+            as_dict=as_dict,
+            normalize=normalize,
+        )
+
+    def normalize_vect(
+        self,
+        x_vect: RealOrComplexArrayT,
+        minus_lb: bool = True,
+    ) -> RealOrComplexArrayT:
+        r"""Normalize a vector of the design space.
+
+        If `minus_lb` is True:
+
+        $$x_u = \frac{x-l_b}{u_b-l_b}$$
+
+        where $l_b$ and $u_b$ are the lower and upper bounds of $x$.
+
+        Otherwise:
+
+        $$x_u = \frac{x}{u_b-l_b}$$
+
+        Unbounded variables are not normalized.
+
+        Args:
+            x_vect: The values of the design variables.
+            minus_lb: If `True`, remove the lower bounds at normalization.
+
+        Returns:
+            The normalized vector.
+        """
+        return self._normalizer.normalize(
+            x_vect,
+            self._current.common_dtype,
+            subtract_lower_bound=minus_lb,
+        )
+
+    def normalize_grad(self, g_vect: RealOrComplexArrayT) -> RealOrComplexArrayT:
+        r"""Normalize a gradient.
+
+        This method is based on the chain rule:
+
+        $$\frac{df(x)}{dx}
+           = \frac{df(x)}{dx_u}\frac{dx_u}{dx}
+           = \frac{df(x)}{dx_u}\frac{1}{u_b-l_b}
+        $$
+
+        where
+        $x_u = \frac{x-l_b}{u_b-l_b}$ is the normalized input vector,
+        $x$ is the original input vector
+        and $l_b$ and $u_b$ are the lower and upper bounds of $x$.
+
+        Then,
+        the normalized gradient reads:
+
+        $$\frac{df(x)}{dx_u} = (u_b-l_b)\frac{df(x)}{dx}$$
+
+        where $\frac{df(x)}{dx}$ is the original one.
+
+        Args:
+            g_vect: The original gradient.
+
+        Returns:
+            The normalized gradient.
+        """
+        return self.denormalize_vect(g_vect, minus_lb=False, no_check=True)
+
+    def denormalize_grad(self, g_vect: RealOrComplexArrayT) -> RealOrComplexArrayT:
+        r"""Denormalize a normalized gradient.
+
+        This method is based on the chain rule:
+
+        $$
+           \frac{df(x)}{dx}
+           = \frac{df(x)}{dx_u}\frac{dx_u}{dx}
+           = \frac{df(x)}{dx_u}\frac{1}{u_b-l_b}
+        $$
+
+        where
+        $x_u = \frac{x-l_b}{u_b-l_b}$ is the normalized input vector,
+        $x$ is the original input vector,
+        $\frac{df(x)}{dx_u}$ is the original gradient
+        $\frac{df(x)}{dx}$ is the normalized one,
+        and $l_b$ and $u_b$ are the lower and upper bounds of $x$.
+
+        Args:
+            g_vect: The normalized gradient.
+
+        Returns:
+            The original gradient.
+        """
+        return self.normalize_vect(g_vect, minus_lb=False)
+
+    def denormalize_vect(
+        self,
+        x_vect: RealOrComplexArrayT,
+        minus_lb: bool = True,
+        no_check: bool = False,
+    ) -> RealOrComplexArrayT:
+        """Denormalize a normalized vector of the design space.
+
+        If `minus_lb` is True:
+
+        $$x = x_u(u_b-l_b) + l_b$$
+
+        where
+        $x_u$ is the normalized input vector,
+        $x$ is the original input vector
+        and $l_b$ and $u_b$ are the lower and upper bounds of $x$.
+
+        Otherwise:
+
+        $$x = x_u(u_b-l_b)$$
+
+        Args:
+            x_vect: The values of the design variables.
+            minus_lb: Whether to remove the lower bounds at normalization.
+            no_check: Whether to check if the components are in $[0,1]$.
+
+        Returns:
+            The original vector.
+        """
+        return self._normalizer.denormalize(
+            x_vect,
+            self._current.common_dtype,
+            add_lower_bound=minus_lb,
+            no_check=no_check,
+        )
+
+    def unnormalize_grad(self, g_vect: RealOrComplexArrayT) -> RealOrComplexArrayT:
+        """Denormalize a normalized gradient.
+
+        Deprecated:
+            Use
+            [denormalize_grad][gemseo.space.design.DesignSpace.denormalize_grad]
+            instead.
+
+        Args:
+            g_vect: The normalized gradient.
+
+        Returns:
+            The original gradient.
+        """
+        warnings.warn(
+            "DesignSpace.unnormalize_grad is deprecated; "
+            "use DesignSpace.denormalize_grad instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.denormalize_grad(g_vect)
+
+    def unnormalize_vect(
+        self,
+        x_vect: RealOrComplexArrayT,
+        minus_lb: bool = True,
+        no_check: bool = False,
+    ) -> RealOrComplexArrayT:
+        """Denormalize a normalized vector of the design space.
+
+        Deprecated:
+            Use
+            [denormalize_vect][gemseo.space.design.DesignSpace.denormalize_vect]
+            instead.
+
+        Args:
+            x_vect: The values of the design variables.
+            minus_lb: Whether to remove the lower bounds at normalization.
+            no_check: Whether to check if the components are in $[0,1]$.
+
+        Returns:
+            The original vector.
+        """
+        warnings.warn(
+            "DesignSpace.unnormalize_vect is deprecated; "
+            "use DesignSpace.denormalize_vect instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.denormalize_vect(x_vect, minus_lb=minus_lb, no_check=no_check)
+
+    def transform_vect(self, x_vect: ndarray) -> ndarray:
+        """Map a point of the design space to a vector with components in $[0,1]$.
+
+        Args:
+            x_vect: A point of the design space.
+
+        Returns:
+            A vector with components in $[0,1]$.
+        """
+        return self.normalize_vect(x_vect)
+
+    def untransform_vect(
+        self, x_vect: NumberArray, no_check: bool = False
+    ) -> NumberArray:
+        """Map a vector with components in $[0,1]$ to the design space.
+
+        Args:
+            x_vect: A vector with components in $[0,1]$.
+            no_check: Whether to check if the components are in $[0,1]$.
+
+        Returns:
+            A point of the variables space.
+        """
+        return self.denormalize_vect(x_vect, no_check=no_check)
+
+    @contextmanager
+    def _prepare_untransformation(
+        self, check_boundedness: bool = False
+    ) -> Iterator[None]:
+        """
+        Notes:
+            The mapping from the unit hypercube to a design space is geometric,
+            so the integer variables are normalized for the duration of the context
+            and the initial setting is restored afterwards.
+
+        Raises:
+            ValueError: When `check_boundedness` is `True`
+                and some components of the design space are unbounded.
+        """  # noqa: D205, D212, D415
+        enabled = not self.enable_integer_variables_normalization
+        if enabled:
+            self.enable_integer_variables_normalization = True
+
+        try:
+            if check_boundedness:
+                self.__check_boundedness()
+
+            yield
+        finally:
+            if enabled:
+                self.enable_integer_variables_normalization = False
+
+    def __check_boundedness(self) -> None:
+        """Check that every component of the design space is bounded.
+
+        Raises:
+            ValueError: When some components of the design space are unbounded.
+        """
+        components = set(
+            where(hstack(list(self.name_to_normalization_mask.values())) == 0)[0]
+        )
+        if components:
+            msg = (
+                f"The components {pretty_str(components)} "
+                "of the design space are unbounded."
+            )
+            raise ValueError(msg)
+
+    def round_vect(self, x_vect: ndarray, copy: bool = True) -> ndarray:
+        """Round the vector where variables are of integer type.
+
+        Args:
+            x_vect: The values to be rounded.
+            copy: Whether to round a copy of `x_vect`.
+
+        Returns:
+            The rounded values.
+        """
+        return self._integer_rounder.round(x_vect, copy=copy)
+
+    def set_current_value(
+        self,
+        value: NumberArray | Mapping[str, NumberArray | None] | OptimizationResult,
+    ) -> None:
+        """Set the current design value of all the variables.
+
+        The value of a variable is either a NumPy array
+        or `None` when the variable has no value.
+
+        Args:
+            value: The value of the current design.
+                When passed as a non-empty mapping,
+                it must cover all the variables of the design space;
+                a variable mapped to `None` is marked as having no value.
+                An empty mapping clears the current value of every variable.
+                Unknown variable names are ignored.
+                When passed as a NumPy array or an
+                [OptimizationResult][gemseo.optimization.result.OptimizationResult],
+                every variable is given a value.
+
+        Raises:
+            ValueError: If the value has a wrong dimension,
+                if a mapping does not cover all the variables,
+                or if it violates the bounds of a variable
+                or the domain of the kind of a variable.
+            TypeError: If the value is neither a mapping of NumPy arrays,
+                a NumPy array nor an
+                [OptimizationResult][gemseo.optimization.result.OptimizationResult].
+        """
+        if isinstance(value, Mapping) and value:
+            # An empty mapping clears the current value of every variable;
+            # a non-empty mapping must cover all the variables.
+            missing = self._variables.keys() - value.keys()
+            if missing:
+                got = [name for name in value if name in self._variables]
+                msg = (
+                    f"Expected current_x variables:"
+                    f" {pretty_str(self)}; "
+                    f"got {pretty_str(got)}."
+                )
+                raise ValueError(msg)
+
+            # Validate before mutating: a value rejected below must never
+            # reach the store, so a caller retains a consistent current value.
+            self.check_membership(value)  # ty: ignore[invalid-argument-type]
+        elif isinstance(value, ndarray) and value.size == self._variables.size:
+            # Validate before mutating, as for the mapping case above.
+            # A size mismatch is left for Value.set to reject: converting to a
+            # dict here would silently mis-split a wrong-size array instead.
+            self.check_membership(self.convert_array_to_dict(value))
+        elif (
+            isinstance(value, OptimizationResult)
+            and value.x_opt.size == self._variables.size
+        ):
+            self.check_membership(self.convert_array_to_dict(value.x_opt))
+
+        self._current.set(value)
+        if self._current.name_to_value:
+            self.__check_current_names()
+
+    def set_current_variable(self, name: str, current_value: ndarray | None) -> None:
+        """Set the current value of a single variable.
+
+        Args:
+            name: The name of the variable.
+            current_value: The current value of the variable,
+                or `None` to mark the variable as having no value.
+
+        Raises:
+            ValueError: If the value does not match the size of the variable
+                or if a component of the value falls outside the domain
+                of the kind of the variable.
+        """
+        if current_value is not None:
+            size = self._variables[name].size
+            if current_value.size != size:
+                msg = (
+                    f"The variable {name} of size {size} "
+                    f"cannot be set with an array of size {current_value.size}."
+                )
+                raise ValueError(msg)
+
+        self._current.set_variable(name, current_value)
+
+    def get_lower_bound(self, name: str) -> NumberArray:
+        """Return the lower bound of a variable.
+
+        Args:
+            name: The name of the variable.
+
+        Returns:
+            The lower bound of the variable (possibly infinite);
+            this array is read-only.
+        """
+        return self._bounds.get_lower_bound(name)
+
+    def get_upper_bound(self, name: str) -> NumberArray:
+        """Return the upper bound of a variable.
+
+        Args:
+            name: The name of the variable.
+
+        Returns:
+            The upper bound of the variable (possibly infinite);
+            this array is read-only.
+        """
+        return self._bounds.get_upper_bound(name)
+
+    @overload
+    def get_lower_bounds(
+        self,
+        variable_names: Sequence[str] = (),
+        as_dict: Literal[False] = False,
+    ) -> NumberArray: ...
+
+    @overload
+    def get_lower_bounds(
+        self,
+        variable_names: Sequence[str] = (),
+        as_dict: Literal[True] = False,
+    ) -> dict[str, NumberArray]: ...
+
+    def get_lower_bounds(
+        self,
+        variable_names: Sequence[str] = (),
+        as_dict: bool = False,
+    ) -> NumberArray | dict[str, NumberArray]:
+        """Return the lower bounds of design variables.
+
+        Args:
+            variable_names: The names of the design variables.
+                If empty, the lower bounds of all the design variables are returned.
+            as_dict: Whether to return the lower bounds
+                as a dictionary of the form `{variable_name: variable_lower_bound}`.
+
+        Returns:
+            The lower bounds of the design variables;
+            the arrays are read-only.
+        """
+        return self._bounds.get_lower_bounds(variable_names, as_dict)
+
+    @overload
+    def get_upper_bounds(
+        self,
+        variable_names: Sequence[str] = (),
+        as_dict: Literal[False] = False,
+    ) -> NumberArray: ...
+
+    @overload
+    def get_upper_bounds(
+        self,
+        variable_names: Sequence[str] = (),
+        as_dict: Literal[True] = False,
+    ) -> dict[str, NumberArray]: ...
+
+    def get_upper_bounds(
+        self,
+        variable_names: Sequence[str] = (),
+        as_dict: bool = False,
+    ) -> NumberArray | dict[str, NumberArray]:
+        """Return the upper bounds of design variables.
+
+        Args:
+            variable_names: The names of the design variables.
+                If empty, the upper bounds of all the design variables are returned.
+            as_dict: Whether to return the upper bounds
+                as a dictionary of the form `{variable_name: variable_upper_bound}`.
+
+        Returns:
+            The upper bounds of the design variables;
+            the arrays are read-only.
+        """
+        return self._bounds.get_upper_bounds(variable_names, as_dict)
+
+    def set_lower_bound(
+        self, name: str, lower_bound: complex | Iterable[complex]
+    ) -> None:
+        """Set the lower bound of a variable.
+
+        Args:
+            name: The name of the variable.
+            lower_bound: The value of the lower bound.
+        """
+        self._bounds.set_lower_bound(name, lower_bound)
+
+    def set_upper_bound(
+        self,
+        name: str,
+        upper_bound: complex | Iterable[complex],
+    ) -> None:
+        """Set the upper bound of a variable.
+
+        Args:
+            name: The name of the variable.
+            upper_bound: The value of the upper bound.
+        """
+        self._bounds.set_upper_bound(name, upper_bound)
+
+    def get_pretty_table(
+        self,
+        fields: Sequence[str] = (),
+        with_index: bool = False,
+        capitalize: bool = False,
+    ) -> PrettyTable:
+        """Build a tabular view of the design space.
+
+        Args:
+            fields: The name of the fields to be exported.
+                If empty, export all the fields.
+            with_index: Whether to show index of names for arrays.
+                This is ignored for scalars.
+            capitalize: Whether to capitalize the field names
+                and replace `"_"` by `" "`.
+
+        Returns:
+            A tabular view of the design space.
+        """
+        return view.get_pretty_table(
+            self,
+            fields=fields,
+            with_index=with_index,
+            capitalize=capitalize,
+        )
+
+    def to_hdf(
+        self, file_path: StrPath, append: bool = False, hdf_node_path: str = ""
+    ) -> None:
+        """Export the design space to an HDF file.
+
+        Args:
+            file_path: The path to the file to export the design space.
+            append: If `False`, existing node data is replaced
+                by the current design space.
+                If `True` and the node does not contain a design space,
+                the design space is exported
+                and the rest of the file is left untouched.
+                If `True` and the node already contains a design space,
+                both design spaces must have the same structure
+                (variables, sizes and types);
+                the bounds are overwritten,
+                and the current value is overwritten,
+                or removed when the exported design space has none.
+            hdf_node_path: The path of the HDF node in which
+                the design space should be exported.
+                If empty, the root node is considered.
+
+        Raises:
+            ValueError: If the file already stores a design space with a different
+                structure at this node.
+        """
+        _design_space_io.to_hdf(
+            self, file_path, append=append, hdf_node_path=hdf_node_path
+        )
+
+    @classmethod
+    def from_hdf(cls, file_path: StrPath, hdf_node_path: str = "") -> DesignSpace:
+        """Create a design space from an HDF file.
+
+        Args:
+            file_path: The path to the HDF file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
+
+        Returns:
+            The design space defined in the file.
+        """
+        return _design_space_io.from_hdf(cls, file_path, hdf_node_path)
+
+    def _to_complex(self) -> None:
+        self._current.to_complex()
+
+    def to_complex(self) -> None:
+        """Cast the current value to complex."""
+        self._to_complex()
+
+    @classmethod
+    def from_file(
+        cls,
+        file_path: StrPath,
+        hdf_node_path: str = "",
+        header: Iterable[str] = (),
+        delimiter: str = "",
+    ) -> DesignSpace:
+        """Create a design space from a file.
+
+        Args:
+            file_path: The path to the file.
+                If the extension starts with `"hdf"`,
+                the file will be considered as an HDF file.
+            hdf_node_path: The path of the HDF node from which
+                the database should be imported.
+                If empty, the root node is considered.
+            header: The names of the fields saved in the CSV file.
+                If empty, read them in the first row of the CSV file.
+            delimiter: The string used to separate values for CSV files. If empty,
+                any consecutive whitespaces act as delimiter.
+
+        Returns:
+            The design space defined in the file.
+        """
+        return _design_space_io.from_file(
+            cls,
+            file_path,
+            hdf_node_path=hdf_node_path,
+            header=header,
+            delimiter=delimiter,
+        )
+
+    def to_file(
+        self,
+        file_path: StrPath,
+        delimiter: str = " ",
+        append: bool = False,
+        fields: Sequence[str] = (),
+    ) -> None:
+        """Save the design space.
+
+        Args:
+            file_path: The file path to save the design space.
+                If the extension starts with `"hdf"`,
+                the design space will be saved in an HDF file.
+            delimiter: The string used to separate values for CSV files.
+            append: If `False`, the file is truncated
+                and the design space is exported.
+                If `True` and the file does not contain a design space,
+                the design space is exported
+                and the rest of the file is left untouched.
+                If `True` and the file already contains a design space,
+                both design spaces must have the same structure
+                (variables, sizes and types);
+                the bounds are overwritten,
+                and the current value is overwritten,
+                or removed when the exported design space has none.
+                This argument is ignored for CSV files.
+            fields: The fields to be exported in the CSV fields.
+                If empty, export all fields.
+
+        Raises:
+            ValueError: If the HDF file already stores a design space with a
+                different structure.
+        """
+        _design_space_io.to_file(
+            self, file_path, delimiter=delimiter, append=append, fields=fields
+        )
+
+    def to_csv(
+        self, output_file: StrPath, fields: Sequence[str] = (), delimiter: str = " "
+    ) -> None:
+        """Export the design space to a CSV file.
+
+        Args:
+            output_file: The path to the file.
+            fields: The fields to be exported.
+                If empty, export all fields.
+            delimiter: The string used to separate values.
+        """
+        _design_space_io.to_csv(self, output_file, fields=fields, delimiter=delimiter)
+
+    @classmethod
+    def from_csv(
+        cls, file_path: StrPath, header: Iterable[str] = (), delimiter: str = ""
+    ) -> DesignSpace:
+        """Create a design space from a CSV file.
+
+        Args:
+            file_path: The path to the CSV file.
+            header: The names of the fields saved in the file.
+                If empty, read them in the file.
+            delimiter: The string used to separate values. If empty, any consecutive
+                whitespaces act as delimiter.
+
+        Returns:
+            The design space defined in the file.
+
+        Raises:
+            ValueError: If the file does not contain the minimal variables
+                in its header.
+        """
+        return _design_space_io.from_csv(
+            cls, file_path, header=header, delimiter=delimiter
+        )
+
+    def project_into_bounds(
+        self,
+        x_vect: NumberArray,
+        normalized: bool = False,
+    ) -> NumberArray:
+        """Project a vector onto the bounds, using a simple coordinate wise approach.
+
+        Args:
+            x_vect: The vector to be projected onto the bounds.
+            normalized: If `True`, then the vector is assumed to be normalized.
+
+        Returns:
+            The projected vector.
+        """
+        return self._bounds.clip_to_bounds(x_vect, normalized=normalized)
+
+    def __eq__(self, other: object) -> bool:
+        if not super().__eq__(other):
+            return False
+
+        current_value = self._current_value
+        other_current_value = other._current_value
+        if current_value.keys() != other_current_value.keys():
+            return False
+
+        for name, value in current_value.items():
+            if not array_equal(other_current_value[name], value):
+                return False
+
+        return True
+
+    def extend(self, other: DesignSpace) -> None:
+        """Extend the design space with another design space.
+
+        Args:
+            other: The design space to be appended to the current one.
+        """
+        for name, variable in other._variables.items():
+            # Share the variable object rather than rebuilding it from its bounds,
+            # so that a field belonging to its kind is not dropped;
+            # a variable is immutable, so sharing it is safe.
+            self.add_variable(
+                name, value=other._current_value.get(name), variable=variable
+            )
+
+    def rename_variable(self, current_name: str, new_name: str) -> None:  # noqa: D102
+        super().rename_variable(current_name, new_name)
+        self._current.rename(current_name, new_name)
+
+    def initialize_missing_current_values(self) -> None:
+        """Initialize the current values of the design variables when missing.
+
+        Use:
+
+        - the center of the design space when the lower and upper bounds are finite,
+        - the lower bounds when the upper bounds are infinite,
+        - the upper bounds when the lower bounds are infinite,
+        - zero when the lower and upper bounds are infinite,
+        - the first choice of a discrete variable.
+        """
+        self._current.initialize_missing()
+
+    def add_variables_from(self, space: DesignSpace, *names: str) -> None:
+        """Add variables from another variable space.
+
+        Args:
+            space: The other variable space.
+            *names: The names of the variables.
+        """
+        for name in names:
+            self._add_variable_from(space, name)
+
+    def _add_variable_from(self, space: DesignSpace, name: str) -> None:
+        """Add a variable from another variable space.
+
+        Args:
+            space: The other variable space.
+            name: The name of the variable.
+        """
+        # Share the variable object rather than rebuilding it from its bounds,
+        # so that a field belonging to its kind is not dropped;
+        # a variable is immutable, so sharing it is safe.
+        self.add_variable(
+            name, value=space._current_value.get(name), variable=space.variables[name]
+        )
+
+    def to_scalar_variables(self) -> DesignSpace:
+        """Create a new design space with the variables splitted into scalar variables.
+
+        Returns:
+            The design space of scalar variables.
+        """
+        design_space = self.__class__()
+        for name in self:
+            variable = self._variables[name]
+            size = variable.size
+            type_ = variable.type
+            lower_bounds = self.get_lower_bound(name)
+            upper_bounds = self.get_upper_bound(name)
+
+            try:
+                current_value = self.get_current_value([name])
+            except KeyError:
+                # The variable has no current value.
+                current_value = full(size, None)
+
+            if size == 1:
+                # Splitting a scalar variable is the identity;
+                # share the variable object rather than rebuilding it from its bounds,
+                # so that a field belonging to its kind is not dropped.
+                design_space.add_variable(
+                    name, value=current_value[0], variable=self._variables[name]
+                )
+                continue
+
+            for index, indexed_name in enumerate(self.get_indexed_variable_names(name)):
+                design_space.add_variable(
+                    indexed_name,
+                    1,
+                    type_,
+                    lower_bounds[index],
+                    upper_bounds[index],
+                    current_value[index],
+                )
+
+        return design_space
+
+    @property
+    def enable_integer_variables_normalization(self) -> bool:
+        """Whether to enable the normalization of integer variables.
+
+        Note:
+            Switching the normalization of integer variables shall trigger
+            the (re-)computation of the normalization data
+            at the next normalization (or denormalization).
+        """
+        return self._variables.enable_integer_variables_normalization
+
+    @enable_integer_variables_normalization.setter
+    def enable_integer_variables_normalization(self, value: bool) -> None:
+        if value != self._variables.enable_integer_variables_normalization:
+            self._variables.enable_integer_variables_normalization = value

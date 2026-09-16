@@ -62,7 +62,7 @@ def test_create() -> None:
     )
     problem.objective = formulation.create_objective(["obj"])
     assert isinstance(formulation, MDF)
-    assert "x_shared" in formulation.design_space
+    assert "x_shared" in formulation.input_space
     assert [d.name for d in formulation.disciplines] == [
         "Sellar1",
         "Sellar2",

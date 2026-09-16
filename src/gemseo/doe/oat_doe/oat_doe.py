@@ -29,7 +29,7 @@ from gemseo.doe.oat_doe.settings.oat_doe_settings import OATDOE_Settings
 from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
 
 OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
 
@@ -92,7 +92,7 @@ class OATDOE(BaseDOELibrary[OATDOE_Settings]):
     def __init__(self, algo_name: str = "OATDOE") -> None:  # noqa:D107
         super().__init__(algo_name)
 
-    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+    def _generate_unit_samples(self, input_space: BaseVariableSpace) -> RealArray:
         step = self._settings.step
         initial_point = self._settings.initial_point
 

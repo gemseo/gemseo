@@ -17,17 +17,19 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import TypeVar
 
 from gemseo.space.variable import BaseVariable
 from gemseo.util.read_only_mapping import ReadOnlyMapping
 
 if TYPE_CHECKING:
-    # The only registry of variables is that of a design space for the time being;
-    # this view uses nothing specific to a design space.
-    from gemseo.space.design._variables import Variables
+    from gemseo.space._core.variables import Variables
+
+_VariableT = TypeVar("_VariableT", bound=BaseVariable)
+"""The type of the variables of the registry."""
 
 
-class VariablesView(ReadOnlyMapping[str, BaseVariable]):
+class VariablesView(ReadOnlyMapping[str, _VariableT]):
     """A read-only live view over a registry of variables.
 
     A space of variables exposes its registry through such a view,
@@ -43,7 +45,7 @@ class VariablesView(ReadOnlyMapping[str, BaseVariable]):
 
     __slots__ = ()
 
-    _mapping: Variables
+    _mapping: Variables[_VariableT]
     """The registry of the variables."""
 
     @property

@@ -25,27 +25,61 @@ from typing import Final
 # so the name must keep resolving here;
 # it is re-exported explicitly and left out of the public surface.
 from gemseo.space.variable._legacy import Variable as Variable
-from gemseo.space.variable.base import BaseVariable
-from gemseo.space.variable.base import ComponentDType
-from gemseo.space.variable.base import DataType
+from gemseo.space.variable.base import BaseVariable as BaseVariable
+from gemseo.space.variable.base import DataType as DataType  # noqa: TC001
 from gemseo.space.variable.continuous import ContinuousVariable
+from gemseo.space.variable.deterministic import (
+    BaseDeterministicVariable as BaseDeterministicVariable,
+)
 from gemseo.space.variable.discrete import DiscreteVariable
+from gemseo.space.variable.factory import (
+    DeterministicVariableFactory as DeterministicVariableFactory,
+)
 from gemseo.space.variable.integer import IntegerVariable
+from gemseo.space.variable.interval import BaseIntervalVariable as BaseIntervalVariable
+from gemseo.space.variable.numeric import BaseNumericVariable as BaseNumericVariable
+from gemseo.space.variable.numeric import BoundArray as BoundArray
+from gemseo.space.variable.numeric import BoundType as BoundType
+from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+
+    # static visibility for mypy / IDEs
+    from gemseo.space.variable.numeric import ComponentDType
+    from gemseo.space.variable.random import RandomVariable  # noqa: F401
 
 data_type_to_numpy_type: Final[Mapping[DataType, ComponentDType]] = MappingProxyType({
     cls.type: cls.component_type
     for cls in (ContinuousVariable, DiscreteVariable, IntegerVariable)
 })
-"""The map from a variable data type to the NumPy type of its components."""
+"""The map from a variable data type to the NumPy type of its components.
 
-__all__ = [
-    "BaseVariable",
-    "ContinuousVariable",
-    "DataType",
-    "DiscreteVariable",
-    "IntegerVariable",
-    "data_type_to_numpy_type",
-]
+Only a variable whose components are numbers has such a type.
+"""
+
+# A random variable drags in the probability distributions,
+# which a design space has no use for,
+# so it is re-exported lazily.
+_name_to_location: Final[Mapping[str, str]] = MappingProxyType({
+    "RandomVariable": "random"
+})
+
+install_lazy_reexport(
+    globals(),
+    _name_to_location,
+    extra_all=[
+        "data_type_to_numpy_type",
+        "BaseDeterministicVariable",
+        "BaseIntervalVariable",
+        "BaseNumericVariable",
+        "BaseVariable",
+        "BoundArray",
+        "BoundType",
+        "ContinuousVariable",
+        "DataType",
+        "DeterministicVariableFactory",
+        "DiscreteVariable",
+        "IntegerVariable",
+    ],
+)

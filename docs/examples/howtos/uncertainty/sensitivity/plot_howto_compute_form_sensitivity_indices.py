@@ -49,9 +49,7 @@ the `classical` ones being the default
 from __future__ import annotations
 
 from gemseo.problem.uncertainty.wing_weight.discipline import WingWeightDiscipline
-from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
-    WingWeightUncertainSpace,
-)
+from gemseo.problem.uncertainty.wing_weight.random_space import WingWeightRandomSpace
 from gemseo.uncertainty.sensitivity.form import FORMAnalysis
 
 # %%
@@ -61,8 +59,8 @@ from gemseo.uncertainty.sensitivity.form import FORMAnalysis
 # from 10 structural and aerodynamic parameters,
 # all modelled as independent uniform random variables:
 discipline = WingWeightDiscipline()
-uncertain_space = WingWeightUncertainSpace(
-    WingWeightUncertainSpace.UniformDistribution.OPENTURNS
+random_space = WingWeightRandomSpace(
+    WingWeightRandomSpace.UniformDistribution.OPENTURNS
 )
 
 # %%
@@ -88,8 +86,8 @@ events = {"too_heavy": Ww > 400}
 # for the most probable failure point (MPFP),
 # so the returned dataset contains the model evaluations performed during this
 # optimization (the optimizer iterates),
-# not points drawn from a sampling of the uncertain space:
-analysis.compute_samples([discipline], uncertain_space, events)
+# not points drawn from a sampling of the random space:
+analysis.compute_samples([discipline], random_space, events)
 
 # %%
 # !!! note

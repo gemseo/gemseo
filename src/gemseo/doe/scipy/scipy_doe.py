@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from numpy.random import Generator
     from numpy.random import RandomState
 
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
 
 OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
 
@@ -149,9 +149,9 @@ class SciPyDOE(BaseDOELibrary[BaseSciPyDOESettings]):
     Optimizer = Optimizer
     """The optimization scheme to improve the quality of the DOE after sampling."""
 
-    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+    def _generate_unit_samples(self, input_space: BaseVariableSpace) -> RealArray:
         algo = self.__names_to_classes[self._algo_name](
-            design_space.dimension,
+            input_space.dimension,
             seed=self._seeder.get_seed(self._settings.seed),
             **self._settings.model_dump(include=self.__scipy_option_names),
         )

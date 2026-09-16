@@ -85,7 +85,7 @@ if TYPE_CHECKING:
     from gemseo.post.dataset.base import BaseDatasetPlot
     from gemseo.post.dataset.base import DatasetPlotPropertyType
     from gemseo.scenario.backup_settings import BackupSettings
-    from gemseo.space.parameter import ParameterSpace
+    from gemseo.space.random import RandomSpace
     from gemseo.util.string import VariableType
     from gemseo.util.typing import StrPath
 
@@ -114,7 +114,7 @@ class BaseGenericSensitivityAnalysis(
     method to generate them,
     using a [Discipline][gemseo.core.discipline.discipline.Discipline]
     representing the model,
-    a [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+    a [RandomSpace][gemseo.space.random.RandomSpace]
     describing the uncertain input variables
     and a set of options.
     In the second case,
@@ -139,7 +139,7 @@ class BaseGenericSensitivityAnalysis(
     """The name of the default main sensitivity analysis method."""
 
     _input_names: list[str]
-    """The names of the inputs in uncertain space order."""
+    """The names of the inputs in random space order."""
 
     _output_names: list[str]
     """The names of the outputs."""
@@ -200,18 +200,18 @@ class BaseGenericSensitivityAnalysis(
     def compute_samples(
         self,
         disciplines: Collection[Discipline],
-        parameter_space: ParameterSpace,
+        random_space: RandomSpace,
         algo_settings: BaseSettings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,
     ) -> IODataset:
-        """Sample the model over the uncertain space.
+        """Sample the model over the random space.
 
         This step is a prerequisite for calculating the sensitivity indices
         if the samples were not passed during instantiation.
 
         Args:
             disciplines: The discipline or disciplines to use for the analysis.
-            parameter_space: A parameter space.
+            random_space: A random space.
             algo_settings: The settings of the DOE algorithm.
                 If `None`,
                 use the default settings of the default DOE algorithm
@@ -1024,7 +1024,7 @@ class BaseSensitivityAnalysis(BaseGenericSensitivityAnalysis[T]):
     def compute_samples(
         self,
         disciplines: Collection[Discipline],
-        parameter_space: ParameterSpace,
+        random_space: RandomSpace,
         n_samples: int,
         output_names: str | Iterable[str] = (),
         algo_settings: BaseDOESettings | None = None,
@@ -1054,14 +1054,14 @@ class BaseSensitivityAnalysis(BaseGenericSensitivityAnalysis[T]):
         if n_samples > 0:
             algo_settings.n_samples = n_samples
         self._output_names = list(output_names or get_all_outputs(disciplines))
-        self._input_names = parameter_space.variable_names
+        self._input_names = list(random_space.variables)
         algo_settings.use_one_line_progress_bar = True
         formulation_settings = create_model(
             MDF_Settings, settings_model=formulation_settings
         )
         scenario = EvaluationScenario(
             disciplines,
-            parameter_space,
+            random_space,
             f"{self.__class__.__name__}SamplingPhase",
             formulation_settings=formulation_settings,
         )

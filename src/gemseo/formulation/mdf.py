@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import ClassVar
+from typing import TypeVar
 
 from gemseo.formulation.core.base_mdo import BaseMDOFormulation
 from gemseo.formulation.mdf_settings import MDF_Settings
@@ -31,10 +32,13 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.core.grammar.json import JSONGrammar
     from gemseo.mda.core.base import BaseMDA
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import StrKeyMapping
 
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 
-class MDF(BaseMDOFormulation[MDF_Settings]):
+
+class MDF(BaseMDOFormulation[MDF_Settings, _SpaceT]):
     """The Multidisciplinary Design Feasible (MDF) formulation.
 
     This formulation draws an optimization architecture
@@ -92,8 +96,8 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
             raise ValueError(msg)
         return main_mda_name
 
-    def _update_design_space(self) -> None:
-        self._set_default_input_values_from_design_space()
+    def _update_input_space(self) -> None:
+        self._set_default_input_values_from_space()
         # No couplings in design space (managed by MDA)
         self._remove_couplings_from_ds()
         # Cleanup
@@ -101,7 +105,7 @@ class MDF(BaseMDOFormulation[MDF_Settings]):
 
     def _remove_couplings_from_ds(self) -> None:
         """Remove the coupling variables from the design space."""
-        design_space = self.problem.design_space
+        design_space = self.problem.input_space
         for coupling in self.mda.coupling_structure.all_couplings:
             if coupling in design_space:
                 design_space.remove_variable(coupling)

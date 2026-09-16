@@ -22,14 +22,15 @@ from numpy import inf
 from numpy import iscomplexobj
 from numpy import logical_and
 
-from gemseo.space.variable.base import BaseVariable
+from gemseo.space.variable.interval import BaseIntervalVariable
+from gemseo.util._numpy import freeze_array
 
 if TYPE_CHECKING:
     from gemseo.util.typing import BooleanArray
     from gemseo.util.typing import NumberArray
 
 
-class ContinuousVariable(BaseVariable):
+class ContinuousVariable(BaseIntervalVariable):
     """A variable whose components are real numbers."""
 
     def cast(self, value: NumberArray) -> NumberArray:
@@ -49,7 +50,9 @@ class ContinuousVariable(BaseVariable):
         """
         return value.copy() if iscomplexobj(value) else super().cast(value)
 
-    def compute_normalization_mask(  # noqa: D102
+    def get_normalization_mask(  # noqa: D102
         self, enable_integer_normalization: bool
     ) -> BooleanArray:
-        return logical_and(self.lower_bound != -inf, self.upper_bound != inf)
+        return freeze_array(
+            logical_and(self.lower_bound != -inf, self.upper_bound != inf)
+        )

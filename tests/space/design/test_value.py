@@ -24,17 +24,17 @@ from numpy import float64
 from numpy import int64
 from numpy.testing import assert_equal
 
-from gemseo.space.design._bounds import Bounds
-from gemseo.space.design._integer_rounder import IntegerRounder
-from gemseo.space.design._normalizer import Normalizer
-from gemseo.space.design._value import Value
-from gemseo.space.design._variables import Variables
+from gemseo.space._design.bounds import Bounds
+from gemseo.space._design.integer_rounder import IntegerRounder
+from gemseo.space._design.normalizer import Normalizer
+from gemseo.space._design.value import Value
+from gemseo.space._design.variables import DesignVariables
 from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.util.testing.helper import assert_exception
 
 
-def _build_value(*names: str) -> tuple[Variables, Value]:
+def _build_value(*names: str) -> tuple[DesignVariables, Value]:
     """Build a Value over float variables of size 1 with bounds [0, 1].
 
     Args:
@@ -43,7 +43,7 @@ def _build_value(*names: str) -> tuple[Variables, Value]:
     Returns:
         The variables and the value.
     """
-    variables = Variables()
+    variables = DesignVariables()
     for name in names:
         variables[name] = ContinuousVariable(size=1, lower_bound=0.0, upper_bound=1.0)
     bounds = Bounds(variables)
@@ -51,7 +51,7 @@ def _build_value(*names: str) -> tuple[Variables, Value]:
     return variables, Value(variables, bounds, normalizer)
 
 
-def _build_integer_value(name: str) -> tuple[Variables, Value]:
+def _build_integer_value(name: str) -> tuple[DesignVariables, Value]:
     """Build a Value over a single integer variable with bounds [-10, 10].
 
     Args:
@@ -60,14 +60,14 @@ def _build_integer_value(name: str) -> tuple[Variables, Value]:
     Returns:
         The variables and the value.
     """
-    variables = Variables()
+    variables = DesignVariables()
     variables[name] = IntegerVariable(size=1, lower_bound=-10, upper_bound=10)
     bounds = Bounds(variables)
     normalizer = Normalizer(variables, bounds, IntegerRounder(variables))
     return variables, Value(variables, bounds, normalizer)
 
 
-def _resize(variables: Variables, name: str, size: int) -> None:
+def _resize(variables: DesignVariables, name: str, size: int) -> None:
     """Replace a variable with a bigger one, bumping the variables version.
 
     Args:
@@ -276,7 +276,7 @@ def test_initialize_missing_after_resize() -> None:
 
 def test_check_value_ignores_resized_value() -> None:
     """Check that a value invalidated by a resize is not checked against bounds."""
-    variables = Variables()
+    variables = DesignVariables()
     variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
     bounds = Bounds(variables)
     value = Value(
@@ -305,3 +305,79 @@ def test_to_complex_keeps_no_value(snapshot) -> None:
     assert not value.has_value
     with assert_exception(KeyError, snapshot):
         value.get()
+
+
+GET_CALLS = [
+    lambda value: value.get(),
+    lambda value: value.get(complex_to_real=True),
+    lambda value: value.get(normalize=True),
+    lambda value: value.get(names=["x"]),
+    lambda value: value.get(as_dict=True)["x"],
+    lambda value: value.get(as_dict=True, complex_to_real=True)["x"],
+    lambda value: value.get(as_dict=True, normalize=True)["x"],
+    lambda value: value.get(names=["x"], as_dict=True)["x"],
+]
+"""The ways of reading the value of the variable `"x"`."""
+
+GET_CALL_IDS = [
+    "full",
+    "full[complex_to_real]",
+    "full[normalize]",
+    "full[names]",
+    "as_dict",
+    "as_dict[complex_to_real]",
+    "as_dict[normalize]",
+    "as_dict[names]",
+]
+"""The identifiers of the ways of reading a value."""
+
+
+@pytest.mark.parametrize("get_result", GET_CALLS, ids=GET_CALL_IDS)
+def test_get_returns_a_writeable_copy(get_result) -> None:
+    """Check that a value read is a writeable array sharing nothing with the space."""
+    _variables, value = _build_value("x")
+    value.set_variable("x", array([0.5]))
+
+    result = get_result(value)
+    assert result.flags.writeable
+
+    result[0] = 42.0
+
+    assert_equal(value.get(), array([0.5]))
+    assert_equal(value.get(as_dict=True)["x"], array([0.5]))
+    assert_equal(value.get(normalize=True), array([0.5]))
+
+
+def test_get_as_dict_returns_a_new_dictionary() -> None:
+    """Check that the dictionary read is not the one the value keeps."""
+    _variables, value = _build_value("x", "y")
+    value.set_variable("x", array([0.5]))
+    value.set_variable("y", array([0.5]))
+
+    name_to_value = value.get(as_dict=True)
+    name_to_value["z"] = array([0.5])
+    del name_to_value["x"]
+
+    assert set(value.get(as_dict=True)) == {"x", "y"}
+
+
+def test_get_partial_value_as_dict_returns_copies() -> None:
+    """Check that the values of a partially valued space are copies too."""
+    _variables, value = _build_value("x", "y")
+    value.set_variable("x", array([0.5]))
+
+    name_to_value = value.get(as_dict=True)
+    name_to_value["x"][0] = 42.0
+
+    assert_equal(value.get(as_dict=True)["x"], array([0.5]))
+
+
+def test_get_partial_value_as_dict_casts_complex_to_real() -> None:
+    """Check that the values of a partially valued space are cast to real too."""
+    _variables, value = _build_value("x", "y")
+    value.set_variable("x", array([0.5 + 1j]))
+
+    name_to_value = value.get(as_dict=True, complex_to_real=True)
+
+    assert name_to_value["x"].dtype == float64
+    assert_equal(name_to_value["x"], array([0.5]))

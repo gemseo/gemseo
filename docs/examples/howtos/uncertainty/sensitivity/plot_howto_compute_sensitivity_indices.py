@@ -50,7 +50,7 @@ from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 #
 # with $X_1, X_2, X_3 \sim \mathcal{U}(-\pi, \pi)$ independently.
 discipline = IshigamiDiscipline()
-uncertain_space = IshigamiSpace()
+random_space = IshigamiSpace()
 
 # %%
 # ### 2. Instantiate a sensitivity analysis
@@ -64,8 +64,8 @@ analysis = CorrelationAnalysis()
 # ### 3. Generate samples
 #
 # [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples]
-# evaluates the discipline at random input points drawn from the uncertain space:
-samples = analysis.compute_samples([discipline], uncertain_space, n_samples=1000)
+# evaluates the discipline at random input points drawn from the random space:
+samples = analysis.compute_samples([discipline], random_space, n_samples=1000)
 samples
 
 # %%

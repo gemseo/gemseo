@@ -223,6 +223,20 @@ def convert_camel_case_to_screaming_snake_case(name: str) -> str:
     return _re_pattern_camel_case_boundary.sub(r"\1_\2", name).upper()
 
 
+def _convert_camel_case_to_lower_case_words(name: str) -> str:
+    """Convert a camel case string to lower case words separated by spaces.
+
+    For instance, `"DesignSpace"` becomes `"design space"`.
+
+    Args:
+        name: The camel case string.
+
+    Returns:
+        The lower case words separated by spaces.
+    """
+    return convert_camel_case_to_screaming_snake_case(name).lower().replace("_", " ")
+
+
 def filter_names(
     names: Iterable[str],
     names_to_keep: Iterable[str],

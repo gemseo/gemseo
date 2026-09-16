@@ -44,8 +44,9 @@ from gemseo.machine_learning.regression.model.pce import CleaningOptions
 from gemseo.machine_learning.regression.model.pce import PCERegressor
 from gemseo.machine_learning.regression.model.pce_settings import PCERegressor_Settings
 from gemseo.machine_learning.regression.quality.r2_measure import R2Measure
-from gemseo.scenario.mdo import MDOScenario
-from gemseo.space.parameter import ParameterSpace
+from gemseo.scenario.evaluation import EvaluationScenario
+from gemseo.space.design import DesignSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -69,11 +70,11 @@ def discipline() -> AnalyticDiscipline:
 
 
 @pytest.fixture(scope="module")
-def probability_space() -> ParameterSpace:
+def probability_space() -> RandomSpace:
     """The probability space associated with the linear discipline."""
-    space = ParameterSpace()
-    space.add_random_variable("x1", OTUniformDistribution_Settings())
-    space.add_random_variable("x2", OTUniformDistribution_Settings())
+    space = RandomSpace()
+    space.add_variable("x1", OTUniformDistribution_Settings())
+    space.add_variable("x2", OTUniformDistribution_Settings())
     return space
 
 
@@ -100,18 +101,12 @@ def ishigami_discipline() -> AnalyticDiscipline:
 
 
 @pytest.fixture(scope="module")
-def ishigami_probability_space() -> ParameterSpace:
+def ishigami_probability_space() -> RandomSpace:
     """The probability space associated with the Ishigami discipline."""
-    space = ParameterSpace()
-    space.add_random_variable(
-        "x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
-    )
-    space.add_random_variable(
-        "x2", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
-    )
-    space.add_random_variable(
-        "x3", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
-    )
+    space = RandomSpace()
+    space.add_variable("x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi))
+    space.add_variable("x2", OTUniformDistribution_Settings(minimum=-pi, maximum=pi))
+    space.add_variable("x3", OTUniformDistribution_Settings(minimum=-pi, maximum=pi))
     return space
 
 
@@ -223,11 +218,21 @@ def test_input_names_with_quadrature(discipline, probability_space) -> None:
 
 def test_missing_random_variables(dataset, snapshot) -> None:
     """Check that a ValueError is raised when a random variable has no distribution."""
-    probability_space = ParameterSpace()
-    probability_space.add_random_variable("x1", SPNormalDistribution_Settings())
+    probability_space = RandomSpace()
+    probability_space.add_variable("x1", SPNormalDistribution_Settings())
     input_space = dataset.misc["input_space"]
     dataset.misc["input_space"] = probability_space
     with assert_exception(ValueError, snapshot):
+        PCERegressor(dataset, PCERegressor_Settings())
+
+    dataset.misc["input_space"] = input_space
+
+
+def test_input_space_is_not_a_random_space(dataset, snapshot) -> None:
+    """Check that PCERegressor requires an uncertain input space."""
+    input_space = dataset.misc["input_space"]
+    dataset.misc["input_space"] = DesignSpace()
+    with assert_exception(TypeError, snapshot):
         PCERegressor(dataset, PCERegressor_Settings())
 
     dataset.misc["input_space"] = input_space
@@ -245,9 +250,9 @@ def test_transformer(dataset, probability_space, key, snapshot) -> None:
 
 def test_ot_distribution(dataset, snapshot) -> None:
     """Check that PCERegressor handles only the OTDistribution instances."""
-    probability_space = ParameterSpace()
-    probability_space.add_random_variable("x1", SPUniformDistribution_Settings())
-    probability_space.add_random_variable("x2", SPUniformDistribution_Settings())
+    probability_space = RandomSpace()
+    probability_space.add_variable("x1", SPUniformDistribution_Settings())
+    probability_space.add_variable("x2", SPUniformDistribution_Settings())
     input_space = dataset.misc["input_space"]
     dataset.misc["input_space"] = probability_space
     with assert_exception(ValueError, snapshot):
@@ -612,21 +617,21 @@ def test_multidimensional_variables() -> None:
         return y  # noqa: RET504
 
     discipline = AutoPyDiscipline(f)
-    parameter_space = ParameterSpace()
-    parameter_space.add_random_variable(
+    parameter_space = RandomSpace()
+    parameter_space.add_variable(
         "x1", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
-    parameter_space.add_random_variable(
+    parameter_space.add_variable(
         "x2", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
-    parameter_space.add_random_variable(
+    parameter_space.add_variable(
         "x3", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
 
-    scenario = MDOScenario([discipline], parameter_space)
-    scenario.add_objective("y")
+    scenario = EvaluationScenario([discipline], parameter_space)
+    scenario.add_observable("y")
     scenario.execute(OT_OPT_LHS_Settings(n_samples=100))
-    dataset = scenario.to_dataset(opt_naming=False)
+    dataset = scenario.to_dataset()
 
     pce = PCERegressor(dataset, PCERegressor_Settings())
     pce.learn()
@@ -644,18 +649,18 @@ def test_multidimensional_variables() -> None:
         return y  # noqa: RET504
 
     discipline = AutoPyDiscipline(f, use_arrays=True)
-    parameter_space = ParameterSpace()
-    parameter_space.add_random_variable(
-        "a", OTUniformDistribution_Settings(minimum=-pi, maximum=pi), size=2
+    parameter_space = RandomSpace()
+    parameter_space.add_variable(
+        "a", *[OTUniformDistribution_Settings(minimum=-pi, maximum=pi)] * 2
     )
-    parameter_space.add_random_variable(
+    parameter_space.add_variable(
         "b", OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
     )
 
-    scenario = MDOScenario([discipline], parameter_space)
-    scenario.add_objective("y")
+    scenario = EvaluationScenario([discipline], parameter_space)
+    scenario.add_observable("y")
     scenario.execute(OT_OPT_LHS_Settings(n_samples=100))
-    dataset = scenario.to_dataset(opt_naming=False)
+    dataset = scenario.to_dataset()
 
     pce = PCERegressor(dataset, PCERegressor_Settings())
     pce.learn()

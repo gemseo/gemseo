@@ -27,10 +27,13 @@ from gemseo.uncertainty.distribution.scipy.joint import SPJointDistribution
 def test_ishigami_problem() -> None:
     """Check the Ishigami problem."""
     problem = IshigamiProblem()
-    uncertain_space = problem.design_space
-    assert isinstance(uncertain_space, IshigamiSpace)
-    assert isinstance(problem.objective, IshigamiFunction)
-    assert isinstance(uncertain_space.distribution, SPJointDistribution)
+    input_space = problem.input_space
+    assert isinstance(input_space, IshigamiSpace)
+    functions = problem.functions
+    assert len(functions) == 1
+    assert isinstance(functions[0], IshigamiFunction)
+    for random_variable in input_space.variables.values():
+        assert isinstance(random_variable.distribution, SPJointDistribution)
 
 
 @pytest.mark.parametrize(
@@ -40,4 +43,5 @@ def test_ishigami_problem() -> None:
 def test_ishigami_problem_openturns(uniform_distribution_name) -> None:
     """Check the Ishigami problem using OpenTURNS."""
     problem = IshigamiProblem(uniform_distribution_name)
-    assert isinstance(problem.design_space.distribution, OTJointDistribution)
+    for random_variable in problem.input_space.variables.values():
+        assert isinstance(random_variable.distribution, OTJointDistribution)

@@ -50,7 +50,7 @@ class FunctionFromDiscipline(ArrayFunction):
     __all_input_names: Iterable[str]
     """The names of the discipline inputs for the function.
 
-    Use all the design variables of `formulation.design_space` if empty.
+    Use all the design variables of `formulation.input_space` if empty.
     """
 
     __all_differentiated_input_names: Iterable[str]

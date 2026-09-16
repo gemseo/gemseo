@@ -21,7 +21,7 @@
 
 A driver is an algorithm evaluating the functions
 of an [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem]
-at different points of the design space,
+at different points of the input space,
 using the
 [execute()][gemseo.core.algorithm.base_driver_library.BaseDriverLibrary.execute]
 method.
@@ -48,6 +48,7 @@ from time import time
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Generic
 from typing import TypeVar
 
 from numpy import ndarray
@@ -72,6 +73,7 @@ from gemseo.util.hashable_ndarray import HashableNdarray
 from gemseo.util.logging import OneLineLogging
 from gemseo.util.pydantic import create_model
 from gemseo.util.string import MultiLineString
+from gemseo.util.string import _convert_camel_case_to_lower_case_words
 from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
@@ -79,7 +81,7 @@ if TYPE_CHECKING:
     from gemseo.core.algorithm.progress_bar_data.factory import ProgressBarDataName
     from gemseo.optimization.problem import OptimizationProblem
     from gemseo.optimization.result import OptimizationResult
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
 
 DriverSettingType = (
     str
@@ -94,6 +96,7 @@ DriverSettingType = (
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseDriverSettings)
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 
 
 @dataclass
@@ -107,8 +110,17 @@ class DriverDescription(AlgorithmDescription):
     """The Pydantic model for the driver library settings."""
 
 
-class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta):
-    """Base class for libraries of drivers."""
+class BaseDriverLibrary(
+    BaseAlgorithmLibrary[T], Generic[T, _SpaceT], metaclass=WorkflowObserverMeta
+):
+    """Base class for libraries of drivers.
+
+    The type of the input space of the problems handled by the library
+    is the second type parameter of this class:
+    a family of drivers requiring a specific kind of space,
+    e.g. an optimization library requiring a design space,
+    passes it to its base.
+    """
 
     ApproximationMode = ApproximationMode
 
@@ -129,7 +141,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
     enable_progress_bar: bool = _enable_progress_bar
     """Whether to enable the progress bar in the evaluation log."""
 
-    _problem: EvaluationProblem | None
+    _problem: EvaluationProblem[_SpaceT] | None
     """The optimization problem the driver library is bonded to."""
 
     _progress_bar: BaseProgressBar | None
@@ -148,14 +160,14 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
         cls, algorithm_description: DriverDescription, problem: EvaluationProblem
     ) -> _UnsuitabilityReason:
         reason = super()._get_unsuitability_reason(algorithm_description, problem)
-        if reason or problem.design_space:
+        if reason or problem.input_space:
             return reason
 
-        return _UnsuitabilityReason.EMPTY_DESIGN_SPACE
+        return _UnsuitabilityReason.EMPTY_VARIABLE_SPACE
 
     def _init_iter_observer(
         self,
-        problem: EvaluationProblem,
+        problem: EvaluationProblem[_SpaceT],
         max_iter: int,
         message: str = "",
         progress_bar_data_name: ProgressBarDataName = ProgressBarData.__name__,
@@ -219,37 +231,37 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
 
     def _post_run(
         self,
-        problem: EvaluationProblem,
+        problem: OptimizationProblem,
         result: OptimizationResult,
-        max_design_space_dimension_to_log: int,
+        max_input_space_dimension_to_log: int,
     ) -> None:
         """
         Args:
-            max_design_space_dimension_to_log: The maximum dimension of a design space
+            max_input_space_dimension_to_log: The maximum dimension of an input space
                 to be logged.
-                If this number is higher than the dimension of the design space
-                then the design space will not be logged.
+                If this number is higher than the dimension of the input space
+                then the input space will not be logged.
         """  # noqa: D205, D212
         result.objective_name = problem.objective.name
-        result.design_space = problem.design_space
+        result.design_space = problem.input_space
         problem.solution = result
         if result.x_opt is not None:
-            problem.design_space.set_current_value(result)
+            problem.input_space.set_current_value(result)
 
         if self._settings.log_problem:
-            self._log_result(problem, max_design_space_dimension_to_log)
+            self._log_result(problem, max_input_space_dimension_to_log)
 
     def _log_result(
-        self, problem: OptimizationProblem, max_design_space_dimension_to_log: int
+        self, problem: OptimizationProblem, max_input_space_dimension_to_log: int
     ) -> None:
         """Log the optimization result.
 
         Args:
             problem: The problem to be solved.
-            max_design_space_dimension_to_log: The maximum dimension of a design space
+            max_input_space_dimension_to_log: The maximum dimension of an input space
                 to be logged.
-                If this number is higher than the dimension of the design space
-                then the design space will not be logged.
+                If this number is higher than the dimension of the input space
+                then the input space will not be logged.
         """
         result = problem.solution
         opt_result_str = result._strings
@@ -260,35 +272,40 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
             else:
                 logger.warning("%s", opt_result_str[1])
         logger.info("%s", opt_result_str[2])
-        if problem.design_space.dimension <= max_design_space_dimension_to_log:
+        if problem.input_space.dimension <= max_input_space_dimension_to_log:
             log = MultiLineString()
             log.indent()
             log.indent()
-            log.add("Design space:")
+            log.add(
+                "{}:",
+                _convert_camel_case_to_lower_case_words(
+                    type(problem.input_space).__name__
+                ).capitalize(),
+            )
             log.indent()
-            for line in str(problem.design_space).split("\n")[1:]:
+            for line in str(problem.input_space).split("\n")[1:]:
                 log.add(line)
             log.dedent()
             logger.info("%s", log)
 
     def _check_integer_handling(
         self,
-        design_space: DesignSpace,
+        input_space: BaseVariableSpace,
     ) -> None:
         """Check if the algo handles integer variables.
 
         The user may force the execution if needed, in this case a warning is logged.
 
         Args:
-            design_space: The design space of the problem.
+            input_space: The input space of the problem.
 
         Raises:
             ValueError: If `force_execution` is set to `False` and
                 the algo does not handle integer variables and the
-                design space includes at least one integer variable.
+                input space includes at least one integer variable.
         """
         if (
-            design_space.has_integer_variables
+            input_space.variables.has_integer_variables
             and not self.ALGORITHM_INFOS[self._algo_name].handle_integer_variables
         ):
             if not self._settings.skip_int_check:
@@ -312,7 +329,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
 
     def execute(
         self,
-        problem: EvaluationProblem,
+        problem: EvaluationProblem[_SpaceT],
         settings: BaseDriverSettings | None = None,
     ) -> OptimizationResult:
         """
@@ -328,7 +345,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
         self._settings = create_model(
             self.ALGORITHM_INFOS[self.algo_name].settings_class, settings_model=settings
         )
-        self._check_integer_handling(problem.design_space)
+        self._check_integer_handling(problem.input_space)
 
         solve_optimization_problem = self._is_solving_optimization_problem
         if solve_optimization_problem:
@@ -372,14 +389,19 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
         if self._settings.log_problem:
             logger.info("%s", problem)
             if (
-                problem.design_space.dimension
-                <= self._settings.max_design_space_dimension_to_log
+                problem.input_space.dimension
+                <= self._settings.max_input_space_dimension_to_log
             ):
                 log = MultiLineString()
                 log.indent()
-                log.add("over the design space:")
+                log.add(
+                    "over the {}:",
+                    _convert_camel_case_to_lower_case_words(
+                        type(problem.input_space).__name__
+                    ),
+                )
                 log.indent()
-                for line in str(problem.design_space).split("\n")[1:]:
+                for line in str(problem.input_space).split("\n")[1:]:
                     log.add(line)
                 log.dedent()
                 logger.info("%s", log)
@@ -442,7 +464,7 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
             self._post_run(
                 problem,
                 result,
-                self._settings.max_design_space_dimension_to_log,
+                self._settings.max_input_space_dimension_to_log,
             )
 
         self._reset()
@@ -457,14 +479,16 @@ class BaseDriverLibrary(BaseAlgorithmLibrary[T], metaclass=WorkflowObserverMeta)
             self._progress_bar.update(input_value)
 
     @abstractmethod
-    def _run(self, problem: EvaluationProblem) -> tuple[Any, Any]:
+    def _run(self, problem: EvaluationProblem[_SpaceT]) -> tuple[Any, Any]:
         """
         Returns:
             The message and status of the algorithm if any.
         """  # noqa: D205 D212
 
     def _get_early_stopping_result(
-        self, problem: EvaluationProblem, termination_criterion: TerminationCriterion
+        self,
+        problem: EvaluationProblem[_SpaceT],
+        termination_criterion: TerminationCriterion,
     ) -> OptimizationResult:
         """Retrieve the best known result when a termination criterion is met.
 

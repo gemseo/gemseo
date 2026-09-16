@@ -296,10 +296,10 @@ class OptHistoryView(BasePost[OptHistoryView_Settings]):
 
         x_hist_to_display = complete_x_hist
         if variable_names:
+            input_variables = self._dataset.misc["input_space"].variables
+            name_to_indices = input_variables.name_to_indices
             indices = [
-                index
-                for name in variable_names
-                for index in self._dataset.misc["input_space"].name_to_indices[name]
+                index for name in variable_names for index in name_to_indices[name]
             ]
             x_hist_to_display = complete_x_hist[:, indices]
 

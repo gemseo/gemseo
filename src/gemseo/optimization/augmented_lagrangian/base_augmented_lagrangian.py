@@ -99,7 +99,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
             if constr.name not in self._settings.sub_problem_constraints
         ]
 
-        current_value = self._problem.design_space.get_current_value(
+        current_value = self._problem.input_space.get_current_value(
             normalize=self._settings.normalize_design_space
         )
         eq_multipliers = {
@@ -112,7 +112,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         }
 
         active_constraint_residual = inf
-        x = self._problem.design_space.get_current_value()
+        x = self._problem.input_space.get_current_value()
         message = None
         for iteration in range(self._settings.max_iter):
             logger.debug("iteration: %s", iteration)
@@ -171,10 +171,10 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         self,
         problem: OptimizationProblem,
         result: OptimizationResult,
-        max_design_space_dimension_to_log: int,
+        max_input_space_dimension_to_log: int,
     ) -> None:
         result.n_obj_call = self.__n_obj_func_calls
-        super()._post_run(problem, result, max_design_space_dimension_to_log)
+        super()._post_run(problem, result, max_input_space_dimension_to_log)
 
     @staticmethod
     def _check_termination_criteria(
@@ -222,7 +222,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
             the equality constraint violation value,
             the active inequality constraint residuals.
         """
-        self._problem.design_space.set_current_value(x_opt)
+        self._problem.input_space.set_current_value(x_opt)
         require_gradient = self.ALGORITHM_INFOS[self.algo_name].require_gradient
         output_functions, jacobian_functions = self._problem.get_functions(
             jacobian_names=() if require_gradient else None,
@@ -277,7 +277,7 @@ class BaseAugmentedLagrangian(BaseOptimizationLibrary[T]):
         """
         # Get the sub problem.
         lagrangian = self.__get_lagrangian_function(lambda0, mu0, self._rho)
-        dspace = deepcopy(self._problem.design_space)
+        dspace = deepcopy(self._problem.input_space)
         dspace.set_current_value(x_init)
         sub_problem = OptimizationProblem(dspace)
         sub_problem.objective = lagrangian

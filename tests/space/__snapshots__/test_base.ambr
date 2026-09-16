@@ -1,0 +1,37 @@
+# serializer version: 1
+# name: test_add_variable_duplicate_name[DesignSpace]
+  "The variable 'x' already exists."
+# ---
+# name: test_add_variable_duplicate_name[RandomSpace]
+  "The variable 'x' already exists."
+# ---
+# name: test_check_an_empty_space[DesignSpace]
+  'The design space is empty.'
+# ---
+# name: test_check_an_empty_space[RandomSpace]
+  'The random space is empty.'
+# ---
+# name: test_variables_view_gives_unfreezable_bounds[lower_bound-<lambda>]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_unfreezable_bounds[lower_bound-copy_with_pickle]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_unfreezable_bounds[lower_bound-deepcopy]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_unfreezable_bounds[upper_bound-<lambda>]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_unfreezable_bounds[upper_bound-copy_with_pickle]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_gives_unfreezable_bounds[upper_bound-deepcopy]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_variables_view_unknown_name[DesignSpace]
+  "No variable named 'y'."
+# ---
+# name: test_variables_view_unknown_name[RandomSpace]
+  "No variable named 'y'."
+# ---

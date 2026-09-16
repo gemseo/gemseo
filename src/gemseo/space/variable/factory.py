@@ -22,18 +22,23 @@ from typing import ClassVar
 from typing import Final
 
 from gemseo.core.base_factory import BaseFactory
-from gemseo.space.variable.base import BaseVariable
 from gemseo.space.variable.base import DataType
+from gemseo.space.variable.deterministic import BaseDeterministicVariable
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from gemseo.util.pydantic import BaseSettings
 
 
-class VariableFactory(BaseFactory[BaseVariable]):
-    """A factory of variables."""
+class DeterministicVariableFactory(BaseFactory[BaseDeterministicVariable]):
+    """A factory of deterministic variables.
 
-    _class: ClassVar[type[BaseVariable]] = BaseVariable
+    A random variable is built from the settings
+    of the probability distributions of its components,
+    not from a data type, so it is out of the scope of this factory.
+    """
+
+    _class: ClassVar[type[BaseDeterministicVariable]] = BaseDeterministicVariable
     _package_names: ClassVar[tuple[str, ...]] = ("gemseo.space.variable",)
 
     __data_type_to_class_name: dict[DataType, str]
@@ -73,22 +78,24 @@ class VariableFactory(BaseFactory[BaseVariable]):
         settings: BaseSettings,
         *args: Any,
         **kwargs: Any,
-    ) -> BaseVariable:
+    ) -> BaseDeterministicVariable:
         raise NotImplementedError
 
-    def create(
-        self,
-        data_type: DataType | str | bytes,
-        *args: Any,
-        **kwargs: Any,
-    ) -> BaseVariable:
-        """Create a variable of a given data type.
+    @property
+    def data_types(self) -> tuple[DataType, ...]:
+        """The data types pinned by the variable classes."""
+        return tuple(self._data_type_to_class_name)
+
+    def get_class_from_data_type(
+        self, data_type: DataType | str | bytes
+    ) -> type[BaseDeterministicVariable]:
+        """Return the variable class pinning a data type.
 
         Args:
             data_type: The type of the data of the variable.
 
         Returns:
-            The variable.
+            The variable class pinning the data type.
 
         Raises:
             ValueError: If `data_type` is not a data type
@@ -113,7 +120,28 @@ class VariableFactory(BaseFactory[BaseVariable]):
             )
             raise ValueError(msg)
 
-        return super().create(class_name, *args, **kwargs)
+        return self.get_class(class_name)
+
+    def create(
+        self,
+        data_type: DataType | str | bytes,
+        *args: Any,
+        **kwargs: Any,
+    ) -> BaseDeterministicVariable:
+        """Create a variable of a given data type.
+
+        Args:
+            data_type: The type of the data of the variable.
+
+        Returns:
+            The variable.
+
+        Raises:
+            ValueError: If `data_type` is not a data type
+                or if no variable class pins it.
+        """
+        cls = self.get_class_from_data_type(data_type)
+        return super().create(cls.__name__, *args, **kwargs)
 
     def update(self) -> None:  # noqa: D102
         super().update()
@@ -122,5 +150,7 @@ class VariableFactory(BaseFactory[BaseVariable]):
         self.__data_type_to_class_name = {}
 
 
-variable_factory: Final[VariableFactory] = VariableFactory()
-"""The factory for `Variable` objects."""
+deterministic_variable_factory: Final[DeterministicVariableFactory] = (
+    DeterministicVariableFactory()
+)
+"""The factory for `BaseDeterministicVariable` objects."""

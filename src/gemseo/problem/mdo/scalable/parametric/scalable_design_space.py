@@ -32,13 +32,7 @@ from gemseo.problem.mdo.scalable.parametric.standalone.scalable_design_space imp
 from gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings import (  # noqa: E501
     default_scalable_discipline_settings,
 )
-from gemseo.problem.mdo.scalable.parametric.standalone.variable_name import (
-    get_u_local_name,
-)
-from gemseo.space.parameter import ParameterSpace
-from gemseo.uncertainty.distribution.openturns.normal_settings import (
-    OTNormalDistribution_Settings,
-)
+from gemseo.space.design import DesignSpace
 from gemseo.util.constant import read_only_empty_dict
 
 if TYPE_CHECKING:
@@ -51,7 +45,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
 
 
-class ScalableDesignSpace(ParameterSpace):
+class ScalableDesignSpace(DesignSpace):
     """The design space for the scalable problem.
 
     It is the space in which the design and coupling variables vary. For all the
@@ -65,7 +59,6 @@ class ScalableDesignSpace(ParameterSpace):
         ] = default_scalable_discipline_settings,
         d_0: int = default_d_0,
         name_to_default_value: Mapping[str, RealArray] = read_only_empty_dict,
-        add_uncertain_variables: bool = False,
     ) -> None:
         r"""Args:
             discipline_settings: The configurations of the different disciplines.
@@ -75,11 +68,6 @@ class ScalableDesignSpace(ParameterSpace):
                 [ScalableDisciplineSettings][gemseo.problem.mdo.scalable.parametric.standalone.scalable_discipline_settings.ScalableDisciplineSettings].
             d_0: The size of the shared design variable $x_0$.
             name_to_default_value: The default values of the variables.
-            add_uncertain_variables: Whether to add the uncertain variables
-                impacting the coupling variables
-                as $y_{i,j}:=y_{i,j}+\epsilon_{i,j}$
-                where $\epsilon_{i,j}$ are independent and identically distributed
-                standard Gaussian variables.
 
         Notes:
             The lengths of `n_local` and `n_coupling` must be equal
@@ -102,10 +90,3 @@ class ScalableDesignSpace(ParameterSpace):
                 upper_bound=variable.upper_bound,
                 value=variable.default_value,
             )
-
-        if add_uncertain_variables:
-            for index, settings in enumerate(discipline_settings):
-                self.add_random_vector(
-                    get_u_local_name(index + 1),
-                    *[OTNormalDistribution_Settings()] * settings.p_i,
-                )

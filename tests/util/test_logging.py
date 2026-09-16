@@ -118,13 +118,35 @@ def test_while_false() -> None:
         pass
 
 
-def test_configured_loggers():
+@pytest.fixture(autouse=True)
+def gemseo_loggers():
+    """Yield the GEMSEO loggers with their initial state restored.
+
+    Configuring the `"gemseo"` logger leaks into every subsequent test, which then
+    captures nothing from it, so every test of this module is undone afterwards.
+    """
+    loggers = (
+        getLogger("gemseo"),
+        getLogger("gemseo_plugin"),
+        getLogger("gemseo.module"),
+    )
+    initial_states = [
+        (logger.level, logger.handlers[:], logger.propagate) for logger in loggers
+    ]
+    yield loggers
+    for logger, (level, handlers, propagate) in zip(
+        loggers, initial_states, strict=True
+    ):
+        logger.level = level
+        logger.handlers = handlers
+        logger.propagate = propagate
+
+
+def test_configured_loggers(gemseo_loggers):
     """Check that LoggingConfiguration configures the loggers for GEMSEO and plugins."""
-    gemseo_logger = getLogger("gemseo")
+    gemseo_logger, gemseo_plugin_logger, gemseo_module_logger = gemseo_loggers
     gemseo_logger.level = logging.NOTSET
-    gemseo_plugin_logger = getLogger("gemseo_plugin")
-    gemseo_module_logger = getLogger("gemseo.module")
-    for logger in (gemseo_logger, gemseo_plugin_logger, gemseo_module_logger):
+    for logger in gemseo_loggers:
         assert logger.level == logging.NOTSET
 
     LoggingConfiguration(level=logging.WARNING)

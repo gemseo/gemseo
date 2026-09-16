@@ -36,7 +36,7 @@ To be suffixed by the index of the corresponding scalable discipline, e.g. `"x_3
 """
 
 uncertain_variable_base_name: Final[str] = "u"
-"""The base name of an uncertain variable.
+"""The base name of an random variable.
 
 To be suffixed by the index of the corresponding scalable discipline, e.g. `"u_3"`.
 """
@@ -55,13 +55,13 @@ To be suffixed by the index of the corresponding scalable discipline, e.g. `"y_3
 
 
 def get_u_local_name(index: int) -> str:
-    """Return the name of an uncertain variable specific to a scalable discipline.
+    """Return the name of an random variable specific to a scalable discipline.
 
     Args:
         index: The index of the scalable discipline.
 
     Returns:
-        The name of the uncertain variable specific to the scalable discipline.
+        The name of the random variable specific to the scalable discipline.
     """
     return __compute_name(uncertain_variable_base_name, index)
 

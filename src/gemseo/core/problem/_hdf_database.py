@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping
 from enum import auto
 from typing import TYPE_CHECKING
@@ -38,7 +39,8 @@ from numpy import ndarray
 from numpy import str_
 from strenum import LowercaseStrEnum
 
-from gemseo.space.design._constants import _design_space_group
+from gemseo.space._design.constants import design_space_group
+from gemseo.space.design import DesignSpace
 from gemseo.util.hdf5 import get_hdf5_group
 
 if TYPE_CHECKING:
@@ -59,6 +61,9 @@ ReturnedHdfMissingOutputType = tuple[
 def _cast(x: Any) -> Any:
     """Auxiliar function used to cast data."""
     return x
+
+
+logger = logging.getLogger(__name__)
 
 
 class HDFDatabase:
@@ -145,8 +150,17 @@ class HDFDatabase:
     membership.
     """
 
+    __non_design_space_warned: bool
+    """Whether the warning about a non-design space input space has been emitted.
+
+    This is used to emit this warning only once, as the HDF file never gets a
+    design space group for a non-design space input space, which would otherwise
+    make the warning fire on every call to [to_file][.HDFDatabase.to_file].
+    """
+
     def __init__(self) -> None:  # noqa:D107
         self.__pending_arrays = {}
+        self.__non_design_space_warned = False
 
     @staticmethod
     def __to_real(data: ArrayLike) -> ndarray:
@@ -560,8 +574,23 @@ class HDFDatabase:
                     index_dataset += 1
 
             input_space = database.input_space
-            if input_space and (not append or _design_space_group not in h5file):
-                input_space.to_hdf(file_path, append=True, hdf_node_path=hdf_node_path)
+            if input_space and (not append or design_space_group not in h5file):
+                if isinstance(input_space, DesignSpace):
+                    input_space.to_hdf(
+                        file_path, append=True, hdf_node_path=hdf_node_path
+                    )
+                elif not self.__non_design_space_warned:
+                    # Only a design space can be serialized to HDF.
+                    # The design space group is never created in this case,
+                    # so this warning is emitted once and not on every append.
+                    logger.warning(
+                        "The %s cannot be written to the HDF file %s "
+                        "because it is not a design space; "
+                        "the database is written without it.",
+                        type(input_space).__name__,
+                        file_path,
+                    )
+                    self.__non_design_space_warned = True
 
         self.__pending_arrays.clear()
 

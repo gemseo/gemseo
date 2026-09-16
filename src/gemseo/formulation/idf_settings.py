@@ -71,7 +71,10 @@ used to parallelize the execution.""",
 
     start_at_equilibrium: bool = Field(
         default=False,
-        description="Whether an MDA is used to initialize the coupling variables.",
+        description="""Whether an MDA is used to initialize the coupling variables.
+The input space must be a [DesignSpace][gemseo.space.design.DesignSpace].
+The equilibrium computed by this MDA is stored
+as the current value of this design space.""",
     )
 
     use_threading: bool = Field(

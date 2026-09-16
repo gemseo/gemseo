@@ -27,7 +27,7 @@ from numpy.random import default_rng
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.discipline.analytic import AnalyticDiscipline
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty import create_distribution
 from gemseo.uncertainty import create_sensitivity_analysis
 from gemseo.uncertainty import create_statistics
@@ -51,9 +51,9 @@ def analysis() -> MorrisAnalysis:
         {"y": "sin(x1)+7*sin(x2)**2+0.1*a3**4*sin(x1)"}, name="Ishigami"
     )
 
-    space = ParameterSpace()
+    space = RandomSpace()
     for variable in ["x1", "x2", "a3"]:
-        space.add_random_variable(
+        space.add_variable(
             variable, OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
         )
 

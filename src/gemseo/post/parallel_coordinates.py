@@ -73,11 +73,10 @@ class ParallelCoordinates(BasePost[ParallelCoordinates_Settings]):
         # x_names should be the actual names of the designs.
         x_names = [f"x_{i + 1}" for i in range(len(x_names))]
         variable_names.extend(x_names)
-        name_to_size = input_space.variable_sizes
         design_names = [
-            repr_variable(name, i, name_to_size[name])
-            for name in input_space.variable_names
-            for i in range(name_to_size[name])
+            repr_variable(name, i, variable.size)
+            for name, variable in input_space.variables.items()
+            for i in range(variable.size)
         ]
         output_dimension = variable_history.shape[1] - len(design_names)
         design_history = input_space.normalize_vect(

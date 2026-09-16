@@ -69,7 +69,7 @@ from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
     from gemseo.doe.core.base_doe import BaseDOE
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import NumberArray
 
 OptionType = str | int | float | bool | Sequence[int] | RealArray | None
@@ -234,8 +234,8 @@ class OpenTURNS(BaseDOELibrary[BaseOpenTURNSSettings]):
 
     def _generate_unit_samples(
         self,
-        design_space: DesignSpace,
+        input_space: BaseVariableSpace,
     ) -> NumberArray:
         openturns.RandomGenerator.SetSeed(self._seeder.get_seed(self._settings.seed))
         doe_algo = self.__names_to_classes[self._algo_name]()
-        return doe_algo.generate_samples(design_space.dimension, self._settings)
+        return doe_algo.generate_samples(input_space.dimension, self._settings)

@@ -32,6 +32,8 @@ from numpy import linspace
 from numpy import newaxis
 from numpy import pi as np_pi
 from numpy import sin
+from numpy import sqrt
+from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
 from gemseo import check_jacobian
@@ -45,7 +47,7 @@ from gemseo import create_dataset
 from gemseo import create_design_space
 from gemseo import create_discipline
 from gemseo import create_mda
-from gemseo import create_parameter_space
+from gemseo import create_random_space
 from gemseo import create_scalable
 from gemseo import create_scenario
 from gemseo import create_surrogate
@@ -116,8 +118,12 @@ from gemseo.scenario.backup_settings import BackupSettings
 from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
+)
+from gemseo.uncertainty.distribution.openturns.triangular_settings import (
+    OTTriangularDistribution_Settings,
 )
 from gemseo.util.constant import _logging_date_format
 from gemseo.util.constant import _logging_message_format
@@ -740,14 +746,13 @@ def test_get_available_scenario_types() -> None:
     assert "MDO" in scen_types
 
 
-def test_create_parameter_space() -> None:
-    """Test the creation of a parameter space."""
-    parameter_space = create_parameter_space()
-    parameter_space.add_variable(
-        "name", type_="float", lower_bound=-1, upper_bound=1, value=0
-    )
-    parameter_space.add_random_variable("other_name", OTNormalDistribution_Settings())
-    parameter_space.check()
+def test_create_random_space() -> None:
+    """Test the creation of a random space."""
+    random_space = create_random_space()
+    assert isinstance(random_space, RandomSpace)
+    random_space.add_variable("name", OTNormalDistribution_Settings())
+    assert list(random_space.variables) == ["name"]
+    assert random_space.variables.distribution.dimension == 1
 
 
 def test_create_design_space() -> None:
@@ -894,6 +899,19 @@ def test_compute_doe(
         variables_space, algo_name="PYDOE_FULLFACT", **settings, **transformation
     )
     assert (doe == array(expected_points)).all()
+
+
+def test_compute_doe_random_space() -> None:
+    """Check the computation of a DOE in a random space."""
+    random_space = create_random_space()
+    random_space.add_variable(
+        "x", OTTriangularDistribution_Settings(minimum=2.0, mode=3.5, maximum=4.0)
+    )
+    doe = compute_doe(random_space, algo_name="PYDOE_FULLFACT", levels=[3])
+    # The unit levels are mapped by the inverse CDF of the triangular distribution,
+    # which sends 0.5 to the median 2 + sqrt((4 - 2) x (3.5 - 2) / 2),
+    # where a geometric mapping would send it to the midpoint 3.
+    assert_allclose(doe, array([[2.0], [2.0 + sqrt(1.5)], [4.0]]))
 
 
 def test_compute_doe_unit_hypercube(variables_space) -> None:

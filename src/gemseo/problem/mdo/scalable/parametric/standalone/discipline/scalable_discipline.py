@@ -86,7 +86,7 @@ class ScalableDiscipline(BaseDiscipline):
     r"""The name of the local design variable $x_i$."""
 
     __u_i_name: str
-    r"""The name of the local uncertain variable $u_i$."""
+    r"""The name of the local random variable $u_i$."""
 
     __y_i_name: str
     r"""The name of the coupling variable $y_i$."""

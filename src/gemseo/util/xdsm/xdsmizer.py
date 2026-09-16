@@ -465,7 +465,7 @@ class XDSMizer:
             function_varnames.extend(fvars)
 
         to_user = function_name
-        to_opt = self.scenario.formulation.problem.design_space.variable_names
+        to_opt = list(self.scenario.formulation.problem.input_space.variables)
 
         if self._is_scenario:
             user_pattern = "L({})" if self.scenario.name == "Sampling" else "{}^(0)"
@@ -480,7 +480,7 @@ class XDSMizer:
                     continue
                 varnames = sorted(
                     set(atom.process.io.input_grammar)
-                    & set(self.scenario.formulation.problem.design_space.variable_names)
+                    & set(self.scenario.formulation.problem.input_space.variables)
                 )
 
                 if varnames:

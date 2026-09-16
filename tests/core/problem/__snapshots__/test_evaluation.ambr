@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_evaluate_functions_with_normalized_input_value_on_random_space
+  'The input value cannot be normalized because a RandomSpace cannot be normalized.'
+# ---
+# name: test_evaluate_functions_without_input_value_on_random_space
+  'The input value cannot be None because a RandomSpace has no current value.'
+# ---
+# name: test_preprocess_function_expecting_normalized_inputs_on_random_space
+  'The function square expects normalized inputs while a RandomSpace cannot be normalized.'
+# ---

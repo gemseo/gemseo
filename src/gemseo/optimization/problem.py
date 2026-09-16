@@ -61,6 +61,8 @@ from gemseo.optimization.history import OptimizationHistory
 from gemseo.optimization.multiobjective_result import MultiObjectiveOptimizationResult
 from gemseo.optimization.pareto.pareto_front import ParetoFront
 from gemseo.optimization.result import OptimizationResult
+from gemseo.space._core.checking import check_design_space
+from gemseo.space.design import DesignSpace
 from gemseo.util.hdf5 import convert_h5_group_to_dict
 from gemseo.util.hdf5 import get_hdf5_group
 from gemseo.util.hdf5 import store_attr_h5data
@@ -72,7 +74,6 @@ from gemseo.util.typing import RealArray
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-    from gemseo.space.design import DesignSpace
     from gemseo.util.typing import StrPath
 
 
@@ -83,7 +84,7 @@ BestInfeasiblePointType = tuple[
 ]
 
 
-class OptimizationProblem(EvaluationProblem):
+class OptimizationProblem(EvaluationProblem[DesignSpace]):
     """An optimization problem."""
 
     _is_optimization: ClassVar[bool] = True
@@ -152,6 +153,9 @@ class OptimizationProblem(EvaluationProblem):
             use_standardized_objective: Whether to use standardized objective
                 for logging and post-processing.
         """  # noqa: D205, D212, D415
+        check_design_space(
+            design_space, "An OptimizationProblem", "an EvaluationProblem"
+        )
         self.__tolerances = ConstraintTolerances()
         self._objective = None
         self.__constraints = Constraints(design_space, self.tolerances)
@@ -167,9 +171,17 @@ class OptimizationProblem(EvaluationProblem):
         )
         self._sequence_of_functions = [self.__constraints, *self._sequence_of_functions]
         self._function_names = ["_objective"]
-        self.history = OptimizationHistory(
-            self.constraints, self.database, self.design_space
-        )
+        self.history = OptimizationHistory(self.constraints, self.database)
+
+    @property
+    def design_space(self) -> DesignSpace:
+        """The design space on which the functions are evaluated.
+
+        This is the
+        [input_space][gemseo.core.problem.evaluation.EvaluationProblem.input_space]
+        of the problem, which an optimization problem requires to be a design space.
+        """
+        return self.input_space
 
     @EvaluationProblem.database.setter
     def database(self, database: Database) -> None:
@@ -397,7 +409,7 @@ class OptimizationProblem(EvaluationProblem):
         # Add a slack variable to the copied design space for each
         # inequality constraint.
         for inequality_constraint in self.constraints.get_inequality_constraints():
-            problem.design_space.add_variable(
+            problem.input_space.add_variable(
                 name=self._slack_variable.format(inequality_constraint.name),
                 size=inequality_constraint.dim,
                 value=0,
@@ -409,7 +421,7 @@ class OptimizationProblem(EvaluationProblem):
         dimension = self.design_space.dimension
         restriction_operator = hstack((
             np_eye(dimension),
-            zeros((dimension, problem.design_space.dimension - dimension)),
+            zeros((dimension, problem.input_space.dimension - dimension)),
         ))
         # Get the new problem objective function composing the initial objective
         # function with the restriction operator.
@@ -429,13 +441,13 @@ class OptimizationProblem(EvaluationProblem):
                 problem.add_constraint(new_function)
                 continue
 
+            slack_variable_indexes = problem.input_space.get_variables_indexes([
+                self._slack_variable.format(constraint.name)
+            ])
             coefficients = where(
                 [
-                    i
-                    in problem.design_space.get_variables_indexes(
-                        self._slack_variable.format(constraint.name)
-                    )
-                    for i in range(problem.design_space.dimension)
+                    i in slack_variable_indexes
+                    for i in range(problem.input_space.dimension)
                 ],
                 -1,
                 0,
@@ -443,7 +455,7 @@ class OptimizationProblem(EvaluationProblem):
             correction_term = LinearFunction(
                 coefficients=coefficients,
                 name=f"offset_{constraint.name}",
-                input_names=problem.design_space.get_indexed_variable_names(),
+                input_names=problem.input_space.get_indexed_variable_names(),
             )
             problem.add_constraint(new_function + correction_term)
 
@@ -981,7 +993,7 @@ class OptimizationProblem(EvaluationProblem):
         self,
         database: bool = True,
         current_iter: bool = True,
-        design_space: bool = True,
+        input_space: bool = True,
         function_calls: bool = True,
         preprocessing: bool = True,
     ) -> None:
@@ -1000,7 +1012,7 @@ class OptimizationProblem(EvaluationProblem):
         super().reset(
             database=database,
             current_iter=current_iter,
-            design_space=design_space,
+            input_space=input_space,
             function_calls=function_calls,
             preprocessing=preprocessing,
         )

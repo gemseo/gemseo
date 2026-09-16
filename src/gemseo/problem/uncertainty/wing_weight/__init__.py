@@ -62,14 +62,14 @@ if TYPE_CHECKING:
 
     # static visibility for mypy / IDEs
     from gemseo.problem.uncertainty.wing_weight.discipline import WingWeightDiscipline  # noqa: F401
-    from gemseo.problem.uncertainty.wing_weight.uncertain_space import (
-        WingWeightUncertainSpace,  # noqa: F401
+    from gemseo.problem.uncertainty.wing_weight.random_space import (
+        WingWeightRandomSpace,  # noqa: F401
     )
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "WingWeightDiscipline": "discipline",
-    "WingWeightUncertainSpace": "uncertain_space",
+    "WingWeightRandomSpace": "random_space",
 })
 
 install_lazy_reexport(globals(), _name_to_location)

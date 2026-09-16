@@ -1,0 +1,21 @@
+# serializer version: 1
+# name: test_assignment
+  '''
+  1 validation error for Model
+  values
+    Instance is frozen [type=frozen_instance, input_value=array([3.]), input_type=ndarray]
+      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
+  '''
+# ---
+# name: test_expose_unknown_field
+  'foo is not a field of Model.'
+# ---
+# name: test_get_from_class
+  'values'
+# ---
+# name: test_get_unset_field
+  "'Model' object has no attribute 'values'"
+# ---
+# name: test_set
+  'values is read-only.'
+# ---

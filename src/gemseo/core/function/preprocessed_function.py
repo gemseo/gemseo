@@ -30,6 +30,7 @@ from gemseo.core.problem.database import Database
 from gemseo.core.problem.termination_criterion import DesvarIsNan
 from gemseo.core.problem.termination_criterion import FunctionIsNan
 from gemseo.core.serializable import Serializable
+from gemseo.space.design import DesignSpace
 from gemseo.util.constant import _enable_function_statistics
 from gemseo.util.derivative.approximator.factory import GradientApproximatorFactory
 
@@ -40,7 +41,7 @@ if TYPE_CHECKING:
     from gemseo.core.function.array_function import OutputType
     from gemseo.core.function.array_function import WrappedFunctionType
     from gemseo.core.problem.counter import EvaluationCounter
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.derivative.approximation_mode import ApproximationMode
     from gemseo.util.typing import NumberArray
     from gemseo.util.typing import RealOrComplexArrayT
@@ -84,15 +85,24 @@ class PreprocessedFunction(ArrayFunction, Serializable):
     [evaluate()][gemseo.core.function.preprocessed_function.PreprocessedFunction.evaluate]."""
 
     _normalize_grad: Callable[[RealOrComplexArrayT], RealOrComplexArrayT]
-    """The function to normalize an original gradient."""
+    """The function to normalize an original gradient.
+
+    Set only when the function takes normalized inputs.
+    """
 
     _denormalize_grad: Callable[[RealOrComplexArrayT], RealOrComplexArrayT]
-    """The function to denormalize a normalized gradient."""
+    """The function to denormalize a normalized gradient.
+
+    Set only when the function takes normalized inputs.
+    """
 
     _denormalize_vect: Callable[
         [RealOrComplexArrayT, bool, bool, ndarray | None], RealOrComplexArrayT
     ]
-    """The function to denormalize a normalized vector of the design space."""
+    """The function to denormalize a normalized vector of the design space.
+
+    Set only when the function takes normalized inputs.
+    """
 
     __store_jacobian: bool
     """Whether to store the Jacobian matrices in the database."""
@@ -106,7 +116,7 @@ class PreprocessedFunction(ArrayFunction, Serializable):
         database: Database | None,
         counter: EvaluationCounter,
         stop_if_nan: bool,
-        design_space: DesignSpace,
+        input_space: BaseVariableSpace,
         store_jacobian: bool = True,
         differentiation_method: ApproximationMode | None = None,
         vectorize: bool = False,
@@ -124,7 +134,7 @@ class PreprocessedFunction(ArrayFunction, Serializable):
                 if `None`, do not use database.
             counter: The counter of evaluations.
             stop_if_nan: Whether the evaluation stops when a function returns `NaN`.
-            design_space: The design space on which to evaluate the function.
+            input_space: The input space on which to evaluate the function.
             store_jacobian: Whether to store the Jacobian matrices in the database.
             differentiation_method: The differentiation method to compute the Jacobian.
                 If `None`, use the original derivatives.
@@ -155,15 +165,27 @@ class PreprocessedFunction(ArrayFunction, Serializable):
         self._evaluation_counter = counter
         self.stop_if_nan = stop_if_nan
         self._database = database
-        self._input_dimension = design_space.dimension
-        self._denormalize_vect = design_space.denormalize_vect
-        self._normalize_grad = design_space.normalize_grad
-        self._denormalize_grad = design_space.denormalize_grad
+        self._input_dimension = input_space.dimension
+        if with_normalized_inputs:
+            # These mappings are geometric, hence specific to a design space,
+            # and only the evaluation paths taking normalized inputs use them.
+            # EvaluationProblem._preprocess_function leaves this flag disabled
+            # when the input space is not a design space,
+            # so the input space is one whenever this branch is reached.
+            self._denormalize_vect = input_space.denormalize_vect
+            self._normalize_grad = input_space.normalize_grad
+            self._denormalize_grad = input_space.denormalize_grad
         if differentiation_method is not None:
             gradient_approximator = GradientApproximatorFactory().create(
                 differentiation_method,
                 self._compute_output,
-                design_space=design_space,
+                # Only a design space can bound the perturbations.
+                # The bounds of a random variable are the limits of the support
+                # of its probability distribution; they are descriptive only,
+                # so the perturbations of a random input are unbounded.
+                design_space=input_space
+                if isinstance(input_space, DesignSpace)
+                else None,
                 **differentiation_method_options,
             )
             self._jacobian_evaluation_sequence = (gradient_approximator.f_gradient,)

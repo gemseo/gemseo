@@ -42,6 +42,7 @@ from gemseo.optimization.termination_criteria import DesignToleranceTester
 from gemseo.optimization.termination_criteria import KKTConditionsTester
 from gemseo.optimization.termination_criteria import ObjectiveToleranceTester
 from gemseo.optimization.termination_criteria import kkt_residual_computation
+from gemseo.space.design import DesignSpace
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -78,7 +79,7 @@ class OptimizationAlgorithmDescription(DriverDescription):
     """The settings validation model."""
 
 
-class BaseOptimizationLibrary(BaseDriverLibrary[T]):
+class BaseOptimizationLibrary(BaseDriverLibrary[T, DesignSpace]):
     """Base class for libraries of optimizers.
 
     Typically used as:
@@ -206,9 +207,9 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T]):
                     at_each_function_call=True,
                 )
 
-        problem.design_space.initialize_missing_current_values()
+        problem.input_space.initialize_missing_current_values()
         if problem.differentiation_method == self.DifferentiationMethod.COMPLEX_STEP:
-            problem.design_space.to_complex()
+            problem.input_space.to_complex()
 
         # First, evaluate all functions at x_0. Some algorithms don't do this
         output_functions, jacobian_functions = problem.get_functions(
@@ -217,7 +218,7 @@ class BaseOptimizationLibrary(BaseDriverLibrary[T]):
         )
 
         function_values, _ = problem.evaluate_functions(
-            design_vector_is_normalized=self._settings.normalize_design_space,
+            input_value_is_normalized=self._settings.normalize_design_space,
             output_functions=output_functions or None,
             jacobian_functions=jacobian_functions or None,
         )

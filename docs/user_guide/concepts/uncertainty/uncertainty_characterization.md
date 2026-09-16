@@ -153,16 +153,21 @@ by replacing raw data by their component-wise normalized ranks.
 This empirical distribution tends to the the copula
 when the number of samples tends to infinity.
 
-## Parameter space { #concept-parameter-space }
+## Random space { #concept-random-space }
 
-The [ParameterSpace][gemseo.space.parameter.ParameterSpace]
-extends the [DesignSpace][concept-design-space]
-to declare uncertain variables alongside deterministic ones.
-Each uncertain variable is added with its marginal distribution
-using either the [add_random_variable()][gemseo.space.parameter.ParameterSpace.add_random_variable] or the [add_random_vector()][gemseo.space.parameter.ParameterSpace.add_random_vector] method,
-and the dependency structure is defined using the [add_copula()][gemseo.space.parameter.ParameterSpace.add_copula] method.
-The [distribution][gemseo.space.parameter.ParameterSpace.distribution] attribute then exposes the corresponding joint distribution
+The [RandomSpace][gemseo.space.random.RandomSpace] models the uncertain inputs;
+it declares random variables from the settings
+of the marginal probability distributions of their components.
+Each uncertain variable is added
+using the [add_variable()][gemseo.space.random.RandomSpace.add_variable] method,
+with one settings object per component,
+and the dependency structure is defined using the [add_copula()][gemseo.space.random.RandomSpace.add_copula] method.
+The read-only registry [variables][gemseo.space.random.RandomSpace.variables] then exposes
+the joint distribution of the space (`variables.distribution`)
+and the distribution of each random vector (`variables[name].distribution`),
 used to generate samples for propagation and sensitivity analysis.
+A random space has neither bounds setters, nor current value,
+nor normalization, unlike a [DesignSpace][concept-design-space].
 
 ## Going further
 
@@ -172,5 +177,4 @@ used to generate samples for propagation and sensitivity analysis.
 !!! how-to
     - [Define probability distributions][probability-distributions]
     - [Fit a probability distribution from data][]
-    - [Define an uncertain space][]
-    - [Define a parameter space with deterministic and uncertain variables][]
+    - [Define a random space][]

@@ -33,7 +33,7 @@ from gemseo.doe.core.base_doe_library import DOEAlgorithmDescription
 from gemseo.doe.diagonal_doe.settings.diagonal_doe_settings import DiagonalDOE_Settings
 
 if TYPE_CHECKING:
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import RealArray
 
 OptionType = str | int | float | bool | Container[str] | None
@@ -55,20 +55,20 @@ class DiagonalDOE(BaseDOELibrary[DiagonalDOE_Settings]):
     def __init__(self, algo_name: str = "DiagonalDOE") -> None:  # noqa:D107
         super().__init__(algo_name)
 
-    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+    def _generate_unit_samples(self, input_space: BaseVariableSpace) -> RealArray:
         reverse = self._settings.reverse
 
         name_by_index = {}
         start = 0
-        for name in design_space:
-            size = design_space.get_size(name)
+        for name, variable in input_space.variables.items():
+            size = variable.size
             for index in range(start, start + size):
                 name_by_index[index] = name
 
             start += size
 
         samples = []
-        for index in range(design_space.dimension):
+        for index in range(input_space.dimension):
             if str(index) in reverse or name_by_index[index] in reverse:
                 start = 1.0
                 end = 0.0

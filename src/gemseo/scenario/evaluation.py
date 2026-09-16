@@ -23,6 +23,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Generic
+from typing import TypeVar
 
 from numpy import array
 from numpy import complex128
@@ -64,7 +66,7 @@ if TYPE_CHECKING:
     from gemseo.formulation.core.base import BaseFormulation
     from gemseo.formulation.core.base_settings import BaseFormulationSettings
     from gemseo.formulation.factory import MDOFormulationFactory
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import RealArray
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
@@ -102,7 +104,10 @@ class _ScenarioProcessFlow(BaseProcessFlow):
         return [self._node]
 
 
-class EvaluationScenario(BaseMonitoredProcess):
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
+
+
+class EvaluationScenario(BaseMonitoredProcess, Generic[_SpaceT]):
     """Scenario for evaluating disciplinary outputs from disciplinary inputs.
 
     The outputs of interest are declared as observables
@@ -111,8 +116,10 @@ class EvaluationScenario(BaseMonitoredProcess):
     method.
     These observables are attached to
     an [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem],
-    built over the [DesignSpace][gemseo.space.design.DesignSpace],
-    that is passed at instantiation.
+    built over the space of variables
+    that is passed at instantiation,
+    either a [DesignSpace][gemseo.space.design.DesignSpace]
+    or a [RandomSpace][gemseo.space.random.RandomSpace].
     """
 
     _algo_factory_class: ClassVar[type[DriverLibraryFactory]] = DOELibraryFactory
@@ -127,7 +134,7 @@ class EvaluationScenario(BaseMonitoredProcess):
     DifferentiationMethod = EvaluationProblem.DifferentiationMethod
     """The enumeration of differentiation methods."""
 
-    _evaluation_problem_class: type[EvaluationProblem] = EvaluationProblem
+    _evaluation_problem_class: type[EvaluationProblem[Any]] = EvaluationProblem
     """The type of evaluation problem."""
 
     _execution_result: Any
@@ -136,7 +143,7 @@ class EvaluationScenario(BaseMonitoredProcess):
     _formulation_factory: ClassVar[MDOFormulationFactory] = mdo_formulation_factory
     """The factory of MDO formulations."""
 
-    formulation: BaseFormulation
+    formulation: BaseFormulation[Any, _SpaceT]
     """The MDO formulation."""
 
     _backup_evaluations: bool
@@ -153,7 +160,7 @@ class EvaluationScenario(BaseMonitoredProcess):
     def __init__(
         self,
         disciplines: Sequence[BaseDiscipline],
-        design_space: DesignSpace,
+        input_space: _SpaceT,
         name: str = "",
         formulation_settings: BaseFormulationSettings | None = None,
         default_input_data: StrKeyMapping = read_only_empty_dict,
@@ -161,7 +168,11 @@ class EvaluationScenario(BaseMonitoredProcess):
         """
         Args:
             disciplines: The disciplines.
-            design_space: The input space on which to evaluate the disciplines.
+            input_space: The input space on which to evaluate the disciplines,
+                either a [DesignSpace][gemseo.space.design.DesignSpace]
+                or a [RandomSpace][gemseo.space.random.RandomSpace];
+                it is used as is,
+                so `scenario.input_space` is the space that was passed.
             name: The name to be given to the scenario.
                 If empty, use the name of the class.
             formulation_settings: The MDO formulation settings
@@ -169,7 +180,7 @@ class EvaluationScenario(BaseMonitoredProcess):
                 If `None`,
                 use [MDF_Settings][gemseo.formulation.mdf_settings.MDF_Settings].
             default_input_data: Some default input data of the disciplines.
-                A scenario operates on a design space
+                A scenario operates on an input space
                 composed of certain input variables from various disciplines.
                 This argument allows to change the values of other input variables.
         """  # noqa: D205, D212
@@ -194,7 +205,7 @@ class EvaluationScenario(BaseMonitoredProcess):
         if default_input_data:
             update_default_input_values(disciplines, default_input_data)
 
-        evaluation_problem = self._evaluation_problem_class(design_space)
+        evaluation_problem = self._evaluation_problem_class(input_space)
         self.formulation = self._formulation_factory.create(
             formulation_settings.target_class_name,
             evaluation_problem,
@@ -224,9 +235,9 @@ class EvaluationScenario(BaseMonitoredProcess):
         return self.formulation.disciplines
 
     @property
-    def design_space(self) -> DesignSpace:
-        """The design space."""
-        return self.formulation.problem.design_space
+    def input_space(self) -> _SpaceT:
+        """The input space on which the disciplines are evaluated."""
+        return self.formulation.problem.input_space
 
     def add_observable(
         self,
@@ -264,8 +275,15 @@ class EvaluationScenario(BaseMonitoredProcess):
 
         When the selected method to differentiate the process is `complex_step`,
         the [DesignSpace][gemseo.space.design.DesignSpace] current value
-        will be cast to `complex128`;
-        additionally, if the option `cast_default_inputs_to_complex` is `True`,
+        will be cast to `complex128`,
+        so that the normalization does not drop the imaginary part
+        of a perturbed input value;
+        a [RandomSpace][gemseo.space.random.RandomSpace] has no current value,
+        hence nothing to cast,
+        and cannot be normalized.
+        In both cases,
+        the perturbations are applied to the input values passed by the driver.
+        Additionally, if the option `cast_default_inputs_to_complex` is `True`,
         the default inputs of the scenario's disciplines will be cast as well provided
         that they are `ndarray` with `dtype` `float64`.
 
@@ -277,7 +295,11 @@ class EvaluationScenario(BaseMonitoredProcess):
                 `"complex_step"`.
         """
         if method == self.DifferentiationMethod.COMPLEX_STEP:
-            self.formulation.problem.design_space.to_complex()
+            # Casting the current value makes the dtype of the normalization
+            # complex, so that the imaginary part of a perturbation is not dropped;
+            # a space defining no current value has nothing to cast.
+            self.formulation.problem.input_space._to_complex()
+
             if cast_default_inputs_to_complex:
                 self.__cast_default_inputs_to_complex()
 
@@ -424,7 +446,7 @@ class EvaluationScenario(BaseMonitoredProcess):
             self.formulation.problem.reset(
                 database=False,
                 current_iter=False,
-                design_space=False,
+                input_space=False,
                 function_calls=False,
             )
 

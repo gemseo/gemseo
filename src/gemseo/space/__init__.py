@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Design and parameter spaces."""
+"""Design and random spaces."""
 
 from __future__ import annotations
 
@@ -26,17 +26,19 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     # static visibility for mypy / IDEs
+    from gemseo.space.base import BaseVariableSpace  # noqa: F401
     from gemseo.space.design import DesignSpace  # noqa: F401
     from gemseo.space.factory import design_space_factory  # noqa: F401
-    from gemseo.space.factory import parameter_space_factory  # noqa: F401
-    from gemseo.space.parameter import ParameterSpace  # noqa: F401
+    from gemseo.space.factory import random_space_factory  # noqa: F401
+    from gemseo.space.random import RandomSpace  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
 _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
+    "BaseVariableSpace": "base",
     "DesignSpace": "design",
-    "ParameterSpace": "parameter",
+    "RandomSpace": "random",
     "design_space_factory": "factory",
-    "parameter_space_factory": "factory",
+    "random_space_factory": "factory",
 })
 
 install_lazy_reexport(globals(), _name_to_location)

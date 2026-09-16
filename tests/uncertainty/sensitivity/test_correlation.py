@@ -25,7 +25,8 @@ from pathlib import Path
 import pytest
 
 from gemseo import create_discipline
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.design import DesignSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
@@ -39,9 +40,9 @@ def correlation() -> CorrelationAnalysis:
     discipline = create_discipline(
         "AnalyticDiscipline", {"y1": "x1+2*x2", "y2": "x1-2*x2"}
     )
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ["x1", "x2"]:
-        space.add_random_variable(name, OTNormalDistribution_Settings())
+        space.add_variable(name, OTNormalDistribution_Settings())
     analysis = CorrelationAnalysis()
     analysis.compute_samples([discipline], space, 100)
     return analysis
@@ -127,11 +128,25 @@ def test_from_samples(correlation, tmp_wd):
     assert new_correlation.indices == correlation.indices
 
 
+def test_compute_samples_with_design_space() -> None:
+    """Check that a plain design space can be used to compute the samples."""
+    discipline = create_discipline(
+        "AnalyticDiscipline", {"y1": "x1+2*x2", "y2": "x1-2*x2"}
+    )
+    space = DesignSpace()
+    space.add_variable("x1", lower_bound=-1.0, upper_bound=1.0)
+    space.add_variable("x2", lower_bound=-1.0, upper_bound=1.0)
+    analysis = CorrelationAnalysis()
+    analysis.compute_samples([discipline], space, 100)
+    indices = analysis.compute_indices()
+    assert list(indices.pearson["y1"][0]) == ["x1", "x2"]
+
+
 def test_constant_output(discipline_with_constant_output_and_space):
     """Check that CorrelationAnalysis supports constant outputs."""
-    discipline, uncertain_space = discipline_with_constant_output_and_space
+    discipline, random_space = discipline_with_constant_output_and_space
     analysis = CorrelationAnalysis()
-    analysis.compute_samples([discipline], uncertain_space, 100)
+    analysis.compute_samples([discipline], random_space, 100)
     indices = analysis.compute_indices()
     assert indices.kendall["constant"][0] is None
     assert indices.kendall["varying"][0] is not None

@@ -57,7 +57,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline import Discipline
     from gemseo.doe.core.base_doe_settings import BaseDOESettings
     from gemseo.formulation.core.base_settings import BaseFormulationSettings
-    from gemseo.space.parameter import ParameterSpace
+    from gemseo.space.random import RandomSpace
     from gemseo.uncertainty.reliability.event import Event
     from gemseo.util.typing import RealArray
 
@@ -106,7 +106,7 @@ class ISFORMSobolAnalysis(
     def compute_samples(  # noqa: D102
         self,
         disciplines: Sequence[Discipline],
-        parameter_space: ParameterSpace,
+        random_space: RandomSpace,
         events: Mapping[str, Event],
         n_samples: int,
         algo_settings: BaseDOESettings | None = None,
@@ -180,7 +180,7 @@ class ISFORMSobolAnalysis(
         # In the standard space,
         # the true input density is the standard normal distribution,
         # shared by all the events.
-        dimension = parameter_space.dimension
+        dimension = random_space.dimension
         true_distribution = Normal(dimension)
 
         event_names = list(events)
@@ -199,7 +199,7 @@ class ISFORMSobolAnalysis(
             standard_design_point, n_form_evaluations = (
                 self.__compute_standard_design_point(
                     disciplines,
-                    parameter_space,
+                    random_space,
                     event_name,
                     event,
                     form_settings or OT_FORM_Settings(),
@@ -268,7 +268,7 @@ class ISFORMSobolAnalysis(
                     standard_samples = array(auxiliary_distribution.getSample(budget))
 
             # Map the standard samples to the physical space.
-            ot_distribution = parameter_space.distribution.distribution
+            ot_distribution = random_space.variables.distribution.distribution
             inverse_transform = (
                 ot_distribution.getInverseIsoProbabilisticTransformation()
             )
@@ -276,7 +276,7 @@ class ISFORMSobolAnalysis(
 
             output_values = self.__evaluate_model(
                 disciplines,
-                parameter_space,
+                random_space,
                 event,
                 physical_samples,
                 formulation_settings,
@@ -296,13 +296,14 @@ class ISFORMSobolAnalysis(
             event_to_sample_size[event_name] = sample_size
             event_to_probability[event_name] = float(reweighted_indicator.mean())
 
-        variable_names = list(parameter_space.variable_names)
+        variables = random_space.variables
+        variable_names = list(variables)
         dataset = self.__create_dataset(
             event_names,
             event_to_standard_samples,
             event_to_reweighted_indicator,
             variable_names,
-            parameter_space.variable_sizes,
+            {name: variable.size for name, variable in variables.items()},
         )
         dataset.misc["use_pick_and_freeze"] = use_pick_and_freeze
         dataset.misc["eval_second_order"] = compute_second_order
@@ -317,7 +318,7 @@ class ISFORMSobolAnalysis(
     @staticmethod
     def __compute_standard_design_point(
         disciplines: Sequence[Discipline],
-        uncertain_space: ParameterSpace,
+        random_space: RandomSpace,
         event_name: str,
         event: Event,
         form_settings: OT_FORM_Settings,
@@ -327,7 +328,7 @@ class ISFORMSobolAnalysis(
 
         Args:
             disciplines: The disciplines that make up the model.
-            uncertain_space: The uncertain space.
+            random_space: The random space.
             event_name: The name of the event.
             event: The event of interest.
             form_settings: The settings of the FORM algorithm.
@@ -338,7 +339,7 @@ class ISFORMSobolAnalysis(
             and the number of model evaluations performed by FORM.
         """
         scenario = ReliabilityScenario(
-            disciplines, uncertain_space, formulation_settings=formulation_settings
+            disciplines, random_space, formulation_settings=formulation_settings
         )
         scenario.add_event(event, event_name)
         scenario.execute(form_settings)
@@ -349,7 +350,7 @@ class ISFORMSobolAnalysis(
     @staticmethod
     def __evaluate_model(
         disciplines: Sequence[Discipline],
-        uncertain_space: ParameterSpace,
+        random_space: RandomSpace,
         event: Event,
         physical_samples: RealArray,
         formulation_settings: BaseFormulationSettings | None,
@@ -358,7 +359,7 @@ class ISFORMSobolAnalysis(
 
         Args:
             disciplines: The disciplines that make up the model.
-            uncertain_space: The uncertain space.
+            random_space: The random space.
             event: The event of interest.
             physical_samples: The samples in the physical space,
                 shaped as `(n_samples, input_dimension)`.
@@ -374,7 +375,7 @@ class ISFORMSobolAnalysis(
         }
         scenario = EvaluationScenario(
             disciplines,
-            uncertain_space,
+            random_space,
             name="ISFORMSobolAnalysisSamplingPhase",
             formulation_settings=formulation_settings,
         )
@@ -422,8 +423,8 @@ class ISFORMSobolAnalysis(
                 of each event, each shaped as `(n_samples_e, input_dimension)`.
             reweighted_indicator_per_event: The IS-reweighted indicator of each event,
                 each shaped as `(n_samples_e, 1)`.
-            variable_names: The names of the uncertain variables.
-            variable_sizes: The sizes of the uncertain variables.
+            variable_names: The names of the random variables.
+            variable_sizes: The sizes of the random variables.
 
         Returns:
             The dataset of the IS-reweighted samples.

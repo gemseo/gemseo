@@ -60,10 +60,10 @@ def problem() -> Power2:
 
 @pytest.mark.parametrize("upper_bound", [False, True])
 def test_lagrange_pow2_too_many_acts(problem, upper_bound) -> None:
-    problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
+    problem.input_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
     if upper_bound:
-        problem.design_space.set_current_value(array([0.5, 0.9, -0.5]))
-        problem.design_space.set_upper_bound("x", array([1.0, 1.0, 0.9]))
+        problem.input_space.set_current_value(array([0.5, 0.9, -0.5]))
+        problem.input_space.set_upper_bound("x", array([1.0, 1.0, 0.9]))
     execute_algo(
         problem,
         algo_name="SLSQP",
@@ -72,7 +72,7 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound) -> None:
     )
     lagrange = LagrangeMultipliers(problem)
     x_opt = problem.solution.x_opt
-    x_n = problem.design_space.normalize_vect(x_opt)
+    x_n = problem.input_space.normalize_vect(x_opt)
     output_functions, jacobian_functions = problem.get_functions(jacobian_names=())
     problem.evaluate_functions(
         x_n, output_functions=output_functions, jacobian_functions=jacobian_functions
@@ -90,7 +90,7 @@ def test_lagrange_pow2_too_many_acts(problem, upper_bound) -> None:
 def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) -> None:
     options = deepcopy(slsqp_options)
     options["normalize_design_space"] = normalize
-    problem.design_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
+    problem.input_space.set_lower_bound("x", array([-1.0, 0.8, -1.0]))
     execute_algo(problem, algo_name="SLSQP", **options)
     lagrange = LagrangeMultipliers(problem)
     lagrangian = lagrange.compute(problem.solution.x_opt)
@@ -100,7 +100,7 @@ def test_lagrangian_validation_lbound_normalize(problem, normalize, eps, tol) ->
         # Normalization enables the test to pass with Scipy SLSQP
         normalization_factor = 0.1
         problem.objective *= normalization_factor
-        dspace = problem.design_space
+        dspace = problem.input_space
         dspace.set_current_value(array([1.0, 0.9, 1.0]))
         dspace.set_lower_bound("x", array([-1.0, 0.8 + lb, -1.0]))
         execute_algo(problem, algo_name="SLSQP", **options)

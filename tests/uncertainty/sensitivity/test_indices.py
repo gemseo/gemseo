@@ -43,7 +43,7 @@ from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
 from gemseo.problem.uncertainty.ishigami.ishigami_discipline import IshigamiDiscipline
 from gemseo.problem.uncertainty.ishigami.ishigami_space import IshigamiSpace
 from gemseo.scenario.backup_settings import BackupSettings
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
@@ -70,11 +70,11 @@ def discipline() -> AnalyticDiscipline:
 
 
 @pytest.fixture(scope="module")
-def parameter_space() -> ParameterSpace:
+def parameter_space() -> RandomSpace:
     """Return the parameter space on which to evaluate the discipline."""
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ["x1", "x2", "x3"]:
-        space.add_random_variable(name, OTNormalDistribution_Settings())
+        space.add_variable(name, OTNormalDistribution_Settings())
     return space
 
 
@@ -416,9 +416,9 @@ def test_convert_to_dataset(mock_sensitivity_analysis) -> None:
 @pytest.fixture(scope="module")
 def ishigami() -> SobolAnalysis:
     """Return the Sobol' analysis for the Ishigami function."""
-    space = ParameterSpace()
+    space = RandomSpace()
     for variable in ["x1", "x2", "x3"]:
-        space.add_random_variable(
+        space.add_variable(
             variable, OTUniformDistribution_Settings(minimum=-pi, maximum=pi)
         )
 

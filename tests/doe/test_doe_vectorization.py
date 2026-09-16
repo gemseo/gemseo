@@ -139,17 +139,17 @@ class Callback:
         self.x.append((index, result))
 
 
-@pytest.mark.parametrize("preprocess_design_vector", [False, True])
+@pytest.mark.parametrize("preprocess_input_value", [False, True])
 @pytest.mark.parametrize(
-    ("design_vector_is_normalized", "design_vectors"),
+    ("input_value_is_normalized", "design_vectors"),
     [(False, array([[0.0, 1.0], [1.0, 2.0]])), (True, array([[0.0, 0.5], [0.5, 1.0]]))],
 )
 @pytest.mark.parametrize("vectorize", [False, True])
 @pytest.mark.parametrize("use_database", [False, True])
 def test_preprocess_functions_vectorize(
     design_space,
-    preprocess_design_vector,
-    design_vector_is_normalized,
+    preprocess_input_value,
+    input_value_is_normalized,
     design_vectors,
     vectorize,
     use_database,
@@ -159,7 +159,7 @@ def test_preprocess_functions_vectorize(
     Whatever the value of `vectorize`,
     `EvaluationProblem.evaluate_functions` can evaluate a vectorized function.
     """
-    if design_vector_is_normalized and not preprocess_design_vector:
+    if input_value_is_normalized and not preprocess_input_value:
         expected = array([0.125, 1.25])
     else:
         expected = array([1.0, 9.0])
@@ -169,13 +169,13 @@ def test_preprocess_functions_vectorize(
     problem.preprocess_functions(
         use_database=use_database,
         vectorize=vectorize,
-        is_function_input_normalized=preprocess_design_vector,
+        is_function_input_normalized=preprocess_input_value,
     )
     outputs = problem.evaluate_functions(
         design_vectors,
         output_functions=problem.get_functions(observable_names=())[0],
-        design_vector_is_normalized=design_vector_is_normalized,
-        preprocess_design_vector=preprocess_design_vector,
+        input_value_is_normalized=input_value_is_normalized,
+        preprocess_input_value=preprocess_input_value,
     )
     assert_array_equal(outputs[0]["out"], expected)
 

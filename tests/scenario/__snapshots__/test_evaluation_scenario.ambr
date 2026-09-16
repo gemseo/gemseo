@@ -1,0 +1,7 @@
+# serializer version: 1
+# name: test_mdo_scenario_requires_a_design_space
+  'An MDOScenario requires a design space; got a RandomSpace; use an EvaluationScenario to sample a random space.'
+# ---
+# name: test_random_space_and_normalization
+  'The functions cannot take normalized inputs because a RandomSpace cannot be normalized.'
+# ---

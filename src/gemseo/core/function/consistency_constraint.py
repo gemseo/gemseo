@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Final
 
 from numpy import eye
@@ -50,7 +51,7 @@ class ConsistencyConstraint(ArrayFunction):
     def __init__(
         self,
         output_couplings: Sequence[str],
-        formulation: IDF,
+        formulation: IDF[Any],
     ) -> None:
         """
         Args:
@@ -72,7 +73,10 @@ class ConsistencyConstraint(ArrayFunction):
         else:
             self.__norm_fact = 1.0
 
-        self.__input_name_to_size = self.__formulation.design_space.variable_sizes
+        self.__input_name_to_size = {
+            name: variable.size
+            for name, variable in self.__formulation.input_space.variables.items()
+        }
 
         expr = ""
         for out_c in self.__output_couplings:
@@ -128,7 +132,7 @@ class ConsistencyConstraint(ArrayFunction):
             # coupling, at the right place.
             output_size = y_jac.shape[0]
             yt_jac = zeros((output_size, len(x_vect)), dtype=x_vect.dtype)
-            input_names = self.__formulation.problem.design_space.variable_names
+            input_names = self.__formulation.problem.input_space.variables
             o_min = 0
             o_max = 0
             for output_name in self.__output_couplings:

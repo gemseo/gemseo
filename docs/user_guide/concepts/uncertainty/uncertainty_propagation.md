@@ -23,7 +23,7 @@ we are trying to calculate the induced output uncertainties.
 This is the purpose of uncertainty propagation.
 
 GEMSEO addresses this via sampling the multidisciplinary system:
-the [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+the [RandomSpace][gemseo.space.random.RandomSpace]
 generates samples from the joint input distribution,
 an [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario]
 evaluates the model at each sample,
@@ -31,7 +31,7 @@ and statistics are computed on the resulting output [IODataset][gemseo.dataset.i
 
 ## Sampling { #concept-sampling-uncertain-inputs }
 
-Input samples are drawn from the joint probability distribution defined in the [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+Input samples are drawn from the joint probability distribution defined in the [RandomSpace][gemseo.space.random.RandomSpace]
 using a design of experiment (DOE) algorithm — typically crude MC or a space-filling variant
 such as [Latin hypercube sampling](https://en.wikipedia.org/wiki/Latin_hypercube_sampling) (LHS).
 In practice,

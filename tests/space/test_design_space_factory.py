@@ -21,7 +21,6 @@ def test_is_available() -> None:
     """Check that the method is_available works."""
     class_names = [
         "AerostructureDesignSpace",
-        "WingWeightUncertainSpace",
         "SellarDesignSpace",
         "ScalableDesignSpace",
     ]

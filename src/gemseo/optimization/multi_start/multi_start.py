@@ -64,7 +64,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
         super().__init__(algo_name)
 
     def _run(self, problem: OptimizationProblem) -> None:
-        design_space = problem.design_space
+        design_space = problem.input_space
         # We decrement the maximum number of iterations by one
         # as a first iteration has already been done in OptimizationLibrary._pre_run.
         max_iter = self._settings.max_iter - 1
@@ -162,7 +162,7 @@ class MultiStart(BaseOptimizationLibrary[MultiStart_Settings]):
         """
         initial_point, max_iter = data
 
-        design_space = deepcopy(self._problem.design_space)
+        design_space = deepcopy(self._problem.input_space)
         design_space.set_current_value(initial_point)
 
         problem = OptimizationProblem(design_space)

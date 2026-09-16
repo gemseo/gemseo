@@ -98,7 +98,7 @@ def create_pb_alleq():
 )
 def test_ks_constraint_aggregation_consistency(x):
     problem_ref = create_problem()
-    out = problem_ref.evaluate_functions(design_vector=x)
+    out = problem_ref.evaluate_functions(input_value=x)
     rho = 10
     offset = log(len(out[0]["cstr"])) / rho
     g_max = max(out[0]["cstr"])
@@ -106,13 +106,13 @@ def test_ks_constraint_aggregation_consistency(x):
     problem_upper_bound_ks.constraints.aggregate(
         0, method="upper_bound_KS", rho=rho, scale=1.0
     )
-    out_upper_bound_ks = problem_upper_bound_ks.evaluate_functions(design_vector=x)
+    out_upper_bound_ks = problem_upper_bound_ks.evaluate_functions(input_value=x)
     upper_bound_ks = out_upper_bound_ks[0]["upper_bound_KS(cstr)"]
     problem_lower_bound_ks = create_problem()
     problem_lower_bound_ks.constraints.aggregate(
         0, method="lower_bound_KS", rho=rho, scale=1.0
     )
-    out_lower_bound_ks = problem_lower_bound_ks.evaluate_functions(design_vector=x)
+    out_lower_bound_ks = problem_lower_bound_ks.evaluate_functions(input_value=x)
     lower_bound_ks = out_lower_bound_ks[0]["lower_bound_KS(cstr)"]
     assert g_max - lower_bound_ks <= offset
     assert pytest.approx(upper_bound_ks - lower_bound_ks) == offset

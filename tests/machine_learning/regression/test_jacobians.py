@@ -50,8 +50,8 @@ from gemseo.machine_learning.regression.model.rbf_settings import RBF
 from gemseo.machine_learning.regression.model.rbf_settings import RBFRegressor_Settings
 from gemseo.machine_learning.transformer.dimension_reduction.pca import PCA
 from gemseo.machine_learning.transformer.scaler.scaler import Scaler
-from gemseo.scenario.mdo import MDOScenario
-from gemseo.space.parameter import ParameterSpace
+from gemseo.scenario.evaluation import EvaluationScenario
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.uniform_settings import (
     OTUniformDistribution_Settings,
 )
@@ -86,21 +86,21 @@ def create_dataset(
         n_samples: The number of learning samples.
     """
     discipline = AnalyticDiscipline(expressions)
-    parameter_space = ParameterSpace()
-    parameter_space.add_random_variable(
+    parameter_space = RandomSpace()
+    parameter_space.add_variable(
         "x_1", OTUniformDistribution_Settings(minimum=-3.0, maximum=3.0)
     )
     for name, bounds in design_space_variables.items():
-        parameter_space.add_random_variable(
+        parameter_space.add_variable(
             name,
             OTUniformDistribution_Settings(
                 minimum=bounds["lower_bound"], maximum=bounds["upper_bound"]
             ),
         )
-    scenario = MDOScenario([discipline], parameter_space)
-    scenario.add_objective(objective_name)
-    scenario.execute(LHS_Settings(n_samples=n_samples))
-    return scenario.to_dataset(opt_naming=False)
+    scenario = EvaluationScenario([discipline], parameter_space)
+    scenario.add_observable(objective_name)
+    scenario.execute(LHS_Settings(n_samples=learning_size))
+    return scenario.to_dataset()
 
 
 # the following contains the arguments passed to create_dataset

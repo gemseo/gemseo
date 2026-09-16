@@ -24,6 +24,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+from numpy import array
+from numpy import isfinite
 
 from gemseo import create_discipline
 from gemseo.core.discipline import Discipline
@@ -32,6 +34,7 @@ from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.auto_py import AutoPyDiscipline
 from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.discipline.chain.warm_started_chain import WarmStartedDisciplineChain
+from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.formulation.bilevel import BiLevel
 from gemseo.formulation.bilevel_bcd import BiLevelBCD
 from gemseo.formulation.bilevel_settings import BiLevel_Settings
@@ -49,8 +52,13 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
 from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
+from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.space.design import DesignSpace
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.scipy.uniform_settings import (
+    SPUniformDistribution_Settings,
+)
 from gemseo.util.discipline import flatten_processes
 from gemseo.util.name_generator import NameGenerator
 from gemseo.util.testing.disciplines_creator import create_disciplines_from_desc
@@ -338,10 +346,8 @@ def test_remove_couplings_from_ds(sobieski_sub_scenarios, caplog) -> None:
     formulation = BiLevel(problem, [*sobieski_sub_scenarios, SobieskiMission()])
     problem.objective = formulation.create_objective(["y_4"])
     for strong_coupling in ["y_12", "y_21", "y_23", "y_31", "y_32"]:
-        assert strong_coupling not in formulation.design_space
-    assert (
-        "The coupling variable y_12 was removed from the design space." in caplog.text
-    )
+        assert strong_coupling not in formulation.input_space
+    assert "The coupling variable y_12 was removed from the input space." in caplog.text
 
 
 @pytest.mark.parametrize(
@@ -412,7 +418,7 @@ def test_adapters_inputs_outputs(scenario, subscenario, request) -> None:
         adapter = scenario_adapter
 
         design_variable = set(
-            adapter.scenario.formulation.problem.design_space.variable_names
+            adapter.scenario.formulation.problem.input_space.variable_names
         )
         other_local = ssbj_local_variables.difference(design_variable)
         # Check the inputs
@@ -1046,3 +1052,71 @@ def test_custom_mda2_with_mda1(generate_sobieski_bilevel_scenario, caplog):
     assert "x_1" in scenario.formulation.chain.disciplines[1].io.output_grammar.names
     assert "b" in scenario.formulation.chain.disciplines[1].io.output_grammar.names
     assert "obj" in scenario.formulation.chain.disciplines[2].io.output_grammar.names
+
+
+def test_bilevel_shared_variables_of_a_random_space():
+    """Check that the shared variables of a random space reach the adapters.
+
+    A shared variable can only reach the inputs of a scenario adapter
+    through the system-level space,
+    which is a
+    [RandomSpace][gemseo.space.random.RandomSpace] here.
+    """
+    discipline_1, discipline_2, discipline_3 = create_disciplines_from_desc({
+        "disc_1": (["x_1"], ["a"]),
+        "disc_2": (["a", "x_2"], ["b"]),
+        "disc_3": (["x", "x_3", "b"], ["obj"]),
+    })
+
+    sub_design_space_1 = DesignSpace()
+    sub_design_space_1.add_variable("x_1")
+    sub_scenario_1 = MDOScenario([discipline_1, discipline_3], sub_design_space_1)
+    sub_scenario_1.add_objective("obj")
+
+    sub_design_space_2 = DesignSpace()
+    sub_design_space_2.add_variable("x_2")
+    sub_scenario_2 = MDOScenario([discipline_2, discipline_3], sub_design_space_2)
+    sub_scenario_2.add_objective("obj")
+
+    system_space = RandomSpace()
+    system_space.add_variable(
+        "x_3", SPUniformDistribution_Settings(minimum=0.0, maximum=1.0)
+    )
+    scenario = EvaluationScenario(
+        [sub_scenario_1, sub_scenario_2],
+        system_space,
+        formulation_settings=BiLevel_Settings(),
+    )
+
+    assert scenario.input_space is system_space
+    assert "x_3" in scenario.formulation._compute_adapter_inputs(sub_scenario_1)
+
+
+def test_bilevel_on_a_random_space(to_random_space):
+    """Check that a bi-level process samples a random system-level space."""
+    sub_scenarios = create_sobieski_sub_scenarios()
+    for sub_scenario in sub_scenarios:
+        sub_scenario.set_algorithm(SLSQP_Settings(max_iter=3))
+
+    system_space = to_random_space(
+        SobieskiProblem().design_space.filter(["x_shared", "y_14"])
+    )
+    scenario = EvaluationScenario(
+        [*sub_scenarios, SobieskiMission()],
+        system_space,
+        formulation_settings=BiLevel_Settings(),
+    )
+    scenario.add_observable("y_4")
+
+    # y_14 is a strong coupling, so the formulation removed it from the space.
+    assert list(scenario.input_space.variables) == ["x_shared"]
+
+    scenario.execute(
+        CustomDOE_Settings(
+            samples=array([scenario.input_space.reference_value["x_shared"]])
+        )
+    )
+
+    dataset = scenario.to_dataset()
+    assert len(dataset) == 1
+    assert isfinite(dataset.get_view(variable_names="y_4").to_numpy()).all()

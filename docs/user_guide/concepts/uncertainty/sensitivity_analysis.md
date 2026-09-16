@@ -336,7 +336,8 @@ per event).
 All sensitivity analyses follow the same workflow:
 
 1. **Compute samples** — [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples] draws input–output samples
-   from the [ParameterSpace][gemseo.space.parameter.ParameterSpace].
+   from the [RandomSpace][gemseo.space.random.RandomSpace]
+   passed as `random_space`.
    Alternatively, an existing [IODataset][gemseo.dataset.io_dataset.IODataset] can be reused directly.
 2. **Compute indices** — [compute_indices()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_indices]
    derives the sensitivity indices from the samples.

@@ -76,8 +76,6 @@ def store_attr_h5data(obj: Any, group: Group) -> None:
         obj: The object to store
         group: The hdf5 group.
     """
-    from gemseo.space.design import DesignSpace
-
     data = obj if isinstance(obj, Mapping) else obj.to_dict()
     for name, value in data.items():
         dtype = None
@@ -85,7 +83,7 @@ def store_attr_h5data(obj: Any, group: Group) -> None:
             value = value.encode("ascii", "ignore")
         elif isinstance(value, bytes):
             value = value.decode()
-        elif isinstance(value, Mapping) and not isinstance(value, DesignSpace):
+        elif isinstance(value, Mapping):
             grname = f"/{name}"
             if grname in group:
                 del group[grname]

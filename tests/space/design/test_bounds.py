@@ -20,18 +20,21 @@ import pickle
 
 import pytest
 from numpy import array
+from numpy import float64
+from numpy import int32
+from numpy import ndarray
 from numpy.testing import assert_array_equal
 
-from gemseo.space.design._bounds import Bounds
-from gemseo.space.design._variables import Variables
+from gemseo.space._design.bounds import Bounds
+from gemseo.space._design.variables import DesignVariables
 from gemseo.space.variable import ContinuousVariable
 from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture
-def variables() -> Variables:
+def variables() -> DesignVariables:
     """A variables with a single float variable of size 2, bounds [0, 10]."""
-    variables = Variables()
+    variables = DesignVariables()
     variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=10.0)
     return variables
 
@@ -75,32 +78,37 @@ def test_set_bound_bumps_version(variables) -> None:
     assert variables.version > version
 
 
+BOUND_ACCESSORS = [
+    (lambda bounds: bounds.full_lower_bound, None),
+    (lambda bounds: bounds.full_upper_bound, None),
+    (lambda bounds: bounds.get_lower_bound("x"), None),
+    (lambda bounds: bounds.get_upper_bound("x"), None),
+    (lambda bounds: bounds.get_lower_bounds(), None),
+    (lambda bounds: bounds.get_upper_bounds(), None),
+    (lambda bounds: bounds.get_lower_bounds(["x"]), None),
+    (lambda bounds: bounds.get_upper_bounds(["x"]), None),
+    (lambda bounds: bounds.get_lower_bounds(["x"], as_dict=True), "x"),
+    (lambda bounds: bounds.get_upper_bounds(["x"], as_dict=True), "x"),
+]
+"""The bound accessors of Bounds, with the dictionary key to read, if any."""
+
+BOUND_ACCESSOR_IDS = [
+    "full_lower_bound",
+    "full_upper_bound",
+    "get_lower_bound",
+    "get_upper_bound",
+    "get_lower_bounds",
+    "get_upper_bounds",
+    "get_lower_bounds[names]",
+    "get_upper_bounds[names]",
+    "get_lower_bounds[as_dict]",
+    "get_upper_bounds[as_dict]",
+]
+"""The identifiers of the bound accessors."""
+
+
 @pytest.mark.parametrize(
-    ("get_result", "dict_key"),
-    [
-        (lambda bounds: bounds.full_lower_bound, None),
-        (lambda bounds: bounds.full_upper_bound, None),
-        (lambda bounds: bounds.get_lower_bound("x"), None),
-        (lambda bounds: bounds.get_upper_bound("x"), None),
-        (lambda bounds: bounds.get_lower_bounds(), None),
-        (lambda bounds: bounds.get_upper_bounds(), None),
-        (lambda bounds: bounds.get_lower_bounds(["x"]), None),
-        (lambda bounds: bounds.get_upper_bounds(["x"]), None),
-        (lambda bounds: bounds.get_lower_bounds(["x"], as_dict=True), "x"),
-        (lambda bounds: bounds.get_upper_bounds(["x"], as_dict=True), "x"),
-    ],
-    ids=[
-        "full_lower_bound",
-        "full_upper_bound",
-        "get_lower_bound",
-        "get_upper_bound",
-        "get_lower_bounds",
-        "get_upper_bounds",
-        "get_lower_bounds[names]",
-        "get_upper_bounds[names]",
-        "get_lower_bounds[as_dict]",
-        "get_upper_bounds[as_dict]",
-    ],
+    ("get_result", "dict_key"), BOUND_ACCESSORS, ids=BOUND_ACCESSOR_IDS
 )
 def test_read_only_bounds(variables, get_result, dict_key, snapshot) -> None:
     """Check that every bound accessor of Bounds returns a read-only array."""
@@ -117,66 +125,106 @@ def test_read_only_bounds(variables, get_result, dict_key, snapshot) -> None:
 
 
 @pytest.mark.parametrize(
-    "get_result",
-    [
-        lambda bounds: bounds.full_lower_bound,
-        lambda bounds: bounds.full_upper_bound,
-        lambda bounds: bounds.get_lower_bound("x"),
-        lambda bounds: bounds.get_upper_bound("x"),
-        lambda bounds: bounds.get_lower_bounds(),
-        lambda bounds: bounds.get_upper_bounds(),
-    ],
-    ids=[
-        "full_lower_bound",
-        "full_upper_bound",
-        "get_lower_bound",
-        "get_upper_bound",
-        "get_lower_bounds",
-        "get_upper_bounds",
-    ],
+    ("get_result", "dict_key"), BOUND_ACCESSORS, ids=BOUND_ACCESSOR_IDS
 )
-def test_read_only_bounds_cannot_be_unfrozen(variables, get_result, snapshot) -> None:
-    """Check that the writeable flag of a bound cannot be re-enabled.
-
-    The accessors hand out views,
-    which do not own their data,
-    so NumPy refuses to make them writeable again;
-    freezing the arrays alone would not be enough,
-    since they own their data.
-    """
+def test_read_only_bounds_cannot_be_unfrozen(
+    variables, get_result, dict_key, snapshot
+) -> None:
+    """Check that the writeable flag of a bound cannot be re-enabled."""
     bounds = Bounds(variables)
+
+    result = get_result(bounds)
+    if dict_key is not None:
+        result = result[dict_key]
 
     with assert_exception(ValueError, snapshot):
-        get_result(bounds).setflags(write=True)
+        result.setflags(write=True)
 
 
-def test_full_bounds_cache_is_not_handed_out(variables) -> None:
-    """Check that the cached full bounds are never handed out by identity.
-
-    Otherwise a caller could reach the cache
-    and corrupt it for every later reader.
-    """
+@pytest.mark.parametrize(
+    ("get_result", "dict_key"), BOUND_ACCESSORS, ids=BOUND_ACCESSOR_IDS
+)
+def test_bounds_cannot_be_thawed_through_their_base(
+    variables, get_result, dict_key
+) -> None:
+    """Check that no array reachable from a bound can be made writeable."""
     bounds = Bounds(variables)
-    cached_lower_bound = bounds._Bounds__full_lower_bound
-    cached_upper_bound = bounds._Bounds__full_upper_bound
 
-    for result in (
-        bounds.full_lower_bound,
-        bounds.get_lower_bounds(),
-        bounds.full_upper_bound,
-        bounds.get_upper_bounds(),
-    ):
-        assert result is not cached_lower_bound
-        assert result is not cached_upper_bound
+    result = get_result(bounds)
+    if dict_key is not None:
+        result = result[dict_key]
 
+    array_ = result
+    while isinstance(array_, ndarray):
+        with pytest.raises(ValueError, match="cannot set WRITEABLE flag to True"):
+            array_.setflags(write=True)
+
+        array_ = array_.base
+
+    assert isinstance(array_, bytes)
     assert_array_equal(bounds.get_lower_bounds(), [0.0, 0.0])
     assert_array_equal(bounds.get_upper_bounds(), [10.0, 10.0])
+    assert_array_equal(variables["x"].lower_bound, [0.0, 0.0])
+    assert_array_equal(variables["x"].upper_bound, [10.0, 10.0])
+
+
+@pytest.mark.parametrize(
+    ("get_result", "dict_key"), BOUND_ACCESSORS, ids=BOUND_ACCESSOR_IDS
+)
+@pytest.mark.parametrize(
+    ("attribute_name", "value"),
+    [("shape", (2, 1)), ("strides", (0,)), ("dtype", int32)],
+)
+def test_reassigning_bound_attributes_leaves_the_bounds_alone(
+    variables, get_result, dict_key, attribute_name, value
+) -> None:
+    """Check that a bound is handed out as a view of what the bounds store.
+
+    NumPy lets a caller reassign the shape, the strides and the data type
+    of a read-only array, so a bound accessor returns a view of the frozen bound
+    and such a reassignment reaches the view only.
+    """
+    bounds = Bounds(variables)
+
+    result = get_result(bounds)
+    if dict_key is not None:
+        result = result[dict_key]
+
+    setattr(result, attribute_name, value)
+
+    for bound in (
+        bounds.full_lower_bound,
+        bounds.full_upper_bound,
+        bounds.get_lower_bound("x"),
+        bounds.get_upper_bound("x"),
+        variables["x"].lower_bound,
+        variables["x"].upper_bound,
+    ):
+        assert bound.shape == (2,)
+        assert bound.strides == (8,)
+        assert bound.dtype == float64
+
+
+def test_reassigning_variable_bound_attributes_leaves_the_bounds_alone(
+    variables,
+) -> None:
+    """Check that a bound read from a variable is a view of what the variable stores.
+
+    The full bounds are rebuilt from the bounds of the variables,
+    so a reassignment reaching a variable would corrupt every bound of the registry.
+    """
+    bounds = Bounds(variables)
+    variables["x"].lower_bound.shape = (2, 1)
+    variables["y"] = ContinuousVariable(size=1, lower_bound=1.0, upper_bound=2.0)
+
+    assert_array_equal(bounds.full_lower_bound, [0.0, 0.0, 1.0])
+    assert_array_equal(bounds.get_lower_bound("x"), [0.0, 0.0])
 
 
 def test_bounds_are_read_only_after_unpickling(variables) -> None:
     """Check that the full bounds are still read-only after a pickle round-trip.
 
-    NumPy does not preserve the writeable flag,
+    Pickling does not preserve the writeable flag,
     so the restored cache must be rebuilt before being handed out.
     """
     bounds = Bounds(variables)

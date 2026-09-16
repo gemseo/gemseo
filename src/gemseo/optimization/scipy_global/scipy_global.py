@@ -130,7 +130,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
             x_vect: The input data with which to call the functions.
         """
         if self._settings.normalize_design_space:
-            x_vect = self._problem.design_space.normalize_vect(x_vect)
+            x_vect = self._problem.input_space.normalize_vect(x_vect)
 
         self._problem.objective.evaluate(x_vect)
         for constraint in self._problem.constraints:
@@ -149,7 +149,7 @@ class ScipyGlobalOpt(BaseOptimizationLibrary[BaseSciPyGlobalSettings]):
     def _run(self, problem: OptimizationProblem) -> tuple[str, Any]:
         # Get the normalized bounds:
         _, l_b, u_b = get_value_and_bounds(
-            problem.design_space, self._settings.normalize_design_space
+            problem.input_space, self._settings.normalize_design_space
         )
         # Replace infinite values with None:
         l_b = [val if isfinite(val) else None for val in l_b]

@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.discipline import Discipline
     from gemseo.dataset.io_dataset import IODataset
     from gemseo.formulation.core.base_settings import BaseFormulationSettings
-    from gemseo.space.parameter import ParameterSpace
+    from gemseo.space.random import RandomSpace
     from gemseo.uncertainty.reliability.event import Event
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
 
@@ -110,7 +110,7 @@ class FORMAnalysis(BaseROSensitivityAnalysis[FORMAnalysisMethod]):
     def compute_samples(
         self,
         disciplines: Collection[Discipline],
-        parameter_space: ParameterSpace,
+        random_space: RandomSpace,
         events: Mapping[str, Event],
         algo_settings: OT_FORM_Settings | None = None,
         formulation_settings: BaseFormulationSettings | None = None,
@@ -124,7 +124,7 @@ class FORMAnalysis(BaseROSensitivityAnalysis[FORMAnalysisMethod]):
         The returned dataset therefore contains
         the model evaluations performed during this optimization
         (the optimizer iterates),
-        not points drawn from a sampling of the uncertain space.
+        not points drawn from a sampling of the random space.
         The importance factors are computed by
         [compute_indices][gemseo.uncertainty.sensitivity.form.FORMAnalysis.compute_indices]
         from the reliability result stored in `dataset.misc["execution_result"]`.
@@ -143,7 +143,7 @@ class FORMAnalysis(BaseROSensitivityAnalysis[FORMAnalysisMethod]):
 
         scenario = ReliabilityScenario(
             list(disciplines),
-            parameter_space,
+            random_space,
             formulation_settings=formulation_settings,
         )
         for event_name, event in events.items():
@@ -151,7 +151,7 @@ class FORMAnalysis(BaseROSensitivityAnalysis[FORMAnalysisMethod]):
 
         scenario.execute(settings)
         self.dataset = scenario.to_dataset()
-        self._input_names = parameter_space.variable_names
+        self._input_names = list(random_space.variables)
         self._output_names = list(events)
         return self.dataset
 

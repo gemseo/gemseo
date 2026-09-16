@@ -1,6 +1,6 @@
 # serializer version: 1
 # name: test_empty_design_space
-  'The algorithm algo_name is not adapted to the problem because the design space is empty.'
+  'The algorithm algo_name is not adapted to the problem because the variable space is empty.'
 # ---
 # name: test_get_result_without_result_class
   'The driver library MyDriver cannot build a result; set its class attribute _result_class.'

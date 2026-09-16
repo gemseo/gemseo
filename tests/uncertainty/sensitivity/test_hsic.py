@@ -40,7 +40,7 @@ from openturns import Sample
 from openturns import SquaredExponential
 
 from gemseo.discipline.analytic import AnalyticDiscipline
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
@@ -64,12 +64,12 @@ def samples() -> IODataset:
     """The samples shared by the HSIC sensitivity analyses."""
     discipline = AnalyticDiscipline({"y1": "x1+2*x2", "y2": "x1-2*x2"})
 
-    uncertain_space = ParameterSpace()
-    uncertain_space.add_random_variable("x1", OTNormalDistribution_Settings())
-    uncertain_space.add_random_variable("x2", OTNormalDistribution_Settings())
+    random_space = RandomSpace()
+    random_space.add_variable("x1", OTNormalDistribution_Settings())
+    random_space.add_variable("x2", OTNormalDistribution_Settings())
 
     analysis = HSICAnalysis()
-    analysis.compute_samples([discipline], uncertain_space, 100)
+    analysis.compute_samples([discipline], random_space, 100)
     return analysis.dataset
 
 
@@ -301,9 +301,9 @@ def test_from_samples(hsic_analysis, tmp_wd):
 
 def test_constant_output(discipline_with_constant_output_and_space):
     """Check that HSICAnalysis supports constant outputs."""
-    discipline, uncertain_space = discipline_with_constant_output_and_space
+    discipline, random_space = discipline_with_constant_output_and_space
     analysis = HSICAnalysis()
-    analysis.compute_samples([discipline], uncertain_space, 100)
+    analysis.compute_samples([discipline], random_space, 100)
     indices = analysis.compute_indices()
     assert indices.hsic["constant"][0] is None
     assert indices.hsic["varying"][0] is not None

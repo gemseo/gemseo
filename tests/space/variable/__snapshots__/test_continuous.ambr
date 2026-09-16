@@ -2,3 +2,9 @@
 # name: test_model_copy_leaves_original_alone
   'cannot set WRITEABLE flag to True of this array'
 # ---
+# name: test_normalization_mask_is_read_only[False]
+  'assignment destination is read-only'
+# ---
+# name: test_normalization_mask_is_read_only[True]
+  'assignment destination is read-only'
+# ---

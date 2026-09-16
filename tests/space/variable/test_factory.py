@@ -23,7 +23,7 @@ from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
-from gemseo.space.variable.factory import VariableFactory
+from gemseo.space.variable.factory import DeterministicVariableFactory
 from gemseo.util.pydantic import BaseSettings
 from gemseo.util.testing.helper import assert_exception
 
@@ -31,9 +31,9 @@ pytestmark = pytest.mark.usefixtures("reset_factory")
 
 
 @pytest.fixture
-def factory() -> VariableFactory:
+def factory() -> DeterministicVariableFactory:
     """The factory of variables."""
-    return VariableFactory()
+    return DeterministicVariableFactory()
 
 
 def test_create_from_settings_not_implemented(factory) -> None:
@@ -53,7 +53,7 @@ def test_class_names(factory) -> None:
 
 def test_singleton(factory) -> None:
     """Check that the factory is a singleton."""
-    assert VariableFactory() is factory
+    assert DeterministicVariableFactory() is factory
 
 
 def test_create(factory) -> None:
@@ -108,10 +108,12 @@ def test_update_invalidates_the_data_types(factory, monkeypatch) -> None:
         "OtherIntegerVariable": OtherIntegerVariable,
     }
     monkeypatch.setattr(
-        VariableFactory, "class_names", property(lambda self: class_names)
+        DeterministicVariableFactory, "class_names", property(lambda self: class_names)
     )
     monkeypatch.setattr(
-        VariableFactory, "get_class", lambda self, name: name_to_class[name]
+        DeterministicVariableFactory,
+        "get_class",
+        lambda self, name: name_to_class[name],
     )
     factory.update()
 
@@ -131,10 +133,14 @@ def test_duplicate_data_type(factory, monkeypatch, snapshot) -> None:
         "OtherContinuousVariable": OtherContinuousVariable,
     }
     monkeypatch.setattr(
-        VariableFactory, "class_names", property(lambda self: list(name_to_class))
+        DeterministicVariableFactory,
+        "class_names",
+        property(lambda self: list(name_to_class)),
     )
     monkeypatch.setattr(
-        VariableFactory, "get_class", lambda self, name: name_to_class[name]
+        DeterministicVariableFactory,
+        "get_class",
+        lambda self, name: name_to_class[name],
     )
     with assert_exception(ValueError, snapshot):
         factory.create("float")

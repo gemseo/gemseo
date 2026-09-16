@@ -41,6 +41,10 @@ from gemseo.optimization.factory import optimization_library_factory
 from gemseo.optimization.scipy_local.settings.lbfgsb import L_BFGS_B_Settings
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 from gemseo.space.design import DesignSpace
+from gemseo.space.random import RandomSpace
+from gemseo.uncertainty.distribution.openturns.uniform_settings import (
+    OTUniformDistribution_Settings,
+)
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
@@ -586,6 +590,60 @@ def test_name() -> None:
     assert Database(name="my_database").name == "my_database"
 
 
+def test_input_space_explicit_empty_design_space() -> None:
+    """Check the description of an explicitly-passed empty design space.
+
+    An explicitly-passed empty [DesignSpace][gemseo.space.design.DesignSpace]
+    must be described from the stored input values,
+    exactly as the default design space created when no input space is passed.
+    """
+    database = Database(input_space=DesignSpace())
+    database.store(array([1.0, 2.0]), {"y": 3.0})
+
+    input_space = database.input_space
+    assert isinstance(input_space, DesignSpace)
+    assert input_space.variable_names == [Database.default_input_name]
+    assert input_space.dimension == 2
+
+    dataset = database.to_dataset()
+    assert_array_equal(dataset.to_numpy(), array([[1.0, 2.0, 3.0]]))
+
+
+def test_input_space_random_space_untouched() -> None:
+    """Check that a RandomSpace input space is not augmented with a variable.
+
+    Contrary to a [DesignSpace][gemseo.space.design.DesignSpace],
+    a [RandomSpace][gemseo.space.random.RandomSpace] cannot hold
+    a deterministic, unnamed variable,
+    so the input space must be returned unmodified.
+    """
+    random_space = RandomSpace(name="random_space")
+    random_space.add_variable("x", OTUniformDistribution_Settings())
+    database = Database(input_space=random_space)
+    database.store(array([1.0]), {"y": 2.0})
+
+    input_space = database.input_space
+    assert input_space is random_space
+    assert list(input_space.variables) == ["x"]
+
+
+def test_input_space_empty_random_space_untouched() -> None:
+    """Check that an empty RandomSpace input space stays empty.
+
+    The unnamed variable is added from a name and a size only,
+    which only a [DesignSpace][gemseo.space.design.DesignSpace] accepts,
+    so an empty space of another kind must be returned as it is.
+    """
+    random_space = RandomSpace(name="random_space")
+    database = Database(input_space=random_space)
+    database.store(array([1.0]), {"y": 2.0})
+
+    input_space = database.input_space
+    assert input_space is random_space
+    assert not input_space
+    assert input_space.dimension == 0
+
+
 def test_notify_newiter_store_listeners() -> None:
     """Check that notify_new_iter_listeners and notify_store_listeners works
     properly."""
@@ -849,3 +907,58 @@ def test_to_hdf_from_hdf_str(tmp_wd, string_value):
     database.to_hdf("database.h5")
     loaded_database = Database.from_hdf("database.h5")
     assert loaded_database.last_item == database.last_item
+
+
+def test_to_hdf_from_hdf_random_space(tmp_wd, caplog) -> None:
+    """Check the export to HDF of a database whose input space is a RandomSpace.
+
+    A [RandomSpace][gemseo.space.random.RandomSpace] cannot be serialized to HDF,
+    so `to_hdf` must warn and write the database without its input space,
+    and `from_hdf` must then rebuild the default one-variable
+    [DesignSpace][gemseo.space.design.DesignSpace].
+    """
+    random_space = RandomSpace()
+    random_space.add_variable("x", OTUniformDistribution_Settings())
+    database = Database(input_space=random_space)
+    database.store(array([1.0]), {"y": 2.0})
+
+    file_path = "database.h5"
+    database.to_hdf(file_path)
+
+    assert (
+        "The RandomSpace cannot be written to the HDF file "
+        f"{file_path} because it is not a design space; "
+        "the database is written without it." in caplog.text
+    )
+
+    loaded_database = Database.from_hdf(file_path)
+    input_space = loaded_database.input_space
+    assert isinstance(input_space, DesignSpace)
+    assert input_space.variable_names == [Database.default_input_name]
+    assert input_space.dimension == 1
+    assert loaded_database.last_item == database.last_item
+
+
+def test_to_hdf_random_space_warns_once(tmp_wd, caplog) -> None:
+    """Check that the non-design space warning is emitted only once.
+
+    A [RandomSpace][gemseo.space.random.RandomSpace] cannot be serialized to HDF,
+    so `to_hdf` must warn about it, but only on the first call, even when the
+    database is exported several times with `append=True`.
+    """
+    random_space = RandomSpace(name="random_space")
+    random_space.add_variable("x", OTUniformDistribution_Settings())
+    database = Database(input_space=random_space)
+    database.store(array([1.0]), {"y": 2.0})
+
+    file_path = "database.h5"
+    database.to_hdf(file_path)
+    database.store(array([2.0]), {"y": 3.0})
+    database.to_hdf(file_path, append=True)
+
+    message = (
+        "The RandomSpace cannot be written to the HDF file "
+        f"{file_path} because it is not a design space; "
+        "the database is written without it."
+    )
+    assert caplog.text.count(message) == 1

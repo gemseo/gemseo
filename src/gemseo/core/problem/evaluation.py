@@ -28,7 +28,9 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
+from typing import Generic
 from typing import Literal
+from typing import TypeVar
 from typing import overload
 
 from strenum import StrEnum
@@ -41,6 +43,7 @@ from gemseo.core.problem.counter import EvaluationCounter
 from gemseo.core.problem.database import Database
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.io_dataset import IODataset
+from gemseo.space.design import DesignSpace
 from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import _check_desvars_bounds
 from gemseo.util.derivative.approximation_mode import ApproximationMode
@@ -51,9 +54,12 @@ from gemseo.util.typing import RealArray
 if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Iterable
+    from collections.abc import Mapping
+
+    from numpy import ndarray
 
     from gemseo.core.function.array_function import ArrayFunction
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
     from gemseo.util.typing import StrPath
 
 
@@ -62,9 +68,19 @@ logger = logging.getLogger(__name__)
 EvaluationType = tuple[dict[str, float | RealArray], dict[str, RealArray]]
 """The type of the output value of an evaluation."""
 
+_SpaceT = TypeVar("_SpaceT", bound="BaseVariableSpace")
 
-class EvaluationProblem(BaseProblem):
-    """A problem to evaluate functions over a design space."""
+
+class EvaluationProblem(BaseProblem, Generic[_SpaceT]):
+    """A problem to evaluate functions over an input space.
+
+    The type of the input space is the type parameter of this class:
+    a subclass requiring a specific kind of space,
+    e.g. an optimization problem requiring a design space,
+    passes it to its base
+    so that [input_space][gemseo.core.problem.evaluation.EvaluationProblem.input_space]
+    is typed accordingly.
+    """
 
     class HistoryFileFormat(StrEnum):
         """The format of the history file."""
@@ -79,7 +95,7 @@ class EvaluationProblem(BaseProblem):
     """The observables."""
 
     check_bounds: ClassVar[bool] = _check_desvars_bounds
-    """Whether to check if a point is in the design space before calling functions."""
+    """Whether to check if a point is in the input space before calling functions."""
 
     _is_optimization: ClassVar[bool] = False
     """Whether the problem is an optimization problem."""
@@ -87,8 +103,8 @@ class EvaluationProblem(BaseProblem):
     _database: Database
     """The database to store the function evaluations."""
 
-    design_space: DesignSpace
-    """The design space on which the functions are evaluated."""
+    _input_space: _SpaceT
+    """The input space on which the functions are evaluated."""
 
     evaluation_counter: EvaluationCounter
     """The counter of function evaluations.
@@ -132,9 +148,17 @@ class EvaluationProblem(BaseProblem):
     differentiation_method: DifferentiationMethod
     """The differentiation method."""
 
+    __initial_current_value: Mapping[str, ndarray | None]
+    """The initial current value of the input space.
+
+    The current value is restored when the problem is reset;
+    it is empty for a space defining none, e.g. a random space,
+    and writing it back is then a no-op.
+    """
+
     def __init__(
         self,
-        design_space: DesignSpace,
+        input_space: _SpaceT,
         database: Database | None = None,
         differentiation_method: DifferentiationMethod = DifferentiationMethod.USER,
         differentiation_step: float = 1e-7,
@@ -142,7 +166,7 @@ class EvaluationProblem(BaseProblem):
     ) -> None:
         """
         Args:
-            design_space: The design space on which the functions are evaluated.
+            input_space: The input space on which the functions are evaluated.
             database: The initial database to store the function evaluations.
                 If `None`,
                 the problem starts from an empty database.
@@ -163,12 +187,10 @@ class EvaluationProblem(BaseProblem):
         self.differentiation_step = differentiation_step
         self.differentiation_method = differentiation_method
         self._database = (
-            Database(input_space=design_space) if database is None else database
+            Database(input_space=input_space) if database is None else database
         )
-        self.design_space = design_space
-        self.__initial_current_x = deepcopy(
-            design_space.get_current_value(as_dict=True)
-        )
+        self._input_space = input_space
+        self.__initial_current_value = deepcopy(input_space._current_value)
         self._stop_if_nan = True
         self.__parallel_differentiation = parallel_differentiation
         self.__parallel_differentiation_options = {}
@@ -196,6 +218,23 @@ class EvaluationProblem(BaseProblem):
             pretty_str(self.function_names, use_and=False),
         )
         return mls
+
+    @property
+    def input_space(self) -> _SpaceT:
+        """The input space on which the functions are evaluated."""
+        return self._input_space
+
+    @property
+    def _design_space(self) -> DesignSpace | None:
+        """The input space when it is a design space, otherwise `None`.
+
+        Bounds, membership, normalization and integer rounding
+        are specific to a design space.
+        This property is the single place where the input space is narrowed to one,
+        so that every consumer branches on the same test.
+        """
+        input_space = self._input_space
+        return input_space if isinstance(input_space, DesignSpace) else None
 
     @property
     def database(self) -> Database:
@@ -361,7 +400,7 @@ class EvaluationProblem(BaseProblem):
 
         Args:
             listener: A function to be called after some events,
-                whose argument is a design vector.
+                whose argument is an input value.
             at_each_iteration: Whether to evaluate the listeners
                 after evaluating all functions
                 for a given point and storing their values in the
@@ -387,7 +426,7 @@ class EvaluationProblem(BaseProblem):
 
         Args:
             no_db_no_norm: Whether to prevent
-                both database backup and design vector normalization.
+                both database backup and input value normalization.
             observable_names: The names of the observables to evaluate.
                 If empty,
                 then all the observables are evaluated.
@@ -426,7 +465,7 @@ class EvaluationProblem(BaseProblem):
             jacobian_names: The names of the Jacobian functions.
             output_functions: The names of the output functions.
             no_db_no_norm: Whether to prevent
-                both database backup and design vector normalization.
+                both database backup and input value normalization.
 
         Returns:
             The output and Jacobian functions to be evaluated.
@@ -459,19 +498,19 @@ class EvaluationProblem(BaseProblem):
 
     def evaluate_functions(
         self,
-        design_vector: RealArray | None = None,
-        design_vector_is_normalized: bool = True,
-        preprocess_design_vector: bool = True,
+        input_value: RealArray | None = None,
+        input_value_is_normalized: bool = True,
+        preprocess_input_value: bool = True,
         output_functions: Iterable[ArrayFunction] | None = (),
         jacobian_functions: Iterable[ArrayFunction] | None = None,
     ) -> EvaluationType:
         """Evaluate the functions, and possibly their derivatives.
 
         Args:
-            design_vector: The design vector at which to evaluate the functions;
-                if `None`, use the current value of the design space.
-            design_vector_is_normalized: Whether `design_vector` is normalized.
-            preprocess_design_vector: Whether to preprocess the design vector.
+            input_value: The input value at which to evaluate the functions;
+                if `None`, use the current value of the input space.
+            input_value_is_normalized: Whether `input_value` is normalized.
+            preprocess_input_value: Whether to preprocess the input value.
             output_functions: The functions computing the outputs.
                 If empty, evaluate all the functions computing outputs.
                 If `None`, do not evaluate functions computing outputs.
@@ -482,6 +521,11 @@ class EvaluationProblem(BaseProblem):
         Returns:
             The output values of the functions,
             as well as their Jacobian matrices if `jacobian_functions` is empty.
+
+        Raises:
+            ValueError: When `preprocess_input_value` is `True`
+                and the input space cannot be normalized
+                while `input_value` is `None` or `input_value_is_normalized` is `True`.
         """
         if output_functions is None and jacobian_functions is None:
             return {}, {}
@@ -506,20 +550,20 @@ class EvaluationProblem(BaseProblem):
         if jacobian_functions is None:
             jacobian_functions = ()
 
-        if preprocess_design_vector:
+        if preprocess_input_value:
             functions = output_functions or jacobian_functions
             if functions:
                 # N.B. either all functions expect normalized inputs or none of them do.
-                design_vector = self._preprocess_inputs(
-                    design_vector,
-                    design_vector_is_normalized,
+                input_value = self._preprocess_inputs(
+                    input_value,
+                    input_value_is_normalized,
                     functions[0].expects_normalized_inputs,
                 )
 
         outputs = {}
         for function in output_functions:
             try:
-                outputs[function.name] = function.evaluate(design_vector)
+                outputs[function.name] = function.evaluate(input_value)
             except ValueError:  # noqa: PERF203
                 logger.exception("Failed to evaluate function %s", function.name)
                 raise
@@ -530,7 +574,7 @@ class EvaluationProblem(BaseProblem):
         jacobians = {}
         for function in jacobian_functions:
             try:
-                jacobians[function.name] = function.jac(design_vector)
+                jacobians[function.name] = function.jac(input_value)
             except ValueError:  # noqa: PERF203
                 logger.exception("Failed to evaluate Jacobian of %s.", function.name)
                 raise
@@ -557,34 +601,65 @@ class EvaluationProblem(BaseProblem):
         normalized: bool,
         normalization_expected: bool,
     ) -> RealArray:
-        """Prepare the design variables for the function evaluation.
+        """Prepare the input value for the function evaluation.
 
         Args:
-            input_value: The design variables.
-                If `None`, use the current value of the design space.
-            normalized: Whether the design variables are normalized.
+            input_value: The input value.
+                If `None`, use the current value of the input space.
+            normalized: Whether the input value is normalized.
             normalization_expected: Whether the functions expect normalized variables.
 
         Returns:
-            The prepared design variables.
+            The prepared input value.
+
+        Raises:
+            ValueError: When the input space is not a design space
+                and the input value is either `None` or normalized.
         """
+        design_space = self._design_space
+        if design_space is None:
+            # Membership and normalization are specific to a design space.
+            # The bounds of a random variable are the limits of the support
+            # of its probability distribution; they are descriptive only,
+            # so the membership of the input value is not checked.
+            # A driver passes the input value explicitly, non-normalized,
+            # so there is nothing to prepare.
+            input_space = self.input_space
+            if input_value is None:
+                msg = (
+                    "The input value cannot be None "
+                    f"because a {input_space.__class__.__name__} "
+                    "has no current value."
+                )
+                raise ValueError(msg)
+
+            if normalized:
+                msg = (
+                    "The input value cannot be normalized "
+                    f"because a {input_space.__class__.__name__} "
+                    "cannot be normalized."
+                )
+                raise ValueError(msg)
+
+            return input_value
+
         if input_value is None:
-            input_value = self.design_space.get_current_value(normalize=normalized)
+            input_value = design_space.get_current_value(normalize=normalized)
         elif self.check_bounds:
             if normalized:
-                non_normalized_variables = self.design_space.denormalize_vect(
+                non_normalized_variables = design_space.denormalize_vect(
                     input_value, no_check=True
                 )
             else:
                 non_normalized_variables = input_value
 
-            self.design_space.check_membership(non_normalized_variables)
+            design_space.check_membership(non_normalized_variables)
 
         if normalized and not normalization_expected:
-            return self.design_space.denormalize_vect(input_value, no_check=True)
+            return design_space.denormalize_vect(input_value, no_check=True)
 
         if not normalized and normalization_expected:
-            return self.design_space.normalize_vect(input_value)
+            return design_space.normalize_vect(input_value)
 
         return input_value
 
@@ -597,7 +672,7 @@ class EvaluationProblem(BaseProblem):
 
         Args:
             no_db_no_norm: Whether to prevent
-                both database backup and design vector normalization.
+                both database backup and input value normalization.
             observable_names: The names of the observables to return.
                 If empty,
                 then all the observables are returned.
@@ -651,15 +726,31 @@ class EvaluationProblem(BaseProblem):
             store_jacobian: Whether to store the Jacobian matrices in the database.
                 This argument is ignored when `use_database` is `False`.
             vectorize: Whether to vectorize the functions evaluations.
+
+        Raises:
+            ValueError: When a function expects normalized inputs,
+                while the input space is not a design space.
         """
         # Avoids multiple wrappings of functions when multiple executions
         # are performed, in bi-level scenarios for instance
         if self._functions_are_preprocessed:
             return
 
-        if round_ints:
-            # Keep the rounding option only if there is an integer design variable
-            round_ints = self.design_space.has_integer_variables
+        design_space = self._design_space
+        if design_space is None:
+            # Normalization and integer rounding require bounded variables.
+            if is_function_input_normalized:
+                msg = (
+                    "The functions cannot take normalized inputs "
+                    f"because a {self.input_space.__class__.__name__} "
+                    "cannot be normalized."
+                )
+                raise ValueError(msg)
+
+            round_ints = False
+        elif round_ints:
+            # Keep the rounding option only if there is an integer variable
+            round_ints = design_space.variables.has_integer_variables
 
         for functions in self._sequence_of_functions:
             if functions == self.__new_iter_observables:
@@ -728,41 +819,73 @@ class EvaluationProblem(BaseProblem):
 
         Returns:
             The pre-processed function.
+
+        Raises:
+            ValueError: When the function expects normalized inputs
+                while the input space is not a design space.
+
+        Note:
+            Normalization and integer rounding are specific to a design space;
+            `preprocess_functions` raises for the former
+            and disables the latter
+            when the input space is not one,
+            so neither is enabled here in that case.
         """
         original_function = function
         args = () if support_sparse_jacobian else (self._convert_array_to_dense,)
-        ds = self.design_space
-        if (
+        input_space = self.input_space
+        design_space = self._design_space
+        if design_space is None and function.expects_normalized_inputs:
+            # Normalization is specific to a design space,
+            # so such a function cannot be fed with the inputs it expects;
+            # evaluating it at a point of the space instead
+            # would return a value that is not the one asked for.
+            msg = (
+                f"The function {function.name} expects normalized inputs "
+                f"while a {input_space.__class__.__name__} cannot be normalized."
+            )
+            raise ValueError(msg)
+
+        if design_space is None or not (round_ints or is_function_input_normalized):
+            expects_normalized_inputs = function.expects_normalized_inputs
+            func_seq = (function.func,)
+            jac_seq = (function.jac, *args)
+        elif (
             isinstance(function, LinearFunction)
             and not round_ints
             and is_function_input_normalized
         ):
             expects_normalized_inputs = True
-            function = function.normalize(self.design_space)
+            function = function.normalize(design_space)
             func_seq = (function.func,)
             jac_seq = (function.jac, *args)
         elif is_function_input_normalized and round_ints:
             expects_normalized_inputs = True
-            func_seq = (ds.denormalize_vect, ds.round_vect, function.func)
+            func_seq = (
+                design_space.denormalize_vect,
+                design_space.round_vect,
+                function.func,
+            )
             jac_seq = (
-                ds.denormalize_vect,
-                ds.round_vect,
+                design_space.denormalize_vect,
+                design_space.round_vect,
                 function.jac,
                 *args,
-                ds.normalize_grad,
+                design_space.normalize_grad,
             )
         elif round_ints:
             expects_normalized_inputs = function.expects_normalized_inputs
-            func_seq = (ds.round_vect, function.func)
-            jac_seq = (ds.round_vect, function.jac, *args)
+            func_seq = (design_space.round_vect, function.func)
+            jac_seq = (design_space.round_vect, function.jac, *args)
         elif is_function_input_normalized:
             expects_normalized_inputs = True
-            func_seq = (ds.denormalize_vect, function.func)
-            jac_seq = (ds.denormalize_vect, function.jac, *args, ds.normalize_grad)
-        else:
-            expects_normalized_inputs = function.expects_normalized_inputs
-            func_seq = (function.func,)
-            jac_seq = (function.jac, *args)
+            func_seq = (design_space.denormalize_vect, function.func)
+            jac_seq = (
+                design_space.denormalize_vect,
+                function.jac,
+                *args,
+                design_space.normalize_grad,
+            )
 
         function = PreprocessedFunction(
             function,
@@ -772,7 +895,7 @@ class EvaluationProblem(BaseProblem):
             self.database if use_database else None,
             self.evaluation_counter,
             self.stop_if_nan,
-            self.design_space,
+            input_space,
             store_jacobian,
             differentiation_method=(
                 None
@@ -795,7 +918,7 @@ class EvaluationProblem(BaseProblem):
 
     def check(self) -> None:
         """Check if the functions attached to the problem can be evaluated."""
-        self.design_space.check()
+        self.input_space.check()
 
     @overload
     def to_dataset(
@@ -835,7 +958,7 @@ class EvaluationProblem(BaseProblem):
                 between the different groups of variables.
                 If so,
                 use an [IODataset][gemseo.dataset.io_dataset.IODataset]
-                with the design variables in the
+                with the input variables in the
                 [input_group][gemseo.dataset.io_dataset.IODataset.input_group]
                 and the functions and their derivatives
                 in the
@@ -874,7 +997,7 @@ class EvaluationProblem(BaseProblem):
         self,
         database: bool = True,
         current_iter: bool = True,
-        design_space: bool = True,
+        input_space: bool = True,
         function_calls: bool = True,
         preprocessing: bool = True,
     ) -> None:
@@ -884,8 +1007,8 @@ class EvaluationProblem(BaseProblem):
             database: Whether to clear the database.
             current_iter: Whether to reset the counter of evaluations
                 to the initial iteration.
-            design_space: Whether to reset the current value of the design space
-                which can be `None`.
+            input_space: Whether to restore the current value that the input space
+                had at the instantiation of the problem.
             function_calls: Whether to reset the number of calls of the functions.
             preprocessing: Whether to turn the pre-processing of functions to False.
         """
@@ -899,8 +1022,8 @@ class EvaluationProblem(BaseProblem):
         if database:
             self.database.clear()
 
-        if design_space:
-            self.design_space.set_current_value(self.__initial_current_x)
+        if input_space:
+            self.input_space._current_value = self.__initial_current_value
 
         if function_calls and PreprocessedFunction.enable_statistics:
             for function in self.functions:

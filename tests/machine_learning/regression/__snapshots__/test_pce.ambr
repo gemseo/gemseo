@@ -46,6 +46,9 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
+# name: test_input_space_is_not_a_random_space
+  'PCERegressor requires a random space; got a DesignSpace.'
+# ---
 # name: test_lars_with_quadrature
   '''
   1 validation error for PCERegressor_Settings

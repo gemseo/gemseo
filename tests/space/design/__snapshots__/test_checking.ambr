@@ -23,9 +23,6 @@
 # name: test_check_addable_value_several_non_numeric
   "The following values of variable 'x' are neither None nor complex and cannot be cast to float: a (index 0) and b (index 1)."
 # ---
-# name: test_check_empty_variables
-  'The design space is empty.'
-# ---
 # name: test_check_membership_2d_array_with_a_discrete_variable
   'The variable d is discrete with the choices [2.0, 5.0]; got d[0] = 3.0.'
 # ---
@@ -61,10 +58,4 @@
 # ---
 # name: test_check_membership_wrong_type
   "The input vector should be an array or a dictionary; got a <class 'list'> instead."
-# ---
-# name: test_check_out_array_wrong_dtype
-  'Expected an out array of dtype complex128; got float64.'
-# ---
-# name: test_check_out_array_wrong_shape
-  'Expected an out array of shape (2,); got (3, 2).'
 # ---

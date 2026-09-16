@@ -1,17 +1,35 @@
 # serializer version: 1
+# name: test_filter_components_rejects_other_selections[components0]
+  'A discrete variable is scalar; its size cannot be set to 0.'
+# ---
+# name: test_filter_components_rejects_other_selections[components1]
+  'A discrete variable is scalar; its size cannot be set to 2.'
+# ---
+# name: test_filter_components_rejects_other_selections[components2]
+  'A discrete variable is scalar, so its only component is 0; got 1.'
+# ---
+# name: test_filter_components_rejects_other_selections[components3]
+  'A discrete variable is scalar, so its only component is 0; got 1 and 2.'
+# ---
+# name: test_filter_components_rejects_other_selections[components4]
+  'A discrete variable is scalar, so its only component is 0; got 1.'
+# ---
 # name: test_model_copy_rejects_the_bounds[lower_bound]
   '''
   1 validation error for DiscreteVariable
-    Value error, The domain of a discrete variable is its choices, from which its bounds are derived; the bounds are not settable. [type=value_error, input_value={'size': 1, 'choices': ar... 2.]), 'lower_bound': 0}, input_type=dict]
+    Value error, lower_bound is read-only; the input of a DiscreteVariable is choices. [type=value_error, input_value={'choices': array([1., 2.]), 'lower_bound': 0}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_model_copy_rejects_the_bounds[upper_bound]
   '''
   1 validation error for DiscreteVariable
-    Value error, The domain of a discrete variable is its choices, from which its bounds are derived; the bounds are not settable. [type=value_error, input_value={'size': 1, 'choices': ar... 2.]), 'upper_bound': 0}, input_type=dict]
+    Value error, upper_bound is read-only; the input of a DiscreteVariable is choices. [type=value_error, input_value={'choices': array([1., 2.]), 'upper_bound': 0}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
+# ---
+# name: test_normalization_mask_is_read_only
+  'assignment destination is read-only'
 # ---
 # name: test_rejections[kwargs0]
   '''
@@ -59,22 +77,21 @@
 # name: test_rejections[kwargs5]
   '''
   1 validation error for DiscreteVariable
-    Value error, The domain of a discrete variable is its choices, from which its bounds are derived; the bounds are not settable. [type=value_error, input_value={'choices': [1, 2], 'lower_bound': 0}, input_type=dict]
+    Value error, lower_bound is read-only; the input of a DiscreteVariable is choices. [type=value_error, input_value={'choices': [1, 2], 'lower_bound': 0}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_rejections[kwargs6]
   '''
   1 validation error for DiscreteVariable
-    Value error, The domain of a discrete variable is its choices, from which its bounds are derived; the bounds are not settable. [type=value_error, input_value={'choices': [1, 2], 'upper_bound': 3}, input_type=dict]
+    Value error, upper_bound is read-only; the input of a DiscreteVariable is choices. [type=value_error, input_value={'choices': [1, 2], 'upper_bound': 3}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_rejections[kwargs7]
   '''
   1 validation error for DiscreteVariable
-  size
-    Value error, A discrete variable is scalar; its size cannot be set to 2. [type=value_error, input_value=2, input_type=int]
+    Value error, size is read-only; the input of a DiscreteVariable is choices. [type=value_error, input_value={'choices': [1, 2], 'size': 2}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---

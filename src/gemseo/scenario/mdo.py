@@ -35,6 +35,8 @@ from gemseo.post.factory import post_factory as default_post_factory
 from gemseo.post.opt_history_view_settings import OptHistoryView_Settings
 from gemseo.scenario.evaluation import EvaluationScenario
 from gemseo.scenario.scenario_result.factory import ScenarioResultFactory
+from gemseo.space._core.checking import check_design_space
+from gemseo.space.design import DesignSpace
 from gemseo.util.constant import read_only_empty_dict
 from gemseo.util.string import convert_strings_to_iterable
 
@@ -53,12 +55,11 @@ if TYPE_CHECKING:
     from gemseo.post.core.base_post_settings import BasePostSettings
     from gemseo.post.factory import PostFactory
     from gemseo.scenario.scenario_result.scenario_result import ScenarioResult
-    from gemseo.space.design import DesignSpace
     from gemseo.util.typing import StrKeyMapping
     from gemseo.util.typing import StrPath
 
 
-class MDOScenario(EvaluationScenario):
+class MDOScenario(EvaluationScenario[DesignSpace]):
     """A scenario to solve an MDO problem, using an optimizer or a DOE algorithm.
 
     The outputs of interest can be declared as objectives, constraints or observables
@@ -113,6 +114,7 @@ class MDOScenario(EvaluationScenario):
         formulation_settings: BaseFormulationSettings | None = None,
         default_input_data: StrKeyMapping = read_only_empty_dict,
     ) -> None:
+        check_design_space(design_space, "An MDOScenario", "an EvaluationScenario")
         super().__init__(
             disciplines,
             design_space,
@@ -121,6 +123,16 @@ class MDOScenario(EvaluationScenario):
             default_input_data=default_input_data,
         )
         self.__objectives_to_minimize = {}
+
+    @property
+    def design_space(self) -> DesignSpace:
+        """The design space on which the disciplines are evaluated.
+
+        This is the
+        [input_space][gemseo.scenario.evaluation.EvaluationScenario.input_space]
+        of the scenario, which an MDO scenario requires to be a design space.
+        """
+        return self.input_space
 
     def _add_extra_constraint(self, constraint: ArrayFunction) -> None:
         self.formulation.problem.add_constraint(constraint)
@@ -254,7 +266,7 @@ class MDOScenario(EvaluationScenario):
         Returns:
             The optimization variables of the scenario.
         """
-        return self.formulation.problem.design_space.variable_names
+        return list(self.formulation.problem.input_space.variables)
 
     def set_backup_settings(
         self,

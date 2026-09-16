@@ -1,0 +1,1 @@
+- `gemseo.create_parameter_space` is deprecated; use `gemseo.create_random_space` instead. It creates an empty `RandomSpace`, so the space it returns can no longer be given deterministic variables.

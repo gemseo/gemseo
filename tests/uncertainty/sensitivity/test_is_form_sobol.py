@@ -31,7 +31,7 @@ from scipy.stats import norm
 from gemseo.dataset.io_dataset import IODataset
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.discipline.auto_py import AutoPyDiscipline
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty import create_sensitivity_analysis
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
@@ -54,11 +54,11 @@ def discipline() -> AnalyticDiscipline:
 
 
 @pytest.fixture(scope="module")
-def parameter_space() -> ParameterSpace:
-    """The uncertain space of two standard normal variables."""
-    space = ParameterSpace()
-    space.add_random_variable("x1", OTNormalDistribution_Settings())
-    space.add_random_variable("x2", OTNormalDistribution_Settings())
+def parameter_space() -> RandomSpace:
+    """The random space of two standard normal variables."""
+    space = RandomSpace()
+    space.add_variable("x1", OTNormalDistribution_Settings())
+    space.add_variable("x2", OTNormalDistribution_Settings())
     return space
 
 
@@ -117,6 +117,26 @@ def test_budget_includes_form(analysis) -> None:
     assert len(dataset) <= 500
 
 
+def test_compute_samples_with_random_space(discipline) -> None:
+    """Check that compute_samples() accepts a RandomSpace, not only a ParameterSpace.
+
+    Regression test: compute_samples() used to read `random_space.distribution`,
+    an attribute only available on ParameterSpace, after the FORM pass had already
+    run, raising AttributeError when a RandomSpace was passed.
+    """
+    space = RandomSpace()
+    space.add_variable("x1", OTNormalDistribution_Settings())
+    space.add_variable("x2", OTNormalDistribution_Settings())
+
+    analysis = ISFORMSobolAnalysis()
+    y = analysis.get_event_variables("y")
+    dataset = analysis.compute_samples(
+        [discipline], space, {"y_high": y > threshold}, n_samples=500
+    )
+    assert set(dataset.input_names) == {"x1", "x2"}
+    assert dataset.output_names == ["y_high"]
+
+
 def test_compute_second_order_false(discipline, parameter_space) -> None:
     """Check that a pick-and-freeze design can skip second-order indices."""
     analysis = ISFORMSobolAnalysis()
@@ -141,9 +161,9 @@ def test_high_dimension_sampling_factor() -> None:
     the design has N(2+2d) rows instead of N(2+d).
     """
     discipline = AnalyticDiscipline({"y": "x1 + 2*x2 + 3*x3"}, name="my_function")
-    space = ParameterSpace()
+    space = RandomSpace()
     for name in ("x1", "x2", "x3"):
-        space.add_random_variable(name, OTNormalDistribution_Settings())
+        space.add_variable(name, OTNormalDistribution_Settings())
 
     analysis = ISFORMSobolAnalysis()
     y = analysis.get_event_variables("y")
@@ -383,7 +403,7 @@ def test_several_events(discipline, parameter_space, analysis) -> None:
     single_event_size = analysis.dataset.misc["sample_size"]["y_high"]
     for event_name in ("y_high", "y_higher"):
         assert dataset.misc["sample_size"][event_name] < single_event_size
-    # The rarer event y > 2*THRESHOLD is less probable.
+    # The rarer event y > 2*threshold is less probable.
     assert (
         dataset.misc["probability"]["y_higher"] < dataset.misc["probability"]["y_high"]
     )

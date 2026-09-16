@@ -46,9 +46,9 @@ that integrates with its MDO capabilities.
 
 ### Uncertain variables { #usecases-uncertain-variables }
 
-GEMSEO extends the notion of **design space**
-with a `ParameterSpace` that defines
-both deterministic and uncertain variables.
+GEMSEO defines a **random space**
+with a `RandomSpace` gathering random variables,
+next to the **design space** defined by a `DesignSpace`.
 Uncertain variables are described by probability distributions
 (normal, uniform, triangular, etc.),
 which can be fitted from data

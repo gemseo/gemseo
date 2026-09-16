@@ -41,7 +41,7 @@ from gemseo.problem.uncertainty.ishigami import IshigamiSpace
 from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 
 discipline = IshigamiDiscipline()
-uncertain_space = IshigamiSpace()
+random_space = IshigamiSpace()
 
 # %%
 # ### 1. Check the default main method
@@ -56,7 +56,7 @@ analysis.main_method
 # ### 2. Compute the indices
 #
 # The calculation of samples and indices is independent of the main method:
-analysis.compute_samples([discipline], uncertain_space, n_samples=1000)
+analysis.compute_samples([discipline], random_space, n_samples=1000)
 analysis.compute_indices()
 
 # %%

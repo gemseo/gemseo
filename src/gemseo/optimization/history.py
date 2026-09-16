@@ -44,7 +44,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from gemseo.optimization.core.constraints import Constraints
-    from gemseo.space.design import DesignSpace
     from gemseo.util.typing import RealOrComplexArray
 
 
@@ -61,9 +60,6 @@ class OptimizationHistory:
 
     database: Database
     """The database attached to the optimization problem.."""
-
-    __design_space: DesignSpace
-    """The design space."""
 
     objective_name: str
     """The name of the objective."""
@@ -86,19 +82,15 @@ class OptimizationHistory:
         constraint_jacobian: dict[str, RealArray]
         """The Jacobian matrices of the constraints."""
 
-    def __init__(
-        self, constraints: Constraints, database: Database, design_space: DesignSpace
-    ) -> None:
+    def __init__(self, constraints: Constraints, database: Database) -> None:
         """
         Args:
             constraints: The constraints of the optimization problem.
             database: The database of the optimization problem.
-            design_space: The design space.
         """  # noqa: D205, D212
         self.objective_name = ""
         self.__constraints = constraints
         self.database = database
-        self.__design_space = design_space
 
     @property
     def feasible_points(

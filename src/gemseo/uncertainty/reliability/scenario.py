@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.scenario.evaluation import EvaluationScenario
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.reliability.event_variable import EventVariable
 from gemseo.uncertainty.reliability.factory import ReliabilityAlgorithmFactory
 from gemseo.uncertainty.reliability.problem import ReliabilityProblem
@@ -31,12 +32,11 @@ if TYPE_CHECKING:
     from gemseo.core.discipline.base_discipline import BaseDiscipline
     from gemseo.core.function.function_from_discipline import FunctionFromDiscipline
     from gemseo.formulation.core.base_settings import BaseFormulationSettings
-    from gemseo.space.parameter import ParameterSpace
     from gemseo.uncertainty.reliability.event import Event
     from gemseo.uncertainty.reliability.result import ReliabilityResult
 
 
-class ReliabilityScenario(EvaluationScenario):
+class ReliabilityScenario(EvaluationScenario[RandomSpace]):
     """A reliability analysis scenario."""
 
     _evaluation_problem_class: type[ReliabilityProblem] = ReliabilityProblem
@@ -51,13 +51,13 @@ class ReliabilityScenario(EvaluationScenario):
     def __init__(  # noqa: D107
         self,
         disciplines: Sequence[BaseDiscipline],
-        design_space: ParameterSpace,
+        random_space: RandomSpace,
         name: str = "",
         formulation_settings: BaseFormulationSettings | None = None,
     ) -> None:
         super().__init__(
             disciplines,
-            design_space,
+            random_space,
             name=name,
             formulation_settings=formulation_settings,
         )

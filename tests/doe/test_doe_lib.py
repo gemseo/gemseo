@@ -38,6 +38,7 @@ from gemseo import execute_algo
 from gemseo.core.discipline import Discipline
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.problem.database import Database
+from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.doe.custom_doe.custom_doe import CustomDOE
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
 from gemseo.doe.factory import doe_library_factory
@@ -49,7 +50,7 @@ from gemseo.doe.scipy.settings.mc import MC_Settings
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.problem.optimization.power_2 import Power2
 from gemseo.space.design import DesignSpace
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.scipy.normal_settings import (
     SPNormalDistribution_Settings,
 )
@@ -214,14 +215,17 @@ def test_sample_unit_hypercube(custom_doe):
 def doe_database(request) -> Database:
     """The DOE-based database with either deterministic or random variables."""
     if request.param:
-        space = ParameterSpace()
-        space.add_random_variable("var", SPNormalDistribution_Settings())
+        # A random space is only sampled, never optimized.
+        space = RandomSpace()
+        space.add_variable("var", SPNormalDistribution_Settings())
+        problem = EvaluationProblem(space)
+        problem.add_observable(ArrayFunction(lambda x: x, name="func"))
     else:
         space = DesignSpace()
         space.add_variable("var", lower_bound=-3.0, upper_bound=4.0, value=1.0)
+        problem = OptimizationProblem(space)
+        problem.objective = ArrayFunction(lambda x: x, name="func")
 
-    problem = OptimizationProblem(space)
-    problem.objective = ArrayFunction(lambda x: x, name="func")
     execute_algo(
         problem,
         algo_name="CustomDOE",
@@ -290,7 +294,7 @@ def test_seed(algo_name) -> None:
     # we need to reset the current iteration because max_iter is reached
     # (for BaseDOELibrary, max_iter == n_samples).
     problem.reset(
-        database=False, design_space=False, function_calls=False, preprocessing=False
+        database=False, input_space=False, function_calls=False, preprocessing=False
     )
     library.execute(problem, settings=settings)
     assert library.seed == 2
@@ -302,7 +306,7 @@ def test_seed(algo_name) -> None:
     # By doing so,
     # the input samples will be the same and the functions won't be evaluated.
     problem.reset(
-        database=False, design_space=False, function_calls=False, preprocessing=False
+        database=False, input_space=False, function_calls=False, preprocessing=False
     )
     settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2, seed=2)
     library.execute(problem, settings=settings)
@@ -313,7 +317,7 @@ def test_seed(algo_name) -> None:
 
     # Lastly, we check that the BaseDOELibrary uses its own seed again.
     problem.reset(
-        database=False, design_space=False, function_calls=False, preprocessing=False
+        database=False, input_space=False, function_calls=False, preprocessing=False
     )
     settings = library.ALGORITHM_INFOS[algo_name].settings_class(n_samples=2)
     library.execute(problem, settings=settings)
@@ -385,18 +389,15 @@ def test_uunormalized_components(mc, l_b, u_b, snapshot) -> None:
         mc.execute(problem, settings=MC_Settings(n_samples=3))
 
 
-def test_uunormalized_components_with_parameter_space(mc) -> None:
-    """Check that an error is not raised when the design space is a parameter space."""
-    parameter_space = ParameterSpace()
-    parameter_space.add_random_variable("x", SPNormalDistribution_Settings())  # noqa: F821
+def test_unbounded_random_space(mc) -> None:
+    """Check that an unbounded random space can be sampled."""
+    random_space = RandomSpace()
+    random_space.add_variable("x", SPNormalDistribution_Settings())
 
-    # The parameter space is unbounded.
-    assert not parameter_space.name_to_normalization_mask["x"]
+    problem = EvaluationProblem(random_space)
+    problem.add_observable(ArrayFunction(sum, name="f"))
 
-    problem = OptimizationProblem(parameter_space)
-    problem.objective = ArrayFunction(sum, name="f")
-
-    mc.sample_space(parameter_space, MC_Settings(n_samples=3))
+    mc.sample_space(random_space, MC_Settings(n_samples=3))
     mc.execute(problem, settings=MC_Settings(n_samples=3))
 
 

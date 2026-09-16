@@ -184,10 +184,10 @@ class VariableInfluence(BasePost[VariableInfluence_Settings]):
             pretty_str([x_names[i] for i in influential_variables], use_and=False),
         )
         if save:
-            input_space = self._dataset.misc["input_space"]
+            input_variables = self._dataset.misc["input_space"].variables
             names = [
-                [f"{name}${i}" for i in range(input_space.get_size(name))]
-                for name in input_space
+                [f"{name}${i}" for i in range(variable.size)]
+                for name, variable in input_variables.items()
             ]
             names = array(list(itertools.chain(*names)))
             file_name = f"{func}_influ_vars.csv"

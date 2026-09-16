@@ -58,12 +58,12 @@ If `None`, use the global value of `enable_progress_bar` (see the
         description="""Whether to log the definition and result of the problem.""",
     )
 
-    max_design_space_dimension_to_log: PositiveInt = Field(
+    max_input_space_dimension_to_log: PositiveInt = Field(
         default=40,
-        description="The maximum dimension of a design space "
+        description="The maximum dimension of an input space "
         "to be logged. "
-        "If this number is higher than the dimension of the design space "
-        "then the design space will not be logged.",
+        "If this number is higher than the dimension of the input space "
+        "then the input space will not be logged.",
     )
 
     max_time: NonNegativeFloat = Field(

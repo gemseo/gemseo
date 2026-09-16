@@ -80,7 +80,7 @@ class FCERegressor(BaseFCERegressor):
             data: The training dataset
                 whose input space `data.misc["input_space"]`
                 is expected to be a
-                [ParameterSpace][gemseo.space.parameter.ParameterSpace]
+                [RandomSpace][gemseo.space.random.RandomSpace]
                 defining the random input variables as
                 [OTDistribution][gemseo.uncertainty.distribution.openturns.distribution.OTDistribution].
         """  # noqa: D205 D212
@@ -101,7 +101,7 @@ class FCERegressor(BaseFCERegressor):
         Args:
             features: The features matrix.
         """  # noqa: D205, D212
-        convert = self.learning_set.misc["input_space"].convert_array_to_dict
+        convert = self._input_space.convert_array_to_dict
         degree = self._settings.degree
         input_dimension = self._reduced_input_dimension
         get_index = self.__basis.get_index
@@ -202,7 +202,7 @@ class FCERegressor(BaseFCERegressor):
         """Set the private attribute `__basis`."""
         self.__basis = BasisFactory().create(
             self._settings.basis,
-            self.learning_set.misc["input_space"].distribution,
+            self._input_space.variables.distribution,
             self._settings.degree,
         )
         self._basis_functions = self.__basis.basis_functions

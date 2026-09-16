@@ -21,7 +21,7 @@ from openturns import AnalyticalResult
 from openturns import MultiFORMResult
 
 from gemseo.core.function.array_function import ArrayFunction
-from gemseo.space.parameter import ParameterSpace
+from gemseo.space.random import RandomSpace
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
 )
@@ -46,10 +46,10 @@ def function() -> ArrayFunction:
 
 
 @pytest.fixture(scope="module")
-def uncertain_space() -> ParameterSpace:
+def random_space() -> RandomSpace:
     """The uncertainty space."""
-    parameter_space = ParameterSpace()
-    parameter_space.add_random_vector(
+    parameter_space = RandomSpace()
+    parameter_space.add_variable(
         "u", OTNormalDistribution_Settings(), OTNormalDistribution_Settings()
     )
     return parameter_space
@@ -66,7 +66,7 @@ def uncertain_space() -> ParameterSpace:
         (False, (0.0028, 0.0018, 0.0010)),
     ],
 )
-def test_multi_form(function, uncertain_space, settings, greater, expected):
+def test_multi_form(function, random_space, settings, greater, expected):
     """Test OT_MultiFORM."""
     multi_form = OT_MultiFORM()
     assert multi_form._use_multiform_result
@@ -74,7 +74,7 @@ def test_multi_form(function, uncertain_space, settings, greater, expected):
     if settings is not None:
         kwargs["settings"] = OT_MultiFORM_Settings(optimizer=settings())
 
-    problem = ReliabilityProblem(uncertain_space)
+    problem = ReliabilityProblem(random_space)
     f = problem.get_event_variables(function)
     problem.add_event(
         f < 0.0 if greater is False else f > 0.0,
@@ -121,11 +121,11 @@ def test_multi_form(function, uncertain_space, settings, greater, expected):
     )
     assert compare_dict_of_arrays(
         design_point.physical_as_dict,
-        uncertain_space.convert_array_to_dict(design_point.physical),
+        random_space.convert_array_to_dict(design_point.physical),
     )
     assert compare_dict_of_arrays(
         design_point.standard_as_dict,
-        uncertain_space.convert_array_to_dict(design_point.standard),
+        random_space.convert_array_to_dict(design_point.standard),
     )
 
     importance_factors = form_result_0.importance_factors
@@ -143,13 +143,13 @@ def test_multi_form(function, uncertain_space, settings, greater, expected):
     )
     assert compare_dict_of_arrays(
         importance_factors.classical_as_dict,
-        uncertain_space.convert_array_to_dict(importance_factors.classical),
+        random_space.convert_array_to_dict(importance_factors.classical),
     )
     assert compare_dict_of_arrays(
         importance_factors.elliptical_as_dict,
-        uncertain_space.convert_array_to_dict(importance_factors.elliptical),
+        random_space.convert_array_to_dict(importance_factors.elliptical),
     )
     assert compare_dict_of_arrays(
         importance_factors.physical_as_dict,
-        uncertain_space.convert_array_to_dict(importance_factors.physical),
+        random_space.convert_array_to_dict(importance_factors.physical),
     )

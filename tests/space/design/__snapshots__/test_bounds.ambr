@@ -38,10 +38,22 @@
 # name: test_read_only_bounds_cannot_be_unfrozen[get_lower_bound]
   'cannot set WRITEABLE flag to True of this array'
 # ---
+# name: test_read_only_bounds_cannot_be_unfrozen[get_lower_bounds[as_dict]]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_read_only_bounds_cannot_be_unfrozen[get_lower_bounds[names]]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
 # name: test_read_only_bounds_cannot_be_unfrozen[get_lower_bounds]
   'cannot set WRITEABLE flag to True of this array'
 # ---
 # name: test_read_only_bounds_cannot_be_unfrozen[get_upper_bound]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_read_only_bounds_cannot_be_unfrozen[get_upper_bounds[as_dict]]
+  'cannot set WRITEABLE flag to True of this array'
+# ---
+# name: test_read_only_bounds_cannot_be_unfrozen[get_upper_bounds[names]]
   'cannot set WRITEABLE flag to True of this array'
 # ---
 # name: test_read_only_bounds_cannot_be_unfrozen[get_upper_bounds]

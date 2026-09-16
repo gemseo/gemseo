@@ -31,7 +31,7 @@ from gemseo.doe.oat_doe.settings.oat_doe_settings import OATDOE_Settings
 from gemseo.util.typing import RealArray
 
 if TYPE_CHECKING:
-    from gemseo.space.design import DesignSpace
+    from gemseo.space.base import BaseVariableSpace
 
 OptionType = str | int | float | bool | list[str] | Path | TextIO | RealArray | None
 
@@ -58,7 +58,7 @@ class MorrisDOE(BaseDOELibrary[MorrisDOE_Settings]):
     def __init__(self, algo_name: str = "MorrisDOE") -> None:  # noqa:D107
         super().__init__(algo_name)
 
-    def _generate_unit_samples(self, design_space: DesignSpace) -> RealArray:
+    def _generate_unit_samples(self, input_space: BaseVariableSpace) -> RealArray:
         """
         Raises:
             ValueError: When the number of samples is less than
@@ -71,7 +71,7 @@ class MorrisDOE(BaseDOELibrary[MorrisDOE_Settings]):
         doe_algo_name = doe_algo_settings.target_class_name
         doe_algo = factory.create(doe_algo_name)
         oat_algo = factory.create("OATDOE")
-        dimension = design_space.dimension
+        dimension = input_space.dimension
         if n_samples > 0:
             n_replicates = n_samples // (dimension + 1)
             if n_replicates == 0:
