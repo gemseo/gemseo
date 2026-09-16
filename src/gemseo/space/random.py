@@ -202,9 +202,7 @@ class RandomSpace(BaseVariableSpace[RandomVariables, RandomVariablesView]):
         in order to add several copulas associated to different random variables.
         All the variables which are not linked through any copula will be independent.
 
-        The arguments are ordered as
-        [copulas][gemseo.space._random.variables_view.RandomVariablesView.copulas]
-        yields them,
+        The arguments are ordered as `space.variables.copulas` yields them,
         so copying the dependency structure of a random space reads as
 
         ```python
