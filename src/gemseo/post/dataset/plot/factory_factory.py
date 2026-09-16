@@ -30,10 +30,10 @@ class PlotFactoryFactory(BaseFactory[PlotFactory[T]]):
     A factory of plots is used to create plots from a visualization library,
     a.k.a. plot engine,
     e.g.
-    [MatplotlibPlotFactory][gemseo.post.dataset.plot._matplotlib.factory.MatplotlibPlotFactory]
+    `MatplotlibPlotFactory`
     for matplotlib-based plots
     and
-    [PlotlyPlotFactory][gemseo.post.dataset.plot._plotly.factory.PlotlyPlotFactory]
+    `PlotlyPlotFactory`
     for plotly-based plots.
 
     [PlotFactoryFactory][gemseo.post.dataset.plot.factory_factory.PlotFactoryFactory]

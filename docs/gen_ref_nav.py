@@ -51,7 +51,9 @@ for path in sorted(Path("src").rglob("*.py")):
         parts = parts[:-1]
         doc_path = doc_path.with_name("index.md")
         full_doc_path = full_doc_path.with_name("index.md")
-    elif parts[-1].startswith("_"):
+
+    # Skip the private modules and everything inside the private packages.
+    if any(part.startswith("_") for part in parts):
         continue
 
     nav[parts] = doc_path.as_posix()
