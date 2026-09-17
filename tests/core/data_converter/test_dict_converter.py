@@ -31,7 +31,7 @@ from numpy import sqrt
 from numpy.testing import assert_allclose
 
 from gemseo import create_mda
-from gemseo.core.data_converter.factory import DataConverterFactory
+from gemseo.core.data_converter.factory import data_converter_factory
 from gemseo.core.discipline.discipline import Discipline
 from gemseo.core.grammar.factory import grammar_factory
 from gemseo.mda.core.base import BaseMDA
@@ -47,9 +47,12 @@ gemseo_path = str(Path(__file__).parent)
 @pytest.fixture
 def change_grammar(monkeypatch):
     # Get the new grammar visible.
+    # Update the module-level factories, not DataConverterFactory(): once a test using
+    # the reset_factory fixture has cleared the multiton cache, that call would return
+    # a new instance and leave the one used by the grammars untouched.
     monkeypatch.setenv("GEMSEO_PATH", gemseo_path)
     grammar_factory.update()
-    DataConverterFactory().update()
+    data_converter_factory.update()
     old_disc_grammar_type = Discipline.default_grammar_type
     old_mda_grammar_type = BaseMDA.default_grammar_type
     Discipline.default_grammar_type = "DictGrammar"
@@ -59,7 +62,7 @@ def change_grammar(monkeypatch):
     BaseMDA.default_grammar_type = old_mda_grammar_type
     monkeypatch.delenv("GEMSEO_PATH")
     grammar_factory.update()
-    DataConverterFactory().update()
+    data_converter_factory.update()
 
 
 class DictSellarBase(Discipline):
