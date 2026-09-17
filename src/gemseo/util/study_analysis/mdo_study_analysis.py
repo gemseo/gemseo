@@ -171,7 +171,11 @@ class MDOStudyAnalysis(CouplingStudyAnalysis):
         coupling_variables = set(CouplingStructure(real_disciplines).all_couplings)
         design_variables = set(scenario_description[XLSStudyParser.design_variables])
         for name in sorted(coupling_variables | design_variables):
-            design_space.add_variable(name)
+            # The bounds are arbitrary,
+            # as this scenario is only used to draw diagrams and is never executed,
+            # but they must be finite,
+            # as a formulation such as IDF requires a finite bound range.
+            design_space.add_variable(name, lower_bound=0.0, upper_bound=1.0)
 
         option_names = scenario_description[XLSStudyParser.options]
         options = {}
