@@ -318,8 +318,18 @@ class Value(RegistryDerivedData):
             current_name: The original name.
             new_name: The new name.
         """
+        if new_name == current_name:
+            return
+
         self.__reconcile_before_write()
-        self.__name_to_value[new_name] = self.__name_to_value.pop(current_name, None)
+        # Rename in place so that the values keep the order of the variables;
+        # popping and re-assigning would move the entry to the end.
+        items = [
+            (new_name if name == current_name else name, value)
+            for name, value in self.__name_to_value.items()
+        ]
+        self.__name_to_value.clear()
+        self.__name_to_value.update(items)
         self.__update_metadata()
 
     def to_complex(self) -> None:

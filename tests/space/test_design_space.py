@@ -1836,6 +1836,9 @@ def test_rename_variable_consistency() -> None:
         array([1.0])
     )
     assert space.get_current_value(normalize=True) == pytest.approx(array([0.1, 0.02]))
+    # The renamed variable keeps its position in the current value,
+    # so that reading it by position does not mix up the variables.
+    assert list(space.get_current_value(as_dict=True)) == space.variable_names
 
 
 def test_normalized_current_value_follows_bound_changes() -> None:
