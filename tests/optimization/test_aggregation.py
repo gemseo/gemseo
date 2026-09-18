@@ -261,3 +261,33 @@ def test_real_complex(complex_real_mdo_func_aggregation, indices) -> None:
     assert pytest.approx(
         complex_mdo_func_agg.evaluate(input_data)
     ) == real_mdo_func_agg.evaluate(input_data)
+
+
+@pytest.mark.parametrize("output_suffix", ["", "_1"])
+@pytest.mark.parametrize(
+    ("aggregation_meth", "output_name"),
+    [
+        (aggregate_max, "max_cstr"),
+        (aggregate_upper_bound_ks, "upper_bound_KS"),
+        (aggregate_lower_bound_ks, "lower_bound_KS"),
+        (aggregate_iks, "IKS"),
+        (aggregate_positive_sum_square, "pos_sum_sq_cstr"),
+    ],
+)
+def test_output_names_ineq(
+    sellar_problem, aggregation_meth, output_name, output_suffix
+) -> None:
+    """Check the output names of an aggregated inequality constraint."""
+    function = aggregation_meth(
+        sellar_problem.constraints[0], output_suffix=output_suffix
+    )
+    assert function.output_names == [f"{output_name}{output_suffix}"]
+
+
+@pytest.mark.parametrize("output_suffix", ["", "_1"])
+def test_output_names_eq(output_suffix) -> None:
+    """Check the output names of an aggregated equality constraint."""
+    function = aggregate_sum_square(
+        create_pb_alleq().constraints[0], output_suffix=output_suffix
+    )
+    assert function.output_names == [f"sum_sq_cstr{output_suffix}"]
