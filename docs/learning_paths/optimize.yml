@@ -84,8 +84,10 @@ resources:
     desc: See which constraint was violated, active or satisfied, and when.
     path: generated/examples/howtos/post_process/algorithms/plot_howto_constraints_history/
   - type: reference
-    desc: Every optimizer, filterable by constraint, variable type and gradients.
-    path: algorithms/opt_algos/
-  - type: reference
+    title: Catalog of design of experiments (DOE)
     desc: Every sampling algorithm shipped with GEMSEO.
-    path: algorithms/doe_algos/
+    path: https://gemseo.org/more_on/catalogs/optimization/
+  - type: reference
+    title: Catalog of optimizers
+    desc: Every optimizer, filterable by constraint, variable type and gradients.
+    path: https://gemseo.org/more_on/catalogs/doe/
