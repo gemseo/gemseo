@@ -110,7 +110,11 @@ class BaseSettings(BasePydanticModel):
         for name, type_ in cls._inherited_field_types.items():
             fields[name].annotation = type_
         for name, default in cls._inherited_field_defaults.items():
-            fields[name].default = default
+            field = fields[name]
+            field.default = default
+            # Pydantic gives precedence to the default factory over the default,
+            # so an inherited factory would shadow the default set here.
+            field.default_factory = None
         cls.model_rebuild(force=True)
 
     @property

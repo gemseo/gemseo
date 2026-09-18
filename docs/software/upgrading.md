@@ -292,6 +292,22 @@ and uncertain variables as two separate spaces: the space of the uncertain
 variables is now a `RandomSpace` instead of a `ParameterSpace`, and the space of
 the optimized variables is still a `DesignSpace`.
 
+### Fast global configuration
+
+The `fast` option of the global configuration has been removed,
+as was the `GEMSEO_FAST` environment variable.
+Use the methods of the global configuration instead:
+
+- `configuration.enable_fast_mode()` disables the options
+  that cost time at every evaluation,
+  as `configuration.fast = True` did;
+- `configuration.disable_fast_mode()` resets these options to their default values,
+  as `configuration.fast = False` did.
+
+Passing `fast` to the global configuration,
+from the constructor, from a dotenv file or from the `GEMSEO_FAST` environment variable,
+raises an error naming these methods.
+
 ### Discipline local data split
 
 The single merged `Discipline.local_data` / `IO.data` attribute has been split

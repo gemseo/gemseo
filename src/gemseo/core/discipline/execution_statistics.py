@@ -114,7 +114,10 @@ class ExecutionStatistics(Serializable, metaclass=_Meta):
     """
 
     is_enabled: ClassVar[bool] = _enable_discipline_statistics
-    """Whether to record all the statistics."""
+    """Whether to record all the statistics.
+
+    Driven by the `enable_discipline_statistics` option of the global configuration.
+    """
 
     is_time_stamps_enabled: ClassVar[bool]
     """Whether to record the time stamps."""

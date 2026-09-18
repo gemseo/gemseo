@@ -16,6 +16,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from pydantic import Field
 from pydantic import NonNegativeInt
 
@@ -27,6 +29,15 @@ from gemseo.util.constant import n_cpus
 class BaseMDAParallelSolverSettings(BaseMDASolverSettings):
     """The settings for the MDA algorithms that can be run in parallel."""
 
+    _default_n_processes: ClassVar[int] = n_cpus if _enable_parallel_execution else 1
+    """The default number of threads/processes.
+
+    This default is shared by all the settings classes deriving from this one,
+    except those that override the default of `n_processes`,
+    whether by redeclaring the field
+    or by listing it in `_inherited_field_defaults`.
+    """
+
     execute_before_linearizing: bool = Field(
         default=True,
         description="""Whether to start by executing the disciplines before linearizing.
@@ -36,15 +47,15 @@ class BaseMDAParallelSolverSettings(BaseMDASolverSettings):
     )
 
     n_processes: NonNegativeInt = Field(
-        default=n_cpus if _enable_parallel_execution else 1,
+        default_factory=lambda: BaseMDAParallelSolverSettings._default_n_processes,
         description="""The number of threads/processes.
 
 Threads if `use_threading`, processes otherwise.
 
 The default value can be changed
 using
-[set_default_n_processes()][gemseo.mda.core.base_parallel_solver_settings.BaseMDAParallelSolverSettings.set_default_n_processes]
-or [configure()][gemseo.configure].
+[set_default_n_processes()][gemseo.mda.core.base_parallel_solver_settings.BaseMDAParallelSolverSettings.set_default_n_processes],
+or by the `enable_parallel_execution` option of the global configuration.
 """,
     )
 
@@ -63,13 +74,18 @@ then multiprocessing should be preferred."""
     def set_default_n_processes(cls, default_n_processes: int) -> None:
         """Set the default number of threads/processes.
 
+        The field reads this default when it is validated,
+        so this default is shared
+        by all the settings classes deriving from
+        [BaseMDAParallelSolverSettings][gemseo.mda.core.base_parallel_solver_settings.BaseMDAParallelSolverSettings],
+        whatever the class that this classmethod is called on,
+        including the settings models embedded in other settings models.
+        A settings class overriding the default of `n_processes`,
+        whether by redeclaring the field
+        or by listing it in `_inherited_field_defaults`,
+        keeps its own default.
+
         Args:
             default_n_processes: The default number of threads/processes.
         """
-        try:
-            fields = cls.__pydantic_fields__
-        except AttributeError:  # pragma: no cover
-            # TODO: remove when pydantic 2.9 is no longer supported.
-            fields = cls.model_fields
-        fields["n_processes"].default = default_n_processes
-        cls.model_rebuild(force=True)
+        BaseMDAParallelSolverSettings._default_n_processes = default_n_processes

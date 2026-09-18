@@ -71,7 +71,10 @@ class ExecutionStatus(Serializable):
         DONE = "DONE"
 
     is_enabled: ClassVar[bool] = _enable_discipline_status
-    """Whether to handle statuses when calling [handle()][gemseo.core.discipline.execution_status.ExecutionStatus.handle]."""  # noqa: E501
+    """Whether to handle statuses when calling [handle()][gemseo.core.discipline.execution_status.ExecutionStatus.handle].
+
+    Driven by the `enable_discipline_status` option of the global configuration.
+    """  # noqa: E501
 
     _attr_not_to_serialize: ClassVar[set[str]] = {"__observers"}
 

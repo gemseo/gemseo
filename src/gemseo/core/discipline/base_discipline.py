@@ -138,10 +138,16 @@ class BaseDiscipline(BaseMonitoredProcess):
     """Whether to find the grammar files automatically."""
 
     validate_input_data: ClassVar[bool] = _validate_input_data
-    """Whether to validate the input data."""
+    """Whether to validate the input data.
+
+    Driven by the `validate_input_data` option of the global configuration.
+    """
 
     validate_output_data: ClassVar[bool] = _validate_output_data
-    """Whether to validate the output data."""
+    """Whether to validate the output data.
+
+    Driven by the `validate_output_data` option of the global configuration.
+    """
 
     virtual_execution: ClassVar[bool] = False
     """Whether the execution method return the default output data.
@@ -156,7 +162,10 @@ class BaseDiscipline(BaseMonitoredProcess):
     default_cache_type: ClassVar[CacheType] = (
         CacheType.SIMPLE if _enable_discipline_cache else CacheType.NONE
     )
-    """The default type of cache."""
+    """The default type of cache.
+
+    Driven by the `enable_discipline_cache` option of the global configuration.
+    """
 
     cache: BaseCache | None
     """The execution and linearization data saved according to the cache type."""

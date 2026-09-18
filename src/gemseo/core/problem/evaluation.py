@@ -95,7 +95,10 @@ class EvaluationProblem(BaseProblem, Generic[_SpaceT]):
     """The observables."""
 
     check_bounds: ClassVar[bool] = _check_desvars_bounds
-    """Whether to check if a point is in the input space before calling functions."""
+    """Whether to check if a point is in the input space before calling functions.
+
+    Driven by the `check_desvars_bounds` option of the global configuration.
+    """
 
     _is_optimization: ClassVar[bool] = False
     """Whether the problem is an optimization problem."""

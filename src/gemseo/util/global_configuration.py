@@ -17,20 +17,22 @@
 
 from __future__ import annotations
 
+import os
+from types import MappingProxyType
 from typing import TYPE_CHECKING
+from typing import Final
 
 from pydantic import Field
-from pydantic import field_validator
 from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
-from gemseo.core.discipline.discipline import Discipline
+from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.function.preprocessed_function import PreprocessedFunction
+from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
-from gemseo.optimization.problem import OptimizationProblem
 from gemseo.util._directory_manager.settings import Settings as DirectoryManagerSettings
 from gemseo.util.constant import _check_desvars_bounds
 from gemseo.util.constant import _enable_discipline_cache
@@ -45,7 +47,131 @@ from gemseo.util.constant import n_cpus
 from gemseo.util.logging import LoggingConfiguration
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+    from collections.abc import Mapping
+    from typing import Any
+
+    from pydantic import ValidationInfo
     from typing_extensions import Self
+
+
+def _apply_check_desvars_bounds(value: bool) -> None:
+    """Apply `check_desvars_bounds`.
+
+    Args:
+        value: The value of the field.
+    """
+    EvaluationProblem.check_bounds = value
+
+
+def _apply_enable_discipline_cache(value: bool) -> None:
+    """Apply `enable_discipline_cache`.
+
+    Args:
+        value: The value of the field.
+
+    Note:
+        [BaseMDA][gemseo.mda.core.base.BaseMDA] overrides `default_cache_type`
+        on purpose: MDAs keep their cache.
+    """
+    BaseDiscipline.default_cache_type = (
+        BaseDiscipline.CacheType.SIMPLE if value else BaseDiscipline.CacheType.NONE
+    )
+
+
+def _apply_enable_discipline_statistics(value: bool) -> None:
+    """Apply `enable_discipline_statistics`.
+
+    Args:
+        value: The value of the field.
+    """
+    ExecutionStatistics.is_enabled = value
+
+
+def _apply_enable_discipline_status(value: bool) -> None:
+    """Apply `enable_discipline_status`.
+
+    Args:
+        value: The value of the field.
+    """
+    ExecutionStatus.is_enabled = value
+
+
+def _apply_enable_function_statistics(value: bool) -> None:
+    """Apply `enable_function_statistics`.
+
+    Args:
+        value: The value of the field.
+    """
+    PreprocessedFunction.enable_statistics = value
+
+
+def _apply_enable_parallel_execution(value: bool) -> None:
+    """Apply `enable_parallel_execution`.
+
+    Args:
+        value: The value of the field.
+    """
+    BaseMDAParallelSolverSettings.set_default_n_processes(n_cpus if value else 1)
+
+
+def _apply_enable_progress_bar(value: bool) -> None:
+    """Apply `enable_progress_bar`.
+
+    Args:
+        value: The value of the field.
+    """
+    BaseDriverLibrary.enable_progress_bar = value
+
+
+def _apply_validate_input_data(value: bool) -> None:
+    """Apply `validate_input_data`.
+
+    Args:
+        value: The value of the field.
+    """
+    BaseDiscipline.validate_input_data = value
+
+
+def _apply_validate_output_data(value: bool) -> None:
+    """Apply `validate_output_data`.
+
+    Args:
+        value: The value of the field.
+    """
+    BaseDiscipline.validate_output_data = value
+
+
+_apply: Final[Mapping[str, Callable[[bool], None]]] = MappingProxyType({
+    "check_desvars_bounds": _apply_check_desvars_bounds,
+    "enable_discipline_cache": _apply_enable_discipline_cache,
+    "enable_discipline_statistics": _apply_enable_discipline_statistics,
+    "enable_discipline_status": _apply_enable_discipline_status,
+    "enable_function_statistics": _apply_enable_function_statistics,
+    "enable_parallel_execution": _apply_enable_parallel_execution,
+    "enable_progress_bar": _apply_enable_progress_bar,
+    "validate_input_data": _apply_validate_input_data,
+    "validate_output_data": _apply_validate_output_data,
+})
+"""The function applying a field to the class that it configures, per field name."""
+
+_non_fast_field_names: Final[frozenset[str]] = frozenset({"enable_progress_bar"})
+"""The names of the applied fields that the fast mode does not disable.
+
+The progress bar is user feedback and not a per-evaluation overhead.
+"""
+
+_fast_field_names: Final[frozenset[str]] = frozenset(
+    _apply.keys() - _non_fast_field_names
+)
+"""The names of the fields disabled by the fast mode."""
+
+_fast_removed_message: Final[str] = (
+    "The fast option of the global configuration has been removed; "
+    "use its methods enable_fast_mode and disable_fast_mode instead, "
+    "and unset the GEMSEO_FAST environment variable if it is set."
+)
+"""The error message raised when the removed `fast` option is passed."""
 
 
 class GlobalConfiguration(
@@ -63,7 +189,7 @@ class GlobalConfiguration(
         default=_check_desvars_bounds,
         description="""Whether to check the membership of design variables in the bounds
 when evaluating the functions
-in [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem].""",
+in [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem].""",
     )
 
     enable_discipline_cache: bool = Field(
@@ -102,22 +228,6 @@ in charge to log the execution of the process:
 iteration, execution time and objective value.""",
     )
 
-    fast: bool = Field(
-        default=False,
-        description="""Use a global configuration for inexpensive disciplines.
-
-    This global configuration disables the following options:
-
-    - `check_desvars_bounds`,
-    - `enable_discipline_cache`,
-    - `enable_discipline_statistics`,
-    - `enable_discipline_status`,
-    - `enable_parallel_execution`,
-    - `validate_input_data`,
-    - `validate_output_data`.
-    """,
-    )
-
     validate_input_data: bool = Field(
         default=_validate_input_data,
         description="""Whether to validate the input data of a discipline
@@ -130,63 +240,6 @@ before execution.""",
 after execution.""",
     )
 
-    @field_validator("check_desvars_bounds")
-    @classmethod
-    def __validate_check_desvars_bounds(cls, v: bool) -> bool:
-        OptimizationProblem.check_bounds = v
-        return v
-
-    @field_validator("enable_discipline_cache")
-    @classmethod
-    def __validate_enable_discipline_cache(cls, v: bool) -> bool:
-        Discipline.default_cache_type = (
-            Discipline.CacheType.SIMPLE if v else Discipline.CacheType.NONE
-        )
-        return v
-
-    @field_validator("enable_discipline_statistics")
-    @classmethod
-    def __validate_enable_discipline_statistics(cls, v: bool) -> bool:
-        ExecutionStatistics.is_enabled = v
-        return v
-
-    @field_validator("enable_discipline_status")
-    @classmethod
-    def __validate_enable_discipline_status(cls, v: bool) -> bool:
-        ExecutionStatus.is_enabled = v
-        return v
-
-    @field_validator("enable_function_statistics")
-    @classmethod
-    def __validate_enable_function_statistics(cls, v: bool) -> bool:
-        PreprocessedFunction.enable_statistics = v
-        return v
-
-    @field_validator("enable_parallel_execution")
-    @classmethod
-    def __validate_enable_parallel_execution(cls, v: bool) -> bool:
-        default_n_processes = n_cpus if v else 1
-        BaseMDAParallelSolverSettings.set_default_n_processes(default_n_processes)
-        return v
-
-    @field_validator("enable_progress_bar")
-    @classmethod
-    def __validate_enable_progress_bar(cls, v: bool) -> bool:
-        BaseDriverLibrary.enable_progress_bar = v
-        return v
-
-    @field_validator("validate_input_data")
-    @classmethod
-    def __validate_validate_input_data(cls, v: bool) -> bool:
-        Discipline.validate_input_data = v
-        return v
-
-    @field_validator("validate_output_data")
-    @classmethod
-    def __validate_validate_output_data(cls, v: bool) -> bool:
-        Discipline.validate_output_data = v
-        return v
-
     logging: LoggingConfiguration = Field(
         default=LoggingConfiguration(),
         description=LoggingConfiguration.__doc__,
@@ -197,44 +250,130 @@ after execution.""",
         description=DirectoryManagerSettings.__doc__,
     )
 
-    @model_validator(mode="after")
-    def __validate_fast(self) -> Self:
-        # setattr would validate the field and lead to a RecursionError;
-        # so we use object.__setattr__ instead.
-        if self.fast:
-            for name in (
-                "check_desvars_bounds",
-                "enable_discipline_cache",
-                "enable_discipline_statistics",
-                "enable_discipline_status",
-                "enable_function_statistics",
-                "enable_parallel_execution",
-                "validate_input_data",
-                "validate_output_data",
-            ):
-                object.__setattr__(self, name, False)
-        elif "fast" in self.model_fields_set:
-            # The user sets fast to False.
-            # If fast is at False by default,
-            # do not do this,
-            # as you would overwrite the other field values the user have entered.
-            for name in (
-                "check_desvars_bounds",
-                "enable_discipline_cache",
-                "enable_parallel_execution",
-                "validate_input_data",
-                "validate_output_data",
-            ):
-                object.__setattr__(self, name, True)
+    def __init__(self, **data: Any) -> None:
+        """
+        Args:
+            **data: The values of the fields.
 
-            for name in (
-                "enable_discipline_statistics",
-                "enable_discipline_status",
-                "enable_function_statistics",
-            ):
-                object.__setattr__(self, name, False)
+        Raises:
+            ValueError: When the `fast` option is passed.
+        """  # noqa: D205 D212
+        # Only the constructor spells the option without the prefix;
+        # a prefix-free name coming from a dotenv file
+        # belongs to another tool and is ignored.
+        if "fast" in {name.lower() for name in data}:
+            raise ValueError(_fast_removed_message)
+
+        super().__init__(**data)
+
+    @model_validator(mode="before")
+    @classmethod
+    def __reject_fast(cls, data: Any) -> Any:
+        """Reject the `fast` option, replaced by the fast mode methods.
+
+        Args:
+            data: The input data.
+
+        Returns:
+            The input data.
+
+        Raises:
+            ValueError: When the `fast` option is set
+                in the environment or in a dotenv file.
+        """
+        # A dotenv file passes an unknown key with its prefix,
+        # whereas the environment source only reads the names of the fields.
+        fast_name = f"{cls.model_config['env_prefix']}fast".lower()
+        names = [*data, *os.environ] if isinstance(data, dict) else list(os.environ)
+        if any(isinstance(name, str) and name.lower() == fast_name for name in names):
+            raise ValueError(_fast_removed_message)
+
+        return data
+
+    @model_validator(mode="after")
+    def __apply_fields(self, info: ValidationInfo) -> Self:
+        """Apply the fields to the classes that they configure.
+
+        All the fields are applied when the global configuration is created,
+        and only the field being assigned otherwise,
+        so that an assignment does not overwrite a class attribute
+        that has been set directly.
+
+        Args:
+            info: The validation context,
+                holding the name of the field being assigned,
+                which is `None` when the global configuration is being created.
+
+        Returns:
+            The global configuration.
+        """
+        field_name = info.field_name
+        if field_name is None:
+            field_names = _apply
+        elif field_name in _apply:
+            field_names = (field_name,)
+        else:
+            field_names = ()
+
+        for name in field_names:
+            _apply[name](getattr(self, name))
 
         return self
+
+    def enable_fast_mode(self) -> None:
+        """Configure GEMSEO for inexpensive disciplines.
+
+        Disable the options that cost time at every evaluation:
+
+        - `check_desvars_bounds`,
+        - `enable_discipline_cache`,
+        - `enable_discipline_statistics`,
+        - `enable_discipline_status`,
+        - `enable_function_statistics`,
+        - `enable_parallel_execution`,
+        - `validate_input_data`,
+        - `validate_output_data`.
+
+        `enable_progress_bar` is deliberately left alone,
+        as the progress bar is user feedback and not a per-evaluation overhead.
+
+        The cache of the MDAs is not disabled either,
+        as an MDA without cache re-executes its disciplines
+        at every residual evaluation.
+
+        These options are applied again at every call,
+        which restores the fast mode
+        after one of the class attributes that they drive
+        has been changed directly.
+        """
+        self.__set_fast_mode(True)
+
+    def disable_fast_mode(self) -> None:
+        """Reset the options disabled by the fast mode to their default values.
+
+        The options enabled by default are enabled again;
+        `enable_discipline_statistics`,
+        `enable_discipline_status`
+        and `enable_function_statistics`,
+        which are disabled by default,
+        remain disabled.
+
+        These default values are the built-in ones,
+        so an option set from an environment variable or from a dotenv file
+        is reset to the built-in default too,
+        and not to the value read at start-up.
+        """
+        self.__set_fast_mode(False)
+
+    def __set_fast_mode(self, enable: bool) -> None:
+        """Set the options driven by the fast mode.
+
+        Args:
+            enable: Whether to enable the fast mode.
+        """
+        fields = type(self).model_fields
+        for name in _fast_field_names:
+            setattr(self, name, False if enable else fields[name].default)
 
 
 _configuration = GlobalConfiguration()

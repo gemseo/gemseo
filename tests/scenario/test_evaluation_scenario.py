@@ -21,6 +21,7 @@ from numpy import sqrt
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
+from gemseo import configuration
 from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.doe.custom_doe.settings.custom_doe_settings import CustomDOE_Settings
@@ -232,6 +233,17 @@ def test_two_coupled_disciplines_over_random_space(random_space):
 
     # The fixed point of y1 = x + 0.5 * y2 and y2 = 0.5 * y1 is y1 = x / 0.75.
     assert_allclose(scenario.to_dataset().get_view(variable_names="y1"), samples / 0.75)
+
+
+@pytest.mark.usefixtures("restore_configuration_options")
+def test_check_desvars_bounds(discipline_a, design_space):
+    """Check that check_desvars_bounds drives the problem of an evaluation scenario."""
+    problem = EvaluationScenario([discipline_a], design_space).formulation.problem
+    assert isinstance(problem, EvaluationProblem)
+    assert problem.check_bounds
+
+    configuration.check_desvars_bounds = False
+    assert not problem.check_bounds
 
 
 def test_two_coupled_disciplines_default(discipline_a, discipline_b, design_space):

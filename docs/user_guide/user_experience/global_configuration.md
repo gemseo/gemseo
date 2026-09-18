@@ -30,7 +30,7 @@ or set `logging.configure_root_logger = True` to let GEMSEO configure the root l
 
 <!-- TODO: replace by automatic print of pydantic model. -->
 
-- `check_desvars_bounds`, default: `True` - Whether to check the membership of design variables in the bounds when evaluating the functions in OptimizationProblem.
+- `check_desvars_bounds`, default: `True` - Whether to check the membership of design variables in the bounds when evaluating the functions in [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem].
 - `enable_discipline_cache`, default: `True` - Whether to enable the discipline cache.
 - `enable_discipline_statistics`, default: `False` - Whether to record execution statistics of the disciplines such as the execution time, the number of executions and the number of linearizations.
 - `enable_discipline_status`, default: `False` - Whether to enable discipline statuses.
@@ -60,23 +60,48 @@ configuration.validate_output_data = False
 configuration.logging.enable = False
 ```
 
-You can also use the `fast` option to use a global configuration suitable for inexpensive disciplines:
+You can also use the fast mode, suitable for inexpensive disciplines:
 
 ```python
 from gemseo import configuration
 
-configuration.fast = True
+configuration.enable_fast_mode()
 ```
 
-This global configuration disables the following options:
+This disables the options that cost time at every evaluation:
 
 - `check_desvars_bounds`,
 - `enable_discipline_cache`,
 - `enable_discipline_statistics`,
 - `enable_discipline_status`,
+- `enable_function_statistics`,
 - `enable_parallel_execution`,
 - `validate_input_data`,
 - `validate_output_data`.
+
+`enable_progress_bar` is deliberately left alone,
+as the progress bar is user feedback and not a per-evaluation overhead.
+The cache of the MDAs is not disabled either,
+neither by the fast mode nor by `enable_discipline_cache`,
+as an MDA without cache re-executes its disciplines at every residual evaluation.
+
+An option assigned after `configuration.enable_fast_mode()` keeps the value assigned,
+and calling `configuration.enable_fast_mode()` again applies the eight options again,
+which restores the fast mode
+after one of the class attributes that they drive has been changed directly.
+
+```python
+configuration.disable_fast_mode()
+```
+
+resets these options to their default values,
+so the five that are enabled by default are enabled again
+while `enable_discipline_statistics`, `enable_discipline_status`
+and `enable_function_statistics` remain disabled.
+These default values are the built-in ones,
+so an option set from an environment variable or from a dotenv file
+is reset to the built-in default too,
+and not to the value read at start-up.
 
 ### Environment variables { #concept-environment-variables }
 

@@ -106,6 +106,14 @@ class BaseMDA(ProcessDiscipline):
     """The variable name for the MDA residual norm."""
 
     default_cache_type: ClassVar[_CacheType] = ProcessDiscipline.CacheType.SIMPLE
+    """The default type of cache.
+
+    Unlike the other disciplines,
+    an MDA keeps its cache when the global configuration disables it,
+    e.g. with `enable_discipline_cache = False` or the fast mode,
+    as an MDA without cache re-executes its disciplines
+    at every residual evaluation.
+    """
 
     _linearize_on_last_state: ClassVar[bool] = True
     """Whether to update the local data from the input data before linearizing."""
