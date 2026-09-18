@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import cmath
 import math
+from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
@@ -38,7 +39,6 @@ from numpy import clip
 from numpy import complex128
 from numpy import concatenate
 from numpy import float64
-from strenum import StrEnum
 
 from gemseo.util.string import convert_strings_to_iterable
 

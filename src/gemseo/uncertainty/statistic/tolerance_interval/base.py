@@ -23,12 +23,12 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import NamedTuple
 
 from numpy import array
 from numpy import inf
-from strenum import LowercaseStrEnum
 
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 
@@ -60,7 +60,7 @@ class _BaseToleranceInterval(metaclass=ABCGoogleDocstringInheritanceMeta):
        with 95%-coverage and 95%-confidence.
     """
 
-    class ToleranceIntervalSide(LowercaseStrEnum):
+    class ToleranceIntervalSide(StrEnum):
         """The side of the tolerance interval."""
 
         LOWER = "lower"

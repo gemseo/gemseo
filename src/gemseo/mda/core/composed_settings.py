@@ -23,7 +23,7 @@ from typing import ClassVar  # Noqa: TC003
 from pydantic import model_validator
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
     from gemseo.mda.core.base import BaseMDA
 

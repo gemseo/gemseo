@@ -16,11 +16,10 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
-
-from strenum import StrEnum
 
 from gemseo.core.serializable import Serializable
 from gemseo.util.constant import _enable_discipline_status

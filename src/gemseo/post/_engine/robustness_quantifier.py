@@ -21,13 +21,13 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
 
 import numpy as np
 from numpy.random import default_rng
-from strenum import StrEnum
 
 from gemseo.post._engine.hessian import BFGSApprox
 from gemseo.post._engine.hessian import LSTSQApprox

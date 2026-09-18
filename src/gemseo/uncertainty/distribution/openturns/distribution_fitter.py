@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -30,7 +31,6 @@ import openturns as ots
 from openturns import DistributionFactory
 from openturns import FittingTest
 from openturns import Sample
-from strenum import StrEnum
 
 from gemseo.uncertainty.distribution.core.base_fitter import BaseDistributionFitter
 from gemseo.uncertainty.distribution.openturns.distribution import OTDistribution

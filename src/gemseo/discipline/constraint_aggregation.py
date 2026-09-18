@@ -20,13 +20,13 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 
 from numpy import atleast_1d
-from strenum import StrEnum
 
 from gemseo.core.discipline import Discipline
 from gemseo.optimization.aggregation._functions import compute_iks_agg

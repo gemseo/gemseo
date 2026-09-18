@@ -24,6 +24,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from dataclasses import field
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
@@ -39,7 +40,6 @@ from numpy import nanmax
 from numpy import nanmin
 from numpy import newaxis
 from numpy import where
-from strenum import StrEnum
 
 from gemseo.doe.factory import doe_library_factory
 from gemseo.doe.morris_doe.settings.morris_doe_settings import MorrisDOE_Settings

@@ -31,6 +31,9 @@ from gemseo.problem.mdo.sobieski.discipline import SobieskiMission
 from gemseo.problem.mdo.sobieski.discipline import SobieskiPropulsion
 from gemseo.problem.mdo.sobieski.discipline import SobieskiStructure
 from gemseo.util.pickle import from_pickle
+from tests.marks import requires_numpy_2
+
+pytestmark = requires_numpy_2
 
 n_samples = 10
 

@@ -18,20 +18,20 @@ from __future__ import annotations
 
 from abc import ABC
 from abc import abstractmethod
+from enum import StrEnum
 from enum import auto
 
 from pydantic import Field
 from pydantic import NonNegativeFloat
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
-from strenum import LowercaseStrEnum
 
 from gemseo.machine_learning.regression.core.base_regressor_settings import (
     BaseRegressorSettings,
 )
 
 
-class RBF(LowercaseStrEnum):
+class RBF(StrEnum):
     r"""The radial basis functions.
 
     These functions take the scaled radius $\epsilon r$ as input,

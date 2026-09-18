@@ -37,6 +37,7 @@ from gemseo.util.attributes_tracker import _state_key
 from gemseo.util.attributes_tracker import track_model
 from gemseo.util.attributes_tracker import wrap_with_attributes_tracking
 from gemseo.util.pydantic_ndarray import NDArrayPydantic
+from gemseo.util.testing.helper import assert_exception
 
 
 class Sub(BaseModel):
@@ -248,11 +249,9 @@ def test_computed_field_dependencies_tracked(tracker) -> None:
     assert tracker.get_input_model().model_fields.keys() == {"r_int", "rw_int"}
 
 
-def test_computed_field_setattr_raises(tracker) -> None:
+def test_computed_field_setattr_raises(tracker, snapshot) -> None:
     """A computed_field cannot be written through the tracker."""
-    # The wording differs across Python versions: "has no setter" (>=3.11)
-    # versus "can't set attribute" (3.10).
-    with pytest.raises(AttributeError, match=r"has no setter|can't set attribute"):
+    with assert_exception(AttributeError, snapshot):
         tracker.derived = 1
 
 

@@ -28,7 +28,7 @@ from gemseo.doe.oat_doe.settings.oat_doe_settings import default_step
 from gemseo.doe.pydoe.settings.pydoe_lhs import PYDOE_LHS_Settings
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class MorrisDOE_Settings(BaseDOESettings):  # noqa: N801

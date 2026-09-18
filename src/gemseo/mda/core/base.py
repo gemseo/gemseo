@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from enum import StrEnum
 from enum import auto
 from typing import TYPE_CHECKING
 from typing import Any
@@ -32,7 +33,6 @@ from typing import Final
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-from strenum import LowercaseStrEnum
 
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core._process_flow.execution_sequence.loop import LoopExecSequence
@@ -158,7 +158,7 @@ class BaseMDA(ProcessDiscipline):
     _starting_indices: list[int]
     """The indices of the residual history where a new execution starts."""
 
-    class ResidualScaling(LowercaseStrEnum):
+    class ResidualScaling(StrEnum):
         """The scaling method applied to MDA residuals for convergence monitoring."""
 
         NO_SCALING = auto()

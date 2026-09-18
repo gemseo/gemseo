@@ -14,6 +14,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import pickle
+
 import pytest
 from numpy.testing import assert_almost_equal
 from openturns import AnalyticalResult
@@ -141,3 +143,9 @@ def test_form_slsqp(parametric_f_and_j, random_space):
         OT_FORM_Settings(optimizer=OTNLopt(algo_name=NLoptAlgorithmName.LD_SLSQP)),
     )
     assert results["a"].probability == pytest.approx(0.75, abs=1e-3)
+
+
+def test_nlopt_settings_are_picklable() -> None:
+    """The NLopt optimizer settings must survive a pickle round trip."""
+    settings = OTNLopt(algo_name=NLoptAlgorithmName.LD_SLSQP)
+    assert pickle.loads(pickle.dumps(settings)) == settings

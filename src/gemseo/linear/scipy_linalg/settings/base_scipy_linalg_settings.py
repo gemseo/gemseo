@@ -34,7 +34,7 @@ from scipy.sparse.linalg import LinearOperator  # noqa: TC002
 from gemseo.linear.core.base_linear_solver_settings import BaseLinearSolverSettings
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class BaseSciPyLinalgSettingsBase(BaseLinearSolverSettings):

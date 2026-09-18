@@ -16,8 +16,9 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
+
 from pydantic import Field
-from strenum import StrEnum
 
 from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 

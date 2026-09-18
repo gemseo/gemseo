@@ -33,14 +33,13 @@ This abstract class has to be overloaded by concrete ones implementing at least 
 from __future__ import annotations
 
 from collections.abc import Sequence
+from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
-
-from strenum import StrEnum
 
 from gemseo.post.dataset.base_settings import BaseDatasetPlotSettings
 from gemseo.post.dataset.plot.factory_factory import PlotFactoryFactory

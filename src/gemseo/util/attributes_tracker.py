@@ -84,8 +84,9 @@ from gemseo.util.data_conversion import flatten_nested_dict
 from gemseo.util.pydantic import copy_field
 
 if TYPE_CHECKING:
+    from typing import Self
+
     from pydantic.fields import FieldInfo
-    from typing_extensions import Self
 
 flatten_separator: Final[str] = "."
 

@@ -29,13 +29,13 @@ from collections.abc import Mapping
 from collections.abc import MutableSequence
 from collections.abc import Sequence
 from copy import deepcopy
+from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Final
 
 from numpy import array
 from numpy import ndarray
-from strenum import StrEnum
 
 from gemseo.core.discipline.data_processor import FloatDataProcessor
 from gemseo.discipline.wrapper._base_disc_from_exe import _BaseDiscFromExe

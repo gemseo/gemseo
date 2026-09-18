@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from enum import auto
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -23,7 +24,6 @@ from typing import ClassVar
 from numpy import ones
 from numpy.random import default_rng
 from scipy.sparse import rand as sp_rand
-from strenum import LowercaseStrEnum
 
 from gemseo.core.derivative.jacobian_operator import JacobianOperator
 from gemseo.core.discipline import Discipline
@@ -48,7 +48,7 @@ class LinearDiscipline(Discipline):
 
     default_matrix_density: ClassVar[float] = 0.1
 
-    class MatrixFormat(LowercaseStrEnum):
+    class MatrixFormat(StrEnum):
         """The format of the Jacobian matrix.
 
         DENSE corresponds to numpy.ndarray. CSC, CSR, LIL and DOK correspond to sparse

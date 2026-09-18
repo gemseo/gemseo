@@ -48,9 +48,9 @@ from gemseo.util.typing import StrPath
 if TYPE_CHECKING:
     from logging import Logger
     from types import TracebackType
+    from typing import Self
 
     from _typeshed import SupportsWrite
-    from typing_extensions import Self
 
 
 _StreamT = TypeVar("_StreamT", bound="SupportsWrite[str]")

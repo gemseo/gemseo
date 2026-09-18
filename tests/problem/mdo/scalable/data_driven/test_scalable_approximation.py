@@ -33,6 +33,7 @@ from gemseo.problem.mdo.scalable.data_driven.discipline import (
 from gemseo.problem.mdo.sobieski.discipline import SobieskiAerodynamics
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
+from tests.marks import requires_numpy_2
 
 
 @pytest.fixture
@@ -45,6 +46,7 @@ def sobieski_aerodynamics():
     return SobieskiAerodynamics()
 
 
+@requires_numpy_2
 def test_build_model(sobieski_aerodynamics) -> None:
     """Test the build a 1D interpolation of Sobieski's drag wrt z."""
     sizes = {}

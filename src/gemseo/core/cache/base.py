@@ -26,6 +26,7 @@ from abc import abstractmethod
 from collections import defaultdict
 from collections.abc import Mapping as ABCMapping
 from collections.abc import Sized
+from enum import StrEnum
 from itertools import chain
 from typing import TYPE_CHECKING
 from typing import Literal
@@ -36,7 +37,6 @@ from numpy import hstack
 from numpy import ndarray
 from numpy import vstack
 from pandas import MultiIndex
-from strenum import StrEnum
 
 from gemseo.core.cache.cache_entry import CacheEntry
 from gemseo.dataset.dataset import Dataset

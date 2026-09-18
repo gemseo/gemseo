@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -32,8 +33,6 @@ from typing import Generic
 from typing import Literal
 from typing import TypeVar
 from typing import overload
-
-from strenum import StrEnum
 
 from gemseo.core.function.collection.observables import Observables
 from gemseo.core.function.linear_function import LinearFunction

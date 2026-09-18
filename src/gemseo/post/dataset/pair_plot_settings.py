@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -24,14 +25,13 @@ from pydantic import Field
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
 from pydantic import model_validator
-from strenum import StrEnum
 
 from gemseo.post.dataset.base_settings import BaseDatasetPlotSettings
 from gemseo.post.dataset.trend import Trend
 from gemseo.post.dataset.trend import TrendFunctionCreator
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 ColormapName = StrEnum(

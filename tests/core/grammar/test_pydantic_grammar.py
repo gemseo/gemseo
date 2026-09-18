@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import pickle
 from enum import Enum
+from enum import StrEnum
 from enum import auto
 from platform import python_version
 from typing import TYPE_CHECKING
@@ -29,7 +30,6 @@ from pydantic import BaseModel
 from pydantic import Field
 from pydantic import field_validator
 from pydantic.fields import FieldInfo
-from strenum import StrEnum
 
 from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.grammar.error import InvalidDataError

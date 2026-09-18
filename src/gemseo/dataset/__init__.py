@@ -16,11 +16,10 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
-
-from strenum import StrEnum
 
 from gemseo.dataset.factory import dataset_factory
 from gemseo.util.package_import import install_lazy_reexport

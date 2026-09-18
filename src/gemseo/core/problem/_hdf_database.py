@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
+from enum import StrEnum
 from enum import auto
 from typing import TYPE_CHECKING
 from typing import Any
@@ -37,7 +38,6 @@ from numpy import bytes_
 from numpy import float64
 from numpy import ndarray
 from numpy import str_
-from strenum import LowercaseStrEnum
 
 from gemseo.space._design.constants import design_space_group
 from gemseo.space.design import DesignSpace
@@ -121,7 +121,7 @@ class HDFDatabase:
         └── 1
     """
 
-    class _StringDataType(LowercaseStrEnum):
+    class _StringDataType(StrEnum):
         """The scaling method applied to MDA residuals for convergence monitoring."""
 
         STR = auto()
@@ -130,7 +130,7 @@ class HDFDatabase:
         ARRAY = auto()
         """A NumPy array of strings."""
 
-    class _ValueDataType(LowercaseStrEnum):
+    class _ValueDataType(StrEnum):
         """The scaling method applied to MDA residuals for convergence monitoring."""
 
         STR = auto()

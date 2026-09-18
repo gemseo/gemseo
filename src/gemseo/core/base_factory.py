@@ -33,10 +33,10 @@ from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Generic
+from typing import NamedTuple
 from typing import TypeVar
 
 from prettytable import PrettyTable
-from typing_extensions import NamedTuple
 
 from gemseo.util.base_multiton import BaseABCMultiton
 from gemseo.util.repr_html import repr_html_wrapper

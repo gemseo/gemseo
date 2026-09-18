@@ -25,7 +25,7 @@ described below.
 We try to support the Python interpreter versions following the official
 [Python release cycle](https://devguide.python.org/versions/#python-release-cycle).
 We may not support newer version of Python if a dependency of GEMSEO does not support it.
-The currently supported versions of Python are 3.10, 3.11, 3.12, 3.13 and 3.14.
+The currently supported versions of Python are 3.11, 3.12, 3.13 and 3.14.
 
 To install GEMSEO, you should use a Python environment.
 You can create environments with [uv](https://docs.astral.sh/uv),
@@ -80,13 +80,13 @@ section of [pyproject.toml](https://gitlab.com/gemseo/dev/gemseo/-/blob/master/p
 
 === "Anaconda"
 
-    Install the full features in an anaconda environment named *gemseo* for Python 3.10 with
+    Install the full features in an anaconda environment named *gemseo* for Python 3.11 with
 
     ``` console
-    conda create -c conda-forge -n gemseo python=3.10 gemseo
+    conda create -c conda-forge -n gemseo python=3.11 gemseo
     ```
 
-    You can change the Python version to 3.11, 3.12, 3.13 or 3.14.
+    You can change the Python version to 3.12, 3.13 or 3.14.
 
 === "without internet access"
 

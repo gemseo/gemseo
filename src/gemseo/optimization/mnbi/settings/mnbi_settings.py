@@ -31,7 +31,7 @@ from gemseo.util.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 from gemseo.util.typing import StrPath
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class MNBI_Settings(BaseOptimizerSettings):  # noqa: N801

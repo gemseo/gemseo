@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import sys
+from enum import StrEnum
 from multiprocessing import current_process
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -28,13 +29,12 @@ from pydantic import Field
 from pydantic import PrivateAttr
 from pydantic import field_validator
 from pydantic import model_validator
-from strenum import StrEnum
 
 from gemseo.scenario.backup_settings import BaseBackupSettings
 from gemseo.util.base_multiton import BaseMultiton
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 _keep_all: Final[str] = "KEEP_ALL"
 _keep_last_only: Final[str] = "KEEP_LAST_ONLY"

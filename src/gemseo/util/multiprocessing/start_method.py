@@ -16,9 +16,8 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from multiprocessing import get_start_method
-
-from strenum import StrEnum
 
 from gemseo.util.platform import platform_is_linux
 

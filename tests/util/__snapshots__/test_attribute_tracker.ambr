@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_computed_field_setattr_raises
+  "property 'derived' of '_TrackedMain' object has no setter"
+# ---

@@ -12,32 +12,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""The settings for the SORM algorithm."""
+"""Markers shared by the tests."""
 
 from __future__ import annotations
 
-from enum import StrEnum
-from typing import ClassVar
+import pytest
 
-from pydantic import Field
+from gemseo.util._compatibility.numpy import numpy_greater_than_2
 
-from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
-
-
-class Approximation(StrEnum):
-    """The probability approximation method."""
-
-    BREITUNG = "Breitung"
-    HOHENBICHLER = "Hohenbichler"
-    TVEDT = "Tvedt"
-
-
-class OT_SORM_Settings(OT_FORM_Settings):  # noqa: N801
-    """The base class for the settings of the SORM algorithm."""
-
-    Approximation: ClassVar[type[Approximation]] = Approximation
-
-    approximation: Approximation = Field(
-        default=Approximation.BREITUNG,
-        description="The probability approximation method.",
-    )
+requires_numpy_2 = pytest.mark.xfail(
+    not numpy_greater_than_2,
+    reason=(
+        "The pickle fixtures were generated with NumPy 2, "
+        "they refer to numpy._core which does not exist in NumPy 1."
+    ),
+)
+"""Mark a test that reads a pickle fixture generated with NumPy 2."""

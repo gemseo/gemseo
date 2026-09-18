@@ -32,33 +32,31 @@ which the docstring of a method refers to by its equation number.
 
 from __future__ import annotations
 
-from enum import auto
-
-from strenum import PascalCaseStrEnum
+from enum import StrEnum
 
 
 # TODO: Link the enum entrees to the available SequenceTransformer classes.
-class AccelerationMethod(PascalCaseStrEnum):
+class AccelerationMethod(StrEnum):
     """The acceleration method to be used to improve convergence rate.
 
     More details on each acceleration methods can be found in the dedicated module
     [gemseo.mda.sequence_transformer.acceleration][gemseo.mda.sequence_transformer.acceleration].
     """
 
-    AITKEN = auto()
+    AITKEN = "Aitken"
     """The Aitken method."""
 
     ALTERNATE_2_DELTA = "Alternate2Delta"
     """The alternate 2-ẟ method."""
 
-    ALTERNATE_DELTA_SQUARED = auto()
+    ALTERNATE_DELTA_SQUARED = "AlternateDeltaSquared"
     """The alternate ẟ² method."""
 
-    MINIMUM_POLYNOMIAL = auto()
+    MINIMUM_POLYNOMIAL = "MinimumPolynomial"
     """The minimum polynomial method."""
 
     NONE = "NoTransformation"
     """No acceleration method."""
 
-    SECANT = auto()
+    SECANT = "Secant"
     """The secant method."""

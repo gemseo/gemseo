@@ -38,8 +38,7 @@ from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
-
-    from typing_extensions import NotRequired
+    from typing import NotRequired
 
     Property = TypedDict(  # noqa: UP013
         "Property",

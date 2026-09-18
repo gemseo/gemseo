@@ -33,7 +33,7 @@ from gemseo.core.algorithm.base_driver_settings import BaseDriverSettings
 from gemseo.core.problem.evaluation import EvaluationType  # noqa:TC001
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 logger = logging.getLogger(__name__)
 

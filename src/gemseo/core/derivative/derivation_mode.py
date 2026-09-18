@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from strenum import StrEnum
+from enum import StrEnum
 
 
 class DerivationMode(StrEnum):

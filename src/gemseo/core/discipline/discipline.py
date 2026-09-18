@@ -17,13 +17,13 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from numpy import empty
 from numpy import zeros
 from scipy.sparse import csr_array
-from strenum import StrEnum
 
 from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics

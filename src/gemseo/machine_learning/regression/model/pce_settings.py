@@ -30,7 +30,7 @@ from gemseo.machine_learning.regression.core.base_fce_settings import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 @dataclass

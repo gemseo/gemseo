@@ -51,8 +51,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Collection
     from collections.abc import Iterator
-
-    from typing_extensions import Self
+    from typing import Self
 
     from gemseo.core.grammar.base import SimpleGrammarTypes
     from gemseo.core.grammar.json_schema import Properties

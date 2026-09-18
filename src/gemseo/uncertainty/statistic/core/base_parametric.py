@@ -51,6 +51,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
@@ -63,7 +64,6 @@ from matplotlib import pyplot as plt
 from numpy import array
 from numpy import linspace
 from prettytable import PrettyTable
-from strenum import StrEnum
 
 from gemseo.uncertainty.distribution.core.base_fitter import BaseDistributionFitter
 from gemseo.uncertainty.statistic.core.base import BaseStatistics

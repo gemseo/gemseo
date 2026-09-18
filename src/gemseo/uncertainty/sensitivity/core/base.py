@@ -27,6 +27,7 @@ from collections.abc import Sequence
 from copy import deepcopy
 from dataclasses import asdict
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -42,7 +43,6 @@ from numpy import nansum
 from numpy import newaxis
 from numpy import vstack
 from pandas import MultiIndex
-from strenum import StrEnum
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.io_dataset import IODataset

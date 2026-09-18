@@ -23,11 +23,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from enum import StrEnum
 from enum import auto
 from typing import TYPE_CHECKING
 from typing import ClassVar
-
-from strenum import LowercaseStrEnum
 
 from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Settings
 from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
@@ -47,7 +46,7 @@ if TYPE_CHECKING:
     from gemseo.uncertainty.sensitivity.core.base import FirstOrderIndicesType
 
 
-class FORMAnalysisMethod(LowercaseStrEnum):
+class FORMAnalysisMethod(StrEnum):
     """A FORM analysis method."""
 
     CLASSICAL = auto()

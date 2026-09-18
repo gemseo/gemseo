@@ -16,10 +16,9 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import ClassVar
 from typing import Final
-
-from strenum import StrEnum
 
 from gemseo.core.algorithm.progress_bar_data.base import BaseProgressBarData
 from gemseo.core.base_factory import BaseFactory

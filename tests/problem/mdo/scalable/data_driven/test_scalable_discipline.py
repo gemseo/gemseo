@@ -42,11 +42,13 @@ from gemseo.util.derivative.check.discipline import DisciplineJacobianChecker
 from gemseo.util.derivative.check.function import FunctionJacobianChecker
 from gemseo.util.pickle import from_pickle
 from gemseo.util.pickle import to_pickle
+from tests.marks import requires_numpy_2
 
 n_samples = 10
 
 
 @pytest.mark.usefixtures("tmp_wd")
+@requires_numpy_2
 class ScalableProblem(unittest.TestCase):
     """Tests of the scalable methodology on Sobieski' SSBJ."""
 

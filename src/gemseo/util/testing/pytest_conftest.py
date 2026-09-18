@@ -43,12 +43,8 @@ def __tmp_wd(tmp_path):
 
     Return the path to the temporary directory.
     """
-    prev_cwd = Path.cwd()
-    os.chdir(str(tmp_path))
-    try:
+    with contextlib.chdir(tmp_path):
         yield tmp_path
-    finally:
-        os.chdir(str(prev_cwd))
 
 
 @pytest.fixture(scope="module")
@@ -57,13 +53,9 @@ def module_tmp_wd(tmp_path_factory):
 
     Return the path to the temporary directory.
     """
-    prev_cwd = Path.cwd()
     tmp_path = tmp_path_factory.getbasetemp()
-    os.chdir(str(tmp_path))
-    try:
+    with contextlib.chdir(tmp_path):
         yield tmp_path
-    finally:
-        os.chdir(str(prev_cwd))
 
 
 # Fixture to move into a temporary directory.

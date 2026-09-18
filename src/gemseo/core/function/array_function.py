@@ -30,13 +30,13 @@ import inspect
 import logging
 from collections.abc import Callable
 from collections.abc import Sized
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
 
 from numpy import ndarray
-from strenum import StrEnum
 
 from gemseo.core.function._operation import _AdditionFunctionMaker
 from gemseo.core.function._operation import _MultiplicationFunctionMaker

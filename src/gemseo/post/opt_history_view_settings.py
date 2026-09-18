@@ -28,7 +28,7 @@ from gemseo.post.core.base_post_settings import UseStandardizedObjectiveMixin
 from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class OptHistoryView_Settings(UseStandardizedObjectiveMixin, BasePostSettings):  # noqa: D101, N801
