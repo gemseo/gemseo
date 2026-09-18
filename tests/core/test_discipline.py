@@ -223,12 +223,20 @@ def test_instantiate_grammars() -> None:
 
 
 @pytest.fixture(params=[True, False])
-def enable_status(request) -> bool:
-    """Enable or not the execution status and return it."""
+def enable_status(request, restore_configuration_options) -> bool:
+    """Enable or not the execution status and return it.
+
+    Args:
+        request: The fixture request, holding the value of the option.
+        restore_configuration_options: The fixture restoring
+            the boolean options of the global configuration.
+
+    Returns:
+        Whether the execution status is enabled.
+    """
     enable_status: bool = request.param
     configuration.enable_discipline_status = enable_status
-    yield enable_status
-    configuration.enable_discipline_status = False
+    return enable_status
 
 
 def test_execute_status_error(sobieski_chain, enable_status) -> None:
@@ -1015,17 +1023,13 @@ def test_deactivate_counters(snapshot) -> None:
         ExecutionStatistics.is_enabled = activate_counters
 
 
-def test_cache_none() -> None:
+def test_cache_none(monkeypatch) -> None:
     """Check that the discipline cache can be deactivated."""
-    cache_type_before = Discipline.default_cache_type
-    Discipline.default_cache_type = Discipline.CacheType.NONE
-    try:
-        discipline = DummyDiscipline()
-        assert discipline.cache is None
-        discipline.execute()
-        assert BaseMDA.default_cache_type is BaseMDA.CacheType.SIMPLE
-    finally:
-        Discipline.default_cache_type = cache_type_before
+    monkeypatch.setattr(Discipline, "default_cache_type", Discipline.CacheType.NONE)
+    discipline = DummyDiscipline()
+    assert discipline.cache is None
+    discipline.execute()
+    assert BaseMDA.default_cache_type is BaseMDA.CacheType.SIMPLE
 
 
 def test_grammar_inheritance() -> None:
@@ -1055,16 +1059,12 @@ def test_grammar_file_search():
     assert grand_son_discipline.input_grammar == discipline.input_grammar
 
 
-def test_activate_checks() -> None:
+def test_activate_checks(monkeypatch) -> None:
     """Verify the discipline produces the same output when validations are disabled."""
     out_ref = SobieskiMission().execute()["y_4"]
-    SobieskiMission.validate_input_data = False
-    SobieskiMission.validate_output_data = False
-    try:
-        assert out_ref == SobieskiMission().execute()["y_4"]
-    finally:
-        SobieskiMission.validate_input_data = True
-        SobieskiMission.validate_output_data = True
+    monkeypatch.setattr(SobieskiMission, "validate_input_data", False)
+    monkeypatch.setattr(SobieskiMission, "validate_output_data", False)
+    assert out_ref == SobieskiMission().execute()["y_4"]
 
 
 def test_no_cache(enable_discipline_statistics) -> None:
@@ -1450,10 +1450,10 @@ def test_caches_str_num(
 
 @pytest.mark.parametrize("enable_statistics", [True, False])
 @pytest.mark.parametrize("enable_status", [True, False])
-def test_execute_status_and_statistics(enable_statistics, enable_status):
+def test_execute_status_and_statistics(enable_statistics, enable_status, monkeypatch):
     """Verify execute minitoring enabling."""
-    ExecutionStatistics.is_enabled = enable_statistics
-    ExecutionStatus.is_enabled = enable_status
+    monkeypatch.setattr(ExecutionStatistics, "is_enabled", enable_statistics)
+    monkeypatch.setattr(ExecutionStatus, "is_enabled", enable_status)
 
     sellar = Sellar1()
     sellar._execute = MagicMock()
@@ -1473,10 +1473,10 @@ def test_execute_status_and_statistics(enable_statistics, enable_status):
 
 @pytest.mark.parametrize("enable_statistics", [True, False])
 @pytest.mark.parametrize("enable_status", [True, False])
-def test_linearize_status_and_statistics(enable_statistics, enable_status):
+def test_linearize_status_and_statistics(enable_statistics, enable_status, monkeypatch):
     """Verify execute minitoring enabling."""
-    ExecutionStatistics.is_enabled = enable_statistics
-    ExecutionStatus.is_enabled = enable_status
+    monkeypatch.setattr(ExecutionStatistics, "is_enabled", enable_statistics)
+    monkeypatch.setattr(ExecutionStatus, "is_enabled", enable_status)
 
     sellar = Sellar1()
     sellar.cache = None
@@ -1501,9 +1501,9 @@ def test_linearize_status_and_statistics(enable_statistics, enable_status):
         (BaseDiscipline.CacheType.MEMORY_FULL, MemoryFullCache),
     ],
 )
-def test_default_cache(cache_type, cache_class):
+def test_default_cache(cache_type, cache_class, monkeypatch):
     """Test the instantiation of a discipline with different default caches."""
-    DummyDiscipline.default_cache_type = cache_type
+    monkeypatch.setattr(DummyDiscipline, "default_cache_type", cache_type)
     discipline = DummyDiscipline()
     assert isinstance(discipline.cache, cache_class)
 

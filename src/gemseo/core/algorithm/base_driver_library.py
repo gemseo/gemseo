@@ -139,7 +139,10 @@ class BaseDriverLibrary(
     """Whether the library support sparse Jacobians."""
 
     enable_progress_bar: bool = _enable_progress_bar
-    """Whether to enable the progress bar in the evaluation log."""
+    """Whether to enable the progress bar in the evaluation log.
+
+    Driven by the `enable_progress_bar` option of the global configuration.
+    """
 
     _problem: EvaluationProblem[_SpaceT] | None
     """The optimization problem the driver library is bonded to."""

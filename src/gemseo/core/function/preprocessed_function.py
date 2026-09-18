@@ -54,7 +54,10 @@ class PreprocessedFunction(ArrayFunction, Serializable):
     """
 
     enable_statistics: ClassVar[bool] = _enable_function_statistics
-    """Whether to count the number of function evaluations."""
+    """Whether to count the number of function evaluations.
+
+    Driven by the `enable_function_statistics` option of the global configuration.
+    """
 
     stop_if_nan: bool
     """Whether to stop the evaluation when a value is NaN."""

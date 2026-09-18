@@ -15,12 +15,15 @@
 from __future__ import annotations
 
 import re
+from functools import partial
 from math import prod
 
+import pytest
 from numpy import array
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
+from gemseo import configuration
 from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.problem.database import Database
 from gemseo.core.problem.evaluation import EvaluationProblem
@@ -66,6 +69,38 @@ Running the algorithm CustomDOE:
     50%\|█████     \| 1\/2 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
    100%\|██████████\| 2\/2 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]$"""
     assert re.match(expected_result, result)
+
+
+@pytest.mark.usefixtures("restore_configuration_options")
+def test_check_desvars_bounds(snapshot):
+    """Check that check_desvars_bounds drives the membership check.
+
+    Args:
+        snapshot: The snapshot fixture.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0)
+
+    evaluation_problem = EvaluationProblem(design_space)
+    evaluation_problem.add_observable(ArrayFunction(sum, name="sum"))
+    evaluation_problem.preprocess_functions(is_function_input_normalized=False)
+    output_functions, _ = evaluation_problem.get_functions(
+        observable_names=(), jacobian_names=None
+    )
+    evaluate = partial(
+        evaluation_problem.evaluate_functions,
+        array([2.0]),
+        input_value_is_normalized=False,
+        output_functions=output_functions,
+        jacobian_functions=None,
+    )
+
+    assert configuration.check_desvars_bounds
+    with assert_exception(ValueError, snapshot):
+        evaluate()
+
+    configuration.check_desvars_bounds = False
+    assert_equal(evaluate()[0]["sum"], array([2.0]))
 
 
 def test_set_database():

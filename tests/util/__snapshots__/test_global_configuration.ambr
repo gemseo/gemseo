@@ -1,0 +1,21 @@
+# serializer version: 1
+# name: test_fast_rejected_by_the_constructor
+  'The fast option of the global configuration has been removed; use its methods enable_fast_mode and disable_fast_mode instead, and unset the GEMSEO_FAST environment variable if it is set.'
+# ---
+# name: test_fast_rejected_by_the_constructor_whatever_the_case
+  'The fast option of the global configuration has been removed; use its methods enable_fast_mode and disable_fast_mode instead, and unset the GEMSEO_FAST environment variable if it is set.'
+# ---
+# name: test_fast_rejected_from_a_dotenv_file
+  '''
+  1 validation error for GlobalConfiguration
+    Value error, The fast option of the global configuration has been removed; use its methods enable_fast_mode and disable_fast_mode instead, and unset the GEMSEO_FAST environment variable if it is set. [type=value_error, input_value={'gemseo_fast': 'True'}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---
+# name: test_fast_rejected_from_an_environment_variable
+  '''
+  1 validation error for GlobalConfiguration
+    Value error, The fast option of the global configuration has been removed; use its methods enable_fast_mode and disable_fast_mode instead, and unset the GEMSEO_FAST environment variable if it is set. [type=value_error, input_value={}, input_type=dict]
+      For further information visit https://errors.pydantic.dev/X.Y/v/value_error
+  '''
+# ---

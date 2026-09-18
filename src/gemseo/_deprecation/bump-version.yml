@@ -1208,6 +1208,13 @@ classes:
   #### Distributions
   # TODO
 
+  #### Global configuration
+  # fast is removed; use the methods enable_fast_mode and disable_fast_mode.
+  GlobalConfiguration:
+    fast: null
+    __init__:
+      fast: null
+
   #### Misc
   # Settings: settings_class
   PCERegressor_Settings:

@@ -818,6 +818,7 @@ def test_create_benchmark_dataset(tmp_wd, dataset_name, expected_n_samples) -> N
     assert len(dataset) == expected_n_samples
 
 
+@pytest.mark.usefixtures("restore_configuration_options")
 def test_print_configuration(capfd) -> None:
     """Check that the |g| configuration is shown to the user.
 
@@ -829,9 +830,6 @@ def test_print_configuration(capfd) -> None:
     configuration.enable_discipline_status = True
     configuration.enable_discipline_statistics = True
     print_configuration()
-    configuration.enable_function_statistics = False
-    configuration.enable_discipline_status = False
-    configuration.enable_discipline_statistics = False
 
     out, err = capfd.readouterr()
     assert not err

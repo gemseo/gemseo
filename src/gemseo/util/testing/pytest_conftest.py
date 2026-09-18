@@ -27,6 +27,7 @@ from syrupy.matchers import path_type
 
 from gemseo import configuration
 from gemseo.core.base_factory import BaseFactory
+from gemseo.util.global_configuration import _apply
 from gemseo.util.platform import platform_is_windows
 
 # Rewrite asserts in helpers so syrupy's snapshot diff is shown on mismatch.
@@ -146,24 +147,53 @@ def snapshot_allclose(snapshot):
 
 
 @pytest.fixture
-def enable_function_statistics() -> Generator[None, None, None]:
-    """Enable functions statistics temporary."""
+def restore_configuration_options() -> Generator[None, None, None]:
+    """Restore the boolean options of the global configuration after the test.
+
+    The `logging` and `directory_manager` settings are not restored.
+
+    Every option is re-assigned at teardown,
+    so the class attribute that an option drives is re-applied,
+    even when the test wrote that class attribute directly.
+    Only a class attribute that no option drives,
+    such as the `default_cache_type` of [BaseMDA][gemseo.mda.core.base.BaseMDA],
+    or one shadowed on a subclass,
+    keeps the value written by the test.
+    """
+    values = {name: getattr(configuration, name) for name in _apply}
+    yield
+    for name, value in values.items():
+        setattr(configuration, name, value)
+
+
+@pytest.fixture
+def enable_function_statistics(restore_configuration_options) -> None:
+    """Enable the function statistics temporarily.
+
+    Args:
+        restore_configuration_options: The fixture restoring
+            the boolean options of the global configuration.
+    """
     configuration.enable_function_statistics = True
-    yield
-    configuration.enable_function_statistics = False
 
 
 @pytest.fixture
-def enable_discipline_status() -> Generator[None, None, None]:
-    """Enable discipline status temporary."""
+def enable_discipline_status(restore_configuration_options) -> None:
+    """Enable the discipline status temporarily.
+
+    Args:
+        restore_configuration_options: The fixture restoring
+            the boolean options of the global configuration.
+    """
     configuration.enable_discipline_status = True
-    yield
-    configuration.enable_discipline_status = False
 
 
 @pytest.fixture
-def enable_discipline_statistics() -> Generator[None, None, None]:
-    """Enable discipline statistics temporary.."""
+def enable_discipline_statistics(restore_configuration_options) -> None:
+    """Enable the discipline statistics temporarily.
+
+    Args:
+        restore_configuration_options: The fixture restoring
+            the boolean options of the global configuration.
+    """
     configuration.enable_discipline_statistics = True
-    yield
-    configuration.enable_discipline_statistics = False

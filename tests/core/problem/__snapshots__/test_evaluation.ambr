@@ -1,4 +1,7 @@
 # serializer version: 1
+# name: test_check_desvars_bounds
+  'The components [0] of the given array ([2.]) are greater than the upper bound ([1.]) by [1.].'
+# ---
 # name: test_evaluate_functions_with_normalized_input_value_on_random_space
   'The input value cannot be normalized because a RandomSpace cannot be normalized.'
 # ---

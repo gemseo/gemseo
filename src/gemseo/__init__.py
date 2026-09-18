@@ -1629,7 +1629,8 @@ def configure(
         validate_output_data: Whether to validate the output data of a discipline
             after execution.
         check_desvars_bounds: Whether to check the membership of design variables
-            in the bounds when evaluating the functions in OptimizationProblem.
+            in the bounds when evaluating the functions in
+            [EvaluationProblem][gemseo.core.problem.evaluation.EvaluationProblem].
         enable_parallel_execution: Whether to let GEMSEO
             use parallelism (multi-processing or multi-threading) by default.
         enable_discipline_status: Whether to enable discipline statuses.
