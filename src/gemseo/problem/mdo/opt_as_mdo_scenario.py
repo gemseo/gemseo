@@ -137,10 +137,33 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Iterable
     from collections.abc import Mapping
+    from collections.abc import Sequence
 
     from gemseo.formulation.core.base_settings import BaseFormulationSettings
     from gemseo.space.design import DesignSpace
     from gemseo.util.typing import RealArray
+
+
+def _rename_variables(design_space: DesignSpace, x_names: Sequence[str]) -> None:
+    """Rename the design variables of a design space.
+
+    The variables are first renamed with temporary names,
+    so that a new name can never be the name of a variable not yet renamed.
+
+    Args:
+        design_space: The design space of the original optimization problem.
+        x_names: The names of the design variables in the MDO problem.
+    """
+    original_x_names = design_space.variable_names
+    prefix = "_"
+    while any(f"{prefix}{name}" in original_x_names for name in original_x_names):
+        prefix += "_"
+
+    for original_x_name in original_x_names:
+        design_space.rename_variable(original_x_name, f"{prefix}{original_x_name}")
+
+    for original_x_name, x_name in zip(original_x_names, x_names, strict=True):
+        design_space.rename_variable(f"{prefix}{original_x_name}", x_name)
 
 
 class BaseLinkDiscipline(Discipline):
@@ -213,13 +236,12 @@ class BaseLinkDiscipline(Discipline):
 
         # Names of the design variables and coupling variables in the MDO problem:
         original_x_names = design_space.variable_names
-        for i, original_x_name in enumerate(original_x_names):
-            design_space.rename_variable(original_x_name, f"x_{i}")
-        self._x_names = tuple(design_space.variable_names)
-        self._y_names = tuple(
-            f"y_{i}" for i in range(1, n_strongly_coupled_disciplines + 1)
-        )
-        self.input_grammar.update_from_names([*self._x_names, *self._y_names])
+        x_names = tuple(f"x_{i}" for i in range(n_strongly_coupled_disciplines + 1))
+        y_names = tuple(f"y_{i}" for i in range(1, n_strongly_coupled_disciplines + 1))
+        _rename_variables(design_space, x_names)
+        self._x_names = x_names
+        self._y_names = y_names
+        self.input_grammar.update_from_names([*x_names, *y_names])
 
         # Names of the design variables in the original optimization problem:
         self._original_x_names = original_x_names
