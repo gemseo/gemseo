@@ -37,6 +37,7 @@ from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
 from gemseo.optimization.nlopt.settings.nlopt_slsqp_settings import NLOPT_SLSQP_Settings
 from gemseo.optimization.scipy_local.settings.slsqp import SLSQP_Settings
 from gemseo.problem.mdo.opt_as_mdo_scenario import OptAsMDOScenario
+from gemseo.problem.mdo.opt_as_mdo_scenario import create_disciplines
 from gemseo.problem.mdo.scalable.parametric.scalable_problem import ScalableProblem
 from gemseo.space.design import DesignSpace
 from gemseo.util.testing.helper import assert_exception
@@ -81,6 +82,58 @@ def test_basic(discipline, initial_point):
 
     scenario.execute(NLOPT_SLSQP_Settings(max_iter=100))
     assert_almost_equal(scenario.optimization_result.x_opt, ones(3))
+
+
+def test_design_space_renamed_in_place(discipline):
+    """Check that the design space passed as argument is renamed in place."""
+    design_space = DesignSpace()
+    design_space.add_variable("z_0", lower_bound=-1, upper_bound=1)
+    design_space.add_variable("z_1", lower_bound=-1, upper_bound=1)
+    design_space.add_variable("z_2", lower_bound=-1, upper_bound=1)
+    initial_point = array([-0.25, 0.75, -0.9])
+    design_space.set_current_value(initial_point)
+
+    scenario = OptAsMDOScenario(
+        discipline, design_space, formulation_settings=MDF_Settings()
+    )
+
+    assert design_space.variable_names == ["x_0", "x_1", "x_2"]
+    assert_almost_equal(design_space.get_current_value(), initial_point)
+    assert sorted(scenario.disciplines[1].io.output_grammar.names) == [
+        "z_0",
+        "z_1",
+        "z_2",
+    ]
+
+
+def test_renaming_with_a_variable_named_after_another_one():
+    """Check the renaming when a variable name is another one prefixed with '_'."""
+    design_space = DesignSpace()
+    design_space.add_variable("_a", lower_bound=-1, upper_bound=1)
+    design_space.add_variable("a", lower_bound=-1, upper_bound=1)
+    design_space.add_variable("b", lower_bound=-1, upper_bound=1)
+
+    scenario = OptAsMDOScenario(
+        AnalyticDiscipline({"f": "_a+a+b"}),
+        design_space,
+        formulation_settings=MDF_Settings(),
+    )
+
+    assert design_space.variable_names == ["x_0", "x_1", "x_2"]
+    assert sorted(scenario.disciplines[1].io.output_grammar.names) == ["_a", "a", "b"]
+
+
+def test_renaming_with_a_name_of_the_mdo_problem(discipline):
+    """Check the renaming when a variable is named after one of the MDO problem."""
+    design_space = DesignSpace()
+    design_space.add_variable("a", lower_bound=-1, upper_bound=1)
+    design_space.add_variable("b", lower_bound=-1, upper_bound=1)
+    design_space.add_variable("x_1", lower_bound=-1, upper_bound=1)
+
+    link_discipline = create_disciplines(discipline, design_space)[1]
+
+    assert design_space.variable_names == ["x_0", "x_1", "x_2"]
+    assert sorted(link_discipline.io.output_grammar.names) == ["a", "b", "x_1"]
 
 
 @pytest.mark.parametrize("n_variables", range(3))
