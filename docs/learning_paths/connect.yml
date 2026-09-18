@@ -61,4 +61,5 @@ resources:
     path: generated/examples/howtos/disciplines/differentiation/plot_howto_differenciation_settings/
   - type: reference
     desc: The comprehensive list of the disciplines shipped with GEMSEO.
-    path: algorithms/discipline_algos/
+    title: Catalog of disciplines
+    path: https://gemseo.org/more_on/catalogs/disciplines
