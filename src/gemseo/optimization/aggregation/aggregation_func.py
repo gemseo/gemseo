@@ -144,7 +144,7 @@ def aggregate_sum_square(
         compute_jac,
         f"sum²_{constr_fct.name}{output_suffix}",
         f"sum({constr_fct.expr}**2){output_suffix}",
-        f"sum_sq_cstr{output_suffix}",
+        (f"sum_sq_cstr{output_suffix}",),
     )
 
 
@@ -186,7 +186,7 @@ def aggregate_positive_sum_square(
         compute_jac,
         f"pos_sum_{constr_fct.name}{output_suffix}",
         f"sum(heaviside({constr_fct.expr})*{constr_fct.expr}**2){output_suffix}",
-        f"pos_sum_sq_cstr{output_suffix}",
+        (f"pos_sum_sq_cstr{output_suffix}",),
     )
 
 
@@ -226,7 +226,7 @@ def aggregate_max(
         compute_jac,
         f"max_{constr_fct.name}{output_suffix}",
         f"max({constr_fct.expr}){output_suffix}",
-        f"max_cstr{output_suffix}",
+        (f"max_cstr{output_suffix}",),
     )
 
 
@@ -274,7 +274,7 @@ def aggregate_iks(
         compute_jac,
         f"IKS({constr_fct.name}){output_suffix}",
         f"IKS({constr_fct.expr}){output_suffix}",
-        f"IKS{output_suffix}",
+        (f"IKS{output_suffix}",),
     )
 
 
@@ -322,7 +322,7 @@ def aggregate_lower_bound_ks(
         compute_jac,
         f"lower_bound_KS({constr_fct.name}){output_suffix}",
         f"lower_bound_KS({constr_fct.expr}){output_suffix}",
-        f"lower_bound_KS{output_suffix}",
+        (f"lower_bound_KS{output_suffix}",),
     )
 
 
@@ -370,7 +370,7 @@ def aggregate_upper_bound_ks(
         compute_jac,
         f"upper_bound_KS({constr_fct.name}){output_suffix}",
         f"upper_bound_KS({constr_fct.expr}){output_suffix}",
-        f"upper_bound_KS{output_suffix}",
+        (f"upper_bound_KS{output_suffix}",),
     )
 
 
