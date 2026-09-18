@@ -16,11 +16,11 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import model_validator
-from strenum import StrEnum
 
 from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings import (  # noqa: E501
     BaseLinearModelFitterSettings,
@@ -33,7 +33,7 @@ from gemseo.machine_learning.regression.core.base_fce_settings import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class OrthonormalFunctionBasis(StrEnum):

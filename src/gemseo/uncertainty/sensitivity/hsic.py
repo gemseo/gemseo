@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -39,7 +40,6 @@ from openturns import IndicatorFunction
 from openturns import Interval
 from openturns import Sample
 from openturns import SquaredExponential
-from strenum import StrEnum
 
 from gemseo.uncertainty.sensitivity._seeding import seed_ot_random_generator
 from gemseo.uncertainty.sensitivity.core.base import BaseSensitivityAnalysis

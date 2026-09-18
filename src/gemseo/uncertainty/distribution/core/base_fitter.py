@@ -19,13 +19,12 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from collections.abc import Mapping
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Generic
 from typing import TypeVar
-
-from strenum import StrEnum
 
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta
 

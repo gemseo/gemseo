@@ -6,7 +6,7 @@ set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
 # The oldest supported Python version, used to test the lowest dependency bounds,
 # it shall mirror .python-version.
-min-python := '3.10'
+min-python := '3.11'
 
 # Recursive invocations shall use the very same just binary and justfile.
 just := quote(just_executable()) + ' --justfile ' + quote(justfile())

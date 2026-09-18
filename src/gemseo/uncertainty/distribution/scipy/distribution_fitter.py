@@ -21,6 +21,7 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -28,7 +29,6 @@ from typing import ClassVar
 import scipy.stats as scipy_stats
 from scipy.stats import goodness_of_fit
 from scipy.stats import rv_continuous
-from strenum import StrEnum
 
 from gemseo.uncertainty.distribution.core.base_fitter import BaseDistributionFitter
 from gemseo.uncertainty.distribution.scipy.distribution import SPDistribution

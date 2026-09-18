@@ -1,4 +1,4 @@
 include:
-  - component: gitlab.com/gemseo/dev/ci/pipeline@1.0.0
+  - component: gitlab.com/gemseo/dev/ci/pipeline@1.1.0
     inputs:
       test_tags: "saas-linux-medium-amd64 windows-server-2019"

@@ -24,6 +24,7 @@ from __future__ import annotations
 import itertools
 import logging
 from collections import defaultdict
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -43,7 +44,6 @@ from scipy.sparse import eye
 from scipy.sparse import vstack
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse.linalg import factorized
-from strenum import StrEnum
 
 from gemseo.core.derivative.derivation_mode import DerivationMode
 from gemseo.core.derivative.graph_traversal import set_mda_differentiated_ios

@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from enum import StrEnum
 from genericpath import exists
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -33,7 +34,6 @@ from numpy import array
 from numpy import bytes_
 from numpy import str_
 from scipy.sparse import csr_array
-from strenum import StrEnum
 
 from gemseo.core.cache.base import BaseCache
 from gemseo.core.cache.util import hash_data

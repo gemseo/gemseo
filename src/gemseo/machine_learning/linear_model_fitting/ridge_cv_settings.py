@@ -18,10 +18,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from enum import StrEnum
 
 from pydantic import Field
 from pydantic import NonNegativeFloat
-from strenum import StrEnum
 
 from gemseo.machine_learning.linear_model_fitting.core.base_linear_model_fitter_settings import (  # noqa: E501
     BaseLinearModelFitterSettings,

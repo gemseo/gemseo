@@ -33,7 +33,7 @@ from gemseo.uncertainty.distribution.openturns.base_settings import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class OTJointDistribution_Settings(  # noqa: N801

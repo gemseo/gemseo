@@ -23,8 +23,7 @@ from typing import Any
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Iterator
-
-    from typing_extensions import Self
+    from typing import Self
 
     from gemseo.core.grammar.base import BaseGrammar
 

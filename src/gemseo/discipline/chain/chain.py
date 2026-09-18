@@ -20,11 +20,11 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from networkx import DiGraph
-from strenum import StrEnum
 
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.dependency_graph import DependencyGraph

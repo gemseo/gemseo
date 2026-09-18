@@ -46,10 +46,10 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
+    from typing import Self
 
     from numpy import ndarray
     from prettytable import PrettyTable
-    from typing_extensions import Self
 
     from gemseo.space.variable import BaseVariable
     from gemseo.util.typing import IntegerArray

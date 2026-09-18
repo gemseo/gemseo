@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Literal
 
 from openturns import NLopt
@@ -23,7 +24,6 @@ from pydantic import BaseModel
 from pydantic import Field
 from pydantic import PositiveFloat
 from pydantic import PositiveInt
-from strenum import StrEnum
 
 
 class BaseOTOptimizer(BaseModel):  # noqa: N801
@@ -85,7 +85,10 @@ class OTCobyla(BaseOTOptimizer):  # noqa: N801
     )
 
 
-NLoptAlgorithmName = StrEnum("NLoptAlgorithm", names=tuple(NLopt.GetAlgorithmNames()))
+# The values must mirror the names, which are the identifiers expected by NLopt.
+NLoptAlgorithmName = StrEnum(
+    "NLoptAlgorithmName", {name: name for name in NLopt.GetAlgorithmNames()}
+)
 
 
 class OTNLopt(BaseOTOptimizer):  # noqa: N801

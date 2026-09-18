@@ -22,7 +22,6 @@ from matplotlib import pyplot as plt
 
 from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 from gemseo.post.dataset.plot._matplotlib.plot import MatplotlibPlot
-from gemseo.util._compatibility.matplotlib import boxplot as boxplot_
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -109,16 +108,15 @@ class Boxplot(MatplotlibPlot[Boxplot_Settings]):
                 center=settings.center,
                 scale=settings.scale,
             )
-        boxplot = boxplot_(
+        boxplot = ax.boxplot(
             dataset.get_view(variable_names=variables).to_numpy(),
-            vert=settings.use_vertical_bars,
+            orientation="vertical" if settings.use_vertical_bars else "horizontal",
             notch=settings.add_confidence_interval,
             showfliers=settings.add_outliers,
             positions=[origin + i * n_datasets for i, _ in enumerate(names)],
             sym="*",
             patch_artist=True,
             flierprops={"markeredgecolor": color},
-            ax=ax,
             **settings.options,
         )
         if settings.grid:

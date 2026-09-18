@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Final
 
@@ -25,7 +26,6 @@ from openturns import CovarianceModelImplementation
 from openturns import OptimizationAlgorithmImplementation
 from pydantic import Field
 from pydantic import model_validator
-from strenum import StrEnum
 
 from gemseo.doe.core.base_doe_settings import BaseDOESettings
 from gemseo.doe.openturns.settings.ot_opt_lhs import OT_OPT_LHS_Settings
@@ -35,7 +35,7 @@ from gemseo.machine_learning.regression.core.base_regressor_settings import (
 from gemseo.space.design import DesignSpace
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class Trend(StrEnum):

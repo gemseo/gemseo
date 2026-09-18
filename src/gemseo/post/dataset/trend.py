@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Final
@@ -24,7 +25,6 @@ from typing import Final
 from numpy import poly1d
 from numpy import polyfit
 from scipy.interpolate import RBFInterpolator
-from strenum import StrEnum
 
 from gemseo.util.typing import RealArray
 

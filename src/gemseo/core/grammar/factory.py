@@ -22,13 +22,12 @@
 from __future__ import annotations
 
 import sys
+from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
-
-from strenum import StrEnum
 
 from gemseo.core.base_factory import BaseFactory
 from gemseo.core.grammar.base import BaseGrammar

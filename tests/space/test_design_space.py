@@ -57,6 +57,7 @@ from gemseo.space.variable import Variable
 from gemseo.util.pickle import from_pickle
 from gemseo.util.repr_html import repr_html_wrapper
 from gemseo.util.testing.helper import assert_exception
+from tests.marks import requires_numpy_2
 
 current_dir = Path(__file__).parent
 test_infile = current_dir / "design_space.csv"
@@ -2643,6 +2644,7 @@ def test_unpickle_pre_refactor_design_space() -> None:
     )
 
 
+@requires_numpy_2
 def test_unpickle_design_space_of_the_last_release() -> None:
     """Check that a design space pickled by the last release can be loaded.
 

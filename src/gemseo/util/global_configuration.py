@@ -50,9 +50,9 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Mapping
     from typing import Any
+    from typing import Self
 
     from pydantic import ValidationInfo
-    from typing_extensions import Self
 
 
 def _apply_check_desvars_bounds(value: bool) -> None:

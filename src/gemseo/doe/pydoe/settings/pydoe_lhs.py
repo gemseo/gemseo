@@ -16,11 +16,12 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
+
 from numpy.random import Generator
 from pydantic import Field
 from pydantic import NonNegativeInt
 from pydantic import PositiveInt  # noqa: TC002
-from strenum import StrEnum
 
 from gemseo.doe.pydoe.settings.base_pydoe_settings import BasePyDOESettings
 

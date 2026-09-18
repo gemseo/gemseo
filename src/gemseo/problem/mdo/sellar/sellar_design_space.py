@@ -20,9 +20,10 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
+
 from numpy import array
 from numpy import ones
-from strenum import StrEnum
 
 from gemseo.problem.mdo.sellar.variable import x_1
 from gemseo.problem.mdo.sellar.variable import x_2

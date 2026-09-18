@@ -27,7 +27,7 @@ from gemseo.machine_learning.regression.core.base_regressor_settings import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class BaseFCERegressorSettings(BaseRegressorSettings):  # noqa: N801

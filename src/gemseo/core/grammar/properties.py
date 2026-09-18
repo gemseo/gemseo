@@ -27,8 +27,7 @@ from gemseo.util.typing import MutableStrKeyMapping
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
-
-    from typing_extensions import Self
+    from typing import Self
 
     from gemseo.core.grammar.base import BaseGrammar
     from gemseo.util.typing import StrKeyMapping

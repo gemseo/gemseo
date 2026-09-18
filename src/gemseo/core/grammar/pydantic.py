@@ -44,9 +44,9 @@ from gemseo.util.pydantic_ndarray import _NDArrayPydantic
 if TYPE_CHECKING:
     from collections.abc import Collection
     from collections.abc import Iterator
+    from typing import Self
 
     from pydantic import ConfigDict
-    from typing_extensions import Self
 
     from gemseo.core.grammar.base import SimpleGrammarTypes
     from gemseo.core.grammar.json_schema import Schema

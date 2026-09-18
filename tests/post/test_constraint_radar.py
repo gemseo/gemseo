@@ -20,9 +20,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import matplotlib
 import pytest
-from packaging import version
 
 from gemseo.optimization.problem import OptimizationProblem
 from gemseo.post.constraint_radar import ConstraintRadar
@@ -75,10 +73,6 @@ def test_iteration_error(problem, snapshot) -> None:
         )
 
 
-@pytest.mark.skipif(
-    version.parse(matplotlib.__version__) < version.parse("3.10.0"),
-    reason="Does not work with matplotlib < 3.10.0",
-)
 def test_common_scenario(common_problem, snapshot_matplotlib) -> None:
     """Check ConstraintRadar."""
     opt = ConstraintRadar(common_problem)

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from enum import StrEnum
 from enum import auto
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -37,8 +38,6 @@ from openturns import MartinezSensitivityAlgorithm
 from openturns import MauntzKucherenkoSensitivityAlgorithm
 from openturns import RankSobolSensitivityAlgorithm
 from openturns import SaltelliSensitivityAlgorithm
-from strenum import LowercaseStrEnum
-from strenum import PascalCaseStrEnum
 
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 from gemseo.util.matplotlib_figure import save_show_figure_from_file_path_manager
@@ -60,7 +59,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
 
 
-class SobolAnalysisMethod(LowercaseStrEnum):
+class SobolAnalysisMethod(StrEnum):
     """A Sobol' analysis method."""
 
     FIRST = auto()
@@ -96,10 +95,10 @@ class SobolIndicesEstimatorMixin:
         total: FirstOrderIndicesType = field(default_factory=dict)
         """The total-order Sobol' indices."""
 
-    class Algorithm(PascalCaseStrEnum):
+    class Algorithm(StrEnum):
         """The algorithms to estimate the Sobol' indices."""
 
-        JANSEN = auto()
+        JANSEN = "Jansen"
         """The Jansen method.
 
         !!! quote "References"
@@ -109,7 +108,7 @@ class SobolIndicesEstimatorMixin:
             Computer Physics Communications, 117(1-2):35-43, 1999.
         """
 
-        MARTINEZ = auto()
+        MARTINEZ = "Martinez"
         """The Martinez method.
 
         !!! quote "References"
@@ -120,7 +119,7 @@ class SobolIndicesEstimatorMixin:
             Institut Henri Poincaré, Paris, France, January 2011.
         """
 
-        MAUNTZ_KUCHERENKO = auto()
+        MAUNTZ_KUCHERENKO = "MauntzKucherenko"
         """The Mauntz-Kucherenko method.
 
         !!! quote "References"
@@ -131,7 +130,7 @@ class SobolIndicesEstimatorMixin:
             Reliability Engineering & System Safety, 92(7):957-960, 2007.
         """
 
-        RANK = auto()
+        RANK = "Rank"
         """The rank-based method.
 
         !!! quote "References"
@@ -142,7 +141,7 @@ class SobolIndicesEstimatorMixin:
             Bernoulli, 28(4):2345-2374, 2022.
         """
 
-        SALTELLI = auto()
+        SALTELLI = "Saltelli"
         """The Saltelli method.
 
         !!! quote "References"

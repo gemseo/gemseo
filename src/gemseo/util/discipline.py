@@ -35,9 +35,9 @@ from gemseo.util.repr_html import repr_html_wrapper
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from collections.abc import Mapping
+    from typing import Self
 
     from pandas import DataFrame
-    from typing_extensions import Self
 
     from gemseo.core._base_monitored_process import BaseMonitoredProcess
     from gemseo.core.discipline.base_discipline import BaseDiscipline

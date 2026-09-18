@@ -22,10 +22,12 @@ from __future__ import annotations
 import pytest
 from matplotlib import pyplot as plt
 from numpy import array
+from pydantic import ValidationError
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.boxplot import Boxplot
 from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
+from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture(scope="module")
@@ -95,3 +97,19 @@ def test_plot(
         (None, None) if not fig_and_ax else plt.subplots(figsize=settings.fig_size)
     )
     plot.execute(save=False, fig=fig, ax=ax)
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"vert": False},
+        {"orientation": "horizontal"},
+        {"labels": ["a", "b"]},
+        {"orientation": "h", "vert": True},
+    ],
+    ids=["vert", "orientation", "labels", "orientation_and_vert"],
+)
+def test_unsupported_options(options, snapshot) -> None:
+    """Check that the options owned by other settings are rejected."""
+    with assert_exception(ValidationError, snapshot):
+        Boxplot_Settings(options=options)

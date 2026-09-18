@@ -20,12 +20,11 @@ import logging
 import warnings
 from abc import abstractmethod
 from copy import deepcopy
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
 from typing import Final
-
-from strenum import StrEnum
 
 from gemseo.core._base_monitored_process import BaseMonitoredProcess
 from gemseo.core._process_flow.base_flow import BaseFlow

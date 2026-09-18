@@ -5,7 +5,6 @@ FROM fedora:$FEDORA_VERSION
 RUN  dnf -y --setopt=install_weak_deps=False --nodocs update \
   && dnf -y --setopt=install_weak_deps=False --nodocs install \
                     python-unversioned-command \
-                    python310 \
                     python311 \
                     python312 \
                     python313 \

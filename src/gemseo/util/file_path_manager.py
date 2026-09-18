@@ -17,14 +17,13 @@
 from __future__ import annotations
 
 import re
+from enum import StrEnum
 from pathlib import Path
 from re import findall
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
 from typing import NamedTuple
-
-from strenum import LowercaseStrEnum
 
 from gemseo.util.string import MultiLineString
 
@@ -47,7 +46,7 @@ class FileDefinition(NamedTuple):
 class FilePathManager:
     """A manager of file paths for a given type of file and with default settings."""
 
-    class FileType(LowercaseStrEnum):
+    class FileType(StrEnum):
         """The type of file, defined by its default name and format."""
 
         FIGURE = "figure"

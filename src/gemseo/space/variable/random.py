@@ -32,8 +32,7 @@ from gemseo.util.string import pretty_repr
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-    from typing_extensions import Self
+    from typing import Self
 
     from gemseo.uncertainty.distribution.core.base_joint import BaseJointDistribution
     from gemseo.util.typing import RealArray

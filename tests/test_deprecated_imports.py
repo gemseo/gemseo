@@ -32,6 +32,7 @@ import pytest
 
 import gemseo  # noqa: F401 - ensures the deprecated-import finder is installed
 from gemseo.util.testing.helper import assert_exception
+from tests.marks import requires_numpy_2
 
 
 def test_moved_module_and_renamed_class():
@@ -264,6 +265,7 @@ def test_user_warning_filters_are_not_overridden():
     assert "DeprecationWarning" in result.stderr
 
 
+@requires_numpy_2
 def test_class_deprecation_is_visible_under_the_default_filters():
     """The deprecation of a class is shown although it is raised by library code.
 

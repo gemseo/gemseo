@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import ClassVar
@@ -31,7 +32,6 @@ from typing import Final
 
 from numpy import vstack
 from openturns import Sample
-from strenum import StrEnum
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.post.dataset.radar_chart import RadarChart

@@ -17,11 +17,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import StrEnum
 from multiprocessing import Lock
 from multiprocessing import Value
 from uuid import uuid4
-
-from strenum import StrEnum
 
 from gemseo.core.serializable import Serializable
 

@@ -17,9 +17,9 @@
 from __future__ import annotations
 
 from enum import IntEnum
+from enum import StrEnum
 
 from pydantic import Field
-from strenum import StrEnum
 
 from gemseo.doe.core.base_n_samples_based_doe_settings import (
     BaseNSamplesBasedDOESettings,

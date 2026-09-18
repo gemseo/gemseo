@@ -23,11 +23,11 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Sequence
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from numpy import array
-from strenum import StrEnum
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.util.metaclass import ABCGoogleDocstringInheritanceMeta

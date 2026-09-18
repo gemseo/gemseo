@@ -40,7 +40,7 @@ to illustrate its capabilities:
 
 from __future__ import annotations
 
-from strenum import StrEnum
+from enum import StrEnum
 
 
 class DatasetType(StrEnum):

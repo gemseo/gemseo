@@ -47,8 +47,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from collections.abc import Mapping
     from collections.abc import Sequence
-
-    from typing_extensions import Self
+    from typing import Self
 
     from gemseo.core.coupling_structure import CouplingStructure
     from gemseo.core.discipline.discipline import Discipline

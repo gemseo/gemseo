@@ -19,20 +19,19 @@ from __future__ import annotations
 from abc import ABC
 from abc import abstractmethod
 from collections.abc import Mapping
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import model_validator
-from strenum import StrEnum
 
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
-
-    from typing_extensions import Self
+    from typing import Self
 
 
 class DataType(StrEnum):

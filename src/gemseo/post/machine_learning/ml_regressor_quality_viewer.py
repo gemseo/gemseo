@@ -16,11 +16,11 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import TYPE_CHECKING
 from typing import Any
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
-from strenum import StrEnum
 
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.io_dataset import IODataset

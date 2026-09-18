@@ -16,9 +16,8 @@
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Final
-
-from strenum import StrEnum
 
 _linear_solver_template: Final[str] = "the left-hand side of the problem is not {}"
 """The template of the reason why an algorithm is unsuited for a problem."""
