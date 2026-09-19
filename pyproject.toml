@@ -36,7 +36,7 @@ dependencies = [
     "pydantic >=2.12,<=2.13.5",
     "pydantic-settings >=2.9.0,<=2.15.0",
     "requests >=2.28.2,<3",
-    "scipy >=1.15,<=1.17.1",
+    "scipy >=1.15,<=1.18.1",
     "tqdm >=4.64.1,<=4.70.0",
     "xdsmjs >=1.0.0,<=2.0.0",
     "xxhash >=3.2.0,<=3.7.1",
