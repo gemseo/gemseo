@@ -78,7 +78,7 @@ disciplines.append(AnalyticDiscipline({"b": "5*j"}, name="B"))
 # [VariableTranslation][gemseo.util.discipline.VariableTranslation]
 # to translate a discipline variable name according to a global taxonomy:
 variable_translation = VariableTranslation(
-    discipline_name="A", variable_name="a", new_variable_name="x"
+    discipline_name="A", is_input=True, variable_name="a", new_variable_name="x"
 )
 variable_translation
 # %%
@@ -90,17 +90,30 @@ variable_translation
 # from translations
 # that can include both
 # [VariableTranslation][gemseo.util.discipline.VariableTranslation] instances
-# and tuples of the form `(discipline_name, variable_name, new_variable_name)`:
+# and tuples of the form `(discipline_name, is_input, variable_name, new_variable_name)`:
 renamer = VariableRenamer()
 renamer.add_translation(variable_translation)
-renamer.add_translation(("B", "b", "y"))
+renamer.add_translation(("B", False, "b", "y"))
 renamer.add_translation(
-    VariableTranslation(discipline_name="A", variable_name="c", new_variable_name="z")
+    VariableTranslation(
+        discipline_name="A",
+        is_input=False,
+        variable_name="c",
+        new_variable_name="z",
+    )
 )
 renamer
 
 
 # %%
+#
+# Note that `is_input` is a boolean variable which is used to distinguish input and
+# output variables' renaming. This architecture is chosen to support special cases, e.g.
+#
+# - When both the input and output grammars of a discipline share the same name, but the user
+# wants to rename them to different names.
+# - When the input and output grammars of a discipline have different names, but the user wants
+# to rename them to a common name.
 #
 # !!! tips
 #     There are several ways
@@ -120,10 +133,22 @@ renamer.translators
 # !!! note
 #     You may avoid creating a [VariableRenamer][gemseo.util.discipline.VariableRenamer]
 #     if you are able to create a nested dictionary from scratch:
-#     `{"discipline_name": {old_variable_name: new_variable_name}}`.
+#     `{"discipline_name": ({old_input_name: new_input_name}, {old_output_name: new_output_name})}`.
+#
+#     - It is not necessary to have both input and output mapping dictionaries at the
+# same time. The user is able to rename only the input or the output grammars by
+# passing empty dictionaries inside the discipline mapping tuple in their respective positions (first
+# position for input mapping, second position for output mapping).
+#     - If the discipline is multivariate, the user is able to rename several input or
+# output variables by adding their mappings to the respective mapping dictionaries, e.g.:
+# `{"discipline_name": ({old_input_1_name: new_input_1_name, old_input_2_name: new_input_2_name, ...},
+# {old_output_1_name: new_output_1_name, old_output_2_name: new_output_2_name, ...})}`.
+#
 #
 #     However, creating such nested dictionary can be painful
 #     when there are a lot of disciplines and variables to rename.
+#
+#
 
 # %%
 # ### 4. Rename discipline variables from translators
@@ -154,7 +179,7 @@ disc_b.execute({"j": array([3.0])})
 # - a [VariableRenamer][gemseo.util.discipline.VariableRenamer] — a collection of translations, creatable from:
 #
 #     - Individual VariableTranslation objects or tuples ([from_translations()][gemseo.util.discipline.VariableRenamer.from_translations])
-#     - A nested dict like {"A": {"a": "x"}} ([from_dictionary()][gemseo.util.discipline.VariableRenamer.from_dictionary])
+#     - A nested dict like {"A": ({"a": "x"}, {"c": "z"})} ([from_dictionary()][gemseo.util.discipline.VariableRenamer.from_dictionary])
 #     - A CSV file ([from_csv()][gemseo.util.discipline.VariableRenamer.from_csv])
 #     - A spreadsheet ([from_spreadsheet()][gemseo.util.discipline.VariableRenamer.from_spreadsheet])
 #

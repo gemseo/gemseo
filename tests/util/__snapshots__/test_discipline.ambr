@@ -1,7 +1,31 @@
 # serializer version: 1
+# name: test_add_translation_is_input_not_bool[tuple_empty]
+  "In discipline 'A', the translation of the variable 'a' uses '' to try to differentiate an input from an output; expected the boolean `True` or `False`."
+# ---
+# name: test_add_translation_is_input_not_bool[tuple_int]
+  "In discipline 'A', the translation of the variable 'a' uses 1 to try to differentiate an input from an output; expected the boolean `True` or `False`."
+# ---
+# name: test_add_translation_is_input_not_bool[tuple_none]
+  "In discipline 'A', the translation of the variable 'a' uses None to try to differentiate an input from an output; expected the boolean `True` or `False`."
+# ---
+# name: test_add_translation_is_input_not_bool[tuple_str]
+  "In discipline 'A', the translation of the variable 'a' uses 'out' to try to differentiate an input from an output; expected the boolean `True` or `False`."
+# ---
+# name: test_add_translation_is_input_not_bool[variable_translation]
+  "In discipline 'A', the translation of the variable 'a' uses 'out' to try to differentiate an input from an output; expected the boolean `True` or `False`."
+# ---
 # name: test_rename_discipline_variables
-  "The discipline 'A' has no variable 'foo'."
+  "The discipline 'A' has no input variable 'foo'."
+# ---
+# name: test_rename_discipline_variables.1
+  "The translator of the discipline 'A' must be a pair of mappings, the first one for the input variables and the second one for the output variables."
 # ---
 # name: test_rename_twice_error
   "In discipline 'A', the variable 'a' cannot be renamed to 'y' because it has already been renamed to 'x'."
+# ---
+# name: test_renaming_from_file_is_input_not_bool[translations_is_input_not_bool.csv-from_csv]
+  "In discipline 'A', the translation of the variable 'a' uses 'True' to try to differentiate an input from an output; expected the boolean `True` or `False`."
+# ---
+# name: test_renaming_from_file_is_input_not_bool[translations_is_input_not_bool.xlsx-from_spreadsheet]
+  "In discipline 'A', the translation of the variable 'c' uses 'out' to try to differentiate an input from an output; expected the boolean `True` or `False`."
 # ---

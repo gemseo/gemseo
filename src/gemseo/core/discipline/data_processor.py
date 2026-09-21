@@ -113,38 +113,57 @@ class ComplexDataProcessor(DataProcessor):
 class NameMapping(DataProcessor):
     """A data preprocessor to map process level names to local discipline names."""
 
-    __mapping: Mapping[str, str]
-    """The mapping structure of the form `{global_name: local_name}`."""
+    __input_mapping: Mapping[str, str]
+    """The input mapping structure as `{global_input_name: local_input_name}`."""
 
-    __reverse_mapping: Mapping[str, str]
-    """The reverse mapping structure of the form `{local_name: global_name}`."""
+    __output_mapping: Mapping[str, str]
+    """The output mapping structure as `{global_output_name: local_output_name}`."""
 
-    def __init__(self, mapping: Mapping[str, str]) -> None:
+    __reverse_output_mapping: Mapping[str, str]
+    """The reverse output mapping structure as `{local_output_name:
+    global_output_name}`."""
+
+    def __init__(
+        self, input_mapping: Mapping[str, str], output_mapping: Mapping[str, str]
+    ) -> None:
         """
         Args:
-            mapping: A mapping structure of the form `{global_name: local_name}`
-                where `global_name` must be consistent
-                with the grammar of the discipline.
-                The local name is the data provided
-                to the `.Discipline._run()` method.
-                When missing,
-                the global name is the local name.
+            input_mapping: The mapping from a global input name to a local input name.
+                A local input name is the name of a data provided to the
+                `.Discipline._run()` method.
+                By default, the global input name is the local input name.
+            output_mapping: The mapping from a global output name to a local output
+                name.
+                A local output name is the name of a data returned by the
+                `.Discipline._run()` method.
+                By default, the global output name is the local output name.
         """  # noqa: D205, D212, D415
         super().__init__()
-        self.__mapping = mapping
-        self.__reverse_mapping = {
-            local_key: global_key for global_key, local_key in mapping.items()
+        self.__input_mapping = input_mapping
+        self.__output_mapping = output_mapping
+        self.__reverse_output_mapping = {
+            local_key: global_key for global_key, local_key in output_mapping.items()
         }
 
+    @property
+    def input_mapping(self) -> Mapping[str, str]:
+        """The mapping from a global input name to a local input name."""
+        return self.__input_mapping
+
+    @property
+    def output_mapping(self) -> Mapping[str, str]:
+        """The mapping from a global output name to a local output name."""
+        return self.__output_mapping
+
     def pre_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
-        get_local_name = self.__mapping.get
+        get_local_name = self.__input_mapping.get
         return {
             get_local_name(global_key, global_key): value
             for global_key, value in data.items()
         }
 
     def post_process_data(self, data: StrKeyMapping) -> MutableStrKeyMapping:  # noqa: D102
-        get_global_name = self.__reverse_mapping.get
+        get_global_name = self.__reverse_output_mapping.get
         return {
             get_global_name(local_key, local_key): value
             for local_key, value in data.items()
