@@ -159,7 +159,9 @@ def restore_configuration_options() -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def enable_function_statistics(restore_configuration_options) -> None:
+def enable_function_statistics(
+    restore_configuration_options: Generator[None, None, None],
+) -> None:
     """Enable the function statistics temporarily.
 
     Args:
@@ -170,7 +172,9 @@ def enable_function_statistics(restore_configuration_options) -> None:
 
 
 @pytest.fixture
-def enable_discipline_status(restore_configuration_options) -> None:
+def enable_discipline_status(
+    restore_configuration_options: Generator[None, None, None],
+) -> None:
     """Enable the discipline status temporarily.
 
     Args:
@@ -181,7 +185,9 @@ def enable_discipline_status(restore_configuration_options) -> None:
 
 
 @pytest.fixture
-def enable_discipline_statistics(restore_configuration_options) -> None:
+def enable_discipline_statistics(
+    restore_configuration_options: Generator[None, None, None],
+) -> None:
     """Enable the discipline statistics temporarily.
 
     Args:

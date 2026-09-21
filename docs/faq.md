@@ -34,12 +34,12 @@ Use the [DisciplinaryOpt][gemseo.formulation.disciplinary_opt.DisciplinaryOpt] f
 
 ## Available options for algorithms
 
-See the available [DOEs][available-doe-algorithms],
-[linear solvers][available-linear-solvers],
-[MDO formulations][available-linear-solvers],
-[MDAs][available-mda-algorithms],
-[optimizers][available-optimization-algorithms], [post-processors][available-post-processing-algorithms]
-and [machine learners][algorithms-of-machine-learning] (accessible from [this page][overview] of the documentation).
+See the available [DOEs](https://gemseo.org/more_on/catalogs/doe/),
+[linear solvers](https://gemseo.org/more_on/catalogs/linear_solvers/),
+[MDO formulations](https://gemseo.org/more_on/catalogs/mdo_formulations/),
+[MDAs](https://gemseo.org/more_on/catalogs/mda/),
+[optimizers](https://gemseo.org/more_on/catalogs/optimization/), [post-processors](https://gemseo.org/more_on/catalogs/post_processing/)
+and [machine learners](https://gemseo.org/more_on/catalogs/machine_learning/) (accessible from [the feature catalogs](https://gemseo.org/more_on/catalogs/) of the GEMSEO website).
 
 ## How to extend GEMSEO features?
 

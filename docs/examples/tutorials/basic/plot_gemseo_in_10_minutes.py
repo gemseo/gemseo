@@ -255,7 +255,7 @@ scenario.execute(SLSQP_Settings(max_iter=10))
 #
 #     GEMSEO provides you with a lot of optimization algorithms and options.
 #     An exhaustive list of the algorithms available in GEMSEO can be found in the
-#     [available optimization algorithms section][available-optimization-algorithms].
+#     [optimization catalog](https://gemseo.org/more_on/catalogs/optimization/).
 
 # %%
 # ## Post-processing the results
