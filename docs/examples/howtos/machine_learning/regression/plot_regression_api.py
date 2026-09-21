@@ -49,7 +49,7 @@ get_regression_options("GaussianProcessRegressor", pretty_print=False)
 #     [get_regression_models()][gemseo.machine_learning.get_regression_models] and [get_regression_options()][gemseo.machine_learning.get_regression_options]
 #     can be very useful for the developers.
 #     As a user,
-#     it may be easier to consult [this page][available-regression-models]
+#     it may be easier to consult [this page](https://gemseo.org/more_on/catalogs/machine_learning/)
 #     to find out about the different models and their options.
 #
 # ## Creation
