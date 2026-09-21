@@ -187,6 +187,9 @@ class BaseLinkDiscipline(Discipline):
     _n_strongly_coupled_disciplines: int
     """The number of strongly coupled disciplines."""
 
+    _original_x_names: tuple[str, ...]
+    """The names of the design variables in the original problem."""
+
     _perform_mda_analytically: Callable[[RealArray], RealArray]
     """The function performing the MDA analytically at a given design point."""
 
@@ -195,9 +198,6 @@ class BaseLinkDiscipline(Discipline):
 
     _y_names: tuple[str, ...]
     """The names of the coupling variables in the MDO problem."""
-
-    _original_x_names: tuple[str, ...]
-    """The names of the design variables in the original problem."""
 
     def __init__(
         self,
