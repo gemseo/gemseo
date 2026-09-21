@@ -100,16 +100,18 @@ def test_complex_data_processor_with_discipline() -> None:
 
 
 @pytest.mark.parametrize(
-    ("mapping", "input_names", "output_names", "input_data"),
+    ("input_mapping", "output_mapping", "input_names", "output_names", "input_data"),
     [
         (
-            {"A": "a", "B": "b", "O1": "o1", "O2": "o2"},
+            {"A": "a", "B": "b"},
+            {"O1": "o1", "O2": "o2"},
             ("A", "B"),
             ("O1", "O2"),
             {"A": array([1]), "B": array([2])},
         ),
         (
-            {"A": "a", "O1": "o1"},
+            {"A": "a"},
+            {"O1": "o1"},
             ("A", "b"),
             ("O1", "o2"),
             {"A": array([1]), "b": array([2])},
@@ -121,7 +123,8 @@ def test_complex_data_processor_with_discipline() -> None:
 @pytest.mark.parametrize("add_namespace_to_o1", [False, True])
 @pytest.mark.parametrize("add_namespace_to_o2", [False, True])
 def test_name_mapping(
-    mapping,
+    input_mapping,
+    output_mapping,
     input_data,
     input_names,
     output_names,
@@ -134,7 +137,7 @@ def test_name_mapping(
     disc = LocalDisc()
     disc.io.input_grammar.update_from_names(input_names)
     disc.io.output_grammar.update_from_names(output_names)
-    disc.io.data_processor = NameMapping(mapping)
+    disc.io.data_processor = NameMapping(input_mapping, output_mapping)
     o1_name = output_names[0]
     o2_name = output_names[1]
     input_data_ = input_data.copy()
@@ -162,27 +165,27 @@ def test_name_mapping(
 
 def test_name_mapping_pre_process() -> None:
     """Verify ``NameMapping.pre_process_data`` renames global keys to local keys."""
-    processor = NameMapping({"global_a": "local_a", "global_b": "local_b"})
-    pre = processor.pre_process_data({"global_a": 1, "global_b": 2})
-    assert pre == {"local_a": 1, "local_b": 2}
+    processor = NameMapping({"global_a": "local_a"}, {})
+    pre = processor.pre_process_data({"global_a": 1})
+    assert pre == {"local_a": 1}
 
 
 def test_name_mapping_pre_process_passes_unmapped_keys() -> None:
     """Verify unmapped keys go through ``pre_process_data`` unchanged."""
-    processor = NameMapping({"global_a": "local_a"})
+    processor = NameMapping({"global_a": "local_a"}, {})
     pre = processor.pre_process_data({"global_a": 1, "passthrough": 2})
     assert pre == {"local_a": 1, "passthrough": 2}
 
 
 def test_name_mapping_post_process() -> None:
     """Verify ``NameMapping.post_process_data`` reverses the renaming."""
-    processor = NameMapping({"global_a": "local_a", "global_b": "local_b"})
-    post = processor.post_process_data({"local_a": 1, "local_b": 2})
-    assert post == {"global_a": 1, "global_b": 2}
+    processor = NameMapping({}, {"global_b": "local_b"})
+    post = processor.post_process_data({"local_b": 2})
+    assert post == {"global_b": 2}
 
 
 def test_name_mapping_post_process_passes_unmapped_keys() -> None:
     """Verify unmapped keys go through ``post_process_data`` unchanged."""
-    processor = NameMapping({"global_a": "local_a"})
+    processor = NameMapping({}, {"global_a": "local_a"})
     post = processor.post_process_data({"local_a": 1, "passthrough": 2})
     assert post == {"global_a": 1, "passthrough": 2}

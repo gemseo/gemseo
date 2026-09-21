@@ -1428,8 +1428,10 @@ classes:
     __init__:
       output_names_to_input_indices: output_name_to_input_indices
   VariableRenamer:
+    add_translations_by_discipline:
+      variable_names_to_new_variable_names: null
     add_translations_by_variable:
-      discipline_names_to_variable_names: discipline_name_to_variable_name
+      discipline_names_to_variable_names: null
 
   FilteringDiscipline:
     __init__:
