@@ -984,21 +984,18 @@ def test_configure(
     validate_input_data,
     validate_output_data,
     enable_parallel_execution,
+    restore_configuration_options,
 ) -> None:
     """Check that the configuration of GEMSEO works correctly."""
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape("configure() is deprecated; use gemseo.configuration instead."),
-    ):
-        configure(
-            enable_discipline_statistics=enable_discipline_statistics,
-            enable_function_statistics=enable_function_statistics,
-            enable_progress_bar=enable_progress_bar,
-            enable_discipline_cache=enable_discipline_cache,
-            validate_input_data=validate_input_data,
-            validate_output_data=validate_output_data,
-            enable_parallel_execution=enable_parallel_execution,
-        )
+    configure(
+        enable_discipline_statistics=enable_discipline_statistics,
+        enable_function_statistics=enable_function_statistics,
+        enable_progress_bar=enable_progress_bar,
+        enable_discipline_cache=enable_discipline_cache,
+        validate_input_data=validate_input_data,
+        validate_output_data=validate_output_data,
+        enable_parallel_execution=enable_parallel_execution,
+    )
     assert PreprocessedFunction.enable_statistics == enable_function_statistics
     assert ExecutionStatistics.is_enabled == enable_discipline_statistics
     assert Discipline.validate_input_data == validate_input_data
@@ -1013,21 +1010,11 @@ def test_configure(
     assert BaseMDAParallelSolverSettings().n_processes == (
         n_cpus if enable_parallel_execution else 1
     )
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape("configure() is deprecated; use gemseo.configuration instead."),
-    ):
-        configure()
-    BaseMDAParallelSolverSettings.default_n_processes = n_cpus
 
 
 def test_configure_default() -> None:
     """Check the default use of configure."""
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape("configure() is deprecated; use gemseo.configuration instead."),
-    ):
-        configure()
+    configure()
     assert PreprocessedFunction.enable_statistics is False
     assert ExecutionStatistics.is_enabled is False
     assert ExecutionStatus.is_enabled is False
@@ -1081,14 +1068,7 @@ def test_configure_logger_deprecated() -> None:
 
 def test_configure_logger() -> None:
     """Check configure_logger() with default argument values."""
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape(
-            "configure_logger() is deprecated; "
-            "use gemseo.configuration.logging instead."
-        ),
-    ):
-        logger = configure_logger()
+    logger = configure_logger()
     assert logger == logging.root
     assert logger.level == logging.INFO
 
@@ -1101,20 +1081,13 @@ def test_configure_logger_gemseo_logger():
     file_name = "foo"
     file_mode = "w"
     handlers = gemseo_logger.handlers.copy()
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape(
-            "configure_logger() is deprecated; "
-            "use gemseo.configuration.logging instead."
-        ),
-    ):
-        configure_logger(
-            level=logging.WARNING,
-            date_format=date_format,
-            message_format=message_format,
-            filename=file_name,
-            filemode=file_mode,
-        )
+    configure_logger(
+        level=logging.WARNING,
+        date_format=date_format,
+        message_format=message_format,
+        filename=file_name,
+        filemode=file_mode,
+    )
     assert gemseo_logger.level == logging.WARNING
     assert gemseo_logger.handlers[0].formatter.datefmt == date_format
     assert gemseo_logger.handlers[0].formatter._fmt == message_format
@@ -1132,21 +1105,14 @@ def test_configure_logger_no_gemseo_logger() -> None:
     message_format = _logging_message_format + " - "
     file_name = "foo"
     file_mode = "w"
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape(
-            "configure_logger() is deprecated; "
-            "use gemseo.configuration.logging instead."
-        ),
-    ):
-        logger = configure_logger(
-            logger_name="foo",
-            level=logging.WARNING,
-            date_format=date_format,
-            message_format=message_format,
-            filename=file_name,
-            filemode=file_mode,
-        )
+    logger = configure_logger(
+        logger_name="foo",
+        level=logging.WARNING,
+        date_format=date_format,
+        message_format=message_format,
+        filename=file_name,
+        filemode=file_mode,
+    )
     assert logger.name == "foo"
     assert logger.level == logging.WARNING
     assert logger.handlers[0].formatter.datefmt == date_format
@@ -1160,14 +1126,7 @@ def test_configure_logger_no_gemseo_logger() -> None:
 
 def test_configure_logger_level() -> None:
     """Check configure_logger() with custom level."""
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape(
-            "configure_logger() is deprecated; "
-            "use gemseo.configuration.logging instead."
-        ),
-    ):
-        logger = configure_logger(level=logging.WARNING)
+    logger = configure_logger(level=logging.WARNING)
     assert logger.level == logging.WARNING
     gemseo_logger.level = logging.INFO
 
@@ -1176,30 +1135,16 @@ def test_configure_logger_format(caplog) -> None:
     """Check configure_logger() with custom message and date formats."""
     date_format = "foo"
     message_format = "%(levelname)8s / %(asctime)s: %(message)s"
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape(
-            "configure_logger() is deprecated; "
-            "use gemseo.configuration.logging instead."
-        ),
-    ):
-        logger = configure_logger(
-            logger_name="bar", date_format=date_format, message_format=message_format
-        )
+    logger = configure_logger(
+        logger_name="bar", date_format=date_format, message_format=message_format
+    )
     logger.info("baz")
     assert re.match(r"INFO     bar:test_gemseo\.py:\d+\d+\d+ baz\n", caplog.text)
 
 
 def test_configure_logger_file(tmp_wd) -> None:
     """Check configure_logger() with custom file."""
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape(
-            "configure_logger() is deprecated; "
-            "use gemseo.configuration.logging instead."
-        ),
-    ):
-        logger = configure_logger(filename="foo.txt")
+    logger = configure_logger(filename="foo.txt")
     stream_handler = logger.handlers[0]
     assert isinstance(stream_handler, MultiLineStreamHandler)
     assert len(logger.handlers) == 2
@@ -1213,14 +1158,7 @@ def test_configure_logger_file(tmp_wd) -> None:
 
 def test_configure_logger_file_mode(tmp_wd) -> None:
     """Check configure_logger() with custom file and file mode."""
-    with pytest.warns(
-        DeprecationWarning,
-        match=re.escape(
-            "configure_logger() is deprecated; "
-            "use gemseo.configuration.logging instead."
-        ),
-    ):
-        logger = configure_logger(filename="foo.txt", filemode="w")
+    logger = configure_logger(filename="foo.txt", filemode="w")
     assert logger.handlers[-1].mode == "w"
 
 
