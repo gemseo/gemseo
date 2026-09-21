@@ -13,13 +13,7 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Execution statistics as a Gantt chart.
+"""# Execution statistics as a Gantt chart
 
 When
 the global attribute [ExecutionStatistics.is_time_stamps_enabled][gemseo.core.discipline.execution_statistics.ExecutionStatistics.is_time_stamps_enabled] is `True`

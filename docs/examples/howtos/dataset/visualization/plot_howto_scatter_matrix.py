@@ -37,17 +37,18 @@ from gemseo.post.dataset import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
 #
+# This how-to needs a dataset.
 iris = create_benchmark_dataset("IrisDataset")
 
 # %%
-# ### 2. Plot the pair plot
+# ### 1. Plot the pair plot
 #
 PairPlot(iris, PairPlot_Settings()).execute(save=False, show=True)
 
 # %%
-# ### 3. Plot the pair plot with options
+# ### 2. Plot the pair plot with options
 #
 # Color the dots based on the value of a variable:
 PairPlot(iris, PairPlot_Settings(classifier="specy")).execute(save=False, show=True)

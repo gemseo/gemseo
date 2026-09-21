@@ -50,7 +50,9 @@ from gemseo.machine_learning.regression.model.polyreg_settings import (
 from gemseo.machine_learning.regression.quality import R2Measure
 
 # %%
-# ### 1. Define the reference model
+# ### Prerequisites
+#
+# This how-to needs a trained regressor.
 
 
 def f(x):
@@ -58,8 +60,6 @@ def f(x):
 
 
 # %%
-# ### 2. Create the training dataset
-
 x_train = array([0.1, 0.3, 0.5, 0.6, 0.8, 0.9, 0.95])
 y_train = f(x_train)
 
@@ -68,15 +68,13 @@ training_dataset.add_input_group(x_train[:, newaxis], ["x"])
 training_dataset.add_output_group(y_train[:, newaxis], ["y"])
 
 # %%
-# ### 2. Create the ML model
-
 regressor = PolynomialRegressor(
     training_dataset, settings=PolynomialRegressor_Settings(degree=3)
 )
 regressor.learn()
 
 # %%
-# ### 3. Evaluate its quality by resampling
+# ### 1. Evaluate its quality by resampling
 r2 = R2Measure(regressor)
 
 # %%

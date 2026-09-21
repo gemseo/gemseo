@@ -45,7 +45,9 @@ from numpy import ones
 from gemseo import create_design_space
 
 # %%
-# ### 1. Create an initial design space
+# ### Prerequisites
+#
+# This how-to needs a design space.
 #
 # First,
 # create a design space with multiple variables of different types and sizes.
@@ -71,7 +73,7 @@ print("Initial design space:")
 design_space
 
 # %%
-# ### 2. Remove a specific variable
+# ### 1. Remove a specific variable
 #
 # Use the `remove_variable()` method to delete a single variable from the design space.
 # Here, you remove the variable `'x4'`.
@@ -81,7 +83,7 @@ print("After removing 'x4':")
 design_space
 
 # %%
-# ### 3. Keep only selected variables
+# ### 2. Keep only selected variables
 #
 # The `filter()` method allows you to keep only a subset of variables.
 # All other variables will be removed from the design space.
@@ -92,7 +94,7 @@ print("After filtering to keep only selected variables:")
 design_space
 
 # %%
-# ### 4. Filter dimensions of a variable
+# ### 3. Filter dimensions of a variable
 #
 # For multi-dimensional variables,
 # use `filter_dimensions()` to keep only specific components.

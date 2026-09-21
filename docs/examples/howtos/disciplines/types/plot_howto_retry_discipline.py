@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Jean-François Figué
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Retry the discipline execution
 
 ## Problem
@@ -49,7 +43,9 @@ if TYPE_CHECKING:
 
 
 # %%
-# ### 1. Create a discipline
+# ### Prerequisites
+#
+# This how-to needs a discipline.
 #
 # This discipline will crash the first 2 executions
 # and finally succeed at the third attempt.
@@ -75,7 +71,7 @@ class FictiveDiscipline(Discipline):
 discipline = FictiveDiscipline()
 
 # %%
-# ### 2. Multiple trials
+# ### 1. Multiple trials
 #
 # Wrap your discipline with
 # [RetryDiscipline][gemseo.discipline.wrapper.retry_discipline.RetryDiscipline].

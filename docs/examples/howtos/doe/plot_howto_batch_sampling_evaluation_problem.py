@@ -49,14 +49,15 @@ if TYPE_CHECKING:
     from gemseo.util.typing import RealArray
 
 # %%
-# ### 1. Define the design space
+# ### Prerequisites
 #
+# This how-to needs a design space.
 design_space = DesignSpace()
 design_space.add_variable("length", lower_bound=0.0, upper_bound=10.0)
 design_space.add_variable("width", lower_bound=0.0, upper_bound=10.0)
 
 # %%
-# ### 2. Implement a vectorizable function
+# ### 1. Implement a vectorizable function
 #
 # The function must handle both a single sample (1D array of shape `(input_dimension,)`)
 # and a batch of samples (2D array of shape `(n_samples, input_dimension)`):
@@ -93,19 +94,19 @@ class AreaFunction:
 function = AreaFunction()
 
 # %%
-# ### 3. Create the evaluation problem
+# ### 2. Create the evaluation problem
 #
 problem = EvaluationProblem(design_space)
 problem.add_observable(ArrayFunction(function, name="area"))
 
 # %%
-# ### 4. Execute with batch sampling
+# ### 3. Execute with batch sampling
 #
 # Pass `vectorize=True` to the DOE settings to enable batch sampling:
 SciPyDOE("MC").execute(problem, settings=MC_Settings(n_samples=1000, vectorize=True))
 
 # %%
-# ### 5. Verify
+# ### 4. Verify
 #
 # The function was called once with a 2D array of shape `(1000, 2)`:
 function.last_input_data.shape

@@ -13,13 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Matthias De Lozzo
-#        :author: Syver Doving Agdestein
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Create a classification model
 
 ## Problem
@@ -46,13 +39,16 @@ from gemseo.machine_learning.classification.quality import F1Measure
 from gemseo.problem.dataset.iris import create_iris_dataset
 
 # %%
-# ### 1. Create the training dataset
+# ### Prerequisites
+#
+# This how-to needs a training dataset.
+#
 # For example,
 # [the Iris flower data set](https://en.wikipedia.org/wiki/Iris_flower_data_set).
 training_dataset = create_iris_dataset(as_io=True)
 
 # %%
-# ### 2. Create a classification model
+# ### 1. Create a classification model
 model = KNNClassifier(
     training_dataset,
     settings=KNNClassifier_Settings(),
@@ -61,12 +57,12 @@ model.learn()
 model
 
 # %%
-# ### 3. Assess its quality
+# ### 2. Assess its quality
 f1 = F1Measure(model)
 f1.compute_learning_measure(multioutput=False)
 
 # %%
-# ### 4. Predict a cluster
+# ### 3. Predict a cluster
 input_value = {
     "sepal_length": array([4.5]),
     "sepal_width": array([3.0]),

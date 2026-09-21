@@ -49,7 +49,9 @@ from gemseo.optimization import SLSQP_Settings
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 
 # %%
-# ### 1. Create your scenario
+# ### Prerequisites
+#
+# This how-to needs a scenario.
 #
 # Here, the Sobieski test case is used, with the MDF formulation.
 disciplines = create_discipline([
@@ -68,7 +70,7 @@ scenario = create_scenario(
 )
 
 # %%
-# ### 2. Set an history backup
+# ### 1. Set an history backup
 #
 # You can chose the save frequency,
 # either at each iteration or/and at each call function.
@@ -90,7 +92,7 @@ scenario.set_backup_settings(
 )
 
 # %%
-# ### 3. Save after execution
+# ### 2. Save after execution
 scenario.execute(
     SLSQP_Settings(
         max_iter=10,

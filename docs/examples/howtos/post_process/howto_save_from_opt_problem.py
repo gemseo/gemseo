@@ -39,7 +39,9 @@ from gemseo.optimization import OptimizationProblem
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build and solve the optimization problem
+# ### Prerequisites
+#
+# This how-to needs an optimization problem that has already been solved.
 #
 # You consider a minimization problem over the interval $[0,1]$
 # of the $f(x)=x^2$ objective function:
@@ -57,7 +59,7 @@ optimization_problem.objective = objective
 execute_algo(optimization_problem, "NLOPT_COBYLA", max_iter=10)
 
 # %%
-# ### 2. Save the results to an HDF5 file
+# ### 1. Save the results to an HDF5 file
 #
 optimization_problem.to_hdf("my_results.hdf")
 

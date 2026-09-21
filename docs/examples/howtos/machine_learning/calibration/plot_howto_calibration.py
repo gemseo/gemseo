@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Calibrate an ML model
 
 ## Problem
@@ -47,16 +42,18 @@ from gemseo.problem.dataset.rosenbrock import create_rosenbrock_dataset
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Create the training dataset
+# ### Prerequisites
+#
+# This how-to needs a training dataset.
 training_dataset = create_rosenbrock_dataset(opt_naming=False, n_samples=25)
 
 # %%
-# ### 2. Create the test training
+# ### 1. Create the test training
 #
 test_dataset = create_rosenbrock_dataset(opt_naming=False)
 
 # %%
-# ### 3. Calibrate the degree of a polynomial regressor
+# ### 2. Calibrate the degree of a polynomial regressor
 #
 # #### Create the calibration space
 calibration_space = DesignSpace()

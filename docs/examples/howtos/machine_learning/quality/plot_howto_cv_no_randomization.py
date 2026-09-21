@@ -41,7 +41,9 @@ from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
 from gemseo.problem.uncertainty.wing_weight import WingWeightRandomSpace
 
 # %%
-# ### 1. Define the reference model
+# ### Prerequisites
+#
+# This how-to needs a trained regressor.
 #
 # In this how-to guide,
 # you consider the wing weight problem
@@ -51,8 +53,6 @@ discipline = WingWeightDiscipline()
 input_space = WingWeightRandomSpace()
 
 # %%
-# ### 2. Create the training dataset
-#
 # You generate $3 \times d$ training samples
 # using optimized Latin hypercube sampling strategy.
 
@@ -64,8 +64,6 @@ training_dataset = sample_disciplines(
 )
 
 # %%
-# ### 2. Create the ML model
-#
 # You create a regressor from this training dataset,
 # taking care to normalize the data to facilitate learning.
 
@@ -76,7 +74,7 @@ regressor = RBFRegressor(
 regressor.learn()
 
 # %%
-# ### 3. Evaluate its quality by resampling
+# ### 1. Evaluate its quality by resampling
 r2 = R2Measure(regressor)
 r2.compute_cross_validation_measure()
 

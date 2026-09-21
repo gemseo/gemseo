@@ -48,7 +48,9 @@ from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Create your scenario
+# ### Prerequisites
+#
+# This how-to needs a scenario.
 #
 # Here, an `AnalyticDiscipline` is used, with the `DisciplinaryOpt` formulation.
 # An [MDOScenario][gemseo.scenario.mdo.MDOScenario] is generated,
@@ -71,7 +73,7 @@ scenario.add_objective("y")
 #     [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario],
 #     you don't have any objective function.
 #
-# ### 2. Execute with a given algorithm
+# ### 1. Execute with a given algorithm
 #
 # Select the settings
 settings = SLSQP_Settings(max_iter=5)
@@ -82,7 +84,7 @@ settings
 scenario.execute(settings)
 
 # %%
-# ### 3. Set a default algorithm to the scenario
+# ### 2. Set a default algorithm to the scenario
 #
 # In some particular cases, you may want to set a default algorithm.
 #

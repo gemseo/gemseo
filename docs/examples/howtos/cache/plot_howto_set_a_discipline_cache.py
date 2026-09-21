@@ -32,13 +32,17 @@ from __future__ import annotations
 from gemseo.discipline import AnalyticDiscipline
 
 # %%
-# ### 1. Create a discipline
+# ### Prerequisites
+#
+# This how-to needs a discipline.
 #
 # Here, you consider an analytic discipline.
 discipline = AnalyticDiscipline({"y": "x1+x2"})
+# %%
+# Initially, the cache is an empty [SimpleCache][gemseo.core.cache.simple.SimpleCache].
 discipline.cache
 # %%
-# ### 2. Enumerate possible caches
+# ### 1. Enumerate possible caches
 #
 # By default, a cache of type `SimpleCache` is attached to the discipline
 # but different types of cache can be set for this discipline.
@@ -51,7 +55,7 @@ list(discipline.CacheType)
 #     Some caches have usage restrictions.
 #     Do not hesitate to read the [user guide][concept-different-cache-types].
 #
-# ### 3. Set another cache
+# ### 2. Set another cache
 #
 # From that list, you can reset the cache with the
 # [set_cache()][gemseo.core.discipline.base_discipline.BaseDiscipline.set_cache] method.

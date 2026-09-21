@@ -14,7 +14,7 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-r"""# Create a discipline from a Pydantic model
+"""# Create a discipline from a Pydantic model
 
 ## Problem
 
@@ -41,7 +41,9 @@ implementation.
 from __future__ import annotations
 
 # %%
-# ### 1. Define the Pydantic model
+# ### Prerequisites
+#
+# This how-to needs a Pydantic model.
 #
 # The model carries all data exchanged with the discipline.
 # Use standard Pydantic field annotations to declare the types and defaults.
@@ -59,7 +61,7 @@ class QuadraticModel(BaseModel):
 
 
 # %%
-# ### 2. Subclass BaseModelDiscipline
+# ### 1. Subclass BaseModelDiscipline
 #
 # The only requirement is to implement ``_run_from_model``.
 # Read input values from *model* and write the results back into it.
@@ -74,7 +76,7 @@ class QuadraticDiscipline(BaseModelDiscipline):
 
 
 # %%
-# ### 3. Instantiate the discipline
+# ### 2. Instantiate the discipline
 #
 # Pass a model instance that carries the **default** values; the grammars are
 # inferred automatically at construction time — no manual grammar declaration is
@@ -83,7 +85,7 @@ model = QuadraticModel()
 discipline = QuadraticDiscipline(model)
 
 # %%
-# ### 4. Inspect the auto-inferred grammar names
+# ### 3. Inspect the auto-inferred grammar names
 #
 # ``x``, ``a``, and ``b`` were **read before being written** in
 # ``_run_from_model`` → inputs.
@@ -92,7 +94,7 @@ print("Inputs :", sorted(discipline.io.input_grammar.keys()))
 print("Outputs:", sorted(discipline.io.output_grammar.keys()))
 
 # %%
-# ### 5. Execute the discipline
+# ### 4. Execute the discipline
 #
 # Call ``execute`` with a dictionary of input values.
 # Unspecified inputs fall back to the defaults stored in the model.

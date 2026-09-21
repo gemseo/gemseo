@@ -39,7 +39,9 @@ from gemseo.optimization import OptimizationProblem
 from gemseo.post import OptHistoryView_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
+#
+# This how-to needs a dataset.
 #
 # In this how-to, you assume that only an
 # [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]
@@ -52,7 +54,7 @@ problem = OptimizationProblem.from_hdf("power2_opt_pb.h5")
 dataset = problem.to_dataset()
 
 # %%
-# ### 2. Post-process the dataset
+# ### 1. Post-process the dataset
 #
 # Pass the dataset to [execute_post()][gemseo.execute_post]
 # exactly as you would pass a scenario or an HDF5 file path:

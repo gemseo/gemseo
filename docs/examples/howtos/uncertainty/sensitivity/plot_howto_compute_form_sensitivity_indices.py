@@ -53,7 +53,9 @@ from gemseo.problem.uncertainty.wing_weight.random_space import WingWeightRandom
 from gemseo.uncertainty.sensitivity.form import FORMAnalysis
 
 # %%
-# ### 1. Set up the test problem
+# ### Prerequisites
+#
+# This how-to needs one or more disciplines and a design space.
 #
 # The wing weight problem estimates the wing weight $W_w$ (lb) of a light aircraft
 # from 10 structural and aerodynamic parameters,
@@ -64,11 +66,11 @@ random_space = WingWeightRandomSpace(
 )
 
 # %%
-# ### 2. Instantiate a FORM analysis
+# ### 1. Instantiate a FORM analysis
 analysis = FORMAnalysis()
 
 # %%
-# ### 3. Define the events of interest
+# ### 2. Define the events of interest
 #
 # Build an event variable bound to the disciplinary output `Ww`,
 # then the events as a mapping from names to comparisons.
@@ -77,7 +79,7 @@ Ww = analysis.get_event_variables("Ww")
 events = {"too_heavy": Ww > 400}
 
 # %%
-# ### 4. Run the FORM study
+# ### 3. Run the FORM study
 #
 # [compute_samples()][gemseo.uncertainty.sensitivity.form.FORMAnalysis.compute_samples]
 # runs the first-order reliability method (FORM) by default.
@@ -94,14 +96,14 @@ analysis.compute_samples([discipline], random_space, events)
 #     Set `algo_settings` to `OT_FORM_Settings()` or `OT_SORM_Settings()`
 #     to change the settings of the reliability analysis algorithm.
 #
-# ### 5. Compute indices
+# ### 4. Compute indices
 #
 # [compute_indices()][gemseo.uncertainty.sensitivity.form.FORMAnalysis.compute_indices]
 # derives the importance factors from the FORM study:
 analysis.compute_indices()
 
 # %%
-# ### 6. Inspect the indices
+# ### 5. Inspect the indices
 #
 # The [main_indices][gemseo.uncertainty.sensitivity.form.FORMAnalysis.main_indices]
 # attribute holds the classical importance factors,
@@ -121,7 +123,7 @@ result = analysis.dataset.misc["execution_result"]["too_heavy"]
 result.probability
 
 # %%
-# ### 7. Visualize the indices
+# ### 6. Visualize the indices
 #
 # A bar plot ranks the inputs by their importance for the event.
 # The event name `"too_heavy"` is passed as the output of interest:

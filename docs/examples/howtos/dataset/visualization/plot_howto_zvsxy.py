@@ -34,12 +34,13 @@ from gemseo.post.dataset import ZvsXY
 from gemseo.post.dataset.zvsxy_settings import ZvsXY_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
 #
+# This how-to needs a dataset.
 dataset = create_benchmark_dataset("RosenbrockDataset")
 
 # %%
-# ### 2. Plot z vs x and y
+# ### 1. Plot z vs x and y
 #
 plot = ZvsXY(dataset, ZvsXY_Settings(x=("x", 0), y=("x", 1), z="rosen"))
 plot.colormap = "viridis"

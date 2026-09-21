@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
 # Compute the Jacobian of a discipline
 
@@ -43,11 +37,13 @@ from numpy import array
 from gemseo.discipline import AnalyticDiscipline
 
 # %%
-# ### 1. Create a discipline
+# ### Prerequisites
+#
+# This how-to needs a discipline.
 discipline = AnalyticDiscipline({"y": "a**2+b", "z": "a**3+b**2"})
 
 # %%
-# ### 2. Define the differentiated inputs and ouputs
+# ### 1. Define the differentiated inputs and ouputs
 #
 # You need to set the input variables
 # with respect to which to compute the Jacobian of the output ones.
@@ -69,7 +65,7 @@ discipline.add_differentiated_outputs(["z"])
 #     [PydanticGrammar][gemseo.core.grammar.pydantic.PydanticGrammar].
 
 # %%
-# ### 3. Compute the derivatives
+# ### 2. Compute the derivatives
 #
 # Use the method
 # [linearize()][gemseo.core.discipline.discipline.Discipline.linearize]

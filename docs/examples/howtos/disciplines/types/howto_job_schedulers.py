@@ -14,7 +14,7 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-r"""# Interface with HPC job schedulers (SLURM, LSF, PBS, etc)
+"""# Interface with HPC job schedulers (SLURM, LSF, PBS, etc)
 
 ## Problem
 
@@ -37,12 +37,14 @@ from gemseo import create_discipline
 from gemseo import wrap_discipline_in_job_scheduler
 
 # %%
-# ### 1. Create a discipline
+# ### Prerequisites
+#
+# This how-to needs a discipline.
 
 discipline = create_discipline(["Sellar1"])
 
-
-# ### 2. Wrap your discpline
+# %%
+# ### 1. Wrap your discipline
 #
 # The discipline is executed on 24 CPUs using the SLURM wrapper, on an HPC.
 

@@ -13,7 +13,7 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-r"""# Use a Taylor linearization
+"""# Use a Taylor linearization
 
 ## Problem
 
@@ -38,15 +38,17 @@ from gemseo.discipline import AnalyticDiscipline
 from gemseo.discipline import TaylorDiscipline
 
 # %%
-# Consider the discipline $f(x)=(\sin(x_1)+\cos(x_2),\cos(x_1)+\sin(x_2))$.
+# ### Prerequisites
 #
-# ### 1. Create the reference discipline.
+# This how-to needs a reference discipline.
+#
+# Consider the discipline $f(x)=(\sin(x_1)+\cos(x_2),\cos(x_1)+\sin(x_2))$.
 discipline = AnalyticDiscipline(
     {"y1": "sin(x1)+cos(x2)", "y2": "cos(x1)+sin(x2)"}, name="f"
 )
 
 # %%
-# ### 2. Create the Taylor discipline
+# ### 1. Create the Taylor discipline
 #
 # The first-order Taylor polynomial of $f$ at an input point $a$ is
 #

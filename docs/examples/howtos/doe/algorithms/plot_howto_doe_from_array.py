@@ -38,8 +38,9 @@ from gemseo.scenario import EvaluationScenario
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build the discipline and design space
+# ### Prerequisites
 #
+# This how-to needs a discipline and a design space.
 discipline = AnalyticDiscipline({"y": "a*b + c"})
 
 design_space = DesignSpace()
@@ -48,7 +49,7 @@ design_space.add_variable("b", lower_bound=1.0, upper_bound=10.0)
 design_space.add_variable("c", size=2, lower_bound=1.0, upper_bound=10.0)
 
 # %%
-# ### 2. Define the samples
+# ### 1. Define the samples
 #
 samples = [
     {
@@ -72,14 +73,14 @@ samples = [
 #     [variable_names][gemseo.space.design.DesignSpace.variable_names]
 #     method to see that order.
 #
-# ### 3. Execute the scenario with the custom samples
+# ### 2. Execute the scenario with the custom samples
 #
 scenario = EvaluationScenario([discipline], design_space)
 scenario.add_observable("y")
 scenario.execute(CustomDOE_Settings(samples=samples))
 
 # %%
-# ### 4. Inspect the results
+# ### 3. Inspect the results
 #
 # Export the database to a [Dataset][gemseo.dataset.dataset.Dataset]
 # and verify that the output equals the product of $a$ and $b$:

@@ -38,7 +38,9 @@ from gemseo.post.dataset import BarPlot
 from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
+#
+# This how-to needs a dataset.
 #
 # Each row is one series; columns are the variable components to compare:
 dataset = Dataset()
@@ -48,7 +50,7 @@ dataset.add_variable("x3", array([[0.75], [0.25]]))
 dataset.index = ["series_1", "series_2"]
 
 # %%
-# ### 2. Plot the bar chart
+# ### 1. Plot the bar chart
 #
 # Use `n_digits` to control the number of digits displayed on the bars
 # and `colormap` to set the color scheme:

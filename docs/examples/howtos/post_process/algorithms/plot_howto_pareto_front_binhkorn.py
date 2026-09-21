@@ -39,7 +39,9 @@ from gemseo.post import ParetoFront_Settings
 from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
-# ### 1. Build and sample the optimization problem
+# ### Prerequisites
+#
+# This how-to needs an optimization problem that has already been sampled.
 #
 # You use the Binh and Korn problem
 # (see [BinhKorn][gemseo.problem.multiobjective_optimization.binh_korn.BinhKorn])
@@ -48,7 +50,7 @@ problem = BinhKorn()
 doe_library_factory.execute(problem, OT_OPT_LHS_Settings(n_samples=100))
 
 # %%
-# ### 2. Plot the Pareto front without non-feasible points
+# ### 1. Plot the Pareto front without non-feasible points
 #
 # Set `show_non_feasible=False` to restrict the plot to feasible points only.
 # Use `objectives_labels` to assign readable labels to the objective components:
@@ -64,7 +66,7 @@ execute_post(
 )
 
 # %%
-# ### 3. Plot the Pareto front with non-feasible points
+# ### 2. Plot the Pareto front with non-feasible points
 #
 # By default, non-feasible points are included and shown in green:
 execute_post(

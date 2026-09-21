@@ -41,7 +41,9 @@ from gemseo.problem.uncertainty.wing_weight import WingWeightRandomSpace
 from gemseo.uncertainty.statistic import EmpiricalStatistics
 
 # %%
-# ### 1. Create a dataset
+# ### Prerequisites
+#
+# This how-to needs a dataset.
 #
 # Sample the
 # [WingWeightDiscipline][gemseo.problem.uncertainty.wing_weight.discipline.WingWeightDiscipline]
@@ -58,7 +60,7 @@ dataset = sample_disciplines(
 )
 
 # %%
-# ### 2. Create an EmpiricalStatistics object
+# ### 1. Create an EmpiricalStatistics object
 #
 # Pass the dataset to
 # [EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics].
@@ -67,7 +69,7 @@ analysis = EmpiricalStatistics(dataset, name="WingWeightDiscipline")
 analysis
 
 # %%
-# ### 3. Restrict to variables of interest
+# ### 2. Restrict to variables of interest
 #
 # Focus on the wing weight variable `Ww` only:
 analysis = EmpiricalStatistics(
@@ -76,7 +78,7 @@ analysis = EmpiricalStatistics(
 analysis
 
 # %%
-# ### 4. Plot the empirical distribution
+# ### 3. Plot the empirical distribution
 #
 # Boxplot:
 analysis.plot_boxplot()

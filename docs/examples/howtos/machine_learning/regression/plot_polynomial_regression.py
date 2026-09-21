@@ -13,13 +13,7 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Matthias De Lozzo, Syver Doving Agdestein
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Polynomial regression.
+"""# Polynomial regression
 
 A [PolynomialRegressor][gemseo.machine_learning.regression.model.polyreg.PolynomialRegressor] is a polynomial regression model
 based on a [LinearRegressor][gemseo.machine_learning.regression.model.linreg.LinearRegressor].

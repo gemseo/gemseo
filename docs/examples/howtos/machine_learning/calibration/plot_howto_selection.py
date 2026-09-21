@@ -51,7 +51,9 @@ from gemseo.space import DesignSpace
 rng = default_rng(54321)
 
 # %%
-# ### 1. Create the training dataset
+# ### Prerequisites
+#
+# This how-to needs a training dataset.
 #
 # The data are generated from the function $f(x)=x^2$.
 # The input data $\{x_i\}_{i=1,\cdots,20}$ are chosen at random
@@ -69,7 +71,7 @@ training_dataset.add_variable("x", x[:, None], training_dataset.input_group)
 training_dataset.add_variable("y", y[:, None], training_dataset.output_group)
 
 # %%
-# ### 2. Create a selection algorithm
+# ### 1. Create a selection algorithm
 # Use a quality measure for selection,
 # e.g. mean squared error with a cross-validation.
 selector = MLModelSelection(
@@ -107,7 +109,7 @@ best_model = selector.select()
 best_model
 
 # %%
-# ### 3. Visualize the results
+# ### 2. Visualize the results
 finex = linspace(0, 1, 1000)
 for candidate in selector.candidates:
     model = candidate[0]
@@ -124,6 +126,6 @@ plt.legend()
 #
 # ## One step further
 #
-# At Step 3, you used ML calibration when adding the RBF candidate.
+# At Step 1, you used ML calibration when adding the RBF candidate.
 # If you want to get more information about this topic,
 # you can read [this how-to guide][calibrate-an-ml-model].

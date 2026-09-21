@@ -47,7 +47,9 @@ from gemseo.space import DesignSpace
 backup_file = Path("backup.hdf5")
 
 # %%
-# ### 1. Create the scenario
+# ### Prerequisites
+#
+# This how-to needs a scenario.
 #
 # For this optimization scenario,
 # you minimize the sphere function $f(x, y) = x^2 + y^2$ over two variables,
@@ -66,7 +68,7 @@ scenario.add_objective("obj")
 #     This example also works with
 #     [EvaluationScenario][gemseo.scenario.evaluation.EvaluationScenario].
 #
-# ### 2. Configure the history backup
+# ### 1. Configure the history backup
 #
 # [set_backup_settings][gemseo.scenario.mdo.MDOScenario.set_backup_settings]
 # registers a listener that appends each evaluation to an HDF5 file.
@@ -87,7 +89,7 @@ scenario.add_objective("obj")
 scenario.set_backup_settings(backup_file)
 
 # %%
-# ### 3. Execute and verify the backup
+# ### 2. Execute and verify the backup
 #
 # The backup file is created (or updated) incrementally during execution:
 # by default the option `at_each_function_call` is used, therefore,
@@ -102,7 +104,7 @@ print(f"Backup file exists: {backup_file.exists()}")
 print(f"Evaluations stored: {len(scenario.formulation.problem.database)}")
 
 # %%
-# ### 4. Resume from backup
+# ### 3. Resume from backup
 #
 # Simulate a restart by resetting the starting point to the original value.
 # In this case,

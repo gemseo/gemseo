@@ -46,7 +46,9 @@ from gemseo.uncertainty.distribution import SPNormalDistribution_Settings
 from gemseo.uncertainty.distribution import SPUniformDistribution_Settings
 
 # %%
-# ### 1. Set up the discipline and random space
+# ### Prerequisites
+#
+# This how-to needs a discipline and a random space.
 #
 # Create a simple analytic discipline:
 discipline = AnalyticDiscipline({"z": "x+y"})
@@ -61,7 +63,7 @@ random_space.add_variable("y", SPNormalDistribution_Settings(mu=0.0, sigma=1.0))
 random_space
 
 # %%
-# ### 2. Sample the discipline over the random space
+# ### 1. Sample the discipline over the random space
 #
 # Run a Latin Hypercube Sampling (LHS) DOE over the random space
 # and collect inputs and outputs in an
@@ -75,7 +77,7 @@ dataset = sample_disciplines(
 dataset.describe()
 
 # %%
-# ### 3. Visualize the input-output samples
+# ### 2. Visualize the input-output samples
 #
 # A pair plot shows marginal histograms on the diagonal
 # and scatter plots for each pair of variables off the diagonal:

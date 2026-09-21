@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """
 # Change the differentiation settings
 
@@ -43,7 +37,9 @@ from gemseo.discipline import AutoPyDiscipline
 
 
 # %%
-# ### 1. Create the discipline to linearize
+# ### Prerequisites
+#
+# This how-to needs a discipline to linearize.
 #
 # !!! note
 #     You may see the how-to:
@@ -59,7 +55,7 @@ jacobian_data = discipline.linearize(compute_all_jacobians=True)
 jacobian_data
 
 # %%
-# ### 2. Change the jacobian approximation settings
+# ### 1. Change the jacobian approximation settings
 #
 # You can change the approximation type to complex step:
 discipline.set_jacobian_approximation(

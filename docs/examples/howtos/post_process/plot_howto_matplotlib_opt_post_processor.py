@@ -42,8 +42,9 @@ from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build and execute the scenario
+# ### Prerequisites
 #
+# This how-to needs a scenario that has already been executed.
 discipline = AnalyticDiscipline(expressions={"y": "x**2"})
 
 design_space = DesignSpace()
@@ -56,7 +57,7 @@ scenario.add_objective("y")
 scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 
 # %%
-# ### 2. Run the post-processing and retrieve the figures
+# ### 1. Run the post-processing and retrieve the figures
 #
 # Pass `save=False` and `show=False` to prevent GEMSEO from saving or
 # displaying the figures immediately, so they can be modified first:
@@ -72,7 +73,7 @@ figures
 #     The keys vary depending on the post-processor used;
 #     print them to discover how to access each figure.
 #
-# ### 3. Customize the figure with matplotlib
+# ### 2. Customize the figure with matplotlib
 #
 # Access the axes of the `"variables"` figure and update the labels:
 figure = figures["variables"]
@@ -81,7 +82,7 @@ axes[1].set_ylabel("Optimization variables scaled in [0,1]")
 axes[0].set_ylabel("Optimization variables")
 
 # %%
-# ### 4. Display the modified figure
+# ### 3. Display the modified figure
 #
 plt.figure(figure)
 plt.show()

@@ -47,7 +47,9 @@ from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
 from gemseo.problem.uncertainty.wing_weight import WingWeightRandomSpace
 
 # %%
-# ### 1. Define the reference model
+# ### Prerequisites
+#
+# This how-to needs training and validation datasets generated from a reference model.
 #
 # You consider the wing weight problem
 # defined in [this page][gemseo.problem.uncertainty.wing_weight].
@@ -56,8 +58,6 @@ discipline = WingWeightDiscipline()
 input_space = WingWeightRandomSpace()
 
 # %%
-# ### 2. Create the training dataset
-#
 # You generate $3 \times d$ training samples
 # using optimized Latin hypercube sampling strategy.
 
@@ -69,8 +69,6 @@ training_dataset = sample_disciplines(
 )
 
 # %%
-# ### 3. Create the validation dataset
-#
 # You generate many validation samples using Monte Carlo sampling.
 
 test_dataset = sample_disciplines(
@@ -81,7 +79,7 @@ test_dataset = sample_disciplines(
 )
 
 # %%
-# ### 4. Use an ML model without normalization
+# ### 1. Use an ML model without normalization
 #
 # Create a regressor, e.g. Gaussian process regressor (GPR).
 regressor = GaussianProcessRegressor(training_dataset)
@@ -93,7 +91,7 @@ r2 = R2Measure(regressor)
 r2.compute_test_measure(test_dataset)
 
 # %%
-# ### 5. Use an ML model with normalization
+# ### 2. Use an ML model with normalization
 #
 # #### Scale using min-max
 #

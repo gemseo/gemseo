@@ -40,8 +40,9 @@ from gemseo.post.dataset import Scatter
 from gemseo.post.dataset.scatter_settings import Scatter_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
 #
+# This how-to needs a dataset.
 inputs = linspace(0, 1, 20)[:, None]
 outputs = sin(2 * pi * inputs)
 
@@ -50,13 +51,13 @@ dataset.add_variable("x", inputs, "inputs")
 dataset.add_variable("y", outputs, "outputs")
 
 # %%
-# ### 2. Define a per-point color
+# ### 1. Define a per-point color
 #
 # Each point is colored according to whether its output value exceeds 0.5 in magnitude:
 color = ["b" if abs(output) > 0.5 else "r" for output in outputs]
 
 # %%
-# ### 3. Plot the scatter chart
+# ### 2. Plot the scatter chart
 #
 plot = Scatter(dataset, Scatter_Settings(x="x", y="y"))
 plot.color = color

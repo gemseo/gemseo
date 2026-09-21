@@ -38,8 +38,9 @@ from gemseo.post.dataset import YvsX
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
 #
+# This how-to needs a dataset.
 inputs = linspace(0, 1, 10)[:, None]
 outputs = sin(2 * pi * inputs)
 
@@ -48,7 +49,7 @@ dataset.add_variable("x", inputs, "inputs")
 dataset.add_variable("y", outputs, "outputs")
 
 # %%
-# ### 2. Plot y vs x
+# ### 1. Plot y vs x
 #
 plot = YvsX(dataset, YvsX_Settings(x="x", y="y"))
 plot.linestyle = "--o"

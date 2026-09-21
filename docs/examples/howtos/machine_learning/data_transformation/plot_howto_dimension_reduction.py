@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo, Syver Doving Agdestein
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Reduce the data dimension before training an ML model
 
 ## Problem
@@ -57,7 +51,9 @@ from gemseo.machine_learning.transformer.dimension_reduction.pca import PCA
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Define the reference model
+# ### Prerequisites
+#
+# This how-to needs training and validation datasets generated from a reference model.
 #
 # You consider the functional discipline $f(x)=\{\cos(xt): t\in[0,2]\}$
 # defined over the input space $[0, 2\pi]$
@@ -77,8 +73,6 @@ design_space = DesignSpace()
 design_space.add_variable("x", lower_bound=0.0, upper_bound=2 * pi)
 
 # %%
-# ### 2. Create the training dataset
-#
 # You generate 20 training samples
 # using optimized Latin hypercube sampling strategy.
 training_dataset = sample_disciplines(
@@ -92,8 +86,6 @@ plt.plot(t, training_dataset.get_view(variable_names="y").T)
 plt.show()
 
 # %%
-# ### 3. Create the validation dataset
-#
 # You generate many validation samples using Monte Carlo sampling.
 
 test_dataset = sample_disciplines(
@@ -101,7 +93,7 @@ test_dataset = sample_disciplines(
 )
 
 # %%
-# ### 4. Use an ML model without normalization
+# ### 1. Use an ML model without normalization
 #
 # You create a regressor,
 # e.g. radial basis function (RBF) regressor,

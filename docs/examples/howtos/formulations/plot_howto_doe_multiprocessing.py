@@ -36,7 +36,9 @@ from gemseo.scenario import EvaluationScenario
 from gemseo.util.platform import platform_is_windows
 
 # %%
-# ### 1. Generate your DOE scenario
+# ### Prerequisites
+#
+# This how-to needs a discipline, a design space and a DOE scenario.
 disciplines = create_discipline([
     "SobieskiPropulsion",
     "SobieskiAerodynamics",
@@ -57,7 +59,7 @@ scenario.add_observable("y_4")
 #     This how-to also works with [MDOScenario][gemseo.scenario.mdo.MDOScenario],
 #     when using Design of Experiments.
 #
-# ### 2. Execute the scenario with multiprocessing
+# ### 1. Execute the scenario with multiprocessing
 #
 # It is possible to run a DOE in parallel using multiprocessing, in order to do
 # this, you specify the number of processes to be used for the computation of

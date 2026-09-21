@@ -41,7 +41,9 @@ from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
+#
+# This how-to needs a dataset.
 #
 # Each row is one series; `x1` has two components while `x2` and `x3` are scalars:
 dataset = Dataset()
@@ -51,13 +53,13 @@ dataset.add_variable("x3", array([[0.75], [0.25]]))
 dataset.index = ["series_1", "series_2"]
 
 # %%
-# ### 2. Create the shared figure
+# ### 1. Create the shared figure
 #
 # Use `plt.subplots` to create a figure with as many `Axes` as plots needed:
 fig, (ax1, ax2) = plt.subplots(ncols=2)
 
 # %%
-# ### 3. Draw the first plot into the left subplot
+# ### 2. Draw the first plot into the left subplot
 #
 # Pass `fig` and `ax1` to `execute()` so the bar chart renders in the left panel.
 # Set `save=False` to prevent each plot from creating its own figure:
@@ -67,7 +69,7 @@ plot_1.title = "Plot 1"
 plot_1.execute(save=False, fig=fig, ax=ax1)
 
 # %%
-# ### 4. Draw the second plot into the right subplot
+# ### 3. Draw the second plot into the right subplot
 #
 # Pass `fig` and `ax2` to `execute()` so the scatter renders in the right panel:
 plot_2 = YvsX(dataset, YvsX_Settings(x="x2", y="x3"))
@@ -77,7 +79,7 @@ plot_2.title = "Plot 2"
 plot_2.execute(save=False, fig=fig, ax=ax2)
 
 # %%
-# ### 5. Add a shared title and display
+# ### 4. Add a shared title and display
 #
 fig.suptitle("Plots 1 and 2")
 plt.show()

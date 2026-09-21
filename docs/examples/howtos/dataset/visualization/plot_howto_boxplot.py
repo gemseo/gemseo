@@ -40,8 +40,9 @@ from gemseo.post.dataset import Boxplot
 from gemseo.post.dataset.boxplot_settings import Boxplot_Settings
 
 # %%
-# ### 1. Build the datasets
+# ### Prerequisites
 #
+# This how-to needs datasets.
 inputs = linspace(-1, 1, 100)[:, None]
 
 dataset = IODataset(dataset_name="Foo")
@@ -53,7 +54,7 @@ other_dataset.add_output_variable("y1", -(inputs**2))
 other_dataset.add_output_variable("y2", hstack((-(inputs**3), -(inputs**4))))
 
 # %%
-# ### 2. Plot a standard boxplot
+# ### 1. Plot a standard boxplot
 #
 plot = Boxplot(dataset)
 plot.xlabel = "Variables"
@@ -62,7 +63,7 @@ plot.title = "Standard boxplots"
 plot.execute(save=False, show=True)
 
 # %%
-# ### 3. Center or scale the data
+# ### 2. Center or scale the data
 #
 # Use `center=True` to subtract the mean from each variable:
 plot = Boxplot(dataset, Boxplot_Settings(center=True))
@@ -76,7 +77,7 @@ plot.title = "With scaling"
 plot.execute(save=False, show=True)
 
 # %%
-# ### 4. Control outliers and confidence intervals
+# ### 3. Control outliers and confidence intervals
 #
 # Set `add_outliers=False` to hide individual outlier points:
 plot = Boxplot(dataset, Boxplot_Settings(add_outliers=False))
@@ -91,7 +92,7 @@ plot.title = "Confidence intervals"
 plot.execute(save=False, show=True)
 
 # %%
-# ### 5. Change the orientation
+# ### 4. Change the orientation
 #
 # Set `use_vertical_bars=False` to display horizontal boxes:
 plot = Boxplot(dataset, Boxplot_Settings(use_vertical_bars=False))
@@ -99,7 +100,7 @@ plot.title = "Horizontal bars"
 plot.execute(save=False, show=True)
 
 # %%
-# ### 6. Overlay an additional dataset
+# ### 5. Overlay an additional dataset
 #
 # Pass extra datasets as positional arguments to compare distributions side by side:
 plot = Boxplot(dataset, Boxplot_Settings(datasets=[other_dataset]))

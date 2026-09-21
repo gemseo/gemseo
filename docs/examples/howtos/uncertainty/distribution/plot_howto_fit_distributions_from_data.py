@@ -56,14 +56,16 @@ from gemseo.uncertainty.distribution.scipy.distribution_fitter import (
 )
 
 # %%
-# ### 1. Prepare data
+# ### Prerequisites
+#
+# This how-to needs data.
 #
 # For illustration, generate 100 samples from a standard normal distribution:
 rng = default_rng(1)
 data = rng.normal(size=100)
 
 # %%
-# ### 2. Create the distribution fitters
+# ### 1. Create the distribution fitters
 #
 # #### With OpenTURNS:
 ot_fitter = OTDistributionFitter(data)
@@ -73,7 +75,7 @@ ot_fitter = OTDistributionFitter(data)
 sp_fitter = SPDistributionFitter(data)
 
 # %%
-# ### 3. List available distributions
+# ### 2. List available distributions
 #
 # These are the names of the backend classes,
 # e.g. `Normal` for OpenTURNS and `norm` for SciPy in the case of a normal distribution.
@@ -86,7 +88,7 @@ ot_fitter.available_distributions
 sp_fitter.available_distributions
 
 # %%
-# ### 4. Fit individual distributions
+# ### 3. Fit individual distributions
 #
 # #### With OpenTURNS
 #
@@ -122,7 +124,7 @@ sp_exponential
 sp_normal.plot()
 
 # %%
-# ### 5. Measure goodness-of-fit
+# ### 4. Measure goodness-of-fit
 #
 # #### With OpenTURNS
 #
@@ -181,7 +183,7 @@ acceptable, details = sp_fitter.compute_measure(sp_normal, "AndersonDarling")
 acceptable, details
 
 # %%
-# ### 6. Select the optimal distribution
+# ### 5. Select the optimal distribution
 #
 # #### With OpenTURNS
 #

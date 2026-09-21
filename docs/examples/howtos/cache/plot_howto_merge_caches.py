@@ -40,7 +40,9 @@ from numpy.random import default_rng
 from gemseo.discipline import AnalyticDiscipline
 
 # %%
-# ### 1. Create two disciplines and fill their cache
+# ### Prerequisites
+#
+# This how-to needs two disciplines that have already been executed.
 #
 # Here, you consider the same discipline twice,
 # and you execute them with random numbers so their cache are not the same.
@@ -61,14 +63,14 @@ disciplines[0].cache.to_dataset()
 disciplines[1].cache.to_dataset()
 
 # %%
-# ### 2. Create a new cache
+# ### 1. Create a new cache
 #
 # You can create a new cache using the two caches:
 cache = disciplines[0].cache + disciplines[1].cache
 cache.to_dataset()
 
 # %%
-# ### 3. Merge into an existing cache
+# ### 2. Merge into an existing cache
 #
 # You can also merge the first cache into the second one:
 disciplines[1].cache.update(disciplines[0].cache)

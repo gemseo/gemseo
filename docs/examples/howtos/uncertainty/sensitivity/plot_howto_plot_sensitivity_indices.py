@@ -43,7 +43,9 @@ from gemseo.problem.uncertainty.ishigami import IshigamiSpace
 from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 
 # %%
-# ### 1. Compute sensitivity indices
+# ### Prerequisites
+#
+# This how-to needs a sensitivity analysis whose indices have already been computed.
 #
 # Create a
 # [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]
@@ -56,7 +58,7 @@ analysis.compute_samples([discipline], random_space, n_samples=1000)
 analysis.compute_indices()
 
 # %%
-# ### 2. Bar chart
+# ### 1. Bar chart
 #
 # [plot_bar()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_bar]
 # shows the sensitivity of the
@@ -65,7 +67,7 @@ analysis.compute_indices()
 analysis.plot_bar("y", save=False, show=True)
 
 # %%
-# ### 3. Radar chart
+# ### 2. Radar chart
 #
 # [plot_radar()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_radar]
 # shows the same information on a radar (spider) plot:

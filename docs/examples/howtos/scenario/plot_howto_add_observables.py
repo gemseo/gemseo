@@ -43,7 +43,9 @@ from gemseo.optimization import SLSQP_Settings
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Define your scenario
+# ### Prerequisites
+#
+# This how-to needs a scenario.
 #
 # Consider the Sellar's problem, defined with two constraints.
 disciplines = create_discipline(["Sellar1", "Sellar2", "SellarSystem"])
@@ -64,7 +66,7 @@ scenario.add_constraint("c_1", constraint_type="ineq")
 scenario.add_constraint("c_2", constraint_type="ineq")
 
 # %%
-# ### 2. Add observables
+# ### 1. Add observables
 #
 # Only the design variables, objective function and constraints are stored by
 # default in the history database.
@@ -81,7 +83,7 @@ scenario.add_observable("y_1")
 scenario.add_observable("y_2", observable_name="y2")
 
 # %%
-# ### 3. Execute the scenario
+# ### 2. Execute the scenario
 #
 # Then,
 # you execute the MDO scenario with the inputs of the MDO scenario as a dictionary.

@@ -46,7 +46,9 @@ from numpy import array
 from gemseo.discipline import AnalyticDiscipline
 
 # %%
-# ### 1. Create and execute a discipline
+# ### Prerequisites
+#
+# This how-to needs a discipline that has already been executed.
 #
 # Here, you consider an analytic discipline.
 # For the purpose of this example, set a full cache and
@@ -58,7 +60,7 @@ discipline.execute({"x": array([2])})
 discipline.cache
 
 # %%
-# ### 2. Change a cache entry
+# ### 1. Change a cache entry
 #
 # You can change an existing entry.
 # To change the result when $x=2$, you have to give the tuple (output, jacobian):
@@ -66,7 +68,7 @@ discipline.cache[{"x": array([2])}] = ({"y": array([8])}, None)
 discipline.cache
 
 # %%
-# ### 3. Add a new cache entry
+# ### 2. Add a new cache entry
 #
 # Without executing the discipline, you can add new entries.
 # This can be used, for instance, to merge different caches of the same discipline,

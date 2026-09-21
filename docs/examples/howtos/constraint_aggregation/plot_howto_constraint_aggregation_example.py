@@ -41,7 +41,9 @@ from gemseo.optimization import NLOPT_MMA_Settings
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build your scenario
+# ### Prerequisites
+#
+# This how-to needs a scenario.
 #
 # Define 100 inequality constraints:
 N = 100
@@ -83,7 +85,7 @@ scenario = create_scenario(
 scenario.add_constraint(constraint_names, constraint_type="ineq")
 
 # %%
-# ### 2. Aggregate the constraints
+# ### 1. Aggregate the constraints
 #
 # Replace the 100 individual constraints with a single scalar one
 # using the lower bound KS function:
@@ -95,7 +97,7 @@ scenario.formulation.problem.constraints.aggregate(
 # !!! note
 #     With the `group` argument, you can chose to aggregate constraints by group.
 #
-# ### 3. Execute the scenario
+# ### 2. Execute the scenario
 #
 # The scenario now contains only 1 constraint:
 scenario.execute(

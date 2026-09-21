@@ -13,13 +13,7 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Generate a coupling graph.
+"""# Generate a coupling graph
 
 ## Problem
 
@@ -40,7 +34,9 @@ from gemseo import generate_coupling_graph
 from gemseo.util.discipline import DummyDiscipline
 
 # %%
-# ### 1. Create the disciplines
+# ### Prerequisites
+#
+# This how-to needs disciplines.
 #
 # In this example, you will use dummy disciplines that do nothing, but the same applies to any GEMSEO disciplines:
 dummy_disciplines = [
@@ -66,7 +62,7 @@ dummy_disciplines = [
 ]
 
 # %%
-# ### 2. Generate the coupling graph
+# ### 1. Generate the coupling graph
 #
 # The coupling graph represents each discipline by a node
 # and each coupling variable by an edge.
@@ -80,7 +76,7 @@ dummy_disciplines = [
 generate_coupling_graph(dummy_disciplines, file_path="")
 
 # %%
-# ### 3. Generate the condensed coupling graph
+# ### 2. Generate the condensed coupling graph
 #
 # You can also draw the condensed coupling graph,
 # where each groups of strongly coupled disciplines is represented by a node:

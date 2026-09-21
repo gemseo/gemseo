@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# How to project parameters into boundaries
 
 ## Problem
@@ -47,9 +42,9 @@ from numpy import ones
 from gemseo import create_design_space
 
 # %%
-# ###  1. Create a design space
+# ### Prerequisites
 #
-# First, create a design space.
+# This how-to needs a design space.
 design_space = create_design_space()
 design_space.add_variable("x1", lower_bound=-10, upper_bound=10)
 design_space.add_variable("x2", lower_bound=-10, upper_bound=10)
@@ -57,8 +52,7 @@ design_space.add_variable("x3", lower_bound=-10, upper_bound=10)
 design_space.add_variable("x4", value=ones(1), lower_bound=-10, upper_bound=10)
 
 # %%
-#
-# ###  2. Array projection
+# ### 1. Array projection
 point = array([1.0, 3, -15.0, 23.0])
 p_point = design_space.project_into_bounds(point)
 p_point

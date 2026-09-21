@@ -48,7 +48,9 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
 
 # %%
-# ### 1. Implement the discipline
+# ### Prerequisites
+#
+# This how-to needs a discipline raising a `ValueError` when a sample must be skipped.
 #
 # Raise a `ValueError` in `_run` whenever a sample must be skipped.
 # Here the function $y = \sqrt{a}$ is undefined for $a < 0$:
@@ -73,7 +75,7 @@ class ValueErrorDiscipline(Discipline):
 discipline = ValueErrorDiscipline()
 
 # %%
-# ### 2. Create an EvaluationScenario
+# ### 1. Create an EvaluationScenario
 #
 design_space = DesignSpace()
 design_space.add_variable("a", lower_bound=-1.0, upper_bound=10.0)
@@ -84,7 +86,7 @@ design_space.add_variable("a", lower_bound=-1.0, upper_bound=10.0)
 scenario = EvaluationScenario([discipline], design_space)
 scenario.add_observable("y")
 # %%
-# ### 3. Evaluate the scenario
+# ### 2. Evaluate the scenario
 #
 # You want to evaluate this discipline over this design space
 # at points 1, -1 and 4:

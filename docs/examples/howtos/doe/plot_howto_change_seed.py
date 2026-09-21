@@ -40,8 +40,9 @@ from gemseo.scenario import EvaluationScenario
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build the discipline, design space and scenario
+# ### Prerequisites
 #
+# This how-to needs a discipline, a design space and a scenario.
 discipline = AnalyticDiscipline({"y": "x**2"})
 
 design_space = DesignSpace()
@@ -50,7 +51,7 @@ design_space.add_variable("x", lower_bound=-1.0, upper_bound=1.0)
 scenario = EvaluationScenario([discipline], design_space)
 scenario.add_observable("y")
 # %%
-# ### 2. Observe the auto-increment behavior
+# ### 1. Observe the auto-increment behavior
 #
 # By default, the seed starts at 0 and is incremented at each execution.
 # Running the scenario twice therefore produces different samples:
@@ -62,7 +63,7 @@ scenario.execute(OT_OPT_LHS_Settings(n_samples=2))
 scenario.formulation.problem.database.get_last_n_x_vect(2)
 
 # %%
-# ### 3. Fix the seed for reproducibility
+# ### 2. Fix the seed for reproducibility
 #
 # Pass an explicit `seed` value to obtain the same samples every time:
 scenario.execute(OT_OPT_LHS_Settings(n_samples=2, seed=0))

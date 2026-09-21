@@ -43,6 +43,9 @@ from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
 
 # %%
+# ### Prerequisites
+#
+# This how-to needs a scenario and a logger showing the listener's output.
 #
 # You configure the logger to see the listener's output in the console.
 # In this case you use GEMSEO's default configuration.
@@ -52,8 +55,6 @@ configuration.logging.configure_root_logger = True
 
 
 # %%
-# ### 1. Create the scenario
-#
 # For this optimization scenario,
 # you minimize the sphere function $f(x, y) = x^2 + y^2$ over two variables,
 # both bounded in $[-5, 5]$ with starting point $(4, 4)$.
@@ -67,7 +68,7 @@ scenario = MDOScenario([discipline], design_space)
 scenario.add_objective("obj")
 
 # %%
-# ### 2. Define a listener
+# ### 1. Define a listener
 #
 # A listener is any callable that accepts a single argument:
 # the design vector `x_vect` at which new outputs were just stored.
@@ -90,7 +91,7 @@ def track_objective(x_vect):
 
 
 # %%
-# ### 3. Register the listener
+# ### 2. Register the listener
 #
 # Pass the listener to
 # [add_listener()][gemseo.core.problem.evaluation.EvaluationProblem.add_listener].
@@ -99,7 +100,7 @@ def track_objective(x_vect):
 problem.add_listener(track_objective)
 
 # %%
-# ### 4. Execute and inspect the tracked history
+# ### 3. Execute and inspect the tracked history
 scenario.execute(SLSQP_Settings(max_iter=20))
 
 # %%

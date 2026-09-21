@@ -14,7 +14,7 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-r"""# Function chaos expansion.
+r"""# Function chaos expansion
 
 Given a training dataset
 whose input samples are generated from OpenTURNS probability distributions,
