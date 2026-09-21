@@ -196,21 +196,8 @@ class BaseLinkDiscipline(Discipline):
     _y_names: tuple[str, ...]
     """The names of the coupling variables in the MDO problem."""
 
-    """The function differentiating the MDA analytically at a given design point.
-
-    If `None`, the discipline is not differentiable.
-    """
-
-    """The number of strongly coupled disciplines."""
-
     _original_x_names: tuple[str, ...]
     """The names of the design variables in the original problem."""
-
-    """The function performing the MDA analytically at a given design point."""
-
-    """The names of the design variables in the MDO problem."""
-
-    """The names of the coupling variables in the MDO problem."""
 
     def __init__(
         self,
