@@ -13,13 +13,7 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Polynomial chaos expansion (PCE).
+"""# Polynomial chaos expansion (PCE)
 
 A [PCERegressor][gemseo.machine_learning.regression.model.pce.PCERegressor] is a PCE model
 based on [OpenTURNS](http://openturns.github.io/).

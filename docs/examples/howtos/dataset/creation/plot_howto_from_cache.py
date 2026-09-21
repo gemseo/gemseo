@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Convert a cache to a dataset
 
 
@@ -43,9 +37,11 @@ from numpy import array
 from gemseo.core.cache.memory_full import MemoryFullCache
 
 # %%
-# ### 1. Create a cache
+# ### Prerequisites
 #
-# Consider an [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache] storing two parameters:
+# This how-to needs a cache.
+#
+# Consider a [MemoryFullCache][gemseo.core.cache.memory_full.MemoryFullCache] storing two parameters:
 #
 # - x with dimension 1 which is a cache input,
 # - y with dimension 2 which is a cache output.
@@ -55,7 +51,7 @@ cache[{"x": array([1.0])}] = ({"y": array([2.0, 3.0])}, None)
 cache[{"x": array([4.0])}] = ({"y": array([5.0, 6.0])}, None)
 
 # %%
-# ### 2. Convert to dataset
+# ### 1. Convert to dataset
 #
 # This cache can be converted to an [IODataset][gemseo.dataset.io_dataset.IODataset]
 # using its method [to_dataset()][gemseo.core.cache.memory_full.MemoryFullCache.to_dataset]:

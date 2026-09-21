@@ -35,7 +35,9 @@ from gemseo import create_scenario
 from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 
 # %%
-# ### 1. Create your scenario
+# ### Prerequisites
+#
+# This how-to needs a scenario.
 #
 # Here, the Sobieski test case is used, with the MDF formulation.
 
@@ -55,7 +57,7 @@ scenario = create_scenario(
 )
 
 # %%
-# ### 2. Generate your XDSM
+# ### 1. Generate your XDSM
 #
 # An [MDOScenario][gemseo.scenario.mdo.MDOScenario]
 # can generate its own XDSM.

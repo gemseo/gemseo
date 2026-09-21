@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Convert a database to a dataset
 
 ## Problem
@@ -44,7 +38,9 @@ from gemseo.optimization import SLSQP_Settings
 from gemseo.problem.optimization.rosenbrock import Rosenbrock
 
 # %%
-# ### 1. Create and execute an optimization problem
+# ### Prerequisites
+#
+# This how-to needs an optimization problem that has already been executed.
 #
 # Solve the [Rosenbrock][gemseo.problem.optimization.rosenbrock.Rosenbrock] optimization problem
 # with the SLSQP algorithm and 10 iterations:
@@ -52,7 +48,7 @@ optimization_problem = Rosenbrock()
 execute_algo(optimization_problem, settings_model=SLSQP_Settings(max_iter=10))
 
 # %%
-# ### 2. Convert to dataset
+# ### 1. Convert to dataset
 #
 # Then,
 # the [Database][gemseo.core.problem.database.Database] attached to this [OptimizationProblem][gemseo.optimization.problem.OptimizationProblem]

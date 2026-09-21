@@ -41,7 +41,9 @@ from gemseo.problem.uncertainty.wing_weight import WingWeightDiscipline
 from gemseo.problem.uncertainty.wing_weight import WingWeightRandomSpace
 
 # %%
-# ### 1. Define the reference model.
+# ### Prerequisites
+#
+# This how-to needs a reference model.
 #
 # In this how-to guide,
 # you consider the wing weight problem
@@ -51,7 +53,7 @@ discipline = WingWeightDiscipline()
 input_space = WingWeightRandomSpace()
 
 # %%
-# ### 2. Build a small training dataset
+# ### 1. Build a small training dataset
 #
 # You generate $3 \times d$ training samples
 # using optimized Latin hypercube sampling strategy.
@@ -64,7 +66,7 @@ training_dataset = sample_disciplines(
 )
 
 # %%
-# ### 3. Create a surrogate discipline
+# ### 2. Create a surrogate discipline
 #
 # You create a discipline based on a regressor trained from this training dataset.
 
@@ -85,7 +87,7 @@ discipline
 discipline.regressor
 
 # %%
-# ### 4. Evaluate the surrogate quality
+# ### 3. Evaluate the surrogate quality
 #
 # The surrogate discipline as a specific method for assessing its quality.
 
@@ -93,7 +95,7 @@ r2 = discipline.get_error_measure("R2Measure")
 r2.compute_learning_measure()
 
 # %%
-# ### 5. Evaluate the surrogate discipline
+# ### 4. Evaluate the surrogate discipline
 #
 # #### Default input values
 discipline.execute()

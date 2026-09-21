@@ -37,7 +37,9 @@ from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 from gemseo.uncertainty.sensitivity import MorrisAnalysis
 
 # %%
-# ### 1. Set up the test problem
+# ### Prerequisites
+#
+# This how-to needs one or more disciplines and a design space.
 #
 # The Ishigami function is a standard benchmark for sensitivity analysis [@ishigami1990]:
 #
@@ -48,7 +50,7 @@ discipline = IshigamiDiscipline()
 random_space = IshigamiSpace()
 
 # %%
-# ### 2. Run two sensitivity analyses
+# ### 1. Run two sensitivity analyses
 #
 # [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]:
 correlation = CorrelationAnalysis()
@@ -62,7 +64,7 @@ morris.compute_samples([discipline], random_space, n_samples=0)
 morris.compute_indices()
 
 # %%
-# ### 3. Compare with a bar chart
+# ### 2. Compare with a bar chart
 #
 # Pass the second analysis to
 # [plot_comparison()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.plot_comparison],
@@ -70,7 +72,7 @@ morris.compute_indices()
 morris.plot_comparison(correlation, "y", save=False, show=True)
 
 # %%
-# ### 4. Compare with a radar plot
+# ### 3. Compare with a radar plot
 morris.plot_comparison(correlation, "y", use_bar_plot=False, save=False, show=True)
 
 # %%

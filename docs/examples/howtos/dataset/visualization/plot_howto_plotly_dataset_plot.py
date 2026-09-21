@@ -45,8 +45,9 @@ from gemseo.post.dataset import BarPlot
 from gemseo.post.dataset.bar_plot_settings import BarPlot_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
 #
+# This how-to needs a dataset.
 dataset = Dataset()
 dataset.add_variable("x1", array([[0.25, 0.35], [0.75, 0.85]]))
 dataset.add_variable("x2", array([[0.5], [0.5]]))
@@ -54,20 +55,20 @@ dataset.add_variable("x3", array([[0.75], [0.25]]))
 dataset.index = ["series_1", "series_2"]
 
 # %%
-# ### 2. Create the plot
+# ### 1. Create the plot
 #
 plot = BarPlot(dataset, BarPlot_Settings(n_digits=2))
 plot.colormap = "PiYG"
 
 # %%
-# ### 3. Execute with the HTML format
+# ### 2. Execute with the HTML format
 #
 # Setting `file_format="html"` switches the rendering engine to plotly
 # and returns a list of plotly figures:
 plotly_figures = plot.execute(save=False, file_format="html")
 
 # %%
-# ### 4. Display the figure
+# ### 3. Display the figure
 #
 plotly_figures[0]
 

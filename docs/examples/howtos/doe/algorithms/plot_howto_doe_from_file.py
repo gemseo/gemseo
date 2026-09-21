@@ -38,8 +38,9 @@ from gemseo.scenario import EvaluationScenario
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build the discipline and design space
+# ### Prerequisites
 #
+# This how-to needs a discipline and a design space.
 discipline = AnalyticDiscipline({"y": "a*b"})
 
 design_space = DesignSpace()
@@ -47,7 +48,7 @@ design_space.add_variable("a", lower_bound=1.0, upper_bound=10.0)
 design_space.add_variable("b", lower_bound=1.0, upper_bound=10.0)
 
 # %%
-# ### 2. Execute the scenario from the file
+# ### 1. Execute the scenario from the file
 #
 scenario = EvaluationScenario([discipline], design_space)
 scenario.add_observable("y")
@@ -70,7 +71,7 @@ scenario.execute(CustomDOE_Settings(doe_file="doe.txt"))
 #     The DOE file is parsed by using
 #     the [read_csv()](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html) Pandas method.
 #
-# ### 3. Inspect the results
+# ### 2. Inspect the results
 #
 # Export the database to a [Dataset][gemseo.dataset.dataset.Dataset]
 # and verify that the output equals the product of $a$ and $b$:

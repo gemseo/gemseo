@@ -13,13 +13,7 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Matthias De Lozzo, Syver Doving Agdestein
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
-"""# Random forest.
+"""# Random forest
 
 A [RandomForestRegressor][gemseo.machine_learning.regression.model.random_forest.RandomForestRegressor] is a random forest model
 based on [scikit-learn](https://scikit-learn.org).

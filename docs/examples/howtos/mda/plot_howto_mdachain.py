@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Charlie Vanaret
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Manage nested coupling systems
 
 ## Problem
@@ -40,7 +35,9 @@ from gemseo.mda import MDAChain_Settings
 from gemseo.mda import MDAGaussSeidel_Settings
 
 # %%
-# ### 1. Create your disciplines
+# ### Prerequisites
+#
+# This how-to needs coupled disciplines.
 #
 # Here, you take the Sobieski disciplines.
 # The *Structure*, *Propulsion* and *Aerodynamics* disciplines are highly coupled.
@@ -54,7 +51,7 @@ disciplines = create_discipline([
 ])
 
 # %%
-# ### 2. Create the MDA chain
+# ### 1. Create the MDA chain
 #
 # You can specify which MDA algorithm you want to use inside the chain.
 # Here, you set the Gauss-Seidel algorithm.
@@ -66,7 +63,7 @@ mda = create_mda(
 )
 
 # %%
-# ### 3. Observe the coupling structure
+# ### 2. Observe the coupling structure
 #
 # The `MDAChain` has decomposed the problem in two parts:
 #

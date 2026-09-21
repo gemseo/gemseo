@@ -41,15 +41,17 @@ from gemseo.post.dataset import YvsX
 from gemseo.post.dataset.yvsx_settings import YvsX_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
 #
+# This how-to needs a dataset.
 dataset = Dataset()
 dataset.add_variable("a", [[1], [2], [3]])
 dataset.add_variable("b", [[1], [0], [1]])
 
 # %%
-# Then,
-# you define a [YvsX][gemseo.post.dataset.yvsx.YvsX] chart,
+# ### 1. Create and draw the chart
+#
+# Define a [YvsX][gemseo.post.dataset.yvsx.YvsX] chart,
 # which is a particular [BaseDatasetPlot][gemseo.post.dataset.base.BaseDatasetPlot]:
 yvsx = YvsX(dataset, YvsX_Settings(x="a", y="b"))
 
@@ -59,7 +61,7 @@ figures = yvsx.execute(save=False)
 figure = figures[0]
 
 # %%
-# ### 3. Customize the figure with matplotlib
+# ### 2. Customize the figure with matplotlib
 #
 # Access the `Axes` object and apply any standard matplotlib modifications:
 ax = figure.axes[0]
@@ -68,7 +70,7 @@ ax.set_ylabel("A relevant y-label")
 ax.grid()
 
 # %%
-# ### 4. Save and display the figure
+# ### 3. Save and display the figure
 #
 plt.savefig("foo.png")
 plt.show()

@@ -13,18 +13,15 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Gilberto RUIZ JIMENEZ
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Using the DirectoryManager
+
 ## Problem
+
 When disciplines create and read files at run time, the number of files grows quickly
 and it becomes hard to tell which file belongs to which discipline or iteration.
 
 ## Solution
+
 Enable the ``DirectoryManager`` via ``configuration.directory_manager``:
 it organizes run-time files into a directory hierarchy that mirrors the scenario workflow
 and lets you apply cleanup policies to control disk usage.

@@ -44,7 +44,9 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
 
 # %%
-# ### 1. Implement vectorizable disciplines
+# ### Prerequisites
+#
+# This how-to needs vectorizable disciplines.
 #
 # In batch mode, each discipline receives and must return dictionaries of 1D arrays.
 # For a scalar variable, the 1D array has size `n_samples`.
@@ -89,7 +91,7 @@ class AreaIncreaser(Discipline):
 
 
 # %%
-# ### 2. Build the design space and scenario
+# ### 1. Build the design space and scenario
 #
 area_discipline = AreaDiscipline()
 
@@ -101,7 +103,7 @@ scenario = MDOScenario([area_discipline, AreaIncreaser()], design_space)
 scenario.add_objective("final_area")
 
 # %%
-# ### 3. Execute with batch sampling
+# ### 2. Execute with batch sampling
 #
 # Pass `vectorize=True` to the DOE settings to enable batch sampling:
 scenario.execute(MC_Settings(n_samples=1000, vectorize=True))
@@ -113,7 +115,7 @@ scenario.execute(MC_Settings(n_samples=1000, vectorize=True))
 #     provided that all disciplines are vectorized.
 
 # %%
-# ### 4. Verify
+# ### 3. Verify
 #
 # Each discipline received and returned 1D arrays of size 1000:
 area_discipline.io.data["length"].shape

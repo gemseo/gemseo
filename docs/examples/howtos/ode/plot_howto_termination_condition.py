@@ -50,7 +50,9 @@ from gemseo.core.discipline.discipline import Discipline
 from gemseo.discipline import ODEDiscipline
 
 # %%
-# ### 1. Build the RHS discipline
+# ### Prerequisites
+#
+# This how-to needs a discipline computing the right-hand side of the ODE.
 #
 # You reuse the harmonic oscillator RHS from the ODE tutorial.
 #
@@ -81,7 +83,7 @@ rhs_discipline = create_discipline(
 
 
 # %%
-# ### 2. Define the termination condition discipline
+# ### 1. Define the termination condition discipline
 #
 # The termination discipline must have the same inputs as the RHS discipline
 # and return a single real-valued output.
@@ -104,7 +106,7 @@ termination_discipline = create_discipline(
 )
 
 # %%
-# ### 3. Create the ODEDiscipline with the termination condition
+# ### 2. Create the ODEDiscipline with the termination condition
 #
 # Pass the termination discipline as a tuple
 # to `termination_event_disciplines`:
@@ -118,7 +120,7 @@ ode_discipline = ODEDiscipline(
 )
 
 # %%
-# ### 4. Execute and inspect the result
+# ### 3. Execute and inspect the result
 #
 # The integration stops as soon as `position` crosses zero:
 ode_res = ode_discipline.execute({

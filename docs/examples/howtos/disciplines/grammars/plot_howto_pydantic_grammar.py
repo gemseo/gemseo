@@ -48,7 +48,9 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
 
 # %%
-# ### 1. Create the Pydantic model
+# ### Prerequisites
+#
+# This how-to needs a Pydantic model.
 #
 # A Pydantic model is a class deriving from `pydantic.BaseModel`
 # that describes the names and types of the data to be validated.
@@ -93,7 +95,7 @@ class Model(BaseModel):
 # !!! tip "Good practice"
 #     `PydanticGrammar` should be defined in the `__init__` method of your discipline.
 #
-# ### 2. Create your discipline
+# ### 1. Create your discipline
 #
 class MyDiscipline(Discipline):
     """A discipline using a Pydantic grammar for inputs."""

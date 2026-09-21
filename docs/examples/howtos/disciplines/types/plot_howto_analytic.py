@@ -14,7 +14,7 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-r"""# Use analytic expressions
+"""# Use analytic expressions
 
 ## Problem
 
@@ -46,9 +46,11 @@ from numpy import array
 from gemseo.discipline import AnalyticDiscipline
 
 # %%
-# Consider the expressions $y_1 = 2x^2$ and $y_2 = 5+3x^2+z^3$.
+# ### Prerequisites
 #
-# ### 1. Create the dictionary of expressions
+# This how-to needs a dictionary of expressions.
+#
+# Consider the expressions $y_1 = 2x^2$ and $y_2 = 5+3x^2+z^3$.
 #
 # The keys in the dictionary are the names of the outputs,
 # and the values are the expressions.
@@ -58,7 +60,7 @@ expressions = {"y_1": "2*x**2", "y_2": "5+3*x**2+z**3"}
 # Please refer to the [sympy documentation](https://docs.sympy.org/)
 # for the syntax to use in expressions.
 #
-# ### 2. Create the discipline
+# ### 1. Create the discipline
 discipline = AnalyticDiscipline(expressions, name="f")
 
 # %%
@@ -66,7 +68,7 @@ discipline = AnalyticDiscipline(expressions, name="f")
 #     This class only supports scalar input and output variables.
 #
 #
-# ### 3. Execute the discipline
+# ### 2. Execute the discipline
 #
 # #### Default input values
 #

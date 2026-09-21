@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# How to (un)normalize design parameters
 
 ## Problem
@@ -42,7 +37,9 @@ from numpy import ones
 from gemseo import create_design_space
 
 # %%
-# ### 1. Create a design space
+# ### Prerequisites
+#
+# This how-to needs a design space.
 #
 # First, create a design space.
 design_space = create_design_space()
@@ -52,7 +49,7 @@ design_space.add_variable("x3", lower_bound=-10, upper_bound=10)
 design_space.add_variable("x4", value=ones(1), lower_bound=-10, upper_bound=10)
 
 # %%
-# ### 2. Normalize a given array
+# ### 1. Normalize a given array
 
 normalized_x_vect = design_space.normalize_vect(array([1.0, 10.0, 1.0, 1.0]))
 normalized_x_vect
@@ -62,7 +59,7 @@ normalized_x_vect
 #     When each variable has a current value, it can be retrieved as its normalized form with:
 #     `design_space.get_current_value(normalize=True)`.
 #
-# ### 3. Denormalize the array
+# ### 2. Denormalize the array
 denormalized_x_vect = design_space.denormalize_vect(normalized_x_vect)
 denormalized_x_vect
 

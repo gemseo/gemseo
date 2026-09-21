@@ -47,7 +47,9 @@ from gemseo.uncertainty.reliability.openturns.form_settings import OT_FORM_Setti
 from gemseo.uncertainty.reliability.scenario import ReliabilityScenario
 
 # %%
-# ### 1. Set up the test problem
+# ### Prerequisites
+#
+# This how-to needs one or more disciplines and a design space.
 #
 # The wing weight problem estimates the wing weight $W_w$ (lb) of a light aircraft
 # from 10 structural and aerodynamic parameters,
@@ -58,14 +60,14 @@ random_space = WingWeightRandomSpace(
 )
 
 # %%
-# ### 2. Create a reliability scenario
+# ### 1. Create a reliability scenario
 #
 # [ReliabilityScenario][gemseo.uncertainty.reliability.scenario.ReliabilityScenario]
 # takes the list of disciplines and the random space:
 scenario = ReliabilityScenario([discipline], random_space)
 
 # %%
-# ### 3. Define an event
+# ### 2. Define an event
 #
 # First, create an event variable bound to the disciplinary output `Ww`:
 Ww = scenario.get_event_variables("Ww")
@@ -82,7 +84,7 @@ Ww = scenario.get_event_variables("Ww")
 scenario.add_event(Ww > 400, "too_heavy")
 
 # %%
-# ### 4. Execute with FORM
+# ### 3. Execute with FORM
 #
 # [OT_FORM_Settings][gemseo.uncertainty.reliability.openturns.form_settings.OT_FORM_Settings]
 # selects the first-order reliability method (FORM) from OpenTURNS.
@@ -92,7 +94,7 @@ scenario.add_event(Ww > 400, "too_heavy")
 results = scenario.execute(OT_FORM_Settings())
 
 # %%
-# ### 5. Read the results
+# ### 4. Read the results
 #
 # Get the result for the `"too_heavy"` event:
 event_result = results["too_heavy"]

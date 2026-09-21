@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Charlie Vanaret
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Chain disciplines
 
 ## Problem
@@ -40,12 +35,14 @@ from gemseo.discipline import AnalyticDiscipline
 from gemseo.discipline.chain.chain import DisciplineChain
 
 # %%
-# ### 1. Create your disciplines
+# ### Prerequisites
+#
+# This how-to needs disciplines.
 discipline_a = AnalyticDiscipline({"y": "2*x"}, name="A")
 discipline_b = AnalyticDiscipline({"z": "y+1"}, name="B")
 
 # %%
-# ### 2. Chain the disciplines
+# ### 1. Chain the disciplines
 chain = DisciplineChain([discipline_a, discipline_b])
 chain
 
@@ -56,7 +53,7 @@ chain
 # They have the same default values, if any.
 # The outputs of the chain are the output of the disciplines.
 #
-# ### 3. Execute the chain
+# ### 2. Execute the chain
 #
 # Executing this chain is equivalent to executing discipline `A`,
 # getting its outputs,

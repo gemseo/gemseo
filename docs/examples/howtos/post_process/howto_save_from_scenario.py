@@ -37,8 +37,9 @@ from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build and execute the scenario
+# ### Prerequisites
 #
+# This how-to needs a scenario that has already been executed.
 discipline = AnalyticDiscipline(expressions={"y": "x**2"})
 
 design_space = DesignSpace()
@@ -51,7 +52,7 @@ scenario.add_objective("y")
 scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 
 # %%
-# ### 2. Save the results to an HDF5 file
+# ### 1. Save the results to an HDF5 file
 #
 scenario.to_hdf("my_results.hdf")
 

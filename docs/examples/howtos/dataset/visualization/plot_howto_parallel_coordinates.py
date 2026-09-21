@@ -38,12 +38,13 @@ from gemseo.post.dataset.parallel_coordinates_settings import (
 )
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
 #
+# This how-to needs a dataset.
 iris = create_benchmark_dataset("IrisDataset")
 
 # %%
-# ### 2. Plot the parallel coordinates chart
+# ### 1. Plot the parallel coordinates chart
 #
 # Pass a `classifier` variable name to color each polyline by class:
 ParallelCoordinates(iris, ParallelCoordinates_Settings(classifier="specy")).execute(

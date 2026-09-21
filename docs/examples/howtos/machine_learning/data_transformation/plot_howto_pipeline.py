@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Syver Doving Agdestein
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Chain data transformations
 
 ## Problem
@@ -44,14 +38,16 @@ from gemseo.machine_learning.transformer.pipeline import Pipeline
 from gemseo.machine_learning.transformer.scaler.scaler import Scaler
 
 # %%
-# ### 1. Generate data
+# ### Prerequisites
+#
+# This how-to needs data.
 #
 # To illustrate the concept of pipeline,
 # you consider very simple data:
 data = linspace(0, 1, 100)[:, newaxis]
 
 # %%
-# ### 2. Create the pipeline
+# ### 1. Create the pipeline
 #
 # Here,
 # you want a pipeline that:
@@ -60,19 +56,19 @@ data = linspace(0, 1, 100)[:, newaxis]
 pipeline = Pipeline(transformers=[Scaler(offset=1), Scaler(coefficient=2)])
 
 # %%
-# ### 3. Fit the pipeline to data
+# ### 2. Fit the pipeline to data
 pipeline.fit(data)
 
 # %%
-# ### 4. Transform data
+# ### 3. Transform data
 transformed_data = pipeline.transform(data)
 
 # %%
-# ### 5. Compute the Jacobian of the pipeline
+# ### 4. Compute the Jacobian of the pipeline
 transformed_jac_data = pipeline.compute_jacobian(data)
 
 # %%
-# ### 6. Verify the pipeline
+# ### 5. Verify the pipeline
 #
 # You could implement this pipeline by hand,
 # with a shifter:

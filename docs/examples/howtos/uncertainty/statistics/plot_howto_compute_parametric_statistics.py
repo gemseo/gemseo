@@ -51,7 +51,9 @@ from gemseo.uncertainty.statistic import OTParametricStatistics
 from gemseo.uncertainty.statistic import SPParametricStatistics
 
 # %%
-# ### 1. Create synthetic data
+# ### Prerequisites
+#
+# This how-to needs synthetic data.
 #
 # Generate 500 samples of four variables with known distributions:
 # uniform, normal, Weibull, and exponential.
@@ -69,7 +71,7 @@ variables = ["x_0", "x_1", "x_2", "x_3"]
 dataset = create_dataset("Dataset", data, variables)
 
 # %%
-# ### 2. Create the parametric statistics objects
+# ### 1. Create the parametric statistics objects
 #
 # Specify the candidate distributions and the fitting criterion.
 #
@@ -91,7 +93,7 @@ sp_analysis = SPParametricStatistics(
 sp_analysis
 
 # %%
-# ### 3. Inspect the fitting matrix
+# ### 2. Inspect the fitting matrix
 #
 # #### With OpenTURNS
 #
@@ -111,7 +113,7 @@ print(sp_analysis.get_fitting_matrix())
 sp_analysis.plot_criteria("x_0")
 
 # %%
-# ### 4. Plot the fitted distributions
+# ### 3. Plot the fitted distributions
 #
 # CDF and PDF of the fitted distribution for each variable:
 ot_analysis.plot()

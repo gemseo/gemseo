@@ -51,7 +51,9 @@ from gemseo.util.discipline import VariableTranslation
 from gemseo.util.discipline import rename_discipline_variables
 
 # %%
-# ### 1. Create the disciplines
+# ### Prerequisites
+#
+# This how-to needs disciplines.
 #
 # Consider four analytic disciplines.
 # There is the first discipline, named `"A"`,
@@ -71,7 +73,7 @@ disciplines.append(AnalyticDiscipline({"c": "4*a"}, name="A"))
 disciplines.append(AnalyticDiscipline({"b": "5*j"}, name="B"))
 
 # %%
-# ### 2. Variable translation
+# ### 1. Variable translation
 #
 # First,
 # you need to introduce the notion of
@@ -84,7 +86,7 @@ variable_translation
 # %%
 # This object will be used to create a translator.
 #
-# ### 3. Create translators
+# ### 2. Create translators
 #
 # A [VariableRenamer][gemseo.util.discipline.VariableRenamer] can be created
 # from translations
@@ -151,7 +153,7 @@ renamer.translators
 #
 
 # %%
-# ### 4. Rename discipline variables from translators
+# ### 3. Rename discipline variables from translators
 #
 # [rename_discipline_variables()][gemseo.util.discipline.rename_discipline_variables]
 # is a function to rename some discipline variables from a translator

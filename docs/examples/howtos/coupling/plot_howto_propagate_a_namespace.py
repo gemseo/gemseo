@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Gilberto Ruiz Jimenez
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Propagate a namespace over a group of disciplines
 
 ## Problem
@@ -46,7 +40,9 @@ from gemseo import create_mda
 from gemseo.discipline import propagate_namespace
 
 # %%
-# ### 1. Create the group of disciplines
+# ### Prerequisites
+#
+# This how-to needs a group of coupled disciplines.
 #
 # The group is a short coupled chain:
 # `a` computes `y = x + 1`,
@@ -74,7 +70,7 @@ for discipline in disciplines:
 # `x` is the entry point of the group: it is the variable you seed the propagation with.
 
 # %%
-# ### 2. The manual route
+# ### 1. The manual route
 #
 # Doing this by hand means namespacing, on every discipline,
 # every input and output that is not left bare on purpose.
@@ -108,7 +104,7 @@ for discipline in disciplines:
     )
 
 # %%
-# ### 3. The same result with `propagate_namespace()`
+# ### 2. The same result with `propagate_namespace()`
 #
 # Start over with a fresh copy of the group, still bare:
 a = create_discipline("AnalyticDiscipline", expressions={"y": "x + 1"}, name="a")
@@ -136,7 +132,7 @@ for discipline in disciplines:
     )
 
 # %%
-# ### 4. The namespaced group still solves
+# ### 3. The namespaced group still solves
 #
 # The couplings survived the renaming, so an
 # [MDA][gemseo.mda.core.base.BaseMDA] over the namespaced group still converges,
@@ -147,7 +143,7 @@ print(f"left:w = {result['left:w']}")
 # left:x=1 -> left:y=2 -> left:z=3 -> left:w=3+2=5
 
 # %%
-# ### 5. Before committing: the self-containment caveat
+# ### 4. Before committing: the self-containment caveat
 #
 # Remember that the group of disciplines you pass must be self-contained:
 # references held by objects that are not disciplines — design space variable

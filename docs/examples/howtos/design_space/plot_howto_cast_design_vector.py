@@ -20,11 +20,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# How to cast parameters into different types
 
 ## Problem
@@ -56,7 +51,9 @@ from numpy import ones
 from gemseo import create_design_space
 
 # %%
-# ### 1. Create a design space
+# ### Prerequisites
+#
+# This how-to needs a design space.
 #
 # First, create a design space.
 design_space = create_design_space()
@@ -68,7 +65,7 @@ design_space.add_variable("x3", lower_bound=-10, upper_bound=10)
 design_space.add_variable("x4", value=ones(1), lower_bound=-10, upper_bound=10)
 
 # %%
-# ### 2. Cast a design point from array to dict
+# ### 1. Cast a design point from array to dict
 #
 # You can cast a design point from `array` to `dict`,
 # by means of the
@@ -78,7 +75,7 @@ dict_point = design_space.convert_array_to_dict(array_point)
 dict_point
 
 # %%
-# ### 3. Cast a design point from dict to array
+# ### 2. Cast a design point from dict to array
 #
 # You can cast a design point from `dict` to `array` by means of
 # the [convert_dict_to_array()][gemseo.space.design.DesignSpace.convert_dict_to_array] method.
@@ -92,7 +89,7 @@ new_array_point = design_space.convert_dict_to_array(dict_point)
 new_array_point
 
 # %%
-# ### 4. Cast the current value to complex
+# ### 3. Cast the current value to complex
 #
 # You can cast the current value to complex by means of
 # the [to_complex()][gemseo.space.design.DesignSpace.to_complex] method:
@@ -101,7 +98,7 @@ design_space.to_complex()
 design_space.get_current_value()
 
 # %%
-# ### 5. Cast the right component values of a vector to integer
+# ### 4. Cast the right component values of a vector to integer
 #
 # For a given vector where some components should be integer,
 # it is possible to round them by means of

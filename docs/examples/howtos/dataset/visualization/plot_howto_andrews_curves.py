@@ -37,12 +37,13 @@ from gemseo.post.dataset import AndrewsCurves
 from gemseo.post.dataset.andrews_curves_settings import AndrewsCurves_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
 #
+# This how-to needs a dataset.
 iris = create_benchmark_dataset("IrisDataset")
 
 # %%
-# ### 2. Plot the Andrews curves
+# ### 1. Plot the Andrews curves
 #
 # Pass the classifier variable name to color each curve by class:
 AndrewsCurves(iris, AndrewsCurves_Settings(classifier="specy")).execute(

@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial documentation
-#        :author:  Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Use the mNBI algorithm
 
 ## Problem
@@ -62,7 +57,9 @@ from gemseo.post import ParetoFront_Settings
 from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 
 # %%
-# ### 1. Define the optimization problem
+# ### Prerequisites
+#
+# This how-to needs a multiobjective optimization problem.
 #
 # You use the
 # [BinhKorn][gemseo.problem.multiobjective_optimization.binh_korn.BinhKorn]
@@ -80,7 +77,7 @@ from gemseo.problem.multiobjective_optimization.binh_korn import BinhKorn
 problem = BinhKorn()
 
 # %%
-# ### 2. Execute the mNBI algorithm
+# ### 1. Execute the mNBI algorithm
 #
 # The 50 sub-optimization problems are solved with SLSQP from NLOPT,
 # with a maximum of 200 iterations each.
@@ -92,13 +89,13 @@ mnbi_settings = MNBI_Settings(
 _ = execute_algo(problem, settings_model=mnbi_settings)
 
 # %%
-# ### 3. Display the Pareto front
+# ### 2. Display the Pareto front
 #
 # GEMSEO detects the Pareto-optimal and dominated points automatically.
 execute_post(problem, ParetoFront_Settings(save=False, show=True))
 
 # %%
-# ### 4. Refine the Pareto front in a specific area
+# ### 3. Refine the Pareto front in a specific area
 #
 # A region of interest can be refined by providing `custom_anchor_points`
 # that bound both objectives in the target area.

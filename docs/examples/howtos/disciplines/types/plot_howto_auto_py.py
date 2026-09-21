@@ -14,7 +14,7 @@
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-r"""# Use a Python function
+"""# Use a Python function
 
 ## Problem
 
@@ -36,7 +36,9 @@ from numpy import array
 from gemseo.discipline import AutoPyDiscipline
 
 # %%
-# ### 1. Create the Python function
+# ### Prerequisites
+#
+# This how-to needs a Python function.
 
 
 def f(x, y=0.0):
@@ -75,7 +77,7 @@ def f(x, y=0.0):
 #     or NumPy arrays with dimensions greater than 1.
 #     At the end of this guide, you will see how to use other types.
 #
-# ### 2. Create the discipline from this function
+# ### 1. Create the discipline from this function
 discipline = AutoPyDiscipline(f)
 
 # %%
@@ -92,7 +94,7 @@ discipline.io.output_grammar.names
 discipline.io.input_grammar.defaults
 
 # %%
-# ### 3. Execute the discipline
+# ### 2. Execute the discipline
 #
 # Using the default input values (note that sole `"y"` as a default input value):
 discipline.execute({"x": array([1.0])})
@@ -108,7 +110,7 @@ discipline.execute({"x": array([1.0]), "y": array([-3.2])})
 #     the input data are passed to the [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline] as NumPy arrays
 #     even if the Python function `f` is expecting `float` numbers.
 #
-# ### 4. Use a Jacobian function
+# ### 3. Use a Jacobian function
 
 
 def df(x, y):
@@ -130,7 +132,7 @@ discipline.linearize(input_data={"x": array([1.0])}, compute_all_jacobians=True)
 
 
 # %%
-# ### 5.  Use custom types
+# ### 4. Use custom types
 #
 # By default,
 # the [AutoPyDiscipline][gemseo.discipline.auto_py.AutoPyDiscipline] assumes that

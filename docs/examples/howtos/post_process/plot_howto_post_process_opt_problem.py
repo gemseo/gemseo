@@ -42,7 +42,9 @@ from gemseo.post import BasicHistory_Settings
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build and solve the optimization problem
+# ### Prerequisites
+#
+# This how-to needs an optimization problem that has already been solved.
 #
 # You consider a minimization problem over the interval $[0,1]$
 # of the $f(x)=x^2$ objective function:
@@ -62,7 +64,7 @@ execute_algo(
 )
 
 # %%
-# ### 2. Post-process the optimization problem
+# ### 1. Post-process the optimization problem
 #
 execute_post(
     optimization_problem,

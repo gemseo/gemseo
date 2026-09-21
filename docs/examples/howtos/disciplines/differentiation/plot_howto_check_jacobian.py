@@ -13,7 +13,7 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-r"""# Check the Jacobian of a discipline
+"""# Check the Jacobian of a discipline
 
 ## Problem
 
@@ -46,7 +46,9 @@ if TYPE_CHECKING:
 
 
 # %%
-# ### 1. Create the discipline
+# ### Prerequisites
+#
+# This how-to needs a discipline that implements `_compute_jacobian`.
 #
 # We consider a discipline computing $f(x,y)=2x+3y$ and $g(x,y)=x^3+y$,
 # and introduce a bug in the Jacobian of $g$:
@@ -77,7 +79,7 @@ class BuggedDiscipline(Discipline):
 
 
 # %%
-# ### 2. Check the implemented Jacobian
+# ### 1. Check the implemented Jacobian
 #
 # Call [check_jacobian()][gemseo.check_jacobian] from your discipline
 discipline = BuggedDiscipline()

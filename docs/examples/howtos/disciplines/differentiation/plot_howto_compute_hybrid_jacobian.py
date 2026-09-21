@@ -13,8 +13,7 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-"""
-# Partial analytical Jacobian with numerical completion
+"""# Partial analytical Jacobian with numerical completion
 
 ## Problem
 
@@ -55,7 +54,10 @@ if TYPE_CHECKING:
     from gemseo.util.typing import StrKeyMapping
 
 # %%
-# ### 1. The discipline
+# ### Prerequisites
+#
+# This how-to needs a discipline with some analytical derivatives defined and some
+# missing.
 #
 # For many different reasons, one might be in a situation where not all the derivatives
 # of a given discipline are at hand and approximating all of them might not be
@@ -110,7 +112,7 @@ class HybridDiscipline(Discipline):
 
 
 # %%
-# ### 2. Hybrid Jacobian approximation
+# ### 1. Hybrid Jacobian approximation
 #
 # As you can see, you define the Jacobian function of the discipline with the discipline's method `_compute_jacobian()`.
 # However,
@@ -137,7 +139,7 @@ discipline.set_jacobian_approximation(
 #     Being the difference between each other
 #     the approximation type used to approximate the missing derivatives.
 #
-# ### 3. Compute and compare the Jacobian
+# ### 2. Compute and compare the Jacobian
 #
 # You can compute the Jacobian.
 jacobian_data = discipline.linearize(compute_all_jacobians=True)

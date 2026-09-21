@@ -41,8 +41,9 @@ from gemseo.post.dataset import Lines
 from gemseo.post.dataset.lines_settings import Lines_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
 #
+# This how-to needs a dataset.
 inputs = linspace(0, 1, 10)[:, None]
 outputs_1 = sin(2 * pi * inputs)
 outputs_2 = cos(2 * pi * inputs)
@@ -53,7 +54,7 @@ dataset.add_variable("y1", outputs_1, "outputs")
 dataset.add_variable("y2", outputs_2, "outputs")
 
 # %%
-# ### 2. Plot the lines
+# ### 1. Plot the lines
 #
 # Pass the variable names to plot and assign one line style per variable:
 plot = Lines(dataset, Lines_Settings(variables=("y1", "y2")))

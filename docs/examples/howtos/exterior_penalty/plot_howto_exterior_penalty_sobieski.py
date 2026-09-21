@@ -37,7 +37,9 @@ from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 from gemseo.scenario import MDOScenario
 
 # %%
-# ### 1. Build the disciplines, design space and scenario
+# ### Prerequisites
+#
+# This how-to needs disciplines, a design space and a scenario.
 #
 # You use the Sobieski SSBJ test case.
 # See [the benchmark problems][concept-mdo-problems] for a full description.
@@ -55,14 +57,14 @@ scenario.add_objective("y_4", minimize=False)
 scenario.set_differentiation_method()
 
 # %%
-# ### 2. Add the constraints
+# ### 1. Add the constraints
 #
 # The problem has three inequality constraints:
 for constraint in ["g_1", "g_2", "g_3"]:
     scenario.add_constraint(constraint, constraint_type="ineq")
 
 # %%
-# ### 3. Apply the exterior penalty
+# ### 2. Apply the exterior penalty
 #
 # `apply_exterior_penalty()` removes the constraints from the problem
 # and folds them into the objective function as a penalty term.
@@ -73,14 +75,14 @@ scenario.formulation.problem.apply_exterior_penalty(
 )
 
 # %%
-# ### 4. Execute your scenario
+# ### 3. Execute your scenario
 #
 # L-BFGS-B is a gradient-based algorithm that does not handle constraints.
 # It can now be used safely on the penalized problem:
 scenario.execute(L_BFGS_B_Settings(max_iter=10))
 
 # %%
-# ### 5. Inspect the constraint history
+# ### 4. Inspect the constraint history
 #
 # Even though the constraints were folded into the objective,
 # their history is still tracked and can be visualized:

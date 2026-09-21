@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Francois Gallard
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Use data converters
 
 ## Problem
@@ -67,7 +62,9 @@ if TYPE_CHECKING:
 
 
 # %%
-# ### 1. Define the disciplines
+# ### Prerequisites
+#
+# This how-to needs disciplines with non-standard data types.
 #
 # As compared to the original Sellar example,
 # here the `y_1` variable is a dictionary.
@@ -147,7 +144,7 @@ class Sellar2(Discipline):
 
 
 # %%
-# ### 2. Set the data converter
+# ### 1. Set the data converter
 # Define the data converters for the custom types of the variables `y_1` and `y_2`.
 #
 # This one shall return the value of a variable as a 1D array.
@@ -190,7 +187,7 @@ to_size = {
 set_data_converters(to_array, from_array, to_size)
 
 # %%
-# ### 3. Create your scenario
+# ### 2. Create your scenario
 disciplines = [Sellar1(), Sellar2(), SellarSystem()]
 
 design_space = DesignSpace()

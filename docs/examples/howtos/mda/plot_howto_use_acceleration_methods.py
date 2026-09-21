@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Charlie Vanaret
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Accelerate MDA convergence
 
 ## Problem
@@ -41,7 +36,9 @@ from gemseo.mda import MDAGaussSeidel_Settings
 from gemseo.mda.sequence_transformer.acceleration import AccelerationMethod
 
 # %%
-# ### 1. Create your disciplines
+# ### Prerequisites
+#
+# This how-to needs disciplines.
 #
 # Start creating the well-known Sobieski disciplines.
 
@@ -53,7 +50,7 @@ disciplines = create_discipline([
 ])
 
 # %%
-# ### 2. Default Gauss-Seidel MDA
+# ### 1. Default Gauss-Seidel MDA
 gauss_seidel_mda = create_mda(
     "MDAGaussSeidel",
     disciplines,
@@ -65,7 +62,7 @@ gauss_seidel_mda.plot_residual_history(logscale=[1e-8, 10.0], save=False, show=T
 # %%
 # The MDA has converged in 8 iterations.
 #
-# ### 3. Accelerated Gauss-Seidel MDA
+# ### 2. Accelerated Gauss-Seidel MDA
 accelerated_gauss_seidel_mda = create_mda(
     "MDAGaussSeidel",
     disciplines,

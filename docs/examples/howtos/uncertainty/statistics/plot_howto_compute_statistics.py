@@ -42,7 +42,9 @@ from gemseo.problem.uncertainty.wing_weight import WingWeightRandomSpace
 from gemseo.uncertainty.statistic import EmpiricalStatistics
 
 # %%
-# ### 1. Create a statistics object
+# ### Prerequisites
+#
+# This how-to needs a statistics object.
 #
 # The examples below use
 # [EmpiricalStatistics][gemseo.uncertainty.statistic.empirical.EmpiricalStatistics],
@@ -67,7 +69,7 @@ analysis = EmpiricalStatistics(dataset, variable_names=["Ww"], name="WingWeight"
 analysis
 
 # %%
-# ### 2. Compute location and spread statistics
+# ### 1. Compute location and spread statistics
 #
 # All methods return a dict mapping each variable name to its statistic value.
 #
@@ -99,7 +101,7 @@ analysis.compute_standard_deviation()
 analysis.compute_variance()
 
 # %%
-# ### 3. Compute quantile-based statistics
+# ### 2. Compute quantile-based statistics
 #
 # Quantile at the 80% level:
 analysis.compute_quantile(0.8)
@@ -117,7 +119,7 @@ analysis.compute_percentile(50)
 analysis.compute_median()
 
 # %%
-# ### 4. Compute tolerance intervals
+# ### 3. Compute tolerance intervals
 #
 # Two-sided tolerance interval with 50% coverage and 95% confidence:
 analysis.compute_tolerance_interval(0.5)
@@ -127,7 +129,7 @@ analysis.compute_tolerance_interval(0.5)
 analysis.compute_b_value()
 
 # %%
-# ### 5. Compute exceedance probability
+# ### 4. Compute exceedance probability
 #
 # Probability that `Ww` exceeds (or falls below) its nominal value:
 default_output = discipline.execute()

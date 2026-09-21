@@ -44,7 +44,9 @@ from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build the multimodal problem
+# ### Prerequisites
+#
+# This how-to needs a multimodal optimization problem.
 #
 # You define a constrained problem with a multimodal objective $x^3 - x + 1$:
 objective = AnalyticDiscipline({"obj": "x**3-x+1"})
@@ -58,7 +60,7 @@ scenario.add_objective("obj")
 scenario.add_constraint("cstr", constraint_type="ineq")
 
 # %%
-# ### 2. Execute with the MultiStart algorithm
+# ### 1. Execute with the MultiStart algorithm
 #
 # Combine a local algorithm (SLSQP) with a DOE to generate starting points
 # (here, a 10-point full-factorial design).
@@ -73,7 +75,7 @@ scenario.execute(
 )
 
 # %%
-# ### 3. Inspect the results
+# ### 2. Inspect the results
 #
 # Plot the full history (all sub-optimization iterations concatenated):
 execute_post(

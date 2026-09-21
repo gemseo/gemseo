@@ -42,7 +42,9 @@ from gemseo.problem.uncertainty.ishigami import IshigamiSpace
 from gemseo.uncertainty.sensitivity import CorrelationAnalysis
 
 # %%
-# ### 1. Set up the test problem
+# ### Prerequisites
+#
+# This how-to needs one or more disciplines and a design space.
 #
 # The Ishigami function is a standard benchmark for sensitivity analysis [@ishigami1990]:
 #
@@ -53,7 +55,7 @@ discipline = IshigamiDiscipline()
 random_space = IshigamiSpace()
 
 # %%
-# ### 2. Instantiate a sensitivity analysis
+# ### 1. Instantiate a sensitivity analysis
 #
 # [CorrelationAnalysis][gemseo.uncertainty.sensitivity.correlation.CorrelationAnalysis]
 # is used here as a representative example.
@@ -61,7 +63,7 @@ random_space = IshigamiSpace()
 analysis = CorrelationAnalysis()
 
 # %%
-# ### 3. Generate samples
+# ### 2. Generate samples
 #
 # [compute_samples()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_samples]
 # evaluates the discipline at random input points drawn from the random space:
@@ -69,14 +71,14 @@ samples = analysis.compute_samples([discipline], random_space, n_samples=1000)
 samples
 
 # %%
-# ### 4. Compute indices
+# ### 3. Compute indices
 #
 # [compute_indices()][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.compute_indices]
 # derives the sensitivity indices from the samples:
 analysis.compute_indices()
 
 # %%
-# ### 5. Inspect the indices
+# ### 4. Inspect the indices
 #
 # The
 # [indices][gemseo.uncertainty.sensitivity.core.base.BaseSensitivityAnalysis.indices]

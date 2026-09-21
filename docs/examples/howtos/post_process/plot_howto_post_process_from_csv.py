@@ -49,7 +49,9 @@ from gemseo.post import OptHistoryView_Settings
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Create the CSV file
+# ### Prerequisites
+#
+# This how-to needs a CSV file storing an optimization history.
 #
 # In this how-to, you assume that only a CSV file is available.
 # As a workaround to create the prerequisite,
@@ -65,14 +67,14 @@ problem.to_dataset().to_csv("results.csv")
 print(Path("results.csv").read_text())
 
 # %%
-# ### 2. Load the CSV file
+# ### 1. Load the CSV file
 #
 # Load the CSV as an
 # [OptimizationDataset][gemseo.dataset.optimization_dataset.OptimizationDataset]:
 dataset = OptimizationDataset.from_csv("results.csv")
 
 # %%
-# ### 3. Build the optimization metadata
+# ### 2. Build the optimization metadata
 #
 # When loading from a CSV, the metadata that GEMSEO normally derives from the
 # optimization problem must be provided manually.
@@ -106,7 +108,7 @@ feasible_iterations = dataset.index[
 ].tolist()
 
 # %%
-# ### 4. Attach the metadata to the dataset
+# ### 3. Attach the metadata to the dataset
 #
 # Create the
 # [OptimizationMetadata][gemseo.dataset.optimization_metadata.OptimizationMetadata]
@@ -123,7 +125,7 @@ dataset.misc["optimization_metadata"] = OptimizationMetadata(
 )
 
 # %%
-# ### 5. Attach the input space
+# ### 4. Attach the input space
 #
 # Some post-processors use the input space of the problem.
 # Attach it to the dataset via the `misc` attribute:
@@ -132,7 +134,7 @@ input_space.add_variable("x", 3, lower_bound=-1.0, upper_bound=1.0, value=1.0)
 dataset.misc["input_space"] = input_space
 
 # %%
-# ### 6. Post-process the dataset
+# ### 5. Post-process the dataset
 #
 execute_post(
     dataset,

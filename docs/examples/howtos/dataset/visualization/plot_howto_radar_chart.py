@@ -37,7 +37,9 @@ from gemseo.post.dataset import RadarChart
 from gemseo.post.dataset.radar_chart_settings import RadarChart_Settings
 
 # %%
-# ### 1. Build the dataset
+# ### Prerequisites
+#
+# This how-to needs a dataset.
 #
 # Each row is one series; columns are the variable components to compare:
 dataset = Dataset()
@@ -47,7 +49,7 @@ dataset.add_variable("x3", array([[0.8], [0.7]]))
 dataset.index = ["series_1", "series_2"]
 
 # %%
-# ### 2. Plot the radar chart
+# ### 1. Plot the radar chart
 #
 # Set `connect=True` to close each polygon and `radial_ticks=True`
 # to display tick labels along the radial axis.

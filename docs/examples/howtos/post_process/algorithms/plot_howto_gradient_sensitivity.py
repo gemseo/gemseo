@@ -42,7 +42,9 @@ from gemseo.problem.mdo.sobieski import SobieskiDesignSpace
 from gemseo.scenario import MDOScenario
 
 # %%
-# ### 1. Build and execute the scenario
+# ### Prerequisites
+#
+# This how-to needs a scenario that has already been executed.
 #
 # Unlike most post-processing how-tos, this one requires a **live scenario**
 # rather than an HDF5 file.
@@ -75,7 +77,7 @@ for name in ["g_1", "g_2", "g_3"]:
 scenario.execute(SLSQP_Settings(max_iter=20))
 
 # %%
-# ### 2. Run the gradient sensitivity post-processing
+# ### 1. Run the gradient sensitivity post-processing
 #
 # Set `compute_missing_gradients=True` to let GEMSEO compute gradients
 # for any iteration where they were not evaluated by the algorithm.

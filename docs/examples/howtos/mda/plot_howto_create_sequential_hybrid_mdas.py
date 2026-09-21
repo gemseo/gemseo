@@ -13,11 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - API and implementation and/or documentation
-#        :author: Charlie Vanaret
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Create sequential hybrid MDAs
 
 ## Problem
@@ -41,7 +36,9 @@ from gemseo import create_mda
 from gemseo.mda import MDAJacobi_Settings
 
 # %%
-# ### 1. Create your disciplines
+# ### Prerequisites
+#
+# This how-to needs coupled disciplines.
 #
 # Here, you take the Sobieski disciplines.
 # The *Structure*, *Propulsion* and *Aerodynamics* disciplines are strongly coupled.
@@ -55,7 +52,7 @@ disciplines = create_discipline([
 ])
 
 # %%
-# ### 2. Create the different MDAs
+# ### 1. Create the different MDAs
 #
 # You want at most 5 iterations of Jacobi,
 # and then use Gauss-Seidel.
@@ -65,7 +62,7 @@ mda1 = create_mda(
 mda2 = create_mda("MDAGaussSeidel", disciplines)
 
 # %%
-# ### 3. Create the sequential MDA, and execute it
+# ### 2. Create the sequential MDA, and execute it
 mda = create_mda(
     "MDASequential",
     disciplines,
@@ -74,7 +71,7 @@ mda = create_mda(
 res = mda.execute()
 
 # %%
-# ### 4. Analyze the result through the residuals
+# ### 3. Analyze the result through the residuals
 #
 # You can clearly see the 5 first iterations through an MDA (here, Jacobi),
 # and then executing another MDA (Gauss-Seidel).

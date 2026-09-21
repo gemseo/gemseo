@@ -39,7 +39,9 @@ from numpy.random import default_rng
 from gemseo.dataset import Dataset
 
 # %%
-# ### 1. Generate the data
+# ### Prerequisites
+#
+# This how-to needs data.
 #
 # Consider three parameters $x_1$, $x_2$ and $x_3$
 # of size 1, 2 and 3 respectively.
@@ -62,14 +64,14 @@ data.shape
 # !!! note
 #     `data` should be of shape (n_samples, n_variables).
 #
-# ### 2. Create a dataset with default names
+# ### 1. Create a dataset with default names
 #
 # Pass the array alone and let GEMSEO assign default column names:
 dataset = Dataset.from_array(data)
 dataset
 
 # %%
-# ### 3. Create a dataset with custom variable names and sizes
+# ### 2. Create a dataset with custom variable names and sizes
 #
 # Pass the variable names and a dictionary mapping each name to its number of components.
 # The total number of components must equal the number of columns of the array:
@@ -84,7 +86,7 @@ dataset
 #     or a sizes dictionary must be provided whose component total matches that count.
 
 # %%
-# ### 4. Create a dataset with custom groups
+# ### 3. Create a dataset with custom groups
 #
 # Pass an additional dictionary mapping each variable name to its group.
 # Variables not listed fall back to

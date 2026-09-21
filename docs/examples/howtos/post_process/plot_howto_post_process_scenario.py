@@ -40,8 +40,9 @@ from gemseo.scenario import MDOScenario
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Build and execute the scenario
+# ### Prerequisites
 #
+# This how-to needs a scenario that has already been executed.
 discipline = AnalyticDiscipline(expressions={"y": "x**2"})
 
 design_space = DesignSpace()
@@ -54,7 +55,7 @@ scenario.add_objective("y")
 scenario.execute(NLOPT_COBYLA_Settings(max_iter=10))
 
 # %%
-# ### 2. Post-process the scenario
+# ### 1. Post-process the scenario
 #
 # Use the scenario method [post_process()][gemseo.scenario.mdo.MDOScenario.post_process]:
 scenario.post_process(BasicHistory_Settings(variable_names=["y"], save=False))

@@ -13,13 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                         documentation
-#        :author: Matthias De Lozzo
-#        :author: Syver Doving Agdestein
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Create a clustering model
 
 ## Problem
@@ -48,13 +41,16 @@ from gemseo.post.dataset import PairPlot
 from gemseo.post.dataset.pair_plot_settings import PairPlot_Settings
 
 # %%
-# ### 1. Create the training dataset
+# ### Prerequisites
+#
+# This how-to needs a training dataset.
+#
 # For example,
 # [the Iris flower data set](https://en.wikipedia.org/wiki/Iris_flower_data_set).
 training_dataset = create_benchmark_dataset("IrisDataset")
 
 # %%
-# ### 2. Create a clustering model
+# ### 1. Create a clustering model
 model = KMeans(
     training_dataset,
     settings=KMeans_Settings(
@@ -69,12 +65,12 @@ model.learn()
 model
 
 # %%
-# ### 3. Assess its quality
+# ### 2. Assess its quality
 silhouette = SilhouetteMeasure(model)
 silhouette.compute_learning_measure(multioutput=False)
 
 # %%
-# ### 4. Predict a cluster
+# ### 3. Predict a cluster
 input_value = {
     "sepal_length": array([4.5]),
     "sepal_width": array([3.0]),
@@ -84,7 +80,7 @@ input_value = {
 model.predict(input_value)
 
 # %%
-# ### 5. Visualize predictions
+# ### 4. Visualize predictions
 training_dataset.add_variable("km_specy", model.labels.reshape((-1, 1)), "labels")
 pair_plot = PairPlot(
     training_dataset,

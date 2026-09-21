@@ -83,7 +83,9 @@ from gemseo.scenario import MDOScenarioAdapter
 from gemseo.space import DesignSpace
 
 # %%
-# ### 1. Define your scenario
+# ### Prerequisites
+#
+# This how-to needs a scenario.
 #
 # Here, the created scenario minimize $y$ w.r.t. $x$.
 
@@ -95,13 +97,13 @@ design_space.add_variable("x", lower_bound=-5, upper_bound=5.0, value=ones(1))
 inner_scenario = MDOScenario((discipline,), design_space)
 inner_scenario.add_objective("y")
 # %%
-# ### 2. Set a default algorithm
+# ### 1. Set a default algorithm
 #
 # NLOPT_COBYLA is chosen to find the best $x$ to minimize $y$.
 inner_scenario.set_algorithm(NLOPT_COBYLA_Settings(max_iter=100))
 
 # %%
-# ### 3. Transform your scenario
+# ### 2. Transform your scenario
 #
 # When transforming a scenario into a discipline, the variable names must be defined.
 #
@@ -111,7 +113,7 @@ scenario_adapter = MDOScenarioAdapter(
 )
 
 # %%
-# ### 4. Use your new discipline
+# ### 3. Use your new discipline
 #
 # Now, `scenario_adapter` is now a discipline.
 # You can either execute it for $n=4$:
@@ -137,7 +139,7 @@ upper_scenario.add_objective("y")
 upper_scenario.execute(PYDOE_FULLFACT_Settings(n_samples=6))
 upper_scenario.to_dataset()
 # %%
-# ### 5. Transform a scenario that does not optimize
+# ### 4. Transform a scenario that does not optimize
 #
 # A scenario sampling $y$ w.r.t. $x$ does not solve an optimization problem,
 # so it has no optimum to report

@@ -13,12 +13,6 @@
 # FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
 # NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
 # WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# Contributors:
-#    INITIAL AUTHORS - initial API and implementation and/or initial
-#                           documentation
-#        :author: Matthias De Lozzo
-#    OTHER AUTHORS   - MACROSCOPIC CHANGES
 """# Generate the N2 chart
 
 ## Problem
@@ -40,7 +34,9 @@ from gemseo import generate_n2_plot
 from gemseo.util.discipline import DummyDiscipline
 
 # %%
-# ### 1. Create the disciplines
+# ### Prerequisites
+#
+# This how-to needs disciplines.
 #
 # You create coupled dummy disciplines:
 dummy_disciplines = [
@@ -61,7 +57,7 @@ dummy_disciplines = [
 ]
 
 # %%
-# ### 2. Plot the N2 chart
+# ### 1. Plot the N2 chart
 #
 # The N2 chart is a tabular way to visualize multidisciplinary coupling variables.
 # The disciplines are located on the diagonal of the chart
