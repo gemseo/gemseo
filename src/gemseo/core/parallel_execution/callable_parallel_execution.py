@@ -40,6 +40,7 @@ from typing import TypeVar
 
 from docstring_inheritance import GoogleDocstringInheritanceMeta
 
+from gemseo.util.constant import _enable_parallel_execution
 from gemseo.util.constant import n_cpus
 from gemseo.util.multiprocessing import start_method
 from gemseo.util.multiprocessing.start_method import MultiProcessingStartMethod
@@ -206,17 +207,34 @@ class CallableParallelExecution(
     )
     """The start method used for multiprocessing."""
 
+    enable_parallel_execution: ClassVar[bool] = _enable_parallel_execution
+    """Whether to parallelize the execution by default.
+
+    When `False`,
+    an instance created without `n_processes` uses a single process.
+    This class attribute is shared by all the subclasses that do not override it
+    and is set by the `enable_parallel_execution` option of the global configuration.
+    """
+
     workers: Sequence[CallableType[ArgT, ReturnT]]
     """The objects that perform the tasks."""
 
     n_processes: int
-    """The maximum simultaneous number of threads or processes."""
+    """The maximum simultaneous number of threads or processes.
+
+    When 1,
+    the tasks are run one after another in the calling process,
+    without any executor.
+    """
 
     use_threading: bool
     """Whether to use threads instead of processes to parallelize the execution."""
 
     wait_time_between_fork: float
-    """The time to wait between two forks of the process/thread."""
+    """The time to wait between two forks of the process/thread.
+
+    Ignored when `n_processes` is 1, as nothing is forked.
+    """
 
     __exceptions_to_re_raise: tuple[type[Exception], ...]
     """The exception from a worker to be raised."""
@@ -224,7 +242,7 @@ class CallableParallelExecution(
     def __init__(
         self,
         workers: Sequence[CallableType[ArgT, ReturnT]],
-        n_processes: int = n_cpus,
+        n_processes: int | None = None,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
         exceptions_to_re_raise: Sequence[type[Exception]] = (),
@@ -238,6 +256,11 @@ class CallableParallelExecution(
             n_processes: The maximum simultaneous number of threads,
                 if `use_threading` is True, or processes otherwise,
                 used to parallelize the execution.
+                If `None`,
+                use the number of CPUs when `enable_parallel_execution` is `True`
+                and 1 otherwise.
+                When 1,
+                the tasks are run one after another in the calling process.
             use_threading: Whether to use threads instead of processes
                 to parallelize the execution.
                 Multiprocessing will copy (serialize) all the disciplines,
@@ -247,6 +270,7 @@ class CallableParallelExecution(
                 multiprocessing.
             wait_time_between_fork: The time to wait between two forks of the
                 process/thread.
+                Ignored when `n_processes` is 1, as nothing is forked.
             exceptions_to_re_raise: The exceptions that should be raised again
                 when caught inside a worker. If `None`, all exceptions coming from
                 workers are caught and the execution is allowed to continue.
@@ -256,12 +280,20 @@ class CallableParallelExecution(
                 using multithreading.
         """  # noqa: D205, D212, D415
         self.workers = workers
+        if n_processes is None:
+            n_processes = n_cpus if self.enable_parallel_execution else 1
+
         self.n_processes = n_processes
         self.use_threading = use_threading
         self.wait_time_between_fork = wait_time_between_fork
         self.__exceptions_to_re_raise = tuple(exceptions_to_re_raise)
         self._check_unicity(workers)
         self.__check_multiprocessing_start_method()
+
+    @property
+    def _is_serial(self) -> bool:
+        """Whether the tasks are run one after another in the calling process."""
+        return self.n_processes == 1
 
     def _check_unicity(self, objects: Any) -> None:
         """Check that the objects are unique.
@@ -311,8 +343,13 @@ class CallableParallelExecution(
         if n_tasks == 0:
             return []
 
-        ordered_outputs: list[ReturnT | None] = [None] * n_tasks
         task_callables = _TaskCallables(self.workers, preprocessors)
+        if self._is_serial:
+            return self.__execute_in_calling_process(
+                inputs, task_callables, exec_callbacks, task_submitted_callback
+            )
+
+        ordered_outputs: list[ReturnT | None] = [None] * n_tasks
         re_raise: Exception | None = None
 
         with self._build_executor(task_callables, n_tasks) as executor:
@@ -351,6 +388,55 @@ class CallableParallelExecution(
 
         if re_raise is not None:
             raise re_raise
+
+        return ordered_outputs
+
+    def __execute_in_calling_process(
+        self,
+        inputs: Sequence[ArgT],
+        task_callables: _TaskCallables[ArgT, ReturnT],
+        exec_callbacks: Iterable[CallbackType],
+        task_submitted_callback: Callable[[], None] | None,
+    ) -> list[ReturnT | None]:
+        """Run the tasks one after another in the calling process.
+
+        No executor is built, so the workers are neither serialized nor run in a
+        child process or thread; this is what asking for a single process means.
+        For the same reason, `wait_time_between_fork` is ignored, as nothing is
+        forked.
+
+        Args:
+            inputs: The input values.
+            task_callables: The callables performing the tasks.
+            exec_callbacks: The functions called with the pair (index, outputs)
+                once a task is done.
+            task_submitted_callback: The function called before running the tasks,
+                if any.
+
+        Returns:
+            The computed outputs.
+
+        Raises:
+            Exception: When a task raises one of the exceptions to be re-raised.
+        """
+        ordered_outputs: list[ReturnT | None] = [None] * len(inputs)
+
+        if task_submitted_callback is not None:
+            task_submitted_callback()
+
+        for task_index, input_ in enumerate(inputs):
+            try:
+                output = task_callables(task_index, input_)
+            except Exception as err:
+                logger.exception("Failed to execute task indexed %s", task_index)
+                # Stop the execution only for required exceptions.
+                # Otherwise, keep running the remaining tasks.
+                if isinstance(err, self.__exceptions_to_re_raise):
+                    raise
+            else:
+                ordered_outputs[task_index] = output
+                for callback in exec_callbacks:
+                    callback(task_index, output)
 
         return ordered_outputs
 

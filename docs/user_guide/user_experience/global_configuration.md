@@ -35,7 +35,7 @@ or set `logging.configure_root_logger = True` to let GEMSEO configure the root l
 - `enable_discipline_statistics`, default: `False` - Whether to record execution statistics of the disciplines such as the execution time, the number of executions and the number of linearizations.
 - `enable_discipline_status`, default: `False` - Whether to enable discipline statuses.
 - `enable_function_statistics`, default: `False` - Whether to record the statistics attached to the functions, in charge of counting their number of evaluations.
-- `enable_parallel_execution`, default: `True` - Whether to let GEMSEO use parallelism (multi-processing or multi-threading) by default.
+- `enable_parallel_execution`, default: `True` - Whether to let GEMSEO use parallelism (multi-processing or multi-threading) by default. When `False`, the default number of threads/processes of the parallel MDAs, of [ParallelDisciplineChain][gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain] and of [CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution] is 1.
 - `enable_progress_bar`, default: `True` - Whether to enable the progress bar attached to the drivers, in charge to log the execution of the process: iteration, execution time and objective value.
 - `logging`, default: enabled - The logging configuration of type [LoggingConfiguration][gemseo.util.logging.LoggingConfiguration]; use `logging.enable = False` to disable logging.
 - `validate_input_data`, default: `True` - Whether to validate the input data of a discipline before execution.

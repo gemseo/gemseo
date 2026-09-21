@@ -33,7 +33,12 @@ from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.function.preprocessed_function import PreprocessedFunction
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
 from gemseo.core.problem.evaluation import EvaluationProblem
+from gemseo.discipline.analytic import AnalyticDiscipline
+from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
 from gemseo.mda.gauss_seidel_newton_raphson_settings import (
     MDAGaussSeidelNewtonRaphson_Settings,
 )
@@ -93,6 +98,10 @@ def assert_applied(configuration: GlobalConfiguration) -> None:
     assert BaseDiscipline.validate_output_data is configuration.validate_output_data
     assert MDAJacobi_Settings().n_processes == (
         n_cpus if configuration.enable_parallel_execution else 1
+    )
+    assert (
+        CallableParallelExecution.enable_parallel_execution
+        is configuration.enable_parallel_execution
     )
 
 
@@ -276,6 +285,37 @@ def test_n_processes_of_an_indirect_subclass():
 
     configuration.enable_parallel_execution = True
     assert GrandChildSettings().n_processes == n_cpus
+
+
+def test_n_processes_of_a_callable_parallel_execution():
+    """Check that the default n_processes reaches CallableParallelExecution."""
+    configuration.enable_parallel_execution = False
+    assert CallableParallelExecution([len]).n_processes == 1
+
+    configuration.enable_parallel_execution = True
+    assert CallableParallelExecution([len]).n_processes == n_cpus
+
+    # An explicit number of processes is left alone.
+    assert CallableParallelExecution([len], n_processes=2).n_processes == 2
+
+
+def test_n_processes_of_a_parallel_discipline_chain():
+    """Check that the parallel execution option reaches ParallelDisciplineChain."""
+    disciplines = [AnalyticDiscipline({"y": "x"}), AnalyticDiscipline({"z": "x"})]
+
+    configuration.enable_parallel_execution = False
+    chain = ParallelDisciplineChain(disciplines)
+    assert chain.parallel_execution.n_processes == 1
+    assert chain.parallel_lin.n_processes == 1
+
+    configuration.enable_parallel_execution = True
+    chain = ParallelDisciplineChain(disciplines)
+    assert chain.parallel_execution.n_processes == len(disciplines)
+    assert chain.parallel_lin.n_processes == len(disciplines)
+
+    # An explicit number of processes is left alone.
+    chain = ParallelDisciplineChain(disciplines, n_processes=1)
+    assert chain.parallel_execution.n_processes == 1
 
 
 def test_each_field_is_applied_once_at_creation(apply_counter):

@@ -31,6 +31,9 @@ from gemseo.core.discipline.base_discipline import BaseDiscipline
 from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.discipline.execution_status import ExecutionStatus
 from gemseo.core.function.preprocessed_function import PreprocessedFunction
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
 from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.mda.core.base_parallel_solver_settings import BaseMDAParallelSolverSettings
 from gemseo.util._directory_manager.settings import Settings as DirectoryManagerSettings
@@ -113,6 +116,7 @@ def _apply_enable_parallel_execution(value: bool) -> None:
         value: The value of the field.
     """
     BaseMDAParallelSolverSettings.set_default_n_processes(n_cpus if value else 1)
+    CallableParallelExecution.enable_parallel_execution = value
 
 
 def _apply_enable_progress_bar(value: bool) -> None:
@@ -218,7 +222,15 @@ in charge of counting their number of evaluations.""",
     enable_parallel_execution: bool = Field(
         default=_enable_parallel_execution,
         description="""Whether to let GEMSEO use parallelism
-    (multi-processing or multi-threading) by default.""",
+    (multi-processing or multi-threading) by default.
+
+When `False`,
+the default number of threads/processes of the parallel MDAs,
+of
+[ParallelDisciplineChain][gemseo.discipline.chain.parallel_chain.ParallelDisciplineChain]
+and of
+[CallableParallelExecution][gemseo.core.parallel_execution.callable_parallel_execution.CallableParallelExecution]
+is 1.""",
     )
 
     enable_progress_bar: bool = Field(

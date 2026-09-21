@@ -24,7 +24,6 @@ from gemseo.core.discipline.execution_statistics import ExecutionStatistics
 from gemseo.core.parallel_execution.callable_parallel_execution import (
     CallableParallelExecution,
 )
-from gemseo.util.constant import n_cpus
 from gemseo.util.typing import StrKeyMapping
 
 if TYPE_CHECKING:
@@ -92,7 +91,7 @@ class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _Worker
     def __init__(
         self,
         disciplines: Sequence[Discipline],
-        n_processes: int = n_cpus,
+        n_processes: int | None = None,
         use_threading: bool = False,
         wait_time_between_fork: float = 0.0,
         exceptions_to_re_raise: Sequence[type[Exception]] = (),
@@ -134,32 +133,38 @@ class DiscParallelLinearization(CallableParallelExecution[StrKeyMapping, _Worker
             task_submitted_callback=task_submitted_callback,
         )
 
-        if len(self._disciplines) == 1 or len(self._disciplines) != len(inputs):
-            output_0 = ordered_outputs[0]
-            if output_0 is not None:
-                disc_0 = self._disciplines[0]
-                if len(self._disciplines) == 1:
-                    disc_0.io.input_data = DisciplineData(output_0.input_data)
-                    disc_0.io.output_data = DisciplineData(output_0.output_data)
-                    disc_0.jac = output_0.jacobian
-                if (
-                    not self.use_threading
-                    and self.multi_processing_start_method
-                    == self.MultiProcessingStartMethod.SPAWN
-                    and ExecutionStatistics.is_enabled
-                    and output_0.output_data
+        # In serial mode, the disciplines were linearized in the calling process,
+        # so their data, Jacobians and execution statistics are already up to date.
+        if not self._is_serial:
+            if len(self._disciplines) == 1 or len(self._disciplines) != len(inputs):
+                output_0 = ordered_outputs[0]
+                if output_0 is not None:
+                    disc_0 = self._disciplines[0]
+                    if len(self._disciplines) == 1:
+                        disc_0.io.input_data = DisciplineData(output_0.input_data)
+                        disc_0.io.output_data = DisciplineData(output_0.output_data)
+                        disc_0.jac = output_0.jacobian
+                    if (
+                        not self.use_threading
+                        and self.multi_processing_start_method
+                        == self.MultiProcessingStartMethod.SPAWN
+                        and ExecutionStatistics.is_enabled
+                        and output_0.output_data
+                    ):
+                        # Only increase the number of calls
+                        # if the Jacobian was computed.
+                        disc_0.execution_statistics.n_executions += len(inputs)  # type: ignore[operator] # checked with activate_counter
+                        disc_0.execution_statistics.n_linearizations += len(inputs)  # type: ignore[operator] # checked with activate_counter
+            else:
+                for disc, output in zip(
+                    self._disciplines, ordered_outputs, strict=False
                 ):
-                    # Only increase the number of calls if the Jacobian was computed.
-                    disc_0.execution_statistics.n_executions += len(inputs)  # type: ignore[operator] # checked with activate_counter
-                    disc_0.execution_statistics.n_linearizations += len(inputs)  # type: ignore[operator] # checked with activate_counter
-        else:
-            for disc, output in zip(self._disciplines, ordered_outputs, strict=False):
-                # When the discipline in the worker failed, output is None.
-                # We do not update the data such that the issue is caught by the
-                # output grammar.
-                if output is not None:
-                    disc.io.input_data = DisciplineData(output.input_data)
-                    disc.io.output_data = DisciplineData(output.output_data)
-                    disc.jac = output.jacobian
+                    # When the discipline in the worker failed, output is None.
+                    # We do not update the data such that the issue is caught by the
+                    # output grammar.
+                    if output is not None:
+                        disc.io.input_data = DisciplineData(output.input_data)
+                        disc.io.output_data = DisciplineData(output.output_data)
+                        disc.jac = output.jacobian
 
         return [out.jacobian for out in ordered_outputs if out is not None or None]
