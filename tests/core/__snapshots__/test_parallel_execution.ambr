@@ -11,6 +11,9 @@
 # name: test_re_raise_exceptions[exceptions1-True]
   'Undefined'
 # ---
+# name: test_serial_execution_exception_re_raised
+  'Undefined'
+# ---
 # name: test_task_submitted_callback_error
   "'str' object is not callable"
 # ---

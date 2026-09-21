@@ -24,6 +24,9 @@ from numpy import ndarray
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline.discipline_data import DisciplineData
 from gemseo.core.discipline.process_discipline import ProcessDiscipline
+from gemseo.core.parallel_execution.callable_parallel_execution import (
+    CallableParallelExecution,
+)
 from gemseo.core.parallel_execution.discipline_execution import DiscParallelExecution
 from gemseo.core.parallel_execution.discipline_linearization import (
     DiscParallelLinearization,
@@ -71,7 +74,10 @@ class ParallelDisciplineChain(ProcessDiscipline):
             n_processes: The maximum simultaneous number of threads,
                 if `use_threading` is True, or processes otherwise,
                 used to parallelize the execution.
-                If `None`, uses the number of disciplines.
+                If `None`,
+                use the number of disciplines
+                when `CallableParallelExecution.enable_parallel_execution` is `True`
+                and 1 otherwise.
             use_deep_copy: Whether to deepcopy the discipline input data.
 
         Notes:
@@ -84,7 +90,11 @@ class ParallelDisciplineChain(ProcessDiscipline):
         self._use_deep_copy = use_deep_copy
         self._initialize_grammars()
         if n_processes is None:
-            n_processes = len(self._disciplines)
+            n_processes = (
+                len(self._disciplines)
+                if CallableParallelExecution.enable_parallel_execution
+                else 1
+            )
 
         self.parallel_execution = DiscParallelExecution(
             self._disciplines, n_processes, use_threading=use_threading

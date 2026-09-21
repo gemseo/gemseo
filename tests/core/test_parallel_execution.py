@@ -21,7 +21,10 @@ from __future__ import annotations
 
 from copy import copy
 from copy import deepcopy
+from os import getpid
+from threading import get_native_id
 from timeit import default_timer as timer
+from typing import Any
 
 import pytest
 from numpy import array
@@ -72,6 +75,12 @@ def function_raising_exception(_) -> None:
 def _double(x: float) -> float:
     """Return ``2 * x``; lightweight worker for fast tests."""
     return 2 * x
+
+
+def _get_worker_ids(x: Any) -> tuple[int, int]:
+    """Return the ids of the process and of the thread running the task."""
+    del x
+    return getpid(), get_native_id()
 
 
 def test_functional() -> None:
@@ -501,3 +510,186 @@ def test_check_method_in_init(monkeypatch, snapshot) -> None:
     )
     with assert_exception(ValueError, snapshot):
         CallableParallelExecution([_double])
+
+
+@pytest.mark.parametrize("use_threading", [False, True])
+def test_serial_execution_in_calling_process(use_threading) -> None:
+    """With a single process, the tasks run in the calling process and thread.
+
+    A pool with a single worker runs the tasks one after another, but still in a
+    child process or thread, which is not what asking for a serial execution means.
+    """
+    parallel_execution = CallableParallelExecution(
+        [_get_worker_ids], n_processes=1, use_threading=use_threading
+    )
+    assert parallel_execution.execute([1, 2, 3]) == [(getpid(), get_native_id())] * 3
+
+
+def test_parallel_execution_in_workers() -> None:
+    """With several threads, the tasks do not run in the calling thread."""
+    parallel_execution = CallableParallelExecution(
+        [_get_worker_ids], n_processes=2, use_threading=True
+    )
+    outputs = parallel_execution.execute([1, 2, 3])
+    assert all(thread_id != get_native_id() for _, thread_id in outputs)
+
+
+def test_serial_execution_callbacks_and_preprocessors() -> None:
+    """In serial, the callbacks and the preprocessors are called as in parallel."""
+    calls: list[tuple[int, float]] = []
+    indexes: list[int] = []
+    parallel_execution = CallableParallelExecution([_double], n_processes=1)
+    outputs = parallel_execution.execute(
+        [1, 2, 3],
+        exec_callbacks=(lambda index, value: calls.append((index, value)),),
+        preprocessors=(indexes.append,),
+    )
+    assert outputs == [2, 4, 6]
+    assert calls == [(0, 2), (1, 4), (2, 6)]
+    # With a single worker the index is always ``0``.
+    assert indexes == [0, 0, 0]
+
+
+def test_serial_execution_task_submitted_callback() -> None:
+    """In serial, the ``task_submitted_callback`` runs once before the tasks."""
+    seen: list[str | float] = []
+
+    def on_submitted() -> None:
+        seen.append("submitted")
+
+    def track(x: float) -> float:
+        """Double ``x`` and record that the task ran."""
+        seen.append(x)
+        return 2 * x
+
+    parallel_execution = CallableParallelExecution([track], n_processes=1)
+    outputs = parallel_execution.execute([1, 2], task_submitted_callback=on_submitted)
+    assert outputs == [2, 4]
+    assert seen == ["submitted", 1, 2]
+
+
+def test_serial_execution_exception_logged(caplog) -> None:
+    """In serial, a non-re-raised exception is logged and its output is ``None``."""
+    parallel_execution = CallableParallelExecution(
+        [function_raising_exception, CallableWorker()], n_processes=1
+    )
+    assert parallel_execution.execute([1, 1]) == [None, 2]
+    assert "This is an Exception" in caplog.text
+
+
+def test_serial_execution_exception_re_raised(snapshot) -> None:
+    """In serial, an exception to be re-raised stops the execution."""
+    parallel_execution = CallableParallelExecution(
+        [f], n_processes=1, exceptions_to_re_raise=(ValueError,)
+    )
+    with assert_exception(ValueError, snapshot):
+        parallel_execution.execute([array([0.0]), array([1.0])])
+
+
+def _build_sellar_input_list() -> list[dict]:
+    """Return one Sellar input data per discipline, each with a different x_shared."""
+    input_list = []
+    for index in range(3):
+        inputs = get_initial_data()
+        inputs[x_shared][0] = index + 1
+        input_list.append(inputs)
+    return input_list
+
+
+def test_serial_disc_parallel_execution(enable_discipline_statistics) -> None:
+    """In serial, the disciplines are executed in the calling process."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    input_list = _build_sellar_input_list()
+    outputs = DiscParallelExecution(disciplines, n_processes=1).execute(input_list)
+
+    references = [Sellar1(), Sellar2(), SellarSystem()]
+    for discipline, reference, inputs, output in zip(
+        disciplines, references, input_list, outputs, strict=True
+    ):
+        reference.execute(inputs)
+        for name, value in reference.io.output_data.items():
+            assert equal(output[name], value).all()
+            assert equal(discipline.io.output_data[name], value).all()
+
+        assert discipline.execution_statistics.n_executions == 1
+
+
+def test_serial_disc_parallel_execution_one_discipline(
+    enable_discipline_statistics,
+) -> None:
+    """In serial, a single discipline is counted once per input, not twice."""
+    discipline = Sellar1()
+    input_list = _build_sellar_input_list()
+    outputs = DiscParallelExecution([discipline], n_processes=1).execute(input_list)
+
+    reference = Sellar1()
+    for inputs, output in zip(input_list, outputs, strict=True):
+        reference.execute(inputs)
+        assert equal(output[y_1], reference.io.output_data[y_1]).all()
+
+    assert discipline.execution_statistics.n_executions == 3
+
+
+def _differentiate_wrt_x_shared(disciplines) -> None:
+    """Differentiate all the outputs of the disciplines with respect to x_shared.
+
+    Args:
+        disciplines: The disciplines to be differentiated.
+    """
+    for discipline in disciplines:
+        discipline.add_differentiated_inputs([x_shared])
+        discipline.add_differentiated_outputs(list(discipline.io.output_grammar))
+
+
+def test_serial_disc_parallel_linearization(enable_discipline_statistics) -> None:
+    """In serial, the disciplines are linearized in the calling process."""
+    disciplines = [Sellar1(), Sellar2(), SellarSystem()]
+    _differentiate_wrt_x_shared(disciplines)
+    input_list = _build_sellar_input_list()
+    jacobians = DiscParallelLinearization(disciplines, n_processes=1).execute(
+        input_list
+    )
+
+    references = [Sellar1(), Sellar2(), SellarSystem()]
+    _differentiate_wrt_x_shared(references)
+    for discipline, reference, inputs, jacobian in zip(
+        disciplines, references, input_list, jacobians, strict=True
+    ):
+        reference_jacobian = reference.linearize(inputs)
+        assert reference_jacobian
+        for output_name, sub_jacobian in reference_jacobian.items():
+            for input_name, derivative in sub_jacobian.items():
+                assert (jacobian[output_name][input_name] == derivative).all()
+                assert (discipline.jac[output_name][input_name] == derivative).all()
+
+        assert discipline.execution_statistics.n_linearizations == 1
+
+
+def test_serial_disc_parallel_linearization_one_discipline(
+    enable_discipline_statistics,
+) -> None:
+    """In serial, a single discipline is linearized once per input, not twice."""
+    discipline = Sellar1()
+    _differentiate_wrt_x_shared([discipline])
+    input_list = _build_sellar_input_list()
+    jacobians = DiscParallelLinearization([discipline], n_processes=1).execute(
+        input_list
+    )
+
+    reference = Sellar1()
+    _differentiate_wrt_x_shared([reference])
+    for inputs, jacobian in zip(input_list, jacobians, strict=True):
+        reference_jacobian = reference.linearize(inputs)
+        assert reference_jacobian
+        for output_name, sub_jacobian in reference_jacobian.items():
+            for input_name, derivative in sub_jacobian.items():
+                assert (jacobian[output_name][input_name] == derivative).all()
+
+    # The discipline was linearized in the calling process,
+    # so it holds the Jacobian of the last input data.
+    for output_name, sub_jacobian in reference.jac.items():
+        for input_name, derivative in sub_jacobian.items():
+            assert (discipline.jac[output_name][input_name] == derivative).all()
+
+    assert discipline.execution_statistics.n_executions == 3
+    assert discipline.execution_statistics.n_linearizations == 3
