@@ -27,6 +27,7 @@ from numpy import all as np_all
 from numpy import allclose
 from numpy import array
 from numpy import atleast_2d
+from numpy import concatenate
 from numpy import matmul
 from numpy import ones
 from numpy import ones_like
@@ -43,6 +44,7 @@ from gemseo.discipline.chain.chain import DisciplineChain
 from gemseo.discipline.chain.parallel_chain import ParallelDisciplineChain
 from gemseo.doe.pydoe.settings.pydoe_fullfact import PYDOE_FULLFACT_Settings
 from gemseo.doe.scipy.settings.lhs import LHS_Settings
+from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.formulation.mdf_settings import MDF_Settings
 from gemseo.optimization.multi_start.settings.multi_start_settings import (
     MultiStart_Settings,
@@ -140,6 +142,70 @@ def test_adapter_set_x0_before_exec(scenario) -> None:
     func = gen.get_function(inputs, outputs)
     f_x3 = func.evaluate(x_shared)
     assert f_x3 > 4947.0
+
+
+def test_adapter_set_x0_before_exec_from_partial_inputs(scenario) -> None:
+    """Check set_x0_before_exec when the inputs are a part of the design variables.
+
+    The design variables that are not inputs keep their current value.
+    """
+    design_space = scenario.design_space
+    current_value = {"x_1": array([0.3, 0.8]), "x_2": array([0.9]), "x_3": array([0.4])}
+    design_space.set_current_value(current_value)
+    scenario.set_algorithm(L_BFGS_B_Settings(max_iter=1))
+    adapter = MDOScenarioAdapter(scenario, ["x_2"], ["y_4"], set_x0_before_exec=True)
+    x_2 = array([1.1])
+    adapter.execute({"x_2": x_2})
+    x_0 = scenario.formulation.problem.database.get_x_vect(1)
+    assert x_0 == pytest.approx(
+        concatenate([current_value["x_1"], x_2, current_value["x_3"]])
+    )
+
+
+def test_adapter_set_x0_before_exec_without_design_variable_inputs(scenario) -> None:
+    """Check set_x0_before_exec when no design variable is an input.
+
+    The current value of the design space is not validated,
+    so a current value out of the bounds does not prevent the execution.
+    """
+    scenario.set_algorithm(L_BFGS_B_Settings(max_iter=1))
+    scenario.design_space.set_lower_bound("x_2", array([1.2]))
+    adapter = MDOScenarioAdapter(
+        scenario, ["x_shared"], ["y_4"], set_x0_before_exec=True
+    )
+    adapter.execute()
+    assert adapter.io.data["y_4"] > 0
+
+
+def test_adapter_set_bounds_and_x0_from_partial_inputs() -> None:
+    """Check set_bounds_before_exec with set_x0_before_exec and partial inputs.
+
+    The design variables that are not inputs keep their current value
+    projected into the new bounds.
+    """
+    design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
+    design_space.add_variable("y", lower_bound=0.0, upper_bound=1.0, value=0.3)
+    scenario = MDOScenario(
+        [AnalyticDiscipline({"f": "(x-0.2)**2+(y-0.3)**2"})],
+        design_space,
+        formulation_settings=DisciplinaryOpt_Settings(),
+    )
+    scenario.add_objective("f")
+    scenario.set_algorithm(SLSQP_Settings(max_iter=1))
+    adapter = MDOScenarioAdapter(
+        scenario,
+        ["x"],
+        ["f"],
+        set_x0_before_exec=True,
+        set_bounds_before_exec=True,
+    )
+    adapter.execute({
+        "x": array([0.2]),
+        "y_lower_bnd": array([0.85]),
+    })
+    x_0 = scenario.formulation.problem.database.get_x_vect(1)
+    assert x_0 == pytest.approx(array([0.2, 0.85]))
 
 
 def test_adapter_set_and_reset_x0(scenario, snapshot) -> None:

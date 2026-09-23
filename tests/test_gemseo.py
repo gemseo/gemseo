@@ -36,6 +36,7 @@ from numpy import sqrt
 from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
+import gemseo.scenario
 from gemseo import check_jacobian
 from gemseo import compute_doe
 from gemseo import configuration
@@ -88,6 +89,7 @@ from gemseo import print_configuration
 from gemseo import read_design_space
 from gemseo import sample_disciplines
 from gemseo import wrap_discipline_in_job_scheduler
+from gemseo import wrap_scenario_in_job_scheduler
 from gemseo import write_design_space
 from gemseo.core.algorithm.base_driver_library import BaseDriverLibrary
 from gemseo.core.discipline import Discipline
@@ -1041,6 +1043,13 @@ def test_wrap_discipline_in_job_scheduler(tmpdir) -> None:
         job_out_filename="run_disc.py",
     )
     assert "y_4" in wrapped.execute()
+
+
+def test_wrap_scenario_in_job_scheduler_alias() -> None:
+    """Check that wrap_scenario_in_job_scheduler is an alias of gemseo.scenario's."""
+    assert (
+        wrap_scenario_in_job_scheduler is gemseo.scenario.wrap_scenario_in_job_scheduler
+    )
 
 
 def test_create_dataset_without_name() -> None:
