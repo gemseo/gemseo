@@ -45,7 +45,7 @@ discipline = AnalyticDiscipline({"y": "a*b + c"})
 design_space = DesignSpace()
 design_space.add_variable("a", lower_bound=1.0, upper_bound=10.0)
 design_space.add_variable("b", lower_bound=1.0, upper_bound=10.0)
-design_space.add_variable("c", size=2, lower_bound=1.0, upper_bound=10.0)
+design_space.add_variable("c", lower_bound=1.0, upper_bound=10.0)
 
 # %%
 # ### 2. Define the samples
@@ -54,12 +54,12 @@ samples = [
     {
         "a": array([1.0]),
         "b": array([2.0]),
-        "c": array([1.0, 1.0]),
+        "c": array([1.0]),
     },
     {
         "a": array([2.0]),
         "b": array([3.0]),
-        "c": array([5.0, 5.0]),
+        "c": array([5.0]),
     },
 ]
 
@@ -70,7 +70,7 @@ samples = [
 #     the order of the elements must follow the design space variable order.
 #     Use the
 #     [variable_names][gemseo.space.design.DesignSpace.variable_names]
-#     method to see that order.
+#     property to see that order.
 #
 # ### 3. Execute the scenario with the custom samples
 #

@@ -23,11 +23,16 @@ import pytest
 from numpy import array
 from numpy.testing import assert_equal
 
+from gemseo import create_scenario
 from gemseo.discipline.analytic import AnalyticDiscipline
 from gemseo.formulation.disciplinary_opt import DisciplinaryOpt
 from gemseo.formulation.disciplinary_opt_settings import DisciplinaryOpt_Settings
 from gemseo.optimization.problem import OptimizationProblem
+from gemseo.optimization.scipy_local.settings.cobyla import COBYLA_Settings
 from gemseo.space.design import DesignSpace
+from tests.core.function.test_mdo_discipline_adapter import (
+    DisciplineWithNonNumericInput,
+)
 
 
 @pytest.mark.parametrize(
@@ -60,3 +65,29 @@ def test_jac_wrt_dv_or_non_dv(options, expected_jac):
     for function in [problem.objective, problem.constraints[0], problem.observables[0]]:
         assert_equal(function.evaluate(array([1])), array([2.0]))
         assert_equal(function.jac(array([1])), expected_jac)
+
+
+def test_scenario_with_non_numeric_discipline_input() -> None:
+    """Check that a non-numeric, non-design discipline input does not break a scenario.
+
+    Regression test: a discipline input that is not a number or an array
+    (e.g. a `list`) and that is not a design variable used to make the
+    `DisciplineAdapter` crash while computing sizes for all the discipline
+    inputs, when it only needs the sizes of the design variables.
+    """
+    discipline = DisciplineWithNonNumericInput()
+
+    design_space = DesignSpace()
+    design_space.add_variable("z", value=0.5, lower_bound=-100.0, upper_bound=50.0)
+
+    scenario = create_scenario(
+        [discipline],
+        "f",
+        design_space,
+        formulation_settings_model=DisciplinaryOpt_Settings(),
+    )
+    scenario.execute(COBYLA_Settings(max_iter=3))
+
+    # The sizes of the discipline inputs that are neither design variables nor
+    # differentiated inputs must not have leaked into the formulation.
+    assert scenario.formulation.variable_sizes == design_space.variable_sizes
