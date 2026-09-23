@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_wrap_scenario_requires_algorithm[create_evaluation_scenario]
+  'The algorithm must be set on the scenario before wrapping it in a job scheduler; use the set_algorithm method.'
+# ---
+# name: test_wrap_scenario_requires_algorithm[create_sellar_scenario]
+  'The algorithm must be set on the scenario before wrapping it in a job scheduler; use the set_algorithm method.'
+# ---
+# name: test_wrap_scenario_requires_objective
+  'The objective must be set on the scenario before wrapping it in a job scheduler; use the add_objective method.'
+# ---

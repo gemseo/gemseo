@@ -27,6 +27,8 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 from typing import ClassVar
 
+from numpy import clip
+
 from gemseo.core._process_flow.base_process_flow import BaseProcessFlow
 from gemseo.core.discipline import Discipline
 from gemseo.core.discipline.process_discipline import ProcessDiscipline
@@ -157,6 +159,9 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             set_x0_before_exec: Whether to set the current value
                 of the design space of the scenario before executing it,
                 from the input data of this adapter.
+                The design variables that are not inputs of this adapter
+                keep their current value,
+                projected into the bounds set with `set_bounds_before_exec`.
                 This is useful for multi-start optimization.
             set_bounds_before_exec: Whether to set the bounds
                 of the design space of the scenario before executing it,
@@ -347,11 +352,6 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
 
         self._reset_problem()
 
-        # Set the starting point of the sub scenario with current dv names
-        if self._set_x0_before_exec:
-            dv_values = {dv_name: data[dv_name] for dv_name in self._dv_in_names}
-            design_space.set_current_value(dv_values)
-
         # Set the bounds of the sub-scenario
         if self._set_bounds_before_exec:
             lower_bound_suffix = self.lower_bnd_suffix
@@ -359,6 +359,27 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
             for name in design_space:
                 design_space.set_lower_bound(name, data[f"{name}{lower_bound_suffix}"])
                 design_space.set_upper_bound(name, data[f"{name}{upper_bound_suffix}"])
+
+        # Set the starting point of the sub scenario with current dv names
+        if self._set_x0_before_exec:
+            dv_values = {dv_name: data[dv_name] for dv_name in self._dv_in_names}
+            if dv_values:
+                # The design variables that are not inputs keep their current value,
+                # projected into the bounds as these may have just been set.
+                dv_values = {
+                    **{
+                        name: clip(
+                            value,
+                            design_space.get_lower_bound(name),
+                            design_space.get_upper_bound(name),
+                        )
+                        for name, value in design_space.get_current_value(
+                            as_dict=True
+                        ).items()
+                    },
+                    **dv_values,
+                }
+            design_space.set_current_value(dv_values)
 
     def _reset_problem(self) -> None:
         """Reset the problem attached to the scenario."""

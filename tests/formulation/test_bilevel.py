@@ -633,6 +633,19 @@ def test_set_x0_before_opt(generate_sobieski_bilevel_scenario, kwargs):
     assert scenario_adapters[2]._set_x0_before_exec is set_x0_before_opt
 
 
+def test_set_x0_before_opt_execution(generate_sobieski_bilevel_scenario):
+    """Verify that set_x0_before_opt changes the result of the scenario."""
+    f_opt = []
+    for set_x0_before_opt in (False, True):
+        scenario = generate_sobieski_bilevel_scenario(
+            set_x0_before_opt=set_x0_before_opt
+        )
+        scenario.execute(SLSQP_Settings(max_iter=3))
+        f_opt.append(scenario.optimization_result.f_opt)
+
+    assert f_opt[0] != pytest.approx(f_opt[1])
+
+
 @pytest.mark.parametrize(
     "kwargs", [{"reset_x0_before_opt": False}, {"reset_x0_before_opt": True}, {}]
 )

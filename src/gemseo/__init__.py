@@ -58,6 +58,7 @@ from gemseo.doe.factory import DOELibraryFactory
 from gemseo.machine_learning.regression.core.base_regressor import BaseRegressor
 from gemseo.machine_learning.regression.model.factory import regressor_factory
 from gemseo.problem.dataset import DatasetType
+from gemseo.scenario.job_scheduler import wrap_scenario_in_job_scheduler  # noqa: F401
 from gemseo.scenario.mdo import MDOScenario
 from gemseo.util.constant import _check_desvars_bounds
 from gemseo.util.constant import _enable_discipline_cache

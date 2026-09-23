@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from gemseo.scenario.adapter.mdo import MDOScenarioAdapter  # noqa: F401
     from gemseo.scenario.evaluation import EvaluationScenario  # noqa: F401
     from gemseo.scenario.factory import scenario_factory  # noqa: F401
+    from gemseo.scenario.job_scheduler import wrap_scenario_in_job_scheduler  # noqa: F401
     from gemseo.scenario.mdo import MDOScenario  # noqa: F401
 
 # Class name -> defining submodule (lazy-loaded on attribute access).
@@ -39,6 +40,7 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "MDOScenario": "mdo",
     "MDOScenarioAdapter": "adapter.mdo",
     "scenario_factory": "factory",
+    "wrap_scenario_in_job_scheduler": "job_scheduler",
 })
 
 install_lazy_reexport(globals(), _name_to_location)
