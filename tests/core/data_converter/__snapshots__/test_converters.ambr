@@ -1,0 +1,10 @@
+# serializer version: 1
+# name: test_get_value_size_non_numeric[converter0]
+  'The size of the value of a_list cannot be computed because its type list is neither a number nor an array.'
+# ---
+# name: test_get_value_size_non_numeric[converter1]
+  'The size of the value of a_list cannot be computed because its type list is neither a number nor an array.'
+# ---
+# name: test_get_value_size_non_numeric[converter2]
+  'The size of the value of a_list cannot be computed because its type list is neither a number nor an array.'
+# ---

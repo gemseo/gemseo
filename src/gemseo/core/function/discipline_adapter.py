@@ -57,6 +57,18 @@ class DisciplineAdapter(ArrayFunction):
     __input_dimension: int | None
     """The input variable dimension, needed for linear candidates."""
 
+    __given_input_names: frozenset[str]
+    """The names of the inputs whose sizes were in the mapping at instantiation.
+
+    These sizes prevail over the ones measured from the discipline of this adapter.
+
+    The guarantee is about construction time only: the mapping may be shared with other
+    adapters, and the set of these names is snapshotted when this adapter is built,
+    while the mapping itself is kept and receives the sizes measured by this adapter. An
+    adapter built after a sibling has been evaluated therefore inherits the sizes
+    measured and stored by this sibling, as if they had been given.
+    """
+
     differentiated_input_names_substitute: Sequence[str]
     """The names of the inputs with respect to which to differentiate the functions.
 
@@ -106,6 +118,7 @@ class DisciplineAdapter(ArrayFunction):
         self.__discipline = discipline
         self.__input_name_to_slice = {}
         self.__input_name_to_size = name_to_size or {}
+        self.__given_input_names = frozenset(name_to_size)
         self.__differentiated_input_name_to_slice = {}
         input_names = set(self.input_names)
         self.__is_linear = self.__discipline.io.have_linear_relationships(
@@ -370,20 +383,39 @@ class DisciplineAdapter(ArrayFunction):
         """Create the map from discipline input names to input vector slices.
 
         Raises:
-            ValueError: When a discipline input has no default value.
+            ValueError: When an input or a differentiated input of the discipline
+                has neither a given size, nor a default value,
+                nor a value in the local data.
         """
-        input_data = self.__discipline.io.get_input_data()
-        input_data.update(self.__discipline.io.input_grammar.defaults)
+        # The local data of the discipline is more recent than its default inputs,
+        # while the default inputs of this adapter, already pushed into the defaults
+        # of the discipline, prevail over both.
+        input_data = dict(self.__discipline.io.input_grammar.defaults)
+        input_data.update(self.__discipline.io.input_data)
+        input_data.update(self.__default_inputs)
+        # Only the inputs that are actually sliced below need a size: measuring the
+        # other ones would fail for the inputs whose values are not numeric.
+        # The sizes given at instantiation are not measured either as they prevail.
+        required_names = {
+            *self.input_names,
+            *self.differentiated_input_names_substitute,
+        }.intersection(input_data).difference(self.__given_input_names)
+        # `__input_name_to_size` may be a mapping shared with the formulation, which
+        # seeds it with the design variable sizes and reads back the sizes measured
+        # here for the differentiated inputs that are not design variables.
+        # Hence the sizes measured by another adapter must not prevail over the ones
+        # measured here, as the same name can have different sizes in two disciplines;
+        # only the sizes given at instantiation of this adapter do.
         self.__input_name_to_size.update(
             self.__discipline.io.input_grammar.data_converter.compute_name_to_size(
-                input_data.keys(), input_data
+                required_names, input_data
             )
         )
 
         missing_names = (
             set(self.input_names)
+            .union(self.differentiated_input_names_substitute)
             .difference(self.__input_name_to_size.keys())
-            .difference(input_data.keys())
         )
 
         if missing_names:

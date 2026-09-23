@@ -23,8 +23,11 @@ from typing import TYPE_CHECKING
 
 import pytest
 from numpy import array
+from numpy import ndarray
+from numpy.testing import assert_allclose
 from numpy.testing import assert_equal
 
+from gemseo.core.discipline import Discipline
 from gemseo.core.function.discipline_adapter import DisciplineAdapter
 from gemseo.discipline.auto_py import AutoPyDiscipline
 from gemseo.util.constant import read_only_empty_dict
@@ -32,8 +35,6 @@ from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
-
-    from numpy import ndarray
 
     from gemseo.core.function.array_function import ArrayFunction
     from gemseo.core.grammar.properties import GrammarProperties
@@ -129,3 +130,144 @@ def test_names_to_sizes() -> None:
     """Check that input sizes can be guessed from the function's input sizes."""
     disciplinary_function = create_disciplinary_function(name_to_size={"x": 1})
     check_func_and_jac_evaluation(disciplinary_function)
+
+
+def test_error_differentiated_input(snapshot) -> None:
+    """Check the error message when the size of a differentiated input is unknown."""
+
+    def my_func(y: float, x: float = 0.0) -> float:
+        z = x + y
+        return z  # noqa: RET504
+
+    function = DisciplineAdapter(
+        ["x"],
+        ["z"],
+        {},
+        AutoPyDiscipline(my_func),
+        differentiated_input_names_substitute=["y"],
+    )
+    with assert_exception(ValueError, snapshot):
+        function.func(array([1.0]))
+
+
+class DisciplineWithNonNumericInput(Discipline):
+    """A discipline with a non-numeric input that is not a function input."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.input_grammar.update_from_types({"x": list, "z": float})
+        self.output_grammar.update_from_types({"f": float})
+        self.io.input_grammar.defaults.update({"x": [1.0], "z": 0.5})
+
+    def _run(self, input_data):
+        x = input_data["x"][0]
+        z = input_data["z"]
+        return {"f": x * z}
+
+
+def test_non_numeric_input_not_in_input_names() -> None:
+    """Check that a non-numeric, non-differentiated input does not break the adapter.
+
+    A discipline input whose value is not a number or an array (e.g. a `list`)
+    used to make the adapter crash while computing sizes for all the discipline
+    inputs, even though the adapter only needs the sizes of `input_names` and
+    `differentiated_input_names_substitute`.
+    """
+    discipline = DisciplineWithNonNumericInput()
+    function = DisciplineAdapter(["z"], ["f"], {}, discipline)
+    assert_equal(function.evaluate(array([0.5])), array([0.5]))
+
+
+class _DisciplineWithSummingInput(Discipline):
+    """A discipline whose single input `x` defaults to a size-1 array."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.input_grammar.update_from_types({"x": ndarray})
+        self.output_grammar.update_from_types({"f": float})
+        self.io.input_grammar.defaults.update({"x": array([1.0])})
+
+    def _run(self, input_data):
+        return {"f": float(input_data["x"].sum())}
+
+
+def test_shared_name_to_size_prevails_over_discipline_size() -> None:
+    """Check that a size shared with the formulation prevails over the discipline's.
+
+    The `name_to_size` mapping passed at instantiation may be shared with the
+    formulation, which seeds it with the design variable sizes. This size must
+    be used to slice the input vector, even though it differs from the size
+    that would be measured from the discipline's default input value.
+    """
+    discipline = _DisciplineWithSummingInput()
+    function = DisciplineAdapter(["x"], ["f"], {}, discipline, name_to_size={"x": 3})
+    assert_equal(function.evaluate(array([1.0, 2.0, 3.0])), array([6.0]))
+
+
+class _DisciplineWithSquaringInput(Discipline):
+    """A discipline summing the squares of its input `x`, defaulting to a size-1 array.
+
+    Its Jacobian is approximated by finite differences.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.input_grammar.update_from_types({"x": ndarray})
+        self.output_grammar.update_from_types({"f": float})
+        self.io.input_grammar.defaults.update({"x": array([1.0])})
+        self.linearization_mode = "finite_differences"
+
+    def _run(self, input_data):
+        return {"f": float((input_data["x"] ** 2).sum())}
+
+
+def test_local_data_size_prevails_over_default_size() -> None:
+    """Check that an input size is measured from the local data before the defaults.
+
+    The default input values of the discipline used to prevail over its local data
+    when measuring the input sizes. An approximated Jacobian was then silently
+    truncated to the size of the default value: a discipline defaulting to an `x`
+    of size 1 but linearized at an `x` of size 3 returned a Jacobian of shape
+    `(1, 1)` instead of `(1, 3)`. The local data is more recent than the default
+    input values, hence it must prevail over them.
+    """
+    discipline = _DisciplineWithSquaringInput()
+    discipline.add_differentiated_inputs(["x"])
+    discipline.add_differentiated_outputs(["f"])
+    jacobian = discipline.linearize({"x": array([1.0, 2.0, 3.0])})["f"]["x"]
+    assert jacobian.shape == (1, 3)
+    assert_allclose(jacobian, array([[2.0, 4.0, 6.0]]), atol=1e-6)
+
+
+class _DisciplineWithTwoInputs(Discipline):
+    """A discipline whose inputs `x` and `y` default to size-1 arrays.
+
+    The output `f` weights `x` and `y` differently so that a wrong split of the
+    input vector between the two gives a different value rather than the same one.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.input_grammar.update_from_types({"x": ndarray, "y": ndarray})
+        self.output_grammar.update_from_types({"f": float})
+        self.io.input_grammar.defaults.update({"x": array([1.0]), "y": array([1.0])})
+
+    def _run(self, input_data):
+        return {"f": float(input_data["x"].sum() + 10.0 * input_data["y"].sum())}
+
+
+def test_default_inputs_size_prevails_over_local_data_size() -> None:
+    """Check that the adapter's default input data prevails over the local data.
+
+    The discipline's local data may be stale, e.g. left over from a previous
+    evaluation at another point, and of another size than the point at which the
+    adapter is now evaluated. The adapter's own `default_input_data`, passed at
+    instantiation, is the most trustworthy source of sizes and must prevail over
+    the discipline's local data when the two disagree on the size of an input.
+    """
+    discipline = _DisciplineWithTwoInputs()
+    discipline.io.input_data.update({"x": array([9.0])})
+    function = DisciplineAdapter(
+        ["x", "y"], ["f"], {"x": array([1.0, 2.0])}, discipline
+    )
+    assert_equal(function.evaluate(array([1.0, 2.0, 3.0])), array([33.0]))

@@ -180,6 +180,10 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
 
         Returns:
             The size.
+
+        Raises:
+            TypeError: When the value is neither a number nor an array,
+                i.e. when it has no `size` attribute.
         """
         getters = cls.value_size_getters
         if getters and (getter := getters.get(name)):
@@ -187,7 +191,15 @@ class BaseDataConverter(Generic[T], metaclass=ABCGoogleDocstringInheritanceMeta)
         if isinstance(value, cls._non_array_types):
             return 1
 
-        return cast("NumberArray", value).size
+        try:
+            return cast("NumberArray", value).size
+        except AttributeError as error:
+            msg = (
+                f"The size of the value of {name} cannot be computed "
+                f"because its type {type(value).__name__} "
+                "is neither a number nor an array."
+            )
+            raise TypeError(msg) from error
 
     def compute_name_to_slice(
         self,

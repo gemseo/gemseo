@@ -29,6 +29,7 @@ from gemseo.core.grammar.json import JSONGrammar
 from gemseo.core.grammar.pydantic import PydanticGrammar
 from gemseo.core.grammar.simple import SimpleGrammar
 from gemseo.util.comparison import compare_dict_of_arrays
+from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -200,6 +201,12 @@ def test_get_value_sizes_user(
         },
     )
     assert converter.get_value_size(name, value) == expected
+
+
+def test_get_value_size_non_numeric(converter, snapshot) -> None:
+    """Verify get_value_size raises a TypeError for a non-numeric, non-array value."""
+    with assert_exception(TypeError, snapshot):
+        converter.get_value_size("a_list", [1.0])
 
 
 reference_data = {
