@@ -19,12 +19,9 @@ from __future__ import annotations
 from pydantic import Field
 from pydantic import PositiveInt  # noqa: TC002
 
-from gemseo.doe.openturns._algorithm.ot_optimal_lhs import OTOptimalLHS
 from gemseo.doe.openturns.settings.base_openturns_settings import BaseOpenTURNSSettings
-
-TemperatureProfile = OTOptimalLHS.TemperatureProfile
-
-SpaceFillingCriterion = OTOptimalLHS.SpaceFillingCriterion
+from gemseo.enum._ot_optimal_lhs import SpaceFillingCriterion
+from gemseo.enum._ot_optimal_lhs import TemperatureProfile
 
 
 class OT_OPT_LHS_Settings(BaseOpenTURNSSettings):  # noqa: N801

@@ -228,9 +228,9 @@ domain_core_exceptions: dict[str, set[str]] = {
     # BaseDOELibrary exposes gemseo.optimization.result.OptimizationResult as
     # its default result class.
     "doe.core": {"optimization"},
-    # Constraints.AggregationFunction reuses ConstraintAggregation from
-    # gemseo.discipline.constraint_aggregation.
-    "optimization.core": {"discipline"},
+    # Constraints.AggregationFunction reuses EvaluationFunction from
+    # gemseo.enum._constraint_aggregation.
+    "optimization.core": {"enum"},
     # BaseMDASolverSettings reuses BaseLinearSolverSettings and LGMRES_Settings
     # from gemseo.linear to configure an MDA's inner linear solver.
     "mda.core": {"linear"},
@@ -293,13 +293,14 @@ package_dependency_allowlist: dict[str, frozenset[str]] = {
     "discipline": frozenset({
         "core",
         "discipline",
+        "enum",
         "machine_learning",
         "ode",
         "optimization",
         "post",
         "util",
     }),
-    "doe": frozenset({"core", "doe", "optimization", "space", "util"}),
+    "doe": frozenset({"core", "doe", "enum", "optimization", "space", "util"}),
     "enum": frozenset({"util"}),
     "formulation": frozenset({
         "core",
@@ -330,8 +331,8 @@ package_dependency_allowlist: dict[str, frozenset[str]] = {
     "optimization": frozenset({
         "core",
         "dataset",
-        "discipline",
         "doe",
+        "enum",
         "optimization",
         "space",
         "util",

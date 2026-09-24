@@ -16,9 +16,9 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 
 from numpy import array
@@ -32,6 +32,8 @@ from openturns import SpaceFillingMinDist
 from openturns import SpaceFillingPhiP
 
 from gemseo.doe.openturns._algorithm.base_ot_doe import BaseOTDOE
+from gemseo.enum._ot_optimal_lhs import SpaceFillingCriterion
+from gemseo.enum._ot_optimal_lhs import TemperatureProfile
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -50,18 +52,11 @@ class OTOptimalLHS(BaseOTDOE):
         This class is a singleton.
     """
 
-    class TemperatureProfile(StrEnum):
-        """The name of the temperature profile."""
+    TemperatureProfile: ClassVar[type[TemperatureProfile]] = TemperatureProfile
+    """The name of the temperature profile."""
 
-        GEOMETRIC = "Geometric"
-        LINEAR = "Linear"
-
-    class SpaceFillingCriterion(StrEnum):
-        """The name of the space-filling criterion."""
-
-        C2 = "C2"
-        PHIP = "PhiP"
-        MINDIST = "MinDist"
+    SpaceFillingCriterion: ClassVar[type[SpaceFillingCriterion]] = SpaceFillingCriterion
+    """The name of the space-filling criterion."""
 
     __temperature_profiles: Final[Mapping[str, TemperatureProfileImplementation]] = (
         MappingProxyType({
