@@ -36,7 +36,7 @@ from __future__ import annotations
 
 from gemseo import create_scenario
 from gemseo.discipline import AnalyticDiscipline
-from gemseo.discipline import ConstraintAggregation
+from gemseo.enum import EvaluationFunction
 from gemseo.optimization import NLOPT_MMA_Settings
 from gemseo.space import DesignSpace
 
@@ -90,7 +90,7 @@ scenario.add_constraint(constraint_names, constraint_type="ineq")
 # Replace the 100 individual constraints with a single scalar one
 # using the lower bound KS function:
 scenario.formulation.problem.constraints.aggregate(
-    0, method=ConstraintAggregation.EvaluationFunction.LOWER_BOUND_KS, rho=10.0
+    0, method=EvaluationFunction.LOWER_BOUND_KS, rho=10.0
 )
 
 # %%

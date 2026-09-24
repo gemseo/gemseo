@@ -31,7 +31,7 @@ from gemseo.core.function.array_function import ArrayFunction
 from gemseo.core.function.collection.functions import Functions
 from gemseo.core.function.linear_function import LinearFunction
 from gemseo.core.function.quadratic_function import QuadraticFunction
-from gemseo.discipline.constraint_aggregation import ConstraintAggregation
+from gemseo.enum._constraint_aggregation import EvaluationFunction
 from gemseo.optimization.aggregation.aggregation_func import aggregate_iks
 from gemseo.optimization.aggregation.aggregation_func import aggregate_lower_bound_ks
 from gemseo.optimization.aggregation.aggregation_func import aggregate_max
@@ -58,7 +58,7 @@ if TYPE_CHECKING:
 class Constraints(Functions):
     """A mutable sequence of constraints."""
 
-    AggregationFunction = ConstraintAggregation.EvaluationFunction
+    AggregationFunction = EvaluationFunction
 
     _aggregation_function_map: Final[Mapping[str, Callable[[RealArray], float]]] = (
         MappingProxyType({

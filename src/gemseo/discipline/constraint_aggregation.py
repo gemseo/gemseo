@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
@@ -29,6 +28,7 @@ from typing import ClassVar
 from numpy import atleast_1d
 
 from gemseo.core.discipline import Discipline
+from gemseo.enum._constraint_aggregation import EvaluationFunction
 from gemseo.optimization.aggregation._functions import compute_iks_agg
 from gemseo.optimization.aggregation._functions import compute_lower_bound_ks_agg
 from gemseo.optimization.aggregation._functions import compute_max_agg
@@ -77,26 +77,8 @@ class ConstraintAggregation(Discipline):
         International Journal of Control, 37(2):251-284, 1983.
     """
 
-    class EvaluationFunction(StrEnum):
-        """A function to compute an aggregation of constraints."""
-
-        IKS = "IKS"
-        """The induces exponential function."""
-
-        LOWER_BOUND_KS = "lower_bound_KS"
-        """The lower bound Kreisselmeier-Steinhauser function."""
-
-        UPPER_BOUND_KS = "upper_bound_KS"
-        """The upper bound Kreisselmeier-Steinhauser function."""
-
-        POS_SUM = "POS_SUM"
-        """The positive sum squared function."""
-
-        MAX = "MAX"
-        """The maximum function."""
-
-        SUM = "SUM"
-        """The sum squared function."""
+    EvaluationFunction: ClassVar[type[EvaluationFunction]] = EvaluationFunction
+    """A function to compute an aggregation of constraints."""
 
     _evaluation_function_map: ClassVar[Mapping[EvaluationFunction, Callable]] = (
         MappingProxyType({

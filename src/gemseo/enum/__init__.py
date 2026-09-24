@@ -44,9 +44,6 @@ if TYPE_CHECKING:
     from gemseo.core.problem.evaluation import EvaluationProblem as _EvaluationProblem
     from gemseo.dataset import DatasetClassName  # noqa: F401
     from gemseo.discipline.chain.chain import ChainDerivationMode  # noqa: F401
-    from gemseo.discipline.constraint_aggregation import (
-        ConstraintAggregation as _ConstraintAggregation,
-    )
     from gemseo.discipline.wrapper.disc_from_exe import Parser  # noqa: F401
     from gemseo.doe.pydoe.settings.pydoe_ccdesign import Alpha  # noqa: F401
     from gemseo.doe.pydoe.settings.pydoe_ccdesign import Face  # noqa: F401
@@ -54,6 +51,9 @@ if TYPE_CHECKING:
     from gemseo.doe.scipy.settings.base_scipy_doe_settings import Hypersphere  # noqa: F401
     from gemseo.doe.scipy.settings.base_scipy_doe_settings import Optimizer  # noqa: F401
     from gemseo.doe.scipy.settings.base_scipy_doe_settings import Strength  # noqa: F401
+    from gemseo.enum._constraint_aggregation import EvaluationFunction  # noqa: F401
+    from gemseo.enum._ot_optimal_lhs import SpaceFillingCriterion  # noqa: F401
+    from gemseo.enum._ot_optimal_lhs import TemperatureProfile  # noqa: F401
     from gemseo.machine_learning.core.quality.base_ml_model_quality import (
         BaseMLModelQuality as _BaseMLModelQuality,
     )
@@ -140,9 +140,6 @@ if TYPE_CHECKING:
 
     FunctionType = _ArrayFunction.FunctionType
     """All function types: objective, observable and constraints."""
-
-    EvaluationFunction = _ConstraintAggregation.EvaluationFunction
-    """The evaluation function for constraint aggregation."""
 
     EvaluationFunctionName = _BaseMLModelQuality.EvaluationFunctionName
     """The evaluation function name for an ML model quality metric."""
@@ -261,9 +258,7 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     "DifferentiationMethod": (
         "gemseo.core.problem.evaluation:EvaluationProblem.DifferentiationMethod"
     ),
-    "EvaluationFunction": (
-        "gemseo.discipline.constraint_aggregation:ConstraintAggregation.EvaluationFunction"
-    ),
+    "EvaluationFunction": "gemseo.enum._constraint_aggregation:EvaluationFunction",
     "EvaluationFunctionName": (
         "gemseo.machine_learning.core.quality.base_ml_model_quality"
         ":BaseMLModelQuality.EvaluationFunctionName"
@@ -350,11 +345,13 @@ _name_to_location: Final[Mapping[str, str]] = MappingProxyType({
     ),
     "SobolAnalysisMethod": "gemseo.uncertainty.sensitivity.sobol:SobolAnalysisMethod",
     "Solver": "gemseo.machine_learning.linear_model_fitting.ridge_settings:Solver",
+    "SpaceFillingCriterion": "gemseo.enum._ot_optimal_lhs:SpaceFillingCriterion",
     "StatisticEstimator": (
         "gemseo.uncertainty.sensitivity.hsic:HSICAnalysis.StatisticEstimator"
     ),
     "Status": "gemseo.core.discipline.execution_status:ExecutionStatus.Status",
     "Strength": "gemseo.doe.scipy.settings.base_scipy_doe_settings:Strength",
+    "TemperatureProfile": "gemseo.enum._ot_optimal_lhs:TemperatureProfile",
     "ToleranceIntervalSide": (
         "gemseo.uncertainty.statistic.tolerance_interval.base"
         ":BaseToleranceInterval.ToleranceIntervalSide"
