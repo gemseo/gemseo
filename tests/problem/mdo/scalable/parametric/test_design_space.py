@@ -71,7 +71,7 @@ def test_dtype(default_design_space) -> None:
     """Check the use of a custom NumPy data type."""
     design_space = ScalableDesignSpace()
     for name in default_design_space:
-        assert design_space.variable_types[name] == "float"
+        assert design_space.variables[name].type == "real"
 
 
 def check_variable(space: DesignSpace, name: str, reference_space: DesignSpace) -> None:
@@ -86,10 +86,12 @@ def check_variable(space: DesignSpace, name: str, reference_space: DesignSpace) 
         Whether the variable is valid.
     """
     assert name in space
-    assert space.get_size(name) == reference_space.get_size(name)
-    assert space.get_type(name) == reference_space.get_type(name)
-    assert_equal(space.get_lower_bound(name), reference_space.get_lower_bound(name))
-    assert_equal(space.get_upper_bound(name), reference_space.get_upper_bound(name))
+    assert space.variables[name].size == reference_space.variables[name].size
+    assert space.variables[name].type == reference_space.variables[name].type
+    variable = space.variables[name]
+    reference_variable = reference_space.variables[name]
+    assert_equal(variable.lower_bound, reference_variable.lower_bound)
+    assert_equal(variable.upper_bound, reference_variable.upper_bound)
     assert_equal(
         space.get_current_value([name]), reference_space.get_current_value([name])
     )
@@ -100,7 +102,7 @@ def test_default_design_space(default_design_space) -> None:
     design_space = ScalableDesignSpace()
     assert len(default_design_space) == len(design_space)
     for name in default_design_space:
-        assert design_space.variable_types[name] == "float"
+        assert design_space.variables[name].type == "real"
         check_variable(design_space, name, default_design_space)
 
 

@@ -23,7 +23,7 @@ from numpy import array
 from numpy import inf
 
 from gemseo.space.variable import BaseVariable
-from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import RealVariable
 from gemseo.space.variable._legacy import Variable
 from gemseo.space.variable.factory import DeterministicVariableFactory
 from tests.space.variable.utils import kinds
@@ -59,13 +59,13 @@ def test_unpickle_legacy_variable_with_default_fields() -> None:
     ):
         restored = pickle.loads(pickle.dumps(Variable()))
 
-    assert restored == ContinuousVariable(size=1, lower_bound=-inf, upper_bound=inf)
+    assert restored == RealVariable(size=1, lower_bound=-inf, upper_bound=inf)
 
 
 def test_legacy_variable_is_not_a_kind() -> None:
     """Check that the legacy variable is out of the hierarchy and of its factory.
 
-    Otherwise the factory would find two classes pinning the float data type.
+    Otherwise the factory would find two classes pinning the real data type.
     """
     assert not issubclass(Variable, BaseVariable)
     assert "Variable" not in DeterministicVariableFactory().class_names

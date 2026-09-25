@@ -69,9 +69,7 @@ samples = [
 #     A 2D-array can also be used to define the samples.
 #     In that case,
 #     the order of the elements must follow the design space variable order.
-#     Use the
-#     [variable_names][gemseo.space.design.DesignSpace.variable_names]
-#     property to see that order.
+#     Use `list(design_space.variables)` to see that order.
 #
 # ### 2. Execute the scenario with the custom samples
 #

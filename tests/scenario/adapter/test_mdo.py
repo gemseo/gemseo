@@ -293,8 +293,8 @@ def test_adapter_set_bounds(scenario) -> None:
 def test_chain(scenario) -> None:
     """"""
     mda = scenario.formulation.mda
-    inputs = list(mda.io.input_grammar) + scenario.design_space.variable_names
-    outputs = ["x_1", "x_2", "x_3"]
+    inputs = tuple(mda.io.input_grammar) + tuple(scenario.design_space.variables)
+    outputs = ("x_1", "x_2", "x_3")
     adapter = MDOScenarioAdapter(scenario, inputs, outputs)
 
     # Allow re exec when DONE for the chain execution

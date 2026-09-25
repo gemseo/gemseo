@@ -72,7 +72,7 @@ class ParetoFront(BasePost[ParetoFront_Settings]):
             + self._dataset.objective_names
             + self._dataset.observable_names
         )
-        all_dv_names = self._dataset.misc["input_space"].variable_names
+        all_dv_names = list(self._dataset.misc["input_space"].variables)
 
         all_labels: Sequence[str]
         sample_values, all_labels = self.__compute_names_and_values(

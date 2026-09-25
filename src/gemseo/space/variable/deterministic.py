@@ -45,7 +45,7 @@ class BaseDeterministicVariable(BaseVariable, ABC):
     unlike a random variable, which is defined by a probability distribution.
     """
 
-    type: ClassVar[DataType] = DataType.FLOAT
+    type: ClassVar[DataType] = DataType.REAL
     """The type of data."""
 
     @abstractmethod

@@ -77,7 +77,7 @@ class TestPropaneScenario(unittest.TestCase):
         :param scenario:
 
         """
-        data_names = scenario.formulation.problem.input_space.variable_names
+        data_names = tuple(scenario.formulation.problem.input_space.variables)
         data = [self.io_data.input_data[name] for name in data_names]
         return concatenate(data)
 

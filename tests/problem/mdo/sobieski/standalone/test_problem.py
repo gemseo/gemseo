@@ -554,7 +554,7 @@ def test_original_design_variables_order(
     """Check the design space with original variables order."""
     problem = SobieskiProblem()
     problem.use_original_design_variables_order = use_original_order
-    variable_names = [
+    variable_names = (
         *design_variables,
         "y_14",
         "y_32",
@@ -564,9 +564,9 @@ def test_original_design_variables_order(
         "y_23",
         "y_21",
         "y_12",
-    ]
-    assert problem.design_space.variable_names == variable_names
-    variable_names = [
+    )
+    assert tuple(problem.design_space.variables) == variable_names
+    variable_names = (
         *physical_design_variables,
         "t_w_4",
         "f_w",
@@ -578,5 +578,5 @@ def test_original_design_variables_order(
         "cl",
         "t_w_2",
         "twist",
-    ]
-    assert problem.design_space_with_physical_naming.variable_names == variable_names
+    )
+    assert tuple(problem.design_space_with_physical_naming.variables) == variable_names

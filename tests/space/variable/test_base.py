@@ -27,6 +27,7 @@ from numpy import atleast_1d
 from numpy import inf
 from numpy import int32
 from numpy import nan
+from numpy import str_
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
@@ -34,14 +35,37 @@ from gemseo.space.variable import BaseDeterministicVariable
 from gemseo.space.variable import BaseIntervalVariable
 from gemseo.space.variable import BaseNumericVariable
 from gemseo.space.variable import BaseVariable
-from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
 from gemseo.space.variable.random import RandomVariable
 from gemseo.util.pydantic_ndarray import NDArrayPydantic  # noqa: TC001
 from gemseo.util.testing.helper import assert_exception
 from tests.space.variable.utils import kinds
+
+
+def test_data_type_from_a_non_string(snapshot) -> None:
+    """Check that a non-string does not resolve to the data type its `str()` names.
+
+    `_missing_` looks a legacy value up after calling `str()` on it, so without
+    the guard rejecting a non-string, any object whose `str()` is a legacy value
+    (a 0-d NumPy array of it, a `Path`, ...) would silently resolve to the data
+    type that value named in a past release.
+    """
+    with assert_exception(ValueError, snapshot):
+        DataType(array("float"))
+
+
+def test_data_type_from_a_numpy_string() -> None:
+    """Check that a legacy value read as a NumPy string still resolves.
+
+    A CSV file is read as an array of NumPy strings, which are `str` instances,
+    so they must go on resolving; this is the contrast case of
+    `test_data_type_from_a_non_string`.
+    """
+    with pytest.deprecated_call(match="The variable data type 'float' is deprecated"):
+        assert DataType(str_("float")) is DataType.REAL
 
 
 def test_base_variable_is_abstract() -> None:
@@ -76,7 +100,7 @@ def test_intermediate_classes_are_abstract(cls, abstract_methods) -> None:
 @pytest.mark.parametrize(
     ("cls", "is_deterministic", "is_numeric"),
     [
-        (ContinuousVariable, True, True),
+        (RealVariable, True, True),
         (IntegerVariable, True, True),
         (DiscreteVariable, True, True),
         (RandomVariable, False, True),
@@ -97,7 +121,7 @@ def test_axes_of_the_hierarchy(cls, is_deterministic, is_numeric) -> None:
 @pytest.mark.parametrize(
     ("cls", "field_names"),
     [
-        (ContinuousVariable, {"size", "lower_bound", "upper_bound"}),
+        (RealVariable, {"size", "lower_bound", "upper_bound"}),
         (IntegerVariable, {"size", "lower_bound", "upper_bound"}),
         (DiscreteVariable, {"choices"}),
         (RandomVariable, {"distribution_settings"}),
@@ -146,7 +170,7 @@ def test_non_positive_size(cls, size, snapshot) -> None:
 
 @pytest.mark.parametrize("cls", kinds)
 @pytest.mark.parametrize(
-    "type_", ["complex", DataType.FLOAT, DataType.INTEGER, DataType.DISCRETE]
+    "type_", ["complex", DataType.REAL, DataType.INTEGER, DataType.DISCRETE]
 )
 def test_type_is_not_settable(cls, type_, snapshot) -> None:
     """Check that the data type, pinned by the kind, cannot be passed.
@@ -293,7 +317,7 @@ def test_model_copy_with_inconsistent_update(cls, snapshot) -> None:
 
 @pytest.mark.parametrize(
     ("cls", "type_"),
-    [(ContinuousVariable, DataType.INTEGER), (IntegerVariable, DataType.FLOAT)],
+    [(RealVariable, DataType.INTEGER), (IntegerVariable, DataType.REAL)],
 )
 def test_model_copy_with_another_type(cls, type_, snapshot) -> None:
     """Check that an update contradicting the pinned data type is rejected."""
@@ -330,7 +354,7 @@ def test_get_normalization_mask(cls, upper_bound, enable_integer_normalization) 
     variable = cls(size=2, lower_bound=0, upper_bound=upper_bound)
     policy = variable.get_normalization_mask(enable_integer_normalization)
     expected = upper_bound != inf and (
-        cls is ContinuousVariable or enable_integer_normalization
+        cls is RealVariable or enable_integer_normalization
     )
     assert_array_equal(policy, [expected] * 2)
 
@@ -345,22 +369,22 @@ def test_find_components_outside_domain_with_none_and_inf(cls) -> None:
 
 def test_eq_is_data_based() -> None:
     """Check that equality compares the data and not the exact class."""
-    continuous = ContinuousVariable(size=2, lower_bound=0, upper_bound=1)
+    real = RealVariable(size=2, lower_bound=0, upper_bound=1)
     integer = IntegerVariable(size=2, lower_bound=0, upper_bound=1)
 
-    assert continuous == ContinuousVariable(size=2, lower_bound=0, upper_bound=1)
-    assert continuous != integer
-    assert continuous != ContinuousVariable(size=2, lower_bound=0, upper_bound=2)
-    assert continuous != "not a variable"
+    assert real == RealVariable(size=2, lower_bound=0, upper_bound=1)
+    assert real != integer
+    assert real != RealVariable(size=2, lower_bound=0, upper_bound=2)
+    assert real != "not a variable"
     # The sizes differ, so the comparison returns before reaching the bounds.
-    assert continuous != ContinuousVariable(size=3, lower_bound=0, upper_bound=1)
+    assert real != RealVariable(size=3, lower_bound=0, upper_bound=1)
 
 
 def test_eq_compares_the_fields_of_a_subclass() -> None:
     """Check that a field added by a subclass takes part in the comparison."""
 
-    class CustomVariable(ContinuousVariable):
-        """A continuous variable with extra fields."""
+    class CustomVariable(RealVariable):
+        """A real variable with extra fields."""
 
         label: str = ""
         weights: NDArrayPydantic[float] = array([0.0])
@@ -374,4 +398,4 @@ def test_eq_compares_the_fields_of_a_subclass() -> None:
         size=1, lower_bound=0, upper_bound=1, label="a", weights=array([0.0, 0.0])
     )
     # The extra fields are declared by only one of the two kinds.
-    assert variable != ContinuousVariable(size=1, lower_bound=0, upper_bound=1)
+    assert variable != RealVariable(size=1, lower_bound=0, upper_bound=1)

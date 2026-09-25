@@ -1,2 +1,2 @@
  name       value    lower_bound   type   upper_bound
- x_shared    0.04       0.01        real     0.09
+ x_shared    0.04       0.01        float     0.09

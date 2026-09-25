@@ -31,7 +31,7 @@ class Variable(BaseModel):
 
     A single `Variable` class used to define a variable of any data type. It has been
     replaced by one class per data type, namely
-    [ContinuousVariable][gemseo.space.variable.ContinuousVariable] and
+    [RealVariable][gemseo.space.variable.RealVariable] and
     [IntegerVariable][gemseo.space.variable.IntegerVariable], built by
     `DeterministicVariableFactory`.
 
@@ -44,7 +44,7 @@ class Variable(BaseModel):
     size: Any = 1
     """The size of the variable."""
 
-    type: Any = DataType.FLOAT
+    type: Any = DataType.REAL
     """The type of data."""
 
     lower_bound: Any = -inf
@@ -67,7 +67,7 @@ class Variable(BaseModel):
         """
         fields = state.get("__dict__", {})
         variable = deterministic_variable_factory.create(
-            fields.get("type", DataType.FLOAT),
+            fields.get("type", DataType.REAL),
             size=fields.get("size", 1),
             lower_bound=fields.get("lower_bound", -inf),
             upper_bound=fields.get("upper_bound", inf),

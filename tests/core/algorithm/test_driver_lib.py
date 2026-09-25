@@ -168,7 +168,7 @@ def driver_library() -> BaseDriverLibrary:
     """A driver library."""
     driver_library = ScipyOpt("SLSQP")
     design_space = DesignSpace()
-    design_space.add_variable("x", 1, "float", -2, 3, 1)
+    design_space.add_variable("x", 1, "real", -2, 3, 1)
     driver_library._problem = OptimizationProblem(design_space)
     return driver_library
 

@@ -30,14 +30,14 @@ Each variable is described by:
 
 - a name,
 - a size (default: 1),
-- a type ([read more][concept-variable-types]), either `"float"` (continuous, default), `"integer"` or `"discrete"`,
+- a type ([read more][concept-variable-types]), either `"real"` (default), `"integer"` or `"discrete"`,
 - a lower bound (default: $-\infty$),
 - an upper bound (default: $\infty$),
 - a current value (default: none).
 
 As an example,
 when dealing with an aerodynamic simulation,
-you might consider a continuous variable "wing_span"
+you might consider a real variable "wing_span"
 bounded between 10 and 15 meters and
 an integer variable "number_of_ribs" between 5 and 20.
 
@@ -56,13 +56,12 @@ of [add_variable()][gemseo.space.design.DesignSpace.add_variable],
 either as a string
 or as a member of the `DesignSpace.DesignVariableType` enumeration
 (also available as `gemseo.enum.DesignVariableType`).
-[get_type()][gemseo.space.design.DesignSpace.get_type]
-and [variable_types][gemseo.space.design.DesignSpace.variable_types]
-read it back as a string.
+[variables][gemseo.space.design.DesignSpace.variables]
+reads it back: `design_space.variables["x"].type`.
 
 Three types are available:
 
-- `"float"` for the continuous variables (default),
+- `"real"` for the real variables (default),
 - `"integer"` for the integer variables,
 - `"discrete"` for the discrete numeric variables.
 
@@ -72,9 +71,9 @@ so it is declared by passing a variable object
 to the `variable` argument of
 [add_variable()][gemseo.space.design.DesignSpace.add_variable].
 
-### Continuous variables { #concept-continuous-variables }
+### Real variables { #concept-real-variables }
 
-A continuous variable can take any real value between its bounds.
+A real variable can take any real value between its bounds.
 
 Think of the fuel mass loaded into an aircraft:
 1250.5 kg is as meaningful as 1250.6 kg,
@@ -114,7 +113,7 @@ mentioning the type of the variable.
 
 [round_vect()][gemseo.space.design.DesignSpace.round_vect]
 rounds the integer components of a vector,
-while [has_integer_variables][gemseo.space.design.DesignSpace.has_integer_variables]
+while [has_integer_variables][gemseo.space.variables_view.VariablesView.has_integer_variables]
 and [get_integer_mask()][gemseo.space.design.DesignSpace.get_integer_mask]
 tell where the integer variables are.
 
@@ -126,10 +125,8 @@ tell where the integer variables are.
 ??? abstract "API"
 
     - [add_variable()][gemseo.space.design.DesignSpace.add_variable]
-    - [get_type()][gemseo.space.design.DesignSpace.get_type]
-    - [variable_types][gemseo.space.design.DesignSpace.variable_types]
     - [variables][gemseo.space.design.DesignSpace.variables]
-    - [has_integer_variables][gemseo.space.design.DesignSpace.has_integer_variables]
+    - [has_integer_variables][gemseo.space.variables_view.VariablesView.has_integer_variables]
     - [get_integer_mask()][gemseo.space.design.DesignSpace.get_integer_mask]
     - [round_vect()][gemseo.space.design.DesignSpace.round_vect]
 
@@ -183,14 +180,14 @@ tells whether the design space holds a discrete variable.
 
 ## Integer relaxation { #concept-integer-relaxation }
 
-Some algorithms only support continuous variables.
+Some algorithms only support real variables.
 In that case,
-the design space can relax integer variables by treating them as floats.
+the design space can relax integer variables by treating them as reals.
 
 ## Normalization of the variables { #concept-normalization-of-the-variables }
 
 Optimization algorithms often work better when variables share a comparable scale,
-that is why the design space can normalize bounded float variables $x$
+that is why the design space can normalize bounded real variables $x$
 into $x_{\mathrm{normalized}}$ in $[0, 1]$:
 
 - $x_{\mathrm{normalized}} = \frac{x-l_b(x)}{u_b(x)-l_b(x)}$,

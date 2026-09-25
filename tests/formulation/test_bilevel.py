@@ -418,7 +418,7 @@ def test_adapters_inputs_outputs(scenario, subscenario, request) -> None:
         adapter = scenario_adapter
 
         design_variable = set(
-            adapter.scenario.formulation.problem.input_space.variable_names
+            adapter.scenario.formulation.problem.input_space.variables
         )
         other_local = ssbj_local_variables.difference(design_variable)
         # Check the inputs

@@ -91,14 +91,6 @@
       For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
   '''
 # ---
-# name: test_immutability[type]
-  '''
-  1 validation error for RandomVariable
-  type
-    Instance is frozen [type=frozen_instance, input_value=3, input_type=int]
-      For further information visit https://errors.pydantic.dev/X.Y/v/frozen_instance
-  '''
-# ---
 # name: test_immutability[upper_bound]
   '''
   1 validation error for RandomVariable
@@ -129,4 +121,7 @@
     Value error, size is read-only; the input of a RandomVariable is distribution_settings. [type=value_error, input_value={'distribution_settings':...aximum=1.0)), 'size': 5}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
+# ---
+# name: test_type_is_a_class_variable
+  "'type' is a ClassVar of `RandomVariable` and cannot be set on an instance. If you want to set a value on the class, use `RandomVariable.type = value`."
 # ---

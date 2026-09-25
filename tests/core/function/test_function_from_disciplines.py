@@ -26,7 +26,7 @@ from gemseo.space.design import DesignSpace
 
 @pytest.mark.parametrize("use_discipline", [False, True])
 def test_design_space_copy(use_discipline):
-    """Verify that FunctionFromDiscipline uses a copy of DesignSpace.variable_sizes."""
+    """Verify that FunctionFromDiscipline uses a copy of the variable sizes."""
     design_space = DesignSpace()
     design_space.add_variable("a")
     evaluation_problem = OptimizationProblem(design_space)
@@ -37,4 +37,4 @@ def test_design_space_copy(use_discipline):
     function = FunctionFromDiscipline(["f"], formulation, **kwargs)
     assert function.evaluate(array([3.0])) == 6.0
     function.discipline_adapter._DisciplineAdapter__input_name_to_size["b"] = 1
-    assert "b" not in design_space.variable_sizes
+    assert "b" not in design_space.variables

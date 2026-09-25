@@ -167,7 +167,7 @@ def wrap_scenario_in_job_scheduler(
     # so the design variables are not inputs of the wrapper in this case.
     is_doe = isinstance(scenario._algorithm_settings, BaseDOESettings)
     settings = {
-        "input_names": [] if is_doe else list(design_space.variable_names),
+        "input_names": () if is_doe else tuple(design_space.variables),
         "set_x0_before_exec": (
             not is_doe and not adapter_settings.get("reset_x0_before_exec", False)
         ),
@@ -175,7 +175,7 @@ def wrap_scenario_in_job_scheduler(
     if "output_names" not in adapter_settings:
         # The adapter can only return the outputs of the top-level disciplines
         # and the design variables.
-        retrievable_names = set(design_space.variable_names)
+        retrievable_names = set(design_space.variables)
         for discipline in scenario.formulation.get_top_level_disciplines():
             retrievable_names.update(discipline.io.output_grammar)
 
@@ -197,8 +197,8 @@ def wrap_scenario_in_job_scheduler(
         output_names = [
             name for name in function_output_names if name in retrievable_names
         ]
-        output_names += design_space.variable_names
-        settings["output_names"] = list(dict.fromkeys(output_names))
+        output_names += design_space.variables
+        settings["output_names"] = tuple(dict.fromkeys(output_names))
 
     settings.update(adapter_settings)
     adapter = adapter_class(scenario, **settings)

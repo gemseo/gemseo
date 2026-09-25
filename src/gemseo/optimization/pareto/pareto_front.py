@@ -152,7 +152,7 @@ class ParetoFront:
         # Get design variables group,
         # and reorder the columns to match the design space order.
         desvar_history = full_history.get_view(
-            variable_names=problem.input_space.variable_names
+            variable_names=tuple(problem.input_space.variables)
         )
         ind_anchors = [
             full_history.index[np_all(desvar_history == x_anchor, axis=1)][0]

@@ -29,13 +29,13 @@ from gemseo.space._design.integer_rounder import IntegerRounder
 from gemseo.space._design.normalizer import Normalizer
 from gemseo.space._design.value import Value
 from gemseo.space._design.variables import DesignVariables
-from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
 from gemseo.util.testing.helper import assert_exception
 
 
 def _build_value(*names: str) -> tuple[DesignVariables, Value]:
-    """Build a Value over float variables of size 1 with bounds [0, 1].
+    """Build a Value over real variables of size 1 with bounds [0, 1].
 
     Args:
         names: The names of the variables.
@@ -45,7 +45,7 @@ def _build_value(*names: str) -> tuple[DesignVariables, Value]:
     """
     variables = DesignVariables()
     for name in names:
-        variables[name] = ContinuousVariable(size=1, lower_bound=0.0, upper_bound=1.0)
+        variables[name] = RealVariable(size=1, lower_bound=0.0, upper_bound=1.0)
     bounds = Bounds(variables)
     normalizer = Normalizer(variables, bounds, IntegerRounder(variables))
     return variables, Value(variables, bounds, normalizer)
@@ -75,12 +75,12 @@ def _resize(variables: DesignVariables, name: str, size: int) -> None:
         name: The name of the variable to resize.
         size: The new size of the variable.
     """
-    variables[name] = ContinuousVariable(size=size, lower_bound=0.0, upper_bound=1.0)
+    variables[name] = RealVariable(size=size, lower_bound=0.0, upper_bound=1.0)
 
 
 @pytest.fixture
 def value() -> Value:
-    """A Value over a single float variable with bounds [0, 1]."""
+    """A Value over a single real variable with bounds [0, 1]."""
     return _build_value("x")[1]
 
 
@@ -277,7 +277,7 @@ def test_initialize_missing_after_resize() -> None:
 def test_check_value_ignores_resized_value() -> None:
     """Check that a value invalidated by a resize is not checked against bounds."""
     variables = DesignVariables()
-    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
+    variables["x"] = RealVariable(size=2, lower_bound=0.0, upper_bound=1.0)
     bounds = Bounds(variables)
     value = Value(
         variables, bounds, Normalizer(variables, bounds, IntegerRounder(variables))
@@ -286,7 +286,7 @@ def test_check_value_ignores_resized_value() -> None:
 
     # The new size does not broadcast against the stored one and the new bounds
     # exclude the stored value.
-    variables["x"] = ContinuousVariable(size=3, lower_bound=2.0, upper_bound=3.0)
+    variables["x"] = RealVariable(size=3, lower_bound=2.0, upper_bound=3.0)
 
     value.check_value("x")
     assert value.name_to_value == {"x": None}

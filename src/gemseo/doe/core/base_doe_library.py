@@ -205,14 +205,14 @@ class BaseDOELibrary(BaseDriverLibrary[T, BaseVariableSpace], Serializable):
         }
         unique_variable_types = set(variable_types.values())
         if len(unique_variable_types) > 1:
-            # When the input space has both float and integer variables,
+            # When the input space has both real and integer variables,
             # the samples array has the float dtype.
             # We record the integer variables types to later be able to restore the
             # proper data type.
             python_var_types = {
                 name: data_type_to_numpy_type[type_]
                 for name, type_ in variable_types.items()
-                if type_ != DesignSpace.DesignVariableType.FLOAT
+                if type_ != DesignSpace.DesignVariableType.REAL
             }
             samples.dtype = dtype(samples.dtype, metadata=python_var_types)
 

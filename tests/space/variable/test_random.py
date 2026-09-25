@@ -29,8 +29,8 @@ from pydantic import ValidationError
 from gemseo.space.variable import BaseDeterministicVariable
 from gemseo.space.variable import BaseNumericVariable
 from gemseo.space.variable import BaseVariable
-from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DataType
+from gemseo.space.variable import RealVariable
 from gemseo.space.variable import Variable
 from gemseo.space.variable.random import RandomVariable
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
@@ -57,7 +57,7 @@ def variable() -> RandomVariable:
 def test_derived_fields(variable) -> None:
     """Check that size, type and bounds derive from the distribution."""
     assert variable.size == 2
-    assert variable.type == DataType.FLOAT
+    assert variable.type == DataType.REAL
     assert_array_equal(variable.lower_bound, [-inf, 0.0])
     assert_array_equal(variable.upper_bound, [inf, 1.0])
     assert variable.distribution.dimension == 2
@@ -119,7 +119,6 @@ def test_is_a_variable(variable) -> None:
     [
         "distribution_settings",
         "size",
-        "type",
         "lower_bound",
         "upper_bound",
         "distribution",
@@ -129,6 +128,13 @@ def test_immutability(variable, name, snapshot) -> None:
     """Check that neither the settings nor the derived attributes can be set."""
     with assert_exception(ValidationError, snapshot):
         setattr(variable, name, 3)
+
+
+def test_type_is_a_class_variable(variable, snapshot) -> None:
+    """Check that the type is shared by the class and cannot be set on an instance."""
+    assert RandomVariable.type == DataType.REAL
+    with assert_exception(AttributeError, snapshot):
+        variable.type = DataType.INTEGER
 
 
 @pytest.mark.parametrize(
@@ -195,7 +201,7 @@ def test_equality(variable) -> None:
     assert variable == RandomVariable(distribution_settings=(NORMAL, UNIFORM))
     assert variable != RandomVariable(distribution_settings=(UNIFORM, NORMAL))
     assert variable != RandomVariable(distribution_settings=(NORMAL,))
-    assert variable != ContinuousVariable(size=2)
+    assert variable != RealVariable(size=2)
 
 
 def test_copy_is_shared(variable) -> None:

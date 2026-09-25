@@ -225,8 +225,7 @@ def test_methods(test_method) -> None:
 def variables_space():
     """A variables space."""
     design_space = mock.MagicMock()
-    design_space.variable_names = ["x"]
-    design_space.variable_sizes = {"x": 2}
+    design_space.variables = {"x": mock.Mock(size=2)}
     design_space.dimension = 2
     design_space.untransform_vect = lambda doe, no_check: doe
     design_space.name_to_normalization_mask = {"x": array([True, True])}

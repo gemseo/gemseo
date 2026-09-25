@@ -59,12 +59,12 @@ def test_default(caplog):
     expected_result = r"""^Evaluation problem:
    Evaluate the functions: prod, sum
    over the design space:
-      \+------\+-------------\+-------\+-------------\+-------\+
-      \| Name \| Lower bound \| Value \| Upper bound \| Type  \|
-      \+------\+-------------\+-------\+-------------\+-------\+
-      \| x\[0\] \|     -inf    \|  None \|     inf     \| float \|
-      \| x\[1\] \|     -inf    \|  None \|     inf     \| float \|
-      \+------\+-------------\+-------\+-------------\+-------\+
+      \+------\+-------------\+-------\+-------------\+------\+
+      \| Name \| Lower bound \| Value \| Upper bound \| Type \|
+      \+------\+-------------\+-------\+-------------\+------\+
+      \| x\[0\] \|     -inf    \|  None \|     inf     \| real \|
+      \| x\[1\] \|     -inf    \|  None \|     inf     \| real \|
+      \+------\+-------------\+-------\+-------------\+------\+
 Running the algorithm CustomDOE:
     50%\|█████     \| 1\/2 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]
    100%\|██████████\| 2\/2 \[\d+:\d+<(?:\d+:\d+|\?), (?:\s*\d+\.\d+|\?) it\/sec\]$"""
