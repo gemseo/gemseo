@@ -43,6 +43,7 @@ from gemseo.core.problem.database import Database
 from gemseo.dataset.dataset import Dataset
 from gemseo.dataset.io_dataset import IODataset
 from gemseo.space.design import DesignSpace
+from gemseo.space.variable import DataType
 from gemseo.util._compatibility.scipy import sparse_classes
 from gemseo.util.constant import _check_desvars_bounds
 from gemseo.util.derivative.approximation_mode import ApproximationMode
@@ -752,7 +753,7 @@ class EvaluationProblem(BaseProblem, Generic[_SpaceT]):
             round_ints = False
         elif round_ints:
             # Keep the rounding option only if there is an integer variable
-            round_ints = design_space.variables.has_integer_variables
+            round_ints = design_space.variables.has_variables_of_type(DataType.INTEGER)
 
         for functions in self._sequence_of_functions:
             if functions == self.__new_iter_observables:

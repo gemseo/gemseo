@@ -84,8 +84,11 @@
 # name: test_add_variable_with_a_non_string_type[list]
   "The type_ argument of add_variable must be a string naming the type of the whole variable; got ['real', 'integer']."
 # ---
+# name: test_add_variable_with_an_invalid_value_rolls_back
+  "The current value of variable 'n' (7) is not between the lower bound 0 and the upper bound 3."
+# ---
 # name: test_add_variable_with_discrete_type_raises
-  'Only integer and real variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
+  'Only integer and real variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
 # ---
 # name: test_add_variable_with_inconsistent_bound_size[lower_bound]
   '''
@@ -119,7 +122,7 @@
   "The following value of variable 'varname' is neither None nor a number: nan (index 0)."
 # ---
 # name: test_add_variable_with_unkown_type
-  'Only integer and real variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
+  'Only integer and real variables may be declared through the type_ argument of add_variable; use the add_<kind>_variable method instead.'
 # ---
 # name: test_add_variable_with_unnumerizable_value
   "The following value of variable 'varname' is neither None nor complex and cannot be cast to float: <built-in function len> (index 0)."

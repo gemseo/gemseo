@@ -1077,7 +1077,7 @@ classes:
     get_upper_bound: null
     # TODO: use space.variables[name].upper_bound instead.
     has_integer_variables: null
-    # TODO: use space.variables.has_integer_variables instead.
+    # TODO: use space.variables.has_variables_of_type(DataType.INTEGER) instead.
     to_csv:
       header_char: null
     get_variables_indexes:
@@ -1166,8 +1166,8 @@ classes:
     get_type: null
     # TODO: use space.variables[name].type instead.
     has_integer_variables: null
-    # TODO: use space.variables.has_integer_variables instead; it is always False,
-    # as a random variable is of real type.
+    # TODO: use space.variables.has_variables_of_type(DataType.INTEGER) instead;
+    # it is always False, as a random variable is of real type.
     has_current_value: null
     get_current_value: null
     set_current_value: null

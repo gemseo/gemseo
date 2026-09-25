@@ -50,7 +50,6 @@ from gemseo.optimization.problem import OptimizationProblem
 from gemseo.optimization.result import OptimizationResult
 from gemseo.problem.mdo.sobieski.standalone.problem import SobieskiProblem
 from gemseo.space.design import DesignSpace
-from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
 from gemseo.space.variable import RealVariable
 from gemseo.space.variable import Variable
@@ -532,7 +531,7 @@ def test_filter_dimensions_repeated_on_a_discrete_variable(snapshot) -> None:
     with a message naming its size rather than the repetition.
     """
     space = DesignSpace()
-    space.add_variable("t", variable=DiscreteVariable(choices=[1, 2, 3]))
+    space.add_discrete_variable("t", [1, 2, 3])
     with assert_exception(ValueError, snapshot):
         space.filter_dimensions("t", [0, 0])
 
@@ -1913,7 +1912,7 @@ def test_normalized_current_value_follows_bound_changes() -> None:
     ],
 )
 def test_has_integer_variables(variables, expected) -> None:
-    """Test that the correct bool is returned by the _has_integer_variables method."""
+    """Check the detection of integer variables in a design space."""
     design_space = DesignSpace()
     for key, val in variables.items():
         design_space.add_variable(
@@ -1923,7 +1922,7 @@ def test_has_integer_variables(variables, expected) -> None:
             value=val["value"],
         )
 
-    assert design_space.variables.has_integer_variables == expected
+    assert design_space.variables.has_variables_of_type(integer) == expected
 
 
 @pytest.fixture(scope="module")
@@ -3216,55 +3215,87 @@ def test_prepare_untransformation_checks_boundedness(snapshot) -> None:
 def discrete_design_space() -> DesignSpace:
     """A design space mixing the three kinds of variable."""
     design_space = DesignSpace()
+    design_space.add_variable("x", lower_bound=0.0, upper_bound=1.0, value=0.5)
     design_space.add_variable(
-        "x", value=0.5, variable=RealVariable(lower_bound=0.0, upper_bound=1.0)
+        "n", type_=integer, lower_bound=1, upper_bound=10, value=4
     )
-    design_space.add_variable(
-        "n", value=4, variable=IntegerVariable(lower_bound=1, upper_bound=10)
-    )
-    design_space.add_variable(
-        "t", value=0.55, variable=DiscreteVariable(choices=[0.72, 0.45, 0.55])
-    )
-    design_space.add_variable("p", variable=DiscreteVariable(choices=[2, 4, 6, 8]))
+    design_space.add_discrete_variable("t", [0.72, 0.45, 0.55], value=0.55)
+    design_space.add_discrete_variable("p", [2, 4, 6, 8])
     return design_space
 
 
-def test_add_variable_from_variable() -> None:
-    """Check the addition of a variable of any kind from its object."""
+def test_add_variable_broadcasts_a_scalar_value() -> None:
+    """Check that a scalar value is broadcast over the components."""
     design_space = DesignSpace()
-    variable = RealVariable(size=2, lower_bound=0.0, upper_bound=1.0)
-    design_space.add_variable("x", value=0.5, variable=variable)
+    design_space.add_variable("x", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5)
 
-    # The variable object is stored as is, not rebuilt.
-    assert design_space._variables["x"] is variable
-    # A scalar value is broadcast over the components.
     assert_array_equal(design_space.get_current_value(["x"]), array([0.5, 0.5]))
 
 
 def test_add_without_value() -> None:
     """Check that a variable added without a value has a None entry."""
     design_space = DesignSpace()
-    design_space.add_variable("t", variable=DiscreteVariable(choices=[1, 2]))
+    design_space.add_discrete_variable("t", [1, 2])
     assert design_space._current_value["t"] is None
 
 
 def test_add_already_existing_variable(snapshot) -> None:
     """Check that adding an existing variable raises."""
     design_space = DesignSpace()
-    design_space.add_variable("x", variable=RealVariable())
+    design_space.add_variable("x")
     with assert_exception(ValueError, snapshot):
-        design_space.add_variable("x", variable=RealVariable())
+        design_space.add_variable("x")
 
 
 def test_add_with_an_invalid_value_rolls_back(snapshot) -> None:
     """Check that a variable whose value is rejected is not registered."""
     design_space = DesignSpace()
     with assert_exception(ValueError, snapshot):
-        design_space.add_variable(
-            "t", value=3, variable=DiscreteVariable(choices=[2, 4])
-        )
+        design_space.add_discrete_variable("t", [2, 4], value=3)
 
     assert "t" not in design_space
+
+
+def test_add_real_variable() -> None:
+    """Check the addition of a real variable."""
+    design_space = DesignSpace()
+    design_space.add_real_variable(
+        "x", size=2, lower_bound=0.0, upper_bound=1.0, value=0.5
+    )
+
+    assert design_space.variables["x"].type == real_type
+    assert_array_equal(design_space.variables["x"].lower_bound, array([0.0, 0.0]))
+    assert_array_equal(design_space.variables["x"].upper_bound, array([1.0, 1.0]))
+    assert_array_equal(design_space.get_current_value(["x"]), array([0.5, 0.5]))
+
+
+def test_add_real_variable_without_bound() -> None:
+    """Check that a real variable is unbounded by default."""
+    design_space = DesignSpace()
+    design_space.add_real_variable("x")
+
+    assert_array_equal(design_space.variables["x"].lower_bound, array([-inf]))
+    assert_array_equal(design_space.variables["x"].upper_bound, array([inf]))
+    assert design_space._current_value["x"] is None
+
+
+def test_add_integer_variable() -> None:
+    """Check the addition of an integer variable."""
+    design_space = DesignSpace()
+    design_space.add_integer_variable("n", lower_bound=1, upper_bound=10, value=4)
+
+    assert design_space.variables["n"].type == integer
+    assert_array_equal(design_space.get_current_value(["n"]), array([4]))
+    assert design_space.get_current_value(["n"]).dtype == int64
+
+
+def test_add_variable_with_an_invalid_value_rolls_back(snapshot) -> None:
+    """Check that a variable whose value is out of its bounds is not registered."""
+    design_space = DesignSpace()
+    with assert_exception(ValueError, snapshot):
+        design_space.add_integer_variable("n", lower_bound=0, upper_bound=3, value=7)
+
+    assert "n" not in design_space
 
 
 def test_add_variable_from_bounds() -> None:
@@ -3362,13 +3393,11 @@ def test_discrete_variable_hdf_append_then_real(tmp_wd, snapshot) -> None:
     """
     file_path = Path("ds.h5")
     design_space = DesignSpace()
-    design_space.add_variable("t", variable=DiscreteVariable(choices=[0.0, 1.0, 2.0]))
+    design_space.add_discrete_variable("t", [0.0, 1.0, 2.0])
     design_space.to_hdf(file_path)
 
     design_space = DesignSpace()
-    design_space.add_variable(
-        "t", variable=RealVariable(lower_bound=0.0, upper_bound=5.0)
-    )
+    design_space.add_variable("t", lower_bound=0.0, upper_bound=5.0)
     with assert_exception(ValueError, snapshot):
         design_space.to_hdf(file_path, append=True)
 
@@ -3388,11 +3417,11 @@ def test_discrete_variable_hdf_append_with_changed_length(tmp_wd) -> None:
     """
     file_path = Path("ds.h5")
     design_space = DesignSpace()
-    design_space.add_variable("t", variable=DiscreteVariable(choices=[5.0, 6.0]))
+    design_space.add_discrete_variable("t", [5.0, 6.0])
     design_space.to_hdf(file_path)
 
     design_space = DesignSpace()
-    design_space.add_variable("t", variable=DiscreteVariable(choices=[1.0, 2.0, 3.0]))
+    design_space.add_discrete_variable("t", [1.0, 2.0, 3.0])
     design_space.to_hdf(file_path, append=True)
 
     read_design_space = DesignSpace.from_hdf(file_path)
@@ -3411,9 +3440,7 @@ def test_from_hdf_rejects_inconsistent_choices(tmp_wd, snapshot) -> None:
     """
     file_path = Path("ds.h5")
     design_space = DesignSpace()
-    design_space.add_variable(
-        "t", variable=RealVariable(lower_bound=0.0, upper_bound=5.0)
-    )
+    design_space.add_variable("t", lower_bound=0.0, upper_bound=5.0)
     design_space.to_hdf(file_path)
 
     with h5py.File(file_path, "a") as h5file:
