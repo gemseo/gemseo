@@ -41,8 +41,8 @@
 - The probabilistic data of a `RandomSpace` is read through `variables` too: `variables.distribution` (joint
   distribution of the space), `variables[name].distribution`, `variables[name].distribution_settings` and the statistics
   of `variables[name].distribution` such as `range` and `support`.
-- `space.variables.has_integer_variables` is `False` for a `RandomSpace`, whose random variables are always of real
-  type.
+- `space.variables.has_variables_of_type(DataType.INTEGER)` is `False` for a `RandomSpace`, whose random variables
+  are always of real type.
 - The function `gemseo.create_random_space` creates an empty `RandomSpace`.
 - The factory `gemseo.space.factory.random_space_factory` creates `RandomSpace` objects.
 - `BaseDOELibrary.sample_space` and the function `gemseo.compute_doe` sample any `BaseVariableSpace`, hence a

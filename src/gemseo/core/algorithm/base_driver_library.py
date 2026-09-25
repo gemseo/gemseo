@@ -66,6 +66,7 @@ from gemseo.core.problem.evaluation import EvaluationProblem
 from gemseo.core.problem.termination_criterion import MaxIterReachedException
 from gemseo.core.problem.termination_criterion import MaxTimeReached
 from gemseo.core.problem.termination_criterion import TerminationCriterion
+from gemseo.space.variable import DataType
 from gemseo.util._workflow_observer.injector import WorkflowObserverMeta
 from gemseo.util.constant import _enable_progress_bar
 from gemseo.util.derivative.approximation_mode import ApproximationMode
@@ -308,7 +309,7 @@ class BaseDriverLibrary(
                 input space includes at least one integer variable.
         """
         if (
-            input_space.variables.has_integer_variables
+            input_space.variables.has_variables_of_type(DataType.INTEGER)
             and not self.ALGORITHM_INFOS[self._algo_name].handle_integer_variables
         ):
             if not self._settings.skip_int_check:

@@ -305,12 +305,10 @@ def from_hdf(
 
                 # The bounds of a discrete variable are derived from its choices,
                 # so the persisted ones are informational.
-                design_space.add_variable(
+                design_space._register_variable(
                     name,
-                    value=value,
-                    variable=deterministic_variable_factory.create(
-                        var_type, choices=choices
-                    ),
+                    deterministic_variable_factory.create(var_type, choices=choices),
+                    value,
                 )
     design_space.check()
     return design_space
@@ -367,7 +365,7 @@ def to_dataframe(design_space: DesignSpace) -> DataFrame:
         "upper_bound": upper_bounds,
         "type": variable_types,
     }
-    if design_space.variables.has_discrete_variables:
+    if design_space.variables.has_variables_of_type(DataType.DISCRETE):
         # Do not add a column that every variable would leave empty.
         data[choices_group] = choices
     return DataFrame(data)
@@ -389,7 +387,7 @@ def to_csv(
     """
     separator = delimiter or " "
     columns = list(fields) if fields else list(table_names)
-    if design_space.variables.has_discrete_variables:
+    if design_space.variables.has_variables_of_type(DataType.DISCRETE):
         if separator == choices_separator:
             msg = (
                 "A design space holding a discrete variable cannot be exported "
@@ -541,12 +539,10 @@ def from_csv(
         else:
             # The bounds of a discrete variable are derived from its choices,
             # so the persisted ones are informational.
-            design_space.add_variable(
+            design_space._register_variable(
                 name,
-                value=value,
-                variable=deterministic_variable_factory.create(
-                    var_type, choices=choices
-                ),
+                deterministic_variable_factory.create(var_type, choices=choices),
+                value,
             )
         k += size
     design_space.check()

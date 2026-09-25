@@ -27,6 +27,7 @@ from numpy import ndarray
 from numpy import vectorize
 
 from gemseo.space._design.constants import bound_atol
+from gemseo.space.variable import DataType
 from gemseo.space.variable._formatting import format_components
 from gemseo.util.data_conversion import split_array_to_dict_of_arrays
 
@@ -168,7 +169,7 @@ def check_membership(
             msg = f"Expected an array of shape (..., {size}); got {shape}."
             raise ValueError(msg)
 
-        if not names and variables.has_discrete_variables:
+        if not names and variables.has_variables_of_type(DataType.DISCRETE):
             # The bounds of a discrete variable are derived from its choices,
             # so the vectorized bound comparison cannot tell a non-candidate value
             # lying inside the bounds from a candidate one;

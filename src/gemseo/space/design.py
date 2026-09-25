@@ -53,6 +53,9 @@ from gemseo.space.base import BaseVariableSpace
 from gemseo.space.variable import BaseDeterministicVariable
 from gemseo.space.variable import BaseIntervalVariable
 from gemseo.space.variable import DataType
+from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
 from gemseo.space.variable import data_type_to_numpy_type
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.space.variables_view import VariablesView
@@ -67,6 +70,8 @@ if TYPE_CHECKING:
     from numpy import int64
     from prettytable import PrettyTable
 
+    from gemseo.space.variable import BoundType
+    from gemseo.space.variable.discrete import ChoicesType
     from gemseo.util.read_only_mapping import ReadOnlyMapping
     from gemseo.util.typing import BooleanArray
     from gemseo.util.typing import NumberArray
@@ -239,110 +244,225 @@ class DesignSpace(
         self,
         name: str,
         size: int = 1,
-        type_: DataType = DesignVariableType.REAL,
-        lower_bound: complex | Iterable[complex] = -inf,
-        upper_bound: complex | Iterable[complex] = inf,
+        type_: Literal[DataType.REAL, DataType.INTEGER] = DataType.REAL,
+        lower_bound: BoundType = -inf,
+        upper_bound: BoundType = inf,
         value: complex | Iterable[complex] | None = None,
-        variable: BaseDeterministicVariable | None = None,
     ) -> None:
         r"""Add a variable to the design space.
 
-        To add a variable whose domain is defined by its bounds,
-        you can use
-        either all the arguments except `variable`,
-        or the arguments `name` and `variable` only.
-        To add a variable whose domain is not defined by its bounds,
-        you must use the `name` and `variable` arguments only.
-        In both cases, you can also specify its default value
-        using the `value` argument.
+        Note:
+            This method handles the variables whose domain is an interval,
+            namely the real and integer ones;
+            prefer the method dedicated to the kind of variable to add, namely
+            [add_real_variable][gemseo.space.design.DesignSpace.add_real_variable],
+            [add_integer_variable][gemseo.space.design.DesignSpace.add_integer_variable],
+            or
+            [add_discrete_variable][gemseo.space.design.DesignSpace.add_discrete_variable].
 
         Args:
             name: The name of the variable.
-            size: The size of the variable; ignored if `variable` is passed.
-            type_: The type of the variable;
-                ignored if `variable` is passed.
-            lower_bound: The lower bound of the variable.
-                If `None`, use $-\infty$.
-                Ignored if `variable` is passed.
-            upper_bound: The upper bound of the variable.
-                If `None`, use $+\infty$.
-                Ignored if `variable` is passed.
+            size: The size of the variable.
+            type_: The type of the variable.
+            lower_bound: The lower bound of the variable,
+                either one value per component or a single value for all of them.
+                If $-\infty$, the variable is not bounded from below.
+            upper_bound: The upper bound of the variable,
+                either one value per component or a single value for all of them.
+                If $+\infty$, the variable is not bounded from above.
             value: The default value of the variable.
                 If `None`, do not use a default value.
-            variable: A variable of any kind.
-                If `None`,
-                    build a real or integer variable
-                    from `size`, `type_`, `lower_bound` and `upper_bound`.
 
         Raises:
             ValueError: Either if the variable already exists,
-                if the type is neither real nor integer
-                and no `variable` is passed,
+                if the type is neither real nor integer,
                 if a size, type or bound is wrong,
                 or if the value is not within the bounds.
         """
-        if variable is None:
-            decoded_type_ = type_.decode() if isinstance(type_, bytes) else type_
-            # Only a string names a type;
-            # the variable factory would otherwise resolve
-            # a one-element array of type names by an element-wise comparison.
-            if not isinstance(decoded_type_, str):
-                msg = (
-                    "The type_ argument of add_variable must be a string "
-                    f"naming the type of the whole variable; got {type_!r}."
-                )
-                raise ValueError(msg)
-
-            # A caller may name the type by the value of a past release,
-            # e.g. when replaying a script written against that release,
-            # so normalize it before comparing it to the data types.
-            # A value that is not a data type at all is left as is,
-            # so that the message below names the valid ones.
-            decoded_type_ = DataType._resolve_value(decoded_type_)
-
-            interval_data_types = _get_interval_data_types()
-            if decoded_type_ not in interval_data_types:
-                msg = (
-                    f"Only {pretty_str(interval_data_types, use_and=True)} variables "
-                    "may be declared "
-                    "through the type_ argument of add_variable; "
-                    "use the variable argument instead."
-                )
-                raise ValueError(msg)
-
-            variable = deterministic_variable_factory.create(
-                decoded_type_,
-                size=size,
-                lower_bound=lower_bound,
-                upper_bound=upper_bound,
+        decoded_type_ = type_.decode() if isinstance(type_, bytes) else type_
+        # Only a string names a type;
+        # the variable factory would otherwise resolve
+        # a one-element array of type names by an element-wise comparison.
+        if not isinstance(decoded_type_, str):
+            msg = (
+                "The type_ argument of add_variable must be a string "
+                f"naming the type of the whole variable; got {type_!r}."
             )
+            # Every invalid input of add_variable is reported
+            # with a ValueError, which the documented contract states,
+            # so a wrong type of type_ is not singled out with a TypeError.
+            raise ValueError(msg)  # noqa: TRY004
 
-        size = variable.size
+        # A caller may name the type by the value of a past release,
+        # e.g. when replaying a script written against that release,
+        # so normalize it before comparing it to the data types.
+        # A value that is not a data type at all is left as is,
+        # so that the message below names the valid ones.
+        decoded_type_ = DataType._resolve_value(decoded_type_)
+
+        interval_data_types = _get_interval_data_types()
+        if decoded_type_ not in interval_data_types:
+            msg = (
+                f"Only {pretty_str(interval_data_types, use_and=True)} variables "
+                "may be declared "
+                "through the type_ argument of add_variable; "
+                "use the add_<kind>_variable method instead."
+            )
+            raise ValueError(msg)
+
+        variable = deterministic_variable_factory.create(
+            decoded_type_,
+            size=size,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+        )
+
+        self._register_variable(name, variable, value)
+
+    def _register_variable(
+        self,
+        name: str,
+        variable: BaseDeterministicVariable,
+        value: complex | Iterable[complex] | None,
+    ) -> None:
+        """Register a variable and its default value.
+
+        Args:
+            name: The name of the variable.
+            variable: The variable, whatever its kind.
+            value: The default value of the variable.
+                If `None`, do not use a default value.
+
+        Raises:
+            ValueError: Either if the variable already exists
+                or if the value is outside the domain of the variable.
+        """
         self._add_variable(name, variable)
         if value is None:
             # Register the variable with no value so that every variable of the
             # design space always has an entry in the current value.
             self._current.set_variable(name, None)
-        else:
-            try:
-                array_value = atleast_1d(value)
-                checking.check_addable_value(self._variables, array_value, name)
-                if len(array_value) == 1 and size > 1:
-                    array_value = full(size, value)
-                self._current.set_variable(
-                    name,
-                    array_value.astype(variable.component_type, copy=False),
-                )
-                self._current.check_value(name)
-            except ValueError:
-                # If a ValueError is raised,
-                # we must remove the variable from the design space.
-                # When using a python script, this has no interest.
-                # When using a notebook, a cell can raise a ValueError,
-                # but we can continue to the next cell,
-                # and use a design space which contains variables that leads to error.
-                self.remove_variable(name)
-                raise
+            return
+
+        try:
+            array_value = atleast_1d(value)
+            checking.check_addable_value(self._variables, array_value, name)
+            if len(array_value) == 1 and variable.size > 1:
+                array_value = full(variable.size, value)
+            self._current.set_variable(
+                name,
+                array_value.astype(variable.component_type, copy=False),
+            )
+            self._current.check_value(name)
+        except ValueError:
+            # If a ValueError is raised,
+            # we must remove the variable from the design space.
+            # When using a python script, this has no interest.
+            # When using a notebook, a cell can raise a ValueError,
+            # but we can continue to the next cell,
+            # and use a design space which contains variables that leads to error.
+            self.remove_variable(name)
+            raise
+
+    def add_real_variable(
+        self,
+        name: str,
+        size: int = 1,
+        lower_bound: BoundType = -inf,
+        upper_bound: BoundType = inf,
+        value: float | Iterable[float] | None = None,
+    ) -> None:
+        r"""Add a real variable to the design space.
+
+        The domain of such a variable is an interval of real numbers.
+
+        Args:
+            name: The name of the variable.
+            size: The size of the variable.
+            lower_bound: The lower bound of the variable,
+                either one value per component or a single value for all of them.
+                If $-\infty$, the variable is not bounded from below.
+            upper_bound: The upper bound of the variable,
+                either one value per component or a single value for all of them.
+                If $+\infty$, the variable is not bounded from above.
+            value: The default value of the variable.
+                If `None`, do not use a default value.
+
+        Raises:
+            ValueError: Either if the variable already exists,
+                if a size or a bound is wrong,
+                or if the value is outside the bounds.
+        """
+        self._register_variable(
+            name,
+            RealVariable(size=size, lower_bound=lower_bound, upper_bound=upper_bound),
+            value,
+        )
+
+    def add_integer_variable(
+        self,
+        name: str,
+        size: int = 1,
+        lower_bound: BoundType = -inf,
+        upper_bound: BoundType = inf,
+        value: int | Iterable[int] | None = None,
+    ) -> None:
+        r"""Add an integer variable to the design space.
+
+        The domain of such a variable is an interval of integers.
+
+        Args:
+            name: The name of the variable.
+            size: The size of the variable.
+            lower_bound: The lower bound of the variable,
+                either one value per component or a single value for all of them.
+                A finite component must be an integer.
+                If $-\infty$, the variable is not bounded from below.
+            upper_bound: The upper bound of the variable,
+                either one value per component or a single value for all of them.
+                A finite component must be an integer.
+                If $+\infty$, the variable is not bounded from above.
+            value: The default value of the variable.
+                If `None`, do not use a default value.
+
+        Raises:
+            ValueError: Either if the variable already exists,
+                if a size or a bound is wrong,
+                or if the value is outside the bounds.
+        """
+        self._register_variable(
+            name,
+            IntegerVariable(
+                size=size, lower_bound=lower_bound, upper_bound=upper_bound
+            ),
+            value,
+        )
+
+    def add_discrete_variable(
+        self,
+        name: str,
+        choices: ChoicesType,
+        value: float | None = None,
+    ) -> None:
+        """Add a discrete variable to the design space.
+
+        The domain of such a variable is a finite set of ordered numbers,
+        whose smallest (resp. largest) element
+        is the lower (resp. upper) bound of the variable.
+
+        Args:
+            name: The name of the variable.
+            choices: The values that the variable can take.
+            value: The default value of the variable,
+                which must be one of the choices.
+                If `None`, do not use a default value.
+
+        Raises:
+            ValueError: Either if the variable already exists,
+                if the choices are wrong,
+                or if the value is not one of the choices.
+        """
+        self._register_variable(name, DiscreteVariable(choices=choices), value)
 
     @property
     def has_current_value(self) -> bool:
@@ -1176,9 +1296,7 @@ class DesignSpace(
             # Share the variable object rather than rebuilding it from its bounds,
             # so that a field belonging to its kind is not dropped;
             # a variable is immutable, so sharing it is safe.
-            self.add_variable(
-                name, value=other._current_value.get(name), variable=variable
-            )
+            self._register_variable(name, variable, other._current_value.get(name))
 
     def rename_variable(self, current_name: str, new_name: str) -> None:  # noqa: D102
         super().rename_variable(current_name, new_name)
@@ -1217,8 +1335,8 @@ class DesignSpace(
         # Share the variable object rather than rebuilding it from its bounds,
         # so that a field belonging to its kind is not dropped;
         # a variable is immutable, so sharing it is safe.
-        self.add_variable(
-            name, value=space._current_value.get(name), variable=space.variables[name]
+        self._register_variable(
+            name, space.variables[name], space._current_value.get(name)
         )
 
     def to_scalar_variables(self) -> DesignSpace:
@@ -1245,8 +1363,8 @@ class DesignSpace(
                 # Splitting a scalar variable is the identity;
                 # share the variable object rather than rebuilding it from its bounds,
                 # so that a field belonging to its kind is not dropped.
-                design_space.add_variable(
-                    name, value=current_value[0], variable=self._variables[name]
+                design_space._register_variable(
+                    name, self._variables[name], current_value[0]
                 )
                 continue
 

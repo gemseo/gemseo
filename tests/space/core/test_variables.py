@@ -61,6 +61,21 @@ def test_getitem_unknown_variable(variables) -> None:
 
 @pytest.mark.parametrize(
     ("names", "expected"),
+    [((), False), (("n",), False), (("x",), True), (("x", "n"), True)],
+)
+def test_has_real(names, expected) -> None:
+    """Check the detection of real variables."""
+    variables = Variables()
+    types = {"x": DataType.REAL, "n": DataType.INTEGER}
+    for name in names:
+        variables[name] = deterministic_variable_factory.create(
+            types[name], size=1, lower_bound=0, upper_bound=1
+        )
+    assert variables.has_variables_of_type(DataType.REAL) is expected
+
+
+@pytest.mark.parametrize(
+    ("names", "expected"),
     [((), False), (("x",), False), (("n",), True), (("x", "n"), True)],
 )
 def test_has_integer(names, expected) -> None:
@@ -71,7 +86,7 @@ def test_has_integer(names, expected) -> None:
         variables[name] = deterministic_variable_factory.create(
             types[name], size=1, lower_bound=0, upper_bound=1
         )
-    assert variables.has_integer_variables is expected
+    assert variables.has_variables_of_type(DataType.INTEGER) is expected
 
 
 def test_get_integer_components(variables) -> None:
@@ -200,36 +215,36 @@ def test_has_discrete_variables(names, expected) -> None:
         else:
             variables[name] = RealVariable(lower_bound=0.0, upper_bound=1.0)
 
-    assert variables.has_discrete_variables is expected
+    assert variables.has_variables_of_type(DataType.DISCRETE) is expected
 
 
 def test_has_discrete_variables_tracks_mutations() -> None:
     """Check that the discrete-variable flag stays correct across mutations."""
     variables = Variables()
     variables["x"] = RealVariable(lower_bound=0.0, upper_bound=1.0)
-    assert variables.has_discrete_variables is False
+    assert variables.has_variables_of_type(DataType.DISCRETE) is False
 
     variables["d"] = DiscreteVariable(choices=[1, 2])
-    assert variables.has_discrete_variables is True
+    assert variables.has_variables_of_type(DataType.DISCRETE) is True
 
     # Overwriting a discrete variable with a real one turns it off.
     variables["d"] = RealVariable(lower_bound=0.0, upper_bound=1.0)
-    assert variables.has_discrete_variables is False
+    assert variables.has_variables_of_type(DataType.DISCRETE) is False
 
     # Overwriting a real variable with a discrete one turns it on.
     variables["d"] = DiscreteVariable(choices=[1, 2])
-    assert variables.has_discrete_variables is True
+    assert variables.has_variables_of_type(DataType.DISCRETE) is True
 
     # Removing the last discrete variable turns it off.
     del variables["d"]
-    assert variables.has_discrete_variables is False
+    assert variables.has_variables_of_type(DataType.DISCRETE) is False
 
     # filter_components() preserves the kind of the variable (a discrete
     # variable is always scalar, so only the identity filtering applies),
     # so it must not flip the flag either way.
     variables["d"] = DiscreteVariable(choices=[1, 2, 3])
     variables.filter_components("d", [0])
-    assert variables.has_discrete_variables is True
+    assert variables.has_variables_of_type(DataType.DISCRETE) is True
 
     del variables["d"]
-    assert variables.has_discrete_variables is False
+    assert variables.has_variables_of_type(DataType.DISCRETE) is False

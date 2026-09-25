@@ -251,15 +251,16 @@ class Variables(
             )
         )
 
-    @property
-    def has_integer_variables(self) -> bool:
-        """Whether the registry has at least one integer variable."""
-        return any(variable.type == DataType.INTEGER for variable in self.values())
+    def has_variables_of_type(self, type_: DataType) -> bool:
+        """Return whether the registry has at least one variable of a given type.
 
-    @property
-    def has_discrete_variables(self) -> bool:
-        """Whether the registry has at least one discrete variable."""
-        return any(variable.type == DataType.DISCRETE for variable in self.values())
+        Args:
+            type_: The type of variable.
+
+        Returns:
+            Whether the registry has at least one variable of this type.
+        """
+        return any(variable.type == type_ for variable in self.values())
 
     def __getitem__(self, name: str) -> _VariableT:
         try:

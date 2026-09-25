@@ -51,25 +51,21 @@ that allows you to see all the variables at a glance.
 
 ## Variable types { #concept-variable-types }
 
-The type of a variable is set with the `type_` argument
-of [add_variable()][gemseo.space.design.DesignSpace.add_variable],
-either as a string
-or as a member of the `DesignSpace.DesignVariableType` enumeration
-(also available as `gemseo.enum.DesignVariableType`).
-[variables][gemseo.space.design.DesignSpace.variables]
-reads it back: `design_space.variables["x"].type`.
-
 Three types are available:
 
 - `"real"` for the real variables (default),
 - `"integer"` for the integer variables,
 - `"discrete"` for the discrete numeric variables.
 
-A discrete variable carries the list of the values it can take;
-no bound-shaped signature can express that list,
-so it is declared by passing a variable object
-to the `variable` argument of
-[add_variable()][gemseo.space.design.DesignSpace.add_variable].
+Each type has its own declaration method,
+taking what a variable of that type is defined by:
+[add_real_variable()][gemseo.space.design.DesignSpace.add_real_variable]
+and
+[add_integer_variable()][gemseo.space.design.DesignSpace.add_integer_variable]
+take a size and bounds,
+while
+[add_discrete_variable()][gemseo.space.design.DesignSpace.add_discrete_variable]
+takes the values that the variable can take.
 
 ### Real variables { #concept-real-variables }
 
@@ -113,7 +109,8 @@ mentioning the type of the variable.
 
 [round_vect()][gemseo.space.design.DesignSpace.round_vect]
 rounds the integer components of a vector,
-while [has_integer_variables][gemseo.space.variables_view.VariablesView.has_integer_variables]
+while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
+called with `DesignVariableType.INTEGER`,
 and [get_integer_mask()][gemseo.space.design.DesignSpace.get_integer_mask]
 tell where the integer variables are.
 
@@ -124,9 +121,10 @@ tell where the integer variables are.
 
 ??? abstract "API"
 
+    - [add_integer_variable()][gemseo.space.design.DesignSpace.add_integer_variable]
     - [add_variable()][gemseo.space.design.DesignSpace.add_variable]
     - [variables][gemseo.space.design.DesignSpace.variables]
-    - [has_integer_variables][gemseo.space.variables_view.VariablesView.has_integer_variables]
+    - [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type]
     - [get_integer_mask()][gemseo.space.design.DesignSpace.get_integer_mask]
     - [round_vect()][gemseo.space.design.DesignSpace.round_vect]
 
@@ -144,7 +142,9 @@ or of a thickness that a supplier only delivers in $0.4$ mm and $0.47$ mm:
 a value in between is not manufacturable,
 even though it lies between the smallest and the largest one.
 
-The choices must be numbers,
+The choices are passed to
+[add_discrete_variable()][gemseo.space.design.DesignSpace.add_discrete_variable];
+they must be numbers,
 and cannot be changed afterwards.
 A discrete variable is scalar:
 declare a vector of discrete quantities as several discrete variables.
@@ -159,7 +159,8 @@ gives it its first choice.
 [variables][gemseo.space.design.DesignSpace.variables]
 reads the choices back,
 as `design_space.variables["thickness"].choices`,
-while [has_discrete_variables][gemseo.space.variables_view.VariablesView.has_discrete_variables]
+while [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type],
+called with `DesignVariableType.DISCRETE`,
 tells whether the design space holds a discrete variable.
 
 !!! warning
@@ -173,9 +174,9 @@ tells whether the design space holds a discrete variable.
 
 ??? abstract "API"
 
-    - [add_variable()][gemseo.space.design.DesignSpace.add_variable]
+    - [add_discrete_variable()][gemseo.space.design.DesignSpace.add_discrete_variable]
     - [variables][gemseo.space.design.DesignSpace.variables]
-    - [has_discrete_variables][gemseo.space.variables_view.VariablesView.has_discrete_variables]
+    - [has_variables_of_type()][gemseo.space.variables_view.VariablesView.has_variables_of_type]
     - [DiscreteVariable][gemseo.space.variable.DiscreteVariable]
 
 ## Integer relaxation { #concept-integer-relaxation }

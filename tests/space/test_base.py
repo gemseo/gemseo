@@ -39,6 +39,7 @@ from gemseo.space._random.variables_view import RandomVariablesView
 from gemseo.space.base import BaseVariableSpace
 from gemseo.space.design import DesignSpace
 from gemseo.space.random import RandomSpace
+from gemseo.space.variable import DataType
 from gemseo.space.variables_view import VariablesView
 from gemseo.uncertainty.distribution.openturns.normal_settings import (
     OTNormalDistribution_Settings,
@@ -403,17 +404,29 @@ def test_variables_view_name_to_indices(space) -> None:
         name_to_indices["x"] = range(2)
 
 
+def test_variables_view_has_real_variables(space) -> None:
+    """Check that the view tells whether a variable is of real type.
+
+    This is how a consumer typed on the base class reads it, whatever the space;
+    the random variables are always of real type.
+    """
+    assert space.variables.has_variables_of_type(DataType.REAL)
+
+    space.remove_variable("x")
+    assert not space.variables.has_variables_of_type(DataType.REAL)
+
+
 def test_variables_view_has_integer_variables(space) -> None:
     """Check that the view tells whether a variable is of integer type.
 
     This is how a consumer typed on the base class reads it, whatever the space;
     the random variables are always of real type.
     """
-    assert not space.variables.has_integer_variables
+    assert not space.variables.has_variables_of_type(DataType.INTEGER)
 
     if isinstance(space, DesignSpace):
         space.add_variable("n", type_=DesignSpace.DesignVariableType.INTEGER)
-        assert space.variables.has_integer_variables
+        assert space.variables.has_variables_of_type(DataType.INTEGER)
 
 
 def test_variables_view_is_live(space) -> None:
