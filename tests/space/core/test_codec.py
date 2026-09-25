@@ -25,15 +25,15 @@ from numpy.testing import assert_array_equal
 from gemseo.space._core.codec import concatenate_values
 from gemseo.space._core.codec import split_full_value
 from gemseo.space._core.variables import Variables
-from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import RealVariable
 
 
 @pytest.fixture
 def variables() -> Variables:
-    """A variables with a float variable of size 2 and one of size 3."""
+    """A variables with a real variable of size 2 and one of size 3."""
     variables = Variables()
-    variables["x"] = ContinuousVariable(size=2)
-    variables["y"] = ContinuousVariable(size=3)
+    variables["x"] = RealVariable(size=2)
+    variables["y"] = RealVariable(size=3)
     return variables
 
 

@@ -22,19 +22,19 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from gemseo.space._core.variables import Variables
-from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture
 def variables() -> Variables:
-    """A variables with a float and an integer variable."""
+    """A variables with a real and an integer variable."""
     variables = Variables()
-    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
+    variables["x"] = RealVariable(size=2, lower_bound=0.0, upper_bound=1.0)
     variables["n"] = IntegerVariable(size=1, lower_bound=0, upper_bound=10)
     return variables
 
@@ -49,7 +49,7 @@ def test_mapping_interface(variables) -> None:
     assert list(variables.keys()) == ["x", "n"]
     assert [variable.size for variable in variables.values()] == [2, 1]
     assert dict(variables.items()).keys() == {"x", "n"}
-    assert variables["x"].type == DataType.FLOAT
+    assert variables["x"].type == DataType.REAL
     assert variables.get("missing") is None
 
 
@@ -66,7 +66,7 @@ def test_getitem_unknown_variable(variables) -> None:
 def test_has_integer(names, expected) -> None:
     """Check the detection of integer variables."""
     variables = Variables()
-    types = {"x": DataType.FLOAT, "n": DataType.INTEGER}
+    types = {"x": DataType.REAL, "n": DataType.INTEGER}
     for name in names:
         variables[name] = deterministic_variable_factory.create(
             types[name], size=1, lower_bound=0, upper_bound=1
@@ -82,7 +82,7 @@ def test_get_integer_components(variables) -> None:
 def test_setitem_insert(variables) -> None:
     """Check that setting a new name appends it and allocates its indices."""
     version = variables.version
-    variables["z"] = ContinuousVariable(size=3, lower_bound=0.0, upper_bound=1.0)
+    variables["z"] = RealVariable(size=3, lower_bound=0.0, upper_bound=1.0)
     assert list(variables) == ["x", "n", "z"]
     assert variables.size == 6
     assert variables.name_to_indices["z"] == range(3, 6)
@@ -91,7 +91,7 @@ def test_setitem_insert(variables) -> None:
 
 def test_setitem_replace_same_size(variables) -> None:
     """Check that replacing keeps position, size and index ranges."""
-    variables["x"] = ContinuousVariable(size=2, lower_bound=-1.0, upper_bound=2.0)
+    variables["x"] = RealVariable(size=2, lower_bound=-1.0, upper_bound=2.0)
     assert list(variables) == ["x", "n"]
     assert variables.size == 3
     assert variables.name_to_indices["x"] == range(2)
@@ -101,7 +101,7 @@ def test_setitem_replace_same_size(variables) -> None:
 
 def test_setitem_replace_resize(variables) -> None:
     """Check that replacing with a different size rebuilds indices and size."""
-    variables["x"] = ContinuousVariable(size=4, lower_bound=0.0, upper_bound=1.0)
+    variables["x"] = RealVariable(size=4, lower_bound=0.0, upper_bound=1.0)
     assert variables.size == 5
     assert variables.name_to_indices["x"] == range(4)
     assert variables.name_to_indices["n"] == range(4, 5)
@@ -198,7 +198,7 @@ def test_has_discrete_variables(names, expected) -> None:
         if name == "d":
             variables[name] = DiscreteVariable(choices=[1, 2])
         else:
-            variables[name] = ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
+            variables[name] = RealVariable(lower_bound=0.0, upper_bound=1.0)
 
     assert variables.has_discrete_variables is expected
 
@@ -206,17 +206,17 @@ def test_has_discrete_variables(names, expected) -> None:
 def test_has_discrete_variables_tracks_mutations() -> None:
     """Check that the discrete-variable flag stays correct across mutations."""
     variables = Variables()
-    variables["x"] = ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
+    variables["x"] = RealVariable(lower_bound=0.0, upper_bound=1.0)
     assert variables.has_discrete_variables is False
 
     variables["d"] = DiscreteVariable(choices=[1, 2])
     assert variables.has_discrete_variables is True
 
-    # Overwriting a discrete variable with a continuous one turns it off.
-    variables["d"] = ContinuousVariable(lower_bound=0.0, upper_bound=1.0)
+    # Overwriting a discrete variable with a real one turns it off.
+    variables["d"] = RealVariable(lower_bound=0.0, upper_bound=1.0)
     assert variables.has_discrete_variables is False
 
-    # Overwriting a continuous variable with a discrete one turns it on.
+    # Overwriting a real variable with a discrete one turns it on.
     variables["d"] = DiscreteVariable(choices=[1, 2])
     assert variables.has_discrete_variables is True
 

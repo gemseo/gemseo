@@ -13,7 +13,7 @@
 # ---
 # name: test_add_variable_with_2d_object[lower_bound]
   '''
-  8 validation errors for ContinuousVariable
+  8 validation errors for RealVariable
   lower_bound.chain[is-instance[ndarray],function-plain[validate()]]
     Input should be an instance of ndarray [type=is_instance_of, input_value=[[1.0]], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
@@ -42,7 +42,7 @@
 # ---
 # name: test_add_variable_with_2d_object[upper_bound]
   '''
-  8 validation errors for ContinuousVariable
+  8 validation errors for RealVariable
   upper_bound.chain[is-instance[ndarray],function-plain[validate()]]
     Input should be an instance of ndarray [type=is_instance_of, input_value=[[1.0]], input_type=list]
       For further information visit https://errors.pydantic.dev/X.Y/v/is_instance_of
@@ -82,35 +82,35 @@
   "The type_ argument of add_variable must be a string naming the type of the whole variable; got array(['discrete'], dtype='<U8')."
 # ---
 # name: test_add_variable_with_a_non_string_type[list]
-  "The type_ argument of add_variable must be a string naming the type of the whole variable; got ['float', 'integer']."
+  "The type_ argument of add_variable must be a string naming the type of the whole variable; got ['real', 'integer']."
 # ---
 # name: test_add_variable_with_discrete_type_raises
-  'Only float and integer variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
+  'Only integer and real variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
 # ---
 # name: test_add_variable_with_inconsistent_bound_size[lower_bound]
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The lower bound should be of size 3. [type=value_error, input_value={'size': 3, 'lower_bound'....0], 'upper_bound': inf}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_add_variable_with_inconsistent_bound_size[upper_bound]
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The upper bound should be of size 3. [type=value_error, input_value={'size': 3, 'lower_bound'...pper_bound': [0.0, 0.0]}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_add_variable_with_nan_value[lower_bound-The following lower bound component is not a number: nan (index 0).]
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound'...nan, 'upper_bound': inf}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_add_variable_with_nan_value[upper_bound-The following upper bound component is not a number: nan (index 0).]
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound'...inf, 'upper_bound': nan}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
@@ -119,14 +119,14 @@
   "The following value of variable 'varname' is neither None nor a number: nan (index 0)."
 # ---
 # name: test_add_variable_with_unkown_type
-  'Only float and integer variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
+  'Only integer and real variables may be declared through the type_ argument of add_variable; use the variable argument instead.'
 # ---
 # name: test_add_variable_with_unnumerizable_value
   "The following value of variable 'varname' is neither None nor complex and cannot be cast to float: <built-in function len> (index 0)."
 # ---
 # name: test_add_variable_with_upper_bounds_lower_than_lower_ones
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 3, 'lower_bound'...per_bound': [1, 0.0, 1]}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
@@ -139,7 +139,7 @@
 # ---
 # name: test_add_variable_with_wrong_size[-1]
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
   size
     Input should be greater than 0 [type=greater_than, input_value=-1, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
@@ -147,7 +147,7 @@
 # ---
 # name: test_add_variable_with_wrong_size[0.4]
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
   size
     Input should be a valid integer, got a number with a fractional part [type=int_from_float, input_value=0.4, input_type=float]
       For further information visit https://errors.pydantic.dev/X.Y/v/int_from_float
@@ -155,7 +155,7 @@
 # ---
 # name: test_add_variable_with_wrong_size[0]
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
   size
     Input should be greater than 0 [type=greater_than, input_value=0, input_type=int]
       For further information visit https://errors.pydantic.dev/X.Y/v/greater_than
@@ -166,28 +166,28 @@
 # ---
 # name: test_bounds_set_lower_bound_with_inconsistent_size
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The lower bound should be of size 1. [type=value_error, input_value={'size': 1, 'lower_bound'...per_bound': array([2.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_lower_bound_with_nan
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The following lower bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound'...per_bound': array([2.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_upper_bound_with_inconsistent_size
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The upper bound should be of size 1. [type=value_error, input_value={'size': 1, 'lower_bound'...bound': array([1., 1.])}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
 # ---
 # name: test_bounds_set_upper_bound_with_nan
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The following upper bound component is not a number: nan (index 0). [type=value_error, input_value={'size': 1, 'lower_bound'...f]), 'upper_bound': nan}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
@@ -242,7 +242,7 @@
 # ---
 # name: test_current_x.5
   '''
-  1 validation error for ContinuousVariable
+  1 validation error for RealVariable
     Value error, The upper bounds must be greater than or equal to the lower bounds. [type=value_error, input_value={'size': 1, 'lower_bound'...1.0, 'upper_bound': 0.0}, input_type=dict]
       For further information visit https://errors.pydantic.dev/X.Y/v/value_error
   '''
@@ -267,10 +267,10 @@
 # name: test_discrete_variable_csv_with_the_separator_as_delimiter
   "A design space holding a discrete variable cannot be exported with '|' as delimiter, which separates the choices within a cell."
 # ---
-# name: test_discrete_variable_hdf_append_then_continuous
+# name: test_discrete_variable_hdf_append_then_real
   '''
   The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
-  - The type of the design variable 't' is 'discrete'; got 'float'.
+  - The type of the design variable 't' is 'discrete'; got 'real'.
   '''
 # ---
 # name: test_discrete_variable_pretty_table
@@ -278,7 +278,7 @@
   +------+-------------+-------+-------------+----------+
   | name | lower_bound | value | upper_bound | type     |
   +------+-------------+-------+-------------+----------+
-  | x    |      0      |  0.5  |      1      | float    |
+  | x    |      0      |  0.5  |      1      | real     |
   | n    |      1      |   4   |      10     | integer  |
   | t    |     0.45    |  0.55 |     0.72    | discrete |
   | p    |      2      |   2   |      8      | discrete |
@@ -306,7 +306,7 @@
               <td>0</td>
               <td>0.5</td>
               <td>1</td>
-              <td>float</td>
+              <td>real</td>
           </tr>
           <tr>
               <td>n</td>
@@ -339,7 +339,7 @@
   +------+-------------+-------+-------------+----------+
   | Name | Lower bound | Value | Upper bound | Type     |
   +------+-------------+-------+-------------+----------+
-  | x    |      0      |  0.5  |      1      | float    |
+  | x    |      0      |  0.5  |      1      | real     |
   | n    |      1      |   4   |      10     | integer  |
   | t    |     0.45    |  0.55 |     0.72    | discrete |
   | p    |      2      |   2   |      8      | discrete |
@@ -371,13 +371,13 @@
   "No variable named 'unknown_x'."
 # ---
 # name: test_from_csv_rejects_inconsistent_choices
-  "Malformed DesignSpace input file ds.csv has choices for the variable 't' of type 'float' instead of 'discrete'."
+  "Malformed DesignSpace input file ds.csv has choices for the variable 't' of type 'real' instead of 'discrete'."
 # ---
 # name: test_from_csv_with_discrete_type_and_no_choices
   "Malformed DesignSpace input file ds.csv has no choices for the variable 't' of type 'discrete'."
 # ---
 # name: test_from_hdf_rejects_inconsistent_choices
-  "Malformed DesignSpace input file ds.h5 has choices for the variable 't' of type 'float' instead of 'discrete'."
+  "Malformed DesignSpace input file ds.h5 has choices for the variable 't' of type 'real' instead of 'discrete'."
 # ---
 # name: test_from_hdf_with_discrete_type_and_no_choices
   "Malformed DesignSpace input file ds.h5 has no choices for the variable 't' of type 'discrete'."
@@ -550,7 +550,7 @@
 # name: test_hdf5_append_with_changed_type
   '''
   The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
-  - The type of the design variable 'x' is 'integer'; got 'float'.
+  - The type of the design variable 'x' is 'integer'; got 'real'.
   '''
 # ---
 # name: test_hdf5_append_with_changed_variable_names
@@ -569,7 +569,7 @@
   '''
   The design space stored in the node '/' of the HDF file ds.h5 has a different structure:
   - The size of the design variable 'x' is 2; got 3.
-  - The type of the design variable 'x' is 'integer'; got 'float'.
+  - The type of the design variable 'x' is 'integer'; got 'real'.
   - The size of the design variable 'y' is 1; got 2.
   '''
 # ---
@@ -641,6 +641,12 @@
 # ---
 # name: test_to_complex_without_current_value
   "'There is no current value for the design variables: y.'"
+# ---
+# name: test_to_hdf_appends_to_an_unknown_data_type
+  '''
+  The design space stored in the node '/' of the HDF file bogus.h5 has a different structure:
+  - The type of the design variable 'x' is 'not-a-type'; got 'real'.
+  '''
 # ---
 # name: test_to_scalar_variables
   "'There is no current value for the design variables: foo.'"

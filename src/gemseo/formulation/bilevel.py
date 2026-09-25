@@ -227,7 +227,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings, _SpaceT]):
         local_dv = [
             var
             for scn in self.get_sub_scenarios()
-            for var in scn.design_space.variable_names
+            for var in scn.design_space.variables
         ]
         shared_dv = set(self.problem.input_space.variables)
         couplings = self.coupling_structure.all_couplings
@@ -235,7 +235,7 @@ class BiLevel(BaseMDOFormulation[BiLevel_Settings, _SpaceT]):
         top_disc = scenario.formulation.get_top_level_disciplines()
         top_inputs = [inpt for disc in top_disc for inpt in disc.io.input_grammar]
 
-        nonshared_var = set(scenario.design_space.variable_names)
+        nonshared_var = set(scenario.design_space.variables)
 
         # All couplings of the scenarios are taken from the MDA
         return list(

@@ -26,9 +26,10 @@
 # Apply a single entry to a name: a value is already the final name, never feed it back
 # in. A name matching no entry is unchanged.
 #
-# Apart from `flatten_processes`, the only public class attributes, methods and
-# signatures renamed between `develop` and this branch are the ones of the scenario
-# adapters, listed under `classes:`, so a rebase needs the names below and little else.
+# Apart from `flatten_processes` and `DataType`, the only public class attributes,
+# methods and signatures renamed between `develop` and this branch are the ones of the
+# scenario adapters, listed under `classes:`. The paragraphs of this header say what the
+# table cannot express, so a rebase needs them as much as the names below.
 # Private internals did move though: a branch touching them has to reconcile its design
 # with the one of this branch. The private attributes of the scenario adapters holding
 # the renamed arguments were renamed in step with them (`_reset_x0_before_exec`,
@@ -47,12 +48,26 @@
 # flattens an `MDOScenario` only and returns any other scenario as is. A branch relying
 # on either of these has to account for the difference.
 #
+# The `DesignSpace` shortcuts to its variables no longer exist: `variable_names`,
+# `variable_sizes`, `variable_types`, `name_to_indices`, `get_size`, `get_type`,
+# `get_lower_bound`, `get_upper_bound` and `has_integer_variables` were removed in favor of the `variables` view, and accessing
+# any of them here raises an `AttributeError`. The `classes:` entries below map an old
+# member to a new one, so a removal cannot be expressed and no codemod can rewrite these
+# use sites; port them by hand, with `list(space.variables)` for `variable_names`,
+# `{n: v.size for n, v in space.variables.items()}` for `variable_sizes`, the same with
+# `v.type` for `variable_types`, `space.variables.name_to_indices` for
+# `name_to_indices`, `space.variables[name].size` for `get_size(name)`,
+# `space.variables[name].type` for `get_type(name)`,
+# `space.variables[name].lower_bound` for `get_lower_bound(name)`,
+# `space.variables[name].upper_bound` for `get_upper_bound(name)` and
+# `space.variables.has_integer_variables` for `has_integer_variables`.
+#
 # The `gemseo.settings` package was dissolved into the packages of the settings it
 # exposed; its modules are listed one by one and the package itself has no counterpart.
 #
 # Every old name below exists on `develop` and every new name exists on this branch,
 # checked against both source trees; 211 modules and packages,
-# 20 module-level names and the members of 2 classes.
+# 20 module-level names and the members of 3 classes.
 
 # Renamed and moved modules and packages.
 modules:
@@ -299,6 +314,16 @@ names:
 
 # Renamed members of a class, given with the module defining the class on `develop`.
 classes:
+  # The value of the data type changed with its name, from "float" to "real". On
+  # `develop`, `DesignSpace.DesignVariableType` is `DataType` itself, so a use site
+  # spelled `DesignSpace.DesignVariableType.FLOAT` needs the same rename although the
+  # key below does not name `DesignSpace`. Beware that `DataType.FLOAT` still resolves
+  # here, through the deprecation descriptor shipped in `gemseo._deprecation`, with a
+  # `DeprecationWarning` and nothing more: the trap is the value, not the name, since
+  # `variable.type == "float"` is now `False` with no warning at all and
+  # `variable_types_to_dtypes["float"]` raises a `KeyError`.
+  gemseo.algos._variable.DataType:
+    FLOAT: REAL
   gemseo.disciplines.scenario_adapters.mdo_objective_scenario_adapter.MDOObjectiveScenarioAdapter: &scenario-adapter-class
     keep_opt_history: keep_databases
     save_opt_history: save_databases

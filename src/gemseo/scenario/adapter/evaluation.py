@@ -370,8 +370,8 @@ class EvaluationScenarioAdapter(ProcessDiscipline):
                     **{
                         name: clip(
                             value,
-                            design_space.get_lower_bound(name),
-                            design_space.get_upper_bound(name),
+                            design_space.variables[name].lower_bound,
+                            design_space.variables[name].upper_bound,
                         )
                         for name, value in design_space.get_current_value(
                             as_dict=True

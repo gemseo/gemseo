@@ -40,12 +40,12 @@ from gemseo.space import DesignSpace
 #
 # Imagine that you want to build a design space with the following requirements:
 #
-# - *x1* is a one-dimensional unbounded float variable,
+# - *x1* is a one-dimensional unbounded real variable,
 # - *x2* is a one-dimensional unbounded integer variable,
-# - *x3* is a two-dimensional unbounded float variable,
-# - *x4* is a one-dimensional float variable with lower bound equal to 1,
-# - *x5* is a one-dimensional float variable with upper bound equal to 1,
-# - *x6* is a one-dimensional unbounded float variable,
+# - *x3* is a two-dimensional unbounded real variable,
+# - *x4* is a one-dimensional real variable with lower bound equal to 1,
+# - *x5* is a one-dimensional real variable with upper bound equal to 1,
+# - *x6* is a one-dimensional unbounded real variable,
 # - *x7* is a two-dimensional bounded integer variable with lower bound equal to -1, upper bound equal to 1 and current values to (0,1).
 #
 # You can create this design space from scratch.
@@ -100,10 +100,12 @@ design_space
 #
 # You can query the size, type, and bounds of a specific variable:
 
-print(f"The size of the `x3` variable is: {design_space.get_size('x3')}")
-print(f"The type of the `x2` variable is: {design_space.get_type('x2')}")
+print(f"The size of the `x3` variable is: {design_space.variables['x3'].size}")
+print(f"The type of the `x2` variable is: {design_space.variables['x2'].type}")
 print(
-    f"Variable `x3` is in [{design_space.get_lower_bound('x3')}, {design_space.get_upper_bound('x3')}]"
+    f"Variable `x3` is in ["
+    f"{design_space.variables['x3'].lower_bound}, "
+    f"{design_space.variables['x3'].upper_bound}]"
 )
 
 # %%

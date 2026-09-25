@@ -103,7 +103,7 @@ def test_add_candidate(dataset) -> None:
 
     # Add RBF candidate with calibration
     space = DesignSpace()
-    space.add_variable("smoothing", 1, "float", 0.0, 10.0, 0.0)
+    space.add_variable("smoothing", 1, "real", 0.0, 10.0, 0.0)
     selector.add_candidate(
         RBFRegressor_Settings(), space, PYDOE_FULLFACT_Settings(n_samples=1)
     )

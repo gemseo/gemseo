@@ -19,10 +19,10 @@ from __future__ import annotations
 import pytest
 from numpy.testing import assert_array_equal
 
-from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
 from gemseo.space.variable.factory import DeterministicVariableFactory
 from gemseo.util.pydantic import BaseSettings
 from gemseo.util.testing.helper import assert_exception
@@ -45,9 +45,9 @@ def test_create_from_settings_not_implemented(factory) -> None:
 def test_class_names(factory) -> None:
     """Check that the concrete kinds are discovered and the abstract base is not."""
     assert factory.class_names == [
-        "ContinuousVariable",
         "DiscreteVariable",
         "IntegerVariable",
+        "RealVariable",
     ]
 
 
@@ -68,11 +68,11 @@ def test_create(factory) -> None:
 @pytest.mark.parametrize(
     ("data_type", "cls"),
     [
-        (DataType.FLOAT, ContinuousVariable),
+        (DataType.REAL, RealVariable),
         (DataType.INTEGER, IntegerVariable),
-        ("float", ContinuousVariable),
+        ("real", RealVariable),
         ("integer", IntegerVariable),
-        (b"float", ContinuousVariable),
+        (b"real", RealVariable),
         (b"integer", IntegerVariable),
     ],
 )
@@ -81,6 +81,16 @@ def test_create_kind(factory, data_type, cls) -> None:
     variable = factory.create(data_type, size=2)
     assert isinstance(variable, cls)
     assert variable.size == 2
+
+
+@pytest.mark.parametrize("data_type", ["float", b"float"])
+def test_create_kind_from_a_legacy_data_type(factory, data_type) -> None:
+    """Check that a data type value of a past release still resolves."""
+    with pytest.deprecated_call():
+        variable = factory.create(data_type, size=2)
+
+    assert isinstance(variable, RealVariable)
+    assert variable.type == DataType.REAL
 
 
 def test_create_for_unknown_variable_type(factory, snapshot) -> None:
@@ -99,11 +109,11 @@ def test_update_invalidates_the_data_types(factory, monkeypatch) -> None:
     assert isinstance(factory.create("integer"), IntegerVariable)
 
     # Rediscover the classes with the integer data type pinned by another class.
-    class_names = ["ContinuousVariable", "OtherIntegerVariable"]
+    class_names = ("RealVariable", "OtherIntegerVariable")
     # IntegerVariable is still resolvable by name, but no longer discovered,
     # so that a stale map fails the assertion below instead of raising.
     name_to_class = {
-        "ContinuousVariable": ContinuousVariable,
+        "RealVariable": RealVariable,
         "IntegerVariable": IntegerVariable,
         "OtherIntegerVariable": OtherIntegerVariable,
     }
@@ -125,12 +135,12 @@ def test_update_invalidates_the_data_types(factory, monkeypatch) -> None:
 def test_duplicate_data_type(factory, monkeypatch, snapshot) -> None:
     """Check that two classes pinning the same data type raise."""
 
-    class OtherContinuousVariable(ContinuousVariable):
-        """Another variable class pinning the float data type."""
+    class OtherRealVariable(RealVariable):
+        """Another variable class pinning the real data type."""
 
     name_to_class = {
-        "ContinuousVariable": ContinuousVariable,
-        "OtherContinuousVariable": OtherContinuousVariable,
+        "RealVariable": RealVariable,
+        "OtherRealVariable": OtherRealVariable,
     }
     monkeypatch.setattr(
         DeterministicVariableFactory,
@@ -143,7 +153,7 @@ def test_duplicate_data_type(factory, monkeypatch, snapshot) -> None:
         lambda self, name: name_to_class[name],
     )
     with assert_exception(ValueError, snapshot):
-        factory.create("float")
+        factory.create("real")
 
 
 def test_create_discrete_variable(factory) -> None:

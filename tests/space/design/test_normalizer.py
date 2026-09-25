@@ -27,15 +27,15 @@ from gemseo.space._design.bounds import Bounds
 from gemseo.space._design.integer_rounder import IntegerRounder
 from gemseo.space._design.normalizer import Normalizer
 from gemseo.space._design.variables import DesignVariables
-from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
 
 
 @pytest.fixture
 def normalizer() -> Normalizer:
-    """A normalizer over a single float variable with bounds [0, 2]."""
+    """A normalizer over a single real variable with bounds [0, 2]."""
     variables = DesignVariables()
-    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=2.0)
+    variables["x"] = RealVariable(size=2, lower_bound=0.0, upper_bound=2.0)
     return Normalizer(
         variables,
         Bounds(variables),

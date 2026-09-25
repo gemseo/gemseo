@@ -26,6 +26,8 @@ from numpy import ndarray
 from pydantic import BaseModel
 from pydantic import model_validator
 
+from gemseo.space.variable._compatibility import legacy_data_type_values
+from gemseo.space.variable._compatibility import warn_legacy_data_type_value
 from gemseo.util.string import pretty_str
 
 if TYPE_CHECKING:
@@ -38,8 +40,56 @@ class DataType(StrEnum):
     """The type of variable data."""
 
     DISCRETE = "discrete"
-    FLOAT = "float"
     INTEGER = "integer"
+    REAL = "real"
+
+    @classmethod
+    def _missing_(cls, value: object) -> DataType | None:
+        """Resolve a data type value used by a past release.
+
+        A file written by a past release refers to a data type by the value that
+        release used, so such a value must keep resolving; the values of the past
+        releases are listed in `gemseo.space.variable._compatibility`.
+
+        Args:
+            value: The value that does not name a data type.
+
+        Returns:
+            The data type the value named in a past release,
+            if any, otherwise `None`.
+        """
+        if not isinstance(value, str):
+            return None
+
+        # A CSV file is read as an array of NumPy strings,
+        # whose repr would leak into the message.
+        legacy_value = str(value)
+        new_value = legacy_data_type_values.get(legacy_value)
+        if new_value is None:
+            return None
+
+        warn_legacy_data_type_value(legacy_value, new_value)
+        return cls(new_value)
+
+    @classmethod
+    def _resolve_value(cls, value: str) -> DataType | str:
+        """Resolve a value naming a data type, tolerating a value that names none.
+
+        A value used by a past release resolves to the data type it named then,
+        with a `DeprecationWarning`;
+        a value naming no data type at all is returned as it stands,
+        so that the caller can report it in an error message of its own.
+
+        Args:
+            value: The value to resolve.
+
+        Returns:
+            The data type named by the value, if any, otherwise the value itself.
+        """
+        try:
+            return cls(value)
+        except ValueError:
+            return value
 
 
 class BaseVariable(BaseModel, ABC, frozen=True, extra="forbid"):

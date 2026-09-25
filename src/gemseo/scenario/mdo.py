@@ -259,7 +259,8 @@ class MDOScenario(EvaluationScenario[DesignSpace]):
         self.formulation.problem._check_function_name(constraint)
         self.formulation.problem.add_constraint(constraint)
 
-    # TODO: API: remove and use scenario.design_space.variable_names instead, or rename.
+    # TODO: API: remove and use tuple(scenario.design_space.variables) instead,
+    # or rename.
     def get_optim_variable_names(self) -> list[str]:
         """A convenience function to access the optimization variables.
 

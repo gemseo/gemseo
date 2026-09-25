@@ -180,7 +180,7 @@ class BaseLinkDiscipline(Discipline):
 
     """The number of strongly coupled disciplines."""
 
-    _original_x_names: list[str]
+    _original_x_names: tuple[str, ...]
     """The names of the design variables in the original problem."""
 
     """The function performing the MDA analytically at a given design point."""
@@ -212,10 +212,10 @@ class BaseLinkDiscipline(Discipline):
         self._n_strongly_coupled_disciplines = n_strongly_coupled_disciplines
 
         # Names of the design variables and coupling variables in the MDO problem:
-        original_x_names = design_space.variable_names
+        original_x_names = tuple(design_space.variables)
         for i, original_x_name in enumerate(original_x_names):
             design_space.rename_variable(original_x_name, f"x_{i}")
-        self._x_names = tuple(design_space.variable_names)
+        self._x_names = tuple(design_space.variables)
         self._y_names = tuple(
             f"y_{i}" for i in range(1, n_strongly_coupled_disciplines + 1)
         )
@@ -459,14 +459,16 @@ def create_disciplines(
     if coupling_equations:
         strongly_coupled_disciplines, compute_y, differentiate_y = coupling_equations
     else:
-        sizes = design_space.variable_sizes
-        names = design_space.variable_names
+        variables = design_space.variables
+        names = tuple(variables)
         scalable_problem = ScalableProblem(
-            discipline_settings=[
-                ScalableDisciplineSettings(d_i=(size := sizes[names[i]]), p_i=size)
+            discipline_settings=tuple(
+                ScalableDisciplineSettings(
+                    d_i=(size := variables[names[i]].size), p_i=size
+                )
                 for i in range(1, n_variables)
-            ],
-            d_0=sizes[names[0]],
+            ),
+            d_0=variables[names[0]].size,
         )
         strongly_coupled_disciplines = scalable_problem.scalable_disciplines
         for i, strongly_coupled_discipline in enumerate(strongly_coupled_disciplines):

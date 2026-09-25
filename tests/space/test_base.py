@@ -407,7 +407,7 @@ def test_variables_view_has_integer_variables(space) -> None:
     """Check that the view tells whether a variable is of integer type.
 
     This is how a consumer typed on the base class reads it, whatever the space;
-    the random variables are always of float type.
+    the random variables are always of real type.
     """
     assert not space.variables.has_integer_variables
 

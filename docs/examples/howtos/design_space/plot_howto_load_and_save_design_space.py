@@ -39,8 +39,8 @@ from gemseo import write_design_space
 #
 # ``` txt
 # name lower_bound value upper_bound type
-# x1 -1. 0. 1. float
-# x2 5. 6. 8. float
+# x1 -1. 0. 1. real
+# x2 5. 6. 8. real
 # x 2. 3. 5. integer
 # ```
 #
@@ -66,14 +66,14 @@ design_space
 #
 #     -   Available fields are `'name'`, `'lower_bound'`, `'upper_bound'`, `'value'` and `'type'`.
 #     -   The `'value'` field is optional. By default, it is set at `None`.
-#     -   The `'type'` field is optional. By default, it is set at `float`.
+#     -   The `'type'` field is optional. By default, it is set at `real`.
 #     -   Each dimension of a variable must be provided. E.g. when the `'size'` of `'x1'` is 2:
 #
 #         ```
 #         name lower_bound value upper_bound type
-#         x1 -1. 0. 1. float
-#         x1 -3. -1. 1. float
-#         x2 5. 6. 8. float
+#         x1 -1. 0. 1. real
+#         x1 -3. -1. 1. real
+#         x2 5. 6. 8. real
 #         ```
 #
 # !!! note

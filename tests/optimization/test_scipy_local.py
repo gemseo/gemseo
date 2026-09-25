@@ -170,16 +170,16 @@ class TestScipy(TestCase):
         normalized."""
         design_space = DesignSpace()
         design_space.add_variable(
-            "x1", 1, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
+            "x1", 1, DesignSpace.DesignVariableType.REAL, -1.0, 1.0, 0.0
         )
         design_space.add_variable(
-            "x2", 1, DesignSpace.DesignVariableType.FLOAT, -inf, 1.0, 0.0
+            "x2", 1, DesignSpace.DesignVariableType.REAL, -inf, 1.0, 0.0
         )
         design_space.add_variable(
-            "x3", 1, DesignSpace.DesignVariableType.FLOAT, -1.0, inf, 0.0
+            "x3", 1, DesignSpace.DesignVariableType.REAL, -1.0, inf, 0.0
         )
         design_space.add_variable(
-            "x4", 1, DesignSpace.DesignVariableType.FLOAT, -inf, inf, 0.0
+            "x4", 1, DesignSpace.DesignVariableType.REAL, -inf, inf, 0.0
         )
         problem = OptimizationProblem(design_space)
         problem.objective = ArrayFunction(
@@ -196,7 +196,7 @@ class TestScipy(TestCase):
         def run_pb(algo_options):
             design_space = DesignSpace()
             design_space.add_variable(
-                "x1", 2, DesignSpace.DesignVariableType.FLOAT, -1.0, 1.0, 0.0
+                "x1", 2, DesignSpace.DesignVariableType.REAL, -1.0, 1.0, 0.0
             )
             problem = OptimizationProblem(design_space)
             problem.objective = ArrayFunction(

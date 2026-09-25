@@ -491,7 +491,7 @@ def test_invalid_differentiation_method(pow2_problem, snapshot) -> None:
 def test_get_dv_names() -> None:
     problem = Power2()
     optimization_library_factory.execute(problem, settings=SLSQP_Settings())
-    assert problem.input_space.variable_names == ["x"]
+    assert tuple(problem.input_space.variables) == ("x",)
 
 
 def test_get_best_infeasible_point() -> None:
@@ -1806,7 +1806,7 @@ def test_export_to_dataset_input_names_order(name) -> None:
 
 @pytest.fixture(scope="module")
 def problem_with_complex_value() -> OptimizationProblem:
-    """A problem using a design space with a float variable whose value is complex."""
+    """A problem using a design space with a real variable whose value is complex."""
     design_space = DesignSpace()
     design_space.add_variable("x")
     design_space.set_current_value({"x": array([1.0 + 0j])})
@@ -2131,7 +2131,7 @@ def test_hdf_node_path(pow2_problem, tmp_wd):
     node = "problem_node"
     problem = pow2_problem
     function_names = problem.function_names
-    desvar_names = problem.input_space.variable_names
+    desvar_names = tuple(problem.input_space.variables)
     problem.to_hdf(file_name, hdf_node_path=node)
 
     # Should fail : no opt_problem saved at the root
@@ -2145,7 +2145,7 @@ def test_hdf_node_path(pow2_problem, tmp_wd):
     # Should succeed : check if functions and design variables are correct
     imp_prob = OptimizationProblem.from_hdf(file_name, hdf_node_path=node)
     assert_equal(imp_prob.function_names, function_names)
-    assert_equal(imp_prob.design_space.variable_names, desvar_names)
+    assert_equal(tuple(imp_prob.design_space.variables), desvar_names)
 
     # Test saving options in nested dict form
     execute_algo(
@@ -2159,7 +2159,7 @@ def test_hdf_node_path(pow2_problem, tmp_wd):
     # Should succeed : check if functions and design variables are correct
     imp_prob = OptimizationProblem.from_hdf(file_name, hdf_node_path=node)
     assert_equal(imp_prob.function_names, function_names)
-    assert_equal(imp_prob.design_space.variable_names, desvar_names)
+    assert_equal(tuple(imp_prob.design_space.variables), desvar_names)
 
 
 def test_repr_html():

@@ -27,15 +27,15 @@ from numpy.testing import assert_array_equal
 
 from gemseo.space._design.bounds import Bounds
 from gemseo.space._design.variables import DesignVariables
-from gemseo.space.variable import ContinuousVariable
+from gemseo.space.variable import RealVariable
 from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture
 def variables() -> DesignVariables:
-    """A variables with a single float variable of size 2, bounds [0, 10]."""
+    """A variables with a single real variable of size 2, bounds [0, 10]."""
     variables = DesignVariables()
-    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=10.0)
+    variables["x"] = RealVariable(size=2, lower_bound=0.0, upper_bound=10.0)
     return variables
 
 
@@ -215,7 +215,7 @@ def test_reassigning_variable_bound_attributes_leaves_the_bounds_alone(
     """
     bounds = Bounds(variables)
     variables["x"].lower_bound.shape = (2, 1)
-    variables["y"] = ContinuousVariable(size=1, lower_bound=1.0, upper_bound=2.0)
+    variables["y"] = RealVariable(size=1, lower_bound=1.0, upper_bound=2.0)
 
     assert_array_equal(bounds.full_lower_bound, [0.0, 0.0, 1.0])
     assert_array_equal(bounds.get_lower_bound("x"), [0.0, 0.0])

@@ -235,7 +235,7 @@ class MLModelCalibration:
         model_assessor = MLModelAssessor(
             settings,
             dataset,
-            calibration_space.variable_names,
+            tuple(calibration_space.variables),
             measure,
             measure_evaluation_method_name=measure_evaluation_method_name,
             measure_options=measure_options,

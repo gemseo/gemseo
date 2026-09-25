@@ -360,7 +360,7 @@ class ScalableProblem:
             sub_inputs += inputs
             for name in inputs:
                 design_space.add_variable(
-                    name, self.scaled_sizes[name], "float", 0.0, 1.0, 0.5
+                    name, self.scaled_sizes[name], "real", 0.0, 1.0, 0.5
                 )
             sub_scenarios.append(
                 create_scenario(
@@ -379,7 +379,7 @@ class ScalableProblem:
         design_space = DesignSpace()
         for name in inputs:
             design_space.add_variable(
-                name, self.scaled_sizes[name], "float", 0.0, 1.0, 0.5
+                name, self.scaled_sizes[name], "real", 0.0, 1.0, 0.5
             )
         sub_disciplines = sub_scenarios + wk_cpl_disciplines
         return create_scenario(
@@ -410,7 +410,7 @@ class ScalableProblem:
             design_space.add_variable(
                 name,
                 size=size,
-                type_="float",
+                type_="real",
                 lower_bound=zeros(size),
                 upper_bound=ones(size),
                 value=full(size, 0.5),
@@ -424,7 +424,7 @@ class ScalableProblem:
                 design_space.add_variable(
                     name,
                     size=size,
-                    type_="float",
+                    type_="real",
                     lower_bound=zeros(size),
                     upper_bound=ones(size),
                     value=full(size, 0.5),

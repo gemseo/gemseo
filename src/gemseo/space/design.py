@@ -41,7 +41,6 @@ from numpy import ndarray
 from numpy import where
 
 from gemseo.optimization.result import OptimizationResult
-from gemseo.space._core.accessors import VariableAccessorsMixin
 from gemseo.space._design import checking
 from gemseo.space._design import io as _design_space_io
 from gemseo.space._design import view
@@ -97,8 +96,7 @@ def _get_interval_data_types() -> tuple[DataType, ...]:
 
 
 class DesignSpace(
-    VariableAccessorsMixin[DesignVariables],
-    BaseVariableSpace[DesignVariables, VariablesView[BaseDeterministicVariable]],
+    BaseVariableSpace[DesignVariables, VariablesView[BaseDeterministicVariable]]
 ):
     """A space of design variables.
 
@@ -241,7 +239,7 @@ class DesignSpace(
         self,
         name: str,
         size: int = 1,
-        type_: DataType = DesignVariableType.FLOAT,
+        type_: DataType = DesignVariableType.REAL,
         lower_bound: complex | Iterable[complex] = -inf,
         upper_bound: complex | Iterable[complex] = inf,
         value: complex | Iterable[complex] | None = None,
@@ -273,12 +271,12 @@ class DesignSpace(
                 If `None`, do not use a default value.
             variable: A variable of any kind.
                 If `None`,
-                    build a continuous or integer variable
+                    build a real or integer variable
                     from `size`, `type_`, `lower_bound` and `upper_bound`.
 
         Raises:
             ValueError: Either if the variable already exists,
-                if the type is neither continuous nor integer
+                if the type is neither real nor integer
                 and no `variable` is passed,
                 if a size, type or bound is wrong,
                 or if the value is not within the bounds.
@@ -295,6 +293,13 @@ class DesignSpace(
                 )
                 raise ValueError(msg)
 
+            # A caller may name the type by the value of a past release,
+            # e.g. when replaying a script written against that release,
+            # so normalize it before comparing it to the data types.
+            # A value that is not a data type at all is left as is,
+            # so that the message below names the valid ones.
+            decoded_type_ = DataType._resolve_value(decoded_type_)
+
             interval_data_types = _get_interval_data_types()
             if decoded_type_ not in interval_data_types:
                 msg = (
@@ -306,7 +311,7 @@ class DesignSpace(
                 raise ValueError(msg)
 
             variable = deterministic_variable_factory.create(
-                type_,
+                decoded_type_,
                 size=size,
                 lower_bound=lower_bound,
                 upper_bound=upper_bound,
@@ -855,30 +860,6 @@ class DesignSpace(
 
         self._current.set_variable(name, current_value)
 
-    def get_lower_bound(self, name: str) -> NumberArray:
-        """Return the lower bound of a variable.
-
-        Args:
-            name: The name of the variable.
-
-        Returns:
-            The lower bound of the variable (possibly infinite);
-            this array is read-only.
-        """
-        return self._bounds.get_lower_bound(name)
-
-    def get_upper_bound(self, name: str) -> NumberArray:
-        """Return the upper bound of a variable.
-
-        Args:
-            name: The name of the variable.
-
-        Returns:
-            The upper bound of the variable (possibly infinite);
-            this array is read-only.
-        """
-        return self._bounds.get_upper_bound(name)
-
     @overload
     def get_lower_bounds(
         self,
@@ -1251,8 +1232,8 @@ class DesignSpace(
             variable = self._variables[name]
             size = variable.size
             type_ = variable.type
-            lower_bounds = self.get_lower_bound(name)
-            upper_bounds = self.get_upper_bound(name)
+            lower_bounds = variable.lower_bound
+            upper_bounds = variable.upper_bound
 
             try:
                 current_value = self.get_current_value([name])

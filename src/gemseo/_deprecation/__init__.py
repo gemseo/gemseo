@@ -604,7 +604,7 @@ def install() -> None:
     Also alias the old names of the renamed attributes of the modules and classes
     that are already imported, and register warning filters so the emitted
     `DeprecationWarning` is shown once, regardless of the default filters: without them,
-    warnings triggered by imports in library code (rather than `__main__`) would be
+    a warning attributed to a module of the library (rather than to `__main__`) would be
     silenced. These filters take precedence over the default ones, so they are only
     registered when the user did not configure warnings themselves, e.g. with
     `-W error::DeprecationWarning` or `PYTHONWARNINGS`; their choice must win.
@@ -633,6 +633,11 @@ def install() -> None:
         warnings.filterwarnings(
             "once",
             message=r"The attribute '.*' of the class '.*' is deprecated",
+            category=DeprecationWarning,
+        )
+        warnings.filterwarnings(
+            "once",
+            message=r"The variable data type '.*' is deprecated",
             category=DeprecationWarning,
         )
     sys.meta_path.insert(0, _DeprecatedModuleFinder())

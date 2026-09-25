@@ -63,14 +63,14 @@ ds.add_variable(
     lower_bound=0.0,
     upper_bound=1,
     value=1.0 / N / 2.0,
-    type_=DesignSpace.DesignVariableType.FLOAT,
+    type_=DesignSpace.DesignVariableType.REAL,
 )
 ds.add_variable(
     "y",
     lower_bound=0.0,
     upper_bound=1,
     value=1,
-    type_=DesignSpace.DesignVariableType.FLOAT,
+    type_=DesignSpace.DesignVariableType.REAL,
 )
 
 # %%

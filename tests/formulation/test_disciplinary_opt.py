@@ -90,4 +90,6 @@ def test_scenario_with_non_numeric_discipline_input() -> None:
 
     # The sizes of the discipline inputs that are neither design variables nor
     # differentiated inputs must not have leaked into the formulation.
-    assert scenario.formulation.variable_sizes == design_space.variable_sizes
+    assert scenario.formulation.variable_sizes == {
+        name: variable.size for name, variable in design_space.variables.items()
+    }

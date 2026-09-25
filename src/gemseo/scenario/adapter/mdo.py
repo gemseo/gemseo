@@ -383,7 +383,7 @@ class MDOScenarioAdapter(EvaluationScenarioAdapter):
                 )
                 raise ValueError(msg)
         else:
-            input_names = set(self._input_names + self._bound_names)
+            input_names = set(self._input_names).union(self._bound_names)
 
         # N.B the adapter is assumed constant w.r.t. bounds
         bound_inputs = set(input_names) & set(self._bound_names)

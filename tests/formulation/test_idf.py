@@ -66,7 +66,7 @@ def test_build_func_from_disc() -> None:
     problem.objective = idf.create_objective(["y_4"])
     assert idf.all_couplings == idf.coupling_structure.all_couplings
 
-    x_names = idf.problem.input_space.variable_names
+    x_names = tuple(idf.problem.input_space.variables)
     x_dict = pb.get_default_inputs(x_names)
     x_vect = np.concatenate([x_dict[k] for k in x_names])
 

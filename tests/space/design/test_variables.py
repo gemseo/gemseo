@@ -27,16 +27,16 @@ from numpy import ndarray
 from numpy.testing import assert_array_equal
 
 from gemseo.space._design.variables import DesignVariables
-from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
 from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture
 def variables() -> DesignVariables:
-    """A variables with a float and an integer variable."""
+    """A variables with a real and an integer variable."""
     variables = DesignVariables()
-    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
+    variables["x"] = RealVariable(size=2, lower_bound=0.0, upper_bound=1.0)
     variables["n"] = IntegerVariable(size=1, lower_bound=0, upper_bound=10)
     return variables
 
@@ -135,7 +135,7 @@ def test_normalization_mask_is_read_only_after_copy(
 def test_setitem_normalization_mask(variables) -> None:
     """Check that setting a variable computes its normalization mask."""
     version = variables.version
-    variables["z"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=1.0)
+    variables["z"] = RealVariable(size=2, lower_bound=0.0, upper_bound=1.0)
     assert variables.name_to_normalization_mask["z"].all()
     assert variables.version == version + 1
 

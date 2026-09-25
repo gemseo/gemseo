@@ -150,8 +150,9 @@ class OTGaussianProcessRegressor(BaseRandomProcessRegressor):
 
         for input_name in self.input_names:
             if input_name in optimization_space:
-                lower_bound = optimization_space.get_lower_bound(input_name)
-                upper_bound = optimization_space.get_upper_bound(input_name)
+                variable = optimization_space.variables[input_name]
+                lower_bound = variable.lower_bound
+                upper_bound = variable.upper_bound
             else:
                 n = self.sizes[input_name]
                 if self.output_dimension > 1:

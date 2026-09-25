@@ -602,7 +602,7 @@ def test_input_space_explicit_empty_design_space() -> None:
 
     input_space = database.input_space
     assert isinstance(input_space, DesignSpace)
-    assert input_space.variable_names == [Database.default_input_name]
+    assert tuple(input_space.variables) == (Database.default_input_name,)
     assert input_space.dimension == 2
 
     dataset = database.to_dataset()
@@ -934,7 +934,7 @@ def test_to_hdf_from_hdf_random_space(tmp_wd, caplog) -> None:
     loaded_database = Database.from_hdf(file_path)
     input_space = loaded_database.input_space
     assert isinstance(input_space, DesignSpace)
-    assert input_space.variable_names == [Database.default_input_name]
+    assert tuple(input_space.variables) == (Database.default_input_name,)
     assert input_space.dimension == 1
     assert loaded_database.last_item == database.last_item
 

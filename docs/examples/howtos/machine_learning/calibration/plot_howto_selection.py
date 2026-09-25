@@ -95,7 +95,7 @@ selector.add_candidate(
 # %%
 # Possibly add a calibration algorithm for tuning an hyperparameter.
 rbf_space = DesignSpace()
-rbf_space.add_variable("epsilon", 1, "float", 1.0, 100.0, 10.0)
+rbf_space.add_variable("epsilon", 1, "real", 1.0, 100.0, 10.0)
 selector.add_candidate(
     RBFRegressor_Settings(),
     calibration_space=rbf_space,

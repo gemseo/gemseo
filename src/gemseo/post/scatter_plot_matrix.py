@@ -60,7 +60,7 @@ class ScatterPlotMatrix(BasePost[ScatterPlotMatrix_Settings]):
             + self._dataset.objective_names
             + self._dataset.observable_names
         )
-        all_design_names = self._dataset.misc["input_space"].variable_names
+        all_design_names = list(self._dataset.misc["input_space"].variables)
 
         if (
             not optimization_metadata.minimize_objective

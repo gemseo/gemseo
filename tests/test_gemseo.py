@@ -761,7 +761,7 @@ def test_create_design_space() -> None:
     """Test the creation of a design space."""
     design_space = create_design_space()
     design_space.add_variable(
-        "name", type_="float", lower_bound=-1, upper_bound=1, value=0
+        "name", type_="real", lower_bound=-1, upper_bound=1, value=0
     )
     design_space.check()
 
@@ -775,7 +775,7 @@ def test_read_write_design_space(tmp_wd, file_name) -> None:
     """
     design_space = create_design_space()
     design_space.add_variable(
-        "name", type_="float", lower_bound=-1, upper_bound=1, value=0
+        "name", type_="real", lower_bound=-1, upper_bound=1, value=0
     )
     design_space.add_variable(
         "another_name",
@@ -1363,9 +1363,9 @@ def test_generate_xdsm_return():
 @pytest.mark.parametrize(
     ("file_path", "names", "size"),
     [
-        ("database_from_database_default.hdf5", ["input"], 2),
-        ("database_from_database_custom.hdf5", ["a", "b"], 1),
-        ("database_from_problem.hdf5", ["x"], 2),
+        ("database_from_database_default.hdf5", ("input",), 2),
+        ("database_from_database_custom.hdf5", ("a", "b"), 1),
+        ("database_from_problem.hdf5", ("x",), 2),
     ],
 )
 def test_import_database(file_path, names, size, caplog):
@@ -1373,8 +1373,8 @@ def test_import_database(file_path, names, size, caplog):
     database = import_database(Path(__file__).parent / file_path)
     assert isinstance(database, Database)
     input_space = database.input_space
-    assert database.input_space.variable_names == names
+    assert tuple(database.input_space.variables) == names
     for name in names:
-        assert input_space.get_size(name) == size
+        assert input_space.variables[name].size == size
 
     assert ("Importing the database" in caplog.text) is ("from_database" in file_path)

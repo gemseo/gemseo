@@ -330,8 +330,8 @@ def test_seed(algo_name) -> None:
     ("var_type1", "var_type2"),
     [
         ("integer", "integer"),
-        ("integer", "float"),
-        ("float", "float"),
+        ("integer", "real"),
+        ("real", "real"),
     ],
 )
 def test_variable_types(var_type1, var_type2) -> None:

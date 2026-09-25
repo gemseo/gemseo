@@ -288,6 +288,33 @@ def test_class_deprecation_is_visible_under_the_default_filters():
     assert "The class 'gemseo.space.variable.Variable' is deprecated" in result.stderr
 
 
+def test_data_type_deprecation_is_visible_under_the_default_filters():
+    """The deprecation of a data type value is shown although raised by library code.
+
+    The default filters silence a `DeprecationWarning` that is not raised from
+    `__main__`; `install` registers a filter so that this one is shown.
+
+    This can only be checked in a child process: `pytest` runs every test inside
+    `warnings.catch_warnings()` with `simplefilter("always")`, which replaces the
+    filter under test. The child is run without any `-W` flag on purpose, since
+    `install` registers the filters only when the user configured none.
+    """
+    csv_path = Path(__file__).parent / "space" / "design_space_legacy_type.csv"
+    # Read through the gemseo API, as a user does: the warning is then raised
+    # from library code, which the default filters silence.
+    helper = (
+        f"from gemseo.space import DesignSpace\nDesignSpace.from_csv(r'{csv_path}')\n"
+    )
+    result = subprocess.run(  # noqa: S603
+        [sys.executable, "-c", helper],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "The variable data type 'float' is deprecated" in result.stderr
+
+
 def test_renamed_submodule_is_not_an_attribute_rename():
     """A renamed submodule and a renamed function are told apart by their section."""
     with pytest.warns(
@@ -701,6 +728,36 @@ def test_renamed_class_attribute_of_the_standalone_sobieski_structure_resolves()
         old_value = SobieskiStructure.STRESS_LIMIT
 
     assert old_value == SobieskiStructure.stress_limit == 1.09
+
+
+def test_renamed_enumeration_member_warns_and_resolves():
+    """The old name of a renamed enumeration member warns and resolves.
+
+    An enumeration is a class like any other for the `classes:` section, but its
+    members live in the class namespace, so the data descriptor must not disturb
+    them.
+    """
+    from gemseo.space.variable import DataType
+
+    with pytest.warns(DeprecationWarning, match="'FLOAT'"):
+        old_value = DataType.FLOAT
+
+    assert old_value is DataType.REAL
+    assert tuple(member.name for member in DataType) == ("DISCRETE", "INTEGER", "REAL")
+
+
+def test_renamed_enumeration_member_of_a_namesake_class_is_left_alone():
+    """A namesake enumeration keeps the member the table renames elsewhere.
+
+    `SobieskiBase.DataType` shares its name with the data type of a variable but
+    enumerates NumPy dtypes; it declares no `REAL` and its `FLOAT` is still live, so
+    the guards of the installer must leave it untouched.
+    """
+    from gemseo.problem.mdo.sobieski.standalone.util import SobieskiBase
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        assert SobieskiBase.DataType.FLOAT == "float64"
 
 
 def test_renamed_protected_class_attribute_warns_and_resolves():

@@ -192,7 +192,7 @@ def objective_and_problem_for_tests(constraints_before_obj):
         upper_bound=10.0,
         value=5.0,
         size=1,
-        type_=DesignSpace.DesignVariableType.FLOAT,
+        type_=DesignSpace.DesignVariableType.REAL,
     )
     problem = OptimizationProblem(design_space)
     problem.objective = f

@@ -48,7 +48,7 @@ class BiLevelScenarioResult(ScenarioResult):
         optimal_local_design_values = {
             variable_name: y_opt[variable_name]
             for scenario_adapter in scenario_adapters
-            for variable_name in scenario_adapter.scenario.design_space.variable_names
+            for variable_name in scenario_adapter.scenario.design_space.variables
         }
         self.design_variable_name_to_value.update(optimal_local_design_values)
         self.__n_sub_problems = len(scenario_adapters)

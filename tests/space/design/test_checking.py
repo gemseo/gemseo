@@ -26,17 +26,17 @@ from gemseo.space._design.bounds import Bounds
 from gemseo.space._design.checking import check_addable_value
 from gemseo.space._design.checking import check_membership
 from gemseo.space._design.variables import DesignVariables
-from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable import IntegerVariable
+from gemseo.space.variable import RealVariable
 from gemseo.util.testing.helper import assert_exception
 
 
 @pytest.fixture
 def variables() -> DesignVariables:
-    """A variables with a float variable and an integer variable."""
+    """A variables with a real variable and an integer variable."""
     variables = DesignVariables()
-    variables["x"] = ContinuousVariable(size=2, lower_bound=0.0, upper_bound=10.0)
+    variables["x"] = RealVariable(size=2, lower_bound=0.0, upper_bound=10.0)
     variables["y"] = IntegerVariable(size=1, lower_bound=0, upper_bound=5)
     return variables
 
@@ -242,9 +242,9 @@ def test_check_membership_dict_with_none_value(
 
 @pytest.fixture
 def discrete_variables() -> DesignVariables:
-    """A variables with a float variable and a discrete variable."""
+    """A variables with a real variable and a discrete variable."""
     variables = DesignVariables()
-    variables["x"] = ContinuousVariable(lower_bound=0.0, upper_bound=10.0)
+    variables["x"] = RealVariable(lower_bound=0.0, upper_bound=10.0)
     variables["d"] = DiscreteVariable(choices=[2.0, 5.0])
     return variables
 

@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""Continuous variable."""
+"""Real variable."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from gemseo.util.typing import NumberArray
 
 
-class ContinuousVariable(BaseIntervalVariable):
+class RealVariable(BaseIntervalVariable):
     """A variable whose components are real numbers."""
 
     def cast(self, value: NumberArray) -> NumberArray:

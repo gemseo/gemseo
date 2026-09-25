@@ -27,7 +27,6 @@ from typing import Final
 from gemseo.space.variable._legacy import Variable as Variable
 from gemseo.space.variable.base import BaseVariable as BaseVariable
 from gemseo.space.variable.base import DataType as DataType  # noqa: TC001
-from gemseo.space.variable.continuous import ContinuousVariable
 from gemseo.space.variable.deterministic import (
     BaseDeterministicVariable as BaseDeterministicVariable,
 )
@@ -40,6 +39,7 @@ from gemseo.space.variable.interval import BaseIntervalVariable as BaseIntervalV
 from gemseo.space.variable.numeric import BaseNumericVariable as BaseNumericVariable
 from gemseo.space.variable.numeric import BoundArray as BoundArray
 from gemseo.space.variable.numeric import BoundType as BoundType
+from gemseo.space.variable.real import RealVariable
 from gemseo.util.package_import import install_lazy_reexport
 
 if TYPE_CHECKING:
@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 
 data_type_to_numpy_type: Final[Mapping[DataType, ComponentDType]] = MappingProxyType({
     cls.type: cls.component_type
-    for cls in (ContinuousVariable, DiscreteVariable, IntegerVariable)
+    for cls in (DiscreteVariable, IntegerVariable, RealVariable)
 })
 """The map from a variable data type to the NumPy type of its components.
 
@@ -76,10 +76,10 @@ install_lazy_reexport(
         "BaseVariable",
         "BoundArray",
         "BoundType",
-        "ContinuousVariable",
         "DataType",
         "DeterministicVariableFactory",
         "DiscreteVariable",
         "IntegerVariable",
+        "RealVariable",
     ],
 )

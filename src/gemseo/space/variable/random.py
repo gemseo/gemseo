@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from functools import cached_property
 from typing import TYPE_CHECKING
+from typing import ClassVar
 from typing import Final
 
 from pydantic import Field
@@ -70,7 +71,7 @@ class RandomVariable(BaseNumericVariable):
     everything else is derived from them and read-only:
     the joint probability distribution of its components,
     its size (the number of these components),
-    its data type (always float)
+    its data type (always real)
     and its bounds (the limits of the support of its distribution).
 
     Note:
@@ -87,6 +88,8 @@ class RandomVariable(BaseNumericVariable):
         Reading a bound hands out a frozen copy of the corresponding array
         of the distribution, which the variable leaves untouched.
     """
+
+    type: ClassVar[DataType] = DataType.REAL
 
     distribution_settings: tuple[BaseDistributionSettings, ...] = Field(
         min_length=1,
@@ -130,11 +133,6 @@ class RandomVariable(BaseNumericVariable):
     def size(self) -> int:
         """The size of the variable."""
         return len(self.distribution_settings)
-
-    @property
-    def type(self) -> DataType:
-        """The type of data."""
-        return DataType.FLOAT
 
     @property
     def lower_bound(self) -> RealArray:

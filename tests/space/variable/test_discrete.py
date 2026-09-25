@@ -27,9 +27,9 @@ from numpy import nan
 from numpy.testing import assert_array_equal
 from pydantic import ValidationError
 
-from gemseo.space.variable import ContinuousVariable
 from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
+from gemseo.space.variable import RealVariable
 from gemseo.util.testing.helper import assert_exception
 
 
@@ -229,7 +229,7 @@ def test_eq() -> None:
     assert variable == DiscreteVariable(choices=[3, 2, 1])
     # The two variables share their derived bounds but not their choices.
     assert variable != DiscreteVariable(choices=[1, 3])
-    assert variable != ContinuousVariable(size=1, lower_bound=1, upper_bound=3)
+    assert variable != RealVariable(size=1, lower_bound=1, upper_bound=3)
 
 
 def test_pickle_freezes_the_choices() -> None:

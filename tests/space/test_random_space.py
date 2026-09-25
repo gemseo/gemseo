@@ -114,9 +114,9 @@ def test_container_behavior(space) -> None:
     assert "x" in space
     assert "z" not in space
     assert space.variables["x"].size == 2
-    assert space.variables["x"].type == DataType.FLOAT
+    assert space.variables["x"].type == DataType.REAL
     assert space.variables["y"].size == 1
-    assert space.variables["y"].type == DataType.FLOAT
+    assert space.variables["y"].type == DataType.REAL
     assert space.get_indexed_variable_names() == ["x[0]", "x[1]", "y"]
     assert_array_equal(space.get_variables_indexes(["y"]), [2])
 
@@ -128,14 +128,15 @@ def test_container_behavior(space) -> None:
         "variable_sizes",
         "variable_types",
         "name_to_indices",
+        "has_integer_variables",
         "get_size",
         "get_type",
     ],
 )
-def test_no_accessors(space, name) -> None:
-    """Check that a random space does not duplicate its registry of variables."""
-    assert not hasattr(space, name)
-    assert hasattr(DesignSpace(), name)
+@pytest.mark.parametrize("space_class", [DesignSpace, RandomSpace])
+def test_no_accessors(space_class, name) -> None:
+    """Check that a space does not duplicate its registry of variables."""
+    assert not hasattr(space_class(), name)
 
 
 def test_conversions(space) -> None:

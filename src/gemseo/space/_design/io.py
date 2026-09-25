@@ -37,6 +37,7 @@ from gemseo.space._design.constants import table_names
 from gemseo.space._design.constants import ub_group
 from gemseo.space._design.constants import value_group
 from gemseo.space._design.constants import var_type_group
+from gemseo.space.variable import DataType
 from gemseo.space.variable import DiscreteVariable
 from gemseo.space.variable.factory import deterministic_variable_factory
 from gemseo.util._numpy import int64_dtype
@@ -102,12 +103,12 @@ def check_structure_is_unchanged(
     """
     error_messages = []
     stored_names = [name.decode() for name in get_hdf5_group(space_group, names_group)]
-    if design_space.variable_names != stored_names:
+    names = list(design_space.variables)
+    if names != stored_names:
         # The variables are compared one by one only when they match,
         # otherwise a variable may be missing from the HDF file.
         error_messages.append(
-            f"The names of the design variables are {stored_names}; "
-            f"got {design_space.variable_names}."
+            f"The names of the design variables are {stored_names}; got {names}."
         )
     else:
         for name, variable in design_space.variables.items():
@@ -120,7 +121,13 @@ def check_structure_is_unchanged(
                 )
 
             stored_type = get_hdf5_group(variable_group, var_type_group)[0].decode()
-            if stored_type != variable.type:
+            # A file written by a past release stores the data type value of that
+            # release, so normalize it before comparing;
+            # a stored value that is not a data type at all is left as is,
+            # and the message below reports it as it stands.
+            stored_data_type = DataType._resolve_value(stored_type)
+
+            if stored_data_type != variable.type:
                 error_messages.append(
                     f"The type of the design variable {name!r} is {stored_type!r}; "
                     f"got {variable.type.value!r}."
@@ -198,7 +205,7 @@ def to_hdf(
         if space_group is None:
             space_group = h5file.create_group(design_space_group)
             space_group.create_dataset(
-                names_group, data=array(design_space.variable_names, dtype=bytes_)
+                names_group, data=array(tuple(design_space.variables), dtype=bytes_)
             )
         else:
             check_structure_is_unchanged(design_space, space_group, file_path)
@@ -511,7 +518,7 @@ def from_csv(
         if var_type_field in col_map:
             var_type = str_data[k, col_map[var_type_field]]
         else:
-            var_type = cls.DesignVariableType.FLOAT
+            var_type = cls.DesignVariableType.REAL
         choices = read_choices_cell(str_data, col_map, k)
         if choices is not None and var_type != cls.DesignVariableType.DISCRETE:
             msg = (

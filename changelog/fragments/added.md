@@ -37,14 +37,11 @@
 - `BaseVariableSpace.add_variable` is the common entry point to add a variable, whatever the kind of space; its
   arguments depend on this kind, e.g. a size, a data type and bounds for a `DesignSpace`, the settings of the marginal
   probability distributions of the components for a `RandomSpace`.
-- A `RandomSpace` reads all its variables through `variables`, which is its only accessor: unlike a `DesignSpace`, it
-  does not duplicate the registry with the shortcuts `variable_names`, `variable_sizes`, `variable_types`,
-  `name_to_indices`, `get_size` and `get_type`; use `list(space.variables)`, `space.variables[name].size`,
-  `space.variables[name].type` and `space.variables.name_to_indices` instead, `space.dimension` being kept.
+- A `RandomSpace` reads all its variables through `variables`, which is its only accessor, as for a `DesignSpace`.
 - The probabilistic data of a `RandomSpace` is read through `variables` too: `variables.distribution` (joint
   distribution of the space), `variables[name].distribution`, `variables[name].distribution_settings` and the statistics
   of `variables[name].distribution` such as `range` and `support`.
-- `space.variables.has_integer_variables` is `False` for a `RandomSpace`, whose random variables are always of float
+- `space.variables.has_integer_variables` is `False` for a `RandomSpace`, whose random variables are always of real
   type.
 - The function `gemseo.create_random_space` creates an empty `RandomSpace`.
 - The factory `gemseo.space.factory.random_space_factory` creates `RandomSpace` objects.
@@ -73,14 +70,14 @@
 - The hierarchy of the variables of a space is public, in the `gemseo.space.variable` package. Every kind of variable
   derives from the abstract `BaseVariable`, which defines a variable by a size and a data type; a variable is immutable
   and its fields are exactly what its kind takes as input, anything deriving from them being a read-only property.
-  The arrays a variable hands out, e.g. the bounds of a `ContinuousVariable` or the choices of a `DiscreteVariable`,
+  The arrays a variable hands out, e.g. the bounds of a `RealVariable` or the choices of a `DiscreteVariable`,
   are read-only views of what the variable stores: in-place mutation raises
   `ValueError: assignment destination is read-only`, the writeable flag cannot be re-enabled, and reassigning the
   shape, the strides or the data type of such an array, which NumPy allows on a read-only array, changes that array
   only.
   Two abstract classes place a kind in this hierarchy: `BaseDeterministicVariable`, whose variables take a value that a
   space can check and a driver can normalize, and `BaseNumericVariable`, whose components are numbers, hence ordered,
-  hence bounded. `ContinuousVariable` and `IntegerVariable` derive from `BaseIntervalVariable`, whose domain is an
+  hence bounded. `RealVariable` and `IntegerVariable` derive from `BaseIntervalVariable`, whose domain is an
   interval defined by a size and bounds supplied by the caller; `DiscreteVariable` derives its size and its bounds from
   its choices; the `gemseo.space.variable.random.RandomVariable` of a `RandomSpace` derives its size, its type and its
   bounds from the settings of the probability distributions of its components.
