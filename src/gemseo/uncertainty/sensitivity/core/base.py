@@ -821,7 +821,7 @@ class BaseGenericSensitivityAnalysis(
 
         Args:
             output: An output for which to display the sensitivity indices.
-            inputs_to_keep: The inputs to keep. If `None`, keep all.
+            inputs_to_keep: The inputs to keep. If empty, keep all.
 
         Returns:
             The filtered input names sorted in descending order of influence.

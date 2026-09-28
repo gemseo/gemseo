@@ -258,7 +258,13 @@ def test_get_name_and_component(variable, expected):
 
 @pytest.mark.parametrize(
     ("names_to_keep", "expected"),
-    [((), ["a", "b", "c"]), (("a", "b"), ["a", "b"]), (("b", "a"), ["a", "b"])],
+    [
+        ((), ["a", "b", "c"]),
+        (("a", "b"), ["a", "b"]),
+        (("b", "a"), ["a", "b"]),
+        (iter(["a", "b"]), ["a", "b"]),
+        (iter([]), ["a", "b", "c"]),
+    ],
 )
 def test_filter_names(names_to_keep, expected):
     """Check filter_names()."""
