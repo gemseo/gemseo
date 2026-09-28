@@ -24,7 +24,7 @@ from gemseo.util.testing.helper import assert_exception
 
 
 def _make_call_spec() -> CallSpec:
-    return CallSpec(callable_=lambda: None, args=(), kwargs={})
+    return CallSpec(kwargs={}, callable_=lambda: None)
 
 
 def test_start_raises_when_already_started(snapshot):

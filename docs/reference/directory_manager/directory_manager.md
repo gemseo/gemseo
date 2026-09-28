@@ -41,6 +41,8 @@ trigger directory creation and cleanup.
 - **Cleanup policies**: Configurable per scenario and MDA (keep all, keep last, keep solution, etc.)
 - **Thread/process safety**: Thread-local CWD tracking, spawn-aware multiprocessing
 - **History and residuals**: Generates OptHistoryView plots and MDA residual convergence plots
+- **Execution traces**: Each processor owns a [tracer](../tracer/tracer.md) writing a
+  `.gemseo-trace.yml` in the execution directory
 
 ---
 
@@ -54,11 +56,18 @@ Global object (via `BaseMultiton`) that:
 - Manages working directory for multi-threaded contexts (thread-local CWD tracking)
 - Applies cleanup policies to remove directories
 - Coordinates with processors
-- Resets when the directory manager is enabled in config (it cannot be disabled once enabled)
+- Resets when the directory manager is enabled in config (it cannot be disabled once enabled),
+  together with the [trace registry](../tracer/tracer.md#traceregistry-registrypy), whose
+  per-class counters would otherwise keep accumulating across runs sharing a process
+- Injects `execution_root_path` into the trace registry, which has no notion of an
+  execution root of its own
 
 **Key Methods:**
 
-- `start_directory()`: Create and enter a new directory
+- `start_directory()`: Create and enter a new directory, and return its path, e.g. for a
+  tracer to write its trace file there. The manager maps a directory path to an observer,
+  so searching that path back from the observer would be a linear scan over every
+  directory started since the beginning of the process
 - `end_directory()`: Exit directory and apply cleanup policy
 
 ### Settings (`settings.py`)
@@ -99,22 +108,28 @@ Base processor for directory management:
 
 - Delegates filesystem operations (`start_directory()` / `end_directory()`) to the
   `DirectoryManager` singleton
-- Minimal logic—mostly delegation; concrete subclasses set `observer_class` and
-  override `__str__` to build the directory name
+- Owns a [tracer](../tracer/tracer.md), built from the `_tracer_class` attribute of the
+  concrete processor, started after the directory is created and ended before the
+  directory is ended, so that its `.gemseo-trace.yml` lands in that directory
+- Logs a tracing error, in `start()` as in `end()`, instead of propagating it, so that a
+  failing tracer cannot break the observed call, and ends the execution directory in any
+  case, so that it cannot break the later executions either
+- Minimal logic—mostly delegation; concrete subclasses set `observer_class`,
+  `_tracer_class` and override `__str__` to build the directory name
 
 ---
 
 ## Processors
 
-| Processor | Observer Class | Directory Name |
-| --- | --- | --- |
-| `DisciplineExecutionDMProcessor` | `DisciplineExecutionWorkflowObserver` | `{discipline}_execution` |
-| `DisciplineLinearizationDMProcessor` | `DisciplineLinearizationWorkflowObserver` | `{discipline}_linearization` |
-| `MDAExecutionDMProcessor` | `MDAExecutionWorkflowObserver` | `{mda}` |
-| `MDAIterationDMProcessor` | `MDAIterationWorkflowObserver` | `{mda}_iteration_{iter}` |
-| `OptimizerDMProcessor` | `OptimizerWorkflowObserver` | `Optimizer_iteration_{iter+1}` |
-| `ScenarioDMProcessor` | `ScenarioWorkflowObserver` | `{scenario}` |
-| `DOEDMProcessor` | `DOEWorkflowObserver` | `DOE_sample_{sample_index}` |
+| Processor | Observer Class | Directory Name | Tracer |
+| --- | --- | --- | --- |
+| `DisciplineExecutionDMProcessor` | `DisciplineExecutionWorkflowObserver` | `{discipline}_execution` | `DisciplineExecutionTracer` |
+| `DisciplineLinearizationDMProcessor` | `DisciplineLinearizationWorkflowObserver` | `{discipline}_linearization` | `DisciplineLinearizationTracer` |
+| `MDAExecutionDMProcessor` | `MDAExecutionWorkflowObserver` | `{mda}` | `MDAExecutionTracer` |
+| `MDAIterationDMProcessor` | `MDAIterationWorkflowObserver` | `{mda}_iteration_{iter}` | `MDAIterationTracer` |
+| `OptimizerDMProcessor` | `OptimizerWorkflowObserver` | `Optimizer_iteration_{iter+1}` | `OptimizerTracer` |
+| `ScenarioDMProcessor` | `ScenarioWorkflowObserver` | `{scenario}` | `ScenarioTracer` |
+| `DOEDMProcessor` | `DOEWorkflowObserver` | `DOE_sample_{sample_index}` | `DOETracer` |
 
 `DMProcessorFactory` (module singleton `dm_processor_factory`) matches a processor to an
 observer by testing `isinstance(observer, processor.observer_class)`. The DOE

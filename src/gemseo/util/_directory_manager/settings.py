@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import sys
 from enum import StrEnum
-from multiprocessing import current_process
 from pathlib import Path
 from typing import TYPE_CHECKING
 from typing import Final
@@ -31,6 +30,7 @@ from pydantic import field_validator
 from pydantic import model_validator
 
 from gemseo.scenario.backup_settings import BaseBackupSettings
+from gemseo.util._worker_context import get_process_parent_path
 from gemseo.util.base_multiton import BaseMultiton
 
 if TYPE_CHECKING:
@@ -152,6 +152,12 @@ class Settings(
         manager_module = sys.modules.get("gemseo.util._directory_manager.manager")
         if manager_module is not None:
             BaseMultiton.clear_cache(manager_module.DirectoryManager)
+        # Likewise for the trace registry: without this reset, its per-class
+        # counters would keep accumulating across runs and tests sharing a
+        # process, and object ids would stop being deterministic.
+        registry_module = sys.modules.get("gemseo.util._tracer.registry")
+        if registry_module is not None:
+            BaseMultiton.clear_cache(registry_module.TraceRegistry)
         return value
 
     @model_validator(mode="after")
@@ -189,7 +195,7 @@ class Settings(
                 # The branch is not seen by coverage: the worker side only
                 # runs in subprocesses, which the coverage tracer does not
                 # record.
-                if not hasattr(current_process(), "parent_path"):  # pragma: no branch
+                if get_process_parent_path() is None:  # pragma: no branch
                     self.execution_root_path.mkdir(parents=True)
                 self.__execution_root_path = self.execution_root_path
         return self

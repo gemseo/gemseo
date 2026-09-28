@@ -19,14 +19,11 @@ from __future__ import annotations
 
 import operator
 import shutil
-from multiprocessing import current_process
-from multiprocessing import parent_process
 from os import chdir
 from os import getpid
 from os import walk
 from pathlib import Path
 from sys import maxsize
-from threading import current_thread
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import ClassVar
@@ -35,6 +32,13 @@ from gemseo.util._directory_manager.settings import CleanUpPolicy
 from gemseo.util._directory_manager.settings import _keep_all
 from gemseo.util._directory_manager.settings import _keep_last_only
 from gemseo.util._filename_sanitizer import secure_filename
+from gemseo.util._tracer.registry import TraceRegistry
+from gemseo.util._worker_context import get_process_parent_path
+from gemseo.util._worker_context import get_thread_cwd
+from gemseo.util._worker_context import get_thread_parent_path
+from gemseo.util._worker_context import is_in_worker_process
+from gemseo.util._worker_context import set_thread_cwd
+from gemseo.util._worker_context import tag_process_worker
 from gemseo.util._workflow_observer.mda import MDAExecutionWorkflowObserver
 from gemseo.util._workflow_observer.scenario import ScenarioWorkflowObserver
 from gemseo.util.base_multiton import BaseMultiton
@@ -61,10 +65,10 @@ class DirectoryManager(metaclass=BaseMultiton):
     once enabled.
     """
 
-    suffix_separator: ClassVar[str] = "#"
+    __suffix_separator: ClassVar[str] = "#"
     """The separator used when suffixing homonymic directories."""
 
-    _marker_file_name: ClassVar[str] = ".gemseo_directory_manager"
+    __marker_file_name: ClassVar[str] = ".gemseo_directory_manager"
     """The name of the marker file identifying directories created by the manager.
 
     The marker allows recognizing managed directories across processes,
@@ -84,7 +88,17 @@ class DirectoryManager(metaclass=BaseMultiton):
         self.__path_to_observer = {}
         self.__main_scenario_observer = None
 
-        if parent_path := getattr(current_process(), "parent_path", None):
+        # The tracer package has no notion of an execution root of its own
+        # (it does not depend on the directory manager): inject it here,
+        # since the manager is constructed (and reset, together with the
+        # registry, when the configuration is re-enabled) before any
+        # processor builds a tracer, which registers its observee as soon
+        # as it is built.
+        TraceRegistry().set_root_path(
+            _configuration.directory_manager.execution_root_path
+        )
+
+        if parent_path := get_process_parent_path():
             # In a worker process created with a non-fork start method,
             # a new instance of this class is created and the starting path is
             # no longer the root path: it is the parent working directory set
@@ -135,12 +149,16 @@ class DirectoryManager(metaclass=BaseMultiton):
         self,
         observer: BaseWorkflowObserver,
         name: str,
-    ) -> None:
+    ) -> Path:
         """Start using a new directory.
 
         Args:
             observer: The current observer.
             name: The name of the processor.
+
+        Returns:
+            The path of the new directory, so that the caller does not have to
+            search it back from the observer, see `BaseDMProcessor.end`.
         """
         directory_path = self.__get_directory_path(name)
         self.__path_to_observer[directory_path] = observer
@@ -151,7 +169,7 @@ class DirectoryManager(metaclass=BaseMultiton):
             self.__main_scenario_observer = observer
 
         directory_path.mkdir()
-        (directory_path / self._marker_file_name).touch()
+        (directory_path / self.__marker_file_name).touch()
         self.__set_cwd(directory_path)
 
         if (
@@ -161,7 +179,7 @@ class DirectoryManager(metaclass=BaseMultiton):
             # Do not pass plot: EvaluationScenario.set_backup_settings does not
             # have this argument (only the MDOScenario override does) and the
             # history view is written by end_directory anyway.
-            observer._object.set_backup_settings(
+            observer.object_.set_backup_settings(
                 file_path=directory_path
                 / _configuration.directory_manager.backup_settings.file_path,
                 at_each_iteration=_configuration.directory_manager.backup_settings.at_each_iteration,
@@ -169,6 +187,8 @@ class DirectoryManager(metaclass=BaseMultiton):
                 erase=False,
                 load=False,
             )
+
+        return directory_path
 
     @staticmethod
     def __set_cwd(path: Path) -> None:
@@ -182,10 +202,7 @@ class DirectoryManager(metaclass=BaseMultiton):
             path: The path to be the current working directory.
         """
         chdir(path)
-        thread = current_thread()
-        # Store the cwd if we are in a thread spawned from gemseo.
-        if hasattr(thread, "parent_path"):
-            thread.cwd = path
+        set_thread_cwd(path)
 
     def __get_directory_path(self, name: str) -> Path:
         """Return the path to a new directory.
@@ -205,10 +222,7 @@ class DirectoryManager(metaclass=BaseMultiton):
         # the threads, thus no longer reliable: we use the explicitly stored value,
         # i.e. the last directory used by this thread if any (see __set_cwd),
         # the starting directory of the worker thread otherwise.
-        thread = current_thread()
-        parent_path = (
-            getattr(thread, "cwd", getattr(thread, "parent_path", None)) or Path.cwd()
-        )
+        parent_path = get_thread_cwd() or get_thread_parent_path() or Path.cwd()
 
         # Ensure that name can be a filename.
         # secure_filename can return an empty string (e.g. for a name made of
@@ -232,7 +246,7 @@ class DirectoryManager(metaclass=BaseMultiton):
                 # unsuffixed directory.
                 previous_suffix = 0
                 new_path = path.with_name(
-                    path.name + self.suffix_separator + str(previous_suffix)
+                    path.name + self.__suffix_separator + str(previous_suffix)
                 )
                 self.__path_to_observer.pop(path)
                 self.__path_to_observer[new_path] = observer_
@@ -267,7 +281,9 @@ class DirectoryManager(metaclass=BaseMultiton):
                 # Is it a homonymic directory that has been suffixed?
                 str(path).startswith(str(directory_path))
                 # Yes, then is it suffixed with the separator and an index?
-                and (previous_suffix := path.name.rsplit(self.suffix_separator, 1)[-1])
+                and (
+                    previous_suffix := path.name.rsplit(self.__suffix_separator, 1)[-1]
+                )
                 != path.name
             ):
                 previous_suffix = int(previous_suffix)
@@ -275,7 +291,7 @@ class DirectoryManager(metaclass=BaseMultiton):
                 continue
 
             return directory_path.with_name(
-                directory_path.name + self.suffix_separator + str(previous_suffix + 1)
+                directory_path.name + self.__suffix_separator + str(previous_suffix + 1)
             )
 
         return directory_path
@@ -412,13 +428,17 @@ class DirectoryManager(metaclass=BaseMultiton):
         Returns:
             The paths of the directories to remove.
         """
-        problem = observer._object.formulation.problem
+        problem = observer.object_.formulation.problem
         try:
             optimum_iteration = problem.database.get_iteration(problem.optimum[1])
-        except ValueError:
-            # The execution failed before any complete evaluation (e.g. the
-            # database is empty): keep everything rather than mask the
-            # exception being propagated.
+        except (ValueError, KeyError):
+            # ValueError: the execution failed before any complete evaluation
+            # (e.g. the database is empty).
+            # KeyError: `OptimizationHistory.optimum` returns an empty design
+            # vector when no feasible point carries the value of the objective,
+            # and `Database.get_iteration` does not hold such a vector.
+            # Either way, keep everything rather than mask the exception being
+            # propagated.
             return set()
 
         dir_paths_to_keep: set[Path] = set()
@@ -466,7 +486,7 @@ class DirectoryManager(metaclass=BaseMultiton):
         Returns:
             Whether the directory was created by the manager.
         """
-        return (path / cls._marker_file_name).exists()
+        return (path / cls.__marker_file_name).exists()
 
     @classmethod
     def __filter_paths_with_managed_subdirs(cls, paths: Iterable[Path]) -> set[Path]:
@@ -498,7 +518,7 @@ class DirectoryManager(metaclass=BaseMultiton):
         # gemseo.post.
         from gemseo.post import OptHistoryView_Settings
 
-        scenario = observer._object
+        scenario = observer.object_
         if len(scenario.formulation.problem.database) > 2:
             scenario.post_process(
                 OptHistoryView_Settings(
@@ -517,7 +537,7 @@ class DirectoryManager(metaclass=BaseMultiton):
         Args:
             observer: The MDA workflow observer.
         """
-        mda = observer._object
+        mda = observer.object_
         mda.plot_residual_history(
             save=True, filename=f"{mda.name}_residuals_history.pdf"
         )
@@ -552,7 +572,7 @@ def _get_cwd() -> Path:
     """
     # When multi-threading, the current working directory is shared among
     # the threads, thus no longer reliable: we use the explicitly stored value.
-    return getattr(current_thread(), "cwd", Path.cwd())
+    return get_thread_cwd() or Path.cwd()
 
 
 def _rebuild_directory_manager(
@@ -581,19 +601,14 @@ def _rebuild_directory_manager(
     Returns:
         The directory manager singleton of the current process.
     """
-    process = current_process()
-    # A worker process either has a parent process (when unpickling task
-    # arguments) or is inheriting its state (when unpickling the pool initargs
-    # during the bootstrap of a spawned process, where parent_process() is not
-    # set yet and _inheriting is the stdlib marker of that phase).
-    in_worker = parent_process() is not None or getattr(process, "_inheriting", False)
     # Not seen by coverage: this block only runs in worker subprocesses,
     # which the coverage tracer does not record.
     if (  # pragma: no cover
-        in_worker and getpid() != parent_id and not hasattr(process, "parent_path")
+        is_in_worker_process()
+        and getpid() != parent_id
+        and get_process_parent_path() is None
     ):
-        process.parent_id = parent_id  # type: ignore[attr-defined]
-        process.parent_path = parent_path  # type: ignore[attr-defined]
+        tag_process_worker(parent_id, parent_path)
         # The parent metadata is set on the process above before the settings
         # are applied: the settings validator detects the worker from it and
         # reuses the parent's (already existing) execution root instead of

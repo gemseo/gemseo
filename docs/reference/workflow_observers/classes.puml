@@ -7,8 +7,8 @@ class "WorkflowObserverInterface" as gemseo.util._workflow_observer.interface.Wo
 }
 together {
   class "BaseWorkflowObserver" as gemseo.util._workflow_observer.base_observer.BaseWorkflowObserver {
-    _object
-    _processor
+    object_
+    __processor
     _status
   }
   class "BaseWorkflowObserverDispatcher" as gemseo.util._workflow_observer.base_dispatcher.BaseWorkflowObserverDispatcher {

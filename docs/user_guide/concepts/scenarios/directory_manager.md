@@ -112,6 +112,66 @@ If the actual path in the hierarchy is needed, use `Path.cwd()` to obtain it.
 
 When the processing related to a directory is finished, the current working directory is set to its parent directory.
 
+## The execution traces
+
+Every execution directory also contains a `.gemseo-trace.yml` file recording the traced data of the
+call that created the directory: the `object_id` of the executed object, its `type` and
+dynamic data such as the input data, the output data and the timing of the call. Depending on
+the executed object, more data is traced, e.g. the Jacobian for a discipline linearization,
+the iteration number for an MDA iteration or an optimizer iteration, the sample index and the
+input value for a DOE sample, and the objective and the optimum for a scenario.
+
+The data that does not change from one call to the next, namely the class documentation and
+the constructor arguments of an executed object, is not repeated in every `.gemseo-trace.yml`: it is
+written once, when the object is first executed, to a registry entry under
+`<execution_root_path>/.gemseo-traces/<ClassName>/<n>.trace.yml`. The `object_id` of a trace, e.g.
+`Sellar1/0`, is the registry-relative path of that entry. The name of that directory
+starts with a dot, and is therefore hidden from `ls`, so that it can never clash with an
+execution directory named after an executed object.
+
+A NumPy array of more than 16 elements is not written inline in a trace: it is written to
+a `.npy` file in a sibling directory, e.g. `.gemseo-trace.arrays/` next to `.gemseo-trace.yml`,
+or `<n>.trace.arrays/` next to a registry entry `<n>.trace.yml`, and referenced from the YAML
+by a small mapping. This avoids the cost of converting a large array element by element, and
+of the larger YAML it would produce. That directory only exists when the trace has at least
+one such array.
+
+```txt
+├── .gemseo-traces
+│   ├── MDOScenario
+│   │   └── 0.trace.yml
+│   ├── MDAJacobi
+│   │   └── 0.trace.yml
+│   ├── Sellar1
+│   │   ├── 0.trace.yml
+│   │   └── 0.trace.arrays
+│   │       └── 0.npy
+│   └── Sellar2
+│       └── 0.trace.yml
+├── MDOScenario
+│   ├── .gemseo-trace.yml
+│   ├── Optimizer_iteration_1
+│   │   ├── .gemseo-trace.yml
+│   │   └── MDAJacobi
+│   │       ├── .gemseo-trace.yml
+│   │       └── MDAJacobi_iteration_0
+│   │           ├── .gemseo-trace.yml
+│   │           └── Sellar1_execution
+│   │               ├── .gemseo-trace.yml
+│   │               └── .gemseo-trace.arrays
+│   │                   └── 0.npy
+```
+
+The traces are written whenever the directory manager is enabled; there is no dedicated
+setting. As for the other files written at each iteration, keep in mind that this has an
+impact on performance for disciplines that are cheap to execute.
+
+!!! warning
+    The tracing is experimental: the contents and the layout of the trace files may change
+    without notice. The object ids are also unique within one process only, so a process
+    creating worker processes by forking, e.g. `multiprocessing` with the default start
+    method on Linux, may write the registry entries of two distinct objects to a same file.
+
 ## The scenario cleanup policies
 
 It is possible to set a cleanup policy to automatically erase certain directories created during the execution of the

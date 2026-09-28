@@ -25,8 +25,8 @@ from gemseo.util._workflow_observer.interface import WorkflowObserverInterface
 if TYPE_CHECKING:
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
     from gemseo.util._workflow_observer.base_observer import ObservationSpec
-    from gemseo.util._workflow_observer.interface import CallArguments
     from gemseo.util._workflow_observer.interface import CallSpec
+    from gemseo.util.typing import StrKeyMapping
 
 
 class BaseWorkflowObserverDispatcher(WorkflowObserverInterface):
@@ -53,7 +53,7 @@ class BaseWorkflowObserverDispatcher(WorkflowObserverInterface):
     def __init__(  # noqa: D107
         self,
         object_: object,
-        init_arguments: CallArguments,
+        init_arguments: StrKeyMapping,
     ) -> None:
         self.__method_name_to_observer = {
             method_name: observer_class(object_, init_arguments)

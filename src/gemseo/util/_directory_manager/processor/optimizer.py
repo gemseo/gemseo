@@ -20,9 +20,11 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.util._directory_manager.processor.base import BaseDMProcessor
+from gemseo.util._tracer.optimizer import OptimizerTracer
 from gemseo.util._workflow_observer.optimizer import OptimizerWorkflowObserver
 
 if TYPE_CHECKING:
+    from gemseo.util._tracer.base import BaseTracer
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
 
 
@@ -35,5 +37,15 @@ class OptimizerDMProcessor(BaseDMProcessor):
 
     observer_class: ClassVar[type[BaseWorkflowObserver]] = OptimizerWorkflowObserver
 
+    _tracer_class: ClassVar[type[BaseTracer]] = OptimizerTracer
+
+    _observer: OptimizerWorkflowObserver
+    """The workflow observer, which owns the iteration counter."""
+
     def __str__(self) -> str:
-        return f"Optimizer_iteration_{self._observer.iteration + 1}"
+        iteration = self._observer.iteration
+        # The observer has no iteration number until the observation of
+        # `execute` has captured the evaluation counter of the problem; the
+        # directories being numbered from 1, that is the first one.
+        number = 1 if iteration is None else iteration + 1
+        return f"Optimizer_iteration_{number}"

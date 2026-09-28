@@ -31,8 +31,8 @@ from gemseo.util._workflow_observer.injector import _WorkflowObserverInjector
 from gemseo.util.testing.helper import assert_exception
 
 if TYPE_CHECKING:
-    from gemseo.util._workflow_observer.interface import CallArguments
     from gemseo.util._workflow_observer.interface import CallSpec
+    from gemseo.util.typing import StrKeyMapping
 
 
 class _StubObserver:
@@ -45,7 +45,7 @@ class _StubObserver:
         method_names_for_both={"both"},
     )
 
-    def __init__(self, object_: object, init_arguments: CallArguments) -> None:
+    def __init__(self, object_: object, init_arguments: StrKeyMapping) -> None:
         self.events: list[tuple[str, Any]] = []
 
     def start(self, call_spec: CallSpec) -> None:
@@ -225,6 +225,44 @@ def test_accept_returns_false_when_directory_manager_disabled(monkeypatch):
         pass
 
     assert not _WorkflowObserverInjector.accept(_C)
+
+
+def test_decorate_init_binds_a_variadic_signature(enable_observation):
+    """Construction must succeed when `__init__` has variadic parameters.
+
+    Enabling the directory manager must not abort the construction of a
+    class whose `__init__` has variadic parameters (e.g.
+    `ConstraintAggregation`): the arguments are bound like any other
+    signature, the extra positional ones under `"*args"` and the extra
+    keyword ones flattened into the mapping.
+    """
+
+    class _VariadicInitTarget:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            pass
+
+    class _VariadicInitObserver(_StubObserver):
+        _spec: ClassVar[ObservationSpec] = ObservationSpec(
+            base_class=(
+                f"{_VariadicInitTarget.__module__}.{_VariadicInitTarget.__qualname__}"
+            ),
+        )
+
+        def __init__(self, object_: object, init_arguments: StrKeyMapping) -> None:
+            super().__init__(object_, init_arguments)
+            self.init_arguments = init_arguments
+
+    _decorate_class(
+        _VariadicInitObserver._spec, _VariadicInitObserver, _VariadicInitTarget
+    )
+
+    target = _VariadicInitTarget(1, 2, extra="value")
+
+    assert isinstance(target._workflow_observer, _VariadicInitObserver)
+    assert target._workflow_observer.init_arguments == {
+        "*args": (1, 2),
+        "extra": "value",
+    }
 
 
 def test_accept_returns_false_for_abstract_class(monkeypatch):

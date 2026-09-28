@@ -20,9 +20,11 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.util._directory_manager.processor.base import BaseDMProcessor
+from gemseo.util._tracer.scenario import ScenarioTracer
 from gemseo.util._workflow_observer.scenario import ScenarioWorkflowObserver
 
 if TYPE_CHECKING:
+    from gemseo.util._tracer.base import BaseTracer
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
 
 
@@ -34,3 +36,5 @@ class ScenarioDMProcessor(BaseDMProcessor):
     """
 
     observer_class: ClassVar[type[BaseWorkflowObserver]] = ScenarioWorkflowObserver
+
+    _tracer_class: ClassVar[type[BaseTracer]] = ScenarioTracer

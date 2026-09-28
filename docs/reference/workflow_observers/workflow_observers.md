@@ -27,7 +27,8 @@
 GEMSEO's workflow observation system provides transparent tracking of execution lifecycle events (start/end) for GEMSEO
 objects (disciplines, scenarios, MDA solvers, optimizers, DOE algorithms). Observers are automatically injected via a
 metaclass and delegate actual processing to processors (
-see [Directory Manager](../directory_manager/directory_manager.md)).
+see [Directory Manager](../directory_manager/directory_manager.md)), which create the
+execution directories and record the [execution traces](../tracer/tracer.md).
 
 **Key Features:**
 
@@ -47,17 +48,48 @@ The abstract interface all observers must implement:
 
 ```python
 class WorkflowObserverInterface:
-    def __init__(object_: object, init_arguments: CallArguments) -> None: ...
+    def __init__(object_: object, init_arguments: StrKeyMapping) -> None: ...
 
     def start(call_spec: CallSpec) -> None: ...
 
     def end(call_spec: CallSpec, returned_data: Any) -> None: ...
 ```
 
-Supporting dataclasses:
+`init_arguments` holds the normalized arguments used to instantiate the observed
+object, by parameter name.
 
-- `CallArguments`: holds `args` and `kwargs` of a call
-- `CallSpec(CallArguments)`: extends with `callable_` reference
+Supporting dataclass:
+
+- `CallSpec`: holds the normalized arguments of a call, by parameter name
+  (`kwargs`), and the `callable_` reference. It is built through
+  `CallSpec.create_safely()`, never directly.
+
+#### Argument normalization
+
+The arguments of an observed call are bound to the parameters of the method
+called, so that a consumer, e.g. a [tracer](../tracer/tracer.md), can read an
+argument by its parameter name whatever the way the caller passed it, or did
+not pass it (the omitted parameters take their default value):
+
+- `normalize_arguments_safely(callable_, args, kwargs)`: returns the arguments
+  by parameter name, binding through `inspect.Signature.bind()`, which handles
+  a variadic signature too. The extra positional arguments of a `*args`
+  parameter are kept as a tuple under the name of that parameter prefixed with
+  `*`, e.g. `"*args"`, so that a trace shows which argument is variadic; the
+  extra keyword arguments of a `**kwargs` parameter are flattened into the
+  returned mapping, unless one of them has the key of another argument (a
+  keyword argument named after a positional-only parameter, e.g.
+  `f(self, x, /, **kwargs)` called as `f(1, x=2)`, or a key such as `"*args"`
+  passed by dictionary unpacking), in which case they are left nested under
+  `"**kwargs"` instead — never raised on, since Python itself accepts these
+  calls. A method with variadic parameters, e.g. the constructor of
+  `ConstraintAggregation`, is thus observed like any other
+- `CallSpec.create_safely()` wraps that function
+
+The signature of an observed method is computed without its first parameter,
+since the decorated methods are plain functions whose signature includes
+`self`, and it is cached: computing a signature is expensive relative to an
+observed call, e.g. an MDA iteration.
 
 ### BaseWorkflowObserver (`base_observer.py`)
 
@@ -114,6 +146,12 @@ observers based on the name of the method to observe (`_method_name_to_observer_
 
 **OptimizerWorkflowObserver** uses custom `start()`/`end()` logic instead of a dispatcher, handling `execute`,
 `_finalize_previous_iteration`, and `_get_early_stopping_result` methods with specialized routing.
+Although it routes by method name too, it is not a candidate for
+`BaseWorkflowObserverDispatcher`: a dispatcher delegates each method to an independent child
+observer with its own lifecycle, while here the observed methods drive one shared lifecycle
+(`_finalize_previous_iteration` closes the observation of the current iteration when it starts
+and opens the next one when it ends, sharing the status and the evaluation counter captured
+by `execute`).
 
 ---
 

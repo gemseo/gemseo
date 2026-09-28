@@ -20,9 +20,11 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.util._directory_manager.processor.base import BaseDMProcessor
+from gemseo.util._tracer.doe import DOETracer
 from gemseo.util._workflow_observer.doe import DOEWorkflowObserver
 
 if TYPE_CHECKING:
+    from gemseo.util._tracer.base import BaseTracer
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
     from gemseo.util._workflow_observer.interface import CallSpec
 
@@ -44,10 +46,16 @@ class DOEDMProcessor(BaseDMProcessor):
 
     observer_class: ClassVar[type[BaseWorkflowObserver]] = DOEWorkflowObserver
 
-    __sample_index: int
+    _tracer_class: ClassVar[type[BaseTracer]] = DOETracer
+
+    __sample_index: int = -1
     """The zero-based index of the current sample.
 
     A negative value means that all the samples are evaluated at once.
+
+    The class-level default makes `__str__` total: it is called before `start`
+    has set the index, e.g. when the construction of the tracer fails and the
+    error is logged from the constructor.
     """
 
     def start(self, call_spec: CallSpec) -> None:  # noqa: D102

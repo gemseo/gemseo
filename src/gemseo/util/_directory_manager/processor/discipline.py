@@ -20,6 +20,8 @@ from typing import TYPE_CHECKING
 from typing import ClassVar
 
 from gemseo.util._directory_manager.processor.base import BaseDMProcessor
+from gemseo.util._tracer.discipline import DisciplineExecutionTracer
+from gemseo.util._tracer.discipline import DisciplineLinearizationTracer
 from gemseo.util._workflow_observer.discipline import (
     DisciplineExecutionWorkflowObserver,
 )
@@ -28,6 +30,7 @@ from gemseo.util._workflow_observer.discipline import (
 )
 
 if TYPE_CHECKING:
+    from gemseo.util._tracer.base import BaseTracer
     from gemseo.util._workflow_observer.base_observer import BaseWorkflowObserver
 
 
@@ -42,8 +45,10 @@ class DisciplineExecutionDMProcessor(BaseDMProcessor):
         DisciplineExecutionWorkflowObserver
     )
 
+    _tracer_class: ClassVar[type[BaseTracer]] = DisciplineExecutionTracer
+
     def __str__(self) -> str:
-        return f"{self._observer._object}_execution"
+        return f"{self._observer.object_}_execution"
 
 
 class DisciplineLinearizationDMProcessor(BaseDMProcessor):
@@ -57,5 +62,7 @@ class DisciplineLinearizationDMProcessor(BaseDMProcessor):
         DisciplineLinearizationWorkflowObserver
     )
 
+    _tracer_class: ClassVar[type[BaseTracer]] = DisciplineLinearizationTracer
+
     def __str__(self) -> str:
-        return f"{self._observer._object}_linearization"
+        return f"{self._observer.object_}_linearization"

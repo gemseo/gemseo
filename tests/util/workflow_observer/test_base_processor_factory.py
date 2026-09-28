@@ -17,13 +17,14 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from gemseo.util._directory_manager.processor.factory import dm_processor_factory
 from gemseo.util._directory_manager.processor.mda import MDAExecutionDMProcessor
 from gemseo.util._directory_manager.processor.optimizer import OptimizerDMProcessor
 from gemseo.util._directory_manager.processor.scenario import ScenarioDMProcessor
-from gemseo.util._workflow_observer.interface import CallArguments
 from gemseo.util._workflow_observer.mda import MDAExecutionWorkflowObserver
 from gemseo.util._workflow_observer.optimizer import OptimizerWorkflowObserver
 from gemseo.util._workflow_observer.scenario import ScenarioWorkflowObserver
@@ -32,7 +33,7 @@ from gemseo.util.testing.helper import assert_exception
 
 def test_create_raises_for_unknown_observer(snapshot):
     with assert_exception(ValueError, snapshot):
-        dm_processor_factory.create(object(), CallArguments(args=(), kwargs={}))
+        dm_processor_factory.create(object(), {})
 
 
 @pytest.mark.parametrize(
@@ -49,5 +50,11 @@ def test_create_returns_processor_matching_observer_type(
     expected_processor_class,
 ):
     observer = observer_class.__new__(observer_class)
-    processor = dm_processor_factory.create(observer, CallArguments(args=(), kwargs={}))
+    # The tracer created by the processor needs an observed object to
+    # register in the trace registry (class name, name, documentation); in
+    # real use this is always set by `BaseWorkflowObserver.__init__` before
+    # the processor is created. `SimpleNamespace` (rather than `object()`) can
+    # carry the `_workflow_trace_id` the tracer stamps back onto it.
+    observer.object_ = SimpleNamespace()
+    processor = dm_processor_factory.create(observer, {})
     assert isinstance(processor, expected_processor_class)

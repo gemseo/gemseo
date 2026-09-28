@@ -223,6 +223,7 @@ nav:
           - Workflow observers: reference/workflow_observers/workflow_observers.md
           - Workflow observer patterns: reference/workflow_observers/architecture_patterns.md
           - Directory manager: reference/directory_manager/directory_manager.md
+          - Tracer: reference/tracer/tracer.md
 
 markdown_extensions:
   - admonition

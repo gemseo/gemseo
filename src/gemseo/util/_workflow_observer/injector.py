@@ -31,8 +31,8 @@ from gemseo.util._workflow_observer.discipline import (
 from gemseo.util._workflow_observer.doe import (
     DOEWorkflowObserver as _DOEWorkflowObserver,
 )
-from gemseo.util._workflow_observer.interface import CallArguments
 from gemseo.util._workflow_observer.interface import CallSpec
+from gemseo.util._workflow_observer.interface import normalize_arguments_safely
 from gemseo.util._workflow_observer.mda import (
     MDAWorkflowObserver as _MDAWorkflowObserver,
 )
@@ -251,7 +251,7 @@ def _decorate_init(
         # created at that time are not observed.
         if type(self).__init__ is _wrapper and _is_observation_enabled():
             self._workflow_observer = observer_class(
-                self, CallArguments(args=args, kwargs=kwargs)
+                self, normalize_arguments_safely(callable_, args, kwargs)
             )
 
     setattr(_wrapper, _wrapper_attribute, True)
@@ -279,7 +279,7 @@ def _decorate_with_start(callable_: Callable) -> Callable:
         observer = _get_observer(self)
         if observer is None:
             return callable_(self, *args, **kwargs)
-        observer.start(CallSpec(callable_=callable_, args=args, kwargs=kwargs))
+        observer.start(CallSpec.create_safely(callable_, args, kwargs))
         return callable_(self, *args, **kwargs)
 
     setattr(_wrapper, _wrapper_attribute, True)
@@ -308,7 +308,7 @@ def _decorate_with_finish(callable_: Callable) -> Callable:
         observer = _get_observer(self)
         if observer is None:
             return callable_(self, *args, **kwargs)
-        call_spec = CallSpec(callable_=callable_, args=args, kwargs=kwargs)
+        call_spec = CallSpec.create_safely(callable_, args, kwargs)
         try:
             returned_data = callable_(self, *args, **kwargs)
         except BaseException:
@@ -343,7 +343,7 @@ def _decorate_with_both(callable_: Callable) -> Callable:
         observer = _get_observer(self)
         if observer is None:
             return callable_(self, *args, **kwargs)
-        call_spec = CallSpec(callable_=callable_, args=args, kwargs=kwargs)
+        call_spec = CallSpec.create_safely(callable_, args, kwargs)
         observer.start(call_spec)
         try:
             returned_data = callable_(self, *args, **kwargs)
