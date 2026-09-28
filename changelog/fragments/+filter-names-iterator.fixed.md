@@ -1,0 +1,1 @@
+`filter_names` now keeps the expected names when `names_to_keep` is an iterator, e.g. a generator; it used to return no name, and an empty iterator did not keep all the names. This affected the `input_names` argument of the `plot` methods of the sensitivity analyses. `names_to_keep` no longer accepts `None`; use an empty iterable to keep all the names.

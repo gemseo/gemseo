@@ -245,15 +245,16 @@ def filter_names(
 
     Args:
         names: The original names.
-        names_to_keep: The names to keep. If `None`, keep all.
+        names_to_keep: The names to keep. If empty, keep all.
 
     Returns:
         The filtered names.
     """
-    if names_to_keep:
-        return [name for name in names if name in set(names_to_keep)]
+    kept_names = set(names_to_keep)
+    if not kept_names:
+        return names
 
-    return names
+    return [name for name in names if name in kept_names]
 
 
 def get_variables_with_components(
